@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Proforma_Phase",
+  "display_name": "Proforma Phase",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Phase",
+      "display_name": "Phase",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma",
+      "display_name": "Pro Forma",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Phases]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Length_field",
+      "display_name": "Length (Months)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Acres",
+      "display_name": "Acres",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Eng_Start_Month",
+      "display_name": "Eng Start Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Eng_End_Month",
+      "display_name": "Eng End Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Const_Start_Month",
+      "display_name": "Const Start Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Const_End_Month",
+      "display_name": "Const End Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Sale_Start_Month",
+      "display_name": "Lot Sale Start Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Sale_End_Month",
+      "display_name": "Lot Sale End Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Closing_Length",
+      "display_name": "Lot Closing Length",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Lots",
+      "display_name": "Total Lots",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

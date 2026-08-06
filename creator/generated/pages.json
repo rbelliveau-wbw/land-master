@@ -1,0 +1,302 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "pages": [
+    {
+      "link_name": "Lot_Management",
+      "display_name": "Lot Management",
+      "parameters": [
+        {
+          "name": "search",
+          "type": "unspecified"
+        },
+        {
+          "name": "search_results",
+          "type": "unspecified"
+        }
+      ]
+    },
+    {
+      "link_name": "Land_Projects",
+      "display_name": "Land & Projects",
+      "parameters": [
+        {
+          "name": "searchCounty",
+          "type": "unspecified"
+        },
+        {
+          "name": "searchName",
+          "type": "unspecified"
+        }
+      ]
+    },
+    {
+      "link_name": "Tax_Parcel_Management",
+      "display_name": "Tax Parcel Management",
+      "parameters": []
+    },
+    {
+      "link_name": "Forecast_Management",
+      "display_name": "Forecast Management",
+      "parameters": []
+    },
+    {
+      "link_name": "Approvals_HTML_Page",
+      "display_name": "Approvals HTML Page",
+      "parameters": [
+        {
+          "name": "recordID",
+          "type": "int"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Contract_Management",
+      "display_name": "Contract Management",
+      "parameters": []
+    },
+    {
+      "link_name": "Settings1",
+      "display_name": "Settings",
+      "parameters": []
+    },
+    {
+      "link_name": "Proforma_Management",
+      "display_name": "Proforma Management",
+      "parameters": [
+        {
+          "name": "proformaId",
+          "type": "int"
+        },
+        {
+          "name": "searchParam",
+          "type": "string"
+        },
+        {
+          "name": "startMonth",
+          "type": "int"
+        },
+        {
+          "name": "startYear",
+          "type": "int"
+        },
+        {
+          "name": "tabChoice",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Lot_Management_V2",
+      "display_name": "Lot Management V2",
+      "parameters": [
+        {
+          "name": "subdivisionForm",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "View_Budget",
+      "display_name": "View Budget",
+      "parameters": [
+        {
+          "name": "approvalAction",
+          "type": "string"
+        },
+        {
+          "name": "approvalId",
+          "type": "string"
+        },
+        {
+          "name": "approvalNote",
+          "type": "string"
+        },
+        {
+          "name": "approvalRole",
+          "type": "string"
+        },
+        {
+          "name": "approvalType",
+          "type": "string"
+        },
+        {
+          "name": "approver",
+          "type": "string"
+        },
+        {
+          "name": "budgetId",
+          "type": "int"
+        },
+        {
+          "name": "submittedApprovalType",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Queue_Live_Embed",
+      "display_name": "Queue Live Embed",
+      "parameters": [
+        {
+          "name": "lotId",
+          "type": "int"
+        },
+        {
+          "name": "lotaction",
+          "type": "string"
+        },
+        {
+          "name": "mode",
+          "type": "string"
+        },
+        {
+          "name": "popup",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Milestone_Gantt_View",
+      "display_name": "Milestone Gantt View",
+      "parameters": []
+    },
+    {
+      "link_name": "Contract_Mgmt",
+      "display_name": "Contract Mgmt",
+      "parameters": [
+        {
+          "name": "actionComplete",
+          "type": "string"
+        },
+        {
+          "name": "actionCompleteDate",
+          "type": "string"
+        },
+        {
+          "name": "actionDueDate",
+          "type": "string"
+        },
+        {
+          "name": "actionId",
+          "type": "string"
+        },
+        {
+          "name": "actionStartDate",
+          "type": "string"
+        },
+        {
+          "name": "actionStatus",
+          "type": "string"
+        },
+        {
+          "name": "actionType",
+          "type": "string"
+        },
+        {
+          "name": "contractId",
+          "type": "string"
+        },
+        {
+          "name": "devMgr",
+          "type": "string"
+        },
+        {
+          "name": "devMgrNotes",
+          "type": "string"
+        },
+        {
+          "name": "newActionText",
+          "type": "string"
+        },
+        {
+          "name": "newDevMgrNotes",
+          "type": "string"
+        },
+        {
+          "name": "newDueDate",
+          "type": "string"
+        },
+        {
+          "name": "newStartDate",
+          "type": "string"
+        },
+        {
+          "name": "newStatus",
+          "type": "string"
+        },
+        {
+          "name": "showCompleted",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Proforma_Management1",
+      "display_name": "Pro Formas",
+      "parameters": [
+        {
+          "name": "page",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Budget_Management1",
+      "display_name": "Budgets",
+      "parameters": [
+        {
+          "name": "budgetId",
+          "type": "string"
+        },
+        {
+          "name": "page",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Contracts",
+      "display_name": "Contracts",
+      "parameters": [
+        {
+          "name": "contractId",
+          "type": "string"
+        },
+        {
+          "name": "loiReviewId",
+          "type": "string"
+        },
+        {
+          "name": "tokenId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "link_name": "Proforma_Approval_Response",
+      "display_name": "Pro Forma Approval Response",
+      "parameters": [
+        {
+          "name": "action1",
+          "type": "string"
+        },
+        {
+          "name": "approvalId",
+          "type": "string"
+        },
+        {
+          "name": "approvalNote",
+          "type": "string"
+        },
+        {
+          "name": "submit1",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

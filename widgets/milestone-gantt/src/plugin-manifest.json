@@ -1,0 +1,12 @@
+{
+  "service": "CREATOR",
+  "locale": [
+    "en"
+  ],
+  "defaultLocale": "en",
+  "storage": false,
+  "cspDomains": {
+    "connect-src": []
+  },
+  "config": []
+}

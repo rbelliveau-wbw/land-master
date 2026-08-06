@@ -1,0 +1,55 @@
+				 map Update_Proforma_Approval_Recipient(map request)
+                 {
+                 	response = Map();
+                 	try 
+                 	{
+                 		// Creator widget sends Zoho IDs as strings so JavaScript does not lose
+                 		// precision. Convert them to BIGINT before using them in record criteria.
+                 		proformaIdText = ifnull(request.get("proformaId"),"").toString().trim();
+                 		approvalIdText = ifnull(request.get("approvalId"),"").toString().trim();
+                 		approverEmail = ifnull(request.get("approverEmail"),"").toString().trim();
+                 		if(proformaIdText == "" || approvalIdText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma ID and approval ID are required.");
+                 			return response;
+                 		}
+                 		if(approverEmail == "" || !approverEmail.contains("@"))
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Enter a valid approver email.");
+                 			return response;
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		approvalIdLong = approvalIdText.toLong();
+                 		// Fetch by the Creator record ID only. Combining the ID and Proforma
+                 		// comparisons in one criteria expression caused Creator's
+                 		// BIGINT-versus-STRING mismatch.
+                 		approvalRow = Budget_Approvals[ID == approvalIdLong];
+                 		if(approvalRow.ID == null)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Approval row not found.");
+                 			return response;
+                 		}
+                 		// Validate that this approval belongs to the requested Pro Forma without
+                 		// putting the Proforma field into the record criteria expression.
+                 		approvalProformaId = ifnull(approvalRow.Proforma,0).toLong();
+                 		if(approvalProformaId != proformaIdLong)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Approval row does not belong to this Pro Forma.");
+                 			return response;
+                 		}
+                 		approvalRow.Approver=approverEmail;
+                 		response.put("success",true);
+                 		response.put("message","Approver updated.");
+                 		response.put("approvalId",approvalRow.ID.toString());
+                 		response.put("approverEmail",approvalRow.Approver);
+                 	}	catch (e)
+                 	{
+                 		response.put("success",false);
+                 		response.put("message",e.toString());
+                 	}
+                 	return response;
+                 }

@@ -1,0 +1,35 @@
+				 string setProjectProforma(string projectId, string proformaId)
+                 {
+                 	vProjectId = projectId.toLong();
+                 	vProformaText = ifnull(proformaId,"").trim();
+                 	if(vProjectId == 0)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Missing projectId.\"}";
+                 	}
+                 	projectRec = Project[ID == vProjectId];
+                 	if(projectRec == null)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Project not found.\"}";
+                 	}
+                 	if(vProformaText == "")
+                 	{
+                 		projectRec.Proforma=null;
+                 		resultMap = Map();
+                 		resultMap.put("ok",true);
+                 		resultMap.put("projectId",vProjectId);
+                 		resultMap.put("proformaId","");
+                 		return resultMap.toString();
+                 	}
+                 	vProformaId = vProformaText.toLong();
+                 	proformaRec = Add_Pro_Forma[ID == vProformaId];
+                 	if(proformaRec == null)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Pro Forma not found.\"}";
+                 	}
+                 	projectRec.Proforma=proformaRec.ID;
+                 	resultMap = Map();
+                 	resultMap.put("ok",true);
+                 	resultMap.put("projectId",vProjectId);
+                 	resultMap.put("proformaId",vProformaId);
+                 	return resultMap.toString();
+                 }

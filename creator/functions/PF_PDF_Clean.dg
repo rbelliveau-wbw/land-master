@@ -1,0 +1,17 @@
+				 string PF_PDF_Clean(string value)
+                 {
+                 	textValue = ifnull(value,"").toString();
+                 	textValue = textValue.replaceAll("\r\n"," ");
+                 	textValue = textValue.replaceAll("\n"," ");
+                 	textValue = textValue.replaceAll("\r"," ");
+                 	textValue = textValue.replaceAll("–","-");
+                 	textValue = textValue.replaceAll("—","-");
+                 	textValue = textValue.replaceAll("’","'");
+                 	textValue = textValue.replaceAll("‘","'");
+                 	textValue = textValue.replaceAll("“","\"");
+                 	textValue = textValue.replaceAll("”","\"");
+                 	textValue = textValue.replaceAll("•","-");
+                 	textValue = textValue.replaceAll("[^ -~]","?");
+                 	textValue = textValue.replaceAll("[ ]+"," ");
+                 	return textValue.trim();
+                 }

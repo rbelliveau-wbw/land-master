@@ -1,0 +1,168 @@
+				 map Handle_Proforma_Approval_Action(string proformaId, string approvalId, string approvalAction, string approvalNote)
+                 {
+                 	response = Map();
+                 	try 
+                 	{
+                 		proformaIdText = ifnull(proformaId,"").toString().trim();
+                 		approvalIdText = ifnull(approvalId,"").toString().trim();
+                 		actionText = ifnull(approvalAction,"").toString().trim();
+                 		noteText = ifnull(approvalNote,"").toString().trim();
+                 		if(proformaIdText == "" || approvalIdText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma ID and approval ID are required.");
+                 			return response;
+                 		}
+                 		actionLower = actionText.toLowerCase();
+                 		if(actionLower == "approve" || actionLower == "approved")
+                 		{
+                 			actionText = "Approved";
+                 		}
+                 		else if(actionLower == "deny" || actionLower == "denied" || actionLower == "reject" || actionLower == "rejected")
+                 		{
+                 			actionText = "Rejected";
+                 		}
+                 		else if(actionLower == "pending")
+                 		{
+                 			actionText = "Pending";
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		approvalIdLong = approvalIdText.toLong();
+                 		pf = Add_Pro_Forma[ID == proformaIdLong];
+                 		row = Budget_Approvals[ID == approvalIdLong];
+                 		if(pf.ID == null)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","The Pro Forma could not be found.");
+                 			return response;
+                 		}
+                 		if(row.ID == null || row.Proforma == null || row.Proforma.toString() != proformaIdLong.toString())
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Approval row not found for this Pro Forma.");
+                 			return response;
+                 		}
+                 		if(actionText == "Pending")
+                 		{
+                 			if(row.Status != "Pending")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Only the currently pending approval can be updated.");
+                 				return response;
+                 			}
+                 			row.Approval_Notes=noteText;
+                 			response.put("success",true);
+                 			response.put("message","Approval note saved.");
+                 			return response;
+                 		}
+                 		if(row.Status != "Pending")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","This approval has already been processed or is no longer pending.");
+                 			return response;
+                 		}
+                 		if(actionText == "Approved")
+                 		{
+                 			originalRowNote = ifnull(row.Approval_Notes,"").toString();
+                 			row.Approval_Notes=noteText;
+                 			row.Status="Approved";
+                 			row.Responded_Date=zoho.currenttime;
+                 			nextOrder = row.Sort_Order + 1;
+                 			nextRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == nextOrder];
+                 			if(nextRow.ID != null)
+                 			{
+                 				originalNextStatus = ifnull(nextRow.Status,"Not Sent").toString();
+                 				originalNextSentDate = nextRow.Sent_Date;
+                 				originalNextRespondedDate = nextRow.Responded_Date;
+                 				nextRow.Status="Pending";
+                 				nextRow.Sent_Date=zoho.currenttime;
+                 				nextRow.Responded_Date=null;
+                 				emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,nextRow.ID.toString(),"Approved",noteText,ifnull(row.Title,"Approver").toString());
+                 				if(ifnull(emailResult.get("success"),false) != true)
+                 				{
+                 					row.Status="Pending";
+                 					row.Responded_Date=null;
+                 					row.Approval_Notes=originalRowNote;
+                 					nextRow.Status=originalNextStatus;
+                 					nextRow.Sent_Date=originalNextSentDate;
+                 					nextRow.Responded_Date=originalNextRespondedDate;
+                 					response.put("success",false);
+                 					response.put("message",ifnull(emailResult.get("message"),"The next approval email could not be sent."));
+                 					return response;
+                 				}
+                 				pf.Status="Pending Approval";
+                 				response.put("success",true);
+                 				response.put("message","Approved and routed to " + ifnull(nextRow.Title,"the next approver").toString() + ".");
+                 				return response;
+                 			}
+                 			pf.Status="Approved";
+                 			response.put("success",true);
+                 			response.put("message","Final approval completed. The Pro Forma is now approved.");
+                 			return response;
+                 		}
+                 		if(actionText == "Rejected")
+                 		{
+                 			if(noteText == "")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","A note is required when denying a Pro Forma approval.");
+                 				return response;
+                 			}
+                 			if(row.Sort_Order == 1)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","The first approval step cannot be returned to a prior approver.");
+                 				return response;
+                 			}
+                 			previousOrder = row.Sort_Order - 1;
+                 			previousRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == previousOrder];
+                 			if(previousRow.ID == null)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","The prior approval row could not be found.");
+                 				return response;
+                 			}
+                 			originalRowNote = ifnull(row.Approval_Notes,"").toString();
+                 			originalPreviousStatus = ifnull(previousRow.Status,"Approved").toString();
+                 			originalPreviousSentDate = previousRow.Sent_Date;
+                 			originalPreviousRespondedDate = previousRow.Responded_Date;
+                 			row.Approval_Notes=noteText;
+                 			row.Status="Rejected";
+                 			row.Responded_Date=zoho.currenttime;
+                 			downstreamRows = Budget_Approvals[Proforma == proformaIdLong && Sort_Order > row.Sort_Order];
+                 			for each  downstreamRow in downstreamRows
+                 			{
+                 				downstreamRow.Status="Not Sent";
+                 				downstreamRow.Sent_Date=null;
+                 				downstreamRow.Responded_Date=null;
+                 			}
+                 			previousRow.Status="Pending";
+                 			previousRow.Sent_Date=zoho.currenttime;
+                 			previousRow.Responded_Date=null;
+                 			emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,previousRow.ID.toString(),"Rejected",noteText,ifnull(row.Title,"Approver").toString());
+                 			if(ifnull(emailResult.get("success"),false) != true)
+                 			{
+                 				row.Status="Pending";
+                 				row.Responded_Date=null;
+                 				row.Approval_Notes=originalRowNote;
+                 				previousRow.Status=originalPreviousStatus;
+                 				previousRow.Sent_Date=originalPreviousSentDate;
+                 				previousRow.Responded_Date=originalPreviousRespondedDate;
+                 				response.put("success",false);
+                 				response.put("message",ifnull(emailResult.get("message"),"The return approval email could not be sent."));
+                 				return response;
+                 			}
+                 			pf.Status="Pending Approval";
+                 			response.put("success",true);
+                 			response.put("message","Denied and returned to " + ifnull(previousRow.Title,"the prior approver").toString() + ".");
+                 			return response;
+                 		}
+                 		response.put("success",false);
+                 		response.put("message","Unsupported approval action: " + actionText);
+                 	}	catch (e)
+                 	{
+                 		response.put("success",false);
+                 		response.put("message",e.toString());
+                 	}
+                 	return response;
+                 }

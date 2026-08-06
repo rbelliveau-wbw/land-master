@@ -1,0 +1,11 @@
+				 string startAllApprovalChains(int budgetId)
+                 {
+                 	/********* START BOTH APPROVAL CHAINS *********/
+                 	// Return Type: string
+                 	// Starts Construction at VP and Development at VP.
+                 	// Each chain advances independently after that.
+                 	vBudgetId = budgetId.toLong();
+                 	constructionResp = thisapp.startApprovalChain(vBudgetId,"Construction");
+                 	developmentResp = thisapp.startApprovalChain(vBudgetId,"Development");
+                 	return "Construction: " + constructionResp + " | Development: " + developmentResp;
+                 }

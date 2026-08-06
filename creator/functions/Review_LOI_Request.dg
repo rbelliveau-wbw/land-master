@@ -1,0 +1,111 @@
+				 string Review_LOI_Request(string proformaId, string tokenId, string decision, string legalNote)
+                 {
+                 	result = Map();
+                 	try 
+                 	{
+                 		if(proformaId == null || proformaId.trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","No Pro Forma ID was supplied.");
+                 			return result.toString();
+                 		}
+                 		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+                 		if(pf.ID == null)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The Pro Forma record could not be found.");
+                 			return result.toString();
+                 		}
+                 		if(ifnull(pf.LOI_Legal_Status,"") != "Pending Approval")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","This LOI is no longer pending Legal approval.");
+                 			result.put("status",ifnull(pf.LOI_Legal_Status,""));
+                 			return result.toString();
+                 		}
+                 		if(tokenId == null || tokenId.trim() == "" || ifnull(pf.LOI_Approval_Token,"") != tokenId.trim())
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The LOI approval token is invalid or expired.");
+                 			return result.toString();
+                 		}
+                 		decisionValue = ifnull(decision,"").trim().toUpperCase();
+                 		noteValue = ifnull(legalNote,"").trim();
+                 		if(decisionValue == "REJECT")
+                 		{
+                 			if(noteValue == "")
+                 			{
+                 				result.put("success",false);
+                 				result.put("message","Enter a Legal note before rejecting the LOI.");
+                 				return result.toString();
+                 			}
+                 			pf.LOI_Legal_Status="Rejected";
+                 			pf.LOI_Legal_Note=noteValue;
+                 			pf.LOI_Approval_Token="";
+                 			if(pf.Acquisition_Email != null && pf.Acquisition_Email.trim() != "")
+                 			{
+                 				sendmail
+                 				[
+                 					from :zoho.adminuserid
+                 					to :pf.Acquisition_Email
+                 					subject :"LOI Rejected by Legal - " + ifnull(pf.Name,"Pro Forma")
+                 					message :"Legal rejected the LOI for <b>" + ifnull(pf.Name,"Pro Forma") + "</b>.<br><br><b>Legal note:</b><br>" + noteValue
+                 				]
+                 			}
+                 			result.put("success",true);
+                 			result.put("decision","REJECT");
+                 			result.put("message","LOI rejected and returned to the Pro Forma.");
+                 			result.put("proformaId",pf.ID.toString());
+                 			return result.toString();
+                 		}
+                 		if(decisionValue != "APPROVE")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","Decision must be APPROVE or REJECT.");
+                 			return result.toString();
+                 		}
+                 		// Call the existing function that generates the Writer document,
+                 		// creates/reuses the Acquisition Contract, and attaches Contract_Version.
+                 		contractResultText = thisapp.Create_LOI_Contract(proformaId);
+                 		contractResult = contractResultText.toMap();
+                 		contractSuccess = contractResult.get("success");
+                 		if(contractSuccess != true && contractSuccess.toString() != "true")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message",ifnull(contractResult.get("message"),"Create_LOI_Contract did not complete successfully."));
+                 			result.put("contractResult",contractResult);
+                 			return result.toString();
+                 		}
+                 		contractIdText = contractResult.get("contractId").toString();
+                 		pf.LOI_Legal_Status="Approved";
+                 		pf.LOI_Legal_Note=noteValue;
+                 		pf.LOI_Approval_Token="";
+                 		pf.LOI_Contract=contractIdText.toLong();
+                 		if(pf.Acquisition_Email != null && pf.Acquisition_Email.trim() != "")
+                 		{
+                 			sendmail
+                 			[
+                 				from :zoho.adminuserid
+                 				to :pf.Acquisition_Email
+                 				subject :"LOI Approved by Legal - " + ifnull(pf.Name,"Pro Forma")
+                 				message :"Legal approved the LOI for <b>" + ifnull(pf.Name,"Pro Forma") + "</b> and Contract <b>" + contractIdText + "</b> was created.<br><br><b>Legal note:</b><br>" + if(noteValue == "","No note entered.",noteValue)
+                 			]
+                 		}
+                 		result.put("success",true);
+                 		result.put("decision","APPROVE");
+                 		result.put("message","LOI approved and Contract created.");
+                 		result.put("proformaId",pf.ID.toString());
+                 		result.put("contractId",contractIdText);
+                 		result.put("contractVersionId",contractResult.get("contractVersionId"));
+                 		result.put("contractUrl",contractResult.get("contractUrl"));
+                 		return result.toString();
+                 	}	catch (e)
+                 	{
+                 		result.put("success",false);
+                 		result.put("message","LOI review failed at line " + e.lineNo.toString() + ": " + e.message);
+                 		result.put("error",e.message);
+                 		result.put("errorLine",e.lineNo);
+                 		return result.toString();
+                 	}
+                 	return "nice";
+                 }

@@ -1,0 +1,205 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Lot_Search",
+  "display_name": "Lot Search",
+  "fields": [
+    {
+      "link_name": "Section2",
+      "display_name": "Section2",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Buttons",
+      "display_name": "Buttons",
+      "type": "radiobuttons",
+      "values": "{\"Create Lots\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Search",
+      "display_name": "Lot Search",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision1",
+      "display_name": "Subdivision",
+      "type": "checkboxes",
+      "values": "Subdivision[Status != \"Forecast Placeholder\"].ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Buyer",
+      "display_name": "Buyer",
+      "type": "list",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "list",
+      "values": "{\"Open\",\"Contracted\",\"Sold\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "City",
+      "display_name": "City",
+      "type": "list",
+      "values": "{\"Killeen\",\"Granger\",\"Caldwell\",\"Temple\",\"Waco\",\"Pflugerville\",\"Bryan\",\"Bruceville-Eddy\",\"Belton\",\"Copperas Cove\",\"Seguin\",\"Harker Heights\",\"Taylor\",\"New Braunfels\",\"Jarrell\",\"Troy\",\"Nolanville\",\"Salado\",\"San Antonio\",\"Georgetown\",\"Lorena\",\"Addison\",\"Balch Springs\",\"Carrollton\",\"Cedar Hill\",\"Cockrell Hill\",\"Combine\",\"Coppell\",\"Dallas\",\"DeSoto\",\"Duncanville\",\"Farmers Branch\",\"Ferris\",\"Garland\",\"Glenn Heights\",\"Grand Prairie\",\"Grapevine\",\"Highland Park\",\"Hutchins\",\"Irving\",\"Lancaster\",\"Lewisville\",\"Mesquite\",\"Ovilla\",\"Richardson\",\"Rowlett\",\"Sachse\",\"Seagoville\",\"Sunnyvale\",\"University Park\",\"Wilmer\",\"Wylie\",\"League City\",\"Pasadena\",\"Pearland\",\"Sugar Land\",\"Conroe\",\"Katy\",\"Houston\",\"Denton\",\"Sherman\",\"Westminster\",\"Anna\",\"Crandall\",\"Midlothian\",\"Celina\",\"Van Alstyne\",\"Greenville\",\"Princeton\",\"Corsicana\",\"Waxahachie\",\"Prosper\",\"Cresson\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "County",
+      "display_name": "County",
+      "type": "list",
+      "values": "{\"Bell\",\"Bexar\",\"McLennan\",\"Brazos\",\"Falls\",\"Williamson\",\"Coryell\",\"Guadalupe\",\"Comal\",\"Burleson\",\"Harris\",\"Grayson\",\"Collin\",\"Tarrant\",\"Johnson\",\"Kaufman\",\"Ellis\",\"Denton\",\"Hunt\",\"Dallas\",\"Cooke\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Spreadsheet_View",
+      "display_name": "Spreadsheet View",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Code_Search",
+      "display_name": "Code Search",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Base_Price",
+      "display_name": "Base Price",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_No",
+      "display_name": "Lot No.",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Block",
+      "display_name": "Block",
+      "type": "list",
+      "values": "{\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\",\"19\",\"20\",\"21\",\"22\",\"23\",\"24\",\"28\",\"29\",\"30\",\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\",\"H\",\"I\",\"J\",\"K\",\"L\",\"M\",\"N\",\"O\",\"P\",\"Q\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date_Select",
+      "display_name": "Date",
+      "type": "picklist",
+      "values": "{\"Entered Date\",\"Purchase Date\",\"Close Date\"}",
+      "display_format": null,
+      "initial_value": "\"Entered Date\"",
+      "private": false
+    },
+    {
+      "link_name": "Specific_Date",
+      "display_name": "Specific Date",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Specific_Month",
+      "display_name": "Month",
+      "type": "list",
+      "values": "{\"January\",\"February\",\"March\",\"April\",\"May\",\"June\",\"July\",\"August\",\"September\",\"October\",\"November\",\"December\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain",
+      "display_name": "plain",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Save_Search",
+      "display_name": "Save Search",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

@@ -1,0 +1,655 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Builder_Takedown",
+  "display_name": "Add Builder Takedown",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Name",
+      "display_name": "Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Proration_Date",
+      "display_name": "Tax Proration Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Per_Lot",
+      "display_name": "Tax Per Lot",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Percent_of_Appraisal",
+      "display_name": "Percent of Appraisal",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Count",
+      "display_name": "Lot Count",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Fee_Type",
+      "display_name": "Additional Fee Type",
+      "type": "picklist",
+      "values": "{\"Mailbox\",\"Water Tap\",\"Other\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Fees_Per_Lot",
+      "display_name": "Additional Fees (Per Lot)",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "DRH_Subtract_Day",
+      "display_name": "DRH Subtract Day",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Subtract_Day_From",
+      "display_name": "Subtract Day From",
+      "type": "checkboxes",
+      "values": "{\"Interest\",\"Tax\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Notes",
+      "display_name": "Notes",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Active\",\"Closed\"}",
+      "display_format": null,
+      "initial_value": "\"Active\"",
+      "private": false
+    },
+    {
+      "link_name": "Base_Price_Subtotal",
+      "display_name": "Base Price Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Addl_Fees_Subtotal",
+      "display_name": "Add'l Fees Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Subtotal",
+      "display_name": "Interest Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Calculate_Interest",
+      "display_name": "Calculate Interest",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Total_Tax_Subtotal",
+      "display_name": "Total Tax Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "WBW_Tax_Subtotal",
+      "display_name": "WBW Tax Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Builder_Tax_Subtotal",
+      "display_name": "Builder Tax Subtotal",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money_Total",
+      "display_name": "Earnest Money Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total",
+      "display_name": "Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_w_Additional",
+      "display_name": "Total w/ Additional",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Items",
+      "display_name": "Additional Items",
+      "type": "grid",
+      "values": "Additional_Items.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section4",
+      "display_name": "Section4",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_Box_1",
+      "display_name": "Interest Rate Box 1",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_1",
+      "display_name": "Interest Rate 1",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date1_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date1_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_2",
+      "display_name": "Interest Rate 2",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date2_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date2_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_3",
+      "display_name": "Interest Rate 3",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date3_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date3_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section3",
+      "display_name": "Section3",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_Box_3",
+      "display_name": "Interest Rate Box 3",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_4",
+      "display_name": "Interest Rate 4",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date4_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date4_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_5",
+      "display_name": "Interest Rate 5",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date5_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date5_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_6",
+      "display_name": "Interest Rate 6",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date6_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date6_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section1",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_Box_4",
+      "display_name": "Interest Rate Box 4",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_71",
+      "display_name": "Interest Rate 7",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date7_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date7_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_8",
+      "display_name": "Interest Rate 8",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date8_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date8_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_9",
+      "display_name": "Interest Rate 9",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date9_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date9_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section5",
+      "display_name": "Section5",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_Box_6",
+      "display_name": "Interest Rate Box 6",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_10",
+      "display_name": "Interest Rate 10",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date10_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date10_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_11",
+      "display_name": "Interest Rate 11",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date11_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date11_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_12",
+      "display_name": "Interest Rate 12",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date12_1",
+      "display_name": "From",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date12_2",
+      "display_name": "To",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_Box_7",
+      "display_name": "Interest Rate Box 7",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Rate_7",
+      "display_name": "Interest Rate 7",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

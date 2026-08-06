@@ -1,0 +1,18 @@
+{
+  "name": "land-master-engineering",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Land Master Zoho Creator widgets, knowledge, metadata, and release tooling.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-repo.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
+    "release": "node scripts/create-release.mjs",
+    "package:creator": "node scripts/package-creator.mjs",
+    "inventory:widgets": "python3 scripts/scan-widget-contracts.py",
+    "inventory:creator": "python3 scripts/parse_creator_export.py"
+  }
+}

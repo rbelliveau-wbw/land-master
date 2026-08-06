@@ -1,0 +1,7 @@
+				 void defaultFunction(Lots lotRecords)
+                 {
+                 	for each  lot in lotRecords
+                 	{
+                 		lot.Takedown_Queue=TRUE;
+                 	}
+                 }

@@ -1,0 +1,43 @@
+{
+  "custom_apis": [
+    {
+      "name": "Review_LOI_Request",
+      "config_key": "reviewLOI",
+      "source": "customApis object"
+    }
+  ],
+  "forms_referenced": [
+    "Builder",
+    "Company",
+    "Contract",
+    "Contract_Actions",
+    "Contract_Version",
+    "Lots",
+    "Property",
+    "Subdivision"
+  ],
+  "reports_referenced": [
+    "All_Contract_Actions",
+    "All_Contract_Versions",
+    "All_Contracts",
+    "All_Pro_Formas_All_Fields"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.API",
+    "ZOHO.CREATOR.API.addRecord",
+    "ZOHO.CREATOR.API.deleteRecord",
+    "ZOHO.CREATOR.API.getAllRecords",
+    "ZOHO.CREATOR.API.invokeCustomApi",
+    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.DATA",
+    "ZOHO.CREATOR.DATA.invokeCustomApi",
+    "ZOHO.CREATOR.UTIL",
+    "ZOHO.CREATOR.UTIL.getQueryParams",
+    "ZOHO.CREATOR.UTIL.navigateParentURL",
+    "ZOHO.CREATOR.appName",
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "static.zohocdn.com"
+  ]
+}

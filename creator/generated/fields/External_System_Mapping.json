@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "External_System_Mapping",
+  "display_name": "External System Mapping",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision1",
+      "display_name": "Subdivision",
+      "type": "picklist",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "External_System",
+      "display_name": "External System",
+      "type": "picklist",
+      "values": "{\"Great Plains\",\"HeavyJob\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "External_Code",
+      "display_name": "External Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "method": "inferred by scanning uploaded widget source and matching exact Creator form/report names",
+  "widgets": {
+    "proforma-manager": {
+      "custom_apis": [
+        {
+          "name": "Create_LOI_Contract",
+          "config_key": "createLOI",
+          "source": "customApis object"
+        },
+        {
+          "name": "Get_User_Access",
+          "config_key": "getUserAccess",
+          "source": "customApis object"
+        },
+        {
+          "name": "Handle_Proforma_Approval_Action",
+          "config_key": "handleProformaApproval",
+          "source": "customApis object"
+        },
+        {
+          "name": "Kill_Proforma_Approval_Flow",
+          "config_key": "killProformaApproval",
+          "source": "customApis object"
+        },
+        {
+          "name": "Manage_Proforma_Approval_Config",
+          "config_key": "manageProformaApprovalConfig",
+          "source": "customApis object"
+        },
+        {
+          "name": "Proforma_Bulk_Save",
+          "config_key": "bulkSave",
+          "source": "customApis object"
+        },
+        {
+          "name": "Proforma_Save",
+          "config_key": "saveApiCandidates",
+          "source": "candidate array"
+        },
+        {
+          "name": "proforma_save",
+          "config_key": "saveApiCandidates",
+          "source": "candidate array"
+        },
+        {
+          "name": "Report_Proforma_Widget_Error",
+          "config_key": "errorReport",
+          "source": "customApis object"
+        },
+        {
+          "name": "Save_PF",
+          "config_key": "save",
+          "source": "customApis object"
+        },
+        {
+          "name": "Save_PF1",
+          "config_key": "saveApiCandidates",
+          "source": "candidate array"
+        },
+        {
+          "name": "SavePF",
+          "config_key": "saveApiCandidates",
+          "source": "candidate array"
+        },
+        {
+          "name": "Send_Proforma_Approval_Email",
+          "config_key": "sendProformaApprovalEmail",
+          "source": "customApis object"
+        },
+        {
+          "name": "Start_Proforma_Approval_Chain",
+          "config_key": "startProformaApproval",
+          "source": "customApis object"
+        },
+        {
+          "name": "Update_Proforma_Approval_Recipient",
+          "config_key": "updateProformaApprovalRecipient",
+          "source": "customApis object"
+        }
+      ],
+      "forms_referenced": [
+        "Add_Pro_Forma",
+        "Budget_Approvals",
+        "Builder",
+        "Company",
+        "Construction_Curve",
+        "Contract",
+        "LOI_Worksheet",
+        "Land_Installments",
+        "Lots",
+        "Proforma_Item",
+        "Proforma_Months",
+        "Proforma_Phase",
+        "Project",
+        "Property",
+        "User_Access"
+      ],
+      "reports_referenced": [
+        "All_Additional_Items",
+        "All_Budget_Approvals",
+        "All_Builders",
+        "All_Companies",
+        "All_Construction_Cost_Curves",
+        "All_Land_Installments",
+        "All_Pro_Formas",
+        "All_Pro_Formas_All_Fields",
+        "All_Proforma_Months",
+        "All_Proforma_Phases",
+        "All_Property",
+        "LOI_Worksheet_Report",
+        "Proforma_Item_Report"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API",
+        "ZOHO.CREATOR.API.addRecord",
+        "ZOHO.CREATOR.API.deleteRecord",
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.invokeCustomApi",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.getInitParams",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "static.zohocdn.com"
+      ]
+    },
+    "budget-manager": {
+      "custom_apis": [
+        {
+          "name": "Create_Budget_Attachment_Record",
+          "config_key": "createBudgetAttachmentRecord",
+          "source": "customApis object"
+        },
+        {
+          "name": "Delete_Budget_Attachment",
+          "config_key": "deleteBudgetAttachment",
+          "source": "customApis object"
+        },
+        {
+          "name": "Export_Budget_Snapshot",
+          "config_key": "exportBudgetSnapshot",
+          "source": "customApis object"
+        },
+        {
+          "name": "Get_Budget_Attachment_Preview",
+          "config_key": "getBudgetAttachmentPreview",
+          "source": "customApis object"
+        },
+        {
+          "name": "Get_User_Access",
+          "config_key": "getUserAccess",
+          "source": "customApis object"
+        },
+        {
+          "name": "Handle_Approval_Action",
+          "config_key": "handleApprovalAction",
+          "source": "customApis object"
+        },
+        {
+          "name": "killApprovalChain",
+          "config_key": "killApprovalChain",
+          "source": "customApis object"
+        },
+        {
+          "name": "killApprovalFlow",
+          "config_key": "killApprovalFlow",
+          "source": "customApis object"
+        },
+        {
+          "name": "sendApprovalEmail",
+          "config_key": "sendApprovalEmail",
+          "source": "customApis object"
+        },
+        {
+          "name": "setProjectProforma",
+          "config_key": "setProjectProforma",
+          "source": "customApis object"
+        },
+        {
+          "name": "startApprovalChain",
+          "config_key": "startApprovalChain",
+          "source": "customApis object"
+        },
+        {
+          "name": "syncBudgetApprovalStatus",
+          "config_key": "syncBudgetApprovalStatus",
+          "source": "customApis object"
+        }
+      ],
+      "forms_referenced": [
+        "Add_Budget",
+        "Add_Pro_Forma",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Import_Item",
+        "Budget_Item",
+        "Contract_Version",
+        "Lots",
+        "Proforma_Item",
+        "Project",
+        "Subdivision",
+        "User_Access"
+      ],
+      "reports_referenced": [
+        "All_Budget_Approvals",
+        "All_Budget_Categories",
+        "All_Budget_Item_Imports",
+        "All_Budget_Items",
+        "All_Budgets",
+        "All_Contract_Versions",
+        "All_Pro_Formas",
+        "All_Pro_Formas_All_Fields",
+        "All_Proforma_Phases",
+        "All_Projects",
+        "All_Subdivisions",
+        "Proforma_Item_Report",
+        "User_Access_Report"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API",
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.getRecordById",
+        "ZOHO.CREATOR.API.invokeCustomApi",
+        "ZOHO.CREATOR.API.invokeCustomApi.",
+        "ZOHO.CREATOR.API.readFile",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.API.uploadFile",
+        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.DATA.invokeCustomApi.",
+        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "cdn.jsdelivr.net",
+        "cdnjs.cloudflare.com",
+        "creatorapp.zoho.com",
+        "creatorexport.zoho.com",
+        "static.zohocdn.com",
+        "www.w3.org"
+      ]
+    },
+    "land-master": {
+      "custom_apis": [],
+      "forms_referenced": [
+        "Additional_Items",
+        "Builder",
+        "Builder_Takedown",
+        "Company",
+        "Contract",
+        "External_System_Mapping",
+        "Forecast",
+        "Forecast_Year",
+        "Lots",
+        "Milestones",
+        "Project",
+        "Property",
+        "Subdivision",
+        "Takedown_Schedule"
+      ],
+      "reports_referenced": [
+        "All_Active_Lots",
+        "All_Additional_Items",
+        "All_Builder_Takedowns",
+        "All_Builders",
+        "All_Companies",
+        "All_External_System_Mappings",
+        "All_Forecast_Years",
+        "All_Forecasts",
+        "All_Lots_All_Fields",
+        "All_Milestones",
+        "All_Pro_Formas",
+        "All_Pro_Formas_All_Fields",
+        "All_Projects",
+        "All_Property",
+        "All_Subdivisions",
+        "All_Takedown_Schedules"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API",
+        "ZOHO.CREATOR.API.addRecord",
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.invokeCustomApi",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.UTIL.navigateParentURL",
+        "ZOHO.CREATOR.appName",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "static.zohocdn.com",
+        "www.w3.org"
+      ]
+    },
+    "contract-management": {
+      "custom_apis": [
+        {
+          "name": "Review_LOI_Request",
+          "config_key": "reviewLOI",
+          "source": "customApis object"
+        }
+      ],
+      "forms_referenced": [
+        "Builder",
+        "Company",
+        "Contract",
+        "Contract_Actions",
+        "Contract_Version",
+        "Lots",
+        "Property",
+        "Subdivision"
+      ],
+      "reports_referenced": [
+        "All_Contract_Actions",
+        "All_Contract_Versions",
+        "All_Contracts",
+        "All_Pro_Formas_All_Fields"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API",
+        "ZOHO.CREATOR.API.addRecord",
+        "ZOHO.CREATOR.API.deleteRecord",
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.invokeCustomApi",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.UTIL.getQueryParams",
+        "ZOHO.CREATOR.UTIL.navigateParentURL",
+        "ZOHO.CREATOR.appName",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "static.zohocdn.com"
+      ]
+    },
+    "tax-center": {
+      "custom_apis": [],
+      "forms_referenced": [
+        "Company",
+        "Project",
+        "Property",
+        "Subdivision",
+        "Tax_Parcel_Year",
+        "Tax_Rate",
+        "Taxing_Jurisdiction"
+      ],
+      "reports_referenced": [
+        "All_Companies",
+        "All_Projects",
+        "All_Property",
+        "All_Subdivisions",
+        "All_Tax_Parcel_Years",
+        "All_Taxing_Jurisdictions"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API",
+        "ZOHO.CREATOR.API.addRecord",
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.getRecordCount",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.UTIL.setIframeHeight",
+        "ZOHO.CREATOR.appName",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "static.zohocdn.com",
+        "www.w3.org"
+      ]
+    },
+    "milestone-gantt": {
+      "custom_apis": [],
+      "forms_referenced": [
+        "Milestones",
+        "Project",
+        "Subdivision"
+      ],
+      "reports_referenced": [
+        "All_Milestones",
+        "All_Subdivisions"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.appName",
+        "ZOHO.CREATOR.init"
+      ],
+      "external_domains": [
+        "fonts.googleapis.com",
+        "fonts.gstatic.com",
+        "static.zohocdn.com"
+      ]
+    }
+  }
+}

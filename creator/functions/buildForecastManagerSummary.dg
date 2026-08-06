@@ -1,0 +1,292 @@
+				 string buildForecastManagerSummary(int subdivisionId)
+                 {
+                 	html = "";
+                 	monthStart = zoho.currentdate.toStartOfMonth();
+                 	// ---------- CSS ----------
+                 	html = html + "<style>";
+                 	html = html + ".fm-scroll{width:100%;overflow-x:auto;padding-bottom:8px;}";
+                 	html = html + ".fm-canvas{display:inline-block;min-width:0;}";
+                 	html = html + ".fm-wrap{display:inline-block;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;padding:14px;border:1px solid #d9deea;border-radius:14px;min-width:0;}";
+                 	html = html + ".fm-badge{display:inline-block;padding:7px 10px;border-radius:999px;background:#eef4ff;border:1px solid #d7e5ff;color:#0d5bd7;font-size:12px;font-weight:700;white-space:nowrap;}";
+                 	html = html + ".fm-section{display:inline-block;margin-bottom:16px;background:#ffffff;border:1px solid #d9deea;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(28,49,94,.06);min-width:0;}";
+                 	html = html + ".fm-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:nowrap;margin-bottom:12px;}";
+                 	html = html + ".fm-head-left{display:flex;align-items:center;gap:10px;min-width:0;}";
+                 	html = html + ".fm-title-block{min-width:0;}";
+                 	html = html + ".fm-head-divider{width:1px;height:52px;background:#d9deea;flex:0 0 1px;margin:0 8px;}";
+                 	html = html + ".fm-section-title{font-size:18px;font-weight:700;color:#1f2a44;white-space:nowrap;}";
+                 	html = html + ".fm-section-meta{font-size:12px;color:#667089;margin-top:4px;}";
+                 	html = html + ".fm-top-stat{display:inline-block;min-width:132px;padding:8px 10px;border-radius:12px;border:1px solid #d9deea;background:#f8fafc;text-align:center;}";
+                 	html = html + ".fm-top-stat-neg{background:#fff1f1;border:1px solid #f2b8b8;}";
+                 	html = html + ".fm-top-stat-k{font-size:10px;color:#667089;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}";
+                 	html = html + ".fm-top-stat-v{font-size:18px;font-weight:700;color:#1f2a44;margin-top:3px;line-height:1;}";
+                 	html = html + ".fm-top-stat-neg .fm-top-stat-v{color:#b42318;}";
+                 	html = html + ".fm-grid{display:grid;grid-template-columns:380px max-content;gap:14px;align-items:start;width:max-content;}";
+                 	html = html + ".fm-card{background:#ffffff;border:1px solid #d9deea;border-radius:14px;padding:14px;width:380px;min-width:380px;}";
+                 	html = html + ".fm-card-title{font-size:12px;color:#667089;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;font-weight:700;}";
+                 	html = html + ".fm-table{width:100%;border-collapse:collapse;font-size:13px;}";
+                 	html = html + ".fm-table td{padding:8px 0;border-bottom:1px solid #edf1f7;vertical-align:top;}";
+                 	html = html + ".fm-table td:first-child{color:#667089;width:44%;}";
+                 	html = html + ".fm-builder-grid{display:flex;flex-wrap:nowrap;gap:12px;align-items:stretch;width:max-content;}";
+                 	html = html + ".fm-builder-card{background:#fcfdff;border:1px solid #d9deea;border-radius:14px;padding:12px;width:320px;min-width:320px;max-width:320px;}";
+                 	html = html + ".fm-builder-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;min-height:52px;}";
+                 	html = html + ".fm-builder-title-wrap{min-width:0;flex:1 1 auto;padding-right:6px;}";
+                 	html = html + ".fm-builder-name{font-size:16px;font-weight:700;color:#1f2a44;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}";
+                 	html = html + ".fm-builder-sub{font-size:12px;color:#667089;margin-top:4px;margin-bottom:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}";
+                 	html = html + ".fm-builder-stat{display:inline-block;min-width:88px;padding:6px 8px;border-radius:10px;border:1px solid #d9deea;background:#ffffff;text-align:center;flex:0 0 auto;}";
+                 	html = html + ".fm-builder-stat-neg{background:#fff1f1;border:1px solid #f2b8b8;}";
+                 	html = html + ".fm-builder-stat-k{font-size:9px;color:#667089;text-transform:uppercase;letter-spacing:.05em;font-weight:700;}";
+                 	html = html + ".fm-builder-stat-v{font-size:16px;font-weight:700;color:#1f2a44;margin-top:3px;line-height:1;}";
+                 	html = html + ".fm-builder-stat-neg .fm-builder-stat-v{color:#b42318;}";
+                 	html = html + ".fm-progress-label{font-size:11px;color:#667089;text-transform:uppercase;letter-spacing:.06em;margin:2px 0 8px 0;}";
+                 	html = html + ".fm-progress-wrap{margin-bottom:10px;}";
+                 	html = html + ".fm-progress{height:10px;border-radius:999px;overflow:hidden;margin-bottom:4px;background:#edf2fb;}";
+                 	html = html + ".fm-progress-meta{position:relative;height:28px;}";
+                 	html = html + ".fm-progress-sold{position:absolute;left:0;top:0;font-size:11px;color:#667089;font-weight:700;white-space:nowrap;}";
+                 	html = html + ".fm-progress-expected{position:absolute;top:14px;font-size:11px;color:#b42318;font-weight:700;white-space:nowrap;}";
+                 	html = html + ".fm-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}";
+                 	html = html + ".fm-mini{border:1px solid #d9deea;border-radius:12px;padding:10px;background:#ffffff;}";
+                 	html = html + ".fm-mini-k{font-size:11px;color:#667089;text-transform:uppercase;letter-spacing:.05em;}";
+                 	html = html + ".fm-mini-v{font-size:17px;font-weight:700;color:#1f2a44;margin-top:4px;}";
+                 	html = html + ".fm-empty{padding:16px;background:#ffffff;border:1px dashed #c8d3e6;border-radius:12px;color:#667089;font-size:13px;min-width:0;}";
+                 	html = html + "</style>";
+                 	// ---------- wrapper ----------
+                 	html = html + "<div class='fm-scroll'><div class='fm-canvas'><div class='fm-wrap'>";
+                 	doneSubs = List();
+                 	if(subdivisionId != null)
+                 	{
+                 		subIdText = subdivisionId.toString();
+                 		if(!doneSubs.contains(subIdText))
+                 		{
+                 			doneSubs.add(subIdText);
+                 			subRec = Subdivision[ID == subdivisionId];
+                 			subName = ifnull(subRec.Subdivision_Name,"");
+                 			if(subName == "")
+                 			{
+                 				subName = "Subdivision";
+                 			}
+                 			subCode = ifnull(subRec.Subdivision_Code,"");
+                 			companyName = ifnull(subRec.Company_Name,"");
+                 			county = ifnull(subRec.County,"");
+                 			projectStatus = ifnull(subRec.Status,"");
+                 			totalLots = ifnull(subRec.Total_Lots,0);
+                 			lotTotalResidential = ifnull(subRec.Lot_Total_Residential,0);
+                 			lotsSold = ifnull(subRec.Lots_Sold,0);
+                 			equivLF = ifnull(subRec.Equiv_LF_of_Street,0);
+                 			unforecastedLots = ifnull(subRec.Unforecasted_Lots,0);
+                 			unforecastedClass = "fm-top-stat";
+                 			if(unforecastedLots < 0)
+                 			{
+                 				unforecastedClass = "fm-top-stat fm-top-stat-neg";
+                 			}
+                 			lastSoldDateText = "";
+                 			if(subRec.Last_Sold_Date != null)
+                 			{
+                 				lastSoldDateText = subRec.Last_Sold_Date.toString("MM/dd/yyyy");
+                 			}
+                 			html = html + "<div class='fm-section'>";
+                 			html = html + "<div class='fm-section-head'>";
+                 			html = html + "<div class='fm-head-left'>";
+                 			html = html + "<div class='fm-title-block'>";
+                 			html = html + "<div class='fm-section-title'>" + subName + "</div>";
+                 			html = html + "<div class='fm-section-meta'>";
+                 			if(subCode != "")
+                 			{
+                 				html = html + subCode;
+                 			}
+                 			if(subCode != "" && projectStatus != "")
+                 			{
+                 				html = html + " &nbsp;&middot;&nbsp; ";
+                 			}
+                 			if(projectStatus != "")
+                 			{
+                 				html = html + projectStatus;
+                 			}
+                 			html = html + "</div>";
+                 			html = html + "</div>";
+                 			html = html + "<div class='fm-head-divider'></div>";
+                 			html = html + "<div class='" + unforecastedClass + "'><div class='fm-top-stat-k'>Unforecasted Lots</div><div class='fm-top-stat-v'>" + unforecastedLots.toString() + "</div></div>";
+                 			html = html + "</div>";
+                 			html = html + "<div class='fm-badge'>Subdivision Snapshot</div>";
+                 			html = html + "</div>";
+                 			html = html + "<div class='fm-grid'>";
+                 			// subdivision details card
+                 			html = html + "<div class='fm-card'>";
+                 			html = html + "<div class='fm-card-title'>Subdivision Details</div>";
+                 			html = html + "<table class='fm-table'>";
+                 			html = html + "<tr><td>Subdivision Name</td><td><b>" + subName + "</b></td></tr>";
+                 			html = html + "<tr><td>Subdivision Code</td><td><b>" + subCode + "</b></td></tr>";
+                 			html = html + "<tr><td>Company</td><td>" + companyName + "</td></tr>";
+                 			html = html + "<tr><td>County</td><td>" + county + "</td></tr>";
+                 			html = html + "<tr><td>Total Lots (LM)</td><td>" + totalLots.toString() + "</td></tr>";
+                 			html = html + "<tr><td>Lot Total Residential</td><td>" + lotTotalResidential.toString() + "</td></tr>";
+                 			html = html + "<tr><td>Lots Sold</td><td>" + lotsSold.toString() + "</td></tr>";
+                 			html = html + "<tr><td>Equiv LF of Street</td><td>" + equivLF.toString() + "</td></tr>";
+                 			html = html + "<tr><td>Last Sold Date</td><td>" + lastSoldDateText + "</td></tr>";
+                 			html = html + "</table>";
+                 			html = html + "</div>";
+                 			// all takedown schedules for this subdivision
+                 			html = html + "<div class='fm-builder-grid'>";
+                 			scheduleFoundForSub = false;
+                 			for each  ts in Takedown_Schedule[Subdivisions == subdivisionId]
+                 			{
+                 				scheduleFoundForSub = true;
+                 				builderName = "";
+                 				builderForecastedLots = 0;
+                 				builderUnforecastedLots = 0;
+                 				builderUnforecastedClass = "fm-builder-stat";
+                 				builderLotsSold = 0;
+                 				initialCloseText = "";
+                 				initialTakedown = 0;
+                 				initialDelayDays = 0;
+                 				continuedTakedown = 0;
+                 				continuedDays = 0;
+                 				takedownEndText = "";
+                 				lastTakedownText = "";
+                 				lastTakedownAmount = 0;
+                 				lotsExpected = 0;
+                 				totalObligation = 0;
+                 				last30 = 0;
+                 				last90 = 0;
+                 				last6 = 0;
+                 				last12 = 0;
+                 				soldPercent = 0.0;
+                 				expectedPercent = 0.0;
+                 				redExtensionPercent = 0.0;
+                 				expectedLabelLeft = 0.0;
+                 				showExpectedExtension = false;
+                 				showExpectedLabel = false;
+                 				progressDisplay = "0";
+                 				progressBarStyle = "";
+                 				if(ts.Builder1 != null)
+                 				{
+                 					builderName = ifnull(ts.Builder1.Builder_Name,"");
+                 					if(builderName == "")
+                 					{
+                 						builderName = ts.Builder1.toString();
+                 					}
+                 					builderForecastedLots = ifnull(Forecast[Subdivision1 == subdivisionId && Builder1 == ts.Builder1 && Forecast_Start_Date >= monthStart].sum(Forecasted_Lots),0);
+                 				}
+                 				if(ts.Takedown_Start_Date != null)
+                 				{
+                 					initialCloseText = ts.Takedown_Start_Date.toString("MM/dd/yyyy");
+                 				}
+                 				if(ts.Takedown_End_Date != null)
+                 				{
+                 					takedownEndText = ts.Takedown_End_Date.toString("MM/dd/yyyy");
+                 				}
+                 				if(ts.Last_Takedown_Date != null)
+                 				{
+                 					lastTakedownText = ts.Last_Takedown_Date.toString("MM/dd/yyyy");
+                 				}
+                 				initialTakedown = ifnull(ts.Initial_Takedown,0);
+                 				initialDelayDays = ifnull(ts.Initial_Delay_Days,0);
+                 				continuedTakedown = ifnull(ts.Continued_Takedown,0);
+                 				continuedDays = ifnull(ts.Continued_Takedown_Delay_Days,0);
+                 				lastTakedownAmount = ifnull(ts.Last_Takedown_Amount,0);
+                 				lotsExpected = ifnull(ts.Lots_Expected,0);
+                 				builderLotsSold = ifnull(ts.Lots_Sold,0);
+                 				totalObligation = ifnull(ts.Total_Lot_Obligation,0);
+                 				builderUnforecastedLots = totalObligation - builderLotsSold - builderForecastedLots;
+                 				if(builderUnforecastedLots < 0)
+                 				{
+                 					builderUnforecastedClass = "fm-builder-stat fm-builder-stat-neg";
+                 				}
+                 				last30 = ifnull(ts.Last_30_Day_Sales,0);
+                 				last90 = ifnull(ts.Last_90_Day_Sales,0);
+                 				last6 = ifnull(ts.Last_6_Month_Sales,0);
+                 				last12 = ifnull(ts.Last_12_Month_Sales,0);
+                 				if(totalObligation > 0)
+                 				{
+                 					soldPercent = (builderLotsSold * 100.0) / totalObligation;
+                 					expectedPercent = (lotsExpected * 100.0) / totalObligation;
+                 				}
+                 				if(soldPercent < 0)
+                 				{
+                 					soldPercent = 0;
+                 				}
+                 				if(soldPercent > 100)
+                 				{
+                 					soldPercent = 100;
+                 				}
+                 				if(expectedPercent < 0)
+                 				{
+                 					expectedPercent = 0;
+                 				}
+                 				if(expectedPercent > 100)
+                 				{
+                 					expectedPercent = 100;
+                 				}
+                 				progressDisplay = soldPercent.toLong().toString();
+                 				if(expectedPercent > soldPercent)
+                 				{
+                 					showExpectedExtension = true;
+                 					redExtensionPercent = expectedPercent - soldPercent;
+                 				}
+                 				if(lotsExpected > builderLotsSold && showExpectedExtension)
+                 				{
+                 					showExpectedLabel = true;
+                 					expectedLabelLeft = soldPercent;
+                 					if(expectedLabelLeft > 72)
+                 					{
+                 						expectedLabelLeft = 72;
+                 					}
+                 				}
+                 				if(showExpectedExtension)
+                 				{
+                 					progressBarStyle = "background:linear-gradient(90deg,#0d5bd7 0%,#0d5bd7 " + soldPercent.toString() + "%,#f6a6a6 " + soldPercent.toString() + "%,#f6a6a6 " + expectedPercent.toString() + "%,#edf2fb " + expectedPercent.toString() + "%,#edf2fb 100%);";
+                 				}
+                 				else
+                 				{
+                 					progressBarStyle = "background:linear-gradient(90deg,#0d5bd7 0%,#0d5bd7 " + soldPercent.toString() + "%,#edf2fb " + soldPercent.toString() + "%,#edf2fb 100%);";
+                 				}
+                 				html = html + "<div class='fm-builder-card'>";
+                 				html = html + "<div class='fm-builder-head'>";
+                 				html = html + "<div class='fm-builder-title-wrap'>";
+                 				html = html + "<div class='fm-builder-name'>" + builderName + "</div>";
+                 				html = html + "<div class='fm-builder-sub'>" + totalObligation.toString() + " Lots Contracted</div>";
+                 				html = html + "</div>";
+                 				html = html + "<div class='" + builderUnforecastedClass + "'><div class='fm-builder-stat-k'>Unforecasted Lots</div><div class='fm-builder-stat-v'>" + builderUnforecastedLots.toString() + "</div></div>";
+                 				html = html + "</div>";
+                 				html = html + "<div class='fm-progress-label'>Schedule Progress (" + progressDisplay + "%)</div>";
+                 				html = html + "<div class='fm-progress-wrap'>";
+                 				html = html + "<div class='fm-progress' style='" + progressBarStyle + "'></div>";
+                 				html = html + "<div class='fm-progress-meta'>";
+                 				html = html + "<div class='fm-progress-sold'>" + builderLotsSold.toString() + " Lots Sold</div>";
+                 				if(showExpectedLabel)
+                 				{
+                 					html = html + "<div class='fm-progress-expected' style='left:" + expectedLabelLeft.toString() + "%;'>" + lotsExpected.toString() + " Lots Expected</div>";
+                 				}
+                 				html = html + "</div>";
+                 				html = html + "</div>";
+                 				html = html + "<table class='fm-table'>";
+                 				html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
+                 				html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
+                 				html = html + "<tr><td>Initial Take (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
+                 				html = html + "<tr><td>Cont'd Take (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
+                 				html = html + "<tr><td>Cont'd Take (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
+                 				html = html + "<tr><td>Takedown End Date</td><td>" + takedownEndText + "</td></tr>";
+                 				html = html + "<tr><td>Last Takedown Date</td><td>" + lastTakedownText + "</td></tr>";
+                 				html = html + "<tr><td>Last Take (Lots)</td><td>" + lastTakedownAmount.toString() + "</td></tr>";
+                 				html = html + "</table>";
+                 				html = html + "<div style='height:10px;'></div>";
+                 				html = html + "<div class='fm-card-title'>Recent Sales</div>";
+                 				html = html + "<div class='fm-mini-grid'>";
+                 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 30 Day</div><div class='fm-mini-v'>" + last30.toString() + "</div></div>";
+                 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 90 Day</div><div class='fm-mini-v'>" + last90.toString() + "</div></div>";
+                 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 6 Month</div><div class='fm-mini-v'>" + last6.toString() + "</div></div>";
+                 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 12 Month</div><div class='fm-mini-v'>" + last12.toString() + "</div></div>";
+                 				html = html + "</div>";
+                 				html = html + "</div>";
+                 			}
+                 			if(!scheduleFoundForSub)
+                 			{
+                 				html = html + "<div class='fm-empty'>No Takedown Schedule records were found for this subdivision. Email rbelliveau@wbdevelopment or aarmbrust@wbdevelopment.</div>";
+                 			}
+                 			html = html + "</div>";
+                 			html = html + "</div>";
+                 			html = html + "</div>";
+                 		}
+                 	}
+                 	html = html + "</div></div></div>";
+                 	return html;
+                 }

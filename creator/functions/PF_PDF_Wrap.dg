@@ -1,0 +1,45 @@
+				 list PF_PDF_Wrap(string value, int maxChars)
+                 {
+                 	lines = List();
+                 	clean = thisapp.PF_PDF_Clean(value);
+                 	if(clean == "")
+                 	{
+                 		lines.add("Not provided");
+                 		return lines;
+                 	}
+                 	words = clean.toList(" ");
+                 	current = "";
+                 	for each  word in words
+                 	{
+                 		if(word.length() > maxChars)
+                 		{
+                 			word = word.left(maxChars - 3) + "...";
+                 		}
+                 		candidate = word;
+                 		if(current != "")
+                 		{
+                 			candidate = current + " " + word;
+                 		}
+                 		if(candidate.length() <= maxChars)
+                 		{
+                 			current = candidate;
+                 		}
+                 		else
+                 		{
+                 			if(current != "")
+                 			{
+                 				lines.add(current);
+                 			}
+                 			current = word;
+                 		}
+                 	}
+                 	if(current != "")
+                 	{
+                 		lines.add(current);
+                 	}
+                 	if(lines.size() == 0)
+                 	{
+                 		lines.add("Not provided");
+                 	}
+                 	return lines;
+                 }

@@ -1,0 +1,16 @@
+{
+  "locale": [
+    "en"
+  ],
+  "service": "CREATOR",
+  "modules": {
+    "widgets": [
+      {
+        "location": "zoho.creator.record",
+        "url": "/widget.html",
+        "name": "Land Master Contracts"
+      }
+    ]
+  },
+  "config": []
+}

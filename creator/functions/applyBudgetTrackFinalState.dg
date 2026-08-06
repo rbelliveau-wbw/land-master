@@ -1,0 +1,127 @@
+				 string applyBudgetTrackFinalState(string budgetId, string approvalType, string action)
+                 {
+                 	/********* APPLY FINAL STATE TO ONE APPROVAL TRACK *********/
+                 	// action values:
+                 	// STAGE:
+                 	//   Development = clear Final and refresh Unapproved from Preliminary.
+                 	//   Construction = clear Final only; preserve externally populated Unapproved.
+                 	// FINALIZE:
+                 	//   Copy Unapproved into Final, then clear Unapproved to 0 for either track.
+                 	// CLEAR:
+                 	//   Clear Final for the selected track.
+                 	//   Development also clears its workflow-owned Unapproved.
+                 	//   Construction preserves externally populated Unapproved when killed/restarted.
+                 	// CLEAR_FINAL:
+                 	//   Clear Final only and preserve Unapproved for either track.
+                 	vBudgetId = budgetId.toLong();
+                 	vType = ifnull(approvalType,"").trim();
+                 	vAction = ifnull(action,"").trim().toUpperCase();
+                 	if(vBudgetId == 0)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Missing budgetId.\"}";
+                 	}
+                 	if(vType != "Development" && vType != "Construction")
+                 	{
+                 		return "{\"ok\":false,\"error\":\"approvalType must be Development or Construction.\"}";
+                 	}
+                 	if(vAction != "STAGE" && vAction != "FINALIZE" && vAction != "CLEAR" && vAction != "CLEAR_FINAL")
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Invalid action.\"}";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Budget not found.\"}";
+                 	}
+                 	categoriesChanged = 0;
+                 	itemsChanged = 0;
+                 	allCategories = Budget_Category[Budget == vBudgetId];
+                 	for each  ct in allCategories
+                 	{
+                 		deptName = ifnull(ct.Deparment,"").trim();
+                 		isTargetCategory = false;
+                 		if(vType == "Construction" && deptName == "Construction")
+                 		{
+                 			isTargetCategory = true;
+                 		}
+                 		else if(vType == "Development" && deptName == "Development" || deptName == "Engineering")
+                 		{
+                 			isTargetCategory = true;
+                 		}
+                 		if(isTargetCategory)
+                 		{
+                 			categoriesChanged = categoriesChanged + 1;
+                 			trackItems = Budget_Item[Budget_Category == ct.ID];
+                 			for each  it in trackItems
+                 			{
+                 				if(vAction == "STAGE")
+                 				{
+                 					// Starting/restarting either track always invalidates that track's Final.
+                 					it.Budget_Ttl=0;
+                 					if(vType == "Development")
+                 					{
+                 						// Dev/Eng approval values are staged from Preliminary.
+                 						prelimValue = 0;
+                 						if(it.Prelim_Budget_Ttl != null)
+                 						{
+                 							prelimValue = it.Prelim_Budget_Ttl;
+                 						}
+                 						it.Unapproved_Final_Budget_Ttl=prelimValue;
+                 					}
+                 					// Construction Unapproved is externally owned. Do not touch it.
+                 				}
+                 				else if(vAction == "FINALIZE")
+                 				{
+                 					finalValue = 0;
+                 					if(it.Unapproved_Final_Budget_Ttl != null)
+                 					{
+                 						finalValue = it.Unapproved_Final_Budget_Ttl;
+                 					}
+                 					// Final is populated only when this track completes.
+                 					it.Budget_Ttl=finalValue;
+                 					// Once either track finishes, move Unapproved into Final and clear Unapproved.
+                 					it.Unapproved_Final_Budget_Ttl=0;
+                 				}
+                 				else if(vAction == "CLEAR")
+                 				{
+                 					// Killing the selected chain invalidates only that track's Final.
+                 					it.Budget_Ttl=0;
+                 					if(vType == "Development")
+                 					{
+                 						// Dev/Eng Unapproved is workflow-owned.
+                 						it.Unapproved_Final_Budget_Ttl=0;
+                 					}
+                 					// Construction Unapproved remains untouched.
+                 				}
+                 				else if(vAction == "CLEAR_FINAL")
+                 				{
+                 					it.Budget_Ttl=0;
+                 				}
+                 				itemsChanged = itemsChanged + 1;
+                 			}
+                 		}
+                 	}
+                 	// Rebuild all category Final totals and the budget Final grand total.
+                 	// The already-approved opposite track remains included.
+                 	grandFinal = 0;
+                 	allCategoriesToRecalc = Budget_Category[Budget == vBudgetId];
+                 	for each  rc in allCategoriesToRecalc
+                 	{
+                 		categoryFinal = Budget_Item[Budget_Category == rc.ID].sum(Budget_Ttl);
+                 		if(categoryFinal == null)
+                 		{
+                 			categoryFinal = 0;
+                 		}
+                 		rc.Budget_Total=categoryFinal;
+                 		grandFinal = grandFinal + categoryFinal;
+                 	}
+                 	budgetRec.Budget_Grand_Total=grandFinal;
+                 	resultMap = Map();
+                 	resultMap.put("ok",true);
+                 	resultMap.put("approvalType",vType);
+                 	resultMap.put("action",vAction);
+                 	resultMap.put("categoriesChanged",categoriesChanged);
+                 	resultMap.put("itemsChanged",itemsChanged);
+                 	resultMap.put("budgetGrandFinal",grandFinal);
+                 	return resultMap.toString();
+                 }

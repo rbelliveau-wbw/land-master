@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Tax_Table_Search",
+  "display_name": "Tax Table Search",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Jurisdiction_Rate_Name",
+      "display_name": "Jurisdiction/Rate Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Taxing_Jurisdiction1",
+      "display_name": "Taxing Jurisdiction",
+      "type": "list",
+      "values": "Taxing_Jurisdiction.ID",
+      "display_format": "[Jurisdiction_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Year",
+      "display_name": "Tax Year",
+      "type": "picklist",
+      "values": "{\"2020\",\"2021\",\"2022\",\"2023\",\"2024\",\"2025\",\"2026\",\"2027\",\"2028\",\"2029\",\"2030\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "County",
+      "display_name": "County",
+      "type": "picklist",
+      "values": "{\"Bell\",\"Bexar\",\"Brazos\",\"Comal\",\"Grayson\",\"Coryell\",\"Falls\",\"Guadalupe\",\"McLennan\",\"Williamson\",\"Burleson\",\"Harris\",\"Dallas\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

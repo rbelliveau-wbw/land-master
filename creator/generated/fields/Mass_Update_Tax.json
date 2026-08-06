@@ -1,0 +1,160 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Mass_Update_Tax",
+  "display_name": "Mass Update Tax",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Awaiting Assessment\",\"Assessment Received\",\"Under Protest\",\"No Protest\",\"Paid (Protested)\",\"Paid (Arbitration)\",\"Paid (No Protest)\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Appraised_Value",
+      "display_name": "Appraised Value",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Protest_Value",
+      "display_name": "Protest Value",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Arbitration_Value",
+      "display_name": "Arbitration Value",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Final_Value",
+      "display_name": "Final Value",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "FMV",
+      "display_name": "FMV",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Appeal_Date",
+      "display_name": "Appeal Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Appeal_Deadline",
+      "display_name": "Appeal Deadline",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Parcel_Year",
+      "display_name": "Tax Parcel Year",
+      "type": "list",
+      "values": "Tax_Parcel_Year.ID",
+      "display_format": "[Tax_Parcel_Year_Code]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Taxing_Jurisdiction2",
+      "display_name": "Taxing Jurisdiction",
+      "type": "list",
+      "values": "Taxing_Jurisdiction.ID",
+      "display_format": "[Jurisdiction_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Rate_Template",
+      "display_name": "Tax Rate Template",
+      "type": "picklist",
+      "values": "Tax_Rate_Template.ID",
+      "display_format": "[Tax_Template_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tax_Rates",
+      "display_name": "Tax Rates",
+      "type": "list",
+      "values": "Tax_Rate.ID",
+      "display_format": "[Tax_Rate_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

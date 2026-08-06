@@ -1,0 +1,11 @@
+				 void createTaxTemplate(Tax_Rate taxRates)
+                 {
+                 	idRecordList = taxRates.ID.getall();
+                 	//city = taxRates.Taxing_Jurisdiction2.City;
+                 	county = taxRates.County.getall();
+                 	taxYear = taxRates.Tax_Year;
+                 	taxJurisdiction = taxRates.Taxing_Jurisdiction2.ID.getall();
+                 	taxTemplateurl = "#Form:Tax_Rate_Template?Tax_Rates=" + idRecordList + "&&County=" + county + "&&Taxing_Jurisdiction2=" + taxJurisdiction + "&&Tax_Year=" + taxYear;
+                 	openUrl(taxTemplateurl,"popup window");
+                 	//info taxYear;
+                 }

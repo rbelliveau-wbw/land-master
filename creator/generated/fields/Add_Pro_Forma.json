@@ -1,0 +1,1051 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Add_Pro_Forma",
+  "display_name": "Add Pro Forma",
+  "fields": [
+    {
+      "link_name": "Section3",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Tabs",
+      "display_name": "Tabs",
+      "type": "radiobuttons",
+      "values": "{\"General Information\",\"Project Schedule\",\"Land Purchase/Sale\",\"PIDs/MUD\",\"Additional Costs\",\"Construction Curve\",\"Months & Phases\"}",
+      "display_format": null,
+      "initial_value": "\"General Information\"",
+      "private": false
+    },
+    {
+      "link_name": "Addl_Costs_Tabs",
+      "display_name": "Add'l Costs Tabs",
+      "type": "radiobuttons",
+      "values": "{\"CONSTRUCTION\",\"DEVELOPMENT\"}",
+      "display_format": null,
+      "initial_value": "\"CONSTRUCTION\"",
+      "private": false
+    },
+    {
+      "link_name": "Reports",
+      "display_name": "Reports",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Post_Mortem_Link",
+      "display_name": "Post Mortem Link",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Pricing_Report",
+      "display_name": "Lot Pricing Report",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain2",
+      "display_name": "plain2",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "General_Info",
+      "display_name": "General Info",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Name",
+      "display_name": "Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Territory",
+      "display_name": "Territory",
+      "type": "picklist",
+      "values": "{\"Bryan/College Station\",\"Corpus Christi\",\"Dallas/Fort Worth\",\"Fort Hood\",\"Houston\",\"North Austin\",\"San Antonio\",\"South Austin\",\"Temple/Belton\",\"Waco\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "PF_Number",
+      "display_name": "PF Number",
+      "type": "autonumber",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lock_Inputs",
+      "display_name": "Lock",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Owner",
+      "display_name": "Owner",
+      "type": "list",
+      "values": "User_Access.ID",
+      "display_format": "[User]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Draft\",\"Pending Approval\",\"Approved\",\"LOI in Progress\",\"Closed\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "MUD_PID",
+      "display_name": "MUD/PID",
+      "type": "picklist",
+      "values": "{\"TRUE\",\"FALSE\"}",
+      "display_format": null,
+      "initial_value": "\"FALSE\"",
+      "private": false
+    },
+    {
+      "link_name": "Archive",
+      "display_name": "Archive",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Section2",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Acres",
+      "display_name": "Total Acres",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Cost_Acre",
+      "display_name": "Land Cost $ / Acre",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Sale_Price_FF",
+      "display_name": "Sale Price $ / FF",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Cost_Lot",
+      "display_name": "Engineering Cost $ / Lot",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Const_Cost_FF",
+      "display_name": "Const Cost Base $ / FF",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Phases",
+      "display_name": "Phases",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots",
+      "display_name": "Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Street_LF",
+      "display_name": "Total Street LF (Ft)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Size_Ft",
+      "display_name": "Lot Size (Ft)",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Regenerate_All",
+      "display_name": "Regenerate All",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Land_Purchase",
+      "display_name": "Land Purchase & Sale",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Cost",
+      "display_name": "Land Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Purchase_Installments",
+      "display_name": "Purchase Installments",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Sale",
+      "display_name": "Land Sale",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Sale_Installments",
+      "display_name": "Sale Installments",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Purchase_Installments",
+      "display_name": "Land Purchase Installments",
+      "type": "grid",
+      "values": "Land_Installments.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Sale_Installments",
+      "display_name": "Land Sale Installments",
+      "type": "grid",
+      "values": "Land_Installments.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "PID_MUD",
+      "display_name": "PID/MUD",
+      "type": "grid",
+      "values": "Land_Installments.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "ROI",
+      "display_name": "ROI",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "ROI1",
+      "display_name": "ROI",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "IRR",
+      "display_name": "IRR",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "XIRR",
+      "display_name": "XIRR",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Est_Lots_per_Acre",
+      "display_name": "Est Lots per Acre",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Ft_St_per_Lot",
+      "display_name": "Ft. St. per Lot",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI",
+      "display_name": "LOI",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Purchasing_Company",
+      "display_name": "Purchasing Company",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Company_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller",
+      "display_name": "Seller",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Street_Address",
+      "display_name": "Street Address",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller_City_State_ZIP",
+      "display_name": "Seller City/State/ZIP",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller_Phone",
+      "display_name": "Seller Phone",
+      "type": "phonenumber",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller_Email",
+      "display_name": "Seller Email",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Authorized_Signer_for_Seller",
+      "display_name": "Authorized Signer for Seller",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "CAD_ID",
+      "display_name": "CAD ID",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money",
+      "display_name": "Earnest Money",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Property_County",
+      "display_name": "County",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Property_City",
+      "display_name": "City",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Feasibility_Days",
+      "display_name": "Initial Feasibility (Days)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Extensions",
+      "display_name": "Extensions",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Amount_per_Extension",
+      "display_name": "Amount per Extension",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Days_per_Extension",
+      "display_name": "Days per Extension",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Closing_Days_Feas",
+      "display_name": "Closing (Days + Feas)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Special_Provisions",
+      "display_name": "Special Provisions",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Broker_Buyer",
+      "display_name": "Broker Buyer",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Broker_Seller",
+      "display_name": "Broker Seller",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Acquisition_Email",
+      "display_name": "Acquisition Email",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Response_Date",
+      "display_name": "Response Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI_Legal_Status",
+      "display_name": "LOI Legal Status",
+      "type": "picklist",
+      "values": "{\"Not Submitted\",\"Pending Approval\",\"Approved\",\"Rejected\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI_Approval_Token",
+      "display_name": "LOI Approval Token",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI_Legal_Note",
+      "display_name": "LOI Legal Note",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI_Contract",
+      "display_name": "LOI Contract",
+      "type": "picklist",
+      "values": "Contract.ID",
+      "display_format": "[Contract_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Totals",
+      "display_name": "Totals",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Gross_Sales",
+      "display_name": "Gross Sales",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "MUD_Revenue",
+      "display_name": "PID/MUD Revenue",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Reimbursements",
+      "display_name": "Reimbursements",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Reimbursed_Fees",
+      "display_name": "Reimbursed Fees",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Total_Income",
+      "display_name": "Total Income",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Entitlement_Cost",
+      "display_name": "Entitlement & Engineering",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Entitlement_Engineering_Addl",
+      "display_name": "Entitlement & Engineering Add'l",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Cost_Base",
+      "display_name": "Construction Cost Base",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Construction_Cost_Addl",
+      "display_name": "Construction Cost Add'l",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Expenses",
+      "display_name": "Total Expenses",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Net_Profit",
+      "display_name": "Net Profit",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Project_Schedule",
+      "display_name": "Project Schedule",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Estimated_Purchase_Date",
+      "display_name": "Estimated Purchase Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Length_Months",
+      "display_name": "Engineering Length (Months)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Length",
+      "display_name": "Construction Length (Months)",
+      "type": "picklist",
+      "values": "{\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Delay_Months",
+      "display_name": "Engineering Delay (Months)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Delay_Months",
+      "display_name": "Construction Delay (Months)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Start_Month",
+      "display_name": "Construction Start (Month)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Takedown_Start_Month",
+      "display_name": "Takedown Start (Month)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Start",
+      "display_name": "Engineering Start",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Start",
+      "display_name": "Construction Start",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Estimated_Lot_Sale_Start",
+      "display_name": "Estimated Lot Sale Start",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Estimated_Completion",
+      "display_name": "Estimated Completion",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Takedown",
+      "display_name": "Initial Takedown (Lots)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots_per_Month",
+      "display_name": "Lots per Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "VP",
+      "display_name": "VP",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Overhead",
+      "display_name": "Overhead",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Overhead",
+      "display_name": "Engineering Overhead",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Overhead",
+      "display_name": "Construction Overhead",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest",
+      "display_name": "Interest",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Profit_Share",
+      "display_name": "Profit Share",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "VP_Totals",
+      "display_name": "VP Totals",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Overhead_Total",
+      "display_name": "Overhead Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Overhead_Total",
+      "display_name": "Engineering Overhead Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Overhead_Total",
+      "display_name": "Construction Overhead Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Interest_Total",
+      "display_name": "Interest Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Profit_Share_Total",
+      "display_name": "Profit Share  Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain",
+      "display_name": "plain",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain4",
+      "display_name": "plain4",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Curve",
+      "display_name": "Construction Curve",
+      "type": "grid",
+      "values": "Construction_Curve.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Costs_Construction",
+      "display_name": "Construction",
+      "type": "grid",
+      "values": "Proforma_Item.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Costs_Development",
+      "display_name": "Development",
+      "type": "grid",
+      "values": "Proforma_Item.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Phases1",
+      "display_name": "Phases",
+      "type": "grid",
+      "values": "Proforma_Phase.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Months",
+      "display_name": "Months",
+      "type": "grid",
+      "values": "Proforma_Months.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Tax_Rate",
+  "display_name": "Add Tax Rate",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Taxing_Jurisdiction2",
+      "display_name": "Taxing Jurisdiction",
+      "type": "picklist",
+      "values": "Taxing_Jurisdiction.ID",
+      "display_format": "[Jurisdiction_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "County",
+      "display_name": "County",
+      "type": "picklist",
+      "values": "{\"Bell\",\"Bexar\",\"Brazos\",\"Comal\",\"Grayson\",\"Burleson\",\"Coryell\",\"Falls\",\"Guadalupe\",\"McLennan\",\"Williamson\",\"Harris\",\"Dallas\",\"Grant\",\"San Miguel\",\"Terrell\",\"Val Verde\",\"Matagorda\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Add",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

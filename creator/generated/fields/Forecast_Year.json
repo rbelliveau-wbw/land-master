@@ -1,0 +1,214 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Forecast_Year",
+  "display_name": "Add Forecast Year",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Forecast_Name",
+      "display_name": "Forecast Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Builder1",
+      "display_name": "Builder",
+      "type": "picklist",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Show_Previous_Year",
+      "display_name": "Show Previous Year",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "plain4",
+      "display_name": "plain4",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Full_Year_Forecast",
+      "display_name": "Full Year Forecasted Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Running_Forecast_Balance",
+      "display_name": "Running Forecast Balance",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Show_Next_Year",
+      "display_name": "Show Next Year",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Contracted_Lot_Amount",
+      "display_name": "Contracted Lot Amount",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Contracted_Lots",
+      "display_name": "Total Scheduled/Contracted Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Sold_Lots",
+      "display_name": "Total Actual/Sold Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Sold_Forecasted",
+      "display_name": "Total Sold + Forecasted",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Overforecast_Warning",
+      "display_name": "Overforecast Warning",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Previous_Year",
+      "display_name": "Previous Year",
+      "type": "grid",
+      "values": "Forecast.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section2",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Forecast_Months",
+      "display_name": "Forecast Months",
+      "type": "grid",
+      "values": "Forecast.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section3",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Next_Year",
+      "display_name": "Next Year",
+      "type": "grid",
+      "values": "Forecast.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

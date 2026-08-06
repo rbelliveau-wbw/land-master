@@ -1,0 +1,362 @@
+				 string handleApprovalAction(string budgetId, string approvalId, string approvalAction, string approvalNote)
+                 {
+                 	/********* HANDLE APPROVAL PAGE BUTTON PRESS *********/
+                 	// All record IDs are held internally as strings.
+                 	// IDs are converted to long only when required by:
+                 	// - Creator record criteria
+                 	// - Existing helper functions that accept numeric IDs
+                 	//
+                 	// Approved:
+                 	// - Approves the current row.
+                 	// - Sends the next approver.
+                 	// - When the last approver finishes:
+                 	//     Development: Development + Engineering Unapproved -> Final,
+                 	//                  then Unapproved -> 0.
+                 	//     Construction: Construction Unapproved -> Final,
+                 	//                   then Unapproved -> 0.
+                 	// - When both tracks are fully approved:
+                 	//     Generates an approved-budget PDF and attaches it to
+                 	//     Add_Budget.Attachments.
+                 	//
+                 	// Rejected:
+                 	// - Sends the chain back to the previous approver.
+                 	//
+                 	// Pending:
+                 	// - Saves the note only.
+                 	//
+                 	// VP cannot reject because there is no previous approver.
+                 	vBudgetId = ifnull(budgetId,"").trim();
+                 	vApprovalId = ifnull(approvalId,"").trim();
+                 	vAction = ifnull(approvalAction,"").trim();
+                 	vNote = ifnull(approvalNote,"");
+                 	if(vBudgetId == "")
+                 	{
+                 		return "No Budget ID provided.";
+                 	}
+                 	if(vApprovalId == "")
+                 	{
+                 		return "No Approval ID provided.";
+                 	}
+                 	if(vAction == "")
+                 	{
+                 		return "No approval action provided.";
+                 	}
+                 	/********* LOAD BUDGET *********/
+                 	budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+                 	if(budgetRec == null)
+                 	{
+                 		return "Budget not found.";
+                 	}
+                 	/********* LOAD CURRENT APPROVAL *********/
+                 	currentRows = Budget_Approvals[ID == vApprovalId.toLong()];
+                 	if(currentRows.count() == 0)
+                 	{
+                 		return "Approval row not found.";
+                 	}
+                 	currentApproval = null;
+                 	for each  cr in currentRows
+                 	{
+                 		currentApproval = cr;
+                 	}
+                 	vApprovalType = ifnull(currentApproval.Type1,"").trim();
+                 	vCurrentRole = ifnull(currentApproval.Title,"").trim();
+                 	vCurrentStatus = ifnull(currentApproval.Status,"").trim();
+                 	if(vCurrentStatus == "")
+                 	{
+                 		vCurrentStatus = "Not Sent";
+                 	}
+                 	vCurrentSort = 0;
+                 	if(currentApproval.Sort_Order != null)
+                 	{
+                 		vCurrentSort = currentApproval.Sort_Order.toLong();
+                 	}
+                 	if(vApprovalType == "")
+                 	{
+                 		return "Approval Type is blank.";
+                 	}
+                 	if(vApprovalType != "Development" && vApprovalType != "Construction")
+                 	{
+                 		return "Unsupported approval type: " + vApprovalType;
+                 	}
+                 	if(vCurrentSort == 0)
+                 	{
+                 		return "Sort Order is blank for " + vCurrentRole + ".";
+                 	}
+                 	/********* FORMAT NOTE *********/
+                 	vNote = vNote.replaceAll("\r\n","\n");
+                 	vNote = vNote.replaceAll("\r","\n");
+                 	vNote = vNote.replaceAll("\n","<br>");
+                 	/********* PREVENT STALE OR OUT-OF-SEQUENCE ACTIONS *********/
+                 	if(vCurrentStatus != "Pending")
+                 	{
+                 		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 		return vApprovalType + " " + vCurrentRole + " is currently " + vCurrentStatus + ". No action was taken because this approval is not Pending. " + syncResp;
+                 	}
+                 	/********* SAVE NOTE ONLY *********/
+                 	if(vAction == "Pending")
+                 	{
+                 		currentApproval.Status="Pending";
+                 		currentApproval.Approval_Notes=vNote;
+                 		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 		return vApprovalType + " " + vCurrentRole + " note saved. " + syncResp;
+                 	}
+                 	/********* APPROVED *********/
+                 	if(vAction == "Approved")
+                 	{
+                 		currentApproval.Status="Approved";
+                 		currentApproval.Approval_Notes=vNote;
+                 		currentApproval.Responded_Date=zoho.currentdate;
+                 		nextApprovalId = "";
+                 		nextSort = 999999;
+                 		/********* FIND NEXT APPROVER IN THE SAME TRACK *********/
+                 		for each  appr in budgetRec.Approvals
+                 		{
+                 			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+                 			{
+                 				apprSort = 999999;
+                 				if(appr.Sort_Order != null)
+                 				{
+                 					apprSort = appr.Sort_Order.toLong();
+                 				}
+                 				if(apprSort > vCurrentSort && apprSort < nextSort)
+                 				{
+                 					nextSort = apprSort;
+                 					nextApprovalId = appr.ID.toString();
+                 				}
+                 			}
+                 		}
+                 		/********* SEND NEXT APPROVER *********/
+                 		if(nextApprovalId != "")
+                 		{
+                 			// Ensure only one row in this track remains Pending.
+                 			for each  appr in budgetRec.Approvals
+                 			{
+                 				apprIdText = appr.ID.toString();
+                 				if(ifnull(appr.Type1,"").trim() == vApprovalType && apprIdText != nextApprovalId && apprIdText != vApprovalId)
+                 				{
+                 					if(ifnull(appr.Status,"").trim() == "Pending")
+                 					{
+                 						pendingRows = Budget_Approvals[ID == apprIdText.toLong()];
+                 						for each  pr in pendingRows
+                 						{
+                 							pr.Status="Not Sent";
+                 							pr.Sent_Date=null;
+                 							pr.Responded_Date=null;
+                 						}
+                 					}
+                 				}
+                 			}
+                 			nextRows = Budget_Approvals[ID == nextApprovalId.toLong()];
+                 			for each  nextApproval in nextRows
+                 			{
+                 				nextApproval.Status="Pending";
+                 				nextApproval.Sent_Date=zoho.currentdate;
+                 				nextApproval.Responded_Date=null;
+                 			}
+                 			emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),nextApprovalId.toLong());
+                 			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 			return vApprovalType + " " + vCurrentRole + " approved. " + emailResp + " " + syncResp;
+                 		}
+                 		else
+                 		{
+                 			/*****************************************************
+                 			 * FINAL APPROVER FINISHED
+                 			 *
+                 			 * Development:
+                 			 * - Development + Engineering Unapproved -> Final
+                 			 * - Development + Engineering Unapproved -> 0
+                 			 *
+                 			 * Construction:
+                 			 * - Construction Unapproved -> Final
+                 			 * - Construction Unapproved -> 0
+                 			 *****************************************************/
+                 			finalizedCount = 0;
+                 			finalizedTotal = 0;
+                 			budgetCategoriesToFinalize = Budget_Category[Budget == vBudgetId.toLong()];
+                 			for each  cat in budgetCategoriesToFinalize
+                 			{
+                 				deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
+                 				shouldFinalize = false;
+                 				if(vApprovalType == "Development")
+                 				{
+                 					if(deptKey.contains("development") || deptKey.contains("engineering"))
+                 					{
+                 						shouldFinalize = true;
+                 					}
+                 				}
+                 				else if(vApprovalType == "Construction")
+                 				{
+                 					if(deptKey.contains("construction"))
+                 					{
+                 						shouldFinalize = true;
+                 					}
+                 				}
+                 				if(shouldFinalize == true)
+                 				{
+                 					categoryId = cat.ID.toString();
+                 					catItemsToFinalize = Budget_Item[Budget_Category == categoryId.toLong()];
+                 					for each  itemToFinalize in catItemsToFinalize
+                 					{
+                 						unapprovedVal = 0;
+                 						if(itemToFinalize.Unapproved_Final_Budget_Ttl != null)
+                 						{
+                 							unapprovedNum = itemToFinalize.Unapproved_Final_Budget_Ttl.toNumber();
+                 							if(unapprovedNum != null)
+                 							{
+                 								unapprovedVal = unapprovedNum;
+                 							}
+                 						}
+                 						// Move Unapproved into Final.
+                 						itemToFinalize.Budget_Ttl=unapprovedVal;
+                 						// Once the track finishes, Unapproved must be zero.
+                 						itemToFinalize.Unapproved_Final_Budget_Ttl=0;
+                 						finalizedCount = finalizedCount + 1;
+                 						finalizedTotal = finalizedTotal + unapprovedVal;
+                 					}
+                 					/********* REFRESH THIS CATEGORY'S FINAL TOTAL *********/
+                 					catFinalTotal = 0;
+                 					catFinalSum = Budget_Item[Budget_Category == categoryId.toLong()].sum(Budget_Ttl);
+                 					if(catFinalSum != null)
+                 					{
+                 						catFinalNum = catFinalSum.toNumber();
+                 						if(catFinalNum != null)
+                 						{
+                 							catFinalTotal = catFinalNum;
+                 						}
+                 					}
+                 					cat.Budget_Total=catFinalTotal;
+                 				}
+                 			}
+                 			/********* REFRESH PARENT BUDGET FINAL GRAND TOTAL *********/
+                 			newGrandTotal = 0;
+                 			allBudgetCategories = Budget_Category[Budget == vBudgetId.toLong()];
+                 			for each  catTotalRec in allBudgetCategories
+                 			{
+                 				if(catTotalRec.Budget_Total != null)
+                 				{
+                 					catTotalNum = catTotalRec.Budget_Total.toNumber();
+                 					if(catTotalNum != null)
+                 					{
+                 						newGrandTotal = newGrandTotal + catTotalNum;
+                 					}
+                 				}
+                 			}
+                 			budgetRec.Budget_Grand_Total=newGrandTotal;
+                 			finalizeResp = "Finalized " + finalizedCount + " " + vApprovalType + " items totaling " + finalizedTotal + " into Final and cleared Unapproved.";
+                 			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 			/*****************************************************
+                 			 * CHECK WHETHER BOTH APPROVAL TRACKS ARE COMPLETE
+                 			 *****************************************************/
+                 			hasDevelopmentTrack = false;
+                 			hasConstructionTrack = false;
+                 			allDevelopmentApproved = true;
+                 			allConstructionApproved = true;
+                 			allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()];
+                 			for each  finalCheckRow in allApprovalRows
+                 			{
+                 				finalCheckType = ifnull(finalCheckRow.Type1,"").trim();
+                 				finalCheckStatus = ifnull(finalCheckRow.Status,"").trim();
+                 				if(finalCheckType == "Development")
+                 				{
+                 					hasDevelopmentTrack = true;
+                 					if(finalCheckStatus != "Approved")
+                 					{
+                 						allDevelopmentApproved = false;
+                 					}
+                 				}
+                 				else if(finalCheckType == "Construction")
+                 				{
+                 					hasConstructionTrack = true;
+                 					if(finalCheckStatus != "Approved")
+                 					{
+                 						allConstructionApproved = false;
+                 					}
+                 				}
+                 			}
+                 			pdfResp = "";
+                 			if(hasDevelopmentTrack == true && hasConstructionTrack == true && allDevelopmentApproved == true && allConstructionApproved == true)
+                 			{
+                 				// generateApprovedBudgetPDF expects a STRING.
+                 				pdfResp = thisapp.generateApprovedBudgetPDF(vBudgetId);
+                 			}
+                 			else
+                 			{
+                 				pdfResp = "Approved budget PDF will be generated after both approval tracks are fully approved.";
+                 			}
+                 			return vApprovalType + " approval chain fully approved. " + finalizeResp + " " + syncResp + " " + pdfResp;
+                 		}
+                 	}
+                 	/********* REJECTED — SEND BACK TO PREVIOUS APPROVER *********/
+                 	if(vAction == "Rejected")
+                 	{
+                 		// VP cannot reject because there is no previous approval row.
+                 		if(vCurrentSort <= 1 || vCurrentRole == "VP")
+                 		{
+                 			currentApproval.Approval_Notes=vNote;
+                 			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 			return vApprovalType + " VP cannot reject because there is no previous approver. Note saved and approval remains Pending. " + syncResp;
+                 		}
+                 		currentApproval.Status="Rejected";
+                 		currentApproval.Approval_Notes=vNote;
+                 		currentApproval.Responded_Date=zoho.currentdate;
+                 		previousApprovalId = "";
+                 		previousSort = 0;
+                 		/********* FIND PREVIOUS APPROVER IN THE SAME TRACK *********/
+                 		for each  appr in budgetRec.Approvals
+                 		{
+                 			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+                 			{
+                 				apprSort = 0;
+                 				if(appr.Sort_Order != null)
+                 				{
+                 					apprSort = appr.Sort_Order.toLong();
+                 				}
+                 				if(apprSort < vCurrentSort && apprSort > previousSort)
+                 				{
+                 					previousSort = apprSort;
+                 					previousApprovalId = appr.ID.toString();
+                 				}
+                 			}
+                 		}
+                 		if(previousApprovalId == "")
+                 		{
+                 			currentApproval.Status="Pending";
+                 			currentApproval.Responded_Date=null;
+                 			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 			return vApprovalType + " " + vCurrentRole + " could not be rejected because no previous approver was found. Approval remains Pending. " + syncResp;
+                 		}
+                 		/********* PUSH THE CHAIN BACK ONE STEP *********/
+                 		for each  appr in budgetRec.Approvals
+                 		{
+                 			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+                 			{
+                 				apprIdText = appr.ID.toString();
+                 				apprSort = 0;
+                 				if(appr.Sort_Order != null)
+                 				{
+                 					apprSort = appr.Sort_Order.toLong();
+                 				}
+                 				apprRows = Budget_Approvals[ID == apprIdText.toLong()];
+                 				for each  ar in apprRows
+                 				{
+                 					if(apprIdText == previousApprovalId)
+                 					{
+                 						ar.Status="Pending";
+                 						ar.Sent_Date=zoho.currentdate;
+                 						ar.Responded_Date=null;
+                 					}
+                 					else if(apprSort > vCurrentSort)
+                 					{
+                 						ar.Status="Not Sent";
+                 						ar.Sent_Date=null;
+                 						ar.Responded_Date=null;
+                 					}
+                 				}
+                 			}
+                 		}
+                 		emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),previousApprovalId.toLong());
+                 		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 		return vApprovalType + " " + vCurrentRole + " rejected. Sent back to previous approver. " + emailResp + " " + syncResp;
+                 	}
+                 	return "Unsupported approval action: " + vAction;
+                 }

@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "creator": {
+    "development": {
+      "status": "requires-registration",
+      "widget_path_prefix": "/dev/"
+    },
+    "stage": {
+      "status": "requires-registration",
+      "widget_path_prefix": "/stage/"
+    },
+    "production": {
+      "status": "requires-registration",
+      "widget_path_prefix": "/prod/"
+    }
+  },
+  "hosting": {
+    "provider": "GitHub Pages",
+    "custom_domain": "widgets.wbdevelopment.com",
+    "custom_domain_status": "placeholder-not-configured"
+  }
+}

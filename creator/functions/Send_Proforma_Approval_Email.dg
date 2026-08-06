@@ -1,0 +1,4 @@
+				 map Send_Proforma_Approval_Email(string proformaId, string approvalId)
+                 {
+                 	return thisapp.Send_Proforma_Approval_Email_With_Context(proformaId,approvalId,"Resent","","System");
+                 }

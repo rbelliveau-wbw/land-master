@@ -1,0 +1,117 @@
+{
+  "custom_apis": [
+    {
+      "name": "Create_Budget_Attachment_Record",
+      "config_key": "createBudgetAttachmentRecord",
+      "source": "customApis object"
+    },
+    {
+      "name": "Delete_Budget_Attachment",
+      "config_key": "deleteBudgetAttachment",
+      "source": "customApis object"
+    },
+    {
+      "name": "Export_Budget_Snapshot",
+      "config_key": "exportBudgetSnapshot",
+      "source": "customApis object"
+    },
+    {
+      "name": "Get_Budget_Attachment_Preview",
+      "config_key": "getBudgetAttachmentPreview",
+      "source": "customApis object"
+    },
+    {
+      "name": "Get_User_Access",
+      "config_key": "getUserAccess",
+      "source": "customApis object"
+    },
+    {
+      "name": "Handle_Approval_Action",
+      "config_key": "handleApprovalAction",
+      "source": "customApis object"
+    },
+    {
+      "name": "killApprovalChain",
+      "config_key": "killApprovalChain",
+      "source": "customApis object"
+    },
+    {
+      "name": "killApprovalFlow",
+      "config_key": "killApprovalFlow",
+      "source": "customApis object"
+    },
+    {
+      "name": "sendApprovalEmail",
+      "config_key": "sendApprovalEmail",
+      "source": "customApis object"
+    },
+    {
+      "name": "setProjectProforma",
+      "config_key": "setProjectProforma",
+      "source": "customApis object"
+    },
+    {
+      "name": "startApprovalChain",
+      "config_key": "startApprovalChain",
+      "source": "customApis object"
+    },
+    {
+      "name": "syncBudgetApprovalStatus",
+      "config_key": "syncBudgetApprovalStatus",
+      "source": "customApis object"
+    }
+  ],
+  "forms_referenced": [
+    "Add_Budget",
+    "Add_Pro_Forma",
+    "Budget_Approvals",
+    "Budget_Category",
+    "Budget_Import_Item",
+    "Budget_Item",
+    "Contract_Version",
+    "Lots",
+    "Proforma_Item",
+    "Project",
+    "Subdivision",
+    "User_Access"
+  ],
+  "reports_referenced": [
+    "All_Budget_Approvals",
+    "All_Budget_Categories",
+    "All_Budget_Item_Imports",
+    "All_Budget_Items",
+    "All_Budgets",
+    "All_Contract_Versions",
+    "All_Pro_Formas",
+    "All_Pro_Formas_All_Fields",
+    "All_Proforma_Phases",
+    "All_Projects",
+    "All_Subdivisions",
+    "Proforma_Item_Report",
+    "User_Access_Report"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.API",
+    "ZOHO.CREATOR.API.getAllRecords",
+    "ZOHO.CREATOR.API.getRecordById",
+    "ZOHO.CREATOR.API.invokeCustomApi",
+    "ZOHO.CREATOR.API.invokeCustomApi.",
+    "ZOHO.CREATOR.API.readFile",
+    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.API.uploadFile",
+    "ZOHO.CREATOR.DATA",
+    "ZOHO.CREATOR.DATA.invokeCustomApi",
+    "ZOHO.CREATOR.DATA.invokeCustomApi.",
+    "ZOHO.CREATOR.UTIL",
+    "ZOHO.CREATOR.UTIL.getInitParams",
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "cdn.jsdelivr.net",
+    "cdnjs.cloudflare.com",
+    "creatorapp.zoho.com",
+    "creatorexport.zoho.com",
+    "static.zohocdn.com",
+    "www.w3.org"
+  ]
+}

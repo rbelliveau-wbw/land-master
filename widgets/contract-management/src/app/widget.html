@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Land Master Contracts</title>
+<script src="https://static.zohocdn.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+<style>
+/* ── TOKENS ── aligned with Pro Forma Manager / Land Master v7 ── */
+:root{
+  --bg:#f0f3f7; --surface:#e8ecf1; --card:#fff;
+  --line:#dde4ef; --line-strong:#c8d4e5;
+  --text:#0f2744; --muted:#5c7394; --faint:#8ea0bd;
+  --navy:#0b2345; --navy-soft:rgba(11,35,69,.08);
+  --primary:#1e40af; --primary-2:#2563eb; --ptint:#eef4ff; --psoft:#e8f0fb;
+  --green:#047857; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#b91c1c; --red-bg:#fef2f2;
+  --violet:#3730a3; --violet-bg:#e0e7ff;
+  --r:10px; --rsm:6px;
+  --shadow:0 2px 8px rgba(30,64,175,.06),0 1px 2px rgba(0,0,0,.03);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--primary-2);outline-offset:1px}
+::selection{background:#dbeafe}
+*{scrollbar-width:thin;scrollbar-color:#c5d0df transparent}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:#c5d0df;border:2px solid transparent;background-clip:padding-box;border-radius:99px}
+*::-webkit-scrollbar-track{background:transparent}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:0;height:48px;padding:0 18px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
+.topbar-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-.2px;color:var(--navy);margin-right:16px;flex:none}
+.topbar-brand svg{width:16px;height:16px;color:var(--primary)}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden}
+.crumb a{color:var(--muted);text-decoration:none;cursor:pointer;font-weight:600}
+.crumb a:hover{color:var(--primary)}
+.crumb strong{color:var(--text);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb .sep{color:#afc0d5}
+.spacer{flex:1}
+.statusline{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.statusline .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.statusline .dot.warn{background:var(--amber)}
+.statusline .dot.err{background:var(--red)}
+
+/* ── BUTTONS / INPUTS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-strong);background:#fff;color:var(--text);
+  font-size:12px;font-weight:700;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.btn:hover{border-color:var(--primary-2);color:var(--primary)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+.btn.primary:hover{background:var(--primary);color:#fff}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.green:hover{background:#065f46;color:#fff}
+.btn.orange{background:var(--amber);border-color:var(--amber);color:#fff}
+.btn.orange:hover{background:#92400e;color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--primary)}
+.btn.sm{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.5;pointer-events:none}
+.input{height:31px;border:1px solid transparent;border-radius:7px;background:#eef2f8;color:var(--text);font-size:12.5px;padding:0 9px;outline:none;font-variant-numeric:tabular-nums;transition:background .12s,border-color .12s,box-shadow .12s;width:100%}
+.input:hover:not(:focus){background:#e6edf7}
+.input:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.input::placeholder{color:var(--faint)}
+select.input{cursor:pointer}
+textarea.input{height:auto;min-height:56px;padding:7px 9px;resize:vertical;line-height:1.45}
+.fl{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#7d90ad;font-weight:800;margin-bottom:4px;display:block;white-space:nowrap}
+
+/* ── FILTER ROW ── */
+.filterrow{display:flex;align-items:center;gap:10px;padding:14px 18px 12px;flex:none;flex-wrap:wrap}
+.filterrow h1{font-size:18px;font-weight:800;letter-spacing:-.3px;margin:0;color:var(--navy)}
+.scope-count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 7px;font-size:10.5px;font-weight:800;border-radius:999px;background:var(--psoft);color:var(--primary)}
+.searchbox{display:flex;align-items:center;gap:9px;flex:0 1 420px;min-width:250px;background:#fff;border:1px solid #8fb2f3;border-radius:10px;padding:7px 11px;box-shadow:0 3px 12px rgba(37,99,235,.12),0 0 0 3px rgba(37,99,235,.04);transition:all .12s}
+.searchbox:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 4px rgba(37,99,235,.14),0 6px 18px rgba(37,99,235,.15);transform:translateY(-1px)}
+.searchbox .search-icon{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--primary-2);color:#fff;flex:none;box-shadow:0 2px 5px rgba(37,99,235,.25)}
+.searchbox svg{width:13px;height:13px}
+.searchbox input{border:0;outline:0;font-size:13px;font-weight:650;flex:1;min-width:0;background:transparent;color:var(--text)}
+.searchbox input::placeholder{color:#7c8faa;font-weight:550}
+.chiprow{display:flex;gap:5px;flex-wrap:wrap}
+.chip-f{border:1px solid var(--line-strong);background:#fff;color:var(--muted);border-radius:999px;height:28px;padding:0 12px;font-size:11px;font-weight:750;cursor:pointer;transition:all .12s;white-space:nowrap}
+.chip-f:hover{border-color:var(--primary-2);color:var(--primary)}
+.chip-f.active{background:var(--navy);border-color:var(--navy);color:#fff}
+select.filter{border:1px solid transparent;border-radius:8px;background:#eef2f8;font-size:12px;font-weight:600;color:var(--text);padding:6px 9px;cursor:pointer;height:30px}
+select.filter:hover{background:#e6edf7}
+select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.seg{display:flex;align-items:center;gap:3px;background:#eef2f8;border:1px solid #dde5f0;border-radius:999px;padding:3px}
+.seg button{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 14px;border:0;background:transparent;color:#5a6b85;border-radius:999px;font-size:11.5px;font-weight:750;cursor:pointer;transition:all .13s;white-space:nowrap}
+.seg button:hover{color:var(--navy);background:rgba(255,255,255,.65)}
+.seg button.active{color:#fff;background:var(--navy);box-shadow:0 1px 3px rgba(11,31,58,.25)}
+
+/* ── WORKAREA / TABLE ── */
+.workarea{flex:1;min-height:0;padding:0 18px 18px;display:flex;flex-direction:column}
+.tablecard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.tscroll{flex:1;overflow:auto;min-height:0}
+.wtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.wtable th{position:sticky;top:0;z-index:2;background:#f6f8fc;text-align:left;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;user-select:none;cursor:pointer}
+.wtable th:hover,.wtable th.sorted{color:var(--primary)}
+.wtable td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px;vertical-align:middle}
+.wtable tbody tr{cursor:pointer;transition:background .1s}
+.wtable tbody tr:hover{background:var(--ptint)}
+.cname{font-weight:750;color:var(--primary)}
+.subtle{color:var(--muted)}
+.progress-cell{display:flex;align-items:center;gap:8px;min-width:120px}
+.progress{flex:1;height:6px;background:#e3e9f2;border-radius:99px;overflow:hidden;min-width:56px}
+.progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#34d399)}
+.progress-n{font-size:10.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.empty{padding:44px 20px;text-align:center;color:var(--muted);font-weight:600}
+.empty b{display:block;font-size:14px;color:var(--navy);margin-bottom:5px}
+.err-banner{border:1px solid #fecaca;color:var(--red);background:var(--red-bg);border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:11.5px;font-weight:650;display:flex;gap:8px;align-items:center}
+.err-banner button{margin-left:auto;border:0;background:none;color:var(--red);font-size:16px;cursor:pointer;line-height:1}
+.ok-banner{border:1px solid #a7f3d0;color:var(--green);background:var(--green-bg);border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:11.5px;font-weight:650}
+
+/* ── BOARD ── */
+.boardwrap{flex:1;min-height:0;overflow:auto;display:flex;gap:12px;align-items:flex-start;padding-bottom:6px}
+.bcol{flex:0 0 264px;background:#e9edf3;border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:8px;max-height:100%}
+.bcol-head{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:850;letter-spacing:.05em;color:var(--navy);text-transform:uppercase;padding:2px 3px}
+.bcol-head .bar{width:3px;height:13px;border-radius:2px;flex:none}
+.bcol-head .n{margin-left:auto;color:var(--faint);font-weight:800}
+.bcol-cards{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:14px}
+.bcard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:5px}
+.bcard:hover{border-color:var(--primary-2);box-shadow:0 3px 10px rgba(37,99,235,.12);transform:translateY(-1px)}
+.bcard-name{font-size:12.5px;font-weight:750;color:var(--navy);line-height:1.3}
+.bcard-action{font-size:11px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bcard-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:2px}
+.bcard-builder{font-size:10.5px;color:var(--faint);font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard-type{font-size:10px;font-weight:800;color:var(--primary);flex:none}
+
+/* ── DETAIL ── */
+.detailwrap{flex:1;min-height:0;overflow:auto;padding:0 18px 18px}
+.info-strip{display:flex;align-items:stretch;background:#fff;border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow);flex-wrap:wrap}
+.info-name-block{background:linear-gradient(145deg,#0b2345,#173d72);padding:13px 20px;display:flex;flex-direction:column;justify-content:center;min-width:260px;flex:1.4}
+.info-kicker{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#bfdbfe;margin-bottom:3px}
+.info-name{font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:#fff}
+.info-field{padding:11px 16px;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:110px}
+.info-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.13em;color:var(--faint);margin-bottom:3px}
+.info-val{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+@media(max-width:1050px){.dgrid{grid-template-columns:1fr}}
+
+/* actions card */
+.acard-shell{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.ac-head{padding:14px 16px 12px;border-bottom:1px solid #eef2f8;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ac-title{font-size:15px;font-weight:800;color:var(--navy);margin:0}
+.ac-sub{font-size:11px;color:var(--faint);margin-top:1px}
+.toggle-btn{border:0;background:transparent;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:10.5px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:0;transition:color .12s}
+.toggle-btn:hover{color:var(--navy)}
+.toggle-track{width:32px;height:17px;border-radius:999px;background:#dde4ef;position:relative;transition:background .18s;flex:none}
+.toggle-knob{position:absolute;width:11px;height:11px;top:3px;left:3px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:left .18s}
+.toggle-btn.on .toggle-track{background:var(--green)}
+.toggle-btn.on .toggle-knob{left:18px}
+.alist{padding:10px;display:flex;flex-direction:column;gap:7px;background:#f4f7fb}
+
+/* action row */
+.arow{border:2px solid var(--line);border-radius:11px;background:#fff;overflow:hidden;position:relative;transition:border-color .15s,box-shadow .15s,opacity .15s}
+.arow::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#cbd5e1;z-index:1}
+.arow.current{border-color:#93c5fd;box-shadow:0 3px 14px rgba(30,64,175,.10)}
+.arow.current::before{background:var(--primary)}
+.arow.done{border-color:#a7f3d0}
+.arow.done::before{background:#34d399}
+.arow.overdue{border-color:#fca5a5}
+.arow.overdue::before{background:#ef4444}
+.arow.dragging{opacity:.35}
+.arow.dragover{box-shadow:0 -3px 0 0 var(--primary-2)}
+.arow-head{display:flex;align-items:center;min-height:56px;cursor:pointer;transition:background .12s;gap:0}
+.arow-head:hover{background:#f8fafc}
+.arow.open .arow-head{border-bottom:1px solid #eef2f8;background:#f8fafc}
+.drag-cell{align-self:stretch;display:flex;align-items:center;padding:0 4px 0 10px;color:#c3cdda;cursor:grab;font-size:13px;user-select:none}
+.drag-cell:hover{color:var(--primary-2)}
+.num-cell{align-self:stretch;display:flex;align-items:center;justify-content:center;padding:0 10px 0 6px}
+.num-badge{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;background:#eef2f8;color:#64748b;border:1.5px solid #e2e8f4;flex:none}
+.arow.current .num-badge{background:#dbeafe;color:var(--primary);border-color:#93c5fd}
+.arow.overdue .num-badge{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+.arow.done .num-badge{background:#d1fae5;color:var(--green);border-color:#6ee7b7}
+.arow-main{flex:1;min-width:0;padding:9px 10px 9px 0}
+.attention{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--primary);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.attention::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--primary);flex:none;animation:pulse 1.8s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,64,175,.45)}50%{box-shadow:0 0 0 4px rgba(30,64,175,0)}}
+.arow-title{font-size:13px;font-weight:650;color:var(--text);line-height:1.35;white-space:normal}
+.arow.done .arow-title{color:#94a3b8;text-decoration:line-through;text-decoration-thickness:1.5px}
+.arow-meta{display:flex;align-items:center;gap:9px;margin-top:4px;flex-wrap:wrap;font-size:10.5px;color:var(--faint)}
+.arow-meta strong{color:var(--muted);font-weight:700}
+.arow-meta .od strong{color:#dc2626}
+.arow-right{display:flex;align-items:center;gap:7px;padding-right:11px;flex:none}
+.icon-btn{width:26px;height:26px;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--muted);font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .13s;cursor:pointer;line-height:1;padding:0}
+.icon-btn:hover{background:#eaf0ff;border-color:#b9c8f3;color:var(--navy);transform:translateY(-1px)}
+.quick-check{width:29px;height:29px;border:2px solid #e2e8f4;border-radius:50%;background:#fff;color:#cbd5e1;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;cursor:pointer;padding:0}
+.quick-check:hover{border-color:#6ee7b7;background:var(--green-bg);color:var(--green)}
+.quick-check.done{border-color:#6ee7b7;background:var(--green-bg);color:var(--green)}
+.chev{width:26px;height:26px;border:1px solid #e2e8f4;border-radius:50%;background:#f8fafc;color:var(--faint);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;transition:transform .25s cubic-bezier(.22,1,.36,1);user-select:none;line-height:1;flex:none}
+.arow.open .chev{transform:rotate(90deg);background:#eef4ff;color:var(--navy)}
+.reorder-group{display:flex;gap:3px;padding-left:7px;border-left:1px solid #f0f4f9}
+
+/* expanded form */
+.arow-form{padding:13px 14px 14px 46px;background:#f8fafc;display:none;flex-direction:column;gap:10px}
+.arow.open .arow-form{display:flex}
+.frow{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap}
+.ff{min-width:0}
+.ff-dm{flex:0 0 96px}.ff-date{flex:0 0 128px}.ff-status{flex:0 0 172px}.ff-notes{flex:1;min-width:170px}
+.form-actions{display:flex;gap:6px}
+
+/* inline add row */
+.add-row{border:1.5px dashed var(--line-strong);border-radius:11px;background:#f7f9fc;transition:border-color .12s}
+.add-row:hover{border-color:var(--primary-2)}
+.add-row-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;color:var(--muted);font-weight:650;font-size:12.5px}
+.add-plus{width:24px;height:24px;background:#eef3ff;border:1px dashed #93b4f8;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--primary);flex:none}
+.add-form{display:none;flex-direction:column;gap:10px;padding:0 14px 14px}
+.add-row.open .add-form{display:flex}
+
+/* ── SIDEBAR ── */
+.side{display:flex;flex-direction:column;gap:13px;position:sticky;top:0}
+.side-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.dark-head{background:linear-gradient(145deg,#0b2345,#173d72);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dark-kicker{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#bfdbfe;margin-bottom:2px}
+.dark-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em}
+.dark-badge strong{display:block;font-size:23px;font-weight:800;color:#fff;line-height:1;text-align:right}
+.dark-badge span{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#bfdbfe}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat-cell{padding:12px 8px;border-right:1px solid #eef2f8;text-align:center}
+.stat-cell:last-child{border-right:0}
+.stat-n{font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.stat-t{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--faint)}
+.stat-open .stat-n{color:var(--primary-2)}.stat-curr .stat-n{color:var(--navy)}.stat-over .stat-n{color:#dc2626}.stat-done .stat-n{color:var(--green)}
+.stats-prog{padding:8px 15px 13px}
+.stats-prog-lbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:5px}
+.stats-prog-lbl b{color:var(--text)}
+.stats-prog-pct{font-weight:800;color:var(--green)}
+.propose-trigger{display:flex;align-items:center;gap:9px;padding:12px 15px;cursor:pointer;font-size:12.5px;font-weight:650;color:var(--primary);transition:background .12s;user-select:none}
+.propose-trigger:hover{background:#f0f5ff}
+.propose-chev{margin-left:auto;font-size:16px;color:#afc0d5;transition:transform .2s}
+.side-card.open .propose-chev{transform:rotate(90deg)}
+.propose-body{border-top:1px solid #eef2f8;padding:13px 14px 14px;background:#f8fafc;display:none;flex-direction:column;gap:9px}
+.side-card.open .propose-body{display:flex}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.attach-body{padding:11px 14px 14px}
+.attach-upload{border:1px dashed #b9c8dc;border-radius:8px;padding:9px 11px;background:#f8fbff;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.attach-lbl{font-size:12px;font-weight:750;color:var(--text)}
+.attach-sub{font-size:10.5px;color:var(--muted)}
+.attach-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border:1px solid #eef2f8;border-radius:8px;background:#fff;margin-bottom:6px}
+.attach-icon{width:32px;height:32px;border-radius:7px;flex:none;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;background:#f1f5f9;color:#64748b}
+.attach-icon.pdf{background:#fff1f2;color:#be123c}
+.attach-icon.doc{background:#eff8ff;color:#0369a1}
+.attach-icon.xls{background:#ecfdf3;color:#15803d}
+.attach-name{font-size:11.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.attach-date{font-size:10px;color:var(--faint)}
+.attach-empty{border:1px dashed var(--line);border-radius:8px;padding:13px;text-align:center;color:var(--faint);font-size:11.5px}
+
+/* ── EDIT GRID (attorney power view) ── */
+.mode-seg{display:flex;align-items:center;gap:3px;background:#eef2f8;border:1px solid #dde5f0;border-radius:999px;padding:3px}
+.mode-seg button{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 13px;border:0;background:transparent;color:#5a6b85;border-radius:999px;font-size:11px;font-weight:750;cursor:pointer;transition:all .13s;white-space:nowrap}
+.mode-seg button:hover{color:var(--navy);background:rgba(255,255,255,.65)}
+.mode-seg button.active{color:#fff;background:var(--primary);box-shadow:0 1px 3px rgba(30,64,175,.28)}
+.egrid-wrap{overflow-x:auto;background:#fff}
+.egrid{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:1120px}
+.egrid th{position:sticky;top:0;z-index:2;background:#f6f8fc;text-align:left;font-size:9px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.egrid td{padding:6px 8px;border-bottom:1px solid #eef2f8;vertical-align:middle}
+.egrid tr.done-row{background:#fbfefc}
+.egrid tr.current-row{background:#f2f7ff}
+.egrid tr.current-row td:first-child{box-shadow:inset 3px 0 0 var(--primary)}
+.egrid tr:hover{background:#f8fbff}
+.egrid tr.done-row:hover{background:#f5fbf7}
+.eg-drag{color:#c3cdda;cursor:grab;font-size:13px;user-select:none;text-align:center;width:28px}
+.eg-drag:hover{color:var(--primary-2)}
+.eg-check{width:24px;height:24px;border-radius:6px;border:2px solid #e2e8f4;background:#fff;color:#cbd5e1;display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;transition:all .13s}
+.eg-check:hover{border-color:#6ee7b7;background:var(--green-bg);color:var(--green)}
+.eg-check.on{border-color:#6ee7b7;background:var(--green);color:#fff}
+.eg-in{width:100%;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--text);font-size:12px;font-weight:600;padding:5px 7px;outline:0;transition:background .12s,border-color .12s,box-shadow .12s;font-family:inherit}
+.eg-in:hover{background:#eef4ff;border-color:#d5e2f7}
+.eg-in:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.eg-in.done-txt{color:#94a3b8;text-decoration:line-through}
+textarea.eg-in{resize:vertical;min-height:32px;line-height:1.35}
+select.eg-in{cursor:pointer;font-weight:700}
+.eg-in.od{color:#dc2626;font-weight:750}
+.eg-saved{border-color:var(--green)!important;box-shadow:0 0 0 2px rgba(5,150,105,.12)!important;background:#fff!important}
+.eg-cur{width:16px;height:16px;border-radius:50%;border:1.5px solid #cbd5e1;cursor:pointer;display:inline-block;transition:all .13s;margin:0 auto}
+.eg-cur.on{background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 3px #d9e7fa}
+.eg-del{border:0;background:none;color:#c3cdda;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;transition:all .12s}
+.eg-del:hover{color:#dc2626;background:#fef2f2}
+.eg-addrow td{background:#f7f9fc;border-top:1px solid var(--line)}
+.eg-add-input{width:100%;border:1px dashed var(--line-strong);border-radius:7px;background:#fff;color:var(--text);font-size:12.5px;padding:7px 10px;outline:0;font-family:inherit;font-weight:600}
+.eg-add-input:focus{border-color:var(--primary-2);border-style:solid;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.eg-add-plus{width:24px;height:24px;border-radius:6px;border:1px dashed #93b4f8;background:#eef3ff;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.edit-note{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);padding:9px 14px;background:#fffbeb;border-bottom:1px solid #fde9c8}
+.edit-note b{color:var(--amber)}
+
+/* ── LOI LEGAL REVIEW ── */
+.home-switch{display:inline-flex;align-items:center;gap:4px;padding:4px;background:#e8eef7;border:1px solid #d4dfed;border-radius:11px;box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
+.home-switch button{height:31px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:#536783;font-size:11.5px;font-weight:800;cursor:pointer;transition:all .13s;white-space:nowrap}
+.home-switch button:hover{background:rgba(255,255,255,.7);color:var(--navy)}
+.home-switch button.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(30,64,175,.12)}
+.home-switch .review-n{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;margin-left:5px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:9.5px;font-weight:900}
+.home-switch button.active .review-n{background:var(--primary-2);color:#fff}
+.review-table td{vertical-align:middle}
+.review-title{font-weight:800;color:var(--navy)}
+.review-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.review-open{color:var(--primary);font-weight:800}
+.review-status{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;background:#fff7ed;color:#c2410c;font-size:10.5px;font-weight:850}
+.review-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#f97316}
+.loi-review-page{height:100%;overflow:auto;padding:14px 18px 22px}
+.loi-review-back{margin-bottom:10px}
+.loi-review-hero{display:flex;align-items:flex-start;gap:18px;padding:18px 20px;border:1px solid #dbe5f2;border-radius:14px;background:linear-gradient(135deg,#fff 0%,#f4f8ff 100%);box-shadow:0 10px 28px rgba(15,39,68,.06);margin-bottom:14px}
+.loi-review-hero-main{min-width:0;flex:1}
+.loi-review-kicker{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#60789b;margin-bottom:4px}
+.loi-review-name{font-size:22px;font-weight:850;letter-spacing:-.35px;color:var(--navy);line-height:1.2}
+.loi-review-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.loi-meta-pill{display:inline-flex;align-items:center;padding:4px 9px;border-radius:99px;background:#fff;border:1px solid #dbe5f2;color:#536783;font-size:10.5px;font-weight:750}
+.loi-review-hero-side{display:grid;grid-template-columns:repeat(2,minmax(110px,1fr));gap:8px;min-width:270px}
+.loi-hero-stat{padding:10px 12px;border:1px solid #dbe5f2;border-radius:10px;background:#fff}
+.loi-hero-stat span{display:block;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#8192ac}
+.loi-hero-stat b{display:block;margin-top:3px;font-size:13px;color:var(--navy)}
+.loi-review-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.loi-review-main{display:flex;flex-direction:column;gap:12px}
+.loi-review-section{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.loi-review-section h3{margin:0;padding:11px 14px;border-bottom:1px solid #e8eef6;background:#f8faff;color:var(--navy);font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.loi-field-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.loi-field{min-height:66px;padding:10px 13px;border-right:1px solid #eef2f7;border-bottom:1px solid #eef2f7}
+.loi-field:nth-child(3n){border-right:0}
+.loi-field label{display:block;font-size:9px;font-weight:850;letter-spacing:.07em;text-transform:uppercase;color:#8192ac;margin-bottom:3px}
+.loi-field div{font-size:12.5px;font-weight:700;color:#173252;white-space:pre-wrap;word-break:break-word}
+.loi-field.wide{grid-column:1/-1;border-right:0}
+.loi-review-side{position:sticky;top:0;display:flex;flex-direction:column;gap:12px}
+.loi-decision-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:15px}
+.loi-decision-card h3{margin:0 0 5px;font-size:15px;color:var(--navy)}
+.loi-decision-card p{margin:0 0 12px;color:var(--muted);font-size:11.5px}
+.loi-note{width:100%;min-height:126px;border:1px solid #cfdaea;border-radius:9px;background:#f8faff;color:var(--text);padding:10px 11px;font-size:12.5px;line-height:1.45;resize:vertical;outline:0}
+.loi-note:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.loi-decision-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.loi-decision-actions .btn{height:38px;font-weight:850}
+.loi-link-warning{padding:10px 12px;border:1px solid #fed7aa;border-radius:9px;background:#fff7ed;color:#9a3412;font-size:11px;font-weight:700;margin-bottom:12px}
+.loi-empty{padding:58px 20px;text-align:center;border:1px dashed #cbd7e6;border-radius:12px;background:#fff;color:var(--muted)}
+.loi-empty b{display:block;color:var(--navy);font-size:15px;margin-bottom:5px}
+@media(max-width:1100px){.loi-review-layout{grid-template-columns:1fr}.loi-review-side{position:static}.loi-review-hero{flex-direction:column}.loi-review-hero-side{width:100%}}
+@media(max-width:760px){.loi-field-grid{grid-template-columns:1fr}.loi-field,.loi-field:nth-child(3n){border-right:0}.loi-review-hero-side{grid-template-columns:1fr}.home-switch{width:100%}.home-switch button{flex:1}}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/><path d="M4 10h16"/></svg>
+    Land Master
+  </div>
+  <div class="crumb" id="crumb"><a onclick="goHome()">Contracts</a></div>
+  <div class="spacer"></div>
+  <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading…</span></span>
+</div>
+
+<div id="banners"></div>
+<div id="view"></div>
+
+<script>
+/* ============================================================
+   LAND MASTER — CONTRACT MANAGEMENT WIDGET
+   Home: searchable list + kanban board of All_Contracts.
+   Detail: Contract_Actions manager — drag/arrow reorder, inline
+   expand edit, quick complete (advances Current_Action), reopen,
+   propose action, Contract_Version attachments.
+   Demo mode when the Creator SDK is absent.
+   ============================================================ */
+
+var CFG = {
+  pageSize: 200, maxPages: 25,
+  reports: {
+    contracts: "All_Contracts",
+    actions: "All_Contract_Actions",
+    versions: "All_Contract_Versions",
+    proformas: "All_Pro_Formas_All_Fields"
+  },
+  forms: { action: "Contract_Actions", contract: "Contract", version: "Contract_Version" },
+  customApis: { reviewLOI: "Review_LOI_Request" }
+};
+
+var DEV_MGRS = ["AD","BB","DW","JS","MT","PS","SH","TB","TM","TP","TW"];
+var ACTION_STATUSES = ["New","Proposed","Approval Rejected","Feasibility","Awaiting WBW DEV","Awaiting WBW LEG","Awaiting WBW CORP","Awaiting Counterparty","Awaiting Approvals","Approved","Complete"];
+var CONTRACT_STATUSES = ["New","Approval Rejected","Feasibility","Awaiting WBW","Awaiting Counterparty","Awaiting Approvals","Approved","Complete"];
+var TYPES = ["Lot","DA","NSSA","Amendment","Acquisition","CCR","Master Services Agreement","Service Agreement"];
+
+var S = {
+  liveSDK:false, demo:false,
+  view:"home", mode:"list", homeSection:"contracts",
+  search:"", fType:"", fStatus:"", loiSearch:"",
+  sortKey:"Contract_Name", sortDir:1,
+  selId:null, showDone:true, expanded:{},
+  actionsMode:"review",
+  contracts:[], actions:[], versions:[], loiReviews:[],
+  loiSelId:null, loiToken:"", deepLink:null,
+  busy:false
+};
+
+/* ---------------- tiny utils ---------------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function attr(s){ return esc(s).replace(/\n/g,"&#10;"); }
+function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
+function truthy(v){ return v===true||v==="true"; }
+function asList(v){ if(v==null||v==="") return []; if(Array.isArray(v)) return v; return [v]; }
+function lookupId(v){ var l=asList(v); if(!l.length) return ""; var f=l[0]; if(typeof f==="object") return String(f.ID||f.id||""); return String(f); }
+function displayValue(v){ var l=asList(v); if(!l.length) return ""; var f=l[0]; if(typeof f==="object") return String(f.display_value||""); return String(f); }
+function listDisplay(v){ return asList(v).map(function(x){ return typeof x==="object"?String(x.display_value||""):String(x); }).filter(Boolean).join(", "); }
+function diag(label,obj){ try{ console.log("[Contracts]",label,obj||""); }catch(e){} }
+function money(v){ var n=parseFloat(String(v==null?"":v).replace(/[$,]/g,"")); if(isNaN(n)) return "—"; return n.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}); }
+function plain(v){ if(v==null||v==="") return "—"; var d=displayValue(v); return d||String(v); }
+function readPageParams(){
+  var out={};
+  function absorb(raw){
+    if(!raw) return;
+    var q=String(raw), qi=q.indexOf("?"); if(qi>=0) q=q.slice(qi+1);
+    var hi=q.indexOf("#"); if(hi>=0) q=q.slice(0,hi);
+    try{ new URLSearchParams(q).forEach(function(v,k){ if(out[k]==null) out[k]=v; }); }catch(e){}
+  }
+  absorb(window.location.search);
+  absorb(window.location.hash);
+  absorb(document.referrer);
+  return out;
+}
+function resolvePageParams(){
+  var fallback=readPageParams();
+  try{
+    if(S.liveSDK && window.ZOHO && ZOHO.CREATOR && ZOHO.CREATOR.UTIL && typeof ZOHO.CREATOR.UTIL.getQueryParams==="function"){
+      return ZOHO.CREATOR.UTIL.getQueryParams().then(function(resp){
+        var p=(resp&&resp.data)||resp||{};
+        Object.keys(fallback).forEach(function(k){if(p[k]==null)p[k]=fallback[k];});
+        return p;
+      },function(){return fallback;});
+    }
+  }catch(e){}
+  return Promise.resolve(fallback);
+}
+
+/* dates: Creator app format is MM/dd/yyyy; date inputs need yyyy-MM-dd */
+function toInput(v){
+  if(!v) return "";
+  var s=String(v).trim(); if(!s) return "";
+  var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/); if(m) return m[3]+"-"+("0"+m[1]).slice(-2)+"-"+("0"+m[2]).slice(-2);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[1]+"-"+m[2]+"-"+m[3];
+  var d=new Date(s); if(!isNaN(d)) return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);
+  return "";
+}
+function toZoho(inputVal){
+  if(!inputVal) return "";
+  var m=String(inputVal).match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return String(inputVal);
+  return m[2]+"/"+m[3]+"/"+m[1];
+}
+function fmtDate(v){ var i=toInput(v); if(!i) return ""; var p=i.split("-"); return p[1]+"/"+p[2]+"/"+p[0]; }
+function todayInput(){ var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function isOverdue(a){ if(truthy(a.Complete)) return false; var d=toInput(a.Due_Date); return !!d && d<todayInput(); }
+
+/* ---------------- status / banners ---------------- */
+function setStatus(mode,text){ $("statusdot").className="dot"+(mode==="ok"?"":mode==="warn"?" warn":" err"); $("statustext").textContent=text; }
+function banner(kind,msg){
+  var b=$("banners");
+  b.innerHTML='<div class="'+(kind==="err"?"err-banner":"ok-banner")+'">'+esc(msg)+(kind==="err"?'<button onclick="document.getElementById(\'banners\').innerHTML=\'\'">×</button>':'')+'</div>';
+  if(kind!=="err") setTimeout(function(){ b.innerHTML=""; },3500);
+}
+
+/* ---------------- SDK layer (envelope machinery, proven in v7 widget) ---------------- */
+function responseBad(resp){
+  if(!resp) return true;
+  var code=resp.code||(resp.result&&resp.result.code);
+  if(code && code!==3000 && code!=="3000") return true;
+  if(resp.error||(resp.result&&resp.result.error)) return true;
+  return false;
+}
+function isEmptyCode(resp){ var code=resp&&(resp.code||(resp.result&&resp.result.code)); return String(code)==="3100"||String(code)==="9280"; }
+function sdkGetAll(reportName,criteria){
+  if(!S.liveSDK) return Promise.resolve([]);
+  var all=[];
+  function page(p){
+    var payload={reportName:reportName,page:p,pageSize:CFG.pageSize};
+    if(criteria) payload.criteria=criteria;
+    return ZOHO.CREATOR.API.getAllRecords(payload).then(function(resp){
+      if(isEmptyCode(resp)) return all;
+      if(responseBad(resp)) return Promise.reject(resp);
+      var rows=(resp&&resp.data)||[];
+      all=all.concat(rows);
+      if(rows.length===CFG.pageSize && p<CFG.maxPages) return page(p+1);
+      diag("Read complete: "+reportName,{rows:all.length});
+      return all;
+    },function(err){
+      var msg=(err&&(err.message||err.responseText||""))+"";
+      if(err&&typeof err.responseText==="string"){ try{ if(isEmptyCode(JSON.parse(err.responseText))) return all; }catch(e){} }
+      if(isEmptyCode(err)) return all;
+      if(/9280|3100|no records|no data available|record(s)? not found/i.test(msg)) return all;
+      return Promise.reject(err);
+    });
+  }
+  return page(1);
+}
+
+function sdkInvoke(config){
+  if(!S.liveSDK) return Promise.resolve({details:{output:JSON.stringify({success:true,decision:config.payload&&config.payload.decision,contractId:"demo_loi_contract"})}});
+  if(ZOHO.CREATOR.API && typeof ZOHO.CREATOR.API.invokeCustomApi==="function") return ZOHO.CREATOR.API.invokeCustomApi(config);
+  if(ZOHO.CREATOR.DATA && typeof ZOHO.CREATOR.DATA.invokeCustomApi==="function") return ZOHO.CREATOR.DATA.invokeCustomApi(config);
+  return Promise.reject({message:"invokeCustomApi unavailable"});
+}
+function unwrapApi(resp){
+  var c=[resp,resp&&resp.details,resp&&resp.details&&resp.details.output,resp&&resp.output,resp&&resp.result,resp&&resp.response];
+  for(var i=0;i<c.length;i++){
+    var v=c[i]; if(v==null) continue;
+    if(typeof v==="string"){
+      var t=v.trim(); if(t.charAt(0)==="{"||t.charAt(0)==="["){ try{return JSON.parse(t);}catch(e){} }
+    }else if(typeof v==="object" && (v.success!=null||v.contractId||v.message||v.error)) return v;
+  }
+  return resp;
+}
+function loadPendingLOIs(){
+  var criteria='LOI_Legal_Status == "Pending Approval"';
+  return sdkGetAll(CFG.reports.proformas,criteria).catch(function(){
+    return sdkGetAll(CFG.reports.proformas).then(function(rows){
+      return rows.filter(function(r){ return String(r.LOI_Legal_Status||"")==="Pending Approval"; });
+    });
+  }).then(function(rows){
+    return rows.filter(function(r){ return String(r.LOI_Legal_Status||"")==="Pending Approval"; });
+  });
+}
+function isSuccess(resp){
+  var code=resp&&resp.code;
+  var hasErr=!!(resp&&(resp.error||(resp.result&&resp.result.error)));
+  var hasId=!!(resp&&((resp.data&&(resp.data.ID||resp.data.id))||(resp.result&&resp.result.data&&(resp.result.data.ID||resp.result.data.id))));
+  return ((code===3000||(resp&&resp.result&&resp.result.code===3000))&&!hasErr)||(!hasErr&&hasId&&code==null);
+}
+function buildEnvelopes(recordId,fieldData,reportName){
+  var rid=String(recordId);
+  var appName=(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName)||undefined;
+  return [
+    {label:"data:{data}",args:{reportName:reportName,id:rid,data:{data:fieldData}}},
+    {label:"data",args:{reportName:reportName,id:rid,data:fieldData}},
+    {label:"data:{input}",args:{reportName:reportName,id:rid,data:{input:fieldData}}},
+    {label:"input",args:{reportName:reportName,id:rid,input:fieldData}},
+    {label:"payload",args:{reportName:reportName,id:rid,payload:{data:fieldData}}},
+    {label:"appName+data",args:{appName:appName,reportName:reportName,id:rid,data:fieldData}}
+  ];
+}
+function tryEnvelopes(recordId,fieldData,envelopes,idx){
+  if(idx>=envelopes.length) return Promise.reject({message:"No envelope accepted for "+recordId});
+  var env=envelopes[idx];
+  return ZOHO.CREATOR.API.updateRecord(env.args).then(function(resp){
+    if(isSuccess(resp)) return resp;
+    throw resp;
+  }).catch(function(err){
+    var code=err&&err.code;
+    if(!code&&err&&typeof err.responseText==="string"){ try{ code=JSON.parse(err.responseText).code; }catch(e){} }
+    if(code===2945) return tryEnvelopes(recordId,fieldData,envelopes,idx+1);
+    diag("Update failed",{recordId:String(recordId),fields:fieldData,error:err});
+    return Promise.reject(err);
+  });
+}
+function updateRecord(recordId,fieldData,reportName){
+  if(S.demo) return Promise.resolve({code:3000});
+  return tryEnvelopes(recordId,fieldData,buildEnvelopes(recordId,fieldData,reportName),0);
+}
+function isCreateSuccess(resp){
+  var code=resp&&resp.code;
+  var hasErr=!!(resp&&(resp.error||(resp.result&&resp.result.error)));
+  var hasId=!!(resp&&((resp.data&&(resp.data.ID||resp.data.id))||(resp.result&&resp.result.data&&(resp.result.data.ID||resp.result.data.id))));
+  return (!hasErr&&(code===3000||hasId));
+}
+function buildCreateEnvelopes(formName,fieldData){
+  var appName=(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName)||undefined;
+  return [
+    {label:"data:{data}",args:{formName:formName,data:{data:fieldData}}},
+    {label:"data",args:{formName:formName,data:fieldData}},
+    {label:"appName+data:{data}",args:{appName:appName,formName:formName,data:{data:fieldData}}},
+    {label:"appName+data",args:{appName:appName,formName:formName,data:fieldData}},
+    {label:"input",args:{formName:formName,input:fieldData}}
+  ];
+}
+function tryCreateEnvelopes(formName,fieldData,envelopes,idx){
+  if(idx>=envelopes.length) return Promise.reject({message:"No create envelope accepted for "+formName});
+  return ZOHO.CREATOR.API.addRecord(envelopes[idx].args).then(function(resp){
+    if(isCreateSuccess(resp)||isSuccess(resp)) return resp;
+    throw resp;
+  }).catch(function(err){
+    var code=err&&err.code;
+    if(!code&&err&&typeof err.responseText==="string"){ try{ code=JSON.parse(err.responseText).code; }catch(e){} }
+    if(code===2945) return tryCreateEnvelopes(formName,fieldData,envelopes,idx+1);
+    return Promise.reject(err);
+  });
+}
+function createRecord(formName,fieldData){
+  if(S.demo) return Promise.resolve({code:3000,data:{ID:"demo_"+Date.now()}});
+  return tryCreateEnvelopes(formName,fieldData,buildCreateEnvelopes(formName,fieldData),0);
+}
+function openParent(url){
+  try{ ZOHO.CREATOR.UTIL.navigateParentURL({action:"open",url:url,window:"popup"}); }
+  catch(e){ banner("err","Available inside Creator only."); }
+}
+function errText(e){
+  if(!e) return "Unknown error";
+  if(typeof e==="string") return e;
+  return e.message||e.responseText||JSON.stringify(e).slice(0,200);
+}
+
+/* ---------------- derived data ---------------- */
+function findContract(id){ for(var i=0;i<S.contracts.length;i++) if(String(S.contracts[i].ID)===String(id)) return S.contracts[i]; return null; }
+function findAction(id){ for(var i=0;i<S.actions.length;i++) if(String(S.actions[i].ID)===String(id)) return S.actions[i]; return null; }
+function actionsFor(cid){
+  return S.actions.filter(function(a){ return lookupId(a.Contract1)===String(cid); })
+    .sort(function(a,b){ return num(a.Sort_Order)-num(b.Sort_Order); });
+}
+function versionsFor(cid){
+  return S.versions.filter(function(v){ return lookupId(v.Contract1)===String(cid); })
+    .sort(function(a,b){ return toInput(b.Date_field1)<toInput(a.Date_field1)?-1:1; });
+}
+function statsFor(cid){
+  var list=actionsFor(cid),st={open:0,done:0,current:0,overdue:0,total:list.length,pct:0};
+  list.forEach(function(a){
+    if(truthy(a.Complete)) st.done++;
+    else { st.open++; if(isOverdue(a)) st.overdue++; }
+    if(truthy(a.Current_Action)) st.current++;
+  });
+  if(st.total) st.pct=Math.round(st.done*100/st.total);
+  return st;
+}
+function currentActionText(cid){
+  var list=actionsFor(cid);
+  for(var i=0;i<list.length;i++) if(truthy(list[i].Current_Action)&&!truthy(list[i].Complete)) return String(list[i].Contract_Action||"");
+  var c=findContract(cid);
+  return c?String(c.Current_Action||""):"";
+}
+
+/* ---------------- chips ---------------- */
+var STATUS_COLORS={
+  "New":["#eef2f7","#5c7394"],"Proposed":["#fef3c7","#b45309"],
+  "Feasibility":["#e0f2fe","#0369a1"],"Approval Rejected":["#fee2e2","#b91c1c"],
+  "Awaiting WBW":["#fef3c7","#b45309"],"Awaiting WBW DEV":["#fef3c7","#b45309"],
+  "Awaiting WBW LEG":["#fef3c7","#b45309"],"Awaiting WBW CORP":["#fef3c7","#b45309"],
+  "Awaiting Counterparty":["#dbeafe","#1e40af"],"Awaiting Approvals":["#e0e7ff","#3730a3"],
+  "Approved":["#ccfbf1","#0f766e"],"Complete":["#d1fae5","#047857"],
+  "Current":["#dbeafe","#1e40af"],"Overdue":["#fee2e2","#dc2626"],"Open":["#f1f5f9","#64748b"]
+};
+function chip(label){
+  var c=STATUS_COLORS[label]||["#eef2f7","#5c7394"];
+  return '<span class="tag" style="background:'+c[0]+';color:'+c[1]+'">'+esc(label)+'</span>';
+}
+
+/* ============================================================ HOME ============================================================ */
+function goHome(){ S.view="home"; S.selId=null; S.loiSelId=null; renderAll(); }
+function showContracts(){ S.homeSection="contracts"; S.view="home"; S.selId=null; S.loiSelId=null; renderAll(); }
+function showLOIReviews(){ S.homeSection="loi"; S.view="home"; S.selId=null; S.loiSelId=null; renderAll(); }
+function openContract(id){ S.homeSection="contracts"; S.view="detail"; S.selId=String(id); S.loiSelId=null; S.expanded={}; var list=actionsFor(id); list.forEach(function(a){ if(truthy(a.Current_Action)&&!truthy(a.Complete)) S.expanded[String(a.ID)]=true; }); renderAll(); }
+function findLOI(id){ return S.loiReviews.find(function(r){ return String(r.ID)===String(id); }); }
+function openLOIReview(id,token){ S.homeSection="loi"; S.view="loiReview"; S.loiSelId=String(id); S.selId=null; S.loiToken=String(token||""); renderAll(); }
+function setMode(m){ S.mode=m; renderAll(); }
+function setType(t){ S.fType=t; renderAll(); }
+function newContract(){
+  if(S.demo){ banner("ok","Demo mode — inside Creator this opens the Add Contract form."); return; }
+  openParent("#Form:"+CFG.forms.contract);
+}
+function filteredContracts(){
+  var q=S.search.toLowerCase();
+  return S.contracts.filter(function(c){
+    if(truthy(c.Archive)) return false;
+    if(S.fType && String(c.Contract_Type||"")!==S.fType) return false;
+    if(S.fStatus && String(c.Status||"")!==S.fStatus) return false;
+    if(q){
+      var hay=(String(c.Contract_Name||"")+" "+displayValue(c.Subdivision1)+" "+displayValue(c.Builder)+" "+String(c.Contract_Type||"")+" "+currentActionText(c.ID)).toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+}
+function sortContracts(list){
+  var k=S.sortKey,d=S.sortDir;
+  return list.slice().sort(function(a,b){
+    var va,vb;
+    if(k==="Subdivision1"){ va=displayValue(a.Subdivision1); vb=displayValue(b.Subdivision1); }
+    else if(k==="Builder"){ va=displayValue(a.Builder); vb=displayValue(b.Builder); }
+    else if(k==="pct"){ va=statsFor(a.ID).pct; vb=statsFor(b.ID).pct; return (va-vb)*d; }
+    else { va=String(a[k]||""); vb=String(b[k]||""); }
+    return String(va).localeCompare(String(vb))*d;
+  });
+}
+function sortBy(k){ if(S.sortKey===k) S.sortDir*=-1; else { S.sortKey=k; S.sortDir=1; } renderAll(); }
+
+
+function homeSwitch(active){
+  var n=S.loiReviews.length;
+  return '<div style="padding:14px 18px 0"><div class="home-switch">'
+    +'<button class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">Contracts</button>'
+    +'<button class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">LOI Reviews <span class="review-n">'+n+'</span></button>'
+    +'</div></div>';
+}
+function filteredLOIs(){
+  var q=String(S.loiSearch||"").toLowerCase();
+  return S.loiReviews.filter(function(r){
+    if(String(r.LOI_Legal_Status||"")!=="Pending Approval") return false;
+    if(!q) return true;
+    var hay=[r.Name,r.Seller,displayValue(r.Buying_Entity),r.Territory,r.Property_County,r.Property_City,r.CAD_ID].join(" ").toLowerCase();
+    return hay.indexOf(q)>=0;
+  });
+}
+function renderLOIReviews(){
+  var list=filteredLOIs();
+  $("crumb").innerHTML='<a onclick="showContracts()">Contracts</a><span class="sep">/</span><strong>LOI Reviews</strong>';
+  var h=homeSwitch("loi")+'<div class="filterrow">'
+    +'<h1>LOI Reviews</h1><span class="scope-count">'+list.length+'</span>'
+    +'<div class="searchbox"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>'
+    +'<input id="loiSearch" placeholder="Search pending LOIs…" value="'+attr(S.loiSearch)+'" autocomplete="off"/></div>'
+    +'<div class="spacer"></div><button class="btn" onclick="loadData()">Refresh</button></div>';
+  if(!list.length){
+    h+='<div class="workarea"><div class="loi-empty"><b>No LOIs are waiting on Legal</b>Pending submissions will appear here automatically.</div></div>';
+  }else{
+    var rows=list.map(function(r){
+      return '<tr onclick="openLOIReview(\''+esc(r.ID)+'\')">'
+        +'<td><div class="review-title">'+esc(r.Name||("Pro Forma "+r.ID))+'</div><div class="review-sub">'+esc(r.Territory||"—")+'</div></td>'
+        +'<td>'+esc(r.Seller||"—")+'</td>'
+        +'<td>'+esc(displayValue(r.Buying_Entity)||"—")+'</td>'
+        +'<td>'+esc(r.Total_Acres||"—")+'</td>'
+        +'<td>'+money(r.Land_Cost_Acre)+'</td>'
+        +'<td>'+money(r.Earnest_Money)+'</td>'
+        +'<td>'+esc(fmtDate(r.Response_Date)||"—")+'</td>'
+        +'<td><span class="review-status">Pending Legal</span></td>'
+        +'<td class="review-open">Review →</td></tr>';
+    }).join("");
+    h+='<div class="workarea"><div class="tablecard"><div class="tscroll"><table class="wtable review-table"><thead><tr>'
+      +'<th>Pro Forma</th><th>Seller</th><th>Purchasing Company</th><th>Acres</th><th>$/Acre</th><th>Earnest</th><th>Response Date</th><th>Status</th><th></th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table></div></div></div>';
+  }
+  $("view").innerHTML=h;
+  var si=$("loiSearch");
+  if(si) si.addEventListener("input",function(){ S.loiSearch=si.value; var pos=si.selectionStart; renderAll(); var s2=$("loiSearch"); if(s2){s2.focus();s2.setSelectionRange(pos,pos);} });
+}
+function loiField(label,value,wide){
+  return '<div class="loi-field'+(wide?' wide':'')+'"><label>'+esc(label)+'</label><div>'+esc(value==null||value===""?"—":value)+'</div></div>';
+}
+function renderLOIReview(){
+  var r=findLOI(S.loiSelId);
+  if(!r){ S.view="home"; S.homeSection="loi"; renderAll(); return; }
+  $("crumb").innerHTML='<a onclick="showContracts()">Contracts</a><span class="sep">/</span><a onclick="showLOIReviews()">LOI Reviews</a><span class="sep">/</span><strong>'+esc(r.Name||"LOI")+'</strong>';
+  var recordToken=String(r.LOI_Approval_Token||"");
+  var linkMismatch=!!S.loiToken && S.loiToken!==recordToken;
+  var property=loiField("Purchasing Company",displayValue(r.Buying_Entity))
+    +loiField("CAD ID",r.CAD_ID)+loiField("Property County",r.Property_County)
+    +loiField("Property City",r.Property_City)+loiField("Total Acres",r.Total_Acres)
+    +loiField("Amount per Acre",money(r.Land_Cost_Acre));
+  var seller=loiField("Seller",r.Seller)+loiField("Authorized Signer",r.Authorized_Signer_for_Seller)
+    +loiField("Seller Email",r.Seller_Email)+loiField("Seller Phone",r.Seller_Phone)
+    +loiField("Property Address",r.Street_Address,true)+loiField("Seller City / State / ZIP",r.Seller_City_State_ZIP,true);
+  var terms=loiField("Earnest Money",money(r.Earnest_Money))+loiField("Initial Feasibility Days",r.Initial_Feasibility_Days)
+    +loiField("Extensions",r.Extensions)+loiField("Days per Extension",r.Days_per_Extension)
+    +loiField("Amount per Extension",money(r.Amount_per_Extension))+loiField("Closing Days after Feasibility",r.Closing_Days_Feas)
+    +loiField("Response Date",fmtDate(r.Response_Date));
+  var routing=loiField("Buyer Broker",r.Broker_Buyer)+loiField("Seller Broker",r.Broker_Seller)
+    +loiField("Acquisition Email",r.Acquisition_Email)+loiField("Special Provisions",r.Special_Provisions,true);
+  var warning=linkMismatch?'<div class="loi-link-warning">The approval token ID in this email link does not match the current request. Open the request from the LOI Reviews queue instead.</div>':'';
+  var h='<div class="loi-review-page"><div class="loi-review-back"><button class="btn ghost sm" onclick="showLOIReviews()">← All LOI Reviews</button></div>'
+    +'<div class="loi-review-hero"><div class="loi-review-hero-main"><div class="loi-review-kicker">Legal LOI Review</div><div class="loi-review-name">'+esc(r.Name||"Pro Forma LOI")+'</div>'
+    +'<div class="loi-review-meta"><span class="loi-meta-pill">'+esc(r.Territory||"No territory")+'</span><span class="loi-meta-pill">'+esc(r.Property_County||"County not set")+'</span><span class="review-status">Pending Legal</span></div></div>'
+    +'<div class="loi-review-hero-side"><div class="loi-hero-stat"><span>Purchase Price</span><b>'+money(r.Land_Cost)+'</b></div><div class="loi-hero-stat"><span>Price / Acre</span><b>'+money(r.Land_Cost_Acre)+'</b></div><div class="loi-hero-stat"><span>Acres</span><b>'+esc(r.Total_Acres||"—")+'</b></div><div class="loi-hero-stat"><span>Earnest Money</span><b>'+money(r.Earnest_Money)+'</b></div></div></div>'
+    +'<div class="loi-review-layout"><div class="loi-review-main">'
+    +'<section class="loi-review-section"><h3>Seller</h3><div class="loi-field-grid">'+seller+'</div></section>'
+    +'<section class="loi-review-section"><h3>Property & Purchase</h3><div class="loi-field-grid">'+property+'</div></section>'
+    +'<section class="loi-review-section"><h3>Feasibility & Closing</h3><div class="loi-field-grid">'+terms+'</div></section>'
+    +'<section class="loi-review-section"><h3>Routing & Provisions</h3><div class="loi-field-grid">'+routing+'</div></section>'
+    +'</div><aside class="loi-review-side"><div class="loi-decision-card">'+warning+'<h3>Legal Decision</h3><p>Approval creates the Acquisition Contract and attaches the generated LOI. Rejection returns the LOI to the Proforma owner.</p>'
+    +'<label class="fl" for="loiLegalNote">Legal note</label><textarea class="loi-note" id="loiLegalNote" placeholder="Optional approval note; required for rejection">'+esc(r.LOI_Legal_Note||"")+'</textarea>'
+    +'<div class="loi-decision-actions"><button class="btn orange" onclick="submitLOIReview(\'REJECT\')">Reject</button><button class="btn green" onclick="submitLOIReview(\'APPROVE\')">Approve & Create Contract</button></div></div></aside></div></div>';
+  $("view").innerHTML=h;
+}
+function refreshAfterLOIReview(out,decision){
+  return Promise.all([
+    sdkGetAll(CFG.reports.contracts),sdkGetAll(CFG.reports.actions),sdkGetAll(CFG.reports.versions).catch(function(){return [];}),loadPendingLOIs()
+  ]).then(function(res){
+    S.contracts=res[0];S.actions=res[1];S.versions=res[2];S.loiReviews=res[3];
+    if(decision==="APPROVE" && out.contractId){ openContract(out.contractId); banner("ok","LOI approved and Contract created."); }
+    else { S.view="home";S.homeSection="loi";S.loiSelId=null;renderAll();banner("ok","LOI rejected and returned to the Proforma."); }
+  });
+}
+function submitLOIReview(decision){
+  if(S.busy) return;
+  var r=findLOI(S.loiSelId); if(!r){banner("err","LOI request not found.");return;}
+  var note=($("loiLegalNote")&&$("loiLegalNote").value||"").trim();
+  if(decision==="REJECT" && !note){banner("err","Enter a Legal note explaining the rejection.");return;}
+  var prompt=decision==="APPROVE"?"Approve this LOI and create the Acquisition Contract?":"Reject this LOI and return it to the Proforma owner?";
+  if(!window.confirm(prompt)) return;
+  S.busy=true;setStatus("warn",decision==="APPROVE"?"Creating Contract…":"Rejecting LOI…");
+  sdkInvoke({api_name:CFG.customApis.reviewLOI,http_method:"POST",content_type:"application/json",payload:{proformaId:String(r.ID),tokenId:String(r.LOI_Approval_Token||S.loiToken||""),decision:decision,legalNote:note}})
+    .then(function(resp){
+      var out=unwrapApi(resp); if(!out||out.success!==true) throw {message:(out&&(out.message||out.error))||"LOI review failed",raw:resp};
+      return refreshAfterLOIReview(out,decision);
+    }).catch(function(e){banner("err","LOI review failed: "+errText(e));setStatus("err","Review failed");})
+    .finally(function(){S.busy=false;if($("statustext").textContent!=="Review failed")setStatus("ok",S.demo?"Demo data":"Connected");});
+}
+
+function renderHome(){
+  var list=sortContracts(filteredContracts());
+  var typeChips=['<button class="chip-f'+(S.fType===""?" active":"")+'" onclick="setType(\'\')">All</button>'];
+  ["Lot","DA","NSSA","Amendment","Acquisition"].forEach(function(t){
+    typeChips.push('<button class="chip-f'+(S.fType===t?" active":"")+'" onclick="setType(\''+t+'\')">'+esc(t)+'</button>');
+  });
+  var h=homeSwitch("contracts")+'<div class="filterrow">'
+    +'<h1>Contracts</h1><span class="scope-count">'+list.length+'</span>'
+    +'<div class="searchbox"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>'
+    +'<input id="search" placeholder="Search contracts, subdivisions, builders…" value="'+attr(S.search)+'" autocomplete="off"/></div>'
+    +'<div class="chiprow">'+typeChips.join("")+'</div>'
+    +'<select class="filter" id="fStatus"><option value="">All statuses</option>'
+    +CONTRACT_STATUSES.map(function(s){ return '<option'+(S.fStatus===s?" selected":"")+'>'+esc(s)+'</option>'; }).join("")
+    +'</select>'
+    +'<div class="spacer"></div>'
+    +'<div class="seg"><button class="'+(S.mode==="list"?"active":"")+'" onclick="setMode(\'list\')">List</button>'
+    +'<button class="'+(S.mode==="board"?"active":"")+'" onclick="setMode(\'board\')">Board</button></div>'
+    +'<button class="btn primary" onclick="newContract()">+ New Contract</button>'
+    +'</div>';
+  h+='<div class="workarea">'+(S.mode==="list"?renderTable(list):renderBoard(list))+'</div>';
+  $("view").innerHTML=h;
+  var si=$("search");
+  si.addEventListener("input",function(){ S.search=si.value; var pos=si.selectionStart; renderAll(); var s2=$("search"); s2.focus(); s2.setSelectionRange(pos,pos); });
+  $("fStatus").addEventListener("change",function(){ S.fStatus=$("fStatus").value; renderAll(); });
+}
+function th(label,key,cls){ return '<th class="'+(S.sortKey===key?"sorted":"")+(cls?" "+cls:"")+'" onclick="sortBy(\''+key+'\')">'+label+(S.sortKey===key?(S.sortDir>0?" ↑":" ↓"):"")+'</th>'; }
+function renderTable(list){
+  if(!list.length) return '<div class="tablecard"><div class="empty"><b>No contracts match</b>Adjust the search or filters.</div></div>';
+  var rows=list.map(function(c){
+    var st=statsFor(c.ID);
+    return '<tr onclick="openContract(\''+c.ID+'\')">'
+      +'<td class="cname">'+esc(c.Contract_Name||("Contract "+c.ID))+'</td>'
+      +'<td>'+esc(c.Contract_Type||"—")+'</td>'
+      +'<td>'+chip(String(c.Status||"New"))+'</td>'
+      +'<td class="subtle">'+esc(displayValue(c.Subdivision1)||"—")+'</td>'
+      +'<td class="subtle">'+esc(displayValue(c.Builder)||"—")+'</td>'
+      +'<td class="subtle" title="'+attr(currentActionText(c.ID))+'">'+esc(currentActionText(c.ID)||"—")+'</td>'
+      +'<td><div class="progress-cell"><div class="progress"><i style="width:'+st.pct+'%"></i></div><span class="progress-n">'+st.done+'/'+st.total+'</span></div></td>'
+      +'</tr>';
+  }).join("");
+  return '<div class="tablecard"><div class="tscroll"><table class="wtable"><thead><tr>'
+    +th("Contract Name","Contract_Name")+th("Type","Contract_Type")+th("Status","Status")
+    +th("Subdivision","Subdivision1")+th("Builder","Builder")+"<th>Current Action</th>"+th("Progress","pct")
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+var COL_BARS={"New":"#8ea0bd","Approval Rejected":"#b91c1c","Feasibility":"#0369a1","Awaiting WBW":"#b45309","Awaiting Counterparty":"#1e40af","Awaiting Approvals":"#3730a3","Approved":"#0f766e","Complete":"#047857"};
+function renderBoard(list){
+  var cols=CONTRACT_STATUSES.map(function(s){
+    var cards=list.filter(function(c){ return String(c.Status||"New")===s; });
+    var inner=cards.map(function(c){
+      var st=statsFor(c.ID);
+      return '<div class="bcard" onclick="openContract(\''+c.ID+'\')">'
+        +'<div class="bcard-name">'+esc(c.Contract_Name||("Contract "+c.ID))+'</div>'
+        +(currentActionText(c.ID)?'<div class="bcard-action">'+esc(currentActionText(c.ID))+'</div>':'')
+        +'<div class="bcard-foot"><span class="bcard-builder">'+esc(displayValue(c.Builder)||displayValue(c.Subdivision1)||"—")+'</span><span class="bcard-type">'+esc(c.Contract_Type||"")+'</span></div>'
+        +(st.total?'<div class="progress"><i style="width:'+st.pct+'%"></i></div>':'')
+        +'</div>';
+    }).join("");
+    return '<div class="bcol"><div class="bcol-head"><span class="bar" style="background:'+(COL_BARS[s]||"#8ea0bd")+'"></span>'+esc(s)+'<span class="n">'+cards.length+'</span></div><div class="bcol-cards">'+inner+'</div></div>';
+  }).join("");
+  return '<div class="boardwrap">'+cols+'</div>';
+}
+
+/* ============================================================ DETAIL ============================================================ */
+function toggleDone(){ S.showDone=!S.showDone; renderAll(); }
+function toggleRow(id){ if(S.expanded[id]) delete S.expanded[id]; else S.expanded[id]=true; renderAll(); }
+function togglePropose(){ var el=$("proposeCard"); if(el) el.classList.toggle("open"); }
+function toggleAdd(){ var el=$("addRow"); if(el) el.classList.toggle("open"); }
+function setActionsMode(m){ S.actionsMode=m; renderAll(); }
+function addFile(){
+  if(S.demo){ banner("ok","Demo mode — inside Creator this opens the Contract Version form."); return; }
+  openParent("#Form:"+CFG.forms.version+"?Contract1="+S.selId);
+}
+
+function renderDetail(){
+  var c=findContract(S.selId);
+  if(!c){ goHome(); return; }
+  var st=statsFor(c.ID);
+  var all=actionsFor(c.ID);
+  var shown=S.showDone?all:all.filter(function(a){ return !truthy(a.Complete); });
+
+  $("crumb").innerHTML='<a onclick="goHome()">Contracts</a><span class="sep">/</span><strong>'+esc(c.Contract_Name||"Contract")+'</strong>';
+
+  var strip='<div class="info-strip">'
+    +'<div class="info-name-block"><div class="info-kicker">'+(S.actionsMode==="edit"?"Edit Contract Actions":"Dev Manager Review")+'</div><div class="info-name">'+esc(c.Contract_Name||("Contract "+c.ID))+'</div></div>'
+    +(c.Contract_Type?'<div class="info-field"><div class="info-lbl">Type</div><div class="info-val">'+esc(c.Contract_Type)+'</div></div>':'')
+    +(displayValue(c.Subdivision1)?'<div class="info-field"><div class="info-lbl">Subdivision</div><div class="info-val">'+esc(displayValue(c.Subdivision1))+'</div></div>':'')
+    +(displayValue(c.Builder)?'<div class="info-field"><div class="info-lbl">Builder</div><div class="info-val">'+esc(displayValue(c.Builder))+'</div></div>':'')
+    +(c.Status?'<div class="info-field"><div class="info-lbl">Status</div><div class="info-val">'+chip(String(c.Status))+'</div></div>':'')
+    +(c.Number_of_Lots?'<div class="info-field"><div class="info-lbl">Lots</div><div class="info-val">'+esc(c.Number_of_Lots)+' total</div></div>':'')
+    +'</div>';
+
+  var modeSeg='<div class="mode-seg">'
+    +'<button class="'+(S.actionsMode==="review"?"active":"")+'" onclick="setActionsMode(\'review\')">Review</button>'
+    +'<button class="'+(S.actionsMode==="edit"?"active":"")+'" onclick="setActionsMode(\'edit\')">Edit</button>'
+    +'</div>';
+
+  var actionsCard;
+  if(S.actionsMode==="edit"){
+    actionsCard='<section class="acard-shell">'
+      +'<div class="ac-head"><div><h2 class="ac-title">Edit Actions</h2><div class="ac-sub">Attorney workspace · edit any field inline · add actions directly</div></div>'
+      +'<div class="spacer"></div>'+modeSeg
+      +'<button class="toggle-btn'+(S.showDone?" on":"")+'" onclick="toggleDone()"><span class="toggle-track"><span class="toggle-knob"></span></span>Show Complete</button>'
+      +'</div>'
+      +'<div class="edit-note">✎ <span><b>Edit mode</b> — changes save on blur. New actions are added directly (no proposal step).</span></div>'
+      +renderEditGrid(c.ID,shown)
+      +'</section>';
+  } else {
+    var rowsHtml=shown.length?shown.map(function(a){ return actionRow(a); }).join("")
+      :'<div class="empty" style="background:#fff;border:1px dashed var(--line);border-radius:10px;"><b>'+(all.length?"No open actions":"No actions yet")+'</b>'+(all.length?"Toggle Show Complete to review completed actions.":"Propose the first action below.")+'</div>';
+    var addRow='<div class="add-row" id="addRow">'
+      +'<div class="add-row-head" onclick="toggleAdd()"><span class="add-plus">+</span>Add a new proposed action…</div>'
+      +'<div class="add-form">'+proposeFields("a_")+'<div class="form-actions"><button class="btn primary" onclick="proposeAction(\'a_\')">Propose Action</button><button class="btn ghost" onclick="toggleAdd()">Cancel</button></div></div>'
+      +'</div>';
+    actionsCard='<section class="acard-shell">'
+      +'<div class="ac-head"><div><h2 class="ac-title">Actions</h2><div class="ac-sub">Drag ⠿ or use arrows to reorder · click a row to edit</div></div>'
+      +'<div class="spacer"></div>'+modeSeg
+      +'<button class="toggle-btn'+(S.showDone?" on":"")+'" onclick="toggleDone()"><span class="toggle-track"><span class="toggle-knob"></span></span>Show Complete</button>'
+      +'</div>'
+      +'<div class="alist" id="alist">'+rowsHtml+addRow+'</div>'
+      +'</section>';
+  }
+
+  var side='<aside class="side">'
+    +'<div class="side-card"><div class="stats-grid">'
+    +'<div class="stat-cell stat-open"><div class="stat-n">'+st.open+'</div><div class="stat-t">Open</div></div>'
+    +'<div class="stat-cell stat-curr"><div class="stat-n">'+st.current+'</div><div class="stat-t">Current</div></div>'
+    +'<div class="stat-cell stat-over"><div class="stat-n">'+st.overdue+'</div><div class="stat-t">Overdue</div></div>'
+    +'<div class="stat-cell stat-done"><div class="stat-n">'+st.done+'</div><div class="stat-t">Done</div></div>'
+    +'</div><div class="stats-prog"><div class="stats-prog-lbl"><span><b>'+st.done+'</b> of <b>'+st.total+'</b> complete</span><span class="stats-prog-pct">'+st.pct+'%</span></div>'
+    +'<div class="progress" style="height:7px"><i style="width:'+st.pct+'%"></i></div></div></div>'
+
+    +(S.actionsMode==="review"
+      ?'<div class="side-card" id="proposeCard"><div class="dark-head"><div><div class="dark-kicker">New Action</div><div class="dark-title">Propose Action</div></div></div>'
+        +'<div class="propose-trigger" onclick="togglePropose()"><span class="add-plus">+</span>Add a new proposed action<span class="propose-chev">›</span></div>'
+        +'<div class="propose-body">'+proposeFields("p_")+'<button class="btn primary" style="width:100%;height:38px;font-weight:800;letter-spacing:.05em;text-transform:uppercase" onclick="proposeAction(\'p_\')">Propose Action</button></div></div>'
+      :'')
+
+    +attachCard(c.ID)
+    +'</aside>';
+
+  $("view").innerHTML='<div class="detailwrap">'
+    +'<div style="padding:12px 0 10px"><button class="btn ghost sm" onclick="goHome()">← All Contracts</button></div>'
+    +strip+'<div class="dgrid">'+actionsCard+side+'</div></div>';
+  if(S.actionsMode==="review") wireDrag(); else wireEditGrid();
+}
+
+function devMgrSelect(id,val){
+  return '<select class="input" id="'+id+'"><option value="">— Select —</option>'
+    +DEV_MGRS.map(function(d){ return '<option'+(d===val?" selected":"")+'>'+d+'</option>'; }).join("")+'</select>';
+}
+function statusSelect(id,val){
+  return '<select class="input" id="'+id+'">'
+    +ACTION_STATUSES.map(function(s){ return '<option'+(s===val?" selected":"")+'>'+esc(s)+'</option>'; }).join("")+'</select>';
+}
+
+function actionRow(a){
+  var id=String(a.ID);
+  var done=truthy(a.Complete), cur=truthy(a.Current_Action)&&!done, od=isOverdue(a);
+  var open=!!S.expanded[id];
+  var cls="arow"+(cur?" current":"")+(done?" done":"")+(od?" overdue":"")+(open?" open":"");
+  var no=actionsFor(lookupId(a.Contract1)).indexOf(a)+1;
+  var status=String(a.Status||(done?"Complete":"New"));
+  var meta=[];
+  if(a.Dev_Mgr) meta.push('<span>Dev Mgr <strong>'+esc(a.Dev_Mgr)+'</strong></span>');
+  if(!done&&a.Due_Date) meta.push('<span class="'+(od?"od":"")+'">'+(od?"Overdue":"Due")+' <strong>'+esc(fmtDate(a.Due_Date))+'</strong></span>');
+  if(done&&a.Complete_Date) meta.push('<span>Completed <strong>'+esc(fmtDate(a.Complete_Date))+'</strong></span>');
+  var chips=(cur?chip("Current"):"")+(od?chip("Overdue"):"")+chip(done?"Complete":status);
+
+  var head='<div class="arow-head" onclick="toggleRow(\''+id+'\')">'
+    +'<span class="drag-cell" draggable="true" data-drag="'+id+'" onclick="event.stopPropagation()" title="Drag to reorder">⠿</span>'
+    +'<span class="num-cell"><span class="num-badge">'+(done?"✓":no)+'</span></span>'
+    +'<div class="arow-main">'+(cur?'<div class="attention">Needs Attention</div>':'')
+    +'<div class="arow-title">'+esc(a.Contract_Action||"Untitled Action")+'</div>'
+    +(meta.length?'<div class="arow-meta">'+meta.join('<span style="color:#cbd5e1">·</span>')+'</div>':'')
+    +'</div>'
+    +'<div class="arow-right" onclick="event.stopPropagation()">'
+    +'<span style="display:flex;gap:5px;align-items:center">'+chips+'</span>'
+    +'<span class="reorder-group">'
+    +'<button class="icon-btn" title="Move up" onclick="moveAction(\''+id+'\',-1)">↑</button>'
+    +'<button class="icon-btn" title="Move down" onclick="moveAction(\''+id+'\',1)">↓</button>'
+    +'</span>'
+    +(done
+      ?'<button class="quick-check done" title="Reopen" onclick="reopenAction(\''+id+'\')">✓</button>'
+      :'<button class="quick-check" title="Mark complete" onclick="quickComplete(\''+id+'\')">✓</button>')
+    +'<span class="chev" onclick="toggleRow(\''+id+'\')">›</span>'
+    +'</div></div>';
+
+  var form='<div class="arow-form">'
+    +'<div class="frow">'
+    +'<div class="ff ff-dm"><span class="fl">Dev Mgr *</span>'+devMgrSelect("f_dm_"+id,String(a.Dev_Mgr||""))+'</div>'
+    +'<div class="ff ff-date"><span class="fl">Start Date</span><input type="date" class="input" id="f_sd_'+id+'" value="'+toInput(a.Start_Date)+'"/></div>'
+    +'<div class="ff ff-date"><span class="fl">Due Date</span><input type="date" class="input" id="f_dd_'+id+'" value="'+toInput(a.Due_Date)+'"/></div>'
+    +'<div class="ff ff-date"><span class="fl">Complete Date</span><input type="date" class="input" id="f_cd_'+id+'" value="'+toInput(a.Complete_Date)+'"/></div>'
+    +'<div class="ff ff-status"><span class="fl">Status</span>'+statusSelect("f_st_"+id,status)+'</div>'
+    +'</div>'
+    +'<div class="frow"><div class="ff ff-notes"><span class="fl">Dev Notes</span><textarea class="input" id="f_nt_'+id+'" rows="2">'+esc(a.Dev_Notes||"")+'</textarea></div></div>'
+    +'<div class="frow"><div class="form-actions">'
+    +'<button class="btn" onclick="saveAction(\''+id+'\')">Save</button>'
+    +(done?'<button class="btn orange" onclick="reopenAction(\''+id+'\')">Reopen</button>'
+          :'<button class="btn green" onclick="completeAction(\''+id+'\')">Complete</button>')
+    +'</div></div></div>';
+
+  return '<div class="'+cls+'" data-row="'+id+'">'+head+form+'</div>';
+}
+
+/* ---------------- EDIT GRID (attorney power view) ---------------- */
+function renderEditGrid(cid,shown){
+  if(!shown.length){
+    return '<div class="egrid-wrap"><div class="empty" style="padding:26px"><b>No actions to show</b>Add one below or toggle Show Complete.</div></div>'+editAddBlock(cid);
+  }
+  var body=shown.map(function(a){
+    var id=String(a.ID);
+    var done=truthy(a.Complete), cur=truthy(a.Current_Action)&&!done, od=isOverdue(a);
+    var no=actionsFor(cid).indexOf(a)+1;
+    var status=String(a.Status||(done?"Complete":"New"));
+    var rc=(done?"done-row":cur?"current-row":"");
+    return '<tr class="'+rc+'" data-row="'+id+'">'
+      +'<td class="eg-drag" draggable="true" data-drag="'+id+'" title="Drag to reorder">⠿</td>'
+      +'<td style="text-align:center">'+(cur?'<span class="eg-cur on" onclick="clearCurrent(\''+id+'\')" title="Current action"></span>':'<span class="eg-cur" onclick="setCurrent(\''+id+'\')" title="Set as current action"></span>')+'</td>'
+      +'<td style="text-align:center"><button class="eg-check'+(done?" on":"")+'" title="'+(done?"Reopen":"Complete")+'" onclick="'+(done?"gReopen":"gComplete")+'(\''+id+'\')">'+(done?"✓":"")+'</button></td>'
+      +'<td style="min-width:230px"><textarea class="eg-in'+(done?" done-txt":"")+'" data-f="Contract_Action" data-id="'+id+'" rows="1">'+esc(a.Contract_Action||"")+'</textarea></td>'
+      +'<td style="min-width:180px"><textarea class="eg-in" data-f="Dev_Notes" data-id="'+id+'" rows="1" placeholder="Add note…">'+esc(a.Dev_Notes||"")+'</textarea></td>'
+      +'<td>'+gSelect("Dev_Mgr",id,String(a.Dev_Mgr||""),DEV_MGRS,true)+'</td>'
+      +'<td style="min-width:150px">'+gSelect("Status",id,status,ACTION_STATUSES,false)+'</td>'
+      +'<td><input type="date" class="eg-in" data-f="Start_Date" data-id="'+id+'" value="'+toInput(a.Start_Date)+'"/></td>'
+      +'<td><input type="date" class="eg-in'+(od?" od":"")+'" data-f="Due_Date" data-id="'+id+'" value="'+toInput(a.Due_Date)+'"/></td>'
+      +'<td><input type="date" class="eg-in" data-f="Complete_Date" data-id="'+id+'" value="'+toInput(a.Complete_Date)+'"/></td>'
+      +'<td style="text-align:center"><button class="eg-del" title="Delete action" onclick="deleteAction(\''+id+'\')">×</button></td>'
+      +'</tr>';
+  }).join("");
+  return '<div class="egrid-wrap"><table class="egrid"><thead><tr>'
+    +'<th></th><th style="text-align:center">Cur</th><th style="text-align:center">Done</th>'
+    +'<th>Action</th><th>Dev Notes</th><th>Dev Mgr</th><th>Status</th><th>Start</th><th>Due</th><th>Complete</th><th></th>'
+    +'</tr></thead><tbody>'+body+'</tbody>'
+    +'<tfoot><tr class="eg-addrow"><td class="eg-drag"><span class="eg-add-plus">+</span></td><td></td><td></td>'
+    +'<td colspan="8"><input class="eg-add-input" id="egAdd" placeholder="Add an action and press Enter — added directly, no proposal needed"/></td>'
+    +'</tr></tfoot></table></div>';
+}
+function editAddBlock(cid){
+  return '<div class="egrid-wrap"><table class="egrid"><tfoot><tr class="eg-addrow"><td class="eg-drag"><span class="eg-add-plus">+</span></td>'
+    +'<td colspan="10"><input class="eg-add-input" id="egAdd" placeholder="Add an action and press Enter — added directly, no proposal needed"/></td></tr></tfoot></table></div>';
+}
+function gSelect(field,id,val,opts,withBlank){
+  return '<select class="eg-in" data-f="'+field+'" data-id="'+id+'">'
+    +(withBlank?'<option value="">—</option>':'')
+    +opts.map(function(o){ return '<option'+(o===val?" selected":"")+'>'+esc(o)+'</option>'; }).join("")+'</select>';
+}
+function wireEditGrid(){
+  var wrap=document.querySelector(".egrid-wrap"); if(!wrap) return;
+  wrap.querySelectorAll("textarea.eg-in").forEach(function(t){ t.style.height="auto"; t.style.height=(t.scrollHeight)+"px"; t.addEventListener("input",function(){ t.style.height="auto"; t.style.height=(t.scrollHeight)+"px"; }); });
+  wrap.querySelectorAll(".eg-in").forEach(function(el){
+    var ev=(el.tagName==="SELECT"||el.type==="date")?"change":"blur";
+    el.addEventListener(ev,function(){ gSaveField(el); });
+  });
+  var add=$("egAdd");
+  if(add) add.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); gAdd(add.value); } });
+  wireGridDrag(wrap);
+}
+function gSaveField(el){
+  var id=el.getAttribute("data-id"), f=el.getAttribute("data-f");
+  var a=findAction(id); if(!a) return;
+  var raw=el.value;
+  var val=(f==="Start_Date"||f==="Due_Date"||f==="Complete_Date")?toZoho(raw):raw;
+  var oldZ=(f==="Start_Date"||f==="Due_Date"||f==="Complete_Date")?toZoho(toInput(a[f])):(a[f]||"");
+  if(String(val)===String(oldZ)) return;
+  var data={}; data[f]=val;
+  if(f==="Status"&&raw==="Complete"&&!truthy(a.Complete)){ data.Complete=true; data.Current_Action=false; if(!toInput(a.Complete_Date)) data.Complete_Date=toZoho(todayInput()); }
+  if(f==="Status"&&raw!=="Complete"&&truthy(a.Complete)){ data.Complete=false; data.Complete_Date=""; }
+  updateRecord(id,data,CFG.reports.actions).then(function(){
+    applyLocal(id,data);
+    el.classList.add("eg-saved"); setTimeout(function(){ el.classList.remove("eg-saved"); },1400);
+    if(("Complete" in data)) renderAll();
+  }).catch(function(e){ banner("err","Save failed: "+errText(e)); reloadActions(); });
+}
+function gComplete(id){ completeAction(id,true); }
+function gReopen(id){ reopenAction(id); }
+function setCurrent(id){
+  var a=findAction(id); if(!a||S.busy) return;
+  var updates=[[id,{Current_Action:true}]];
+  actionsFor(lookupId(a.Contract1)).forEach(function(r){ if(String(r.ID)!==String(id)&&truthy(r.Current_Action)) updates.push([String(r.ID),{Current_Action:false}]); });
+  runUpdates(updates);
+}
+function clearCurrent(id){ if(S.busy) return; runUpdates([[id,{Current_Action:false}]]); }
+function deleteAction(id){
+  var a=findAction(id); if(!a||S.busy) return;
+  if(!window.confirm("Delete this action?\n\n"+(a.Contract_Action||"Untitled"))) return;
+  if(S.demo){ S.actions=S.actions.filter(function(r){ return String(r.ID)!==String(id); }); banner("ok","Action deleted."); renderAll(); return; }
+  S.busy=true; setStatus("warn","Deleting…");
+  ZOHO.CREATOR.API.deleteRecord({reportName:CFG.reports.actions,id:String(id)}).then(function(){
+    S.actions=S.actions.filter(function(r){ return String(r.ID)!==String(id); });
+    S.busy=false; setStatus("ok","Connected"); banner("ok","Action deleted."); renderAll();
+  }).catch(function(e){ S.busy=false; setStatus("err","Delete failed"); banner("err","Delete failed: "+errText(e)); });
+}
+function gAdd(title){
+  title=(title||"").trim(); if(!title||S.busy) return;
+  var all=actionsFor(S.selId), maxSort=0;
+  all.forEach(function(r){ if(num(r.Sort_Order)>maxSort) maxSort=num(r.Sort_Order); });
+  var fieldData={ Contract1:S.selId, Contract_Action:title, Status:"New", Complete:false, Sort_Order:maxSort+1 };
+  S.busy=true; setStatus("warn","Saving…");
+  createRecord(CFG.forms.action,fieldData).then(function(resp){
+    S.busy=false; setStatus("ok",S.demo?"Demo data":"Connected"); banner("ok","Action added.");
+    if(S.demo){
+      var nid=(resp&&resp.data&&resp.data.ID)||("demo_"+Date.now());
+      var local=JSON.parse(JSON.stringify(fieldData)); local.ID=String(nid); local.Contract1={ID:String(S.selId),display_value:""}; local.Current_Action="false";
+      S.actions.push(local); renderAll();
+    } else { sdkGetAll(CFG.reports.actions).then(function(rows){ S.actions=rows; renderAll(); }); }
+  }).catch(function(e){ S.busy=false; setStatus("err","Save failed"); banner("err","Add failed: "+errText(e)); });
+}
+function wireGridDrag(wrap){
+  wrap.querySelectorAll("[data-drag]").forEach(function(h){
+    h.addEventListener("dragstart",function(e){ dragId=h.getAttribute("data-drag"); var r=h.closest("tr"); if(r) r.style.opacity=".35"; e.dataTransfer.effectAllowed="move"; try{ e.dataTransfer.setData("text/plain",dragId); }catch(err){} });
+    h.addEventListener("dragend",function(){ dragId=null; wrap.querySelectorAll("tr").forEach(function(r){ r.style.opacity=""; r.style.boxShadow=""; }); });
+  });
+  wrap.querySelectorAll("tr[data-row]").forEach(function(row){
+    row.addEventListener("dragover",function(e){ if(!dragId||row.getAttribute("data-row")===dragId) return; e.preventDefault(); e.dataTransfer.dropEffect="move"; row.style.boxShadow="inset 0 3px 0 0 var(--primary-2)"; });
+    row.addEventListener("dragleave",function(){ row.style.boxShadow=""; });
+    row.addEventListener("drop",function(e){ e.preventDefault(); row.style.boxShadow=""; var t=row.getAttribute("data-row"); if(!dragId||t===dragId) return; dropReorder(dragId,t); dragId=null; });
+  });
+}
+
+function proposeFields(pfx){
+  return '<div class="ff"><span class="fl">Action Title *</span><textarea class="input" id="'+pfx+'title" rows="2" placeholder="Describe the action…"></textarea></div>'
+    +'<div class="ff"><span class="fl">Dev Notes *</span><textarea class="input" id="'+pfx+'notes" rows="2" placeholder="Context and details…"></textarea></div>'
+    +'<div class="two"><div class="ff"><span class="fl">Start Date *</span><input type="date" class="input" id="'+pfx+'start"/></div>'
+    +'<div class="ff"><span class="fl">Due Date *</span><input type="date" class="input" id="'+pfx+'due"/></div></div>'
+    +'<div class="ff"><span class="fl">Dev Mgr *</span>'+devMgrSelect(pfx+"dm","")+'</div>';
+}
+
+function attachCard(cid){
+  var vers=versionsFor(cid);
+  var items=vers.map(function(v){
+    var name=String(v.File_field1||("Attachment "+v.ID)); name=name.split("/").pop();
+    var lower=name.toLowerCase(), ic="", lbl="DOC";
+    if(/\.pdf$/.test(lower)){ ic="pdf"; lbl="PDF"; }
+    else if(/\.(xls|xlsx)$/.test(lower)){ ic="xls"; lbl="XLS"; }
+    else if(/\.(doc|docx)$/.test(lower)){ ic="doc"; lbl="DOC"; }
+    else if(/\.(png|jpe?g|gif|webp)$/.test(lower)){ lbl="IMG"; }
+    return '<div class="attach-item"><div class="attach-icon '+ic+'">'+lbl+'</div>'
+      +'<div style="flex:1;min-width:0"><div class="attach-name" title="'+attr(name)+'">'+esc(name)+'</div>'
+      +'<div class="attach-date">'+esc(fmtDate(v.Date_field1)||"Added")+'</div></div></div>';
+  }).join("");
+  return '<div class="side-card"><div class="dark-head"><div><div class="dark-kicker">Contract Files</div><div class="dark-title">Attachments</div></div>'
+    +'<div class="dark-badge"><strong>'+vers.length+'</strong><span>Files</span></div></div>'
+    +'<div class="attach-body">'
+    +'<div class="attach-upload"><div><div class="attach-lbl">Add a contract file</div><div class="attach-sub">Upload a version or related document</div></div>'
+    +'<button class="btn sm" style="color:var(--primary);border-color:#93b4f8;background:#eef3ff" onclick="addFile()">+ Add File</button></div>'
+    +(items||'<div class="attach-empty">No attachments found for this contract.</div>')
+    +'</div></div>';
+}
+
+/* ---------------- persistence ---------------- */
+function applyLocal(id,data){
+  var a=findAction(id); if(!a) return;
+  Object.keys(data).forEach(function(k){ a[k]=data[k]; });
+}
+function runUpdates(list){
+  /* list: [[id, data], ...] — sequential, then re-render */
+  S.busy=true; setStatus("warn","Saving…");
+  var p=Promise.resolve();
+  list.forEach(function(u){
+    p=p.then(function(){ return updateRecord(u[0],u[1],CFG.reports.actions).then(function(){ applyLocal(u[0],u[1]); }); });
+  });
+  return p.then(function(){
+    S.busy=false; setStatus("ok",S.demo?"Demo data":"Connected"); renderAll();
+  }).catch(function(e){
+    S.busy=false; setStatus("err","Save failed");
+    banner("err","Save failed: "+errText(e));
+    reloadActions();
+  });
+}
+function reloadActions(){
+  if(S.demo){ renderAll(); return; }
+  sdkGetAll(CFG.reports.actions).then(function(rows){ S.actions=rows; renderAll(); }).catch(function(){ renderAll(); });
+}
+
+/* ensure exactly one open action is Current (Deluge parity) */
+function ensureCurrentUpdates(cid,updates,already){
+  var all=actionsFor(cid);
+  var hasCurrent=all.some(function(a){
+    var pend=(already||{})[String(a.ID)];
+    var complete=pend&&"Complete" in pend?pend.Complete:truthy(a.Complete);
+    var current=pend&&"Current_Action" in pend?pend.Current_Action:truthy(a.Current_Action);
+    return !complete&&current;
+  });
+  if(!hasCurrent){
+    for(var i=0;i<all.length;i++){
+      var a=all[i], pend=(already||{})[String(a.ID)];
+      var complete=pend&&"Complete" in pend?pend.Complete:truthy(a.Complete);
+      if(!complete){ updates.push([String(a.ID),{Current_Action:true}]); break; }
+    }
+  }
+}
+
+function saveAction(id){
+  var a=findAction(id); if(!a||S.busy) return;
+  var dm=$("f_dm_"+id).value;
+  if(!dm){ banner("err","Choose a Dev Mgr before saving or completing this action."); return; }
+  var status=$("f_st_"+id).value;
+  var data={
+    Dev_Mgr:dm,
+    Dev_Notes:$("f_nt_"+id).value,
+    Start_Date:toZoho($("f_sd_"+id).value),
+    Due_Date:toZoho($("f_dd_"+id).value),
+    Complete_Date:toZoho($("f_cd_"+id).value),
+    Status:status
+  };
+  var updates=[];
+  if(status==="Complete"){
+    data.Complete=true; data.Current_Action=false;
+    if(!data.Complete_Date) data.Complete_Date=toZoho(todayInput());
+    updates.push([id,data]);
+    advanceCurrent(id,updates);
+  } else {
+    if(truthy(a.Complete)){ data.Complete=false; data.Complete_Date=""; }
+    updates.push([id,data]);
+    var pend={}; pend[id]=data;
+    ensureCurrentUpdates(lookupId(a.Contract1),updates,pend);
+  }
+  banner("ok","Action updated.");
+  runUpdates(updates);
+}
+
+function advanceCurrent(completedId,updates){
+  var a=findAction(completedId); if(!a) return;
+  var cid=lookupId(a.Contract1);
+  var all=actionsFor(cid);
+  all.forEach(function(r){
+    if(String(r.ID)!==String(completedId)&&truthy(r.Current_Action)) updates.push([String(r.ID),{Current_Action:false}]);
+  });
+  var sort=num(a.Sort_Order), next=null;
+  all.forEach(function(r){
+    if(String(r.ID)===String(completedId)||truthy(r.Complete)) return;
+    if(num(r.Sort_Order)>sort&&(next==null||num(r.Sort_Order)<num(next.Sort_Order))) next=r;
+  });
+  if(!next){ for(var i=0;i<all.length;i++){ var r=all[i]; if(String(r.ID)!==String(completedId)&&!truthy(r.Complete)){ next=r; break; } } }
+  if(next) updates.push([String(next.ID),{Current_Action:true}]);
+}
+
+function quickComplete(id){ completeAction(id,true); }
+function completeAction(id,quick){
+  var a=findAction(id); if(!a||S.busy) return;
+  var dm=quick?String(a.Dev_Mgr||""):$("f_dm_"+id).value;
+  if(!dm){
+    S.expanded[id]=true; renderAll();
+    banner("err","Choose a Dev Mgr before completing this action.");
+    return;
+  }
+  var cd=quick?"":$("f_cd_"+id).value;
+  var data={
+    Dev_Mgr:dm, Complete:true, Current_Action:false, Status:"Complete",
+    Complete_Date:toZoho(cd||todayInput())
+  };
+  if(!quick){
+    data.Dev_Notes=$("f_nt_"+id).value;
+    data.Start_Date=toZoho($("f_sd_"+id).value);
+    data.Due_Date=toZoho($("f_dd_"+id).value);
+  }
+  delete S.expanded[id];
+  var updates=[[id,data]];
+  advanceCurrent(id,updates);
+  banner("ok","Action completed.");
+  runUpdates(updates);
+}
+
+function reopenAction(id){
+  var a=findAction(id); if(!a||S.busy) return;
+  var data={Complete:false,Complete_Date:"",Current_Action:true};
+  if(String(a.Status||"")==="Complete") data.Status="New";
+  var updates=[[id,data]];
+  actionsFor(lookupId(a.Contract1)).forEach(function(r){
+    if(String(r.ID)!==String(id)&&truthy(r.Current_Action)) updates.push([String(r.ID),{Current_Action:false}]);
+  });
+  S.expanded[id]=true;
+  banner("ok","Action reopened.");
+  runUpdates(updates);
+}
+
+/* reorder: arrows swap with visible neighbour; drag reinserts */
+function moveAction(id,dir){
+  if(S.busy) return;
+  var a=findAction(id); if(!a) return;
+  var cid=lookupId(a.Contract1);
+  var all=actionsFor(cid);
+  var visible=S.showDone?all:all.filter(function(r){ return !truthy(r.Complete); });
+  var vi=visible.findIndex(function(r){ return String(r.ID)===String(id); });
+  var ni=vi+dir;
+  if(vi<0||ni<0||ni>=visible.length) return;
+  var other=visible[ni];
+  var updates=[
+    [String(a.ID),{Sort_Order:num(other.Sort_Order)}],
+    [String(other.ID),{Sort_Order:num(a.Sort_Order)}]
+  ];
+  runUpdates(updates);
+}
+var dragId=null;
+function wireDrag(){
+  var list=$("alist"); if(!list) return;
+  list.querySelectorAll("[data-drag]").forEach(function(h){
+    h.addEventListener("dragstart",function(e){
+      dragId=h.getAttribute("data-drag");
+      var row=h.closest(".arow"); if(row) row.classList.add("dragging");
+      e.dataTransfer.effectAllowed="move";
+      try{ e.dataTransfer.setData("text/plain",dragId); }catch(err){}
+    });
+    h.addEventListener("dragend",function(){
+      dragId=null;
+      list.querySelectorAll(".arow").forEach(function(r){ r.classList.remove("dragging","dragover"); });
+    });
+  });
+  list.querySelectorAll(".arow[data-row]").forEach(function(row){
+    row.addEventListener("dragover",function(e){
+      if(!dragId||row.getAttribute("data-row")===dragId) return;
+      e.preventDefault(); e.dataTransfer.dropEffect="move";
+      row.classList.add("dragover");
+    });
+    row.addEventListener("dragleave",function(){ row.classList.remove("dragover"); });
+    row.addEventListener("drop",function(e){
+      e.preventDefault(); row.classList.remove("dragover");
+      var targetId=row.getAttribute("data-row");
+      if(!dragId||targetId===dragId) return;
+      dropReorder(dragId,targetId);
+      dragId=null;
+    });
+  });
+}
+function dropReorder(movedId,beforeId){
+  if(S.busy) return;
+  var a=findAction(movedId); if(!a) return;
+  var cid=lookupId(a.Contract1);
+  var all=actionsFor(cid);
+  var order=all.map(function(r){ return String(r.ID); });
+  var from=order.indexOf(String(movedId)), to=order.indexOf(String(beforeId));
+  if(from<0||to<0) return;
+  order.splice(from,1);
+  to=order.indexOf(String(beforeId));
+  order.splice(to,0,String(movedId));
+  var updates=[];
+  order.forEach(function(rid,i){
+    var r=findAction(rid);
+    if(num(r.Sort_Order)!==i+1) updates.push([rid,{Sort_Order:i+1}]);
+  });
+  if(updates.length) runUpdates(updates);
+}
+
+function proposeAction(pfx){
+  if(S.busy) return;
+  var title=$(pfx+"title").value.trim(), notes=$(pfx+"notes").value.trim(),
+      start=$(pfx+"start").value, due=$(pfx+"due").value, dm=$(pfx+"dm").value;
+  if(!title||!notes||!start||!due||!dm){ banner("err","All Propose Action fields are required."); return; }
+  var all=actionsFor(S.selId), maxSort=0;
+  all.forEach(function(r){ if(num(r.Sort_Order)>maxSort) maxSort=num(r.Sort_Order); });
+  var fieldData={
+    Contract1:S.selId,
+    Contract_Action:title, Dev_Notes:notes, Dev_Mgr:dm,
+    Start_Date:toZoho(start), Due_Date:toZoho(due),
+    Status:"Proposed", Complete:false, Sort_Order:maxSort+1
+  };
+  S.busy=true; setStatus("warn","Saving…");
+  createRecord(CFG.forms.action,fieldData).then(function(resp){
+    S.busy=false; setStatus("ok",S.demo?"Demo data":"Connected");
+    banner("ok","Action proposed.");
+    if(S.demo){
+      var nid=(resp&&resp.data&&resp.data.ID)||("demo_"+Date.now());
+      var local=JSON.parse(JSON.stringify(fieldData));
+      local.ID=String(nid); local.Contract1={ID:String(S.selId),display_value:""}; local.Current_Action=false;
+      S.actions.push(local); renderAll();
+    } else {
+      sdkGetAll(CFG.reports.actions).then(function(rows){ S.actions=rows; renderAll(); });
+    }
+  }).catch(function(e){
+    S.busy=false; setStatus("err","Save failed");
+    banner("err","Propose failed: "+errText(e));
+  });
+}
+
+/* ---------------- render root ---------------- */
+function renderAll(){
+  if(S.view==="detail"&&S.selId) renderDetail();
+  else if(S.view==="loiReview"&&S.loiSelId) renderLOIReview();
+  else if(S.homeSection==="loi") renderLOIReviews();
+  else { $("crumb").innerHTML='<a onclick="showContracts()">Contracts</a>'; renderHome(); }
+}
+
+/* ---------------- data load ---------------- */
+function loadData(){
+  setStatus("warn","Loading…");
+  Promise.all([
+    sdkGetAll(CFG.reports.contracts),
+    sdkGetAll(CFG.reports.actions),
+    sdkGetAll(CFG.reports.versions).catch(function(){ return []; }),
+    loadPendingLOIs().catch(function(){ return []; })
+  ]).then(function(res){
+    S.contracts=res[0]; S.actions=res[1]; S.versions=res[2]; S.loiReviews=res[3];
+    setStatus("ok","Connected");
+    var qp=S.deepLink||readPageParams(); S.deepLink=qp;
+    if(qp.loiReviewId && findLOI(qp.loiReviewId)){ openLOIReview(qp.loiReviewId,qp.tokenId||""); }
+    else if(qp.contractId && findContract(qp.contractId)){ openContract(qp.contractId); }
+    else renderAll();
+  }).catch(function(e){
+    setStatus("err","Load failed");
+    banner("err","Could not load data: "+errText(e));
+    loadDemo();
+  });
+}
+
+/* ---------------- demo data ---------------- */
+function loadDemo(){
+  S.demo=true;
+  function L(id,dv){ return {ID:String(id),display_value:dv}; }
+  S.contracts=[
+    {ID:"c1",Contract_Name:"CP01 - Development Agreement",Contract_Type:"DA",Status:"Awaiting WBW",Subdivision1:L("s1","Chaparral Point - Phase 01"),Builder:L("b1","City of Killeen"),Number_of_Lots:""},
+    {ID:"c2",Contract_Name:"CR01 - Meritage Lot Contract",Contract_Type:"Lot",Status:"Awaiting Counterparty",Subdivision1:L("s2","Cameron Ranch - Phase 01"),Builder:L("b2","Meritage"),Number_of_Lots:"296"},
+    {ID:"c3",Contract_Name:"Sandstone Estates - Assignment",Contract_Type:"Acquisition",Status:"New",Subdivision1:"",Builder:L("b3","DR Horton"),Number_of_Lots:""},
+    {ID:"c4",Contract_Name:"CR01 - Fire Station Agreement",Contract_Type:"DA",Status:"Complete",Subdivision1:L("s2","Cameron Ranch - Phase 01"),Builder:L("b4","Other"),Number_of_Lots:""},
+    {ID:"c5",Contract_Name:"WL01 - Reimbursement Agreement",Contract_Type:"DA",Status:"Awaiting Counterparty",Subdivision1:L("s3","Westlake - Phase 02"),Builder:L("b5","Jonah SUD"),Number_of_Lots:""},
+    {ID:"c6",Contract_Name:"CH05 - DR Horton Lot Amendment",Contract_Type:"Amendment",Status:"Awaiting Approvals",Subdivision1:L("s4","Creekside Hills - Phase 05"),Builder:L("b3","DR Horton"),Number_of_Lots:""},
+    {ID:"c7",Contract_Name:"LG01 - Development Agreement",Contract_Type:"DA",Status:"Awaiting WBW",Subdivision1:L("s5","Lakeside at Granger - Phase 01"),Builder:L("b6","City of Granger"),Number_of_Lots:""}
+  ];
+  function A(id,cid,sort,txt,o){
+    o=o||{};
+    return {ID:String(id),Contract1:L(cid,""),Contract_Action:txt,Sort_Order:String(sort),
+      Complete:o.done?"true":"false",Current_Action:o.cur?"true":"false",
+      Dev_Mgr:o.dm||"",Status:o.st||(o.done?"Complete":"New"),Dev_Notes:o.notes||"",
+      Start_Date:o.sd||"",Due_Date:o.dd||"",Complete_Date:o.cd||""};
+  }
+  S.actions=[
+    A("a1","c1",1,"Development Manager Sends Term Sheet for Internal Review, Approval, and Signatures",{done:true,dm:"TB",cd:"01/22/2026"}),
+    A("a2","c1",2,"Legal Drafts Initial Draft of DA & Sends to Development Managers for Review, Send to Engineers if necessary",{cur:true,dm:"TB",st:"Awaiting WBW DEV",sd:"02/18/2026",dd:"08/14/2026",notes:"Update 6/26 - Still pending City Council action. On hold until we meet with all council members. Term Sheet is complete."}),
+    A("a3","c1",3,"Internal Approvals - Development Managers and Engineers, if necessary"),
+    A("a4","c1",4,"Development Manager Presents Approved Term Sheet to City Council for Review and Approval"),
+    A("a5","c1",5,"Development Managers and Legal Meet with City Staff to Discuss Processes for Completing Annexation and DA",{done:true,dm:"TB",cd:"02/17/2026"}),
+    A("a6","c1",6,"Legal Incorporates Agreements with City Staff into Draft DA and Sends to Development Manager for Review and Approval"),
+    A("a7","c1",7,"Redline & Review / City Acceptance"),
+    A("a8","c1",8,"Final Contract Approved by COO, Legal, Dev Manager, Sales Manager [Final Approvals]"),
+    A("a9","c1",9,"Submitted to and signed by Bruce"),
+    A("a10","c1",10,"Initial Draft sent to City"),
+    A("a11","c2",1,"Development Managers Send Agreement to Legal for Review",{done:true,dm:"BB",sd:"03/31/2026",dd:"05/04/2026",cd:"05/04/2026"}),
+    A("a12","c2",2,"Internal Approvals - Development Managers",{done:true,dm:"BB",sd:"05/04/2026",dd:"05/11/2026",cd:"05/08/2026"}),
+    A("a13","c2",3,"Initial Contract Sent to Builder",{cur:true,dm:"BB",st:"Awaiting Counterparty",sd:"05/04/2026",dd:"05/11/2026",notes:"Builder requested pricing exhibit update"}),
+    A("a14","c2",4,"Redline & Review / Builder Acceptance",{dm:"BB",sd:"05/08/2026",dd:"05/22/2026"}),
+    A("a15","c2",5,"Final Contract Approved by COO, Legal, Dev Manager, Sales Manager",{dm:"BB",sd:"05/22/2026",dd:"06/05/2026"}),
+    A("a16","c4",1,"Development Managers Send Agreement to Legal for Review",{done:true,dm:"BB",cd:"05/04/2026"}),
+    A("a17","c4",2,"Submitted to and signed by Bruce",{done:true,dm:"BB",cd:"06/12/2026"}),
+    A("a18","c5",1,"WBW Redline & Review",{cur:true,dm:"TB",st:"Awaiting Counterparty",dd:"08/01/2026"}),
+    A("a19","c5",2,"Legal & Dev Manager review existing draft of NSSA"),
+    A("a20","c5",3,"Final approvals and signatures"),
+    A("a21","c6",1,"Final Contract Approved by COO, Legal, Dev Manager, Sales Manager [Final Approvals]",{cur:true,dm:"BB",st:"Awaiting Approvals",dd:"07/01/2026"}),
+    A("a22","c3",1,"WBW Review & Redline",{cur:true,st:"New"}),
+    A("a23","c7",1,"Development Managers Send Agreement to Legal for Review",{cur:true,dm:"TB",st:"New",dd:"07/20/2026"})
+  ];
+  S.versions=[
+    {ID:"v1",Contract1:L("c2",""),File_field1:"CR01_Meritage_Lot_Contract_v3.pdf",Date_field1:"06/02/2026"},
+    {ID:"v2",Contract1:L("c2",""),File_field1:"Pricing_Exhibit_B.xlsx",Date_field1:"05/28/2026"}
+  ];
+  S.loiReviews=[{
+    ID:"pf_demo",Name:"Bell Sharkey",Territory:"North Austin",LOI_Legal_Status:"Pending Approval",LOI_Approval_Token:"demo-token",
+    Seller:"Example Seller LLC",Authorized_Signer_for_Seller:"Jane Seller",Street_Address:"100 Main Street",Seller_City_State_ZIP:"Austin, TX 78701",Seller_Phone:"512-555-0100",Seller_Email:"seller@example.com",
+    Buying_Entity:L("co1","WBW Bell Sharkey LLC"),CAD_ID:"R123456",Property_County:"Williamson",Property_City:"Georgetown",Total_Acres:"146.70",Land_Cost_Acre:"68190",Land_Cost:"10002000",
+    Earnest_Money:"100000",Initial_Feasibility_Days:"90",Extensions:"2",Days_per_Extension:"30",Amount_per_Extension:"25000",Closing_Days_Feas:"30",Response_Date:"08/15/2026",
+    Broker_Buyer:"None",Broker_Seller:"None",Acquisition_Email:"acquisitions@example.com",Special_Provisions:"None."
+  }];
+  setStatus("warn","Demo data — connect inside Creator");
+  renderAll();
+}
+
+/* ---------------- boot ---------------- */
+var initDone=false;
+function fallbackDemo(){ if(!initDone){ initDone=true; loadDemo(); } }
+if(window.ZOHO && window.ZOHO.CREATOR && typeof ZOHO.CREATOR.init==="function"){
+  var demoTimer=setTimeout(fallbackDemo,5000);
+  ZOHO.CREATOR.init().then(function(){
+    if(initDone) return;
+    initDone=true; clearTimeout(demoTimer);
+    S.liveSDK=true;
+    resolvePageParams().then(function(p){ S.deepLink=p||{}; loadData(); });
+  }).catch(function(){ clearTimeout(demoTimer); fallbackDemo(); });
+} else {
+  fallbackDemo();
+}
+</script>
+</body>
+</html>

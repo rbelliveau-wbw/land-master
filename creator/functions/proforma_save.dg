@@ -1,0 +1,1187 @@
+				 string proforma_save(string payload)
+                 {
+                 	resp = Map();
+                 	try 
+                 	{
+                 		data = payload.toMap();
+                 		if(data.get("header") == null && data.get("payload") != null)
+                 		{
+                 			data = data.get("payload").toString().toMap();
+                 		}
+                 		pfId = ifnull(data.get("id"),"").toString().trim();
+                 		isNew = false;
+                 		header = Map();
+                 		deleteStage = "";
+                 		op = ifnull(data.get("op"),"").toString().trim();
+                 		if(op == "quick_create_company")
+                 		{
+                 			comp = data.get("company");
+                 			cName = ifnull(comp.get("Company_Name"),"").toString().trim();
+                 			if(cName == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Company Name is required.");
+                 				return resp.toString();
+                 			}
+                 			newComp = insert into Company
+                 			[
+                 				Company_Name=cName
+                 				Added_User=zoho.loginuser
+                 			];
+                 			compRec = Company[ID == newComp];
+                 			facil = ifnull(comp.get("Facility_ID"),"").toString().trim();
+                 			if(facil != "")
+                 			{
+                 				compRec.Facility_ID=facil.toLong();
+                 			}
+                 			acct = ifnull(comp.get("Account_Number"),"").toString().trim();
+                 			if(acct != "")
+                 			{
+                 				compRec.Account_Number=acct.toLong();
+                 			}
+                 			if(pfId != "")
+                 			{
+                 				cIds = List();
+                 				cFound = false;
+                 				for each  cx in compRec.Proforma
+                 				{
+                 					cIds.add(cx);
+                 					if(cx.toString() == pfId)
+                 					{
+                 						cFound = true;
+                 					}
+                 				}
+                 				if(!cFound)
+                 				{
+                 					cIds.add(pfId.toLong());
+                 					compRec.Proforma=cIds;
+                 				}
+                 			}
+                 			resp.put("success",true);
+                 			resp.put("companyId",newComp.toString());
+                 			resp.put("action","company_created");
+                 			return resp.toString();
+                 		}
+                 		if(op == "update_lock" || op == "update_owners")
+                 		{
+                 			if(pfId == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro Forma id is required.");
+                 				return resp.toString();
+                 			}
+                 			quickAccessId = ifnull(data.get("userAccessId"),"").toString().trim();
+                 			if(quickAccessId == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","A valid User Access record is required.");
+                 				return resp.toString();
+                 			}
+                 			quickAccess = User_Access[ID == quickAccessId.toLong()];
+                 			if(quickAccess == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","The User Access record was not found.");
+                 				return resp.toString();
+                 			}
+                 			pfKey = pfId.toLong();
+                 			quickPf = Add_Pro_Forma[ID == pfKey];
+                 			if(quickPf == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro Forma " + pfId + " was not found.");
+                 				return resp.toString();
+                 			}
+                 			if(op == "update_lock")
+                 			{
+                 				canQuickEdit = quickAccess.Edit_All_Proformas == true;
+                 				if(!canQuickEdit && quickAccess.Edit_Owned_Proformas == true)
+                 				{
+                 					for each  quickOwner in quickPf.Owner
+                 					{
+                 						if(quickOwner.toString() == quickAccess.ID.toString())
+                 						{
+                 							canQuickEdit = true;
+                 							break;
+                 						}
+                 					}
+                 				}
+                 				if(!canQuickEdit)
+                 				{
+                 					resp.put("success",false);
+                 					resp.put("error","You do not have access to lock or unlock this Pro Forma.");
+                 					return resp.toString();
+                 				}
+                 				lockValue = ifnull(data.get("lock"),false).toString().toLowerCase() == "true";
+                 				quickPf.Lock_Inputs=lockValue;
+                 				resp.put("success",true);
+                 				resp.put("id",pfId);
+                 				resp.put("lock",lockValue);
+                 				resp.put("action","lock_updated");
+                 				return resp.toString();
+                 			}
+                 			if(quickAccess.Edit_Proforma_Owner != true && quickAccess.Edit_Budget_Owners != true)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Edit Pro Forma Owners access is required.");
+                 				return resp.toString();
+                 			}
+                 			ownerIds = List();
+                 			for each  ownerValue in ifnull(data.get("ownerIds"),List())
+                 			{
+                 				ownerIdText = ifnull(ownerValue,"").toString().trim();
+                 				if(ownerIdText != "")
+                 				{
+                 					ownerAccess = User_Access[ID == ownerIdText.toLong()];
+                 					if(ownerAccess == null)
+                 					{
+                 						resp.put("success",false);
+                 						resp.put("error","Owner " + ownerIdText + " was not found in User Access.");
+                 						return resp.toString();
+                 					}
+                 					ownerIds.add(ownerAccess.ID);
+                 				}
+                 			}
+                 			quickPf.Owner=ownerIds;
+                 			resp.put("success",true);
+                 			resp.put("id",pfId);
+                 			resp.put("ownerIds",ownerIds);
+                 			resp.put("action","owners_updated");
+                 			return resp.toString();
+                 		}
+                 		if(op == "archive_proforma" || op == "delete_proforma")
+                 		{
+                 			if(pfId == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro Forma id is required.");
+                 				return resp.toString();
+                 			}
+                 			manageAccessId = ifnull(data.get("userAccessId"),"").toString().trim();
+                 			if(manageAccessId == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Delete / Archive Pro Formas access is required.");
+                 				return resp.toString();
+                 			}
+                 			manageAccess = User_Access[ID == manageAccessId.toLong()];
+                 			if(manageAccess == null || manageAccess.Delete_Archive_Pro_Formas != true)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Delete / Archive Pro Formas access is required.");
+                 				return resp.toString();
+                 			}
+                 			pfKey = pfId.toLong();
+                 			managePf = Add_Pro_Forma[ID == pfKey];
+                 			if(managePf == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro Forma " + pfId + " was not found.");
+                 				return resp.toString();
+                 			}
+                 			if(op == "archive_proforma")
+                 			{
+                 				archiveValue = ifnull(data.get("archive"),true).toString().toLowerCase() == "true";
+                 				managePf.Archive=archiveValue;
+                 				resp.put("success",true);
+                 				resp.put("id",pfId);
+                 				resp.put("archive",archiveValue);
+                 				resp.put("action",if(archiveValue,"archived","restored"));
+                 				return resp.toString();
+                 			}
+                 			// LOI records and the Company / Builder / Property master records created
+                 			// through the LOI tab are protected. Require Archive instead of Delete.
+                 			deleteStage = "loi_protection_check";
+                 			protectedLoiIds = List();
+                 			for each  protectedLoi in LOI_Worksheet[Proforma == pfKey]
+                 			{
+                 				protectedLoiIds.add(protectedLoi.ID);
+                 			}
+                 			if(protectedLoiIds.size() > 0)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","This Pro Forma has LOI records and cannot be deleted. Archive it instead.");
+                 				resp.put("errorCode","LOI_DELETE_BLOCKED");
+                 				resp.put("loiWorksheetCount",protectedLoiIds.size());
+                 				return resp.toString();
+                 			}
+                 			deleted = Map();
+                 			// Delete each lookup path separately. Combining lookup fields with OR in a
+                 			// collection fetch caused Creator's runtime "Invalid statement found" error.
+                 			deleteStage = "land_purchase_installments";
+                 			landDeleteCount = 0;
+                 			deleteIds = List();
+                 			for each  purchaseRec in Land_Installments[Pro_Forma == pfKey]
+                 			{
+                 				deleteIds.add(purchaseRec.ID);
+                 			}
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Land_Installments[ID == childId];
+                 				landDeleteCount = landDeleteCount + 1;
+                 			}
+                 			deleteStage = "land_sale_installments";
+                 			deleteIds = List();
+                 			for each  saleRec in Land_Installments[Pro_Forma2 == pfKey]
+                 			{
+                 				deleteIds.add(saleRec.ID);
+                 			}
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Land_Installments[ID == childId];
+                 				landDeleteCount = landDeleteCount + 1;
+                 			}
+                 			deleteStage = "pid_mud_installments";
+                 			deleteIds = List();
+                 			for each  pidRec in Land_Installments[Pro_Forma_PID_MUD == pfKey]
+                 			{
+                 				deleteIds.add(pidRec.ID);
+                 			}
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Land_Installments[ID == childId];
+                 				landDeleteCount = landDeleteCount + 1;
+                 			}
+                 			deleted.put("Land_Installments",landDeleteCount);
+                 			deleteStage = "construction_additional_items";
+                 			itemDeleteCount = 0;
+                 			deleteIds = List();
+                 			for each  constItemRec in Proforma_Item[Pro_Forma_Const == pfKey]
+                 			{
+                 				deleteIds.add(constItemRec.ID);
+                 			}
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Proforma_Item[ID == childId];
+                 				itemDeleteCount = itemDeleteCount + 1;
+                 			}
+                 			deleteStage = "development_additional_items";
+                 			deleteIds = List();
+                 			for each  devItemRec in Proforma_Item[Pro_Forma_Dev == pfKey]
+                 			{
+                 				deleteIds.add(devItemRec.ID);
+                 			}
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Proforma_Item[ID == childId];
+                 				itemDeleteCount = itemDeleteCount + 1;
+                 			}
+                 			deleted.put("Proforma_Item",itemDeleteCount);
+                 			deleteStage = "construction_curve";
+                 			deleteIds = List();
+                 			for each  curveRec in Construction_Curve[Pro_Forma == pfKey]
+                 			{
+                 				deleteIds.add(curveRec.ID);
+                 			}
+                 			deleted.put("Construction_Curve",deleteIds.size());
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Construction_Curve[ID == childId];
+                 			}
+                 			deleteStage = "proforma_phases";
+                 			deleteIds = List();
+                 			for each  phaseRec in Proforma_Phase[Pro_Forma == pfKey]
+                 			{
+                 				deleteIds.add(phaseRec.ID);
+                 			}
+                 			deleted.put("Proforma_Phase",deleteIds.size());
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Proforma_Phase[ID == childId];
+                 			}
+                 			deleteStage = "proforma_months";
+                 			deleteIds = List();
+                 			for each  monthRec in Proforma_Months[Proforma == pfKey]
+                 			{
+                 				deleteIds.add(monthRec.ID);
+                 			}
+                 			deleted.put("Proforma_Months",deleteIds.size());
+                 			for each  childId in deleteIds
+                 			{
+                 				delete from Proforma_Months[ID == childId];
+                 			}
+                 			// Do not delete or modify LOI Worksheets, Companies, Builders/Sellers,
+                 			// or Properties. The LOI protection check above prevents orphaning them.
+                 			deleteStage = "parent_proforma";
+                 			delete from Add_Pro_Forma[ID == pfKey];
+                 			deleteStage = "complete";
+                 			resp.put("success",true);
+                 			resp.put("id",pfId);
+                 			resp.put("deleted",deleted);
+                 			resp.put("action","deleted");
+                 			return resp.toString();
+                 		}
+                 		if(op == "save_loi")
+                 		{
+                 			if(pfId == "")
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro forma id is required for save_loi.");
+                 				return resp.toString();
+                 			}
+                 			pfKey = pfId.toLong();
+                 			loi = ifnull(data.get("loi"),Map());
+                 			ws = ifnull(loi.get("worksheet"),Map());
+                 			companyId = ifnull(ws.get("Company"),"").toString().trim();
+                 			tempMap = Map();
+                 			sellerMapOut = List();
+                 			for each  ns in ifnull(loi.get("newSellers"),List())
+                 			{
+                 				nsName = ifnull(ns.get("Builder_Name"),"").toString().trim();
+                 				if(nsName != "")
+                 				{
+                 					newB = insert into Builder
+                 					[
+                 						Builder_Name=nsName
+                 						Email=ifnull(ns.get("Email"),"")
+                 						Phone_Number=ifnull(ns.get("Phone_Number"),"")
+                 						Type1="Seller"
+                 						Added_User=zoho.loginuser
+                 					];
+                 					bRec = Builder[ID == newB];
+                 					bIds = List();
+                 					bIds.add(pfKey);
+                 					bRec.Proforma=bIds;
+                 					tempMap.put(ifnull(ns.get("tempId"),"").toString(),newB.toString());
+                 					sm = Map();
+                 					sm.put("tempId",ifnull(ns.get("tempId"),"").toString());
+                 					sm.put("id",newB.toString());
+                 					sellerMapOut.add(sm);
+                 				}
+                 			}
+                 			for each  sid in ifnull(loi.get("sellerIds"),List())
+                 			{
+                 				sidStr = sid.toString().trim();
+                 				if(sidStr != "")
+                 				{
+                 					exB = Builder[ID == sidStr.toLong()];
+                 					if(exB != null)
+                 					{
+                 						exIds = List();
+                 						exFound = false;
+                 						for each  ex in exB.Proforma
+                 						{
+                 							exIds.add(ex);
+                 							if(ex.toString() == pfId)
+                 							{
+                 								exFound = true;
+                 							}
+                 						}
+                 						if(!exFound)
+                 						{
+                 							exIds.add(pfKey);
+                 							exB.Proforma=exIds;
+                 						}
+                 					}
+                 				}
+                 			}
+                 			if(companyId != "")
+                 			{
+                 				coRec = Company[ID == companyId.toLong()];
+                 				if(coRec != null)
+                 				{
+                 					coIds = List();
+                 					coFound = false;
+                 					for each  co in coRec.Proforma
+                 					{
+                 						coIds.add(co);
+                 						if(co.toString() == pfId)
+                 						{
+                 							coFound = true;
+                 						}
+                 					}
+                 					if(!coFound)
+                 					{
+                 						coIds.add(pfKey);
+                 						coRec.Proforma=coIds;
+                 					}
+                 				}
+                 			}
+                 			propertyMapOut = List();
+                 			for each  np in ifnull(loi.get("newProperties"),List())
+                 			{
+                 				npName = ifnull(np.get("Common_Name"),"").toString().trim();
+                 				npPid = ifnull(np.get("Property_ID"),"").toString().trim();
+                 				if(npName != "" || npPid != "")
+                 				{
+                 					newP = insert into Property
+                 					[
+                 						Common_Name=npName
+                 						Property_ID=npPid
+                 						Facility_ID=ifnull(np.get("Facility_ID"),"")
+                 						County=ifnull(np.get("County"),"")
+                 						Added_User=zoho.loginuser
+                 					];
+                 					pRec = Property[ID == newP];
+                 					npAcres = ifnull(np.get("Acres"),"").toString().trim();
+                 					if(npAcres != "")
+                 					{
+                 						pRec.Acres=npAcres.toDecimal();
+                 					}
+                 					pRec.Proforma=pfKey;
+                 					sRef = ifnull(np.get("sellerRef"),"").toString().trim();
+                 					if(tempMap.get(sRef) != null)
+                 					{
+                 						sRef = tempMap.get(sRef).toString();
+                 					}
+                 					if(sRef != "")
+                 					{
+                 						pRec.Seller=sRef.toLong();
+                 					}
+                 					if(companyId != "")
+                 					{
+                 						pRec.Company1=companyId.toLong();
+                 					}
+                 					pm = Map();
+                 					pm.put("tempId",ifnull(np.get("tempId"),"").toString());
+                 					pm.put("id",newP.toString());
+                 					propertyMapOut.add(pm);
+                 				}
+                 			}
+                 			assigns = ifnull(loi.get("propertyAssignments"),Map());
+                 			for each  pid in ifnull(loi.get("propertyIds"),List())
+                 			{
+                 				pidStr = pid.toString().trim();
+                 				if(pidStr != "")
+                 				{
+                 					exP = Property[ID == pidStr.toLong()];
+                 					if(exP != null)
+                 					{
+                 						exP.Proforma=pfKey;
+                 						aRow = assigns.get(pidStr);
+                 						if(aRow != null)
+                 						{
+                 							aSid = ifnull(aRow.get("sellerId"),"").toString().trim();
+                 							if(tempMap.get(aSid) != null)
+                 							{
+                 								aSid = tempMap.get(aSid).toString();
+                 							}
+                 							if(aSid != "")
+                 							{
+                 								exP.Seller=aSid.toLong();
+                 							}
+                 						}
+                 						if(companyId != "")
+                 						{
+                 							exP.Company1=companyId.toLong();
+                 						}
+                 					}
+                 				}
+                 			}
+                 			loiId = ifnull(loi.get("id"),"").toString().trim();
+                 			loiRecId = 0;
+                 			// A Pro Forma can already exist while its first LOI Worksheet does not.
+                 			// Resolve the worksheet by record existence, not by whether the Pro Forma is new.
+                 			if(loiId != "")
+                 			{
+                 				requestedLoiRec = LOI_Worksheet[ID == loiId.toLong() && Proforma == pfKey];
+                 				if(requestedLoiRec.ID != null)
+                 				{
+                 					loiRecId = requestedLoiRec.ID.toLong();
+                 				}
+                 			}
+                 			// If the client did not supply a usable worksheet ID, reuse this
+                 			// Pro Forma's current worksheet when one exists.
+                 			if(loiRecId == 0)
+                 			{
+                 				currentLoiRec = LOI_Worksheet[Proforma == pfKey && Is_Current == true];
+                 				if(currentLoiRec.ID != null)
+                 				{
+                 					loiRecId = currentLoiRec.ID.toLong();
+                 				}
+                 			}
+                 			// Existing Pro Formas may be receiving LOI data for the first time.
+                 			// Create and link the worksheet in the insert itself so there is never
+                 			// an empty record variable to update.
+                 			if(loiRecId == 0)
+                 			{
+                 				newLoi = insert into LOI_Worksheet
+                 				[
+                 					Proforma=pfKey
+                 					Is_Current=true
+                 					Added_User=zoho.loginuser
+                 				];
+                 				loiRecId = newLoi.toLong();
+                 			}
+                 			loiRec = LOI_Worksheet[ID == loiRecId];
+                 			if(loiRec.ID == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","The LOI Worksheet could not be created or loaded.");
+                 				resp.put("errorCode","LOI_WORKSHEET_NOT_FOUND");
+                 				return resp.toString();
+                 			}
+                 			loiRec.Proforma=pfKey;
+                 			if(ws.get("LOI_Name") != null)
+                 			{
+                 				loiRec.LOI_Name=ws.get("LOI_Name");
+                 			}
+                 			if(ws.get("Acquisition_Email") != null)
+                 			{
+                 				loiRec.Acquisition_Email=ws.get("Acquisition_Email");
+                 			}
+                 			if(ws.get("Buyer_Broker") != null)
+                 			{
+                 				loiRec.Buyer_Broker=ws.get("Buyer_Broker");
+                 			}
+                 			if(ws.get("Seller_Broker") != null)
+                 			{
+                 				loiRec.Seller_Broker=ws.get("Seller_Broker");
+                 			}
+                 			if(ws.get("Special_Provisions") != null)
+                 			{
+                 				loiRec.Special_Provisions=ws.get("Special_Provisions");
+                 			}
+                 			if(ws.get("Legal_Note") != null)
+                 			{
+                 				loiRec.Legal_Note=ws.get("Legal_Note");
+                 			}
+                 			if(ws.get("Legal_Status") != null)
+                 			{
+                 				loiRec.Legal_Status=ws.get("Legal_Status");
+                 			}
+                 			if(ws.get("Approval_Token") != null)
+                 			{
+                 				loiRec.Approval_Token=ws.get("Approval_Token");
+                 			}
+                 			if(ws.get("Total_Acres") != null && ws.get("Total_Acres").toString() != "")
+                 			{
+                 				loiRec.Total_Acres=ws.get("Total_Acres").toDecimal();
+                 			}
+                 			if(ws.get("Amount_Per_Acre") != null && ws.get("Amount_Per_Acre").toString() != "")
+                 			{
+                 				loiRec.Amount_Per_Acre=ws.get("Amount_Per_Acre").toDecimal();
+                 			}
+                 			if(ws.get("Estimated_Price") != null && ws.get("Estimated_Price").toString() != "")
+                 			{
+                 				loiRec.Estimated_Price=ws.get("Estimated_Price").toDecimal();
+                 			}
+                 			if(ws.get("Earnest_Money") != null && ws.get("Earnest_Money").toString() != "")
+                 			{
+                 				loiRec.Earnest_Money=ws.get("Earnest_Money").toDecimal();
+                 			}
+                 			if(ws.get("Amount_Per_Extension") != null && ws.get("Amount_Per_Extension").toString() != "")
+                 			{
+                 				loiRec.Amount_Per_Extension=ws.get("Amount_Per_Extension").toDecimal();
+                 			}
+                 			if(ws.get("Earnest_Money_Due_Days") != null && ws.get("Earnest_Money_Due_Days").toString() != "")
+                 			{
+                 				loiRec.Earnest_Money_Due_Days=ws.get("Earnest_Money_Due_Days").toLong();
+                 			}
+                 			if(ws.get("Initial_Feasibility_Days") != null && ws.get("Initial_Feasibility_Days").toString() != "")
+                 			{
+                 				loiRec.Initial_Feasibility_Days=ws.get("Initial_Feasibility_Days").toLong();
+                 			}
+                 			if(ws.get("Extensions") != null && ws.get("Extensions").toString() != "")
+                 			{
+                 				loiRec.Extensions=ws.get("Extensions").toLong();
+                 			}
+                 			if(ws.get("Days_Per_Extension") != null && ws.get("Days_Per_Extension").toString() != "")
+                 			{
+                 				loiRec.Days_Per_Extension=ws.get("Days_Per_Extension").toLong();
+                 			}
+                 			if(ws.get("Closing_Days_After_Feasibility") != null && ws.get("Closing_Days_After_Feasibility").toString() != "")
+                 			{
+                 				loiRec.Closing_Days_After_Feasibility=ws.get("Closing_Days_After_Feasibility").toLong();
+                 			}
+                 			if(ws.get("Version_Number") != null && ws.get("Version_Number").toString() != "")
+                 			{
+                 				loiRec.Version_Number=ws.get("Version_Number").toLong();
+                 			}
+                 			if(ws.get("Response_Date") != null && ws.get("Response_Date").toString() != "")
+                 			{
+                 				loiRec.Response_Date=ws.get("Response_Date").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			if(ws.get("Assumed_Effective_Date") != null && ws.get("Assumed_Effective_Date").toString() != "")
+                 			{
+                 				loiRec.Assumed_Effective_Date=ws.get("Assumed_Effective_Date").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			if(ws.get("Projected_Hard_Close_Date") != null && ws.get("Projected_Hard_Close_Date").toString() != "")
+                 			{
+                 				loiRec.Projected_Hard_Close_Date=ws.get("Projected_Hard_Close_Date").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			if(ws.get("Earnest_Money_Due_Date") != null && ws.get("Earnest_Money_Due_Date").toString() != "")
+                 			{
+                 				loiRec.Earnest_Money_Due_Date=ws.get("Earnest_Money_Due_Date").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			if(ws.get("Is_Current") != null)
+                 			{
+                 				loiRec.Is_Current=ws.get("Is_Current").toString().toLowerCase() == "true";
+                 			}
+                 			if(ws.get("Locked") != null)
+                 			{
+                 				loiRec.Locked=ws.get("Locked").toString().toLowerCase() == "true";
+                 			}
+                 			if(companyId != "")
+                 			{
+                 				loiRec.Company=companyId.toLong();
+                 			}
+                 			if(ifnull(ws.get("Contract"),"").toString().trim() != "")
+                 			{
+                 				loiRec.Contract=ws.get("Contract").toString().toLong();
+                 			}
+                 			resp.put("success",true);
+                 			resp.put("loiWorksheetId",loiRec.ID.toString());
+                 			pfCheck = Add_Pro_Forma[ID == pfKey];
+                 			if(pfCheck != null)
+                 			{
+                 				resp.put("purchasingCompany",ifnull(pfCheck.Purchasing_Company,"").toString());
+                 			}
+                 			resp.put("sellerMap",sellerMapOut);
+                 			resp.put("propertyMap",propertyMapOut);
+                 			resp.put("action","loi_saved");
+                 			return resp.toString();
+                 		}
+                 		header = data.get("header");
+                 		isNew = pfId == "";
+                 		if(isNew)
+                 		{
+                 			newRec = insert into Add_Pro_Forma
+                 			[
+                 				Name=ifnull(header.get("Name"),"")
+                 				Probability=ifnull(header.get("Probability"),"Medium")
+                 				Added_User=zoho.loginuser
+                 			];
+                 			pfKey = newRec.toLong();
+                 			pf = Add_Pro_Forma[ID == pfKey];
+                 			if(pf == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","New pro forma could not be read back after insert.");
+                 				return resp.toString();
+                 			}
+                 		}
+                 		else
+                 		{
+                 			pfIdLong = pfId.toLong();
+                 			pf = Add_Pro_Forma[ID == pfIdLong];
+                 			if(pf == null)
+                 			{
+                 				resp.put("success",false);
+                 				resp.put("error","Pro forma " + pfId + " not found.");
+                 				return resp.toString();
+                 			}
+                 			pfKey = pf.ID.toLong();
+                 		}
+                 		instIds = List();
+                 		for each  instGr in pf.Land_Purchase_Installments
+                 		{
+                 			instIds.add(instGr.ID.toLong());
+                 		}
+                 		for each  saleGr in pf.Land_Sale_Installments
+                 		{
+                 			instIds.add(saleGr.ID.toLong());
+                 		}
+                 		for each  pidGr in pf.PID_MUD
+                 		{
+                 			instIds.add(pidGr.ID.toLong());
+                 		}
+                 		for each  iid in instIds
+                 		{
+                 			delete from Land_Installments[ID == iid];
+                 		}
+                 		for each  r in ifnull(data.get("purchaseInstallments"),List())
+                 		{
+                 			instDate = null;
+                 			if(r.get("Date1") != null && r.get("Date1").toString() != "")
+                 			{
+                 				instDate = r.get("Date1").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			insert into Land_Installments
+                 			[
+                 				Installment=if(ifnull(r.get("Installment"),"") == "","0",r.get("Installment").toString()).toLong()
+                 				Month1=if(ifnull(r.get("Month1"),"") == "","0",r.get("Month1").toString()).toLong()
+                 				Percent1=if(ifnull(r.get("Percent1"),"") == "","0",r.get("Percent1").toString()).toDecimal()
+                 				Cost=if(ifnull(r.get("Cost"),"") == "","0",r.get("Cost").toString()).toDecimal()
+                 				Type1="Purchase"
+                 				Date1=instDate
+                 				Pro_Forma=pfKey
+                 				Added_User=zoho.loginuser
+                 			]
+                 		}
+                 		for each  r in ifnull(data.get("saleInstallments"),List())
+                 		{
+                 			instDate = null;
+                 			if(r.get("Date1") != null && r.get("Date1").toString() != "")
+                 			{
+                 				instDate = r.get("Date1").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			insert into Land_Installments
+                 			[
+                 				Installment=if(ifnull(r.get("Installment"),"") == "","0",r.get("Installment").toString()).toLong()
+                 				Month1=if(ifnull(r.get("Month1"),"") == "","0",r.get("Month1").toString()).toLong()
+                 				Percent1=if(ifnull(r.get("Percent1"),"") == "","0",r.get("Percent1").toString()).toDecimal()
+                 				Cost=if(ifnull(r.get("Cost"),"") == "","0",r.get("Cost").toString()).toDecimal()
+                 				Type1="Sale"
+                 				Date1=instDate
+                 				Pro_Forma2=pfKey
+                 				Added_User=zoho.loginuser
+                 			]
+                 		}
+                 		for each  r in ifnull(data.get("pidMud"),List())
+                 		{
+                 			instDate = null;
+                 			if(r.get("Date1") != null && r.get("Date1").toString() != "")
+                 			{
+                 				instDate = r.get("Date1").toString().toDate("MM/dd/yyyy");
+                 			}
+                 			insert into Land_Installments
+                 			[
+                 				Installment=if(ifnull(r.get("Installment"),"") == "","0",r.get("Installment").toString()).toLong()
+                 				Month1=if(ifnull(r.get("Month1"),"") == "","0",r.get("Month1").toString()).toLong()
+                 				Percent1=if(ifnull(r.get("Percent1"),"") == "","0",r.get("Percent1").toString()).toDecimal()
+                 				Cost=if(ifnull(r.get("Cost"),"") == "","0",r.get("Cost").toString()).toDecimal()
+                 				Type1="PID/MUD"
+                 				Date1=instDate
+                 				Pro_Forma_PID_MUD=pfKey
+                 				Added_User=zoho.loginuser
+                 			]
+                 		}
+                 		itemIds = List();
+                 		for each  itemGrC in pf.Additional_Costs_Construction
+                 		{
+                 			if(itemGrC.Template_Item != true)
+                 			{
+                 				itemIds.add(itemGrC.ID.toLong());
+                 			}
+                 		}
+                 		for each  itemGrD in pf.Additional_Costs_Development
+                 		{
+                 			if(itemGrD.Template_Item != true)
+                 			{
+                 				itemIds.add(itemGrD.ID.toLong());
+                 			}
+                 		}
+                 		for each  iid in itemIds
+                 		{
+                 			delete from Proforma_Item[ID == iid];
+                 		}
+                 		for each  r in ifnull(data.get("items"),List())
+                 		{
+                 			dept = ifnull(r.get("Department"),"").toString();
+                 			if(dept == "Construction")
+                 			{
+                 				insert into Proforma_Item
+                 				[
+                 					Item_Name=r.get("Item_Name")
+                 					Category=r.get("Category")
+                 					Department=r.get("Department")
+                 					Cost_Code=r.get("Cost_Code")
+                 					Dept_Code=r.get("Dept_Code")
+                 					Add_l_Cost=if(ifnull(r.get("Add_l_Cost"),"") == "","0",r.get("Add_l_Cost").toString()).toDecimal()
+                 					Cost_Application=r.get("Cost_Application")
+                 					Start_Phase=if(ifnull(r.get("Start_Phase"),"") == "","0",r.get("Start_Phase").toString()).toLong()
+                 					End_Phase=if(ifnull(r.get("End_Phase"),"") == "","0",r.get("End_Phase").toString()).toLong()
+                 					Start_Month=if(ifnull(r.get("Start_Month"),"") == "","0",r.get("Start_Month").toString()).toLong()
+                 					End_Month=if(ifnull(r.get("End_Month"),"") == "","0",r.get("End_Month").toString()).toLong()
+                 					Specific_Months_List=ifnull(r.get("Specific_Months_List"),"")
+                 					Description=r.get("Description")
+                 					Template_Item=false
+                 					Pro_Forma_Const=pfKey
+                 					Added_User=zoho.loginuser
+                 				]
+                 			}
+                 			else
+                 			{
+                 				insert into Proforma_Item
+                 				[
+                 					Item_Name=r.get("Item_Name")
+                 					Category=r.get("Category")
+                 					Department=r.get("Department")
+                 					Cost_Code=r.get("Cost_Code")
+                 					Dept_Code=r.get("Dept_Code")
+                 					Add_l_Cost=if(ifnull(r.get("Add_l_Cost"),"") == "","0",r.get("Add_l_Cost").toString()).toDecimal()
+                 					Cost_Application=r.get("Cost_Application")
+                 					Start_Phase=if(ifnull(r.get("Start_Phase"),"") == "","0",r.get("Start_Phase").toString()).toLong()
+                 					End_Phase=if(ifnull(r.get("End_Phase"),"") == "","0",r.get("End_Phase").toString()).toLong()
+                 					Start_Month=if(ifnull(r.get("Start_Month"),"") == "","0",r.get("Start_Month").toString()).toLong()
+                 					End_Month=if(ifnull(r.get("End_Month"),"") == "","0",r.get("End_Month").toString()).toLong()
+                 					Specific_Months_List=ifnull(r.get("Specific_Months_List"),"")
+                 					Description=r.get("Description")
+                 					Template_Item=false
+                 					Pro_Forma_Dev=pfKey
+                 					Added_User=zoho.loginuser
+                 				]
+                 			}
+                 		}
+                 		curveIds = List();
+                 		for each  curveGr in pf.Construction_Curve
+                 		{
+                 			if(curveGr.Template_Item != true)
+                 			{
+                 				curveIds.add(curveGr.ID.toLong());
+                 			}
+                 		}
+                 		for each  cid in curveIds
+                 		{
+                 			delete from Construction_Curve[ID == cid];
+                 		}
+                 		for each  r in ifnull(data.get("curve"),List())
+                 		{
+                 			insert into Construction_Curve
+                 			[
+                 				Month_Number=if(ifnull(r.get("Month_Number"),"") == "","0",r.get("Month_Number").toString()).toLong()
+                 				Percent_Cost=if(ifnull(r.get("Percent_Cost"),"") == "","0",r.get("Percent_Cost").toString()).toDecimal()
+                 				Cost_Curve=r.get("Cost_Curve")
+                 				Template_Item=false
+                 				Pro_Forma=pfKey
+                 				Added_User=zoho.loginuser
+                 			]
+                 		}
+                 		if(header.get("Name") != null)
+                 		{
+                 			pf.Name=header.get("Name");
+                 		}
+                 		if(header.get("Territory") != null)
+                 		{
+                 			pf.Territory=header.get("Territory");
+                 		}
+                 		if(header.get("MUD_PID") != null)
+                 		{
+                 			pf.MUD_PID=header.get("MUD_PID");
+                 		}
+                 		if(header.get("Probability") != null)
+                 		{
+                 			pf.Probability=header.get("Probability");
+                 		}
+                 		if(header.get("Total_Acres") != null && header.get("Total_Acres").toString() != "")
+                 		{
+                 			pf.Total_Acres=header.get("Total_Acres").toDecimal().round(2);
+                 		}
+                 		if(header.get("Land_Cost_Acre") != null && header.get("Land_Cost_Acre").toString() != "")
+                 		{
+                 			pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal();
+                 		}
+                 		if(header.get("Sale_Price_FF") != null && header.get("Sale_Price_FF").toString() != "")
+                 		{
+                 			pf.Sale_Price_FF=header.get("Sale_Price_FF").toDecimal();
+                 		}
+                 		if(header.get("Engineering_Cost_Lot") != null && header.get("Engineering_Cost_Lot").toString() != "")
+                 		{
+                 			pf.Engineering_Cost_Lot=header.get("Engineering_Cost_Lot").toDecimal();
+                 		}
+                 		if(header.get("Const_Cost_FF") != null && header.get("Const_Cost_FF").toString() != "")
+                 		{
+                 			pf.Const_Cost_FF=header.get("Const_Cost_FF").toDecimal();
+                 		}
+                 		if(header.get("Phases") != null && header.get("Phases").toString() != "")
+                 		{
+                 			pf.Phases=header.get("Phases").toLong();
+                 		}
+                 		if(header.get("Lots") != null && header.get("Lots").toString() != "")
+                 		{
+                 			pf.Lots=header.get("Lots").toLong();
+                 		}
+                 		if(header.get("Total_Street_LF") != null && header.get("Total_Street_LF").toString() != "")
+                 		{
+                 			pf.Total_Street_LF=header.get("Total_Street_LF").toLong();
+                 		}
+                 		if(header.get("Lot_Size_Ft") != null && header.get("Lot_Size_Ft").toString() != "")
+                 		{
+                 			pf.Lot_Size_Ft=header.get("Lot_Size_Ft").toDecimal();
+                 		}
+                 		if(header.get("Engineering_Length_Months") != null && header.get("Engineering_Length_Months").toString() != "")
+                 		{
+                 			pf.Engineering_Length_Months=header.get("Engineering_Length_Months").toLong();
+                 		}
+                 		if(header.get("Construction_Length") != null)
+                 		{
+                 			pf.Construction_Length=header.get("Construction_Length");
+                 		}
+                 		if(header.get("Engineering_Delay_Months") != null && header.get("Engineering_Delay_Months").toString() != "")
+                 		{
+                 			pf.Engineering_Delay_Months=header.get("Engineering_Delay_Months").toLong();
+                 		}
+                 		if(header.get("Construction_Delay_Months") != null && header.get("Construction_Delay_Months").toString() != "")
+                 		{
+                 			pf.Construction_Delay_Months=header.get("Construction_Delay_Months").toLong();
+                 		}
+                 		if(header.get("Initial_Takedown") != null && header.get("Initial_Takedown").toString() != "")
+                 		{
+                 			pf.Initial_Takedown=header.get("Initial_Takedown").toLong();
+                 		}
+                 		if(header.get("Lots_per_Month") != null && header.get("Lots_per_Month").toString() != "")
+                 		{
+                 			pf.Lots_per_Month=header.get("Lots_per_Month").toLong();
+                 		}
+                 		if(header.get("Purchase_Installments") != null && header.get("Purchase_Installments").toString() != "")
+                 		{
+                 			pf.Purchase_Installments=header.get("Purchase_Installments").toLong();
+                 		}
+                 		if(header.get("Land_Sale") != null && header.get("Land_Sale").toString() != "")
+                 		{
+                 			pf.Land_Sale=header.get("Land_Sale").toDecimal();
+                 		}
+                 		if(header.get("Sale_Installments") != null && header.get("Sale_Installments").toString() != "")
+                 		{
+                 			pf.Sale_Installments=header.get("Sale_Installments").toLong();
+                 		}
+                 		if(header.get("Overhead") != null && header.get("Overhead").toString() != "")
+                 		{
+                 			pf.Overhead=header.get("Overhead").toDecimal();
+                 		}
+                 		if(header.get("Engineering_Overhead") != null && header.get("Engineering_Overhead").toString() != "")
+                 		{
+                 			pf.Engineering_Overhead=header.get("Engineering_Overhead").toDecimal();
+                 		}
+                 		if(header.get("Construction_Overhead") != null && header.get("Construction_Overhead").toString() != "")
+                 		{
+                 			pf.Construction_Overhead=header.get("Construction_Overhead").toDecimal();
+                 		}
+                 		if(header.get("Interest") != null && header.get("Interest").toString() != "")
+                 		{
+                 			pf.Interest=header.get("Interest").toDecimal();
+                 		}
+                 		if(header.get("Profit_Share") != null && header.get("Profit_Share").toString() != "")
+                 		{
+                 			pf.Profit_Share=header.get("Profit_Share").toDecimal();
+                 		}
+                 		if(header.get("Land_Cost") != null && header.get("Land_Cost").toString() != "")
+                 		{
+                 			pf.Land_Cost=header.get("Land_Cost").toDecimal();
+                 		}
+                 		if(header.get("Estimated_Purchase_Date") != null && header.get("Estimated_Purchase_Date").toString() != "")
+                 		{
+                 			pf.Estimated_Purchase_Date=header.get("Estimated_Purchase_Date").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Construction_Start_Month") != null && header.get("Construction_Start_Month").toString() != "")
+                 		{
+                 			pf.Construction_Start_Month=header.get("Construction_Start_Month").toLong();
+                 		}
+                 		if(header.get("Takedown_Start_Month") != null && header.get("Takedown_Start_Month").toString() != "")
+                 		{
+                 			pf.Takedown_Start_Month=header.get("Takedown_Start_Month").toLong();
+                 		}
+                 		if(header.get("Est_Lots_per_Acre") != null && header.get("Est_Lots_per_Acre").toString() != "")
+                 		{
+                 			pf.Est_Lots_per_Acre=header.get("Est_Lots_per_Acre").toDecimal();
+                 		}
+                 		if(header.get("Ft_St_per_Lot") != null && header.get("Ft_St_per_Lot").toString() != "")
+                 		{
+                 			pf.Ft_St_per_Lot=header.get("Ft_St_per_Lot").toDecimal();
+                 		}
+                 		ownerIds = List();
+                 		if(header.get("Owner") != null)
+                 		{
+                 			for each  ownerValue in header.get("Owner")
+                 			{
+                 				ownerIdText = ifnull(ownerValue,"").toString().trim();
+                 				if(ownerIdText != "")
+                 				{
+                 					ownerIds.add(ownerIdText.toLong());
+                 				}
+                 			}
+                 		}
+                 		if(ownerIds.size() > 0)
+                 		{
+                 			pf.Owner=ownerIds;
+                 		}
+                 		else if(isNew)
+                 		{
+                 			creatorRow = User_Access[User == zoho.loginuser];
+                 			if(creatorRow != null)
+                 			{
+                 				creatorOwners = List();
+                 				creatorOwners.add(creatorRow.ID);
+                 				pf.Owner=creatorOwners;
+                 			}
+                 		}
+                 		if(header.get("Engineering_Start") != null && header.get("Engineering_Start").toString() != "")
+                 		{
+                 			pf.Engineering_Start=header.get("Engineering_Start").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Construction_Start") != null && header.get("Construction_Start").toString() != "")
+                 		{
+                 			pf.Construction_Start=header.get("Construction_Start").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Estimated_Lot_Sale_Start") != null && header.get("Estimated_Lot_Sale_Start").toString() != "")
+                 		{
+                 			pf.Estimated_Lot_Sale_Start=header.get("Estimated_Lot_Sale_Start").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Estimated_Completion") != null && header.get("Estimated_Completion").toString() != "")
+                 		{
+                 			pf.Estimated_Completion=header.get("Estimated_Completion").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Gross_Sales") != null && header.get("Gross_Sales").toString() != "")
+                 		{
+                 			pf.Gross_Sales=header.get("Gross_Sales").toDecimal();
+                 		}
+                 		if(header.get("MUD_Revenue") != null && header.get("MUD_Revenue").toString() != "")
+                 		{
+                 			pf.MUD_Revenue=header.get("MUD_Revenue").toDecimal();
+                 		}
+                 		if(header.get("Reimbursements") != null && header.get("Reimbursements").toString() != "")
+                 		{
+                 			pf.Reimbursements=header.get("Reimbursements").toDecimal();
+                 		}
+                 		if(header.get("Reimbursed_Fees") != null && header.get("Reimbursed_Fees").toString() != "")
+                 		{
+                 			pf.Reimbursed_Fees=header.get("Reimbursed_Fees").toDecimal();
+                 		}
+                 		if(header.get("Total_Income") != null && header.get("Total_Income").toString() != "")
+                 		{
+                 			pf.Total_Income=header.get("Total_Income").toDecimal();
+                 		}
+                 		if(header.get("Entitlement_Cost") != null && header.get("Entitlement_Cost").toString() != "")
+                 		{
+                 			pf.Entitlement_Cost=header.get("Entitlement_Cost").toDecimal();
+                 		}
+                 		if(header.get("Entitlement_Engineering_Addl") != null && header.get("Entitlement_Engineering_Addl").toString() != "")
+                 		{
+                 			pf.Entitlement_Engineering_Addl=header.get("Entitlement_Engineering_Addl").toDecimal();
+                 		}
+                 		if(header.get("Construction_Cost_Base") != null && header.get("Construction_Cost_Base").toString() != "")
+                 		{
+                 			pf.Construction_Cost_Base=header.get("Construction_Cost_Base").toDecimal().round(0);
+                 		}
+                 		if(header.get("Construction_Cost_Addl") != null && header.get("Construction_Cost_Addl").toString() != "")
+                 		{
+                 			pf.Construction_Cost_Addl=header.get("Construction_Cost_Addl").toDecimal();
+                 		}
+                 		if(header.get("Total_Expenses") != null && header.get("Total_Expenses").toString() != "")
+                 		{
+                 			pf.Total_Expenses=header.get("Total_Expenses").toDecimal();
+                 		}
+                 		if(header.get("Net_Profit") != null && header.get("Net_Profit").toString() != "")
+                 		{
+                 			pf.Net_Profit=header.get("Net_Profit").toDecimal();
+                 		}
+                 		if(header.get("ROI1") != null && header.get("ROI1").toString() != "")
+                 		{
+                 			pf.ROI1=header.get("ROI1").toDecimal();
+                 		}
+                 		if(header.get("IRR") != null && header.get("IRR").toString() != "")
+                 		{
+                 			pf.IRR=header.get("IRR").toDecimal();
+                 		}
+                 		if(header.get("XIRR") != null && header.get("XIRR").toString() != "")
+                 		{
+                 			pf.XIRR=header.get("XIRR").toDecimal();
+                 		}
+                 		if(header.get("Overhead_Total") != null && header.get("Overhead_Total").toString() != "")
+                 		{
+                 			pf.Overhead_Total=header.get("Overhead_Total").toDecimal();
+                 		}
+                 		if(header.get("Engineering_Overhead_Total") != null && header.get("Engineering_Overhead_Total").toString() != "")
+                 		{
+                 			pf.Engineering_Overhead_Total=header.get("Engineering_Overhead_Total").toDecimal();
+                 		}
+                 		if(header.get("Construction_Overhead_Total") != null && header.get("Construction_Overhead_Total").toString() != "")
+                 		{
+                 			pf.Construction_Overhead_Total=header.get("Construction_Overhead_Total").toDecimal();
+                 		}
+                 		if(header.get("Interest_Total") != null && header.get("Interest_Total").toString() != "")
+                 		{
+                 			pf.Interest_Total=header.get("Interest_Total").toDecimal();
+                 		}
+                 		if(header.get("Profit_Share_Total") != null && header.get("Profit_Share_Total").toString() != "")
+                 		{
+                 			pf.Profit_Share_Total=header.get("Profit_Share_Total").toDecimal();
+                 		}
+                 		if(header.get("Seller") != null)
+                 		{
+                 			pf.Seller=header.get("Seller");
+                 		}
+                 		if(header.get("Authorized_Signer_for_Seller") != null)
+                 		{
+                 			pf.Authorized_Signer_for_Seller=header.get("Authorized_Signer_for_Seller");
+                 		}
+                 		if(header.get("Street_Address") != null)
+                 		{
+                 			pf.Street_Address=header.get("Street_Address");
+                 		}
+                 		if(header.get("Seller_City_State_ZIP") != null)
+                 		{
+                 			pf.Seller_City_State_ZIP=header.get("Seller_City_State_ZIP");
+                 		}
+                 		if(header.get("Seller_Phone") != null)
+                 		{
+                 			pf.Seller_Phone=header.get("Seller_Phone");
+                 		}
+                 		if(header.get("Seller_Email") != null)
+                 		{
+                 			pf.Seller_Email=header.get("Seller_Email");
+                 		}
+                 		if(ifnull(header.get("Purchasing_Company"),"") != "")
+                 		{
+                 			pf.Purchasing_Company=header.get("Purchasing_Company").toString().toLong();
+                 		}
+                 		if(header.get("CAD_ID") != null)
+                 		{
+                 			pf.CAD_ID=header.get("CAD_ID");
+                 		}
+                 		if(header.get("Property_County") != null)
+                 		{
+                 			pf.Property_County=header.get("Property_County");
+                 		}
+                 		if(header.get("Property_City") != null)
+                 		{
+                 			pf.Property_City=header.get("Property_City");
+                 		}
+                 		if(header.get("Earnest_Money") != null && header.get("Earnest_Money").toString() != "")
+                 		{
+                 			pf.Earnest_Money=header.get("Earnest_Money").toDecimal();
+                 		}
+                 		if(header.get("Initial_Feasibility_Days") != null && header.get("Initial_Feasibility_Days").toString() != "")
+                 		{
+                 			pf.Initial_Feasibility_Days=header.get("Initial_Feasibility_Days").toLong();
+                 		}
+                 		if(header.get("Extensions") != null && header.get("Extensions").toString() != "")
+                 		{
+                 			pf.Extensions=header.get("Extensions").toLong();
+                 		}
+                 		if(header.get("Days_per_Extension") != null && header.get("Days_per_Extension").toString() != "")
+                 		{
+                 			pf.Days_per_Extension=header.get("Days_per_Extension").toLong();
+                 		}
+                 		if(header.get("Amount_per_Extension") != null && header.get("Amount_per_Extension").toString() != "")
+                 		{
+                 			pf.Amount_per_Extension=header.get("Amount_per_Extension").toDecimal();
+                 		}
+                 		if(header.get("Closing_Days_Feas") != null && header.get("Closing_Days_Feas").toString() != "")
+                 		{
+                 			pf.Closing_Days_Feas=header.get("Closing_Days_Feas").toLong();
+                 		}
+                 		if(header.get("Broker_Buyer") != null)
+                 		{
+                 			pf.Broker_Buyer=header.get("Broker_Buyer");
+                 		}
+                 		if(header.get("Broker_Seller") != null)
+                 		{
+                 			pf.Broker_Seller=header.get("Broker_Seller");
+                 		}
+                 		if(header.get("Response_Date") != null && header.get("Response_Date").toString() != "")
+                 		{
+                 			pf.Response_Date=header.get("Response_Date").toString().toDate("MM/dd/yyyy");
+                 		}
+                 		if(header.get("Acquisition_Email") != null)
+                 		{
+                 			pf.Acquisition_Email=header.get("Acquisition_Email");
+                 		}
+                 		if(header.get("Special_Provisions") != null)
+                 		{
+                 			pf.Special_Provisions=header.get("Special_Provisions");
+                 		}
+                 		resp.put("success",true);
+                 		resp.put("id",pfKey.toString());
+                 		pcCheck = Add_Pro_Forma[ID == pfKey];
+                 		resp.put("purchasingCompany",ifnull(pcCheck.Purchasing_Company,"").toString());
+                 		if(isNew)
+                 		{
+                 			resp.put("action","created");
+                 		}
+                 		else
+                 		{
+                 			resp.put("action","updated");
+                 		}
+                 	}	catch (e)
+                 	{
+                 		resp.put("success",false);
+                 		resp.put("error",e.toString());
+                 		resp.put("debug_id",ifnull(pfId,"<null>"));
+                 		resp.put("debug_isNew",ifnull(isNew,"<null>").toString());
+                 		resp.put("debug_hasHeader",(header != null).toString());
+                 		resp.put("debug_deleteStage",ifnull(deleteStage,"").toString());
+                 	}
+                 	return resp.toString();
+                 }

@@ -1,0 +1,169 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Equipment",
+  "display_name": "Add Equipment",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equipment_Code",
+      "display_name": "Equipment Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equipment_Accounting_Code",
+      "display_name": "Equipment Accounting Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Current_Meter_Hours",
+      "display_name": "Current Meter Hours",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Purchase_Price",
+      "display_name": "Purchase Price",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Purchase_Date",
+      "display_name": "Purchase Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"In Service\",\"Down\",\"Out of Service\",\"Available\",\"Imported\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Type1",
+      "display_name": "Type",
+      "type": "picklist",
+      "values": "{\"ARTICULATED TRUCK\",\"BACKHOE\",\"BROOM\",\"DOZER\",\"EXCAVATOR\",\"LAND SCAPE TRACTOR\",\"LOADER\",\"MOTOR GRADER\",\"Mechanic Truck\",\"PAVER\",\"ROLLER\",\"SCRAPER\",\"SKID STEER\",\"SOIL STABILIZER\",\"TELEHANDLER\",\"TRACTOR\",\"TRAILER\",\"TRENCHER\",\"VEHICLES\",\"WATER PUMP\",\"WATER TRUCK\",\"WATER WAGON\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Description",
+      "display_name": "Description",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Serial_Number",
+      "display_name": "Serial Number",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Year1",
+      "display_name": "Year",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equipment_Usage_Year",
+      "display_name": "Equipment Usage Year",
+      "type": "grid",
+      "values": "Equipment_Usage_Year.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equipment_Maintenance",
+      "display_name": "Equipment Maintenance",
+      "type": "grid",
+      "values": "Equipment_Maintenance_Cost.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain",
+      "display_name": "plain",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

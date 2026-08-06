@@ -1,0 +1,277 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Takedown_Schedule",
+  "display_name": "Add Takedown Schedule",
+  "fields": [
+    {
+      "link_name": "Takedown_Details",
+      "display_name": "Takedown Details",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain",
+      "display_name": "plain",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivisions",
+      "display_name": "Subdivisions",
+      "type": "list",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Closing_Date",
+      "display_name": "Initial Closing Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Unlock_Hidden",
+      "display_name": "Unlock Hidden",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "plain1",
+      "display_name": "plain1",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Lot_Obligation",
+      "display_name": "Total Lot Obligation",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Takedown",
+      "display_name": "Initial Takedown (Lots)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Delay_Days",
+      "display_name": "Initial Delay (Days)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Continued_Takedown",
+      "display_name": "Subsequent Takedown (Lots)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Continued_Takedown_Delay_Days",
+      "display_name": "Subsequent Takedown Delay (Days)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Add_Contract_Contract_Name",
+      "display_name": "Add Contract - Contract Name",
+      "type": "picklist",
+      "values": "Contract.ID",
+      "display_format": "[Contract_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Auto_Generated_Fields",
+      "display_name": "Auto Generated Fields",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Takedown_Schedule_Code",
+      "display_name": "Takedown Schedule Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Takedown_Start_Date",
+      "display_name": "Takedown Start Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Takedown_End_Date",
+      "display_name": "Takedown End Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_Takedown_Date",
+      "display_name": "Last Takedown Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots_Sold",
+      "display_name": "Lots Sold",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots_Expected",
+      "display_name": "Lots Expected",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Completion_Percent",
+      "display_name": "Completion Percent",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_Takedown_Amount",
+      "display_name": "Last Takedown Amount",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_30_Day_Sales",
+      "display_name": "Last 30 Day Sales",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_90_Day_Sales",
+      "display_name": "Last 90 Day Sales",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_6_Month_Sales",
+      "display_name": "Last 6 Month Sales",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Last_12_Month_Sales",
+      "display_name": "Last 12 Month Sales",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

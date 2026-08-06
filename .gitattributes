@@ -1,0 +1,10 @@
+
+* text=auto eol=lf
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.ds linguist-language=Deluge
+*.dg linguist-language=Deluge

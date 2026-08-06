@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Land_Installments",
+  "display_name": "Land Installments",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Installment",
+      "display_name": "Installment",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Month1",
+      "display_name": "Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Type1",
+      "display_name": "Type",
+      "type": "picklist",
+      "values": "{\"Purchase\",\"Sale\",\"PID/MUD\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Percent1",
+      "display_name": "%",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost",
+      "display_name": "Amount",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Date1",
+      "display_name": "Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma",
+      "display_name": "Pro Forma (Land Purch)",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma2",
+      "display_name": "Pro Forma (Land Sale)",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma_PID_MUD",
+      "display_name": "Pro Forma (PID/MUD)",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

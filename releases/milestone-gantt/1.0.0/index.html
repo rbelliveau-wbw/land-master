@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subdivision Milestone Gantt</title>
+  <script src="https://static.zohocdn.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #eef1f7;
+      --surface: #ffffff;
+      --surface-2: #f5f7fb;
+      --line: #dde3ef;
+      --line-strong: #bec9dd;
+      --text: #0f1b30;
+      --text-2: #253858;
+      --muted: #5a6e8c;
+      --muted-2: #8fa0b8;
+      /* Primary: deep navy from the app */
+      --primary: #1e3a6e;
+      --primary-dark: #152d56;
+      --primary-bright: #2563eb;
+      --primary-soft: #eaf0fb;
+      --green: #0d7c52;
+      --green-soft: #ecfdf5;
+      /* Unsaved/dirty: teal instead of amber — complements navy */
+      --dirty: #0e6674;
+      --dirty-dark: #0a4f5a;
+      --dirty-soft: #e6f6f8;
+      --dirty-border: #a0d9e3;
+      --red: #991b1b;
+      --red-soft: #fef2f2;
+      --today-tint: rgba(239, 68, 68, 0.05);
+      --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+      --shadow: 0 4px 16px rgba(15,23,42,.07), 0 1px 4px rgba(15,23,42,.04);
+      --radius: 12px;
+      --side: 300px;
+      --row-h: 56px;
+      --day-w: 6px;
+      --axis-h: 60px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    body { padding: 20px 24px 40px; }
+    button, input, select { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    /* ── Page header ── */
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .title-block h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      color: var(--text);
+    }
+    .title-block p {
+      margin: 3px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: var(--shadow-sm);
+    }
+    .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); flex-shrink: 0; }
+    .status-pill.ok { color: var(--green); background: var(--green-soft); border-color: #a7f3d0; }
+    .status-pill.ok .dot { background: var(--green); }
+    .status-pill.err { color: var(--red); background: var(--red-soft); border-color: #fca5a5; }
+    .status-pill.err .dot { background: var(--red); }
+    .status-pill.warn { color: var(--dirty); background: var(--dirty-soft); border-color: var(--dirty-border); }
+    .status-pill.warn .dot { background: var(--dirty); }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .toolbar-top {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .field { flex: 1; min-width: 0; max-width: 360px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    select {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 0 10px;
+      outline: none;
+      font-size: 13.5px;
+    }
+    select:focus { border-color: #93b4fd; box-shadow: 0 0 0 3px rgba(29,78,216,.10); }
+
+    /* Button groups */
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .btn-divider { width: 1px; height: 24px; background: var(--line); margin: 0 2px; }
+    .btn {
+      height: 36px;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-weight: 600;
+      font-size: 13px;
+      background: var(--surface-2);
+      color: var(--text-2);
+      border: 1px solid var(--line-strong);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+      transition: background .12s, box-shadow .12s;
+    }
+    .btn:hover { background: #edf2f7; }
+    .btn.ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+      box-shadow: none;
+    }
+    .btn.ghost:hover { background: #eef2f7; color: var(--text); }
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(30,58,110,.30);
+    }
+    .btn.primary:hover { background: var(--primary-dark); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+
+    .toolbar-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      gap: 2px;
+    }
+    .segmented button {
+      height: 28px;
+      border-radius: 6px;
+      padding: 0 12px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      transition: background .1s, color .1s;
+    }
+    .segmented button.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(15,23,42,.09);
+    }
+    
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .summary .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .summary .tag.blue { color: var(--primary); background: var(--primary-soft); border-color: #b3c6e8; }
+    .summary .tag.amber { color: var(--dirty); background: var(--dirty-soft); border-color: var(--dirty-border); }
+    .summary .tag.green { color: var(--green); background: var(--green-soft); border-color: #a7f3d0; }
+
+    /* ── Panel ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-title-block { min-width: 0; }
+    .panel-title { font-weight: 700; font-size: 13.5px; }
+    .panel-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .legend {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 500;
+    }
+    .legend-item { display: inline-flex; gap: 5px; align-items: center; }
+    .legend-swatch {
+      width: 22px; height: 8px; border-radius: 4px;
+      background: var(--primary);
+    }
+    .legend-swatch.dirty { background: var(--dirty); }
+    .legend-swatch.sync { background: linear-gradient(90deg, var(--primary), #7c3aed); }
+
+    /* ── Gantt shell ── */
+    .gantt-shell {
+      position: relative;
+      overflow: auto;
+      max-height: calc(100vh - 240px);
+      background: #fff;
+    }
+    .gantt-inner { min-width: 100%; position: relative; }
+    .axis-row, .gantt-row {
+      display: grid;
+      grid-template-columns: var(--side) 1fr;
+      min-width: max-content;
+    }
+    .sticky-left {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: #fff;
+      border-right: 2px solid var(--line);
+    }
+
+    /* Axis */
+    .axis-left {
+      height: var(--axis-h);
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      display: flex;
+      align-items: flex-end;
+      padding-bottom: 10px;
+    }
+    .axis {
+      position: relative;
+      height: var(--axis-h);
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .months { height: 34px; position: relative; border-bottom: 1px solid var(--line); }
+    .month {
+      position: absolute;
+      top: 0;
+      height: 34px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .ticks { position: relative; height: 26px; }
+    .tick {
+      position: absolute;
+      top: 0;
+      height: 26px;
+      border-left: 1px solid var(--line);
+      font-size: 10px;
+      color: var(--muted-2);
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Today */
+    .today-col {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .today-col-tint {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: var(--today-tint);
+      width: calc(var(--day-w));
+    }
+    .today-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: #ef4444;
+      z-index: 4;
+    }
+    .today-label {
+      position: absolute;
+      top: -26px;
+      transform: translateX(-50%);
+      background: #ef4444;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+      letter-spacing: .04em;
+    }
+
+    /* Rows */
+    .gantt-row {
+      height: var(--row-h);
+      min-height: var(--row-h);
+      border-bottom: 1px solid #edf1f7;
+    }
+    .gantt-row:hover .row-label { background: #f8faff; }
+    .gantt-row:hover .track { background-color: #fbfcff; }
+
+    .row-label {
+      height: var(--row-h);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      overflow: hidden;
+      transition: background .1s;
+    }
+    .row-index {
+      flex: 0 0 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .row-label.dirty .row-index { background: var(--dirty-soft); color: var(--dirty); }
+
+    .link-btn {
+      flex: 0 0 22px;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--muted-2);
+      transition: all .12s;
+    }
+    .link-btn:hover:not(:disabled) { color: var(--primary); border-color: #8aaad0; background: var(--primary-soft); }
+    .link-btn.active { color: #fff; background: var(--primary); border-color: var(--primary); box-shadow: 0 2px 6px rgba(30,58,110,.28); }
+    .link-btn:disabled { opacity: .2; cursor: not-allowed; background: var(--surface-2); }
+    .link-btn svg { width: 12px; height: 12px; display: block; }
+
+    .sync-btn {
+      flex: 0 0 22px; width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      background: #f5f3ff; border: 1px solid #ddd6fe; color: #7c3aed;
+    }
+    .sync-btn svg { width: 13px; height: 13px; display: block; }
+
+    .row-text { min-width: 0; flex: 1; }
+    .row-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .row-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Track & bars */
+    .track {
+      position: relative;
+      height: var(--row-h);
+      background-image: linear-gradient(to right, rgba(210,220,235,.5) 1px, transparent 1px);
+      background-size: calc(var(--day-w) * 7) 100%;
+      transition: background-color .1s;
+    }
+    .bar {
+      position: absolute;
+      top: 10px;
+      height: 32px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #2a5298, #1e3a6e);
+      box-shadow: 0 2px 8px rgba(29,78,216,.20);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      min-width: 24px;
+      touch-action: none;
+      user-select: none;
+      cursor: grab;
+      overflow: hidden;
+      z-index: 3;
+      transition: box-shadow .12s, filter .1s;
+    }
+    .bar:hover { box-shadow: 0 4px 14px rgba(30,58,110,.32); filter: brightness(1.07); }
+    .bar:active { cursor: grabbing; filter: brightness(.97); }
+    .bar.dirty {
+      background: linear-gradient(135deg, #1a8fa8, #0e6674);
+      box-shadow: 0 2px 8px rgba(14,102,116,.28);
+    }
+    .bar.dirty:hover { box-shadow: 0 4px 14px rgba(14,102,116,.40); }
+    .bar.sync { outline: 2px solid rgba(124,58,237,.3); outline-offset: 1px; }
+
+    .bar-text {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 0 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1;
+    }
+    .bar-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .bar-date {
+      font-size: 10px;
+      font-weight: 500;
+      opacity: .85;
+      padding-left: 7px;
+      border-left: 1px solid rgba(255,255,255,.3);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-sync {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.35);
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Resize handles — wide invisible hit zone, narrow visible grip */
+    .handle {
+      position: absolute; top: 0; width: 14px; height: 100%; z-index: 4;
+    }
+    .handle.left { left: 0; cursor: ew-resize; }
+    .handle.right { right: 0; cursor: ew-resize; }
+    .handle::after {
+      content: "";
+      position: absolute;
+      top: 8px; width: 2px; height: 14px;
+      border-radius: 2px;
+      background: rgba(255,255,255,.7);
+    }
+    .handle.left::after { left: 5px; }
+    .handle.right::after { right: 5px; }
+
+    /* Linked rows: left-border bracket replaces the dashed arrow connector */
+    .gantt-row.linked-from .row-label { border-left: 3px solid var(--primary-bright); }
+    .gantt-row.linked-to   .row-label { border-left: 3px solid var(--primary-bright); background: linear-gradient(90deg, rgba(37,99,235,.04), transparent 40%); }
+    .gantt-row.linked-from .track { border-left: 3px solid rgba(37,99,235,.18); }
+    .gantt-row.linked-to   .track { border-left: 3px solid rgba(37,99,235,.18); }
+
+    /* Dependency / sync layer */
+    .dependency-layer {
+      position: absolute;
+      left: var(--side);
+      top: var(--axis-h);
+      z-index: 1;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .dependency-line {
+      fill: none;
+      stroke: var(--muted-2);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 3 5;
+      opacity: .7;
+    }
+    .dependency-arrow { fill: var(--muted-2); opacity: .7; }
+    .sync-band { fill: rgba(124,58,237,.06); stroke: rgba(124,58,237,.2); stroke-width: 1.5; }
+    .sync-rail { fill: none; stroke: #7c3aed; stroke-width: 1.5; stroke-linecap: round; opacity: .5; stroke-dasharray: 3 4; }
+    .sync-label {
+      fill: #7c3aed;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      paint-order: stroke;
+      stroke: #fff;
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    /* Unscheduled chips */
+    .unscheduled {
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      background: var(--surface-2);
+    }
+    .unscheduled-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .unscheduled-list { display: flex; gap: 7px; flex-wrap: wrap; }
+    .unscheduled-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1.5px dashed var(--line-strong);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .12s, color .12s, background .12s;
+    }
+    .unscheduled-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+    .unscheduled-chip .chip-add {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--line);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      flex-shrink: 0;
+      transition: background .12s, color .12s;
+    }
+    .unscheduled-chip:hover .chip-add { background: var(--primary); color: #fff; }
+
+    /* Empty state */
+    .empty { padding: 48px 24px; text-align: center; color: var(--muted); }
+    .empty h2 { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--text); }
+    .empty p { margin: 0; font-size: 13px; }
+
+    @media (max-width: 800px) {
+      :root { --side: 240px; }
+      body { padding: 12px; }
+      .toolbar-top { flex-wrap: wrap; }
+      .btn-group { margin-left: 0; width: 100%; justify-content: flex-end; }
+    }
+  </style>
+  <style>
+    /* Production overrides — restore original classes used by Zoho logic */
+    .title-block h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.3px;}
+    .title-block p{margin:3px 0 0;font-size:12.5px;color:var(--muted);}
+    .toast{min-height:22px;}
+    .debug-wrap{display:none;margin-top:12px;background:#101828;color:#d1e3ff;border-radius:12px;padding:12px;white-space:pre-wrap;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;max-height:220px;overflow:auto;}
+    .debug-wrap.show{display:block;}
+    .subdivision-field{flex:1;min-width:0;max-width:360px;}
+    .select-wrap{position:relative;}
+    .panel-title{font-weight:700;font-size:13.5px;}
+    .panel-sub{font-size:12px;color:var(--muted);margin-top:1px;}
+    .legend-swatch{width:22px;height:8px;border-radius:4px;background:var(--primary);display:inline-block;}
+    .legend-swatch.dirty{background:var(--dirty);}
+    .legend-swatch.sync{background:linear-gradient(90deg,var(--primary),#7c3aed);}
+    @media(max-width:850px){
+      body{padding:14px;}
+      :root{--side:255px;}
+      .toolbar-top{flex-wrap:wrap!important;}
+      .subdivision-field{max-width:none!important;}
+      .btn-group{margin-left:0!important;width:100%;justify-content:flex-end;}
+      .page-head{display:block;}
+      .status-pill{margin-top:10px;}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-head">
+    <div class="title-block">
+      <h1>Subdivision Milestone Gantt</h1>
+      <p>Select a subdivision, then drag milestone bars to move dates, stretch either edge, or link rows together.</p>
+    </div>
+    <div id="message" class="status-pill toast"><span class="dot"></span><span>Starting widget…</span></div>
+  </div>
+
+  <section class="toolbar">
+    <div class="toolbar-top" style="display:flex;align-items:flex-end;gap:12px;">
+      <div class="field subdivision-field">
+        <label for="subdivisionSelect">Subdivision</label>
+        <div class="select-wrap">
+          <select id="subdivisionSelect" disabled>
+            <option>Loading subdivisions…</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-group" style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button id="refreshBtn" class="btn ghost">Refresh</button>
+        <button id="todayBtn" class="btn ghost">Today</button>
+        <div style="width:1px;height:24px;background:var(--line);margin:0 2px;"></div>
+        <button id="resetBtn" class="btn">Reset</button>
+        <button id="saveBtn" class="btn primary" disabled>Save Changes</button>
+      </div>
+    </div>
+    <div class="toolbar-bottom">
+      <div class="segmented" aria-label="Zoom level">
+        <button id="zoomCompact" data-zoom="compact" class="active">Compact</button>
+        <button id="zoomWeek" data-zoom="week">Week</button>
+        
+      </div>
+      <div id="summary" class="summary"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title" id="panelTitle">Milestones</div>
+        <div class="panel-sub" id="panelSub">Select a subdivision to load its milestone timeline.</div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch"></span>Saved</span>
+        <span class="legend-item"><span class="legend-swatch dirty"></span>Unsaved edit</span>
+        <span class="legend-item">🔗 Linked sequence</span>
+        <span class="legend-item">↔ Moves in unison</span>
+      </div>
+    </div>
+    <div id="gantt" class="gantt-shell">
+      <div class="empty"><h2>Loading…</h2><p>Fetching records from Creator.</p></div>
+    </div>
+    <div id="unscheduled" class="unscheduled" style="display:none;"></div>
+  </section>
+
+  <pre id="debug" class="debug-wrap"></pre>
+
+
+<script>
+(function(){
+  'use strict';
+
+  var CONFIG = {
+    reports: {
+      subdivisions: 'All_Subdivisions',
+      milestones: 'All_Milestones'
+    },
+    pageSize: 200,
+    maxPagesPerReport: 60,
+    datePayloadFormat: 'MM/dd/yyyy'
+  };
+
+  var state = {
+    loading: true,
+    subdivisions: [],
+    milestones: [],
+    selectedSubdivisionId: '',
+    links: {},
+    zoom: 'compact',
+    timeline: null,
+    drag: null,
+    debug: [],
+    query: parseQuery(),
+    saveInProgress: false
+  };
+
+  var zooms = {
+    compact: { dayWidth: 6,  tickEvery: 14, label: 'Compact' },
+    week:    { dayWidth: 12, tickEvery: 7,  label: 'Week' }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function setMessage(text, type){
+    var el = $('message');
+    el.className = 'status-pill toast' + (type ? ' ' + type : '');
+    el.innerHTML = '<span class="dot"></span><span>' + escapeHtml(text || '') + '</span>';
+  }
+
+  function diag(label, obj){
+    try {
+      state.debug.push(label + '\n' + (typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)));
+      if (state.debug.length > 12) state.debug.shift();
+      $('debug').textContent = state.debug.join('\n\n---\n\n');
+      if (/debug=1/i.test(window.location.search || '')) $('debug').classList.add('show');
+    } catch(e) {}
+  }
+
+  function parseQuery(){
+    var out = {};
+    var q = (window.location.search || '').replace(/^\?/, '');
+    q.split('&').forEach(function(part){
+      if (!part) return;
+      var pieces = part.split('=');
+      var k = decodeURIComponent(pieces[0] || '');
+      var v = decodeURIComponent((pieces.slice(1).join('=') || '').replace(/\+/g, ' '));
+      out[k] = v;
+    });
+    return out;
+  }
+
+  function escapeHtml(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  function getValue(row, keys){
+    if (!row) return null;
+    for (var i=0;i<keys.length;i++){
+      var k = keys[i];
+      if (row[k] !== undefined && row[k] !== null) return row[k];
+      var compact = k.replace(/_/g,'');
+      for (var rk in row){
+        if (!Object.prototype.hasOwnProperty.call(row, rk)) continue;
+        if (String(rk).replace(/_/g,'').toLowerCase() === compact.toLowerCase()) return row[rk];
+      }
+    }
+    return null;
+  }
+
+  function displayValue(v){
+    if (v == null) return '';
+    if (Array.isArray(v)) return v.map(displayValue).filter(Boolean).join(', ');
+    if (typeof v === 'object') {
+      return v.display_value || v.zc_display_value || v.name || v.Name || v.Subdivision_Name || v.Milestone_Name || v.value || v.ID || '';
+    }
+    return String(v);
+  }
+
+  function normalizeId(v){
+    if (v == null) return '';
+    if (Array.isArray(v)) return v.map(normalizeId).filter(Boolean).join(',');
+    if (typeof v === 'object') return String(v.ID || v.id || v.value || v.display_value || '').trim();
+    return String(v).trim();
+  }
+
+  function parseSequenceValue(v){
+    var raw = displayValue(v).trim();
+    if (!raw) return null;
+    var n = parseFloat(raw.replace(/[^0-9.\-]/g, ''));
+    return isNaN(n) ? null : n;
+  }
+
+  function milestoneSort(a,b){
+    var as = a.sequence, bs = b.sequence;
+    if (as != null && bs != null && as !== bs) return as - bs;
+    if (as != null && bs == null) return -1;
+    if (as == null && bs != null) return 1;
+    var ad = a.draftStart ? toDay(a.draftStart) : 999999999;
+    var bd = b.draftStart ? toDay(b.draftStart) : 999999999;
+    if (ad !== bd) return ad - bd;
+    return (a.name || '').localeCompare(b.name || '');
+  }
+
+  function parseCreatorDate(v){
+    var raw = displayValue(v).trim();
+    if (!raw) return null;
+    raw = raw.replace(/\s+00:00:00$/, '').trim();
+    var m;
+    if ((m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return makeDate(+m[1], +m[2], +m[3]);
+    if ((m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))) {
+      var a = +m[1], b = +m[2], y = +m[3];
+      if (y < 100) y += 2000;
+      // App date format is MM/dd/yyyy, but handle dd/MM/yyyy if day > 12.
+      var mo = a > 12 ? b : a;
+      var da = a > 12 ? a : b;
+      return makeDate(y, mo, da);
+    }
+    if ((m = raw.match(/^(\d{1,2})-([A-Za-z]{3,})-(\d{2,4})$/))) {
+      var months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+      var mm = months[m[2].toLowerCase()];
+      var yy = +m[3]; if (yy < 100) yy += 2000;
+      if (mm) return makeDate(yy, mm, +m[1]);
+    }
+    var d = new Date(raw);
+    if (!isNaN(d.getTime())) return makeDate(d.getFullYear(), d.getMonth()+1, d.getDate());
+    return null;
+  }
+
+  function makeDate(y,m,d){ return new Date(y, m-1, d); }
+  function toDay(d){ return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+  function fromDay(day){ var d = new Date(day * 86400000); return makeDate(d.getUTCFullYear(), d.getUTCMonth()+1, d.getUTCDate()); }
+  function addDays(d,n){ return fromDay(toDay(d) + n); }
+  function startOfMonth(d){ return makeDate(d.getFullYear(), d.getMonth()+1, 1); }
+  function endOfMonth(d){ return makeDate(d.getFullYear(), d.getMonth()+2, 0); }
+  function fmt2(n){ return String(n).padStart(2,'0'); }
+  function fmtHuman(d){ if (!d) return 'No date'; return fmt2(d.getMonth()+1) + '/' + fmt2(d.getDate()) + '/' + d.getFullYear(); }
+  function fmtCreator(d){ return fmtHuman(d); }
+  function sameDay(a,b){ return !!(a && b && toDay(a) === toDay(b)); }
+
+  function mapSubdivision(row){
+    var id = normalizeId(getValue(row, ['ID']));
+    var name = displayValue(getValue(row, ['Subdivision_Name','Name'])) || ('Subdivision ' + id);
+    var code = displayValue(getValue(row, ['Subdivision_Code']));
+    var status = displayValue(getValue(row, ['Status']));
+    var project = displayValue(getValue(row, ['Project','Project_Name']));
+    return { id:id, name:name, code:code, status:status, project:project, raw:row };
+  }
+
+  function mapMilestone(row){
+    var id = normalizeId(getValue(row, ['ID']));
+    var name = displayValue(getValue(row, ['Milestone_Name','Name'])) || ('Milestone ' + id);
+    var subRaw = getValue(row, ['Subdivision1','Subdivision']);
+    var subId = normalizeId(subRaw);
+    var subName = displayValue(subRaw);
+    var start = parseCreatorDate(getValue(row, ['Start_Date','Start Date']));
+    var end = parseCreatorDate(getValue(row, ['End_Date','End Date']));
+    if (start && !end) end = start;
+    if (end && !start) start = end;
+    if (start && end && toDay(end) < toDay(start)) end = start;
+    return {
+      id:id,
+      name:name,
+      start:start,
+      end:end,
+      draftStart:start ? fromDay(toDay(start)) : null,
+      draftEnd:end ? fromDay(toDay(end)) : null,
+      sequence: parseSequenceValue(getValue(row, ['Sequence','Milestone_Sequence','Milestone Sequence','Sequence_Number','Sequence_No','SequenceNo'])),
+      milestoneId: displayValue(getValue(row, ['Milestone_ID'])),
+      projectId: displayValue(getValue(row, ['Project_ID'])),
+      pushUpdate: displayValue(getValue(row, ['Push_Update'])),
+      subdivisionId: subId,
+      subdivisionName: subName,
+      raw:row
+    };
+  }
+
+  function isDirty(m){
+    if (!m) return false;
+    if (!m.start && m.draftStart) return true;
+    if (!m.end && m.draftEnd) return true;
+    return !sameDay(m.start, m.draftStart) || !sameDay(m.end, m.draftEnd);
+  }
+
+  function fetchAllRows(reportName){
+    var page = 1;
+    var all = [];
+    function next(){
+      return ZOHO.CREATOR.API.getAllRecords({ reportName: reportName, page: page, pageSize: CONFIG.pageSize }).then(function(resp){
+        var batch = (resp && resp.data) ? resp.data : [];
+        all = all.concat(batch);
+        var cont = batch.length === CONFIG.pageSize && page < CONFIG.maxPagesPerReport;
+        page += 1;
+        return cont ? next() : all;
+      });
+    }
+    return next();
+  }
+
+  function describeResp(r){
+    if (r == null) return '(no response)';
+    if (typeof r === 'string') return r;
+    try {
+      var parts = [];
+      if (r.status) parts.push('HTTP ' + r.status);
+      if (r.statusText && r.statusText !== 'error') parts.push(r.statusText);
+      if (typeof r.responseText === 'string') {
+        try {
+          var inner = JSON.parse(r.responseText);
+          if (inner.code != null) parts.push('code ' + inner.code);
+          if (inner.description) parts.push(inner.description);
+          if (inner.message) parts.push(inner.message);
+          if (inner.error) parts.push('error ' + JSON.stringify(inner.error));
+        } catch(e) { parts.push(r.responseText); }
+      }
+      if (r.code != null) parts.push('code ' + r.code);
+      if (r.message) parts.push(r.message);
+      if (r.description) parts.push(r.description);
+      if (r.error) parts.push('error ' + JSON.stringify(r.error));
+      if (!parts.length) return JSON.stringify(r);
+      return parts.join(' — ');
+    } catch(e) { return String(r); }
+  }
+
+  function reloadAll(){
+    state.loading = true;
+    setMessage('Loading Creator data…');
+    renderAll();
+    Promise.all([
+      fetchAllRows(CONFIG.reports.subdivisions),
+      fetchAllRows(CONFIG.reports.milestones)
+    ]).then(function(results){
+      state.subdivisions = results[0].map(mapSubdivision).sort(function(a,b){
+        var an = (a.name || '').toLowerCase(), bn = (b.name || '').toLowerCase();
+        return an.localeCompare(bn);
+      });
+      state.milestones = results[1].map(mapMilestone).sort(milestoneSort);
+      diag('Raw subdivision row #1', results[0][0] || '(none)');
+      diag('Raw milestone row #1', results[1][0] || '(none)');
+      chooseInitialSubdivision();
+      loadLinksForSelected();
+      state.loading = false;
+      var syncStaged = enforceSpecialSyncPairsForSelected();
+      if (syncStaged) {
+        setMessage('Loaded data. Dry Utilities / Punch List sync is staged; click Save Changes to update Creator.', 'warn');
+      } else {
+        setMessage('Loaded ' + state.subdivisions.length + ' subdivisions and ' + state.milestones.length + ' milestones.', 'ok');
+        setTimeout(function(){ setMessage('Ready.', 'ok'); }, 1800);
+      }
+      renderAll();
+    }).catch(function(err){
+      state.loading = false;
+      setMessage('Failed to load: ' + describeResp(err), 'err');
+      diag('Load error', err);
+      renderAll();
+    });
+  }
+
+  function chooseInitialSubdivision(){
+    var preferred = state.query.subdivisionId || state.query.SubdivisionID || state.query.recordId || state.query.recLinkID || state.query.ID || state.query.id || '';
+    if (preferred && state.subdivisions.some(function(s){ return String(s.id) === String(preferred); })) {
+      state.selectedSubdivisionId = String(preferred);
+      return;
+    }
+    if (state.selectedSubdivisionId && state.subdivisions.some(function(s){ return String(s.id) === String(state.selectedSubdivisionId); })) return;
+    var active = state.subdivisions.find(function(s){ return /active/i.test(s.status || ''); });
+    state.selectedSubdivisionId = active ? active.id : (state.subdivisions[0] ? state.subdivisions[0].id : '');
+  }
+
+  function selectedSubdivision(){
+    return state.subdivisions.find(function(s){ return String(s.id) === String(state.selectedSubdivisionId); }) || null;
+  }
+
+  function milestoneBelongsToSelected(m){
+    if (!state.selectedSubdivisionId) return false;
+    if (String(m.subdivisionId) === String(state.selectedSubdivisionId)) return true;
+    var s = selectedSubdivision();
+    if (!s) return false;
+    // Fallback for lookup values returned as display text instead of ID.
+    return (m.subdivisionName && m.subdivisionName === s.name) || (m.subdivisionId && m.subdivisionId === s.name);
+  }
+
+  function orderedMilestonesForSelected(includeUnscheduled){
+    return state.milestones.filter(function(m){
+      if (!milestoneBelongsToSelected(m)) return false;
+      if (!includeUnscheduled && (!m.draftStart || !m.draftEnd)) return false;
+      return true;
+    }).sort(milestoneSort);
+  }
+
+  function visibleMilestones(includeUnscheduled){
+    return orderedMilestonesForSelected(includeUnscheduled);
+  }
+
+  function linkStorageKey(){
+    return 'subdivisionMilestoneGantt.links.' + (state.selectedSubdivisionId || 'none');
+  }
+
+  function loadLinksForSelected(){
+    state.links = {};
+    try {
+      var raw = window.localStorage ? window.localStorage.getItem(linkStorageKey()) : '';
+      if (raw) state.links = JSON.parse(raw) || {};
+    } catch(e) { state.links = {}; }
+  }
+
+  function saveLinksForSelected(){
+    try {
+      if (window.localStorage) window.localStorage.setItem(linkStorageKey(), JSON.stringify(state.links || {}));
+    } catch(e) {}
+  }
+
+  function isLinkedToNext(id){
+    return !!(state.links && state.links[String(id)]);
+  }
+
+  function toggleLink(id){
+    id = String(id || '');
+    if (!id) return;
+    if (!state.links) state.links = {};
+    if (state.links[id]) delete state.links[id];
+    else state.links[id] = true;
+    saveLinksForSelected();
+    renderAll();
+  }
+
+  function nextMilestoneInSequence(m){
+    if (!m) return null;
+    var items = orderedMilestonesForSelected(true);
+    for (var i=0;i<items.length;i++){
+      if (String(items[i].id) === String(m.id)) return items[i+1] || null;
+    }
+    return null;
+  }
+
+  function previousMilestoneInSequence(m){
+    if (!m) return null;
+    var items = orderedMilestonesForSelected(true);
+    for (var i=0;i<items.length;i++){
+      if (String(items[i].id) === String(m.id)) return items[i-1] || null;
+    }
+    return null;
+  }
+
+  function splitMilestoneNameParts(m){
+    var raw = String((m && m.name) || '').trim();
+    var parts = raw.split(/\s*(?:\||–|—|:| - )\s*/);
+    return {
+      raw: raw,
+      base: parts[0] || raw,
+      suffix: parts.length > 1 ? parts.slice(1).join(' ').trim() : ''
+    };
+  }
+
+  function cleanText(v){
+    return String(v || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  function cleanMilestoneName(m){
+    return cleanText(splitMilestoneNameParts(m).base);
+  }
+
+  function syncPairKey(m){
+    return cleanText(splitMilestoneNameParts(m).suffix);
+  }
+
+  function isDryUtilities(m){
+    var n = cleanMilestoneName(m);
+    return n === 'dryutilities' ||
+      n === 'dryutility' ||
+      n === 'dryutil' ||
+      n === 'dryutils' ||
+      n.indexOf('dryutil') >= 0;
+  }
+
+  function isPunchList(m){
+    var n = cleanMilestoneName(m);
+    return n === 'punchlist' ||
+      n === 'punchlists' ||
+      n === 'punchlistitems' ||
+      n === 'punchout' ||
+      n.indexOf('punchlist') >= 0 ||
+      (n.indexOf('punch') >= 0 && n.indexOf('list') >= 0);
+  }
+
+  function isSyncMilestone(m){ return isDryUtilities(m) || isPunchList(m); }
+
+  function getSyncPairs(items){
+    items = items || orderedMilestonesForSelected(true);
+    var drys = items.filter(isDryUtilities);
+    var punches = items.filter(isPunchList);
+    var pairs = [];
+    var usedPunch = {};
+
+    drys.forEach(function(dry){
+      var key = syncPairKey(dry);
+      var match = null;
+      if (key) {
+        for (var i=0;i<punches.length;i++){
+          if (usedPunch[String(punches[i].id)]) continue;
+          if (syncPairKey(punches[i]) === key) { match = punches[i]; break; }
+        }
+      }
+      if (!match && drys.length === 1 && punches.length === 1 && !usedPunch[String(punches[0].id)]) {
+        match = punches[0];
+      }
+      if (!match) {
+        for (var j=0;j<punches.length;j++){
+          if (usedPunch[String(punches[j].id)]) continue;
+          if (!syncPairKey(punches[j]) && !key) { match = punches[j]; break; }
+        }
+      }
+      if (match) {
+        usedPunch[String(match.id)] = true;
+        pairs.push({ dry: dry, punch: match });
+      }
+    });
+
+    return pairs;
+  }
+
+  function syncPairFor(m){
+    if (!m || !isSyncMilestone(m)) return null;
+    var pairs = getSyncPairs();
+    for (var i=0;i<pairs.length;i++){
+      if (String(pairs[i].dry.id) === String(m.id)) return pairs[i].punch;
+      if (String(pairs[i].punch.id) === String(m.id)) return pairs[i].dry;
+    }
+    return null;
+  }
+
+  function areSyncPair(a,b){
+    if (!a || !b) return false;
+    return String(syncPairFor(a) && syncPairFor(a).id) === String(b.id);
+  }
+
+  function dayOrNull(d){ return d ? toDay(d) : null; }
+
+  function setDraftRangeDays(m, startDay, endDay){
+    if (!m || startDay == null || endDay == null) return false;
+    if (endDay < startDay) endDay = startDay;
+    var oldStart = dayOrNull(m.draftStart);
+    var oldEnd = dayOrNull(m.draftEnd);
+    if (oldStart === startDay && oldEnd === endDay) return false;
+    m.draftStart = fromDay(startDay);
+    m.draftEnd = fromDay(endDay);
+    return true;
+  }
+
+  function enforceSpecialSyncPairsForSelected(){
+    var changed = 0;
+    var pairs = getSyncPairs(orderedMilestonesForSelected(true));
+    pairs.forEach(function(pair){
+      if (!pair.dry || !pair.punch || !pair.dry.draftStart || !pair.dry.draftEnd) return;
+      // Dry Utilities is the source of truth when the screen first loads or the subdivision changes.
+      // After that, dragging either milestone keeps the other one in sync.
+      if (setDraftRangeDays(pair.punch, toDay(pair.dry.draftStart), toDay(pair.dry.draftEnd))) changed += 1;
+    });
+    return changed;
+  }
+
+  function enforceDateRelationships(seed){
+    if (!seed || !seed.draftStart || !seed.draftEnd) return;
+    var queue = [seed];
+    var guard = 0;
+    while (queue.length && guard < 60) {
+      guard += 1;
+      var m = queue.shift();
+      if (!m || !m.draftStart || !m.draftEnd) continue;
+      var mStart = toDay(m.draftStart);
+      var mEnd = toDay(m.draftEnd);
+
+      // Dry Utilities and Punch List are a special synchronized pair.
+      // They always share the same full date range, regardless of which one the user moves.
+      var twin = syncPairFor(m);
+      if (twin && twin.draftStart && twin.draftEnd) {
+        if (setDraftRangeDays(twin, mStart, mEnd)) queue.push(twin);
+      }
+
+      // If this milestone has a linked predecessor, moving this start date pulls the predecessor's end date to the same date.
+      var prev = previousMilestoneInSequence(m);
+      if (prev && prev.draftStart && prev.draftEnd && isLinkedToNext(prev.id)) {
+        if (areSyncPair(prev, m)) {
+          if (setDraftRangeDays(prev, mStart, mEnd)) queue.push(prev);
+        } else {
+          var prevEnd = mStart;
+          var prevStart = Math.min(toDay(prev.draftStart), prevEnd);
+          if (setDraftRangeDays(prev, prevStart, prevEnd)) queue.push(prev);
+        }
+      }
+
+      // If this milestone is linked forward, moving this end date pushes the next milestone's start date to the same date.
+      var next = nextMilestoneInSequence(m);
+      if (next && next.draftStart && next.draftEnd && isLinkedToNext(m.id)) {
+        if (areSyncPair(m, next)) {
+          if (setDraftRangeDays(next, mStart, mEnd)) queue.push(next);
+        } else {
+          var nextStart = mEnd;
+          var nextEnd = Math.max(toDay(next.draftEnd), nextStart);
+          if (setDraftRangeDays(next, nextStart, nextEnd)) queue.push(next);
+        }
+      }
+    }
+  }
+
+  function computeTimeline(items){
+    var min = null, max = null;
+    items.forEach(function(m){
+      if (!m.draftStart || !m.draftEnd) return;
+      var s = toDay(m.draftStart), e = toDay(m.draftEnd);
+      min = min == null ? s : Math.min(min, s);
+      max = max == null ? e : Math.max(max, e);
+    });
+    var today = toDay(makeDate((new Date()).getFullYear(), (new Date()).getMonth()+1, (new Date()).getDate()));
+    if (min == null || max == null) {
+      min = today - 30;
+      max = today + 180;
+    } else {
+      min = Math.min(min - 14, today - 14);
+      max = Math.max(max + 30, today + 30);
+    }
+    if (max - min < 90) max = min + 90;
+    var z = zooms[state.zoom] || zooms.week;
+    document.documentElement.style.setProperty('--day-w', z.dayWidth + 'px');
+    return { min:min, max:max, totalDays:max-min+1, dayWidth:z.dayWidth, tickEvery:z.tickEvery, width:(max-min+1)*z.dayWidth, today:today };
+  }
+
+  function monthName(d){
+    return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function renderSubdivisionDropdown(){
+    var sel = $('subdivisionSelect');
+    if (state.loading && !state.subdivisions.length) {
+      sel.innerHTML = '<option>Loading subdivisions…</option>';
+      sel.disabled = true;
+      return;
+    }
+    if (!state.subdivisions.length) {
+      sel.innerHTML = '<option>No subdivisions found</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    sel.innerHTML = state.subdivisions.map(function(s){
+      var label = s.name + (s.code ? ' — ' + s.code : '') + (s.status ? ' [' + s.status + ']' : '');
+      return '<option value="' + escapeHtml(s.id) + '"' + (String(s.id) === String(state.selectedSubdivisionId) ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
+    }).join('');
+  }
+
+  function renderAll(){
+    renderSubdivisionDropdown();
+    renderSummary();
+    renderGantt();
+    updateSaveButton();
+  }
+
+  function renderSummary(){
+    var s = selectedSubdivision();
+    var allForSub = visibleMilestones(true);
+    var dirty = allForSub.filter(isDirty).length;
+    var scheduled = allForSub.filter(function(m){ return m.draftStart && m.draftEnd; }).length;
+    $('summary').innerHTML = [
+      '<span class="tag blue">' + escapeHtml(s ? s.name : 'No subdivision') + '</span>',
+      '<span class="tag">' + allForSub.length + ' milestone' + (allForSub.length === 1 ? '' : 's') + '</span>',
+      '<span class="tag">' + scheduled + ' scheduled</span>',
+      dirty ? '<span class="tag amber">' + dirty + ' unsaved</span>' : '<span class="tag">No unsaved edits</span>'
+    ].join('');
+    $('panelTitle').textContent = s ? (s.name + ' Milestones') : 'Milestones';
+    $('panelSub').textContent = s ? ((s.code ? s.code + ' · ' : '') + (s.project ? s.project + ' · ' : '') + (s.status || '')) : 'Select a subdivision to load its milestone timeline.';
+  }
+
+  function renderGantt(){
+    var shell = $('gantt');
+    if (state.loading) {
+      shell.innerHTML = '<div class="empty"><h2>Loading…</h2><p>Fetching records from Creator.</p></div>';
+      $('unscheduled').style.display = 'none';
+      return;
+    }
+    if (!state.selectedSubdivisionId) {
+      shell.innerHTML = '<div class="empty"><h2>No subdivision selected</h2><p>Choose a subdivision from the dropdown above.</p></div>';
+      $('unscheduled').style.display = 'none';
+      return;
+    }
+    var scheduled = visibleMilestones(false);
+    var all = visibleMilestones(true);
+    var unscheduled = all.filter(function(m){ return !m.draftStart || !m.draftEnd; });
+    state.timeline = computeTimeline(scheduled);
+    if (!scheduled.length) {
+      shell.innerHTML = '<div class="empty"><h2>No scheduled milestones found</h2><p>This subdivision has no milestones with Start Date and End Date.</p></div>';
+      renderUnscheduled(unscheduled);
+      return;
+    }
+    var t = state.timeline;
+    var monthsHtml = [];
+    var cursor = startOfMonth(fromDay(t.min));
+    while (toDay(cursor) <= t.max) {
+      var ms = Math.max(toDay(cursor), t.min);
+      var me = Math.min(toDay(endOfMonth(cursor)), t.max);
+      var left = (ms - t.min) * t.dayWidth;
+      var width = Math.max(1, (me - ms + 1) * t.dayWidth);
+      monthsHtml.push('<div class="month" style="left:' + left + 'px;width:' + width + 'px;">' + escapeHtml(monthName(cursor)) + '</div>');
+      cursor = makeDate(cursor.getFullYear(), cursor.getMonth()+2, 1);
+    }
+    var ticksHtml = [];
+    for (var d=t.min; d<=t.max; d += t.tickEvery) {
+      var date = fromDay(d);
+      var leftTick = (d - t.min) * t.dayWidth;
+      var label = fmt2(date.getMonth()+1) + '/' + fmt2(date.getDate());
+      ticksHtml.push('<div class="tick" style="left:' + leftTick + 'px;width:' + (t.dayWidth*t.tickEvery) + 'px;">' + escapeHtml(label) + '</div>');
+    }
+    var todayHtml = (t.today >= t.min && t.today <= t.max) ? '<div class="today-line" title="Today" style="left:' + ((t.today - t.min) * t.dayWidth) + 'px;"></div>' : '';
+    var rowsHtml = scheduled.map(function(m, idx){ return renderRow(m, idx, scheduled.length); }).join('');
+    var dependencyHtml = renderDependencyLayer(scheduled);
+    shell.innerHTML = '<div class="gantt-inner">' +
+      '<div class="axis-row">' +
+        '<div class="sticky-left axis-left">Milestone</div>' +
+        '<div class="axis" style="width:' + t.width + 'px;">' +
+          '<div class="months">' + monthsHtml.join('') + '</div>' +
+          '<div class="ticks">' + ticksHtml.join('') + todayHtml + '</div>' +
+        '</div>' +
+      '</div>' + rowsHtml + dependencyHtml +
+    '</div>';
+    attachBarEvents();
+    attachLinkEvents();
+    renderUnscheduled(unscheduled);
+  }
+
+  function chainIcon(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l2.8-2.8a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0Z" fill="currentColor"></path><path d="M9.2 16.2a4 4 0 0 1 0-5.7l2-2a1 1 0 1 0-1.4-1.4l-2 2a6 6 0 0 0 8.5 8.5l2-2a1 1 0 1 0-1.4-1.4l-2 2a4 4 0 0 1-5.7 0Z" fill="currentColor"></path><path d="M14.8 7.8a4 4 0 0 1 0 5.7l-2 2a1 1 0 0 0 1.4 1.4l2-2a6 6 0 0 0-8.5-8.5l-2 2a1 1 0 0 0 1.4 1.4l2-2a4 4 0 0 1 5.7 0Z" fill="currentColor"></path></svg>';
+  }
+
+  function syncIcon(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7h8.2l-1.8-1.8a1 1 0 1 1 1.4-1.4l3.5 3.5a1 1 0 0 1 0 1.4l-3.5 3.5a1 1 0 1 1-1.4-1.4L15.2 9H7a3 3 0 0 0 0 6h.5a1 1 0 1 1 0 2H7A5 5 0 0 1 7 7Zm10 10H8.8l1.8 1.8a1 1 0 0 1-1.4 1.4l-3.5-3.5a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 0 1 1.4 1.4L8.8 15H17a3 3 0 0 0 0-6h-.5a1 1 0 1 1 0-2h.5a5 5 0 0 1 0 10Z" fill="currentColor"></path></svg>';
+  }
+
+  function getCssNumber(name, fallback){
+    try {
+      var raw = getComputedStyle(document.documentElement).getPropertyValue(name);
+      var n = parseFloat(raw);
+      return isNaN(n) ? fallback : n;
+    } catch(e) { return fallback; }
+  }
+
+  function renderDependencyLayer(items){
+    if (!state.timeline || !items || !items.length) return '';
+    var t = state.timeline;
+    var rowH = getCssNumber('--row-h', 52);
+    var height = Math.max(rowH, items.length * rowH);
+    var parts = [];
+    var indexById = {};
+    for (var i=0;i<items.length;i++) indexById[String(items[i].id)] = i;
+
+    function svgNum(n){ return Math.round(n * 10) / 10; }
+    function barStart(m){ return (toDay(m.draftStart) - t.min) * t.dayWidth; }
+    function barEnd(m){ return (toDay(m.draftEnd) - t.min + 1) * t.dayWidth; }
+    function pathBetween(x1,y1,x2,y2){
+      var offset = 10;
+      var mid;
+      if (x2 >= x1) mid = x1 + Math.max(18, (x2 - x1) / 2);
+      else mid = x1 + 22;
+      return 'M ' + svgNum(x1 + 2) + ' ' + svgNum(y1) +
+        ' H ' + svgNum(mid) +
+        ' V ' + svgNum(y2) +
+        ' H ' + svgNum(x2 - offset);
+    }
+
+    // Dependency lines replaced by CSS row border highlights
+
+    // Dry Utilities + Punch List use a soft shared band instead of large brackets/nodes.
+    getSyncPairs(items).forEach(function(pair){
+      var dry = pair.dry;
+      var punch = pair.punch;
+      if (!dry || !punch || !dry.draftStart || !dry.draftEnd || !punch.draftStart || !punch.draftEnd) return;
+      var di = indexById[String(dry.id)];
+      var pi = indexById[String(punch.id)];
+      if (di == null || pi == null) return;
+      var topIdx = Math.min(di, pi);
+      var bottomIdx = Math.max(di, pi);
+      var syncStart = Math.min(barStart(dry), barStart(punch));
+      var syncEnd = Math.max(barEnd(dry), barEnd(punch));
+      var x = Math.max(0, syncStart - 5);
+      var y = topIdx * rowH + 8;
+      var w = Math.max(10, syncEnd - syncStart + 10);
+      var h = (bottomIdx - topIdx + 1) * rowH - 16;
+      var railX = Math.max(0, syncStart - 12);
+      var labelX = x + 8;
+      var labelY = y + 15;
+      parts.push('<rect class="sync-band" x="' + svgNum(x) + '" y="' + svgNum(y) + '" width="' + svgNum(w) + '" height="' + svgNum(h) + '" rx="10" ry="10"></rect>');
+      parts.push('<path class="sync-rail" d="M ' + svgNum(railX) + ' ' + svgNum(di * rowH + rowH / 2) + ' V ' + svgNum(pi * rowH + rowH / 2) + '"></path>');
+      parts.push('<text class="sync-label" x="' + svgNum(labelX) + '" y="' + svgNum(labelY) + '">Moves in unison</text>');
+    });
+
+    if (!parts.length) return '';
+    return '<svg class="dependency-layer" style="width:' + t.width + 'px;height:' + height + 'px;" viewBox="0 0 ' + t.width + ' ' + height + '" preserveAspectRatio="none">' + parts.join('') + '</svg>';
+  }
+
+  function renderRow(m, idx, totalRows){
+    var t = state.timeline;
+    var s = toDay(m.draftStart), e = toDay(m.draftEnd);
+    var left = Math.max(0, (s - t.min) * t.dayWidth);
+    var width = Math.max(22, (e - s + 1) * t.dayWidth);
+    var dirty = isDirty(m);
+    var hasNext = idx < totalRows - 1;
+    var linked = hasNext && isLinkedToNext(m.id);
+    var sync = !!syncPairFor(m);
+    var sequenceLabel = m.sequence != null ? m.sequence : (idx + 1);
+    var dateLabel = fmtHuman(m.draftStart) + ' – ' + fmtHuman(m.draftEnd);
+    var syncTitle = 'Dry Utilities and Punch List move in unison';
+    var syncHtml = sync ? '<span class="sync-btn" title="' + escapeHtml(syncTitle) + '" aria-label="Moves in unison">' + syncIcon() + '</span>' : '';
+    var barSyncHtml = sync ? '<span class="bar-sync" title="' + escapeHtml(syncTitle) + '">↔</span>' : '';
+    var _items2 = orderedMilestonesForSelected(false);
+    var _prevM  = idx > 0 ? _items2[idx - 1] : null;
+    var _isLinkedTo = !!(_prevM && isLinkedToNext(_prevM.id) && !areSyncPair(_prevM, m));
+    return '<div class="gantt-row' + (isLinkedToNext(m.id) && hasNext ? ' linked-from' : '') + (_isLinkedTo ? ' linked-to' : '') + '" data-id="' + escapeHtml(m.id) + '">' +
+      '<div class="sticky-left row-label' + (dirty ? ' dirty' : '') + '">' +
+        '<div class="row-index">' + escapeHtml(sequenceLabel) + '</div>' +
+        '<button class="link-btn' + (linked ? ' active' : '') + '" data-link-id="' + escapeHtml(m.id) + '" title="' + escapeHtml(hasNext ? (linked ? 'Unlink from next milestone' : 'Link this milestone to the next milestone in sequence') : 'Last milestone cannot link forward') + '" ' + (hasNext ? '' : 'disabled') + ' aria-label="Link to next milestone">' + chainIcon() + '</button>' +
+        syncHtml +
+        '<div class="row-text"><div class="row-name" title="' + escapeHtml(m.name) + '">' + escapeHtml(m.name) + '</div>' +
+        '<div class="row-dates">' + (m.draftStart && m.draftEnd ? (toDay(m.draftEnd) - toDay(m.draftStart) + 1) + ' days' : 'No dates') + '</div></div>' +
+      '</div>' +
+      '<div class="track" style="width:' + t.width + 'px;">' +
+        '<div class="bar' + (dirty ? ' dirty' : '') + (sync ? ' sync' : '') + '" data-id="' + escapeHtml(m.id) + '" style="left:' + left + 'px;width:' + width + 'px;" title="Drag to move. Stretch either edge to resize.">' +
+          '<span class="handle left" data-action="resize-left"></span>' +
+          '<span class="bar-text"><span class="bar-name">' + escapeHtml(m.name) + '</span>' + barSyncHtml + '<span class="bar-date">' + escapeHtml(dateLabel) + '</span></span>' +
+          '<span class="handle right" data-action="resize-right"></span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderUnscheduled(items){
+    var box = $('unscheduled');
+    if (!items.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = 'block';
+    box.innerHTML = '<h3>Milestones missing Start Date or End Date</h3>' +
+      '<div class="unscheduled-list">' + items.map(function(m){
+        return '<span class="unscheduled-chip">' + escapeHtml(m.name) + ' <small>(' + escapeHtml(m.id) + ')</small></span>';
+      }).join('') + '</div>';
+  }
+
+  function attachBarEvents(){
+    var bars = document.querySelectorAll('.bar');
+    for (var i=0;i<bars.length;i++){
+      bars[i].addEventListener('pointerdown', onBarPointerDown);
+    }
+  }
+
+
+  function attachLinkEvents(){
+    var buttons = document.querySelectorAll('[data-link-id]');
+    for (var i=0;i<buttons.length;i++){
+      buttons[i].addEventListener('click', function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (this.disabled) return;
+        toggleLink(this.getAttribute('data-link-id'));
+      });
+    }
+  }
+
+  function getMilestone(id){
+    return state.milestones.find(function(m){ return String(m.id) === String(id); }) || null;
+  }
+
+  function onBarPointerDown(ev){
+    var id = ev.currentTarget.getAttribute('data-id');
+    var m = getMilestone(id);
+    if (!m || !m.draftStart || !m.draftEnd) return;
+    var action = ev.target && ev.target.getAttribute('data-action');
+    if (!action) action = 'move';
+    ev.preventDefault();
+    ev.currentTarget.setPointerCapture(ev.pointerId);
+    state.drag = {
+      id:id,
+      action: action,
+      pointerId: ev.pointerId,
+      startX: ev.clientX,
+      origStart: toDay(m.draftStart),
+      origEnd: toDay(m.draftEnd),
+      lastDelta: 0
+    };
+    document.addEventListener('pointermove', onBarPointerMove);
+    document.addEventListener('pointerup', onBarPointerUp, { once:true });
+  }
+
+  function onBarPointerMove(ev){
+    if (!state.drag || !state.timeline) return;
+    var d = state.drag;
+    var delta = Math.round((ev.clientX - d.startX) / state.timeline.dayWidth);
+    if (delta === d.lastDelta) return;
+    d.lastDelta = delta;
+    var m = getMilestone(d.id);
+    if (!m) return;
+    var ns = d.origStart, ne = d.origEnd;
+    if (d.action === 'move') {
+      ns = d.origStart + delta;
+      ne = d.origEnd + delta;
+    } else if (d.action === 'resize-left') {
+      ns = Math.min(d.origStart + delta, d.origEnd);
+      ne = d.origEnd;
+    } else if (d.action === 'resize-right') {
+      ns = d.origStart;
+      ne = Math.max(d.origEnd + delta, d.origStart);
+    }
+    m.draftStart = fromDay(ns);
+    m.draftEnd = fromDay(ne);
+    enforceDateRelationships(m);
+    renderGantt();
+    updateSaveButton();
+  }
+
+  function onBarPointerUp(){
+    state.drag = null;
+    document.removeEventListener('pointermove', onBarPointerMove);
+    renderAll();
+  }
+
+  function dirtyMilestones(){ return state.milestones.filter(isDirty); }
+  function updateSaveButton(){ $('saveBtn').disabled = state.saveInProgress || dirtyMilestones().length === 0; }
+
+  function resetDrafts(){
+    state.milestones.forEach(function(m){
+      m.draftStart = m.start ? fromDay(toDay(m.start)) : null;
+      m.draftEnd = m.end ? fromDay(toDay(m.end)) : null;
+    });
+    setMessage('Unsaved changes reset.', 'warn');
+    renderAll();
+  }
+
+  function buildUpdateEnvelopes(recordId, fieldData){
+    var rpt = CONFIG.reports.milestones;
+    var rid = String(recordId);
+    var appName = (window.ZOHO && ZOHO.CREATOR && ZOHO.CREATOR.appName) || undefined;
+    return [
+      { label: 'data:{data:{…}}',    args: { reportName: rpt, id: rid, data: { data: fieldData } } },
+      { label: 'data:{…}',           args: { reportName: rpt, id: rid, data: fieldData } },
+      { label: 'data:{input:{…}}',   args: { reportName: rpt, id: rid, data: { input: fieldData } } },
+      { label: 'input:{…}',          args: { reportName: rpt, id: rid, input: fieldData } },
+      { label: 'payload:{data:{…}}', args: { reportName: rpt, id: rid, payload: { data: fieldData } } },
+      { label: 'appName+data:{…}',   args: { appName: appName, reportName: rpt, id: rid, data: fieldData } }
+    ];
+  }
+
+  function updateMilestoneRecord(m){
+    var payload = { Start_Date: fmtCreator(m.draftStart), End_Date: fmtCreator(m.draftEnd) };
+    var envelopes = buildUpdateEnvelopes(m.id, payload);
+    function tryEnvelope(i){
+      if (i >= envelopes.length) return Promise.reject(new Error('No update envelope accepted by Creator.'));
+      var env = envelopes[i];
+      diag('Milestone ' + m.id + ' save attempt ' + env.label, env.args);
+      return ZOHO.CREATOR.API.updateRecord(env.args).then(function(resp){
+        diag('Milestone ' + m.id + ' save response ' + env.label, resp);
+        var topCode = resp && resp.code;
+        var nestedCode = resp && resp.result && resp.result.code;
+        var hasError = !!(resp && (resp.error || (resp.result && resp.result.error)));
+        var hasId = !!(resp && ((resp.data && (resp.data.ID || resp.data.id)) || (resp.result && resp.result.data && (resp.result.data.ID || resp.result.data.id))));
+        if (topCode === 3000 || nestedCode === 3000 || (!hasError && hasId)) return resp;
+        throw resp;
+      }).catch(function(err){
+        var code = err && err.code;
+        if (!code && err && typeof err.responseText === 'string') {
+          try { code = JSON.parse(err.responseText).code; } catch(e){}
+        }
+        if (code === 2945) return tryEnvelope(i+1);
+        return Promise.reject(err);
+      });
+    }
+    return tryEnvelope(0).then(function(resp){
+      m.start = fromDay(toDay(m.draftStart));
+      m.end = fromDay(toDay(m.draftEnd));
+      return resp;
+    });
+  }
+
+  function saveChanges(){
+    var dirty = dirtyMilestones().filter(function(m){ return m.draftStart && m.draftEnd && m.id; });
+    if (!dirty.length) { setMessage('No changes to save.', 'ok'); return; }
+    state.saveInProgress = true;
+    updateSaveButton();
+    setMessage('Saving ' + dirty.length + ' milestone update' + (dirty.length === 1 ? '' : 's') + '…', 'warn');
+    var chain = Promise.resolve();
+    var saved = 0;
+    var failures = [];
+    dirty.forEach(function(m){
+      chain = chain.then(function(){
+        return updateMilestoneRecord(m).then(function(){ saved += 1; }).catch(function(err){
+          failures.push({ milestone:m.name, id:m.id, error:describeResp(err) });
+        });
+      });
+    });
+    chain.then(function(){
+      state.saveInProgress = false;
+      renderAll();
+      if (failures.length) {
+        diag('Save failures', failures);
+        setMessage('Saved ' + saved + ', failed ' + failures.length + '. Open ?debug=1 for details.', 'err');
+      } else {
+        setMessage('Saved ' + saved + ' milestone update' + (saved === 1 ? '' : 's') + '.', 'ok');
+      }
+    });
+  }
+
+  function scrollToToday(){
+    var shell = $('gantt');
+    var t = state.timeline;
+    if (!t) return;
+    var left = ((t.today - t.min) * t.dayWidth) - (shell.clientWidth / 2) + 160;
+    shell.scrollLeft = Math.max(0, left);
+  }
+
+  function bindEvents(){
+    $('subdivisionSelect').addEventListener('change', function(){
+      state.selectedSubdivisionId = this.value;
+      loadLinksForSelected();
+      var syncStaged = enforceSpecialSyncPairsForSelected();
+      if (syncStaged) setMessage('Dry Utilities / Punch List sync is staged; click Save Changes to update Creator.', 'warn');
+      renderAll();
+      setTimeout(scrollToToday, 40);
+    });
+    $('refreshBtn').addEventListener('click', reloadAll);
+    $('todayBtn').addEventListener('click', scrollToToday);
+    $('resetBtn').addEventListener('click', resetDrafts);
+    $('saveBtn').addEventListener('click', saveChanges);
+    var zoomButtons = document.querySelectorAll('[data-zoom]');
+    for (var i=0;i<zoomButtons.length;i++){
+      zoomButtons[i].addEventListener('click', function(){
+        state.zoom = this.getAttribute('data-zoom');
+        var buttons = document.querySelectorAll('[data-zoom]');
+        for (var j=0;j<buttons.length;j++) buttons[j].classList.toggle('active', buttons[j] === this);
+        renderAll();
+        setTimeout(scrollToToday, 40);
+      });
+    }
+  }
+
+  function start(){
+    bindEvents();
+    if (window.ZOHO && ZOHO.CREATOR && ZOHO.CREATOR.init) {
+      ZOHO.CREATOR.init().then(reloadAll).catch(function(err){
+        setMessage('Creator init failed: ' + describeResp(err), 'err');
+        diag('Creator init error', err);
+        state.loading = false;
+        renderAll();
+      });
+    } else {
+      state.loading = false;
+      setMessage('Zoho Creator SDK was not found. Import this widget into Creator to run it.', 'err');
+      renderAll();
+    }
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

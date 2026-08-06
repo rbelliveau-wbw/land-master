@@ -1,0 +1,97 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Contracts_Management_Search",
+  "display_name": "Contracts Management Search",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision",
+      "display_name": "Subdivisions",
+      "type": "list",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Builder1",
+      "display_name": "Builder",
+      "type": "picklist",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "list",
+      "values": "{\"Open\",\"Contracted\",\"Sold\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Block",
+      "display_name": "Block",
+      "type": "list",
+      "values": "{\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\",\"19\",\"20\",\"21\",\"22\",\"23\",\"24\",\"28\",\"29\",\"30\",\"A\",\"B\",\"C\",\"D\",\"E\",\"F\",\"G\",\"H\",\"I\",\"J\",\"K\",\"L\",\"M\",\"N\",\"O\",\"P\",\"Q\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Type1",
+      "display_name": "Type",
+      "type": "checkboxes",
+      "values": "{\"Lot\",\"NSSA\",\"DA\",\"Amendment\",\"Acquisition\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Search",
+      "display_name": "Search",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

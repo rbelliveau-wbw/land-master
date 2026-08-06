@@ -1,0 +1,51 @@
+{
+  "custom_apis": [],
+  "forms_referenced": [
+    "Additional_Items",
+    "Builder",
+    "Builder_Takedown",
+    "Company",
+    "Contract",
+    "External_System_Mapping",
+    "Forecast",
+    "Forecast_Year",
+    "Lots",
+    "Milestones",
+    "Project",
+    "Property",
+    "Subdivision",
+    "Takedown_Schedule"
+  ],
+  "reports_referenced": [
+    "All_Active_Lots",
+    "All_Additional_Items",
+    "All_Builder_Takedowns",
+    "All_Builders",
+    "All_Companies",
+    "All_External_System_Mappings",
+    "All_Forecast_Years",
+    "All_Forecasts",
+    "All_Lots_All_Fields",
+    "All_Milestones",
+    "All_Pro_Formas",
+    "All_Pro_Formas_All_Fields",
+    "All_Projects",
+    "All_Property",
+    "All_Subdivisions",
+    "All_Takedown_Schedules"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.API",
+    "ZOHO.CREATOR.API.addRecord",
+    "ZOHO.CREATOR.API.getAllRecords",
+    "ZOHO.CREATOR.API.invokeCustomApi",
+    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.UTIL.navigateParentURL",
+    "ZOHO.CREATOR.appName",
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "static.zohocdn.com",
+    "www.w3.org"
+  ]
+}

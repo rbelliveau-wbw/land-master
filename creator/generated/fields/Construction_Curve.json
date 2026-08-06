@@ -1,0 +1,106 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Construction_Curve",
+  "display_name": "Construction Cost Curve",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_Curve",
+      "display_name": "No. Months",
+      "type": "picklist",
+      "values": "{\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Month_Number",
+      "display_name": "Month No.",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Percent_Cost",
+      "display_name": "% Cost",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma",
+      "display_name": "Pro Forma",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Settings",
+      "display_name": "Settings",
+      "type": "picklist",
+      "values": "Settings.ID",
+      "display_format": "[ID]",
+      "initial_value": null,
+      "private": true
+    },
+    {
+      "link_name": "Template_Item",
+      "display_name": "Template Item",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

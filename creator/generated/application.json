@@ -1,0 +1,18 @@
+{
+  "application": "Land Master",
+  "export_generated_on": "2026-08-06 12:23:44 America/Chicago",
+  "repository_generated_at": "2026-08-06T14:25:00-05:00",
+  "source_export": "creator/exports/Land_Master_2026-08-06.ds",
+  "source_sha256": "1c6f5e80a318b7ae2e01bd0857957cff788b91e9475937c682ddd8e32e13e0ca",
+  "counts": {
+    "forms": 57,
+    "fields": 1269,
+    "reports": 70,
+    "pages": 17,
+    "custom_functions": 53,
+    "workflows": 346,
+    "workflow_functions": 41,
+    "connections": 4
+  },
+  "trust": "Generated directly from the uploaded Zoho Creator DS export. Re-run scripts/parse_creator_export.py after replacing the export."
+}

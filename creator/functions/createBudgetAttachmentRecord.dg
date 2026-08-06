@@ -1,0 +1,36 @@
+				 string createBudgetAttachmentRecord(string budgetId)
+                 {
+                 	/********* CREATE EMPTY CHILD RECORD FOR WIDGET FILE UPLOAD *********/
+                 	vBudgetId = ifnull(budgetId,"").trim();
+                 	if(vBudgetId == "")
+                 	{
+                 		return "{\"ok\":false,\"message\":\"Missing Budget ID.\"}";
+                 	}
+                 	budgetRows = Add_Budget[ID == vBudgetId.toLong()];
+                 	if(budgetRows.count() == 0)
+                 	{
+                 		return "{\"ok\":false,\"message\":\"Budget not found.\"}";
+                 	}
+                 	try 
+                 	{
+                 		attachmentId = insert into Contract_Version
+                 		[
+                 			Budget=vBudgetId.toLong()
+                 			Date_field1=zoho.currenttime
+                 			Email_Attachment=false
+                 			Added_User=zoho.loginuser
+                 		];
+                 		resp = Map();
+                 		resp.put("ok",true);
+                 		resp.put("attachmentId",attachmentId.toString());
+                 		resp.put("message","Attachment record created.");
+                 		return resp.toString();
+                 	}	catch (createError)
+                 	{
+                 		resp = Map();
+                 		resp.put("ok",false);
+                 		resp.put("message","Attachment record creation failed: " + createError.toString());
+                 		return resp.toString();
+                 	}
+                 	return "gj";
+                 }

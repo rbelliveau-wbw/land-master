@@ -1,0 +1,385 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Subdivision",
+  "display_name": "Add Subdivision",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subphase",
+      "display_name": "Subphase",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Generate_Forecasts",
+      "display_name": "Generate Forecasts",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Land_Company",
+      "display_name": "Land Company",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Facility_ID + \" - \" + Company_Name + \" - \" + Account_Number]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Division",
+      "display_name": "Division",
+      "type": "picklist",
+      "values": "{\"Choice 1\",\"Choice 2\",\"Choice 3\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Builders",
+      "display_name": "Builders",
+      "type": "list",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Property_Used",
+      "display_name": "Property Used",
+      "type": "list",
+      "values": "Property.ID",
+      "display_format": "[Common_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Unlock",
+      "display_name": "Unlock",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "External_System_Mapping",
+      "display_name": "External System Mapping",
+      "type": "grid",
+      "values": "External_System_Mapping.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Additional_Items",
+      "display_name": "Additional Items",
+      "type": "grid",
+      "values": "Additional_Items.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Milestones",
+      "display_name": "Milestones",
+      "type": "grid",
+      "values": "Milestones.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Data",
+      "display_name": "Budget Data",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain2",
+      "display_name": "plain2",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Markup",
+      "display_name": "Engineering Markup",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Sub_Markup",
+      "display_name": "Engineering Sub Markup",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Markup",
+      "display_name": "Construction Markup",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Sub_Markup",
+      "display_name": "Construction Sub Markup",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Override",
+      "display_name": "Override",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Capital_Cost",
+      "display_name": "Capital Cost",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Points",
+      "display_name": "Points",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Admin_Cost",
+      "display_name": "Admin Cost",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Profit_Share",
+      "display_name": "Profit Share",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Zoho_Projects_Data",
+      "display_name": "Zoho Projects Data",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Projects_Status",
+      "display_name": "Projects Status",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Acres",
+      "display_name": "Acres",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Total_Residential",
+      "display_name": "Lot Total - Residential",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Project_ID",
+      "display_name": "Project ID",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equiv_LF_of_Street",
+      "display_name": "Equiv. LF of Street",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Auto_Generated_Fields",
+      "display_name": "Auto-Generated Fields",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision_Code",
+      "display_name": "Subdivision Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Lots",
+      "display_name": "Total Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots_Sold",
+      "display_name": "Lots Sold",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Unforecasted_Lots",
+      "display_name": "Unforecasted Lots",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision_Name",
+      "display_name": "Subdivision Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Eng_Sold_Out_Email_Sent",
+      "display_name": "Eng. Sold-Out Email Sent",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Last_Sold_Date",
+      "display_name": "Last Sold/Sold Out Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Company_Name",
+      "display_name": "Company Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Account_Number",
+      "display_name": "Account Number",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Add",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

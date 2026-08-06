@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
+  "environments": {
+    "development": {
+      "proforma-manager": "1.44.6",
+      "budget-manager": "121.0.0",
+      "land-master": "8.9.1",
+      "contract-management": "1.0.0",
+      "tax-center": "19.0.0",
+      "milestone-gantt": "1.0.0"
+    },
+    "stage": {
+      "proforma-manager": "1.44.6",
+      "budget-manager": "121.0.0",
+      "land-master": "8.9.1",
+      "contract-management": "1.0.0",
+      "tax-center": "19.0.0",
+      "milestone-gantt": "1.0.0"
+    },
+    "production": {
+      "proforma-manager": "1.44.6",
+      "budget-manager": "121.0.0",
+      "land-master": "8.9.1",
+      "contract-management": "1.0.0",
+      "tax-center": "19.0.0",
+      "milestone-gantt": "1.0.0"
+    }
+  }
+}

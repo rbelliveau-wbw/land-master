@@ -1,0 +1,70 @@
+				 string syncBudgetApprovalStatus(int budgetId, string approvalType)
+                 {
+                 	/********* SYNC PARENT BUDGET APPROVAL STATUS *********/
+                 	// Return Type: string
+                 	// Updates Add_Budget.Const_Budget_Approval_Status or Add_Budget.Development_Budget_Approval_Status
+                 	// based on the current approval rows for the selected approval type.
+                 	// Parent statuses stay simple: Not Sent, Pending, Approved.
+                 	// Rejected approval rows are treated as Pending at the parent level because the chain is still active.
+                 	vBudgetId = budgetId.toLong();
+                 	vApprovalType = ifnull(approvalType,"").trim();
+                 	if(vBudgetId == 0)
+                 	{
+                 		return "No Budget ID provided.";
+                 	}
+                 	if(vApprovalType == "")
+                 	{
+                 		return "No approval type provided.";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "Budget not found.";
+                 	}
+                 	totalRows = 0;
+                 	approvedRows = 0;
+                 	startedRows = 0;
+                 	for each  appr in budgetRec.Approvals
+                 	{
+                 		if(ifnull(appr.Type1,"") == vApprovalType)
+                 		{
+                 			totalRows = totalRows + 1;
+                 			apprStatus = ifnull(appr.Status,"");
+                 			if(apprStatus == "")
+                 			{
+                 				apprStatus = "Not Sent";
+                 			}
+                 			if(apprStatus == "Approved")
+                 			{
+                 				approvedRows = approvedRows + 1;
+                 				startedRows = startedRows + 1;
+                 			}
+                 			else if(apprStatus == "Pending" || apprStatus == "Rejected")
+                 			{
+                 				startedRows = startedRows + 1;
+                 			}
+                 		}
+                 	}
+                 	parentStatus = "Not Sent";
+                 	if(totalRows > 0 && approvedRows == totalRows)
+                 	{
+                 		parentStatus = "Approved";
+                 	}
+                 	else if(startedRows > 0)
+                 	{
+                 		parentStatus = "Pending";
+                 	}
+                 	else
+                 	{
+                 		parentStatus = "Not Sent";
+                 	}
+                 	if(vApprovalType == "Construction")
+                 	{
+                 		budgetRec.Const_Budget_Approval_Status=parentStatus;
+                 	}
+                 	else if(vApprovalType == "Development")
+                 	{
+                 		budgetRec.Development_Budget_Approval_Status=parentStatus;
+                 	}
+                 	return vApprovalType + " budget approval status synced to " + parentStatus + ".";
+                 }

@@ -1,0 +1,70 @@
+				 string Claim_Proforma(string proformaId, string userAccessId)
+                 {
+                 	result = Map();
+                 	try 
+                 	{
+                 		if(proformaId == null || proformaId.trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","No Pro Forma ID was supplied.");
+                 			return result.toString();
+                 		}
+                 		if(userAccessId == null || userAccessId.trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","No resolved User Access ID was supplied.");
+                 			return result.toString();
+                 		}
+                 		// Get_User_Access already resolved the logged-in Creator user to this
+                 		// environment's User_Access record. Do not re-match by email here.
+                 		accessRow = User_Access[ID == userAccessId.toLong()];
+                 		if(accessRow.ID == null)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The resolved User Access record could not be found.");
+                 			return result.toString();
+                 		}
+                 		canClaim = accessRow.Edit_Owned_Proformas == true || accessRow.Edit_All_Proformas == true;
+                 		if(!canClaim)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","You do not have permission to claim Pro Formas.");
+                 			return result.toString();
+                 		}
+                 		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+                 		if(pf.ID == null)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The Pro Forma record could not be found.");
+                 			return result.toString();
+                 		}
+                 		ownerIds = List();
+                 		if(pf.Owner != null)
+                 		{
+                 			for each  ownerId in pf.Owner
+                 			{
+                 				ownerIds.add(ownerId);
+                 			}
+                 		}
+                 		if(ownerIds.size() > 0)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","This Pro Forma already has an owner.");
+                 			result.put("ownerIds",ownerIds);
+                 			return result.toString();
+                 		}
+                 		ownerIds.add(accessRow.ID);
+                 		pf.Owner=ownerIds;
+                 		result.put("success",true);
+                 		result.put("message","Pro Forma claimed.");
+                 		result.put("proformaId",pf.ID.toString());
+                 		result.put("ownerId",accessRow.ID.toString());
+                 		result.put("ownerIds",ownerIds);
+                 		result.put("owner",accessRow.User.toString());
+                 	}	catch (e)
+                 	{
+                 		result.put("success",false);
+                 		result.put("message",e.toString());
+                 	}
+                 	return result.toString();
+                 }

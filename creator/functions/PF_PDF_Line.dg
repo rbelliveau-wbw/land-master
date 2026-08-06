@@ -1,0 +1,4 @@
+				 string PF_PDF_Line(decimal x1, decimal y1, decimal x2, decimal y2, string color, decimal lineWidth)
+                 {
+                 	return "q\n" + color + " RG\n" + lineWidth + " w\n" + x1 + " " + y1 + " m " + x2 + " " + y2 + " l S\nQ\n";
+                 }

@@ -1,0 +1,142 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Budget_Import_Item",
+  "display_name": "Budget Import Item",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Code",
+      "display_name": "Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_Code_Description",
+      "display_name": "Cost Code Description",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Percent_Complete",
+      "display_name": "Percent Complete",
+      "type": "percentage",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_to_Complete",
+      "display_name": "Cost to Complete",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Item",
+      "display_name": "Budget Item",
+      "type": "picklist",
+      "values": "Budget_Item[Budget_Code.contains(input.Subdivision_Code)].ID",
+      "display_format": "[Budget_Code + \" - \" + Item_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Data_Source",
+      "display_name": "Data Source",
+      "type": "picklist",
+      "values": "{\"Great Plains\",\"HeavyJob\",\"HeavyJob Budget\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Import_Status",
+      "display_name": "Import Status",
+      "type": "picklist",
+      "values": "{\"Awaiting Processing\",\"Import Successful\",\"Import Error\"}",
+      "display_format": null,
+      "initial_value": "\"Awaiting Processing\"",
+      "private": false
+    },
+    {
+      "link_name": "Error_Response",
+      "display_name": "Error Response",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_Code_ID",
+      "display_name": "Cost Code ID",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Updated_Date",
+      "display_name": "Updated Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

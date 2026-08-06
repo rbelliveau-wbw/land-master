@@ -1,0 +1,241 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Budget_Months",
+  "display_name": "Budget Months",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision",
+      "display_name": "Subdivision",
+      "type": "picklist",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget",
+      "display_name": "Budget",
+      "type": "picklist",
+      "values": "Add_Budget.ID",
+      "display_format": "[Budget_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Month_No",
+      "display_name": "Month No.",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Cost",
+      "display_name": "Land Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Cost",
+      "display_name": "Budget Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Points",
+      "display_name": "Points",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Cost",
+      "display_name": "Engineering Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subcontract_Engineering_Cost",
+      "display_name": "Subcontract Engineering Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Cost",
+      "display_name": "Construction Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Subcontract_Construction_Cost",
+      "display_name": "Subcontract Construction Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": "0",
+      "private": false
+    },
+    {
+      "link_name": "Development_Cost",
+      "display_name": "Development Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Cost",
+      "display_name": "Total Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_to_Date",
+      "display_name": "Cost to Date",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Revenue",
+      "display_name": "Revenue",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cash_Flow",
+      "display_name": "Cash Flow",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Carry_Charge",
+      "display_name": "Carry Charge",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Admin_Cost",
+      "display_name": "Admin Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Final_Cost",
+      "display_name": "Final Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Other_Revenue",
+      "display_name": "Other Revenue",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Profit",
+      "display_name": "Profit",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Profit_Share",
+      "display_name": "Profit Share",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

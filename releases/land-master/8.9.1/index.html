@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Land Master</title>
+<script src="https://static.zohocdn.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+<style>
+/* ── TOKENS ── aligned with Pro Forma Manager ── */
+:root{
+  --bg:#f0f3f7; --surface:#e8ecf1; --card:#fff;
+  --line:#dde4ef; --line-strong:#c8d4e5;
+  --text:#0f2744; --muted:#5c7394; --faint:#8ea0bd;
+  --navy:#0b2345; --navy-soft:rgba(11,35,69,.08);
+  --primary:#1e40af; --primary-2:#2563eb; --ptint:#eef4ff; --psoft:#e8f0fb;
+  --green:#047857; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#b91c1c; --red-bg:#fef2f2;
+  --violet:#3730a3; --violet-bg:#e0e7ff;
+  --r:10px; --rsm:6px;
+  --shadow:0 2px 8px rgba(30,64,175,.06),0 1px 2px rgba(0,0,0,.03);
+
+  /* Compatibility aliases used by the existing widget logic. */
+  --divider:var(--line); --accent:var(--primary-2);
+  --accent-100:var(--psoft); --accent-200:#dbeafe; --accent-400:#60a5fa;
+  --accent-600:var(--primary); --accent-700:var(--primary); --accent-800:#1e3a8a; --accent-900:var(--navy);
+  --n-100:#eef2f7; --n-200:#e2e8f0; --n-400:#94a3b8; --n-500:#7d90ad; --n-600:var(--muted); --n-800:var(--text);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--primary-2);outline-offset:1px}
+::selection{background:#dbeafe}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:0;height:48px;padding:0 18px;background:var(--card);border-bottom:1px solid var(--line);flex:none}
+.topbar-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-.2px;color:var(--navy);margin-right:20px;flex:none}
+.topbar-brand svg{width:16px;height:16px;color:var(--primary)}
+.topbar-brand small{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-left:2px}
+.tabs{display:flex;align-items:center;gap:4px;background:#eef2f8;border:1px solid #dde5f0;border-radius:999px;padding:3px}
+.tabs .seg-opt{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 16px;border:0;background:transparent;color:#5a6b85;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:all .13s;white-space:nowrap}
+.tabs .seg-opt:hover{color:var(--navy);background:rgba(255,255,255,.65)}
+.tabs .seg-opt.active{color:#fff;background:var(--navy);box-shadow:0 1px 3px rgba(11,31,58,.25)}
+.tabs .seg-opt .ct{display:inline-grid;place-items:center;min-width:18px;height:17px;padding:0 5px;border-radius:999px;background:rgba(255,255,255,.16);font-size:9.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.tabs .seg-opt:not(.active) .ct{background:#fff;color:var(--primary)}
+.spacer{flex:1}
+.statusline{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.statusline .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.statusline .dot.warn{background:var(--amber)}
+.statusline .dot.err{background:var(--red)}
+.issuebtn{margin-left:13px;border:1px solid var(--line-strong);background:#fff;color:var(--muted);border-radius:7px;height:29px;padding:0 10px;font-size:10.5px;font-weight:800;cursor:pointer;transition:all .12s}
+.issuebtn:hover{border-color:var(--primary-2);color:var(--primary)}
+.issuebtn.active{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+
+/* ── LIST HEADER / FILTERS ── */
+.filterrow{display:flex;align-items:center;gap:10px;padding:16px 18px 13px;flex:none;flex-wrap:wrap}
+.filterrow h1{font-size:18px;font-weight:800;letter-spacing:-.3px;margin:0;color:var(--navy)}
+.scope-count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 7px;font-size:10.5px;font-weight:800;border-radius:999px;background:var(--psoft);color:var(--primary)}
+.searchbox{display:flex;align-items:center;gap:9px;flex:0 1 540px;min-width:330px;max-width:580px;background:#fff;border:1px solid #8fb2f3;border-radius:10px;padding:8px 12px;box-shadow:0 3px 12px rgba(37,99,235,.12),0 0 0 3px rgba(37,99,235,.04);transition:border-color .12s,box-shadow .12s,transform .12s}
+.searchbox:hover{border-color:var(--primary-2);box-shadow:0 5px 16px rgba(37,99,235,.16),0 0 0 3px rgba(37,99,235,.06)}
+.searchbox:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 4px rgba(37,99,235,.14),0 6px 18px rgba(37,99,235,.15);transform:translateY(-1px)}
+.searchbox .search-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:7px;background:var(--primary-2);color:#fff;flex:none;box-shadow:0 2px 5px rgba(37,99,235,.25)}
+.searchbox svg{width:13px;height:13px;color:currentColor;flex:none}
+.searchbox input{border:0;outline:0;font-size:13px;font-weight:650;flex:1;min-width:0;background:transparent;color:var(--text)}
+.searchbox input::placeholder{color:#7c8faa;font-weight:550}
+.search-shortcut{display:inline-grid;place-items:center;min-width:22px;height:21px;padding:0 6px;border:1px solid var(--line-strong);border-radius:6px;background:#f6f8fc;color:var(--muted);font-size:10px;font-weight:800}
+select.filter{border:1px solid transparent;border-radius:8px;background:#eef2f8;font-size:12px;font-weight:600;color:var(--text);padding:6px 9px;cursor:pointer;transition:background .12s,border-color .12s,box-shadow .12s}
+select.filter:hover{background:#e6edf7}
+select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.hint{font-size:10.5px;color:var(--faint);font-weight:600}
+#resultLine{color:var(--muted);font-weight:700}
+.keyboard-hint{margin-left:auto}
+
+
+/* ── TABLE PAGING / PERFORMANCE ── */
+.tablepager{display:flex;align-items:center;gap:7px;min-height:43px;padding:7px 10px;border-top:1px solid var(--line);background:#f8fafc;flex:none;color:var(--muted);font-size:10.5px;font-weight:750}
+.tablepager-info{min-width:190px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tablepager-spacer{flex:1}
+.page-btn{height:28px;min-width:30px;padding:0 8px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--navy);font-size:11px;font-weight:850;cursor:pointer}
+.page-btn:hover:not(:disabled){border-color:var(--primary-2);color:var(--primary);background:var(--ptint)}
+.page-btn:disabled{opacity:.38;cursor:default}
+.page-number{min-width:86px;text-align:center;color:var(--navy);font-variant-numeric:tabular-nums}
+.page-size{height:28px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--navy);padding:0 7px;font-size:10.5px;font-weight:800}
+@media(max-width:760px){.tablepager-info{min-width:0}.tablepager .page-first,.tablepager .page-last,.tablepager .page-size-label{display:none}}
+
+/* ── LOAD PROGRESS ── */
+.load-progress{display:none;flex:none;padding:8px 18px 9px;background:linear-gradient(180deg,#f8fbff,#eef5ff);border-bottom:1px solid #cfe0fb;box-shadow:0 3px 12px rgba(37,99,235,.07);position:relative;z-index:6}
+.load-progress.show{display:block}
+.load-progress-meta{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--navy)}
+.load-progress-meta .load-progress-detail{margin-left:auto;color:var(--primary);font-variant-numeric:tabular-nums}
+.load-progress-track{height:7px;overflow:hidden;border-radius:999px;background:#dbe7f8;box-shadow:inset 0 1px 2px rgba(15,39,68,.08)}
+.load-progress-track i{display:block;width:2%;height:100%;border-radius:999px;background:linear-gradient(90deg,#1e40af,#3b82f6,#60a5fa);transition:width .22s ease;position:relative;overflow:hidden}
+.load-progress-track i::after{content:"";position:absolute;inset:0;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:loadShimmer 1.15s linear infinite}
+@keyframes loadShimmer{from{transform:translateX(-120%)}to{transform:translateX(340%)}}
+
+/* ── SEARCHABLE MULTI FILTERS ── */
+.filter-controls{display:flex;align-items:center;gap:7px;min-width:0;max-width:100%;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:thin}
+.multi-filter-btn{height:34px;display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:var(--navy);padding:0 10px;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(15,39,68,.05);transition:all .12s}
+.multi-filter-btn:hover{border-color:#7ea4df;background:#f8fbff;box-shadow:0 3px 9px rgba(37,99,235,.11)}
+.multi-filter-btn.primary-filter{border-color:#7da5e5;background:#f5f9ff;box-shadow:0 0 0 2px rgba(37,99,235,.06),0 2px 7px rgba(37,99,235,.09)}
+.multi-filter-btn.active{border-color:var(--primary-2);background:var(--primary-2);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.22)}
+.multi-filter-btn .filter-name{font-size:9.5px;letter-spacing:.055em;text-transform:uppercase;opacity:.72}
+.multi-filter-btn .filter-value{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multi-filter-btn .filter-caret{font-size:8px;opacity:.75}
+.filter-popup{display:none;position:fixed;z-index:1225;width:330px;max-width:calc(100vw - 24px);max-height:430px;overflow:hidden;background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 22px 60px rgba(15,39,68,.28)}
+.filter-popup.show{display:flex;flex-direction:column}
+.filter-popup-head{display:flex;align-items:center;gap:7px;padding:9px;border-bottom:1px solid var(--line);background:#f7f9fc}
+.filter-popup-search{flex:1;min-width:0;height:34px;border:1px solid #9eb8df;border-radius:8px;background:#fff;color:var(--text);padding:0 10px;font-size:12px;font-weight:650;outline:0}
+.filter-popup-search:focus{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.filter-popup-list{overflow:auto;padding:6px;min-height:90px}
+.filter-option{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;color:var(--text);font-size:11.5px;font-weight:700;cursor:pointer}
+.filter-option:hover{background:var(--ptint)}
+.filter-option input{width:15px;height:15px;accent-color:var(--primary-2);flex:none}
+.filter-popup-empty{padding:24px 12px;text-align:center;color:var(--muted);font-size:11px;font-weight:700}
+.filter-popup-foot{display:flex;align-items:center;gap:8px;padding:9px 10px;border-top:1px solid var(--line);background:#f8fafc}
+.filter-popup-count{flex:1;color:var(--muted);font-size:10.5px;font-weight:750}
+
+/* ── LAYOUT / CARDS ── */
+.workarea{display:flex;gap:13px;flex:1;min-height:0;padding:0 18px 18px}
+.tablewrap{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.tablecard{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.tscroll{flex:1;overflow:auto;min-height:0}
+.panelwrap{display:none}
+.panel{min-height:100%;background:var(--card);padding:18px 20px}
+.blueprint>.corner{display:none}
+@media(max-width:1000px){
+  .workarea{overflow:auto}
+  .tablewrap{min-height:380px}
+  .panelwrap{display:none}
+  .keyboard-hint{display:none}
+}
+@media(max-width:760px){
+  .topbar{height:auto;min-height:48px;padding:8px 12px;flex-wrap:wrap;gap:8px}
+  .topbar-brand{margin-right:4px}.tabs{order:3;width:100%;overflow:auto}.tabs .seg-opt{flex:1;justify-content:center;padding:0 10px}
+  .filterrow{padding:12px}.filterrow .spacer{display:none}.searchbox{order:5;flex:1 1 100%;min-width:0;max-width:none}.new-menu-wrap{order:6}.filter-controls{order:7;flex:1 1 100%}
+  .workarea{padding:0 12px 12px}
+}
+
+/* ── BUTTONS / CONTROLS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-strong);background:#fff;color:var(--text);
+  font-size:12px;font-weight:700;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.btn:hover{border-color:var(--primary-2);color:var(--primary)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+.btn.primary:hover{background:var(--primary);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--primary)}
+.btn:disabled{opacity:.5;pointer-events:none}
+.btn.sm{padding:4px 10px;font-size:11px;height:auto}
+.btn.inverse{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.btn.inverse:hover{background:rgba(255,255,255,.12);border-color:#fff;color:#fff}
+.input{height:30px;border:1px solid transparent;border-radius:7px;background:#eef2f8;color:var(--text);font-size:12.5px;padding:0 9px;outline:none;font-variant-numeric:tabular-nums;transition:background .12s,border-color .12s,box-shadow .12s}
+.input:hover:not(:focus){background:#e6edf7}
+.input:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.input::placeholder{color:var(--faint)}
+select.input{cursor:pointer}
+textarea.input{height:auto;min-height:68px;padding:7px 9px;resize:vertical;line-height:1.45}
+.input.warn{background:var(--amber-bg);border-color:#f5c26b}
+.input.ro{background:#f6f8fc;color:var(--muted);border-color:var(--line);cursor:default}
+
+/* ── TABLE ── */
+.wtable{width:100%;border-collapse:collapse;font-size:12.5px}
+.wtable th{position:sticky;top:0;z-index:2;background:#f6f8fc;text-align:left;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+.wtable th:hover,.wtable th.sorted{color:var(--primary)}
+.wtable th.num,.wtable td.num{text-align:right}.wtable th.center,.wtable td.center{text-align:center}
+.wtable td{padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;font-variant-numeric:tabular-nums;vertical-align:middle;color:var(--text)}
+.wtable td.editable{padding:4px 6px;overflow:visible}
+.table-editor{width:100%;min-width:72px;height:29px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text);font-size:12px;font-weight:600;padding:0 7px;outline:0;transition:background .12s,border-color .12s,box-shadow .12s}
+.table-editor:hover{background:#eef4ff;border-color:#d5e2f7}
+.table-editor:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.table-editor.warn{color:var(--amber);font-weight:750}
+.table-editor.saving,.table-project-btn.saving{background-color:#fff7ed!important;border-color:#fdba74!important}
+.table-editor.saved-ok{
+  border-color:var(--green)!important;
+  background-color:#fff!important;
+  box-shadow:0 0 0 2px rgba(5,150,105,.10)!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23047857' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;
+  background-position:right 6px center!important;
+  padding-right:28px!important;
+}
+.table-editor.save-error,.table-project-btn.save-error{background:var(--red-bg)!important;border-color:#fca5a5!important}
+select.table-editor{cursor:pointer;padding-right:22px}
+select.table-editor.saved-ok{background-position:right 27px center!important;padding-right:48px!important}
+.table-editor-check{width:15px;height:15px;accent-color:var(--primary-2);cursor:pointer;transition:outline-color .12s,transform .12s}
+.table-editor-check.saving{outline:2px solid var(--amber);outline-offset:2px}
+.table-editor-check.saved-ok{outline:2px solid var(--green);outline-offset:2px;accent-color:var(--green)!important;animation:checkPop .35s cubic-bezier(.34,1.56,.64,1)}
+.table-editor-check.save-error{outline:2px solid var(--red);outline-offset:2px}
+.table-project-btn{width:100%;min-width:130px;height:29px;display:flex;align-items:center;gap:5px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text);font-size:11.5px;font-weight:650;padding:0 7px;cursor:pointer;overflow:hidden;transition:all .12s;text-align:left}
+.table-project-btn:hover{background:#eef4ff;border-color:#d5e2f7}
+.table-project-btn .project-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.table-project-btn .project-caret{color:var(--muted);font-size:9px;flex:none}
+.table-project-btn.saved-ok{border-color:var(--green)!important;background:#fff!important;box-shadow:0 0 0 2px rgba(5,150,105,.10)!important;color:var(--green)}
+.table-project-btn.saved-ok::after{content:"✓";font-size:15px;font-weight:900;animation:checkPop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes checkPop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+.wtable td.readonly-cell{color:var(--muted);background:#fbfcfe}
+.wtable tbody tr.rec{cursor:pointer;transition:background .1s}
+.wtable tbody tr.rec:hover{background:var(--ptint)}
+.wtable tbody tr.rec.sel{background:#e5efff}
+.wtable tbody tr.rec.sel td:first-child{box-shadow:inset 3px 0 0 var(--primary-2)}
+.wtable input[type=checkbox]{accent-color:var(--primary-2);cursor:pointer}
+tr.ghead{cursor:pointer}
+tr.ghead td{background:#f3f6fb;color:var(--muted);font-size:10px;font-weight:700;padding:7px 12px;max-width:none;border-bottom:1px solid var(--line)}
+tr.ghead:hover td{background:#edf2f9}
+.ghead .caret{font-size:9px;color:var(--primary-2);display:inline-block;width:14px}
+.ghead .gname{font-weight:800;font-size:10px;letter-spacing:.08em;color:var(--navy)}
+.ghead .gmeta{font-size:10.5px;color:var(--muted);margin-left:10px}
+.gbar{display:inline-block;width:72px;height:7px;border-radius:99px;background:#dfe6f0;vertical-align:middle;margin-left:10px;overflow:hidden}
+.gbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--primary-2))}
+.gpct{font-size:10px;color:var(--muted);font-weight:800;margin-left:6px}
+
+/* ── CHIPS / TAGS ── */
+.tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.tag-accent{background:var(--green-bg);color:var(--green)}
+.tag-neutral{background:#eef2f7;color:var(--muted)}
+.tag-outline{background:var(--amber-bg);color:var(--amber);border:0}
+.tag.sm{font-size:10px;padding:2px 8px}
+.tag.link{cursor:pointer}.tag.link:hover{filter:brightness(.97)}
+
+/* ── BULK ACTION BAR ── */
+.bulkbar{display:flex;align-items:center;gap:8px;padding:9px 12px;background:linear-gradient(150deg,#0b2345,#1e3a6e);color:#fff;flex:none}
+.bulkbar b{font-size:11px;letter-spacing:.07em;font-weight:800}
+.bulkbar select{height:28px;font-size:11px;font-weight:700;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:0 7px;outline:0}
+.bulkbar select:focus{border-color:#fff}.bulkbar select option{color:var(--text);background:#fff}
+
+/* ── DETAIL PANEL ── */
+.kicker{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--primary);font-weight:800}
+.ptitle{font-weight:800;font-size:19px;letter-spacing:-.3px;line-height:1.2;color:var(--navy)}
+.psub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:3px}
+.sect{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);font-weight:800;margin:17px 0 9px;border-bottom:1px solid #eef2f8;padding-bottom:6px;display:flex;justify-content:space-between;align-items:baseline}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px}
+.fg{min-width:0}.fg.full{grid-column:1/-1}
+.fl{font-size:10px;letter-spacing:.055em;text-transform:uppercase;color:#7d90ad;font-weight:700;margin-bottom:4px}
+.fg .input{width:100%;height:31px;font-size:12.5px}
+.fg textarea.input{height:auto;min-height:72px}
+.progress{height:8px;background:#e3e9f2;border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--primary-2))}
+.panel .empty{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* ── MILESTONES ── */
+.mslist{border-left:2px solid #e4eaf3;margin-left:5px;padding-left:14px;display:flex;flex-direction:column;gap:7px}
+.msrow{position:relative;display:grid;grid-template-columns:minmax(0,1.4fr) 104px 104px;gap:6px;align-items:center}
+.msrow .dot{position:absolute;left:-20px;top:9px;width:9px;height:9px;border:2px solid #b8c5d8;border-radius:50%;background:#fff}
+.msrow.done .dot{background:#94a3b8;border-color:#94a3b8}
+.msrow.next .dot{border-color:var(--primary-2);background:#dbeafe;box-shadow:0 0 0 3px rgba(37,99,235,.09)}
+.msvalue{width:100%;min-height:29px;display:flex;align-items:center;border:1px solid var(--line);background:#f6f8fc;font-size:11.25px;font-weight:650;padding:4px 7px;font-variant-numeric:tabular-nums;border-radius:7px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msrow.done .msvalue{color:var(--faint);background:#fafbfd}
+.msvalue.date{justify-content:center}
+.panel-actions{position:sticky;z-index:4;bottom:-16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px -17px -16px;padding:12px 17px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -5px 16px rgba(15,39,68,.06)}
+.panel-actions .action-spacer{flex:1}
+.dirty-note{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:750;color:var(--muted)}
+.dirty-note::before{content:"";width:7px;height:7px;border-radius:50%;background:#a8b5c7}
+.dirty-note.dirty{color:var(--amber)}
+.dirty-note.dirty::before{background:var(--amber)}
+
+/* ── AUDIT LOG ── */
+.audit-open-btn{height:29px;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(30,42,58,.20);background:#fff;color:var(--navy);border-radius:999px;padding:0 10px;font-size:10.5px;font-weight:800;cursor:pointer;box-shadow:0 1px 2px rgba(30,42,58,.06);margin-left:10px;transition:all .12s}
+.audit-open-btn:hover{border-color:var(--navy);background:#f8fafc}
+.audit-open-btn .audit-dot{width:7px;height:7px;border-radius:999px;background:#8b939f}
+.audit-open-btn.has-logs .audit-dot{background:#2563eb}
+.audit-open-btn.has-error{background:#fff1f1;border-color:#ef4444;color:#991b1b;box-shadow:0 0 0 3px rgba(239,68,68,.10)}
+.audit-open-btn.has-error .audit-dot{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.14)}
+.audit-open-btn .audit-count{min-width:18px;height:18px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#eef2f7;color:var(--navy);font-size:10px}
+.audit-open-btn.has-error .audit-count{background:#fee2e2;color:#991b1b}
+.audit-modal{position:fixed;inset:0;z-index:1300;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(15,23,42,.48)}
+.audit-modal.show{display:flex}
+.audit-dialog{width:min(860px,calc(100vw - 40px));height:min(650px,calc(100vh - 70px));background:#fff;border:1px solid var(--line-strong);border-radius:18px;box-shadow:0 30px 90px rgba(15,23,42,.38);overflow:hidden;display:flex;flex-direction:column}
+.audit-head{height:52px;display:flex;align-items:center;gap:10px;padding:0 16px;background:linear-gradient(180deg,#f8fbff,#f3f7fc);border-bottom:1px solid var(--line)}
+.audit-title{font-weight:900;color:var(--navy);font-size:15px;letter-spacing:-.01em}
+.audit-title span{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;margin-left:7px;padding:0 7px;border-radius:999px;background:#eef2f7;color:var(--navy);font-size:11px}
+.audit-spacer{flex:1}
+.audit-btn{height:30px;border:1px solid var(--line);background:#fff;border-radius:8px;color:var(--navy);font-size:11px;font-weight:850;cursor:pointer;padding:0 10px}
+.audit-btn:hover{border-color:var(--navy);background:#f8fafc}
+.audit-close{width:32px;height:32px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
+.audit-close:hover{border-color:#ef4444;color:#991b1b;background:#fff5f5}
+.audit-body{flex:1;overflow:auto;background:#0f172a;color:#dbeafe;font-family:ui-monospace,Consolas,monospace;font-size:11px;line-height:1.45;white-space:pre-wrap;word-break:break-word;margin:0;padding:14px}
+.audit-empty{color:#64748b;background:#f8fafc;padding:18px;font-size:13px;border-top:1px solid var(--line)}
+
+/* ── PROJECT MULTI-SELECT POPUP ── */
+.project-popup{display:none;position:fixed;z-index:1200;width:310px;max-width:calc(100vw - 24px);background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 18px 50px rgba(15,39,68,.22);overflow:hidden}
+.project-popup.show{display:block}
+.project-popup-head{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);background:#f7f9fc;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;color:var(--navy)}
+.project-popup-head .spacer{flex:1}
+.project-popup-close{width:25px;height:25px;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:18px;cursor:pointer}
+.project-popup-close:hover{background:#eef2f7;color:var(--navy)}
+.project-popup-list{max-height:260px;overflow:auto;padding:5px}
+.project-choice{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer}
+.project-choice:hover{background:var(--ptint)}
+.project-choice input{width:14px;height:14px;accent-color:var(--primary-2)}
+.project-popup-empty{padding:18px;text-align:center;color:var(--muted);font-size:12px}
+.project-popup-foot{display:flex;align-items:center;gap:7px;padding:9px 10px;border-top:1px solid var(--line);background:#f8fafc}
+.project-popup-count{font-size:10.5px;font-weight:700;color:var(--muted);flex:1}
+@media(max-width:760px){.audit-modal{padding:10px}.audit-dialog{width:calc(100vw - 20px);height:calc(100vh - 40px);border-radius:14px}.audit-head{flex-wrap:wrap;height:auto;min-height:52px;padding:10px}}
+
+
+/* ── RECORD POPUP / TABBED SUBDIVISION WORKSPACE ── */
+.record-modal{position:fixed;inset:0;z-index:1150;display:none;align-items:center;justify-content:center;padding:26px;background:rgba(15,23,42,.52)}
+.record-modal.show{display:flex}
+.record-dialog{width:min(1180px,calc(100vw - 44px));height:min(820px,calc(100vh - 52px));display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--line-strong);border-radius:18px;box-shadow:0 32px 100px rgba(15,23,42,.38)}
+.record-head{display:flex;align-items:center;gap:14px;min-height:74px;padding:13px 18px;background:linear-gradient(145deg,#0b2345,#173d72);color:#fff;border-bottom:1px solid rgba(255,255,255,.14)}
+.record-heading{min-width:0;flex:1}.record-kicker{font-size:9.5px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:#bfdbfe}.record-title{font-size:20px;line-height:1.2;font-weight:850;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.record-subtitle{margin-top:3px;font-size:11.5px;font-weight:600;color:#dbeafe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.record-head-actions{display:flex;align-items:center;gap:7px;flex:none}.record-head-btn{height:31px;border:1px solid rgba(255,255,255,.30);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;padding:0 10px;font-size:10.5px;font-weight:800;cursor:pointer}.record-head-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.55)}.record-close{display:grid;place-items:center;width:34px;height:34px;padding:0;line-height:1}.record-close svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round}
+.record-tabs{display:flex;align-items:center;gap:4px;min-height:47px;padding:8px 16px;background:#f7f9fc;border-bottom:1px solid var(--line);overflow-x:auto;flex:none}
+.record-tabs:empty{display:none}.record-tab{display:inline-flex;align-items:center;gap:7px;height:31px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);padding:0 13px;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap}.record-tab:hover{background:#eef3fa;color:var(--navy)}.record-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 2px 5px rgba(11,35,69,.18)}.record-tab-count{display:inline-grid;place-items:center;min-width:18px;height:17px;padding:0 5px;border-radius:999px;background:rgba(255,255,255,.16);font-size:9.5px}.record-tab:not(.active) .record-tab-count{background:#e6edf7;color:var(--primary)}
+.record-body{flex:1;min-height:0;overflow:auto;background:#fff}.record-body .panel{box-shadow:none;border:0;border-radius:0;display:flex;flex-direction:column}.record-body .panel>.panel-actions{position:sticky;bottom:0;margin:24px -20px 0;padding:12px 20px 14px;min-height:58px;flex-wrap:nowrap;background:#fff;backdrop-filter:none;box-shadow:0 -6px 18px rgba(15,39,68,.08);margin-top:auto}.record-body .panel>.panel-actions .btn{flex:none}.record-body .panel>.panel-actions .dirty-note{white-space:nowrap}.record-body .panel>.panel-actions .hint{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab-intro{display:flex;align-items:center;gap:9px;margin-bottom:13px}.tab-intro h3{margin:0;color:var(--navy);font-size:15px}.readonly-pill{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;background:#eef2f7;color:var(--muted);font-size:9.5px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+.related-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:15px}.related-card{border:1px solid var(--line);border-radius:10px;background:#fbfcfe;padding:11px 12px;min-width:0}.related-card-title{display:flex;align-items:center;gap:7px;color:var(--navy);font-size:12px;font-weight:850}.related-card-sub{margin-top:2px;color:var(--muted);font-size:10.5px;font-weight:650}.related-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.related-metric{min-width:0;padding:7px;border-radius:7px;background:#eef3f9}.related-metric b{display:block;color:var(--navy);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.related-metric span{display:block;margin-top:1px;color:var(--muted);font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.related-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}.related-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:780px}.related-table th{position:sticky;top:0;z-index:1;text-align:left;padding:8px 10px;background:#f5f8fc;border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.055em;white-space:nowrap}.related-table td{padding:8px 10px;border-bottom:1px solid #edf1f6;color:var(--text);white-space:nowrap;vertical-align:middle}.related-table tbody tr:last-child td{border-bottom:0}.related-table tbody tr:hover{background:var(--ptint)}.related-table td.num{text-align:right;font-variant-numeric:tabular-nums}.related-open{border:0;background:transparent;color:var(--primary);font-size:10.5px;font-weight:800;cursor:pointer;padding:3px 5px}.related-open:hover{text-decoration:underline}
+.related-empty{display:flex;align-items:center;justify-content:center;min-height:180px;border:1px dashed var(--line-strong);border-radius:11px;background:#fafbfd;color:var(--muted);font-weight:650;text-align:center;padding:24px}.related-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:17px 0 8px;color:var(--navy);font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+@media(max-width:760px){.record-modal{padding:8px}.record-dialog{width:calc(100vw - 16px);height:calc(100vh - 16px);border-radius:13px}.record-head{min-height:68px;padding:10px 12px}.record-title{font-size:17px}.record-head-btn:not(.record-close){display:none}.record-tabs{padding:7px 9px}.record-tab{padding:0 10px}.panel{padding:14px}.fgrid{grid-template-columns:1fr}.related-summary-grid{grid-template-columns:1fr}.panel-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}.record-body .panel>.panel-actions{margin:20px -14px 0;padding:11px 14px 13px;min-height:56px;gap:7px}.record-body .panel>.panel-actions .dirty-note{display:none}}
+
+/* ── FEEDBACK / EMPTY STATES ── */
+@keyframes savedPulse{0%{box-shadow:0 0 0 3px rgba(37,99,235,.28)}100%{box-shadow:none}}
+.flash-ok{animation:savedPulse 1.1s ease-out}
+.err-banner{border:1px solid #fecaca;color:var(--red);background:var(--red-bg);border-radius:8px;padding:8px 12px;margin:0 18px 10px;font-size:11.5px;font-weight:650}
+.empty{padding:44px 20px;text-align:center;color:var(--muted);font-weight:600}
+.empty b{display:block;font-size:14px;color:var(--navy);margin-bottom:5px}
+#panelMsg{font-weight:700}
+*{scrollbar-width:thin;scrollbar-color:#c5d0df transparent}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-thumb{background:#c5d0df;border:2px solid transparent;background-clip:padding-box;border-radius:99px}
+*::-webkit-scrollbar-track{background:transparent}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Modal-only editing and generalized mass update */
+.row-edit-btn{display:grid;place-items:center;width:29px;height:29px;border:1px solid #d1dbe9;border-radius:7px;background:#fff;color:var(--primary);cursor:pointer;transition:all .12s;box-shadow:0 1px 2px rgba(15,39,68,.04)}
+.row-edit-btn:hover{border-color:#9fb3cf;background:var(--ptint);color:var(--navy);box-shadow:0 2px 5px rgba(30,64,175,.10)}
+.row-edit-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.new-menu-wrap{position:relative;flex:none}
+.new-menu{display:none;position:absolute;top:37px;left:0;z-index:1000;width:250px;max-height:min(520px,calc(100vh - 110px));overflow:auto;padding:6px;background:#fff;border:1px solid var(--line-strong);border-radius:11px;box-shadow:0 18px 50px rgba(15,39,68,.22)}
+.new-menu.show{display:block}
+.new-menu button{display:flex;align-items:center;width:100%;height:34px;border:0;border-radius:7px;background:transparent;color:var(--text);padding:0 10px;font-size:11.5px;font-weight:750;text-align:left;cursor:pointer}
+.new-menu button:hover{background:var(--ptint);color:var(--primary)}
+.table-lookup-btn{width:100%;min-width:150px;height:29px;display:flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text);font-size:11.5px;font-weight:650;padding:0 7px;cursor:pointer;overflow:hidden;text-align:left;transition:background .12s,border-color .12s,box-shadow .12s}
+.table-lookup-btn:hover{background:#eef4ff;border-color:#d5e2f7}
+.table-lookup-btn.warn{color:var(--amber);font-weight:750}
+.table-lookup-btn .lookup-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.table-lookup-btn .lookup-ok{display:none;flex:none;color:var(--green);font-size:15px;font-weight:900;line-height:1}
+.table-lookup-btn .lookup-caret{flex:none;color:var(--muted);font-size:9px}
+.table-lookup-btn.saving{background:#fff7ed!important;border-color:#fdba74!important}
+.table-lookup-btn.saved-ok{background:#fff!important;border-color:var(--green)!important;box-shadow:0 0 0 2px rgba(5,150,105,.10)!important}
+.table-lookup-btn.saved-ok .lookup-ok{display:inline-block;animation:checkPop .35s cubic-bezier(.34,1.56,.64,1)}
+.table-lookup-btn.save-error{background:var(--red-bg)!important;border-color:#fca5a5!important}
+.lookup-value{display:none!important}
+.field-lookup-btn{width:100%;height:32px;display:flex;align-items:center;gap:7px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--text);font-size:12px;font-weight:650;padding:0 9px;cursor:pointer;overflow:hidden;text-align:left;transition:background .12s,border-color .12s,box-shadow .12s}
+.field-lookup-btn:hover{background:#f8fbff;border-color:#9fb7db}
+.field-lookup-btn:focus{outline:0;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.field-lookup-btn.warn{color:var(--amber);font-weight:750}
+.field-lookup-btn .lookup-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.field-lookup-btn .lookup-caret{flex:none;color:var(--muted);font-size:9px}
+.lookup-popup{display:none;position:fixed;z-index:1125;width:360px;max-width:calc(100vw - 24px);max-height:390px;overflow:hidden;background:#fff;border:1px solid var(--line-strong);border-radius:11px;box-shadow:0 20px 55px rgba(15,39,68,.26)}
+.lookup-popup.show{display:flex;flex-direction:column}
+.lookup-popup-head{display:flex;align-items:center;gap:7px;padding:8px;border-bottom:1px solid var(--line);background:#f7f9fc}
+.lookup-popup-search{flex:1;min-width:0;height:32px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;color:var(--text);padding:0 10px;font-size:12px;font-weight:650;outline:0}
+.lookup-popup-search:focus{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.lookup-popup-close{display:grid;place-items:center;width:30px;height:30px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--muted);font-size:19px;cursor:pointer}
+.lookup-popup-close:hover{background:#e9eef6;color:var(--navy)}
+.lookup-popup-list{overflow:auto;padding:6px}
+.lookup-choice{display:block;width:100%;border:0;border-radius:8px;background:transparent;color:var(--text);padding:8px 9px;text-align:left;cursor:pointer}
+.lookup-choice:hover,.lookup-choice.active{background:var(--ptint);color:var(--primary)}
+.lookup-choice-name{display:block;font-size:11.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lookup-choice-meta{display:block;margin-top:1px;font-size:9.5px;font-weight:650;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lookup-empty{padding:22px 12px;text-align:center;color:var(--muted);font-size:11px;font-weight:650}
+
+.confirm-dialog{width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 25px 80px rgba(15,23,42,.34);overflow:hidden}
+.confirm-body{padding:20px}.confirm-title{margin:0 0 6px;font-size:16px;font-weight:850;color:var(--navy)}.confirm-message{margin:0;color:var(--muted);font-size:12.5px;line-height:1.55}.confirm-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;background:#f8fafc;border-top:1px solid var(--line)}
+.readonly-value{min-height:30px;border:1px solid var(--line);border-radius:7px;background:#f6f8fc;color:var(--muted);padding:6px 9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.multi-input{height:auto!important;min-height:112px;padding:5px!important}
+.field-help{font-size:9.5px;color:var(--faint);margin-top:3px}
+.section-note{text-transform:none;letter-spacing:0;font-weight:650;color:var(--muted)}
+.bulkbar>span{font-size:11px;opacity:.82}
+.bulk-dialog{width:min(680px,calc(100vw - 36px));max-height:min(620px,calc(100vh - 36px));display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(15,39,68,.28);overflow:hidden}
+.bulk-body{padding:20px;overflow:auto}.bulk-body>.fg{margin-bottom:16px}.bulk-warning{margin:16px 0 0;padding:10px 12px;border:1px solid #f6d48b;border-radius:8px;background:var(--amber-bg);color:var(--amber);font-size:11px;font-weight:700}
+.bulk-actions{position:static;margin:20px -20px -20px;padding:13px 20px}.bulk-actions #bulkMsgModal{margin-left:auto}
+.related-table+.tab-intro{margin-top:20px}.related-table-wrap+.tab-intro{margin-top:22px}
+.wtable tr.rec{cursor:pointer}.wtable tr.rec:hover{background:#f7faff}
+@media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/><path d="M4 10h16"/></svg>
+    Land Master
+  </div>
+  <div class="tabs" id="scopeSeg">
+    <button class="seg-opt active" data-scope="props">Properties <span class="ct" id="ctProps">0</span></button>
+    <button class="seg-opt" data-scope="subs">Subdivisions <span class="ct" id="ctSubs">0</span></button>
+    <button class="seg-opt" data-scope="cos">Companies <span class="ct" id="ctCos">0</span></button>
+  </div>
+  <div class="spacer"></div>
+  <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading</span></span>
+  <button class="audit-open-btn" id="auditOpenBtn" type="button" title="Open audit log"><span class="audit-dot"></span>Audit <span class="audit-count" id="auditBtnCount">0</span></button>
+  <button class="issuebtn" id="btnIssues" title="Show only records with missing links">⚠ <span id="issueCt">0</span> issues</button>
+</div>
+
+<div class="load-progress show" id="loadProgress" aria-live="polite">
+  <div class="load-progress-meta"><span id="loadProgressLabel">Loading Land Master data…</span><span class="load-progress-detail" id="loadProgressDetail">Starting…</span></div>
+  <div class="load-progress-track"><i id="loadProgressBar"></i></div>
+</div>
+
+<div class="filterrow">
+  <h1 id="scopeTitle">Properties</h1><span class="scope-count" id="scopeCount">0</span>
+  <span class="hint" id="resultLine"></span>
+  <div class="searchbox">
+    <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+    <input id="search" placeholder="Search…" autocomplete="off"/>
+  </div>
+  <div class="new-menu-wrap" id="newMenuWrap">
+    <button class="btn primary" id="newBtn" type="button">New <span aria-hidden="true">▾</span></button>
+    <div class="new-menu" id="newMenu" role="menu"></div>
+  </div>
+  <div class="filter-controls" id="propertyFilters">
+    <button class="multi-filter-btn primary-filter" type="button" data-filter-key="county"></button>
+    <button class="multi-filter-btn" type="button" data-filter-key="landType"></button>
+    <button class="multi-filter-btn" type="button" data-filter-key="subtype"></button>
+    <button class="multi-filter-btn" type="button" data-filter-key="company"></button>
+    <button class="multi-filter-btn" type="button" data-filter-key="deedTo"></button>
+  </div>
+  <div class="spacer"></div>
+  <span class="hint keyboard-hint">edit inline · pencil opens the full editor · select rows for mass update</span>
+</div>
+
+<div id="banners"></div>
+
+<div class="workarea">
+  <div class="tablewrap">
+    <div class="blueprint tablecard">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div class="tscroll" id="tableScroll"></div>
+      <div class="tablepager" id="tablePager">
+        <span class="tablepager-info" id="pageInfo">0 records</span>
+        <span class="tablepager-spacer"></span>
+        <button class="page-btn page-first" id="pageFirst" type="button" title="First page">«</button>
+        <button class="page-btn" id="pagePrev" type="button" title="Previous page">‹</button>
+        <span class="page-number" id="pageNumber">Page 1 of 1</span>
+        <button class="page-btn" id="pageNext" type="button" title="Next page">›</button>
+        <button class="page-btn page-last" id="pageLast" type="button" title="Last page">»</button>
+        <span class="page-size-label">Rows</span>
+        <select class="page-size" id="pageSize" aria-label="Rows per page"><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option><option value="500">500</option></select>
+      </div>
+      <div id="bulkbar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="record-modal" id="recordModal" aria-hidden="true">
+  <div class="record-dialog" role="dialog" aria-modal="true" aria-labelledby="recordTitle">
+    <div class="record-head">
+      <div class="record-heading">
+        <div class="record-kicker" id="recordKicker">Record</div>
+        <div class="record-title" id="recordTitle">Record details</div>
+        <div class="record-subtitle" id="recordSubtitle"></div>
+      </div>
+      <div class="record-head-actions">
+        <button class="record-head-btn" id="btnEditorBack" type="button" style="display:none">← Back</button>
+        <button class="record-head-btn" id="btnOpenLots" type="button" style="display:none">Lots ↗</button>
+        <button class="record-head-btn record-close" id="recordClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+    </div>
+    <div class="record-tabs" id="recordTabs"></div>
+    <div class="record-body"><div class="panel" id="panel"></div></div>
+  </div>
+</div>
+
+<div class="record-modal" id="bulkModal" aria-hidden="true">
+  <div class="bulk-dialog" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+    <div class="record-head">
+      <div class="record-heading"><div class="record-kicker">MASS UPDATE</div><div class="record-title" id="bulkTitle">Mass update records</div><div class="record-subtitle">One field and value will be applied to every selected record.</div></div>
+      <button class="record-head-btn record-close" id="bulkClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="bulk-body">
+      <div class="fg full"><div class="fl">Field to update</div><select class="input" id="bulkField"></select></div>
+      <div id="bulkValueWrap"></div>
+      <div class="bulk-warning">This saves each selected record separately. Records that fail validation will be listed in the audit log and emailed automatically.</div>
+      <div class="panel-actions bulk-actions"><button class="btn primary" id="bulkApplyBtn" disabled>Save mass update</button><button class="btn" id="bulkCancelBtn">Cancel</button><span class="hint" id="bulkMsgModal"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="project-popup" id="projectPopup" aria-hidden="true">
+  <div class="project-popup-head">Projects <span class="spacer"></span><button class="project-popup-close" id="projectPopupClose" type="button">×</button></div>
+  <div class="project-popup-list" id="projectPopupList"></div>
+  <div class="project-popup-foot"><span class="project-popup-count" id="projectPopupCount">0 selected</span><button class="btn sm" id="projectPopupCancel" type="button">Cancel</button><button class="btn primary sm" id="projectPopupSave" type="button">Save</button></div>
+</div>
+
+<div class="lookup-popup" id="lookupPopup" aria-hidden="true">
+  <div class="lookup-popup-head"><input class="lookup-popup-search" id="lookupPopupSearch" type="search" placeholder="Search companies…" autocomplete="off"><button class="lookup-popup-close" id="lookupPopupClose" type="button" aria-label="Close">×</button></div>
+  <div class="lookup-popup-list" id="lookupPopupList"></div>
+</div>
+
+<div class="filter-popup" id="filterPopup" aria-hidden="true">
+  <div class="filter-popup-head"><input class="filter-popup-search" id="filterPopupSearch" type="search" placeholder="Search values…" autocomplete="off"><button class="lookup-popup-close" id="filterPopupClose" type="button" aria-label="Close">×</button></div>
+  <div class="filter-popup-list" id="filterPopupList"></div>
+  <div class="filter-popup-foot"><span class="filter-popup-count" id="filterPopupCount">0 selected</span><button class="btn sm" id="filterPopupClear" type="button">Clear</button><button class="btn primary sm" id="filterPopupApply" type="button">Apply</button></div>
+</div>
+
+<div class="audit-modal" id="auditModal" aria-hidden="true">
+  <div class="audit-dialog" role="dialog" aria-modal="true" aria-labelledby="auditTitle">
+    <div class="audit-head">
+      <div class="audit-title" id="auditTitle">Audit Log <span id="auditDialogCount">0</span></div>
+      <div class="audit-spacer"></div>
+      <button class="audit-btn" id="auditCopy" type="button">Copy</button>
+      <button class="audit-btn" id="auditClear" type="button">Clear</button>
+      <button class="audit-close" id="auditClose" type="button">×</button>
+    </div>
+    <pre class="audit-body" id="auditBody"></pre>
+    <div class="audit-empty" id="auditEmpty">No audit entries yet.</div>
+  </div>
+</div>
+
+<div class="audit-modal" id="confirmModal" aria-hidden="true">
+  <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-body">
+      <h3 class="confirm-title" id="confirmTitle">Discard changes?</h3>
+      <p class="confirm-message" id="confirmMessage">Your unsaved changes will be lost.</p>
+    </div>
+    <div class="confirm-actions">
+      <button class="btn" id="confirmCancel" type="button">Cancel</button>
+      <button class="btn primary" id="confirmAccept" type="button">Discard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   LAND MASTER v8.6 — Inline + Modal Record Workspace
+   List tables support inline editing and each record opens in a staged editor.
+   Related records and subforms open in the same modal. Bulk updates
+   use a confirmation window. Runtime errors are emailed through the
+   shared reportProformaWidgetError Creator Custom API.
+   ============================================================ */
+
+var CFG = {
+  version: "8.9.1-SUBS-COMPANIES-NO-PAGING",
+  pageSize: 200,
+  tablePageSize: 100,
+  maxPages: 50,
+  errorRecipient: "rbelliveau@wbdevelopment.com",
+  errorApi: "reportProformaWidgetError",
+  reportCandidates: {
+    All_Property:["All_Property"], All_Projects:["All_Projects"], All_Subdivisions:["All_Subdivisions"],
+    All_Milestones:["All_Milestones"], All_Companies:["All_Companies"], All_Forecasts:["All_Forecasts"],
+    All_Forecast_Years:["All_Forecast_Years"], All_Takedown_Schedules:["All_Takedown_Schedules"],
+    All_Builder_Takedowns:["All_Builder_Takedowns"], All_Builders:["All_Builders"],
+    All_Lots_All_Fields:["All_Lots_All_Fields","All_Active_Lots"], All_Additional_Items:["All_Additional_Items"],
+    All_External_System_Mappings:["All_External_System_Mappings"], All_Pro_Formas:["All_Pro_Formas","All_Pro_Formas_All_Fields"]
+  },
+  lotsReport:"All_Active_Lots"
+};
+
+var OPTS = {
+  landType:["Commercial","Other","Residential"],
+  propertySubtype:["Condo","L&B Amenity","L&B Drain/Det","L&B Open Space","L&B Res","L&B Util/Gov","MUD Duplicate","Office","Oil & Gas","Personal Property","Retail","Tract","Tract & Structure","Tract-Dev","Tract-Undev","Unusable"],
+  propertyCounty:["Bell","Bexar","Brazos","Burleson","Collin","Comal","Cooke","Coryell","Dallas","Denton","Ellis","Falls","Grant","Grayson","Guadalupe","Harris","Hunt","Johnson","Kaufman","Matagorda","McLennan","Montrose","Multiple","San Miguel","Tarrant","Terrell","Val Verde","Williamson"],
+  deedTo:["No","Deed to HOA-Now","Deed to HOA-Later","Deed to HOA-Hold","Deed to Other-Now","Deed to Other-Later","Deed to Other-Hold"],
+  subCounty:["Bell","Bexar","Brazos","Burleson","Collin","Comal","Cooke","Coryell","Dallas","Denton","Ellis","Falls","Grayson","Guadalupe","Harris","Hunt","Johnson","Kaufman","McLennan","Tarrant","Travis","Williamson"],
+  subCity:["Addison","Anna","Austin","Balch Springs","Belton","Bruceville-Eddy","Bryan","Caldwell","Carrollton","Cedar Hill","Celina","Cockrell Hill","Combine","Conroe","Coppell","Copperas Cove","Corsicana","Crandall","Cresson","Dallas","Denton","DeSoto","Duncanville","Farmers Branch","Ferris","Garland","Georgetown","Glenn Heights","Grand Prairie","Granger","Grapevine","Greenville","Harker Heights","Highland Park","Houston","Hutchins","Irving","Jarrell","Katy","Killeen","Lancaster","League City","Lewisville","Lorena","Mesquite","Midlothian","New Braunfels","Nolanville","Ovilla","Pasadena","Pearland","Pflugerville","Princeton","Prosper","Richardson","Robinson","Rowlett","Sachse","Salado","San Antonio","Seagoville","Seguin","Sherman","Sugar Land","Sunnyvale","Taylor","Temple","Troy","University Park","Van Alstyne","Waco","Waxahachie","Westminster","Wilmer","Wylie"],
+  subDivision:["Choice 1","Choice 2","Choice 3"],
+  subStatus:["Active","Sold Out","Forecast Placeholder"],
+  projectCounty:["Bell","Bexar","Brazos","Burleson","Caldwell","Collin","Comal","Cooke","Coryell","Dallas","Denton","Ellis","Falls","Grayson","Guadalupe","Harris","Hunt","Johnson","Kaufman","McLennan","Tarrant","Travis","Williamson"],
+  projectCity:["Addison","Anna","Austin","Balch Springs","Belton","Bruceville-Eddy","Bryan","Caldwell","Carrollton","Cedar Hill","Celina","Cockrell Hill","Combine","Conroe","Coppell","Copperas Cove","Corsicana","Crandall","Cresson","Dallas","Denton","DeSoto","Duncanville","Farmers Branch","Ferris","Garland","Georgetown","Glenn Heights","Grand Prairie","Granger","Grapevine","Greenville","Harker Heights","Highland Park","Houston","Hutchins","Irving","Jarrell","Katy","Killeen","Lancaster","League City","Lewisville","Lorena","Mesquite","Midlothian","N","New Braunfels","Nolanville","Ovilla","Pasadena","Pearland","Pflugerville","Princeton","Prosper","Richardson","Robinson","Rowlett","Sachse","Salado","San Antonio","Seagoville","Seguin","Sherman","Sugar Land","Sunnyvale","Taylor","Temple","Troy","University Park","Van Alstyne","Waco","Waxahachie","Westminster","Wilmer","Wylie"],
+  projectStatus:["Active","Inactive","Forecast Placeholder"],
+  territory:["Bryan/College Station","Corpus Christi","Dallas/Fort Worth","Fort Hood","Houston","North Austin","San Antonio","South Austin","Temple/Belton","Waco"],
+  yesNo:["Yes","No"], forecastStatus:["Planning","Builder"], scheduleStatus:["Active","Behind","Completed"],
+  taxMethod:["Flat","Percentage of Appraisal"], taxStatus:["Taxes Paid","Taxes Unpaid","Proration Taxes Unpaid"],
+  feeType:["Mailbox","Water Tap","Other"], lotStatus:["Open","Contracted","Sold"], itemType:["Addition","Deduction"],
+  externalSystem:["Great Plains","HeavyJob"], builderType:["Builder","City","County","Seller","Other"],
+  lotCounty:["Bell","Bexar","Brazos","Burleson","Collin","Comal","Cooke","Coryell","Dallas","Denton","Ellis","Falls","Grayson","Guadalupe","Harris","Hunt","Johnson","Kaufman","McLennan","Tarrant","Williamson"]
+};
+
+var S = {
+  liveSDK:false, demo:false, scope:"props", search:"", filters:{county:[],landType:[],subtype:[],company:[],deedTo:[]}, issuesOnly:false,
+  filterPopupKey:null, filterDraft:[], filterPopupButton:null, loadProgress:{}, loadStarted:false,
+  sortKey:null, sortDir:1, page:{props:1,subs:1,cos:1}, tablePageSize:100, lastFiltered:[], lastPageRows:[], selected:{props:null,subs:null,cos:null}, checked:{}, expandedGroups:{},
+  modalOpen:false, modalTab:"details", editorType:null, editorId:null, editorStack:[], editorNew:false, editorDraft:null, panelDirty:false, panelSaving:false,
+  bulkOpen:false, bulkSaving:false, bulkField:"", auditCount:0, auditHasError:false, confirmAction:null, projectPopupId:null, projectPopupButton:null, lookupPopupId:null, lookupPopupField:null, lookupPopupKind:null, lookupPopupButton:null, lookupPopupMode:null, lookupPopupInput:null,
+  properties:[], projects:[], subdivisions:[], milestones:[], companies:[], forecasts:[], forecastYears:[],
+  takedownSchedules:[], builderTakedowns:[], builders:[], lots:[], additionalItems:[], externalMappings:[], proformas:[],
+  errors:[], errorQueue:[], errorTimer:null, errorRetryTimer:null, errorSending:false, errorAttempts:0, errorLastFailure:null
+};
+
+function $(id){return document.getElementById(id);}
+function esc(v){if(v===null||v===undefined)return "";return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function num(v){var n=parseFloat(v);return isNaN(n)?0:n;}
+function fmt(n){return Math.round(num(n)).toLocaleString();}
+function errMeta(e){try{return typeof e==="string"?e:JSON.stringify(e);}catch(x){return String(e);}}
+function asList(v){if(!v)return[];if(Array.isArray(v))return v.filter(Boolean);if(typeof v==="object")return[v];return[{ID:"",display_value:String(v)}];}
+function lookupId(v){var l=asList(v);return l.length?String(l[0].ID||""):"";}
+function displayValue(v){var l=asList(v);return l.length?String(l[0].display_value||l[0].name||""):"";}
+function relHasId(v,id){return asList(v).some(function(x){return String(x.ID||"")===String(id);});}
+function truthy(v){return v===true||String(v).toLowerCase()==="true"||String(v).toLowerCase()==="yes"||String(v)==="1";}
+function brToNl(v){return String(v||"").replace(/<br\s*\/?>/gi,"\n");}
+function nlToBr(v){return String(v||"").replace(/\r?\n/g,"<br>");}
+function toDateInput(v){
+  if(!v)return"";var s=String(v).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m)return m[3]+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0");
+  var mo={Jan:"01",Feb:"02",Mar:"03",Apr:"04",May:"05",Jun:"06",Jul:"07",Aug:"08",Sep:"09",Oct:"10",Nov:"11",Dec:"12"};
+  var m2=s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);if(m2)return m2[3]+"-"+(mo[m2[2]]||"01")+"-"+m2[1].padStart(2,"0");return"";
+}
+function toZohoDate(v){if(!v)return"";var m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[2]+"/"+m[3]+"/"+m[1]:v;}
+function shortDate(v){var d=toDateInput(v);if(!d)return"";var m=d.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m[2]+"/"+m[3]+"/"+m[1].slice(2);}
+function todayInput(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function valText(v){return v===undefined||v===null||v===""?"—":String(v);}
+function dateText(v){var d=toDateInput(v);return d?toZohoDate(d):"—";}
+function moneyText(v){var n=parseFloat(v);return isNaN(n)||v===""?"—":"$"+Math.round(n).toLocaleString();}
+function pctText(v){var n=num(v);if(n>0&&n<=1)n*=100;return n?Math.round(n*100)/100+"%":"—";}
+function setStatus(mode,text){$("statusdot").className="dot"+(mode==="ok"?"":mode==="warn"?" warn":" err");$("statustext").textContent=text;}
+function markInlineState(el,stateName){if(!el)return;el.classList.remove("saving","saved-ok","save-error");if(stateName)el.classList.add(stateName);if(stateName==="saved-ok"){clearTimeout(el._savedOkTimer);el._savedOkTimer=setTimeout(function(){if(el)el.classList.remove("saved-ok");},2000);}}
+function findIn(list,id){for(var i=0;i<list.length;i++)if(String(list[i].ID)===String(id))return list[i];return null;}
+function uniqueValues(list,key){var m={};list.forEach(function(r){var v=String(r[key]||"").trim();if(v)m[v]=1;});return Object.keys(m).sort();}
+
+var LOAD_WEIGHTS={All_Property:62,All_Projects:2,All_Subdivisions:7,All_Milestones:4,All_Companies:3,All_Forecasts:5,All_Forecast_Years:3,All_Takedown_Schedules:2,All_Builder_Takedowns:3,All_Builders:1,All_Lots_All_Fields:4,All_Additional_Items:1,All_External_System_Mappings:1,All_Pro_Formas:2};
+var LOAD_EXPECTED_PAGES={All_Property:12,All_Projects:2,All_Subdivisions:3,All_Milestones:3,All_Companies:2,All_Forecasts:5,All_Forecast_Years:3,All_Takedown_Schedules:2,All_Builder_Takedowns:3,All_Builders:2,All_Lots_All_Fields:5,All_Additional_Items:2,All_External_System_Mappings:2,All_Pro_Formas:2};
+function beginLoadProgress(reports){S.loadStarted=true;S.loadProgress={};reports.forEach(function(r){S.loadProgress[r]={fraction:0,count:0,page:0,done:false};});var box=$("loadProgress");box.classList.add("show");$("loadProgressBar").style.width="2%";$("loadProgressLabel").textContent="Loading Land Master data…";$("loadProgressDetail").textContent="Connecting…";}
+function updateLoadProgress(report,info){if(!S.loadProgress[report])S.loadProgress[report]={fraction:0,count:0,page:0,done:false};var st=S.loadProgress[report],done=!!(info&&info.done),page=num(info&&info.page),count=num(info&&info.count);st.page=Math.max(st.page,page);st.count=Math.max(st.count,count);st.done=done||st.done;st.fraction=st.done?1:Math.min(.94,Math.max(st.fraction,st.page/Math.max(1,LOAD_EXPECTED_PAGES[report]||2)));var pct=0,complete=0,total=0;Object.keys(S.loadProgress).forEach(function(r){var w=LOAD_WEIGHTS[r]||1;total+=w;pct+=w*S.loadProgress[r].fraction;if(S.loadProgress[r].done)complete++;});pct=total?pct/total*100:2;pct=Math.max(2,Math.min(done&&complete===Object.keys(S.loadProgress).length?100:98,pct));$("loadProgressBar").style.width=pct.toFixed(1)+"%";var prop=S.loadProgress.All_Property||{};if(!prop.done){$("loadProgressLabel").textContent="Loading properties…";$("loadProgressDetail").textContent=fmt(prop.count||0)+" properties received";}else{$("loadProgressLabel").textContent="Loading related Land Master data…";$("loadProgressDetail").textContent=complete+" of "+Object.keys(S.loadProgress).length+" data sets ready";}}
+function setLoadRendering(count){var box=$("loadProgress");box.classList.add("show");$("loadProgressLabel").textContent="Rendering property table…";$("loadProgressDetail").textContent=fmt(count)+" properties";$("loadProgressBar").style.width="99%";}
+function finishLoadProgress(hasErrors){$("loadProgressLabel").textContent=hasErrors?"Loaded with some data errors":"Land Master ready";$("loadProgressDetail").textContent=fmt(S.properties.length)+" properties loaded";$("loadProgressBar").style.width="100%";setTimeout(function(){if($("loadProgress"))$("loadProgress").classList.remove("show");},850);}
+
+/* audit and automatic error email */
+function safeAuditString(obj){var seen=[];function scrub(v){if(v==null)return v;if(typeof v==="function")return"[Function]";if(typeof v!=="object")return v;if(v instanceof Error)return{message:v.message,stack:v.stack};if(seen.indexOf(v)>=0)return"[Circular]";seen.push(v);if(Array.isArray(v))return v.map(scrub);var o={};Object.keys(v).forEach(function(k){try{o[k]=scrub(v[k]);}catch(e){o[k]="[Unreadable]";}});return o;}try{return typeof obj==="string"?obj:JSON.stringify(scrub(obj),null,2);}catch(e){return String(obj);}}
+function updateAuditButton(){var n=S.auditCount||0;if($("auditBtnCount"))$("auditBtnCount").textContent=n;if($("auditDialogCount"))$("auditDialogCount").textContent=n;var btn=$("auditOpenBtn");if(btn){btn.classList.toggle("has-logs",n>0);btn.classList.toggle("has-error",!!S.auditHasError);}if($("auditEmpty"))$("auditEmpty").style.display=$("auditBody")&&$("auditBody").textContent.trim()?"none":"block";}
+function auditOnly(label,obj,isErr){var body=$("auditBody"),ts=new Date().toLocaleTimeString();if(body)body.textContent="["+ts+"] "+label+"\n"+safeAuditString(obj)+"\n\n"+body.textContent;S.auditCount++;if(isErr)S.auditHasError=true;updateAuditButton();try{console.log("[Land Master]",label,obj);}catch(e){}}
+function isAuditError(label,obj){
+  if(/\b(error|errors|failed|failure|exception|invalid|denied|forbidden|unauthorized|rejected|timeout|timed out|not loaded|partial data)\b/i.test(String(label||"")))return true;
+  var seen=[];
+  function bad(v,key){
+    if(v instanceof Error)return true;
+    if(v===null||v===undefined)return false;
+    if(typeof v!=="object"){
+      if(/^(error|errors|failure|exception)$/i.test(String(key||""))&&String(v).trim()!=="")return true;
+      return false;
+    }
+    if(seen.indexOf(v)>=0)return false;seen.push(v);
+    if(v.success===false||v.ok===false||v.hasError===true)return true;
+    if(v.error!==undefined&&v.error!==null&&String(v.error)!==""&&String(v.error)!=="false")return true;
+    if(Array.isArray(v.errors)&&v.errors.length)return true;
+    var code=v.code||(v.result&&v.result.code)||(v.response&&v.response.code);
+    if(code!==undefined&&code!==null&&String(code)!==""&&String(code)!=="3000"&&String(code)!=="3100"&&String(code)!=="9280")return true;
+    return Object.keys(v).some(function(k){try{return bad(v[k],k);}catch(e){return false;}});
+  }
+  return bad(obj,"");
+}
+function diag(label,obj,skipReport){var isErr=isAuditError(label,obj);auditOnly(label,obj,isErr);if(isErr&&!skipReport)queueErrorEmail(label,obj);}
+function openAuditModal(){var m=$("auditModal");m.classList.add("show");m.setAttribute("aria-hidden","false");updateAuditButton();}
+function closeAuditModal(){var m=$("auditModal");m.classList.remove("show");m.setAttribute("aria-hidden","true");}
+function clearAuditLog(){if($("auditBody"))$("auditBody").textContent="";S.auditCount=0;S.auditHasError=false;updateAuditButton();}
+function reportId(){return"LMW-"+Date.now()+"-"+Math.random().toString(36).slice(2,8).toUpperCase();}
+function scheduleErrorEmail(delay){clearTimeout(S.errorTimer);clearTimeout(S.errorRetryTimer);S.errorTimer=setTimeout(sendQueuedErrorEmail,Math.max(100,num(delay)||700));}
+function queueErrorEmail(label,obj){
+  S.errorQueue.push({id:reportId(),time:new Date().toISOString(),label:String(label||"Error"),details:safeAuditString(obj).slice(0,8000)});
+  if(S.errorQueue.length>50)S.errorQueue=S.errorQueue.slice(S.errorQueue.length-50);
+  scheduleErrorEmail(700);
+}
+function parseFunctionResult(resp){
+  if(!resp)return{ok:false,error:"Empty Custom API response"};
+  if(responseBad(resp))return{ok:false,error:"Custom API returned an error response",response:resp};
+  var raw=resp.result!==undefined?resp.result:(resp.data!==undefined?resp.data:resp),parsed=raw;
+  if(typeof raw==="string"){
+    try{parsed=JSON.parse(raw);}catch(e){try{parsed=JSON.parse(raw.replace(/'/g,'"'));}catch(ignore){parsed=raw;}}
+  }
+  if(parsed&&typeof parsed==="object"&&parsed.success===false)return{ok:false,error:parsed.error||"Email function returned success=false",response:resp};
+  return{ok:true,result:parsed,response:resp};
+}
+function removeSentErrors(entries){var sent={};entries.forEach(function(x){sent[x.id]=true;});S.errorQueue=S.errorQueue.filter(function(x){return!sent[x.id];});}
+function sendQueuedErrorEmail(){
+  clearTimeout(S.errorTimer);clearTimeout(S.errorRetryTimer);
+  if(S.demo||S.errorSending||!S.errorQueue.length)return;
+  if(!S.liveSDK||!window.ZOHO||!ZOHO.CREATOR||!ZOHO.CREATOR.API||typeof ZOHO.CREATOR.API.invokeCustomApi!=="function"){
+    S.errorRetryTimer=setTimeout(sendQueuedErrorEmail,1500);return;
+  }
+  var entries=S.errorQueue.slice(0,25),rid=reportId();S.errorSending=true;
+  var pageUrl=String(location.href||"");
+  var auditText=($("auditBody")?$("auditBody").textContent:"").slice(0,14000);
+  var functionPayload={
+    reportId:rid,
+    subject:"[Land Master Widget Error] "+rid,
+    body:[
+      "Land Master widget error report",
+      "",
+      "Report ID: "+rid,
+      "Widget version: "+CFG.version,
+      "Page URL: "+pageUrl,
+      "Error count: "+entries.length,
+      "",
+      "Errors:",
+      safeAuditString(entries),
+      "",
+      "Audit log:",
+      auditText||"(No audit log entries were available.)"
+    ].join("\n")
+  };
+  var config={api_name:CFG.errorApi,http_method:"POST",content_type:"application/json",payload:{payload:JSON.stringify(functionPayload)}};
+  ZOHO.CREATOR.API.invokeCustomApi(config).then(function(resp){
+    var checked=parseFunctionResult(resp);if(!checked.ok)throw checked;
+    removeSentErrors(entries);S.errorSending=false;S.errorAttempts=0;S.errorLastFailure=null;
+    auditOnly("Automatic error report emailed",{recipient:CFG.errorRecipient,errorCount:entries.length,reportId:rid,api:CFG.errorApi,response:resp},false);
+    if(S.errorQueue.length)scheduleErrorEmail(250);
+  }).catch(function(err){
+    S.errorSending=false;S.errorAttempts++;S.errorLastFailure=err;
+    var delay=Math.min(30000,1000*Math.pow(2,Math.min(S.errorAttempts,5)));
+    auditOnly("Automatic error report delivery failed; retry scheduled",{api:CFG.errorApi,reportId:rid,attempt:S.errorAttempts,retryInMs:delay,error:err},true);
+    S.errorRetryTimer=setTimeout(sendQueuedErrorEmail,delay);
+  });
+}
+window.addEventListener("error",function(e){var d={message:e.message,source:e.filename,line:e.lineno,column:e.colno,stack:e.error&&e.error.stack};auditOnly("Unhandled widget error",d,true);queueErrorEmail("Unhandled widget error",d);});
+window.addEventListener("unhandledrejection",function(e){var d={reason:safeAuditString(e.reason)};auditOnly("Unhandled promise rejection",d,true);queueErrorEmail("Unhandled promise rejection",d);});
+
+/* SDK */
+function responseBad(resp){if(!resp)return true;var code=resp.code||(resp.result&&resp.result.code);if(code&&code!==3000&&code!=="3000")return true;return !!(resp.error||(resp.result&&resp.result.error));}
+function isEmptyCode(resp){var code=resp&&(resp.code||(resp.result&&resp.result.code));return String(code)==="3100"||String(code)==="9280";}
+function candidates(reportName){var a=(CFG.reportCandidates[reportName]||[reportName]).slice();if(a.indexOf(reportName)<0)a.unshift(reportName);return a;}
+function sdkGetAll(reportName,criteria,onProgress){
+  if(!S.liveSDK)return Promise.resolve([]);var cands=candidates(reportName),lastErr=null;
+  function notify(info){try{if(typeof onProgress==="function")onProgress(info||{});}catch(e){}}
+  function tryCand(ci){if(ci>=cands.length)return Promise.reject({message:"All report candidates failed for "+reportName,error:lastErr});var rep=cands[ci],all=[];
+    function page(p){var args={reportName:rep,page:p,pageSize:CFG.pageSize};if(criteria)args.criteria=criteria;return ZOHO.CREATOR.API.getAllRecords(args).then(function(resp){if(isEmptyCode(resp)){notify({report:reportName,page:p,count:all.length,done:true});return all;}if(responseBad(resp)){lastErr=resp;notify({report:reportName,page:0,count:0,done:false,retrying:true});return tryCand(ci+1);}var rows=resp&&resp.data||[];all=all.concat(rows);notify({report:reportName,page:p,count:all.length,done:false});if(rows.length===CFG.pageSize&&p<CFG.maxPages)return page(p+1);notify({report:reportName,page:p,count:all.length,done:true});diag("READ "+reportName+" ok",{report:rep,count:all.length,pages:p},true);return all;}).catch(function(err){var msg=String(err&&(err.message||err.responseText)||"");if(isEmptyCode(err)||/9280|3100|no records|no data available|record(s)? not found/i.test(msg)){notify({report:reportName,page:p,count:all.length,done:true});return all;}lastErr=err;notify({report:reportName,page:0,count:0,done:false,retrying:true});return tryCand(ci+1);});}
+    return page(1);
+  }return tryCand(0);
+}
+function isSuccess(resp){var code=resp&&resp.code,hasErr=!!(resp&&(resp.error||(resp.result&&resp.result.error))),hasId=!!(resp&&((resp.data&&(resp.data.ID||resp.data.id))||(resp.result&&resp.result.data&&(resp.result.data.ID||resp.result.data.id))));return (!hasErr&&(code===3000||(resp&&resp.result&&resp.result.code===3000)))||(!hasErr&&hasId&&code==null);}
+function buildEnvelopes(id,data,report){var rid=String(id),appName=window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName;return[{label:"data:{data}",args:{reportName:report,id:rid,data:{data:data}}},{label:"data",args:{reportName:report,id:rid,data:data}},{label:"data:{input}",args:{reportName:report,id:rid,data:{input:data}}},{label:"input",args:{reportName:report,id:rid,input:data}},{label:"payload",args:{reportName:report,id:rid,payload:{data:data}}},{label:"appName+data",args:{appName:appName,reportName:report,id:rid,data:data}}];}
+function tryEnvelopes(id,data,envelopes,i){if(i>=envelopes.length)return Promise.reject({message:"No update envelope accepted",recordId:id});var env=envelopes[i];return ZOHO.CREATOR.API.updateRecord(env.args).then(function(resp){if(isSuccess(resp))return resp;throw resp;}).catch(function(err){var code=err&&err.code;if(!code&&err&&typeof err.responseText==="string")try{code=JSON.parse(err.responseText).code;}catch(x){}if(code===2945)return tryEnvelopes(id,data,envelopes,i+1);return Promise.reject(err);});}
+function updateRecord(id,data,report){if(S.demo)return Promise.resolve({code:3000});return tryEnvelopes(id,data,buildEnvelopes(id,data,report),0);}
+function formForType(type){return{property:"Property",project:"Project",subdivision:"Subdivision",company:"Company",milestone:"Milestones",forecast:"Forecast",forecastYear:"Forecast_Year",takedown:"Takedown_Schedule",builderTakedown:"Builder_Takedown",builder:"Builder",lot:"Lots",additionalItem:"Additional_Items",externalMapping:"External_System_Mapping"}[type];}
+function extractRecordId(resp){var paths=[resp&&resp.data,resp&&resp.result&&resp.result.data,resp&&resp.result,resp];for(var i=0;i<paths.length;i++){var x=paths[i];if(x&&(x.ID||x.id))return String(x.ID||x.id);}return"";}
+function buildAddEnvelopes(form,data){var appName=window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName;return[{formName:form,data:{data:data}},{formName:form,data:data},{formName:form,data:{input:data}},{formName:form,input:data},{appName:appName,formName:form,data:{data:data}},{appName:appName,formName:form,data:data}];}
+function tryAddEnvelopes(form,data,envelopes,i){if(i>=envelopes.length)return Promise.reject({message:"No add-record envelope accepted",formName:form});var args=envelopes[i];return ZOHO.CREATOR.API.addRecord(args).then(function(resp){if(isSuccess(resp))return resp;throw resp;}).catch(function(err){var code=err&&err.code;if(!code&&err&&typeof err.responseText==="string")try{code=JSON.parse(err.responseText).code;}catch(x){}if(code===2945||code==="2945")return tryAddEnvelopes(form,data,envelopes,i+1);return Promise.reject(err);});}
+function createRecord(type,data){if(S.demo)return Promise.resolve({code:3000,data:{ID:"demo-"+Date.now()}});var form=formForType(type);if(!form)return Promise.reject({message:"No form configured for "+type});return tryAddEnvelopes(form,data,buildAddEnvelopes(form,data),0);}
+function openReport(report,query){try{ZOHO.CREATOR.UTIL.navigateParentURL({action:"open",url:"#Report:"+report+(query?"?"+query:""),window:"same"});}catch(e){diag("Report navigation failed",{report:report,query:query,error:e});}}
+
+/* record descriptors */
+function listForType(type){var map={property:"properties",project:"projects",subdivision:"subdivisions",company:"companies",milestone:"milestones",forecast:"forecasts",forecastYear:"forecastYears",takedown:"takedownSchedules",builderTakedown:"builderTakedowns",builder:"builders",lot:"lots",additionalItem:"additionalItems",externalMapping:"externalMappings"};return S[map[type]]||[];}
+function reportForType(type){return{property:"All_Property",project:"All_Projects",subdivision:"All_Subdivisions",company:"All_Companies",milestone:"All_Milestones",forecast:"All_Forecasts",forecastYear:"All_Forecast_Years",takedown:"All_Takedown_Schedules",builderTakedown:"All_Builder_Takedowns",builder:"All_Builders",lot:"All_Lots_All_Fields",additionalItem:"All_Additional_Items",externalMapping:"All_External_System_Mappings"}[type];}
+function typeLabel(type){return{property:"Property",project:"Project",subdivision:"Subdivision",company:"Company",milestone:"Milestone",forecast:"Monthly Forecast",forecastYear:"Forecast Year",takedown:"Takedown Schedule",builderTakedown:"Builder Takedown",builder:"Builder / Counterparty",lot:"Lot",additionalItem:"Additional Item",externalMapping:"External System Mapping"}[type]||"Record";}
+function recordFor(type,id){return findIn(listForType(type),id);}
+function lookupOptions(kind){
+  var cfg={company:[S.companies,"Company_Name"],project:[S.projects,"Project_Name"],subdivision:[S.subdivisions,"Subdivision_Name"],builder:[S.builders,"Builder_Name"],lot:[S.lots,"Lot_Code"],forecastYear:[S.forecastYears,"Forecast_Name"],takedown:[S.takedownSchedules,"Takedown_Schedule_Code"],builderTakedown:[S.builderTakedowns,"Name"],property:[S.properties,"Common_Name"],proforma:[S.proformas,"Name"]}[kind];
+  if(!cfg)return[];return cfg[0].slice().sort(function(a,b){return String(a[cfg[1]]||"").localeCompare(String(b[cfg[1]]||""));}).map(function(r){var label=String(r[cfg[1]]||r.ID),meta="";if(kind==="company"){var bits=[];if(r.Facility_ID)bits.push("Facility "+r.Facility_ID);if(r.Account_Number)bits.push("Account "+r.Account_Number);meta=bits.join(" · ");}return{id:String(r.ID),label:label,meta:meta,search:(label+" "+meta).toLowerCase()};});
+}
+function F(k,label,type,v,extra){var o={k:k,label:label,type:type||"text",v:v};if(extra)Object.keys(extra).forEach(function(x){o[x]=extra[x];});return o;}
+function descriptor(type,rec){
+  var d={type:type,label:typeLabel(type),fields:[],tabs:[{id:"details",label:"Details"}],bulk:[]};
+  if(type==="property"){
+    d.fields=[F("Common_Name","Common name","text",rec.Common_Name,{full:1}),F("Property_ID","Property ID","text",rec.Property_ID),F("Facility_ID","Facility ID","text",rec.Facility_ID),F("County","County","select",rec.County,{opts:OPTS.propertyCounty}),F("Land_Type","Land type","select",rec.Land_Type,{opts:OPTS.landType}),F("Subtype","Subtype","select",rec.Subtype,{opts:OPTS.propertySubtype}),F("Company1","Company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Seller","Seller","lookup",lookupId(rec.Seller),{lookup:"builder"}),F("Projects","Projects","multilookup",asList(rec.Projects).map(function(x){return String(x.ID||"");}),{lookup:"project",full:1}),F("Subdivisions","Subdivisions","multilookup",asList(rec.Subdivisions).map(function(x){return String(x.ID||"");}),{lookup:"subdivision",full:1}),F("Acres","Acres","number",rec.Acres),F("Original_Acres","Original acres","number",rec.Original_Acres),F("Construction_Acres","Construction acres","number",rec.Construction_Acres),F("cost_per_acre_FT","Cost per acre","currency",rec.cost_per_acre_FT),F("Deed_To","Deed to","select",rec.Deed_To,{opts:OPTS.deedTo}),F("Insured","Insured","bool",rec.Insured),F("Ag_Exempt","Ag exempt","bool",rec.Ag_Exempt),F("New_Owner","New owner","select",rec.New_Owner,{opts:OPTS.yesNo}),F("Agree_with_Designation","Agree with designation","select",rec.Agree_with_Designation,{opts:OPTS.yesNo}),F("Purchase_Price","Purchase price","currency",rec.Purchase_Price),F("Purchase_Date","Purchase date","date",rec.Purchase_Date),F("Location","Location","text",rec.Location,{full:1}),F("Legal_Description","Legal description","textarea",rec.Legal_Description,{full:1}),F("Bruce_s_Description","Bruce's description","textarea",rec.Bruce_s_Description,{full:1}),F("Notes","Notes","textarea",rec.Notes,{full:1}),F("Proforma","Proforma","lookup",lookupId(rec.Proforma),{lookup:"proforma"})];
+    d.tabs.push({id:"linked",label:"Linked Records",count:asList(rec.Projects).length+asList(rec.Subdivisions).length});
+    d.bulk=["County","Land_Type","Subtype","Company1","Seller","Insured","Ag_Exempt","Deed_To","New_Owner","Agree_with_Designation","Purchase_Price","Purchase_Date"];
+  } else if(type==="subdivision"){
+    d.fields=[F("Subdivision_Name","Subdivision name","ro",rec.Subdivision_Name,{full:1}),F("Subdivision_Code","Subdivision code","ro",rec.Subdivision_Code),F("Status","Status","ro",rec.Status),F("Projects_Status","Projects Status","ro",rec.Projects_Status),F("Project","Project","lookup",lookupId(rec.Project),{lookup:"project"}),F("Phase","Phase","number",rec.Phase),F("Subphase","Subphase","text",rec.Subphase),F("County","County","select",rec.County,{opts:OPTS.subCounty}),F("City","City","select",rec.City,{opts:OPTS.subCity}),F("Territory","Territory","select",rec.Territory,{opts:OPTS.territory}),F("Division","Division","select",rec.Division,{opts:OPTS.subDivision}),F("Company1","Development company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Land_Company","Land company","lookup",lookupId(rec.Land_Company),{lookup:"company"}),F("Builders","Builders","multilookup",asList(rec.Builders).map(function(x){return String(x.ID||"");}),{lookup:"builder",full:1}),F("Property_Used","Properties used","multilookup",asList(rec.Property_Used).map(function(x){return String(x.ID||"");}),{lookup:"property",full:1}),F("Generate_Forecasts","Generate forecasts","bool",rec.Generate_Forecasts),F("Acres","Acres (auto)","ro",rec.Acres),F("Lot_Total_Residential","Residential lots (auto)","ro",rec.Lot_Total_Residential),F("Total_Lots","Total lots (auto)","ro",rec.Total_Lots),F("Lots_Sold","Lots sold (auto)","ro",rec.Lots_Sold),F("Unforecasted_Lots","Unforecasted lots (auto)","ro",rec.Unforecasted_Lots),F("Equiv_LF_of_Street","Equivalent LF street","number",rec.Equiv_LF_of_Street),F("Engineering_Markup","Engineering markup","percentage",rec.Engineering_Markup),F("Engineering_Sub_Markup","Engineering subcontract markup","percentage",rec.Engineering_Sub_Markup),F("Construction_Markup","Construction markup","percentage",rec.Construction_Markup),F("Construction_Sub_Markup","Construction subcontract markup","percentage",rec.Construction_Sub_Markup),F("Capital_Cost","Capital cost","percentage",rec.Capital_Cost),F("Points","Points","percentage",rec.Points),F("Admin_Cost","Admin cost","percentage",rec.Admin_Cost),F("Profit_Share","Profit share","percentage",rec.Profit_Share),F("Override","Override","bool",rec.Override),F("Project_ID","Project ID (auto)","ro",rec.Project_ID),F("Company_Name","Company name (auto)","ro",rec.Company_Name),F("Account_Number","Account number (auto)","ro",rec.Account_Number),F("Last_Sold_Date","Last sold date","ro",rec.Last_Sold_Date)];
+    d.tabs=d.tabs.concat([{id:"milestones",label:"Milestones",count:milestonesForSub(rec.ID).length},{id:"forecasts",label:"Forecasts",count:forecastYearsForSub(rec.ID).length+forecastsForSub(rec.ID).length},{id:"takedowns",label:"Takedown Schedules",count:takedownsForSub(rec.ID).length},{id:"builderTakedowns",label:"Builder Takedowns",count:builderTakedownsForSub(rec.ID).length},{id:"additionalItems",label:"Additional Items",count:additionalItemsFor("subdivision",rec.ID).length},{id:"externalMappings",label:"External Mappings",count:externalMappingsForSub(rec.ID).length}]);
+    d.bulk=["Project","Phase","Subphase","County","City","Territory","Division","Company1","Land_Company","Generate_Forecasts","Equiv_LF_of_Street","Engineering_Markup","Engineering_Sub_Markup","Construction_Markup","Construction_Sub_Markup","Capital_Cost","Points","Admin_Cost","Profit_Share","Override"];
+  } else if(type==="company"){
+    d.fields=[F("Company_Name","Company name","text",rec.Company_Name,{full:1}),F("Facility_ID","Facility ID","text",rec.Facility_ID),F("Account_Number","Account number","text",rec.Account_Number),F("Proforma","Proforma IDs","ro",asList(rec.Proforma).map(function(x){return x.display_value||x.ID;}).join(", "),{full:1})];
+    d.tabs.push({id:"properties",label:"Properties",count:propertiesForCompany(rec.ID).length},{id:"subdivisions",label:"Subdivisions",count:subdivisionsForCompany(rec.ID).length});d.bulk=["Company_Name","Facility_ID","Account_Number"];
+  } else if(type==="project"){
+    d.fields=[F("Project_Name","Project name","text",rec.Project_Name,{full:1}),F("Project_Code","Project code","text",rec.Project_Code),F("Status","Status","select",rec.Status,{opts:OPTS.projectStatus}),F("City","City","select",rec.City,{opts:OPTS.projectCity}),F("County","County","select",rec.County,{opts:OPTS.projectCounty}),F("Company1","Company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Properties","Properties","multilookup",asList(rec.Properties).map(function(x){return String(x.ID||"");}),{lookup:"property",full:1}),F("Proforma","Proforma","ro",displayValue(rec.Proforma))];
+    d.tabs.push({id:"properties",label:"Properties",count:propertiesForProject(rec.ID).length},{id:"subdivisions",label:"Subdivisions",count:subdivisionsForProject(rec.ID).length});
+  } else if(type==="milestone"){
+    d.fields=[F("Milestone_Name","Milestone name","text",rec.Milestone_Name,{full:1}),F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("Start_Date","Start date","date",rec.Start_Date),F("End_Date","End date","date",rec.End_Date),F("Sequence","Sequence","number",rec.Sequence),F("Milestone_ID","External milestone ID","text",rec.Milestone_ID),F("Project_ID","External project ID","text",rec.Project_ID),F("Push_Update","Push update","bool",rec.Push_Update)];
+  } else if(type==="forecast"){
+    d.fields=[F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("Builder1","Builder","lookup",lookupId(rec.Builder1),{lookup:"builder"}),F("Forecast_Year2","Forecast year record","lookup",lookupId(rec.Forecast_Year2),{lookup:"forecastYear"}),F("Forecast_Year","Forecast year","text",rec.Forecast_Year),F("Forecast_Month","Forecast month","text",rec.Forecast_Month),F("Forecast_Start_Date","Forecast start date","date",rec.Forecast_Start_Date),F("Forecasted_Lots","Forecasted lots","number",rec.Forecasted_Lots),F("Scheduled_Lots","Scheduled lots","number",rec.Scheduled_Lots),F("Actual_Lots","Actual lots","number",rec.Actual_Lots),F("Edit","Edit flag","bool",rec.Edit)];
+  } else if(type==="forecastYear"){
+    d.fields=[F("Forecast_Name","Forecast name","text",rec.Forecast_Name,{full:1}),F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("Builder1","Builder","lookup",lookupId(rec.Builder1),{lookup:"builder"}),F("Subdivision_Code","Subdivision code","text",rec.Subdivision_Code),F("Status","Status","select",rec.Status,{opts:OPTS.forecastStatus}),F("Forecast_Year","Forecast year","number",rec.Forecast_Year),F("Full_Year_Forecast","Full-year forecast","number",rec.Full_Year_Forecast),F("Contracted_Lot_Amount","Contracted lot amount","number",rec.Contracted_Lot_Amount),F("Show_Previous_Year","Show previous year","bool",rec.Show_Previous_Year),F("Show_Next_Year","Show next year","bool",rec.Show_Next_Year),F("Running_Forecast_Balance","Running forecast balance","ro",rec.Running_Forecast_Balance),F("Total_Contracted_Lots","Total contracted lots","ro",rec.Total_Contracted_Lots),F("Total_Sold_Lots","Total sold lots","ro",rec.Total_Sold_Lots),F("Total_Sold_Forecasted","Total sold forecasted","ro",rec.Total_Sold_Forecasted)];
+    var groups=forecastGroups(rec);d.tabs=d.tabs.concat([{id:"previousYear",label:"Previous Year",count:groups.previous.length},{id:"forecastMonths",label:"Forecast Months",count:groups.current.length},{id:"nextYear",label:"Next Year",count:groups.next.length}]);
+  } else if(type==="takedown"){
+    d.fields=[F("Takedown_Schedule_Code","Schedule code","text",rec.Takedown_Schedule_Code,{full:1}),F("Builder1","Builder","lookup",lookupId(rec.Builder1),{lookup:"builder"}),F("Subdivisions","Subdivisions","multilookup",asList(rec.Subdivisions).map(function(x){return String(x.ID||"");}),{lookup:"subdivision",full:1}),F("Status","Status","select",rec.Status,{opts:OPTS.scheduleStatus}),F("Initial_Closing_Date","Initial closing date","date",rec.Initial_Closing_Date),F("Total_Lot_Obligation","Total lot obligation","number",rec.Total_Lot_Obligation),F("Initial_Takedown","Initial takedown","number",rec.Initial_Takedown),F("Initial_Delay_Days","Initial delay days","number",rec.Initial_Delay_Days),F("Continued_Takedown","Continued takedown","number",rec.Continued_Takedown),F("Continued_Takedown_Delay_Days","Continued delay days","number",rec.Continued_Takedown_Delay_Days),F("Add_Contract_Contract_Name","Contract","ro",displayValue(rec.Add_Contract_Contract_Name)),F("Takedown_Start_Date","Start date (auto)","ro",rec.Takedown_Start_Date),F("Takedown_End_Date","End date (auto)","ro",rec.Takedown_End_Date),F("Last_Takedown_Date","Last takedown date","ro",rec.Last_Takedown_Date),F("Lots_Sold","Lots sold","ro",rec.Lots_Sold),F("Lots_Expected","Lots expected","ro",rec.Lots_Expected),F("Completion_Percent","Completion percent","ro",rec.Completion_Percent),F("Last_Takedown_Amount","Last takedown amount","ro",rec.Last_Takedown_Amount),F("Last_30_Day_Sales","Last 30-day sales","ro",rec.Last_30_Day_Sales),F("Last_90_Day_Sales","Last 90-day sales","ro",rec.Last_90_Day_Sales),F("Last_6_Month_Sales","Last 6-month sales","ro",rec.Last_6_Month_Sales),F("Last_12_Month_Sales","Last 12-month sales","ro",rec.Last_12_Month_Sales)];
+  } else if(type==="builderTakedown"){
+    d.fields=[F("Name","Name","text",rec.Name,{full:1}),F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("Builder1","Builder","lookup",lookupId(rec.Builder1),{lookup:"builder"}),F("Entered_Date","Entered date","date",rec.Entered_Date),F("Purchase_Date","Purchase date","date",rec.Purchase_Date),F("Tax_Proration_Date","Tax proration date","date",rec.Tax_Proration_Date),F("Tax_Method","Tax method","select",rec.Tax_Method,{opts:OPTS.taxMethod}),F("Tax_Per_Lot","Tax per lot","currency",rec.Tax_Per_Lot),F("Percent_of_Appraisal","Percent of appraisal","percentage",rec.Percent_of_Appraisal),F("Lots","Lots","multilookup",asList(rec.Lots).map(function(x){return String(x.ID||"");}),{lookup:"lot",full:1,size:10}),F("Lot_Count","Lot count","ro",rec.Lot_Count),F("Tax_Status","Tax status","select",rec.Tax_Status,{opts:OPTS.taxStatus}),F("Additional_Fee_Type","Additional fee type","select",rec.Additional_Fee_Type,{opts:OPTS.feeType}),F("Additional_Fees_Per_Lot","Additional fees per lot","currency",rec.Additional_Fees_Per_Lot),F("Subtract_Day_From","Subtract day from","text",Array.isArray(rec.Subtract_Day_From)?rec.Subtract_Day_From.join(", "):rec.Subtract_Day_From),F("Calculate_Interest","Calculate interest","bool",rec.Calculate_Interest),F("Status","Status","select",rec.Status,{opts:["Active","Closed"]}),F("Notes","Notes","textarea",rec.Notes,{full:1}),F("Base_Price_Subtotal","Base price subtotal","ro",rec.Base_Price_Subtotal),F("Addl_Fees_Subtotal","Additional fees subtotal","ro",rec.Addl_Fees_Subtotal),F("Interest_Subtotal","Interest subtotal","ro",rec.Interest_Subtotal),F("Total_Tax_Subtotal","Total tax subtotal","ro",rec.Total_Tax_Subtotal),F("WBW_Tax_Subtotal","WBW tax subtotal","ro",rec.WBW_Tax_Subtotal),F("Builder_Tax_Subtotal","Builder tax subtotal","ro",rec.Builder_Tax_Subtotal),F("Earnest_Money_Total","Earnest money total","ro",rec.Earnest_Money_Total),F("Total","Total","ro",rec.Total),F("Total_w_Additional","Total with additional","ro",rec.Total_w_Additional)];
+    for(var ri=1;ri<=12;ri++){d.fields.push(F("Interest_Rate_"+ri,"Interest rate "+ri,"percentage",rec["Interest_Rate_"+ri]));d.fields.push(F("Date"+ri+"_1","Rate "+ri+" from","date",rec["Date"+ri+"_1"]));d.fields.push(F("Date"+ri+"_2","Rate "+ri+" to","date",rec["Date"+ri+"_2"]));}
+    d.tabs.push({id:"lots",label:"Lots",count:lotsForBuilderTakedown(rec.ID).length},{id:"additionalItems",label:"Additional Items",count:additionalItemsFor("builderTakedown",rec.ID).length});
+  } else if(type==="builder"){
+    d.fields=[F("Builder_Name","Name","text",rec.Builder_Name,{full:1}),F("Type1","Type","select",rec.Type1,{opts:OPTS.builderType}),F("Email","Email","text",rec.Email),F("Phone_Number","Phone","text",rec.Phone_Number),F("Address","Address","ro",typeof rec.Address==="object"?safeAuditString(rec.Address):rec.Address,{full:1}),F("Proforma","Proforma IDs","ro",asList(rec.Proforma).map(function(x){return x.display_value||x.ID;}).join(", "),{full:1})];
+  } else if(type==="lot"){
+    d.fields=[F("Lot_Code","Lot code","text",rec.Lot_Code,{full:1}),F("Status","Status","select",rec.Status,{opts:OPTS.lotStatus}),F("Subdivision","Subdivision","lookup",lookupId(rec.Subdivision),{lookup:"subdivision"}),F("Subdivision_Code","Subdivision code","text",rec.Subdivision_Code),F("Phase","Phase","number",rec.Phase),F("Block","Block","text",rec.Block),F("Lot_Number","Lot number","number",rec.Lot_Number),F("Lot_Size","Lot size","number",rec.Lot_Size),F("Archived","Archived","bool",rec.Archived),F("Property_ID","Property ID","text",rec.Property_ID),F("Contract_Schedule","Contract schedule","lookup",lookupId(rec.Contract_Schedule),{lookup:"takedown"}),F("Add_Builder_Takedown_Name","Builder takedowns","multilookup",asList(rec.Add_Builder_Takedown_Name).map(function(x){return String(x.ID||"");}),{lookup:"builderTakedown",full:1}),F("On_Hold","On hold","bool",rec.On_Hold),F("Notes","Notes","textarea",rec.Notes,{full:1}),F("Address","Address","text",rec.Address,{full:1}),F("City","City","text",rec.City),F("County","County","select",rec.County,{opts:OPTS.lotCounty}),F("Base_Price","Base price","currency",rec.Base_Price),F("Appraised_Value","Appraised value","currency",rec.Appraised_Value),F("Earnest_Money","Earnest money","currency",rec.Earnest_Money),F("Additional_Tax","Additional tax","currency",rec.Additional_Tax),F("Escalator","Escalator","percentage",rec.Escalator),F("Fee_Type","Fee type","select",rec.Fee_Type,{opts:OPTS.feeType}),F("Additional_Fees","Additional fees","currency",rec.Additional_Fees),F("Model","Model","bool",rec.Model),F("Builder1","Buyer","lookup",lookupId(rec.Builder1),{lookup:"builder"}),F("Escalator_Start_Date","Escalator start date","date",rec.Escalator_Start_Date),F("Prime_1","Prime + 1","bool",rec.Prime_1),F("Purchase_Date","Purchase date","date",rec.Purchase_Date),F("Entered_Date","Entered date","date",rec.Entered_Date),F("Close_Date","Close date","date",rec.Close_Date),F("WBW_Tax","WBW tax","ro",rec.WBW_Tax),F("Builder_Tax","Builder tax","ro",rec.Builder_Tax),F("Total_Tax","Total tax","ro",rec.Total_Tax),F("Interest1","Interest","ro",rec.Interest1),F("Total","Total","ro",rec.Total)];
+  } else if(type==="additionalItem"){
+    d.fields=[F("Item_Type","Type","select",rec.Item_Type,{opts:OPTS.itemType}),F("Name","Name","text",rec.Name,{full:1}),F("Amount","Amount","currency",rec.Amount),F("Quantity","Quantity","number",rec.Quantity),F("Total","Total","ro",rec.Total),F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("Builder_Takedown1","Builder takedown","lookup",lookupId(rec.Builder_Takedown1),{lookup:"builderTakedown"}),F("Takedown_Template1","Takedown template","ro",displayValue(rec.Takedown_Template1))];
+  } else if(type==="externalMapping"){
+    d.fields=[F("Subdivision1","Subdivision","lookup",lookupId(rec.Subdivision1),{lookup:"subdivision"}),F("External_System","External system","select",rec.External_System,{opts:OPTS.externalSystem}),F("External_Code","External code","text",rec.External_Code,{full:1})];
+  }
+  return d;
+}
+
+/* related helpers */
+function milestonesForSub(id){return S.milestones.filter(function(r){return relHasId(r.Subdivision1,id);}).sort(function(a,b){return String(toDateInput(a.Start_Date)||"9999").localeCompare(String(toDateInput(b.Start_Date)||"9999"))||num(a.Sequence)-num(b.Sequence);});}
+function nextMilestone(list){var t=todayInput();for(var i=0;i<list.length;i++){var d=toDateInput(list[i].Start_Date);if(d&&d>=t)return list[i];}return null;}
+function forecastsForSub(id){return S.forecasts.filter(function(r){return relHasId(r.Subdivision1,id);}).sort(function(a,b){return String(toDateInput(a.Forecast_Start_Date)||a.Forecast_Year||"").localeCompare(String(toDateInput(b.Forecast_Start_Date)||b.Forecast_Year||""));});}
+function forecastYearsForSub(id){return S.forecastYears.filter(function(r){return relHasId(r.Subdivision1,id);}).sort(function(a,b){return num(b.Forecast_Year)-num(a.Forecast_Year);});}
+function takedownsForSub(id){return S.takedownSchedules.filter(function(r){return relHasId(r.Subdivisions,id);});}
+function builderTakedownsForSub(id){return S.builderTakedowns.filter(function(r){return relHasId(r.Subdivision1,id);}).sort(function(a,b){return String(toDateInput(b.Purchase_Date)||"").localeCompare(String(toDateInput(a.Purchase_Date)||""));});}
+function additionalItemsFor(kind,id){return S.additionalItems.filter(function(r){return kind==="subdivision"?relHasId(r.Subdivision1,id):relHasId(r.Builder_Takedown1,id);});}
+function externalMappingsForSub(id){return S.externalMappings.filter(function(r){return relHasId(r.Subdivision1,id);});}
+function lotsForBuilderTakedown(id){return S.lots.filter(function(r){return relHasId(r.Add_Builder_Takedown_Name,id);});}
+function propertiesForCompany(id){return S.properties.filter(function(r){return relHasId(r.Company1,id);});}
+function subdivisionsForCompany(id){return S.subdivisions.filter(function(r){return relHasId(r.Company1,id)||relHasId(r.Land_Company,id);});}
+function propertiesForProject(id){return S.properties.filter(function(r){return relHasId(r.Projects,id);});}
+function subdivisionsForProject(id){return S.subdivisions.filter(function(r){return relHasId(r.Project,id);});}
+function forecastGroups(fy){var year=num(fy.Forecast_Year),sub=lookupId(fy.Subdivision1),builder=lookupId(fy.Builder1);function group(y){return S.forecasts.filter(function(r){return relHasId(r.Subdivision1,sub)&&(!builder||relHasId(r.Builder1,builder))&&num(r.Forecast_Year)===y;});}return{previous:group(year-1),current:group(year),next:group(year+1)};}
+function companyUsage(){var u={};S.subdivisions.forEach(function(r){var d=lookupId(r.Company1),l=lookupId(r.Land_Company);if(d)(u[d]=u[d]||{dev:0,land:0}).dev++;if(l)(u[l]=u[l]||{dev:0,land:0}).land++;});return u;}
+
+/* searchable multi-select property filters */
+var FILTER_DEFS={
+  county:{label:"County",value:function(r){return String(r.County||"");},options:function(){return mergeFilterValues(OPTS.propertyCounty,uniqueValues(S.properties,"County"));}},
+  landType:{label:"Land Type",value:function(r){return String(r.Land_Type||"");},options:function(){return mergeFilterValues(OPTS.landType,uniqueValues(S.properties,"Land_Type"));}},
+  subtype:{label:"Subtype",value:function(r){return String(r.Subtype||"");},options:function(){return mergeFilterValues(OPTS.propertySubtype,uniqueValues(S.properties,"Subtype"));}},
+  company:{label:"Company",value:function(r){var id=lookupId(r.Company1),name=displayValue(r.Company1);return id||("name:"+name);},options:function(){var seen={},out=[];S.companies.forEach(function(c){var id=String(c.ID||""),name=String(c.Company_Name||"").trim();if(id&&name&&!seen[id]){seen[id]=1;out.push({value:id,label:name});}});S.properties.forEach(function(r){var id=lookupId(r.Company1),name=displayValue(r.Company1);var key=id||("name:"+name);if(name&&key&&!seen[key]){seen[key]=1;out.push({value:key,label:name});}});return out.sort(function(a,b){return a.label.localeCompare(b.label);});}},
+  deedTo:{label:"Deed To",value:function(r){return String(r.Deed_To||"");},options:function(){return mergeFilterValues(OPTS.deedTo,uniqueValues(S.properties,"Deed_To"));}}
+};
+function mergeFilterValues(base,extra){var seen={},out=[];(base||[]).concat(extra||[]).forEach(function(v){v=String(v||"").trim();if(v&&!seen[v]){seen[v]=1;out.push({value:v,label:v});}});return out.sort(function(a,b){return a.label.localeCompare(b.label);});}
+function filterSelections(key){return(S.filters[key]||[]).slice();}
+function hasPropertyFilters(){return Object.keys(S.filters).some(function(k){return(S.filters[k]||[]).length;});}
+function renderFilterButtons(){var wrap=$("propertyFilters");if(!wrap)return;wrap.style.display=S.scope==="props"?"flex":"none";wrap.querySelectorAll("[data-filter-key]").forEach(function(btn){var key=btn.getAttribute("data-filter-key"),def=FILTER_DEFS[key],vals=filterSelections(key),value=vals.length?String(vals.length)+" selected":"All";btn.classList.toggle("active",vals.length>0);btn.innerHTML='<span class="filter-name">'+esc(def.label)+'</span><span class="filter-value">'+esc(value)+'</span><span class="filter-caret">▾</span>';});}
+function renderFilterPopupList(query){var key=S.filterPopupKey,def=FILTER_DEFS[key];if(!def)return;var q=String(query||"").trim().toLowerCase(),selected={};S.filterDraft.forEach(function(v){selected[String(v)]=1;});var opts=def.options().filter(function(o){return!q||String(o.label).toLowerCase().indexOf(q)>=0;});$("filterPopupList").innerHTML=opts.map(function(o){return'<label class="filter-option"><input type="checkbox" value="'+esc(o.value)+'"'+(selected[String(o.value)]?' checked':'')+'><span>'+esc(o.label)+'</span></label>';}).join("")||'<div class="filter-popup-empty">No matching values.</div>';$("filterPopupCount").textContent=S.filterDraft.length+" selected";}
+function syncFilterDraftFromList(){var visibleChecked={};document.querySelectorAll('#filterPopupList input[type="checkbox"]').forEach(function(cb){visibleChecked[String(cb.value)]=cb.checked;});var next=S.filterDraft.filter(function(v){return!(String(v) in visibleChecked);});Object.keys(visibleChecked).forEach(function(v){if(visibleChecked[v])next.push(v);});S.filterDraft=Array.from(new Set(next));$("filterPopupCount").textContent=S.filterDraft.length+" selected";}
+function openFilterPopup(btn){var key=btn.getAttribute("data-filter-key");if(!FILTER_DEFS[key])return;S.filterPopupKey=key;S.filterDraft=filterSelections(key);S.filterPopupButton=btn;$("filterPopupSearch").value="";$("filterPopupSearch").placeholder="Search "+FILTER_DEFS[key].label.toLowerCase()+"…";renderFilterPopupList("");var rect=btn.getBoundingClientRect(),width=330,left=Math.min(window.innerWidth-width-12,Math.max(12,rect.left)),top=rect.bottom+6;if(top+430>window.innerHeight-10)top=Math.max(10,rect.top-436);var popup=$("filterPopup");popup.style.left=left+"px";popup.style.top=top+"px";popup.classList.add("show");popup.setAttribute("aria-hidden","false");setTimeout(function(){$("filterPopupSearch").focus();},0);}
+function closeFilterPopup(){var p=$("filterPopup");p.classList.remove("show");p.setAttribute("aria-hidden","true");S.filterPopupKey=null;S.filterDraft=[];S.filterPopupButton=null;}
+function applyFilterPopup(){if(!S.filterPopupKey)return closeFilterPopup();syncFilterDraftFromList();S.filters[S.filterPopupKey]=S.filterDraft.slice();S.page[S.scope]=1;closeFilterPopup();renderFilterButtons();renderTable();}
+function clearFilterPopup(){S.filterDraft=[];renderFilterPopupList($("filterPopupSearch").value);}
+
+/* list/table */
+function currentList(){return S.scope==="props"?S.properties:S.scope==="subs"?S.subdivisions:S.companies;}
+function currentType(){return S.scope==="props"?"property":S.scope==="subs"?"subdivision":"company";}
+function isIssue(scope,r){if(scope==="props")return asList(r.Projects).length===0;if(scope==="subs")return!lookupId(r.Company1)||!lookupId(r.Land_Company)||!lookupId(r.Project);return!companyUsage()[String(r.ID)];}
+function issueCount(){var n=0;S.properties.forEach(function(r){if(isIssue("props",r))n++;});S.subdivisions.forEach(function(r){if(isIssue("subs",r))n++;});return n;}
+function cols(){
+  if(S.scope==="props")return[
+    {label:"Name",key:"Common_Name",edit:"text"},{label:"ID",key:"Property_ID",edit:"text"},
+    {label:"County",key:"County",edit:"select",opts:OPTS.propertyCounty},{label:"Land type",key:"Land_Type",edit:"select",opts:OPTS.landType},
+    {label:"Subtype",key:"Subtype",edit:"select",opts:OPTS.propertySubtype},
+    {label:"Company",key:"_company",edit:"lookupsearch",field:"Company1",lookup:"company"},{label:"Acres",key:"Acres",num:1,edit:"number"},
+    {label:"Original acres",key:"Original_Acres",num:1,edit:"number"},{label:"Ag exempt",key:"Ag_Exempt",bool:1,edit:"bool",center:1},
+    {label:"Deed to",key:"Deed_To",edit:"select",opts:OPTS.deedTo},{label:"Insured",key:"Insured",bool:1,edit:"bool",center:1},
+    {label:"Projects",key:"_projects",edit:"projects",field:"Projects"},{label:"Location",key:"Location",edit:"text"},
+    {label:"Legal description",key:"Legal_Description",edit:"text"},{label:"Notes",key:"Notes",edit:"text"}
+  ];
+  if(S.scope==="subs")return[
+    {label:"Subdivision",key:"Subdivision_Name"},{label:"Code",key:"Subdivision_Code"},{label:"Projects Status",key:"Projects_Status"},
+    {label:"County",key:"County",edit:"select",opts:OPTS.subCounty},{label:"Phase",key:"Phase",num:1},{label:"Lots",key:"Total_Lots",num:1},{label:"Sold",key:"Lots_Sold",num:1},
+    {label:"Next milestone",key:"_next"},{label:"Dev entity",key:"_dev",edit:"lookupsearch",field:"Company1",lookup:"company"},
+    {label:"Land entity",key:"_land",edit:"lookupsearch",field:"Land_Company",lookup:"company"}
+  ];
+  return[
+    {label:"Company",key:"Company_Name",edit:"text"},{label:"Facility ID",key:"Facility_ID",edit:"text"},
+    {label:"Account #",key:"Account_Number",edit:"text"},{label:"Properties",key:"_properties",num:1},{label:"Subdivision links",key:"_use"}
+  ];
+}
+function colValue(r,k){if(k==="_company")return displayValue(r.Company1);if(k==="_projects")return asList(r.Projects).map(function(x){return x.display_value;}).join(", ");if(k==="_project")return displayValue(r.Project);if(k==="_dev")return displayValue(r.Company1);if(k==="_land")return displayValue(r.Land_Company);if(k==="_next"){var m=nextMilestone(milestonesForSub(r.ID));return m?(m.Milestone_Name||"")+" "+shortDate(m.Start_Date):"";}if(k==="_properties")return propertiesForCompany(r.ID).length;if(k==="_use"){var u=companyUsage()[String(r.ID)];return u?((u.dev||0)+" dev · "+(u.land||0)+" land"):"";}return r[k];}
+function tableStatusTag(v){var s=String(v||"");if(!s)return"—";var cls=/active|planning/i.test(s)?"tag-accent":/behind|warning/i.test(s)?"tag-outline":"tag-neutral";return'<span class="tag sm '+cls+'">'+esc(s)+'</span>';}
+function cellHTML(r,c){var v=colValue(r,c.key);if(c.key==="Projects_Status"||c.key==="Status")return tableStatusTag(v);if(c.bool)return truthy(v)?'<span class="tag sm tag-accent">Yes</span>':'<span class="tag sm tag-neutral">No</span>';if(c.num)return v===""||v==null?"—":fmt(v);if(!v)return"—";return esc(String(v).replace(/<br\s*\/?>/gi," "));}
+function filterActive(){return!!(S.search||(S.scope==="props"&&hasPropertyFilters())||S.issuesOnly);}
+function visibleList(){var list=currentList().slice(),q=S.search.toLowerCase(),cs=cols();if(q)list=list.filter(function(r){return cs.map(function(c){return String(colValue(r,c.key)||"");}).join(" ").toLowerCase().indexOf(q)>=0;});if(S.scope==="props")Object.keys(FILTER_DEFS).forEach(function(key){var chosen=S.filters[key]||[];if(chosen.length){var def=FILTER_DEFS[key];list=list.filter(function(r){return chosen.indexOf(String(def.value(r)))>=0;});}});if(S.issuesOnly)list=list.filter(function(r){return isIssue(S.scope,r);});if(S.sortKey){var k=S.sortKey,d=S.sortDir;list.sort(function(a,b){var va=colValue(a,k),vb=colValue(b,k),na=parseFloat(va),nb=parseFloat(vb);return !isNaN(na)&&!isNaN(nb)?(na-nb)*d:String(va||"").localeCompare(String(vb||""))*d;});}else if(S.scope==="cos")list.sort(function(a,b){return String(a.Company_Name||"").localeCompare(String(b.Company_Name||""));});return list;}
+function groupSubs(list){var by={},order=[];list.forEach(function(r){var g=displayValue(r.Project)||"Unlinked";if(!by[g]){by[g]=[];order.push(g);}by[g].push(r);});order.sort(function(a,b){if(a==="Unlinked")return 1;if(b==="Unlinked")return-1;return a.localeCompare(b);});return order.map(function(n){return{name:n,items:by[n]};});}
+function projectSummary(r){var names=asList(r.Projects).map(function(x){return String(x.display_value||"");}).filter(Boolean);if(!names.length)return"— assign —";return names.length<=2?names.join(", "):names.slice(0,2).join(", ")+" +"+(names.length-2);}
+function tableEditorHTML(r,c){var field=c.field||c.key,ftype=c.edit,raw="";if(ftype==="lookup"||ftype==="lookupsearch")raw=lookupId(r[field]);else if(ftype==="projects")raw=asList(r[field]).map(function(x){return String(x.ID||"");}).filter(Boolean).join(",");else if(ftype==="bool")raw=truthy(r[field])?"true":"false";else raw=r[field]==null?"":String(r[field]);if(ftype==="projects")return'<button type="button" class="table-project-btn'+(!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="projects" data-original="'+esc(raw)+'" aria-label="Edit '+esc(c.label)+'"><span class="project-label">'+esc(projectSummary(r))+'</span><span class="project-caret">▾</span></button>';if(ftype==="lookupsearch")return'<button type="button" class="table-lookup-btn'+(!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="lookup" data-lookup="'+esc(c.lookup||'')+'" data-original="'+esc(raw)+'" aria-label="Search and edit '+esc(c.label)+'"><span class="lookup-label">'+esc(displayValue(r[field])||"— search —")+'</span><span class="lookup-ok">✓</span><span class="lookup-caret">▾</span></button>';if(ftype==="bool")return'<input type="checkbox" class="table-editor-check" data-field="'+esc(field)+'" data-ftype="bool" data-original="'+raw+'" aria-label="Edit '+esc(c.label)+'"'+(raw==="true"?' checked':'')+'/>';var attrs=' class="table-editor'+(ftype==="lookup"&&!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="'+esc(ftype)+'" data-lookup="'+esc(c.lookup||'')+'" data-original="'+esc(raw)+'" aria-label="Edit '+esc(c.label)+'"';if(ftype==="select"){var opts='<option value="">—</option>',list=(c.opts||[]).slice();if(raw&&list.indexOf(raw)<0)list.unshift(raw);list.forEach(function(o){opts+='<option value="'+esc(o)+'"'+(o===raw?' selected':'')+'>'+esc(o)+'</option>';});return'<select'+attrs+'>'+opts+'</select>';}if(ftype==="lookup")return'<select'+attrs+'>'+optionsHTML(lookupOptions(c.lookup),raw,false)+'</select>';return'<input'+attrs+(ftype==="number"?' type="number" step="any"':' type="text"')+' value="'+esc(raw)+'"/>';}
+function pageState(){var total=S.lastFiltered.length;if(S.scope!=="props"){S.page[S.scope]=1;return{total:total,size:Math.max(1,total),pages:1,page:1,start:0,end:total};}var size=Math.max(1,num(S.tablePageSize)||CFG.tablePageSize||100),pages=Math.max(1,Math.ceil(total/size)),page=Math.max(1,Math.min(pages,num(S.page[S.scope])||1));S.page[S.scope]=page;return{total:total,size:size,pages:pages,page:page,start:(page-1)*size,end:Math.min(total,page*size)};}
+function renderPager(st){var pager=$('tablePager');if(S.scope!=="props"){pager.style.display='none';return;}pager.style.display='flex';if(!st)st=pageState();var from=st.total?st.start+1:0,to=st.end;$('pageInfo').textContent=st.total?(fmt(from)+'–'+fmt(to)+' of '+fmt(st.total)+' matching'):'0 matching records';$('pageNumber').textContent='Page '+st.page+' of '+st.pages;$('pageFirst').disabled=st.page<=1;$('pagePrev').disabled=st.page<=1;$('pageNext').disabled=st.page>=st.pages;$('pageLast').disabled=st.page>=st.pages;if(String($('pageSize').value)!==String(st.size))$('pageSize').value=String(st.size);}
+function renderTable(){var all=visibleList();S.lastFiltered=all;var st=pageState(),list=all.slice(st.start,st.end);S.lastPageRows=list;var cs=cols(),html='<table class="wtable"><thead><tr><th style="width:38px;cursor:default" aria-label="Edit"></th><th style="width:34px;cursor:default"><input type="checkbox" id="checkVisible" title="'+(S.scope==="props"?'Select rows on this page':'Select all matching rows')+'"></th>';cs.forEach(function(c){var sorted=S.sortKey===c.key;html+='<th class="'+(c.num?'num ':'')+(c.center?'center ':'')+(sorted?'sorted':'')+'" data-sort="'+esc(c.key)+'">'+esc(c.label)+(sorted?(S.sortDir>0?' ↑':' ↓'):'')+'</th>';});html+='</tr></thead><tbody>';function row(r){var id=String(r.ID),s='<tr class="rec'+(S.selected[S.scope]===id?' sel':'')+'" data-id="'+esc(id)+'"><td><button class="row-edit-btn" type="button" data-open-row="'+esc(id)+'" title="Open full editor" aria-label="Edit record"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></td><td onclick="event.stopPropagation()"><input type="checkbox" data-check="'+esc(id)+'"'+(S.checked[id]?' checked':'')+'></td>';cs.forEach(function(c){var editable=!!c.edit;s+='<td class="'+(c.num?'num ':'')+(c.center?'center ':'')+(editable?'editable':'readonly-cell')+'">'+(editable?tableEditorHTML(r,c):cellHTML(r,c))+'</td>';});return s+'</tr>';}
+  if(S.scope==="subs"){var fa=filterActive();groupSubs(list).forEach(function(g){var lots=0,sold=0;g.items.forEach(function(r){lots+=num(r.Total_Lots);sold+=num(r.Lots_Sold);});var open=fa||!!S.expandedGroups[g.name];html+='<tr class="ghead" data-group="'+esc(g.name)+'"><td colspan="'+(cs.length+2)+'"><span class="caret">'+(open?'▼':'▶')+'</span><span class="gname">'+esc(g.name.toUpperCase())+'</span><span class="gmeta">'+g.items.length+' subdivisions · '+fmt(sold)+'/'+fmt(lots)+' sold</span></td></tr>';if(open)g.items.forEach(function(r){html+=row(r);});});}else list.forEach(function(r){html+=row(r);});html+='</tbody></table>';if(!all.length)html+='<div class="empty"><b>No matches</b>Adjust search or filters.</div>';$('tableScroll').innerHTML=html;$('resultLine').textContent=all.length+' of '+currentList().length+' matched';renderPager(st);}
+function goToPage(page){var total=S.lastFiltered.length,size=Math.max(1,num(S.tablePageSize)||100),pages=Math.max(1,Math.ceil(total/size));S.page[S.scope]=Math.max(1,Math.min(pages,page));$('tableScroll').scrollTop=0;renderTable();}
+
+/* field/editor rendering */
+function optionsHTML(items,selected,multiple){var sel=Array.isArray(selected)?selected.map(String):[String(selected||"")],h=multiple?'':'<option value="">—</option>';items.forEach(function(o){h+='<option value="'+esc(o.id)+'"'+(sel.indexOf(String(o.id))>=0?' selected':'')+'>'+esc(o.label)+'</option>';});return h;}
+function fieldHTML(f){
+  var id='f_'+f.k,full=f.full?' full':'',orig="",inner="";
+  if(f.type==='ro'){
+    inner='<div class="readonly-value">'+esc(valText(f.v))+'</div>';
+  }else if(f.type==='select'){
+    orig=f.v==null?'':String(f.v);var opts=(f.opts||[]).slice();if(orig&&opts.indexOf(orig)<0)opts.unshift(orig);
+    inner='<select class="input pf" id="'+id+'" data-field="'+esc(f.k)+'" data-ftype="select" data-original="'+esc(orig)+'"><option value="">—</option>'+opts.map(function(o){return'<option value="'+esc(o)+'"'+(o===orig?' selected':'')+'>'+esc(o)+'</option>';}).join('')+'</select>';
+  }else if(f.type==='lookup'){
+    orig=String(f.v||'');
+    if(f.lookup==='company'){
+      inner='<input class="input pf lookup-value" id="'+id+'" type="hidden" data-field="'+esc(f.k)+'" data-ftype="lookup" data-lookup="company" data-original="'+esc(orig)+'" value="'+esc(orig)+'">'+
+        '<button class="field-lookup-btn'+(!orig?' warn':'')+'" type="button" data-lookup-target="'+id+'" data-lookup="company" aria-label="Search companies"><span class="lookup-label">'+esc(lookupLabel('company',orig)||'— search —')+'</span><span class="lookup-caret">▾</span></button>';
+    }else{
+      inner='<select class="input pf" id="'+id+'" data-field="'+esc(f.k)+'" data-ftype="lookup" data-lookup="'+esc(f.lookup)+'" data-original="'+esc(orig)+'">'+optionsHTML(lookupOptions(f.lookup),orig,false)+'</select>';
+    }
+  }else if(f.type==='multilookup'){
+    var vals=Array.isArray(f.v)?f.v.map(String):[];orig=vals.slice().sort().join(',');
+    inner='<select class="input pf multi-input" id="'+id+'" multiple size="'+(f.size||6)+'" data-field="'+esc(f.k)+'" data-ftype="multilookup" data-lookup="'+esc(f.lookup)+'" data-original="'+esc(orig)+'">'+optionsHTML(lookupOptions(f.lookup),vals,true)+'</select><div class="field-help">Ctrl/Cmd-click to select multiple records.</div>';
+  }else if(f.type==='date'){
+    orig=toDateInput(f.v);inner='<input class="input pf" id="'+id+'" type="date" data-field="'+esc(f.k)+'" data-ftype="date" data-original="'+esc(orig)+'" value="'+esc(orig)+'">';
+  }else if(f.type==='textarea'){
+    orig=brToNl(f.v);inner='<textarea class="input pf" id="'+id+'" data-field="'+esc(f.k)+'" data-ftype="textarea" data-original="'+esc(orig)+'">'+esc(orig)+'</textarea>';
+  }else if(f.type==='bool'){
+    orig=truthy(f.v)?'true':'false';inner='<select class="input pf" id="'+id+'" data-field="'+esc(f.k)+'" data-ftype="bool" data-original="'+orig+'"><option value="true"'+(orig==='true'?' selected':'')+'>Yes</option><option value="false"'+(orig==='false'?' selected':'')+'>No</option></select>';
+  }else{
+    orig=f.v==null?'':String(f.v);var nt=/number|currency|percentage/.test(f.type);inner='<input class="input pf" id="'+id+'"'+(nt?' type="number" step="any"':' type="text"')+' data-field="'+esc(f.k)+'" data-ftype="'+esc(f.type||'text')+'" data-original="'+esc(orig)+'" value="'+esc(orig)+'">';
+  }
+  return'<div class="fg'+full+'"><div class="fl">'+esc(f.label)+'</div>'+inner+'</div>';
+}
+function currentEditor(){return S.editorNew?S.editorDraft:(S.editorType&&S.editorId?recordFor(S.editorType,S.editorId):null);}
+function recordTitle(type,r){if(type==='property')return r.Common_Name||r.Property_ID||'Property';if(type==='subdivision')return r.Subdivision_Name||r.Subdivision_Code||'Subdivision';if(type==='company')return r.Company_Name||'Company';if(type==='project')return r.Project_Name||r.Project_Code||'Project';if(type==='milestone')return r.Milestone_Name||'Milestone';if(type==='forecastYear')return r.Forecast_Name||'Forecast Year';if(type==='forecast')return (r.Forecast_Year||'')+' '+(r.Forecast_Month||'Forecast');if(type==='takedown')return r.Takedown_Schedule_Code||'Takedown Schedule';if(type==='builderTakedown')return r.Name||'Builder Takedown';if(type==='builder')return r.Builder_Name||'Builder';if(type==='lot')return r.Lot_Code||'Lot';if(type==='additionalItem')return r.Name||'Additional Item';if(type==='externalMapping')return (r.External_System||'External System')+' '+(r.External_Code||'');return typeLabel(type);}
+function relatedOpen(type,id,label){return id?'<button class="related-open" type="button" data-open-type="'+esc(type)+'" data-open-id="'+esc(id)+'">'+esc(label||'Open / Edit')+'</button>':'';}
+function relatedTable(title,type,rows,columns){var h='<div class="tab-intro"><h3>'+esc(title)+'</h3><span class="readonly-pill">'+rows.length+' record'+(rows.length===1?'':'s')+'</span></div>';if(!rows.length)return h+'<div class="related-empty">No linked records.</div>';h+='<div class="related-table-wrap"><table class="related-table"><thead><tr>';columns.forEach(function(c){h+='<th>'+esc(c.label)+'</th>';});h+='<th>Actions</th></tr></thead><tbody>';rows.forEach(function(r){h+='<tr>';columns.forEach(function(c){var v=typeof c.value==='function'?c.value(r):r[c.key];h+='<td class="'+(c.num?'num':'')+'">'+(c.html?c.html(v,r):esc(valText(v)))+'</td>';});h+='<td>'+relatedOpen(type,r.ID)+'</td></tr>';});return h+'</tbody></table></div>';}
+function tabHTML(type,rec,tab){
+  if(tab==='details'){var d=descriptor(type,rec),h='<div class="sect"><span>Record fields</span><span class="section-note">Edit here, then use Save changes below.</span></div><div class="fgrid">';d.fields.forEach(function(f){h+=fieldHTML(f);});return h+'</div>';}
+  if(type==='subdivision'&&tab==='milestones')return relatedTable('Milestones','milestone',milestonesForSub(rec.ID),[{label:'Milestone',key:'Milestone_Name'},{label:'Start',value:function(r){return dateText(r.Start_Date);}},{label:'End',value:function(r){return dateText(r.End_Date);}},{label:'Sequence',key:'Sequence',num:1}]);
+  if(type==='subdivision'&&tab==='forecasts'){var h=relatedTable('Forecast Years','forecastYear',forecastYearsForSub(rec.ID),[{label:'Name',key:'Forecast_Name'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'WFY',key:'Forecast_Year'},{label:'Status',key:'Status'},{label:'Full Year',key:'Full_Year_Forecast',num:1}]);return h+relatedTable('Monthly Forecasts','forecast',forecastsForSub(rec.ID),[{label:'WFY',key:'Forecast_Year'},{label:'Month',key:'Forecast_Month'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'Forecasted',key:'Forecasted_Lots',num:1},{label:'Scheduled',key:'Scheduled_Lots',num:1},{label:'Actual',key:'Actual_Lots',num:1}]);}
+  if(type==='subdivision'&&tab==='takedowns')return relatedTable('Takedown Schedules','takedown',takedownsForSub(rec.ID),[{label:'Schedule',key:'Takedown_Schedule_Code'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'Status',key:'Status'},{label:'Obligation',key:'Total_Lot_Obligation',num:1},{label:'Sold',key:'Lots_Sold',num:1},{label:'Complete',value:function(r){return pctText(r.Completion_Percent);}}]);
+  if(type==='subdivision'&&tab==='builderTakedowns')return relatedTable('Builder Takedowns','builderTakedown',builderTakedownsForSub(rec.ID),[{label:'Name',key:'Name'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'Purchase',value:function(r){return dateText(r.Purchase_Date);}},{label:'Lots',key:'Lot_Count',num:1},{label:'Total',value:function(r){return moneyText(r.Total_w_Additional||r.Total);}}]);
+  if(type==='subdivision'&&tab==='additionalItems')return relatedTable('Additional Items','additionalItem',additionalItemsFor('subdivision',rec.ID),[{label:'Type',key:'Item_Type'},{label:'Name',key:'Name'},{label:'Amount',value:function(r){return moneyText(r.Amount);}},{label:'Quantity',key:'Quantity',num:1},{label:'Total',value:function(r){return moneyText(r.Total);}}]);
+  if(type==='subdivision'&&tab==='externalMappings')return relatedTable('External System Mappings','externalMapping',externalMappingsForSub(rec.ID),[{label:'System',key:'External_System'},{label:'External Code',key:'External_Code'}]);
+  if(type==='property'&&tab==='linked'){var p=asList(rec.Projects).map(function(x){return recordFor('project',x.ID)||{ID:x.ID,Project_Name:x.display_value};}),s=asList(rec.Subdivisions).map(function(x){return recordFor('subdivision',x.ID)||{ID:x.ID,Subdivision_Name:x.display_value};});return relatedTable('Projects','project',p,[{label:'Project',key:'Project_Name'},{label:'Code',key:'Project_Code'},{label:'Status',key:'Status'}])+relatedTable('Subdivisions','subdivision',s,[{label:'Subdivision',key:'Subdivision_Name'},{label:'Code',key:'Subdivision_Code'},{label:'Status',key:'Projects_Status'}]);}
+  if(type==='company'&&tab==='properties')return relatedTable('Properties','property',propertiesForCompany(rec.ID),[{label:'Property',key:'Common_Name'},{label:'ID',key:'Property_ID'},{label:'County',key:'County'},{label:'Acres',key:'Acres',num:1}]);
+  if(type==='company'&&tab==='subdivisions')return relatedTable('Subdivision Links','subdivision',subdivisionsForCompany(rec.ID),[{label:'Subdivision',key:'Subdivision_Name'},{label:'Code',key:'Subdivision_Code'},{label:'Dev Company',value:function(r){return displayValue(r.Company1);}},{label:'Land Company',value:function(r){return displayValue(r.Land_Company);}}]);
+  if(type==='project'&&tab==='properties')return relatedTable('Properties','property',propertiesForProject(rec.ID),[{label:'Property',key:'Common_Name'},{label:'ID',key:'Property_ID'},{label:'County',key:'County'},{label:'Acres',key:'Acres',num:1}]);
+  if(type==='project'&&tab==='subdivisions')return relatedTable('Subdivisions','subdivision',subdivisionsForProject(rec.ID),[{label:'Subdivision',key:'Subdivision_Name'},{label:'Code',key:'Subdivision_Code'},{label:'Status',key:'Projects_Status'},{label:'Lots',key:'Total_Lots',num:1}]);
+  if(type==='forecastYear'){var g=forecastGroups(rec),rows=tab==='previousYear'?g.previous:tab==='nextYear'?g.next:g.current;return relatedTable(tab==='previousYear'?'Previous Year Forecast':tab==='nextYear'?'Next Year Forecast':'Forecast Months','forecast',rows,[{label:'WFY',key:'Forecast_Year'},{label:'Month',key:'Forecast_Month'},{label:'Start',value:function(r){return dateText(r.Forecast_Start_Date);}},{label:'Forecasted',key:'Forecasted_Lots',num:1},{label:'Scheduled',key:'Scheduled_Lots',num:1},{label:'Actual',key:'Actual_Lots',num:1}]);}
+  if(type==='builderTakedown'&&tab==='lots')return relatedTable('Lots','lot',lotsForBuilderTakedown(rec.ID),[{label:'Lot',key:'Lot_Code'},{label:'Status',key:'Status'},{label:'Block',key:'Block'},{label:'Lot #',key:'Lot_Number'},{label:'Base Price',value:function(r){return moneyText(r.Base_Price);}}]);
+  if(type==='builderTakedown'&&tab==='additionalItems')return relatedTable('Additional Items','additionalItem',additionalItemsFor('builderTakedown',rec.ID),[{label:'Type',key:'Item_Type'},{label:'Name',key:'Name'},{label:'Amount',value:function(r){return moneyText(r.Amount);}},{label:'Quantity',key:'Quantity',num:1},{label:'Total',value:function(r){return moneyText(r.Total);}}]);
+  return'<div class="related-empty">No records in this section.</div>';
+}
+function panelActionsHTML(){return'<div class="panel-actions"><button class="btn primary" id="btnPanelSave" disabled>'+(S.editorNew?'Create record':'Save changes')+'</button><button class="btn" id="btnPanelCancel">'+(S.editorNew?'Cancel':'Close')+'</button><span class="dirty-note" id="panelDirtyNote">'+(S.editorNew?'New record':'No unsaved changes')+'</span><span class="action-spacer"></span><span class="hint" id="panelMsg"></span></div>';}
+function renderPanel(){var rec=currentEditor();if(!rec)return;var d=descriptor(S.editorType,rec);if(S.editorNew)d.tabs=[{id:'details',label:'Details'}];var valid=d.tabs.some(function(t){return t.id===S.modalTab;});if(!valid)S.modalTab='details';$("recordKicker").textContent=S.editorNew?'NEW '+d.label.toUpperCase():d.label.toUpperCase()+' · '+String(rec.ID||'');$("recordTitle").textContent=S.editorNew?'New '+d.label:recordTitle(S.editorType,rec);$("recordSubtitle").textContent=S.editorNew?formForType(S.editorType)+' · create a new record':reportForType(S.editorType)+' · all visible fields and linked records';$("recordTabs").innerHTML=d.tabs.map(function(t){return'<button class="record-tab'+(t.id===S.modalTab?' active':'')+'" type="button" data-record-tab="'+esc(t.id)+'">'+esc(t.label)+(t.count==null?'':' <span class="record-tab-count">'+t.count+'</span>')+'</button>';}).join('');$("btnOpenLots").style.display=!S.editorNew&&S.editorType==='subdivision'?'':'none';$("btnEditorBack").style.display=!S.editorNew&&S.editorStack.length?'':'none';$("panel").innerHTML=tabHTML(S.editorType,rec,S.modalTab)+panelActionsHTML();S.panelSaving=false;updatePanelActionState();}
+function showAppConfirm(title,message,confirmText,action){S.confirmAction=action||null;$("confirmTitle").textContent=title;$("confirmMessage").textContent=message;$("confirmAccept").textContent=confirmText||'Continue';$("confirmModal").classList.add('show');$("confirmModal").setAttribute('aria-hidden','false');}
+function closeAppConfirm(){S.confirmAction=null;$("confirmModal").classList.remove('show');$("confirmModal").setAttribute('aria-hidden','true');}
+function acceptAppConfirm(){var fn=S.confirmAction;closeAppConfirm();if(fn)fn();}
+function withDiscardConfirm(message,action){if(S.panelDirty&&!S.panelSaving){showAppConfirm('Discard unsaved changes?',message,'Discard',action);return false;}action();return true;}
+function openEditor(type,id,push){if(!recordFor(type,id)){diag('Record open failed',{type:type,id:id,error:'Record not loaded'});return;}if(push&&S.editorType&&S.editorId&&!S.editorNew)S.editorStack.push({type:S.editorType,id:S.editorId,tab:S.modalTab});S.editorType=type;S.editorId=String(id);S.editorNew=false;S.editorDraft=null;S.modalTab='details';S.panelDirty=false;S.panelSaving=false;S.modalOpen=true;var m=$("recordModal");m.classList.add('show');m.setAttribute('aria-hidden','false');renderPanel();}
+function requestOpenEditor(type,id,push){withDiscardConfirm('Your changes will be lost before opening the selected record.',function(){openEditor(type,id,push);});}
+function openTopRecord(id){S.selected[S.scope]=String(id);var old=document.querySelector('tr.rec.sel');if(old)old.classList.remove('sel');var next=document.querySelector('tr.rec[data-id="'+String(id).replace(/"/g,'\"')+'"]');if(next)next.classList.add('sel');requestOpenEditor(currentType(),id,false);}
+function newDefaults(type){if(type==='property')return{Deed_To:'No',Insured:true,Ag_Exempt:false,New_Owner:'No',Agree_with_Designation:'Yes'};return{};}
+function openNewEditor(type,defaults){withDiscardConfirm('Your changes will be lost before creating a new record.',function(){S.editorType=type;S.editorId=null;S.editorNew=true;S.editorDraft=Object.assign(newDefaults(type),defaults||{});S.editorStack=[];S.modalTab='details';S.panelDirty=true;S.panelSaving=false;S.modalOpen=true;$("recordModal").classList.add('show');$("recordModal").setAttribute('aria-hidden','false');renderPanel();});}
+function closeRecordModal(force){if(S.panelSaving)return false;if(S.panelDirty&&!force)return withDiscardConfirm('Your unsaved changes will be lost.',function(){closeRecordModal(true);});S.panelDirty=false;S.modalOpen=false;S.editorType=null;S.editorId=null;S.editorNew=false;S.editorDraft=null;S.editorStack=[];$("recordModal").classList.remove('show');$("recordModal").setAttribute('aria-hidden','true');return true;}
+function editorBack(){if(!S.editorStack.length)return closeRecordModal(false);withDiscardConfirm('Your unsaved changes will be lost before returning to the previous record.',function(){var prev=S.editorStack.pop();S.editorType=prev.type;S.editorId=prev.id;S.editorNew=false;S.editorDraft=null;S.modalTab=prev.tab||'details';S.panelDirty=false;renderPanel();});}
+function switchRecordTab(tab){if(tab===S.modalTab)return;withDiscardConfirm('Your unsaved changes will be lost before switching tabs.',function(){S.panelDirty=false;S.modalTab=tab;renderPanel();});}
+function inputRaw(el,ftype){if(ftype==='multilookup')return Array.prototype.slice.call(el.selectedOptions||[]).map(function(o){return String(o.value);});return String(el.value);}
+function normalizedRaw(raw,ftype){return ftype==='multilookup'?(Array.isArray(raw)?raw.slice().sort().join(','):String(raw||'')):String(raw||'');}
+function panelHasChanges(){if(S.editorNew)return true;var els=document.querySelectorAll('#panel .pf');for(var i=0;i<els.length;i++){var ft=els[i].getAttribute('data-ftype')||'text',raw=inputRaw(els[i],ft);if(normalizedRaw(raw,ft)!==String(els[i].getAttribute('data-original')||''))return true;}return false;}
+function updatePanelActionState(){S.panelDirty=panelHasChanges();var save=$("btnPanelSave"),cancel=$("btnPanelCancel"),note=$("panelDirtyNote");if(save)save.disabled=!S.panelDirty||S.panelSaving;if(cancel)cancel.disabled=S.panelSaving;if(note){note.className='dirty-note'+(S.panelDirty?' dirty':'');note.textContent=S.panelSaving?'Saving…':S.panelDirty?'Unsaved changes':'No unsaved changes';}}
+function payloadValue(ftype,raw){if(ftype==='date')return raw?toZohoDate(raw):'';if(ftype==='textarea')return nlToBr(raw);if(ftype==='multilookup')return raw;return String(raw);}
+function lookupLabel(kind,id){var o=lookupOptions(kind);for(var i=0;i<o.length;i++)if(String(o[i].id)===String(id))return o[i].label;return'';}
+function applyLocalField(rec,field,ftype,raw,kind){if(ftype==='lookup'){rec[field]=raw?{ID:String(raw),display_value:lookupLabel(kind,raw)}:[];}else if(ftype==='multilookup'){rec[field]=(raw||[]).map(function(id){return{ID:String(id),display_value:lookupLabel(kind,id)};});}else if(ftype==='date')rec[field]=raw?toZohoDate(raw):'';else if(ftype==='textarea')rec[field]=nlToBr(raw);else rec[field]=String(raw);}
+function savePanel(){if(S.panelSaving||(!S.editorNew&&!panelHasChanges()))return;var rec=currentEditor(),els=document.querySelectorAll('#panel .pf'),data={},changes=[];for(var i=0;i<els.length;i++){var el=els[i],ft=el.getAttribute('data-ftype')||'text',raw=inputRaw(el,ft),orig=String(el.getAttribute('data-original')||'');if(!S.editorNew&&normalizedRaw(raw,ft)===orig)continue;var field=el.getAttribute('data-field'),kind=el.getAttribute('data-lookup')||'';var empty=ft==='multilookup'?!raw.length:String(raw)==='';if(S.editorNew&&ft==='bool'&&rec[field]===undefined)continue;if(S.editorNew&&empty)continue;data[field]=payloadValue(ft,raw);changes.push({field:field,ftype:ft,raw:raw,kind:kind});}if(!changes.length){if($("panelMsg"))$("panelMsg").textContent='Enter at least one value.';return;}S.panelSaving=true;updatePanelActionState();setStatus('warn',S.editorNew?'Creating…':'Saving…');var wasNew=S.editorNew,type=S.editorType;diag(wasNew?'Record create requested':'Record save requested',{type:type,recordId:S.editorId,fields:data},true);var work=wasNew?createRecord(type,data):updateRecord(S.editorId,data,reportForType(type));work.then(function(resp){changes.forEach(function(c){applyLocalField(rec,c.field,c.ftype,c.raw,c.kind);});if(wasNew){var id=extractRecordId(resp);if(!id){S.panelSaving=false;setStatus('ok',S.demo?'Demo record created':'Created');diag('Record create complete without returned ID',{type:type,response:resp},true);closeRecordModal(true);return loadData();}rec.ID=id;listForType(type).push(rec);S.editorNew=false;S.editorDraft=null;S.editorId=id;}S.panelSaving=false;S.panelDirty=false;setStatus('ok',S.demo?'Demo (local only)':(wasNew?'Created':'Saved'));diag(wasNew?'Record create complete':'Record save complete',{type:type,recordId:S.editorId,fields:Object.keys(data)},true);renderAll();renderPanel();if($("panelMsg"))$("panelMsg").textContent=S.demo?'Demo mode — local changes only':(wasNew?'Record created.':'Changes saved.');}).catch(function(err){S.panelSaving=false;updatePanelActionState();setStatus('err',wasNew?'Create failed':'Save failed');if($("panelMsg"))$("panelMsg").textContent=(wasNew?'Create failed: ':'Save failed: ')+errMeta(err).slice(0,140);diag(wasNew?'Record create failed':'Record save failed',{type:type,recordId:S.editorId,fields:data,error:err});});}
+
+/* inline list editing */
+function tableInlineSave(el){var row=el.closest('tr.rec');if(!row)return;var id=row.getAttribute('data-id'),rec=findIn(currentList(),id);if(!rec)return;var field=el.getAttribute('data-field'),ftype=el.getAttribute('data-ftype')||'text',kind=el.getAttribute('data-lookup')||'';var raw=ftype==='bool'?(el.checked?'true':'false'):String(el.value),orig=String(el.getAttribute('data-original')||'');if(raw===orig)return;var data={};data[field]=payloadValue(ftype,raw);markInlineState(el,'saving');el.disabled=true;setStatus('warn','Saving inline edit…');diag('Inline save requested',{type:currentType(),recordId:id,field:field,value:raw},true);updateRecord(id,data,reportForType(currentType())).then(function(){applyLocalField(rec,field,ftype,raw,kind);el.setAttribute('data-original',raw);el.disabled=false;markInlineState(el,'saved-ok');setStatus('ok',S.demo?'Demo (local only)':'Saved');renderCounts();if(S.scope==='props'&&hasPropertyFilters())renderTable();else renderFilterButtons();if(S.modalOpen&&!S.panelDirty&&!S.editorNew)renderPanel();diag('Inline save complete',{type:currentType(),recordId:id,field:field},true);}).catch(function(err){el.disabled=false;markInlineState(el,'save-error');if(ftype==='bool')el.checked=orig==='true';else el.value=orig;setStatus('err','Inline save failed');diag('Inline save failed',{type:currentType(),recordId:id,field:field,value:raw,error:err});});}
+function closeProjectPopup(){var p=$("projectPopup");p.classList.remove('show');p.setAttribute('aria-hidden','true');$("projectPopupSave").disabled=false;S.projectPopupId=null;S.projectPopupButton=null;}
+function updateProjectPopupCount(){var n=document.querySelectorAll('#projectPopupList input[type=checkbox]:checked').length;$("projectPopupCount").textContent=n+' selected';}
+function openProjectPopup(btn){var row=btn.closest('tr.rec'),id=row&&row.getAttribute('data-id'),rec=id?findIn(S.properties,id):null;if(!rec)return;S.projectPopupId=id;S.projectPopupButton=btn;var selected={};asList(rec.Projects).forEach(function(x){selected[String(x.ID||'')]=true;});var html='';lookupOptions('project').forEach(function(pr){html+='<label class="project-choice"><input type="checkbox" value="'+esc(pr.id)+'"'+(selected[pr.id]?' checked':'')+'><span>'+esc(pr.label)+'</span></label>';});$("projectPopupList").innerHTML=html||'<div class="project-popup-empty">No projects loaded.</div>';updateProjectPopupCount();var rect=btn.getBoundingClientRect(),width=310,left=Math.min(window.innerWidth-width-12,Math.max(12,rect.left)),top=rect.bottom+6;if(top+340>window.innerHeight-10)top=Math.max(10,rect.top-346);var popup=$("projectPopup");popup.style.left=left+'px';popup.style.top=top+'px';popup.classList.add('show');popup.setAttribute('aria-hidden','false');}
+function saveProjectPopup(){var id=S.projectPopupId,btn=S.projectPopupButton,rec=id?findIn(S.properties,id):null;if(!id||!btn||!rec)return closeProjectPopup();var ids=[];document.querySelectorAll('#projectPopupList input[type=checkbox]:checked').forEach(function(cb){ids.push(String(cb.value));});var original=String(btn.getAttribute('data-original')||'').split(',').filter(Boolean).sort().join(','),next=ids.slice().sort().join(',');if(original===next)return closeProjectPopup();markInlineState(btn,'saving');btn.disabled=true;$("projectPopupSave").disabled=true;setStatus('warn','Saving projects…');updateRecord(id,{Projects:ids},'All_Property').then(function(){applyLocalField(rec,'Projects','multilookup',ids,'project');btn.setAttribute('data-original',ids.join(','));var label=btn.querySelector('.project-label');if(label)label.textContent=projectSummary(rec);btn.classList.toggle('warn',!ids.length);btn.disabled=false;markInlineState(btn,'saved-ok');setStatus('ok',S.demo?'Demo (local only)':'Saved');if(S.modalOpen&&!S.panelDirty&&!S.editorNew)renderPanel();diag('Inline project save complete',{recordId:id,projects:ids},true);closeProjectPopup();}).catch(function(err){btn.disabled=false;$("projectPopupSave").disabled=false;markInlineState(btn,'save-error');setStatus('err','Project save failed');diag('Inline project save failed',{recordId:id,projects:ids,error:err});});}
+function closeLookupPopup(){var p=$("lookupPopup");p.classList.remove('show');p.setAttribute('aria-hidden','true');S.lookupPopupId=null;S.lookupPopupField=null;S.lookupPopupKind=null;S.lookupPopupButton=null;S.lookupPopupMode=null;S.lookupPopupInput=null;$("lookupPopupSearch").value='';}
+function renderLookupPopupList(query){var q=String(query||'').trim().toLowerCase(),items=lookupOptions(S.lookupPopupKind).filter(function(o){return !q||(o.search||o.label.toLowerCase()).indexOf(q)>=0;}),selected='';if(S.lookupPopupMode==='field'&&S.lookupPopupInput)selected=String(S.lookupPopupInput.value||'');else if(S.lookupPopupButton)selected=String(S.lookupPopupButton.getAttribute('data-original')||'');var h='<button type="button" class="lookup-choice'+(!selected?' active':'')+'" data-lookup-choice=""><span class="lookup-choice-name">Clear selection</span><span class="lookup-choice-meta">Leave this entity blank</span></button>';items.forEach(function(o){h+='<button type="button" class="lookup-choice'+(String(o.id)===selected?' active':'')+'" data-lookup-choice="'+esc(o.id)+'"><span class="lookup-choice-name">'+esc(o.label)+'</span>'+(o.meta?'<span class="lookup-choice-meta">'+esc(o.meta)+'</span>':'')+'</button>';});if(!items.length)h+='<div class="lookup-empty">No matching companies.</div>';$("lookupPopupList").innerHTML=h;}
+function openLookupPopup(btn){var targetId=btn.getAttribute('data-lookup-target');S.lookupPopupButton=btn;S.lookupPopupKind=btn.getAttribute('data-lookup')||'company';if(targetId){S.lookupPopupMode='field';S.lookupPopupInput=$(targetId);if(!S.lookupPopupInput)return;S.lookupPopupId=null;S.lookupPopupField=S.lookupPopupInput.getAttribute('data-field')||'';}else{var row=btn.closest('tr.rec'),id=row&&row.getAttribute('data-id');if(!id)return;S.lookupPopupMode='table';S.lookupPopupId=id;S.lookupPopupField=btn.getAttribute('data-field');S.lookupPopupInput=null;}$("lookupPopupSearch").placeholder='Search '+(S.lookupPopupKind==='company'?'companies':'records')+'…';renderLookupPopupList('');var rect=btn.getBoundingClientRect(),width=360,left=Math.min(window.innerWidth-width-12,Math.max(12,rect.left)),top=rect.bottom+6;if(top+390>window.innerHeight-10)top=Math.max(10,rect.top-396);var p=$("lookupPopup");p.style.left=left+'px';p.style.top=top+'px';p.classList.add('show');p.setAttribute('aria-hidden','false');setTimeout(function(){$("lookupPopupSearch").focus();},0);}
+function saveLookupChoice(nextId){var next=String(nextId||''),kind=S.lookupPopupKind,btn=S.lookupPopupButton;if(S.lookupPopupMode==='field'){var input=S.lookupPopupInput;if(!input||!btn)return closeLookupPopup();input.value=next;var stagedLabel=btn.querySelector('.lookup-label');if(stagedLabel)stagedLabel.textContent=next?lookupLabel(kind,next):'— search —';btn.classList.toggle('warn',!next);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));closeLookupPopup();return;}var id=S.lookupPopupId,field=S.lookupPopupField,rec=id?findIn(currentList(),id):null;if(!id||!field||!btn||!rec)return closeLookupPopup();var original=String(btn.getAttribute('data-original')||'');if(original===next)return closeLookupPopup();markInlineState(btn,'saving');btn.disabled=true;setStatus('warn','Saving entity…');var data={};data[field]=payloadValue('lookup',next);updateRecord(id,data,reportForType(currentType())).then(function(){applyLocalField(rec,field,'lookup',next,kind);btn.setAttribute('data-original',next);var label=btn.querySelector('.lookup-label');if(label)label.textContent=next?lookupLabel(kind,next):'— search —';btn.classList.toggle('warn',!next);btn.disabled=false;markInlineState(btn,'saved-ok');setStatus('ok',S.demo?'Demo (local only)':'Saved');if(S.modalOpen&&!S.panelDirty&&!S.editorNew)renderPanel();diag('Searchable entity save complete',{type:currentType(),recordId:id,field:field,value:next},true);closeLookupPopup();}).catch(function(err){btn.disabled=false;markInlineState(btn,'save-error');setStatus('err','Entity save failed');diag('Searchable entity save failed',{type:currentType(),recordId:id,field:field,value:next,error:err});closeLookupPopup();});}
+var NEW_TYPES=[['property','Property'],['project','Project'],['subdivision','Subdivision'],['company','Company']];
+function renderNewMenu(){$("newMenu").innerHTML=NEW_TYPES.map(function(x){return'<button type="button" role="menuitem" data-new-type="'+esc(x[0])+'">'+esc(x[1])+'</button>';}).join('');}
+function toggleNewMenu(){$("newMenu").classList.toggle('show');}
+function closeNewMenu(){$("newMenu").classList.remove('show');}
+
+
+/* bulk update */
+function renderBulk(){var ids=Object.keys(S.checked);if(!ids.length){$("bulkbar").innerHTML='';return;}$("bulkbar").innerHTML='<div class="bulkbar"><b>'+ids.length+' SELECTED</b><span>Open a mass-update window to apply one field value to every selected record.</span><div style="flex:1"></div><button class="btn primary sm" id="bulkOpen">Mass update…</button><button class="btn sm inverse" id="bulkClear">Clear</button></div>';}
+function bulkFieldDefs(){var fake=currentList()[0]||{},d=descriptor(currentType(),fake),allowed={};d.bulk.forEach(function(k){allowed[k]=1;});return d.fields.filter(function(f){return allowed[f.k];});}
+function openBulkModal(){if(!Object.keys(S.checked).length)return;S.bulkOpen=true;S.bulkField='';var defs=bulkFieldDefs();var bn=Object.keys(S.checked).length;$("bulkTitle").textContent='Mass update '+bn+' '+typeLabel(currentType()).toLowerCase()+' record'+(bn===1?'':'s');$("bulkField").innerHTML='<option value="">Choose a field…</option>'+defs.map(function(f){return'<option value="'+esc(f.k)+'">'+esc(f.label)+'</option>';}).join('');$("bulkValueWrap").innerHTML='<div class="related-empty">Choose a field to set.</div>';$("bulkApplyBtn").disabled=true;$("bulkMsgModal").textContent='';$("bulkModal").classList.add('show');$("bulkModal").setAttribute('aria-hidden','false');}
+function closeBulkModal(){if(S.bulkSaving)return;S.bulkOpen=false;$("bulkModal").classList.remove('show');$("bulkModal").setAttribute('aria-hidden','true');}
+function renderBulkValue(){var field=$("bulkField").value,def=bulkFieldDefs().filter(function(f){return f.k===field;})[0];S.bulkField=field;if(!def){$("bulkValueWrap").innerHTML='<div class="related-empty">Choose a field to set.</div>';$("bulkApplyBtn").disabled=true;return;}var copy={};Object.keys(def).forEach(function(k){copy[k]=def[k];});copy.v=copy.type==='multilookup'?[]:'';copy.k='bulk_value';copy.label='New '+def.label;$("bulkValueWrap").innerHTML=fieldHTML(copy).replace(/class="input pf/g,'class="input bulk-value').replace(/data-field="bulk_value"/g,'data-field="'+esc(def.k)+'"');$("bulkApplyBtn").disabled=false;}
+function bulkInput(){var el=$("bulkValueWrap").querySelector('.bulk-value'),def=bulkFieldDefs().filter(function(f){return f.k===S.bulkField;})[0];if(!el||!def)return null;var ft=el.getAttribute('data-ftype')||def.type||'text',raw=inputRaw(el,ft);return{def:def,ftype:ft,raw:raw,kind:el.getAttribute('data-lookup')||def.lookup||''};}
+function applyBulk(){var ids=Object.keys(S.checked),b=bulkInput();if(!ids.length||!b)return;S.bulkSaving=true;$("bulkApplyBtn").disabled=true;$("bulkCancelBtn").disabled=true;var done=0,failures=[];setStatus('warn','Mass update…');function step(i){if(i>=ids.length){S.bulkSaving=false;$("bulkCancelBtn").disabled=false;$("bulkMsgModal").textContent='Saved '+done+(failures.length?' · '+failures.length+' failed':'');if(failures.length){setStatus('err','Partial mass update');diag('Mass update completed with failures',{type:currentType(),field:b.def.k,saved:done,failures:failures});}else{setStatus('ok','Mass update saved');diag('Mass update complete',{type:currentType(),field:b.def.k,saved:done},true);}renderTable();renderCounts();if(!failures.length){S.checked={};renderBulk();setTimeout(closeBulkModal,350);}else $("bulkApplyBtn").disabled=false;return;}var data={};data[b.def.k]=payloadValue(b.ftype,b.raw);$("bulkMsgModal").textContent='Saving '+(i+1)+' of '+ids.length+'…';updateRecord(ids[i],data,reportForType(currentType())).then(function(){var rec=recordFor(currentType(),ids[i]);if(rec)applyLocalField(rec,b.def.k,b.ftype,b.raw,b.kind);done++;step(i+1);}).catch(function(err){failures.push({recordId:ids[i],error:errMeta(err)});step(i+1);});}step(0);}
+
+/* root rendering */
+function renderCounts(){$("ctProps").textContent=S.properties.length;$("ctSubs").textContent=S.subdivisions.length;$("ctCos").textContent=S.companies.length;$("issueCt").textContent=issueCount();$("btnIssues").classList.toggle('active',S.issuesOnly);}
+function renderBanners(){var h='';S.errors.forEach(function(e){h+='<div class="err-banner">'+esc(e)+'</div>';});$("banners").innerHTML=h;}
+function renderAll(){document.querySelectorAll('.seg-opt').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-scope')===S.scope);});$("scopeTitle").textContent=S.scope==='props'?'Properties':S.scope==='subs'?'Subdivisions':'Companies';$("scopeCount").textContent=currentList().length;$("search").placeholder=S.scope==='props'?'Search properties, IDs, counties…':S.scope==='subs'?'Search subdivisions, codes, projects…':'Search companies, facilities, accounts…';renderFilterButtons();renderCounts();renderBanners();renderTable();renderBulk();}
+
+/* events */
+$("scopeSeg").addEventListener('click',function(e){var b=e.target.closest('.seg-opt');if(!b)return;var next=b.getAttribute('data-scope');if(next===S.scope)return;withDiscardConfirm('Your unsaved changes will be lost before changing sections.',function(){if(S.modalOpen)closeRecordModal(true);closeFilterPopup();S.scope=next;S.checked={};S.sortKey=null;S.issuesOnly=false;S.page[next]=1;renderAll();});});
+var searchTimer=null;$("search").addEventListener('input',function(e){clearTimeout(searchTimer);var v=e.target.value;searchTimer=setTimeout(function(){S.search=v.trim();S.page[S.scope]=1;renderTable();},160);});
+$("propertyFilters").addEventListener('click',function(e){var b=e.target.closest('[data-filter-key]');if(b)openFilterPopup(b);});$("filterPopupSearch").addEventListener('input',function(e){renderFilterPopupList(e.target.value);});$("filterPopupList").addEventListener('change',function(){syncFilterDraftFromList();});$("filterPopupApply").addEventListener('click',applyFilterPopup);$("filterPopupClear").addEventListener('click',clearFilterPopup);$("filterPopupClose").addEventListener('click',closeFilterPopup);$("btnIssues").addEventListener('click',function(){S.issuesOnly=!S.issuesOnly;S.page[S.scope]=1;renderCounts();renderTable();});
+$("auditOpenBtn").addEventListener('click',openAuditModal);$("auditClose").addEventListener('click',closeAuditModal);$("auditModal").addEventListener('click',function(e){if(e.target===this)closeAuditModal();});$("auditClear").addEventListener('click',clearAuditLog);$("auditCopy").addEventListener('click',function(){var t=$("auditBody").textContent||'';if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t);});
+$("recordClose").addEventListener('click',function(){closeRecordModal(false);});$("confirmCancel").addEventListener('click',closeAppConfirm);$("confirmAccept").addEventListener('click',acceptAppConfirm);$("confirmModal").addEventListener('click',function(e){if(e.target===this)closeAppConfirm();});$("recordModal").addEventListener('click',function(e){if(e.target===this)closeRecordModal(false);});$("btnEditorBack").addEventListener('click',editorBack);$("recordTabs").addEventListener('click',function(e){var b=e.target.closest('[data-record-tab]');if(b)switchRecordTab(b.getAttribute('data-record-tab'));});$("btnOpenLots").addEventListener('click',function(){if(S.editorType==='subdivision')openReport(CFG.lotsReport,'Subdivision='+S.editorId);});
+$("panel").addEventListener('input',function(e){if(e.target.closest('.pf'))updatePanelActionState();});$("panel").addEventListener('change',function(e){if(e.target.closest('.pf'))updatePanelActionState();});$("panel").addEventListener('click',function(e){var lookup=e.target.closest('.field-lookup-btn');if(lookup){openLookupPopup(lookup);return;}var rel=e.target.closest('[data-open-type]');if(rel){requestOpenEditor(rel.getAttribute('data-open-type'),rel.getAttribute('data-open-id'),true);return;}if(e.target.closest('#btnPanelSave'))savePanel();else if(e.target.closest('#btnPanelCancel'))closeRecordModal(false);});
+$("tableScroll").addEventListener('click',function(e){var th=e.target.closest('th[data-sort]');if(th){var k=th.getAttribute('data-sort');if(S.sortKey===k)S.sortDir=-S.sortDir;else{S.sortKey=k;S.sortDir=1;}S.page[S.scope]=1;renderTable();return;}var gh=e.target.closest('tr.ghead');if(gh){var g=gh.getAttribute('data-group');if(S.expandedGroups[g])delete S.expandedGroups[g];else S.expandedGroups[g]=true;renderTable();return;}var open=e.target.closest('[data-open-row]');if(open){openTopRecord(open.getAttribute('data-open-row'));return;}var projectBtn=e.target.closest('.table-project-btn');if(projectBtn){S.selected[S.scope]=projectBtn.closest('tr.rec').getAttribute('data-id');openProjectPopup(projectBtn);return;}var lookupBtn=e.target.closest('.table-lookup-btn');if(lookupBtn){S.selected[S.scope]=lookupBtn.closest('tr.rec').getAttribute('data-id');openLookupPopup(lookupBtn);return;}var editor=e.target.closest('.table-editor,.table-editor-check');if(editor){var erow=editor.closest('tr.rec');if(erow)S.selected[S.scope]=erow.getAttribute('data-id');return;}var tr=e.target.closest('tr.rec');if(tr)openTopRecord(tr.getAttribute('data-id'));});
+$("tableScroll").addEventListener('change',function(e){var all=e.target.closest('#checkVisible');if(all){S.lastPageRows.forEach(function(r){if(all.checked)S.checked[String(r.ID)]=true;else delete S.checked[String(r.ID)];});renderTable();renderBulk();return;}var cb=e.target.closest('input[data-check]');if(cb){var id=cb.getAttribute('data-check');if(cb.checked)S.checked[id]=true;else delete S.checked[id];renderBulk();return;}var editor=e.target.closest('.table-editor,.table-editor-check');if(editor)tableInlineSave(editor);});
+$("tableScroll").addEventListener('keydown',function(e){var editor=e.target.closest('.table-editor,.table-editor-check');if(!editor)return;if(e.key==='Enter'&&editor.tagName!=='SELECT'&&editor.type!=='checkbox'){e.preventDefault();editor.blur();}if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(editor.type==='checkbox')editor.checked=editor.getAttribute('data-original')==='true';else editor.value=editor.getAttribute('data-original')||'';editor.blur();}});
+$("pageFirst").addEventListener('click',function(){goToPage(1);});$("pagePrev").addEventListener('click',function(){goToPage((S.page[S.scope]||1)-1);});$("pageNext").addEventListener('click',function(){goToPage((S.page[S.scope]||1)+1);});$("pageLast").addEventListener('click',function(){var pages=Math.max(1,Math.ceil(S.lastFiltered.length/Math.max(1,S.tablePageSize)));goToPage(pages);});$("pageSize").addEventListener('change',function(e){S.tablePageSize=Math.max(1,num(e.target.value)||100);S.page[S.scope]=1;renderTable();});
+$("newBtn").addEventListener('click',function(e){e.stopPropagation();toggleNewMenu();});$("newMenu").addEventListener('click',function(e){var b=e.target.closest('[data-new-type]');if(!b)return;closeNewMenu();openNewEditor(b.getAttribute('data-new-type'));});$("projectPopupClose").addEventListener('click',closeProjectPopup);$("projectPopupCancel").addEventListener('click',closeProjectPopup);$("projectPopupSave").addEventListener('click',saveProjectPopup);$("projectPopupList").addEventListener('change',updateProjectPopupCount);$("lookupPopupClose").addEventListener('click',closeLookupPopup);$("lookupPopupSearch").addEventListener('input',function(e){renderLookupPopupList(e.target.value);});$("lookupPopupList").addEventListener('click',function(e){var b=e.target.closest('[data-lookup-choice]');if(b)saveLookupChoice(b.getAttribute('data-lookup-choice'));});document.addEventListener('mousedown',function(e){if(!e.target.closest('#newMenuWrap'))closeNewMenu();var p=$("projectPopup");if(p.classList.contains('show')&&!p.contains(e.target)&&!(S.projectPopupButton&&S.projectPopupButton.contains(e.target)))closeProjectPopup();var lp=$("lookupPopup");if(lp.classList.contains('show')&&!lp.contains(e.target)&&!(S.lookupPopupButton&&S.lookupPopupButton.contains(e.target)))closeLookupPopup();var fp=$("filterPopup");if(fp.classList.contains('show')&&!fp.contains(e.target)&&!(S.filterPopupButton&&S.filterPopupButton.contains(e.target)))closeFilterPopup();});
+$("bulkbar").addEventListener('click',function(e){if(e.target.closest('#bulkOpen'))openBulkModal();if(e.target.closest('#bulkClear')){S.checked={};renderTable();renderBulk();}});$("bulkValueWrap").addEventListener('click',function(e){var lookup=e.target.closest('.field-lookup-btn');if(lookup)openLookupPopup(lookup);});$("bulkField").addEventListener('change',renderBulkValue);$("bulkApplyBtn").addEventListener('click',applyBulk);$("bulkCancelBtn").addEventListener('click',closeBulkModal);$("bulkClose").addEventListener('click',closeBulkModal);$("bulkModal").addEventListener('click',function(e){if(e.target===this)closeBulkModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$("confirmModal").classList.contains('show'))return closeAppConfirm();if(e.key==='Escape'&&$("auditModal").classList.contains('show'))return closeAuditModal();if(e.key==='Escape'&&$("projectPopup").classList.contains('show'))return closeProjectPopup();if(e.key==='Escape'&&$("lookupPopup").classList.contains('show'))return closeLookupPopup();if(e.key==='Escape'&&$("filterPopup").classList.contains('show'))return closeFilterPopup();if(e.key==='Escape'&&$("newMenu").classList.contains('show'))return closeNewMenu();if(e.key==='Escape'&&$("bulkModal").classList.contains('show'))return closeBulkModal();if(e.key==='Escape'&&$("recordModal").classList.contains('show'))return closeRecordModal(false);if(e.key==='/'&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement&&document.activeElement.tagName)){e.preventDefault();$("search").focus();}});
+
+/* demo */
+function loadDemo(){S.demo=true;function L(id,d){return{ID:String(id),display_value:d};}S.projects=[{ID:'pr1',Project_Name:'Salado Ph 2',Project_Code:'SP2',Status:'Active',County:'Bell'}];S.companies=[{ID:'c1',Company_Name:'SLD Holdings',Facility_ID:'1041',Account_Number:'772210'},{ID:'c2',Company_Name:'Bell Land Co',Facility_ID:'1007',Account_Number:'771180'}];S.builders=[{ID:'b1',Builder_Name:'Builder A',Type1:'Builder'}];S.proformas=[{ID:'pf1',Name:'Salado Creek Pro Forma'}];S.properties=[{ID:'p1',Common_Name:'Salado Creek Tract',Property_ID:'PR-0012',County:'Bell',Acres:'241.5',Original_Acres:'241.5',Land_Type:'Residential',Company1:L('c2','Bell Land Co'),Projects:[L('pr1','Salado Ph 2')],Insured:'true',Ag_Exempt:'true',Purchase_Price:'1250000',Purchase_Date:'07/15/2026',Notes:'Demo property'}];S.subdivisions=[{ID:'s1',Subdivision_Name:'Salado Creek 22',Subdivision_Code:'SC-22',Status:'Active',Projects_Status:'Road Prep / Pave',Project:L('pr1','Salado Ph 2'),County:'Bell',Phase:'2',Total_Lots:'148',Lots_Sold:'92',Company1:L('c1','SLD Holdings'),Land_Company:L('c2','Bell Land Co'),Territory:'Temple/Belton'}];S.milestones=[{ID:'m1',Milestone_Name:'Paving',Start_Date:'08/15/2026',End_Date:'',Sequence:'3',Subdivision1:L('s1','Salado Creek 22')}];S.forecastYears=[{ID:'fy1',Forecast_Name:'Salado Creek 22 - Builder A - 2027',Subdivision1:L('s1','Salado Creek 22'),Builder1:L('b1','Builder A'),Status:'Builder',Forecast_Year:'2027',Full_Year_Forecast:'42'}];S.forecasts=[{ID:'f1',Subdivision1:L('s1','Salado Creek 22'),Builder1:L('b1','Builder A'),Forecast_Year2:L('fy1','Salado Creek 22 - Builder A - 2027'),Forecast_Year:'2027',Forecast_Month:'January',Forecast_Start_Date:'01/01/2027',Forecasted_Lots:'4',Scheduled_Lots:'5',Actual_Lots:'3'}];S.takedownSchedules=[{ID:'td1',Takedown_Schedule_Code:'TD-SC22-A',Subdivisions:[L('s1','Salado Creek 22')],Builder1:L('b1','Builder A'),Status:'Active',Total_Lot_Obligation:'80',Lots_Sold:'34'}];S.builderTakedowns=[{ID:'bt1',Name:'01-15-2026 Builder A - Salado Creek 22',Subdivision1:L('s1','Salado Creek 22'),Builder1:L('b1','Builder A'),Entered_Date:'01/10/2026',Purchase_Date:'01/15/2026',Lot_Count:'2',Tax_Method:'Flat',Tax_Status:'Taxes Paid',Total_w_Additional:'1224500'}];S.lots=[{ID:'l1',Lot_Code:'SC22-B1-L1',Subdivision:L('s1','Salado Creek 22'),Add_Builder_Takedown_Name:[L('bt1','01-15-2026 Builder A - Salado Creek 22')],Status:'Sold',Block:'1',Lot_Number:'1',Base_Price:'120000'}];S.additionalItems=[{ID:'ai1',Item_Type:'Addition',Name:'Mailbox',Amount:'600',Quantity:'2',Total:'1200',Builder_Takedown1:L('bt1','01-15-2026 Builder A - Salado Creek 22')}];S.externalMappings=[{ID:'em1',Subdivision1:L('s1','Salado Creek 22'),External_System:'HeavyJob',External_Code:'SC22'}];setStatus('warn','Demo data — SDK not connected');renderAll();finishLoadProgress(false);diag('Demo data loaded',{version:CFG.version},true);}
+
+function loadData(){setStatus('warn','Loading');S.errors=[];var reports=['All_Property','All_Projects','All_Subdivisions','All_Milestones','All_Companies','All_Forecasts','All_Forecast_Years','All_Takedown_Schedules','All_Builder_Takedowns','All_Builders','All_Lots_All_Fields','All_Additional_Items','All_External_System_Mappings','All_Pro_Formas'];beginLoadProgress(reports);diag('Land Master load started',{version:CFG.version,reports:reports},true);var jobs=reports.map(function(r){return sdkGetAll(r,null,function(info){updateLoadProgress(r,info);}).catch(function(e){S.errors.push(r+' read failed: '+errMeta(e));diag(r+' read failed',{report:r,error:e});updateLoadProgress(r,{done:true,page:0,count:0});return[];});});return Promise.all(jobs).then(function(x){S.properties=x[0];S.projects=x[1];S.subdivisions=x[2];S.milestones=x[3];S.companies=x[4];S.forecasts=x[5];S.forecastYears=x[6];S.takedownSchedules=x[7];S.builderTakedowns=x[8];S.builders=x[9];S.lots=x[10];S.additionalItems=x[11];S.externalMappings=x[12];S.proformas=x[13];S.page={props:1,subs:1,cos:1};setStatus(S.errors.length?'err':'ok',S.errors.length?'Partial data':'Live');var counts={properties:S.properties.length,projects:S.projects.length,subdivisions:S.subdivisions.length,milestones:S.milestones.length,companies:S.companies.length,forecasts:S.forecasts.length,forecastYears:S.forecastYears.length,takedownSchedules:S.takedownSchedules.length,builderTakedowns:S.builderTakedowns.length,builders:S.builders.length,lots:S.lots.length,additionalItems:S.additionalItems.length,externalMappings:S.externalMappings.length,proformas:S.proformas.length,errors:S.errors};diag(S.errors.length?'Land Master load completed with errors':'Land Master load complete',counts,!S.errors.length);setLoadRendering(S.properties.length);return new Promise(function(resolve){requestAnimationFrame(function(){setTimeout(function(){renderAll();finishLoadProgress(S.errors.length>0);resolve();},0);});});});}
+
+S.tablePageSize=CFG.tablePageSize||100;renderNewMenu();updateAuditButton();var initDone=false;function fallbackDemo(){if(!initDone){initDone=true;loadDemo();}}if(window.ZOHO&&ZOHO.CREATOR&&typeof ZOHO.CREATOR.init==='function'){var timer=setTimeout(fallbackDemo,5000);ZOHO.CREATOR.init().then(function(){if(initDone)return;initDone=true;clearTimeout(timer);S.liveSDK=true;if(S.errorQueue.length)scheduleErrorEmail(100);loadData();}).catch(function(err){clearTimeout(timer);var d={error:err};auditOnly('Creator SDK initialization failed',d,true);queueErrorEmail('Creator SDK initialization failed',d);fallbackDemo();});}else fallbackDemo();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+				 string PF_PDF_Compile(list pageStreams, string documentTitle)
+                 {
+                 	pageCount = pageStreams.size();
+                 	if(pageCount == 0)
+                 	{
+                 		return "";
+                 	}
+                 	fontRegularObject = 3 + pageCount * 2;
+                 	fontBoldObject = fontRegularObject + 1;
+                 	fontItalicObject = fontRegularObject + 2;
+                 	infoObject = fontRegularObject + 3;
+                 	objects = List();
+                 	objects.add("<< /Type /Catalog /Pages 2 0 R >>");
+                 	kids = "";
+                 	pageCounter = 0;
+                 	for each  ignoredPageStream in pageStreams
+                 	{
+                 		pageObjectNumber = 3 + pageCounter * 2;
+                 		kids = kids + pageObjectNumber + " 0 R ";
+                 		pageCounter = pageCounter + 1;
+                 	}
+                 	objects.add("<< /Type /Pages /Kids [" + kids + "] /Count " + pageCount + " >>");
+                 	pageCounter = 0;
+                 	for each  baseStreamContent in pageStreams
+                 	{
+                 		pageObjectNumber = 3 + pageCounter * 2;
+                 		contentObjectNumber = pageObjectNumber + 1;
+                 		pageNumber = pageCounter + 1;
+                 		streamContent = baseStreamContent;
+                 		streamContent = streamContent + thisapp.PF_PDF_Line(28,32,764,32,"0.82 0.86 0.91",0.5);
+                 		streamContent = streamContent + thisapp.PF_PDF_Text(28,18,7,"regular","0.36 0.43 0.52","CONFIDENTIAL - Pro Forma Approval Packet");
+                 		streamContent = streamContent + thisapp.PF_PDF_Text(680,18,7,"regular","0.36 0.43 0.52","Page " + pageNumber + " of " + pageCount);
+                 		pageObject = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 792 612] /Resources << /ProcSet [/PDF /Text] /Font << /F1 " + fontRegularObject + " 0 R /F2 " + fontBoldObject + " 0 R /F3 " + fontItalicObject + " 0 R >> >> /Contents " + contentObjectNumber + " 0 R >>";
+                 		contentObject = "<< /Length " + streamContent.length() + " >>\nstream\n" + streamContent + "endstream";
+                 		objects.add(pageObject);
+                 		objects.add(contentObject);
+                 		pageCounter = pageCounter + 1;
+                 	}
+                 	objects.add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+                 	objects.add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+                 	objects.add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>");
+                 	titleHex = thisapp.PF_PDF_Clean(documentTitle).textToHex();
+                 	objects.add("<< /Title <" + titleHex + "> /Producer <5a6f686f2043726561746f722044656c756765> >>");
+                 	pdfText = "%PDF-1.4\n";
+                 	offsets = List();
+                 	objectCounter = 0;
+                 	for each  objectText in objects
+                 	{
+                 		objectNumber = objectCounter + 1;
+                 		offsets.add(pdfText.length());
+                 		pdfText = pdfText + objectNumber + " 0 obj\n" + objectText + "\nendobj\n";
+                 		objectCounter = objectCounter + 1;
+                 	}
+                 	xrefOffset = pdfText.length();
+                 	pdfText = pdfText + "xref\n0 " + (objects.size() + 1) + "\n0000000000 65535 f \n";
+                 	for each  objectOffset in offsets
+                 	{
+                 		paddedOffset = ("0000000000" + objectOffset.toString()).right(10);
+                 		pdfText = pdfText + paddedOffset + " 00000 n \n";
+                 	}
+                 	pdfText = pdfText + "trailer\n<< /Size " + (objects.size() + 1) + " /Root 1 0 R /Info " + infoObject + " 0 R >>\nstartxref\n" + xrefOffset + "\n%%EOF";
+                 	return pdfText;
+                 }

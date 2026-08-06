@@ -1,0 +1,6 @@
+				 void createTaxtable(Taxing_Jurisdiction td)
+                 {
+                 	id = td.ID;
+                 	btdUrl = "#Form:Mass_Create_Tax_Rates?Taxing_Jurisdiction1=" + id + "&&Builder1=";
+                 	openUrl(btdUrl,"popup window");
+                 }

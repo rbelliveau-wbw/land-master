@@ -1,0 +1,35 @@
+{
+  "custom_apis": [],
+  "forms_referenced": [
+    "Company",
+    "Project",
+    "Property",
+    "Subdivision",
+    "Tax_Parcel_Year",
+    "Tax_Rate",
+    "Taxing_Jurisdiction"
+  ],
+  "reports_referenced": [
+    "All_Companies",
+    "All_Projects",
+    "All_Property",
+    "All_Subdivisions",
+    "All_Tax_Parcel_Years",
+    "All_Taxing_Jurisdictions"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.API",
+    "ZOHO.CREATOR.API.addRecord",
+    "ZOHO.CREATOR.API.getAllRecords",
+    "ZOHO.CREATOR.API.getRecordCount",
+    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.UTIL",
+    "ZOHO.CREATOR.UTIL.setIframeHeight",
+    "ZOHO.CREATOR.appName",
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "static.zohocdn.com",
+    "www.w3.org"
+  ]
+}

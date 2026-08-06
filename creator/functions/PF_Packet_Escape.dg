@@ -1,0 +1,10 @@
+				 string PF_Packet_Escape(string value)
+                 {
+                 	textValue = ifnull(value,"").toString();
+                 	textValue = textValue.replaceAll("&","&amp;");
+                 	textValue = textValue.replaceAll("<","&lt;");
+                 	textValue = textValue.replaceAll(">","&gt;");
+                 	textValue = textValue.replaceAll("\"","&quot;");
+                 	textValue = textValue.replaceAll("'","&#39;");
+                 	return textValue;
+                 }

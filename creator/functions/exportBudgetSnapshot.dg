@@ -1,0 +1,570 @@
+				 string exportBudgetSnapshot(string budgetId, string exportType)
+                 {
+                 	/********* MANUAL BUDGET EXPORT ENTRY POINT *********/
+                 	// Creates either a PDF or Excel-compatible .xls snapshot
+                 	// using the budget's current saved values and creates one
+                 	// Contract_Version record per exported attachment.
+                 	vBudgetId = ifnull(budgetId,"").trim();
+                 	vExportType = ifnull(exportType,"").trim().toUpperCase();
+                 	if(vBudgetId == "")
+                 	{
+                 		return "Budget export failed: missing Budget ID.";
+                 	}
+                 	isApprovedExport = false;
+                 	if(vExportType == "APPROVED_PDF")
+                 	{
+                 		isApprovedExport = true;
+                 		vExportType = "PDF";
+                 	}
+                 	if(vExportType != "PDF" && vExportType != "EXCEL")
+                 	{
+                 		return "Budget export failed: unsupported export type " + vExportType + ".";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+                 	if(budgetRec == null)
+                 	{
+                 		return "Budget export failed: budget not found.";
+                 	}
+                 	try 
+                 	{
+                 		/********* COMMON BUDGET HEADER INFORMATION *********/
+                 		budgetName = ifnull(budgetRec.Budget_Name,"Budget");
+                 		projectName = ifnull(budgetRec.Project,"");
+                 		phaseName = ifnull(budgetRec.Phase,"");
+                 		subdivisionCode = ifnull(budgetRec.Subdivision_Code,"");
+                 		subdivisionName = "";
+                 		territoryText = "";
+                 		if(budgetRec.Subdivision1 != null)
+                 		{
+                 			subdivisionName = ifnull(budgetRec.Subdivision1.Subdivision_Name,"");
+                 			territoryText = ifnull(budgetRec.Subdivision1.Territory,"");
+                 		}
+                 		budgetLabel = budgetName;
+                 		if(projectName != "" && phaseName != "")
+                 		{
+                 			budgetLabel = projectName + " - " + phaseName;
+                 		}
+                 		else if(subdivisionName != "")
+                 		{
+                 			budgetLabel = subdivisionName;
+                 		}
+                 		else if(projectName != "")
+                 		{
+                 			budgetLabel = projectName;
+                 		}
+                 		if(budgetName != "" && budgetName != budgetLabel)
+                 		{
+                 			budgetLabel = budgetLabel + " - " + budgetName;
+                 		}
+                 		grandFinal = 0.00;
+                 		if(budgetRec.Budget_Grand_Total != null)
+                 		{
+                 			grandFinal = budgetRec.Budget_Grand_Total.toDecimal();
+                 		}
+                 		exportedDate = zoho.currenttime.toString("MM/dd/yyyy hh:mm a");
+                 		safeFileName = budgetLabel;
+                 		safeFileName = safeFileName.replaceAll("[^A-Za-z0-9_-]","_");
+                 		safeFileName = safeFileName.replaceAll("_+","_");
+                 		pdfDocumentTitle = "Budget Snapshot";
+                 		pdfFilePrefix = "Budget_Export";
+                 		if(isApprovedExport == true)
+                 		{
+                 			pdfDocumentTitle = "Approved Budget";
+                 			pdfFilePrefix = "Approved_Budget";
+                 		}
+                 		/*********************************************************
+                 		 * PDF EXPORT
+                 		 *********************************************************/
+                 		if(vExportType == "PDF")
+                 		{
+                 			budgetLabelSafe = budgetLabel;
+                 			budgetLabelSafe = budgetLabelSafe.replaceAll("&","&amp;");
+                 			budgetLabelSafe = budgetLabelSafe.replaceAll("<","&lt;");
+                 			budgetLabelSafe = budgetLabelSafe.replaceAll(">","&gt;");
+                 			subdivisionCodeSafe = subdivisionCode;
+                 			subdivisionCodeSafe = subdivisionCodeSafe.replaceAll("&","&amp;");
+                 			subdivisionCodeSafe = subdivisionCodeSafe.replaceAll("<","&lt;");
+                 			subdivisionCodeSafe = subdivisionCodeSafe.replaceAll(">","&gt;");
+                 			territorySafe = territoryText;
+                 			territorySafe = territorySafe.replaceAll("&","&amp;");
+                 			territorySafe = territorySafe.replaceAll("<","&lt;");
+                 			territorySafe = territorySafe.replaceAll(">","&gt;");
+                 			grandFinalDisplay = grandFinal.text("$#,##0.00");
+                 			pdfHtml = "";
+                 			pdfHtml = pdfHtml + "<html>";
+                 			pdfHtml = pdfHtml + "<head>";
+                 			pdfHtml = pdfHtml + "<meta charset='UTF-8'>";
+                 			pdfHtml = pdfHtml + "<style>";
+                 			pdfHtml = pdfHtml + "@page{size:landscape;margin:0.45in;}";
+                 			pdfHtml = pdfHtml + "*{box-sizing:border-box;}";
+                 			pdfHtml = pdfHtml + "body{font-family:Arial,sans-serif;color:#172033;font-size:10px;margin:0;}";
+                 			pdfHtml = pdfHtml + ".header{border-bottom:3px solid #163b6d;padding-bottom:12px;margin-bottom:14px;}";
+                 			pdfHtml = pdfHtml + ".title{font-size:24px;font-weight:700;color:#102f55;margin-bottom:4px;}";
+                 			pdfHtml = pdfHtml + ".subtitle{font-size:11px;color:#64748b;}";
+                 			pdfHtml = pdfHtml + ".summary{width:100%;border-collapse:collapse;margin-bottom:18px;}";
+                 			pdfHtml = pdfHtml + ".summary td{border:1px solid #d9e2ef;padding:9px 11px;vertical-align:top;}";
+                 			pdfHtml = pdfHtml + ".label{font-size:8px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;}";
+                 			pdfHtml = pdfHtml + ".value{font-size:13px;font-weight:700;color:#102f55;margin-top:3px;}";
+                 			pdfHtml = pdfHtml + ".grand{font-size:18px;color:#047857;}";
+                 			pdfHtml = pdfHtml + ".category{margin:0 0 16px 0;page-break-inside:auto;}";
+                 			pdfHtml = pdfHtml + ".category-title{background:#eaf1fb;border-left:5px solid #1e4f91;padding:8px 10px;font-size:13px;font-weight:700;color:#102f55;}";
+                 			pdfHtml = pdfHtml + ".category-meta{float:right;font-size:10px;color:#475569;}";
+                 			pdfHtml = pdfHtml + "table.lines{width:100%;border-collapse:collapse;table-layout:fixed;}";
+                 			pdfHtml = pdfHtml + "table.lines thead{display:table-header-group;}";
+                 			pdfHtml = pdfHtml + "table.lines th{background:#f3f6fa;border-bottom:1px solid #b8c6d9;padding:6px;text-align:right;font-size:8px;color:#52657d;text-transform:uppercase;}";
+                 			pdfHtml = pdfHtml + "table.lines th:first-child,table.lines th:nth-child(2),table.lines th:last-child{text-align:left;}";
+                 			pdfHtml = pdfHtml + "table.lines td{border-bottom:1px solid #e4eaf2;padding:6px;text-align:right;vertical-align:top;}";
+                 			pdfHtml = pdfHtml + "table.lines td:first-child,table.lines td:nth-child(2),table.lines td:last-child{text-align:left;}";
+                 			pdfHtml = pdfHtml + "table.lines tr{page-break-inside:avoid;}";
+                 			pdfHtml = pdfHtml + ".code{color:#64748b;font-family:monospace;}";
+                 			pdfHtml = pdfHtml + ".money{font-weight:600;white-space:nowrap;}";
+                 			pdfHtml = pdfHtml + ".notes{color:#475569;font-size:9px;}";
+                 			pdfHtml = pdfHtml + ".approval-title{margin-top:22px;padding-bottom:6px;border-bottom:2px solid #163b6d;font-size:15px;font-weight:700;color:#102f55;}";
+                 			pdfHtml = pdfHtml + ".approval-table{width:100%;border-collapse:collapse;margin-top:8px;}";
+                 			pdfHtml = pdfHtml + ".approval-table thead{display:table-header-group;}";
+                 			pdfHtml = pdfHtml + ".approval-table th{background:#f3f6fa;text-align:left;padding:7px;border-bottom:1px solid #b8c6d9;font-size:8px;text-transform:uppercase;color:#52657d;}";
+                 			pdfHtml = pdfHtml + ".approval-table td{padding:7px;border-bottom:1px solid #e4eaf2;vertical-align:top;}";
+                 			pdfHtml = pdfHtml + ".approval-table tr{page-break-inside:avoid;}";
+                 			pdfHtml = pdfHtml + ".footer-note{margin-top:18px;color:#64748b;font-size:8px;text-align:center;}";
+                 			pdfHtml = pdfHtml + "</style>";
+                 			pdfHtml = pdfHtml + "</head>";
+                 			pdfHtml = pdfHtml + "<body>";
+                 			pdfHtml = pdfHtml + "<div class='header'>";
+                 			pdfHtml = pdfHtml + "<div class='title'>" + pdfDocumentTitle + "</div>";
+                 			pdfHtml = pdfHtml + "<div class='subtitle'>" + budgetLabelSafe + "</div>";
+                 			pdfHtml = pdfHtml + "</div>";
+                 			pdfHtml = pdfHtml + "<table class='summary'><tr>";
+                 			pdfHtml = pdfHtml + "<td><div class='label'>Budget</div><div class='value'>" + budgetLabelSafe + "</div></td>";
+                 			pdfHtml = pdfHtml + "<td><div class='label'>Subdivision Code</div><div class='value'>" + subdivisionCodeSafe + "</div></td>";
+                 			pdfHtml = pdfHtml + "<td><div class='label'>Territory</div><div class='value'>" + territorySafe + "</div></td>";
+                 			pdfHtml = pdfHtml + "<td><div class='label'>Exported</div><div class='value'>" + exportedDate + "</div></td>";
+                 			pdfHtml = pdfHtml + "<td><div class='label'>Current Final Budget</div><div class='value grand'>" + grandFinalDisplay + "</div></td>";
+                 			pdfHtml = pdfHtml + "</tr></table>";
+                 			budgetCategories = Budget_Category[Budget == vBudgetId.toLong()] sort by Category_Code;
+                 			for each  cat in budgetCategories
+                 			{
+                 				categoryName = ifnull(cat.Budget_Category_Name,"Uncategorized");
+                 				categoryCode = ifnull(cat.Category_Code,"");
+                 				departmentName = ifnull(cat.Deparment,"");
+                 				categoryNameSafe = categoryName;
+                 				categoryNameSafe = categoryNameSafe.replaceAll("&","&amp;");
+                 				categoryNameSafe = categoryNameSafe.replaceAll("<","&lt;");
+                 				categoryNameSafe = categoryNameSafe.replaceAll(">","&gt;");
+                 				categoryCodeSafe = categoryCode;
+                 				categoryCodeSafe = categoryCodeSafe.replaceAll("&","&amp;");
+                 				categoryCodeSafe = categoryCodeSafe.replaceAll("<","&lt;");
+                 				categoryCodeSafe = categoryCodeSafe.replaceAll(">","&gt;");
+                 				departmentSafe = departmentName;
+                 				departmentSafe = departmentSafe.replaceAll("&","&amp;");
+                 				departmentSafe = departmentSafe.replaceAll("<","&lt;");
+                 				departmentSafe = departmentSafe.replaceAll(">","&gt;");
+                 				categoryFinal = 0.00;
+                 				if(cat.Budget_Total != null)
+                 				{
+                 					categoryFinal = cat.Budget_Total.toDecimal();
+                 				}
+                 				categoryFinalDisplay = categoryFinal.text("$#,##0.00");
+                 				pdfHtml = pdfHtml + "<div class='category'>";
+                 				pdfHtml = pdfHtml + "<div class='category-title'>";
+                 				pdfHtml = pdfHtml + categoryCodeSafe + " &nbsp; " + categoryNameSafe;
+                 				pdfHtml = pdfHtml + "<span class='category-meta'>" + departmentSafe + " &nbsp; | &nbsp; Final: " + categoryFinalDisplay + "</span>";
+                 				pdfHtml = pdfHtml + "</div>";
+                 				pdfHtml = pdfHtml + "<table class='lines'>";
+                 				pdfHtml = pdfHtml + "<thead><tr>";
+                 				pdfHtml = pdfHtml + "<th style='width:8%;'>Code</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:22%;'>Budget Item</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Preliminary</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Unapproved</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Final</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:11%;'>HCSS Actuals</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:11%;'>GP Actuals</th>";
+                 				pdfHtml = pdfHtml + "<th style='width:15%;'>Notes</th>";
+                 				pdfHtml = pdfHtml + "</tr></thead><tbody>";
+                 				categoryItems = Budget_Item[Budget_Category == cat.ID] sort by Cost_Code;
+                 				for each  item in categoryItems
+                 				{
+                 					itemName = ifnull(item.Item_Name,"Budget Item");
+                 					itemCode = ifnull(item.Cost_Code,"");
+                 					itemNameSafe = itemName;
+                 					itemNameSafe = itemNameSafe.replaceAll("&","&amp;");
+                 					itemNameSafe = itemNameSafe.replaceAll("<","&lt;");
+                 					itemNameSafe = itemNameSafe.replaceAll(">","&gt;");
+                 					itemCodeSafe = itemCode;
+                 					itemCodeSafe = itemCodeSafe.replaceAll("&","&amp;");
+                 					itemCodeSafe = itemCodeSafe.replaceAll("<","&lt;");
+                 					itemCodeSafe = itemCodeSafe.replaceAll(">","&gt;");
+                 					itemNote = ifnull(item.Description,"");
+                 					itemNote = itemNote.replaceAll("<br>","\n");
+                 					itemNote = itemNote.replaceAll("<br/>","\n");
+                 					itemNote = itemNote.replaceAll("<br />","\n");
+                 					itemNote = itemNote.replaceAll("&","&amp;");
+                 					itemNote = itemNote.replaceAll("<","&lt;");
+                 					itemNote = itemNote.replaceAll(">","&gt;");
+                 					itemNote = itemNote.replaceAll("\r\n","\n");
+                 					itemNote = itemNote.replaceAll("\r","\n");
+                 					itemNote = itemNote.replaceAll("\n","<br>");
+                 					prelimValue = 0.00;
+                 					unapprovedValue = 0.00;
+                 					finalValue = 0.00;
+                 					hcssValue = 0.00;
+                 					gpValue = 0.00;
+                 					if(item.Prelim_Budget_Ttl != null)
+                 					{
+                 						prelimValue = item.Prelim_Budget_Ttl.toDecimal();
+                 					}
+                 					if(item.Unapproved_Final_Budget_Ttl != null)
+                 					{
+                 						unapprovedValue = item.Unapproved_Final_Budget_Ttl.toDecimal();
+                 					}
+                 					if(item.Budget_Ttl != null)
+                 					{
+                 						finalValue = item.Budget_Ttl.toDecimal();
+                 					}
+                 					if(item.HCSS_Actuals != null)
+                 					{
+                 						hcssValue = item.HCSS_Actuals.toDecimal();
+                 					}
+                 					if(item.PROJ_Actual != null)
+                 					{
+                 						gpValue = item.PROJ_Actual.toDecimal();
+                 					}
+                 					prelimDisplay = prelimValue.text("$#,##0.00");
+                 					unapprovedDisplay = unapprovedValue.text("$#,##0.00");
+                 					finalDisplay = finalValue.text("$#,##0.00");
+                 					hcssDisplay = hcssValue.text("$#,##0.00");
+                 					gpDisplay = gpValue.text("$#,##0.00");
+                 					pdfHtml = pdfHtml + "<tr>";
+                 					pdfHtml = pdfHtml + "<td class='code'>" + itemCodeSafe + "</td>";
+                 					pdfHtml = pdfHtml + "<td>" + itemNameSafe + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='money'>" + prelimDisplay + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='money'>" + unapprovedDisplay + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='money'>" + finalDisplay + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='money'>" + hcssDisplay + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='money'>" + gpDisplay + "</td>";
+                 					pdfHtml = pdfHtml + "<td class='notes'>" + itemNote + "</td>";
+                 					pdfHtml = pdfHtml + "</tr>";
+                 				}
+                 				pdfHtml = pdfHtml + "</tbody></table></div>";
+                 			}
+                 			pdfHtml = pdfHtml + "<div class='approval-title'>Approval History</div>";
+                 			pdfHtml = pdfHtml + "<table class='approval-table'>";
+                 			pdfHtml = pdfHtml + "<thead><tr>";
+                 			pdfHtml = pdfHtml + "<th>Track</th><th>Role</th><th>Approver</th><th>Status</th><th>Responded</th><th>Approval Notes</th>";
+                 			pdfHtml = pdfHtml + "</tr></thead><tbody>";
+                 			allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()] sort by Sort_Order;
+                 			for each  approvalRow in allApprovalRows
+                 			{
+                 				approvalTrackSafe = ifnull(approvalRow.Type1,"");
+                 				approvalTrackSafe = approvalTrackSafe.replaceAll("&","&amp;");
+                 				approvalTrackSafe = approvalTrackSafe.replaceAll("<","&lt;");
+                 				approvalTrackSafe = approvalTrackSafe.replaceAll(">","&gt;");
+                 				approvalRoleSafe = ifnull(approvalRow.Title,"");
+                 				approvalRoleSafe = approvalRoleSafe.replaceAll("&","&amp;");
+                 				approvalRoleSafe = approvalRoleSafe.replaceAll("<","&lt;");
+                 				approvalRoleSafe = approvalRoleSafe.replaceAll(">","&gt;");
+                 				approvalEmailSafe = ifnull(approvalRow.Approver,"");
+                 				approvalEmailSafe = approvalEmailSafe.replaceAll("&","&amp;");
+                 				approvalEmailSafe = approvalEmailSafe.replaceAll("<","&lt;");
+                 				approvalEmailSafe = approvalEmailSafe.replaceAll(">","&gt;");
+                 				approvalStatusSafe = ifnull(approvalRow.Status,"");
+                 				approvalStatusSafe = approvalStatusSafe.replaceAll("&","&amp;");
+                 				approvalStatusSafe = approvalStatusSafe.replaceAll("<","&lt;");
+                 				approvalStatusSafe = approvalStatusSafe.replaceAll(">","&gt;");
+                 				approvalNotes = ifnull(approvalRow.Approval_Notes,"");
+                 				approvalNotes = approvalNotes.replaceAll("<br>","\n");
+                 				approvalNotes = approvalNotes.replaceAll("<br/>","\n");
+                 				approvalNotes = approvalNotes.replaceAll("<br />","\n");
+                 				approvalNotes = approvalNotes.replaceAll("&","&amp;");
+                 				approvalNotes = approvalNotes.replaceAll("<","&lt;");
+                 				approvalNotes = approvalNotes.replaceAll(">","&gt;");
+                 				approvalNotes = approvalNotes.replaceAll("\r\n","\n");
+                 				approvalNotes = approvalNotes.replaceAll("\r","\n");
+                 				approvalNotes = approvalNotes.replaceAll("\n","<br>");
+                 				respondedText = "";
+                 				if(approvalRow.Responded_Date != null)
+                 				{
+                 					respondedText = approvalRow.Responded_Date.toString("MM/dd/yyyy");
+                 				}
+                 				pdfHtml = pdfHtml + "<tr>";
+                 				pdfHtml = pdfHtml + "<td>" + approvalTrackSafe + "</td>";
+                 				pdfHtml = pdfHtml + "<td>" + approvalRoleSafe + "</td>";
+                 				pdfHtml = pdfHtml + "<td>" + approvalEmailSafe + "</td>";
+                 				pdfHtml = pdfHtml + "<td>" + approvalStatusSafe + "</td>";
+                 				pdfHtml = pdfHtml + "<td>" + respondedText + "</td>";
+                 				pdfHtml = pdfHtml + "<td>" + approvalNotes + "</td>";
+                 				pdfHtml = pdfHtml + "</tr>";
+                 			}
+                 			pdfHtml = pdfHtml + "</tbody></table>";
+                 			pdfHtml = pdfHtml + "<div class='footer-note'>Generated automatically by Land Master from the current saved budget values.</div>";
+                 			pdfHtml = pdfHtml + "</body></html>";
+                 			pdfOptions = Collection();
+                 			pdfOptions.insert("landscape":true);
+                 			pdfOptions.insert("units":"in");
+                 			pdfOptions.insert("page-width":11);
+                 			pdfOptions.insert("page-height":8.5);
+                 			pdfOptions.insert("top-margin":0.35);
+                 			pdfOptions.insert("bottom-margin":0.45);
+                 			pdfOptions.insert("left-margin":0.35);
+                 			pdfOptions.insert("right-margin":0.35);
+                 			pdfOptions.insert("print-background":true);
+                 			pdfOptions.insert("auto-shrink":true);
+                 			pdfOptions.insert("page-number":"footer");
+                 			pdfOptions.insert("page-number-location":"right");
+                 			pdfOptions.insert("mask-html":true);
+                 			pdfFile = zoho.file.convertToPDF(pdfHtml,pdfOptions);
+                 			if(pdfFile == null)
+                 			{
+                 				return "Budget PDF generation failed: convertToPDF returned null.";
+                 			}
+                 			if(pdfFile.isFile() != true)
+                 			{
+                 				return "Budget PDF generation failed: convertToPDF did not return a valid file.";
+                 			}
+                 			fileName = pdfFilePrefix + "_" + safeFileName + "_" + zoho.currenttime.toString("yyyyMMdd_HHmmss") + ".pdf";
+                 			pdfFile.setFileName(fileName);
+                 			/********* CREATE ONE ATTACHMENT RECORD *********/
+                 			attachmentId = insert into Contract_Version
+                 			[
+                 				Budget=vBudgetId.toLong()
+                 				Date_field1=zoho.currenttime
+                 				Email_Attachment=false
+                 				File_field1=pdfFile
+                 				Added_User=zoho.loginuser
+                 			];
+                 			if(attachmentId == null || attachmentId == 0)
+                 			{
+                 				return "Budget PDF was generated, but the Contract_Version attachment record was not created.";
+                 			}
+                 			return "Budget PDF added to Attachments as " + fileName + ".";
+                 		}
+                 		/*********************************************************
+                 		 * EXCEL EXPORT
+                 		 *********************************************************/
+                 		budgetLabelXml = budgetLabel;
+                 		budgetLabelXml = budgetLabelXml.replaceAll("&","&amp;");
+                 		budgetLabelXml = budgetLabelXml.replaceAll("<","&lt;");
+                 		budgetLabelXml = budgetLabelXml.replaceAll(">","&gt;");
+                 		budgetLabelXml = budgetLabelXml.replaceAll("\"","&quot;");
+                 		budgetLabelXml = budgetLabelXml.replaceAll("'","&apos;");
+                 		subdivisionCodeXml = subdivisionCode;
+                 		subdivisionCodeXml = subdivisionCodeXml.replaceAll("&","&amp;");
+                 		subdivisionCodeXml = subdivisionCodeXml.replaceAll("<","&lt;");
+                 		subdivisionCodeXml = subdivisionCodeXml.replaceAll(">","&gt;");
+                 		subdivisionCodeXml = subdivisionCodeXml.replaceAll("\"","&quot;");
+                 		subdivisionCodeXml = subdivisionCodeXml.replaceAll("'","&apos;");
+                 		territoryXml = territoryText;
+                 		territoryXml = territoryXml.replaceAll("&","&amp;");
+                 		territoryXml = territoryXml.replaceAll("<","&lt;");
+                 		territoryXml = territoryXml.replaceAll(">","&gt;");
+                 		territoryXml = territoryXml.replaceAll("\"","&quot;");
+                 		territoryXml = territoryXml.replaceAll("'","&apos;");
+                 		excelXml = "";
+                 		excelXml = excelXml + "<?xml version='1.0'?>";
+                 		excelXml = excelXml + "<?mso-application progid='Excel.Sheet'?>";
+                 		excelXml = excelXml + "<Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:x='urn:schemas-microsoft-com:office:excel' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet'>";
+                 		excelXml = excelXml + "<Styles>";
+                 		excelXml = excelXml + "<Style ss:ID='Default' ss:Name='Normal'><Alignment ss:Vertical='Bottom'/><Borders/><Font ss:FontName='Calibri' ss:Size='11'/><Interior/><NumberFormat/><Protection/></Style>";
+                 		excelXml = excelXml + "<Style ss:ID='Title'><Font ss:FontName='Calibri' ss:Size='18' ss:Bold='1' ss:Color='#17385F'/></Style>";
+                 		excelXml = excelXml + "<Style ss:ID='Header'><Font ss:Bold='1' ss:Color='#17385F'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><Borders><Border ss:Position='Bottom' ss:LineStyle='Continuous' ss:Weight='1' ss:Color='#AAB9CC'/></Borders></Style>";
+                 		excelXml = excelXml + "<Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00;[Red]-$#,##0.00'/></Style>";
+                 		excelXml = excelXml + "<Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style>";
+                 		excelXml = excelXml + "</Styles>";
+                 		/********* SUMMARY WORKSHEET *********/
+                 		excelXml = excelXml + "<Worksheet ss:Name='Summary'><Table>";
+                 		excelXml = excelXml + "<Column ss:Width='150'/><Column ss:Width='320'/>";
+                 		excelXml = excelXml + "<Row><Cell ss:MergeAcross='1' ss:StyleID='Title'><Data ss:Type='String'>Budget Export</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell ss:StyleID='Header'><Data ss:Type='String'>Field</Data></Cell><Cell ss:StyleID='Header'><Data ss:Type='String'>Value</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>Budget</Data></Cell><Cell><Data ss:Type='String'>" + budgetLabelXml + "</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>Subdivision Code</Data></Cell><Cell><Data ss:Type='String'>" + subdivisionCodeXml + "</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>Territory</Data></Cell><Cell><Data ss:Type='String'>" + territoryXml + "</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>Exported</Data></Cell><Cell><Data ss:Type='String'>" + exportedDate + "</Data></Cell></Row>";
+                 		excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>Current Final Budget</Data></Cell><Cell ss:StyleID='Money'><Data ss:Type='Number'>" + grandFinal + "</Data></Cell></Row>";
+                 		excelXml = excelXml + "</Table></Worksheet>";
+                 		/********* BUDGET DETAIL WORKSHEET *********/
+                 		excelXml = excelXml + "<Worksheet ss:Name='Budget Detail'><Table>";
+                 		excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='180'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='260'/>";
+                 		excelXml = excelXml + "<Row ss:StyleID='Header'>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Department</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category Code</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost Code</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Budget Item</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Preliminary</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Unapproved</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Final</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>HCSS Actuals</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>GP Actuals</Data></Cell>";
+                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Notes</Data></Cell>";
+                 		excelXml = excelXml + "</Row>";
+                 		budgetCategories = Budget_Category[Budget == vBudgetId.toLong()] sort by Category_Code;
+                 		for each  cat in budgetCategories
+                 		{
+                 			departmentXml = ifnull(cat.Deparment,"");
+                 			departmentXml = departmentXml.replaceAll("&","&amp;");
+                 			departmentXml = departmentXml.replaceAll("<","&lt;");
+                 			departmentXml = departmentXml.replaceAll(">","&gt;");
+                 			departmentXml = departmentXml.replaceAll("\"","&quot;");
+                 			departmentXml = departmentXml.replaceAll("'","&apos;");
+                 			categoryCodeXml = ifnull(cat.Category_Code,"");
+                 			categoryCodeXml = categoryCodeXml.replaceAll("&","&amp;");
+                 			categoryCodeXml = categoryCodeXml.replaceAll("<","&lt;");
+                 			categoryCodeXml = categoryCodeXml.replaceAll(">","&gt;");
+                 			categoryCodeXml = categoryCodeXml.replaceAll("\"","&quot;");
+                 			categoryCodeXml = categoryCodeXml.replaceAll("'","&apos;");
+                 			categoryNameXml = ifnull(cat.Budget_Category_Name,"Uncategorized");
+                 			categoryNameXml = categoryNameXml.replaceAll("&","&amp;");
+                 			categoryNameXml = categoryNameXml.replaceAll("<","&lt;");
+                 			categoryNameXml = categoryNameXml.replaceAll(">","&gt;");
+                 			categoryNameXml = categoryNameXml.replaceAll("\"","&quot;");
+                 			categoryNameXml = categoryNameXml.replaceAll("'","&apos;");
+                 			categoryItems = Budget_Item[Budget_Category == cat.ID] sort by Cost_Code;
+                 			for each  item in categoryItems
+                 			{
+                 				itemCodeXml = ifnull(item.Cost_Code,"");
+                 				itemCodeXml = itemCodeXml.replaceAll("&","&amp;");
+                 				itemCodeXml = itemCodeXml.replaceAll("<","&lt;");
+                 				itemCodeXml = itemCodeXml.replaceAll(">","&gt;");
+                 				itemCodeXml = itemCodeXml.replaceAll("\"","&quot;");
+                 				itemCodeXml = itemCodeXml.replaceAll("'","&apos;");
+                 				itemNameXml = ifnull(item.Item_Name,"Budget Item");
+                 				itemNameXml = itemNameXml.replaceAll("&","&amp;");
+                 				itemNameXml = itemNameXml.replaceAll("<","&lt;");
+                 				itemNameXml = itemNameXml.replaceAll(">","&gt;");
+                 				itemNameXml = itemNameXml.replaceAll("\"","&quot;");
+                 				itemNameXml = itemNameXml.replaceAll("'","&apos;");
+                 				itemNoteXml = ifnull(item.Description,"");
+                 				itemNoteXml = itemNoteXml.replaceAll("<br>","\n");
+                 				itemNoteXml = itemNoteXml.replaceAll("<br/>","\n");
+                 				itemNoteXml = itemNoteXml.replaceAll("<br />","\n");
+                 				itemNoteXml = itemNoteXml.replaceAll("&","&amp;");
+                 				itemNoteXml = itemNoteXml.replaceAll("<","&lt;");
+                 				itemNoteXml = itemNoteXml.replaceAll(">","&gt;");
+                 				itemNoteXml = itemNoteXml.replaceAll("\"","&quot;");
+                 				itemNoteXml = itemNoteXml.replaceAll("'","&apos;");
+                 				prelimValue = 0.00;
+                 				unapprovedValue = 0.00;
+                 				finalValue = 0.00;
+                 				hcssValue = 0.00;
+                 				gpValue = 0.00;
+                 				if(item.Prelim_Budget_Ttl != null)
+                 				{
+                 					prelimValue = item.Prelim_Budget_Ttl.toDecimal();
+                 				}
+                 				if(item.Unapproved_Final_Budget_Ttl != null)
+                 				{
+                 					unapprovedValue = item.Unapproved_Final_Budget_Ttl.toDecimal();
+                 				}
+                 				if(item.Budget_Ttl != null)
+                 				{
+                 					finalValue = item.Budget_Ttl.toDecimal();
+                 				}
+                 				if(item.HCSS_Actuals != null)
+                 				{
+                 					hcssValue = item.HCSS_Actuals.toDecimal();
+                 				}
+                 				if(item.PROJ_Actual != null)
+                 				{
+                 					gpValue = item.PROJ_Actual.toDecimal();
+                 				}
+                 				excelXml = excelXml + "<Row>";
+                 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + departmentXml + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + categoryCodeXml + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + categoryNameXml + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemCodeXml + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemNameXml + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + prelimValue + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + unapprovedValue + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + finalValue + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + hcssValue + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + gpValue + "</Data></Cell>";
+                 				excelXml = excelXml + "<Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + itemNoteXml + "</Data></Cell>";
+                 				excelXml = excelXml + "</Row>";
+                 			}
+                 		}
+                 		excelXml = excelXml + "</Table><WorksheetOptions xmlns='urn:schemas-microsoft-com:office:excel'><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions></Worksheet>";
+                 		/********* APPROVAL HISTORY WORKSHEET *********/
+                 		excelXml = excelXml + "<Worksheet ss:Name='Approval History'><Table>";
+                 		excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='90'/><Column ss:Width='110'/><Column ss:Width='320'/>";
+                 		excelXml = excelXml + "<Row ss:StyleID='Header'><Cell><Data ss:Type='String'>Track</Data></Cell><Cell><Data ss:Type='String'>Role</Data></Cell><Cell><Data ss:Type='String'>Approver</Data></Cell><Cell><Data ss:Type='String'>Status</Data></Cell><Cell><Data ss:Type='String'>Responded</Data></Cell><Cell><Data ss:Type='String'>Approval Notes</Data></Cell></Row>";
+                 		allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()] sort by Sort_Order;
+                 		for each  approvalRow in allApprovalRows
+                 		{
+                 			approvalTrackXml = ifnull(approvalRow.Type1,"");
+                 			approvalTrackXml = approvalTrackXml.replaceAll("&","&amp;");
+                 			approvalTrackXml = approvalTrackXml.replaceAll("<","&lt;");
+                 			approvalTrackXml = approvalTrackXml.replaceAll(">","&gt;");
+                 			approvalTrackXml = approvalTrackXml.replaceAll("\"","&quot;");
+                 			approvalTrackXml = approvalTrackXml.replaceAll("'","&apos;");
+                 			approvalRoleXml = ifnull(approvalRow.Title,"");
+                 			approvalRoleXml = approvalRoleXml.replaceAll("&","&amp;");
+                 			approvalRoleXml = approvalRoleXml.replaceAll("<","&lt;");
+                 			approvalRoleXml = approvalRoleXml.replaceAll(">","&gt;");
+                 			approvalRoleXml = approvalRoleXml.replaceAll("\"","&quot;");
+                 			approvalRoleXml = approvalRoleXml.replaceAll("'","&apos;");
+                 			approvalEmailXml = ifnull(approvalRow.Approver,"");
+                 			approvalEmailXml = approvalEmailXml.replaceAll("&","&amp;");
+                 			approvalEmailXml = approvalEmailXml.replaceAll("<","&lt;");
+                 			approvalEmailXml = approvalEmailXml.replaceAll(">","&gt;");
+                 			approvalEmailXml = approvalEmailXml.replaceAll("\"","&quot;");
+                 			approvalEmailXml = approvalEmailXml.replaceAll("'","&apos;");
+                 			approvalStatusXml = ifnull(approvalRow.Status,"");
+                 			approvalStatusXml = approvalStatusXml.replaceAll("&","&amp;");
+                 			approvalStatusXml = approvalStatusXml.replaceAll("<","&lt;");
+                 			approvalStatusXml = approvalStatusXml.replaceAll(">","&gt;");
+                 			approvalStatusXml = approvalStatusXml.replaceAll("\"","&quot;");
+                 			approvalStatusXml = approvalStatusXml.replaceAll("'","&apos;");
+                 			approvalNotesXml = ifnull(approvalRow.Approval_Notes,"");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("<br>","\n");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("<br/>","\n");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("<br />","\n");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("&","&amp;");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("<","&lt;");
+                 			approvalNotesXml = approvalNotesXml.replaceAll(">","&gt;");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("\"","&quot;");
+                 			approvalNotesXml = approvalNotesXml.replaceAll("'","&apos;");
+                 			respondedText = "";
+                 			if(approvalRow.Responded_Date != null)
+                 			{
+                 				respondedText = approvalRow.Responded_Date.toString("MM/dd/yyyy");
+                 			}
+                 			excelXml = excelXml + "<Row>";
+                 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + approvalTrackXml + "</Data></Cell>";
+                 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + approvalRoleXml + "</Data></Cell>";
+                 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + approvalEmailXml + "</Data></Cell>";
+                 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + approvalStatusXml + "</Data></Cell>";
+                 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + respondedText + "</Data></Cell>";
+                 			excelXml = excelXml + "<Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + approvalNotesXml + "</Data></Cell>";
+                 			excelXml = excelXml + "</Row>";
+                 		}
+                 		excelXml = excelXml + "</Table></Worksheet>";
+                 		excelXml = excelXml + "</Workbook>";
+                 		fileName = "Budget_Export_" + safeFileName + "_" + zoho.currenttime.toString("yyyyMMdd_HHmmss") + ".xls";
+                 		excelFile = excelXml.toFile(fileName);
+                 		if(excelFile == null)
+                 		{
+                 			return "Budget Excel export failed: toFile returned null.";
+                 		}
+                 		if(excelFile.isFile() != true)
+                 		{
+                 			return "Budget Excel export failed: toFile did not return a valid file.";
+                 		}
+                 		/********* CREATE ONE ATTACHMENT RECORD *********/
+                 		attachmentId = insert into Contract_Version
+                 		[
+                 			Budget=vBudgetId.toLong()
+                 			Date_field1=zoho.currenttime
+                 			Email_Attachment=false
+                 			File_field1=excelFile
+                 			Added_User=zoho.loginuser
+                 		];
+                 		if(attachmentId == null || attachmentId == 0)
+                 		{
+                 			return "Budget Excel file was generated, but the Contract_Version attachment record was not created.";
+                 		}
+                 		return "Budget Excel file added to Attachments as " + fileName + ".";
+                 	}	catch (exportError)
+                 	{
+                 		return "Budget export failed: " + exportError.toString();
+                 	}
+                 	return "gj";
+                 }

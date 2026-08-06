@@ -1,0 +1,532 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "reports": [
+    {
+      "link_name": "All_Subdivisions",
+      "display_name": "All Subdivisions",
+      "type": "default list",
+      "source_form": "Subdivision",
+      "custom_actions": [
+        "Create Budget"
+      ]
+    },
+    {
+      "link_name": "All_Builders",
+      "display_name": "All Builders",
+      "type": "default list",
+      "source_form": "Builder",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Takedown_Schedules",
+      "display_name": "All Takedown Schedules",
+      "type": "default list",
+      "source_form": "Takedown_Schedule",
+      "custom_actions": [
+        "Refresh"
+      ]
+    },
+    {
+      "link_name": "All_Tax_Rates",
+      "display_name": "All Tax Rates",
+      "type": "default list",
+      "source_form": "Tax_Rate",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Mass_Create_Lots_Report",
+      "display_name": "Mass Create Lots Report",
+      "type": "default list",
+      "source_form": "Mass_Create_Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Active_Lots",
+      "display_name": "All Active Lots",
+      "type": "spreadsheet",
+      "source_form": "Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Active_Lots_List_View",
+      "display_name": "All Active Lots - List View",
+      "type": "list",
+      "source_form": "Lots",
+      "custom_actions": [
+        "Add"
+      ]
+    },
+    {
+      "link_name": "All_Projects",
+      "display_name": "All Projects",
+      "type": "default list",
+      "source_form": "Project",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Companies",
+      "display_name": "All Companies",
+      "type": "default list",
+      "source_form": "Company",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Property",
+      "display_name": "All Property",
+      "type": "list",
+      "source_form": "Property",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Behind_Takedown_Schedules",
+      "display_name": "Behind Takedown Schedules",
+      "type": "list",
+      "source_form": "Takedown_Schedule",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_System_Searches",
+      "display_name": "All System Searches",
+      "type": "default list",
+      "source_form": "System_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Lot_Searches",
+      "display_name": "All Lot Searches",
+      "type": "default list",
+      "source_form": "Lot_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Builder_Takedowns",
+      "display_name": "All Builder Takedowns",
+      "type": "default list",
+      "source_form": "Builder_Takedown",
+      "custom_actions": [
+        "Print"
+      ]
+    },
+    {
+      "link_name": "Saved_Searches",
+      "display_name": "Saved Searches",
+      "type": "list",
+      "source_form": "Lot_Search",
+      "custom_actions": [
+        "Open",
+        "Remove"
+      ]
+    },
+    {
+      "link_name": "All_Mass_Updates",
+      "display_name": "All Mass Updates",
+      "type": "default list",
+      "source_form": "Mass_Update_Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contracts",
+      "display_name": "All Active Contracts",
+      "type": "default list",
+      "source_form": "Contract",
+      "custom_actions": [
+        "Archive",
+        "Send for Approvals"
+      ]
+    },
+    {
+      "link_name": "All_Lots_All_Fields",
+      "display_name": "All Lots - All Fields",
+      "type": "list",
+      "source_form": "Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Takedown_Templates",
+      "display_name": "All Takedown Templates",
+      "type": "default list",
+      "source_form": "Takedown_Template",
+      "custom_actions": [
+        "Archive",
+        "Clone"
+      ]
+    },
+    {
+      "link_name": "All_Taxing_Jurisdictions",
+      "display_name": "All Taxing Jurisdictions",
+      "type": "default list",
+      "source_form": "Taxing_Jurisdiction",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Tax_Parcel_Years",
+      "display_name": "All Tax Parcel Years",
+      "type": "default list",
+      "source_form": "Tax_Parcel_Year",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Active_Builder_Takedowns",
+      "display_name": "Active Builder Takedowns",
+      "type": "list",
+      "source_form": "Builder_Takedown",
+      "custom_actions": [
+        "Close",
+        "Print"
+      ]
+    },
+    {
+      "link_name": "Mass_Create_Tax_Report",
+      "display_name": "Mass Create Tax Report",
+      "type": "default list",
+      "source_form": "Mass_Create_Tax",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Tax_Searches",
+      "display_name": "All Tax Searches",
+      "type": "default list",
+      "source_form": "Tax_Table_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Tax_Parcel_Searches",
+      "display_name": "All Tax Parcel Searches",
+      "type": "default list",
+      "source_form": "Tax_Parcel_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Tax_Rate_Templates",
+      "display_name": "All Tax Rate Templates",
+      "type": "default list",
+      "source_form": "Tax_Rate_Template",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Mass_Update_Taxes",
+      "display_name": "All Mass Update Taxes",
+      "type": "default list",
+      "source_form": "Mass_Update_Tax",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Mass_Create_Tax_Rates_Report",
+      "display_name": "Mass Create Tax Rates Report",
+      "type": "default list",
+      "source_form": "Mass_Create_Tax_Rates",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Forecasts",
+      "display_name": "All Forecasts",
+      "type": "default list",
+      "source_form": "Forecast",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Mass_Create_Forecasts_Report",
+      "display_name": "Mass Create Forecasts Report",
+      "type": "default list",
+      "source_form": "Mass_Create_Forecasts",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Forecast_Searches",
+      "display_name": "All Forecast Searches",
+      "type": "default list",
+      "source_form": "Forecast_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Forecast_Years",
+      "display_name": "All Forecast Years",
+      "type": "default list",
+      "source_form": "Forecast_Year",
+      "custom_actions": [
+        "Refresh"
+      ]
+    },
+    {
+      "link_name": "All_Settings",
+      "display_name": "All Settings",
+      "type": "default list",
+      "source_form": "Settings",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contract_Versions",
+      "display_name": "All Contract Versions",
+      "type": "default list",
+      "source_form": "Contract_Version",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contract_Approvals",
+      "display_name": "All Contract Approvals",
+      "type": "default list",
+      "source_form": "Contract_Approvals",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Active_Lots_Contracts_View",
+      "display_name": "All Active Lots - Contracts View",
+      "type": "list",
+      "source_form": "Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Contracts_Management_Search_Report",
+      "display_name": "Contracts Management Search Report",
+      "type": "default list",
+      "source_form": "Contracts_Management_Search",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Contract_Pricing_Report",
+      "display_name": "Contract Pricing Report",
+      "type": "default list",
+      "source_form": "Contract_Pricing",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contract_Actions",
+      "display_name": "All Contract Actions",
+      "type": "default list",
+      "source_form": "Contract_Actions",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contracts_v2",
+      "display_name": "Contracts Board",
+      "type": "kanban",
+      "source_form": "Contract",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Additional_Items",
+      "display_name": "All Additional Items",
+      "type": "default list",
+      "source_form": "Additional_Items",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Construction_Curves",
+      "display_name": "All Construction Curves",
+      "type": "default list",
+      "source_form": "Construction_Curve",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Budget_Months",
+      "display_name": "All Budget Months",
+      "type": "default list",
+      "source_form": "Budget_Months",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Budgets",
+      "display_name": "All Budgets",
+      "type": "default list",
+      "source_form": "Add_Budget",
+      "custom_actions": [
+        "Lock Final",
+        "Lock Prelim",
+        "Refresh",
+        "Send Email",
+        "Send forApprovals",
+        "View"
+      ]
+    },
+    {
+      "link_name": "All_Budget_Items",
+      "display_name": "All Budget Items",
+      "type": "default list",
+      "source_form": "Budget_Item",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Budget_Categories",
+      "display_name": "All Budget Categories",
+      "type": "default list",
+      "source_form": "Budget_Category",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Budget_Item_Imports",
+      "display_name": "All Budget Import Items",
+      "type": "default list",
+      "source_form": "Budget_Import_Item",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Active_Lots_Spreadsheet",
+      "display_name": "All Active Lots - Spreadsheet",
+      "type": "spreadsheet",
+      "source_form": "Lots",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Redline_Reviews",
+      "display_name": "All Redline Reviews",
+      "type": "default list",
+      "source_form": "Redline_Review",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Milestones",
+      "display_name": "All Milestones",
+      "type": "default list",
+      "source_form": "Milestones",
+      "custom_actions": [
+        "End Date",
+        "Sync"
+      ]
+    },
+    {
+      "link_name": "All_Pro_Formas",
+      "display_name": "All Pro Formas",
+      "type": "default list",
+      "source_form": "Add_Pro_Forma",
+      "custom_actions": [
+        "Add'l Costs",
+        "View"
+      ]
+    },
+    {
+      "link_name": "All_Templates",
+      "display_name": "All Templates",
+      "type": "list",
+      "source_form": "Takedown_Template",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Proforma_Phases",
+      "display_name": "All Proforma Phases",
+      "type": "default list",
+      "source_form": "Proforma_Phase",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Proforma_Months",
+      "display_name": "All Proforma Months",
+      "type": "default list",
+      "source_form": "Proforma_Months",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Land_Installments",
+      "display_name": "All Land Installments",
+      "type": "default list",
+      "source_form": "Land_Installments",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Equipment",
+      "display_name": "All Equipment",
+      "type": "default list",
+      "source_form": "Equipment",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Equipment_Usage_Years",
+      "display_name": "All Equipment Usage Years",
+      "type": "default list",
+      "source_form": "Equipment_Usage_Year",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Equipment_Maintenance_Costs",
+      "display_name": "All Equipment Maintenance Costs",
+      "type": "default list",
+      "source_form": "Equipment_Maintenance_Cost",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Proforma_Item_Report",
+      "display_name": "Proforma Item Report",
+      "type": "default list",
+      "source_form": "Proforma_Item",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Contracts1",
+      "display_name": "All Contracts",
+      "type": "list",
+      "source_form": "Contract",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_External_System_Mappings",
+      "display_name": "All External System Mappings",
+      "type": "default list",
+      "source_form": "External_System_Mapping",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Forecast_Managers",
+      "display_name": "All Forecast Managers",
+      "type": "default list",
+      "source_form": "Forecast_Manager",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Forecast_Year_Subform_Report",
+      "display_name": "Forecast Year Subform Report",
+      "type": "default list",
+      "source_form": "Forecast_Year_Subform",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Mass_Create_Lots_Subform_Report",
+      "display_name": "Mass Create Lots Subform Report",
+      "type": "default list",
+      "source_form": "Mass_Create_Lots_Subform",
+      "custom_actions": []
+    },
+    {
+      "link_name": "Lots_in_Queue",
+      "display_name": "Lots in Queue",
+      "type": "list",
+      "source_form": "Lots",
+      "custom_actions": [
+        "Remove"
+      ]
+    },
+    {
+      "link_name": "All_Budget_Approvals",
+      "display_name": "All Budget Approvals",
+      "type": "default list",
+      "source_form": "Budget_Approvals",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Pro_Formas_All_Fields",
+      "display_name": "All_Pro_Formas_All_Fields",
+      "type": "list",
+      "source_form": "Add_Pro_Forma",
+      "custom_actions": []
+    },
+    {
+      "link_name": "User_Access_Report",
+      "display_name": "User Access",
+      "type": "default list",
+      "source_form": "User_Access",
+      "custom_actions": []
+    },
+    {
+      "link_name": "All_Construction_Cost_Curves",
+      "display_name": "All Construction Cost Curves",
+      "type": "list",
+      "source_form": "Construction_Curve",
+      "custom_actions": []
+    },
+    {
+      "link_name": "LOI_Worksheet_Report",
+      "display_name": "LOI Worksheet Report",
+      "type": "default list",
+      "source_form": "LOI_Worksheet",
+      "custom_actions": []
+    }
+  ]
+}

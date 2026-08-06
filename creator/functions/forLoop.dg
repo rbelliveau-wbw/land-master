@@ -1,0 +1,18 @@
+				 list forLoop(int startNo, int endNo)
+                 {
+                 	len = endNo - startNo + 1;
+                 	out = List();
+                 	if(len <= 0)
+                 	{
+                 		return out;
+                 	}
+                 	// Create len non-empty tokens ("x") separated by commas, then split.
+                 	s = "".leftPad(len);
+                 	// "     " (len spaces)
+                 	s = s.replaceAll(" ","x,");
+                 	// "x,x,x," ...
+                 	s = s.subString(0,s.length() - 1);
+                 	// drop trailing comma -> "x,x,x"
+                 	return s.toList();
+                 	// ["x","x","x"] (length == len)
+                 }

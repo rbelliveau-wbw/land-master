@@ -1,0 +1,27 @@
+				 string PF_PDF_Rect(decimal x, decimal y, decimal width, decimal height, string fillColor, string strokeColor, decimal lineWidth)
+                 {
+                 	command = "q\n";
+                 	if(fillColor != "")
+                 	{
+                 		command = command + fillColor + " rg\n";
+                 	}
+                 	if(strokeColor != "")
+                 	{
+                 		command = command + strokeColor + " RG\n" + lineWidth + " w\n";
+                 	}
+                 	command = command + x + " " + y + " " + width + " " + height + " re ";
+                 	if(fillColor != "" && strokeColor != "")
+                 	{
+                 		command = command + "B\n";
+                 	}
+                 	else if(fillColor != "")
+                 	{
+                 		command = command + "f\n";
+                 	}
+                 	else
+                 	{
+                 		command = command + "S\n";
+                 	}
+                 	command = command + "Q\n";
+                 	return command;
+                 }

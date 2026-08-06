@@ -1,0 +1,371 @@
+				 map PF_Get_Proforma_LOI_Snapshot(string proformaId)
+                 {
+                 	result = Map();
+                 	try 
+                 	{
+                 		proformaIdText = ifnull(proformaId,"").toString().trim();
+                 		if(proformaIdText == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","Pro Forma ID is required.");
+                 			return result;
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		pf = Add_Pro_Forma[ID == proformaIdLong];
+                 		if(pf.ID == null)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The Pro Forma could not be found.");
+                 			return result;
+                 		}
+                 		/*
+                 		 * Prefer the current worksheet. Fall back to any worksheet
+                 		 * attached to this Pro Forma.
+                 		 */
+                 		loiRec = LOI_Worksheet[Proforma == proformaIdLong && Is_Current == true];
+                 		if(loiRec.ID == null)
+                 		{
+                 			loiRec = LOI_Worksheet[Proforma == proformaIdLong];
+                 		}
+                 		/*
+                 		 * PURCHASING COMPANY
+                 		 */
+                 		buyingEntityText = "—";
+                 		if(loiRec.ID != null && loiRec.Company != null)
+                 		{
+                 			companyRec = Company[ID == loiRec.Company];
+                 			if(companyRec.ID != null)
+                 			{
+                 				buyingEntityText = ifnull(companyRec.Company_Name,"—").toString();
+                 			}
+                 		}
+                 		else if(pf.Purchasing_Company != null)
+                 		{
+                 			companyRec = Company[ID == pf.Purchasing_Company];
+                 			if(companyRec.ID != null)
+                 			{
+                 				buyingEntityText = ifnull(companyRec.Company_Name,"—").toString();
+                 			}
+                 		}
+                 		/*
+                 		 * SELLERS
+                 		 *
+                 		 * Sellers created in the LOI tab are Builder records with
+                 		 * Type1 = Seller and Proforma containing this Pro Forma.
+                 		 */
+                 		sellerText = "";
+                 		for each  sellerRec in Builder[Proforma == proformaIdLong] sort by Builder_Name
+                 		{
+                 			sellerName = ifnull(sellerRec.Builder_Name,"").toString().trim();
+                 			if(sellerName != "")
+                 			{
+                 				if(sellerText != "")
+                 				{
+                 					sellerText = sellerText + ", ";
+                 				}
+                 				sellerText = sellerText + sellerName;
+                 			}
+                 		}
+                 		/*
+                 		 * Fall back to the old Pro Forma header field for legacy
+                 		 * records that do not have linked Builder records.
+                 		 */
+                 		if(sellerText == "" && pf.Seller != null)
+                 		{
+                 			sellerText = pf.Seller.toString().trim();
+                 		}
+                 		if(sellerText == "")
+                 		{
+                 			sellerText = "—";
+                 		}
+                 		/*
+                 		 * PROPERTIES
+                 		 */
+                 		propertyText = "";
+                 		propertyAcresTotal = 0;
+                 		propertyCount = 0;
+                 		for each  propertyRec in Property[Proforma == proformaIdLong] sort by Common_Name
+                 		{
+                 			propertyCount = propertyCount + 1;
+                 			propertyName = ifnull(propertyRec.Common_Name,"").toString().trim();
+                 			if(propertyName == "")
+                 			{
+                 				propertyName = ifnull(propertyRec.Property_ID,"").toString().trim();
+                 			}
+                 			if(propertyName == "")
+                 			{
+                 				propertyName = "Property " + propertyCount.toString();
+                 			}
+                 			propertyLine = propertyName;
+                 			if(propertyRec.County != null && propertyRec.County.toString().trim() != "")
+                 			{
+                 				propertyLine = propertyLine + " — " + propertyRec.County.toString() + " County";
+                 			}
+                 			if(propertyRec.Acres != null && propertyRec.Acres.toString().trim() != "")
+                 			{
+                 				propertyAcresTotal = propertyAcresTotal + propertyRec.Acres.toDecimal();
+                 			}
+                 			if(propertyText != "")
+                 			{
+                 				propertyText = propertyText + "; ";
+                 			}
+                 			propertyText = propertyText + propertyLine;
+                 		}
+                 		/*
+                 		 * Legacy fallback to Pro Forma address fields.
+                 		 */
+                 		if(propertyText == "")
+                 		{
+                 			if(pf.Street_Address != null && pf.Street_Address.toString().trim() != "")
+                 			{
+                 				propertyText = pf.Street_Address.toString();
+                 			}
+                 			if(pf.Property_City != null && pf.Property_City.toString().trim() != "")
+                 			{
+                 				if(propertyText != "")
+                 				{
+                 					propertyText = propertyText + ", ";
+                 				}
+                 				propertyText = propertyText + pf.Property_City.toString();
+                 			}
+                 			if(pf.Property_County != null && pf.Property_County.toString().trim() != "")
+                 			{
+                 				if(propertyText != "")
+                 				{
+                 					propertyText = propertyText + ", ";
+                 				}
+                 				propertyText = propertyText + pf.Property_County.toString() + " County";
+                 			}
+                 		}
+                 		if(propertyText == "")
+                 		{
+                 			propertyText = "—";
+                 		}
+                 		/*
+                 		 * WORKSHEET ECONOMICS
+                 		 */
+                 		totalAcresRaw = "";
+                 		if(loiRec.ID != null && loiRec.Total_Acres != null && loiRec.Total_Acres.toString().trim() != "")
+                 		{
+                 			totalAcresRaw = loiRec.Total_Acres.toString();
+                 		}
+                 		else if(pf.Total_Acres != null && pf.Total_Acres.toString().trim() != "")
+                 		{
+                 			totalAcresRaw = pf.Total_Acres.toString();
+                 		}
+                 		else if(propertyAcresTotal > 0)
+                 		{
+                 			totalAcresRaw = propertyAcresTotal.toString();
+                 		}
+                 		totalAcresText = "—";
+                 		if(totalAcresRaw != "")
+                 		{
+                 			totalAcresText = thisapp.PF_Packet_Number(totalAcresRaw,2);
+                 		}
+                 		amountPerAcreRaw = "";
+                 		if(loiRec.ID != null && loiRec.Amount_Per_Acre != null && loiRec.Amount_Per_Acre.toString().trim() != "")
+                 		{
+                 			amountPerAcreRaw = loiRec.Amount_Per_Acre.toString();
+                 		}
+                 		else if(pf.Land_Cost_Acre != null && pf.Land_Cost_Acre.toString().trim() != "")
+                 		{
+                 			amountPerAcreRaw = pf.Land_Cost_Acre.toString();
+                 		}
+                 		amountPerAcreText = "—";
+                 		if(amountPerAcreRaw != "")
+                 		{
+                 			amountPerAcreText = thisapp.PF_Packet_Money(amountPerAcreRaw);
+                 		}
+                 		estimatedPriceRaw = "";
+                 		if(loiRec.ID != null && loiRec.Estimated_Price != null && loiRec.Estimated_Price.toString().trim() != "")
+                 		{
+                 			estimatedPriceRaw = loiRec.Estimated_Price.toString();
+                 		}
+                 		else if(totalAcresRaw != "" && amountPerAcreRaw != "")
+                 		{
+                 			estimatedPriceRaw = (totalAcresRaw.toDecimal() * amountPerAcreRaw.toDecimal()).toString();
+                 		}
+                 		else if(pf.Land_Cost != null && pf.Land_Cost.toString().trim() != "")
+                 		{
+                 			estimatedPriceRaw = pf.Land_Cost.toString();
+                 		}
+                 		estimatedPriceText = "—";
+                 		if(estimatedPriceRaw != "")
+                 		{
+                 			estimatedPriceText = thisapp.PF_Packet_Money(estimatedPriceRaw);
+                 		}
+                 		earnestMoneyRaw = "";
+                 		if(loiRec.ID != null && loiRec.Earnest_Money != null && loiRec.Earnest_Money.toString().trim() != "")
+                 		{
+                 			earnestMoneyRaw = loiRec.Earnest_Money.toString();
+                 		}
+                 		else if(pf.Earnest_Money != null && pf.Earnest_Money.toString().trim() != "")
+                 		{
+                 			earnestMoneyRaw = pf.Earnest_Money.toString();
+                 		}
+                 		earnestMoneyText = "—";
+                 		if(earnestMoneyRaw != "")
+                 		{
+                 			earnestMoneyText = thisapp.PF_Packet_Money(earnestMoneyRaw);
+                 		}
+                 		/*
+                 		 * TIMING
+                 		 */
+                 		feasibilityDaysRaw = "";
+                 		if(loiRec.ID != null && loiRec.Initial_Feasibility_Days != null && loiRec.Initial_Feasibility_Days.toString().trim() != "")
+                 		{
+                 			feasibilityDaysRaw = loiRec.Initial_Feasibility_Days.toString();
+                 		}
+                 		else if(pf.Initial_Feasibility_Days != null && pf.Initial_Feasibility_Days.toString().trim() != "")
+                 		{
+                 			feasibilityDaysRaw = pf.Initial_Feasibility_Days.toString();
+                 		}
+                 		feasibilityText = "—";
+                 		if(feasibilityDaysRaw != "")
+                 		{
+                 			feasibilityText = thisapp.PF_Packet_Number(feasibilityDaysRaw,0) + " days";
+                 		}
+                 		closingDaysRaw = "";
+                 		if(loiRec.ID != null && loiRec.Closing_Days_After_Feasibility != null && loiRec.Closing_Days_After_Feasibility.toString().trim() != "")
+                 		{
+                 			closingDaysRaw = loiRec.Closing_Days_After_Feasibility.toString();
+                 		}
+                 		else if(pf.Closing_Days_Feas != null && pf.Closing_Days_Feas.toString().trim() != "")
+                 		{
+                 			closingDaysRaw = pf.Closing_Days_Feas.toString();
+                 		}
+                 		closingText = "—";
+                 		if(closingDaysRaw != "")
+                 		{
+                 			closingText = thisapp.PF_Packet_Number(closingDaysRaw,0) + " days";
+                 		}
+                 		extensionsRaw = "";
+                 		daysPerExtensionRaw = "";
+                 		amountPerExtensionRaw = "";
+                 		if(loiRec.ID != null && loiRec.Extensions != null && loiRec.Extensions.toString().trim() != "")
+                 		{
+                 			extensionsRaw = loiRec.Extensions.toString();
+                 		}
+                 		else if(pf.Extensions != null && pf.Extensions.toString().trim() != "")
+                 		{
+                 			extensionsRaw = pf.Extensions.toString();
+                 		}
+                 		if(loiRec.ID != null && loiRec.Days_Per_Extension != null && loiRec.Days_Per_Extension.toString().trim() != "")
+                 		{
+                 			daysPerExtensionRaw = loiRec.Days_Per_Extension.toString();
+                 		}
+                 		else if(pf.Days_per_Extension != null && pf.Days_per_Extension.toString().trim() != "")
+                 		{
+                 			daysPerExtensionRaw = pf.Days_per_Extension.toString();
+                 		}
+                 		if(loiRec.ID != null && loiRec.Amount_Per_Extension != null && loiRec.Amount_Per_Extension.toString().trim() != "")
+                 		{
+                 			amountPerExtensionRaw = loiRec.Amount_Per_Extension.toString();
+                 		}
+                 		else if(pf.Amount_per_Extension != null && pf.Amount_per_Extension.toString().trim() != "")
+                 		{
+                 			amountPerExtensionRaw = pf.Amount_per_Extension.toString();
+                 		}
+                 		extensionsText = "—";
+                 		if(extensionsRaw != "" || daysPerExtensionRaw != "" || amountPerExtensionRaw != "")
+                 		{
+                 			extensionsText = "";
+                 			if(extensionsRaw != "")
+                 			{
+                 				extensionsText = thisapp.PF_Packet_Number(extensionsRaw,0) + " extensions";
+                 			}
+                 			if(daysPerExtensionRaw != "")
+                 			{
+                 				if(extensionsText != "")
+                 				{
+                 					extensionsText = extensionsText + " × ";
+                 				}
+                 				extensionsText = extensionsText + thisapp.PF_Packet_Number(daysPerExtensionRaw,0) + " days";
+                 			}
+                 			if(amountPerExtensionRaw != "")
+                 			{
+                 				if(extensionsText != "")
+                 				{
+                 					extensionsText = extensionsText + " at ";
+                 				}
+                 				extensionsText = extensionsText + thisapp.PF_Packet_Money(amountPerExtensionRaw) + " each";
+                 			}
+                 		}
+                 		/*
+                 		 * DATES AND CONTACTS
+                 		 */
+                 		responseDateText = "—";
+                 		if(loiRec.ID != null && loiRec.Response_Date != null)
+                 		{
+                 			responseDateText = loiRec.Response_Date.toString("MMM d, yyyy");
+                 		}
+                 		else if(pf.Response_Date != null)
+                 		{
+                 			responseDateText = pf.Response_Date.toString("MMM d, yyyy");
+                 		}
+                 		effectiveDateText = "—";
+                 		if(loiRec.ID != null && loiRec.Assumed_Effective_Date != null)
+                 		{
+                 			effectiveDateText = loiRec.Assumed_Effective_Date.toString("MMM d, yyyy");
+                 		}
+                 		buyerBrokerText = "—";
+                 		if(loiRec.ID != null && loiRec.Buyer_Broker != null && loiRec.Buyer_Broker.toString().trim() != "")
+                 		{
+                 			buyerBrokerText = loiRec.Buyer_Broker.toString();
+                 		}
+                 		else if(pf.Broker_Buyer != null && pf.Broker_Buyer.toString().trim() != "")
+                 		{
+                 			buyerBrokerText = pf.Broker_Buyer.toString();
+                 		}
+                 		sellerBrokerText = "—";
+                 		if(loiRec.ID != null && loiRec.Seller_Broker != null && loiRec.Seller_Broker.toString().trim() != "")
+                 		{
+                 			sellerBrokerText = loiRec.Seller_Broker.toString();
+                 		}
+                 		else if(pf.Broker_Seller != null && pf.Broker_Seller.toString().trim() != "")
+                 		{
+                 			sellerBrokerText = pf.Broker_Seller.toString();
+                 		}
+                 		acquisitionEmailText = "—";
+                 		if(loiRec.ID != null && loiRec.Acquisition_Email != null && loiRec.Acquisition_Email.toString().trim() != "")
+                 		{
+                 			acquisitionEmailText = loiRec.Acquisition_Email.toString();
+                 		}
+                 		else if(pf.Acquisition_Email != null && pf.Acquisition_Email.toString().trim() != "")
+                 		{
+                 			acquisitionEmailText = pf.Acquisition_Email.toString();
+                 		}
+                 		specialProvisionsText = "";
+                 		if(loiRec.ID != null && loiRec.Special_Provisions != null && loiRec.Special_Provisions.toString().trim() != "")
+                 		{
+                 			specialProvisionsText = loiRec.Special_Provisions.toString();
+                 		}
+                 		else if(pf.Special_Provisions != null && pf.Special_Provisions.toString().trim() != "")
+                 		{
+                 			specialProvisionsText = pf.Special_Provisions.toString();
+                 		}
+                 		result.put("success",true);
+                 		result.put("worksheetId",if(loiRec.ID == null,"",loiRec.ID.toString()));
+                 		result.put("seller",sellerText);
+                 		result.put("buyingEntity",buyingEntityText);
+                 		result.put("property",propertyText);
+                 		result.put("totalAcres",totalAcresText);
+                 		result.put("amountPerAcre",amountPerAcreText);
+                 		result.put("estimatedPrice",estimatedPriceText);
+                 		result.put("earnestMoney",earnestMoneyText);
+                 		result.put("feasibility",feasibilityText);
+                 		result.put("closing",closingText);
+                 		result.put("extensions",extensionsText);
+                 		result.put("responseDate",responseDateText);
+                 		result.put("effectiveDate",effectiveDateText);
+                 		result.put("buyerBroker",buyerBrokerText);
+                 		result.put("sellerBroker",sellerBrokerText);
+                 		result.put("acquisitionEmail",acquisitionEmailText);
+                 		result.put("specialProvisions",specialProvisionsText);
+                 	}	catch (e)
+                 	{
+                 		result.put("success",false);
+                 		result.put("message",e.toString());
+                 	}
+                 	return result;
+                 }

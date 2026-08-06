@@ -1,0 +1,64 @@
+				 string getBudgetAttachmentPreview(string budgetId, string attachmentId)
+                 {
+                 	/********* RETURN AN EXACT BASE64 COPY OF ONE BUDGET ATTACHMENT *********/
+                 	// Custom API link name expected by the widget:
+                 	// Get_Budget_Attachment_Preview
+                 	response = Map();
+                 	vBudgetId = ifnull(budgetId,"").trim();
+                 	vAttachmentId = ifnull(attachmentId,"").trim();
+                 	if(vBudgetId == "" || vAttachmentId == "")
+                 	{
+                 		response.put("ok",false);
+                 		response.put("message","Missing Budget ID or attachment ID.");
+                 		return response.toString();
+                 	}
+                 	try 
+                 	{
+                 		attachmentRows = Contract_Version[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+                 		if(attachmentRows.count() == 0)
+                 		{
+                 			response.put("ok",false);
+                 			response.put("message","Attachment record was not found for this budget.");
+                 			return response.toString();
+                 		}
+                 		for each  attachmentRow in attachmentRows
+                 		{
+                 			if(attachmentRow.File_field1 == null)
+                 			{
+                 				response.put("ok",false);
+                 				response.put("message","The attachment record does not contain a file.");
+                 				return response.toString();
+                 			}
+                 			encodedFile = zoho.encryption.base64Encode(attachmentRow.File_field1);
+                 			if(encodedFile == null || encodedFile == "")
+                 			{
+                 				response.put("ok",false);
+                 				response.put("message","Creator could not encode the attachment for preview.");
+                 				return response.toString();
+                 			}
+                 			fileName = "";
+                 			try 
+                 			{
+                 				fileName = attachmentRow.File_field1.actualname;
+                 			}			catch (nameError)
+                 			{
+                 				fileName = "";
+                 			}
+                 			response.put("ok",true);
+                 			response.put("attachmentId",vAttachmentId);
+                 			response.put("budgetId",vBudgetId);
+                 			response.put("fileName",fileName);
+                 			response.put("base64",encodedFile);
+                 			response.put("byteLength",(encodedFile.length() * 3 / 4).toLong());
+                 			return response.toString();
+                 		}
+                 	}	catch (previewError)
+                 	{
+                 		response.put("ok",false);
+                 		response.put("message","Attachment preview failed: " + previewError.toString());
+                 		return response.toString();
+                 	}
+                 	response.put("ok",false);
+                 	response.put("message","Attachment preview failed.");
+                 	return response.toString();
+                 }

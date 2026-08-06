@@ -1,0 +1,17 @@
+				 void createContract(Lots lotRecords)
+                 {
+                 	//get record id's
+                 	idRecordList = lotRecords.ID.getall();
+                 	lotCount = lotRecords.count(ID);
+                 	subdiv = lotRecords.Subdivision;
+                 	subdivisionFields = Subdivision[ID == subdiv];
+                 	contractName = subdivisionFields.Subdivision_Code + " - " + lotRecords.Builder1.Builder_Name + " - " + zoho.currentdate;
+                 	//get Builder Takedowns, sort by newest, and grab top line (newest)
+                 	//builderTd = (Builder_Takedown[Added_Time = zoho.currentdate].ID sort by Added_Time desc).getAll();
+                 	//buildertdTop = builderTd.get(0);
+                 	//open URL of newest Builder Takedown
+                 	//openUrl(zoho.appuri + "/Builder_Takedown/record-edit/All_Builder_Takedowns/" + buildertdTop,"popup window");
+                 	massupdUrl = "#Form:Contract?Number_of_Lots=" + lotCount + "&&Lots1=" + idRecordList + "&&Subdivision1=" + lotRecords.Subdivision + "&&Builder=" + lotRecords.Builder1 + "&&Project=" + subdivisionFields.Project + "&&County=" + subdivisionFields.County + "&&City=" + subdivisionFields.City + "&&Company_Entity=" + subdivisionFields.Company1 + "&&Contract_Name=" + contractName;
+                 	openUrl(massupdUrl,"popup window");
+                 	//info btdUrl;
+                 }

@@ -1,0 +1,28 @@
+{
+  "slug": "milestone-gantt",
+  "name": "Milestone Gantt",
+  "module": "projects",
+  "version": "1.0.0",
+  "description": "Subdivision milestone timeline and inline schedule editing.",
+  "source_entry": "widgets/milestone-gantt/src/app/widget.html",
+  "creator_package_manifest": "widgets/milestone-gantt/src/plugin-manifest.json",
+  "baseline_zip": "widgets/milestone-gantt/baseline/gantt (1).zip",
+  "html_title": "Subdivision Milestone Gantt",
+  "source_sha256": "79f0b02c19662c8f7ca458c4cd24ff275e76a1677f15c81f69dbebb49962112e",
+  "baseline_zip_sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336",
+  "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+      "connect-src": []
+    },
+    "config": []
+  },
+  "dependency_inventory": "manifests/widget-dependencies.json#milestone-gantt",
+  "hosting_entry": "index.html (generated from app/widget.html)",
+  "trust": "Source extracted without modification from the uploaded widget ZIP."
+}

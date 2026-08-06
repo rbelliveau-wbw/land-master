@@ -1,0 +1,87 @@
+				 string killApprovalChain(string budgetId, string approvalType)
+                 {
+                 	/********* CANCEL ONE APPROVAL CHAIN *********/
+                 	//
+                 	// Development:
+                 	// - Reset approval chain.
+                 	// - Clear Development/Engineering Final and Unapproved through
+                 	//   applyBudgetTrackFinalState.
+                 	//
+                 	// Construction:
+                 	// - Reset approval chain.
+                 	// - Move Construction Final back into Unapproved.
+                 	// - Clear Construction Final.
+                 	//
+                 	// Construction will later resync from HeavyJob as needed.
+                 	vBudgetId = budgetId.toLong();
+                 	vType = ifnull(approvalType,"").trim();
+                 	if(vBudgetId == 0 || vType == "")
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Missing budgetId or approvalType.\"}";
+                 	}
+                 	if(vType != "Development" && vType != "Construction")
+                 	{
+                 		return "{\"ok\":false,\"error\":\"approvalType must be Development or Construction.\"}";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Budget not found.\"}";
+                 	}
+                 	/********* RESET PARENT TRACK STATUS *********/
+                 	if(vType == "Construction")
+                 	{
+                 		budgetRec.Const_Budget_Approval_Status="Not Sent";
+                 	}
+                 	else
+                 	{
+                 		budgetRec.Development_Budget_Approval_Status="Not Sent";
+                 	}
+                 	/********* RESET APPROVAL ROWS *********/
+                 	rowsReset = 0;
+                 	approvalRows = Budget_Approvals[Budget == vBudgetId && Type1 == vType];
+                 	for each  ar in approvalRows
+                 	{
+                 		ar.Status="Not Sent";
+                 		ar.Sent_Date=null;
+                 		ar.Responded_Date=null;
+                 		rowsReset = rowsReset + 1;
+                 	}
+                 	/********* MOVE CONSTRUCTION FINAL BACK TO UNAPPROVED *********/
+                 	movedCount = 0;
+                 	movedTotal = 0;
+                 	if(vType == "Construction")
+                 	{
+                 		budgetCategories = Budget_Category[Budget == vBudgetId];
+                 		for each  cat in budgetCategories
+                 		{
+                 			deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
+                 			if(deptKey.contains("construction"))
+                 			{
+                 				constructionItems = Budget_Item[Budget_Category == cat.ID];
+                 				for each  itemToMove in constructionItems
+                 				{
+                 					finalValue = ifnull(itemToMove.Budget_Ttl,0);
+                 					// Move Final back into Unapproved.
+                 					itemToMove.Unapproved_Final_Budget_Ttl=finalValue;
+                 					// Clear Final.
+                 					itemToMove.Budget_Ttl=0;
+                 					movedCount = movedCount + 1;
+                 					movedTotal = movedTotal + finalValue;
+                 				}
+                 			}
+                 		}
+                 	}
+                 	/********* CLEAR TRACK TOTALS AND RECALCULATE BUDGET *********/
+                 	// The Construction CLEAR behavior must preserve
+                 	// Unapproved_Final_Budget_Ttl.
+                 	financialResp = thisapp.applyBudgetTrackFinalState(vBudgetId + "",vType,"CLEAR");
+                 	resultMap = Map();
+                 	resultMap.put("ok",true);
+                 	resultMap.put("approvalType",vType);
+                 	resultMap.put("rowsReset",rowsReset);
+                 	resultMap.put("constructionItemsMoved",movedCount);
+                 	resultMap.put("constructionTotalMoved",movedTotal);
+                 	resultMap.put("financialResult",financialResp);
+                 	return resultMap.toString();
+                 }

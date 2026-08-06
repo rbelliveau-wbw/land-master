@@ -1,0 +1,192 @@
+				 string startApprovalChain(int budgetId, string approvalType)
+                 {
+                 	/********* START OR RESTART ONE APPROVAL CHAIN *********/
+                 	// Return Type: string
+                 	//
+                 	// Development start/restart:
+                 	// - Clear Development + Engineering Final.
+                 	// - Copy Development + Engineering Preliminary into Unapproved.
+                 	// - Construction values remain unchanged.
+                 	//
+                 	// Construction start/restart:
+                 	// - Clear Construction Final.
+                 	// - Preserve Construction Unapproved because it comes from
+                 	//   HeavyJob / the external budget import.
+                 	// - Development + Engineering values remain unchanged.
+                 	//
+                 	// The financial values are not changed until a valid first
+                 	// approval row has been found.
+                 	vBudgetId = budgetId.toLong();
+                 	vApprovalType = ifnull(approvalType,"").trim();
+                 	if(vBudgetId == 0)
+                 	{
+                 		return "No Budget ID provided.";
+                 	}
+                 	if(vApprovalType == "")
+                 	{
+                 		return "No approval type provided.";
+                 	}
+                 	if(vApprovalType != "Development" && vApprovalType != "Construction")
+                 	{
+                 		return "Unsupported approval type: " + vApprovalType;
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "Budget not found.";
+                 	}
+                 	/********* FIRST VALIDATE THE APPROVAL CHAIN *********/
+                 	firstApprovalId = 0;
+                 	firstSort = 999999;
+                 	approvalRowCount = 0;
+                 	for each  appr in budgetRec.Approvals
+                 	{
+                 		if(ifnull(appr.Type1,"").trim() == vApprovalType)
+                 		{
+                 			apprRowsCheck = Budget_Approvals[ID == appr.ID];
+                 			if(apprRowsCheck.count() > 0)
+                 			{
+                 				approvalRowCount = approvalRowCount + 1;
+                 				apprSort = 999999;
+                 				if(appr.Sort_Order != null)
+                 				{
+                 					apprSort = appr.Sort_Order.toLong();
+                 				}
+                 				if(apprSort < firstSort)
+                 				{
+                 					firstSort = apprSort;
+                 					firstApprovalId = appr.ID;
+                 				}
+                 			}
+                 		}
+                 	}
+                 	if(firstApprovalId == 0)
+                 	{
+                 		return "No " + vApprovalType + " approval rows found. No budget values were changed.";
+                 	}
+                 	/*****************************************************
+                 	 * CLEAR THIS TRACK'S FINAL VALUES
+                 	 *
+                 	 * Development:
+                 	 * - Final -> 0
+                 	 * - Preliminary -> Unapproved
+                 	 *
+                 	 * Construction:
+                 	 * - Final -> 0
+                 	 * - Preserve externally populated Unapproved
+                 	 *****************************************************/
+                 	affectedItemCount = 0;
+                 	stagedItemCount = 0;
+                 	stagedTotal = 0;
+                 	budgetCategoriesToStage = Budget_Category[Budget == vBudgetId];
+                 	for each  cat in budgetCategoriesToStage
+                 	{
+                 		deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
+                 		shouldProcess = false;
+                 		if(vApprovalType == "Development")
+                 		{
+                 			if(deptKey.contains("development") || deptKey.contains("engineering"))
+                 			{
+                 				shouldProcess = true;
+                 			}
+                 		}
+                 		else if(vApprovalType == "Construction")
+                 		{
+                 			if(deptKey.contains("construction"))
+                 			{
+                 				shouldProcess = true;
+                 			}
+                 		}
+                 		if(shouldProcess == true)
+                 		{
+                 			catItemsToStage = Budget_Item[Budget_Category == cat.ID];
+                 			for each  itemToStage in catItemsToStage
+                 			{
+                 				// Starting or restarting this track invalidates its old Final.
+                 				itemToStage.Budget_Ttl=0;
+                 				affectedItemCount = affectedItemCount + 1;
+                 				if(vApprovalType == "Development")
+                 				{
+                 					prelimVal = 0;
+                 					if(itemToStage.Prelim_Budget_Ttl != null)
+                 					{
+                 						prelimNum = itemToStage.Prelim_Budget_Ttl.toNumber();
+                 						if(prelimNum != null)
+                 						{
+                 							prelimVal = prelimNum;
+                 						}
+                 					}
+                 					// Dev/Eng stages Preliminary into Unapproved.
+                 					itemToStage.Unapproved_Final_Budget_Ttl=prelimVal;
+                 					stagedItemCount = stagedItemCount + 1;
+                 					stagedTotal = stagedTotal + prelimVal;
+                 				}
+                 				// Construction Unapproved is intentionally not changed.
+                 				// It is owned by HeavyJob / the external import process.
+                 			}
+                 			/********* REFRESH THIS CATEGORY'S FINAL TOTAL *********/
+                 			catFinalTotal = 0;
+                 			catFinalSum = Budget_Item[Budget_Category == cat.ID].sum(Budget_Ttl);
+                 			if(catFinalSum != null)
+                 			{
+                 				catFinalNum = catFinalSum.toNumber();
+                 				if(catFinalNum != null)
+                 				{
+                 					catFinalTotal = catFinalNum;
+                 				}
+                 			}
+                 			cat.Budget_Total=catFinalTotal;
+                 		}
+                 	}
+                 	/********* REFRESH PARENT BUDGET FINAL GRAND TOTAL *********/
+                 	newGrandTotal = 0;
+                 	allBudgetCategories = Budget_Category[Budget == vBudgetId];
+                 	for each  catTotalRec in allBudgetCategories
+                 	{
+                 		if(catTotalRec.Budget_Total != null)
+                 		{
+                 			catTotalNum = catTotalRec.Budget_Total.toNumber();
+                 			if(catTotalNum != null)
+                 			{
+                 				newGrandTotal = newGrandTotal + catTotalNum;
+                 			}
+                 		}
+                 	}
+                 	budgetRec.Budget_Grand_Total=newGrandTotal;
+                 	/********* RESET THIS TRACK'S APPROVAL ROWS *********/
+                 	for each  appr in budgetRec.Approvals
+                 	{
+                 		if(ifnull(appr.Type1,"").trim() == vApprovalType)
+                 		{
+                 			apprRows = Budget_Approvals[ID == appr.ID];
+                 			for each  ar in apprRows
+                 			{
+                 				ar.Status="Not Sent";
+                 				ar.Sent_Date=null;
+                 				ar.Responded_Date=null;
+                 				// Prior approval notes are intentionally retained.
+                 				// Uncomment this if a restart should erase the notes:
+                 				// ar.Approval_Notes="";
+                 			}
+                 		}
+                 	}
+                 	/********* SET FIRST APPROVER TO PENDING *********/
+                 	firstApprovalRows = Budget_Approvals[ID == firstApprovalId];
+                 	for each  firstApproval in firstApprovalRows
+                 	{
+                 		firstApproval.Status="Pending";
+                 		firstApproval.Sent_Date=zoho.currentdate;
+                 		firstApproval.Responded_Date=null;
+                 	}
+                 	emailResp = thisapp.sendApprovalEmail(vBudgetId,firstApprovalId);
+                 	syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId,vApprovalType);
+                 	if(vApprovalType == "Development")
+                 	{
+                 		stageResp = "Cleared " + affectedItemCount + " Development/Engineering Final items and staged " + stagedItemCount + " Preliminary items totaling " + stagedTotal + " into Unapproved.";
+                 	}
+                 	else
+                 	{
+                 		stageResp = "Cleared " + affectedItemCount + " Construction Final items. Construction Unapproved values were preserved.";
+                 	}
+                 	return vApprovalType + " chain started. " + stageResp + " " + emailResp + " " + syncResp;
+                 }

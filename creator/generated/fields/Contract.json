@@ -1,0 +1,394 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Contract",
+  "display_name": "Add Contract",
+  "fields": [
+    {
+      "link_name": "Contract_Info",
+      "display_name": "Contract Info",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision1",
+      "display_name": "Subdivision",
+      "type": "list",
+      "values": "Subdivision[Status != \"Forecast Placeholder\" && Status != \"Sold Out\"].ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Builder",
+      "display_name": "Builder/Counterparty",
+      "type": "picklist",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money_Per_Lot",
+      "display_name": "Earnest Money Per Lot",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Number_of_Lots",
+      "display_name": "Lot Total",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Takedown",
+      "display_name": "Initial Take (Lots)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Takedown_Days",
+      "display_name": "Initial Take (Days)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subsequent_Takedown_Lots",
+      "display_name": "Cont'd Take (Lots)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subsequent_Takedown_Days",
+      "display_name": "Cont'd Take (Days)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Contract_Name",
+      "display_name": "Contract Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lots1",
+      "display_name": "Lots",
+      "type": "list",
+      "values": "Lots.ID",
+      "display_format": "[Lot_Code + \" - \" + Lot_Size + \"Ft - \" + Status]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"New\",\"Approval Rejected\",\"Feasibility\",\"Awaiting WBW\",\"Awaiting Counterparty\",\"Awaiting Approvals\",\"Approved\",\"Complete\"}",
+      "display_format": null,
+      "initial_value": "\"New\"",
+      "private": false
+    },
+    {
+      "link_name": "Current_Approver",
+      "display_name": "Current Approver",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Current_Action",
+      "display_name": "Current Action",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Block_Description",
+      "display_name": "Lot/Block Description",
+      "type": "richtext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": true
+    },
+    {
+      "link_name": "Archive",
+      "display_name": "Archive",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Hide",
+      "display_name": "Hide",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Takedown_Schedule1",
+      "display_name": "Takedown Schedule",
+      "type": "picklist",
+      "values": "Takedown_Schedule.ID",
+      "display_format": "[Takedown_Schedule_Code]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Company_Entity",
+      "display_name": "Company/Entity",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Company_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Project",
+      "display_name": "Project",
+      "type": "picklist",
+      "values": "Project.ID",
+      "display_format": "[Project_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "County",
+      "display_name": "County",
+      "type": "picklist",
+      "values": "{\"Bell\",\"Bexar\",\"Burleson\",\"McLennan\",\"Brazos\",\"Falls\",\"Williamson\",\"Coryell\",\"Guadalupe\",\"Comal\",\"Travis\",\"Harris\",\"Grayson\",\"Collin\",\"Tarrant\",\"Johnson\",\"Kaufman\",\"Ellis\",\"Denton\",\"Hunt\",\"Dallas\",\"Cooke\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "City",
+      "display_name": "City",
+      "type": "picklist",
+      "values": "{\"Killeen\",\"Houston\",\"Granger\",\"Caldwell\",\"Austin\",\"Temple\",\"Waco\",\"Bryan\",\"Belton\",\"Bruceville-Eddy\",\"Copperas Cove\",\"Seguin\",\"Harker Heights\",\"Taylor\",\"New Braunfels\",\"Jarrell\",\"Nolanville\",\"Robinson\",\"Salado\",\"San Antonio\",\"Troy\",\"Georgetown\",\"Addison\",\"Balch Springs\",\"Carrollton\",\"Cedar Hill\",\"Cockrell Hill\",\"Combine\",\"Coppell\",\"Dallas\",\"DeSoto\",\"Duncanville\",\"Farmers Branch\",\"Ferris\",\"Garland\",\"Glenn Heights\",\"Grand Prairie\",\"Grapevine\",\"Highland Park\",\"Hutchins\",\"Irving\",\"Lancaster\",\"Lewisville\",\"Mesquite\",\"Ovilla\",\"Richardson\",\"Rowlett\",\"Sachse\",\"Seagoville\",\"Sunnyvale\",\"University Park\",\"Wilmer\",\"Wylie\",\"League City\",\"Pasadena\",\"Pearland\",\"Sugar Land\",\"Conroe\",\"Katy\",\"Denton\",\"Sherman\",\"Westminster\",\"Anna\",\"Crandall\",\"Midlothian\",\"Celina\",\"Van Alstyne\",\"Greenville\",\"Princeton\",\"Corsicana\",\"Waxahachie\",\"Prosper\",\"Cresson\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Completion_Date",
+      "display_name": "Completion Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Totals",
+      "display_name": "Totals",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money",
+      "display_name": "Earnest Money",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Contract_Price",
+      "display_name": "Total Contract Price",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pricing",
+      "display_name": "Pricing",
+      "type": "grid",
+      "values": "Contract_Pricing.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Contract_Actions",
+      "display_name": "Contract Actions",
+      "type": "grid",
+      "values": "Contract_Actions.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain5",
+      "display_name": "plain5",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Approvals1",
+      "display_name": "Internal Approvals",
+      "type": "grid",
+      "values": "Contract_Approvals.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section3",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain3",
+      "display_name": "plain3",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Redlines",
+      "display_name": "Redlines",
+      "type": "grid",
+      "values": "Redline_Review.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section2",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain2",
+      "display_name": "plain2",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Contract_Versions",
+      "display_name": "Contract Versions",
+      "type": "grid",
+      "values": "Contract_Version.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain1",
+      "display_name": "plain1",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

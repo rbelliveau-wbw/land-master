@@ -1,0 +1,5 @@
+				 string generateApprovedBudgetPDF(string budgetId)
+                 {
+                 	/********* AUTOMATIC EXPORT AFTER BOTH APPROVAL TRACKS FINISH *********/
+                 	return thisapp.exportBudgetSnapshot(budgetId,"APPROVED_PDF");
+                 }

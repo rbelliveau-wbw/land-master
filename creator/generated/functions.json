@@ -1,0 +1,1861 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "functions": [
+    {
+      "name": "applyBudgetTrackFinalState",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "approvalType"
+        },
+        {
+          "type": "string",
+          "name": "action"
+        }
+      ],
+      "source": "creator/functions/applyBudgetTrackFinalState.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Category",
+        "Budget_Item"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "ifnull",
+        "put",
+        "sum",
+        "toLong",
+        "toString",
+        "toUpperCase",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16200,
+      "line_end": 16326
+    },
+    {
+      "name": "buildForecastManagerSummary",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "subdivisionId"
+        }
+      ],
+      "source": "creator/functions/buildForecastManagerSummary.dg",
+      "reads_or_writes_forms": [
+        "Forecast",
+        "Subdivision",
+        "Takedown_Schedule"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Lots",
+        "Progress",
+        "Take",
+        "add",
+        "contains",
+        "gradient",
+        "ifnull",
+        "minmax",
+        "repeat",
+        "rgba",
+        "sum",
+        "toLong",
+        "toStartOfMonth",
+        "toString"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16327,
+      "line_end": 16618
+    },
+    {
+      "name": "Claim_Proforma",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "userAccessId"
+        }
+      ],
+      "source": "creator/functions/Claim_Proforma.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "User_Access"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Map",
+        "add",
+        "put",
+        "size",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16619,
+      "line_end": 16688
+    },
+    {
+      "name": "createBudgetAttachmentRecord",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        }
+      ],
+      "source": "creator/functions/createBudgetAttachmentRecord.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Contract_Version"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "count",
+        "ifnull",
+        "put",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16689,
+      "line_end": 16724
+    },
+    {
+      "name": "createBuilderTakedown",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Lots lotRecords"
+        }
+      ],
+      "source": "creator/functions/createBuilderTakedown.dg",
+      "reads_or_writes_forms": [
+        "Builder_Takedown",
+        "Takedown_Template"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "count",
+        "get",
+        "getAll",
+        "getall",
+        "line",
+        "maximum",
+        "openUrl",
+        "toString"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16725,
+      "line_end": 16842
+    },
+    {
+      "name": "createContract",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Lots lotRecords"
+        }
+      ],
+      "source": "creator/functions/createContract.dg",
+      "reads_or_writes_forms": [
+        "Builder_Takedown",
+        "Subdivision"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "count",
+        "get",
+        "getAll",
+        "getall",
+        "line",
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16843,
+      "line_end": 16859
+    },
+    {
+      "name": "createTaxtable",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Taxing_Jurisdiction td"
+        }
+      ],
+      "source": "creator/functions/createTaxtable.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16860,
+      "line_end": 16865
+    },
+    {
+      "name": "createTaxTemplate",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Tax_Rate taxRates"
+        }
+      ],
+      "source": "creator/functions/createTaxTemplate.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "getall",
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 16866,
+      "line_end": 16876
+    },
+    {
+      "name": "Create_LOI_Contract",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/Create_LOI_Contract.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Company",
+        "Contract",
+        "Contract_Version"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Map",
+        "add",
+        "contains",
+        "get",
+        "ifnull",
+        "isFile",
+        "put",
+        "replaceAll",
+        "round",
+        "setFileName",
+        "size",
+        "toLong",
+        "toString",
+        "toWords",
+        "trim"
+      ],
+      "connections": [
+        "zoho_writer"
+      ],
+      "contains_sendmail": false,
+      "contains_invokeurl": true,
+      "line_start": 16877,
+      "line_end": 17327
+    },
+    {
+      "name": "defaultFunction",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Lots lotRecords"
+        }
+      ],
+      "source": "creator/functions/defaultFunction.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 17328,
+      "line_end": 17334
+    },
+    {
+      "name": "deleteBudgetAttachment",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/deleteBudgetAttachment.dg",
+      "reads_or_writes_forms": [
+        "Contract_Version"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "count",
+        "ifnull",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 17335,
+      "line_end": 17358
+    },
+    {
+      "name": "exportBudgetSnapshot",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "exportType"
+        }
+      ],
+      "source": "creator/functions/exportBudgetSnapshot.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item",
+        "Contract_Version"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Collection",
+        "child",
+        "convertToPDF",
+        "ifnull",
+        "insert",
+        "isFile",
+        "replaceAll",
+        "setFileName",
+        "text",
+        "toDecimal",
+        "toFile",
+        "toLong",
+        "toString",
+        "toUpperCase",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 17359,
+      "line_end": 17928
+    },
+    {
+      "name": "forLoop",
+      "return_type": "list",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "startNo"
+        },
+        {
+          "type": "int",
+          "name": "endNo"
+        }
+      ],
+      "source": "creator/functions/forLoop.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "leftPad",
+        "length",
+        "replaceAll",
+        "subString",
+        "toList",
+        "tokens"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 17929,
+      "line_end": 17946
+    },
+    {
+      "name": "formStyle",
+      "return_type": "string",
+      "parameters": [],
+      "source": "creator/functions/formStyle.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Approval_Email",
+        "Approvals",
+        "BIGGER",
+        "Box",
+        "Dropdown",
+        "Edit",
+        "Edit_Items",
+        "HEADER",
+        "MULTI",
+        "PID_MUD",
+        "SECTIONS",
+        "TITLE",
+        "active",
+        "after",
+        "alignment",
+        "bar",
+        "box",
+        "child",
+        "container",
+        "explicitly",
+        "fields",
+        "focused",
+        "globally",
+        "gradient",
+        "hair",
+        "header",
+        "input",
+        "label",
+        "layer",
+        "look",
+        "match",
+        "media",
+        "not",
+        "rgba",
+        "ring",
+        "section",
+        "state",
+        "subform",
+        "text",
+        "titles",
+        "too",
+        "translate",
+        "translateY",
+        "url",
+        "width"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 17947,
+      "line_end": 18265
+    },
+    {
+      "name": "generateApprovedBudgetPDF",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        }
+      ],
+      "source": "creator/functions/generateApprovedBudgetPDF.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "exportBudgetSnapshot"
+      ],
+      "possible_calls": [
+        "exportBudgetSnapshot"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18266,
+      "line_end": 18270
+    },
+    {
+      "name": "getBudgetAttachmentPreview",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/getBudgetAttachmentPreview.dg",
+      "reads_or_writes_forms": [
+        "Contract_Version"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "base64Encode",
+        "count",
+        "ifnull",
+        "length",
+        "put",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18271,
+      "line_end": 18334
+    },
+    {
+      "name": "getUserAccess",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "user"
+        }
+      ],
+      "source": "creator/functions/getUserAccess.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "User_Access"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Map",
+        "add",
+        "put",
+        "toString"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18335,
+      "line_end": 18434
+    },
+    {
+      "name": "handleApprovalAction",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        },
+        {
+          "type": "string",
+          "name": "approvalAction"
+        },
+        {
+          "type": "string",
+          "name": "approvalNote"
+        }
+      ],
+      "source": "creator/functions/handleApprovalAction.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item"
+      ],
+      "thisapp_calls": [
+        "generateApprovedBudgetPDF",
+        "sendApprovalEmail",
+        "syncBudgetApprovalStatus"
+      ],
+      "possible_calls": [
+        "contains",
+        "count",
+        "generateApprovedBudgetPDF",
+        "ifnull",
+        "replaceAll",
+        "sendApprovalEmail",
+        "sum",
+        "syncBudgetApprovalStatus",
+        "toLong",
+        "toLowerCase",
+        "toNumber",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18435,
+      "line_end": 18796
+    },
+    {
+      "name": "Handle_Proforma_Approval_Action",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        },
+        {
+          "type": "string",
+          "name": "approvalAction"
+        },
+        {
+          "type": "string",
+          "name": "approvalNote"
+        }
+      ],
+      "source": "creator/functions/Handle_Proforma_Approval_Action.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [
+        "Send_Proforma_Approval_Email_With_Context"
+      ],
+      "possible_calls": [
+        "Map",
+        "Send_Proforma_Approval_Email_With_Context",
+        "get",
+        "ifnull",
+        "put",
+        "toLong",
+        "toLowerCase",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18797,
+      "line_end": 18964
+    },
+    {
+      "name": "killApprovalChain",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "approvalType"
+        }
+      ],
+      "source": "creator/functions/killApprovalChain.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item"
+      ],
+      "thisapp_calls": [
+        "applyBudgetTrackFinalState"
+      ],
+      "possible_calls": [
+        "Map",
+        "applyBudgetTrackFinalState",
+        "contains",
+        "ifnull",
+        "put",
+        "toLong",
+        "toLowerCase",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 18965,
+      "line_end": 19051
+    },
+    {
+      "name": "killApprovalFlow",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "budgetId"
+        }
+      ],
+      "source": "creator/functions/killApprovalFlow.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item"
+      ],
+      "thisapp_calls": [
+        "applyBudgetTrackFinalState"
+      ],
+      "possible_calls": [
+        "Map",
+        "applyBudgetTrackFinalState",
+        "contains",
+        "ifnull",
+        "put",
+        "toLong",
+        "toLowerCase",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19052,
+      "line_end": 19125
+    },
+    {
+      "name": "Kill_Proforma_Approval_Flow",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/Kill_Proforma_Approval_Flow.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "ifnull",
+        "put",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19126,
+      "line_end": 19154
+    },
+    {
+      "name": "Manage_Proforma_Approval_Config",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "configAction"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        },
+        {
+          "type": "string",
+          "name": "title"
+        },
+        {
+          "type": "string",
+          "name": "approverEmail"
+        },
+        {
+          "type": "string",
+          "name": "orderedIds"
+        }
+      ],
+      "source": "creator/functions/Manage_Proforma_Approval_Config.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "count",
+        "get",
+        "ifnull",
+        "put",
+        "size",
+        "toList",
+        "toLong",
+        "toLowerCase",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19155,
+      "line_end": 19346
+    },
+    {
+      "name": "massCreateforecasts",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Subdivision subdiv"
+        }
+      ],
+      "source": "creator/functions/massCreateforecasts.dg",
+      "reads_or_writes_forms": [
+        "Builder_Takedown"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "get",
+        "getAll",
+        "getall",
+        "line",
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19347,
+      "line_end": 19359
+    },
+    {
+      "name": "massUpdate",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Lots lotRecords"
+        }
+      ],
+      "source": "creator/functions/massUpdate.dg",
+      "reads_or_writes_forms": [
+        "Builder_Takedown"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "get",
+        "getAll",
+        "getall",
+        "line",
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19360,
+      "line_end": 19372
+    },
+    {
+      "name": "massUpdatetax",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "unknown",
+          "name": "Tax_Parcel_Year taxParcels"
+        }
+      ],
+      "source": "creator/functions/massUpdatetax.dg",
+      "reads_or_writes_forms": [
+        "Builder_Takedown"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "get",
+        "getAll",
+        "getall",
+        "line",
+        "openUrl"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19373,
+      "line_end": 19385
+    },
+    {
+      "name": "openBudget",
+      "return_type": "void",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/openBudget.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "count",
+        "openURL",
+        "toLong"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19386,
+      "line_end": 19393
+    },
+    {
+      "name": "PF_Build_Proforma_Approval_PDF",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        }
+      ],
+      "source": "creator/functions/PF_Build_Proforma_Approval_PDF.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals",
+        "Builder",
+        "Company",
+        "LOI_Worksheet",
+        "Proforma_Item",
+        "Proforma_Months",
+        "Property"
+      ],
+      "thisapp_calls": [
+        "PF_PDF_Compile",
+        "PF_PDF_Rect",
+        "PF_PDF_Text",
+        "PF_PDF_Wrap",
+        "PF_Packet_Money",
+        "PF_Packet_Number"
+      ],
+      "possible_calls": [
+        "Address",
+        "Email",
+        "List",
+        "Map",
+        "PF_PDF_Compile",
+        "PF_PDF_Rect",
+        "PF_PDF_Text",
+        "PF_PDF_Wrap",
+        "PF_Packet_Money",
+        "PF_Packet_Number",
+        "Phone",
+        "Seller",
+        "add",
+        "count",
+        "floor",
+        "get",
+        "ifnull",
+        "put",
+        "size",
+        "toDecimal",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 19394,
+      "line_end": 20441
+    },
+    {
+      "name": "PF_Get_Proforma_LOI_Snapshot",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/PF_Get_Proforma_LOI_Snapshot.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Builder",
+        "Company",
+        "LOI_Worksheet",
+        "Property"
+      ],
+      "thisapp_calls": [
+        "PF_Packet_Money",
+        "PF_Packet_Number"
+      ],
+      "possible_calls": [
+        "Map",
+        "PF_Packet_Money",
+        "PF_Packet_Number",
+        "ifnull",
+        "put",
+        "toDecimal",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20442,
+      "line_end": 20812
+    },
+    {
+      "name": "PF_Packet_Escape",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "value"
+        }
+      ],
+      "source": "creator/functions/PF_Packet_Escape.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "ifnull",
+        "replaceAll",
+        "toString"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20813,
+      "line_end": 20822
+    },
+    {
+      "name": "PF_Packet_Money",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "value"
+        }
+      ],
+      "source": "creator/functions/PF_Packet_Money.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "ifnull",
+        "replaceAll",
+        "round",
+        "toDecimal",
+        "toString",
+        "toText",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20823,
+      "line_end": 20839
+    },
+    {
+      "name": "PF_Packet_Number",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "value"
+        },
+        {
+          "type": "int",
+          "name": "decimals"
+        }
+      ],
+      "source": "creator/functions/PF_Packet_Number.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "ifnull",
+        "replaceAll",
+        "round",
+        "toDecimal",
+        "toString",
+        "toText",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20840,
+      "line_end": 20859
+    },
+    {
+      "name": "PF_PDF_Clean",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "value"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Clean.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "ifnull",
+        "replaceAll",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20860,
+      "line_end": 20876
+    },
+    {
+      "name": "PF_PDF_Compile",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "list",
+          "name": "pageStreams"
+        },
+        {
+          "type": "string",
+          "name": "documentTitle"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Compile.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "PF_PDF_Clean",
+        "PF_PDF_Line",
+        "PF_PDF_Text"
+      ],
+      "possible_calls": [
+        "List",
+        "PF_PDF_Clean",
+        "PF_PDF_Line",
+        "PF_PDF_Text",
+        "add",
+        "length",
+        "right",
+        "size",
+        "textToHex",
+        "toString"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20877,
+      "line_end": 20939
+    },
+    {
+      "name": "PF_PDF_Line",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "decimal",
+          "name": "x1"
+        },
+        {
+          "type": "decimal",
+          "name": "y1"
+        },
+        {
+          "type": "decimal",
+          "name": "x2"
+        },
+        {
+          "type": "decimal",
+          "name": "y2"
+        },
+        {
+          "type": "string",
+          "name": "color"
+        },
+        {
+          "type": "decimal",
+          "name": "lineWidth"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Line.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20940,
+      "line_end": 20943
+    },
+    {
+      "name": "PF_PDF_Rect",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "decimal",
+          "name": "x"
+        },
+        {
+          "type": "decimal",
+          "name": "y"
+        },
+        {
+          "type": "decimal",
+          "name": "width"
+        },
+        {
+          "type": "decimal",
+          "name": "height"
+        },
+        {
+          "type": "string",
+          "name": "fillColor"
+        },
+        {
+          "type": "string",
+          "name": "strokeColor"
+        },
+        {
+          "type": "decimal",
+          "name": "lineWidth"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Rect.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20944,
+      "line_end": 20970
+    },
+    {
+      "name": "PF_PDF_Text",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "decimal",
+          "name": "x"
+        },
+        {
+          "type": "decimal",
+          "name": "y"
+        },
+        {
+          "type": "decimal",
+          "name": "size"
+        },
+        {
+          "type": "string",
+          "name": "fontKey"
+        },
+        {
+          "type": "string",
+          "name": "color"
+        },
+        {
+          "type": "string",
+          "name": "value"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Text.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "PF_PDF_Clean"
+      ],
+      "possible_calls": [
+        "PF_PDF_Clean",
+        "textToHex"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20971,
+      "line_end": 20989
+    },
+    {
+      "name": "PF_PDF_Wrap",
+      "return_type": "list",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "value"
+        },
+        {
+          "type": "int",
+          "name": "maxChars"
+        }
+      ],
+      "source": "creator/functions/PF_PDF_Wrap.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "PF_PDF_Clean"
+      ],
+      "possible_calls": [
+        "List",
+        "PF_PDF_Clean",
+        "add",
+        "left",
+        "length",
+        "size",
+        "toList"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 20990,
+      "line_end": 21034
+    },
+    {
+      "name": "proforma_save",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "payload"
+        }
+      ],
+      "source": "creator/functions/proforma_save.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Builder",
+        "Company",
+        "Construction_Curve",
+        "LOI_Worksheet",
+        "Land_Installments",
+        "Proforma_Item",
+        "Proforma_Months",
+        "Proforma_Phase",
+        "Property",
+        "User_Access"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Map",
+        "add",
+        "get",
+        "ifnull",
+        "put",
+        "round",
+        "size",
+        "toDate",
+        "toDecimal",
+        "toLong",
+        "toLowerCase",
+        "toMap",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 21035,
+      "line_end": 22221
+    },
+    {
+      "name": "reportProformaWidgetError",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "payload"
+        }
+      ],
+      "source": "creator/functions/reportProformaWidgetError.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "get",
+        "ifnull",
+        "put",
+        "toMap",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 22222,
+      "line_end": 22261
+    },
+    {
+      "name": "Review_LOI_Request",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "tokenId"
+        },
+        {
+          "type": "string",
+          "name": "decision"
+        },
+        {
+          "type": "string",
+          "name": "legalNote"
+        }
+      ],
+      "source": "creator/functions/Review_LOI_Request.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma"
+      ],
+      "thisapp_calls": [
+        "Create_LOI_Contract"
+      ],
+      "possible_calls": [
+        "Create_LOI_Contract",
+        "Map",
+        "get",
+        "ifnull",
+        "put",
+        "toLong",
+        "toMap",
+        "toString",
+        "toUpperCase",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 22262,
+      "line_end": 22372
+    },
+    {
+      "name": "sendApprovalEmail",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "budgetId"
+        },
+        {
+          "type": "int",
+          "name": "approvalId"
+        }
+      ],
+      "source": "creator/functions/sendApprovalEmail.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "count",
+        "ifnull",
+        "replaceAll",
+        "toLong",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 22373,
+      "line_end": 22594
+    },
+    {
+      "name": "Send_Proforma_Approval_Email",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        }
+      ],
+      "source": "creator/functions/Send_Proforma_Approval_Email.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "Send_Proforma_Approval_Email_With_Context"
+      ],
+      "possible_calls": [
+        "Send_Proforma_Approval_Email_With_Context"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22595,
+      "line_end": 22598
+    },
+    {
+      "name": "Send_Proforma_Approval_Email_With_Context",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        },
+        {
+          "type": "string",
+          "name": "routingAction"
+        },
+        {
+          "type": "string",
+          "name": "routingNote"
+        },
+        {
+          "type": "string",
+          "name": "routingRole"
+        }
+      ],
+      "source": "creator/functions/Send_Proforma_Approval_Email_With_Context.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [
+        "PF_Build_Proforma_Approval_PDF",
+        "PF_Get_Proforma_LOI_Snapshot",
+        "PF_Packet_Money",
+        "PF_Packet_Number"
+      ],
+      "possible_calls": [
+        "Map",
+        "PF_Build_Proforma_Approval_PDF",
+        "PF_Get_Proforma_LOI_Snapshot",
+        "PF_Packet_Money",
+        "PF_Packet_Number",
+        "get",
+        "ifnull",
+        "put",
+        "replaceAll",
+        "toFile",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 22599,
+      "line_end": 22786
+    },
+    {
+      "name": "setProjectProforma",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "projectId"
+        },
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/setProjectProforma.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Project"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "ifnull",
+        "put",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22787,
+      "line_end": 22821
+    },
+    {
+      "name": "startAllApprovalChains",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "budgetId"
+        }
+      ],
+      "source": "creator/functions/startAllApprovalChains.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "startApprovalChain"
+      ],
+      "possible_calls": [
+        "startApprovalChain",
+        "toLong"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22822,
+      "line_end": 22832
+    },
+    {
+      "name": "startApprovalChain",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "approvalType"
+        }
+      ],
+      "source": "creator/functions/startApprovalChain.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item"
+      ],
+      "thisapp_calls": [
+        "sendApprovalEmail",
+        "syncBudgetApprovalStatus"
+      ],
+      "possible_calls": [
+        "contains",
+        "count",
+        "ifnull",
+        "sendApprovalEmail",
+        "sum",
+        "syncBudgetApprovalStatus",
+        "toLong",
+        "toLowerCase",
+        "toNumber",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22833,
+      "line_end": 23024
+    },
+    {
+      "name": "Start_Proforma_Approval_Chain",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/Start_Proforma_Approval_Chain.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [
+        "Send_Proforma_Approval_Email_With_Context"
+      ],
+      "possible_calls": [
+        "List",
+        "Map",
+        "Send_Proforma_Approval_Email_With_Context",
+        "add",
+        "count",
+        "get",
+        "ifnull",
+        "put",
+        "size",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23025,
+      "line_end": 23121
+    },
+    {
+      "name": "Submit_LOI_For_Legal_Approval",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/Submit_LOI_For_Legal_Approval.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Company"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "List",
+        "Map",
+        "add",
+        "extension",
+        "ifnull",
+        "put",
+        "randomNumber",
+        "size",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 23122,
+      "line_end": 23293
+    },
+    {
+      "name": "syncBudgetApprovalStatus",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "approvalType"
+        }
+      ],
+      "source": "creator/functions/syncBudgetApprovalStatus.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "ifnull",
+        "toLong",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23294,
+      "line_end": 23363
+    },
+    {
+      "name": "Update_Proforma_Approval_Recipient",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "map",
+          "name": "request"
+        }
+      ],
+      "source": "creator/functions/Update_Proforma_Approval_Recipient.dg",
+      "reads_or_writes_forms": [
+        "Budget_Approvals"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": [
+        "Map",
+        "contains",
+        "get",
+        "ifnull",
+        "put",
+        "toLong",
+        "toString",
+        "trim"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23364,
+      "line_end": 23418
+    },
+    {
+      "name": "utilitiesconvertIntegerToCurrency",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "number"
+        }
+      ],
+      "source": "creator/functions/utilitiesconvertIntegerToCurrency.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "utilitiesmakeRange"
+      ],
+      "possible_calls": [
+        "accordingly",
+        "floor",
+        "length",
+        "one",
+        "remove",
+        "separator",
+        "separators",
+        "substring",
+        "toString",
+        "utilitiesmakeRange"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23419,
+      "line_end": 23466
+    },
+    {
+      "name": "utilitiesmakeRange",
+      "return_type": "list",
+      "parameters": [
+        {
+          "type": "int",
+          "name": "start"
+        },
+        {
+          "type": "int",
+          "name": "end"
+        }
+      ],
+      "source": "creator/functions/utilitiesmakeRange.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [
+        "utilitiesmakeRange"
+      ],
+      "possible_calls": [
+        "Int",
+        "add",
+        "addAll"
+      ],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23467,
+      "line_end": 23480
+    }
+  ]
+}

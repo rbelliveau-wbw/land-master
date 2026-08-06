@@ -1,0 +1,13 @@
+{
+  "service": "CREATOR",
+  "whiteListedDomains": [
+    "https://creator.zoho.com",
+    "https://creatorapp.zoho.com",
+    "https://creatorexport.zoho.com",
+    "https://cdnjs.cloudflare.com",
+    "https://download.zoho.com",
+    "https://previewengine.zoho.com",
+    "https://cdn.jsdelivr.net"
+  ],
+  "config": []
+}

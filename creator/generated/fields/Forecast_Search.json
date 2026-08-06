@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Forecast_Search",
+  "display_name": "Forecast Search",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision1",
+      "display_name": "Subdivision",
+      "type": "list",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Builder\",\"Planning\"}",
+      "display_format": null,
+      "initial_value": "\"Builder\"",
+      "private": false
+    },
+    {
+      "link_name": "Builder1",
+      "display_name": "Builder",
+      "type": "list",
+      "values": "Builder.ID",
+      "display_format": "[Builder_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Forecast_Year",
+      "display_name": "Forecast Year",
+      "type": "picklist",
+      "values": "{\"2018\",\"2019\",\"2020\",\"2021\",\"2022\",\"2023\",\"2024\",\"2025\",\"2026\",\"2027\",\"2028\",\"2029\",\"2030\",\"2031\",\"2032\",\"2033\",\"2034\",\"2035\",\"2036\",\"2037\",\"2038\",\"2039\",\"2040\",\"2041\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain4",
+      "display_name": "plain4",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Territory",
+      "display_name": "Territory",
+      "type": "picklist",
+      "values": "{\"Bryan/College Station\",\"Corpus Christi\",\"Dallas/Fort Worth\",\"Fort Hood\",\"Houston\",\"North Austin\",\"San Antonio\",\"South Austin\",\"Temple/Belton\",\"Waco\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "City",
+      "display_name": "City",
+      "type": "picklist",
+      "values": "{\"Killeen\",\"Granger\",\"Caldwell\",\"Temple\",\"Waco\",\"Bryan\",\"Pflugerville\",\"Belton\",\"Bruceville-Eddy\",\"Copperas Cove\",\"Seguin\",\"Harker Heights\",\"Taylor\",\"New Braunfels\",\"Jarrell\",\"Troy\",\"Nolanville\",\"Robinson\",\"Salado\",\"San Antonio\",\"Georgetown\",\"Lorena\",\"Addison\",\"Balch Springs\",\"Carrollton\",\"Cedar Hill\",\"Cockrell Hill\",\"Combine\",\"Coppell\",\"Dallas\",\"DeSoto\",\"Duncanville\",\"Farmers Branch\",\"Ferris\",\"Garland\",\"Glenn Heights\",\"Grand Prairie\",\"Grapevine\",\"Highland Park\",\"Hutchins\",\"Irving\",\"Lancaster\",\"Lewisville\",\"Mesquite\",\"Ovilla\",\"Richardson\",\"Rowlett\",\"Sachse\",\"Seagoville\",\"Sunnyvale\",\"University Park\",\"Wilmer\",\"Wylie\",\"League City\",\"Pasadena\",\"Pearland\",\"Sugar Land\",\"Conroe\",\"Katy\",\"Houston\",\"Denton\",\"Sherman\",\"Westminster\",\"Anna\",\"Crandall\",\"Midlothian\",\"Celina\",\"Van Alstyne\",\"Greenville\",\"Princeton\",\"Corsicana\",\"Waxahachie\",\"Prosper\",\"Cresson\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "County",
+      "display_name": "County",
+      "type": "picklist",
+      "values": "{\"Bell\",\"Bexar\",\"McLennan\",\"Brazos\",\"Williamson\",\"Coryell\",\"Guadalupe\",\"Comal\",\"Burleson\",\"Falls\",\"Harris\",\"Grayson\",\"Collin\",\"Tarrant\",\"Johnson\",\"Kaufman\",\"Ellis\",\"Denton\",\"Hunt\",\"Dallas\",\"Cooke\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

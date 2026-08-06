@@ -1,0 +1,33 @@
+
+name: Land Master feature
+description: Request a widget or Creator feature
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options: [Proforma, Budget, Land Master, Contracts, Tax Center, Gantt, Creator backend, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+    validations:
+      required: true
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired behavior
+    validations:
+      required: true
+  - type: textarea
+    id: do_not_change
+    attributes:
+      label: Do not change
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance tests

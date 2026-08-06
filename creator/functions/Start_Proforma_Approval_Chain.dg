@@ -1,0 +1,97 @@
+				 map Start_Proforma_Approval_Chain(string proformaId)
+                 {
+                 	response = Map();
+                 	try 
+                 	{
+                 		proformaIdText = ifnull(proformaId,"").toString().trim();
+                 		if(proformaIdText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma ID is required.");
+                 			return response;
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		pf = Add_Pro_Forma[ID == proformaIdLong];
+                 		if(pf.ID == null)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma not found.");
+                 			return response;
+                 		}
+                 		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+                 		if(rows.count() == 0)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Add at least one approval step before submitting this Pro Forma.");
+                 			return response;
+                 		}
+                 		missingRecipients = List();
+                 		missingTitles = List();
+                 		expectedOrder = 1;
+                 		for each  row in rows
+                 		{
+                 			rowTitle = ifnull(row.Title,"").toString().trim();
+                 			rowEmail = ifnull(row.Approver,"").toString().trim();
+                 			if(rowTitle == "")
+                 			{
+                 				missingTitles.add("Step " + expectedOrder.toString());
+                 			}
+                 			if(rowEmail == "")
+                 			{
+                 				missingRecipients.add(if(rowTitle == "","Step " + expectedOrder.toString(),rowTitle));
+                 			}
+                 			// Normalize the sequence before routing so there can be no gaps.
+                 			row.Sort_Order=expectedOrder;
+                 			expectedOrder = expectedOrder + 1;
+                 		}
+                 		if(missingTitles.size() > 0)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Missing approval step name for: " + missingTitles.toString(", "));
+                 			return response;
+                 		}
+                 		if(missingRecipients.size() > 0)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Missing approver email for: " + missingRecipients.toString(", "));
+                 			return response;
+                 		}
+                 		for each  row in rows
+                 		{
+                 			row.Status="Not Sent";
+                 			row.Approval_Notes="";
+                 			row.Sent_Date=null;
+                 			row.Responded_Date=null;
+                 		}
+                 		firstRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == 1];
+                 		if(firstRow.ID == null)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","The first approval row could not be found.");
+                 			return response;
+                 		}
+                 		firstRow.Status="Pending";
+                 		firstRow.Sent_Date=zoho.currenttime;
+                 		firstRow.Responded_Date=null;
+                 		pf.Lock_Inputs=true;
+                 		emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Started","","System");
+                 		if(ifnull(emailResult.get("success"),false) != true)
+                 		{
+                 			firstRow.Status="Not Sent";
+                 			firstRow.Sent_Date=null;
+                 			pf.Lock_Inputs=false;
+                 			response.put("success",false);
+                 			response.put("message",emailResult.get("message"));
+                 			return response;
+                 		}
+                 		response.put("success",true);
+                 		response.put("message","Approval request sent to " + firstRow.Title + " with the approval PDF packet.");
+                 		response.put("pendingApprovalId",firstRow.ID.toString());
+                 		response.put("packetFileName",emailResult.get("packetFileName"));
+                 	}	catch (e)
+                 	{
+                 		response.put("success",false);
+                 		response.put("message",e.toString());
+                 	}
+                 	return response;
+                 }

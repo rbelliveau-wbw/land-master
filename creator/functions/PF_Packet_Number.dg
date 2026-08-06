@@ -1,0 +1,20 @@
+				 string PF_Packet_Number(string value, int decimals)
+                 {
+                 	clean = ifnull(value,"").toString();
+                 	clean = clean.trim();
+                 	if(clean == "")
+                 	{
+                 		return "-";
+                 	}
+                 	clean = clean.replaceAll(",","");
+                 	numberValue = clean.toDecimal();
+                 	if(decimals == 2)
+                 	{
+                 		return numberValue.round(2).toText("#,##0.00");
+                 	}
+                 	if(decimals == 1)
+                 	{
+                 		return numberValue.round(1).toText("#,##0.0");
+                 	}
+                 	return numberValue.round(0).toText("#,##0");
+                 }

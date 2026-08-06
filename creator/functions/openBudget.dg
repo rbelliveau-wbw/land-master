@@ -1,0 +1,8 @@
+				 void openBudget(int proformaId)
+                 {
+                 	budgetExist = Add_Budget[Pro_Forma == proformaId.toLong()];
+                 	if(budgetExist.count() = 1)
+                 	{
+                 		openURL("#Form:Add_Budget?recLinkID=" + budgetExist.ID + "&viewLinkName=All_Budgets","popup window","height=90%,width=90%");
+                 	}
+                 }

@@ -1,0 +1,13 @@
+				 void massCreateforecasts(Subdivision subdiv)
+                 {
+                 	//get record id's
+                 	subdivids = subdiv.ID.getall();
+                 	//get Builder Takedowns, sort by newest, and grab top line (newest)
+                 	//builderTd = (Builder_Takedown[Added_Time = zoho.currentdate].ID sort by Added_Time desc).getAll();
+                 	//buildertdTop = builderTd.get(0);
+                 	//open URL of newest Builder Takedown
+                 	//openUrl(zoho.appuri + "/Builder_Takedown/record-edit/All_Builder_Takedowns/" + buildertdTop,"popup window");
+                 	massupdUrl = "#Form:Mass_Create_Forecasts?Subdivisions=" + subdivids;
+                 	openUrl(massupdUrl,"popup window");
+                 	//info btdUrl;
+                 }

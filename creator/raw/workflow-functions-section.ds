@@ -1,0 +1,1480 @@
+		functions
+		{
+			Refresh_Calc_Fields_Taked as "Refresh Calc Fields - Takedown Schedule"
+			{
+				type =  functions
+				form = Takedown_Schedule
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//This code goes through all Takedown_Schedules daily and updates the following fields
+										//1. Takedown_Schedule.Lots_Sold
+										//2. Takedown_Schedule.Takedown_Start_Date
+										status = "Sold";
+										lotCount = 0;
+										for each  subdiv in input.Subdivisions
+										{
+											lots = Lots[ID != 0 && Builder1 == input.Builder1 && Status == status && Purchase_Date != null && Subdivision == subdiv] sort by Purchase_Date;
+											lotCount = lotCount + lots.count(ID);
+											startDate = lots.minimum(Purchase_Date);
+											if(startDate < input.Takedown_Start_Date || input.Takedown_Start_Date == NULL)
+											{
+												input.Takedown_Start_Date = startDate;
+											}
+											input.Lots_Sold = lotCount;
+										}
+					)
+					}
+					actions  (Takedown_Start_Date is not null)
+					{
+					on click
+					(
+						if(Status != "Completed" && Takedown_Start_Date != NULL && Total_Lot_Obligation != NULL && Initial_Takedown != null && Continued_Takedown_Delay_Days != 0)
+										{
+											dayDifference = abs(daysBetween(input.Takedown_Start_Date,today));
+											info dayDifference;
+											contdMultiple = floor((dayDifference - input.Initial_Delay_Days) / input.Continued_Takedown_Delay_Days);
+											if(dayDifference <= Initial_Delay_Days)
+											{
+												input.Lots_Expected = 0;
+											}
+											if(dayDifference > Initial_Delay_Days && addDay(input.Takedown_Start_Date,dayDifference) < Takedown_End_Date)
+											{
+												input.Lots_Expected = input.Initial_Takedown + contdMultiple * input.Continued_Takedown;
+											}
+											if(Takedown_End_Date <= today)
+											{
+												input.Lots_Expected = input.Total_Lot_Obligation;
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						if(Takedown_Start_Date != null)
+										{
+											takedownLength = ceil((input.Total_Lot_Obligation - input.Initial_Takedown) / input.Continued_Takedown) * input.Continued_Takedown_Delay_Days + input.Initial_Delay_Days;
+											//tdStart = Takedown_Start_Date;
+											input.Takedown_End_Date = input.Takedown_Start_Date.addDay(takedownLength);
+										}
+					)
+					}
+					actions  (Status == "Active" || Status == "Behind")
+					{
+					on click
+					(
+						lotsSold = input.Lots_Sold;
+										lotsExpected = input.Lots_Expected;
+										input.Takedown_Schedule_Code = input.Subdivisions.Subdivision_Code + ' - ' + input.Builder1.Builder_Name;
+										if(lotsSold < lotsExpected)
+										{
+											input.Status = "Behind";
+										}
+										if(lotsSold >= input.Total_Lot_Obligation)
+										{
+											input.Status = "Completed";
+											input.Completion_Percent = 100;
+										}
+										if(lotsSold < input.Total_Lot_Obligation)
+										{
+											input.Completion_Percent = lotsSold / input.Total_Lot_Obligation * 100;
+										}
+					)
+					}
+				}
+			}
+			Create_Builder_Takedown as "Create Builder Takedown"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.createBuilderTakedown(Lots);
+					}
+				}
+			}
+			Saved_Search_Open as "Saved Search - Open"
+			{
+				type =  functions
+				form = Lot_Search
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						lotCode = "";
+										lotBuyer = "";
+										lotStatus = "";
+										lotCity = "";
+										lotCounty = "";
+										subdivName = "";
+										basePrice = "";
+										lotNo = "";
+										block = "";
+										monthName = "";
+										monthNum = "";
+										monthSearch = "";
+										specDate = "";
+										monthQuery = "";
+										reportName = "All_Active_Lots_List_View?";
+										if(input.Date_Select = "Entered Date" && input.Specific_Month.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											months = Map();
+											months.put("January","01");
+											months.put("February","02");
+											months.put("March","03");
+											months.put("April","04");
+											months.put("May","05");
+											months.put("June","06");
+											months.put("July","07");
+											months.put("August","08");
+											months.put("September","09");
+											months.put("October","10");
+											months.put("November","11");
+											months.put("December","12");
+											monthSelection = input.Specific_Month;
+											for each  month in monthSelection
+											{
+												monthSearch = monthSearch + months.get(month.toString()) + ",";
+											}
+											monthQuery = "&&Entered_Date_Text=[" + monthSearch + "]&Entered_Date_Text_op=24" + "&&Entered_Date_Text=" + specDate;
+										}
+										if(input.Date_Select = "Entered Date" && input.Specific_Date.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											monthQuery = "&&Entered_Date_Text=" + specDate;
+										}
+										if(input.Date_Select = "Purchase Date" && input.Specific_Month.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											months = Map();
+											months.put("January","01");
+											months.put("February","02");
+											months.put("March","03");
+											months.put("April","04");
+											months.put("May","05");
+											months.put("June","06");
+											months.put("July","07");
+											months.put("August","08");
+											months.put("September","09");
+											months.put("October","10");
+											months.put("November","11");
+											months.put("December","12");
+											monthSelection = input.Specific_Month;
+											for each  month in monthSelection
+											{
+												monthSearch = monthSearch + months.get(month.toString()) + ",";
+											}
+											monthQuery = "&&Purch_Date_Text=[" + monthSearch + "]&Purch_Date_Text_op=24" + "&&Purch_Date_Text=" + specDate;
+										}
+										if(input.Date_Select = "Purchase Date" && input.Specific_Date.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											monthQuery = "&&Purch_Date_Text=" + specDate;
+										}
+										if(input.Date_Select = "Close Date" && input.Specific_Month.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											months = Map();
+											months.put("January","01");
+											months.put("February","02");
+											months.put("March","03");
+											months.put("April","04");
+											months.put("May","05");
+											months.put("June","06");
+											months.put("July","07");
+											months.put("August","08");
+											months.put("September","09");
+											months.put("October","10");
+											months.put("November","11");
+											months.put("December","12");
+											monthSelection = input.Specific_Month;
+											for each  month in monthSelection
+											{
+												monthSearch = monthSearch + months.get(month.toString()) + ",";
+											}
+											monthQuery = "&&Close_Date_Text=[" + monthSearch + "]&Close_Date_Text_op=24" + "&&Close_Date_Text=" + specDate;
+										}
+										if(input.Date_Select = "Close Date" && input.Specific_Date.isEmpty() = false)
+										{
+											specDate = input.Specific_Date;
+											monthQuery = "&&Close_Date_Text=" + specDate;
+										}
+										if(input.Code_Search != "")
+										{
+											//companyName = "Company1=" + input.Search_All + "&Company1_op=26";
+											lotCode = "&Lot_Code=" + input.Code_Search + "&Lot_Code_op=26";
+											//subdivName = "&Subdivision=" + input.Code_Search + "&Subdivision_op=26";
+										}
+										if(input.Buyer.isEmpty() = false)
+										{
+											lotBuyer = "&&Builder1=[" + Builder[ID == input.Buyer].Builder_Name.getAll() + "]";
+										}
+										if(input.Status.isEmpty() = false)
+										{
+											lotStatus = "&&Status=[" + input.Status + "]";
+										}
+										if(input.County.isEmpty() = false)
+										{
+											lotCounty = "&&County=[" + input.County + "]";
+										}
+										if(input.City.isEmpty() = false)
+										{
+											lotCity = "&&City=[" + input.City + "]";
+										}
+										if(input.Subdivision1.isEmpty() = false)
+										{
+											subdivName = "&&Subdivision=[" + Subdivision[ID == input.Subdivision1].Subdivision_Name.getAll() + "]";
+										}
+										if(input.Base_Price.isEmpty() = false)
+										{
+											basePrice = "&&Base_Price=" + input.Base_Price;
+										}
+										if(input.Lot_No.isEmpty() = false)
+										{
+											lotNo = "&&Lot_Number=" + input.Lot_No;
+										}
+										if(input.Block.isEmpty() = false)
+										{
+											block = "&&Block=[" + input.Block + "]";
+										}
+										if(input.Spreadsheet_View = TRUE)
+										{
+											reportName = "All_Active_Lots?";
+										}
+										lotsUrl = zoho.appuri + "view-embed/" + reportName;
+										queryUrl = lotsUrl + lotCode + lotBuyer + lotStatus + lotCity + lotCounty + subdivName + basePrice + lotNo + block + monthQuery;
+										info queryUrl;
+										openUrl(queryUrl,"iframe","frame16");
+										queryUrl = zoho.appuri + "/Lot_Search/record-edit/Saved_Searches/" + input.ID;
+										//testUrl = zoho.appuri + "/#Form:Lot_Search?recLinkID=4410926000000167019&viewLinkName=Saved_Searches";
+										//searchUrl = zoho.appuri + "form-embed/Lot_Search?";
+										//queryUrl2 = searchUrl + "Code_Search=" + input.Code_Search + "&&Buyer=" + input.Buyer + "&&Status=" + input.Status + "&&City=" + input.City + "&&County=" + input.County + "&&Subdivision1=" + input.Subdivision1 + "&&Base_Price=" + basePrice2 + "&&Lot_No=" + lotNo2 + "&&Block_No=" + blockNo2 + "&&Specific_Month=" + input.Specific_Month;
+										openUrl(queryUrl,"iframe","frame08");
+					)
+					}
+				}
+			}
+			Saved_Search_Delete as "Saved Search - Delete"
+			{
+				type =  functions
+				form = Lot_Search
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						delete from Lot_Search[ID == input.ID];
+					)
+					}
+				}
+			}
+			Mass_Update as "Mass Update"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.massUpdate(Lots);
+					}
+				}
+			}
+			Clone_Takedown_Template as "Clone Takedown Template"
+			{
+				type =  functions
+				form = Takedown_Template
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						taxPer = input.Tax_Per_Lot.toString();
+										percentageBase = input.Percent_of_Appraisal.toString();
+										additionalFee = input.Additional_Fee.toString();
+										interest1 = input.Interest_Rate_1.toString();
+										interest2 = input.Interest_Rate_2.toString();
+										interest3 = input.Interest_Rate_3.toString();
+										interest4 = input.Interest_Rate_4.toString();
+										interest5 = input.Interest_Rate_5.toString();
+										interest6 = input.Interest_Rate_6.toString();
+										interest7 = input.Interest_Rate_7.toString();
+										interest8 = input.Interest_Rate_8.toString();
+										interest9 = input.Interest_Rate_9.toString();
+										interest10 = input.Interest_Rate_10.toString();
+										interest11 = input.Interest_Rate_11.toString();
+										interest12 = input.Interest_Rate_12.toString();
+										from1 = input.From_1.toString();
+										to1 = input.To_1.toString();
+										from2 = input.From_2.toString();
+										to2 = input.To_2.toString();
+										from3 = input.From_3.toString();
+										to3 = input.To_3.toString();
+										from4 = input.From_4.toString();
+										to4 = input.To_4.toString();
+										from5 = input.From_5.toString();
+										to5 = input.To_5.toString();
+										from6 = input.From_6.toString();
+										to6 = input.To_6.toString();
+										from7 = input.From_7.toString();
+										to7 = input.To_7.toString();
+										from8 = input.From_8.toString();
+										to8 = input.To_8.toString();
+										from9 = input.From_9.toString();
+										to9 = input.To_9.toString();
+										from10 = input.From_10.toString();
+										to10 = input.To_10.toString();
+										from11 = input.From_11.toString();
+										to11 = input.To_11.toString();
+										from12 = input.From_12.toString();
+										to12 = input.To_12.toString();
+										datesUrl = "&&From_1=" + from1 + "&&To_1=" + to1 + "&&From_2=" + from2 + "&&To_2=" + to2 + "&&From_3=" + from3 + "&&To_3=" + to3 + "&&From_4=" + from4 + "&&To_4=" + to4 + "&&From_5=" + from5 + "&&To_5=" + to5 + "&&From_6=" + from6 + "&&To_6=" + to6 + "&&From_7=" + from7 + "&&To_7=" + to7 + "&&From_8=" + from8 + "&&To_8=" + to8 + "&&From_9=" + from9 + "&&To_9=" + to9 + "&&From_10=" + from10 + "&&To_10=" + to10 + "&&From_11=" + from11 + "&&To_11=" + to11 + "&&From_12=" + from12 + "&&To_12=" + to12;
+										tdTemp = "#Form:Takedown_Template?Subdivision1=" + input.Subdivision1 + datesUrl + "&&Builder1=" + input.Builder1 + "&&Tax_Method=" + input.Tax_Method + "&&Tax_Per_Lot=" + taxPer + "&&Percent_of_Base=" + percentageBase + "&&Additional_Fee_Type=" + input.Additional_Fee_Type + "&&Additional_Fee=" + additionalFee + "&&Interest_Rate_1=" + interest1 + "&&Interest_Rate_2=" + interest2 + "&&Interest_Rate_3=" + interest3 + "&&Interest_Rate_4=" + interest4 + "&&Interest_Rate5=" + interest5 + "&&Interest_Rate_6=" + interest6 + "&&Interest_Rate_7=" + interest7 + "&&Interest_Rate_8=" + interest8 + "&&Interest_Rate_9=" + interest9 + "&&Interest_Rate_10=" + interest10 + "&&Interest_Rate_11=" + interest11 + "&&Interest_Rate_12=" + interest12;
+										openUrl(tdTemp,"same window");
+					)
+					}
+				}
+			}
+			Print_Builder_Takedown as "Print Builder Takedown"
+			{
+				type =  functions
+				form = Builder_Takedown
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						openUrl(zoho.appuri + "/record-print/All_Builder_Takedowns/" + input.ID + "/","new window");
+					)
+					}
+				}
+			}
+			Create_Builder_Takedown_L as "Create Builder Takedown - List View"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.createBuilderTakedown(Lots);
+					}
+				}
+			}
+			Set_to_Closed_Builder_Tak as "Set to Closed - Builder Takedown"
+			{
+				type =  functions
+				form = Builder_Takedown
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					update Builder_Takedown[ID == input.ID]
+					[
+						Status = "Closed"
+					]
+					}
+				}
+			}
+			Mass_Update_List_View1 as "Mass Update - List View"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.massUpdate(Lots);
+					}
+				}
+			}
+			Create_Tax_Rate_Template as "Create Tax Rate Template"
+			{
+				type =  functions
+				form = Tax_Rate
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.createTaxTemplate(Tax_Rate);
+					}
+				}
+			}
+			Mass_Update_Tax_Parcels as "Mass Update Tax Parcels"
+			{
+				type =  functions
+				form = Tax_Parcel_Year
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.massUpdatetax(Tax_Parcel_Year);
+					}
+				}
+			}
+			Add_Forecasts as "Add Forecasts"
+			{
+				type =  functions
+				form = Subdivision
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+						thisapp.massCreateforecasts(Subdivision);
+					}
+				}
+			}
+			Mass_Create_Forecasts as "Mass Create Forecasts"
+			{
+				type =  functions
+				form = Subdivision
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.massCreateforecasts(Subdivision);
+					}
+				}
+			}
+			Refresh_Forecasts_Forecas as "Refresh Forecasts/Forecast Years - Forecast Year"
+			{
+				type =  functions
+				form = Forecast_Year
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//iterate through every Forecast record
+										for each  forecast in Forecast[Forecast_Year2 == input.ID]
+										{
+											//create variable for Forecast.Forecast_StartDate plus one month -- to create Forecast end date
+											forecastEnddate = forecast.Forecast_Start_Date.addMonth(1);
+											//count all Lots with same Builder, Subdiv as Forecast and check for  whether Close Date is within FC Start Date plus one month & status of Closed
+											lotsScheduled = Lots[Subdivision == forecast.Subdivision1 && Builder1 == forecast.Builder1 && Purchase_Date >= forecast.Forecast_Start_Date && Purchase_Date < forecastEnddate && Close_Date == null].count();
+											lotsSold = Lots[Subdivision == forecast.Subdivision1 && Builder1 == forecast.Builder1 && Close_Date >= forecast.Forecast_Start_Date && Close_Date < forecastEnddate && Status = "Sold"].count();
+											//write value to Forecast.Actual_Lots
+											if(lotsSold == 0)
+											{
+												forecast.Actual_Lots=null;
+											}
+											if(lotsScheduled == 0)
+											{
+												forecast.Scheduled_Lots=null;
+											}
+											if(lotsSold > 0)
+											{
+												forecast.Actual_Lots=lotsSold;
+											}
+											if(lotsScheduled > 0)
+											{
+												forecast.Scheduled_Lots=lotsScheduled;
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						//Forecast Year dropdown is stored as string, this changed to number
+										fcyearTonum = input.Forecast_Year.toNumber();
+										//this variable sets the final day of the Forecast Year -- Jan 31st of FC Year + 1 --  to be used in the lotsSold query
+										fcYearpone = "01/31/" + (fcyearTonum + 1);
+										//query all Sold lots with same Builder/Subdiv as Forecast Year record with Close Date >= 02/01 and Close Date <= 01/31 of the next year
+										lotsSold = Lots[Subdivision == input.Subdivision1 && Builder1 == input.Builder1 && Status == "Sold" && Close_Date >= "02/01/" + input.Forecast_Year && Close_Date <= fcYearpone].count();
+										//query all Contracted lots with same Builder/Subdiv as Forecast Year
+										//query all Contracted lots with same Builder/Subdiv as Forecast Year
+										if(input.Builder1.Builder_Name != "Placeholder")
+										{
+											lotsContracted = Lots[Subdivision == input.Subdivision1 && Builder1 == input.Builder1 && Status == "Contracted"].count();
+										}
+										if(input.Builder1.Builder_Name == "Placeholder")
+										{
+											lotsContracted = Lots[Subdivision == input.Subdivision1 && Builder1 == input.Builder1].count();
+										}
+										//query all Forecasts that belong to this Forecast year and sum the Actual/Sold values if prev month
+										fcActual = Forecast[Subdivision1 == input.Subdivision1 && Builder1 == input.Builder1 && Forecast_Year == input.Forecast_Year && Forecast_Start_Date <= zoho.currentdate.subMonth(1)].sum(Actual_Lots);
+										//info fcActual;
+										//query all Forecasts that belong to this FC Year and sum the Forecasted lots this month and going forward
+										fcForecasted = Forecast[Subdivision1 == input.Subdivision1 && Builder1 == input.Builder1 && Forecast_Year == input.Forecast_Year && Forecast_Start_Date > zoho.currentdate.subMonth(1)].sum(Forecasted_Lots);
+										//info fcForecasted;
+										//set Forecasted plus Actual variable
+										fcPlusactual = fcActual.toLong() + fcForecasted.toLong();
+										//write lotsSold count and lotsContracted count to Forecast Year fields
+										input.Total_Sold_Forecasted = fcPlusactual;
+										input.Total_Sold_Lots = lotsSold;
+										input.Total_Contracted_Lots = lotsContracted;
+										//set subdiv code -- can delete after runs once
+										subdivCode = Subdivision[ID == input.Subdivision1].Subdivision_Code;
+										input.Subdivision_Code = subdivCode;
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						if(input.Status == "Planning")
+										{
+											input.Forecast_Name = input.Subdivision_Code + " - " + "Planning" + " - FC" + input.Forecast_Year;
+										}
+										if(input.Status == "Builder")
+										{
+											input.Forecast_Name = input.Subdivision_Code + " - " + input.Builder1.Builder_Name + " - FC" + input.Forecast_Year;
+										}
+					)
+					}
+				}
+			}
+			Send_for_Approvals_Contra1 as "Send for Approvals - Contracts"
+			{
+				type =  functions
+				form = Contract
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//get latest Contract Version by created date
+										contractFiles = Contract_Version[Contract1 == input.ID && Email_Attachment == TRUE].File_field1.getAll();
+										minApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == "Not Sent"].minimum(Approval_Sequence);
+										for each  contractApproval in input.Approvals1
+										{
+											contractApproval.Reject_Reason=null;
+											emailBody = "<p>The following contract is awaiting your approval.</p><br><a href='https://creatorapp.zohopublic.com/wbdevelopment/land-master/Contract_Approvals/record-edit/All_Contract_Approvals/" + contractApproval.ID + "/56FD5tkOEUKxhpxFhOkgQrUbN8yQVks7WpPAUU6R300UDB4bp59fsE4RDETy3Sp4yTUaMzeVmfY3OkmXRWSh3O2uXKn4pSrnGeOT'>Approve/Reject</a>";
+											if(contractApproval.Approval_Email == TRUE)
+											{
+												sendmail
+												[
+													from :"Contracts@wbdevelopment.com"
+													to :contractApproval.Approver
+													subject :input.Builder.Builder_Name + " " + contractApproval.Type1 + " for " + input.Subdivision1.Subdivision_Name + " is awaiting your approval."
+													message :emailBody + "<p>Subdivision: " + input.Subdivision1.Subdivision_Name + "</p>" + "<p>Buyer: " + input.Builder.Builder_Name + "</p>" + "<p>Initiated by: " + input.Modified_User + "</p>"
+													Attachments :file:contractFiles
+												]
+												contractApproval.Status="Awaiting Approval";
+												contractApproval.Approval_Email=FALSE;
+												contractApproval.Last_Reminder_Date=zoho.currentdate;
+												contractApproval.Next_Reminder_Date=contractApproval.Last_Reminder_Date.addDay(contractApproval.Reminder_Interval_Days);
+												input.Status = "Awaiting Approvals";
+												input.Current_Approver = contractApproval.Approver;
+											}
+										}
+					)
+					}
+				}
+			}
+			Create_Contract as "Create Contract"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.createContract(Lots);
+					}
+				}
+			}
+			Contract_Window as "Contract Window"
+			{
+				type =  functions
+				form = Contract
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						openURL("#Form:Contract?recLinkID=" + input.ID + "&viewLinkName=All_Contracts","popup window","height=90%,width=90%");
+					)
+					}
+				}
+			}
+			Send_for_Approvals as "Send for Approvals"
+			{
+				type =  functions
+				form = Contract
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//get latest Contract Version by created date
+										contractFile = Contract_Version[Contract1 == input.ID].File_field1 sort by Date_field1 desc;
+										minApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == "Not Sent"].minimum(Approval_Sequence);
+										for each  contractApproval in input.Approvals1
+										{
+											emailBody = "<p>The following contract is awaiting your approval.</p><br><a href='https://creatorapp.zohopublic.com/wbdevelopment/land-master/Contract_Approvals/record-edit/All_Contract_Approvals/" + contractApproval.ID + "/56FD5tkOEUKxhpxFhOkgQrUbN8yQVks7WpPAUU6R300UDB4bp59fsE4RDETy3Sp4yTUaMzeVmfY3OkmXRWSh3O2uXKn4pSrnGeOT'>Approve/Reject</a>";
+											if(contractApproval.Status == "Not Sent" && contractApproval.Approval_Sequence == minApprovalsequence)
+											{
+												sendmail
+												[
+													from :"Contracts@wbdevelopment.com"
+													to :contractApproval.Approver
+													subject :input.Builder.Builder_Name + " contract for " + input.Subdivision1.Subdivision_Name + " is awaiting your approval."
+													message :emailBody + "<p>Subdivision: " + input.Subdivision1.Subdivision_Name + "</p>" + "<p>Buyer: " + input.Builder.Builder_Name + "</p>" + "<p>Initiated by: " + input.Modified_User + "</p>"
+													Attachments :file:contractFile
+												]
+												contractApproval.Status="Awaiting Approval";
+												contractApproval.Last_Reminder_Date=zoho.currentdate;
+												contractApproval.Next_Reminder_Date=contractApproval.Last_Reminder_Date.addDay(contractApproval.Reminder_Interval_Days);
+												input.Status = "Awaiting Approvals";
+												input.Current_Approver = contractApproval.Approver;
+											}
+										}
+					)
+					}
+				}
+			}
+			Refresh_Names as "Refresh Names"
+			{
+				type =  functions
+				form = Forecast_Year
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						if(input.Status == "Planning")
+										{
+											input.Forecast_Name = input.Subdivision_Code + " - " + "Planning" + " - FC" + input.Forecast_Year;
+										}
+										if(input.Status == "Builder")
+										{
+											input.Forecast_Name = input.Subdivision_Code + " - " + input.Builder1.Builder_Name + " - FC" + input.Forecast_Year;
+										}
+					)
+					}
+				}
+			}
+			Create_Budget_from_Subdiv as "Create Budget from Subdivision"
+			{
+				type =  functions
+				form = Subdivision
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						// Create the Budget
+										newBudget = insert into Add_Budget
+										[
+											Subdivision1=input.ID
+											Added_User=zoho.loginuser
+											Budget_Type="Development"
+											Budget_Name=input.Subdivision_Code + " - " + zoho.currentdate
+											Subdivision_Code=input.Subdivision_Code
+										];
+										// Add 8 approval rows to the new Budget
+										newBudgetRec = Add_Budget[ID == newBudget];
+										// Construction - VP
+										row1 = Add_Budget.Approvals();
+										row1.Approver="VP@wbdevelopment.com";
+										row1.Title="VP";
+										row1.Status="Not Sent";
+										row1.Type1="Construction";
+										row1.Sort_Order=1;
+										// Construction - CFO
+										row2 = Add_Budget.Approvals();
+										row2.Approver="jking@wbdevelopment.com";
+										row2.Title="CFO";
+										row2.Status="Not Sent";
+										row2.Type1="Construction";
+										row2.Sort_Order=2;
+										// Construction - COO
+										row3 = Add_Budget.Approvals();
+										row3.Approver="dreinke@wbdevelopment.com";
+										row3.Title="COO";
+										row3.Status="Not Sent";
+										row3.Type1="Construction";
+										row3.Sort_Order=3;
+										// Development - VP
+										row5 = Add_Budget.Approvals();
+										row5.Approver="VP@wbdevelopment.com";
+										row5.Title="VP";
+										row5.Status="Not Sent";
+										row5.Type1="Development";
+										row5.Sort_Order=1;
+										// Development - CFO
+										row6 = Add_Budget.Approvals();
+										row6.Approver="jking@wbdevelopment.com";
+										row6.Title="CFO";
+										row6.Status="Not Sent";
+										row6.Type1="Development";
+										row6.Sort_Order=2;
+										// Development - COO
+										row7 = Add_Budget.Approvals();
+										row7.Approver="dreinke@wbdevelopment.com";
+										row7.Title="COO";
+										row7.Status="Not Sent";
+										row7.Type1="Development";
+										row7.Sort_Order=3;
+										approvalRows = Collection();
+										approvalRows.insert(row1);
+										approvalRows.insert(row2);
+										approvalRows.insert(row3);
+										approvalRows.insert(row5);
+										approvalRows.insert(row6);
+										approvalRows.insert(row7);
+										newBudgetRec.Approvals.insert(approvalRows);
+										// Backfill / enforce Sort_Order on all Budget Approval rows
+										for each  budgetApproval in Budget_Approvals[ID != 0]
+										{
+											approvalTitle = ifnull(budgetApproval.Title,"").trim().toUpperCase();
+											if(approvalTitle == "VP")
+											{
+												budgetApproval.Sort_Order=1;
+											}
+											else if(approvalTitle == "CFO")
+											{
+												budgetApproval.Sort_Order=2;
+											}
+											else if(approvalTitle == "COO")
+											{
+												budgetApproval.Sort_Order=3;
+											}
+											else if(approvalTitle == "CEO")
+											{
+												budgetApproval.Sort_Order=4;
+											}
+										}
+										// Fetch all Budget Categories where Template_Item = TRUE
+										budgetCategories = Budget_Category[Template_Item == true];
+										for each  category in budgetCategories
+										{
+											// Create a new Budget Category linked to the new Budget
+											newBudgetCategory = insert into Budget_Category
+											[
+												Budget_Category_Name=category.Budget_Category_Name
+												Budget=newBudget
+												Category_Code=category.Category_Code
+												Template_Item=false
+												Added_User=zoho.loginuser
+												Deparment=category.Deparment
+												Reimbursements=category.Reimbursements
+											];
+											// Fetch all Budget Items where Template_Item=TRUE and Category = Budget_Category.Name
+											budgetItems = Budget_Item[Template_Item == true && Category = category.Budget_Category_Name];
+											for each  item in budgetItems
+											{
+												// Create a new Budget Item linked to the new Budget Category
+												newBudgetItem = insert into Budget_Item
+												[
+													Item_Name=item.Item_Name
+													Department=item.Department
+													Category=item.Category
+													Dept_Code=item.Dept_Code
+													Cost_Code=item.Cost_Code
+													Budget=newBudget
+													Budget_Category=newBudgetCategory
+													Template_Item=false
+													Added_User=zoho.loginuser
+													Budget_Code=input.Subdivision_Code + "-" + item.Cost_Code
+													Department=item.Department
+												];
+											}
+										}
+										success message "Budget successfully created for " + input.Subdivision_Name;
+					)
+					}
+				}
+			}
+			Refresh_Import_Items_Budg as "Refresh/Import Items - Budget"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						// Gets all template budget items and check if they exist in the chosen Budget -- if not creates the Budget Item -- used to create missing items in Budgets if a new item is added to the template
+										templateItems = Budget_Item[Template_Item == TRUE];
+										// Get all existing budget item cost codes for the current budget
+										budgItems = Budget_Item[Budget == input.ID].Cost_Code.getAll();
+										// Clean up cost codes into a trimmed list
+										cleanBudgItems = List();
+										for each  code in budgItems
+										{
+											cleanBudgItems.add(code.toString().trim());
+										}
+										// Loop through template items
+										for each  item in templateItems
+										{
+											// Normalize the template item's cost code
+											code = item.Cost_Code.toString().trim();
+											// Check if cost code already exists in current budget
+											checkItem = cleanBudgItems.contains(code);
+											info "Checking code: " + code + " | Exists: " + checkItem;
+											if(checkItem == FALSE)
+											{
+												// Find matching budget category in this budget
+												budgCategory = Budget_Category[Budget_Category_Name == item.Category && Budget == input.ID];
+												// Insert missing item into Budget_Item
+												newBudgetItem = insert into Budget_Item
+												[
+													Item_Name=item.Item_Name
+													Department=item.Department
+													Category=item.Category
+													Dept_Code=item.Dept_Code
+													Cost_Code=item.Cost_Code
+													Budget=input.ID
+													Budget_Category=budgCategory.ID
+													Template_Item=false
+													Added_User=zoho.loginuser
+													Budget_Code=input.Subdivision1.Subdivision_Code + "-" + item.Cost_Code
+												];
+												// Log inserted item
+												info "MISSING ITEM CREATED: " + item.Cost_Code + " - " + item.Item_Name;
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						// Loop through all categories in the input
+										for each  cat in input.Budget_Categories
+										{
+											// Loop through all budget items within the current category
+											for each  item in cat.Budget_Items
+											{
+												// Find the template item that matches the item's cost code
+												templateItem = Budget_Item[Template_Item == TRUE && Cost_Code == item.Cost_Code];
+												// Look up the correct budget category using the template item's category
+												newCat = Budget_Category[Budget == item.Budget && Budget_Category_Name == templateItem.Category];
+												// Update the budget item's category to match the template if it doesn't already match
+												if(item.Budget_Category.Budget_Category_Name != newCat.Budget_Category_Name)
+												{
+													item.Budget_Category=newCat;
+													info "BUDGET ITEM " + item.Budget_Code + " MOVED TO " + newCat.Budget_Category_Name;
+												}
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						//create missing Budget Categories
+										//get template categories
+										for each  catTemplate in Budget_Category[Template_Item == TRUE]
+										{
+											budgCats = Budget_Category[Budget == input.ID && Budget_Category_Name == catTemplate.Budget_Category_Name];
+											if(budgCats.count() = 0)
+											{
+												insert into Budget_Category
+												[
+													Budget_Category_Name=catTemplate.Budget_Category_Name
+													Template_Item=false
+													Reimbursements=catTemplate.Reimbursements
+													Budget=input.ID
+													Deparment=catTemplate.Deparment
+													Category_Code=catTemplate.Category_Code
+													Added_User=zoho.loginuser
+												]
+												info "Added " + catTemplate.Budget_Category_Name + " to Budget Category list in ";
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						//loops through all items in the refreshed budget and fixes the names if they need it
+										for each  item in Budget_Item[Budget == input.ID]
+										{
+											code = input.Subdivision1.Subdivision_Code + "-" + item.Cost_Code;
+											if(item.Budget_Code != code)
+											{
+												info item.Budget_Code + " BEING UPDATED TO: " + code;
+												item.Budget_Code=code;
+											}
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						//put items in the correct category
+										for each  item in Budget_Item[Budget == input.ID]
+										{
+											//get Budget Category
+											budgCat = Budget_Category[Budget_Category_Name == item.Category && Template_Item == FALSE && Budget == input.ID];
+											//if Budget Cat returns 1 value and it doesn't equal what is currently assigned to the item
+											if(budgCat.count() = 1 && item.Budget_Category != budgCat.ID)
+											{
+												item.Budget_Category=budgCat.ID;
+												info "Moved " + item.Item_Name + " to " + budgCat.Budget_Category_Name;
+											}
+										}
+					)
+					}
+				}
+			}
+			Archive_Takedown_Template as "Archive Takedown Template"
+			{
+				type =  functions
+				form = Takedown_Template
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Archive = TRUE;
+					)
+					}
+				}
+			}
+			View_Proforma_Page as "View Proforma Page"
+			{
+				type =  functions
+				form = Add_Pro_Forma
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						profMonths = Proforma_Months[Proforma == input.ID].Date1 sort by Date1;
+										smallYear = profMonths.getYear();
+										openUrl(zoho.appuri + "#Page:Proforma_Management" + "?proformaId=" + input.ID + "&startYear=" + smallYear + "&startMonth=" + "1" + "&tabChoice=pnl","same window");
+					)
+					}
+				}
+			}
+			Create_Edit_Proforma_Budg as "Create/Edit Proforma Budget"
+			{
+				type =  functions
+				form = Add_Pro_Forma
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//budget exist check
+										budgetExist = Add_Budget[Pro_Forma == input.ID];
+										if(budgetExist.count() = 0)
+										{
+											// Create the Budget from the Pro Forma
+											newBudget = insert into Add_Budget
+											[
+												Added_User=zoho.loginuser
+												Pro_Forma=input.ID
+												Budget_Type="Pro Forma"
+												Budget_Name=input.Name + " Pro Forma - " + zoho.currentdate
+											];
+											// Fetch all Budget Categories where Template_Item = TRUE
+											budgetCategories = Budget_Category[Template_Item == true];
+											for each  category in budgetCategories
+											{
+												// Create a new Budget Category linked to the new Budget
+												newBudgetCategory = insert into Budget_Category
+												[
+													Budget_Category_Name=category.Budget_Category_Name
+													Budget=newBudget
+													Category_Code=category.Category_Code
+													Template_Item=false
+													Added_User=zoho.loginuser
+													Deparment=category.Deparment
+													Reimbursements=category.Reimbursements
+												];
+												// Fetch all Budget Items where Template_Item=TRUE and Category = Budget_Category.Name
+												budgetItems = Budget_Item[Template_Item == true && Category = category.Budget_Category_Name];
+												for each  item in budgetItems
+												{
+													// Create a new Budget Item linked to the new Budget Category
+													newBudgetItem = insert into Budget_Item
+													[
+														Item_Name=item.Item_Name
+														Department=item.Department
+														Category=item.Category
+														Dept_Code=item.Dept_Code
+														Cost_Code=item.Cost_Code
+														Budget=newBudget
+														Budget_Category=newBudgetCategory
+														Template_Item=false
+														Added_User=zoho.loginuser
+														Budget_Code="PF" + input.PF_Number.toString() + "-" + item.Cost_Code
+														Department=item.Department
+													];
+												}
+											}
+											openURL("#Form:Add_Budget?recLinkID=" + newBudget + "&viewLinkName=All_Budgets","popup window","height=90%,width=90%");
+											success message "Budget successfully created for " + input.Name + " Pro Forma.";
+										}
+										if(budgetExist.count() = 1)
+										{
+											openURL("#Form:Add_Budget?recLinkID=" + budgetExist.ID + "&viewLinkName=All_Budgets","popup window","height=90%,width=90%");
+										}
+					)
+					}
+				}
+			}
+			Edit_Proforma_Popup as "Edit Proforma Popup"
+			{
+				type =  functions
+				form = Add_Pro_Forma
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						openURL("#Form:Add_Pro_Forma?recLinkID=" + input.ID + "&viewLinkName=All_Pro_Formas","popup window","height=90%,width=90%");
+					)
+					}
+				}
+			}
+			View_Budget_PDF as "View Budget PDF"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						for each  cat in Budget_Category[Budget == input.ID]
+										{
+											cat.Actual_Total=Budget_Item[Budget_Category == cat.ID].sum(PROJ_Actual);
+											cat.Prelim_Budget_Total=Budget_Item[Budget_Category == cat.ID].sum(Prelim_Budget_Ttl);
+											cat.Budget_Total=Budget_Item[Budget_Category == cat.ID].sum(Budget_Ttl);
+											cat.Unapproved_Final_Budget_Total=Budget_Item[Budget_Category == cat.ID].sum(Unapproved_Final_Budget_Ttl);
+											//input.Budget.Actual_Grand_Total = Budget_Item[Budget == input.Budget].sum(PROJ_Actual);
+										}
+					)
+					}
+					actions 
+					{
+					on click
+					(
+						openUrl("https://creatorapp.zohopublic.com/wbdevelopment/land-master/page-perma/View_Budget/dh60eduWVq1ZGZ3BfUCsU1z7Jw3U8xXX2NWFDNYQ0d3fQB4hzjeZbyT7XRjtaD5GunSrOZMTjwHyEESnuMJxx6PnYtphXTT2qA4A?budgetId=" + input.ID + "&approver=CFO","same window");
+					)
+					}
+				}
+			}
+			Send_Budget_Email as "Send Budget Email"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						//Download the Creator page as PDF file using the invokeurl task.
+										fileResp = invokeurl
+										[
+											url :"https://creatorapp.zohopublic.com/wbdevelopment/land-master/pdf/View_Budget/dh60eduWVq1ZGZ3BfUCsU1z7Jw3U8xXX2NWFDNYQ0d3fQB4hzjeZbyT7XRjtaD5GunSrOZMTjwHyEESnuMJxx6PnYtphXTT2qA4A?isc5page=true&budgetId=" + input.ID
+											type :GET
+										];
+										fileResp.setFileName(input.Subdivision_Code + " - Budget - " + zoho.currentdate.toString("MM-dd-YYYY") + ".pdf");
+										//Send mail to all email address in the list, including the downloaded PDF file as an attachment.
+										sendmail
+										[
+											from :"contracts@wbdevelopment.com"
+											to :"rbelliveau@wbdevelopment.com"
+											subject :"Budget"
+											message :"hey33"
+											Attachments :file:fileResp
+										]
+					)
+					}
+				}
+			}
+			Sync_Milestones as "Sync Milestones"
+			{
+				type =  functions
+				form = Milestones
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						portalId = "700737166";
+										orgId = "700732567";
+										if(input.Push_Update == TRUE)
+										{
+											// === 4) Short delay to let the job initialize ===
+											getUrl("https://postman-echo.com/delay/3");
+											body = Map();
+											body.put("end_date",input.End_Date.toString("MM-dd-yyyy"));
+											body.put("start_date",input.Start_Date.toString("MM-dd-yyyy"));
+											resp = invokeurl
+											[
+												url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + input.Project_ID + "/milestones/" + input.Milestone_ID
+												type :POST
+												parameters:body.toString()
+												connection:"zoho_projects_connection"
+											];
+											info resp;
+											if(resp.toString().contains(input.Start_Date.toString("yyyy-MM-dd")) && resp.toString().contains(input.End_Date.toString("yyyy-MM-dd")))
+											{
+												input.Push_Update = false;
+												info body;
+												info resp;
+											}
+										}
+					)
+					}
+				}
+			}
+			Archive_Contract as "Archive Contract"
+			{
+				type =  functions
+				form = Contract
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Archive = TRUE;
+					)
+					}
+				}
+			}
+			Lock_Prelim_Budget as "Lock Prelim Budget"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						if(input.Lock_Prelim_Budget == FALSE)
+										{
+											input.Lock_Prelim_Budget = TRUE;
+											input.Lock_Prelim_Budget_Date = zoho.currentdate;
+										}
+					)
+					}
+				}
+			}
+			Lock_Final_Budget as "Lock Final Budget"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						if(input.Lock_Final_Budget == FALSE)
+										{
+											for each  budgItem in Budget_Item[Budget == input.ID && Department == "Construction"]
+											{
+												if(budgItem.Unapproved_Final_Budget_Ttl > 0 && budgItem.Unapproved_Final_Budget_Ttl != NULL)
+												{
+													budgItem.Budget_Ttl=budgItem.Unapproved_Final_Budget_Ttl;
+													budgItem.Unapproved_Final_Budget_Ttl=null;
+												}
+											}
+											input.Lock_Final_Budget = TRUE;
+											input.Lock_Final_Budget_Date = zoho.currentdate;
+										}
+					)
+					}
+				}
+			}
+			Contract_Popup as "Contract Popup"
+			{
+				type =  functions
+				form = Contract
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						openURL("#Form:Contract?recLinkID=" + input.ID + "&viewLinkName=All_Contracts","popup window","height=90%,width=90%");
+					)
+					}
+				}
+			}
+			Sync_Only_MS_End as "Sync Only MS End"
+			{
+				type =  functions
+				form = Milestones
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						portalId = "700737166";
+										orgId = "700732567";
+										if(input.Push_Update == TRUE)
+										{
+											// === 4) Short delay to let the job initialize ===
+											getUrl("https://postman-echo.com/delay/3");
+											body = Map();
+											body.put("end_date",input.End_Date.toString("MM-dd-YYYY"));
+											resp = invokeurl
+											[
+												url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + input.Project_ID + "/milestones/" + input.Milestone_ID
+												type :POST
+												parameters:body.toString()
+												connection:"zoho_projects_connection"
+											];
+											info resp;
+											if(resp.toString().contains(input.End_Date.toString("YYYY-MM-dd")))
+											{
+												info "END DATE SUCCESSFULLY UPDATED.";
+											}
+										}
+					)
+					}
+				}
+			}
+			Remove_from_Queue as "Remove from Queue"
+			{
+				type =  functions
+				form = Lots
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Takedown_Queue = false;
+					)
+					}
+				}
+			}
+			Add_to_Takedown_Queue as "Add to Takedown Queue"
+			{
+				type =  functions
+				form = Lots
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Takedown_Queue = true;
+										openUrl(zoho.appuri + "page-embed/Queue_Live_Embed","iframe","queueFrame");
+					)
+					}
+				}
+			}
+			Add_Lots_to_Queue as "Add Lots to Queue"
+			{
+				type =  functions
+				form = Lots
+				execution type = collection of records	
+				on start
+				{
+					actions 
+					{
+						thisapp.defaultFunction(Lots);
+					}
+				}
+			}
+			Update_Names_and_Codes1 as "Update Names and Codes"
+			{
+				type =  functions
+				form = Budget_Item
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Budget_Code = input.Budget.Subdivision1.Subdivision_Code + "-" + input.Cost_Code;
+					)
+					}
+				}
+			}
+			Refresh_Name_Subdiv_Code as "Refresh Name/Subdiv Code"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Budget_Name = input.Subdivision1.Subdivision_Code + " - " + toDate(input.Added_Time,"MM/dd/yyyy");
+										input.Subdivision_Code = input.Subdivision1.Subdivision_Code;
+					)
+					}
+				}
+			}
+			Refresh_Subdiv_Codes as "Refresh Subdiv Codes"
+			{
+				type =  functions
+				form = Budget_Import_Item
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						input.Subdivision_Code = input.Budget_Item.Budget.Subdivision_Code;
+										input.Code = input.Code.replaceAll("C_","");
+					)
+					}
+				}
+			}
+			Email_Doug_the_Budget as "Email Doug the Budget"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						/********* START BUDGET APPROVAL CHAINS *********/
+										// Report button on All_Budgets / Add_Budget row
+										resp = thisapp.startAllApprovalChains(input.ID);
+										info resp;
+					)
+					}
+					actions  (Acres == 1312312)
+					{
+					on click
+					(
+						for each  b in Add_Budget[ID != 0]
+										{
+											approvalCount = 0;
+											if(b.Approvals != null)
+											{
+												approvalCount = b.Approvals.length();
+											}
+											if(approvalCount != 8)
+											{
+												row1 = Add_Budget.Approvals();
+												row1.Approver="jking@wbdevelopment.com";
+												row1.Title="CFO";
+												row1.Status="Not Sent";
+												row1.Type1="Construction";
+												row2 = Add_Budget.Approvals();
+												row2.Approver="dreinke@wbdevelopment.com";
+												row2.Title="COO";
+												row2.Status="Not Sent";
+												row2.Type1="Construction";
+												row3 = Add_Budget.Approvals();
+												row3.Approver="bruce@wbdevelopment.com";
+												row3.Title="CEO";
+												row3.Status="Not Sent";
+												row3.Type1="Construction";
+												row4 = Add_Budget.Approvals();
+												row4.Approver="VP@wbdevelopment.com";
+												row4.Title="VP";
+												row4.Status="Not Sent";
+												row4.Type1="Construction";
+												row5 = Add_Budget.Approvals();
+												row5.Approver="jking@wbdevelopment.com";
+												row5.Title="CFO";
+												row5.Status="Not Sent";
+												row5.Type1="Development";
+												row6 = Add_Budget.Approvals();
+												row6.Approver="dreinke@wbdevelopment.com";
+												row6.Title="COO";
+												row6.Status="Not Sent";
+												row6.Type1="Development";
+												row7 = Add_Budget.Approvals();
+												row7.Approver="bruce@wbdevelopment.com";
+												row7.Title="CEO";
+												row7.Status="Not Sent";
+												row7.Type1="Development";
+												row8 = Add_Budget.Approvals();
+												row8.Approver="VP@wbdevelopment.com";
+												row8.Title="VP";
+												row8.Status="Not Sent";
+												row8.Type1="Development";
+												rows = Collection();
+												rows.insert(row1);
+												rows.insert(row2);
+												rows.insert(row3);
+												rows.insert(row4);
+												rows.insert(row5);
+												rows.insert(row6);
+												rows.insert(row7);
+												rows.insert(row8);
+												b.Approvals.insert(rows);
+											}
+										}
+					)
+					}
+				}
+			}
+		}
+	}

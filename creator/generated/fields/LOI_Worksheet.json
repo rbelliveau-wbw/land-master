@@ -1,0 +1,331 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "LOI_Worksheet",
+  "display_name": "LOI Worksheet",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Proforma",
+      "display_name": "Proforma",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Contract",
+      "display_name": "Contract",
+      "type": "picklist",
+      "values": "Contract.ID",
+      "display_format": "[Contract_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Response_Date",
+      "display_name": "Response Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Amount_Per_Extension",
+      "display_name": "Amount Per Extension",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Closing_Days_After_Feasibility",
+      "display_name": "Closing Days After Feasibility",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money_Due_Days",
+      "display_name": "Earnest Money Due Days",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Projected_Hard_Close_Date",
+      "display_name": "Projected Hard Close Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money_Due_Date",
+      "display_name": "Earnest Money Due Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Approval_Token",
+      "display_name": "Approval Token",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Is_Current",
+      "display_name": "Current LOI",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Amount_Per_Acre",
+      "display_name": "Amount Per Acre",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Earnest_Money",
+      "display_name": "Earnest Money",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Initial_Feasibility_Days",
+      "display_name": "Initial Feasibility Days",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LOI_Name",
+      "display_name": "LOI Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Extensions",
+      "display_name": "Extensions",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Company",
+      "display_name": "Company",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Company_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller_Subform",
+      "display_name": "Seller Subform",
+      "type": "grid",
+      "values": "Builder.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Property_Subform",
+      "display_name": "Property Subform",
+      "type": "grid",
+      "values": "Property.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Company_Subform",
+      "display_name": "Company Subform",
+      "type": "grid",
+      "values": "Company.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Buyer_Broker",
+      "display_name": "Buyer Broker",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Seller_Broker",
+      "display_name": "Seller Broker",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Assumed_Effective_Date",
+      "display_name": "Assumed Effective Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Total_Acres",
+      "display_name": "Total Acres",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Estimated_Price",
+      "display_name": "Estimated Price",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Special_Provisions",
+      "display_name": "Special Provisions",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Legal_Note",
+      "display_name": "Legal Note",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Legal_Status",
+      "display_name": "Legal Status",
+      "type": "picklist",
+      "values": "{\"Draft\",\"Pending Legal Approval\",\"Approved\",\"Rejected\",\"Contract Created\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Version_Number",
+      "display_name": "Version Number",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Locked",
+      "display_name": "Locked",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
+    },
+    {
+      "link_name": "Acquisition_Email",
+      "display_name": "Acquisition Email",
+      "type": "email",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Days_Per_Extension",
+      "display_name": "Days Per Extension",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

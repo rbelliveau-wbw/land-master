@@ -1,0 +1,17 @@
+				 string PF_Packet_Money(string value)
+                 {
+                 	clean = ifnull(value,"").toString();
+                 	clean = clean.trim();
+                 	if(clean == "")
+                 	{
+                 		return "-";
+                 	}
+                 	clean = clean.replaceAll("\\$","");
+                 	clean = clean.replaceAll(",","");
+                 	numberValue = clean.toDecimal();
+                 	if(numberValue < 0)
+                 	{
+                 		return "($" + (numberValue * -1).round(0).toText("#,##0") + ")";
+                 	}
+                 	return "$" + numberValue.round(0).toText("#,##0");
+                 }

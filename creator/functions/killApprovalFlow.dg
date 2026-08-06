@@ -1,0 +1,74 @@
+				 string killApprovalFlow(string budgetId)
+                 {
+                 	/********* CANCEL BOTH APPROVAL CHAINS *********/
+                 	//
+                 	// Development:
+                 	// - Reset approval rows and status.
+                 	// - Clear Development/Engineering Final and Unapproved.
+                 	//
+                 	// Construction:
+                 	// - Reset approval rows and status.
+                 	// - Move Construction Final back into Unapproved.
+                 	// - Clear Construction Final.
+                 	vBudgetId = budgetId.toLong();
+                 	if(vBudgetId == 0)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"No Budget ID provided.\"}";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "{\"ok\":false,\"error\":\"Budget not found.\"}";
+                 	}
+                 	/********* RESET BOTH TRACK STATUSES *********/
+                 	budgetRec.Const_Budget_Approval_Status="Not Sent";
+                 	budgetRec.Development_Budget_Approval_Status="Not Sent";
+                 	/********* RESET ALL APPROVAL ROWS *********/
+                 	rowsReset = 0;
+                 	approvalRows = Budget_Approvals[Budget == vBudgetId];
+                 	for each  ar in approvalRows
+                 	{
+                 		ar.Status="Not Sent";
+                 		ar.Sent_Date=null;
+                 		ar.Responded_Date=null;
+                 		rowsReset = rowsReset + 1;
+                 	}
+                 	/********* MOVE CONSTRUCTION FINAL BACK TO UNAPPROVED *********/
+                 	constructionItemsMoved = 0;
+                 	constructionTotalMoved = 0;
+                 	budgetCategories = Budget_Category[Budget == vBudgetId];
+                 	for each  cat in budgetCategories
+                 	{
+                 		deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
+                 		if(deptKey.contains("construction"))
+                 		{
+                 			constructionItems = Budget_Item[Budget_Category == cat.ID];
+                 			for each  itemToMove in constructionItems
+                 			{
+                 				finalValue = 0;
+                 				if(itemToMove.Budget_Ttl != null)
+                 				{
+                 					finalValue = itemToMove.Budget_Ttl;
+                 				}
+                 				// Move Construction Final back into Unapproved.
+                 				itemToMove.Unapproved_Final_Budget_Ttl=finalValue;
+                 				// Clear Construction Final.
+                 				itemToMove.Budget_Ttl=0;
+                 				constructionItemsMoved = constructionItemsMoved + 1;
+                 				constructionTotalMoved = constructionTotalMoved + finalValue;
+                 			}
+                 		}
+                 	}
+                 	/********* CLEAR AND RECALCULATE BOTH TRACKS *********/
+                 	devFinancialResp = thisapp.applyBudgetTrackFinalState(vBudgetId + "","Development","CLEAR");
+                 	// Construction CLEAR must preserve Unapproved_Final_Budget_Ttl.
+                 	constFinancialResp = thisapp.applyBudgetTrackFinalState(vBudgetId + "","Construction","CLEAR");
+                 	resultMap = Map();
+                 	resultMap.put("ok",true);
+                 	resultMap.put("rowsReset",rowsReset);
+                 	resultMap.put("constructionItemsMoved",constructionItemsMoved);
+                 	resultMap.put("constructionTotalMoved",constructionTotalMoved);
+                 	resultMap.put("developmentFinancialResult",devFinancialResp);
+                 	resultMap.put("constructionFinancialResult",constFinancialResp);
+                 	return resultMap.toString();
+                 }

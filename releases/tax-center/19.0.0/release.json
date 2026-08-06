@@ -1,0 +1,8 @@
+{
+  "widget": "tax-center",
+  "version": "19.0.0",
+  "created_from": "widgets/tax-center/src/app/widget.html",
+  "created_at": "2026-08-06T14:25:00-05:00",
+  "source_sha256": "d10f44f35bda70fee611b01636ee25ad5af89eb99ea3589c85000bd82cdf5234",
+  "status": "baseline"
+}

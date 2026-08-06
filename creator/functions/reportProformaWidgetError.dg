@@ -1,0 +1,40 @@
+				 string reportProformaWidgetError(string payload)
+                 {
+                 	result = Map();
+                 	try 
+                 	{
+                 		if(payload == null || payload.toString().trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("error","No error-report payload was supplied.");
+                 			return result.toString();
+                 		}
+                 		data = payload.toString().toMap();
+                 		reportId = ifnull(data.get("reportId"),"").toString().trim();
+                 		subjectText = ifnull(data.get("subject"),"[Pro Forma Widget Error]").toString().trim();
+                 		bodyText = ifnull(data.get("body"),"").toString();
+                 		if(subjectText == "")
+                 		{
+                 			subjectText = "[Pro Forma Widget Error]";
+                 		}
+                 		if(bodyText == "")
+                 		{
+                 			bodyText = "The widget submitted an empty error body.\n\nRaw payload:\n" + payload.toString();
+                 		}
+                 		sendmail
+                 		[
+                 			from :zoho.adminuserid
+                 			to :"rbelliveau@wbdevelopment.com"
+                 			subject :subjectText
+                 			message :bodyText
+                 		]
+                 		result.put("success",true);
+                 		result.put("reportId",reportId);
+                 		result.put("recipient","rbelliveau@wbdevelopment.com");
+                 	}	catch (e)
+                 	{
+                 		result.put("success",false);
+                 		result.put("error",e.toString());
+                 	}
+                 	return result.toString();
+                 }

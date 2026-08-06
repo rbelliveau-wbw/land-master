@@ -1,0 +1,19 @@
+				 string PF_PDF_Text(decimal x, decimal y, decimal size, string fontKey, string color, string value)
+                 {
+                 	clean = thisapp.PF_PDF_Clean(value);
+                 	if(clean == "")
+                 	{
+                 		return "";
+                 	}
+                 	fontName = "F1";
+                 	if(fontKey == "bold")
+                 	{
+                 		fontName = "F2";
+                 	}
+                 	if(fontKey == "italic")
+                 	{
+                 		fontName = "F3";
+                 	}
+                 	hexValue = clean.textToHex();
+                 	return color + " rg\nBT /" + fontName + " " + size + " Tf 1 0 0 1 " + x + " " + y + " Tm <" + hexValue + "> Tj ET\n";
+                 }

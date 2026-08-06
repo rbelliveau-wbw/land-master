@@ -1,0 +1,71 @@
+
+name: Promote Widget
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [development, stage, production]
+      widget:
+        description: Widget slug
+        required: true
+        type: choice
+        options:
+          - proforma-manager
+          - budget-manager
+          - land-master
+          - contract-management
+          - tax-center
+          - milestone-gantt
+      version:
+        description: Existing immutable release version
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    environment: "widget-${{ inputs.environment }}"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Verify release and update mapping
+        env:
+          TARGET_ENV: "${{ inputs.environment }}"
+          WIDGET: "${{ inputs.widget }}"
+          VERSION: "${{ inputs.version }}"
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const env = process.env.TARGET_ENV;
+          const widget = process.env.WIDGET;
+          const version = process.env.VERSION;
+          if (!fs.existsSync(path.join('releases', widget, version, 'index.html'))) {
+            throw new Error(`Release does not exist: ${widget} ${version}`);
+          }
+          const file = 'deploy/environments.json';
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          data.environments[env][widget] = version;
+          data.generated_at = new Date().toISOString();
+          fs.writeFileSync(file, JSON.stringify(data, null, 2) + '
+');
+          NODE
+          npm run validate
+          npm run build:pages
+      - name: Create promotion pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: "promote/${{ inputs.environment }}-${{ inputs.widget }}-${{ inputs.version }}"
+          commit-message: "Promote ${{ inputs.widget }} ${{ inputs.version }} to ${{ inputs.environment }}"
+          title: "Promote ${{ inputs.widget }} ${{ inputs.version }} to ${{ inputs.environment }}"
+          body: "Promotes an existing immutable release by updating deploy/environments.json. Production requires the configured environment reviewer."

@@ -1,0 +1,28 @@
+{
+  "slug": "tax-center",
+  "name": "Tax Center",
+  "module": "tax",
+  "version": "19.0.0",
+  "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
+  "source_entry": "widgets/tax-center/src/app/widget.html",
+  "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",
+  "baseline_zip": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
+  "html_title": "Tax Center",
+  "source_sha256": "d10f44f35bda70fee611b01636ee25ad5af89eb99ea3589c85000bd82cdf5234",
+  "baseline_zip_sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1",
+  "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+      "connect-src": []
+    },
+    "config": []
+  },
+  "dependency_inventory": "manifests/widget-dependencies.json#tax-center",
+  "hosting_entry": "index.html (generated from app/widget.html)",
+  "trust": "Source extracted without modification from the uploaded widget ZIP."
+}

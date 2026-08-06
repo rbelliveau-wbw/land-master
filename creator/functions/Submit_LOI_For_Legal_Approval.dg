@@ -1,0 +1,172 @@
+				 string Submit_LOI_For_Legal_Approval(string proformaId)
+                 {
+                 	result = Map();
+                 	try 
+                 	{
+                 		if(proformaId == null || proformaId.trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","No Pro Forma ID was supplied.");
+                 			return result.toString();
+                 		}
+                 		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+                 		if(pf.ID == null)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","The Pro Forma record could not be found.");
+                 			return result.toString();
+                 		}
+                 		missing = List();
+                 		if(pf.Lock_Inputs != true)
+                 		{
+                 			missing.add("Lock Inputs");
+                 		}
+                 		if(pf.Seller == null || pf.Seller.trim() == "")
+                 		{
+                 			missing.add("Seller");
+                 		}
+                 		if(pf.Authorized_Signer_for_Seller == null || pf.Authorized_Signer_for_Seller.trim() == "")
+                 		{
+                 			missing.add("Authorized Signer for Seller");
+                 		}
+                 		if(pf.Street_Address == null || pf.Street_Address.trim() == "")
+                 		{
+                 			missing.add("Street Address");
+                 		}
+                 		if(pf.Seller_City_State_ZIP == null || pf.Seller_City_State_ZIP.trim() == "")
+                 		{
+                 			missing.add("Seller City State ZIP");
+                 		}
+                 		if(pf.Seller_Phone == null || pf.Seller_Phone.trim() == "")
+                 		{
+                 			missing.add("Seller Phone");
+                 		}
+                 		if(pf.Seller_Email == null || pf.Seller_Email.trim() == "")
+                 		{
+                 			missing.add("Seller Email");
+                 		}
+                 		if(pf.Purchasing_Company == null)
+                 		{
+                 			missing.add("Purchasing Company");
+                 		}
+                 		if(pf.CAD_ID == null || pf.CAD_ID.trim() == "")
+                 		{
+                 			missing.add("CAD ID");
+                 		}
+                 		if(pf.Property_County == null || pf.Property_County.trim() == "")
+                 		{
+                 			missing.add("Property County");
+                 		}
+                 		if(pf.Property_City == null || pf.Property_City.trim() == "")
+                 		{
+                 			missing.add("Property City");
+                 		}
+                 		if(pf.Total_Acres == null)
+                 		{
+                 			missing.add("Total Acres");
+                 		}
+                 		if(pf.Land_Cost_Acre == null)
+                 		{
+                 			missing.add("Amount per Acre");
+                 		}
+                 		if(pf.Earnest_Money == null)
+                 		{
+                 			missing.add("Earnest Money");
+                 		}
+                 		if(pf.Initial_Feasibility_Days == null)
+                 		{
+                 			missing.add("Initial Feasibility Days");
+                 		}
+                 		if(pf.Extensions == null)
+                 		{
+                 			missing.add("Extensions");
+                 		}
+                 		if(pf.Days_per_Extension == null)
+                 		{
+                 			missing.add("Days per Extension");
+                 		}
+                 		if(pf.Amount_per_Extension == null)
+                 		{
+                 			missing.add("Amount per Extension");
+                 		}
+                 		if(pf.Closing_Days_Feas == null)
+                 		{
+                 			missing.add("Closing Days after Feasibility");
+                 		}
+                 		if(pf.Response_Date == null)
+                 		{
+                 			missing.add("Response Date");
+                 		}
+                 		if(missing.size() > 0)
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","Complete the required LOI fields before sending to Legal: " + missing.toString(", "));
+                 			result.put("missing",missing);
+                 			return result.toString();
+                 		}
+                 		legalEmail = "rbelliveau@wbdevelopment.com";
+                 		if(legalEmail == "LEGAL_EMAIL_HERE" || legalEmail.trim() == "")
+                 		{
+                 			result.put("success",false);
+                 			result.put("message","Replace LEGAL_EMAIL_HERE in Submit_LOI_For_Legal_Approval before using this function.");
+                 			return result.toString();
+                 		}
+                 		buyingEntityName = pf.Purchasing_Company.toString();
+                 		companyRec = Company[ID == pf.Purchasing_Company];
+                 		if(companyRec.ID != null && companyRec.Company_Name != null && companyRec.Company_Name.trim() != "")
+                 		{
+                 			buyingEntityName = companyRec.Company_Name.trim();
+                 		}
+                 		token = pf.ID.toString() + "-" + zoho.currenttime.toLong().toString() + "-" + randomNumber(100000000,999999999).toString();
+                 		reviewUrl = zoho.appuri + "page-embed/Contracts?loiReviewId=" + pf.ID.toString() + "&token=" + token;
+                 		pf.LOI_Legal_Status="Pending Approval";
+                 		pf.LOI_Approval_Token=token;
+                 		pf.LOI_Legal_Note="";
+                 		specialProvisions = if(pf.Special_Provisions == null || pf.Special_Provisions.trim() == "","None.",pf.Special_Provisions);
+                 		buyerBroker = if(pf.Broker_Buyer == null || pf.Broker_Buyer.trim() == "","None",pf.Broker_Buyer);
+                 		sellerBroker = if(pf.Broker_Seller == null || pf.Broker_Seller.trim() == "","None",pf.Broker_Seller);
+                 		emailBody = "<div style='font-family:Arial,sans-serif;color:#173252;max-width:760px'>";
+                 		emailBody = emailBody + "<h2 style='margin:0 0 6px'>LOI Review Request: " + ifnull(pf.Name,"Pro Forma") + "</h2>";
+                 		emailBody = emailBody + "<p style='margin:0 0 18px;color:#5c7394'>Please review the terms below. Approval from Contract Management will create the Acquisition Contract and generate the LOI document.</p>";
+                 		emailBody = emailBody + "<table cellpadding='7' cellspacing='0' style='border-collapse:collapse;width:100%;font-size:13px'>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Seller</b></td><td style='border:1px solid #dde4ef'>" + ifnull(pf.Seller,"") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Authorized Signer</b></td><td style='border:1px solid #dde4ef'>" + ifnull(pf.Authorized_Signer_for_Seller,"") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Property</b></td><td style='border:1px solid #dde4ef'>" + ifnull(pf.Street_Address,"") + ", " + ifnull(pf.Seller_City_State_ZIP,"") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Purchasing Company</b></td><td style='border:1px solid #dde4ef'>" + buyingEntityName + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>CAD ID</b></td><td style='border:1px solid #dde4ef'>" + ifnull(pf.CAD_ID,"") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>County / City</b></td><td style='border:1px solid #dde4ef'>" + ifnull(pf.Property_County,"") + " / " + ifnull(pf.Property_City,"") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Total Acres</b></td><td style='border:1px solid #dde4ef'>" + pf.Total_Acres.toString() + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Amount per Acre</b></td><td style='border:1px solid #dde4ef'>$" + pf.Land_Cost_Acre.toString() + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Earnest Money</b></td><td style='border:1px solid #dde4ef'>$" + pf.Earnest_Money.toString() + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Feasibility</b></td><td style='border:1px solid #dde4ef'>" + pf.Initial_Feasibility_Days.toString() + " days; " + pf.Extensions.toString() + " extension(s) of " + pf.Days_per_Extension.toString() + " days at $" + pf.Amount_per_Extension.toString() + " each</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Closing</b></td><td style='border:1px solid #dde4ef'>" + pf.Closing_Days_Feas.toString() + " days after feasibility</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Response Date</b></td><td style='border:1px solid #dde4ef'>" + pf.Response_Date.toString("MM/dd/yyyy") + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Buyer Broker</b></td><td style='border:1px solid #dde4ef'>" + buyerBroker + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Seller Broker</b></td><td style='border:1px solid #dde4ef'>" + sellerBroker + "</td></tr>";
+                 		emailBody = emailBody + "<tr><td style='border:1px solid #dde4ef;background:#f6f8fc'><b>Special Provisions</b></td><td style='border:1px solid #dde4ef'>" + specialProvisions + "</td></tr>";
+                 		emailBody = emailBody + "</table>";
+                 		emailBody = emailBody + "<p style='margin:20px 0'><a href='" + reviewUrl + "' style='display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:11px 18px;border-radius:8px;font-weight:bold'>Review LOI in Contract Management</a></p>";
+                 		emailBody = emailBody + "</div>";
+                 		sendmail
+                 		[
+                 			from :zoho.adminuserid
+                 			to :legalEmail
+                 			subject :"LOI Review Request - " + ifnull(pf.Name,"Pro Forma")
+                 			message :emailBody
+                 		]
+                 		result.put("success",true);
+                 		result.put("message","LOI sent to Legal for approval.");
+                 		result.put("proformaId",pf.ID.toString());
+                 		result.put("reviewUrl",reviewUrl);
+                 		result.put("status","Pending Approval");
+                 		return result.toString();
+                 	}	catch (e)
+                 	{
+                 		result.put("success",false);
+                 		result.put("message","LOI approval request failed at line " + e.lineNo.toString() + ": " + e.message);
+                 		result.put("error",e.message);
+                 		result.put("errorLine",e.lineNo);
+                 		return result.toString();
+                 	}
+                 	return "nice";
+                 }

@@ -1,0 +1,222 @@
+				 string sendApprovalEmail(int budgetId, int approvalId)
+                 {
+                 	/********* SEND ONE APPROVAL EMAIL *********/
+                 	// Return Type: string
+                 	// Sends the approval email for one specific Budget_Approvals row.
+                 	vBudgetId = budgetId.toLong();
+                 	vApprovalId = approvalId.toLong();
+                 	if(vBudgetId == 0)
+                 	{
+                 		return "No Budget ID provided.";
+                 	}
+                 	if(vApprovalId == 0)
+                 	{
+                 		return "No Approval ID provided.";
+                 	}
+                 	budgetRec = Add_Budget[ID == vBudgetId];
+                 	if(budgetRec == null)
+                 	{
+                 		return "Budget not found.";
+                 	}
+                 	approvalRows = Budget_Approvals[ID == vApprovalId];
+                 	if(approvalRows.count() == 0)
+                 	{
+                 		return "Approval row not found.";
+                 	}
+                 	approvalRec = null;
+                 	for each  ar in approvalRows
+                 	{
+                 		approvalRec = ar;
+                 	}
+                 	approverEmail = ifnull(approvalRec.Approver,"").trim();
+                 	approvalRole = ifnull(approvalRec.Title,"").trim();
+                 	approvalType = ifnull(approvalRec.Type1,"").trim();
+                 	approvalSortOrder = ifnull(approvalRec.Sort_Order,0).toLong();
+                 	if(approverEmail == "")
+                 	{
+                 		return "No approver email found for " + approvalType + " " + approvalRole + ".";
+                 	}
+                 	if(approvalRole == "")
+                 	{
+                 		return "No approval role found.";
+                 	}
+                 	if(approvalType == "")
+                 	{
+                 		return "No approval type found.";
+                 	}
+                 	// ============================================================
+                 	// FIND THE APPROVAL NOTES THAT SHOULD APPEAR IN THIS EMAIL
+                 	//
+                 	// Forward approval:
+                 	//     Pull notes from the immediately previous approved row.
+                 	//
+                 	// Rejection:
+                 	//     Pull notes from the immediately next rejected row.
+                 	// ============================================================
+                 	previousApprovalRec = null;
+                 	nextApprovalRec = null;
+                 	previousSortOrder = -1;
+                 	nextSortOrder = 999999;
+                 	trackApprovalRows = Budget_Approvals[Budget == vBudgetId && Type1 == approvalType];
+                 	for each  trackRow in trackApprovalRows
+                 	{
+                 		trackSortOrder = ifnull(trackRow.Sort_Order,0).toLong();
+                 		if(trackSortOrder < approvalSortOrder && trackSortOrder > previousSortOrder)
+                 		{
+                 			previousApprovalRec = trackRow;
+                 			previousSortOrder = trackSortOrder;
+                 		}
+                 		if(trackSortOrder > approvalSortOrder && trackSortOrder < nextSortOrder)
+                 		{
+                 			nextApprovalRec = trackRow;
+                 			nextSortOrder = trackSortOrder;
+                 		}
+                 	}
+                 	approvalNotes = "";
+                 	notesSourceRole = "";
+                 	notesHeading = "Approval Notes";
+                 	notesContext = "";
+                 	// Check rejection first because the email is being routed backward.
+                 	if(nextApprovalRec != null && ifnull(nextApprovalRec.Status,"").trim() == "Rejected")
+                 	{
+                 		approvalNotes = ifnull(nextApprovalRec.Approval_Notes,"").trim();
+                 		notesSourceRole = ifnull(nextApprovalRec.Title,"").trim();
+                 		notesHeading = "Rejection Notes";
+                 		if(notesSourceRole != "")
+                 		{
+                 			notesContext = "From " + notesSourceRole;
+                 		}
+                 		else
+                 		{
+                 			notesContext = "From the rejecting approver";
+                 		}
+                 	}
+                 	else if(previousApprovalRec != null && ifnull(previousApprovalRec.Status,"").trim() == "Approved")
+                 	{
+                 		approvalNotes = ifnull(previousApprovalRec.Approval_Notes,"").trim();
+                 		notesSourceRole = ifnull(previousApprovalRec.Title,"").trim();
+                 		notesHeading = "Approval Notes";
+                 		if(notesSourceRole != "")
+                 		{
+                 			notesContext = "From " + notesSourceRole;
+                 		}
+                 		else
+                 		{
+                 			notesContext = "From the previous approver";
+                 		}
+                 	}
+                 	else
+                 	{
+                 		notesContext = "No previous approval response";
+                 	}
+                 	if(approvalNotes == "")
+                 	{
+                 		approvalNotes = "No notes were provided.";
+                 	}
+                 	// Basic HTML escaping for approval notes.
+                 	approvalNotesSafe = approvalNotes;
+                 	approvalNotesSafe = approvalNotesSafe.replaceAll("&","&amp;");
+                 	approvalNotesSafe = approvalNotesSafe.replaceAll("<","&lt;");
+                 	approvalNotesSafe = approvalNotesSafe.replaceAll(">","&gt;");
+                 	approvalNotesSafe = approvalNotesSafe.replaceAll("\r\n","<br>");
+                 	approvalNotesSafe = approvalNotesSafe.replaceAll("\n","<br>");
+                 	notesHeadingSafe = notesHeading;
+                 	notesHeadingSafe = notesHeadingSafe.replaceAll("&","&amp;");
+                 	notesHeadingSafe = notesHeadingSafe.replaceAll("<","&lt;");
+                 	notesHeadingSafe = notesHeadingSafe.replaceAll(">","&gt;");
+                 	notesContextSafe = notesContext;
+                 	notesContextSafe = notesContextSafe.replaceAll("&","&amp;");
+                 	notesContextSafe = notesContextSafe.replaceAll("<","&lt;");
+                 	notesContextSafe = notesContextSafe.replaceAll(">","&gt;");
+                 	// Internal app URL for the Budget Management page hosting the widget.
+                 	widgetPageUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Budget_Management1";
+                 	// Verified sender for all approval emails.
+                 	fromAddress = "jking@wbdevelopment.com";
+                 	// Build budget display info.
+                 	budgetName = ifnull(budgetRec.Budget_Name,"Budget Review");
+                 	projectName = ifnull(budgetRec.Project,"");
+                 	phaseName = ifnull(budgetRec.Phase,"");
+                 	subdivisionCode = ifnull(budgetRec.Subdivision_Code,"");
+                 	subdivisionName = "";
+                 	territoryText = "";
+                 	if(budgetRec.Subdivision1 != null)
+                 	{
+                 		subdivisionName = ifnull(budgetRec.Subdivision1.Subdivision_Name,"");
+                 		territoryText = ifnull(budgetRec.Subdivision1.Territory,"");
+                 	}
+                 	budgetLabel = budgetName;
+                 	if(projectName != "" && phaseName != "")
+                 	{
+                 		budgetLabel = projectName + " - " + phaseName + " - " + budgetName;
+                 	}
+                 	else if(projectName != "")
+                 	{
+                 		budgetLabel = projectName + " - " + budgetName;
+                 	}
+                 	if(subdivisionName != "")
+                 	{
+                 		budgetLabel = subdivisionName + " - " + budgetName;
+                 	}
+                 	// Basic HTML escaping.
+                 	budgetLabelSafe = budgetLabel;
+                 	budgetLabelSafe = budgetLabelSafe.replaceAll("&","&amp;");
+                 	budgetLabelSafe = budgetLabelSafe.replaceAll("<","&lt;");
+                 	budgetLabelSafe = budgetLabelSafe.replaceAll(">","&gt;");
+                 	subdivisionCodeSafe = subdivisionCode;
+                 	subdivisionCodeSafe = subdivisionCodeSafe.replaceAll("&","&amp;");
+                 	subdivisionCodeSafe = subdivisionCodeSafe.replaceAll("<","&lt;");
+                 	subdivisionCodeSafe = subdivisionCodeSafe.replaceAll(">","&gt;");
+                 	territorySafe = territoryText;
+                 	territorySafe = territorySafe.replaceAll("&","&amp;");
+                 	territorySafe = territorySafe.replaceAll("<","&lt;");
+                 	territorySafe = territorySafe.replaceAll(">","&gt;");
+                 	// Deep link to the widget page, opening directly to this budget.
+                 	approvalUrl = widgetPageUrl + "?budgetId=" + vBudgetId;
+                 	emailSubject = approvalType + " Budget Approval Needed - " + budgetLabel;
+                 	emailBody = "";
+                 	emailBody = emailBody + "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
+                 	emailBody = emailBody + "<h2 style='margin:0 0 8px 0;color:#0f2744;'>Budget Approval Needed</h2>";
+                 	emailBody = emailBody + "<p style='margin:0 0 16px 0;'>A <b>" + approvalType + "</b> budget approval is ready for your review as <b>" + approvalRole + "</b>.</p>";
+                 	// Budget information card.
+                 	emailBody = emailBody + "<div style='background:#f8fafc;border:1px solid #dbe4f0;border-radius:10px;padding:14px 16px;margin:0 0 14px 0;'>";
+                 	emailBody = emailBody + "<div style='font-size:13px;color:#64748b;margin-bottom:4px;'>Budget</div>";
+                 	emailBody = emailBody + "<div style='font-size:16px;font-weight:700;color:#0f2744;'>" + budgetLabelSafe + "</div>";
+                 	if(subdivisionCodeSafe != "" || territorySafe != "")
+                 	{
+                 		emailBody = emailBody + "<div style='margin-top:10px;font-size:13px;color:#475569;'>";
+                 		if(subdivisionCodeSafe != "")
+                 		{
+                 			emailBody = emailBody + "<b>Subdivision Code:</b> " + subdivisionCodeSafe;
+                 		}
+                 		if(subdivisionCodeSafe != "" && territorySafe != "")
+                 		{
+                 			emailBody = emailBody + " &nbsp; | &nbsp; ";
+                 		}
+                 		if(territorySafe != "")
+                 		{
+                 			emailBody = emailBody + "<b>Territory:</b> " + territorySafe;
+                 		}
+                 		emailBody = emailBody + "</div>";
+                 	}
+                 	emailBody = emailBody + "</div>";
+                 	// Approval or rejection notes card.
+                 	emailBody = emailBody + "<div style='background:#fffdf5;border:1px solid #e7d9a8;border-left:4px solid #c79a22;border-radius:10px;padding:14px 16px;margin:0 0 18px 0;'>";
+                 	emailBody = emailBody + "<div style='font-size:13px;font-weight:700;color:#785b12;margin-bottom:2px;'>" + notesHeadingSafe + "</div>";
+                 	emailBody = emailBody + "<div style='font-size:12px;color:#8a6d22;margin-bottom:8px;'>" + notesContextSafe + "</div>";
+                 	emailBody = emailBody + "<div style='font-size:14px;color:#334155;white-space:normal;'>" + approvalNotesSafe + "</div>";
+                 	emailBody = emailBody + "</div>";
+                 	emailBody = emailBody + "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Approval Page</a>";
+                 	emailBody = emailBody + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
+                 	emailBody = emailBody + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
+                 	emailBody = emailBody + "</div>";
+                 	sendmail
+                 	[
+                 		from :fromAddress
+                 		to :approverEmail
+                 		subject :emailSubject
+                 		message :emailBody
+                 	]
+                 	// Mark sent date after successful send.
+                 	approvalRec.Sent_Date=zoho.currentdate;
+                 	return "Email sent to " + approverEmail + " for " + approvalType + " " + approvalRole + ".";
+                 }

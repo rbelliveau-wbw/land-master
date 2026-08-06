@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Budget_Approvals",
+  "display_name": "Budget Approvals",
+  "fields": [
+    {
+      "link_name": "Section",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Approver",
+      "display_name": "Approver",
+      "type": "email",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Title",
+      "display_name": "Title",
+      "type": "picklist",
+      "values": "{\"VP\",\"Legal\",\"CFO\",\"COO\",\"CEO\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Not Sent\",\"Pending\",\"Approved\",\"Rejected\"}",
+      "display_format": null,
+      "initial_value": "\"Not Sent\"",
+      "private": false
+    },
+    {
+      "link_name": "Approval_Notes",
+      "display_name": "Approval Notes",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget",
+      "display_name": "Budget",
+      "type": "picklist",
+      "values": "Add_Budget.ID",
+      "display_format": "[Budget_Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Proforma",
+      "display_name": "Proforma",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Type1",
+      "display_name": "Type",
+      "type": "picklist",
+      "values": "{\"Construction\",\"Development\",\"Pro Forma\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Sort_Order",
+      "display_name": "Sort Order",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Sent_Date",
+      "display_name": "Sent Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Responded_Date",
+      "display_name": "Responded Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "warning": "Creator DS exports do not provide a verified Custom API registry. These entries are inferred from widget source. Verify method, parameters, auth, and enabled status in Creator Microservices.",
+  "custom_apis": [
+    {
+      "name": "Create_Budget_Attachment_Record",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "createBudgetAttachmentRecord",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Create_LOI_Contract",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Create_LOI_Contract",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Delete_Budget_Attachment",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "deleteBudgetAttachment",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Export_Budget_Snapshot",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "exportBudgetSnapshot",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Get_Budget_Attachment_Preview",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "getBudgetAttachmentPreview",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Get_User_Access",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html",
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "getUserAccess",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Handle_Approval_Action",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "handleApprovalAction",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Handle_Proforma_Approval_Action",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Handle_Proforma_Approval_Action",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Kill_Proforma_Approval_Flow",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Kill_Proforma_Approval_Flow",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "killApprovalChain",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "killApprovalChain",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "killApprovalFlow",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "killApprovalFlow",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Manage_Proforma_Approval_Config",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Manage_Proforma_Approval_Config",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Proforma_Bulk_Save",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": null,
+      "confidence": "inferred-from-widget-source"
+    },
+    {
+      "name": "Proforma_Save",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html",
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "proforma_save",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Report_Proforma_Widget_Error",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "reportProformaWidgetError",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Review_LOI_Request",
+      "consumers": [
+        "widgets/contract-management/src/app/widget.html"
+      ],
+      "matching_creator_function": "Review_LOI_Request",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Save_PF",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": null,
+      "confidence": "inferred-from-widget-source"
+    },
+    {
+      "name": "Save_PF1",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": null,
+      "confidence": "inferred-from-widget-source"
+    },
+    {
+      "name": "SavePF",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": null,
+      "confidence": "inferred-from-widget-source"
+    },
+    {
+      "name": "Send_Proforma_Approval_Email",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Send_Proforma_Approval_Email",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "sendApprovalEmail",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "sendApprovalEmail",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "setProjectProforma",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "setProjectProforma",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Start_Proforma_Approval_Chain",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Start_Proforma_Approval_Chain",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "startApprovalChain",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "startApprovalChain",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "syncBudgetApprovalStatus",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "syncBudgetApprovalStatus",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Update_Proforma_Approval_Recipient",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "Update_Proforma_Approval_Recipient",
+      "confidence": "inferred-name-match"
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+				 map Send_Proforma_Approval_Email_With_Context(string proformaId, string approvalId, string routingAction, string routingNote, string routingRole)
+                 {
+                 	response = Map();
+                 	try 
+                 	{
+                 		proformaIdText = ifnull(proformaId,"").toString().trim();
+                 		approvalIdText = ifnull(approvalId,"").toString().trim();
+                 		if(proformaIdText == "" || approvalIdText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma ID and approval ID are required.");
+                 			return response;
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		approvalIdLong = approvalIdText.toLong();
+                 		pf = Add_Pro_Forma[ID == proformaIdLong];
+                 		approvalRow = Budget_Approvals[ID == approvalIdLong];
+                 		if(pf.ID == null || approvalRow.ID == null || approvalRow.Proforma == null || approvalRow.Proforma.toString() != proformaIdLong.toString())
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma or approval row not found.");
+                 			return response;
+                 		}
+                 		toAddress = ifnull(approvalRow.Approver,"").toString().trim();
+                 		if(toAddress == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","No email address is assigned to the " + ifnull(approvalRow.Title,"current").toString() + " approval.");
+                 			return response;
+                 		}
+                 		// Build the complete Deluge-generated PDF packet.
+                 		packet = thisapp.PF_Build_Proforma_Approval_PDF(proformaIdText,approvalIdText);
+                 		if(ifnull(packet.get("success"),false) != true)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message",ifnull(packet.get("message"),"The approval PDF packet could not be generated.").toString());
+                 			return response;
+                 		}
+                 		pdfText = ifnull(packet.get("pdfText"),"").toString();
+                 		packetFileName = ifnull(packet.get("fileName"),"Proforma_Approval_Packet.pdf").toString();
+                 		if(pdfText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","The approval PDF packet was generated without file content.");
+                 			return response;
+                 		}
+                 		pdfFile = pdfText.toFile(packetFileName);
+                 		publicApprovalPageUrl = "https://creatorapp.zohopublic.com/wbdevelopment/land-master/page-perma/Proforma_Approval_Response/SKynkNA9rksmmQtUQYmxGddr0T8zzRkPET48ymuwzpZjjzGeygeb6pQTxqKZT4HwjrSWq1pFZCry2qsyeFZbpZ9v1RA1AUFrQYAE";
+                 		approveUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Approve";
+                 		denyUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Deny";
+                 		reviewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Proforma_Manager?proformaId=" + proformaIdText;
+                 		pfName = ifnull(pf.Name,"Pro Forma #" + proformaIdText).toString();
+                 		territoryText = ifnull(pf.Territory,"—").toString();
+                 		stageText = ifnull(pf.Probability,"—").toString();
+                 		statusText = ifnull(pf.Status,"Draft").toString();
+                 		currentStepText = ifnull(approvalRow.Title,"Approver").toString();
+                 		purchaseDateText = "—";
+                 		completionDateText = "—";
+                 		if(pf.Estimated_Purchase_Date != null)
+                 		{
+                 			purchaseDateText = pf.Estimated_Purchase_Date.toString("MMM, yyyy");
+                 		}
+                 		if(pf.Estimated_Completion != null)
+                 		{
+                 			completionDateText = pf.Estimated_Completion.toString("MMM, yyyy");
+                 		}
+                 		roiText = "—";
+                 		if(pf.ROI1 != null && pf.ROI1.toString().trim() != "")
+                 		{
+                 			roiText = thisapp.PF_Packet_Number(pf.ROI1.toString(),2) + "%";
+                 		}
+                 		netProfitText = thisapp.PF_Packet_Money(ifnull(pf.Net_Profit,0).toString());
+                 		// Read LOI terms from the saved LOI_Worksheet, Builder and Property records.
+                 		loiContext = thisapp.PF_Get_Proforma_LOI_Snapshot(proformaIdText);
+                 		if(ifnull(loiContext.get("success"),false) != true)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message",ifnull(loiContext.get("message"),"The saved LOI information could not be loaded.").toString());
+                 			return response;
+                 		}
+                 		sellerText = ifnull(loiContext.get("seller"),"—").toString();
+                 		buyingEntityText = ifnull(loiContext.get("buyingEntity"),"—").toString();
+                 		propertyText = ifnull(loiContext.get("property"),"—").toString();
+                 		acresText = ifnull(loiContext.get("totalAcres"),"—").toString();
+                 		pricePerAcreText = ifnull(loiContext.get("amountPerAcre"),"—").toString();
+                 		estimatedPurchasePriceText = ifnull(loiContext.get("estimatedPrice"),"—").toString();
+                 		earnestMoneyText = ifnull(loiContext.get("earnestMoney"),"—").toString();
+                 		feasibilityText = ifnull(loiContext.get("feasibility"),"—").toString();
+                 		closingText = ifnull(loiContext.get("closing"),"—").toString();
+                 		extensionsText = ifnull(loiContext.get("extensions"),"—").toString();
+                 		responseDateText = ifnull(loiContext.get("responseDate"),"—").toString();
+                 		effectiveDateText = ifnull(loiContext.get("effectiveDate"),"—").toString();
+                 		specialProvisionsText = ifnull(loiContext.get("specialProvisions"),"").toString();
+                 		routingActionText = ifnull(routingAction,"").toString();
+                 		routingNoteText = ifnull(routingNote,"").toString();
+                 		routingRoleText = ifnull(routingRole,"").toString();
+                 		subjectPrefix = "Approval required";
+                 		if(approvalRow.Title == "Legal")
+                 		{
+                 			subjectPrefix = "Legal LOI review required";
+                 		}
+                 		if(routingActionText == "Rejected")
+                 		{
+                 			subjectPrefix = "Pro Forma returned by " + routingRoleText;
+                 		}
+                 		subjectText = subjectPrefix + ": " + pfName;
+                 		// Escape all user-entered or record text before inserting it into HTML.
+                 		safePfName = pfName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeTerritoryText = territoryText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeStageText = stageText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeStatusText = statusText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeCurrentStepText = currentStepText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeSellerText = sellerText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeBuyingEntityText = buyingEntityText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safePropertyText = propertyText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeExtensionsText = extensionsText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeRoutingNote = routingNoteText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeRoutingRole = routingRoleText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeSpecialProvisions = specialProvisionsText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		routingBlock = "";
+                 		if(routingNoteText != "")
+                 		{
+                 			noteLabel = "Previous approver note";
+                 			if(routingActionText == "Rejected")
+                 			{
+                 				noteLabel = "Return note from " + safeRoutingRole;
+                 			}
+                 			routingBlock = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:18px;'>" + "<tr><td style='padding:14px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#9a3412;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;'>" + noteLabel + "</div>" + "<div style='white-space:pre-wrap;color:#431407;line-height:1.5;'>" + safeRoutingNote + "</div>" + "</td></tr></table>";
+                 		}
+                 		overviewRows = "";
+                 		overviewRows = overviewRows + "<tr><td width='44%' style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Territory</td><td width='56%' style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeTerritoryText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Stage</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeStageText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Status</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeStatusText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Current Step</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeCurrentStepText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Estimated Purchase</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + purchaseDateText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Estimated Completion</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + completionDateText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>ROI</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#2563eb;border-bottom:1px solid #e5ebf3;'>" + roiText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;'>Net Profit</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#047857;'>" + netProfitText + "</td></tr>";
+                 		loiRows = "";
+                 		loiRows = loiRows + "<tr><td width='42%' style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Seller</td><td width='58%' style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeSellerText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Buying Entity</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeBuyingEntityText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Property</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safePropertyText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Total Acres</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + acresText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Price / Acre</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + pricePerAcreText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Estimated Purchase</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#047857;border-bottom:1px solid #e5ebf3;'>" + estimatedPurchasePriceText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Earnest Money</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + earnestMoneyText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Feasibility / Closing</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + feasibilityText + " / " + closingText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Extensions</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeExtensionsText + "</td></tr>";
+                 		loiRows = loiRows + "<tr><td style='padding:8px 0;color:#64748b;'>Response / Effective</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;'>" + responseDateText + " / " + effectiveDateText + "</td></tr>";
+                 		summaryPanels = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:18px;table-layout:fixed;'>" + "<tr>" + "<td width='50%' valign='top' style='padding-right:7px;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;background:#f8fafc;border:1px solid #dce5f0;border-radius:12px;'>" + "<tr><td style='padding:14px 16px 8px;'><div style='font-size:11px;font-weight:800;color:#173b68;text-transform:uppercase;letter-spacing:.08em;'>Pro Forma Overview</div></td></tr>" + "<tr><td style='padding:0 16px 14px;'><table width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'>" + overviewRows + "</table></td></tr>" + "</table></td>" + "<td width='50%' valign='top' style='padding-left:7px;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;background:#f8fafc;border:1px solid #dce5f0;border-radius:12px;'>" + "<tr><td style='padding:14px 16px 8px;'><div style='font-size:11px;font-weight:800;color:#173b68;text-transform:uppercase;letter-spacing:.08em;'>LOI Snapshot</div></td></tr>" + "<tr><td style='padding:0 16px 14px;'><table width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'>" + loiRows + "</table></td></tr>" + "</table></td>" + "</tr></table>";
+                 		legalInstruction = "Review the attached Pro Forma approval packet and record your decision below.";
+                 		if(approvalRow.Title == "Legal")
+                 		{
+                 			legalInstruction = "Review the attached approval packet, including the complete LOI worksheet, Sellers, Properties, and deal terms, before routing it to the next approval step.";
+                 		}
+                 		// Use bgcolor and borders on the TABLE CELLS so Outlook cannot reduce these to plain text links.
+                 		decisionButtons = "<table role='presentation' cellpadding='0' cellspacing='0' border='0' style='margin:22px 0 8px;'>" + "<tr>" + "<td bgcolor='#047857' style='background-color:#047857;border:1px solid #065f46;border-radius:8px;mso-padding-alt:0;'>" + "<a href='" + approveUrl + "' style='display:block;padding:12px 25px;font-family:Arial,sans-serif;font-size:14px;line-height:18px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Approve</a>" + "</td>" + "<td width='12' style='width:12px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td bgcolor='#b42318' style='background-color:#b42318;border:1px solid #8f1d15;border-radius:8px;mso-padding-alt:0;'>" + "<a href='" + denyUrl + "' style='display:block;padding:12px 25px;font-family:Arial,sans-serif;font-size:14px;line-height:18px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Deny</a>" + "</td>" + "</tr></table>";
+                 		messageHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;background:#ffffff;border-collapse:separate;border-spacing:0;'>" + "<tr><td style='background:#102f55;color:#ffffff;padding:24px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #2563eb;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'><tr>" + "<td valign='bottom' style='padding-right:20px;'>" + "<div style='font-size:11px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Pro Forma Approval</div>" + "<div style='font-size:24px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safePfName + "</div>" + "<div style='font-size:13px;color:#c9d8eb;margin-top:8px;'>" + safeTerritoryText + " &nbsp;&middot;&nbsp; " + safeStageText + "</div>" + "</td>" + "<td width='150' valign='bottom' align='right'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#173f6f;border:1px solid #315983;border-radius:10px;'>" + "<tr><td align='left' style='padding:10px 12px;'>" + "<div style='font-size:9px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.09em;font-weight:700;'>Current Step</div>" + "<div style='font-size:16px;color:#ffffff;font-weight:700;margin-top:4px;'>" + safeCurrentStepText + "</div>" + "</td></tr></table></td>" + "</tr></table></td></tr>" + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>" + "<p style='margin:0 0 8px;font-size:15px;color:#172033;'>The <b>" + safeCurrentStepText + "</b> approval is now pending with you.</p>" + "<p style='margin:0;color:#475569;line-height:1.55;'>" + legalInstruction + "</p>" + routingBlock + summaryPanels;
+                 		if(specialProvisionsText != "")
+                 		{
+                 			messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:14px 16px;background:#fffaf0;border:1px solid #fde3a7;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#8a4b08;text-transform:uppercase;letter-spacing:.07em;'>Special Provisions</div>" + "<div style='margin-top:7px;white-space:pre-wrap;color:#4a3217;line-height:1.5;'>" + safeSpecialProvisions + "</div>" + "</td></tr></table>";
+                 		}
+                 		messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:13px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;'>" + "<div style='font-weight:700;color:#173b68;'>Attached approval packet</div>" + "<div style='margin-top:5px;color:#475569;font-size:13px;'>Includes the executive summary, all non-zero Additional Costs, complete LOI terms, Sellers, and Properties.</div>" + "</td></tr></table>" + decisionButtons + "<div style='font-size:12px;color:#64748b;margin-top:8px;'>Approve records the response when the approval page opens. Deny opens a page where a note is required.</div>" + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;'>Already have Land Master access? <a href='" + reviewUrl + "' style='color:#2563eb;text-decoration:none;font-weight:600;'>Open the full Pro Forma</a></div>" + "</td></tr></table></td></tr></table>";
+                 		sendmail
+                 		[
+                 			from :zoho.adminuserid
+                 			to :toAddress
+                 			subject :subjectText
+                 			message :messageHtml
+                 			Attachments :file:pdfFile
+                 		]
+                 		approvalRow.Sent_Date=zoho.currenttime;
+                 		response.put("success",true);
+                 		response.put("message","Approval email and PDF packet sent to " + toAddress + ".");
+                 		response.put("packetFileName",packetFileName);
+                 		response.put("pageCount",packet.get("pageCount"));
+                 		response.put("additionalCostCount",packet.get("additionalCostCount"));
+                 		response.put("containsAdditionalCosts",packet.get("containsAdditionalCosts"));
+                 		response.put("containsLOITerms",packet.get("containsLOITerms"));
+                 		response.put("sellerCount",packet.get("sellerCount"));
+                 		response.put("propertyCount",packet.get("propertyCount"));
+                 	}	catch (e)
+                 	{
+                 		response.put("success",false);
+                 		response.put("message",e.toString());
+                 	}
+                 	return response;
+                 }

@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Proforma_Item",
+  "display_name": "Proforma Item",
+  "fields": [
+    {
+      "link_name": "Section1",
+      "display_name": "Section1",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Add_l_Cost",
+      "display_name": "Add'l Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Cost_Application",
+      "display_name": "Cost Application",
+      "type": "picklist",
+      "values": "{\"Across Phases\",\"Engineering End\",\"Construction Start\",\"Construction End\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Start_Phase",
+      "display_name": "Start Phase",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "End_Phase",
+      "display_name": "End Phase",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Start_Month",
+      "display_name": "Start Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "End_Month",
+      "display_name": "End Month",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Specific_Months_List",
+      "display_name": "Specific Months List",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma_Const",
+      "display_name": "Pro Forma (Const)",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma_Dev",
+      "display_name": "Pro Forma (Dev)",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Template_Item",
+      "display_name": "Template Item",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Description",
+      "display_name": "Description/Details",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Submit",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

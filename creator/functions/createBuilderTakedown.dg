@@ -1,0 +1,118 @@
+				 void createBuilderTakedown(Lots lotRecords)
+                 {
+                 	escStart = "";
+                 	addlFees = "";
+                 	interest1 = "";
+                 	interest2 = "";
+                 	interest3 = "";
+                 	interest4 = "";
+                 	interest5 = "";
+                 	interest6 = "";
+                 	interest7 = "";
+                 	interest8 = "";
+                 	interest9 = "";
+                 	interest10 = "";
+                 	interest11 = "";
+                 	interest12 = "";
+                 	taxPerlot = "";
+                 	percentAppraisal = "";
+                 	from1 = "";
+                 	to1 = "";
+                 	from2 = "";
+                 	to2 = "";
+                 	from3 = "";
+                 	to3 = "";
+                 	from4 = "";
+                 	to4 = "";
+                 	from5 = "";
+                 	to5 = "";
+                 	from6 = "";
+                 	to6 = "";
+                 	from7 = "";
+                 	to7 = "";
+                 	from8 = "";
+                 	to8 = "";
+                 	from9 = "";
+                 	to9 = "";
+                 	from10 = "";
+                 	to10 = "";
+                 	from11 = "";
+                 	to11 = "";
+                 	from12 = "";
+                 	to12 = "";
+                 	//get Takedown Template
+                 	tdTemplate = Takedown_Template[Subdivision1 == lotRecords.Subdivision && Builder1 == lotRecords.Builder1];
+                 	//if there is a TD Template that matches above criteria, use it to fill out the following fields on Builder Takedown form
+                 	if(tdTemplate != null)
+                 	{
+                 		feeType = tdTemplate.Additional_Fee_Type.toString();
+                 		feeAmount = tdTemplate.Additional_Fee.toString();
+                 		taxMethod = tdTemplate.Tax_Method.toString();
+                 		taxPerlot = tdTemplate.Tax_Per_Lot.toString();
+                 		percentAppraisal = tdTemplate.Percent_of_Appraisal.toString();
+                 		taxStatus = tdTemplate.Tax_Status;
+                 		drhSubtract = tdTemplate.DRH_Subtract_Day;
+                 		subDayfrom = tdTemplate.Subtract_Day_From;
+                 	}
+                 	//if there is no TD Template, use the values from Lot records for the following fields
+                 	if(tdTemplate.count() = 0)
+                 	{
+                 		feeType = lotRecords.Fee_Type;
+                 		feeAmount = lotRecords.maximum(Additional_Fees).toString();
+                 		interest1 = lotRecords.maximum(Escalator).toString();
+                 		from1 = lotRecords.maximum(Escalator_Start_Date).toString();
+                 	}
+                 	//get record id's
+                 	idRecordList = lotRecords.ID.getall();
+                 	statusList = lotRecords.Status.getall();
+                 	totaltaxList = lotRecords.Total_Tax.getall();
+                 	if(tdTemplate.From_1 < zoho.currentdate)
+                 	{
+                 		interest1 = tdTemplate.Interest_Rate_1.toString();
+                 		interest2 = tdTemplate.Interest_Rate_2.toString();
+                 		interest3 = tdTemplate.Interest_Rate_3.toString();
+                 		interest4 = tdTemplate.Interest_Rate_4.toString();
+                 		interest5 = tdTemplate.Interest_Rate_5.toString();
+                 		interest6 = tdTemplate.Interest_Rate_6.toString();
+                 		interest7 = tdTemplate.Interest_Rate_7.toString();
+                 		interest8 = tdTemplate.Interest_Rate_8.toString();
+                 		interest9 = tdTemplate.Interest_Rate_9.toString();
+                 		interest10 = tdTemplate.Interest_Rate_10.toString();
+                 		interest11 = tdTemplate.Interest_Rate_11.toString();
+                 		interest12 = tdTemplate.Interest_Rate_12.toString();
+                 		from1 = tdTemplate.From_1.toString();
+                 		to1 = tdTemplate.To_1.toString();
+                 		from2 = tdTemplate.From_2.toString();
+                 		to2 = tdTemplate.To_2.toString();
+                 		from3 = tdTemplate.From_3.toString();
+                 		to3 = tdTemplate.To_3.toString();
+                 		from4 = tdTemplate.From_4.toString();
+                 		to4 = tdTemplate.To_4.toString();
+                 		from5 = tdTemplate.From_5.toString();
+                 		to5 = tdTemplate.To_5.toString();
+                 		from6 = tdTemplate.From_6.toString();
+                 		to6 = tdTemplate.To_6.toString();
+                 		from7 = tdTemplate.From_7.toString();
+                 		to7 = tdTemplate.To_7.toString();
+                 		from8 = tdTemplate.From_8.toString();
+                 		to8 = tdTemplate.To_8.toString();
+                 		from9 = tdTemplate.From_9.toString();
+                 		to9 = tdTemplate.To_9.toString();
+                 		from10 = tdTemplate.From_10.toString();
+                 		to10 = tdTemplate.To_10.toString();
+                 		from11 = tdTemplate.From_11.toString();
+                 		to11 = tdTemplate.To_11.toString();
+                 		from12 = tdTemplate.From_12.toString();
+                 		to12 = tdTemplate.To_12.toString();
+                 	}
+                 	//get Builder Takedowns, sort by newest, and grab top line (newest)
+                 	//builderTd = (Builder_Takedown[Added_Time = zoho.currentdate].ID sort by Added_Time desc).getAll();
+                 	//buildertdTop = builderTd.get(0);
+                 	//open URL of newest Builder Takedown
+                 	//openUrl(zoho.appuri + "/Builder_Takedown/record-edit/All_Builder_Takedowns/" + buildertdTop,"popup window");
+                 	interestUrl = "&&Interest_Rate_1=" + interest1 + "&&Interest_Rate_2=" + interest2 + "&&Interest_Rate_3=" + interest3 + "&&Interest_Rate_4=" + interest4 + "&&Interest_Rate_5=" + interest5 + "&&Interest_Rate_6=" + interest6 + "&&Interest_Rate_8=" + interest8 + "&&Interest_Rate_9=" + interest9 + "&&Interest_Rate_10=" + interest10 + "&&Interest_Rate_11=" + interest11 + "&&Interest_Rate_12=" + interest12 + "&&Interest_Rate_71=" + interest7;
+                 	datesUrl = "&&Date1_1=" + from1 + "&&Date1_2=" + to1 + "&&Date2_1=" + from2 + "&&Date2_2=" + to2 + "&&Date3_1=" + from3 + "&&Date3_2=" + to3 + "&&Date4_1=" + from4 + "&&Date4_2=" + to4 + "&&Date5_1=" + from5 + "&&Date5_2=" + to5 + "&&Date6_1=" + from6 + "&&Date6_2=" + to6 + "&&Date7_1=" + from7 + "&&Date7_2=" + to7 + "&&Date8_1=" + from8 + "&&Date8_2=" + to8 + "&&Date9_1=" + from9 + "&&Date9_2=" + to9 + "&&Date10_1=" + from10 + "&&Date10_2=" + to10 + "&&Date11_1=" + from11 + "&&Date11_2=" + to11 + "&&Date12_1=" + from12 + "&&Date12_2=" + to12;
+                 	btdUrl = "#Form:Builder_Takedown?Lots=" + idRecordList + "&&Builder1=" + lotRecords.Builder1 + "&&Subdivision1=" + lotRecords.Subdivision + interestUrl + datesUrl + "&&Additional_Fees_Per_Lot=" + feeAmount + "&&Additional_Fee_Type=" + feeType + "&&Tax_Method=" + taxMethod + "&&Tax_Per_Lot=" + taxPerlot + "&&Percent_of_Appraisal=" + percentAppraisal + "&&Tax_Status=" + taxStatus + "&&Subtract_Day_From=" + subDayfrom;
+                 	openUrl(btdUrl,"popup window");
+                 	//info btdUrl;
+                 }

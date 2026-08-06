@@ -1,0 +1,192 @@
+				 map Manage_Proforma_Approval_Config(string proformaId, string configAction, string approvalId, string title, string approverEmail, string orderedIds)
+                 {
+                 	response = Map();
+                 	try 
+                 	{
+                 		proformaIdText = ifnull(proformaId,"").toString().trim();
+                 		actionText = ifnull(configAction,"").toString().trim().toLowerCase();
+                 		approvalIdText = ifnull(approvalId,"").toString().trim();
+                 		titleText = ifnull(title,"").toString().trim();
+                 		emailText = ifnull(approverEmail,"").toString().trim();
+                 		orderedIdsText = ifnull(orderedIds,"").toString().trim();
+                 		if(proformaIdText == "")
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma ID is required.");
+                 			return response;
+                 		}
+                 		proformaIdLong = proformaIdText.toLong();
+                 		pf = Add_Pro_Forma[ID == proformaIdLong];
+                 		if(pf.ID == null)
+                 		{
+                 			response.put("success",false);
+                 			response.put("message","Pro Forma not found.");
+                 			return response;
+                 		}
+                 		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+                 		// The route is configuration data only until the chain starts.
+                 		// Once any row has moved beyond Not Sent, cancel the flow before editing it.
+                 		for each  approvalRow in rows
+                 		{
+                 			rowStatus = ifnull(approvalRow.Status,"Not Sent").toString().trim();
+                 			if(rowStatus != "" && rowStatus != "Not Sent")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Cancel the active approval flow before adding, removing, renaming, or reordering approval steps.");
+                 				return response;
+                 			}
+                 		}
+                 		if(actionText == "add")
+                 		{
+                 			// Keep the route readable in the widget, email, public page and PDF packet.
+                 			if(rows.count() >= 8)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","A Pro Forma approval route can contain up to 8 steps.");
+                 				return response;
+                 			}
+                 			nextOrder = rows.count() + 1;
+                 			if(titleText == "")
+                 			{
+                 				titleText = "Approver " + nextOrder.toString();
+                 			}
+                 			newApprovalId = insert into Budget_Approvals
+                 			[
+                 				Added_User=zoho.loginuser
+                 				Proforma=proformaIdLong
+                 				Title=titleText
+                 				Approver=emailText
+                 				Sort_Order=nextOrder
+                 				Status="Not Sent"
+                 				Type1="Pro Forma"
+                 			];
+                 			response.put("success",true);
+                 			response.put("message","Approval step added.");
+                 			response.put("approvalId",newApprovalId.toString());
+                 			response.put("sortOrder",nextOrder);
+                 			return response;
+                 		}
+                 		if(actionText == "update")
+                 		{
+                 			if(approvalIdText == "")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Approval ID is required for update.");
+                 				return response;
+                 			}
+                 			if(titleText == "")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Each approval step needs a name.");
+                 				return response;
+                 			}
+                 			row = Budget_Approvals[ID == approvalIdText.toLong() && Proforma == proformaIdLong];
+                 			if(row.ID == null)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Approval row not found for this Pro Forma.");
+                 				return response;
+                 			}
+                 			row.Title=titleText;
+                 			row.Approver=emailText;
+                 			response.put("success",true);
+                 			response.put("message","Approval step updated.");
+                 			return response;
+                 		}
+                 		if(actionText == "delete")
+                 		{
+                 			if(approvalIdText == "")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Approval ID is required for delete.");
+                 				return response;
+                 			}
+                 			if(rows.count() <= 1)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","An approval route must contain at least one step.");
+                 				return response;
+                 			}
+                 			row = Budget_Approvals[ID == approvalIdText.toLong() && Proforma == proformaIdLong];
+                 			if(row.ID == null)
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","Approval row not found for this Pro Forma.");
+                 				return response;
+                 			}
+                 			delete from Budget_Approvals[ID == row.ID];
+                 			// Re-number the remaining rows so the routing functions can continue
+                 			// using Sort_Order + 1 and Sort_Order - 1 without gaps.
+                 			remainingRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+                 			nextOrder = 1;
+                 			for each  remainingRow in remainingRows
+                 			{
+                 				remainingRow.Sort_Order=nextOrder;
+                 				nextOrder = nextOrder + 1;
+                 			}
+                 			response.put("success",true);
+                 			response.put("message","Approval step removed.");
+                 			return response;
+                 		}
+                 		if(actionText == "reorder")
+                 		{
+                 			if(orderedIdsText == "")
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","The reordered approval ID list is required.");
+                 				return response;
+                 			}
+                 			orderedIdList = orderedIdsText.toList(",");
+                 			if(orderedIdList.size() != rows.count())
+                 			{
+                 				response.put("success",false);
+                 				response.put("message","The reordered list does not contain every approval step.");
+                 				return response;
+                 			}
+                 			seenIds = Map();
+                 			for each  orderedIdValue in orderedIdList
+                 			{
+                 				orderedIdText = orderedIdValue.toString().trim();
+                 				if(orderedIdText == "" || seenIds.get(orderedIdText) != null)
+                 				{
+                 					response.put("success",false);
+                 					response.put("message","The reordered list contains an invalid or duplicate approval ID.");
+                 					return response;
+                 				}
+                 				orderedRow = Budget_Approvals[ID == orderedIdText.toLong() && Proforma == proformaIdLong];
+                 				if(orderedRow.ID == null)
+                 				{
+                 					response.put("success",false);
+                 					response.put("message","The reordered list contains an approval that is not attached to this Pro Forma.");
+                 					return response;
+                 				}
+                 				seenIds.put(orderedIdText,true);
+                 			}
+                 			// Temporary values avoid conflicting with any existing Sort_Order validation.
+                 			tempOrder = 1001;
+                 			for each  orderedIdValue in orderedIdList
+                 			{
+                 				orderedRow = Budget_Approvals[ID == orderedIdValue.toString().trim().toLong()];
+                 				orderedRow.Sort_Order=tempOrder;
+                 				tempOrder = tempOrder + 1;
+                 			}
+                 			finalOrder = 1;
+                 			for each  orderedIdValue in orderedIdList
+                 			{
+                 				orderedRow = Budget_Approvals[ID == orderedIdValue.toString().trim().toLong()];
+                 				orderedRow.Sort_Order=finalOrder;
+                 				finalOrder = finalOrder + 1;
+                 			}
+                 			response.put("success",true);
+                 			response.put("message","Approval order saved.");
+                 			return response;
+                 		}
+                 		response.put("success",false);
+                 		response.put("message","Unsupported approval configuration action: " + actionText);
+                 	}	catch (e)
+                 	{
+                 		response.put("success",false);
+                 		response.put("message",e.toString());
+                 	}
+                 	return response;
+                 }

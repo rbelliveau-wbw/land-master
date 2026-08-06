@@ -1,0 +1,1258 @@
+{
+  "name": "land-master-codex-repository",
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "file_count_before_manifest": 243,
+  "creator_counts": {
+    "forms": 57,
+    "fields": 1269,
+    "reports": 70,
+    "pages": 17,
+    "custom_functions": 53,
+    "workflows": 346,
+    "workflow_functions": 41,
+    "connections": 4
+  },
+  "widgets": [
+    {
+      "slug": "proforma-manager",
+      "version": "1.44.6"
+    },
+    {
+      "slug": "budget-manager",
+      "version": "121.0.0"
+    },
+    {
+      "slug": "land-master",
+      "version": "8.9.1"
+    },
+    {
+      "slug": "contract-management",
+      "version": "1.0.0"
+    },
+    {
+      "slug": "tax-center",
+      "version": "19.0.0"
+    },
+    {
+      "slug": "milestone-gantt",
+      "version": "1.0.0"
+    }
+  ],
+  "files": [
+    {
+      "path": ".agents/skills/deluge-review/SKILL.md",
+      "bytes": 528,
+      "sha256": "7952e3d4b1075896139f0dd3a49283feb8e4ce504ddc2c4747b492eb6e98298a"
+    },
+    {
+      "path": ".agents/skills/land-master-widget-feature/SKILL.md",
+      "bytes": 763,
+      "sha256": "9ee0fb417122116dd0954ee4fb9a517685945a52df6c5fb8b6a82096e94cbe17"
+    },
+    {
+      "path": ".agents/skills/release-qa/SKILL.md",
+      "bytes": 405,
+      "sha256": "09b83cffe70c21724bccb9d131562c365627ca50145a8802078825f33aafd6d6"
+    },
+    {
+      "path": ".env.example",
+      "bytes": 198,
+      "sha256": "c1d0fdd8ec68e4c3568886eb597ec697de7da924c62f5430937fe5d2c975806b"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 159,
+      "sha256": "070aa4f45b1dae9dad955589746b9e540f6b84ba7bf0b3e85551ece2cbda7139"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature.yml",
+      "bytes": 739,
+      "sha256": "a5d395560c967dba91c3d9ee9af277cf9b5d0ea113267d759e0d343e073bbd6c"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "bytes": 311,
+      "sha256": "4a5e035de1e9518a30860673215a42c39635416a35c68a782465d8c928f1b1aa"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 558,
+      "sha256": "4d7d42016f11f8eef8b06b7b56440b0c21f3c6f3f9c1eafc473b7589a692f219"
+    },
+    {
+      "path": ".github/workflows/create-release.yml",
+      "bytes": 1189,
+      "sha256": "96ab810b5efa4597b78a5186796a79be915b5d3eb965b554332290831706f785"
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "bytes": 938,
+      "sha256": "6a59992700e3e900ee74bed8e16b02f175498199d309e9cba9b7cb5dc059b228"
+    },
+    {
+      "path": ".github/workflows/promote-widget.yml",
+      "bytes": 2431,
+      "sha256": "ebc1bf02f0992d66c7c928cde26d6c734c02c7a51d3fcc39ed811e3c3d90c34f"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 79,
+      "sha256": "388f63fa5bac0d6e528b565853880eb237940f8a5dad4f094eaf623eccc8dbbc"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 2308,
+      "sha256": "b3ea0398797a1c8a5ea5db8ebe0af847abfb9625d13fac14e6052c56195fce83"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "bytes": 645,
+      "sha256": "567e2d4af491cc0410bbbe888af0bf26acf69d034cca78a40c942f6aeb61418e"
+    },
+    {
+      "path": "LICENSE.md",
+      "bytes": 288,
+      "sha256": "23e27638063868452c8d5a97b93703d4af5eda68d1179eeb01415d0dedb3a7d0"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1706,
+      "sha256": "a52c2d49d7b46fa8378306077fdc9c2d127b1ce26fbab505c92dca13306c2669"
+    },
+    {
+      "path": "SECURITY.md",
+      "bytes": 1161,
+      "sha256": "c3b1831bb10a7f324c1b53da86cd106561cb60e315e6374b362d72ae9d48f038"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 2796,
+      "sha256": "1692edb92908e6a09419ad760574336dce42254dde3fa5e230c336d1d7874499"
+    },
+    {
+      "path": "artifacts/widget-pages-preview.zip",
+      "bytes": 1212363,
+      "sha256": "da3b3e5641add19e1709e92568f6e77d00557cd7c7be390616c819ebc8f8f184"
+    },
+    {
+      "path": "creator/exports/Land_Master_2026-08-06.ds",
+      "bytes": 2093668,
+      "sha256": "1c6f5e80a318b7ae2e01bd0857957cff788b91e9475937c682ddd8e32e13e0ca"
+    },
+    {
+      "path": "creator/functions/Claim_Proforma.dg",
+      "bytes": 3217,
+      "sha256": "6b1c81b643b8fc5e78f2f137ec9d26ad48b86c722eed61afc6ebd157d463acea"
+    },
+    {
+      "path": "creator/functions/Create_LOI_Contract.dg",
+      "bytes": 26164,
+      "sha256": "5b71cbe0e5c6323b68a1a279357c098153aab8c629ce5efb99acd2ba7d8f574f"
+    },
+    {
+      "path": "creator/functions/Handle_Proforma_Approval_Action.dg",
+      "bytes": 9038,
+      "sha256": "0982d20e2ff41cd6eea535e0ca196673e146901d6081cb3efaecc350bf40784e"
+    },
+    {
+      "path": "creator/functions/Kill_Proforma_Approval_Flow.dg",
+      "bytes": 1232,
+      "sha256": "52f98ca786dc41f50ccf6b88105a974b573aef6a1223984d5dd7a02b82ec87c1"
+    },
+    {
+      "path": "creator/functions/Manage_Proforma_Approval_Config.dg",
+      "bytes": 9493,
+      "sha256": "cb9f2544aeb53a93f465bd8a98679867cc67daf6716e9bfabfd1edffe9a0f999"
+    },
+    {
+      "path": "creator/functions/PF_Build_Proforma_Approval_PDF.dg",
+      "bytes": 61559,
+      "sha256": "6aebfd459e087043ff6b4ce485512e7af857189bdedd784957ea037d5c970094"
+    },
+    {
+      "path": "creator/functions/PF_Get_Proforma_LOI_Snapshot.dg",
+      "bytes": 17898,
+      "sha256": "dc63b9cf454ef2201dfd52f3fab431ee85d4c12af3dd841afd0e0777f0b33554"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Clean.dg",
+      "bytes": 940,
+      "sha256": "7163c33c0b090f19fb3f0ee092a66e45bd0cc0f2f56aeebb92a93fc73d3016e2"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Compile.dg",
+      "bytes": 3958,
+      "sha256": "340807429ef50e6d163fdf9a1629d8af7a029d032863f0e37f81363b20689058"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Line.dg",
+      "bytes": 268,
+      "sha256": "790054d29d3410936bf6db71e1948f0de1e547ab7d6162cefeadae79e1a5b703"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Rect.dg",
+      "bytes": 1059,
+      "sha256": "15770bf9ac2cfc83aeb4fea161672a39ed26c9ffe9b8072166313c53148a9e98"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Text.dg",
+      "bytes": 754,
+      "sha256": "6706c9382c2bec2ef5c79267a2a82c7324d24bacccd80a95875d9e42ec137467"
+    },
+    {
+      "path": "creator/functions/PF_PDF_Wrap.dg",
+      "bytes": 1444,
+      "sha256": "eae6e2844b07867dfbfd13172752f92b962a43a1ca0de5cf85400cd3eaae04e4"
+    },
+    {
+      "path": "creator/functions/PF_Packet_Escape.dg",
+      "bytes": 501,
+      "sha256": "363d0e6d424ad1ef36e5cc8321153d5dd594078c5f4ed4afb329049cb0a8cdb5"
+    },
+    {
+      "path": "creator/functions/PF_Packet_Money.dg",
+      "bytes": 668,
+      "sha256": "6d45daba1e2ef1ac4348937591d276ee1fd09f57f60515a7dad95865be8a4bea"
+    },
+    {
+      "path": "creator/functions/PF_Packet_Number.dg",
+      "bytes": 746,
+      "sha256": "335ceb4271d2cbe3fd77eb5ecd1d1b800c1e230fe01634dd9e18d259a20266e2"
+    },
+    {
+      "path": "creator/functions/Review_LOI_Request.dg",
+      "bytes": 5944,
+      "sha256": "95a5a3904b20d4e7c54f4153384043c7901a728cb3fc3a753b01792eaaa740bd"
+    },
+    {
+      "path": "creator/functions/Send_Proforma_Approval_Email.dg",
+      "bytes": 234,
+      "sha256": "57728ec6f4fb1105918123ea53255e421078f801d8e7280be608ffad73c8701d"
+    },
+    {
+      "path": "creator/functions/Send_Proforma_Approval_Email_With_Context.dg",
+      "bytes": 22759,
+      "sha256": "5d8cd0e9c8e676e85b89545b59c9148e7382389c10e20a4bdcd086090fcb54ab"
+    },
+    {
+      "path": "creator/functions/Start_Proforma_Approval_Chain.dg",
+      "bytes": 4613,
+      "sha256": "a31dca725ab2139b155d34f9aaa9b50cfa76a7792252e7a262ab625d3489052d"
+    },
+    {
+      "path": "creator/functions/Submit_LOI_For_Legal_Approval.dg",
+      "bytes": 11417,
+      "sha256": "1e28c01b198a282c8c6398ad8cbd89fb38774823c0d822ae3ade85dab93a1fdf"
+    },
+    {
+      "path": "creator/functions/Update_Proforma_Approval_Recipient.dg",
+      "bytes": 2938,
+      "sha256": "3ac88d646217264d0d13f518edfeb44fefefd5bb68335cc7662eef8f5ab488f5"
+    },
+    {
+      "path": "creator/functions/applyBudgetTrackFinalState.dg",
+      "bytes": 6231,
+      "sha256": "6be31d6c2a20312931b5f87d132af94b94c8a8659657f04bd5c033746e7ad0a2"
+    },
+    {
+      "path": "creator/functions/buildForecastManagerSummary.dg",
+      "bytes": 20486,
+      "sha256": "9cc4cc4eaf948433069e74a42d358e950db28aca9fa728c476c7b1f7112dcc0d"
+    },
+    {
+      "path": "creator/functions/createBudgetAttachmentRecord.dg",
+      "bytes": 1551,
+      "sha256": "3c5221372c0e5ede683e1588f2543f43cce0367430f6ebb436ba24cb7c2236ae"
+    },
+    {
+      "path": "creator/functions/createBuilderTakedown.dg",
+      "bytes": 7216,
+      "sha256": "82288c0d6009b225e150eaaacf373df6582fcf12ddff92e12b079fdc53d4f2e5"
+    },
+    {
+      "path": "creator/functions/createContract.dg",
+      "bytes": 1403,
+      "sha256": "3cf57607e04fc080ea747710d02821ff6a45b1bd812cb5192a2333e41ffbc949"
+    },
+    {
+      "path": "creator/functions/createTaxTemplate.dg",
+      "bytes": 657,
+      "sha256": "6edd8ad605f003fa487783a98044952123b09052ae00e0d0d073393d956ad6c1"
+    },
+    {
+      "path": "creator/functions/createTaxtable.dg",
+      "bytes": 268,
+      "sha256": "4c62d113cc30295011480bb86c51775b1b0dd7a2f19fbbd05f151f0c99ef89e7"
+    },
+    {
+      "path": "creator/functions/defaultFunction.dg",
+      "bytes": 211,
+      "sha256": "7941edaa723b3f340dd560ab8e6566116b70e1bd64b7c63423d3401cc2b83434"
+    },
+    {
+      "path": "creator/functions/deleteBudgetAttachment.dg",
+      "bytes": 1152,
+      "sha256": "0d747a6bdf89b57fd03a0c9bc9cffbceed5a6cbf336b110eb420073373f4b92e"
+    },
+    {
+      "path": "creator/functions/exportBudgetSnapshot.dg",
+      "bytes": 40789,
+      "sha256": "d2fca12d91a0fe228f57daf003a704cf0c2d803e2533c9aac205a4552d85355d"
+    },
+    {
+      "path": "creator/functions/forLoop.dg",
+      "bytes": 701,
+      "sha256": "4cf9c5f6bdf7f3dd75f4a3da5b5e92d7dd0cd1ee0c7b77f5364e486674bc2385"
+    },
+    {
+      "path": "creator/functions/formStyle.dg",
+      "bytes": 76001,
+      "sha256": "53be856623fc8c3092b1aafaf9e66fed67749a99ae6d3aeb0b7e81449af3abd9"
+    },
+    {
+      "path": "creator/functions/generateApprovedBudgetPDF.dg",
+      "bytes": 264,
+      "sha256": "488a8adbc3b17fe23aad0b243154a255884b38aca5be5997c6aa7fc2dd651e83"
+    },
+    {
+      "path": "creator/functions/getBudgetAttachmentPreview.dg",
+      "bytes": 3116,
+      "sha256": "8b666fa83c807df6454442b2529cb905a582a760139a89a51df43430da88658c"
+    },
+    {
+      "path": "creator/functions/getUserAccess.dg",
+      "bytes": 4814,
+      "sha256": "6baf3e168c9d38e41389d9a56f126cc05b91755efe72934d2a955e04f3d46b85"
+    },
+    {
+      "path": "creator/functions/handleApprovalAction.dg",
+      "bytes": 17841,
+      "sha256": "562d248fb621a666ffe060f2cabf0c63f979a2b06dfdfc12a530c4946b4c58ff"
+    },
+    {
+      "path": "creator/functions/killApprovalChain.dg",
+      "bytes": 4162,
+      "sha256": "3d73a4f060257ca9320f20b09e027a41bde42e3da82fd28e7a553b256a71aff2"
+    },
+    {
+      "path": "creator/functions/killApprovalFlow.dg",
+      "bytes": 3808,
+      "sha256": "4ad53917a564046be9172a9b4621e723a29fb75d5e8cf4c9f4fad4967f7c599c"
+    },
+    {
+      "path": "creator/functions/massCreateforecasts.dg",
+      "bytes": 792,
+      "sha256": "3d9ed8d9ba409e884c34bd4312b7831f0e2da002b14d7ff7c4a5aae3935b46a0"
+    },
+    {
+      "path": "creator/functions/massUpdate.dg",
+      "bytes": 787,
+      "sha256": "266a5bdd21824ddefc85f842c79a4736e66826880aa32feaa9b663c335e82c9d"
+    },
+    {
+      "path": "creator/functions/massUpdatetax.dg",
+      "bytes": 801,
+      "sha256": "f503be23944df2e61965bdaa95b44913b17f983c8013e3fbb3037368c31961f9"
+    },
+    {
+      "path": "creator/functions/openBudget.dg",
+      "bytes": 383,
+      "sha256": "2985007fe303fac6f5d6ce3dd3269e4229b2f9e90b68b2cee934ffb8865b9528"
+    },
+    {
+      "path": "creator/functions/proforma_save.dg",
+      "bytes": 58391,
+      "sha256": "505ad327ac96d0234c5dc901fc4de96515c6766d84b7be78b50e219ca00bb702"
+    },
+    {
+      "path": "creator/functions/reportProformaWidgetError.dg",
+      "bytes": 1749,
+      "sha256": "9012878c32cacb72f05efd4dd5c44d23c7b198a34f400d264abf5d766d09cdf0"
+    },
+    {
+      "path": "creator/functions/sendApprovalEmail.dg",
+      "bytes": 12514,
+      "sha256": "22e7a1eed560d80e3bf493e39908843e11ea3a1f8ba4cc692d3bd983176bdcf3"
+    },
+    {
+      "path": "creator/functions/setProjectProforma.dg",
+      "bytes": 1540,
+      "sha256": "33c3f5e914d5a207f55cffcc4fb55a5e970a136e651421b25d3ec67aadda3184"
+    },
+    {
+      "path": "creator/functions/startAllApprovalChains.dg",
+      "bytes": 662,
+      "sha256": "9e99fbfda6b39242729b221fb72e165f6065ecfd9a220b7e7377e9d452d31fbb"
+    },
+    {
+      "path": "creator/functions/startApprovalChain.dg",
+      "bytes": 8906,
+      "sha256": "c196a7059d247e83607fe7a20891acb49c484c8d8a59057b7383a54984852b82"
+    },
+    {
+      "path": "creator/functions/syncBudgetApprovalStatus.dg",
+      "bytes": 2991,
+      "sha256": "cbbbd13724587241b757175b2928f8423d230509970ecdd0de1db807184104cf"
+    },
+    {
+      "path": "creator/functions/utilitiesconvertIntegerToCurrency.dg",
+      "bytes": 3048,
+      "sha256": "af28b755b9db815957641a71c32fa68f4f1d4e7ef073363a158d1437bc5a947f"
+    },
+    {
+      "path": "creator/functions/utilitiesmakeRange.dg",
+      "bytes": 431,
+      "sha256": "0db475875493fc9a25ef7ad85b9489eb821d46e0f2b4f15d122834e9f7dd1b8e"
+    },
+    {
+      "path": "creator/generated/FORMS.md",
+      "bytes": 2610,
+      "sha256": "b3f747a42e98967dc2e3fa287aa6fac66e990af43eaf40a543a9cb29a9f25d65"
+    },
+    {
+      "path": "creator/generated/FUNCTIONS.md",
+      "bytes": 3379,
+      "sha256": "840b69bc178b3922fd97ad099466f1d45a085044208409e3ad1b744d209a6ebc"
+    },
+    {
+      "path": "creator/generated/PAGES.md",
+      "bytes": 1397,
+      "sha256": "a4fb60806fcf88e7b5a17d0ce64389029d02e293bc0709ef1ad6cdfde6b8cbb8"
+    },
+    {
+      "path": "creator/generated/REPORTS.md",
+      "bytes": 5574,
+      "sha256": "6420cd6fe3481c268820f3be54d442d0993cb90796b154ef3ad9b1a305a8b64f"
+    },
+    {
+      "path": "creator/generated/application.json",
+      "bytes": 643,
+      "sha256": "3fcb4272ad6ef3cfc5adc8ae1ee8356bee3fc92ae9a61a201a5a3474b9766940"
+    },
+    {
+      "path": "creator/generated/connections.json",
+      "bytes": 3832,
+      "sha256": "5815e9f2e7879cda5b8b194ad5d38f6ee91fffc35ec2ba69c83ffd1cd959cbf6"
+    },
+    {
+      "path": "creator/generated/fields/Add_Budget.json",
+      "bytes": 11957,
+      "sha256": "34a0e5b19951d8fb5577c0d0ebe32bb530ee75c5a7a13b73bae6a1ec840d789e"
+    },
+    {
+      "path": "creator/generated/fields/Add_Pro_Forma.json",
+      "bytes": 26169,
+      "sha256": "df3e5e171a4f141160427cedb8705242e50dd4c427c10089116140c59c81bc9f"
+    },
+    {
+      "path": "creator/generated/fields/Additional_Items.json",
+      "bytes": 2081,
+      "sha256": "69dabc0db06b9325e3e8929001bf99e238a15948d63081382d1fbb43299c1e31"
+    },
+    {
+      "path": "creator/generated/fields/Budget_Approvals.json",
+      "bytes": 3209,
+      "sha256": "3eb3eee1de7e03a99ed93bd448b59dff76905a3515892817799dbf1f99663b0c"
+    },
+    {
+      "path": "creator/generated/fields/Budget_Category.json",
+      "bytes": 7847,
+      "sha256": "c548aae276ed4aa48142e55057fc351cf55b3827f3aa0234b6c7d8ce054218f5"
+    },
+    {
+      "path": "creator/generated/fields/Budget_Import_Item.json",
+      "bytes": 3530,
+      "sha256": "f6e81eb78f55efbf25838b46a147e7a34b761e7582d16e71481b6a1fc16f548a"
+    },
+    {
+      "path": "creator/generated/fields/Budget_Item.json",
+      "bytes": 5308,
+      "sha256": "ec90ae087c6e6814fc6b49e6c6299689bbab814145960e3383b1fc986b3ecf58"
+    },
+    {
+      "path": "creator/generated/fields/Budget_Months.json",
+      "bytes": 5645,
+      "sha256": "7455c5db18fe6a3db04f7c268bc026120bde5e26525da82fb109faea2e1fa158"
+    },
+    {
+      "path": "creator/generated/fields/Builder.json",
+      "bytes": 2189,
+      "sha256": "83b859327c4b5b49cbeec3a808cfd73084c1657e9a54ab2aa3e7b6f97b280b73"
+    },
+    {
+      "path": "creator/generated/fields/Builder_Takedown.json",
+      "bytes": 15531,
+      "sha256": "1863e6f02f82d61de6d0a37e4e2bf45f9c1224fddefe0bf80d7e066d0b3278d4"
+    },
+    {
+      "path": "creator/generated/fields/Company.json",
+      "bytes": 1997,
+      "sha256": "2474afb1b481ec4399b585c67bd3ee6748370c2eb5f9b672ab0ea587a894ded7"
+    },
+    {
+      "path": "creator/generated/fields/Construction_Curve.json",
+      "bytes": 2537,
+      "sha256": "05e804035d8eda15e61c92ad6e39d65e0dbc273710b9376cb09f6b91bd047acc"
+    },
+    {
+      "path": "creator/generated/fields/Contract.json",
+      "bytes": 10962,
+      "sha256": "48dbc064fec4d2748dba3efc7b10df281f870ec155faba3e48186ca54d5357ee"
+    },
+    {
+      "path": "creator/generated/fields/Contract_Actions.json",
+      "bytes": 4028,
+      "sha256": "b74a96d01775c4af9192c0248e6bec971d13eed32f74cda282675c999da5cb31"
+    },
+    {
+      "path": "creator/generated/fields/Contract_Approvals.json",
+      "bytes": 3900,
+      "sha256": "ce7cbe5e01b7b23c87dea6dc6a10722e4dd4be20659deecbf5a51718330a4384"
+    },
+    {
+      "path": "creator/generated/fields/Contract_Pricing.json",
+      "bytes": 1584,
+      "sha256": "945be8488a1463fd4a90a798fb688b20b0bea3462a2c9356194ff3855e6e277c"
+    },
+    {
+      "path": "creator/generated/fields/Contract_Version.json",
+      "bytes": 2039,
+      "sha256": "2284f3b7e17389130706a5b0433c40a0c569b55780956c12fc510c9dd91acb59"
+    },
+    {
+      "path": "creator/generated/fields/Contracts_Management_Search.json",
+      "bytes": 2601,
+      "sha256": "d8667334f6f81993a65706dc50bdff10c7b0f2752fe88eccf754bcce89de7e94"
+    },
+    {
+      "path": "creator/generated/fields/Equipment.json",
+      "bytes": 4379,
+      "sha256": "9405b25e206796c3da0d33607bb3499d511d13bf1a90d1ce2c6b0d9da9884217"
+    },
+    {
+      "path": "creator/generated/fields/Equipment_Maintenance_Cost.json",
+      "bytes": 2219,
+      "sha256": "5cedb9b3a8b6b61b69a63c7f7a443437f3190381ec8114f2f81c49f6c528af41"
+    },
+    {
+      "path": "creator/generated/fields/Equipment_Usage_Year.json",
+      "bytes": 1858,
+      "sha256": "f03b25a4493da666111c851426a701dc0d4260047925b7cc5505f35e92f5c31c"
+    },
+    {
+      "path": "creator/generated/fields/External_System_Mapping.json",
+      "bytes": 1669,
+      "sha256": "e688bea832ebb2976e6852e37a1e5ad24d180ea38a3cb43000215554560ab9eb"
+    },
+    {
+      "path": "creator/generated/fields/Forecast.json",
+      "bytes": 2859,
+      "sha256": "3f487a0405e987ec54a8ed5d6ccfc1c16df51b05c54a975b246da448a64523c0"
+    },
+    {
+      "path": "creator/generated/fields/Forecast_Manager.json",
+      "bytes": 3790,
+      "sha256": "00432624135ee19e71c2f2a728e192af16477945fa5deea1f84853418c71e914"
+    },
+    {
+      "path": "creator/generated/fields/Forecast_Search.json",
+      "bytes": 4503,
+      "sha256": "bc26ef08e8bf0fe6131fd4ae771c44cd690297c8881c1a3999ddaa8affa8b55b"
+    },
+    {
+      "path": "creator/generated/fields/Forecast_Year.json",
+      "bytes": 5167,
+      "sha256": "ceb66d38394d521be942045dc6c3fc95c4fe23b2f6e8ffe0118188d2cd038373"
+    },
+    {
+      "path": "creator/generated/fields/Forecast_Year_Subform.json",
+      "bytes": 6945,
+      "sha256": "736e50fcc0b77b5c6851d60adedf2a550f1eeedc1a495964beac03247ed35524"
+    },
+    {
+      "path": "creator/generated/fields/LOI_Worksheet.json",
+      "bytes": 8134,
+      "sha256": "029a83e40c421f672112bfa985ec59238c6bcd274bbc5dd1cf10c4d0d867da12"
+    },
+    {
+      "path": "creator/generated/fields/Land_Installments.json",
+      "bytes": 2921,
+      "sha256": "ec5edff89f6031b2c353be8ba65f3a89b7f59287a0c41095fdebf32682c448c4"
+    },
+    {
+      "path": "creator/generated/fields/Lot_Search.json",
+      "bytes": 6494,
+      "sha256": "c31e1316bb80b9f4894dd9d9dd686d0c12825fcb9758cc8108ad19d5740dc3f6"
+    },
+    {
+      "path": "creator/generated/fields/Lots.json",
+      "bytes": 8645,
+      "sha256": "eb455b022ddace0255d590ae509e148c101eee2d65e411d5b38b656bda051f91"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Create_Forecasts.json",
+      "bytes": 1601,
+      "sha256": "2fa70ad68f8198eda1fe904fc8f3b5b895e5f16e02b6a52a6ae8377b612a99f0"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Create_Lots.json",
+      "bytes": 4215,
+      "sha256": "06f5191ae841ee436ed86cd40e87dcc4baaaf3cbdab309e24ed8269aade5e671"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Create_Lots_Subform.json",
+      "bytes": 3587,
+      "sha256": "925d2f8c4e9314a8da17e486d91473f85544414a6488cf80ed45eb1b37fcc246"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Create_Tax.json",
+      "bytes": 3303,
+      "sha256": "ab697ee6c3c2b759c3d571c8189b262112e8fa5bc6831c3eb1968981ca032115"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Create_Tax_Rates.json",
+      "bytes": 5625,
+      "sha256": "d642e65c5d6b901873436fde6b00565c6e3a2f27f7f233c4cd4c8497e37a1aa6"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Update_Lots.json",
+      "bytes": 3798,
+      "sha256": "a421a179ccc7d182bd7dc0aefd4baed006774669ecf435ee92d27e302cd8afea"
+    },
+    {
+      "path": "creator/generated/fields/Mass_Update_Tax.json",
+      "bytes": 3982,
+      "sha256": "f3f51edde12a97d47407b45d9c7c9ebb9af8fcb39c62d4b33d3fc89844f9034d"
+    },
+    {
+      "path": "creator/generated/fields/Milestones.json",
+      "bytes": 2393,
+      "sha256": "4f026f6e35690435ef22d29b3b1bfaf40b2b2ae721f94eccc004301bab0697a3"
+    },
+    {
+      "path": "creator/generated/fields/Proforma_Item.json",
+      "bytes": 3640,
+      "sha256": "1881f8d55066e7d676c906e92a2a52dbd5b3d18527cabc443f6a4a3b131b2d96"
+    },
+    {
+      "path": "creator/generated/fields/Proforma_Months.json",
+      "bytes": 7084,
+      "sha256": "d44a958fdd9e63c090c5270f7d9394693ff50ca24152eb6a6f92a97306063d32"
+    },
+    {
+      "path": "creator/generated/fields/Proforma_Phase.json",
+      "bytes": 3564,
+      "sha256": "6899a421c5de7548ccdb191ea6c38924a9e831abc36eed7cd645796b2cb79721"
+    },
+    {
+      "path": "creator/generated/fields/Project.json",
+      "bytes": 2457,
+      "sha256": "ef82cd48d4f353cbe65dc335feb8057f188b074afa68149c54a36127739c92f0"
+    },
+    {
+      "path": "creator/generated/fields/Property.json",
+      "bytes": 7469,
+      "sha256": "b764d72eb72641fb3a053f448d9fadf8d3ba924386e542a048caeba2ace3478a"
+    },
+    {
+      "path": "creator/generated/fields/Redline_Review.json",
+      "bytes": 1373,
+      "sha256": "c099b8e64e7ba31d17e140a0597c4f3794fa35eec35288d724663e767949e36c"
+    },
+    {
+      "path": "creator/generated/fields/Settings.json",
+      "bytes": 6280,
+      "sha256": "75762e3d811c78a65f6715435a41c1a428f02e2c0e8923bfa017d07c6a91373f"
+    },
+    {
+      "path": "creator/generated/fields/Subdivision.json",
+      "bytes": 9434,
+      "sha256": "4d8785d00d7849ad1a96b0cc1608ae35d2dc61558839402d17fc48e4018c7d27"
+    },
+    {
+      "path": "creator/generated/fields/System_Search.json",
+      "bytes": 3872,
+      "sha256": "591f347eb4371941f67f318dfca0e3b0ef50a90f6cef220c32e227db8f1a83a9"
+    },
+    {
+      "path": "creator/generated/fields/Takedown_Schedule.json",
+      "bytes": 6834,
+      "sha256": "e065269cbf7f8fb1db30a2c985e8e339fb5b639c36c0b28614886b5ea75688b6"
+    },
+    {
+      "path": "creator/generated/fields/Takedown_Template.json",
+      "bytes": 11454,
+      "sha256": "94160607f32f7f572aa16f39f8ed9b95b5420f2b32fd4237ce4058b4b23463c2"
+    },
+    {
+      "path": "creator/generated/fields/Tax_Parcel_Search.json",
+      "bytes": 3358,
+      "sha256": "a81d2432e1e25520d408cc3d9a2ebd02fe7c83dcf9f2578898ccc9dab05c1b49"
+    },
+    {
+      "path": "creator/generated/fields/Tax_Parcel_Year.json",
+      "bytes": 11036,
+      "sha256": "0edf26e4a4ca4df982f962b03457f7b19535c699af22f21aaef63cd88a7cdc7b"
+    },
+    {
+      "path": "creator/generated/fields/Tax_Rate.json",
+      "bytes": 1818,
+      "sha256": "f5a6b42a0d58fbe1f534e1d9da0cda932c324397daa551326ce4bd33e1a6df77"
+    },
+    {
+      "path": "creator/generated/fields/Tax_Rate_Template.json",
+      "bytes": 1372,
+      "sha256": "a5a7ef49fb0349a2ad555ed7b028fce1698ec9f9d33730022eca25ef64153336"
+    },
+    {
+      "path": "creator/generated/fields/Tax_Table_Search.json",
+      "bytes": 2302,
+      "sha256": "38bedc12b9a00b5b8c88d3752c330bc1a0d4e0d00c79f03142c7de0adc4319ff"
+    },
+    {
+      "path": "creator/generated/fields/Taxing_Jurisdiction.json",
+      "bytes": 2626,
+      "sha256": "0121271249ead878c06771751d6cbf53d06e1e7f1dc1f960d657c6159e090bbf"
+    },
+    {
+      "path": "creator/generated/fields/User_Access.json",
+      "bytes": 5078,
+      "sha256": "784d3594a3087081214d9e24ba47e8be376e39e26c7115572e0b1bba5ea0ddeb"
+    },
+    {
+      "path": "creator/generated/forms.json",
+      "bytes": 338449,
+      "sha256": "2454d1f206d97e2d25f1b227577a6ef380d9e98fdf947347cda39cf563ef28ad"
+    },
+    {
+      "path": "creator/generated/functions.json",
+      "bytes": 41593,
+      "sha256": "5d729a86e1d4f30f2a62d0c6f68c2265c83569e7da11414560bfc147139994ae"
+    },
+    {
+      "path": "creator/generated/pages.json",
+      "bytes": 6141,
+      "sha256": "b145a79b307212a2190b61da651ad8cdccfe492dbe578ae65e1610c3585a7184"
+    },
+    {
+      "path": "creator/generated/reports.json",
+      "bytes": 14358,
+      "sha256": "46dc70a1cd83e0d936e46ce986c73077acd4b20df5586c2cb7f300e13086a1a7"
+    },
+    {
+      "path": "creator/generated/workflows.json",
+      "bytes": 87329,
+      "sha256": "6c768ba02f4b4edda444857f752f3947a81d915693bdd32e85b4df4667340fbb"
+    },
+    {
+      "path": "creator/raw/custom-functions-section.ds",
+      "bytes": 470556,
+      "sha256": "91ff3d9a84a340451bed11de702a79339c95d3f809b488b7f4723c6df968c09e"
+    },
+    {
+      "path": "creator/raw/workflow-functions-section.ds",
+      "bytes": 50355,
+      "sha256": "880af766f3e1fc05ed0fc897df00ac12456e1cc0f1356d44f93c683e7d591a5d"
+    },
+    {
+      "path": "creator/raw/workflow-section.ds",
+      "bytes": 653763,
+      "sha256": "881ab734d7c913920c3d93b44c192232822845e386b2fefd263be1a88537c9d6"
+    },
+    {
+      "path": "deploy/environments.json",
+      "bytes": 915,
+      "sha256": "477273d134bb4cec78524aac9fc752066123ad52b39e60edbc521c453203da77"
+    },
+    {
+      "path": "docs/codex-setup.md",
+      "bytes": 824,
+      "sha256": "b18eaad13d839709075a0b465a4c8ffe6182a1cd8dc219e108a7d85542ac7449"
+    },
+    {
+      "path": "docs/creator-metadata-refresh.md",
+      "bytes": 646,
+      "sha256": "a84ed283c668fbcdd0dd1f10c8adef94f0dd66be4fde74e12eaa84a11ee5e3ff"
+    },
+    {
+      "path": "docs/github-import.md",
+      "bytes": 637,
+      "sha256": "0813a0a0f7530fd8b78d085a509e87d6eadb25ff6571efdcb716f370d26b5c1a"
+    },
+    {
+      "path": "docs/github-pages-setup.md",
+      "bytes": 597,
+      "sha256": "12ceee4131d42197e7723d4093c25536fceb41aeb5bc07f6bc6ef824b1f11163"
+    },
+    {
+      "path": "docs/release-process.md",
+      "bytes": 509,
+      "sha256": "1271030126ac2ebc7b632d63a5ff4a481ed9e0b014c7e1a3b4a9ec4fc73653d4"
+    },
+    {
+      "path": "docs/zoho-external-widget-setup.md",
+      "bytes": 778,
+      "sha256": "3e23b02a17fecbc1f7072b77e9a49ce89f83cbcb7b4b3731fd933d4d955c9461"
+    },
+    {
+      "path": "knowledge/README.md",
+      "bytes": 691,
+      "sha256": "f97b9a9ab92e51f1894cec2a2c66969e974e26853290f354138d8aefcf06a9d1"
+    },
+    {
+      "path": "knowledge/architecture/deployment-model.md",
+      "bytes": 802,
+      "sha256": "03003bbe9fd5ed5f711caef40d703ca688e90d81d3a49d7f685662705569a8e7"
+    },
+    {
+      "path": "knowledge/architecture/repository-map.md",
+      "bytes": 754,
+      "sha256": "db923455853c5f370d7f87bcc3c127244583f921c3bb192c96d3a43694eb66eb"
+    },
+    {
+      "path": "knowledge/architecture/system-overview.md",
+      "bytes": 883,
+      "sha256": "08735ee11b0c7aaa246143f8697ce9c909d9cecf6eda80d85ba59b38c01bc48f"
+    },
+    {
+      "path": "knowledge/business-rules/identifiers.md",
+      "bytes": 428,
+      "sha256": "7160b73eee4b1ea5f3337e675f3e26891f1bb4bc09b24dc0e4ea06cb5cab0c9f"
+    },
+    {
+      "path": "knowledge/business-rules/permissions.md",
+      "bytes": 359,
+      "sha256": "b96c94acea351548193dad065ae1d7641fcef6cd4ce2dd8edf18ebe7b8ddf62c"
+    },
+    {
+      "path": "knowledge/decisions/ADR-001-github-source-of-truth.md",
+      "bytes": 403,
+      "sha256": "9e3bcece0e2f027a6dbd94a6b875ae842967352821f5780f45801213202a8b01"
+    },
+    {
+      "path": "knowledge/decisions/ADR-002-external-widget-hosting.md",
+      "bytes": 369,
+      "sha256": "241783469175b4d6d144f1df6bb7067b339ece89eb222d464bfd9ff6a31ee3f0"
+    },
+    {
+      "path": "knowledge/decisions/ADR-003-private-repository-public-widget-assets.md",
+      "bytes": 270,
+      "sha256": "1657e55dcfc2025a16dc13cf9d5feda3b831829f7d20b3702e7855acc3daecf7"
+    },
+    {
+      "path": "knowledge/decisions/ADR-004-immutable-releases.md",
+      "bytes": 204,
+      "sha256": "baeda1b6ac0afb716cb770eaf7e24a62e5ae53ecbd152dbd20473ba34d09e0f2"
+    },
+    {
+      "path": "knowledge/incidents/budget-attachment-preview.md",
+      "bytes": 615,
+      "sha256": "7a13868a3f2d28db85e914374bacc591258f895edc9158f57a51c0d17de579cc"
+    },
+    {
+      "path": "knowledge/incidents/facility-id-leading-zeroes.md",
+      "bytes": 289,
+      "sha256": "cb7929a321507738a0f8445e5a20b6c18c494360b494c5b108650f29f0347a2f"
+    },
+    {
+      "path": "knowledge/incidents/proforma-loi-field-save.md",
+      "bytes": 379,
+      "sha256": "44f919839547a2871df1a60a55a8e67edb2a043507e42ef2b1f32cc668511bdd"
+    },
+    {
+      "path": "knowledge/incidents/widget-performance-large-record-sets.md",
+      "bytes": 423,
+      "sha256": "84e89249cb43173fded84c3692673d9ef36d9851ae1da1006ce08dfc297f6200"
+    },
+    {
+      "path": "knowledge/migration/personal-to-work-handoff.md",
+      "bytes": 607,
+      "sha256": "81dff6a8804d87fef25e262619351aa5f1da14014c9e3a5041b27aa71dcf516e"
+    },
+    {
+      "path": "knowledge/migration/unresolved-verification.md",
+      "bytes": 582,
+      "sha256": "d7d1107673ae5d5bb08070b11268c9dd1930b3536919c2a6d57cb41bfbc0c25f"
+    },
+    {
+      "path": "knowledge/migration/work-chatgpt-project-instructions.md",
+      "bytes": 663,
+      "sha256": "df8386f5d4d1b90f6a36f8c83c3b66ed38d2d9b134496b38a7206a8d9195106d"
+    },
+    {
+      "path": "knowledge/modules/budget.md",
+      "bytes": 919,
+      "sha256": "6c521369304a7bf40fde0f95899802a2dd24378173567a449924a3486f66b25b"
+    },
+    {
+      "path": "knowledge/modules/contracts.md",
+      "bytes": 483,
+      "sha256": "2e02ed31e0b5e86e9117cb81eeebf2013891f8b852a277f6e738b56821a6321e"
+    },
+    {
+      "path": "knowledge/modules/land-master.md",
+      "bytes": 779,
+      "sha256": "7838fd4ed5220ce600a867ada0c78e1a10cc61ddecc8eb7d3a09d3cb2a803091"
+    },
+    {
+      "path": "knowledge/modules/proforma.md",
+      "bytes": 1153,
+      "sha256": "ce23c4bc94f00e977c10178360826fc76afab7cd8bb6a19f63c8549a5e7b73ac"
+    },
+    {
+      "path": "knowledge/modules/projects.md",
+      "bytes": 403,
+      "sha256": "418709d3ffbcd0adc91f294a9cd0bbaba7e2c0921f52c1ab832c3b5e451f3daf"
+    },
+    {
+      "path": "knowledge/modules/tax.md",
+      "bytes": 323,
+      "sha256": "526c041a76f912c22a2692d9580e2e615bcbec20a260fad1cc783a59bf34abaf"
+    },
+    {
+      "path": "manifests/custom-apis.json",
+      "bytes": 6577,
+      "sha256": "cf179f93cadf45ab8d61ffa79987b9750fc9323c8259e82076f85c75fd0f75b9"
+    },
+    {
+      "path": "manifests/environments.json",
+      "bytes": 539,
+      "sha256": "54d0aebd79073eb3e53376ef033ab92214f625f8d86837d3a4db412718edf701"
+    },
+    {
+      "path": "manifests/functions.json",
+      "bytes": 41641,
+      "sha256": "17b6289432fc4b1affc9b9500d95cc8e7a75365d11f76f409d1dea13ab1e869f"
+    },
+    {
+      "path": "manifests/widget-dependencies.json",
+      "bytes": 11187,
+      "sha256": "36631d3d45c55c2b9dd4dc1105378f6f83bc16ea7a89c332a4e01dec351b6b1e"
+    },
+    {
+      "path": "manifests/widgets.json",
+      "bytes": 7742,
+      "sha256": "ed8acf0bafd91b27e35ab4e48378d4bac36e6f6dcad13ff3847aa71dfc28ccd7"
+    },
+    {
+      "path": "package.json",
+      "bytes": 602,
+      "sha256": "35750056dbf88a4eb793e0f534c62e79391cb33085737211e7b0444c00acdecc"
+    },
+    {
+      "path": "releases/budget-manager/121.0.0/index.html",
+      "bytes": 561051,
+      "sha256": "606bcf35e4b665523b0cf6a9b45dcf4af0d0bd0cd89134572555f076cc843a7e"
+    },
+    {
+      "path": "releases/budget-manager/121.0.0/pdf-preview.html",
+      "bytes": 9478,
+      "sha256": "172c4e34710854fec751379fd0c03459a0fa1399db00e6540ae0a51ed1cf8feb"
+    },
+    {
+      "path": "releases/budget-manager/121.0.0/release.json",
+      "bytes": 277,
+      "sha256": "0464cdcd4a7ad5e1fe76477d732d754ab79b56317a846d9002f1892d0b622b69"
+    },
+    {
+      "path": "releases/contract-management/1.0.0/index.html",
+      "bytes": 98962,
+      "sha256": "110655d857a1c53304df48c0c2a50f6c58597ee7de4a7aa2bb69ac10619accb4"
+    },
+    {
+      "path": "releases/contract-management/1.0.0/release.json",
+      "bytes": 285,
+      "sha256": "56f145339afd16857e6e8c6795f903d9619246fb06074e9ed79bcb0b857df031"
+    },
+    {
+      "path": "releases/land-master/8.9.1/index.html",
+      "bytes": 160758,
+      "sha256": "6972099587593ae8e3332d353a8daabd7573967429d9b4d91fc7acd43815b7b6"
+    },
+    {
+      "path": "releases/land-master/8.9.1/release.json",
+      "bytes": 269,
+      "sha256": "e9088c57f8b466d883c7da19a9bbe0350f2f1d3f7e5b4d5ab32ab3754c066a41"
+    },
+    {
+      "path": "releases/milestone-gantt/1.0.0/index.html",
+      "bytes": 62472,
+      "sha256": "79f0b02c19662c8f7ca458c4cd24ff275e76a1677f15c81f69dbebb49962112e"
+    },
+    {
+      "path": "releases/milestone-gantt/1.0.0/release.json",
+      "bytes": 277,
+      "sha256": "98018d377b623b14a1b5981e5089d4973fb5dbf2571ba88d0b540ccc4885563d"
+    },
+    {
+      "path": "releases/proforma-manager/1.44.6/index.html",
+      "bytes": 485775,
+      "sha256": "c90a61332bd452430c50a80c5a7d295d435fa06757fd81e84ba5eca1c7442706"
+    },
+    {
+      "path": "releases/proforma-manager/1.44.6/release.json",
+      "bytes": 280,
+      "sha256": "eb906700113ab75279468b385d84965f16b34255fde2d24fc720b74d9ee40ff1"
+    },
+    {
+      "path": "releases/tax-center/19.0.0/index.html",
+      "bytes": 276535,
+      "sha256": "d10f44f35bda70fee611b01636ee25ad5af89eb99ea3589c85000bd82cdf5234"
+    },
+    {
+      "path": "releases/tax-center/19.0.0/release.json",
+      "bytes": 268,
+      "sha256": "48ab93aafec4ba4de2ffda0b589fc8372048e208f80e99922ea1ded9e067394a"
+    },
+    {
+      "path": "scripts/build-pages.mjs",
+      "bytes": 2322,
+      "sha256": "0a59a6fb561d195a1409cf3291dfd4de5df1b54e0ead98759b210797fef65f99"
+    },
+    {
+      "path": "scripts/create-release.mjs",
+      "bytes": 1484,
+      "sha256": "e5899a2c17a8566bb866115f5a25e7c635ff96aa4b25d195e6dde4ab19035936"
+    },
+    {
+      "path": "scripts/package-creator.mjs",
+      "bytes": 780,
+      "sha256": "98f0aaa1aea5bf69f47f06cdac75b4bbacf980530bc66626d75c47dcc7083965"
+    },
+    {
+      "path": "scripts/parse_creator_export.py",
+      "bytes": 19724,
+      "sha256": "0be0d123a64c3cbb630da5955fd69c15d38455c4ec263e28d1f78dfd2b6b054d"
+    },
+    {
+      "path": "scripts/scan-widget-contracts.py",
+      "bytes": 4772,
+      "sha256": "1ea7a01a30e0029b9683721cf808b73bfc68d1b1d673f2c0540b9a178e062d88"
+    },
+    {
+      "path": "scripts/validate-repo.mjs",
+      "bytes": 2351,
+      "sha256": "f2fe11479c2c7ec1c0ce3e19a6de3dea7e6e2ad9e2987f65496803a566719e3e"
+    },
+    {
+      "path": "widgets/budget-manager/AGENTS.md",
+      "bytes": 807,
+      "sha256": "27da54ee10be0b7e57854be423f0cb34daadbc44f20104d209c2e56e0a671f05"
+    },
+    {
+      "path": "widgets/budget-manager/README.md",
+      "bytes": 909,
+      "sha256": "a4991ad7776de90ad19a4b896b63cad0f20d53917e1c15a2bb9d07f073a957ca"
+    },
+    {
+      "path": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
+      "bytes": 135375,
+      "sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17"
+    },
+    {
+      "path": "widgets/budget-manager/dependencies.generated.json",
+      "bytes": 2934,
+      "sha256": "f9694b1ab99dfdd145e922c297887d9942fbbebc72147308a46e9a4ff4c0535e"
+    },
+    {
+      "path": "widgets/budget-manager/src/app/pdf-preview.html",
+      "bytes": 9478,
+      "sha256": "172c4e34710854fec751379fd0c03459a0fa1399db00e6540ae0a51ed1cf8feb"
+    },
+    {
+      "path": "widgets/budget-manager/src/app/widget.html",
+      "bytes": 561051,
+      "sha256": "606bcf35e4b665523b0cf6a9b45dcf4af0d0bd0cd89134572555f076cc843a7e"
+    },
+    {
+      "path": "widgets/budget-manager/src/plugin-manifest.json",
+      "bytes": 317,
+      "sha256": "037141fc8681873f6d881cfa1e0c9d871428006194308d687e5bc4891c883a8b"
+    },
+    {
+      "path": "widgets/budget-manager/widget.config.json",
+      "bytes": 1251,
+      "sha256": "c9f1c56a7bdb6d9718a2c7388c6824b99258c011014025f361536a16a6cc0fa5"
+    },
+    {
+      "path": "widgets/contract-management/AGENTS.md",
+      "bytes": 444,
+      "sha256": "ae65f7b81c9517dd07f7d0df91022c76dac65ece692ca8cee521af3470f867a1"
+    },
+    {
+      "path": "widgets/contract-management/README.md",
+      "bytes": 918,
+      "sha256": "5db36430e32041b9aa8837fb67776ab8bdb3f104da8360146bb824d36511d92f"
+    },
+    {
+      "path": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
+      "bytes": 25590,
+      "sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32"
+    },
+    {
+      "path": "widgets/contract-management/dependencies.generated.json",
+      "bytes": 966,
+      "sha256": "0d960f339c487241d7a85e005ae2643183b7786b0f0fc6ea8813d92455c6efc7"
+    },
+    {
+      "path": "widgets/contract-management/src/app/widget.html",
+      "bytes": 98962,
+      "sha256": "110655d857a1c53304df48c0c2a50f6c58597ee7de4a7aa2bb69ac10619accb4"
+    },
+    {
+      "path": "widgets/contract-management/src/plugin-manifest.json",
+      "bytes": 244,
+      "sha256": "8bc3a70e54f6dadb6b9e99122e9a556833ae84dac531fb839b8b64a24e31e597"
+    },
+    {
+      "path": "widgets/contract-management/widget.config.json",
+      "bytes": 1206,
+      "sha256": "0e00b70d3e0b098e355f9cfbcf1b9c8a50eebc748e7baee75368836f95a8150c"
+    },
+    {
+      "path": "widgets/land-master/AGENTS.md",
+      "bytes": 695,
+      "sha256": "535616ab22d5402d03f79c29d7d4ef9a9ca1770810fecd9dc1909d8694fbdb5d"
+    },
+    {
+      "path": "widgets/land-master/README.md",
+      "bytes": 946,
+      "sha256": "726b26795431f5a5c94a31fa247231c5b09cd69ad8b5a84df54ca3da1756f407"
+    },
+    {
+      "path": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
+      "bytes": 40004,
+      "sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0"
+    },
+    {
+      "path": "widgets/land-master/dependencies.generated.json",
+      "bytes": 1113,
+      "sha256": "5af44e08003dd9e8e341a691da12728aa20019d20caadd3ac45b4df65bf2528c"
+    },
+    {
+      "path": "widgets/land-master/src/app/widget.html",
+      "bytes": 160758,
+      "sha256": "6972099587593ae8e3332d353a8daabd7573967429d9b4d91fc7acd43815b7b6"
+    },
+    {
+      "path": "widgets/land-master/src/plugin-manifest.json",
+      "bytes": 234,
+      "sha256": "edd28752cf7584f040c9f54ab35057e6147a694557608307a313f062e75b491c"
+    },
+    {
+      "path": "widgets/land-master/widget.config.json",
+      "bytes": 1186,
+      "sha256": "0c8e9db2a799219c4307ff04848d6810e9afbae591c63063dea4f45c80bd3dcd"
+    },
+    {
+      "path": "widgets/milestone-gantt/AGENTS.md",
+      "bytes": 359,
+      "sha256": "f07a79b0e1d16db9db1d7140af4b712646cb98b6d442fd52c8aeac3f6c5c66b7"
+    },
+    {
+      "path": "widgets/milestone-gantt/README.md",
+      "bytes": 828,
+      "sha256": "86acccfb16c7b77b664a2b20638ce1709443d823fd97349038bd95e67bc4ccd2"
+    },
+    {
+      "path": "widgets/milestone-gantt/baseline/gantt (1).zip",
+      "bytes": 18169,
+      "sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336"
+    },
+    {
+      "path": "widgets/milestone-gantt/dependencies.generated.json",
+      "bytes": 436,
+      "sha256": "7324f9b40c602e988664aad0da23d881ef13ba87efb85bfae05211b4999f9423"
+    },
+    {
+      "path": "widgets/milestone-gantt/src/README.md",
+      "bytes": 2659,
+      "sha256": "4510581a2e985f8472c961735e186504c3e0829a7ae144d77421fe37aeb53a12"
+    },
+    {
+      "path": "widgets/milestone-gantt/src/app/widget.html",
+      "bytes": 62472,
+      "sha256": "79f0b02c19662c8f7ca458c4cd24ff275e76a1677f15c81f69dbebb49962112e"
+    },
+    {
+      "path": "widgets/milestone-gantt/src/plugin-manifest.json",
+      "bytes": 161,
+      "sha256": "5c149598478b26900af95dd8f010064afe8b2c27ba3b63e7b0bf393c8a7218c1"
+    },
+    {
+      "path": "widgets/milestone-gantt/widget.config.json",
+      "bytes": 1062,
+      "sha256": "d59833c49fd6432a64a30f92ada6c143f2ab4b31dfe0b9e8c6047c5545e25006"
+    },
+    {
+      "path": "widgets/proforma-manager/AGENTS.md",
+      "bytes": 690,
+      "sha256": "95e2b352d1336d7bef9f47275fe3579e11f24d3a0a8cb882f6acc6c2e447ad84"
+    },
+    {
+      "path": "widgets/proforma-manager/README.md",
+      "bytes": 930,
+      "sha256": "5d7d9bddb2f388b74972a5d35f77f2371e5eafa3f5780732dda2ead1d88de802"
+    },
+    {
+      "path": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
+      "bytes": 123636,
+      "sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0"
+    },
+    {
+      "path": "widgets/proforma-manager/dependencies.generated.json",
+      "bytes": 3120,
+      "sha256": "61da2858f846c40d658502a2e60a95211d9763887772920f15442af43abfc441"
+    },
+    {
+      "path": "widgets/proforma-manager/src/app/widget.html",
+      "bytes": 485775,
+      "sha256": "c90a61332bd452430c50a80c5a7d295d435fa06757fd81e84ba5eca1c7442706"
+    },
+    {
+      "path": "widgets/proforma-manager/src/plugin-manifest.json",
+      "bytes": 231,
+      "sha256": "afe53e08acc84bc7749c9b43fa2808d0897d7e91625a648da81d806f00fbb214"
+    },
+    {
+      "path": "widgets/proforma-manager/widget.config.json",
+      "bytes": 1204,
+      "sha256": "440897686def53933433e9102c5d171665553907634c71d1af166bc51cae6934"
+    },
+    {
+      "path": "widgets/tax-center/AGENTS.md",
+      "bytes": 363,
+      "sha256": "5bd6ced27d6c718e695a2f6034a3a7f943b39cafc94589c7a5847a0b155eed57"
+    },
+    {
+      "path": "widgets/tax-center/README.md",
+      "bytes": 848,
+      "sha256": "c6ac92ad543e2e690f2504f339bee7437995eba5b43917a3f571c9e219083871"
+    },
+    {
+      "path": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
+      "bytes": 63276,
+      "sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1"
+    },
+    {
+      "path": "widgets/tax-center/dependencies.generated.json",
+      "bytes": 742,
+      "sha256": "909d4058272985a1724e40110c297f8ff3d40a2b689ccd8dfca1c31186eba6ed"
+    },
+    {
+      "path": "widgets/tax-center/src/app/widget.html",
+      "bytes": 276535,
+      "sha256": "d10f44f35bda70fee611b01636ee25ad5af89eb99ea3589c85000bd82cdf5234"
+    },
+    {
+      "path": "widgets/tax-center/src/plugin-manifest.json",
+      "bytes": 161,
+      "sha256": "5c149598478b26900af95dd8f010064afe8b2c27ba3b63e7b0bf393c8a7218c1"
+    },
+    {
+      "path": "widgets/tax-center/widget.config.json",
+      "bytes": 1034,
+      "sha256": "ddacb25902ac3e6a1d972a3338ebeba104932d5e831729a72e307de79a73758d"
+    }
+  ]
+}

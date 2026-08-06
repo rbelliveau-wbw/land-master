@@ -1,0 +1,484 @@
+{
+  "generated_at": "2026-08-06T14:25:00-05:00",
+  "form": "Add_Budget",
+  "display_name": "Add Budget",
+  "fields": [
+    {
+      "link_name": "General_Info",
+      "display_name": "General Info",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Name",
+      "display_name": "Budget Name",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision1",
+      "display_name": "Subdivision",
+      "type": "picklist",
+      "values": "Subdivision.ID",
+      "display_format": "[Subdivision_Name + \" - \" + Subdivision_Code]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Project",
+      "display_name": "Project",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Phase",
+      "display_name": "Phase",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subdivision_Code",
+      "display_name": "Subdivision Code",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Update1",
+      "display_name": "Update",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Lock_Prelim_Budget",
+      "display_name": "Lock Prelim Budget",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Lock_Prelim_Budget_Date",
+      "display_name": "Lock Prelim Budget Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": true
+    },
+    {
+      "link_name": "Lock_Final_Budget",
+      "display_name": "Lock Final Budget",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": true
+    },
+    {
+      "link_name": "Lock_Final_Budget_Date",
+      "display_name": "Lock Final Budget Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": true
+    },
+    {
+      "link_name": "Prelim_Budget_Grand_Total",
+      "display_name": "Prelim Budget Grand Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Unapproved_Final_Budget_Grand_Total",
+      "display_name": "Unapproved Final Budget Grand Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Grand_Total",
+      "display_name": "Budget Grand Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Const_Cost_to_Date",
+      "display_name": "Const Cost to Date",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Owner",
+      "display_name": "Budget Owner",
+      "type": "list",
+      "values": "User_Access.ID",
+      "display_format": "[User]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Const_Budget_Approval_Status",
+      "display_name": "Const Budget Approval Status",
+      "type": "picklist",
+      "values": "{\"Not Sent\",\"Pending\",\"Approved\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Development_Budget_Approval_Status",
+      "display_name": "Development Budget Approval Status",
+      "type": "picklist",
+      "values": "{\"Not Sent\",\"Pending\",\"Approved\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Type",
+      "display_name": "Budget Type",
+      "type": "picklist",
+      "values": "{\"Pro Forma\",\"Development\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Pro_Forma",
+      "display_name": "Pro Forma",
+      "type": "picklist",
+      "values": "Add_Pro_Forma.ID",
+      "display_format": "[Name]",
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Add_l_Grand_Total",
+      "display_name": "Add'l Grand Total",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Attachments",
+      "display_name": "Attachments",
+      "type": "upload file",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Export_Staging_File",
+      "display_name": "Export Staging File",
+      "type": "upload file",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "stupid",
+      "display_name": "Zoho Projects Info",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "text",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Acres",
+      "display_name": "Acres",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Total_Residential",
+      "display_name": "Lot Total - Residential",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Land_Cost",
+      "display_name": "Land Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Equiv_LF_of_Street",
+      "display_name": "Equiv. LF of Street",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Lot_Price",
+      "display_name": "Lot Price",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section4",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section3",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Approvals",
+      "display_name": "Approvals",
+      "type": "grid",
+      "values": "Budget_Approvals.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Categories",
+      "display_name": "Categories",
+      "type": "grid",
+      "values": "Budget_Category.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section2",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "VP_Comp",
+      "display_name": "VP Comp",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LI_Land_Purchase_Date",
+      "display_name": "LI Land Purchase Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "LI_Land_Cost",
+      "display_name": "LI Land Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Engineering_Costs",
+      "display_name": "Engineering Costs",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subcontract_Engineering_Costs",
+      "display_name": "Subcontract Engineering Costs",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Development_Direct_Costs",
+      "display_name": "Development Direct Costs",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Start",
+      "display_name": "Construction Start",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Length_Months",
+      "display_name": "Construction Length (Months)",
+      "type": "number",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Construction_Cost",
+      "display_name": "Construction Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Subcontract_Construction_Cost",
+      "display_name": "Subcontract Construction Cost",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Other_Revenue",
+      "display_name": "Other Revenue",
+      "type": "USD",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Budget_Months",
+      "display_name": "Budget Months",
+      "type": "grid",
+      "values": "Budget_Months.ID",
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "Section1",
+      "display_name": "Section",
+      "type": "section",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "plain4",
+      "display_name": "plain4",
+      "type": "plaintext",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "submit",
+      "display_name": "Add",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "reset",
+      "display_name": "Reset",
+      "type": "reset",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "update",
+      "display_name": "Update",
+      "type": "submit",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    },
+    {
+      "link_name": "cancel",
+      "display_name": "Cancel",
+      "type": "cancel",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false
+    }
+  ]
+}

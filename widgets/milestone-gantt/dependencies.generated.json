@@ -1,0 +1,23 @@
+{
+  "custom_apis": [],
+  "forms_referenced": [
+    "Milestones",
+    "Project",
+    "Subdivision"
+  ],
+  "reports_referenced": [
+    "All_Milestones",
+    "All_Subdivisions"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.API.getAllRecords",
+    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.appName",
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "fonts.googleapis.com",
+    "fonts.gstatic.com",
+    "static.zohocdn.com"
+  ]
+}
