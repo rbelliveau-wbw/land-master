@@ -51,6 +51,20 @@ const proformaHtml = fs.readFileSync(path.join(root, 'widgets/proforma-manager/s
 if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('POLISHED-CREATE-ACTION')) {
   errors.push('proforma-manager: polished New Pro Forma action is missing.');
 }
+for (const required of [
+  'id="vAttachments"',
+  'id="btnDashAttachments"',
+  'id="btnEdAttachments"',
+  'attachmentProformaField:"Pro_Forma"',
+  'Create_Proforma_Attachment_Record',
+  'Delete_Proforma_Attachment',
+  'Get_Proforma_Attachment_Preview'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: Pro Forma attachment workflow is missing ${required}.`);
+}
+if (proformaHtml.includes('View All Pro Formas')) {
+  errors.push('proforma-manager: obsolete View All Pro Formas dashboard button is still present.');
+}
 
 if (errors.length) {
   console.error('\nWidget JavaScript validation errors:');

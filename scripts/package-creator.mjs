@@ -15,5 +15,15 @@ const outDir = path.join(root, 'dist', 'creator-packages');
 fs.mkdirSync(outDir, { recursive: true });
 const output = path.join(outDir, `${widget}.zip`);
 if (fs.existsSync(output)) fs.rmSync(output);
-execFileSync('zip', ['-qr', output, '.'], { cwd: source, stdio: 'inherit' });
+try {
+  execFileSync('zip', ['-qr', output, '.'], { cwd: source, stdio: 'inherit' });
+} catch (error) {
+  if (error && error.code === 'ENOENT' && process.platform === 'win32') {
+    // Git for Windows does not always install zip.exe. Windows' bundled bsdtar
+    // creates a standard ZIP when the output extension is .zip.
+    execFileSync('tar.exe', ['-a', '-c', '-f', output, '.'], { cwd: source, stdio: 'inherit' });
+  } else {
+    throw error;
+  }
+}
 console.log(`Created ${path.relative(root, output)}.`);

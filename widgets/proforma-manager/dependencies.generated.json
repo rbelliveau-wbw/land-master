@@ -6,6 +6,21 @@
       "source": "customApis object"
     },
     {
+      "name": "Create_Proforma_Attachment_Record",
+      "config_key": "createProformaAttachmentRecord",
+      "source": "customApis object"
+    },
+    {
+      "name": "Delete_Proforma_Attachment",
+      "config_key": "deleteProformaAttachment",
+      "source": "customApis object"
+    },
+    {
+      "name": "Get_Proforma_Attachment_Preview",
+      "config_key": "getProformaAttachmentPreview",
+      "source": "customApis object"
+    },
+    {
       "name": "Get_User_Access",
       "config_key": "getUserAccess",
       "source": "customApis object"
@@ -83,6 +98,7 @@
     "Company",
     "Construction_Curve",
     "Contract",
+    "Contract_Version",
     "LOI_Worksheet",
     "Land_Installments",
     "Lots",
@@ -99,6 +115,7 @@
     "All_Builders",
     "All_Companies",
     "All_Construction_Cost_Curves",
+    "All_Contract_Versions",
     "All_Land_Installments",
     "All_Pro_Formas",
     "All_Pro_Formas_All_Fields",
@@ -114,7 +131,9 @@
     "ZOHO.CREATOR.API.deleteRecord",
     "ZOHO.CREATOR.API.getAllRecords",
     "ZOHO.CREATOR.API.invokeCustomApi",
+    "ZOHO.CREATOR.API.readFile",
     "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.API.uploadFile",
     "ZOHO.CREATOR.DATA",
     "ZOHO.CREATOR.DATA.invokeCustomApi",
     "ZOHO.CREATOR.UTIL",
@@ -123,6 +142,7 @@
     "ZOHO.CREATOR.init"
   ],
   "external_domains": [
+    "cdn.jsdelivr.net",
     "static.zohocdn.com"
   ]
 }

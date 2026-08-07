@@ -5,19 +5,25 @@
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.44.7",
-      "description": "Pro forma input, LOI workflow, comparison, and configurable sequential approvals.",
+      "version": "1.44.8",
+      "description": "Pro forma input, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "90532c41d6e0c84e875c58e205c6430545dc4208d753b7a43fe42d79d5189095",
+      "source_sha256": "044e6715e519abec12add10093d6430391d39226521c0fcd35274e28d89f570c",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
           "en"
         ],
         "service": "CREATOR",
+        "whiteListedDomains": [
+          "https://creator.zoho.com",
+          "https://creatorapp.zoho.com",
+          "https://creatorexport.zoho.com",
+          "https://cdn.jsdelivr.net"
+        ],
         "modules": {
           "widgets": [
             {

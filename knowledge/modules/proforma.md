@@ -36,3 +36,18 @@ Connection name: `zoho_writer`.
 ## Primary action
 
 The `New Pro Forma` action is the visually prominent primary action in the portfolio toolbar. Preserve its icon, high-contrast treatment, keyboard focus state, and responsive behavior.
+
+## Attachments
+
+Pro Forma attachments use one `Contract_Version` record per file, matching the Budget attachment pattern:
+
+- parent lookup: `Pro_Forma` (the `Add_Pro_Forma` record ID)
+- child report: `All_Contract_Versions`
+- file field: `File_field1`
+- create API/function: `Create_Proforma_Attachment_Record` / `createProformaAttachmentRecord`
+- delete API/function: `Delete_Proforma_Attachment` / `deleteProformaAttachment`
+- preview API/function: `Get_Proforma_Attachment_Preview` / `getProformaAttachmentPreview`
+
+The widget exposes the attachment workspace from both Dashboard and Edit. It supports multiple-file upload, embedded PDF/image/text/media preview, download, and delete, subject to ordinary Pro Forma edit permissions. The persistent `Pro Forma List` action is the canonical route back to the portfolio.
+
+The current committed Creator export predates the live `Contract_Version.Pro_Forma` field. Do not add it manually to `creator/generated/`; refresh the `.ds` export after the live Creator configuration is published.

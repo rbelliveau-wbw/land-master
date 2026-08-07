@@ -1,0 +1,36 @@
+string createProformaAttachmentRecord(string proformaId)
+{
+	/********* CREATE EMPTY PRO FORMA ATTACHMENT CHILD RECORD *********/
+	vProformaId = ifnull(proformaId,"").trim();
+	if(vProformaId == "")
+	{
+		return "{\"ok\":false,\"message\":\"Missing Pro Forma ID.\"}";
+	}
+	proformaRows = Add_Pro_Forma[ID == vProformaId.toLong()];
+	if(proformaRows.count() == 0)
+	{
+		return "{\"ok\":false,\"message\":\"Pro Forma not found.\"}";
+	}
+	try
+	{
+		attachmentId = insert into Contract_Version
+		[
+			Pro_Forma=vProformaId.toLong()
+			Date_field1=zoho.currenttime
+			Email_Attachment=false
+			Added_User=zoho.loginuser
+		];
+		response = Map();
+		response.put("ok",true);
+		response.put("attachmentId",attachmentId.toString());
+		response.put("message","Attachment record created.");
+		return response.toString();
+	}
+	catch (createError)
+	{
+		response = Map();
+		response.put("ok",false);
+		response.put("message","Attachment record creation failed: " + createError.toString());
+		return response.toString();
+	}
+}

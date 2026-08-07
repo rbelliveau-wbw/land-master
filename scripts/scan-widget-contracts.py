@@ -51,6 +51,13 @@ def main() -> None:
         re.sub(r"[^a-z0-9]", "", item["name"].lower()): item["name"]
         for item in functions_data["functions"]
     }
+    # A change can add a reviewed standalone function before the next Creator .ds
+    # export is refreshed. Include those source filenames in Custom API matching
+    # without pretending they are already present in generated live metadata.
+    for source in (ROOT / "creator" / "functions").glob("*.dg"):
+        normalized_functions.setdefault(
+            re.sub(r"[^a-z0-9]", "", source.stem.lower()), source.stem
+        )
     generated_at = datetime.now(timezone.utc).isoformat()
     dependencies: dict[str, Any] = {}
     api_registry: dict[str, dict[str, Any]] = {}

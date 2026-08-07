@@ -1,6 +1,12 @@
 {
   "locale": ["en"],
   "service": "CREATOR",
+  "whiteListedDomains": [
+    "https://creator.zoho.com",
+    "https://creatorapp.zoho.com",
+    "https://creatorexport.zoho.com",
+    "https://cdn.jsdelivr.net"
+  ],
   "modules": {
     "widgets": [
       {

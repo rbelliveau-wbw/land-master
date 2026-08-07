@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T16:30:44.923191+00:00",
+  "generated_at": "2026-08-07T18:38:24.905739+00:00",
   "warning": "Creator DS exports do not provide a verified Custom API registry. Verify method, parameters, auth, user scope, and enabled status in Creator Microservices.",
   "custom_apis": [
     {
@@ -19,11 +19,27 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Create_Proforma_Attachment_Record",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "createProformaAttachmentRecord",
+      "confidence": "inferred-name-match"
+    },
+    {
       "name": "Delete_Budget_Attachment",
       "consumers": [
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "deleteBudgetAttachment",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Delete_Proforma_Attachment",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "deleteProformaAttachment",
       "confidence": "inferred-name-match"
     },
     {
@@ -40,6 +56,14 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "getBudgetAttachmentPreview",
+      "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Get_Proforma_Attachment_Preview",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "getProformaAttachmentPreview",
       "confidence": "inferred-name-match"
     },
     {
