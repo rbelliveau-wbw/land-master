@@ -47,6 +47,19 @@ function writeStableWidgetLoader(target, widget, version) {
 `);
 }
 
+function verifyStableWidgetLoader(source, target, environment, widget, version) {
+  const loader = fs.readFileSync(path.join(target, 'index.html'), 'utf8');
+  if (!loader.includes("params.set('_lmcb', Date.now().toString())") ||
+      !loader.includes('URLSearchParams(window.location.search)')) {
+    throw new Error(`Invalid permanent widget loader: ${environment}/${widget}`);
+  }
+  const promoted = fs.readFileSync(path.join(target, 'widget.html'));
+  const release = fs.readFileSync(path.join(source, 'index.html'));
+  if (!promoted.equals(release)) {
+    throw new Error(`Promoted widget does not match release: ${environment}/${widget} ${version}`);
+  }
+}
+
 const rows = [];
 for (const [environment, widgets] of Object.entries(config.environments)) {
   const shortName = environment === 'development' ? 'dev' : environment === 'production' ? 'prod' : 'stage';
@@ -57,9 +70,8 @@ for (const [environment, widgets] of Object.entries(config.environments)) {
     }
     const target = path.join(out, shortName, widget);
     copyDir(source, target);
-    if (environment === 'production' && widget === 'proforma-manager') {
-      writeStableWidgetLoader(target, widget, version);
-    }
+    writeStableWidgetLoader(target, widget, version);
+    verifyStableWidgetLoader(source, target, environment, widget, version);
     rows.push({ environment, path: `${shortName}/${widget}/`, widget, version });
   }
 }
