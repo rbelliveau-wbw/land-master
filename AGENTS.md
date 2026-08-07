@@ -64,6 +64,30 @@ Chat history and model memory are not authoritative.
 - Safely handle nulls and conversions.
 - Preserve leading zeroes for identifiers such as Facility IDs.
 - Be conscious of Creator and external API limits.
+- Every Deluge function declared with any return type must end with an unconditional fallback `return` statement at the outer function scope. The returned fallback expression must match the function's declared type. Zoho Creator's compiler may report `Missing return statement: Provide <TYPE> expression to return` even when all apparent `if`, `try`, `catch`, loop, or record-query branches already return. Do not rely on branch-only returns. This applies to all declared return types, including `string`, `map`, `list`, `bool`, numeric types, dates, and record values—not only strings.
+
+  ```deluge
+  string exampleFunction(string recordId)
+  {
+      response = Map();
+      try
+      {
+          response.put("ok",true);
+          return response.toString();
+      }
+      catch (functionError)
+      {
+          response.put("ok",false);
+          response.put("message",functionError.toString());
+          return response.toString();
+      }
+
+      // Required compile-safe fallback at the outer function scope.
+      response.put("ok",false);
+      response.put("message","The function ended without a response.");
+      return response.toString();
+  }
+  ```
 
 ## Required verification
 

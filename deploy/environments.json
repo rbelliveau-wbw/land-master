@@ -8,7 +8,8 @@
       "land-master": "8.9.1",
       "contract-management": "1.0.2",
       "tax-center": "19.0.1",
-      "milestone-gantt": "1.0.1"
+      "milestone-gantt": "1.0.1",
+      "manage-lots": "0.1.0"
     },
     "stage": {
       "proforma-manager": "1.44.6",
@@ -16,7 +17,8 @@
       "land-master": "8.9.1",
       "contract-management": "1.0.0",
       "tax-center": "19.0.0",
-      "milestone-gantt": "1.0.0"
+      "milestone-gantt": "1.0.0",
+      "manage-lots": "0.1.0"
     },
     "production": {
       "proforma-manager": "1.44.9",
@@ -24,7 +26,8 @@
       "land-master": "8.9.1",
       "contract-management": "1.0.2",
       "tax-center": "19.0.1",
-      "milestone-gantt": "1.0.1"
+      "milestone-gantt": "1.0.1",
+      "manage-lots": "0.1.0"
     }
   }
 }
