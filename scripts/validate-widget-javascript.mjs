@@ -62,6 +62,9 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: Pro Forma attachment workflow is missing ${required}.`);
 }
+if (!proformaHtml.includes('data-act="attachments"') || !proformaHtml.includes('View Attachments</button>') || !proformaHtml.includes('openPfAttachments(id,"vList")')) {
+  errors.push('proforma-manager: list action menu is missing the View Attachments route.');
+}
 if (!proformaHtml.includes('var files=Array.prototype.slice.call(this.files||[]);') ||
     proformaHtml.indexOf('var files=Array.prototype.slice.call(this.files||[]);') > proformaHtml.indexOf('this.value="";', proformaHtml.indexOf('proformaAttachmentInput'))) {
   errors.push('proforma-manager: attachment files must be snapshotted before clearing the live file input.');
