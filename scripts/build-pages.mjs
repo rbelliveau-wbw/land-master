@@ -19,6 +19,34 @@ function copyDir(source, target) {
   }
 }
 
+function writeStableWidgetLoader(target, widget, version) {
+  const entry = path.join(target, 'index.html');
+  const current = path.join(target, 'widget.html');
+  fs.renameSync(entry, current);
+  fs.writeFileSync(entry, `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Loading ${widget}</title>
+</head>
+<body>
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  params.set('_lmcb', Date.now().toString());
+  window.location.replace('./widget.html?' + params.toString() + window.location.hash);
+}());
+</script>
+<noscript><a href="./widget.html">Open ${widget} ${version}</a></noscript>
+</body>
+</html>
+`);
+}
+
 const rows = [];
 for (const [environment, widgets] of Object.entries(config.environments)) {
   const shortName = environment === 'development' ? 'dev' : environment === 'production' ? 'prod' : 'stage';
@@ -29,6 +57,9 @@ for (const [environment, widgets] of Object.entries(config.environments)) {
     }
     const target = path.join(out, shortName, widget);
     copyDir(source, target);
+    if (environment === 'production' && widget === 'proforma-manager') {
+      writeStableWidgetLoader(target, widget, version);
+    }
     rows.push({ environment, path: `${shortName}/${widget}/`, widget, version });
   }
 }
