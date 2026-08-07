@@ -47,8 +47,13 @@ Chat history and model memory are not authoritative.
   release is promoted. Promotions change only `deploy/environments.json`.
 - Every environment/widget directory must keep `index.html` as the stable,
   cache-busting bootstrap and publish the promoted release as `widget.html`.
-- The bootstrap must preserve Creator query parameters and add a fresh cache
-  key before loading `widget.html` so cached iframes cannot pin an old release.
+- The bootstrap must fetch `widget.html` with `cache: 'no-store'` and a fresh
+  cache key, then inject it into the current document. It must not navigate or
+  create a nested iframe: changing the browsing/referrer context prevents the
+  Zoho Creator SDK from initializing and leaves widgets in mock mode.
+- The stable document must retain Creator query parameters and its original
+  parent/referrer context so cached iframes cannot pin an old release without
+  breaking `ZOHO.CREATOR.init()`.
 - New widgets and environments must use this same stable-loader pattern.
 
 ## Deluge constraints

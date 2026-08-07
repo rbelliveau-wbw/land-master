@@ -15,10 +15,12 @@ Supported widget slugs are `proforma-manager`, `budget-manager`, `land-master`,
 `contract-management`, `tax-center`, and `milestone-gantt`.
 
 Every environment/widget URL serves a cache-busting bootstrap. On each load it
-preserves Creator query parameters and opens that environment's currently
-promoted `widget.html` with a fresh cache key. Release promotion therefore
-requires only a change to `deploy/environments.json`; it must never require a
-Zoho Creator URL change.
+fetches that environment's currently promoted `widget.html` with `no-store`
+and a fresh cache key, then injects it into the existing document. The loader
+must not redirect or create a nested iframe because Zoho's SDK requires the
+original Creator parent/referrer context. Release promotion therefore requires
+only a change to `deploy/environments.json`; it must never require a Zoho
+Creator URL change.
 
 ## Development
 

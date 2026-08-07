@@ -33,12 +33,26 @@ function writeStableWidgetLoader(target, widget, version) {
 <meta http-equiv="Expires" content="0">
 <title>Loading ${widget}</title>
 </head>
-<body>
+<body style="margin:0;display:grid;place-items:center;min-height:100vh;font:13px system-ui;color:#5c7394;background:#f0f3f7">
+<div id="lm-loader">Loading ${widget}...</div>
 <script>
 (function () {
-  var params = new URLSearchParams(window.location.search);
-  params.set('_lmcb', Date.now().toString());
-  window.location.replace('./widget.html?' + params.toString() + window.location.hash);
+  var target = './widget.html?_lmcb=' + Date.now().toString();
+  fetch(target, { cache: 'no-store', credentials: 'same-origin' })
+    .then(function (response) {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.text();
+    })
+    .then(function (html) {
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(function (error) {
+      var loader = document.getElementById('lm-loader');
+      if (loader) loader.textContent = 'Could not load ${widget}. Refresh to retry.';
+      console.error('Stable widget loader failed', error);
+    });
 }());
 </script>
 <noscript><a href="./widget.html">Open ${widget} ${version}</a></noscript>
@@ -49,8 +63,9 @@ function writeStableWidgetLoader(target, widget, version) {
 
 function verifyStableWidgetLoader(source, target, environment, widget, version) {
   const loader = fs.readFileSync(path.join(target, 'index.html'), 'utf8');
-  if (!loader.includes("params.set('_lmcb', Date.now().toString())") ||
-      !loader.includes('URLSearchParams(window.location.search)')) {
+  if (!loader.includes("fetch(target, { cache: 'no-store'") ||
+      !loader.includes('document.write(html)') ||
+      loader.includes('window.location.replace')) {
     throw new Error(`Invalid permanent widget loader: ${environment}/${widget}`);
   }
   const promoted = fs.readFileSync(path.join(target, 'widget.html'));
