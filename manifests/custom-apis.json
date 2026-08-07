@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-06T14:25:00-05:00",
-  "warning": "Creator DS exports do not provide a verified Custom API registry. These entries are inferred from widget source. Verify method, parameters, auth, and enabled status in Creator Microservices.",
+  "generated_at": "2026-08-07T16:30:44.923191+00:00",
+  "warning": "Creator DS exports do not provide a verified Custom API registry. Verify method, parameters, auth, user scope, and enabled status in Creator Microservices.",
   "custom_apis": [
     {
       "name": "Create_Budget_Attachment_Record",
@@ -119,7 +119,11 @@
     {
       "name": "Report_Proforma_Widget_Error",
       "consumers": [
-        "widgets/proforma-manager/src/app/widget.html"
+        "widgets/proforma-manager/src/app/widget.html",
+        "widgets/budget-manager/src/app/widget.html",
+        "widgets/contract-management/src/app/widget.html",
+        "widgets/tax-center/src/app/widget.html",
+        "widgets/milestone-gantt/src/app/widget.html"
       ],
       "matching_creator_function": "reportProformaWidgetError",
       "confidence": "inferred-name-match"

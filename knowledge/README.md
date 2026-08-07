@@ -11,5 +11,6 @@ This directory is the durable context used by engineers, ChatGPT, and Codex.
 - `knowledge/incidents/` records failures, root causes, and successful fixes.
 - `knowledge/decisions/` records architectural choices.
 - `knowledge/migration/` supports moving from the personal ChatGPT account to the work workspace.
+- `knowledge/architecture/critical-error-reporting.md` documents the shared LLM-friendly critical-error email contract.
 
 Update documentation in the same pull request as the corresponding behavior change.

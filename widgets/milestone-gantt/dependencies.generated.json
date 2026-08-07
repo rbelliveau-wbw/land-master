@@ -1,5 +1,11 @@
 {
-  "custom_apis": [],
+  "custom_apis": [
+    {
+      "name": "Report_Proforma_Widget_Error",
+      "config_key": "errorReport",
+      "source": "customApis object"
+    }
+  ],
   "forms_referenced": [
     "Milestones",
     "Project",

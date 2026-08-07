@@ -1,6 +1,11 @@
 {
   "custom_apis": [
     {
+      "name": "Report_Proforma_Widget_Error",
+      "config_key": "errorReport",
+      "source": "customApis object"
+    },
+    {
       "name": "Review_LOI_Request",
       "config_key": "reviewLOI",
       "source": "customApis object"

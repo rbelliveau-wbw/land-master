@@ -41,6 +41,11 @@
       "source": "customApis object"
     },
     {
+      "name": "Report_Proforma_Widget_Error",
+      "config_key": "errorReport",
+      "source": "customApis object"
+    },
+    {
       "name": "sendApprovalEmail",
       "config_key": "sendApprovalEmail",
       "source": "customApis object"

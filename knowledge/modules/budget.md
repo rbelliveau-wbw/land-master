@@ -22,3 +22,7 @@ Attachments use one `Contract_Version` record per file:
 The working in-widget PDF preview uses `Get_Budget_Attachment_Preview`.
 
 Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator download URLs, or Creator stock preview links; those approaches previously produced blank pages or downloads instead of embedded previews.
+
+## Diagnostics
+
+The Audit Log control lives at the top-right of the application bar. It opens a right-side drawer consistent with Pro Forma Manager and must remain available in every Budget view.

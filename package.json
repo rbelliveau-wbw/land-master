@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "validate": "node scripts/validate-repo.mjs",
+    "validate": "node scripts/validate-repo.mjs && node scripts/validate-widget-javascript.mjs && node scripts/test-critical-error-reporter.mjs",
     "build:pages": "node scripts/build-pages.mjs",
     "release": "node scripts/create-release.mjs",
     "package:creator": "node scripts/package-creator.mjs",

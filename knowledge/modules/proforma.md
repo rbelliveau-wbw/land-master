@@ -32,3 +32,7 @@ Current known LOI Writer merge template ID:
 ```
 
 Connection name: `zoho_writer`.
+
+## Primary action
+
+The `New Pro Forma` action is the visually prominent primary action in the portfolio toolbar. Preserve its icon, high-contrast treatment, keyboard focus state, and responsive behavior.
