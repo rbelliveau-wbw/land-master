@@ -26,3 +26,8 @@ Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator do
 ## Diagnostics
 
 The Audit Log control lives at the top-right of the application bar. It opens a right-side drawer consistent with Pro Forma Manager and must remain available in every Budget view.
+
+## Pro Forma comparison
+
+- The comparison table header remains visible at the top of the comparison view while its rows scroll.
+- Acres, Lots, and LF header metrics have a bounded width and stay aligned to the right edge of their comparison column.
