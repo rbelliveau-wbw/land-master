@@ -16,6 +16,12 @@ Use information in this order:
 
 Chat history and model memory are not authoritative.
 
+## GitHub access
+
+- Before asking the user to authenticate GitHub CLI, check whether the connected GitHub app already has access to the target repository.
+- When the GitHub app confirms repository access, use it for supported reads and writes. A missing local `gh` executable is not evidence that GitHub authorization is missing.
+- Request a new GitHub login only when the required operation is unavailable through the connected app and an authenticated CLI session is genuinely necessary.
+
 ## Source of truth
 
 - Widget source: `widgets/<widget>/src/`
