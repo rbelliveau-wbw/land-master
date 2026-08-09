@@ -72,6 +72,25 @@ if (!proformaHtml.includes('var files=Array.prototype.slice.call(this.files||[])
 if (proformaHtml.includes('View All Pro Formas')) {
   errors.push('proforma-manager: obsolete View All Pro Formas dashboard button is still present.');
 }
+for (const required of [
+  'function proformaApprovalLockReason(pfOrId)',
+  'Cancel the approval flow before unlocking this Pro Forma.',
+  'This Pro Forma is fully approved and can never be unlocked or edited.',
+  'rowCanEdit=canEditPf(r)&&!approvalState.complete',
+  'rowCanLock=canEditPf(r)&&!approvalState.started&&!approvalState.complete'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-protected lock is missing ${required}.`);
+}
+
+const proformaSave = fs.readFileSync(path.join(root, 'creator/functions/proforma_save.dg'), 'utf8');
+for (const required of [
+  'approvalRows = Budget_Approvals[Proforma == pfKey]',
+  'completedApprovalRows = Budget_Approvals[Proforma == pfKey]',
+  'Cancel the approval flow before unlocking this Pro Forma.',
+  'This Pro Forma is fully approved and can never be unlocked or edited.'
+]) {
+  if (!proformaSave.includes(required)) errors.push(`proforma-manager: server approval lock guard is missing ${required}.`);
+}
 
 if (errors.length) {
   console.error('\nWidget JavaScript validation errors:');
