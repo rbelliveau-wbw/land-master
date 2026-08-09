@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T14:25:00-05:00",
+  "generated_at": "2026-08-09T14:03:00-05:00",
   "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
   "environments": {
     "development": {
