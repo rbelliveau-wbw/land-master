@@ -22,6 +22,11 @@ Chat history and model memory are not authoritative.
 - When the GitHub app confirms repository access, use it for supported reads and writes. A missing local `gh` executable is not evidence that GitHub authorization is missing.
 - Request a new GitHub login only when the required operation is unavailable through the connected app and an authenticated CLI session is genuinely necessary.
 
+## Release shorthand
+
+- When the user says `push to main and prod`, treat that as explicit authorization to commit and push the verified change to `main`, update the applicable production environment mapping in `deploy/environments.json`, and monitor the resulting CI and Pages deployment.
+- For widget changes, create and validate the immutable release before promotion. Do not stop after pushing a candidate release when production promotion was requested.
+
 ## Source of truth
 
 - Widget source: `widgets/<widget>/src/`
@@ -40,7 +45,7 @@ Chat history and model memory are not authoritative.
 4. Distinguish frontend-only changes from Creator backend changes.
 5. Treat Creator record IDs as strings in JavaScript.
 6. Never put secrets in widget source.
-7. Do not directly deploy production.
+7. Do not directly deploy production unless the user explicitly authorizes it, including with `push to main and prod`.
 8. Update the widget version and create an immutable release for deployable changes.
 9. Update documentation when behavior or contracts change.
 10. Include regression and rollback notes in every pull request.
