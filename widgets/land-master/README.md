@@ -13,7 +13,7 @@ Projects, subdivisions, companies, properties, related records, filters, and edi
 
 The extracted source is intentionally preserved as a monolithic Creator widget baseline. Do not refactor it merely to make it look cleaner. Establish behavioral tests first, then make targeted changes.
 
-Subdivision editors support adding, editing, and removing External System Mapping subform rows. The mapping editor exposes External System and External Code; the parent Subdivision is implied by the open subdivision workspace, injected on create, and never displayed or editable.
+Subdivision editors support staged inline adding, editing, and removing of External System Mapping subform rows. No mapping API call is made until Save changes is pressed. The editor exposes External System and External Code; the parent Subdivision is implied by the open subdivision workspace, injected on create, and never displayed or editable.
 
 ## Entry points
 
