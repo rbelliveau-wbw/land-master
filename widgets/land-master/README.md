@@ -25,6 +25,8 @@ Creator code `2899` during mapping creation is an account permission failure, no
 
 Subdivision `Company1` (Development Company) is mandatory in Creator. Its lookup omits Clear selection in both inline table editing and the record editor, with a defensive empty-value guard before any API request. Optional entity lookups, including Land Company, retain Clear selection.
 
+Subdivision-list Project Status pills use the same background, text, and border color map as Budget Manager phase-status pills. Status matching is case-insensitive and normalizes spacing around `/`; unknown statuses use the same deterministic fallback palette. Other Land Master Status columns retain their existing styling.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`
