@@ -17,6 +17,8 @@ Subdivision editors support staged inline adding, editing, and removing of Exter
 
 Mapping saves reconcile the successful Creator operations into the loaded widget state instead of reloading every Land Master report. Record-editor saves also defer the background list refresh until the editor closes, keeping the Save action responsive. Audit delivery uses the deployed `Report_Proforma_Widget_Error` Custom API link name and stops retrying when Creator reports that the API is missing or unpublished.
 
+Mapping deletions call Creator's report-based delete API with a validated `ID` criteria expression; the SDK does not accept a record `id` property for this operation.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`

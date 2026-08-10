@@ -16,6 +16,8 @@ requireText("if(S.editorType==='subdivision'&&S.modalTab==='externalMappings')re
 requireText("createRecord('externalMapping'", 'Batch save must create staged mapping rows.');
 requireText("updateRecord(op.row.id,op.data,'All_External_System_Mappings')", 'Batch save must update staged mapping rows.');
 requireText("deleteRecord('externalMapping'", 'Batch save must delete staged mapping rows.');
+requireText("deleteRecord({reportName:report,criteria:'(ID == '+rid+')'})", 'Creator deletes must identify the mapping with a report criteria expression.');
+requireText("if(!/^\\d+$/.test(rid))", 'Creator deletes must validate record IDs before building criteria.');
 requireText('data-mapping-add>+ Add</button>', 'The mapping add action must use the compact + Add label.');
 requireText("r.removed?'Removed'", 'A staged deletion must display Removed.');
 requireText('errorApi: "Report_Proforma_Widget_Error"', 'Audit delivery must use the deployed Custom API link name.');
@@ -28,6 +30,7 @@ forbidText('data-mapping-add>+ Add mapping</button>', 'The mapping add action mu
 forbidText("r.removed?'Will remove'", 'The mapping state must not use the old removal label.');
 forbidText('errorApi: "reportProformaWidgetError"', 'Audit delivery must not use the Deluge function name as the Custom API link name.');
 forbidText('return loadData().then(done)', 'Mapping saves must not reload the complete Land Master dataset.');
+forbidText('deleteRecord({reportName:report,id:String(id)})', 'Creator deleteRecord does not accept an id configuration property.');
 forbidText('function addExternalMapping(){', 'Mappings must not open the standalone record editor.');
 forbidText('function removeExternalMapping(id)', 'Mappings must not delete immediately from a row action.');
 forbidText('data-add-related="externalMapping"', 'The mapping tab must use its staged inline add control.');
