@@ -21,6 +21,8 @@ Mapping deletions call Creator's report-based delete API with a validated `ID` c
 
 Existing subdivision editors omit the report subtitle and the mapping-save confirmation message. Milestones, Forecast Years, Monthly Forecasts, Takedown Schedules, and Builder Takedowns are read-only tables in this workspace and therefore omit the Actions column and Open buttons.
 
+Creator code `2899` during mapping creation is an account permission failure, not a payload error. The widget preserves the staged mapping, directs the user to request Create access for `External_System_Mapping`, and records the denial in Audit without generating an automatic widget-error email. A Creator admin must grant the user's permission set Create access before the retry can succeed.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`

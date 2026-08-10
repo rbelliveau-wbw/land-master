@@ -24,3 +24,5 @@ External Mapping saves update the already-loaded mapping collection and must not
 External Mapping deletion uses `ZOHO.CREATOR.API.deleteRecord` with the `All_External_System_Mappings` report and an `(ID == <record ID>)` criteria expression. Do not pass `id` as a delete configuration property; Creator rejects that request as invalid configuration.
 
 Existing subdivision editors intentionally hide the report subtitle and do not show a success message after External Mapping saves. The Milestones, Forecasts, Takedown Schedules, and Builder Takedowns tabs are read-only summaries and do not render an Actions column or Open buttons.
+
+Zoho Creator 403/code `2899` means the requesting user lacks permission to add records to the target form. For External Mapping creates, retain the staged draft, show guidance to grant Create access on `External_System_Mapping`, and do not email the known permission denial as a widget defect. The permission itself must be changed by a Creator administrator; client code must not bypass it.
