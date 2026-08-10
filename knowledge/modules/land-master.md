@@ -12,7 +12,7 @@ Projects, subdivisions, properties, companies, builders, lots, milestones, forec
 - Subdivision Name, Code, and Status are read-only in the editor.
 - Use `Projects_Status` for the displayed project status when requested.
 - Facility IDs are strings; leading zeroes are significant.
-- External System Mapping rows can be added, edited, and removed from the subdivision workspace. The parent Subdivision is implicit and immutable in this workflow, so only External System and External Code are shown in the row editor.
+- External System Mapping rows are added, edited, and marked for removal inline in the subdivision workspace. These changes remain staged until the user presses Save changes; no per-field or per-row inline save is allowed. The parent Subdivision is implicit and immutable, so only External System and External Code are shown.
 
 ## Performance
 
