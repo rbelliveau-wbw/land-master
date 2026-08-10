@@ -386,9 +386,11 @@
                  					newB = insert into Builder
                  					[
                  						Builder_Name=nsName
-                 						Email=ifnull(ns.get("Email"),"")
-                 						Phone_Number=ifnull(ns.get("Phone_Number"),"")
-                 						Type1="Seller"
+                  						Email=ifnull(ns.get("Email"),"")
+                  						Phone_Number=ifnull(ns.get("Phone_Number"),"")
+										Street_Address=ifnull(ns.get("Street_Address"),"")
+										City_State_ZIP=ifnull(ns.get("City_State_ZIP"),"")
+                  						Type1="Seller"
                  						Added_User=zoho.loginuser
                  					];
                  					bRec = Builder[ID == newB];
@@ -461,9 +463,11 @@
                  					[
                  						Common_Name=npName
                  						Property_ID=npPid
-                 						Facility_ID=ifnull(np.get("Facility_ID"),"")
-                 						County=ifnull(np.get("County"),"")
-                 						Added_User=zoho.loginuser
+                  						Facility_ID=ifnull(np.get("Facility_ID"),"")
+                  						County=ifnull(np.get("County"),"")
+										City=ifnull(np.get("City"),"")
+										LOI=true
+                  						Added_User=zoho.loginuser
                  					];
                  					pRec = Property[ID == newP];
                  					npAcres = ifnull(np.get("Acres"),"").toString().trim();

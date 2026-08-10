@@ -91,6 +91,17 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-locked LOI behavior is missing ${required}.`);
 }
+for (const required of [
+  'data-loi-field="Street_Address"',
+  'data-loi-field="City_State_ZIP"',
+  'data-loi-field="City"',
+  'Street_Address:String(r.Street_Address||"").trim()',
+  'City_State_ZIP:String(r.City_State_ZIP||"").trim()',
+  'City:String(r.City||"").trim()',
+  'LOI:true'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI Seller/Property row contract is missing ${required}.`);
+}
 if (proformaHtml.includes('class="btn rowact workflow-action loi')) {
   errors.push('proforma-manager: Submit LOI to Legal must not render as a standalone row action.');
 }
@@ -150,6 +161,14 @@ for (const required of [
   'Cancel the approval flow before editing the LOI Worksheet.'
 ]) {
   if (!proformaSave.includes(required)) errors.push(`proforma_save: approval-locked LOI guard is missing ${required}.`);
+}
+for (const required of [
+  'Street_Address=ifnull(ns.get("Street_Address"),"")',
+  'City_State_ZIP=ifnull(ns.get("City_State_ZIP"),"")',
+  'City=ifnull(np.get("City"),"")',
+  'LOI=true'
+]) {
+  if (!proformaSave.includes(required)) errors.push(`proforma_save: LOI Seller/Property persistence is missing ${required}.`);
 }
 
 if (errors.length) {
