@@ -10,6 +10,10 @@ function forbidText(text, message) {
   if (source.includes(text)) throw new Error(message);
 }
 
+function requireMatch(pattern, message) {
+  if (!pattern.test(source)) throw new Error(message);
+}
+
 requireText('function externalMappingsEditor(', 'External mappings must render in the subdivision tab.');
 requireText('function saveExternalMappings()', 'External mappings must have a staged batch save.');
 requireText("if(S.editorType==='subdivision'&&S.modalTab==='externalMappings')return saveExternalMappings();", 'The panel Save button must route mapping drafts through the batch save.');
@@ -25,12 +29,20 @@ requireText('function invokeErrorApi(config)', 'Audit delivery must support the 
 requireText('code==="9350"||code==="9360"', 'Missing or unpublished Custom APIs must not retry forever.');
 requireText('S.tableRefreshPending=true;', 'Record saves must defer the expensive background-table refresh.');
 requireText('function finishExternalMappingSave(message,isError){S.mappingDraft=null;S.panelSaving=false;renderPanel();', 'Mapping saves must reconcile local state without reloading all Creator reports.');
+requireText("var hideSubtitle=!S.editorNew&&S.editorType==='subdivision'", 'Existing subdivision editors must hide the report subtitle.');
+requireText("return finishExternalMappingSave('',false)", 'Successful mapping saves must clear the panel message.');
+requireMatch(/relatedTable\('Milestones','milestone'.*?\{showActions:false\}\)/, 'Subdivision Milestones must omit the Actions column.');
+requireMatch(/relatedTable\('Forecast Years','forecastYear'.*?\{showActions:false\}\)/, 'Subdivision Forecast Years must omit the Actions column.');
+requireMatch(/relatedTable\('Monthly Forecasts','forecast'.*?\{showActions:false\}\)/, 'Subdivision Monthly Forecasts must omit the Actions column.');
+requireMatch(/relatedTable\('Takedown Schedules','takedown'.*?\{showActions:false\}\)/, 'Subdivision Takedown Schedules must omit the Actions column.');
+requireMatch(/relatedTable\('Builder Takedowns','builderTakedown'.*?\{showActions:false\}\)/, 'Subdivision Builder Takedowns must omit the Actions column.');
 forbidText('Changes are staged here and sent to Creator only when Save changes is pressed.', 'The removed mapping helper copy must stay hidden.');
 forbidText('data-mapping-add>+ Add mapping</button>', 'The mapping add action must not use the old label.');
 forbidText("r.removed?'Will remove'", 'The mapping state must not use the old removal label.');
 forbidText('errorApi: "reportProformaWidgetError"', 'Audit delivery must not use the Deluge function name as the Custom API link name.');
 forbidText('return loadData().then(done)', 'Mapping saves must not reload the complete Land Master dataset.');
 forbidText('deleteRecord({reportName:report,id:String(id)})', 'Creator deleteRecord does not accept an id configuration property.');
+forbidText('All mapping changes saved.', 'Successful mapping saves must not show the removed confirmation copy.');
 forbidText('function addExternalMapping(){', 'Mappings must not open the standalone record editor.');
 forbidText('function removeExternalMapping(id)', 'Mappings must not delete immediately from a row action.');
 forbidText('data-add-related="externalMapping"', 'The mapping tab must use its staged inline add control.');
