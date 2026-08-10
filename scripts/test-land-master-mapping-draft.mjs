@@ -29,11 +29,11 @@ requireText('function invokeErrorApi(config)', 'Audit delivery must support the 
 requireText('code==="9350"||code==="9360"', 'Missing or unpublished Custom APIs must not retry forever.');
 requireText('S.tableRefreshPending=true;', 'Record saves must defer the expensive background-table refresh.');
 requireText('function finishExternalMappingSave(message,isError){if(!isError)S.mappingDraft=null;S.panelSaving=false;renderPanel();', 'Mapping saves must reconcile local state without reloading all Creator reports and must preserve failed drafts.');
-requireText('function mappingSaveFailureText(err){if(errorResponseCode(err)==="2899")', 'Mapping saves must translate Creator add-permission failures.');
-requireText('Ask a Creator admin to enable Create access for the External_System_Mapping form', 'Permission guidance must identify the exact Creator permission and form.');
 requireText("permissionDenied=!!(failed&&failed.kind==='create'&&errorResponseCode(err)==='2899')", 'Only mapping-create code 2899 failures should use permission handling.');
 requireText("diag(permissionDenied?'External mapping create permission denied':'External mapping batch save failed'", 'Permission failures must have a distinct audit label.');
-requireText('},permissionDenied);', 'Known permission failures must not trigger automatic widget-error email.');
+requireText("operation:failed&&failed.kind,error:err});finishExternalMappingSave('',true)", 'Every mapping failure must be emailed while the visible panel message stays empty.');
+forbidText('Ask a Creator admin to enable Create access for the External_System_Mapping form', 'Detailed permission guidance must not be shown in the user-facing editor.');
+forbidText('},permissionDenied);', 'Permission failures must not bypass automatic widget-error email.');
 requireText("op.row.isNew=false;op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code", 'Successful creates must be reconciled into a retained draft.');
 requireText('op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code;', 'Successful updates must be reconciled into a retained draft.');
 requireText('if(S.mappingDraft)S.mappingDraft.rows=S.mappingDraft.rows.filter(function(r){return r!==op.row;});', 'Successful deletes must be removed from a retained draft.');
