@@ -37,6 +37,9 @@ forbidText('},permissionDenied);', 'Permission failures must not bypass automati
 requireText("op.row.isNew=false;op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code", 'Successful creates must be reconciled into a retained draft.');
 requireText('op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code;', 'Successful updates must be reconciled into a retained draft.');
 requireText('if(S.mappingDraft)S.mappingDraft.rows=S.mappingDraft.rows.filter(function(r){return r!==op.row;});', 'Successful deletes must be removed from a retained draft.');
+requireText("function lookupChoiceRequired(){var type=S.lookupPopupMode==='field'?S.editorType:currentType();return type==='subdivision'&&S.lookupPopupField==='Company1';}", 'Subdivision Development Company must be treated as a required lookup in both editor modes.');
+requireText("var h=lookupChoiceRequired()?'':'<button", 'Required lookup popups must omit the Clear selection action.');
+requireText('if(!next&&lookupChoiceRequired())return closeLookupPopup();', 'Required lookup saves must defensively reject an empty selection before calling Creator.');
 requireText("var hideSubtitle=!S.editorNew&&S.editorType==='subdivision'", 'Existing subdivision editors must hide the report subtitle.');
 requireText("return finishExternalMappingSave('',false)", 'Successful mapping saves must clear the panel message.');
 requireMatch(/relatedTable\('Milestones','milestone'.*?\{showActions:false\}\)/, 'Subdivision Milestones must omit the Actions column.');

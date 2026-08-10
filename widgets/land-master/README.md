@@ -23,6 +23,8 @@ Existing subdivision editors omit the report subtitle and the mapping-save confi
 
 Creator code `2899` during mapping creation is an account permission failure, not a payload error. The widget preserves the staged mapping and sends the full failure through automatic widget-error email while keeping detailed permission guidance out of the user-facing editor. A Creator admin must grant the user's permission set Create access before a retry can succeed.
 
+Subdivision `Company1` (Development Company) is mandatory in Creator. Its lookup omits Clear selection in both inline table editing and the record editor, with a defensive empty-value guard before any API request. Optional entity lookups, including Land Company, retain Clear selection.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`
