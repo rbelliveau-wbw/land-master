@@ -19,6 +19,8 @@ Mapping saves reconcile the successful Creator operations into the loaded widget
 
 Mapping deletions call Creator's report-based delete API with a validated `ID` criteria expression; the SDK does not accept a record `id` property for this operation.
 
+Existing subdivision editors omit the report subtitle and the mapping-save confirmation message. Milestones, Forecast Years, Monthly Forecasts, Takedown Schedules, and Builder Takedowns are read-only tables in this workspace and therefore omit the Actions column and Open buttons.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`
