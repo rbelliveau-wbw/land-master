@@ -116,6 +116,22 @@ if (proformaHtml.includes('flags.Edit_All_Approvals') || proformaHtml.includes('
   errors.push('proforma-manager: Budget approval fields must not grant Pro Forma approval access.');
 }
 
+for (const required of [
+  'function normalizeLandCostPerAcre(m,rescaleInstallments)',
+  'inputF("Land_Cost_Acre",{type:"number",step:"1"})',
+  'var INT_HDR={ Land_Cost_Acre:1,',
+  'if(normalizeLandCostPerAcre(m0,true))',
+  'Land Cost / Acre normalized before save'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: whole-dollar Land_Cost_Acre handling is missing ${required}.`);
+}
+if (proformaHtml.indexOf('if(normalizeLandCostPerAcre(m0,true))') > proformaHtml.indexOf('var m=S.ed.model, errs=validateModel(m);')) {
+  errors.push('proforma-manager: Land_Cost_Acre must be normalized before save validation.');
+}
+if (!proformaSave.includes('pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal().round(0);')) {
+  errors.push('proforma_save: Land_Cost_Acre must be rounded to Creator whole-dollar precision.');
+}
+
 if (errors.length) {
   console.error('\nWidget JavaScript validation errors:');
   errors.forEach(error => console.error(`- ${error}`));

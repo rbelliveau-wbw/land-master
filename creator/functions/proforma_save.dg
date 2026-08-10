@@ -895,7 +895,7 @@
                  		}
                  		if(header.get("Land_Cost_Acre") != null && header.get("Land_Cost_Acre").toString() != "")
                  		{
-                 			pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal();
+				 			pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal().round(0);
                  		}
                  		if(header.get("Sale_Price_FF") != null && header.get("Sale_Price_FF").toString() != "")
                  		{

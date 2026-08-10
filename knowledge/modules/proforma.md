@@ -39,6 +39,10 @@ Important Proforma LOI fields include:
 
 Always verify against `creator/generated/fields/Add_Pro_Forma.json` before implementation.
 
+## Numeric precision
+
+`Add_Pro_Forma.Land_Cost_Acre` is a whole-dollar Creator currency field. The widget normalizes it to zero decimal places before calculation and save, then rescales purchase installments to the resulting land cost. `proforma_save` also applies `.round(0)` as a server-side safeguard. This prevents Creator error `3002` during the workflow-triggering header update.
+
 ## Writer template
 
 Current known LOI Writer merge template ID:
