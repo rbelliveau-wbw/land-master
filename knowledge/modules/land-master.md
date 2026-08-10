@@ -28,3 +28,5 @@ Existing subdivision editors intentionally hide the report subtitle and do not s
 Zoho Creator 403/code `2899` means the requesting user lacks permission to add records to the target form. For External Mapping creates, retain the staged draft and email the complete error report, but keep detailed permission guidance out of the user-facing editor. The permission itself must be changed by a Creator administrator; client code must not bypass it.
 
 Subdivision Development Company (`Company1`) is a mandatory Creator lookup. Do not offer Clear selection for this field in either lookup editor mode, and reject empty lookup choices before sending an update. Land Company and other optional entity lookups may still be cleared.
+
+The Subdivisions table's `Projects_Status` pills mirror Budget Manager's phase-status color map, including aliases and its deterministic palette for unrecognized values. Normalize slash spacing so values such as `Road Prep / Pave` resolve to Budget Manager's `road prep/pave` color. Do not apply this phase palette to generic `Status` columns.

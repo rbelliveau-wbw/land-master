@@ -40,6 +40,12 @@ requireText('if(S.mappingDraft)S.mappingDraft.rows=S.mappingDraft.rows.filter(fu
 requireText("function lookupChoiceRequired(){var type=S.lookupPopupMode==='field'?S.editorType:currentType();return type==='subdivision'&&S.lookupPopupField==='Company1';}", 'Subdivision Development Company must be treated as a required lookup in both editor modes.');
 requireText("var h=lookupChoiceRequired()?'':'<button", 'Required lookup popups must omit the Clear selection action.');
 requireText('if(!next&&lookupChoiceRequired())return closeLookupPopup();', 'Required lookup saves must defensively reject an empty selection before calling Creator.');
+requireText('var PROJECT_STATUS_COLOR_MAP=', 'Land Master must carry the Budget Widget project-status color map.');
+requireText('"municipal review":["#ecfdf5","#059669","#a7f3d0"]', 'Municipal Review must use the Budget Widget green palette.');
+requireText('"road prep/pave":["#fff1e8","#c05621","#fdcdb0"]', 'Road Prep/Pave must use the Budget Widget orange palette.');
+requireText('"completed":["#f7fee7","#65a30d","#d9f99d"]', 'Completed must use the Budget Widget lime palette.');
+requireText("if(c.key===\"Projects_Status\")return projectStatusTag(v);if(c.key===\"Status\")return tableStatusTag(v);", 'Only Projects Status cells must use the Budget Widget phase palette.');
+requireText("replace(/\\s*\\/\\s*/g,'/')", 'Project status matching must normalize spacing around slashes.');
 requireText("var hideSubtitle=!S.editorNew&&S.editorType==='subdivision'", 'Existing subdivision editors must hide the report subtitle.');
 requireText("return finishExternalMappingSave('',false)", 'Successful mapping saves must clear the panel message.');
 requireMatch(/relatedTable\('Milestones','milestone'.*?\{showActions:false\}\)/, 'Subdivision Milestones must omit the Actions column.');
