@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.9.8",
+      "version": "8.9.9",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "b675ced78fbb373f70a8a962e4e84630c82af98d59933aff4ac3c0ac9af99e99",
+      "source_sha256": "df5c39fcfaa9114be4c6e87ab4716f1cf5a23337c0173172672a1a8abffe6736",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
