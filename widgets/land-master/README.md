@@ -15,6 +15,8 @@ The extracted source is intentionally preserved as a monolithic Creator widget b
 
 Subdivision editors support staged inline adding, editing, and removing of External System Mapping subform rows. No mapping API call is made until Save changes is pressed. The editor exposes External System and External Code; the parent Subdivision is implied by the open subdivision workspace, injected on create, and never displayed or editable.
 
+Mapping saves reconcile the successful Creator operations into the loaded widget state instead of reloading every Land Master report. Record-editor saves also defer the background list refresh until the editor closes, keeping the Save action responsive. Audit delivery uses the deployed `Report_Proforma_Widget_Error` Custom API link name and stops retrying when Creator reports that the API is missing or unpublished.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`
