@@ -30,6 +30,8 @@ Approval lock rules:
 - While any approval step has started, the Pro Forma cannot be unlocked; the approval flow must be cancelled first.
 - Once every approval step is approved (or the Pro Forma lifecycle status is `Approved`), the Pro Forma is permanently locked and read-only.
 - Cancelling an in-progress approval flow resets every approval row to `Not Sent` and restores the normal lock control.
+- The LOI Worksheet remains editable under a manual input lock, but becomes read-only as soon as the approval flow starts. Its privileged save operation enforces the same rule server-side.
+- `Submit LOI to Legal` is shown only after every approval step is approved, inside the Pro Forma row's three-dot action menu.
 
 ## LOI fields
 

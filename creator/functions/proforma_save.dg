@@ -349,8 +349,31 @@
                  				resp.put("error","Pro forma id is required for save_loi.");
                  				return resp.toString();
                  			}
-                 			pfKey = pfId.toLong();
-                 			loi = ifnull(data.get("loi"),Map());
+						pfKey = pfId.toLong();
+						loiPf = Add_Pro_Forma[ID == pfKey];
+						if(loiPf == null)
+						{
+							resp.put("success",false);
+							resp.put("error","Pro Forma " + pfId + " was not found.");
+							return resp.toString();
+						}
+						loiApprovalRows = Budget_Approvals[Proforma == pfKey];
+						loiApprovalStarted = false;
+						for each  loiApprovalRow in loiApprovalRows
+						{
+							if(ifnull(loiApprovalRow.Status,"Not Sent").toString() != "Not Sent")
+							{
+								loiApprovalStarted = true;
+							}
+						}
+						loiPfStatus = ifnull(loiPf.Status,"").toString();
+						if(loiApprovalStarted || loiPfStatus == "Pending Approval" || loiPfStatus == "Approved")
+						{
+							resp.put("success",false);
+							resp.put("error","Cancel the approval flow before editing the LOI Worksheet.");
+							return resp.toString();
+						}
+						loi = ifnull(data.get("loi"),Map());
                  			ws = ifnull(loi.get("worksheet"),Map());
                  			companyId = ifnull(ws.get("Company"),"").toString().trim();
                  			tempMap = Map();

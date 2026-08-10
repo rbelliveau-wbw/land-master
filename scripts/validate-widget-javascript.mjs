@@ -81,6 +81,19 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-protected lock is missing ${required}.`);
 }
+for (const required of [
+  'function isLOIApprovalLocked(m)',
+  'host.classList.toggle("approval-lock",approvalLocked);',
+  'Approval in progress — Pro Forma and LOI inputs are locked.',
+  'canSubmitLOI=canEditPf(r)&&approvalState.complete&&!archived&&!loiDone',
+  'The Pro Forma must be fully approved before submitting the LOI to Legal.',
+  'LOI Worksheet save blocked — approvals have started'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-locked LOI behavior is missing ${required}.`);
+}
+if (proformaHtml.includes('class="btn rowact workflow-action loi')) {
+  errors.push('proforma-manager: Submit LOI to Legal must not render as a standalone row action.');
+}
 
 const proformaSave = fs.readFileSync(path.join(root, 'creator/functions/proforma_save.dg'), 'utf8');
 for (const required of [
@@ -130,6 +143,13 @@ if (proformaHtml.indexOf('if(normalizeLandCostPerAcre(m0,true))') > proformaHtml
 }
 if (!proformaSave.includes('pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal().round(0);')) {
   errors.push('proforma_save: Land_Cost_Acre must be rounded to Creator whole-dollar precision.');
+}
+for (const required of [
+  'loiApprovalRows = Budget_Approvals[Proforma == pfKey];',
+  'loiApprovalStarted = false;',
+  'Cancel the approval flow before editing the LOI Worksheet.'
+]) {
+  if (!proformaSave.includes(required)) errors.push(`proforma_save: approval-locked LOI guard is missing ${required}.`);
 }
 
 if (errors.length) {
