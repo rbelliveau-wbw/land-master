@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-08-10T10:18:23-05:00",
+  "generated_at": "2026-08-10T10:56:14-05:00",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.44.18",
+      "version": "1.44.19",
       "description": "Pro forma input, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "aa3d17c2875fed88f6b9fc464f1d4b182c66b40c474b33984cf95f2e52d4d761",
+      "source_sha256": "2a073be7e035bfb1f0c51bb19ab3269ad5efff7443f3c47970b7bf02fb7a51fd",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [

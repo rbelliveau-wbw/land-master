@@ -44,10 +44,12 @@ Always verify against `creator/generated/fields/Add_Pro_Forma.json` before imple
 LOI Seller and Property rows also persist live fields added after the committed Creator export:
 
 - `Builder.Street_Address` and `Builder.City_State_ZIP` are displayed for existing Sellers and collected for staged Sellers.
-- `Property.City` is displayed for existing Properties and collected for staged Properties.
+- `Property.City` is displayed for existing Properties and collected as a picklist for staged Properties. Its choices mirror the canonical `Contract.City` Creator picklist, while retaining any previously stored value that is not yet in that reference list.
 - Every Property created by the Pro Forma LOI workflow is stamped with `Property.LOI = true`.
 
 These fields follow the normal LOI staging, validation, save, and approval-lock rules. Refresh the `.ds` export to regenerate the Builder and Property field metadata; do not treat the older generated files as evidence that the live fields are absent.
+
+The Seller and Property grids use explicit per-column widths, polished field controls, and horizontal overflow at narrower viewport sizes so adding address fields does not compress or misalign the rows.
 
 ## Numeric precision
 

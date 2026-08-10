@@ -102,6 +102,21 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI Seller/Property row contract is missing ${required}.`);
 }
+for (const required of [
+  'Canonical values copied from the Contract.City Creator picklist.',
+  'function cityOpts(selected)',
+  '<select data-loi-new-property="',
+  'data-loi-field="City">\'+cityOpts(r.City)',
+  'table.sub.loi-data-table',
+  '.loi-table-wrap{overflow-x:auto',
+  'table.sub.loi-sellers th:nth-child(5){width:240px}',
+  'table.sub.loi-props th:nth-child(7){width:44px}'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI City picklist/layout polish is missing ${required}.`);
+}
+if (proformaHtml.includes('data-loi-field="City" placeholder="City"')) {
+  errors.push('proforma-manager: Property City must render as a picklist, not a text input.');
+}
 if (proformaHtml.includes('class="btn rowact workflow-action loi')) {
   errors.push('proforma-manager: Submit LOI to Legal must not render as a standalone row action.');
 }
