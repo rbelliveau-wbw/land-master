@@ -92,6 +92,30 @@ for (const required of [
   if (!proformaSave.includes(required)) errors.push(`proforma-manager: server approval lock guard is missing ${required}.`);
 }
 
+const getUserAccess = fs.readFileSync(path.join(root, 'creator/functions/getUserAccess.dg'), 'utf8');
+for (const required of [
+  'pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;',
+  'pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;',
+  'result.put("pfApprAll",pfApprAll);',
+  'result.put("pfApprOwned",pfApprOwned);'
+]) {
+  if (!getUserAccess.includes(required)) errors.push(`getUserAccess: Pro Forma approval permission contract is missing ${required}.`);
+}
+for (const required of [
+  'flags.Edit_All_Pro_Forma_Approvals',
+  'flags.Edit_Owned_Pro_Forma_Approvals',
+  'function canViewProformaApprovals()',
+  'p.apprAll || (!!p.apprOwned&&userOwnsProformaApproval(a))',
+  'if(name==="vApprovals"&&!canViewProformaApprovals())name="vList";',
+  'if(p==="approvals"&&!canViewProformaApprovals())',
+  'if(!canEditProformaApprovalRow(approvalRow)){toast("You do not have permission to edit this approval."'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: Pro Forma approval access gating is missing ${required}.`);
+}
+if (proformaHtml.includes('flags.Edit_All_Approvals') || proformaHtml.includes('flags.Edit_Owned_Approvals')) {
+  errors.push('proforma-manager: Budget approval fields must not grant Pro Forma approval access.');
+}
+
 if (errors.length) {
   console.error('\nWidget JavaScript validation errors:');
   errors.forEach(error => console.error(`- ${error}`));

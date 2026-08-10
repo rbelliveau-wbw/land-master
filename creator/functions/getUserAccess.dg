@@ -17,7 +17,9 @@
                  	pfVpCompTab = false;
                  	pfEditProbability = false;
                  	pfEditOwner = false;
-                 	pfDeleteArchive = false;
+				 	pfDeleteArchive = false;
+				 	pfApprAll = false;
+				 	pfApprOwned = false;
                  	foundRow = false;
                  	myId = "";
                  	rows = User_Access[User == requester];
@@ -41,7 +43,9 @@
                  		pfVpCompTab = row.VP_Compensation_Tab == true;
                  		pfEditProbability = row.Edit_Probability == true;
                  		pfEditOwner = row.Edit_Proforma_Owner == true;
-                 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
+				 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
+				 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
+				 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
                  		break;
                  	}
                  	// Roster: each user as {id, label, email}.
@@ -93,7 +97,9 @@
                  	result.put("pfVpCompTab",pfVpCompTab);
                  	result.put("pfEditProbability",pfEditProbability);
                  	result.put("pfEditOwner",pfEditOwner);
-                 	result.put("pfDeleteArchive",pfDeleteArchive);
+				 	result.put("pfDeleteArchive",pfDeleteArchive);
+				 	result.put("pfApprAll",pfApprAll);
+				 	result.put("pfApprOwned",pfApprOwned);
                  	result.put("users",userList);
                  	result.put("proformaOwners",proformaOwnerMap);
                  	return result.toString();
