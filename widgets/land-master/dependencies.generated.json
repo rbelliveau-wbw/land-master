@@ -37,6 +37,7 @@
   "sdk_calls": [
     "ZOHO.CREATOR.API",
     "ZOHO.CREATOR.API.addRecord",
+    "ZOHO.CREATOR.API.deleteRecord",
     "ZOHO.CREATOR.API.getAllRecords",
     "ZOHO.CREATOR.API.invokeCustomApi",
     "ZOHO.CREATOR.API.updateRecord",
