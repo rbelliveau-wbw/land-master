@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-10T17:35:57.8578602Z",
+  "generated_at": "2026-08-10T18:22:50.5224102Z",
   "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
   "environments": {
     "development": {
@@ -23,7 +23,7 @@
     "production": {
       "proforma-manager": "1.44.19",
       "budget-manager": "121.0.3",
-      "land-master": "8.9.4",
+      "land-master": "8.9.5",
       "contract-management": "1.0.2",
       "tax-center": "19.0.1",
       "milestone-gantt": "1.0.1",
