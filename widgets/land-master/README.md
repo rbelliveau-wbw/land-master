@@ -13,6 +13,8 @@ Projects, subdivisions, companies, properties, related records, filters, and edi
 
 The extracted source is intentionally preserved as a monolithic Creator widget baseline. Do not refactor it merely to make it look cleaner. Establish behavioral tests first, then make targeted changes.
 
+Subdivision editors support adding, editing, and removing External System Mapping subform rows. The mapping editor exposes every data field on the subform: Subdivision, External System, and External Code.
+
 ## Entry points
 
 - Creator package entry: `src/app/widget.html`

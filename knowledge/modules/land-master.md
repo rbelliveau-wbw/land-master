@@ -12,6 +12,7 @@ Projects, subdivisions, properties, companies, builders, lots, milestones, forec
 - Subdivision Name, Code, and Status are read-only in the editor.
 - Use `Projects_Status` for the displayed project status when requested.
 - Facility IDs are strings; leading zeroes are significant.
+- External System Mapping rows can be added, edited, and removed from the subdivision workspace, with all subform data fields available in the row editor.
 
 ## Performance
 
