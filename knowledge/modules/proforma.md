@@ -33,6 +33,15 @@ Approval lock rules:
 - The LOI Worksheet remains editable under a manual input lock, but becomes read-only as soon as the approval flow starts. Its privileged save operation enforces the same rule server-side.
 - `Submit LOI to Legal` is shown only after every approval step is approved, inside the Pro Forma row's three-dot action menu.
 
+Approval submission readiness:
+
+- Sending for approvals requires a selected Purchasing Company, at least one Seller, and at least one Property.
+- Every linked Seller must have Seller Name, Email, Phone, Street Address, and City/State/ZIP.
+- Every linked Property must have Common Name, CAD/Property ID, Facility ID, County, City, positive Acres, Seller, and the Purchasing Company.
+- These requirements are enforced in both the widget and `Start_Proforma_Approval_Chain` so direct API calls cannot bypass them.
+- An active, incomplete chain can be cancelled from the Approvals tab with `Cancel & Reset Approvals`. The action clears approval statuses, notes, and dates, returns the lifecycle status to `Draft`, and unlocks inputs. A completed approval chain remains permanently locked.
+- Approval start, action, and reset APIs write the lifecycle status directly in Deluge. The widget must not follow those calls with a REST header update, because a header update fires `RUN_EVERYTHING_ON_SUCCESS` and can exhaust the Deluge statement limit on large Pro Formas.
+
 ## LOI fields
 
 Important Proforma LOI fields include:

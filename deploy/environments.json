@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-08-11T15:12:00Z",
+  "generated_at": "2026-08-11T15:13:26.642Z",
   "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
   "environments": {
     "development": {
-      "proforma-manager": "1.44.19",
+      "proforma-manager": "1.44.20",
       "budget-manager": "121.0.3",
       "land-master": "8.9.1",
       "contract-management": "1.0.2",
@@ -21,7 +21,7 @@
       "manage-lots": "0.1.0"
     },
     "production": {
-      "proforma-manager": "1.44.19",
+      "proforma-manager": "1.44.20",
       "budget-manager": "121.0.3",
       "land-master": "8.9.11",
       "contract-management": "1.0.2",

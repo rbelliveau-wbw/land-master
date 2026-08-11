@@ -156,6 +156,38 @@ if (proformaHtml.includes('flags.Edit_All_Approvals') || proformaHtml.includes('
 }
 
 for (const required of [
+  'function proformaApprovalReadiness(pfId)',
+  'Select a Purchasing Company',
+  'Add at least one Seller record',
+  'Add at least one Property record',
+  'Complete the LOI records before sending',
+  'Cancel &amp; Reset Approvals'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval readiness/reset behavior is missing ${required}.`);
+}
+const startProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Start_Proforma_Approval_Chain.dg'), 'utf8');
+for (const required of [
+  'if(pf.Purchasing_Company == null)',
+  'sellerRows = Builder[Proforma == proformaIdLong];',
+  'propertyRows = Property[Proforma == proformaIdLong];',
+  'sellerRow.Street_Address',
+  'propertyRow.City',
+  'pf.Status="Pending Approval";'
+]) {
+  if (!startProformaApproval.includes(required)) errors.push(`Start_Proforma_Approval_Chain: approval readiness/status guard is missing ${required}.`);
+}
+const killProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Kill_Proforma_Approval_Flow.dg'), 'utf8');
+if (!killProformaApproval.includes('pf.Status="Draft";')) {
+  errors.push('Kill_Proforma_Approval_Flow: reset must return the Pro Forma lifecycle status to Draft.');
+}
+for (const forbidden of [
+  '.then(function(){return safeSetProformaLifecycleStatus(id,"Pending Approval","Approval chain started");})',
+  '.then(function(){return safeSetProformaLifecycleStatus(id,"Draft","Approval flow cancelled");})'
+]) {
+  if (proformaHtml.includes(forbidden)) errors.push('proforma-manager: approval lifecycle writes must stay inside Deluge APIs so status-only REST updates do not rerun RUN_EVERYTHING.');
+}
+
+for (const required of [
   'function normalizeLandCostPerAcre(m,rescaleInstallments)',
   'inputF("Land_Cost_Acre",{type:"number",step:"1"})',
   'var INT_HDR={ Land_Cost_Acre:1,',

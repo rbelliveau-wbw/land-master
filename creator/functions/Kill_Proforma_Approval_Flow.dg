@@ -1,29 +1,30 @@
 				 map Kill_Proforma_Approval_Flow(string proformaId)
                  {
-                 	response = Map();
-                 	proformaIdText = ifnull(proformaId,"").toString();
-                 	proformaIdText = proformaIdText.trim();
-                 	if(proformaIdText == "")
-                 	{
-                 		response.put("success",false);
-                 		response.put("message","Pro Forma ID is required.");
-                 		return response;
-                 	}
-                 	proformaIdLong = proformaIdText.toLong();
-                 	pf = Add_Pro_Forma[ID == proformaIdLong];
-                 	rows = Budget_Approvals[Proforma == proformaIdLong];
-                 	for each  row in rows
-                 	{
-                 		row.Status="Not Sent";
-                 		row.Approval_Notes="";
-                 		row.Sent_Date=null;
-                 		row.Responded_Date=null;
-                 	}
-                 	if(pf.ID != null)
-                 	{
-                 		pf.Lock_Inputs=false;
-                 	}
-                 	response.put("success",true);
-                 	response.put("message","Pro Forma approvals reset and all inputs unlocked.");
-                 	return response;
+	response = Map();
+	proformaIdText = ifnull(proformaId,"").toString();
+	proformaIdText = proformaIdText.trim();
+	if(proformaIdText == "")
+	{
+		response.put("success",false);
+		response.put("message","Pro Forma ID is required.");
+		return response;
+	}
+	proformaIdLong = proformaIdText.toLong();
+	pf = Add_Pro_Forma[ID == proformaIdLong];
+	rows = Budget_Approvals[Proforma == proformaIdLong];
+	for each  row in rows
+	{
+		row.Status="Not Sent";
+		row.Approval_Notes="";
+		row.Sent_Date=null;
+		row.Responded_Date=null;
+	}
+					if(pf.ID != null)
+					{
+						pf.Lock_Inputs=false;
+						pf.Status="Draft";
+					}
+	response.put("success",true);
+	response.put("message","Pro Forma approvals reset and all inputs unlocked.");
+	return response;
                  }
