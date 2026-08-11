@@ -28,8 +28,8 @@ Approval lock rules:
 
 - Starting an approval flow locks the Pro Forma inputs.
 - While any approval step has started, the Pro Forma cannot be unlocked; the approval flow must be cancelled first.
-- Once every approval step is approved (or the Pro Forma lifecycle status is `Approved`), the Pro Forma is permanently locked and read-only.
-- Cancelling an in-progress approval flow resets every approval row to `Not Sent` and restores the normal lock control.
+- Once every approval step is approved (or the Pro Forma lifecycle status is `Approved`), the Pro Forma remains locked and read-only until an approval administrator cancels and resets the flow.
+- Cancelling an in-progress or completed approval flow resets every approval row to `Not Sent`, clears approval notes and dates, returns the lifecycle status to `Draft`, and restores the normal lock control so the route can be edited and restarted.
 - The LOI Worksheet remains editable under a manual input lock, but becomes read-only as soon as the approval flow starts. Its privileged save operation enforces the same rule server-side.
 - `Submit LOI to Legal` is shown only after every approval step is approved, inside the Pro Forma row's three-dot action menu.
 
@@ -39,7 +39,7 @@ Approval submission readiness:
 - Every linked Seller must have Seller Name, Email, Phone, Street Address, and City/State/ZIP.
 - Every linked Property must have Common Name, CAD/Property ID, Facility ID, County, City, positive Acres, Seller, and the Purchasing Company.
 - These requirements are enforced in both the widget and `Start_Proforma_Approval_Chain` so direct API calls cannot bypass them.
-- An active, incomplete chain can be cancelled from the Approvals tab with `Cancel & Reset Approvals`. The action clears approval statuses, notes, and dates, returns the lifecycle status to `Draft`, and unlocks inputs. A completed approval chain remains permanently locked.
+- An active or completed chain can be cancelled by a user with `Edit_All_Pro_Forma_Approvals` from the Approvals tab with `Cancel & Reset Approvals`. The action clears approval statuses, notes, and dates, returns the lifecycle status to `Draft`, unlocks inputs, and makes the route restartable.
 - Approval start, action, and reset APIs write the lifecycle status directly in Deluge. The widget must not follow those calls with a REST header update, because a header update fires `RUN_EVERYTHING_ON_SUCCESS` and can exhaust the Deluge statement limit on large Pro Formas.
 
 ## LOI fields

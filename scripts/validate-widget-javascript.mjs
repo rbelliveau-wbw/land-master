@@ -75,7 +75,7 @@ if (proformaHtml.includes('View All Pro Formas')) {
 for (const required of [
   'function proformaApprovalLockReason(pfOrId)',
   'Cancel the approval flow before unlocking this Pro Forma.',
-  'This Pro Forma is fully approved and can never be unlocked or edited.',
+  'This Pro Forma is fully approved. An approval administrator can cancel and reset the approval flow to unlock it.',
   'rowCanEdit=canEditPf(r)&&!approvalState.complete',
   'rowCanLock=canEditPf(r)&&!approvalState.started&&!approvalState.complete'
 ]) {
@@ -164,6 +164,17 @@ for (const required of [
   'Cancel &amp; Reset Approvals'
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval readiness/reset behavior is missing ${required}.`);
+}
+for (const required of [
+  'if(state.started&&perms().apprAll)top+=',
+  'S.ed.model.Status=String(fresh.Status==null?S.ed.model.Status:fresh.Status);',
+  'r.Approval_Notes="";',
+  'kp.Status="Draft";'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: completed approval reset/restart behavior is missing ${required}.`);
+}
+if (proformaHtml.includes('if(state.started&&!state.complete&&perms().apprAll)')) {
+  errors.push('proforma-manager: approval administrators must be able to reset a completed approval chain.');
 }
 const startProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Start_Proforma_Approval_Chain.dg'), 'utf8');
 for (const required of [
