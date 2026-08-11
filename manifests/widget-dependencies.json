@@ -418,6 +418,7 @@
         "Builder_Takedown"
       ],
       "reports_referenced": [
+        "All_Builder_Takedowns",
         "All_Builders",
         "All_Lots_All_Fields",
         "All_Subdivisions"

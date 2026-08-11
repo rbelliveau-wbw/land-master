@@ -2,13 +2,13 @@
   "slug": "manage-lots",
   "name": "Manage Lots",
   "module": "lots",
-  "version": "0.1.0",
-  "description": "Visual lot selection and in-widget Builder Takedown creation.",
+  "version": "0.2.0",
+  "description": "Visual lot selection, in-widget Builder Takedown creation, and read-only takedown reporting.",
   "source_entry": "widgets/manage-lots/src/app/widget.html",
   "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Manage Lots",
-  "source_sha256": "3b0de7b294943333f5bcfdf49605b9a5286aa7939534aa6cae172daf27a3601a",
+  "source_sha256": "244eaa01fa8ca9ef019c808a739de4386329b7203e81f0c9fcd22346d542b0f6",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": ["en"],
@@ -19,5 +19,5 @@
   },
   "dependency_inventory": "manifests/widget-dependencies.json#manage-lots",
   "hosting_entry": "index.html (generated from app/widget.html)",
-  "trust": "Initial source based on the user-supplied Lot Takedown Widget v3 prototype."
+  "trust": "Source based on the user-supplied Lot Takedown Widget v3 prototype and verified Creator report contracts."
 }
