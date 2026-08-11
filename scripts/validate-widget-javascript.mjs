@@ -9,6 +9,12 @@ const errors = [];
 for (const widget of widgets) {
   const htmlPath = path.join(root, widget.source_entry);
   const html = fs.readFileSync(htmlPath, 'utf8');
+  for (const required of [
+    'linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%)',
+    'translateY(-1px)'
+  ]) {
+    if (!html.includes(required)) errors.push(`${widget.slug}: modern segmented-control treatment is missing ${required}.`);
+  }
   const inlineScripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)];
   inlineScripts.forEach((match, index) => {
     try {

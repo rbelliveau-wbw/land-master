@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-08-11T16:27:41.234Z",
+  "generated_at": "2026-08-11T17:23:35.811Z",
   "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
   "environments": {
     "development": {
-      "proforma-manager": "1.44.21",
-      "budget-manager": "121.0.3",
-      "land-master": "8.9.1",
-      "contract-management": "1.0.2",
-      "tax-center": "19.0.1",
-      "milestone-gantt": "1.0.1",
-      "manage-lots": "0.1.0"
+      "proforma-manager": "1.44.22",
+      "budget-manager": "121.0.4",
+      "land-master": "8.9.12",
+      "contract-management": "1.0.3",
+      "tax-center": "19.0.2",
+      "milestone-gantt": "1.0.2",
+      "manage-lots": "0.3.1"
     },
     "stage": {
       "proforma-manager": "1.44.6",
@@ -21,13 +21,13 @@
       "manage-lots": "0.1.0"
     },
     "production": {
-      "proforma-manager": "1.44.21",
-      "budget-manager": "121.0.3",
-      "land-master": "8.9.11",
-      "contract-management": "1.0.2",
-      "tax-center": "19.0.1",
-      "milestone-gantt": "1.0.1",
-      "manage-lots": "0.3.0"
+      "proforma-manager": "1.44.22",
+      "budget-manager": "121.0.4",
+      "land-master": "8.9.12",
+      "contract-management": "1.0.3",
+      "tax-center": "19.0.2",
+      "milestone-gantt": "1.0.2",
+      "manage-lots": "0.3.1"
     }
   }
 }
