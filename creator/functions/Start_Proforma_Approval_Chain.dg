@@ -86,10 +86,6 @@
 						{
 							missingPropertyFields.add("CAD / Property ID");
 						}
-						if(ifnull(propertyRow.Facility_ID,"").toString().trim() == "")
-						{
-							missingPropertyFields.add("Facility ID");
-						}
 						if(ifnull(propertyRow.County,"").toString().trim() == "")
 						{
 							missingPropertyFields.add("County");
