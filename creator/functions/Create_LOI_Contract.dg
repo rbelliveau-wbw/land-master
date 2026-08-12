@@ -37,14 +37,26 @@ string Create_LOI_Contract(string proformaId)
 		loadEntry.put("meta",{"proformaId":pf.ID.toString(),"name":ifnull(pf.Name,"")});
 		trace.add(loadEntry);
 		// ============================================================
-		// RESOLVE SELLER / PROPERTY FROM THE LOI SUBFORM RECORDS
-		// The LOI Seller / Property subforms create Builder and Property
-		// records linked back to this Pro Forma through their multi-select
-		// "Proforma" lookup. Those records — not the flat Pro Forma fields —
-		// are now the source of truth for the merge and the validation.
-		// The flat pf.* fields are kept only as a fallback for older records.
+		// RESOLVE THE LOI WORKSHEET + THE SELLER / PROPERTY SUBFORM RECORDS
+		// The LOI tab writes its terms to the LOI Worksheet record (prefer the
+		// current one), and the Seller / Property subforms create Builder /
+		// Property records linked back through their multi-select "Proforma"
+		// lookup. Those records — not the flat Pro Forma fields — are now the
+		// source of truth. The flat pf.* fields are kept only as a fallback.
 		// ============================================================
 		stage = "resolve_subform_records";
+		loiRec = null;
+		for each  w in LOI_Worksheet[Proforma == pfId]
+		{
+			if(loiRec == null)
+			{
+				loiRec = w;
+			}
+			if(w.Is_Current == true)
+			{
+				loiRec = w;
+			}
+		}
 		sellerRec = null;
 		sellerCount = 0;
 		for each  sRec in Builder[Proforma.contains(pfId)]
@@ -65,7 +77,7 @@ string Create_LOI_Contract(string proformaId)
 				propRec = pRec;
 			}
 		}
-		// ---- Resolve each value: subform record first, then the flat Pro Forma field ----
+		// ---- Seller fields: subform Builder record first, then flat Pro Forma field ----
 		rSeller = ifnull(pf.Seller,"").trim();
 		if(sellerRec != null && ifnull(sellerRec.Builder_Name,"").trim() != "")
 		{
@@ -97,6 +109,7 @@ string Create_LOI_Contract(string proformaId)
 		}
 		// Authorized Signer has no subform source — Pro Forma field only, optional.
 		rAuthSigner = ifnull(pf.Authorized_Signer_for_Seller,"").trim();
+		// ---- Property fields: subform Property record first, then flat Pro Forma field ----
 		rCAD = ifnull(pf.CAD_ID,"").trim();
 		if(propRec != null && ifnull(propRec.Property_ID,"").trim() != "")
 		{
@@ -112,11 +125,36 @@ string Create_LOI_Contract(string proformaId)
 		{
 			rPropCity = propRec.City.trim();
 		}
+		// ---- LOI terms: LOI Worksheet record first, then flat Pro Forma field ----
+		vEarnest = if(loiRec != null && loiRec.Earnest_Money != null,loiRec.Earnest_Money,pf.Earnest_Money);
+		vFeas = if(loiRec != null && loiRec.Initial_Feasibility_Days != null,loiRec.Initial_Feasibility_Days,pf.Initial_Feasibility_Days);
+		vExt = if(loiRec != null && loiRec.Extensions != null,loiRec.Extensions,pf.Extensions);
+		vDaysExt = if(loiRec != null && loiRec.Days_Per_Extension != null,loiRec.Days_Per_Extension,pf.Days_per_Extension);
+		vAmtExt = if(loiRec != null && loiRec.Amount_Per_Extension != null,loiRec.Amount_Per_Extension,pf.Amount_per_Extension);
+		vClosing = if(loiRec != null && loiRec.Closing_Days_After_Feasibility != null,loiRec.Closing_Days_After_Feasibility,pf.Closing_Days_Feas);
+		vResponse = if(loiRec != null && loiRec.Response_Date != null,loiRec.Response_Date,pf.Response_Date);
+		vAmtAcre = if(loiRec != null && loiRec.Amount_Per_Acre != null,loiRec.Amount_Per_Acre,pf.Land_Cost_Acre);
+		vTotalAcres = if(loiRec != null && loiRec.Total_Acres != null,loiRec.Total_Acres,pf.Total_Acres);
+		vLandCost = if(loiRec != null && loiRec.Estimated_Price != null,loiRec.Estimated_Price,pf.Land_Cost);
+		vSpecial = if(loiRec != null && loiRec.Special_Provisions != null && loiRec.Special_Provisions.trim() != "",loiRec.Special_Provisions,ifnull(pf.Special_Provisions,""));
+		vBrokerBuyer = if(loiRec != null && loiRec.Buyer_Broker != null && loiRec.Buyer_Broker.trim() != "",loiRec.Buyer_Broker,ifnull(pf.Broker_Buyer,""));
+		vBrokerSeller = if(loiRec != null && loiRec.Seller_Broker != null && loiRec.Seller_Broker.trim() != "",loiRec.Seller_Broker,ifnull(pf.Broker_Seller,""));
+		vAcqEmail = if(loiRec != null && loiRec.Acquisition_Email != null && loiRec.Acquisition_Email.trim() != "",loiRec.Acquisition_Email,ifnull(pf.Acquisition_Email,""));
+		// Buying entity id: LOI Worksheet Company first, then Pro Forma Purchasing Company.
+		vBuyingEntityId = null;
+		if(loiRec != null && loiRec.Company != null)
+		{
+			vBuyingEntityId = loiRec.Company;
+		}
+		else if(pf.Purchasing_Company != null)
+		{
+			vBuyingEntityId = pf.Purchasing_Company;
+		}
 		subformEntry = Map();
 		subformEntry.put("level","info");
 		subformEntry.put("stage",stage);
-		subformEntry.put("message","Seller / Property resolved from LOI subform records");
-		subformEntry.put("meta",{"sellerCount":sellerCount,"propertyCount":propertyCount,"sellerId":if(sellerRec != null,sellerRec.ID.toString(),""),"propertyId":if(propRec != null,propRec.ID.toString(),"")});
+		subformEntry.put("message","LOI Worksheet, Seller and Property resolved from subform records");
+		subformEntry.put("meta",{"loiWorksheetId":if(loiRec != null,loiRec.ID.toString(),""),"sellerCount":sellerCount,"propertyCount":propertyCount,"sellerId":if(sellerRec != null,sellerRec.ID.toString(),""),"propertyId":if(propRec != null,propRec.ID.toString(),"")});
 		trace.add(subformEntry);
 		// ============================================================
 		// VALIDATE — NON-BLOCKING. Missing fields no longer stop the
@@ -173,44 +211,43 @@ string Create_LOI_Contract(string proformaId)
 			missing.add("Property City");
 			mPropCity = "[MISSING: Property City]";
 		}
-		// Buying entity (resolved to a name below); flag here if unset.
-		if(pf.Purchasing_Company == null)
+		if(vBuyingEntityId == null)
 		{
 			missing.add("Buying Entity");
 		}
-		if(pf.Total_Acres == null)
+		if(vTotalAcres == null)
 		{
 			missing.add("Total Acres");
 		}
-		if(pf.Land_Cost_Acre == null)
+		if(vAmtAcre == null)
 		{
 			missing.add("Land Cost per Acre");
 		}
-		if(pf.Earnest_Money == null)
+		if(vEarnest == null)
 		{
 			missing.add("Earnest Money");
 		}
-		if(pf.Initial_Feasibility_Days == null)
+		if(vFeas == null)
 		{
 			missing.add("Initial Feasibility Days");
 		}
-		if(pf.Extensions == null)
+		if(vExt == null)
 		{
 			missing.add("Extensions");
 		}
-		if(pf.Days_per_Extension == null)
+		if(vDaysExt == null)
 		{
 			missing.add("Days per Extension");
 		}
-		if(pf.Amount_per_Extension == null)
+		if(vAmtExt == null)
 		{
 			missing.add("Amount per Extension");
 		}
-		if(pf.Closing_Days_Feas == null)
+		if(vClosing == null)
 		{
 			missing.add("Closing Days after Feasibility");
 		}
-		if(pf.Response_Date == null)
+		if(vResponse == null)
 		{
 			missing.add("Response Date");
 		}
@@ -244,10 +281,10 @@ string Create_LOI_Contract(string proformaId)
 		trace.add(contractDefaultsEntry);
 		stage = "resolve_buying_entity";
 		mBuyingEntity = "[MISSING: Buying Entity]";
-		if(pf.Purchasing_Company != null)
+		if(vBuyingEntityId != null)
 		{
-			mBuyingEntity = pf.Purchasing_Company.toString();
-			companyRec = Company[ID == pf.Purchasing_Company];
+			mBuyingEntity = vBuyingEntityId.toString();
+			companyRec = Company[ID == vBuyingEntityId];
 			if(companyRec.ID != null && companyRec.Company_Name != null && companyRec.Company_Name.trim() != "")
 			{
 				mBuyingEntity = companyRec.Company_Name.trim();
@@ -257,10 +294,10 @@ string Create_LOI_Contract(string proformaId)
 		entityEntry.put("level","info");
 		entityEntry.put("stage",stage);
 		entityEntry.put("message","Buying entity resolved");
-		entityEntry.put("meta",{"buyingEntityId":pf.Purchasing_Company.toString(),"buyingEntityName":mBuyingEntity});
+		entityEntry.put("meta",{"buyingEntityId":if(vBuyingEntityId != null,vBuyingEntityId.toString(),""),"buyingEntityName":mBuyingEntity});
 		trace.add(entityEntry);
 		// ============================================================
-		// BUILD MERGE DATA — subform-sourced values, with "[MISSING: x]"
+		// BUILD MERGE DATA — worksheet / subform values, with "[MISSING: x]"
 		// stamped for any required field that is still blank.
 		// ============================================================
 		stage = "build_merge_data";
@@ -271,36 +308,36 @@ string Create_LOI_Contract(string proformaId)
 		mergeRow.put("Seller_City_State_ZIP",mSellerCityZip);
 		mergeRow.put("Seller_Phone",mSellerPhone);
 		mergeRow.put("Seller_Email",mSellerEmail);
-		mergeRow.put("Purchasing_Company",mBuyingEntity);
+		mergeRow.put("Buying_Entity",mBuyingEntity);
 		mergeRow.put("CAD_ID",mCAD);
 		mergeRow.put("Property_County",mPropCounty);
 		mergeRow.put("Property_City",mPropCity);
-		mergeRow.put("Total_Acres",if(pf.Total_Acres != null,pf.Total_Acres.toString(),"[MISSING: Total Acres]"));
-		mergeRow.put("Land_Cost",ifnull(pf.Land_Cost,""));
-		mergeRow.put("Land_Cost_Written",if(pf.Land_Cost != null,pf.Land_Cost.round(0).toWords("en-us"),""));
-		mergeRow.put("Amount_per_Acre",if(pf.Land_Cost_Acre != null,pf.Land_Cost_Acre.toString(),"[MISSING: Land Cost per Acre]"));
-		mergeRow.put("Earnest_Money",if(pf.Earnest_Money != null,pf.Earnest_Money.toString(),"[MISSING: Earnest Money]"));
-		mergeRow.put("Earnest_Money_Written",if(pf.Earnest_Money != null,pf.Earnest_Money.round(0).toWords("en-us"),""));
-		mergeRow.put("Special_Provisions",if(pf.Special_Provisions == null || pf.Special_Provisions.trim() == "","None.",pf.Special_Provisions));
-		mergeRow.put("Initial_Feasibility_Days",if(pf.Initial_Feasibility_Days != null,pf.Initial_Feasibility_Days.toString(),"[MISSING: Initial Feasibility Days]"));
-		mergeRow.put("Initial_Feasibility_Days_Written",if(pf.Initial_Feasibility_Days != null,pf.Initial_Feasibility_Days.toWords("en-us"),""));
-		mergeRow.put("Extensions",if(pf.Extensions != null,pf.Extensions.toString(),"[MISSING: Extensions]"));
-		mergeRow.put("Extensions_Written",if(pf.Extensions != null,pf.Extensions.toWords("en-us"),""));
-		mergeRow.put("Days_per_Extension",if(pf.Days_per_Extension != null,pf.Days_per_Extension.toString(),"[MISSING: Days per Extension]"));
-		mergeRow.put("Days_per_Extension_Written",if(pf.Days_per_Extension != null,pf.Days_per_Extension.toWords("en-us"),""));
-		mergeRow.put("Amount_per_Extension",if(pf.Amount_per_Extension != null,pf.Amount_per_Extension.toString(),"[MISSING: Amount per Extension]"));
-		mergeRow.put("Amount_per_Extension_Written",if(pf.Amount_per_Extension != null,pf.Amount_per_Extension.round(0).toWords("en-us"),""));
-		mergeRow.put("Closing_Days_Feas",if(pf.Closing_Days_Feas != null,pf.Closing_Days_Feas.toString(),"[MISSING: Closing Days after Feasibility]"));
-		mergeRow.put("Closing_Days_Feas_Written",if(pf.Closing_Days_Feas != null,pf.Closing_Days_Feas.toWords("en-us"),""));
-		mergeRow.put("Broker_Buyer",if(pf.Broker_Buyer == null || pf.Broker_Buyer.trim() == "","None",pf.Broker_Buyer));
-		mergeRow.put("Broker_Seller",if(pf.Broker_Seller == null || pf.Broker_Seller.trim() == "","None",pf.Broker_Seller));
-		mergeRow.put("Response_Date",if(pf.Response_Date != null,pf.Response_Date.toString("yyyy-MM-dd"),"[MISSING: Response Date]"));
-		mergeRow.put("Acquisition_Email",ifnull(pf.Acquisition_Email,""));
+		mergeRow.put("Total_Acres",if(vTotalAcres != null,vTotalAcres.toString(),"[MISSING: Total Acres]"));
+		mergeRow.put("Land_Cost",if(vLandCost != null,vLandCost.toString(),""));
+		mergeRow.put("Land_Cost_Written",if(vLandCost != null,vLandCost.round(0).toWords("en-us"),""));
+		mergeRow.put("Amount_per_Acre",if(vAmtAcre != null,vAmtAcre.toString(),"[MISSING: Land Cost per Acre]"));
+		mergeRow.put("Earnest_Money",if(vEarnest != null,vEarnest.toString(),"[MISSING: Earnest Money]"));
+		mergeRow.put("Earnest_Money_Written",if(vEarnest != null,vEarnest.round(0).toWords("en-us"),""));
+		mergeRow.put("Special_Provisions",if(vSpecial == null || vSpecial.trim() == "","None.",vSpecial));
+		mergeRow.put("Initial_Feasibility_Days",if(vFeas != null,vFeas.toString(),"[MISSING: Initial Feasibility Days]"));
+		mergeRow.put("Initial_Feasibility_Days_Written",if(vFeas != null,vFeas.toWords("en-us"),""));
+		mergeRow.put("Extensions",if(vExt != null,vExt.toString(),"[MISSING: Extensions]"));
+		mergeRow.put("Extensions_Written",if(vExt != null,vExt.toWords("en-us"),""));
+		mergeRow.put("Days_per_Extension",if(vDaysExt != null,vDaysExt.toString(),"[MISSING: Days per Extension]"));
+		mergeRow.put("Days_per_Extension_Written",if(vDaysExt != null,vDaysExt.toWords("en-us"),""));
+		mergeRow.put("Amount_per_Extension",if(vAmtExt != null,vAmtExt.toString(),"[MISSING: Amount per Extension]"));
+		mergeRow.put("Amount_per_Extension_Written",if(vAmtExt != null,vAmtExt.round(0).toWords("en-us"),""));
+		mergeRow.put("Closing_Days_Feas",if(vClosing != null,vClosing.toString(),"[MISSING: Closing Days after Feasibility]"));
+		mergeRow.put("Closing_Days_Feas_Written",if(vClosing != null,vClosing.toWords("en-us"),""));
+		mergeRow.put("Broker_Buyer",if(vBrokerBuyer == null || vBrokerBuyer.trim() == "","None",vBrokerBuyer));
+		mergeRow.put("Broker_Seller",if(vBrokerSeller == null || vBrokerSeller.trim() == "","None",vBrokerSeller));
+		mergeRow.put("Response_Date",if(vResponse != null,vResponse.toString("yyyy-MM-dd"),"[MISSING: Response Date]"));
+		mergeRow.put("Acquisition_Email",ifnull(vAcqEmail,""));
 		mergeEntry = Map();
 		mergeEntry.put("level","info");
 		mergeEntry.put("stage",stage);
 		mergeEntry.put("message","Writer merge map built");
-		mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"sellerSource":if(sellerRec != null,"subform","proforma_or_blank"),"propertySource":if(propRec != null,"subform","proforma_or_blank")});
+		mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"termsSource":if(loiRec != null,"loi_worksheet","proforma_or_blank"),"sellerSource":if(sellerRec != null,"subform","proforma_or_blank"),"propertySource":if(propRec != null,"subform","proforma_or_blank")});
 		trace.add(mergeEntry);
 		stage = "writer_merge";
 		writerDocumentId = "6kuqna9b27e6fe95b4f75a3920de1ff048543";
@@ -359,7 +396,7 @@ string Create_LOI_Contract(string proformaId)
 		expectedWriterFields.add("Seller_City_State_ZIP");
 		expectedWriterFields.add("Seller_Phone");
 		expectedWriterFields.add("Seller_Email");
-		expectedWriterFields.add("Purchasing_Company");
+		expectedWriterFields.add("Buying_Entity");
 		expectedWriterFields.add("CAD_ID");
 		expectedWriterFields.add("Property_County");
 		expectedWriterFields.add("Property_City");
