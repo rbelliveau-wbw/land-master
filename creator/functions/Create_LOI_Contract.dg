@@ -38,11 +38,11 @@ string Create_LOI_Contract(string proformaId)
 		trace.add(loadEntry);
 		// ============================================================
 		// RESOLVE THE LOI WORKSHEET + THE SELLER / PROPERTY SUBFORM RECORDS
-		// The LOI tab writes its terms to the LOI Worksheet record (prefer the
-		// current one), and the Seller / Property subforms create Builder /
-		// Property records linked back through their multi-select "Proforma"
-		// lookup. Those records — not the flat Pro Forma fields — are now the
-		// source of truth. The flat pf.* fields are kept only as a fallback.
+		// These are the ONLY source of truth. The LOI Worksheet holds the terms
+		// and the buying entity (Company); the Seller / Property subforms create
+		// Builder / Property records linked through their multi-select "Proforma"
+		// lookup. The Pro Forma's own LOI fields are deprecated and are NOT read
+		// here (only pf.Name and pf.Territory, which are not LOI fields).
 		// ============================================================
 		stage = "resolve_subform_records";
 		loiRec = null;
@@ -77,23 +77,23 @@ string Create_LOI_Contract(string proformaId)
 				propRec = pRec;
 			}
 		}
-		// ---- Seller fields: subform Builder record first, then flat Pro Forma field ----
-		rSeller = ifnull(pf.Seller,"").trim();
+		// ---- Seller fields: from the Builder (Seller) subform record ----
+		rSeller = "";
 		if(sellerRec != null && ifnull(sellerRec.Builder_Name,"").trim() != "")
 		{
 			rSeller = sellerRec.Builder_Name.trim();
 		}
-		rSellerEmail = ifnull(pf.Seller_Email,"").trim();
+		rSellerEmail = "";
 		if(sellerRec != null && ifnull(sellerRec.Email,"").trim() != "")
 		{
 			rSellerEmail = sellerRec.Email.trim();
 		}
-		rSellerPhone = ifnull(pf.Seller_Phone,"").trim();
+		rSellerPhone = "";
 		if(sellerRec != null && ifnull(sellerRec.Phone_Number,"").trim() != "")
 		{
 			rSellerPhone = sellerRec.Phone_Number.trim();
 		}
-		rStreet = ifnull(pf.Street_Address,"").trim();
+		rStreet = "";
 		if(sellerRec != null && ifnull(sellerRec.Street_Address,"").trim() != "")
 		{
 			rStreet = sellerRec.Street_Address.trim();
@@ -102,53 +102,105 @@ string Create_LOI_Contract(string proformaId)
 		{
 			rStreet = sellerRec.Address.trim();
 		}
-		rSellerCityZip = ifnull(pf.Seller_City_State_ZIP,"").trim();
+		rSellerCityZip = "";
 		if(sellerRec != null && ifnull(sellerRec.City_State_ZIP,"").trim() != "")
 		{
 			rSellerCityZip = sellerRec.City_State_ZIP.trim();
 		}
-		// Authorized Signer has no subform source — Pro Forma field only, optional.
-		rAuthSigner = ifnull(pf.Authorized_Signer_for_Seller,"").trim();
-		// ---- Property fields: subform Property record first, then flat Pro Forma field ----
-		rCAD = ifnull(pf.CAD_ID,"").trim();
+		// Authorized Signer for Seller has no data source in the app — signed by hand.
+		rAuthSigner = "";
+		// ---- Property fields: from the Property subform record ----
+		rCAD = "";
 		if(propRec != null && ifnull(propRec.Property_ID,"").trim() != "")
 		{
 			rCAD = propRec.Property_ID.trim();
 		}
-		rPropCounty = ifnull(pf.Property_County,"").trim();
+		rPropCounty = "";
 		if(propRec != null && ifnull(propRec.County,"").trim() != "")
 		{
 			rPropCounty = propRec.County.trim();
 		}
-		rPropCity = ifnull(pf.Property_City,"").trim();
+		rPropCity = "";
 		if(propRec != null && ifnull(propRec.City,"").trim() != "")
 		{
 			rPropCity = propRec.City.trim();
 		}
-		// ---- LOI terms: LOI Worksheet record first, then flat Pro Forma field ----
-		vEarnest = if(loiRec != null && loiRec.Earnest_Money != null,loiRec.Earnest_Money,pf.Earnest_Money);
-		vFeas = if(loiRec != null && loiRec.Initial_Feasibility_Days != null,loiRec.Initial_Feasibility_Days,pf.Initial_Feasibility_Days);
-		vExt = if(loiRec != null && loiRec.Extensions != null,loiRec.Extensions,pf.Extensions);
-		vDaysExt = if(loiRec != null && loiRec.Days_Per_Extension != null,loiRec.Days_Per_Extension,pf.Days_per_Extension);
-		vAmtExt = if(loiRec != null && loiRec.Amount_Per_Extension != null,loiRec.Amount_Per_Extension,pf.Amount_per_Extension);
-		vClosing = if(loiRec != null && loiRec.Closing_Days_After_Feasibility != null,loiRec.Closing_Days_After_Feasibility,pf.Closing_Days_Feas);
-		vResponse = if(loiRec != null && loiRec.Response_Date != null,loiRec.Response_Date,pf.Response_Date);
-		vAmtAcre = if(loiRec != null && loiRec.Amount_Per_Acre != null,loiRec.Amount_Per_Acre,pf.Land_Cost_Acre);
-		vTotalAcres = if(loiRec != null && loiRec.Total_Acres != null,loiRec.Total_Acres,pf.Total_Acres);
-		vLandCost = if(loiRec != null && loiRec.Estimated_Price != null,loiRec.Estimated_Price,pf.Land_Cost);
-		vSpecial = if(loiRec != null && loiRec.Special_Provisions != null && loiRec.Special_Provisions.trim() != "",loiRec.Special_Provisions,ifnull(pf.Special_Provisions,""));
-		vBrokerBuyer = if(loiRec != null && loiRec.Buyer_Broker != null && loiRec.Buyer_Broker.trim() != "",loiRec.Buyer_Broker,ifnull(pf.Broker_Buyer,""));
-		vBrokerSeller = if(loiRec != null && loiRec.Seller_Broker != null && loiRec.Seller_Broker.trim() != "",loiRec.Seller_Broker,ifnull(pf.Broker_Seller,""));
-		vAcqEmail = if(loiRec != null && loiRec.Acquisition_Email != null && loiRec.Acquisition_Email.trim() != "",loiRec.Acquisition_Email,ifnull(pf.Acquisition_Email,""));
-		// Buying entity id: LOI Worksheet Company first, then Pro Forma Purchasing Company.
+		// ---- LOI terms: from the LOI Worksheet record only ----
+		vEarnest = null;
+		if(loiRec != null && loiRec.Earnest_Money != null)
+		{
+			vEarnest = loiRec.Earnest_Money;
+		}
+		vFeas = null;
+		if(loiRec != null && loiRec.Initial_Feasibility_Days != null)
+		{
+			vFeas = loiRec.Initial_Feasibility_Days;
+		}
+		vExt = null;
+		if(loiRec != null && loiRec.Extensions != null)
+		{
+			vExt = loiRec.Extensions;
+		}
+		vDaysExt = null;
+		if(loiRec != null && loiRec.Days_Per_Extension != null)
+		{
+			vDaysExt = loiRec.Days_Per_Extension;
+		}
+		vAmtExt = null;
+		if(loiRec != null && loiRec.Amount_Per_Extension != null)
+		{
+			vAmtExt = loiRec.Amount_Per_Extension;
+		}
+		vClosing = null;
+		if(loiRec != null && loiRec.Closing_Days_After_Feasibility != null)
+		{
+			vClosing = loiRec.Closing_Days_After_Feasibility;
+		}
+		vResponse = null;
+		if(loiRec != null && loiRec.Response_Date != null)
+		{
+			vResponse = loiRec.Response_Date;
+		}
+		vAmtAcre = null;
+		if(loiRec != null && loiRec.Amount_Per_Acre != null)
+		{
+			vAmtAcre = loiRec.Amount_Per_Acre;
+		}
+		vTotalAcres = null;
+		if(loiRec != null && loiRec.Total_Acres != null)
+		{
+			vTotalAcres = loiRec.Total_Acres;
+		}
+		vLandCost = null;
+		if(loiRec != null && loiRec.Estimated_Price != null)
+		{
+			vLandCost = loiRec.Estimated_Price;
+		}
+		vSpecial = "";
+		if(loiRec != null && loiRec.Special_Provisions != null && loiRec.Special_Provisions.trim() != "")
+		{
+			vSpecial = loiRec.Special_Provisions;
+		}
+		vBrokerBuyer = "";
+		if(loiRec != null && loiRec.Buyer_Broker != null && loiRec.Buyer_Broker.trim() != "")
+		{
+			vBrokerBuyer = loiRec.Buyer_Broker;
+		}
+		vBrokerSeller = "";
+		if(loiRec != null && loiRec.Seller_Broker != null && loiRec.Seller_Broker.trim() != "")
+		{
+			vBrokerSeller = loiRec.Seller_Broker;
+		}
+		vAcqEmail = "";
+		if(loiRec != null && loiRec.Acquisition_Email != null && loiRec.Acquisition_Email.trim() != "")
+		{
+			vAcqEmail = loiRec.Acquisition_Email;
+		}
+		// Buying entity id: ALWAYS the LOI Worksheet Company.
 		vBuyingEntityId = null;
 		if(loiRec != null && loiRec.Company != null)
 		{
 			vBuyingEntityId = loiRec.Company;
-		}
-		else if(pf.Purchasing_Company != null)
-		{
-			vBuyingEntityId = pf.Purchasing_Company;
 		}
 		subformEntry = Map();
 		subformEntry.put("level","info");
@@ -258,7 +310,7 @@ string Create_LOI_Contract(string proformaId)
 		validationEntry.put("meta",{"missing":missing,"proceeding":true});
 		trace.add(validationEntry);
 		// ============================================================
-		// CONTRACT DEFAULTS — Territory is now non-blocking too.
+		// CONTRACT DEFAULTS — Territory (a Pro Forma field) is non-blocking too.
 		// ============================================================
 		stage = "resolve_contract_defaults";
 		contractTerritory = ifnull(pf.Territory,"").trim();
@@ -293,7 +345,7 @@ string Create_LOI_Contract(string proformaId)
 		entityEntry = Map();
 		entityEntry.put("level","info");
 		entityEntry.put("stage",stage);
-		entityEntry.put("message","Buying entity resolved");
+		entityEntry.put("message","Buying entity resolved from LOI Worksheet");
 		entityEntry.put("meta",{"buyingEntityId":if(vBuyingEntityId != null,vBuyingEntityId.toString(),""),"buyingEntityName":mBuyingEntity});
 		trace.add(entityEntry);
 		// ============================================================
@@ -337,7 +389,7 @@ string Create_LOI_Contract(string proformaId)
 		mergeEntry.put("level","info");
 		mergeEntry.put("stage",stage);
 		mergeEntry.put("message","Writer merge map built");
-		mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"termsSource":if(loiRec != null,"loi_worksheet","proforma_or_blank"),"sellerSource":if(sellerRec != null,"subform","proforma_or_blank"),"propertySource":if(propRec != null,"subform","proforma_or_blank")});
+		mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"termsSource":if(loiRec != null,"loi_worksheet","blank"),"sellerSource":if(sellerRec != null,"subform","blank"),"propertySource":if(propRec != null,"subform","blank")});
 		trace.add(mergeEntry);
 		stage = "writer_merge";
 		writerDocumentId = "6kuqna9b27e6fe95b4f75a3920de1ff048543";
@@ -350,8 +402,6 @@ string Create_LOI_Contract(string proformaId)
 			return result.toString();
 		}
 		fileBaseName = ifnull(pf.Name,"Proforma").replaceAll("[^A-Za-z0-9 _-]","").trim().replaceAll(" +","_") + "_LOI_" + zoho.currentdate.toString("yyyyMMdd");
-		// Inspect the actual Writer merge field IDs before consuming a merge credit.
-		// This helps catch any field IDs that changed when the DOCX was imported into Writer.
 		writerFieldIds = List();
 		writerFieldCheckSucceeded = false;
 		try
@@ -441,9 +491,6 @@ string Create_LOI_Contract(string proformaId)
 				return result.toString();
 			}
 		}
-		// Writer's API form parameter expects merge_data.data as a JSON ARRAY.
-		// Sending an explicit one-record array prevents Writer from falling back to the
-		// sample/default values cached in the template.
 		mergeRows = List();
 		mergeRows.add(mergeRow);
 		mergeDataPayload = Map();
