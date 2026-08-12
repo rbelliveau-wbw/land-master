@@ -430,6 +430,26 @@
                  					}
                  				}
                  			}
+                 			for each  es in ifnull(loi.get("editedSellers"),List())
+                 			{
+                 				esId = ifnull(es.get("id"),"").toString().trim();
+                 				if(esId != "")
+                 				{
+                 					edB = Builder[ID == esId.toLong()];
+                 					if(edB != null)
+                 					{
+                 						edName = ifnull(es.get("Builder_Name"),"").toString().trim();
+                 						if(edName != "")
+                 						{
+                 							edB.Builder_Name=edName;
+                 						}
+                 						edB.Email=ifnull(es.get("Email"),"");
+                 						edB.Phone_Number=ifnull(es.get("Phone_Number"),"");
+                 						edB.Street_Address=ifnull(es.get("Street_Address"),"");
+                 						edB.City_State_ZIP=ifnull(es.get("City_State_ZIP"),"");
+                 					}
+                 				}
+                 			}
                  			if(companyId != "")
                  			{
                  				coRec = Company[ID == companyId.toLong()];
@@ -521,6 +541,26 @@
                  						if(companyId != "")
                  						{
                  							exP.Company1=companyId.toLong();
+                 						}
+                 					}
+                 				}
+                 			}
+                 			for each  ep in ifnull(loi.get("editedProperties"),List())
+                 			{
+                 				epId = ifnull(ep.get("id"),"").toString().trim();
+                 				if(epId != "")
+                 				{
+                 					edP = Property[ID == epId.toLong()];
+                 					if(edP != null)
+                 					{
+                 						edP.Common_Name=ifnull(ep.get("Common_Name"),"");
+                 						edP.Property_ID=ifnull(ep.get("Property_ID"),"");
+                 						edP.County=ifnull(ep.get("County"),"");
+                 						edP.City=ifnull(ep.get("City"),"");
+                 						epAcres = ifnull(ep.get("Acres"),"").toString().trim();
+                 						if(epAcres != "")
+                 						{
+                 							edP.Acres=epAcres.toDecimal();
                  						}
                  					}
                  				}
