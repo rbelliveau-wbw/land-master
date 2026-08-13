@@ -1,0 +1,174 @@
+string sendModificationEmail(int modificationId, string action)
+{
+	/********* BUDGET MODIFICATION EMAIL *********/
+	// Return Type: string
+	// Sends the email that accompanies a Budget Modification lifecycle event.
+	// action: "created" | "approved" | "rejected"
+	// Approval rows live in Budget_Approvals with Type1 == "Modification" and a
+	// Budget_Modification lookup back to the modification record.
+	vModId = modificationId.toLong();
+	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vModId == 0)
+	{
+		return "No Modification ID provided.";
+	}
+	if(vAction != "created" && vAction != "approved" && vAction != "rejected")
+	{
+		return "Unknown action: " + vAction;
+	}
+	modRec = Budget_Modification[ID == vModId];
+	if(modRec == null)
+	{
+		return "Modification not found.";
+	}
+	// ---- Modification display data ----
+	modType = ifnull(modRec.Modification_Type,"").trim();
+	modAmount = ifnull(modRec.Amount,0.0);
+	modReason = ifnull(modRec.Reason,"").trim();
+	modRef = ifnull(modRec.Reference_Number,"").trim();
+	itemName = "";
+	if(modRec.Budget_Item != null)
+	{
+		itemName = ifnull(modRec.Budget_Item.Item_Name,"");
+	}
+	budgetLabel = "";
+	vBudgetId = 0;
+	if(modRec.Budget != null)
+	{
+		budgetLabel = ifnull(modRec.Budget.Budget_Name,"");
+		vBudgetId = modRec.Budget.ID;
+	}
+	signPrefix = "+";
+	if(modType == "Decrease")
+	{
+		signPrefix = "-";
+	}
+	amountText = signPrefix + "$" + modAmount.toString();
+	// ---- HTML escaping ----
+	itemNameSafe = itemName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+	budgetLabelSafe = budgetLabel.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+	modReasonSafe = modReason.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+	modReasonSafe = modReasonSafe.replaceAll("\r\n","<br>").replaceAll("\n","<br>");
+	modRefSafe = modRef.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+	if(modReasonSafe == "")
+	{
+		modReasonSafe = "No reason was provided.";
+	}
+	// ---- Chain rows for this modification ----
+	nextApprovalRec = null;
+	nextSortOrder = 999999;
+	approvedRoles = "";
+	chainRows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
+	for each  chainRow in chainRows
+	{
+		rowStatus = ifnull(chainRow.Status,"").trim();
+		rowSort = ifnull(chainRow.Sort_Order,0).toLong();
+		if((rowStatus == "Pending" || rowStatus == "Not Sent") && rowSort < nextSortOrder)
+		{
+			nextApprovalRec = chainRow;
+			nextSortOrder = rowSort;
+		}
+		if(rowStatus == "Approved")
+		{
+			if(approvedRoles != "")
+			{
+				approvedRoles = approvedRoles + ", ";
+			}
+			approvedRoles = approvedRoles + ifnull(chainRow.Title,"");
+		}
+	}
+	// Internal app URL for the Budget Management page hosting the widget.
+	widgetPageUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Budget_Management1";
+	approvalUrl = widgetPageUrl + "?budgetId=" + vBudgetId + "&modificationId=" + vModId;
+	// Verified sender for all approval emails.
+	fromAddress = "jking@wbdevelopment.com";
+	// ---- Shared detail card ----
+	detailCard = "<div style='background:#f8fafc;border:1px solid #dbe4f0;border-radius:10px;padding:14px 16px;margin:0 0 14px 0;'>";
+	detailCard = detailCard + "<div style='font-size:13px;color:#64748b;margin-bottom:4px;'>Budget Modification</div>";
+	detailCard = detailCard + "<div style='font-size:16px;font-weight:700;color:#0f2744;'>" + budgetLabelSafe + " &mdash; " + itemNameSafe + "</div>";
+	detailCard = detailCard + "<div style='margin-top:10px;font-size:14px;color:#334155;'><b>" + modType + ":</b> " + amountText;
+	if(modRefSafe != "")
+	{
+		detailCard = detailCard + " &nbsp; | &nbsp; <b>Reference:</b> " + modRefSafe;
+	}
+	detailCard = detailCard + "</div>";
+	detailCard = detailCard + "<div style='margin-top:8px;font-size:13px;color:#475569;'><b>Reason:</b> " + modReasonSafe + "</div>";
+	detailCard = detailCard + "</div>";
+	linkBlock = "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Budget Page</a>";
+	linkBlock = linkBlock + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
+	linkBlock = linkBlock + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
+	// ---- created / approved: notify the next pending approver ----
+	if(vAction == "created" || vAction == "approved")
+	{
+		if(nextApprovalRec != null)
+		{
+			approverEmail = ifnull(nextApprovalRec.Approver,"").trim();
+			approverRole = ifnull(nextApprovalRec.Title,"").trim();
+			if(approverEmail == "")
+			{
+				return "No approver email found for the next Modification approval.";
+			}
+			emailSubject = "Modification Approval Needed - " + budgetLabel + " - " + itemName;
+			emailBody = "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
+			emailBody = emailBody + "<h2 style='margin:0 0 8px 0;color:#0f2744;'>Budget Modification Approval Needed</h2>";
+			emailBody = emailBody + "<p style='margin:0 0 16px 0;'>An after-finalization <b>budget modification</b> is ready for your review as <b>" + approverRole + "</b>.</p>";
+			emailBody = emailBody + detailCard + linkBlock + "</div>";
+			sendmail
+			[
+				from :fromAddress
+				to :approverEmail
+				subject :emailSubject
+				message :emailBody
+			]
+			nextApprovalRec.Status="Pending";
+			nextApprovalRec.Sent_Date=zoho.currentdate;
+			return "Modification email sent to " + approverEmail + " (" + approverRole + ").";
+		}
+		if(vAction == "approved")
+		{
+			// No pending approver remains: the chain is complete.
+			modRec.Status="Approved";
+			modRec.Approved_On=zoho.currenttime;
+			modRec.Approved_By=approvedRoles;
+			return "Modification fully approved (" + approvedRoles + ").";
+		}
+		return "No approver rows found for this modification.";
+	}
+	// ---- rejected: stamp the record and notify approvers who had approved ----
+	if(vAction == "rejected")
+	{
+		modRec.Status="Rejected";
+		notifiedList = "";
+		for each  chainRow2 in chainRows
+		{
+			rowStatus2 = ifnull(chainRow2.Status,"").trim();
+			rowEmail2 = ifnull(chainRow2.Approver,"").trim();
+			if(rowStatus2 == "Approved" && rowEmail2 != "")
+			{
+				emailSubject2 = "Modification Rejected - " + budgetLabel + " - " + itemName;
+				emailBody2 = "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
+				emailBody2 = emailBody2 + "<h2 style='margin:0 0 8px 0;color:#8f221c;'>Budget Modification Rejected</h2>";
+				emailBody2 = emailBody2 + "<p style='margin:0 0 16px 0;'>A budget modification you had approved was <b>rejected</b> later in the chain.</p>";
+				emailBody2 = emailBody2 + detailCard + linkBlock + "</div>";
+				sendmail
+				[
+					from :fromAddress
+					to :rowEmail2
+					subject :emailSubject2
+					message :emailBody2
+				]
+				if(notifiedList != "")
+				{
+					notifiedList = notifiedList + ", ";
+				}
+				notifiedList = notifiedList + rowEmail2;
+			}
+		}
+		if(notifiedList == "")
+		{
+			return "Modification marked Rejected. No prior approvers to notify.";
+		}
+		return "Modification marked Rejected. Notified: " + notifiedList + ".";
+	}
+	return "No action taken.";
+}

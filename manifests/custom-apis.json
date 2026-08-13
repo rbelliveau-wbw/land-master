@@ -201,6 +201,15 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Send_Modification_Email",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "sendModificationEmail",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, application/json key-value {modificationId, action:'created'|'approved'|'rejected'}. Created via Custom API builder bound to Land Master DEVELOPMENT environment; verify binding after production push."
+    },
+    {
       "name": "setProjectProforma",
       "consumers": [
         "widgets/budget-manager/src/app/widget.html"
