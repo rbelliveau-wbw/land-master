@@ -89,8 +89,12 @@ for reports and downstream consumers. It is maintained by:
 - `recalcItemRevisedFinal(int itemId)` — sets `Revised_Final = Budget_Ttl + sum(approved mods)`;
   called by `sendModificationEmail` when a modification chain completes (action `approved`).
 - `recalcAllRevisedFinals()` — batch: recalcs every item with modifications and resets stale
-  values on items without mods. Run nightly by the Custom Schedule
-  **"Recalc Revised Finals - Nightly"** (daily 02:00).
+  values on items without mods. (The nightly schedule that ran this was removed by Robby on
+  2026-08-13; the function remains available for manual/on-demand runs.)
+- `createBudgetModification(...)` / Custom API `Create_Budget_Modification` — creates the
+  modification record, a two-row approval chain (VP + CFO, both rbelliveau@wbdevelopment.com,
+  recipients editable in the widget), and sends the first approval email atomically. The widget
+  no longer inserts these records client-side.
 
 The widget computes Revised Final live from `All_Budget_Modifications`; the field is the
 persisted mirror, not the widget's source.
