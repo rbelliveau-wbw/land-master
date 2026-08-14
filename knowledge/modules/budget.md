@@ -81,6 +81,20 @@ Modification approvals reuse the existing `Budget_Approvals` form (added 2026-08
 - Custom API: `Send_Modification_Email` — POST, OAuth2, All users, `application/json` key-value
   `{modificationId, action}`; endpoint `https://www.zohoapis.com/creator/custom/wbdevelopment/Send_Modification_Email`.
 
+### Revised Final on Budget_Item
+
+`Budget_Item.Revised_Final` (currency, added 2026-08-13) persists Revised Final on the item record
+for reports and downstream consumers. It is maintained by:
+
+- `recalcItemRevisedFinal(int itemId)` — sets `Revised_Final = Budget_Ttl + sum(approved mods)`;
+  called by `sendModificationEmail` when a modification chain completes (action `approved`).
+- `recalcAllRevisedFinals()` — batch: recalcs every item with modifications and resets stale
+  values on items without mods. Run nightly by the Custom Schedule
+  **"Recalc Revised Finals - Nightly"** (daily 02:00).
+
+The widget computes Revised Final live from `All_Budget_Modifications`; the field is the
+persisted mirror, not the widget's source.
+
 ### Environment note
 
 The `Budget_Modification` form/report, `Budget_Approvals` changes, the Deluge function, and the

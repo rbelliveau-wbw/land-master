@@ -1,0 +1,34 @@
+string recalcItemRevisedFinal(int itemId)
+{
+	/********* RECALC REVISED FINAL — ONE ITEM *********/
+	// Return Type: string
+	// Revised_Final = Budget_Ttl + sum of APPROVED Budget_Modification amounts
+	// (Increase positive, Decrease negative). Called after modification
+	// approval/rejection and from the nightly batch recalc.
+	vItemId = itemId.toLong();
+	if(vItemId == 0)
+	{
+		return "No Item ID provided.";
+	}
+	itemRec = Budget_Item[ID == vItemId];
+	if(itemRec == null)
+	{
+		return "Budget Item not found.";
+	}
+	approvedSum = 0.0;
+	modRows = Budget_Modification[Budget_Item == vItemId && Status == "Approved"];
+	for each  mr in modRows
+	{
+		amt = ifnull(mr.Amount,0.0);
+		if(ifnull(mr.Modification_Type,"") == "Decrease")
+		{
+			approvedSum = approvedSum - amt;
+		}
+		else
+		{
+			approvedSum = approvedSum + amt;
+		}
+	}
+	itemRec.Revised_Final=ifnull(itemRec.Budget_Ttl,0.0) + approvedSum;
+	return "Revised Final updated for item " + vItemId + ".";
+}

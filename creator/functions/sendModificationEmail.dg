@@ -130,6 +130,11 @@ string sendModificationEmail(int modificationId, string action)
 			modRec.Status="Approved";
 			modRec.Approved_On=zoho.currenttime;
 			modRec.Approved_By=approvedRoles;
+			// Roll the newly approved delta into the item's Revised_Final field.
+			if(modRec.Budget_Item != null)
+			{
+				recalcMsg = thisapp.recalcItemRevisedFinal(modRec.Budget_Item.ID);
+			}
 			return "Modification fully approved (" + approvedRoles + ").";
 		}
 		return "No approver rows found for this modification.";

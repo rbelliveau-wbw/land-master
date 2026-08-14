@@ -1,0 +1,42 @@
+string recalcAllRevisedFinals()
+{
+	/********* RECALC REVISED FINAL — BATCH *********/
+	// Return Type: string
+	// Nightly safety net: recompute Revised_Final for every Budget_Item that has
+	// modifications, plus any item whose Revised_Final drifted from Budget_Ttl
+	// with no modifications (e.g. Final changed after finalization).
+	itemIds = List();
+	modRows = Budget_Modification[ID != 0];
+	for each  mr in modRows
+	{
+		if(mr.Budget_Item != null)
+		{
+			iid = mr.Budget_Item.ID;
+			if(!itemIds.contains(iid))
+			{
+				itemIds.add(iid);
+			}
+		}
+	}
+	updated = 0;
+	for each  iid2 in itemIds
+	{
+		result = thisapp.recalcItemRevisedFinal(iid2.toLong());
+		updated = updated + 1;
+	}
+	// Items with a stale Revised_Final but no modifications: reset to Budget_Ttl.
+	staleRows = Budget_Item[Revised_Final != null];
+	for each  sr in staleRows
+	{
+		if(!itemIds.contains(sr.ID))
+		{
+			finVal = ifnull(sr.Budget_Ttl,0.0);
+			if(ifnull(sr.Revised_Final,0.0) != finVal)
+			{
+				sr.Revised_Final=finVal;
+				updated = updated + 1;
+			}
+		}
+	}
+	return "Recalculated Revised Final for " + updated + " items.";
+}
