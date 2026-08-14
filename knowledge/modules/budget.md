@@ -99,10 +99,10 @@ for reports and downstream consumers. It is maintained by:
 The widget computes Revised Final live from `All_Budget_Modifications`; the field is the
 persisted mirror, not the widget's source.
 
--  / Custom API  — promotes a Draft
+- `submitBudgetModification(modId)` / Custom API `Submit_Budget_Modification` — promotes a Draft
   modification: builds the two-row chain if missing, marks Submitted, sends the first email.
-- Email deep links carry  + ; both are declared page variables on the
-  Budgets page (), and the widget opens the phase in Modifications mode with
+- Email deep links carry `budgetId` + `modificationId`; both are declared page variables on the
+  Budgets page (`Budget_Management1`), and the widget opens the phase in Modifications mode with
   that modification's detail.
 
 ### Environment note
