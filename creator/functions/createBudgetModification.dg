@@ -50,6 +50,8 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	[
 		Added_User=zoho.loginuser
 		Budget_Item=vItemId
+		Budget=vBudgetId
+		Budget_Category=vCatId
 		Modification_Type=vType
 		Amount=vAmount
 		Reason=vReason
@@ -63,14 +65,8 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	modRec = Budget_Modification[ID == newModId];
 	if(modRec != null)
 	{
-		if(vBudgetId != 0)
-		{
-			modRec.Budget=vBudgetId;
-		}
-		if(vCatId != 0)
-		{
-			modRec.Budget_Category=vCatId;
-		}
+		// Re-assert: some environments have dropped choice values set during insert.
+		modRec.Status="Submitted";
 		vRef = ifnull(reference,"").trim();
 		if(vRef != "")
 		{
@@ -84,6 +80,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	}
 	// ---- Approval chain (two rbelliveau approvals for now) ----
 	approverEmail = "rbelliveau@wbdevelopment.com";
+	// Lookups are set IN the insert — post-insert lookup assignment proved unreliable.
 	a1 = insert into Budget_Approvals
 	[
 		Added_User=zoho.loginuser
@@ -92,16 +89,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Status="Not Sent"
 		Type1="Modification"
 		Sort_Order=1
+		Budget=vBudgetId
+		Budget_Modification=newModId
 	];
-	ar1 = Budget_Approvals[ID == a1];
-	if(ar1 != null)
-	{
-		ar1.Budget_Modification=newModId;
-		if(vBudgetId != 0)
-		{
-			ar1.Budget=vBudgetId;
-		}
-	}
 	a2 = insert into Budget_Approvals
 	[
 		Added_User=zoho.loginuser
@@ -110,16 +100,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Status="Not Sent"
 		Type1="Modification"
 		Sort_Order=2
+		Budget=vBudgetId
+		Budget_Modification=newModId
 	];
-	ar2 = Budget_Approvals[ID == a2];
-	if(ar2 != null)
-	{
-		ar2.Budget_Modification=newModId;
-		if(vBudgetId != 0)
-		{
-			ar2.Budget=vBudgetId;
-		}
-	}
 	// First approval email (marks the first row Pending + stamps Sent_Date).
 	emailMsg = thisapp.sendModificationEmail(newModId, "created");
 	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");

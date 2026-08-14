@@ -21,6 +21,11 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		return "Modification not found.";
 	}
+	// Self-heal: an emailed modification is by definition in the approval flow.
+	if(vAction == "created" && ifnull(modRec.Status,"") != "Submitted")
+	{
+		modRec.Status="Submitted";
+	}
 	// ---- Modification display data ----
 	modType = ifnull(modRec.Modification_Type,"").trim();
 	modAmount = ifnull(modRec.Amount,0.0);

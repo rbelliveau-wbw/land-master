@@ -20,10 +20,18 @@ string submitBudgetModification(int modificationId)
 	{
 		vBudgetId = modRec.Budget.ID;
 	}
+	// Hygiene: remove orphaned Modification rows on this budget that never got a
+	// Budget_Modification link (artifacts of an earlier linking bug) — they are
+	// unreachable by the widget and pollute the budget approval views.
+	if(vBudgetId != 0)
+	{
+		delete from Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
+	}
 	existing = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
 	if(existing.count() == 0)
 	{
 		approverEmail = "rbelliveau@wbdevelopment.com";
+		// Lookups are set IN the insert — post-insert lookup assignment proved unreliable.
 		a1 = insert into Budget_Approvals
 		[
 			Added_User=zoho.loginuser
@@ -32,16 +40,9 @@ string submitBudgetModification(int modificationId)
 			Status="Not Sent"
 			Type1="Modification"
 			Sort_Order=1
+			Budget=vBudgetId
+			Budget_Modification=vModId
 		];
-		ar1 = Budget_Approvals[ID == a1];
-		if(ar1 != null)
-		{
-			ar1.Budget_Modification=vModId;
-			if(vBudgetId != 0)
-			{
-				ar1.Budget=vBudgetId;
-			}
-		}
 		a2 = insert into Budget_Approvals
 		[
 			Added_User=zoho.loginuser
@@ -50,16 +51,9 @@ string submitBudgetModification(int modificationId)
 			Status="Not Sent"
 			Type1="Modification"
 			Sort_Order=2
+			Budget=vBudgetId
+			Budget_Modification=vModId
 		];
-		ar2 = Budget_Approvals[ID == a2];
-		if(ar2 != null)
-		{
-			ar2.Budget_Modification=vModId;
-			if(vBudgetId != 0)
-			{
-				ar2.Budget=vBudgetId;
-			}
-		}
 	}
 	modRec.Status="Submitted";
 	emailMsg = thisapp.sendModificationEmail(vModId, "created");
