@@ -80,7 +80,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	}
 	// ---- Approval chain (two rbelliveau approvals for now) ----
 	approverEmail = "rbelliveau@wbdevelopment.com";
-	// Lookups are set IN the insert — post-insert lookup assignment proved unreliable.
+	// Lookups are set IN the insert; a fetch-assign fallback below re-links the row
+	// if the in-insert value was dropped (assigning through the insert-returned ID
+	// variable alone proved unreliable in the past).
 	a1 = insert into Budget_Approvals
 	[
 		Added_User=zoho.loginuser
@@ -92,6 +94,11 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Budget=vBudgetId
 		Budget_Modification=newModId
 	];
+	a1Rec = Budget_Approvals[ID == a1];
+	if(a1Rec != null && a1Rec.Budget_Modification == null)
+	{
+		a1Rec.Budget_Modification=newModId;
+	}
 	a2 = insert into Budget_Approvals
 	[
 		Added_User=zoho.loginuser
@@ -103,6 +110,11 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Budget=vBudgetId
 		Budget_Modification=newModId
 	];
+	a2Rec = Budget_Approvals[ID == a2];
+	if(a2Rec != null && a2Rec.Budget_Modification == null)
+	{
+		a2Rec.Budget_Modification=newModId;
+	}
 	// First approval email (marks the first row Pending + stamps Sent_Date).
 	emailMsg = thisapp.sendModificationEmail(newModId, "created");
 	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");

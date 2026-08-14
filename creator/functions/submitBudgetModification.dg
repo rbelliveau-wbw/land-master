@@ -31,7 +31,7 @@ string submitBudgetModification(int modificationId)
 	if(existing.count() == 0)
 	{
 		approverEmail = "rbelliveau@wbdevelopment.com";
-		// Lookups are set IN the insert — post-insert lookup assignment proved unreliable.
+		// Lookups are set IN the insert; fetch-assign fallback re-links if dropped.
 		a1 = insert into Budget_Approvals
 		[
 			Added_User=zoho.loginuser
@@ -43,6 +43,11 @@ string submitBudgetModification(int modificationId)
 			Budget=vBudgetId
 			Budget_Modification=vModId
 		];
+		a1Rec = Budget_Approvals[ID == a1];
+		if(a1Rec != null && a1Rec.Budget_Modification == null)
+		{
+			a1Rec.Budget_Modification=vModId;
+		}
 		a2 = insert into Budget_Approvals
 		[
 			Added_User=zoho.loginuser
@@ -54,6 +59,11 @@ string submitBudgetModification(int modificationId)
 			Budget=vBudgetId
 			Budget_Modification=vModId
 		];
+		a2Rec = Budget_Approvals[ID == a2];
+		if(a2Rec != null && a2Rec.Budget_Modification == null)
+		{
+			a2Rec.Budget_Modification=vModId;
+		}
 	}
 	modRec.Status="Submitted";
 	emailMsg = thisapp.sendModificationEmail(vModId, "created");

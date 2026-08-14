@@ -1,0 +1,166 @@
+string modificationAdmin(string action, int modificationId, int budgetId, string modType, string amount, string reason, string reference, string effectiveDate)
+{
+	/********* MODIFICATION ADMIN *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// actions: "update" | "delete" | "repair"
+	// - update: edit fields on any modification (modificationId + optional fields).
+	// - delete: remove a modification AND its approval chain; recalcs Revised_Final
+	//   if the modification was Approved.
+	// - repair: relink orphaned Modification-type approval rows on a budget to their
+	//   modifications (artifacts of the pre-6.4 linking bug), building fresh chains
+	//   where none can be claimed, then removing unreachable leftovers. Idempotent,
+	//   never sends email.
+	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
+	// (repair is also invoked automatically on inconsistency detection).
+	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vAction == "update")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vType = ifnull(modType,"").trim();
+		if(vType == "Increase" || vType == "Decrease")
+		{
+			modRec.Modification_Type=vType;
+		}
+		vAmt = ifnull(amount,"").trim();
+		if(vAmt != "")
+		{
+			vAmount = vAmt.toDecimal();
+			if(vAmount <= 0)
+			{
+				return "ERROR: Amount must be greater than zero.";
+			}
+			modRec.Amount=vAmount;
+		}
+		vReason = ifnull(reason,"").trim();
+		if(vReason != "")
+		{
+			modRec.Reason=vReason;
+		}
+		vRef = ifnull(reference,"").trim();
+		if(vRef != "")
+		{
+			modRec.Reference_Number=vRef;
+		}
+		vDate = ifnull(effectiveDate,"").trim();
+		if(vDate != "")
+		{
+			modRec.Effective_Date=vDate.toDate();
+		}
+		// Keep the persisted Revised_Final in sync when an approved delta changes.
+		if(ifnull(modRec.Status,"") == "Approved" && modRec.Budget_Item != null)
+		{
+			recalcMsg = thisapp.recalcItemRevisedFinal(modRec.Budget_Item.ID);
+		}
+		return "OK: Modification updated.";
+	}
+	if(vAction == "delete")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vItemId = 0;
+		if(modRec.Budget_Item != null)
+		{
+			vItemId = modRec.Budget_Item.ID;
+		}
+		wasApproved = ifnull(modRec.Status,"") == "Approved";
+		// The approval chain goes with the modification.
+		delete from Budget_Approvals[Budget_Modification == vModId];
+		delete from Budget_Modification[ID == vModId];
+		if(wasApproved && vItemId != 0)
+		{
+			recalcMsg = thisapp.recalcItemRevisedFinal(vItemId);
+		}
+		return "OK: Modification and its approvals deleted.";
+	}
+	if(vAction == "repair")
+	{
+		vBudgetId = budgetId.toLong();
+		if(vBudgetId == 0)
+		{
+			return "ERROR: No budget provided.";
+		}
+		approverEmail = "rbelliveau@wbdevelopment.com";
+		relinked = 0;
+		rebuilt = 0;
+		mods = Budget_Modification[Budget == vBudgetId];
+		for each  modRec in mods
+		{
+			linked = Budget_Approvals[Budget_Modification == modRec.ID && Type1 == "Modification"];
+			if(linked.count() == 0)
+			{
+				vStatus = ifnull(modRec.Status,"");
+				if(vStatus == "Submitted" || vStatus == "Draft")
+				{
+					// Claim one orphaned VP + CFO pair if available, else build fresh rows.
+					orphanVP = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null && Sort_Order == 1];
+					orphanCFO = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null && Sort_Order == 2];
+					if(orphanVP != null && orphanCFO != null)
+					{
+						orphanVP.Budget_Modification=modRec.ID;
+						orphanCFO.Budget_Modification=modRec.ID;
+						if(vStatus == "Submitted" && ifnull(orphanVP.Status,"") == "Not Sent")
+						{
+							orphanVP.Status="Pending";
+							orphanVP.Sent_Date=zoho.currentdate;
+						}
+						relinked = relinked + 1;
+					}
+					else
+					{
+						vpStatus = "Not Sent";
+						if(vStatus == "Submitted")
+						{
+							vpStatus = "Pending";
+						}
+						a1 = insert into Budget_Approvals
+						[
+							Added_User=zoho.loginuser
+							Approver=approverEmail
+							Title="VP"
+							Status=vpStatus
+							Type1="Modification"
+							Sort_Order=1
+							Budget=vBudgetId
+							Budget_Modification=modRec.ID
+						];
+						if(vStatus == "Submitted")
+						{
+							a1Rec = Budget_Approvals[ID == a1];
+							if(a1Rec != null)
+							{
+								a1Rec.Sent_Date=zoho.currentdate;
+							}
+						}
+						a2 = insert into Budget_Approvals
+						[
+							Added_User=zoho.loginuser
+							Approver=approverEmail
+							Title="CFO"
+							Status="Not Sent"
+							Type1="Modification"
+							Sort_Order=2
+							Budget=vBudgetId
+							Budget_Modification=modRec.ID
+						];
+						rebuilt = rebuilt + 1;
+					}
+				}
+			}
+		}
+		// Any orphans still left are unreachable by the widget - remove them.
+		leftovers = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
+		removed = leftovers.count();
+		delete from Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
+		return "OK: repair relinked=" + relinked.toString() + " rebuilt=" + rebuilt.toString() + " removed=" + removed.toString();
+	}
+	return "ERROR: Unknown action.";
+}

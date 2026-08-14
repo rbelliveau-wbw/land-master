@@ -10,6 +10,7 @@
                  	editOwners = false;
                  	viewImports = false;
                  	editImports = false;
+                 	modAdmin = false;
                  	// Pro Forma flags
                  	pfEditAll = false;
                  	pfEditOwned = false;
@@ -36,6 +37,8 @@
                  		editOwners = row.Edit_Budget_Owners == true;
                  		viewImports = row.View_Budget_Import_Items == true;
                  		editImports = row.Edit_Budget_Import_Items == true;
+                 		// Modification admin: full control of Modifications + their approvals
+                 		modAdmin = row.Edit_Delete_All_Modifications == true;
                  		// Pro Forma permissions
                  		pfEditAll = row.Edit_All_Proformas == true;
                  		pfEditOwned = row.Edit_Owned_Proformas == true;
@@ -90,6 +93,7 @@
                  	result.put("editOwners",editOwners);
                  	result.put("viewImports",viewImports);
                  	result.put("editImports",editImports);
+                 	result.put("modAdmin",modAdmin);
                  	// Pro Forma permissions
                  	result.put("pfEditAll",pfEditAll);
                  	result.put("pfEditOwned",pfEditOwned);

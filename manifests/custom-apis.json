@@ -266,6 +266,15 @@
       "matching_creator_function": "submitBudgetModification",
       "confidence": "verified-2026-08-13",
       "notes": "POST, OAuth2, All users, key-value {modificationId}. Promotes a Draft modification: builds the two-row chain if missing, marks Submitted, sends first email."
+    },
+    {
+      "name": "Modification_Admin",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "modificationAdmin",
+      "confidence": "verified-2026-08-14",
+      "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master."
     }
   ]
 }

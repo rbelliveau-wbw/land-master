@@ -101,9 +101,34 @@ persisted mirror, not the widget's source.
 
 - `submitBudgetModification(modId)` / Custom API `Submit_Budget_Modification` — promotes a Draft
   modification: builds the two-row chain if missing, marks Submitted, sends the first email.
+- `modificationAdmin(action, ...)` / Custom API `Modification_Admin` — admin operations gated by
+  `User_Access.Edit_Delete_All_Modifications`: `update` (edit any modification's fields; recalcs
+  Revised_Final when Approved), `delete` (removes the modification AND its approval rows; recalcs),
+  `repair` (relinks orphaned Modification approval rows on a budget to their modifications and
+  removes unreachable leftovers; idempotent, no email — the widget auto-invokes it when it sees a
+  Submitted modification with no chain).
 - Email deep links carry `budgetId` + `modificationId`; both are declared page variables on the
   Budgets page (`Budget_Management1`), and the widget opens the phase in Modifications mode with
   that modification's detail.
+
+### Modification access model
+
+- Submitting a modification requires `Edit Owned Budgets` (ownership-scoped via `canEditBudget`),
+  trumped by `Edit/Delete All Modifications` (`canSubmitMod`).
+- `Edit/Delete All Modifications` (User_Access decision box, link name
+  `Edit_Delete_All_Modifications`; returned by `getUserAccess` as `modAdmin`) additionally grants:
+  edit/delete of ANY modification and approve/reject/recipient-edit on ANY Modification-type
+  approval row (`canAdminMods`, `canEditApprovalRow`).
+
+### Report-layout gotcha (v2 API)
+
+The record API (`/api/v2/.../report/<report>`) returns ONLY the columns configured in the report's
+quick view. If a field is missing from the layout, the widget never receives it — this is why
+modifications once rendered as "Draft" while the records were "Submitted" (no `Status` column in
+prod's `All_Budget_Modifications` layout) and chains looked unlinked (no `Budget_Modification`
+column on `All_Budget_Approvals`). When adding fields consumed by a widget, add them to the report
+quick view AND publish the report component. The `Budget_Modification` lookup displays `Amount`
+(was `Reference_Number`, which is usually blank).
 
 ### Environment note
 
