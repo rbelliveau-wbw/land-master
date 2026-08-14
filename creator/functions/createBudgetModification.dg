@@ -46,6 +46,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		vCatId = itemRec.Budget_Category.ID;
 	}
+	// Reference goes IN the insert — post-insert assignment on the fresh row was
+	// dropping it in production.
+	vRef = ifnull(reference,"").trim();
 	newModId = insert into Budget_Modification
 	[
 		Added_User=zoho.loginuser
@@ -55,6 +58,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Modification_Type=vType
 		Amount=vAmount
 		Reason=vReason
+		Reference_Number=vRef
 		Status="Submitted"
 		Approval_Track=vTrack
 	];
@@ -67,8 +71,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		// Re-assert: some environments have dropped choice values set during insert.
 		modRec.Status="Submitted";
-		vRef = ifnull(reference,"").trim();
-		if(vRef != "")
+		if(vRef != "" && ifnull(modRec.Reference_Number,"") == "")
 		{
 			modRec.Reference_Number=vRef;
 		}

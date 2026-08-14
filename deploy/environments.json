@@ -4,7 +4,7 @@
   "environments": {
     "development": {
       "proforma-manager": "1.44.26",
-      "budget-manager": "122.7.0",
+      "budget-manager": "122.8.0",
       "land-master": "8.9.17",
       "contract-management": "1.0.3",
       "tax-center": "19.1.1",
@@ -13,7 +13,7 @@
     },
     "stage": {
       "proforma-manager": "1.44.6",
-      "budget-manager": "122.7.0",
+      "budget-manager": "122.8.0",
       "land-master": "8.9.1",
       "contract-management": "1.0.0",
       "tax-center": "19.0.0",
@@ -22,7 +22,7 @@
     },
     "production": {
       "proforma-manager": "1.44.26",
-      "budget-manager": "122.7.0",
+      "budget-manager": "122.8.0",
       "land-master": "8.9.17",
       "contract-management": "1.0.3",
       "tax-center": "19.1.1",
