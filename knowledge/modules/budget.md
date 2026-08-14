@@ -111,6 +111,23 @@ persisted mirror, not the widget's source.
   Budgets page (`Budget_Management1`), and the widget opens the phase in Modifications mode with
   that modification's detail.
 
+### COO approval threshold (added 2026-08-14)
+
+`Settings.COO_Approval_Threshold` (currency, Budget Settings section of the single-record
+`Settings` form) gates a third approval step on Budget Modifications: when a modification's
+Amount exceeds the threshold, `createBudgetModification` / `submitBudgetModification` (and the
+`modificationAdmin` repair rebuild) append a COO row (Sort 3, placeholder recipient
+rbelliveau@wbdevelopment.com, editable in the widget) after VP and CFO. Empty/0 disables the
+extra step. The chain traversal in `sendModificationEmail` handles any chain length unchanged.
+
+### Territory defaults (added 2026-08-14)
+
+Form `Territory` (report `All_Territories`, app menu section "Territories") holds per-territory
+defaults: `Territory_Name` (single line, mandatory, unique), `VP` and `Dev_Mgr` (multi-select
+lookups to `User_Access`, display `User` — same record-ID convention as `Budget_Owner`).
+Not yet consumed by any workflow; intended as the routing source for per-territory approval
+recipients.
+
 ### Modification access model
 
 - Submitting a modification requires `Edit Owned Budgets` (ownership-scoped via `canEditBudget`),

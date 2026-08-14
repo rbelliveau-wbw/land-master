@@ -115,6 +115,33 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		a2Rec.Budget_Modification=newModId;
 	}
+	// Route large modifications through the COO as well (Settings.COO_Approval_Threshold;
+	// 0/empty disables the extra step).
+	vThreshold = 0.0;
+	settingsRec = Settings[ID != 0];
+	if(settingsRec != null)
+	{
+		vThreshold = ifnull(settingsRec.COO_Approval_Threshold,0.0);
+	}
+	if(vThreshold > 0 && vAmount > vThreshold)
+	{
+		a3 = insert into Budget_Approvals
+		[
+			Added_User=zoho.loginuser
+			Approver=approverEmail
+			Title="COO"
+			Status="Not Sent"
+			Type1="Modification"
+			Sort_Order=3
+			Budget=vBudgetId
+			Budget_Modification=newModId
+		];
+		a3Rec = Budget_Approvals[ID == a3];
+		if(a3Rec != null && a3Rec.Budget_Modification == null)
+		{
+			a3Rec.Budget_Modification=newModId;
+		}
+	}
 	// First approval email (marks the first row Pending + stamps Sent_Date).
 	emailMsg = thisapp.sendModificationEmail(newModId, "created");
 	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");

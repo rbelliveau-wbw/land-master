@@ -91,6 +91,13 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		approverEmail = "rbelliveau@wbdevelopment.com";
 		relinked = 0;
 		rebuilt = 0;
+		// COO routing threshold applies to rebuilt chains too.
+		vThreshold = 0.0;
+		settingsRec = Settings[ID != 0];
+		if(settingsRec != null)
+		{
+			vThreshold = ifnull(settingsRec.COO_Approval_Threshold,0.0);
+		}
 		mods = Budget_Modification[Budget == vBudgetId];
 		for each  modRec in mods
 		{
@@ -151,6 +158,20 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 							Budget=vBudgetId
 							Budget_Modification=modRec.ID
 						];
+						if(vThreshold > 0 && ifnull(modRec.Amount,0.0) > vThreshold)
+						{
+							a3 = insert into Budget_Approvals
+							[
+								Added_User=zoho.loginuser
+								Approver=approverEmail
+								Title="COO"
+								Status="Not Sent"
+								Type1="Modification"
+								Sort_Order=3
+								Budget=vBudgetId
+								Budget_Modification=modRec.ID
+							];
+						}
 						rebuilt = rebuilt + 1;
 					}
 				}
