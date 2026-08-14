@@ -1,0 +1,126 @@
+string createBudgetModification(int itemId, string modType, string amount, string reason, string reference, string effectiveDate, string track)
+{
+	/********* CREATE BUDGET MODIFICATION *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// Creates the Budget_Modification record, its approval chain, and sends the
+	// first approval email — atomically, so the widget only submits inputs.
+	// Chain rules (current): two approvals, both to rbelliveau@wbdevelopment.com,
+	// as VP (Sort 1) then CFO (Sort 2). Recipients are editable from the widget.
+	vItemId = itemId.toLong();
+	if(vItemId == 0)
+	{
+		return "ERROR: No item provided.";
+	}
+	itemRec = Budget_Item[ID == vItemId];
+	if(itemRec == null)
+	{
+		return "ERROR: Budget Item not found.";
+	}
+	vAmount = ifnull(amount,"0").toDecimal();
+	if(vAmount <= 0)
+	{
+		return "ERROR: Amount must be greater than zero.";
+	}
+	vReason = ifnull(reason,"").trim();
+	if(vReason == "")
+	{
+		return "ERROR: Reason is required.";
+	}
+	vType = ifnull(modType,"").trim();
+	if(vType != "Decrease")
+	{
+		vType = "Increase";
+	}
+	vTrack = ifnull(track,"").trim();
+	if(vTrack != "Construction")
+	{
+		vTrack = "Development";
+	}
+	vBudgetId = 0;
+	if(itemRec.Budget != null)
+	{
+		vBudgetId = itemRec.Budget.ID;
+	}
+	vCatId = 0;
+	if(itemRec.Budget_Category != null)
+	{
+		vCatId = itemRec.Budget_Category.ID;
+	}
+	newModId = insert into Budget_Modification
+	[
+		Added_User=zoho.loginuser
+		Budget_Item=vItemId
+		Modification_Type=vType
+		Amount=vAmount
+		Reason=vReason
+		Status="Submitted"
+		Approval_Track=vTrack
+	];
+	if(newModId == null || newModId == 0)
+	{
+		return "ERROR: Could not create the modification record.";
+	}
+	modRec = Budget_Modification[ID == newModId];
+	if(modRec != null)
+	{
+		if(vBudgetId != 0)
+		{
+			modRec.Budget=vBudgetId;
+		}
+		if(vCatId != 0)
+		{
+			modRec.Budget_Category=vCatId;
+		}
+		vRef = ifnull(reference,"").trim();
+		if(vRef != "")
+		{
+			modRec.Reference_Number=vRef;
+		}
+		vDate = ifnull(effectiveDate,"").trim();
+		if(vDate != "")
+		{
+			modRec.Effective_Date=vDate.toDate();
+		}
+	}
+	// ---- Approval chain (two rbelliveau approvals for now) ----
+	approverEmail = "rbelliveau@wbdevelopment.com";
+	a1 = insert into Budget_Approvals
+	[
+		Added_User=zoho.loginuser
+		Approver=approverEmail
+		Title="VP"
+		Status="Not Sent"
+		Type1="Modification"
+		Sort_Order=1
+	];
+	ar1 = Budget_Approvals[ID == a1];
+	if(ar1 != null)
+	{
+		ar1.Budget_Modification=newModId;
+		if(vBudgetId != 0)
+		{
+			ar1.Budget=vBudgetId;
+		}
+	}
+	a2 = insert into Budget_Approvals
+	[
+		Added_User=zoho.loginuser
+		Approver=approverEmail
+		Title="CFO"
+		Status="Not Sent"
+		Type1="Modification"
+		Sort_Order=2
+	];
+	ar2 = Budget_Approvals[ID == a2];
+	if(ar2 != null)
+	{
+		ar2.Budget_Modification=newModId;
+		if(vBudgetId != 0)
+		{
+			ar2.Budget=vBudgetId;
+		}
+	}
+	// First approval email (marks the first row Pending + stamps Sent_Date).
+	emailMsg = thisapp.sendModificationEmail(newModId, "created");
+	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");
+}

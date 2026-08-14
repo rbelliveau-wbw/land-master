@@ -248,6 +248,15 @@
       ],
       "matching_creator_function": "Update_Proforma_Approval_Recipient",
       "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Create_Budget_Modification",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "createBudgetModification",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, key-value {itemId, modType, amount, reason, reference, effectiveDate, track}. Creates the modification + two approval rows (VP/CFO to rbelliveau) + first email atomically."
     }
   ]
 }
