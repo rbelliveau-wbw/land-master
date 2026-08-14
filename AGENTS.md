@@ -50,6 +50,13 @@ Chat history and model memory are not authoritative.
 9. Update documentation when behavior or contracts change.
 10. Include regression and rollback notes in every pull request.
 
+## UI copy style
+
+- Robby does not like verbose explanatory text blocks in widget UI (2026-08-13).
+  No multi-sentence descriptions under section headings, no long empty-state
+  paragraphs explaining how a feature works. A heading, a short label, and the
+  action button are enough; put any necessary explanation in a tooltip.
+
 ## Permanent externally hosted widget URLs
 
 - Every `dev/<widget>/`, `stage/<widget>/`, and `prod/<widget>/` GitHub Pages
