@@ -1,0 +1,67 @@
+string submitBudgetModification(int modificationId)
+{
+	/********* SUBMIT BUDGET MODIFICATION *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// Promotes a Draft modification into the approval flow: builds the standard
+	// two-row chain if none exists (covers records created outside the widget),
+	// marks it Submitted, and sends the first approval email.
+	vModId = modificationId.toLong();
+	if(vModId == 0)
+	{
+		return "ERROR: No modification provided.";
+	}
+	modRec = Budget_Modification[ID == vModId];
+	if(modRec == null)
+	{
+		return "ERROR: Modification not found.";
+	}
+	vBudgetId = 0;
+	if(modRec.Budget != null)
+	{
+		vBudgetId = modRec.Budget.ID;
+	}
+	existing = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
+	if(existing.count() == 0)
+	{
+		approverEmail = "rbelliveau@wbdevelopment.com";
+		a1 = insert into Budget_Approvals
+		[
+			Added_User=zoho.loginuser
+			Approver=approverEmail
+			Title="VP"
+			Status="Not Sent"
+			Type1="Modification"
+			Sort_Order=1
+		];
+		ar1 = Budget_Approvals[ID == a1];
+		if(ar1 != null)
+		{
+			ar1.Budget_Modification=vModId;
+			if(vBudgetId != 0)
+			{
+				ar1.Budget=vBudgetId;
+			}
+		}
+		a2 = insert into Budget_Approvals
+		[
+			Added_User=zoho.loginuser
+			Approver=approverEmail
+			Title="CFO"
+			Status="Not Sent"
+			Type1="Modification"
+			Sort_Order=2
+		];
+		ar2 = Budget_Approvals[ID == a2];
+		if(ar2 != null)
+		{
+			ar2.Budget_Modification=vModId;
+			if(vBudgetId != 0)
+			{
+				ar2.Budget=vBudgetId;
+			}
+		}
+	}
+	modRec.Status="Submitted";
+	emailMsg = thisapp.sendModificationEmail(vModId, "created");
+	return "OK: Modification submitted. " + ifnull(emailMsg,"");
+}

@@ -257,6 +257,15 @@
       "matching_creator_function": "createBudgetModification",
       "confidence": "verified-2026-08-13",
       "notes": "POST, OAuth2, All users, key-value {itemId, modType, amount, reason, reference, effectiveDate, track}. Creates the modification + two approval rows (VP/CFO to rbelliveau) + first email atomically."
+    },
+    {
+      "name": "Submit_Budget_Modification",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "submitBudgetModification",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, key-value {modificationId}. Promotes a Draft modification: builds the two-row chain if missing, marks Submitted, sends first email."
     }
   ]
 }
