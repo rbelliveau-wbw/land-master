@@ -81,15 +81,31 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 			modRec.Effective_Date=vDate.toDate();
 		}
 	}
-	// ---- Approval chain (two rbelliveau approvals for now) ----
+	// ---- Approval chain ----
+	// VP defaults to the territory's VP (Territory.VP -> User_Access.Approver_Email);
+	// everything else falls back to the standing placeholder recipient.
 	approverEmail = "rbelliveau@wbdevelopment.com";
+	vTerritory = "";
+	if(vBudgetId != 0)
+	{
+		budgetRec = Add_Budget[ID == vBudgetId];
+		if(budgetRec != null && budgetRec.Subdivision1 != null)
+		{
+			vTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
+		}
+	}
+	vpEmail = thisapp.territoryApproverEmail(vTerritory,"VP");
+	if(vpEmail == "")
+	{
+		vpEmail = approverEmail;
+	}
 	// Lookups are set IN the insert; a fetch-assign fallback below re-links the row
 	// if the in-insert value was dropped (assigning through the insert-returned ID
 	// variable alone proved unreliable in the past).
 	a1 = insert into Budget_Approvals
 	[
 		Added_User=zoho.loginuser
-		Approver=approverEmail
+		Approver=vpEmail
 		Title="VP"
 		Status="Not Sent"
 		Type1="Modification"

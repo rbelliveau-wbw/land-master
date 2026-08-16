@@ -120,13 +120,45 @@ Amount exceeds the threshold, `createBudgetModification` / `submitBudgetModifica
 rbelliveau@wbdevelopment.com, editable in the widget) after VP and CFO. Empty/0 disables the
 extra step. The chain traversal in `sendModificationEmail` handles any chain length unchanged.
 
+### Approval reminders (added 2026-08-16)
+
+`Settings.Approval_Reminder_Interval_Days` (number, default 3) and
+`Settings.Next_Approval_Reminder_Date` (date) drive `sendApprovalReminders()`, run by the
+**Send Approval Reminders** schedule (daily, 07:00). The function no-ops until
+`Next_Approval_Reminder_Date` arrives; on the due date it re-sends the approval email for every
+`Budget_Approvals` row still `Pending` — budget tracks via `sendApprovalEmail`, Pro Formas via
+`Send_Proforma_Approval_Email`, Modifications via `sendModificationEmail(..., "created")` — then
+advances the date by the interval. A blank date arms it (interval days out) without sending.
+The schedule runs daily rather than on the date itself because a Creator schedule cannot retarget
+itself; the date field is the real gate.
+
+### Modified Final rollups (added 2026-08-16)
+
+Modified Final = Final + approved modification deltas, persisted at two levels:
+`Budget_Category.Modified_Final_Total` and `Add_Budget.Modified_Final_Grand_Total`, maintained by
+`recalcBudgetModifiedTotals(budgetId)`. It recomputes from the modification records (not from
+`Budget_Item.Revised_Final`) so a stale Revised_Final cannot skew the rollup. Called when a
+modification chain completes (`sendModificationEmail`) and on admin update/delete
+(`modificationAdmin`). The widget's summary matrices compute the same figure client-side and only
+render the Modified Final column when the budget has at least one approved modification.
+
 ### Territory defaults (added 2026-08-14)
 
 Form `Territory` (report `All_Territories`, app menu section "Territories") holds per-territory
 defaults: `Territory_Name` (single line, mandatory, unique), `VP` and `Dev_Mgr` (multi-select
 lookups to `User_Access`, display `User` — same record-ID convention as `Budget_Owner`).
-Not yet consumed by any workflow; intended as the routing source for per-territory approval
-recipients.
+
+`Territory_Name` must match the **Subdivision.Territory** picklist value verbatim (e.g.
+"Temple/Belton"); a budget resolves its territory as `Add_Budget.Subdivision1.Territory`
+(Add_Budget itself has no Territory field).
+
+**Routing email**: `User_Access.User` is a Users picklist that returns the Zoho *login name*
+("jking_wbdevelopment84"), not an email, so it cannot be used to address an approval.
+`User_Access.Approver_Email` (added 2026-08-16) holds the routing address, and
+`territoryApproverEmail(territoryName, role)` resolves Territory.VP / Territory.Dev_Mgr → that
+email. `createBudgetModification`, `submitBudgetModification`, and the `modificationAdmin` repair
+rebuild use it for the VP row, falling back to the standing placeholder recipient when the
+territory has no VP or that VP has no Approver_Email.
 
 ### Modification access model
 

@@ -31,11 +31,26 @@ string submitBudgetModification(int modificationId)
 	if(existing.count() == 0)
 	{
 		approverEmail = "rbelliveau@wbdevelopment.com";
+		// VP defaults to the territory's VP; falls back to the placeholder recipient.
+		vTerritory = "";
+		if(vBudgetId != 0)
+		{
+			budgetRec = Add_Budget[ID == vBudgetId];
+			if(budgetRec != null && budgetRec.Subdivision1 != null)
+			{
+				vTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
+			}
+		}
+		vpEmail = thisapp.territoryApproverEmail(vTerritory,"VP");
+		if(vpEmail == "")
+		{
+			vpEmail = approverEmail;
+		}
 		// Lookups are set IN the insert; fetch-assign fallback re-links if dropped.
 		a1 = insert into Budget_Approvals
 		[
 			Added_User=zoho.loginuser
-			Approver=approverEmail
+			Approver=vpEmail
 			Title="VP"
 			Status="Not Sent"
 			Type1="Modification"

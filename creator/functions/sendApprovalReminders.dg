@@ -1,0 +1,82 @@
+string sendApprovalReminders()
+{
+	/********* PENDING APPROVAL REMINDERS *********/
+	// Return Type: string
+	// Runs daily from a schedule and does nothing until Settings.
+	// Next_Approval_Reminder_Date has arrived. On the due date it re-sends the
+	// approval email for every Budget_Approvals row still sitting at Pending —
+	// budget tracks, Pro Formas, and Budget Modifications — then pushes the next
+	// reminder date out by Settings.Approval_Reminder_Interval_Days (default 3).
+	// The schedule runs daily rather than on a single date because a Creator
+	// schedule cannot retarget itself; the date field is the actual gate.
+	settingsRec = Settings[ID != 0];
+	if(settingsRec == null)
+	{
+		return "No Settings record found.";
+	}
+	vInterval = ifnull(settingsRec.Approval_Reminder_Interval_Days,0).toLong();
+	if(vInterval <= 0)
+	{
+		vInterval = 3;
+	}
+	today = zoho.currentdate;
+	vNext = settingsRec.Next_Approval_Reminder_Date;
+	if(vNext == null)
+	{
+		// First run: arm the schedule without blasting reminders immediately.
+		settingsRec.Next_Approval_Reminder_Date=today.addDay(vInterval);
+		return "Reminder date was empty; armed for " + today.addDay(vInterval).toString() + ".";
+	}
+	if(vNext > today)
+	{
+		return "Not due yet. Next reminder " + vNext.toString() + ".";
+	}
+	budgetCount = 0;
+	proformaCount = 0;
+	modCount = 0;
+	skipped = 0;
+	pendingRows = Budget_Approvals[Status == "Pending"];
+	for each  row in pendingRows
+	{
+		rowType = ifnull(row.Type1,"").trim();
+		if(rowType == "Modification")
+		{
+			if(row.Budget_Modification != null)
+			{
+				modMsg = thisapp.sendModificationEmail(row.Budget_Modification.ID,"created");
+				modCount = modCount + 1;
+			}
+			else
+			{
+				skipped = skipped + 1;
+			}
+		}
+		else if(rowType == "Pro Forma")
+		{
+			if(row.Proforma != null)
+			{
+				pfMsg = thisapp.Send_Proforma_Approval_Email(row.Proforma.ID.toString(),row.ID.toString());
+				proformaCount = proformaCount + 1;
+			}
+			else
+			{
+				skipped = skipped + 1;
+			}
+		}
+		else
+		{
+			if(row.Budget != null)
+			{
+				budgetMsg = thisapp.sendApprovalEmail(row.Budget.ID,row.ID);
+				budgetCount = budgetCount + 1;
+			}
+			else
+			{
+				skipped = skipped + 1;
+			}
+		}
+	}
+	newNext = today.addDay(vInterval);
+	settingsRec.Next_Approval_Reminder_Date=newNext;
+	return "OK: reminders sent — budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ". Next reminder " + newNext.toString() + ".";
+}

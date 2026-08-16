@@ -140,6 +140,11 @@ string sendModificationEmail(int modificationId, string action)
 			{
 				recalcMsg = thisapp.recalcItemRevisedFinal(modRec.Budget_Item.ID);
 			}
+			// Roll it up to the category + budget Modified Final totals.
+			if(vBudgetId != 0)
+			{
+				rollupMsg = thisapp.recalcBudgetModifiedTotals(vBudgetId);
+			}
 			return "Modification fully approved (" + approvedRoles + ").";
 		}
 		return "No approver rows found for this modification.";

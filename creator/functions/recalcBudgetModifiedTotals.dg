@@ -1,0 +1,52 @@
+string recalcBudgetModifiedTotals(int budgetId)
+{
+	/********* RECALC MODIFIED FINAL ROLLUPS *********/
+	// Return Type: string
+	// Modified Final = Final (Budget_Ttl) + sum of APPROVED modification amounts,
+	// rolled up from items to Budget_Category.Modified_Final_Total and then to
+	// Add_Budget.Modified_Final_Grand_Total.
+	// Computed from the modification records directly rather than from
+	// Budget_Item.Revised_Final so a blank/stale Revised_Final cannot skew it.
+	// Called when a modification chain completes (see sendModificationEmail).
+	vBudgetId = budgetId.toLong();
+	if(vBudgetId == 0)
+	{
+		return "No Budget ID provided.";
+	}
+	budgetRec = Add_Budget[ID == vBudgetId];
+	if(budgetRec == null)
+	{
+		return "Budget not found.";
+	}
+	grandTotal = 0.0;
+	catCount = 0;
+	cats = Budget_Category[Budget == vBudgetId];
+	for each  cat in cats
+	{
+		catTotal = 0.0;
+		catItems = Budget_Item[Budget_Category == cat.ID];
+		for each  it in catItems
+		{
+			itemTotal = ifnull(it.Budget_Ttl,0.0);
+			modRows = Budget_Modification[Budget_Item == it.ID && Status == "Approved"];
+			for each  mr in modRows
+			{
+				amt = ifnull(mr.Amount,0.0);
+				if(ifnull(mr.Modification_Type,"") == "Decrease")
+				{
+					itemTotal = itemTotal - amt;
+				}
+				else
+				{
+					itemTotal = itemTotal + amt;
+				}
+			}
+			catTotal = catTotal + itemTotal;
+		}
+		cat.Modified_Final_Total=catTotal;
+		grandTotal = grandTotal + catTotal;
+		catCount = catCount + 1;
+	}
+	budgetRec.Modified_Final_Grand_Total=grandTotal;
+	return "Modified Final updated for budget " + vBudgetId + " (" + catCount + " categories, grand total " + grandTotal + ").";
+}

@@ -1,0 +1,50 @@
+string territoryApproverEmail(string territoryName, string role)
+{
+	/********* TERRITORY DEFAULT APPROVER *********/
+	// Return Type: string (email address, or "" when no default is configured)
+	// Resolves a territory's default approver from the Territory form:
+	//   role "VP"      -> Territory.VP
+	//   role "Dev Mgr" -> Territory.Dev_Mgr
+	// Both are multi-select lookups to User_Access; the email comes from that
+	// row's Approver_Email. User_Access.User is a Users picklist whose value is
+	// the Zoho login name (e.g. "jking_wbdevelopment84"), NOT an email address,
+	// so Approver_Email is the only reliable routing address.
+	// Callers fall back to their own default when this returns "".
+	vName = ifnull(territoryName,"").trim();
+	vRole = ifnull(role,"").trim().toLowerCase();
+	if(vName == "")
+	{
+		return "";
+	}
+	terrRec = Territory[Territory_Name == vName];
+	if(terrRec == null)
+	{
+		return "";
+	}
+	people = terrRec.VP;
+	if(vRole == "dev mgr" || vRole == "devmgr" || vRole == "dev manager")
+	{
+		people = terrRec.Dev_Mgr;
+	}
+	if(people == null)
+	{
+		return "";
+	}
+	out = "";
+	for each  personRow in people
+	{
+		if(out == "")
+		{
+			uaRec = User_Access[ID == personRow.ID];
+			if(uaRec != null)
+			{
+				cand = ifnull(uaRec.Approver_Email,"").trim();
+				if(cand != "")
+				{
+					out = cand;
+				}
+			}
+		}
+	}
+	return out;
+}
