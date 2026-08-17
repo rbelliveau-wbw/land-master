@@ -10192,9 +10192,10 @@ document.addEventListener("click", function (e) {
       modType: "", amount: "", reason: "", reference: "", effectiveDate: ""
     })
       .then(function (resp) {
-        var msg = cleanVal(resp && resp.result) || "";
+        var msg = cleanVal(resp && (resp.result || (resp.response && resp.response.result))) || "";
         if (msg.indexOf("ERROR") === 0) return Promise.reject({ message: msg });
         toastShow("Reopened as draft — edit it, then submit again");
+        auditLog("success", "Budget modification reopened for revision", { modificationId: String(mreo.dataset.modreopen) });
         return refreshBudgetWorkflowState(S.edBudget ? S.edBudget.ID : "");
       })
       .then(function () { if (S.modModal) renderModModal(); refreshModSurfaces(); })
