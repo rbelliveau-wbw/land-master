@@ -22,6 +22,12 @@ for (const widget of widgets) {
     const text = fs.readFileSync(html, 'utf8');
     if (!text.includes('widgetsdk-min.js')) warnings.push(`${widget.slug}: no Creator widget SDK reference detected.`);
     if (!text.toLowerCase().includes('zoho.creator.init')) warnings.push(`${widget.slug}: no ZOHO.CREATOR.init call detected.`);
+    // The critical-error reporter stamps its own version constant on every emailed
+    // report. If it drifts from the released version, triage points at the wrong build.
+    const reported = text.match(/LMCriticalErrors\.configure\(\{[\s\S]{0,400}?version\s*:\s*"([^"]+)"/);
+    if (reported && reported[1] !== widget.version) {
+      errors.push(`${widget.slug}: critical-error reporter version "${reported[1]}" does not match released version "${widget.version}". Update the version in LMCriticalErrors.configure.`);
+    }
   }
 }
 
