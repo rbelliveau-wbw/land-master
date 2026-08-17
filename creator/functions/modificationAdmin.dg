@@ -121,6 +121,15 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		modRec.Status="Draft";
 		modRec.Approved_On=null;
 		modRec.Approved_By="";
+		// Zoho has silently dropped fetch-assign writes on this form before, and a
+		// dropped write here would leave the record Rejected with no chain. Reading
+		// it back turns that into a visible error; clicking Revise & Resubmit again
+		// then succeeds, because the chain delete is already a no-op.
+		checkRec = Budget_Modification[ID == vModId];
+		if(checkRec != null && ifnull(checkRec.Status,"").trim() != "Draft")
+		{
+			return "ERROR: The approval chain was cleared but the status did not save. Try Revise & Resubmit once more.";
+		}
 		return "OK: Modification reopened for revision.";
 	}
 	if(vAction == "repair")
