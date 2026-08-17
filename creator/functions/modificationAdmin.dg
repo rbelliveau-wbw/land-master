@@ -2,10 +2,12 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 {
 	/********* MODIFICATION ADMIN *********/
 	// Return Type: string ("OK: ..." or "ERROR: ...")
-	// actions: "update" | "delete" | "repair"
+	// actions: "update" | "delete" | "reopen" | "repair"
 	// - update: edit fields on any modification (modificationId + optional fields).
 	// - delete: remove a modification AND its approval chain; recalcs Revised_Final
 	//   if the modification was Approved.
+	// - reopen: send a Rejected modification back to Draft with a cleared chain so
+	//   it can be revised and resubmitted.
 	// - repair: relink orphaned Modification-type approval rows on a budget to their
 	//   modifications (artifacts of the pre-6.4 linking bug), building fresh chains
 	//   where none can be claimed, then removing unreachable leftovers. Idempotent,
@@ -89,6 +91,37 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			}
 		}
 		return "OK: Modification and its approvals deleted.";
+	}
+	if(vAction == "reopen")
+	{
+		/********* REVISE AND RESUBMIT *********/
+		// Rejecting a modification is terminal, unlike a budget or Pro Forma
+		// rejection which returns to the prior approver. Without this the record
+		// dead-ends: Submit is gone because the status is not Draft, and only a
+		// delete clears it. Reopen resets it to Draft with a blank chain so the
+		// normal edit-then-submit flow can run again from the top.
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vStatus = ifnull(modRec.Status,"").trim();
+		if(vStatus == "Approved")
+		{
+			return "ERROR: An approved modification cannot be reopened. Delete it instead.";
+		}
+		if(vStatus == "Submitted")
+		{
+			return "ERROR: This modification is already in approvals.";
+		}
+		// A fresh chain is rebuilt on submit, and rebuilding beats resetting: it
+		// picks up the current territory VP and the current COO threshold.
+		delete from Budget_Approvals[Budget_Modification == vModId];
+		modRec.Status="Draft";
+		modRec.Approved_On=null;
+		modRec.Approved_By="";
+		return "OK: Modification reopened for revision.";
 	}
 	if(vAction == "repair")
 	{

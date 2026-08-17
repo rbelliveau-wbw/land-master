@@ -71,6 +71,43 @@ Modification approvals reuse the existing `Budget_Approvals` form (added 2026-08
 - Chain rows carry the usual `Approver`, `Title` (VP/CFO/COO...), `Status`, `Sort_Order`,
   `Sent_Date`, `Responded_Date`, and the phase `Budget` lookup.
 
+### Rejection semantics differ by approval system (added 2026-08-17)
+
+All three approval systems share `Budget_Approvals`, but rejection does not mean the same thing in
+each, and this is the single most confusing part of the table:
+
+| System | Row key | Parent status | Reject |
+| --- | --- | --- | --- |
+| Budget track | `Budget` + `Type1` (Development/Construction) | `Add_Budget.*_Budget_Approval_Status` | Bounces back one step; chain stays alive |
+| Pro Forma | `Proforma` | `Add_Pro_Forma.Status` | Bounces back one step; chain stays alive |
+| Modification | `Budget_Modification` | `Budget_Modification.Status` | **Terminal** |
+
+A modification is a discrete proposal, so bouncing it back to a VP who already approved would just
+re-approve an unchanged request. Terminal rejection is deliberate — but it left the record with no
+way forward, because Submit only renders for `Draft`. `modificationAdmin("reopen")` is the exit:
+it deletes the chain, clears `Approved_On`/`Approved_By`, and sets the record back to `Draft`, where
+the normal edit-then-submit path takes over. The chain is rebuilt rather than reset so a resubmit
+picks up the current territory VP and the current COO threshold. Surfaced in the widget as
+**Revise & Resubmit**, gated behind `canSubmitMod` (Edit Owned Budgets, or modification admin).
+
+Anything walking this table generically must classify rows by **which lookup is populated**, not by
+`Type1` — pro forma rows do not reliably carry a `Type1` value.
+
+### Approval watchdog (`approvalWatchdog`)
+
+Sweeps every chain and repairs the ones stalled with no active approver; emails a summary only when
+it finds something. Auto-repairs: budget tracks (promote next / activate first), pro formas (promote
+next, or stamp `Approved` when every step already approved), and modifications (delegates to
+`sendModificationEmail` with `created`/`approved`/`rejected`, which already picks the next approver
+and runs the rollups). Also rebuilds chains for `Submitted` modifications that own no approval rows,
+and counts orphaned Modification rows as a health signal.
+
+Reports without touching rows: a budget or pro forma chain where a rejection never landed back on a
+prior approver (guessing which row to reopen could reverse a decision someone made), a chain fully
+approved while the parent still reads Pending (may mean finalization failed — flipping the parent
+would hide it), and rejected modifications, which are listed separately as awaiting revision rather
+than counted as stuck.
+
 ### Modification email function / Custom API
 
 - Deluge function: `sendModificationEmail(int modificationId, string action)` — source mirrored at

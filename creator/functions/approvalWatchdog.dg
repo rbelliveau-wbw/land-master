@@ -1,0 +1,720 @@
+string approvalWatchdog()
+{
+	/********* APPROVAL WATCHDOG *********/
+	// Return Type: string
+	// Sweeps every approval chain and repairs the ones that have stalled with no
+	// active approver. Three separate approval systems share Budget_Approvals:
+	//
+	//   Budget tracks  - keyed by Budget + Type1 ("Development" / "Construction")
+	//                    parent status: Add_Budget.Development_Budget_Approval_Status
+	//                                   Add_Budget.Const_Budget_Approval_Status
+	//   Pro Formas     - keyed by Proforma
+	//                    parent status: Add_Pro_Forma.Status
+	//   Modifications  - keyed by Budget_Modification
+	//                    parent status: Budget_Modification.Status
+	//
+	// Rows are classified by WHICH LOOKUP IS POPULATED rather than by Type1, so a
+	// blank or renamed Type1 cannot hide a whole chain from the sweep.
+	//
+	// Rejection semantics differ by system and the watchdog respects that:
+	//   Budgets / Pro Formas - rejection bounces the chain back one step, so the
+	//                          chain stays alive. A rejected chain with no pending
+	//                          row means the bounce-back failed: reported, never
+	//                          auto-repaired, because promoting the wrong row here
+	//                          would re-open a decision somebody already made.
+	//   Modifications        - rejection is terminal. Those are not stuck; they are
+	//                          waiting on the submitter to revise and resubmit, and
+	//                          are listed separately so they stay visible.
+	//
+	// Modification repairs delegate to sendModificationEmail, which already picks
+	// the next approver, stamps the record and runs the Revised/Modified Final
+	// rollups. Reusing it keeps one implementation of that logic.
+	fromAddress = "rbelliveau@wbdevelopment.com";
+	toAddress = "rbelliveau@wbdevelopment.com";
+	/***************************************************************
+	 * PASS 1: CLASSIFY AND COUNT EVERY APPROVAL ROW
+	 ***************************************************************/
+	keyList = List();
+	kindMap = Map();
+	parentMap = Map();
+	trackMap = Map();
+	totMap = Map();
+	pendMap = Map();
+	apprMap = Map();
+	rejMap = Map();
+	allRows = Budget_Approvals[ID != null];
+	for each  r in allRows
+	{
+		rowKind = "";
+		parentId = "";
+		trk = "";
+		if(r.Budget_Modification != null)
+		{
+			rowKind = "MOD";
+			parentId = r.Budget_Modification.ID.toString();
+		}
+		else if(r.Proforma != null)
+		{
+			rowKind = "PF";
+			parentId = r.Proforma.ID.toString();
+		}
+		else if(r.Budget != null)
+		{
+			trk = ifnull(r.Type1,"").trim();
+			// Modification rows that lost their link are handled by the orphan
+			// sweep below, not as a budget track.
+			if(trk != "Development" && trk != "Construction")
+			{
+				continue;
+			}
+			rowKind = "BUD";
+			parentId = r.Budget.ID.toString();
+		}
+		if(rowKind == "")
+		{
+			continue;
+		}
+		k = rowKind + "|" + parentId + "|" + trk;
+		if(keyList.contains(k) == false)
+		{
+			keyList.add(k);
+			kindMap.put(k,rowKind);
+			parentMap.put(k,parentId);
+			trackMap.put(k,trk);
+		}
+		totMap.put(k,ifnull(totMap.get(k),0) + 1);
+		rowStatus = ifnull(r.Status,"").trim().toLowerCase();
+		if(rowStatus.contains("pending"))
+		{
+			pendMap.put(k,ifnull(pendMap.get(k),0) + 1);
+		}
+		else if(rowStatus.contains("approv"))
+		{
+			apprMap.put(k,ifnull(apprMap.get(k),0) + 1);
+		}
+		else if(rowStatus.contains("reject"))
+		{
+			rejMap.put(k,ifnull(rejMap.get(k),0) + 1);
+		}
+	}
+	/***************************************************************
+	 * PASS 2: DETECT AND REPAIR STALLED CHAINS
+	 ***************************************************************/
+	fixedHtml = "";
+	manualHtml = "";
+	waitingHtml = "";
+	detectedCount = 0;
+	fixedCount = 0;
+	manualCount = 0;
+	waitingCount = 0;
+	failedCount = 0;
+	for each  k in keyList
+	{
+		rowKind = kindMap.get(k).toString();
+		parentIdLong = parentMap.get(k).toString().toLong();
+		trk = trackMap.get(k).toString();
+		total = ifnull(totMap.get(k),0);
+		pendingCt = ifnull(pendMap.get(k),0);
+		approvedCt = ifnull(apprMap.get(k),0);
+		rejectedCt = ifnull(rejMap.get(k),0);
+		if(total == 0)
+		{
+			continue;
+		}
+		// An approver is already holding this chain.
+		if(pendingCt > 0)
+		{
+			continue;
+		}
+		/***********************************************************
+		 * BUDGET MODIFICATIONS
+		 ***********************************************************/
+		if(rowKind == "MOD")
+		{
+			modRec = Budget_Modification[ID == parentIdLong];
+			if(modRec == null)
+			{
+				continue;
+			}
+			modStatus = ifnull(modRec.Status,"").trim();
+			modLabel = "Modification " + parentIdLong.toString();
+			if(modRec.Budget_Item != null)
+			{
+				modLabel = ifnull(modRec.Budget_Item.Item_Name,modLabel);
+			}
+			modRefText = ifnull(modRec.Reference_Number,"").trim();
+			if(modRefText != "")
+			{
+				modLabel = modLabel + " (" + modRefText + ")";
+			}
+			// Settled and consistent: nothing to do.
+			if(modStatus == "Approved" && approvedCt == total)
+			{
+				continue;
+			}
+			if(modStatus == "Draft" && approvedCt == 0 && rejectedCt == 0)
+			{
+				continue;
+			}
+			// Terminal by design. Not stuck - it needs the submitter to revise and
+			// resubmit - but it stays listed so it cannot sit unnoticed forever.
+			if(modStatus == "Rejected" && rejectedCt > 0)
+			{
+				waitingCount = waitingCount + 1;
+				waitingHtml = waitingHtml + "<tr>";
+				waitingHtml = waitingHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + modLabel + "</td>";
+				waitingHtml = waitingHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Modification</td>";
+				waitingHtml = waitingHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				waitingHtml = waitingHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#92400e;'>Rejected. Use Revise &amp; Resubmit on the budget page to send it back through approvals, or delete it.</td>";
+				waitingHtml = waitingHtml + "</tr>";
+				continue;
+			}
+			detectedCount = detectedCount + 1;
+			modAction = "";
+			modFixText = "";
+			if(modStatus == "Submitted" && rejectedCt > 0)
+			{
+				modAction = "rejected";
+				modFixText = "An approver rejected this modification but the record was never stamped Rejected.";
+			}
+			else if(modStatus == "Submitted" && approvedCt == total)
+			{
+				modAction = "approved";
+				modFixText = "Every approver signed off but the record was never stamped Approved and the rollups never ran.";
+			}
+			else if(modStatus == "Submitted")
+			{
+				modAction = "created";
+				modFixText = "The modification is in approvals but no approver is Pending.";
+			}
+			if(modAction == "")
+			{
+				// Draft with approval activity, or Approved with an incomplete chain.
+				manualCount = manualCount + 1;
+				manualHtml = manualHtml + "<tr>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + modLabel + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Modification</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>Record reads " + modStatus + " but the approval rows disagree. No row was changed.</td>";
+				manualHtml = manualHtml + "</tr>";
+				continue;
+			}
+			modResult = "";
+			modOk = true;
+			try
+			{
+				modResult = thisapp.sendModificationEmail(parentIdLong,modAction);
+			}
+			catch (modError)
+			{
+				modOk = false;
+				modResult = "Repair failed: " + modError.toString();
+			}
+			fixedCount = fixedCount + 1;
+			if(modOk == false)
+			{
+				failedCount = failedCount + 1;
+			}
+			fixedHtml = fixedHtml + "<tr>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + modLabel + "</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Modification</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>&mdash;</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#047857;'>" + modFixText + "<br><span style='font-size:11px;color:#64748b;'>" + modResult + "</span></td>";
+			fixedHtml = fixedHtml + "</tr>";
+			continue;
+		}
+		/***********************************************************
+		 * PRO FORMAS
+		 ***********************************************************/
+		if(rowKind == "PF")
+		{
+			pfRec = Add_Pro_Forma[ID == parentIdLong];
+			if(pfRec == null)
+			{
+				continue;
+			}
+			pfStatus = ifnull(pfRec.Status,"").trim();
+			pfLabel = "Pro Forma " + parentIdLong.toString();
+			pfName = ifnull(pfRec.Project_Name,"").toString().trim();
+			if(pfName != "")
+			{
+				pfLabel = pfName;
+			}
+			// Only chains the Pro Forma itself believes are in flight.
+			if(pfStatus != "Pending Approval")
+			{
+				continue;
+			}
+			detectedCount = detectedCount + 1;
+			/*******************************************************
+			 * EVERY STEP APPROVED BUT THE PRO FORMA NEVER FLIPPED
+			 *
+			 * The parent status is derived from the rows, so this is
+			 * safe to set directly.
+			 *******************************************************/
+			if(approvedCt == total)
+			{
+				pfRec.Status="Approved";
+				fixedCount = fixedCount + 1;
+				fixedHtml = fixedHtml + "<tr>";
+				fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + pfLabel + "</td>";
+				fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Pro Forma</td>";
+				fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>&mdash;</td>";
+				fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#047857;'>All steps were approved but the Pro Forma still read Pending Approval. Status set to Approved.</td>";
+				fixedHtml = fixedHtml + "</tr>";
+				continue;
+			}
+			/*******************************************************
+			 * A REJECTION DID NOT LAND BACK ON THE PRIOR APPROVER
+			 *******************************************************/
+			if(rejectedCt > 0)
+			{
+				manualCount = manualCount + 1;
+				manualHtml = manualHtml + "<tr>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + pfLabel + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Pro Forma</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>A step was rejected but no prior approver is Pending. No approval row was changed.</td>";
+				manualHtml = manualHtml + "</tr>";
+				continue;
+			}
+			/*******************************************************
+			 * PROMOTE THE NEXT UNTOUCHED STEP
+			 *******************************************************/
+			pfChain = Budget_Approvals[Proforma == parentIdLong];
+			pfHighestApproved = 0;
+			pfTargetId = 0;
+			pfTargetSort = 999999;
+			pfTargetRole = "";
+			pfTargetEmail = "";
+			for each  pfRow in pfChain
+			{
+				pfRowSort = 999999;
+				if(pfRow.Sort_Order != null)
+				{
+					pfRowSort = pfRow.Sort_Order.toLong();
+				}
+				if(ifnull(pfRow.Status,"").trim().toLowerCase().contains("approv") && pfRowSort > pfHighestApproved)
+				{
+					pfHighestApproved = pfRowSort;
+				}
+			}
+			for each  pfRow in pfChain
+			{
+				pfRowSort = 999999;
+				if(pfRow.Sort_Order != null)
+				{
+					pfRowSort = pfRow.Sort_Order.toLong();
+				}
+				pfRowStatus = ifnull(pfRow.Status,"").trim().toLowerCase();
+				if(pfRowSort > pfHighestApproved && pfRowSort < pfTargetSort && pfRowStatus.contains("approv") == false && pfRowStatus.contains("reject") == false)
+				{
+					pfTargetSort = pfRowSort;
+					pfTargetId = pfRow.ID;
+					pfTargetRole = ifnull(pfRow.Title,"");
+					pfTargetEmail = ifnull(pfRow.Approver,"");
+				}
+			}
+			if(pfTargetId == 0)
+			{
+				failedCount = failedCount + 1;
+				manualCount = manualCount + 1;
+				manualHtml = manualHtml + "<tr>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + pfLabel + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Pro Forma</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>The watchdog could not determine which approval step should be activated.</td>";
+				manualHtml = manualHtml + "</tr>";
+				continue;
+			}
+			for each  pfRow in pfChain
+			{
+				pfRowStatus = ifnull(pfRow.Status,"").trim().toLowerCase();
+				if(pfRow.ID == pfTargetId)
+				{
+					pfRow.Status="Pending";
+					pfRow.Sent_Date=zoho.currenttime;
+					pfRow.Responded_Date=null;
+				}
+				else if(pfRowStatus.contains("approv") == false && pfRowStatus.contains("reject") == false)
+				{
+					pfRow.Status="Not Sent";
+					pfRow.Sent_Date=null;
+					pfRow.Responded_Date=null;
+				}
+			}
+			pfEmailResult = "";
+			pfOk = true;
+			try
+			{
+				pfEmailResult = thisapp.Send_Proforma_Approval_Email(parentIdLong.toString(),pfTargetId.toString());
+			}
+			catch (pfError)
+			{
+				pfOk = false;
+				pfEmailResult = "The step was set to Pending, but the email failed: " + pfError.toString();
+			}
+			fixedCount = fixedCount + 1;
+			if(pfOk == false)
+			{
+				failedCount = failedCount + 1;
+			}
+			fixedHtml = fixedHtml + "<tr>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + pfLabel + "</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Pro Forma</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;'>" + pfTargetRole + "<br><span style='font-size:11px;color:#64748b;'>" + pfTargetEmail + "</span></td>";
+			fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#047857;'>No step was Pending. Activated the next approver and resent the approval email.<br><span style='font-size:11px;color:#64748b;'>" + pfEmailResult + "</span></td>";
+			fixedHtml = fixedHtml + "</tr>";
+			continue;
+		}
+		/***********************************************************
+		 * BUDGET TRACKS (Development / Construction)
+		 ***********************************************************/
+		budRec = Add_Budget[ID == parentIdLong];
+		if(budRec == null)
+		{
+			continue;
+		}
+		budgetLabel = ifnull(budRec.Budget_Name,"Budget");
+		projectName = ifnull(budRec.Project,"");
+		phaseName = ifnull(budRec.Phase,"");
+		if(projectName != "" && phaseName != "")
+		{
+			budgetLabel = projectName + " - " + phaseName;
+		}
+		chainStatus = "";
+		if(trk == "Construction")
+		{
+			chainStatus = ifnull(budRec.Const_Budget_Approval_Status,"").trim().toLowerCase();
+		}
+		else
+		{
+			chainStatus = ifnull(budRec.Development_Budget_Approval_Status,"").trim().toLowerCase();
+		}
+		chainInFlight = chainStatus.contains("pending");
+		/***********************************************************
+		 * A REJECTION DID NOT LAND BACK ON THE PRIOR APPROVER
+		 *
+		 * Budget rejection sends the chain back one step, so a rejected
+		 * chain should always have a Pending row. Report only: guessing
+		 * which row to reopen risks reversing somebody's decision.
+		 ***********************************************************/
+		if(rejectedCt > 0)
+		{
+			if(chainInFlight)
+			{
+				detectedCount = detectedCount + 1;
+				manualCount = manualCount + 1;
+				manualHtml = manualHtml + "<tr>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + budgetLabel + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + trk + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+				manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>A step was rejected but the chain never returned to a prior approver. No approval row was changed.</td>";
+				manualHtml = manualHtml + "</tr>";
+			}
+			continue;
+		}
+		reason = "";
+		fixType = "";
+		if(approvedCt > 0 && approvedCt < total)
+		{
+			reason = "Chain started but no approver is Pending. The next approver was never promoted.";
+			fixType = "PROMOTE_NEXT";
+		}
+		else if(chainInFlight && approvedCt == 0)
+		{
+			reason = "Budget track reads Pending, but the first approver was never activated.";
+			fixType = "ACTIVATE_FIRST";
+		}
+		else if(chainInFlight && approvedCt == total)
+		{
+			reason = "All approvers are Approved, but the Budget track still reads Pending.";
+			fixType = "MANUAL_COMPLETION";
+		}
+		if(reason == "")
+		{
+			continue;
+		}
+		detectedCount = detectedCount + 1;
+		/***********************************************************
+		 * ALL ROWS APPROVED: NO NEXT APPROVER EXISTS
+		 *
+		 * Do not reactivate an already-approved row. This may indicate
+		 * that finalization or status synchronization failed, and
+		 * flipping the parent status would hide that.
+		 ***********************************************************/
+		if(fixType == "MANUAL_COMPLETION")
+		{
+			manualCount = manualCount + 1;
+			manualHtml = manualHtml + "<tr>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + budgetLabel + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + trk + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>" + reason + " No approval row was changed.</td>";
+			manualHtml = manualHtml + "</tr>";
+			continue;
+		}
+		chainRows = Budget_Approvals[Budget == parentIdLong && Type1 == trk];
+		highestApprovedSort = 0;
+		firstApprovalId = 0;
+		firstApprovalSort = 999999;
+		for each  chainRow in chainRows
+		{
+			rowSort = 999999;
+			if(chainRow.Sort_Order != null)
+			{
+				rowSort = chainRow.Sort_Order.toLong();
+			}
+			rowStatus = ifnull(chainRow.Status,"").trim().toLowerCase();
+			if(rowSort < firstApprovalSort)
+			{
+				firstApprovalSort = rowSort;
+				firstApprovalId = chainRow.ID;
+			}
+			if(rowStatus.contains("approv") && rowSort > highestApprovedSort)
+			{
+				highestApprovedSort = rowSort;
+			}
+		}
+		targetApprovalId = 0;
+		targetApprovalSort = 999999;
+		targetRole = "";
+		targetEmail = "";
+		if(fixType == "ACTIVATE_FIRST")
+		{
+			targetApprovalId = firstApprovalId;
+		}
+		else if(fixType == "PROMOTE_NEXT")
+		{
+			for each  chainRow in chainRows
+			{
+				rowSort = 999999;
+				if(chainRow.Sort_Order != null)
+				{
+					rowSort = chainRow.Sort_Order.toLong();
+				}
+				rowStatus = ifnull(chainRow.Status,"").trim().toLowerCase();
+				isApproved = rowStatus.contains("approv");
+				isRejected = rowStatus.contains("reject");
+				if(rowSort > highestApprovedSort && rowSort < targetApprovalSort && isApproved == false && isRejected == false)
+				{
+					targetApprovalSort = rowSort;
+					targetApprovalId = chainRow.ID;
+				}
+			}
+		}
+		if(targetApprovalId == 0)
+		{
+			failedCount = failedCount + 1;
+			manualCount = manualCount + 1;
+			manualHtml = manualHtml + "<tr>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + budgetLabel + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + trk + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+			manualHtml = manualHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#b91c1c;'>The watchdog could not determine which approval row should be activated.</td>";
+			manualHtml = manualHtml + "</tr>";
+			continue;
+		}
+		for each  chainRow in chainRows
+		{
+			rowStatus = ifnull(chainRow.Status,"").trim().toLowerCase();
+			if(chainRow.ID == targetApprovalId)
+			{
+				chainRow.Status="Pending";
+				chainRow.Sent_Date=zoho.currentdate;
+				chainRow.Responded_Date=null;
+				targetRole = ifnull(chainRow.Title,"");
+				targetEmail = ifnull(chainRow.Approver,"");
+			}
+			else if(rowStatus.contains("approv") == false && rowStatus.contains("reject") == false)
+			{
+				chainRow.Status="Not Sent";
+				chainRow.Sent_Date=null;
+				chainRow.Responded_Date=null;
+			}
+		}
+		if(trk == "Construction")
+		{
+			budRec.Const_Budget_Approval_Status="Pending";
+		}
+		else
+		{
+			budRec.Development_Budget_Approval_Status="Pending";
+		}
+		emailResult = "";
+		fixSuccessful = true;
+		try
+		{
+			emailResult = thisapp.sendApprovalEmail(parentIdLong,targetApprovalId);
+		}
+		catch (sendError)
+		{
+			fixSuccessful = false;
+			emailResult = "Approval row was set to Pending, but the email failed: " + sendError.toString();
+		}
+		try
+		{
+			syncResult = thisapp.syncBudgetApprovalStatus(parentIdLong,trk);
+		}
+		catch (syncError)
+		{
+			syncResult = "Status synchronization failed: " + syncError.toString();
+		}
+		fixedCount = fixedCount + 1;
+		if(fixSuccessful == false)
+		{
+			failedCount = failedCount + 1;
+		}
+		actionText = "Promoted the next approver";
+		if(fixType == "ACTIVATE_FIRST")
+		{
+			actionText = "Activated the first approver";
+		}
+		fixedHtml = fixedHtml + "<tr>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + budgetLabel + "</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + trk + "</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>" + approvedCt + " / " + total + "</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;'>" + targetRole + "<br><span style='font-size:11px;color:#64748b;'>" + targetEmail + "</span></td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#047857;'>" + actionText + ", set the row to Pending, and attempted to send the approval email.<br><span style='font-size:11px;color:#64748b;'>" + emailResult + "</span></td>";
+		fixedHtml = fixedHtml + "</tr>";
+	}
+	/***************************************************************
+	 * PASS 3: SUBMITTED MODIFICATIONS THAT HAVE NO CHAIN AT ALL
+	 *
+	 * These never appear in pass 1 because they own no approval rows.
+	 * submitBudgetModification builds the chain and sends the first email.
+	 ***************************************************************/
+	chainlessMods = Budget_Modification[Status == "Submitted"];
+	for each  cm in chainlessMods
+	{
+		cmRows = Budget_Approvals[Budget_Modification == cm.ID];
+		if(cmRows.count() > 0)
+		{
+			continue;
+		}
+		cmLabel = "Modification " + cm.ID.toString();
+		if(cm.Budget_Item != null)
+		{
+			cmLabel = ifnull(cm.Budget_Item.Item_Name,cmLabel);
+		}
+		detectedCount = detectedCount + 1;
+		cmResult = "";
+		cmOk = true;
+		try
+		{
+			cmResult = thisapp.submitBudgetModification(cm.ID);
+		}
+		catch (cmError)
+		{
+			cmOk = false;
+			cmResult = "Repair failed: " + cmError.toString();
+		}
+		fixedCount = fixedCount + 1;
+		if(cmOk == false)
+		{
+			failedCount = failedCount + 1;
+		}
+		fixedHtml = fixedHtml + "<tr>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#0f2744;'>" + cmLabel + "</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>Modification</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>0 / 0</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;'>&mdash;</td>";
+		fixedHtml = fixedHtml + "<td style='padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#047857;'>Submitted with no approval chain. Rebuilt the chain and sent the first approval email.<br><span style='font-size:11px;color:#64748b;'>" + cmResult + "</span></td>";
+		fixedHtml = fixedHtml + "</tr>";
+	}
+	/***************************************************************
+	 * ORPHANED MODIFICATION ROWS
+	 *
+	 * Approval rows tagged Modification that lost their Budget_Modification
+	 * link are invisible to the widget. Counted here as a health signal;
+	 * modificationAdmin("repair") is what actually clears them.
+	 ***************************************************************/
+	orphanCount = Budget_Approvals[Type1 == "Modification" && Budget_Modification == null].count();
+	/***************************************************************
+	 * SEND WATCHDOG SUMMARY
+	 ***************************************************************/
+	if(detectedCount == 0 && waitingCount == 0 && orphanCount == 0)
+	{
+		return "OK: no stalled approval chains found.";
+	}
+	emailBody = "";
+	emailBody = emailBody + "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
+	emailBody = emailBody + "<h2 style='margin:0 0 8px 0;color:#0f2744;'>Budget Approval Watchdog Results</h2>";
+	emailBody = emailBody + "<p style='margin:0 0 16px 0;'>";
+	emailBody = emailBody + "<strong>" + detectedCount + "</strong> stalled approval chain(s) were detected across budgets, Pro Formas and modifications. ";
+	emailBody = emailBody + "<strong style='color:#047857;'>" + fixedCount + "</strong> were automatically repaired";
+	if(manualCount > 0)
+	{
+		emailBody = emailBody + ", and <strong style='color:#b91c1c;'>" + manualCount + "</strong> require manual review";
+	}
+	emailBody = emailBody + ".</p>";
+	if(fixedCount > 0)
+	{
+		emailBody = emailBody + "<h3 style='margin:20px 0 8px 0;color:#047857;'>Automatically Fixed Approvals</h3>";
+		emailBody = emailBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;'>";
+		emailBody = emailBody + "<tr style='background:#ecfdf5;'>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #a7f3d0;'>Record</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #a7f3d0;'>Type</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #a7f3d0;'>Approved</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #a7f3d0;'>Activated</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #a7f3d0;'>Repair</th>";
+		emailBody = emailBody + "</tr>";
+		emailBody = emailBody + fixedHtml;
+		emailBody = emailBody + "</table>";
+	}
+	if(manualCount > 0)
+	{
+		emailBody = emailBody + "<h3 style='margin:20px 0 8px 0;color:#b91c1c;'>Manual Review Required</h3>";
+		emailBody = emailBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;'>";
+		emailBody = emailBody + "<tr style='background:#fef2f2;'>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fecaca;'>Record</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fecaca;'>Type</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fecaca;'>Approved</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fecaca;'>Problem</th>";
+		emailBody = emailBody + "</tr>";
+		emailBody = emailBody + manualHtml;
+		emailBody = emailBody + "</table>";
+	}
+	if(waitingCount > 0)
+	{
+		emailBody = emailBody + "<h3 style='margin:20px 0 8px 0;color:#92400e;'>Rejected Modifications Awaiting Revision</h3>";
+		emailBody = emailBody + "<p style='margin:0 0 8px 0;font-size:13px;color:#475569;'>Rejecting a modification is final, unlike a budget or Pro Forma rejection which returns to the prior approver. These are not stuck &mdash; they are waiting on the submitter.</p>";
+		emailBody = emailBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;'>";
+		emailBody = emailBody + "<tr style='background:#fffbeb;'>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fde68a;'>Record</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fde68a;'>Type</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fde68a;'>Approved</th>";
+		emailBody = emailBody + "<th style='padding:8px 12px;text-align:left;border-bottom:2px solid #fde68a;'>Next Step</th>";
+		emailBody = emailBody + "</tr>";
+		emailBody = emailBody + waitingHtml;
+		emailBody = emailBody + "</table>";
+	}
+	if(orphanCount > 0)
+	{
+		emailBody = emailBody + "<p style='margin:16px 0 0 0;font-size:13px;color:#b91c1c;'><strong>" + orphanCount + "</strong> modification approval row(s) have no Budget Modification link and are invisible in the widget. Open the affected budget in Budget Manager to trigger the automatic repair.</p>";
+	}
+	emailBody = emailBody + "<p style='margin:16px 0 0 0;font-size:12px;color:#64748b;'>";
+	emailBody = emailBody + "Automated check from the Land Master approval watchdog. Automatically repaired chains had the appropriate approval row set to Pending and the approval email resent.";
+	emailBody = emailBody + "</p>";
+	emailBody = emailBody + "</div>";
+	subjectText = "Land Master Approvals: " + fixedCount + " fixed";
+	if(manualCount > 0)
+	{
+		subjectText = subjectText + ", " + manualCount + " need review";
+	}
+	if(waitingCount > 0)
+	{
+		subjectText = subjectText + ", " + waitingCount + " rejected";
+	}
+	sendmail
+	[
+		from :fromAddress
+		to :toAddress
+		subject :subjectText
+		message :emailBody
+	]
+	return "OK: detected=" + detectedCount + " fixed=" + fixedCount + " manual=" + manualCount + " rejectedWaiting=" + waitingCount + " orphanRows=" + orphanCount + " failed=" + failedCount + ".";
+}
