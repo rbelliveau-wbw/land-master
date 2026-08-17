@@ -236,7 +236,7 @@ string approvalWatchdog()
 			}
 			pfStatus = ifnull(pfRec.Status,"").trim();
 			pfLabel = "Pro Forma " + parentIdLong.toString();
-			pfName = ifnull(pfRec.Project_Name,"").toString().trim();
+			pfName = ifnull(pfRec.Name,"").toString().trim();
 			if(pfName != "")
 			{
 				pfLabel = pfName;
