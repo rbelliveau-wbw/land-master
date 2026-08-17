@@ -345,11 +345,24 @@ string approvalWatchdog()
 					pfRow.Responded_Date=null;
 				}
 			}
+			// This one reports failure in its return map rather than throwing, so the
+			// success flag has to be read - a try/catch alone would call a failed
+			// send a successful repair.
 			pfEmailResult = "";
 			pfOk = true;
 			try
 			{
-				pfEmailResult = thisapp.Send_Proforma_Approval_Email(parentIdLong.toString(),pfTargetId.toString());
+				pfResultMap = thisapp.Send_Proforma_Approval_Email(parentIdLong.toString(),pfTargetId.toString());
+				pfEmailResult = ifnull(pfResultMap.get("message"),"").toString();
+				if(ifnull(pfResultMap.get("success"),false) != true)
+				{
+					pfOk = false;
+					if(pfEmailResult == "")
+					{
+						pfEmailResult = "The approval email could not be sent.";
+					}
+					pfEmailResult = "The step was set to Pending, but the email failed: " + pfEmailResult;
+				}
 			}
 			catch (pfError)
 			{
