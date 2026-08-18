@@ -1,0 +1,55 @@
+string Get_Proforma_Approval_PDF(string payload)
+{
+	resp = Map();
+	try
+	{
+		data = payload.toMap();
+		if(data.get("payload") != null)
+		{
+			data = data.get("payload").toString().toMap();
+		}
+		pfId = ifnull(data.get("proformaId"),"").toString().trim();
+		approvalId = ifnull(data.get("approvalId"),"").toString().trim();
+		if(pfId == "")
+		{
+			resp.put("success",false);
+			resp.put("error","Pro Forma id is required.");
+			return resp.toString();
+		}
+		if(approvalId == "")
+		{
+			// default to the first approval step of the chain
+			bestSort = 999999;
+			for each  apRow in Budget_Approvals[Proforma == pfId.toLong()]
+			{
+				rowSort = ifnull(apRow.Sort_Order,0).toString().toLong();
+				if(approvalId == "" || rowSort < bestSort)
+				{
+					bestSort = rowSort;
+					approvalId = apRow.ID.toString();
+				}
+			}
+		}
+		if(approvalId == "")
+		{
+			resp.put("success",false);
+			resp.put("error","No approval rows exist for this Pro Forma yet.");
+			return resp.toString();
+		}
+		packet = thisapp.PF_Build_Proforma_Approval_PDF(pfId,approvalId);
+		if(ifnull(packet.get("success"),false) != true)
+		{
+			resp.put("success",false);
+			resp.put("error",ifnull(packet.get("message"),"Could not build the approval PDF."));
+			return resp.toString();
+		}
+		resp.put("success",true);
+		resp.put("fileName",ifnull(packet.get("fileName"),"Proforma_Approval_Packet.pdf"));
+		resp.put("pdfText",ifnull(packet.get("pdfText"),""));
+	}	catch (e)
+	{
+		resp.put("success",false);
+		resp.put("error",e.toString());
+	}
+	return resp.toString();
+}
