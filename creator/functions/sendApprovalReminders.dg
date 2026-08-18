@@ -9,8 +9,9 @@ string sendApprovalReminders()
 	// reminder date out by Settings.Approval_Reminder_Interval_Days (default 3).
 	// The schedule runs daily rather than on a single date because a Creator
 	// schedule cannot retarget itself; the date field is the actual gate.
-	// After sending, emails rbelliveau@wbdevelopment.com a recap listing each
-	// reminder: type, recipient, role, and the item it was for.
+	// Every due run emails rbelliveau@wbdevelopment.com a recap - a table of
+	// each reminder sent (type, recipient, role, item), or a "nothing to send"
+	// note when no pending rows needed one. Not-due daily runs stay silent.
 	settingsRec = Settings[ID != 0];
 	if(settingsRec == null)
 	{
@@ -118,26 +119,33 @@ string sendApprovalReminders()
 	newNext = today.addDay(vInterval);
 	settingsRec.Next_Approval_Reminder_Date=newNext;
 	totalSent = budgetCount + proformaCount + modCount;
+	skippedNote = "";
+	if(skipped > 0)
+	{
+		skippedNote = " " + skipped + " pending row(s) were skipped (missing linked record).";
+	}
+	thStyle = "padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5c7394;border-bottom:2px solid #cbd5e1;";
+	recapBody = "<div style='font-family:Arial,Helvetica,sans-serif;'>";
+	recapBody = recapBody + "<h3 style='margin:0 0 4px 0;color:#0b2345;'>Approval reminders " + today.toString() + "</h3>";
 	if(totalSent > 0)
 	{
-		skippedNote = "";
-		if(skipped > 0)
-		{
-			skippedNote = " " + skipped + " pending row(s) were skipped (missing linked record).";
-		}
-		thStyle = "padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5c7394;border-bottom:2px solid #cbd5e1;";
-		recapBody = "<div style='font-family:Arial,Helvetica,sans-serif;'>";
-		recapBody = recapBody + "<h3 style='margin:0 0 4px 0;color:#0b2345;'>Approval reminders sent " + today.toString() + "</h3>";
 		recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>" + totalSent + " reminder(s) - budgets " + budgetCount + ", pro formas " + proformaCount + ", modifications " + modCount + "." + skippedNote + " Next reminder " + newNext.toString() + ".</p>";
 		recapBody = recapBody + "<table style='border-collapse:collapse;width:100%;max-width:720px;'><tr><th style='" + thStyle + "'>Type</th><th style='" + thStyle + "'>Sent To</th><th style='" + thStyle + "'>Role</th><th style='" + thStyle + "'>Item</th></tr>";
-		recapBody = recapBody + recapRows + "</table></div>";
-		sendmail
-		[
-			from :"jking@wbdevelopment.com"
-			to :"rbelliveau@wbdevelopment.com"
-			subject :"Approval reminders sent: " + totalSent + " (budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")"
-			message :recapBody
-		]
+		recapBody = recapBody + recapRows + "</table>";
+		emailSubject = "Approval reminders sent: " + totalSent + " (budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")";
 	}
+	else
+	{
+		recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>No pending approvals needed reminders." + skippedNote + " Next reminder " + newNext.toString() + ".</p>";
+		emailSubject = "Approval reminders: nothing to send";
+	}
+	recapBody = recapBody + "</div>";
+	sendmail
+	[
+		from :"jking@wbdevelopment.com"
+		to :"rbelliveau@wbdevelopment.com"
+		subject :emailSubject
+		message :recapBody
+	]
 	return "OK: reminders sent - budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ". Next reminder " + newNext.toString() + ".";
 }
