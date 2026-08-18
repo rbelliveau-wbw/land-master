@@ -1,220 +1,220 @@
 {
-  "generated_at": "2026-08-17T16:21:21.705Z",
-  "widgets": [
-    {
-      "slug": "proforma-manager",
-      "name": "Proforma Manager",
-      "module": "proforma",
-      "version": "1.45.1",
-      "description": "Pro forma input, attachments, LOI workflow, comparison, and configurable sequential approvals.",
-      "source_entry": "widgets/proforma-manager/src/app/widget.html",
-      "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
-      "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
-      "html_title": "Pro Forma Manager",
-      "source_sha256": "e05f1d8fb5abd0b52ce83b64eb4dc64eb2ab374694b74891a2cfb9973d2e0e6c",
-      "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
-      "plugin_manifest": {
-        "locale": [
-          "en"
-        ],
-        "service": "CREATOR",
-        "whiteListedDomains": [
-          "https://creator.zoho.com",
-          "https://creatorapp.zoho.com",
-          "https://creatorexport.zoho.com",
-          "https://cdn.jsdelivr.net"
-        ],
-        "modules": {
-          "widgets": [
-            {
-              "location": "zoho.creator.record",
-              "url": "/widget.html",
-              "name": "Proforma Manager"
-            }
-          ]
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#proforma-manager",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+ "generated_at": "2026-08-18T14:58:11.968Z",
+ "widgets": [
+  {
+   "slug": "proforma-manager",
+   "name": "Proforma Manager",
+   "module": "proforma",
+   "version": "1.45.1",
+   "description": "Pro forma input, attachments, LOI workflow, comparison, and configurable sequential approvals.",
+   "source_entry": "widgets/proforma-manager/src/app/widget.html",
+   "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
+   "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
+   "html_title": "Pro Forma Manager",
+   "source_sha256": "e05f1d8fb5abd0b52ce83b64eb4dc64eb2ab374694b74891a2cfb9973d2e0e6c",
+   "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
+   "plugin_manifest": {
+    "locale": [
+     "en"
+    ],
+    "service": "CREATOR",
+    "whiteListedDomains": [
+     "https://creator.zoho.com",
+     "https://creatorapp.zoho.com",
+     "https://creatorexport.zoho.com",
+     "https://cdn.jsdelivr.net"
+    ],
+    "modules": {
+     "widgets": [
+      {
+       "location": "zoho.creator.record",
+       "url": "/widget.html",
+       "name": "Proforma Manager"
+      }
+     ]
     },
-    {
-      "slug": "budget-manager",
-      "name": "Budget Manager",
-      "module": "budget",
-      "version": "122.16.0",
-      "description": "Budget management, approvals, attachments, and pro forma comparison.",
-      "source_entry": "widgets/budget-manager/src/app/widget.html",
-      "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
-      "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
-      "html_title": "Budget Manager V117",
-      "source_sha256": "4f88c3b79f27a273ebcbfcf1e9f40d760d9829f61909eff603456b941f49269b",
-      "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
-      "plugin_manifest": {
-        "service": "CREATOR",
-        "whiteListedDomains": [
-          "https://creator.zoho.com",
-          "https://creatorapp.zoho.com",
-          "https://creatorexport.zoho.com",
-          "https://cdnjs.cloudflare.com",
-          "https://download.zoho.com",
-          "https://previewengine.zoho.com",
-          "https://cdn.jsdelivr.net"
-        ],
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#budget-manager",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#proforma-manager",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "budget-manager",
+   "name": "Budget Manager",
+   "module": "budget",
+   "version": "122.17.0",
+   "description": "Budget management, approvals, attachments, and pro forma comparison.",
+   "source_entry": "widgets/budget-manager/src/app/widget.html",
+   "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
+   "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
+   "html_title": "Budget Manager V117",
+   "source_sha256": "6810b5abb47f93e7f74c1b58ce60ff9437b542619618507d74fdeba20158d236",
+   "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
+   "plugin_manifest": {
+    "service": "CREATOR",
+    "whiteListedDomains": [
+     "https://creator.zoho.com",
+     "https://creatorapp.zoho.com",
+     "https://creatorexport.zoho.com",
+     "https://cdnjs.cloudflare.com",
+     "https://download.zoho.com",
+     "https://previewengine.zoho.com",
+     "https://cdn.jsdelivr.net"
+    ],
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#budget-manager",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "land-master",
+   "name": "Land Master",
+   "module": "land-master",
+   "version": "8.9.17",
+   "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
+   "source_entry": "widgets/land-master/src/app/widget.html",
+   "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
+   "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
+   "html_title": "Land Master",
+   "source_sha256": "e4a1517be1f037511ee0733151ad56b26836582d33bf2336fbf17a2643f9deb5",
+   "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
+   "plugin_manifest": {
+    "locale": [
+     "en"
+    ],
+    "service": "CREATOR",
+    "modules": {
+     "widgets": [
+      {
+       "location": "zoho.creator.record",
+       "url": "/widget.html",
+       "name": "Land Master"
+      }
+     ]
     },
-    {
-      "slug": "land-master",
-      "name": "Land Master",
-      "module": "land-master",
-      "version": "8.9.17",
-      "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
-      "source_entry": "widgets/land-master/src/app/widget.html",
-      "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
-      "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
-      "html_title": "Land Master",
-      "source_sha256": "e4a1517be1f037511ee0733151ad56b26836582d33bf2336fbf17a2643f9deb5",
-      "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
-      "plugin_manifest": {
-        "locale": [
-          "en"
-        ],
-        "service": "CREATOR",
-        "modules": {
-          "widgets": [
-            {
-              "location": "zoho.creator.record",
-              "url": "/widget.html",
-              "name": "Land Master"
-            }
-          ]
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#land-master",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#land-master",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "contract-management",
+   "name": "Contract Management",
+   "module": "contracts",
+   "version": "1.0.3",
+   "description": "Contract management and token-based LOI legal review.",
+   "source_entry": "widgets/contract-management/src/app/widget.html",
+   "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
+   "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
+   "html_title": "Land Master Contracts",
+   "source_sha256": "c80a2d828db98f35d1fa353f193270edacc84382d4e6c0beb96944377daea978",
+   "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
+   "plugin_manifest": {
+    "locale": [
+     "en"
+    ],
+    "service": "CREATOR",
+    "modules": {
+     "widgets": [
+      {
+       "location": "zoho.creator.record",
+       "url": "/widget.html",
+       "name": "Land Master Contracts"
+      }
+     ]
     },
-    {
-      "slug": "contract-management",
-      "name": "Contract Management",
-      "module": "contracts",
-      "version": "1.0.3",
-      "description": "Contract management and token-based LOI legal review.",
-      "source_entry": "widgets/contract-management/src/app/widget.html",
-      "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
-      "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
-      "html_title": "Land Master Contracts",
-      "source_sha256": "c80a2d828db98f35d1fa353f193270edacc84382d4e6c0beb96944377daea978",
-      "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
-      "plugin_manifest": {
-        "locale": [
-          "en"
-        ],
-        "service": "CREATOR",
-        "modules": {
-          "widgets": [
-            {
-              "location": "zoho.creator.record",
-              "url": "/widget.html",
-              "name": "Land Master Contracts"
-            }
-          ]
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#contract-management",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#contract-management",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "tax-center",
+   "name": "Tax Center",
+   "module": "tax",
+   "version": "19.1.1",
+   "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
+   "source_entry": "widgets/tax-center/src/app/widget.html",
+   "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",
+   "baseline_zip": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
+   "html_title": "Tax Center",
+   "source_sha256": "40aac28b894f060c10f8c779738f67d7713736709745c2de978aee1578a0cf60",
+   "baseline_zip_sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1",
+   "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+     "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+     "connect-src": []
     },
-    {
-      "slug": "tax-center",
-      "name": "Tax Center",
-      "module": "tax",
-      "version": "19.1.1",
-      "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
-      "source_entry": "widgets/tax-center/src/app/widget.html",
-      "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",
-      "baseline_zip": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
-      "html_title": "Tax Center",
-      "source_sha256": "40aac28b894f060c10f8c779738f67d7713736709745c2de978aee1578a0cf60",
-      "baseline_zip_sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1",
-      "plugin_manifest": {
-        "service": "CREATOR",
-        "locale": [
-          "en"
-        ],
-        "defaultLocale": "en",
-        "storage": false,
-        "cspDomains": {
-          "connect-src": []
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#tax-center",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#tax-center",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "milestone-gantt",
+   "name": "Milestone Gantt",
+   "module": "projects",
+   "version": "1.0.2",
+   "description": "Subdivision milestone timeline and inline schedule editing.",
+   "source_entry": "widgets/milestone-gantt/src/app/widget.html",
+   "creator_package_manifest": "widgets/milestone-gantt/src/plugin-manifest.json",
+   "baseline_zip": "widgets/milestone-gantt/baseline/gantt (1).zip",
+   "html_title": "Subdivision Milestone Gantt",
+   "source_sha256": "bd28cc632c68e2f4d7d945e653e4738b6aaba71d5cdf9ffb5c8b7f6b0659e99f",
+   "baseline_zip_sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336",
+   "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+     "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+     "connect-src": []
     },
-    {
-      "slug": "milestone-gantt",
-      "name": "Milestone Gantt",
-      "module": "projects",
-      "version": "1.0.2",
-      "description": "Subdivision milestone timeline and inline schedule editing.",
-      "source_entry": "widgets/milestone-gantt/src/app/widget.html",
-      "creator_package_manifest": "widgets/milestone-gantt/src/plugin-manifest.json",
-      "baseline_zip": "widgets/milestone-gantt/baseline/gantt (1).zip",
-      "html_title": "Subdivision Milestone Gantt",
-      "source_sha256": "bd28cc632c68e2f4d7d945e653e4738b6aaba71d5cdf9ffb5c8b7f6b0659e99f",
-      "baseline_zip_sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336",
-      "plugin_manifest": {
-        "service": "CREATOR",
-        "locale": [
-          "en"
-        ],
-        "defaultLocale": "en",
-        "storage": false,
-        "cspDomains": {
-          "connect-src": []
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#milestone-gantt",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source extracted without modification from the uploaded widget ZIP."
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#milestone-gantt",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source extracted without modification from the uploaded widget ZIP."
+  },
+  {
+   "slug": "manage-lots",
+   "name": "Manage Lots",
+   "module": "lots",
+   "version": "0.4.1",
+   "description": "Multi-subdivision lot selection, in-widget Builder Takedown creation, and grouped read-only takedown reporting.",
+   "source_entry": "widgets/manage-lots/src/app/widget.html",
+   "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
+   "baseline_zip": null,
+   "html_title": "Manage Lots",
+   "source_sha256": "ecdb139c1a5e550346d2bd8160389a88627359bb457dcdf5de4bd7273159f255",
+   "baseline_zip_sha256": null,
+   "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+     "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+     "connect-src": []
     },
-    {
-      "slug": "manage-lots",
-      "name": "Manage Lots",
-      "module": "lots",
-      "version": "0.4.1",
-      "description": "Multi-subdivision lot selection, in-widget Builder Takedown creation, and grouped read-only takedown reporting.",
-      "source_entry": "widgets/manage-lots/src/app/widget.html",
-      "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
-      "baseline_zip": null,
-      "html_title": "Manage Lots",
-      "source_sha256": "ecdb139c1a5e550346d2bd8160389a88627359bb457dcdf5de4bd7273159f255",
-      "baseline_zip_sha256": null,
-      "plugin_manifest": {
-        "service": "CREATOR",
-        "locale": [
-          "en"
-        ],
-        "defaultLocale": "en",
-        "storage": false,
-        "cspDomains": {
-          "connect-src": []
-        },
-        "config": []
-      },
-      "dependency_inventory": "manifests/widget-dependencies.json#manage-lots",
-      "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Source based on the user-supplied Lot Takedown Widget v3 prototype and verified Creator report contracts."
-    }
-  ]
+    "config": []
+   },
+   "dependency_inventory": "manifests/widget-dependencies.json#manage-lots",
+   "hosting_entry": "index.html (generated from app/widget.html)",
+   "trust": "Source based on the user-supplied Lot Takedown Widget v3 prototype and verified Creator report contracts."
+  }
+ ]
 }
