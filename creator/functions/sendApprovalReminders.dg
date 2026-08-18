@@ -4,11 +4,13 @@ string sendApprovalReminders()
 	// Return Type: string
 	// Runs daily from a schedule and does nothing until Settings.
 	// Next_Approval_Reminder_Date has arrived. On the due date it re-sends the
-	// approval email for every Budget_Approvals row still sitting at Pending —
-	// budget tracks, Pro Formas, and Budget Modifications — then pushes the next
+	// approval email for every Budget_Approvals row still sitting at Pending -
+	// budget tracks, Pro Formas, and Budget Modifications - then pushes the next
 	// reminder date out by Settings.Approval_Reminder_Interval_Days (default 3).
 	// The schedule runs daily rather than on a single date because a Creator
 	// schedule cannot retarget itself; the date field is the actual gate.
+	// After sending, emails rbelliveau@wbdevelopment.com a recap listing each
+	// reminder: type, recipient, role, and the item it was for.
 	settingsRec = Settings[ID != 0];
 	if(settingsRec == null)
 	{
@@ -35,16 +37,33 @@ string sendApprovalReminders()
 	proformaCount = 0;
 	modCount = 0;
 	skipped = 0;
+	recapRows = "";
+	tdStyle = "padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f2744;";
 	pendingRows = Budget_Approvals[Status == "Pending"];
 	for each  row in pendingRows
 	{
 		rowType = ifnull(row.Type1,"").trim();
+		approverEmail = ifnull(row.Approver,"").trim();
+		approverRole = ifnull(row.Title,"").trim();
+		sentThis = false;
+		displayType = rowType;
+		itemLabel = "";
 		if(rowType == "Modification")
 		{
 			if(row.Budget_Modification != null)
 			{
 				modMsg = thisapp.sendModificationEmail(row.Budget_Modification.ID,"created");
 				modCount = modCount + 1;
+				sentThis = true;
+				itemLabel = ifnull(row.Budget_Modification.Reference_Number,"").trim();
+				if(itemLabel == "")
+				{
+					itemLabel = "Modification " + row.Budget_Modification.ID;
+				}
+				if(row.Budget != null)
+				{
+					itemLabel = itemLabel + " (" + ifnull(row.Budget.Budget_Name,"") + ")";
+				}
 			}
 			else
 			{
@@ -57,6 +76,12 @@ string sendApprovalReminders()
 			{
 				pfMsg = thisapp.Send_Proforma_Approval_Email(row.Proforma.ID.toString(),row.ID.toString());
 				proformaCount = proformaCount + 1;
+				sentThis = true;
+				itemLabel = ifnull(row.Proforma.Name,"").trim();
+				if(itemLabel == "")
+				{
+					itemLabel = "Pro Forma " + row.Proforma.ID;
+				}
 			}
 			else
 			{
@@ -69,14 +94,50 @@ string sendApprovalReminders()
 			{
 				budgetMsg = thisapp.sendApprovalEmail(row.Budget.ID,row.ID);
 				budgetCount = budgetCount + 1;
+				sentThis = true;
+				if(displayType == "")
+				{
+					displayType = "Budget";
+				}
+				itemLabel = ifnull(row.Budget.Budget_Name,"").trim();
+				if(itemLabel == "")
+				{
+					itemLabel = "Budget " + row.Budget.ID;
+				}
 			}
 			else
 			{
 				skipped = skipped + 1;
 			}
 		}
+		if(sentThis)
+		{
+			recapRows = recapRows + "<tr><td style='" + tdStyle + "'>" + displayType + "</td><td style='" + tdStyle + "'>" + approverEmail + "</td><td style='" + tdStyle + "'>" + approverRole + "</td><td style='" + tdStyle + "'>" + itemLabel + "</td></tr>";
+		}
 	}
 	newNext = today.addDay(vInterval);
 	settingsRec.Next_Approval_Reminder_Date=newNext;
-	return "OK: reminders sent — budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ". Next reminder " + newNext.toString() + ".";
+	totalSent = budgetCount + proformaCount + modCount;
+	if(totalSent > 0)
+	{
+		skippedNote = "";
+		if(skipped > 0)
+		{
+			skippedNote = " " + skipped + " pending row(s) were skipped (missing linked record).";
+		}
+		thStyle = "padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5c7394;border-bottom:2px solid #cbd5e1;";
+		recapBody = "<div style='font-family:Arial,Helvetica,sans-serif;'>";
+		recapBody = recapBody + "<h3 style='margin:0 0 4px 0;color:#0b2345;'>Approval reminders sent " + today.toString() + "</h3>";
+		recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>" + totalSent + " reminder(s) - budgets " + budgetCount + ", pro formas " + proformaCount + ", modifications " + modCount + "." + skippedNote + " Next reminder " + newNext.toString() + ".</p>";
+		recapBody = recapBody + "<table style='border-collapse:collapse;width:100%;max-width:720px;'><tr><th style='" + thStyle + "'>Type</th><th style='" + thStyle + "'>Sent To</th><th style='" + thStyle + "'>Role</th><th style='" + thStyle + "'>Item</th></tr>";
+		recapBody = recapBody + recapRows + "</table></div>";
+		sendmail
+		[
+			from :"jking@wbdevelopment.com"
+			to :"rbelliveau@wbdevelopment.com"
+			subject :"Approval reminders sent: " + totalSent + " (budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")"
+			message :recapBody
+		]
+	}
+	return "OK: reminders sent - budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ". Next reminder " + newNext.toString() + ".";
 }
