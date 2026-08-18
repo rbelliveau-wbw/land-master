@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-18T15:40:17.462Z",
+  "generated_at": "2026-08-18T17:10:56.328Z",
   "note": "All environments initially point at the uploaded baselines. Register only Development URLs first; promote Stage and Production after validation.",
   "environments": {
     "development": {
       "proforma-manager": "1.46.0",
-      "budget-manager": "122.20.0",
+      "budget-manager": "122.20.1",
       "land-master": "8.9.17",
       "contract-management": "1.0.3",
       "tax-center": "19.1.1",
@@ -13,7 +13,7 @@
     },
     "stage": {
       "proforma-manager": "1.44.6",
-      "budget-manager": "122.20.0",
+      "budget-manager": "122.20.1",
       "land-master": "8.9.1",
       "contract-management": "1.0.0",
       "tax-center": "19.0.0",
@@ -22,7 +22,7 @@
     },
     "production": {
       "proforma-manager": "1.46.0",
-      "budget-manager": "122.20.0",
+      "budget-manager": "122.20.1",
       "land-master": "8.9.17",
       "contract-management": "1.0.3",
       "tax-center": "19.1.1",
