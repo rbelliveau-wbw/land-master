@@ -8,7 +8,7 @@
   "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
   "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
   "html_title": "Budget Manager V117",
-  "source_sha256": "f2b23d83b7dd7d7d3b4395c7c649458d44f65fcf3aae7450f917fd312faccbf4",
+  "source_sha256": "31b0a68aa532f590b5208f511b9f82936dd763c94dd386c8baa7cab38eb1f73f",
   "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
   "plugin_manifest": {
     "service": "CREATOR",
