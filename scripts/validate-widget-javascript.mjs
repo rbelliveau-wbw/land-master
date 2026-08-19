@@ -60,7 +60,7 @@ if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('POLISHED-C
 for (const required of [
   'id="vAttachments"',
   'data-recview="attachments"',
-  'id="btnEdAttachments"',
+  'function openPfAttachments(',
   'attachmentProformaField:"Pro_Forma"',
   'Create_Proforma_Attachment_Record',
   'Delete_Proforma_Attachment',
