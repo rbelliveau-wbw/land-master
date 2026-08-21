@@ -108,6 +108,14 @@ for (const required of [
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: read-only LOI mutation guard is missing ${required}.`);
 }
 for (const required of [
+  'var accessUser=String(S.currentUser||"").trim().toLowerCase().split("@")[0];',
+  'S.env&&S.env.name==="DEVELOPMENT"',
+  'http_method:"POST",content_type:"application/json",payload:{user:accessUser}',
+  'lookupUser:accessUser,method:request.http_method'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: DEV impersonated-user access transport is missing ${required}.`);
+}
+for (const required of [
   'data-loi-field="Street_Address"',
   'data-loi-field="City_State_ZIP"',
   'data-loi-field="City"',
