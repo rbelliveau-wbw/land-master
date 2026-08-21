@@ -57,6 +57,26 @@ Chat history and model memory are not authoritative.
   paragraphs explaining how a feature works. A heading, a short label, and the
   action button are enough; put any necessary explanation in a tooltip.
 
+## No native browser dialogs
+
+- Never call `window.confirm`, `window.alert`, or `window.prompt` in a widget.
+  A widget runs inside a Creator iframe, so the browser stamps every native
+  dialog with "An embedded page at rbelliveau-wbw.github.io says". Users read
+  that as a browser security warning rather than as Land Master, and the dialog
+  cannot be styled, cannot list the records it is about, and reduces every
+  decision to OK/Cancel.
+- Use the widget's own overlay instead. Contract Management's `confirmDialog({...})`
+  is the reference implementation: kicker, title, one-line consequence, the
+  affected record or list of records, an action-named button, and an `onDismiss`
+  hook so cancelling restores whatever the dialog covered.
+- Budget Manager still has two `window.confirm` calls as of 1.10.0 of Contract
+  Management; convert them the next time that widget ships.
+- A result the user does not have to acknowledge is a `banner("ok"|"err", ...)`,
+  not a dialog. Reserve the overlay for a real decision.
+- Same rule for anything else the browser draws in its own chrome: no
+  `beforeunload` prompts and no native form-validation bubbles as the only
+  error surface.
+
 ## Permanent externally hosted widget URLs
 
 - Every `dev/<widget>/`, `stage/<widget>/`, and `prod/<widget>/` GitHub Pages
