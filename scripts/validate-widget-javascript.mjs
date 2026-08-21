@@ -98,6 +98,16 @@ for (const required of [
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-locked LOI behavior is missing ${required}.`);
 }
 for (const required of [
+  'function canEditLOI()',
+  'if(!canEditLOI()){auditLog("warn","LOI Company quick create blocked',
+  'if(!canEditLOI()){closeLOIQuickCreate();auditLog("warn","LOI Company quick create submit blocked',
+  'var loiEditable=canEditLOI(),loiDisabled=',
+  'if(loiAction&&!canEditLOI())',
+  'if(t.closest&&t.closest(\'.ed-pane[data-pane="loi"]\')&&!canEditLOI())'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: read-only LOI mutation guard is missing ${required}.`);
+}
+for (const required of [
   'data-loi-field="Street_Address"',
   'data-loi-field="City_State_ZIP"',
   'data-loi-field="City"',
