@@ -69,8 +69,11 @@ Chat history and model memory are not authoritative.
   is the reference implementation: kicker, title, one-line consequence, the
   affected record or list of records, an action-named button, and an `onDismiss`
   hook so cancelling restores whatever the dialog covered.
-- Budget Manager still has two `window.confirm` calls as of 1.10.0 of Contract
-  Management; convert them the next time that widget ships.
+- Budget Manager's note popover is the other precedent: `window.prompt` is
+  blocked outright in some sandboxed Creator iframes, so it was replaced with an
+  in-page popover. Native dialogs are not just ugly here, they are unreliable.
+- As of 2026-08-21 no widget in this repo calls `confirm`, `alert`, or `prompt`.
+  Keep it that way.
 - A result the user does not have to acknowledge is a `banner("ok"|"err", ...)`,
   not a dialog. Reserve the overlay for a real decision.
 - Same rule for anything else the browser draws in its own chrome: no
