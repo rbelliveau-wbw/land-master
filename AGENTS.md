@@ -57,6 +57,27 @@ Chat history and model memory are not authoritative.
   paragraphs explaining how a feature works. A heading, a short label, and the
   action button are enough; put any necessary explanation in a tooltip.
 
+## Drag-and-drop must animate
+
+- Any list a user can drag to reorder — subform rows, checklists, template
+  editors, anything where position carries meaning — must animate the rows into
+  their new positions. Never re-render a reordered list straight to its new
+  state: rows teleporting is the single fastest way to lose track of what just
+  moved, and the user cannot tell a successful drop from a bounce.
+- Use the FLIP pair already in the Contract Management widget: `queueFlip(key)`
+  before mutating the model, then `renderAll()`. `flipCapture()` records every
+  row's top edge, `flipPlay()` translates each one back to where it was and
+  releases it over ~300ms, and the moved row gets a `justmoved` flash so the eye
+  lands on it.
+- FLIP has to key on something that survives the move. A row index does not —
+  index 2 is a different row after the drop. Use the record ID where one exists,
+  and a generated key on the draft object where it does not (see `maKey()`).
+- Deletes in the same lists animate too: queue a flip with no moved key so the
+  rows below slide up instead of jumping.
+- Also give the drag itself feedback: dim the row being dragged, and show an
+  insert line on the drop target (`dragover` / `dragover-after`) so the landing
+  position is visible before the mouse is released.
+
 ## No native browser dialogs
 
 - Never call `window.confirm`, `window.alert`, or `window.prompt` in a widget.
