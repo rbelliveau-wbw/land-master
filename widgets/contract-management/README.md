@@ -46,6 +46,24 @@ success while dropping a value it could not parse.
 
 The footer`s `Creator form` button is the escape hatch back to the native form.
 
+## Action templates (1.13.0)
+
+`Manage Actions` (third tab beside Contracts and LOI Reviews) edits the checklist a
+new contract of each type is seeded with. A template is a `Contract_Actions` row
+with `Type_field` set, `Template_Action` true, and no `Contract1`.
+
+Reads key off "has a Type, has no Contract" rather than `Template_Action`, because
+`Template_Action` is not in the `All_Contract_Actions` quick view and the v2 API
+returns only quick-view columns. The flag is still written.
+
+`Type_field` and `Template_Action` exist in the Creator **Development** app only.
+Production still has the old `Contract_Template`, so until the app is published
+`templatesSupported()` is false there and the section says so instead of rendering a
+broken editor. New contracts fall back to `DEFAULT_ACTIONS`.
+
+The create modal asks for Type first and shows nothing else until it is set, then
+lists exactly the actions that will be created and names their source.
+
 ## Common commands
 
 ```bash
