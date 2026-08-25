@@ -25,6 +25,7 @@
                  	ctEdit = false;
                  	ctPropose = false;
                  	ctApprove = false;
+                 	ctTemplates = false;
                  	foundRow = false;
                  	myId = "";
                  	rows = User_Access[User == requester];
@@ -60,6 +61,8 @@
                  		ctEdit = row.Edit_Contracts == true;
                  		ctPropose = row.Propose_Contract_Changes == true;
                  		ctApprove = row.Approve_Contracts == true;
+                 		// ctTemplates: may edit the per-type action template checklists
+                 		ctTemplates = row.Manage_Action_Templates == true;
                  		break;
                  	}
                  	// Roster: each user as {id, label, email}.
@@ -119,6 +122,7 @@
                  	result.put("ctEdit",ctEdit);
                  	result.put("ctPropose",ctPropose);
                  	result.put("ctApprove",ctApprove);
+                 	result.put("ctTemplates",ctTemplates);
                  	result.put("users",userList);
                  	result.put("proformaOwners",proformaOwnerMap);
                  	return result.toString();
