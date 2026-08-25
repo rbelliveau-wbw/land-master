@@ -21,6 +21,10 @@
 				 	pfDeleteArchive = false;
 				 	pfApprAll = false;
 				 	pfApprOwned = false;
+                 	// Contract flags
+                 	ctEdit = false;
+                 	ctPropose = false;
+                 	ctApprove = false;
                  	foundRow = false;
                  	myId = "";
                  	rows = User_Access[User == requester];
@@ -49,6 +53,13 @@
 				 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
 				 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
 				 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
+                 		// Contract permissions
+                 		// ctEdit: full edit of contracts and their actions
+                 		// ctPropose: Dev Managers - propose contracts and propose/edit/reorder actions
+                 		// ctApprove: Legal - approve proposed contracts and proposed actions
+                 		ctEdit = row.Edit_Contracts == true;
+                 		ctPropose = row.Propose_Contract_Changes == true;
+                 		ctApprove = row.Approve_Contracts == true;
                  		break;
                  	}
                  	// Roster: each user as {id, label, email}.
@@ -104,6 +115,10 @@
 				 	result.put("pfDeleteArchive",pfDeleteArchive);
 				 	result.put("pfApprAll",pfApprAll);
 				 	result.put("pfApprOwned",pfApprOwned);
+                 	// Contract permissions
+                 	result.put("ctEdit",ctEdit);
+                 	result.put("ctPropose",ctPropose);
+                 	result.put("ctApprove",ctApprove);
                  	result.put("users",userList);
                  	result.put("proformaOwners",proformaOwnerMap);
                  	return result.toString();
