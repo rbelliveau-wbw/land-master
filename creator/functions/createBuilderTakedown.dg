@@ -113,6 +113,20 @@
                  	interestUrl = "&&Interest_Rate_1=" + interest1 + "&&Interest_Rate_2=" + interest2 + "&&Interest_Rate_3=" + interest3 + "&&Interest_Rate_4=" + interest4 + "&&Interest_Rate_5=" + interest5 + "&&Interest_Rate_6=" + interest6 + "&&Interest_Rate_8=" + interest8 + "&&Interest_Rate_9=" + interest9 + "&&Interest_Rate_10=" + interest10 + "&&Interest_Rate_11=" + interest11 + "&&Interest_Rate_12=" + interest12 + "&&Interest_Rate_71=" + interest7;
                  	datesUrl = "&&Date1_1=" + from1 + "&&Date1_2=" + to1 + "&&Date2_1=" + from2 + "&&Date2_2=" + to2 + "&&Date3_1=" + from3 + "&&Date3_2=" + to3 + "&&Date4_1=" + from4 + "&&Date4_2=" + to4 + "&&Date5_1=" + from5 + "&&Date5_2=" + to5 + "&&Date6_1=" + from6 + "&&Date6_2=" + to6 + "&&Date7_1=" + from7 + "&&Date7_2=" + to7 + "&&Date8_1=" + from8 + "&&Date8_2=" + to8 + "&&Date9_1=" + from9 + "&&Date9_2=" + to9 + "&&Date10_1=" + from10 + "&&Date10_2=" + to10 + "&&Date11_1=" + from11 + "&&Date11_2=" + to11 + "&&Date12_1=" + from12 + "&&Date12_2=" + to12;
                  	btdUrl = "#Form:Builder_Takedown?Lots=" + idRecordList + "&&Builder1=" + lotRecords.Builder1 + "&&Subdivision1=" + lotRecords.Subdivision + interestUrl + datesUrl + "&&Additional_Fees_Per_Lot=" + feeAmount + "&&Additional_Fee_Type=" + feeType + "&&Tax_Method=" + taxMethod + "&&Tax_Per_Lot=" + taxPerlot + "&&Percent_of_Appraisal=" + percentAppraisal + "&&Tax_Status=" + taxStatus + "&&Subtract_Day_From=" + subDayfrom;
+                 	/* carry the contract the lots were completed under into the takedown */
+                 	contractPrefill = "";
+                 	contractIdList = lotRecords.Contract1.getall();
+                 	for each cval in contractIdList
+                 	{
+                 		if(contractPrefill == "" && cval != null && cval.toString() != "")
+                 		{
+                 			contractPrefill = cval.toString();
+                 		}
+                 	}
+                 	if(contractPrefill != "")
+                 	{
+                 		btdUrl = btdUrl + "&&Contract1=" + contractPrefill;
+                 	}
                  	openUrl(btdUrl,"popup window");
                  	//info btdUrl;
                  }

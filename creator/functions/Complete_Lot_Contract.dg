@@ -1,0 +1,103 @@
+string Complete_Lot_Contract(string contractId)
+{
+	resp = Map();
+	updatedList = List();
+	skippedList = List();
+	/* arrives either as a bare id (thisapp call) or as the Entire JSON body
+	   of the Custom API ({"contractId":"..."}) - accept both */
+	raw = contractId.trim();
+	cid = 0;
+	if(raw.startsWith("{"))
+	{
+		pm = raw.toMap();
+		if(pm.get("contractId") != null)
+		{
+			cid = pm.get("contractId").toLong();
+		}
+	}
+	else if(raw != "")
+	{
+		cid = raw.toLong();
+	}
+	if(cid == 0)
+	{
+		resp.put("error","Missing contractId");
+		return resp.toString();
+	}
+	c = Contract[ID == cid];
+	if(c.count() == 0)
+	{
+		resp.put("error","Contract not found");
+		return resp.toString();
+	}
+	if(c.Contract_Type != "Lot")
+	{
+		resp.put("error","Not a Lot contract");
+		return resp.toString();
+	}
+	tdCode = c.Subdivision1.Subdivision_Code + " - " + c.Builder.Builder_Name;
+	tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
+	if(tdsched.count() == 0)
+	{
+		insert into Takedown_Schedule
+		[
+			Added_User=zoho.loginuser
+			Subdivisions=c.Subdivision1
+			Builder1=c.Builder
+			Status="Active"
+			Total_Lot_Obligation=c.Number_of_Lots
+			Initial_Takedown=c.Initial_Takedown
+			Initial_Delay_Days=c.Initial_Takedown_Days
+			Continued_Takedown=c.Subsequent_Takedown_Lots
+			Continued_Takedown_Delay_Days=c.Subsequent_Takedown_Days
+			Add_Contract_Contract_Name=cid
+			Takedown_Schedule_Code=tdCode
+		]
+		tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
+	}
+	for each lotId in c.Lots1
+	{
+		lotRow = Lots[ID == lotId];
+		if(lotRow.count() > 0)
+		{
+			matched = false;
+			if(lotRow.Lot_Size != null)
+			{
+				pr = Contract_Pricing[Contract1 == cid && Lot_Size == lotRow.Lot_Size];
+				if(pr.count() > 0)
+				{
+					lotRow.Base_Price = pr.Base_Price;
+					if(pr.Escalator != null)
+					{
+						lotRow.Escalator = pr.Escalator;
+					}
+					lotRow.Builder1 = c.Builder;
+					lotRow.Status = "Contracted";
+					lotRow.Contract1 = cid;
+					if(tdsched.count() > 0)
+					{
+						lotRow.Contract_Schedule = tdsched.ID;
+					}
+					updatedList.add(lotRow.Lot_Code);
+					matched = true;
+				}
+			}
+			if(!matched)
+			{
+				skippedList.add(lotRow.Lot_Code);
+			}
+		}
+	}
+	if(c.Completion_Date == null)
+	{
+		c.Completion_Date = zoho.currentdate;
+	}
+	resp.put("updated",updatedList);
+	resp.put("skipped",skippedList);
+	resp.put("scheduleCode",tdCode);
+	if(tdsched.count() > 0)
+	{
+		resp.put("scheduleId",tdsched.ID.toString());
+	}
+	return resp.toString();
+}
