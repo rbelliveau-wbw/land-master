@@ -582,6 +582,76 @@ string Create_LOI_Contract(string proformaId)
 			createEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":wbwPointPerson,"status":"Awaiting WBW LEG"});
 			trace.add(createEntry);
 		}
+		stage = "seed_contract_actions";
+		/* The Contract form's "Load Contract Action Template" workflow runs ON LOAD, so it
+		   only fires when a person opens the Add Contract form. This function inserts the
+		   Contract directly, so that workflow never runs and the checklist arrived empty.
+		   Seed it here from the Acquisition action template.
+
+		   A template row is a Contract_Actions record carrying a Contract_Template value
+		   and no Contract. Contract_Template is the field Production has; Type_field and
+		   Template_Action exist only in Development, so they are deliberately not used. */
+		existingActionCount = Contract_Actions[Contract1 == contractId].count();
+		if(existingActionCount == 0)
+		{
+			templateActions = Contract_Actions[(Contract1 == null) && (Contract_Template == "Acquisition")] sort by Sort_Order;
+			seededCount = 0;
+			seededTitles = List();
+			for each  templateAction in templateActions
+			{
+				actionTitle = ifnull(templateAction.Contract_Action,"").trim();
+				if(actionTitle != "")
+				{
+					seededCount = seededCount + 1;
+					actionSort = ifnull(templateAction.Sort_Order,seededCount);
+					isFirstAction = false;
+					if(seededCount == 1)
+					{
+						isFirstAction = true;
+					}
+					insert into Contract_Actions
+					[
+						Contract1=contractId
+						Contract_Action=actionTitle
+						Sort_Order=actionSort
+						Status="New"
+						Complete=false
+						Current_Action=isFirstAction
+					];
+					seededTitles.add(actionTitle);
+				}
+			}
+			if(seededCount > 0)
+			{
+				seedEntry = Map();
+				seedEntry.put("level","success");
+				seedEntry.put("stage",stage);
+				seedEntry.put("message","Acquisition action template applied to the Contract");
+				seedEntry.put("meta",{"contractId":contractId.toString(),"actionsSeeded":seededCount,"actions":seededTitles});
+				trace.add(seedEntry);
+			}
+			else
+			{
+				/* Surfaced rather than swallowed: an empty checklist here means the
+				   Acquisition template has no rows, and Legal would get a contract with
+				   nothing to work through. */
+				noTemplateEntry = Map();
+				noTemplateEntry.put("level","warn");
+				noTemplateEntry.put("stage",stage);
+				noTemplateEntry.put("message","No Acquisition action template rows were found - the Contract has an empty checklist");
+				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":"Acquisition"});
+				trace.add(noTemplateEntry);
+			}
+		}
+		else
+		{
+			keepEntry = Map();
+			keepEntry.put("level","info");
+			keepEntry.put("stage",stage);
+			keepEntry.put("message","Contract already has actions - template not reapplied");
+			keepEntry.put("meta",{"contractId":contractId.toString(),"existingActions":existingActionCount});
+			trace.add(keepEntry);
+		}
 		stage = "attach_contract_version";
 		contractVersionId = insert into Contract_Version
 		[
