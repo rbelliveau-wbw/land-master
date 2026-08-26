@@ -588,14 +588,14 @@ string Create_LOI_Contract(string proformaId)
 		   Contract directly, so that workflow never runs and the checklist arrived empty.
 		   Seed it here from the Acquisition action template.
 
-		   A template row is a Contract_Actions record with a Type_field and no Contract -
-		   the same predicate the Contract widget uses. Template_Action is written on these
-		   rows too but is deliberately not read on: a row that has a type and no contract
-		   cannot be anything else. */
+		   A template row is a Contract_Actions record flagged Template_Action, carrying a
+		   Type_field, with no Contract. All three matter: an ordinary action row whose
+		   contract was deleted would still have a type and no contract, and without the
+		   flag it would be seeded onto every future LOI as a phantom checklist item. */
 		existingActionCount = Contract_Actions[Contract1 == contractId].count();
 		if(existingActionCount == 0)
 		{
-			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition")] sort by Sort_Order;
+			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Template_Action == true)] sort by Sort_Order;
 			seededCount = 0;
 			seededTitles = List();
 			for each  templateAction in templateActions
@@ -636,11 +636,14 @@ string Create_LOI_Contract(string proformaId)
 				/* Surfaced rather than swallowed: an empty checklist here means the
 				   Acquisition template has no rows, and Legal would get a contract with
 				   nothing to work through. */
+				/* Distinguish "no template exists" from "the rows are there but not
+				   flagged", which is the one way the flag check can bite. */
+				untaggedCount = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition")].count();
 				noTemplateEntry = Map();
 				noTemplateEntry.put("level","warn");
 				noTemplateEntry.put("stage",stage);
 				noTemplateEntry.put("message","No Acquisition action template rows were found - the Contract has an empty checklist");
-				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":"Acquisition"});
+				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":"Acquisition","typedButUnflaggedRows":untaggedCount});
 				trace.add(noTemplateEntry);
 			}
 		}
