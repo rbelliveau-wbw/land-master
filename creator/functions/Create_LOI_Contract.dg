@@ -588,13 +588,14 @@ string Create_LOI_Contract(string proformaId)
 		   Contract directly, so that workflow never runs and the checklist arrived empty.
 		   Seed it here from the Acquisition action template.
 
-		   A template row is a Contract_Actions record carrying a Contract_Template value
-		   and no Contract. Contract_Template is the field Production has; Type_field and
-		   Template_Action exist only in Development, so they are deliberately not used. */
+		   A template row is a Contract_Actions record with a Type_field and no Contract -
+		   the same predicate the Contract widget uses. Template_Action is written on these
+		   rows too but is deliberately not read on: a row that has a type and no contract
+		   cannot be anything else. */
 		existingActionCount = Contract_Actions[Contract1 == contractId].count();
 		if(existingActionCount == 0)
 		{
-			templateActions = Contract_Actions[(Contract1 == null) && (Contract_Template == "Acquisition")] sort by Sort_Order;
+			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition")] sort by Sort_Order;
 			seededCount = 0;
 			seededTitles = List();
 			for each  templateAction in templateActions
