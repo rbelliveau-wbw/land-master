@@ -1,8 +1,29 @@
 string Complete_Lot_Contract(string contractId)
 {
+	/*  Server-side half of "complete a Lot contract". The widget owns the rest:
+	    it validates first, closes the open actions, flips Contract.Status AFTER
+	    those writes land (a completed contract is locked), and then runs a heal
+	    pass over the lots. So this function deliberately does NOT touch
+	    Contract.Status and does NOT close actions.
+
+	    Writes performed here:
+	      Takedown_Schedule created (once per Subdivision_Code - Builder_Name)
+	      each priced lot: Base_Price, Escalator, Builder1, Status, Contract1,
+	                       Contract_Schedule
+	      Contract.Completion_Date when it is still blank
+
+	    Response contract - every key below is consumed by widget 1.42.0:
+	      error        hard stop; the widget throws on it and writes nothing else
+	      updated      lot codes written            (audit log)
+	      skipped      lot codes with no price row  (audit log)
+	      scheduleCode the takedown code
+	      scheduleId   used by healLotWrites() to repair Contract_Schedule
+	    "steps" is additive, for the completion progress modal. It reports only
+	    the steps THIS function performs; the widget contributes its own.        */
 	resp = Map();
 	updatedList = List();
 	skippedList = List();
+	steps = List();
 	/* arrives either as a bare id (thisapp call) or as the Entire JSON body
 	   of the Custom API ({"contractId":"..."}) - accept both */
 	raw = contractId.trim();
@@ -35,8 +56,55 @@ string Complete_Lot_Contract(string contractId)
 		resp.put("error","Not a Lot contract");
 		return resp.toString();
 	}
+	/* ---- step: takedown details present ----------------------------------
+	   Mirrors the "Lot Contract Required Fields" form workflow. The widget
+	   already blocks on this, so it is a backstop: without it a schedule can
+	   be created carrying a null obligation. A cleared Creator number field
+	   can read back as an empty string, so both forms are treated as missing. */
+	missing = List();
+	if(ifnull(c.Number_of_Lots,"").toString().trim() == "")
+	{
+		missing.add("Lot Total");
+	}
+	if(ifnull(c.Initial_Takedown,"").toString().trim() == "")
+	{
+		missing.add("Initial Take (Lots)");
+	}
+	if(ifnull(c.Initial_Takedown_Days,"").toString().trim() == "")
+	{
+		missing.add("Initial Take (Days)");
+	}
+	if(ifnull(c.Subsequent_Takedown_Lots,"").toString().trim() == "")
+	{
+		missing.add("Cont'd Take (Lots)");
+	}
+	if(ifnull(c.Subsequent_Takedown_Days,"").toString().trim() == "")
+	{
+		missing.add("Cont'd Take (Days)");
+	}
+	sVal = Map();
+	sVal.put("key","validate");
+	sVal.put("label","Takedown details validated");
+	if(missing.size() > 0)
+	{
+		sVal.put("state","failed");
+		sVal.put("detail","Missing: " + missing.toString(", "));
+		sVal.put("missing",missing);
+		steps.add(sVal);
+		resp.put("steps",steps);
+		resp.put("error","Add all Lot Takedown details before completing: " + missing.toString(", "));
+		return resp.toString();
+	}
+	sVal.put("state","done");
+	sVal.put("detail",c.Number_of_Lots.toString() + " lots · " + c.Initial_Takedown.toString() + " initial / " + c.Initial_Takedown_Days.toString() + " days · " + c.Subsequent_Takedown_Lots.toString() + " continued / " + c.Subsequent_Takedown_Days.toString() + " days");
+	steps.add(sVal);
+	/* ---- step: takedown schedule ---------------------------------------- */
+	sTd = Map();
+	sTd.put("key","takedown");
+	sTd.put("label","Takedown Schedule created");
 	tdCode = c.Subdivision1.Subdivision_Code + " - " + c.Builder.Builder_Name;
 	tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
+	tdExisted = tdsched.count() > 0;
 	if(tdsched.count() == 0)
 	{
 		insert into Takedown_Schedule
@@ -55,28 +123,48 @@ string Complete_Lot_Contract(string contractId)
 		]
 		tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
 	}
-	for each lotId in c.Lots1
+	sTd.put("code",tdCode);
+	if(tdsched.count() > 0)
+	{
+		sTd.put("scheduleId",tdsched.ID.toString());
+	}
+	if(tdExisted)
+	{
+		sTd.put("state","skipped");
+		sTd.put("detail",tdCode + " already existed - nothing was changed.");
+	}
+	else
+	{
+		sTd.put("state","done");
+		sTd.put("detail",tdCode + " · " + c.Number_of_Lots.toString() + " lot obligation");
+	}
+	steps.add(sTd);
+	/* ---- step: price the lots and mark them Contracted -------------------- */
+	unmatchedSizes = List();
+	lotTotal = 0;
+	for each  lotId in c.Lots1
 	{
 		lotRow = Lots[ID == lotId];
 		if(lotRow.count() > 0)
 		{
+			lotTotal = lotTotal + 1;
 			matched = false;
 			if(lotRow.Lot_Size != null)
 			{
 				pr = Contract_Pricing[Contract1 == cid && Lot_Size == lotRow.Lot_Size];
 				if(pr.count() > 0)
 				{
-					lotRow.Base_Price = pr.Base_Price;
+					lotRow.Base_Price=pr.Base_Price;
 					if(pr.Escalator != null)
 					{
-						lotRow.Escalator = pr.Escalator;
+						lotRow.Escalator=pr.Escalator;
 					}
-					lotRow.Builder1 = c.Builder;
-					lotRow.Status = "Contracted";
-					lotRow.Contract1 = cid;
+					lotRow.Builder1=c.Builder;
+					lotRow.Status="Contracted";
+					lotRow.Contract1=cid;
 					if(tdsched.count() > 0)
 					{
-						lotRow.Contract_Schedule = tdsched.ID;
+						lotRow.Contract_Schedule=tdsched.ID;
 					}
 					updatedList.add(lotRow.Lot_Code);
 					matched = true;
@@ -85,12 +173,42 @@ string Complete_Lot_Contract(string contractId)
 			if(!matched)
 			{
 				skippedList.add(lotRow.Lot_Code);
+				if(lotRow.Lot_Size != null)
+				{
+					if(!unmatchedSizes.contains(lotRow.Lot_Size))
+					{
+						unmatchedSizes.add(lotRow.Lot_Size);
+					}
+				}
 			}
 		}
 	}
+	sLots = Map();
+	sLots.put("key","lots");
+	sLots.put("label","Lots updated");
+	sLots.put("updated",updatedList.size());
+	sLots.put("total",lotTotal);
+	sLots.put("unmatchedSizes",unmatchedSizes);
+	sLots.put("unmatchedLots",skippedList);
+	if(lotTotal == 0)
+	{
+		sLots.put("state","skipped");
+		sLots.put("detail","No lots are linked to this contract");
+	}
+	else if(skippedList.size() == 0)
+	{
+		sLots.put("state","done");
+		sLots.put("detail",updatedList.size().toString() + " lots set to Contracted and priced");
+	}
+	else
+	{
+		sLots.put("state","partial");
+		sLots.put("detail",updatedList.size().toString() + " of " + lotTotal.toString() + " lots updated - no pricing row for lot size(s) " + unmatchedSizes.toString(", "));
+	}
+	steps.add(sLots);
 	if(c.Completion_Date == null)
 	{
-		c.Completion_Date = zoho.currentdate;
+		c.Completion_Date=zoho.currentdate;
 	}
 	resp.put("updated",updatedList);
 	resp.put("skipped",skippedList);
@@ -99,5 +217,6 @@ string Complete_Lot_Contract(string contractId)
 	{
 		resp.put("scheduleId",tdsched.ID.toString());
 	}
+	resp.put("steps",steps);
 	return resp.toString();
 }
