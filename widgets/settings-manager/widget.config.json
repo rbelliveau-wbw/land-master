@@ -1,0 +1,27 @@
+{
+  "slug": "settings-manager",
+  "name": "Settings Manager",
+  "module": "settings",
+  "version": "1.0.0",
+  "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
+  "source_entry": "widgets/settings-manager/src/app/widget.html",
+  "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
+  "baseline_zip": null,
+  "html_title": "Land Master Settings",
+  "source_sha256": "941d9f5667a57a28e22eaf11aa3d474369d4cb2f59cf3b2c982794f31dbbe6d7",
+  "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+      "connect-src": []
+    },
+    "config": []
+  },
+  "dependency_inventory": "manifests/widget-dependencies.json#settings-manager",
+  "hosting_entry": "index.html (generated from app/widget.html)",
+  "trust": "Authored in-repo; Settings form schema verified live against the Creator record-edit form on 2026-08-27."
+}

@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Land Master Settings</title>
+<script src="https://static.zohocdn.com/creator/widgets/version/1.0/widgetsdk-min.js"></script>
+<script src="runtime-context.js"></script>
+<script src="critical-error-reporter.js"></script>
+<style>
+/* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
+:root{
+  --bg:#f0f3f7; --surface:#e8ecf1; --card:#fff;
+  --line:#dde4ef; --line-strong:#c8d4e5;
+  --text:#0f2744; --muted:#5c7394; --faint:#8ea0bd;
+  --navy:#0b2345; --navy-soft:rgba(11,35,69,.08);
+  --primary:#1e40af; --primary-2:#2563eb; --ptint:#eef4ff; --psoft:#e8f0fb;
+  --green:#047857; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#b91c1c; --red-bg:#fef2f2;
+  --violet:#3730a3; --violet-bg:#e0e7ff;
+  --r:10px; --rsm:6px;
+  --shadow:0 2px 8px rgba(30,64,175,.06),0 1px 2px rgba(0,0,0,.03);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ── HEADER ── */
+.hdr{flex:0 0 auto;background:var(--navy);color:#fff;padding:12px 18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hdr h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.2px}
+.hdr .sub{font-size:11.5px;color:#a9bcd6;font-weight:400}
+.spacer{flex:1 1 auto}
+.dot{width:8px;height:8px;border-radius:50%;background:#64748b;display:inline-block;flex:0 0 auto}
+.dot.live{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.2)}
+.dot.error{background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.2)}
+.dot.saving{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.2)}
+.mode{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#c9d8ea}
+.hbtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;
+  padding:5px 11px;border-radius:var(--rsm);cursor:pointer;font-size:12px;
+  display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+.hbtn:hover{background:rgba(255,255,255,.2)}
+.hbtn:disabled{opacity:.45;cursor:default}
+
+/* ── SECTION TABS ── segmented control, house style (docs/widget-ui-style.md) ── */
+.navbar{flex:0 0 auto;background:var(--card);border-bottom:1px solid var(--line);
+  padding:9px 18px;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+.tabs{display:inline-flex;border:1px solid;border-radius:9px;gap:3px;padding:4px;background:linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%);border-color:#d4deeb;box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 3px 10px rgba(15,39,68,.07)}
+.tab{border:0;background:none;border-radius:6px;padding:6px 13px;cursor:pointer;color:var(--muted);
+  font-size:12.5px;white-space:nowrap;font-weight:750;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
+.tab:hover{color:var(--navy);background:rgba(255,255,255,.88);box-shadow:0 2px 5px rgba(15,39,68,.08);transform:translateY(-1px)}
+.tab.active{color:#fff;background:linear-gradient(145deg,#163f77,#0b2345);box-shadow:0 4px 10px rgba(11,35,69,.25),inset 0 1px 0 rgba(255,255,255,.18);text-shadow:0 1px 1px rgba(0,0,0,.12);transform:translateY(-1px)}
+.tab:active{transform:translateY(0)}
+.tab:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
+
+/* ── SCROLL CONTAINER (must be a sized flex column with its own overflow) ── */
+#view{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px;
+  display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.wrap{max-width:1080px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+
+/* ── BANNERS ── */
+.banner{border-radius:var(--r);padding:12px 15px;display:flex;gap:11px;align-items:flex-start;
+  font-size:12.5px;border:1px solid}
+.banner .ico{flex:0 0 auto;font-size:15px;line-height:1.25}
+.banner b{display:block;margin-bottom:2px;font-size:13px}
+.banner.ok{background:var(--green-bg);border-color:#a7f3d0;color:var(--green)}
+.banner.warn{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}
+.banner.bad{background:var(--red-bg);border-color:#fecaca;color:var(--red)}
+.banner.info{background:var(--ptint);border-color:#c7d9f5;color:var(--primary)}
+.banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;font-size:11.5px}
+.banner ul{margin:6px 0 0;padding-left:18px}
+.banner a{color:inherit}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden}
+.card>header{padding:13px 16px;border-bottom:1px solid var(--line);background:#fbfcfe;
+  display:flex;align-items:center;gap:10px}
+.card>header h2{margin:0;font-size:13.5px;font-weight:650;color:var(--navy)}
+.card>header .blurb{font-size:11.5px;color:var(--muted);font-weight:400}
+.card .body{padding:16px}
+
+/* ── FIELD ROWS ── */
+.frow{display:grid;grid-template-columns:230px 1fr 26px;gap:14px;align-items:start;
+  padding:11px 0;border-bottom:1px dashed var(--line)}
+.frow:last-child{border-bottom:0}
+.frow>.lab{padding-top:6px}
+.frow .lab .name{font-weight:600;font-size:12.5px;color:var(--text);display:flex;align-items:center;gap:6px}
+.frow .lab .hint{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
+.frow .ctl{min-width:0}
+.frow .tick{padding-top:8px;text-align:center}
+
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--rsm);
+  background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--primary-2);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input:disabled,select:disabled,textarea:disabled{background:var(--surface);color:var(--faint)}
+textarea{resize:vertical;min-height:70px}
+.affix{position:relative;display:block}
+.affix>input{padding-left:26px}
+.affix.suf>input{padding-left:10px;padding-right:28px}
+.affix>.sym{position:absolute;top:50%;transform:translateY(-50%);left:10px;
+  color:var(--faint);font-size:12px;pointer-events:none}
+.affix.suf>.sym{left:auto;right:11px}
+.narrow{max-width:210px}
+.mid{max-width:340px}
+
+/* ── TOGGLE ── */
+.tog{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.tog input{position:absolute;opacity:0;width:0;height:0}
+.tog .track{width:40px;height:22px;border-radius:11px;background:#cbd5e1;position:relative;
+  transition:background .18s;flex:0 0 auto}
+.tog .track::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.tog input:checked+.track{background:var(--primary-2)}
+.tog input:checked+.track::after{transform:translateX(18px)}
+.tog input:focus-visible+.track{box-shadow:0 0 0 3px rgba(37,99,235,.25)}
+.tog .txt{font-size:12.5px;color:var(--muted)}
+.tog.danger input:checked+.track{background:var(--amber)}
+.frow.hot{background:var(--amber-bg);margin:0 -16px;padding-left:16px;padding-right:16px}
+
+/* ── EMAIL CHIPS ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:6px;border:1px solid var(--line-strong);
+  border-radius:var(--rsm);background:#fff;min-height:38px;align-items:center}
+.chips:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--psoft);color:var(--primary);
+  border:1px solid #c7d9f5;border-radius:20px;padding:3px 5px 3px 10px;font-size:11.5px;max-width:100%}
+.chip.bad{background:var(--red-bg);border-color:#fecaca;color:var(--red)}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip button{background:rgba(0,0,0,.08);border:0;border-radius:50%;width:16px;height:16px;
+  cursor:pointer;line-height:1;font-size:11px;color:inherit;flex:0 0 auto;padding:0}
+.chip button:hover{background:rgba(0,0,0,.18)}
+.chips input{border:0;flex:1 1 120px;min-width:120px;padding:4px 6px;background:none}
+.chips input:focus{outline:0;box-shadow:none}
+
+/* ── MULTI-SELECT (searchable) ── */
+.msel{border:1px solid var(--line-strong);border-radius:var(--rsm);background:#fff;overflow:hidden}
+.msel .selbar{display:flex;flex-wrap:wrap;gap:6px;padding:7px 9px;cursor:pointer;
+  align-items:center;min-height:38px}
+.msel .selbar:hover{background:#fbfcfe}
+.msel .ph{color:var(--faint);font-size:12px}
+.msel .caret{margin-left:auto;color:var(--faint);font-size:10px;transition:transform .18s}
+.msel.open .caret{transform:rotate(180deg)}
+.msel .pop{display:none;border-top:1px solid var(--line);background:#fff}
+.msel.open .pop{display:block}
+.msel .pop .search{padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfcfe}
+.msel .pop .search input{padding:6px 9px}
+.msel .opts{max-height:240px;overflow-y:auto}
+.msel .opt{display:flex;gap:9px;align-items:flex-start;padding:8px 11px;cursor:pointer;
+  border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.msel .opt:last-child{border-bottom:0}
+.msel .opt:hover,.msel .opt.cur{background:var(--ptint)}
+.msel .opt .box{width:15px;height:15px;border:1.5px solid var(--line-strong);border-radius:4px;
+  flex:0 0 auto;margin-top:1px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;line-height:1}
+.msel .opt.on .box{background:var(--primary-2);border-color:var(--primary-2)}
+.msel .opt .meta{font-size:11px;color:var(--muted);margin-top:1px}
+.msel .empty{padding:14px;text-align:center;color:var(--faint);font-size:12px}
+
+/* ── TABLE (Construction Curve) ── */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--rsm)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:12.5px}
+th{background:#f6f8fb;text-align:left;padding:8px 10px;font-weight:600;color:var(--muted);
+  font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);
+  white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:6px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fbfcfe}
+td input,td select{padding:5px 8px}
+.grp td{background:var(--surface);font-weight:600;color:var(--navy);font-size:11.5px;
+  border-top:1px solid var(--line-strong)}
+.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10.5px;font-weight:600;
+  border:1px solid}
+.pill.ok{background:var(--green-bg);border-color:#a7f3d0;color:var(--green)}
+.pill.off{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}
+.iconbtn{background:none;border:1px solid transparent;border-radius:var(--rsm);width:26px;height:26px;
+  cursor:pointer;color:var(--faint);line-height:1;font-size:13px;padding:0}
+.iconbtn:hover{background:var(--red-bg);color:var(--red);border-color:#fecaca}
+
+/* ── BUTTONS ── */
+.btn{background:var(--card);border:1px solid var(--line-strong);border-radius:var(--rsm);
+  padding:6px 13px;cursor:pointer;font-size:12.5px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--ptint);border-color:var(--primary-2);color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:disabled:hover{background:var(--card);border-color:var(--line-strong);color:inherit}
+
+/* ── SAVE TICK ── distinct names: `.ok` is already a banner/pill modifier ── */
+.stick{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--green);
+  color:#fff;text-align:center;line-height:18px;font-size:11px;
+  opacity:0;transform:scale(.5);transition:opacity .2s,transform .2s}
+.stick.show{opacity:1;transform:scale(1);animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.5)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.sfail{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--red);
+  color:#fff;text-align:center;line-height:18px;font-size:11px}
+.frow.failed input,.frow.failed select,.frow.failed textarea,
+.frow.failed .chips,.frow.failed .msel{border-color:var(--red)}
+
+/* ── TOAST ── */
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);
+  background:var(--navy);color:#fff;padding:10px 18px;border-radius:22px;font-size:12.5px;
+  box-shadow:0 8px 24px rgba(11,35,69,.28);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;max-width:80%;text-align:center;z-index:60}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.bad{background:var(--red)}
+
+/* ── MISC ── */
+.skel{background:linear-gradient(90deg,#e9eef5 25%,#f3f6fa 50%,#e9eef5 75%);
+  background-size:200% 100%;animation:sh 1.3s infinite;border-radius:var(--rsm);height:14px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.muted{color:var(--muted)}
+.tiny{font-size:11px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+.jobs{margin:8px 0 0;padding-left:16px;columns:2;column-gap:22px}
+.jobs li{margin-bottom:2px;break-inside:avoid}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px 20px}
+.pcell .name{font-weight:600;font-size:12px;margin-bottom:4px;display:flex;align-items:center;
+  justify-content:space-between;gap:6px}
+.foot{padding:4px 2px 20px;text-align:center;color:var(--faint);font-size:11px}
+@media(max-width:760px){
+  .frow{grid-template-columns:1fr 26px;gap:6px}
+  .frow>.lab{padding-top:0;grid-column:1/2}
+  .frow .ctl{grid-column:1/2}
+  .frow .tick{grid-column:2/3;grid-row:1/2}
+  .jobs{columns:1}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Settings</h1>
+  <span class="sub" id="hsub">Land Master · single configuration record</span>
+  <span class="spacer"></span>
+  <span class="mode"><span class="dot" id="dot"></span><span id="mode">Starting…</span></span>
+  <button class="hbtn" id="reload" title="Discard local state and re-read from Creator">↻ Reload</button>
+  <button class="hbtn" id="openrec" title="Open this record in Creator's native form">↗ Open in Creator</button>
+</div>
+
+<div class="navbar"><div class="tabs" id="nav"></div></div>
+
+<div id="view">
+  <div class="wrap" id="wrap">
+    <div class="card"><div class="body">
+      <div class="skel" style="width:40%;margin-bottom:10px"></div>
+      <div class="skel" style="width:75%;margin-bottom:10px"></div>
+      <div class="skel" style="width:60%"></div>
+    </div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+var SMW_VERSION = "1.0.0";
+
+/* ══════════════ CONFIG ══════════════ */
+var CFG = {
+  version: SMW_VERSION,
+  form: "Settings",
+  report: "All_Settings",
+  curveForm: "Construction_Curve",
+  curveReport: "All_Construction_Curves",
+  curveParentField: "Settings",
+  approvalsReport: "All_Contract_Approvals",
+  actionsReport: "All_Contract_Actions",
+  proformaReport: "All_Pro_Formas",
+  pageSize: 200,
+  maxPages: 25,
+  saveDebounceMs: 700,
+  /* Scheduled workflows anchored on Settings.Next_Workflow_Run — surfaced in the UI so
+     nobody edits that field without knowing what it reschedules. */
+  jobs: [
+    "Test Add Hours",
+    "Set Close Date - Lots",
+    "Update Sold/Contracted - Forecast Year",
+    "Update Actual Lots - Forecast",
+    "Check for Stuck Budget Approvals",
+    "Update Budgets w/ Projects Info - Budget"
+  ]
+};
+
+/* ══════════════ FIELD SCHEMA ══════════════
+   Verified live 2026-08-27 against the Settings record-edit DOM. Anything on the record
+   that is NOT listed here still renders, under "Other fields" — so a field added to the
+   Creator form later is never silently hidden by this widget.                            */
+var GROUPS = [
+  { key:"automation", title:"Automation & Scheduling",
+    blurb:"Next Workflow Run is the anchor every nightly job starts from.",
+    fields:[
+      { n:"Next_Workflow_Run", l:"Next Workflow Run", t:"datetime", jobs:true,
+        hint:"Start anchor for the daily scheduled workflows (America/Chicago)." },
+      { n:"Approval_Reminder_Interval_Days", l:"Approval Reminder Interval", t:"int", suffix:"days",
+        hint:"How long to wait between approval reminder emails. Falls back to 3 when blank or 0." },
+      { n:"Next_Approval_Reminder_Date", l:"Next Approval Reminder Date", t:"date",
+        hint:"The daily reminder job stays silent until this date, then pushes it forward by the interval." }
+    ]},
+  { key:"forecasting", title:"Forecasting",
+    blurb:"Global unlock switches. Both are off in normal operation.",
+    fields:[
+      { n:"Open_Forecasting_Window", l:"Open Forecasting Window", t:"bool", danger:true,
+        hint:"Allows editing for current and future month forecasting." },
+      { n:"Unlock_All_Forecasts", l:"Unlock All Forecasts", t:"bool", danger:true,
+        hint:"Unlocks all the fields in Forecasts and Forecast Years, also prevents hiding." }
+    ]},
+  { key:"contracts", title:"Contracts & Legal",
+    blurb:"Who gets legal mail, and which rows seed a new builder contract.",
+    fields:[
+      { n:"Receive_Legal_Notifications", l:"Legal Notification Recipients", t:"emails",
+        hint:"Stored as one comma-separated string. Type an address and press Enter." },
+      { n:"Builder_Approval_Template", l:"Builder Approval Template", t:"multi", src:"approvals",
+        hint:"Contract Approvals rows (template = Builder) copied onto a new builder contract." },
+      { n:"Builder_Contract_Action_Template", l:"Builder Contract Action Template", t:"multi", src:"actions",
+        hint:"Contract Actions rows copied onto a new builder contract." }
+    ]},
+  { key:"budget", title:"Budget",
+    fields:[
+      { n:"COO_Approval_Threshold", l:"COO Approval Threshold", t:"money",
+        hint:"Spend above this amount requires COO approval." },
+      { n:"Multi_Line", l:"Multi Line", t:"text",
+        hint:"Free-text field on the Budget section of the form." }
+    ]},
+  { key:"defaults", title:"Pro Forma Defaults", percentGrid:true,
+    blurb:"Percentage defaults applied to new pro formas.",
+    fields:[
+      { n:"Capital_Cost",           l:"Capital Cost",           t:"pct" },
+      { n:"Points",                 l:"Points",                 t:"pct" },
+      { n:"Admin_Cost",             l:"Admin Cost",             t:"pct" },
+      { n:"Engineering_Markup",     l:"Engineering Markup",     t:"pct" },
+      { n:"Engineering_Sub_Markup", l:"Engineering Sub Markup", t:"pct" },
+      { n:"Construction_Markup",    l:"Construction Markup",    t:"pct" },
+      { n:"Construction_Sub_Markup",l:"Construction Sub Markup",t:"pct" },
+      { n:"Profit_Share",           l:"Profit Share",           t:"pct" }
+    ]}
+];
+
+var CURVE_COLS = [
+  { n:"Cost_Curve",   l:"No. Months", t:"pick", opts:["7","8","9","10","11","12","13","14","15","16","17","18"], w:"110px" },
+  { n:"Month_Number", l:"Month No.",  t:"int",  w:"95px" },
+  { n:"Percent_Cost", l:"% Cost",     t:"pct",  w:"110px" },
+  { n:"Pro_Forma",    l:"Pro Forma",  t:"look", src:"proformas", w:"240px" },
+  { n:"Template_Item",l:"Template",   t:"bool", w:"90px" }
+];
+
+/* Fields that exist on the record but should never be shown as editable "other" fields. */
+var SYSTEM_FIELDS = {ID:1, Added_User:1, Modified_User:1, Added_Time:1, Modified_Time:1,
+  Construction_Curve:1, Forecast_Settings:1, General_Settings:1, Contracts_Settings:1,
+  Budget_Settings:1, plain:1, plain1:1, plain2:1, Section:1, Email:1, zc_display_value:1};
+
+/* ══════════════ STATE ══════════════ */
+var S = {
+  live:false, demo:false, ready:false,
+  rec:null, recId:null, recCount:0, extras:[],
+  curve:[], approvals:[], actions:[], proformas:[],
+  pending:{},          // field -> value awaiting flush
+  inflight:false,
+  saveTimer:null,
+  failed:{},           // field -> error message
+  section:"automation",
+  openMsel:null,
+  loadError:""
+};
+
+/* ══════════════ SMALL HELPERS ══════════════ */
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function str(v){ return v==null?"":String(v); }
+function diag(){ if(window.console&&console.warn) console.warn.apply(console,arguments); }
+function errText(e){
+  if(!e) return "Unknown error";
+  if(typeof e==="string") return e;
+  return e.message||e.responseText||(function(){ try{ return JSON.stringify(e).slice(0,300); }catch(x){ return "Unknown error"; } })();
+}
+function setMode(text,kind){ $("mode").textContent=text; $("dot").className="dot "+(kind||""); }
+function toast(msg,bad){
+  var t=$("toast"); t.textContent=msg; t.className=(bad?"bad ":"")+"show";
+  clearTimeout(toast._t); toast._t=setTimeout(function(){ t.className=""; },3200);
+}
+
+/* ══════════════ CREATOR API (envelope-tolerant, mirrors contract-management) ══════════════ */
+function emptyResponse(r){
+  var c=r&&(r.code||(r.result&&r.result.code));
+  return String(c)==="3100"||String(c)==="9280";
+}
+function responseBad(r){ return !!(r&&(r.error||(r.result&&r.result.error))); }
+/* code 3000 + a non-empty error array whose message says "updated successfully" means the WRITE
+   LANDED and an on-success Deluge workflow then failed. Retrying re-fires the broken workflow. */
+function wroteButWorkflowFailed(resp){
+  var code=resp&&(resp.code||(resp.result&&resp.result.code));
+  if(String(code)!=="3000") return false;
+  var err=resp&&(resp.error||(resp.result&&resp.result.error));
+  if(!err) return false;
+  var txt=""; try{ txt=JSON.stringify(err); }catch(e){ txt=String(err); }
+  return /updated successfully/i.test(txt);
+}
+function isSuccess(resp){
+  if(wroteButWorkflowFailed(resp)) return true;
+  var code=resp&&resp.code;
+  var hasErr=!!(resp&&(resp.error||(resp.result&&resp.result.error)));
+  var hasId=!!(resp&&((resp.data&&(resp.data.ID||resp.data.id))||(resp.result&&resp.result.data&&(resp.result.data.ID||resp.result.data.id))));
+  return ((code===3000||(resp&&resp.result&&resp.result.code===3000))&&!hasErr)||(!hasErr&&hasId&&code==null);
+}
+function getAll(report,criteria){
+  var out=[];
+  function page(n){
+    var a={reportName:report,page:n,pageSize:CFG.pageSize};
+    if(criteria) a.criteria=criteria;
+    return ZOHO.CREATOR.API.getAllRecords(a).then(function(r){
+      if(emptyResponse(r)) return out;
+      if(responseBad(r)) throw r;
+      var rows=r.data||[];
+      out=out.concat(rows);
+      return (rows.length===CFG.pageSize && n<CFG.maxPages) ? page(n+1) : out;
+    });
+  }
+  return page(1);
+}
+function buildUpdateEnvelopes(recordId,fieldData,reportName){
+  var rid=String(recordId);
+  var appName=(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName)||undefined;
+  return [
+    {args:{reportName:reportName,id:rid,data:{data:fieldData}}},
+    {args:{reportName:reportName,id:rid,data:fieldData}},
+    {args:{reportName:reportName,id:rid,data:{input:fieldData}}},
+    {args:{reportName:reportName,id:rid,input:fieldData}},
+    {args:{reportName:reportName,id:rid,payload:{data:fieldData}}},
+    {args:{appName:appName,reportName:reportName,id:rid,data:fieldData}}
+  ];
+}
+function tryUpdate(recordId,fieldData,report,envs,idx){
+  if(idx>=envs.length) return Promise.reject({message:"Creator did not accept the update payload."});
+  return ZOHO.CREATOR.API.updateRecord(envs[idx].args).then(function(resp){
+    if(isSuccess(resp)) return resp;
+    throw resp;
+  }).catch(function(err){
+    var code=err&&err.code;
+    if(!code&&err&&typeof err.responseText==="string"){ try{ code=JSON.parse(err.responseText).code; }catch(e){} }
+    if(String(code)==="2945") return tryUpdate(recordId,fieldData,report,envs,idx+1);
+    throw err;
+  });
+}
+function apiUpdate(recordId,fieldData,report){
+  report=report||CFG.report;
+  if(S.demo) return Promise.resolve({code:3000});
+  return tryUpdate(recordId,fieldData,report,buildUpdateEnvelopes(recordId,fieldData,report),0);
+}
+function createSuccess(r){ var c=r&&(r.code||(r.result&&r.result.code)); return String(c)==="3000"&&!r.error; }
+function apiAdd(form,data){
+  if(S.demo) return Promise.resolve({code:3000,data:{ID:"demo"+Date.now()}});
+  var app=(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.appName)||undefined;
+  var envs=[{formName:form,data:{data:data}},{formName:form,data:data},
+            {appName:app,formName:form,data:{data:data}},{appName:app,formName:form,data:data}];
+  function attempt(i){
+    if(i>=envs.length) return Promise.reject({message:"Creator did not accept the add-record payload."});
+    return ZOHO.CREATOR.API.addRecord(envs[i]).then(function(r){
+      if(createSuccess(r)) return r; throw r;
+    }).catch(function(e){
+      var c=e&&e.code;
+      if(!c&&e&&e.responseText){ try{ c=JSON.parse(e.responseText).code; }catch(x){} }
+      if(String(c)==="2945") return attempt(i+1);
+      throw e;
+    });
+  }
+  return attempt(0);
+}
+/* Creator's widget SDK deleteRecord matches on `criteria`, not `id` — passing an id silently fails. */
+function apiDelete(report,id){
+  if(S.demo) return Promise.resolve({code:3000});
+  return ZOHO.CREATOR.API.deleteRecord({reportName:report,criteria:"(ID == "+String(id)+")"});
+}
+
+/* ══════════════ VALUE COERCION ══════════════ */
+function relId(v){
+  /* A Creator lookup arrives as {ID,zc_display_value}, a bare id, or a display string. */
+  if(v==null||v==="") return "";
+  if(typeof v==="object"){ return str(v.ID||v.id||""); }
+  return str(v);
+}
+function relLabel(v){
+  if(v&&typeof v==="object") return str(v.zc_display_value||v.display_value||v.ID||"");
+  return str(v);
+}
+function multiIds(v){
+  /* Multi-select lookups come back as an array, or a @#zoho-comma#@ / comma delimited string. */
+  if(v==null||v==="") return [];
+  if(Array.isArray(v)) return v.map(relId).filter(Boolean);
+  var s=String(v);
+  var parts = s.indexOf("@#zoho-comma#@")>=0 ? s.split("@#zoho-comma#@") : s.split(",");
+  return parts.map(function(x){ return x.trim(); }).filter(Boolean);
+}
+function numStr(v){
+  /* Strip currency/percent formatting so Creator gets a clean number. */
+  var s=str(v).replace(/[,$%\s]/g,"");
+  return s;
+}
+function boolOf(v){
+  if(v===true||v===false) return v;
+  var s=str(v).trim().toLowerCase();
+  return s==="true"||s==="yes"||s==="1";
+}
+function fmtMoney(v){
+  var s=numStr(v);
+  if(s==="") return "";
+  var n=Number(s);
+  if(!isFinite(n)) return str(v);
+  return n.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+/* Creator's date inputs use MM/dd/yyyy; <input type=date> needs yyyy-MM-dd. */
+function toIsoDate(v){
+  var s=str(v).trim(); if(!s) return "";
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return m[3]+"-"+("0"+m[1]).slice(-2)+"-"+("0"+m[2]).slice(-2);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m?m[0]:"";
+}
+function fromIsoDate(v){
+  var s=str(v).trim(); if(!s) return "";
+  var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m?(m[2]+"/"+m[3]+"/"+m[1]):s;
+}
+/* Datetime round-trip: Creator stores "MM/dd/yyyy hh:mm:ss AM/PM". */
+function splitDateTime(v){
+  var s=str(v).trim();
+  var m=s.match(/^(\d{1,2}\/\d{1,2}\/\d{4})\s+(.*)$/);
+  if(m) return {d:m[1], t:m[2]};
+  return {d:s, t:""};
+}
+function to24(t){
+  var m=str(t).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/);
+  if(!m) return "";
+  var h=parseInt(m[1],10), mi=m[2], ap=m[4]?m[4].toUpperCase():"";
+  if(ap==="PM"&&h<12) h+=12;
+  if(ap==="AM"&&h===12) h=0;
+  return ("0"+h).slice(-2)+":"+mi;
+}
+function to12(hhmm,secs){
+  var m=str(hhmm).match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return "";
+  var h=parseInt(m[1],10), mi=m[2], ap=h>=12?"PM":"AM";
+  var h12=h%12; if(h12===0) h12=12;
+  return h12+":"+mi+":"+(secs||"00")+" "+ap;
+}
+
+/* ══════════════ SAVE ENGINE ══════════════
+   Every control writes into S.pending and schedules a flush. One debounced updateRecord
+   carries all changed fields together, so editing five fields is one write, not five.   */
+function queue(field,value){
+  S.pending[field]=value;
+  delete S.failed[field];
+  var row=document.querySelector('[data-frow="'+field+'"]');
+  if(row) row.classList.remove("failed");
+  setMode("Unsaved changes","saving");
+  clearTimeout(S.saveTimer);
+  S.saveTimer=setTimeout(flush,CFG.saveDebounceMs);
+}
+/* Multi-select lookup encoding is a PER-FIELD property of Creator, not a global one: some fields
+   take an array of ids, some a comma string, some a bare id. The winning shape is memoized. */
+var ENC_MODES=["array","csv","single"];
+var MULTI_ENC={};
+function isMultiField(f){ var d=findField(f); return !!(d&&d.t==="multi"); }
+function encodeMulti(ids,mode){
+  ids=(ids||[]).map(String);
+  if(mode==="csv") return ids.join(",");
+  if(mode==="single") return ids.length===1?ids[0]:ids.join(",");
+  return ids;
+}
+function buildPayload(raw){
+  var out={};
+  Object.keys(raw).forEach(function(f){
+    out[f]=isMultiField(f)?encodeMulti(raw[f],ENC_MODES[MULTI_ENC[f]||0]):raw[f];
+  });
+  return out;
+}
+/* Creator can answer code 3000 while silently dropping a list value it could not parse. Read the
+   row back; if a list came out short, advance that field's encoding and resend just that field. */
+function verifyMultis(raw){
+  var multis=Object.keys(raw).filter(isMultiField);
+  if(!multis.length) return Promise.resolve();
+  return getAll(CFG.report,"ID == "+S.recId).then(function(rows){
+    var row=(rows||[])[0];
+    if(!row) return;
+    var redo={};
+    multis.forEach(function(f){
+      var want=(raw[f]||[]).length, got=multiIds(row[f]).length;
+      if(want===got){ if(S.rec) S.rec[f]=row[f]; return; }
+      var cur=MULTI_ENC[f]||0;
+      if(cur<ENC_MODES.length-1){ MULTI_ENC[f]=cur+1; redo[f]=raw[f]; }
+      else diag("Multi-select value would not stick for "+f,{want:want,got:got});
+    });
+    if(!Object.keys(redo).length) return;
+    return apiUpdate(S.recId,buildPayload(redo),CFG.report).then(function(){ return verifyMultis(redo); });
+  }).catch(function(e){ diag("multi verify skipped",e); });
+}
+function flush(){
+  if(S.inflight){ clearTimeout(S.saveTimer); S.saveTimer=setTimeout(flush,250); return; }
+  var raw={}, n=0;
+  for(var k in S.pending){ if(S.pending.hasOwnProperty(k)){ raw[k]=S.pending[k]; n++; } }
+  if(!n){ setMode("Connected","live"); return; }
+  S.pending={}; S.inflight=true;
+  setMode("Saving…","saving");
+  apiUpdate(S.recId,buildPayload(raw),CFG.report).then(function(){
+    return verifyMultis(raw);
+  }).then(function(){
+    S.inflight=false;
+    Object.keys(raw).forEach(function(f){
+      if(S.rec&&!isMultiField(f)) S.rec[f]=raw[f];
+      showTick(f);
+    });
+    var left=Object.keys(S.pending).length;
+    setMode(left?"Unsaved changes":"Connected",left?"saving":"live");
+    toast(n===1?"Saved":"Saved "+n+" changes");
+  }).catch(function(e){
+    S.inflight=false;
+    var msg=errText(e);
+    Object.keys(raw).forEach(function(f){
+      S.failed[f]=msg;
+      var row=document.querySelector('[data-frow="'+f+'"]');
+      if(row){ row.classList.add("failed"); var t=row.querySelector(".tick"); if(t) t.innerHTML='<span class="sfail" title="'+esc(msg)+'">!</span>'; }
+    });
+    setMode("Save failed","error");
+    toast("Could not save: "+msg,true);
+    diag("Settings save failed",e);
+    if(window.LMCriticalErrors) LMCriticalErrors.breadcrumb("error","Settings save failed",{fields:Object.keys(raw),error:msg},true);
+  });
+}
+function showTick(field){
+  var row=document.querySelector('[data-frow="'+field+'"]');
+  if(!row) return;
+  var t=row.querySelector(".tick");
+  if(!t) return;
+  t.innerHTML='<span class="stick show">✓</span>';
+  setTimeout(function(){ var s=t.querySelector(".stick"); if(s) s.classList.remove("show"); },1900);
+}
+
+/* ══════════════ RENDER ══════════════ */
+function render(){
+  if(!S.ready) return;
+  renderNav();
+  var w=$("wrap");
+  var html="";
+
+  html+=guardBanner();
+  if(S.loadError){
+    html+='<div class="banner bad"><span class="ico">⚠</span><div><b>Some data could not be loaded</b>'
+        + esc(S.loadError)+'</div></div>';
+  }
+
+  GROUPS.forEach(function(g){ html+=groupCard(g); });
+  html+=curveCard();
+  html+=otherCard();
+  html+='<div class="foot">Settings Manager v'+esc(CFG.version)
+      + ' · record <span class="mono">'+esc(S.recId||"—")+'</span>'
+      + ' · changes save automatically</div>';
+
+  w.innerHTML=html;
+  wire();
+}
+
+function renderNav(){
+  var items=GROUPS.map(function(g){ return {k:g.key,t:g.title}; });
+  items.push({k:"curve",t:"Construction Curve"});
+  if(otherFields().length) items.push({k:"other",t:"Other fields"});
+  $("nav").innerHTML=items.map(function(i){
+    return '<button class="tab'+(S.section===i.k?" active":"")+'" data-jump="'+esc(i.k)+'">'+esc(i.t)+'</button>';
+  }).join("");
+}
+
+function guardBanner(){
+  if(S.recCount>1){
+    return '<div class="banner bad"><span class="ico">⛔</span><div>'
+      + '<b>'+S.recCount+' Settings records exist — only one is allowed</b>'
+      + 'Every nightly scheduled workflow is anchored on this form, so duplicates make each job run '
+      + S.recCount+'× per day. Deluge across the app reads <code>Settings[ID != 0]</code> as a single '
+      + 'record and will now pick one arbitrarily.'
+      + '<ul>'+S.extras.map(function(r){
+          return '<li><span class="mono">'+esc(r.ID)+'</span>'+(String(r.ID)===String(S.recId)?' — being edited here':' — <b>delete this one</b>')+'</li>';
+        }).join("")+'</ul>'
+      + 'Delete the extras in Creator, then install the <i>Block Second Settings Record</i> validation so it cannot recur.'
+      + '</div></div>';
+  }
+  return '<div class="banner ok"><span class="ico">✓</span><div>'
+    + '<b>One Settings record — as it should be</b>'
+    + 'This app stores all configuration in a single row (<span class="mono">'+esc(S.recId||"—")+'</span>). '
+    + 'The <i>Block Second Settings Record</i> validation keeps it that way.'
+    + '</div></div>';
+}
+
+function groupCard(g){
+  var h='<div class="card" id="sec-'+esc(g.key)+'"><header><h2>'+esc(g.title)+'</h2>'
+       + (g.blurb?'<span class="blurb">'+esc(g.blurb)+'</span>':'')
+       + '</header><div class="body">';
+  if(g.percentGrid){
+    var blank=g.fields.filter(function(f){ return numStr(curVal(f.n))===""; }).length;
+    if(blank) h+='<div class="banner warn" style="margin-bottom:14px"><span class="ico">•</span><div>'
+      + '<b>'+blank+' of '+g.fields.length+' defaults are blank</b>'
+      + 'Blank defaults are read as zero wherever a pro forma falls back to them.</div></div>';
+    h+='<div class="grid2">'+g.fields.map(pctCell).join("")+'</div>';
+  } else {
+    h+=g.fields.map(fieldRow).join("");
+  }
+  return h+'</div></div>';
+}
+
+function curVal(name){
+  if(S.pending.hasOwnProperty(name)) return S.pending[name];
+  return S.rec?S.rec[name]:"";
+}
+
+function pctCell(f){
+  var v=numStr(curVal(f.n));
+  return '<div class="pcell" data-frow="'+esc(f.n)+'">'
+    + '<div class="name"><span>'+esc(f.l)+'</span><span class="tick"></span></div>'
+    + '<label class="affix suf"><input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="pct"'
+    + ' value="'+esc(v)+'" placeholder="0"/><span class="sym">%</span></label>'
+    + '</div>';
+}
+
+function fieldRow(f){
+  var ctl="";
+  var v=curVal(f.n);
+  switch(f.t){
+    case "bool":{
+      var on=boolOf(v);
+      ctl='<label class="tog'+(f.danger?" danger":"")+'"><input type="checkbox" data-f="'+esc(f.n)+'" data-t="bool"'
+        + (on?" checked":"")+'/><span class="track"></span>'
+        + '<span class="txt">'+(on?(f.danger?"On — unlocked":"On"):"Off")+'</span></label>';
+      break; }
+    case "date":
+      ctl='<input class="narrow" type="date" data-f="'+esc(f.n)+'" data-t="date" value="'+esc(toIsoDate(v))+'"/>';
+      break;
+    case "datetime":{
+      var p=splitDateTime(v);
+      ctl='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<input class="narrow" type="date" data-f="'+esc(f.n)+'" data-t="dt-d" value="'+esc(toIsoDate(p.d))+'" style="max-width:170px"/>'
+        + '<input class="narrow" type="time" data-f="'+esc(f.n)+'" data-t="dt-t" value="'+esc(to24(p.t))+'" style="max-width:130px"/>'
+        + '</div>';
+      if(f.jobs) ctl+='<div class="tiny muted" style="margin-top:7px">Reschedules these daily jobs:'
+        + '<ul class="jobs">'+CFG.jobs.map(function(j){ return '<li>'+esc(j)+'</li>'; }).join("")+'</ul></div>';
+      break; }
+    case "int":
+      ctl='<label class="affix suf" style="max-width:170px"><input type="text" inputmode="numeric" data-f="'+esc(f.n)+'" data-t="int" value="'+esc(numStr(v))+'"/>'
+        + '<span class="sym tiny">'+esc(f.suffix||"")+'</span></label>';
+      break;
+    case "money":
+      ctl='<label class="affix" style="max-width:210px"><span class="sym">$</span>'
+        + '<input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="money" value="'+esc(fmtMoney(v))+'"/></label>';
+      break;
+    case "pct":
+      ctl='<label class="affix suf narrow"><input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="pct" value="'+esc(numStr(v))+'"/><span class="sym">%</span></label>';
+      break;
+    case "text":
+      ctl='<textarea data-f="'+esc(f.n)+'" data-t="text">'+esc(v)+'</textarea>';
+      break;
+    case "emails":
+      ctl=emailChips(f,v);
+      break;
+    case "multi":
+      ctl=multiSelect(f,v);
+      break;
+    default:
+      ctl='<input type="text" data-f="'+esc(f.n)+'" data-t="raw" value="'+esc(v)+'"/>';
+  }
+  return '<div class="frow'+(f.danger&&boolOf(v)?" hot":"")+'" data-frow="'+esc(f.n)+'">'
+    + '<div class="lab"><div class="name">'+esc(f.l)+'</div>'
+    + (f.hint?'<div class="hint">'+esc(f.hint)+'</div>':'')+'</div>'
+    + '<div class="ctl">'+ctl+'</div><div class="tick"></div></div>';
+}
+
+function emailList(v){
+  return str(v).split(/[,;]/).map(function(x){ return x.trim(); }).filter(Boolean);
+}
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+function emailChips(f,v){
+  var list=emailList(v);
+  return '<div class="chips" data-chips="'+esc(f.n)+'">'
+    + list.map(function(e,i){
+        return '<span class="chip'+(validEmail(e)?"":" bad")+'" title="'+esc(validEmail(e)?e:"Not a valid address")+'">'
+          + '<span>'+esc(e)+'</span><button type="button" data-rmchip="'+i+'" aria-label="Remove">×</button></span>';
+      }).join("")
+    + '<input type="text" data-chipinput="'+esc(f.n)+'" placeholder="'+(list.length?"Add another…":"name@wbdevelopment.com")+'"/>'
+    + '</div>';
+}
+
+function optionsFor(src){
+  if(src==="approvals") return S.approvals.map(function(r){
+    var seq=str(r.Approval_Sequence);
+    return { id:str(r.ID),
+             label:str(r.Approver)||"(no approver)",
+             meta:[seq?("#"+seq):"", str(r.Type1)].filter(Boolean).join(" · ") };
+  }).sort(function(a,b){ return (a.meta>b.meta?1:a.meta<b.meta?-1:0); });
+  if(src==="actions") return S.actions.map(function(r){
+    /* Creator's own display format on this field is [Contract_Template + " - " + Contract_Template],
+       which renders every option as "Lot - Lot". Show the actual action text instead. */
+    var so=str(r.Sort_Order);
+    return { id:str(r.ID),
+             label:str(r.Action)||"(no action text)",
+             meta:[str(r.Contract_Template), so?("sort "+so):""].filter(Boolean).join(" · ") };
+  }).sort(function(a,b){ return (Number(a.meta.replace(/\D/g,""))||0)-(Number(b.meta.replace(/\D/g,""))||0); });
+  if(src==="proformas") return S.proformas.map(function(r){
+    return { id:str(r.ID), label:str(r.Name)||("#"+r.ID), meta:"" };
+  });
+  return [];
+}
+function multiSelect(f,v){
+  var sel=multiIds(v), opts=optionsFor(f.src);
+  var byId={}; opts.forEach(function(o){ byId[o.id]=o; });
+  var picked=sel.map(function(id){ return byId[id]||{id:id,label:"#"+id+" (not in list)",meta:""}; });
+  return '<div class="msel" data-msel="'+esc(f.n)+'" data-src="'+esc(f.src)+'">'
+    + '<div class="selbar" data-toggle="1">'
+    + (picked.length
+        ? picked.map(function(o){ return '<span class="chip"><span>'+esc(o.label)+'</span>'
+            + '<button type="button" data-unpick="'+esc(o.id)+'" aria-label="Remove">×</button></span>'; }).join("")
+        : '<span class="ph">Nothing selected — click to choose</span>')
+    + '<span class="caret">▼</span></div>'
+    + '<div class="pop">'
+    + '<div class="search"><input type="text" data-msearch="1" placeholder="Search '+esc(opts.length)+' options…"/></div>'
+    + '<div class="opts" data-opts="1">'+msOptions(opts,sel,"")+'</div>'
+    + '</div></div>';
+}
+function msOptions(opts,sel,q){
+  q=String(q||"").trim().toLowerCase();
+  var rows=opts.filter(function(o){
+    return !q || (o.label+" "+o.meta).toLowerCase().indexOf(q)>=0;
+  });
+  if(!rows.length) return '<div class="empty">No matches</div>';
+  return rows.map(function(o){
+    var on=sel.indexOf(o.id)>=0;
+    return '<div class="opt'+(on?" on":"")+'" data-pick="'+esc(o.id)+'">'
+      + '<span class="box">'+(on?"✓":"")+'</span>'
+      + '<span><span>'+esc(o.label)+'</span>'+(o.meta?'<div class="meta">'+esc(o.meta)+'</div>':'')+'</span></div>';
+  }).join("");
+}
+
+/* ── Construction Curve ─────────────────────────────────────────── */
+function curveCard(){
+  var h='<div class="card" id="sec-curve"><header><h2>Construction Curve</h2>'
+      + '<span class="blurb">Cost spread by month. Each curve should total 100%.</span>'
+      + '<span class="spacer"></span>'
+      + '<button class="btn" id="addCurve">+ Add row</button>'
+      + '</header><div class="body">';
+  if(!S.curve.length){
+    h+='<div class="banner info" style="margin:0"><span class="ico">•</span><div>'
+      + '<b>No curve rows yet</b>Add a row to define how construction cost spreads across months.'
+      + '</div></div>';
+    return h+'</div></div>';
+  }
+  /* Group by Cost_Curve so each curve's total is checkable at a glance. */
+  var groups={}, order=[];
+  S.curve.forEach(function(r){
+    var k=str(r.Cost_Curve)||"(unset)";
+    if(!groups[k]){ groups[k]=[]; order.push(k); }
+    groups[k].push(r);
+  });
+  order.sort(function(a,b){ return (Number(a)||999)-(Number(b)||999); });
+
+  h+='<div class="tblwrap"><table><thead><tr>'
+    + CURVE_COLS.map(function(c){ return '<th style="width:'+c.w+'">'+esc(c.l)+'</th>'; }).join("")
+    + '<th style="width:44px"></th></tr></thead><tbody>';
+  order.forEach(function(k){
+    var rows=groups[k];
+    var sum=rows.reduce(function(a,r){ var n=Number(numStr(r.Percent_Cost)); return a+(isFinite(n)?n:0); },0);
+    var okSum=Math.abs(sum-100)<0.01;
+    h+='<tr class="grp"><td colspan="'+(CURVE_COLS.length+1)+'">'
+      + esc(k==="(unset)"?"No month count set":(k+"-month curve"))
+      + ' · '+rows.length+' row'+(rows.length===1?"":"s")
+      + ' <span class="pill '+(okSum?"ok":"off")+'">'+(Math.round(sum*1000)/1000)+'%</span>'
+      + (okSum?"":' <span class="tiny muted">should total 100%</span>')
+      + '</td></tr>';
+    rows.sort(function(a,b){ return (Number(a.Month_Number)||0)-(Number(b.Month_Number)||0); });
+    rows.forEach(function(r){ h+=curveRow(r); });
+  });
+  return h+'</tbody></table></div></div></div>';
+}
+function curveRow(r){
+  var id=str(r.ID);
+  var h='<tr data-crow="'+esc(id)+'">';
+  CURVE_COLS.forEach(function(c){
+    var v=r[c.n];
+    h+='<td>';
+    if(c.t==="pick"){
+      h+='<select data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"><option value=""></option>'
+        + c.opts.map(function(o){ return '<option value="'+esc(o)+'"'+(str(v)===o?" selected":"")+'>'+esc(o)+'</option>'; }).join("")
+        + '</select>';
+    } else if(c.t==="bool"){
+      h+='<label class="tog"><input type="checkbox" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"'
+        + (boolOf(v)?" checked":"")+'/><span class="track"></span></label>';
+    } else if(c.t==="look"){
+      var opts=optionsFor(c.src), cur=relId(v);
+      var known=opts.some(function(o){ return o.id===cur; });
+      h+='<select class="searchable-select" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"><option value=""></option>'
+        + (cur&&!known?'<option value="'+esc(cur)+'" selected>'+esc(relLabel(v)||("#"+cur))+'</option>':'')
+        + opts.map(function(o){ return '<option value="'+esc(o.id)+'"'+(o.id===cur?" selected":"")+'>'+esc(o.label)+'</option>'; }).join("")
+        + '</select>';
+    } else {
+      h+='<input type="text" inputmode="decimal" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'" value="'+esc(numStr(v))+'"/>';
+    }
+    h+='</td>';
+  });
+  return h+'<td><button class="iconbtn" data-delcurve="'+esc(id)+'" title="Delete row">🗑</button></td></tr>';
+}
+
+/* ── Fields on the record that this widget does not explicitly model ── */
+function otherFields(){
+  if(!S.rec) return [];
+  var known={};
+  GROUPS.forEach(function(g){ g.fields.forEach(function(f){ known[f.n]=1; }); });
+  return Object.keys(S.rec).filter(function(k){
+    if(known[k]||SYSTEM_FIELDS[k]) return false;
+    var v=S.rec[k];
+    if(v&&typeof v==="object"&&!Array.isArray(v)&&!v.ID) return false;
+    return true;
+  }).sort();
+}
+function otherCard(){
+  var list=otherFields();
+  if(!list.length) return "";
+  return '<div class="card" id="sec-other"><header><h2>Other fields</h2>'
+    + '<span class="blurb">On the record but not yet styled by this widget — editable as plain text.</span>'
+    + '</header><div class="body">'
+    + list.map(function(k){
+        var v=S.rec[k];
+        var shown=(v&&typeof v==="object")?relLabel(v):str(v);
+        return '<div class="frow" data-frow="'+esc(k)+'">'
+          + '<div class="lab"><div class="name">'+esc(k.replace(/_/g," "))+'</div>'
+          + '<div class="hint mono">'+esc(k)+'</div></div>'
+          + '<div class="ctl"><input type="text" data-f="'+esc(k)+'" data-t="raw" value="'+esc(shown)+'"/></div>'
+          + '<div class="tick"></div></div>';
+      }).join("")
+    + '</div></div>';
+}
+
+/* ══════════════ EVENT WIRING ══════════════ */
+function readControl(el){
+  var t=el.getAttribute("data-t"), f=el.getAttribute("data-f");
+  switch(t){
+    case "bool":  return {f:f, v:el.checked};
+    case "date":  return {f:f, v:fromIsoDate(el.value)};
+    case "dt-d":
+    case "dt-t":{
+      var row=el.closest("[data-frow]");
+      var d=row.querySelector('[data-t="dt-d"]').value;
+      var tm=row.querySelector('[data-t="dt-t"]').value;
+      if(!d) return {f:f, v:""};
+      var prev=splitDateTime(curVal(f));
+      var secs=(prev.t.match(/:(\d{2})\s*[AaPp]/)||[])[1]||"00";
+      return {f:f, v:fromIsoDate(d)+(tm?(" "+to12(tm,secs)):" 12:00:00 AM")};
+    }
+    case "int":   return {f:f, v:numStr(el.value).replace(/[^\d-]/g,"")};
+    case "money":
+    case "pct":   return {f:f, v:numStr(el.value)};
+    default:      return {f:f, v:el.value};
+  }
+}
+function wire(){
+  /* Section jump */
+  $("nav").onclick=function(e){
+    var b=e.target.closest("[data-jump]"); if(!b) return;
+    var k=b.getAttribute("data-jump");
+    S.section=k; renderNav();
+    var el=$("sec-"+k); if(el) el.scrollIntoView({block:"start"});
+  };
+
+  /* Scroll-spy: keep the active tab in step with what is on screen. Assignment (not
+     addEventListener) because wire() re-runs on every render and must not stack listeners. */
+  var view=$("view");
+  view.onscroll=function(){
+    var edge=view.getBoundingClientRect().top+70, cur=null;
+    Array.prototype.forEach.call(document.querySelectorAll("[id^=sec-]"),function(el){
+      if(el.getBoundingClientRect().top<=edge) cur=el.id.slice(4);
+    });
+    if(cur&&cur!==S.section){ S.section=cur; renderNav(); }
+  };
+
+  var wrap=$("wrap");
+
+  /* Plain controls — commit on change (and on input for text so typing feels live) */
+  wrap.addEventListener("change",function(e){
+    var el=e.target;
+    if(el.hasAttribute("data-f")){
+      var r=readControl(el);
+      queue(r.f,r.v);
+      if(el.getAttribute("data-t")==="bool"){
+        var row=el.closest("[data-frow]");
+        var lab=el.parentNode.querySelector(".txt");
+        var fdef=findField(r.f);
+        if(lab) lab.textContent=r.v?(fdef&&fdef.danger?"On — unlocked":"On"):"Off";
+        if(row&&fdef&&fdef.danger) row.classList.toggle("hot",!!r.v);
+      }
+      return;
+    }
+    if(el.hasAttribute("data-cf")) curveEdit(el);
+  });
+  wrap.addEventListener("input",function(e){
+    var el=e.target;
+    if(!el.hasAttribute("data-f")) return;
+    var t=el.getAttribute("data-t");
+    if(t==="pct"||t==="money"||t==="int"||t==="raw"||t==="text"){
+      var r=readControl(el); queue(r.f,r.v);
+    }
+  });
+  /* Re-format money only once the user leaves the box, so typing isn't fought. */
+  wrap.addEventListener("blur",function(e){
+    var el=e.target;
+    if(el.getAttribute&&el.getAttribute("data-t")==="money") el.value=fmtMoney(el.value);
+  },true);
+
+  /* Email chips */
+  wrap.addEventListener("keydown",function(e){
+    var inp=e.target.closest?e.target.closest("[data-chipinput]"):null;
+    if(!inp) return;
+    var f=inp.getAttribute("data-chipinput");
+    if(e.key==="Enter"||e.key===","||e.key===";"||e.key==="Tab"){
+      var val=inp.value.trim().replace(/[,;]$/,"");
+      if(!val){ if(e.key!=="Tab") e.preventDefault(); return; }
+      e.preventDefault();
+      var list=emailList(curVal(f)); list.push(val);
+      commitEmails(f,list);
+    } else if(e.key==="Backspace"&&!inp.value){
+      var l2=emailList(curVal(f));
+      if(l2.length){ l2.pop(); commitEmails(f,l2); }
+    }
+  });
+  wrap.addEventListener("click",function(e){
+    var rm=e.target.closest("[data-rmchip]");
+    if(rm){
+      var box=rm.closest("[data-chips]"), f=box.getAttribute("data-chips");
+      var list=emailList(curVal(f));
+      list.splice(Number(rm.getAttribute("data-rmchip")),1);
+      commitEmails(f,list);
+      return;
+    }
+    var un=e.target.closest("[data-unpick]");
+    if(un){
+      e.stopPropagation();
+      var ms=un.closest("[data-msel]");
+      togglePick(ms.getAttribute("data-msel"),un.getAttribute("data-unpick"));
+      return;
+    }
+    var tg=e.target.closest("[data-toggle]");
+    if(tg){
+      var m=tg.closest("[data-msel]");
+      var wasOpen=m.classList.contains("open");
+      closeMsels();
+      if(!wasOpen){ m.classList.add("open"); var s=m.querySelector("[data-msearch]"); if(s){ s.value=""; s.focus(); } }
+      return;
+    }
+    var pk=e.target.closest("[data-pick]");
+    if(pk){
+      var m2=pk.closest("[data-msel]");
+      togglePick(m2.getAttribute("data-msel"),pk.getAttribute("data-pick"));
+      return;
+    }
+    var del=e.target.closest("[data-delcurve]");
+    if(del){ deleteCurve(del.getAttribute("data-delcurve")); return; }
+    if($("addCurve")&&e.target.closest("#addCurve")){ addCurve(); return; }
+    if(!e.target.closest("[data-msel]")) closeMsels();
+  });
+  wrap.addEventListener("input",function(e){
+    var s=e.target.closest?e.target.closest("[data-msearch]"):null;
+    if(!s) return;
+    var m=s.closest("[data-msel]");
+    var f=m.getAttribute("data-msel"), src=m.getAttribute("data-src");
+    m.querySelector("[data-opts]").innerHTML=msOptions(optionsFor(src),multiIds(curVal(f)),s.value);
+  });
+
+  document.addEventListener("click",function(e){
+    if(!e.target.closest("[data-msel]")) closeMsels();
+  },{capture:false});
+}
+function findField(n){
+  for(var i=0;i<GROUPS.length;i++){
+    for(var j=0;j<GROUPS[i].fields.length;j++) if(GROUPS[i].fields[j].n===n) return GROUPS[i].fields[j];
+  }
+  return null;
+}
+function closeMsels(){
+  Array.prototype.forEach.call(document.querySelectorAll(".msel.open"),function(m){ m.classList.remove("open"); });
+}
+function commitEmails(f,list){
+  var clean=[],seen={};
+  list.forEach(function(e){ var v=e.trim(); if(v&&!seen[v.toLowerCase()]){ seen[v.toLowerCase()]=1; clean.push(v); } });
+  var joined=clean.join(",");
+  queue(f,joined);
+  var row=document.querySelector('[data-frow="'+f+'"]');
+  if(row){
+    var host=row.querySelector(".ctl");
+    host.innerHTML=emailChips(findField(f)||{n:f},joined);
+    var inp=host.querySelector("[data-chipinput]"); if(inp) inp.focus();
+  }
+}
+function togglePick(f,id){
+  var sel=multiIds(curVal(f));
+  var at=sel.indexOf(id);
+  if(at>=0) sel.splice(at,1); else sel.push(id);
+  /* Creator accepts an array of ids for a multi-select lookup. */
+  queue(f,sel.slice());
+  var m=document.querySelector('[data-msel="'+f+'"]');
+  if(!m) return;
+  var wasOpen=m.classList.contains("open");
+  var q=(m.querySelector("[data-msearch]")||{}).value||"";
+  var row=m.closest("[data-frow]");
+  row.querySelector(".ctl").innerHTML=multiSelect(findField(f),sel);
+  var m2=row.querySelector("[data-msel]");
+  if(wasOpen){
+    m2.classList.add("open");
+    var s=m2.querySelector("[data-msearch]");
+    if(s){ s.value=q; s.focus(); }
+    m2.querySelector("[data-opts]").innerHTML=msOptions(optionsFor(m2.getAttribute("data-src")),sel,q);
+  }
+}
+
+/* ── Curve row writes go straight to the child form (bidirectional link) ── */
+function curveEdit(el){
+  var id=el.getAttribute("data-cid"), f=el.getAttribute("data-cf");
+  var col=CURVE_COLS.filter(function(c){ return c.n===f; })[0]||{};
+  var v;
+  if(col.t==="bool") v=el.checked;
+  else if(col.t==="pct"||col.t==="int") v=numStr(el.value);
+  else v=el.value;
+  var row=S.curve.filter(function(r){ return String(r.ID)===String(id); })[0];
+  if(row) row[f]=v;
+  setMode("Saving…","saving");
+  var payload={}; payload[f]=v;
+  apiUpdate(id,payload,CFG.curveReport).then(function(){
+    setMode("Connected","live"); toast("Curve row saved");
+    if(f==="Cost_Curve"||f==="Percent_Cost"||f==="Month_Number") render();
+  }).catch(function(e){
+    setMode("Save failed","error"); toast("Curve row failed: "+errText(e),true);
+  });
+}
+function addCurve(){
+  var data={}; data[CFG.curveParentField]=S.recId;
+  setMode("Adding row…","saving");
+  apiAdd(CFG.curveForm,data).then(function(){
+    return loadCurve();
+  }).then(function(){
+    setMode("Connected","live"); render(); toast("Row added");
+  }).catch(function(e){
+    setMode("Add failed","error"); toast("Could not add row: "+errText(e),true);
+  });
+}
+function deleteCurve(id){
+  if(!window.confirm("Delete this construction curve row?")) return;
+  setMode("Deleting…","saving");
+  apiDelete(CFG.curveReport,id).then(function(){
+    S.curve=S.curve.filter(function(r){ return String(r.ID)!==String(id); });
+    setMode("Connected","live"); render(); toast("Row deleted");
+  }).catch(function(e){
+    setMode("Delete failed","error"); toast("Could not delete: "+errText(e),true);
+  });
+}
+
+/* ══════════════ LOAD ══════════════ */
+function loadCurve(){
+  return getAll(CFG.curveReport,CFG.curveParentField+" == "+S.recId).then(function(rows){
+    S.curve=rows||[];
+  }).catch(function(e){
+    S.curve=[]; diag("curve load failed",e);
+  });
+}
+function loadData(){
+  setMode("Loading…","");
+  var soft=[];
+  return getAll(CFG.report).then(function(rows){
+    rows=rows||[];
+    S.recCount=rows.length;
+    if(!rows.length) throw {message:"No Settings record exists. Create one in Creator first."};
+    S.rec=rows[0];
+    S.recId=str(rows[0].ID);
+    S.extras=rows;
+    return Promise.all([
+      loadCurve(),
+      getAll(CFG.approvalsReport,'Contract_Template == "Builder"')
+        .then(function(r){ S.approvals=r||[]; })
+        .catch(function(e){ S.approvals=[]; soft.push("Contract Approvals"); diag(e); }),
+      getAll(CFG.actionsReport,'Contract_Template != ""')
+        .then(function(r){ S.actions=r||[]; })
+        .catch(function(e){ S.actions=[]; soft.push("Contract Actions"); diag(e); }),
+      getAll(CFG.proformaReport)
+        .then(function(r){ S.proformas=r||[]; })
+        .catch(function(e){ S.proformas=[]; soft.push("Pro Formas"); diag(e); })
+    ]);
+  }).then(function(){
+    S.loadError=soft.length?("Lookup lists unavailable: "+soft.join(", ")+". Those pickers will be empty."):"";
+    S.ready=true;
+    setMode(S.recCount>1?"Duplicate records":"Connected",S.recCount>1?"error":"live");
+    $("hsub").textContent="Land Master · record "+S.recId;
+    render();
+    if(S.recCount>1&&window.LMCriticalErrors)
+      LMCriticalErrors.breadcrumb("error","Multiple Settings records detected",{count:S.recCount},true);
+  }).catch(function(e){
+    setMode("Load failed","error");
+    S.ready=true;
+    $("wrap").innerHTML='<div class="banner bad"><span class="ico">⚠</span><div>'
+      + '<b>Could not load Settings</b>'+esc(errText(e))+'</div></div>';
+    diag("Settings load failed",e);
+    if(window.LMCriticalErrors) LMCriticalErrors.breadcrumb("error","Settings load failed",{error:errText(e)},true);
+  });
+}
+
+/* ══════════════ HEADER ACTIONS ══════════════ */
+$("reload").onclick=function(){
+  clearTimeout(S.saveTimer);
+  S.pending={}; S.failed={};
+  loadData();
+};
+$("openrec").onclick=function(){
+  if(!S.recId) return;
+  var url="#Form:"+CFG.form+"?recLinkID="+S.recId;
+  try{
+    if(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.UTIL&&ZOHO.CREATOR.UTIL.navigateParentURL){
+      ZOHO.CREATOR.UTIL.navigateParentURL({action:"open",url:url});
+      return;
+    }
+  }catch(e){ diag(e); }
+  window.open("https://creatorapp.zoho.com/wbdevelopment/land-master/"+url,"_blank");
+};
+/* Warn before a reload/navigation drops an unflushed edit. */
+window.addEventListener("beforeunload",function(e){
+  if(Object.keys(S.pending).length||S.inflight){ e.preventDefault(); e.returnValue=""; }
+});
+
+/* ══════════════ DEMO FALLBACK (no SDK — local preview only) ══════════════ */
+function fallbackDemo(){
+  if(S.ready) return;
+  S.demo=true; S.live=false;
+  S.rec={ID:"0000000000000000000",Next_Workflow_Run:"08/27/2026 12:32:20 PM",
+    Approval_Reminder_Interval_Days:"3",Next_Approval_Reminder_Date:"08/29/2026",
+    Open_Forecasting_Window:false,Unlock_All_Forecasts:false,
+    Receive_Legal_Notifications:"rbelliveau@wbdevelopment.com,rharris@wbdevelopment.com",
+    Builder_Approval_Template:[],Builder_Contract_Action_Template:[],
+    COO_Approval_Threshold:"10000",Multi_Line:"",
+    Capital_Cost:"",Points:"",Admin_Cost:"",Engineering_Markup:"",Engineering_Sub_Markup:"",
+    Construction_Markup:"",Construction_Sub_Markup:"",Profit_Share:""};
+  S.recId=S.rec.ID; S.recCount=1; S.extras=[S.rec];
+  S.curve=[]; S.approvals=[]; S.actions=[]; S.proformas=[];
+  S.ready=true;
+  setMode("Preview (no Creator SDK)","");
+  render();
+}
+
+/* ══════════════ BOOT ══════════════ */
+if(window.ZOHO && window.ZOHO.CREATOR && typeof ZOHO.CREATOR.init==="function"){
+  var demoTimer=setTimeout(fallbackDemo,6000);
+  ZOHO.CREATOR.init().then(function(){
+    if(S.ready) return;
+    clearTimeout(demoTimer);
+    S.live=true;
+    return (window.LMRuntime&&LMRuntime.capture)?LMRuntime.capture():null;
+  }).then(function(runtime){
+    if(window.LMCriticalErrors){
+      LMCriticalErrors.configure({widget:"Settings Manager",version:CFG.version,code:"SMW",
+        getContext:function(){
+          var r=(window.LMRuntime&&LMRuntime.current)?LMRuntime.current():{};
+          return {environment:r.environment,user:r.user,sdkMode:S.live?"LIVE":"NO-SDK",records:S.recCount};
+        }});
+      LMCriticalErrors.markReady();
+    }
+    return loadData();
+  }).catch(function(err){
+    clearTimeout(demoTimer);
+    diag("Creator init error",err);
+    fallbackDemo();
+  });
+} else {
+  fallbackDemo();
+}
+
+})();
+</script>
+</body>
+</html>
