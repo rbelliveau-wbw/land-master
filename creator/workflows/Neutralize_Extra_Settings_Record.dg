@@ -1,0 +1,53 @@
+/*
+ * FORM WORKFLOW - "Neutralize Extra Settings Record - Settings"   (OPTIONAL BACKSTOP)
+ *
+ *   Form         : Settings
+ *   Record event : on add
+ *   Trigger      : on success      (runs AFTER the record is inserted)
+ *
+ * WHAT IT IS FOR
+ *   "Only One Settings Record" (on validate) blocks every interactive path, but
+ *   `alert` / `cancel submit` are UI-stage tasks. They are no-ops in a server-side
+ *   context, so these vectors can still land a second row:
+ *       - Deluge `insert into Settings [...]` from another script
+ *         (there are ZERO such statements in the app today - this is a
+ *          future-regression guard, not a live hole)
+ *       - a Data API add sent with skip_workflow
+ *       - a CSV / bulk import run with workflows suspended
+ *
+ *   This workflow cannot stop the insert. What it does is defuse the expensive
+ *   half of the blast radius - it clears Next_Workflow_Run on the NEW row so the
+ *   six Settings-anchored daily schedules keep firing once, not twice - and then
+ *   emails so a human deletes the row.
+ *
+ * SAFETY: the keeper is DERIVED as the oldest Settings row (lowest ID), never
+ * hardcoded. Zoho record ids increase monotonically, so the oldest row is the
+ * original. If only one row exists (the normal case, including the very first
+ * Settings record ever created) keeperId == input.ID and this does nothing.
+ * That matters: nulling Next_Workflow_Run on the LEGITIMATE record would silently
+ * stop all six nightly jobs, and only "Test Add Hours" re-advances the anchor, so
+ * they would never self-recover.
+ *
+ * Ship this one INACTIVE first if you want to watch it before trusting it
+ * (Workflow builder -> the workflow's ... menu -> Deactivate).
+ */
+keeperId = 0;
+for each  s in Settings[ID != 0]
+{
+	sid = s.ID.toLong();
+	if(keeperId == 0 || sid < keeperId)
+	{
+		keeperId = sid;
+	}
+}
+if(keeperId != 0 && input.ID.toLong() != keeperId)
+{
+	input.Next_Workflow_Run = null;
+	sendmail
+	[
+		from :"rbelliveau@wbdevelopment.com"
+		to :"rbelliveau@wbdevelopment.com"
+		subject :"Land Master - DUPLICATE Settings record created (ID " + input.ID + ")"
+		message :"A second Settings record was created and bypassed the on-validate guard.<br><br>Next_Workflow_Run has been cleared on the new row so the six daily Settings-anchored schedules do not double-fire.<br><br>Delete record " + input.ID + " from the All Settings report. The record to KEEP is " + keeperId + "."
+	]
+}

@@ -15,6 +15,7 @@ on:
           - contract-management
           - tax-center
           - milestone-gantt
+          - settings-manager
       version:
         description: New immutable version
         required: true

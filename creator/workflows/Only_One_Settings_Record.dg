@@ -1,0 +1,47 @@
+/*
+ * FORM WORKFLOW - "Only One Settings Record - Settings"
+ *
+ *   Form         : Settings
+ *   Record event : on add          <-- NOT "on add or edit". See the warning below.
+ *   Trigger      : on validate     (runs BEFORE the record is inserted)
+ *
+ * WHY THIS EXISTS
+ *   Settings is a singleton. Two things break the moment a second row exists:
+ *     1. Six DAILY scheduled workflows are anchored on this form
+ *        (type = schedule, form = Settings, start = Next_Workflow_Run).
+ *        Creator fires a form-anchored schedule once PER RECORD, so a second
+ *        row runs every one of them twice a day - duplicate lot status writes,
+ *        duplicate forecast recalcs, duplicate approval emails:
+ *              Test Add Hours
+ *              Set Close Date - Lots
+ *              Update Sold/Contracted - Forecast Year
+ *              Update Actual Lots - Forecast
+ *              Check for Stuck Budget Approvals
+ *              Update Budgets w/ Projects Info - Budget
+ *     2. The expression Settings[ID != 0] appears 24 times across the app and is
+ *        consumed as a SINGLE record (e.g. sendApprovalReminders.dg line 15:
+ *        settingsRec = Settings[ID != 0]; then settingsRec.Approval_Reminder_Interval_Days).
+ *        With two rows that read becomes ambiguous and silently picks one.
+ *
+ * !! DO NOT SET THE RECORD EVENT TO "on add or edit" !!
+ *   On an edit the record already exists, so Settings[ID != 0].count() returns 1,
+ *   the guard would cancel every single Settings save, and the form would be
+ *   permanently unusable. 25 of the 31 on-validate workflows in this app use
+ *   "on add or edit" - do not copy one of those by reflex. Copy
+ *   "Field Validations - Mass Create Forecasts", which is "on add".
+ *
+ * The input.ID branch below is belt-and-braces: if a future maintainer does flip
+ * the trigger to "on add or edit", the guard excludes the record being saved
+ * instead of bricking the form. On an add, input.ID is null and this degrades to
+ * the plain count.
+ */
+existingCount = Settings[ID != 0].count();
+if(input.ID != null)
+{
+	existingCount = Settings[ID != input.ID].count();
+}
+if(existingCount > 0)
+{
+	alert "Only one Settings record is allowed. A Settings record already exists - open Settings from the menu and edit that record instead of adding a new one.";
+	cancel submit;
+}
