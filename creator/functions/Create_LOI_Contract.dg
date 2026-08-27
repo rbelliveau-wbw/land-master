@@ -553,8 +553,6 @@ string Create_LOI_Contract(string proformaId)
 			contractId = existingContract.ID;
 			existingContract.Contract_Type="Acquisition";
 			existingContract.Territory=contractTerritory;
-			/* A re-send puts the Contract back into Legal's review queue as Proposed. */
-			existingContract.Status="Proposed";
 			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
 			{
 				existingContract.WBW_Point_Person=wbwPointPerson;
@@ -562,8 +560,8 @@ string Create_LOI_Contract(string proformaId)
 			reuseEntry = Map();
 			reuseEntry.put("level","info");
 			reuseEntry.put("stage",stage);
-			reuseEntry.put("message","Existing Acquisition LOI Contract reused and set back to Proposed");
-			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,""),"status":"Proposed"});
+			reuseEntry.put("message","Existing Acquisition LOI Contract reused and required values confirmed");
+			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
 			trace.add(reuseEntry);
 		}
 		else
