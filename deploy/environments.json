@@ -5,7 +5,7 @@
     "development": {
       "proforma-manager": "1.56.4",
       "budget-manager": "122.24.2",
-      "land-master": "8.11.1",
+      "land-master": "8.11.2",
       "contract-management": "1.45.0",
       "tax-center": "19.10.0",
       "milestone-gantt": "1.1.1",
@@ -24,7 +24,7 @@
     "production": {
       "proforma-manager": "1.56.4",
       "budget-manager": "122.24.2",
-      "land-master": "8.11.1",
+      "land-master": "8.11.2",
       "contract-management": "1.45.0",
       "tax-center": "19.10.0",
       "milestone-gantt": "1.1.1",
