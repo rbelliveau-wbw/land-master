@@ -43,7 +43,7 @@
       "link_name": "Land_Type",
       "display_name": "Land Type",
       "type": "picklist",
-      "values": "{\"Residential\",\"Commercial\",\"Other\"}",
+      "values": "{\"Residential\",\"Commercial\",\"Other\",\"LOI\"}",
       "display_format": null,
       "initial_value": null,
       "private": false

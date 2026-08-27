@@ -486,6 +486,7 @@
                   						Facility_ID=ifnull(np.get("Facility_ID"),"")
                   						County=ifnull(np.get("County"),"")
 										City=ifnull(np.get("City"),"")
+										Land_Type="LOI"
 										LOI=true
                   						Added_User=zoho.loginuser
                  					];
