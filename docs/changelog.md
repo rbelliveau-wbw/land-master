@@ -3,6 +3,17 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.59.1
+
+- **The page variable arrives in `getInitParams()`, not `getQueryParams()`.** 1.59.0 read only
+  `getQueryParams()`, which comes back empty for a page-embedded widget, so the link resolved
+  nothing. Now reads `getQueryParams` → `getInitParams` → a permissive scan of the widget's
+  own href — the order the budget widget already proved for `budgetId`/`modificationId`.
+- **The href fallback could never have covered for it:** it required a `?` and read
+  `window.location` / `document.referrer`, none of which carry a parent-page hash fragment.
+- **Boot logs what each source held** (key names only — `getInitParams` carries the login
+  user), so a link that still does not resolve is one audit-log copy from a diagnosis.
+
 ## Proforma Manager 1.59.0
 
 - **The approval email's link opens the Pro Forma's dashboard.** `?proformaId=<id>` on the
