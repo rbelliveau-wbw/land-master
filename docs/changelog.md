@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.61.0
+
+- **Property acres must tie out to Total Acres.** Once any Property is on the LOI, their
+  acres are summed — saved rows and rows staged for creation alike — and compared to Total
+  Acres on General Information. A gap blocks the save and badges the LOI tab.
+- **A bar under the Properties table shows the sum in both states**, green when it ties out
+  and red with the difference when it does not. A check that only appears when it fails
+  reads as a bug rather than a rule.
+- **It tracks Total Acres as you type it** on the other tab — the LOI pane is built once by
+  `ensureLOIWorksheet`, so the bar is patched in place rather than waiting for a rebuild.
+- **Tolerance is 0.01 acres**, and the check waits until Total Acres itself is set so its
+  own "Enter Total Acres" error is not doubled up.
+- **Fixed alongside:** the LOI subform draft errors replaced the LOI pane's error list
+  instead of appending, which would have dropped the acreage line from the blocked-save
+  overlay whenever the LOI was dirty.
+
 ## Proforma Manager 1.60.2
 
 - **One modal-title scale: 15.5px / 700.** Every modal header sat at 16–18px and weight
