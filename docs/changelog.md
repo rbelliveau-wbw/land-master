@@ -3,6 +3,19 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.62.0
+
+- **Fixed: the close X leaked onto every dialog.** `display:grid` on `.cm-x` outranked the
+  UA `[hidden]` rule, so 1.61.2 put an X on the discard prompt and every other confirm.
+  Third time this stylesheet has done it — `.btn` in 1.58.2, `.cm-body` in 1.60.1.
+- **The acreage state moved onto the Total Acres readout.** That number *is* the sum of the
+  Property rows, so the field showing it glows green with a ✓ when it agrees with General
+  Information, red with the signed difference when it does not, and carries the gap in the
+  hint underneath ("1.00 under General Information (193.00)").
+- **Removed the separate acreage bar and the grey savebar strip** under the Properties
+  table.
+- **The discard prompt loses its "UNSAVED CHANGES" kicker** — the title says it already.
+
 ## Proforma Manager 1.61.2
 
 - **The blocked-save dialog has no footer buttons** — a single X in the header. It reports
