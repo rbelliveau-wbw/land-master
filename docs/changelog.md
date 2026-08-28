@@ -3,6 +3,21 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.60.0
+
+- **Eleven more fields block a save when blank:** Territory, Probability, MUD/PID, Total
+  Acres, Land Cost $/Acre, Engineering Cost $/Lot, Const Cost Base $/FF, Total Street LF,
+  Engineering Delay, Construction Delay and Initial Takedown. They land in the same
+  grouped-by-tab overlay the other required fields use.
+- **Zero stays a real answer** for the two delays and Initial Takedown — those reject blank
+  and negative, not 0. Total Acres must be positive, because ft/lot and lots/acre divide
+  by it.
+- **Legacy records feel this:** any older Pro Forma missing one of these has to have it
+  filled in before it will save again.
+- **Scenario Analysis header modernised.** The "What-if tools" pill is gone; the ↗ text
+  arrow is now a stroked sliders glyph, and the loose "Expand" word plus boxed caret are
+  one pill with a chevron that rotates on open. Same words, same "N changes" badge.
+
 ## Proforma Manager 1.59.1
 
 - **The page variable arrives in `getInitParams()`, not `getQueryParams()`.** 1.59.0 read only
