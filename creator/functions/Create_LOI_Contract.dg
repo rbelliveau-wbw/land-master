@@ -545,9 +545,18 @@ string Create_LOI_Contract(string proformaId)
 		writerOkEntry.put("meta",{"fileName":fileName});
 		trace.add(writerOkEntry);
 		stage = "create_or_reuse_contract";
-		contractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
+		contractName = "Acquisition - " + ifnull(pf.Name,"Pro Forma");
+		/* Contracts created before this rename are named "<Pro Forma> - LOI", and reuse is
+		   matched on the name alone - so without the legacy lookup a resubmit would miss the
+		   existing record and insert a duplicate. Old contracts keep their old name; only
+		   newly created ones use the new scheme. */
+		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
 		contractId = null;
-		existingContract = Contract[Contract_Name == contractName && Contract_Type == "Acquisition"];
+		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == "Acquisition")];
+		if(existingContract.ID == null)
+		{
+			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == "Acquisition")];
+		}
 		if(existingContract.ID != null)
 		{
 			contractId = existingContract.ID;
@@ -561,7 +570,7 @@ string Create_LOI_Contract(string proformaId)
 			reuseEntry.put("level","info");
 			reuseEntry.put("stage",stage);
 			reuseEntry.put("message","Existing Acquisition LOI Contract reused and required values confirmed");
-			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
+			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":ifnull(existingContract.Contract_Name,contractName),"matchedLegacyName":ifnull(existingContract.Contract_Name,"") == legacyContractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
 			trace.add(reuseEntry);
 		}
 		else

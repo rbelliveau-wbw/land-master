@@ -3,6 +3,23 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Create_LOI_Contract — Deluge, needs a Creator publish
+
+- **Acquisition contracts are named `Acquisition - <Pro Forma Name>`**, replacing
+  `<Pro Forma Name> - LOI`.
+- **Reuse still finds the old ones.** Reuse matches on the contract name alone, so the
+  lookup now tries the new name and falls back to the legacy one — without that, the next
+  resubmit on any Pro Forma already sent to Legal would insert a duplicate. Existing
+  contracts keep their existing name.
+- **The reuse trace reports which name matched**, so a duplicate hunt is not blind.
+
+## Proforma Manager 1.60.1
+
+- **Menu item and modal now read "Submit to Legal"**, not "Submit PF to Legal".
+- **The lock dialog is title-only** — "Only the LOI tab will remain editable." is gone, and
+  `uiConfirm` takes `message:false` and drops the whole body when there is nothing in it,
+  so the head sits on the buttons instead of leaving empty padding.
+
 ## Proforma Manager 1.60.0
 
 - **Eleven more fields block a save when blank:** Territory, Probability, MUD/PID, Total
