@@ -48,7 +48,7 @@
                  		publicApprovalPageUrl = "https://creatorapp.zohopublic.com/wbdevelopment/land-master/page-perma/Proforma_Approval_Response/SKynkNA9rksmmQtUQYmxGddr0T8zzRkPET48ymuwzpZjjzGeygeb6pQTxqKZT4HwjrSWq1pFZCry2qsyeFZbpZ9v1RA1AUFrQYAE";
                  		approveUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Approve";
                  		denyUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Deny";
-                 		reviewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Proforma_Manager?proformaId=" + proformaIdText;
+                 		reviewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Proforma_Management1?proformaId=" + proformaIdText;
                  		pfName = ifnull(pf.Name,"Pro Forma #" + proformaIdText).toString();
                  		territoryText = ifnull(pf.Territory,"—").toString();
                  		stageText = ifnull(pf.Probability,"—").toString();

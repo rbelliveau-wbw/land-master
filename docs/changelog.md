@@ -3,6 +3,20 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.59.0
+
+- **The approval email's link opens the Pro Forma's dashboard.** `?proformaId=<id>` on the
+  page URL was ignored, so an approver landed on the full list and had to find the record
+  the email had just told them about.
+- **Read from `ZOHO.CREATOR.UTIL.getQueryParams()`**, with the iframe's own query string,
+  hash and referrer as backstops — the same resolution Contract Management uses for its
+  `contractId` / `loiReviewId` links.
+- **An id that does not resolve leaves the list usable** and says so, rather than failing
+  into a blank view.
+- **Deluge, needs a Creator publish:** `Send_Proforma_Approval_Email_With_Context` in the
+  repo built the link against `#Page:Proforma_Manager`; the live email uses
+  `#Page:Proforma_Management1`. Resynced — confirm against the published copy.
+
 ## Proforma Manager 1.58.2
 
 - **The reasons live on their own hover target.** A small amber "?" sits at the right of
