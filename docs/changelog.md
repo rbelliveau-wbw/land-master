@@ -3,6 +3,15 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.58.1
+
+- **Send for Approvals renders even without the access flag.** 1.58.0 still hid it behind
+  `canSendProformaApprovals()`, so the criterion most likely to be unmet was the one that
+  kept the item invisible — which is why it never appeared greyed in Dev.
+- **The reason names the checkbox:** "Tick Send for Approvals on your User Access record."
+  One shared `User_Access.Send_for_Approvals` field covers Budgets and Pro Formas; there is
+  no Pro Forma specific flag.
+
 ## Proforma Manager 1.58.0
 
 - **A blocked profile no longer wipes the month schedule.** The client-side rebuild deletes
