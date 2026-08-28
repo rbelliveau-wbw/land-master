@@ -3,6 +3,14 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.58.2
+
+- **The reasons live on their own hover target.** A small amber "?" sits at the right of
+  the greyed Send for Approvals row; hovering it opens a tooltip listing every criterion.
+  Hovering an item you cannot use should not be the only way to find out why, and a native
+  title cannot render a list.
+- Clicking the row still opens the full dialog; the enabled state has no icon.
+
 ## Proforma Manager 1.58.1
 
 - **Send for Approvals renders even without the access flag.** 1.58.0 still hid it behind
