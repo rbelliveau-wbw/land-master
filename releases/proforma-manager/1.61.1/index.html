@@ -1057,17 +1057,6 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 #confirmModal .cactions .btn.danger-alt{margin-right:auto;background:var(--red-bg);border-color:#fecaca;color:var(--red)}
 #confirmModal .cactions .btn.danger-alt:hover{background:var(--red);border-color:var(--red);color:#fff}
 #confirmModal .cactions .btn[hidden]{display:none}
-#confirmModal .cactions[hidden]{display:none}
-/* A dialog that only reports why something cannot happen has one exit, not a choice
-   between two. The X carries it, and the body keeps its bottom padding since there is
-   no longer a footer to sit on. */
-#confirmModal .cm-x{margin-left:auto;align-self:flex-start;width:28px;height:28px;flex:none;padding:0;
-  border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#dbeafe;display:grid;place-items:center;
-  cursor:pointer;transition:background .13s,color .13s}
-#confirmModal .cm-x:hover{background:rgba(255,255,255,.2);color:#fff}
-#confirmModal .cm-x:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
-#confirmModal .cm-x svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
-#confirmModal .cbox.no-actions .cm-body{padding-bottom:22px}
 /* ── LOI submit run modal ── same stepped-progress treatment as Contract
    Management's lot-completion modal, including its pacing and patch-in-place
    rendering, so a Pro Forma going to Legal reports the same way a Lot contract does. */
@@ -1572,9 +1561,6 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
         <div class="cm-kicker" id="cmKicker">Confirm action</div>
         <h3 id="cmTitle">Discard unsaved changes?</h3>
       </div>
-      <button type="button" class="cm-x" id="cmX" aria-label="Close" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-      </button>
     </div>
     <div class="cm-body">
       <div class="cm-msg" id="cmMsg">You have unsaved changes. If you leave now they will be lost.</div>
@@ -1640,7 +1626,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.61.2-LOI-ACREAGE-EXACT-POLISHED-CREATE-ACTION";
+var PFW_VERSION="1.61.1-LOI-ACREAGE-EXACT-POLISHED-CREATE-ACTION";
 
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
@@ -8518,9 +8504,15 @@ function saveProforma(){
       tone:"danger",
       kicker:"Cannot save yet",
       title:(errs.length===1?"One field needs attention":errs.length+" fields need attention"),
-      message:"Correct the following and try again.",
+      message:"Nothing has been saved. Fix these and save again.",
       list:lines,
-      dismissOnly:true
+      okLabel:(firstPane?"Go to "+edPaneLabel(firstPane):"Close"),
+      cancelLabel:"Stay here"
+    }).then(function(go){
+      if(go!==true || !firstPane) return;
+      var tb=document.querySelector('#edTabs button[data-pane="'+firstPane+'"]');
+      if(tb && S.ed.pane!==firstPane) tb.click();
+      var mainEl=document.getElementById("main"); if(mainEl) mainEl.scrollTop=0;
     });
     return;
   }
@@ -8859,13 +8851,6 @@ function uiConfirm(opts, legacyOkLabel){
     var title=document.getElementById("cmTitle"), kicker=document.getElementById("cmKicker"), msg=document.getElementById("cmMsg");
     var list=document.getElementById("cmList"), note=document.getElementById("cmNote"), icon=document.getElementById("cmIcon");
     var ok=document.getElementById("cmOk"), ca=document.getElementById("cmCancel"), alt=document.getElementById("cmAlt");
-    var xBtn=document.getElementById("cmX"), actions=ok.parentNode, cbox=mo.querySelector(".cbox");
-    /* dismissOnly: nothing to confirm or cancel, so the footer goes and the header X is
-       the single exit. Resolves false, same as any other dismissal. */
-    var dismissOnly=opts.dismissOnly===true;
-    xBtn.hidden=!dismissOnly;
-    actions.hidden=dismissOnly;
-    if(cbox) cbox.classList.toggle("no-actions", dismissOnly);
     mo.className="";
     mo.classList.add(String(opts.tone||"default"));
     title.textContent=opts.title||"Confirm action";
@@ -8924,8 +8909,7 @@ function uiConfirm(opts, legacyOkLabel){
     }
     function done(v){
       mo.classList.remove("show");
-      ok.removeEventListener("click",onOk); ca.removeEventListener("click",onCa); alt.removeEventListener("click",onAlt);
-      xBtn.removeEventListener("click",onCa); document.removeEventListener("keydown",onKey);
+      ok.removeEventListener("click",onOk); ca.removeEventListener("click",onCa); alt.removeEventListener("click",onAlt); document.removeEventListener("keydown",onKey);
       res(v);
     }
     function onOk(){ done(true); }
@@ -8933,10 +8917,9 @@ function uiConfirm(opts, legacyOkLabel){
     function onAlt(){ done("alt"); }
     function onKey(e){ if(e.key==="Escape") done(false); }
     ok.addEventListener("click",onOk); ca.addEventListener("click",onCa); document.addEventListener("keydown",onKey);
-    if(dismissOnly) xBtn.addEventListener("click",onCa);
     if(opts.altLabel) alt.addEventListener("click",onAlt);
     mo.classList.add("show");
-    setTimeout(function(){ (dismissOnly?xBtn:ok).focus(); },0);
+    setTimeout(function(){ ok.focus(); },0);
   });
 }
 function updateDirtyChip(){ var c=document.getElementById("edDirty"); if(c) c.classList.toggle("show", !!(S.ed&&S.ed.dirty)); var b=document.getElementById("btnSave"); if(b && b.dataset.permlock!=="1"){ b.disabled=!(S.ed&&S.ed.dirty); b.title=b.disabled?"No changes to save yet":""; } }

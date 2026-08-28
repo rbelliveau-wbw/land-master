@@ -3,6 +3,23 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.61.2
+
+- **The blocked-save dialog has no footer buttons** — a single X in the header. It reports
+  why a save cannot happen; there is nothing to confirm or cancel, and "Go to <tab>" was a
+  second exit dressed as a choice. The tab badges already point at the work.
+- **"Nothing has been saved. Fix these and save again." → "Correct the following and try
+  again."**
+- `uiConfirm` takes `dismissOnly:true` for this shape; every other dialog keeps its footer.
+
+## Proforma Manager 1.61.1
+
+- **Acreage must match exactly — no tolerance.** The 0.01 window is gone; Property acres
+  and Total Acres are compared as ten-thousandths, so summing the rows cannot invent a
+  difference out of float noise while a real 0.0001 gap still counts.
+- **Differences are printed at the precision they occur** — 2dp normally, 4dp when the gap
+  is in the last two places, so a 0.0012 mismatch no longer reads "over by 0.00".
+
 ## Proforma Manager 1.61.0
 
 - **Property acres must tie out to Total Acres.** Once any Property is on the LOI, their
