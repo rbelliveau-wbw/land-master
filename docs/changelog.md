@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.58.0
+
+- **A blocked profile no longer wipes the month schedule.** The client-side rebuild deletes
+  every phase and month row before writing the new set; a profile without Add rights on
+  `Proforma_Phase` / `Proforma_Months` 403s on all ~130 writes, leaving the Pro Forma with
+  no schedule at all. It now probes one row on each form first and aborts while the old
+  data is still there.
+- **One 2899 stops the pool** instead of firing another hundred-odd doomed round trips.
+- **"Retry save" is no longer the advice for a 403** — the toast names the permission and
+  says the app owner has to re-save.
+- **Send for Approvals is always in the menu, greyed with its criteria.** It used to vanish
+  once the flow had started, and the LOI checks only ran after the click, so there was no
+  way to see what was missing without trying it. Clicking the greyed item lists everything
+  outstanding.
+- **Lock confirmation reads "Lock all inputs for <name>?"**
+
 ## Create_LOI_Contract — Deluge, published 2026-08-26
 
 - **LOI contracts arrive with the Acquisition checklist.** The function inserts the
