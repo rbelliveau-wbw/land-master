@@ -3,6 +3,15 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.60.2
+
+- **One modal-title scale: 15.5px / 700.** Every modal header sat at 16–18px and weight
+  800–900; at that size the weight reads as shouting. Covers the confirm/lock dialog, the
+  Submit to Legal run modal, the LOI quick modal, the owner picker, the month overlay and
+  the attachments header (which was the heaviest at 900).
+- **The lock dialog is wider (440 → 492px)** — a typical "<name> - <date>" title was one
+  word short of fitting and wrapped to two lines in the narrowest dialog in the app.
+
 ## Create_LOI_Contract — Deluge, needs a Creator publish
 
 - **Acquisition contracts are named `Acquisition - <Pro Forma Name>`**, replacing
