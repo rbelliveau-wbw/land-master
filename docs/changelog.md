@@ -3,6 +3,15 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.64.1
+
+- **The view switcher sits dead centre again.** 1.64.0 gave the name column 1.75fr against
+  the rail's 1fr, which pushed the switcher right; moving the owner pills out had already
+  freed the room, so the extra weight was over-correcting.
+- **Equal columns, capped at zero** (`minmax(0,1fr)`) rather than a bare `1fr` — a bare
+  `1fr` has an auto minimum, so a long Pro Forma name would widen its own column and shove
+  the switcher off centre again.
+
 ## Proforma Manager 1.64.0
 
 - **Send for Approvals is on the Approvals tab.** The `[data-pf-appr-start]` click handler
