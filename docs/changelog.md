@@ -3,6 +3,15 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Send_Proforma_Approval_Email_With_Context — Deluge, published in Development
+
+- **A View button joins Approve and Deny** in the approval email, opening the same page
+  as the "Open the full Pro Forma" footer link.
+- **Buttons render properly in Outlook:** padding moved from the anchor to the TD (with
+  `mso-padding-alt`) — Outlook ignores anchor padding, which is why they collapsed to
+  text-tight blocks.
+- Production gets it with the Dev → Prod environment deploy.
+
 ## Proforma Manager 1.68.2
 
 - **A missing TerraVault URL blocks Send for Approvals.** It joins the per-Property
