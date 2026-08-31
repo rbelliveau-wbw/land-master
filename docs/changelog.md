@@ -3,6 +3,23 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.66.0
+
+- **Native `<datalist>` dropdowns are gone — and banned.** The browser popup is an
+  unstyled OS overlay that clips inside the scrolling table and shows bare values. All
+  four LOI pickers (Sellers, Properties, County, City) now share one styled floating
+  popup: filter as you type, full list on open, Arrow/Enter/Escape keyboard nav, click to
+  pick. The validator hard-fails on `<datalist id=` from now on.
+- **Owner Edit & Send Approvals now also configures the route** on Pro Formas you own —
+  approver names, emails, order, add/remove. Edit All Pro Forma Approvals is unchanged as
+  the admin route. The two config Custom APIs enforce nothing server-side, so the widget
+  gate is the gate.
+- **The read-only Approvals subtitle tells the truth** — it claimed "approvals are active"
+  even on a Not Sent route; it now names the permission that would unlock editing.
+- **Creator:** `getUserAccess` is published in Development with the
+  `Owner_Edit_Send_Approvals` flag (the checkbox now exists on `User_Access`). Production
+  still needs the Dev → Prod environment deploy.
+
 ## Proforma Manager 1.65.0
 
 - **New targeted permission: Owner Edit & Send Approvals.** A Pro Forma owner with it can

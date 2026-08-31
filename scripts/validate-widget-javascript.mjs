@@ -128,8 +128,7 @@ for (const required of [
 }
 for (const required of [
   'Canonical values copied from the Contract.City Creator picklist.',
-  '<datalist id="loiCityList">',
-  '<datalist id="loiCountyList">',
+  'loiComboPop',
   'function loiChoiceMatch(list,text)',
   'if(canon===null){ t.value=""; canon=""; }',
   'table.sub.loi-data-table',
@@ -139,18 +138,27 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI City picklist/layout polish is missing ${required}.`);
 }
-// City and County are Creator picklists. They are allowed to render as a searchable
-// <input list=...> rather than a <select>, but ONLY bound to the vocabulary datalist -
-// never as a bare text field, which is what this guard originally caught.
+// Native <datalist>/<select> popups are BANNED for searchable pickers (user directive,
+// 2026-08-31): the browser popup is an unstyled OS overlay that clips inside scrolling
+// tables. City, County and the Seller/Property pickers must ride the styled loiCombo
+// popup, bound via data-combo - never a bare text field, never a native datalist.
+if (proformaHtml.includes('<datalist id=')) {
+  errors.push('proforma-manager: native <datalist> dropdowns are banned - use the loiCombo popup.');
+}
 for (const field of ['City', 'County']) {
   const hits = proformaHtml.match(new RegExp(`<input[^>]*data-loi-field="${field}"[^>]*>`, 'g')) || [];
   if (!hits.length) {
     errors.push(`proforma-manager: no Property ${field} picker found.`);
   }
   for (const tag of hits) {
-    if (!tag.includes(`list="loi${field}List"`)) {
-      errors.push(`proforma-manager: Property ${field} must be bound to the loi${field}List datalist, not a free text input.`);
+    if (!tag.includes(`data-combo="${field.toLowerCase()}"`)) {
+      errors.push(`proforma-manager: Property ${field} must be bound to the ${field.toLowerCase()} combo, not a free text input.`);
     }
+  }
+}
+for (const kind of ['seller', 'property']) {
+  if (!proformaHtml.includes(`data-combo="${kind}"`)) {
+    errors.push(`proforma-manager: the existing-${kind} picker is missing its combo binding.`);
   }
 }
 if (proformaHtml.includes('class="btn rowact workflow-action loi')) {
