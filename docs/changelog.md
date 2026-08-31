@@ -3,6 +3,20 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.65.0
+
+- **New targeted permission: Owner Edit & Send Approvals.** A Pro Forma owner with it can
+  edit that Pro Forma and send it for approvals, on records they own only. Edit All
+  Proformas is untouched and still the full admin mode.
+- **Send access is per-record now.** `canSendProformaApprovalsFor(rec)` decides; the old
+  no-argument form stays as the "can send something" visibility gate.
+- **Buyer Broker and Seller Broker are on the LOI tab**, defaulting to "None". They were
+  already read from and written to `LOI_Worksheet` — only the fields were missing.
+- **Both are required once the LOI is under way** and block the save if cleared, with the
+  message pointing at "None" as the answer when there is no broker on that side.
+- **NEEDS CREATOR WORK:** add the `Owner_Edit_Send_Approvals` checkbox to `User_Access` and
+  publish `getUserAccess`. Until then the flag reads false and nothing changes.
+
 ## Proforma Manager 1.64.1
 
 - **The view switcher sits dead centre again.** 1.64.0 gave the name column 1.75fr against

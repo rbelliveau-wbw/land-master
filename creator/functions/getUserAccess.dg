@@ -21,6 +21,7 @@
 				 	pfDeleteArchive = false;
 				 	pfApprAll = false;
 				 	pfApprOwned = false;
+				 	pfOwnerEditSend = false;
                  	// Contract flags
                  	ctEdit = false;
                  	ctPropose = false;
@@ -54,6 +55,9 @@
 				 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
 				 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
 				 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
+				 		// Targeted grant: a Pro Forma OWNER may edit it and send it for approvals,
+				 		// without the blanket reach of Edit All Proformas.
+				 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
                  		// Contract permissions
                  		// ctEdit: full edit of contracts and their actions
                  		// ctPropose: Dev Managers - propose contracts and propose/edit/reorder actions
@@ -118,6 +122,7 @@
 				 	result.put("pfDeleteArchive",pfDeleteArchive);
 				 	result.put("pfApprAll",pfApprAll);
 				 	result.put("pfApprOwned",pfApprOwned);
+				 	result.put("pfOwnerEditSend",pfOwnerEditSend);
                  	// Contract permissions
                  	result.put("ctEdit",ctEdit);
                  	result.put("ctPropose",ctPropose);
