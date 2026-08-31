@@ -3,6 +3,16 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.68.0
+
+- **Purchasing Company is a searchable combo** — the 200-option native select joins the
+  styled popup the other four pickers use. Junk text reverts to the committed company
+  instead of silently unlinking it; clearing the text clears the selection.
+- **The Create Purchasing Company modal is quieter:** the subtitle and the "Pick an
+  entity…" placeholder strip are gone. That line now lives as a tooltip on the gated
+  Create & Add button (not `[disabled]` — a disabled button swallows its tooltip), and
+  the derived-name strip only renders once the name exists.
+
 ## Proforma Manager 1.67.0
 
 - **TerraVault URL on every LOI Property row**, saved and staged, between Acres and
