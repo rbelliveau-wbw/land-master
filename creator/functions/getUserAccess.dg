@@ -1,134 +1,134 @@
-				 string getUserAccess(string user)
-                 {
-                 	requester = if(user != null && user != "",user,zoho.loginuser);
-                 	// Budget flags
-                 	editAll = false;
-                 	editOwned = false;
-                 	apprAll = false;
-                 	apprOwned = false;
-                 	sendAppr = false;
-                 	editOwners = false;
-                 	viewImports = false;
-                 	editImports = false;
-                 	modAdmin = false;
-                 	// Pro Forma flags
-                 	pfEditAll = false;
-                 	pfEditOwned = false;
-                 	pfEditCurve = false;
-                 	pfVpCompTab = false;
-                 	pfEditProbability = false;
-                 	pfEditOwner = false;
-				 	pfDeleteArchive = false;
-				 	pfApprAll = false;
-				 	pfApprOwned = false;
-				 	pfOwnerEditSend = false;
-                 	// Contract flags
-                 	ctEdit = false;
-                 	ctPropose = false;
-                 	ctApprove = false;
-                 	ctTemplates = false;
-                 	foundRow = false;
-                 	myId = "";
-                 	rows = User_Access[User == requester];
-                 	for each  row in rows
-                 	{
-                 		foundRow = true;
-                 		myId = row.ID.toString();
-                 		// Budget permissions
-                 		editAll = row.Edit_All_Budgets == true;
-                 		editOwned = row.Edit_Owned_Budgets == true;
-                 		apprAll = row.Edit_All_Approvals == true;
-                 		apprOwned = row.Edit_Owned_Approvals == true;
-                 		sendAppr = row.Send_for_Approvals == true;
-                 		editOwners = row.Edit_Budget_Owners == true;
-                 		viewImports = row.View_Budget_Import_Items == true;
-                 		editImports = row.Edit_Budget_Import_Items == true;
-                 		// Modification admin: full control of Modifications + their approvals
-                 		modAdmin = row.Edit_Delete_All_Modifications == true;
-                 		// Pro Forma permissions
-                 		pfEditAll = row.Edit_All_Proformas == true;
-                 		pfEditOwned = row.Edit_Owned_Proformas == true;
-                 		pfEditCurve = row.Edit_Construction_Curve == true;
-                 		pfVpCompTab = row.VP_Compensation_Tab == true;
-                 		pfEditProbability = row.Edit_Probability == true;
-                 		pfEditOwner = row.Edit_Proforma_Owner == true;
-				 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
-				 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
-				 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
-				 		// Targeted grant: a Pro Forma OWNER may edit it and send it for approvals,
-				 		// without the blanket reach of Edit All Proformas.
-				 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
-                 		// Contract permissions
-                 		// ctEdit: full edit of contracts and their actions
-                 		// ctPropose: Dev Managers - propose contracts and propose/edit/reorder actions
-                 		// ctApprove: Legal - approve proposed contracts and proposed actions
-                 		ctEdit = row.Edit_Contracts == true;
-                 		ctPropose = row.Propose_Contract_Changes == true;
-                 		ctApprove = row.Approve_Contracts == true;
-                 		// ctTemplates: may edit the per-type action template checklists
-                 		ctTemplates = row.Manage_Action_Templates == true;
-                 		break;
-                 	}
-                 	// Roster: each user as {id, label, email}.
-                 	// id is the User_Access record ID stored by Budget_Owner / Owner.
-                 	userList = List();
-                 	allRows = User_Access[ID != null];
-                 	for each  r in allRows
-                 	{
-                 		m = Map();
-                 		m.put("id",r.ID.toString());
-                 		m.put("label",r.User.toString());
-                 		m.put("email",r.User.toString());
-                 		userList.add(m);
-                 	}
-                 	// The Owner lookup can be hidden or blank in report API responses for users
-                 	// without owner-edit access. Return the authoritative Owner IDs server-side so
-                 	// the widget can still display ownership and enforce Edit Owned Pro Formas.
-                 	proformaOwnerMap = Map();
-                 	allProformas = Add_Pro_Forma[ID != null];
-                 	for each  pfRec in allProformas
-                 	{
-                 		ownerIds = List();
-                 		if(pfRec.Owner != null)
-                 		{
-                 			for each  ownerRow in pfRec.Owner
-                 			{
-                 				ownerIds.add(ownerRow.ID.toString());
-                 			}
-                 		}
-                 		proformaOwnerMap.put(pfRec.ID.toString(),ownerIds);
-                 	}
-                 	result = Map();
-                 	result.put("found",foundRow);
-                 	result.put("hasRow",foundRow);
-                 	result.put("myId",myId);
-                 	// Budget permissions
-                 	result.put("editAll",editAll);
-                 	result.put("editOwned",editOwned);
-                 	result.put("apprAll",apprAll);
-                 	result.put("apprOwned",apprOwned);
-                 	result.put("send",sendAppr);
-                 	result.put("editOwners",editOwners);
-                 	result.put("viewImports",viewImports);
-                 	result.put("editImports",editImports);
-                 	result.put("modAdmin",modAdmin);
-                 	// Pro Forma permissions
-                 	result.put("pfEditAll",pfEditAll);
-                 	result.put("pfEditOwned",pfEditOwned);
-                 	result.put("pfEditCurve",pfEditCurve);
-                 	result.put("pfVpCompTab",pfVpCompTab);
-                 	result.put("pfEditProbability",pfEditProbability);
-                 	result.put("pfEditOwner",pfEditOwner);
-				 	result.put("pfDeleteArchive",pfDeleteArchive);
-				 	result.put("pfApprAll",pfApprAll);
-				 	result.put("pfApprOwned",pfApprOwned);
-				 	result.put("pfOwnerEditSend",pfOwnerEditSend);
-                 	// Contract permissions
-                 	result.put("ctEdit",ctEdit);
-                 	result.put("ctPropose",ctPropose);
-                 	result.put("ctApprove",ctApprove);
-                 	result.put("ctTemplates",ctTemplates);
-                 	result.put("users",userList);
-                 	result.put("proformaOwners",proformaOwnerMap);
-                 	return result.toString();
-                 }
+string getUserAccess(string user)
+{
+	requester = if(user != null && user != "",user,zoho.loginuser);
+	// Budget flags
+	editAll = false;
+	editOwned = false;
+	apprAll = false;
+	apprOwned = false;
+	sendAppr = false;
+	editOwners = false;
+	viewImports = false;
+	editImports = false;
+	modAdmin = false;
+	// Pro Forma flags
+	pfEditAll = false;
+	pfEditOwned = false;
+	pfEditCurve = false;
+	pfVpCompTab = false;
+	pfEditProbability = false;
+	pfEditOwner = false;
+	pfDeleteArchive = false;
+	pfApprAll = false;
+	pfApprOwned = false;
+	pfOwnerEditSend = false;
+	// Contract flags
+	ctEdit = false;
+	ctPropose = false;
+	ctApprove = false;
+	ctTemplates = false;
+	foundRow = false;
+	myId = "";
+	rows = User_Access[User == requester];
+	for each  row in rows
+	{
+		foundRow = true;
+		myId = row.ID.toString();
+		// Budget permissions
+		editAll = row.Edit_All_Budgets == true;
+		editOwned = row.Edit_Owned_Budgets == true;
+		apprAll = row.Edit_All_Approvals == true;
+		apprOwned = row.Edit_Owned_Approvals == true;
+		sendAppr = row.Send_for_Approvals == true;
+		editOwners = row.Edit_Budget_Owners == true;
+		viewImports = row.View_Budget_Import_Items == true;
+		editImports = row.Edit_Budget_Import_Items == true;
+		// Modification admin: full control of Modifications + their approvals
+		modAdmin = row.Edit_Delete_All_Modifications == true;
+		// Pro Forma permissions
+		pfEditAll = row.Edit_All_Proformas == true;
+		pfEditOwned = row.Edit_Owned_Proformas == true;
+		pfEditCurve = row.Edit_Construction_Curve == true;
+		pfVpCompTab = row.VP_Compensation_Tab == true;
+		pfEditProbability = row.Edit_Probability == true;
+		pfEditOwner = row.Edit_Proforma_Owner == true;
+		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
+		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
+		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
+		// Targeted grant: a Pro Forma OWNER may edit it and send it for approvals,
+		// without the blanket reach of Edit All Proformas.
+		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
+		// Contract permissions
+		// ctEdit: full edit of contracts and their actions
+		// ctPropose: Dev Managers - propose contracts, propose/edit/reorder actions
+		// ctApprove: Legal - approve proposed contracts and proposed actions
+		ctEdit = row.Edit_Contracts == true;
+		ctPropose = row.Propose_Contract_Changes == true;
+		ctApprove = row.Approve_Contracts == true;
+		// ctTemplates: may edit the per-type action template checklists
+		ctTemplates = row.Manage_Action_Templates == true;
+		break;
+	}
+	// Roster: each user as {id, label, email}.
+	// id is the User_Access record ID stored by Budget_Owner / Owner.
+	userList = List();
+	allRows = User_Access[ID != null];
+	for each  r in allRows
+	{
+		m = Map();
+		m.put("id",r.ID.toString());
+		m.put("label",r.User.toString());
+		m.put("email",r.User.toString());
+		userList.add(m);
+	}
+	// The Owner lookup can be hidden or blank in report API responses for users
+	// without owner-edit access. Return the authoritative Owner IDs server-side so
+	// the widget can still display ownership and enforce Edit Owned Pro Formas.
+	proformaOwnerMap = Map();
+	allProformas = Add_Pro_Forma[ID != null];
+	for each  pfRec in allProformas
+	{
+		ownerIds = List();
+		if(pfRec.Owner != null)
+		{
+			for each  ownerRow in pfRec.Owner
+			{
+				ownerIds.add(ownerRow.ID.toString());
+			}
+		}
+		proformaOwnerMap.put(pfRec.ID.toString(),ownerIds);
+	}
+	result = Map();
+	result.put("found",foundRow);
+	result.put("hasRow",foundRow);
+	result.put("myId",myId);
+	// Budget permissions
+	result.put("editAll",editAll);
+	result.put("editOwned",editOwned);
+	result.put("apprAll",apprAll);
+	result.put("apprOwned",apprOwned);
+	result.put("send",sendAppr);
+	result.put("editOwners",editOwners);
+	result.put("viewImports",viewImports);
+	result.put("editImports",editImports);
+	result.put("modAdmin",modAdmin);
+	// Pro Forma permissions
+	result.put("pfEditAll",pfEditAll);
+	result.put("pfEditOwned",pfEditOwned);
+	result.put("pfEditCurve",pfEditCurve);
+	result.put("pfVpCompTab",pfVpCompTab);
+	result.put("pfEditProbability",pfEditProbability);
+	result.put("pfEditOwner",pfEditOwner);
+	result.put("pfDeleteArchive",pfDeleteArchive);
+	result.put("pfApprAll",pfApprAll);
+	result.put("pfApprOwned",pfApprOwned);
+	result.put("pfOwnerEditSend",pfOwnerEditSend);
+	// Contract permissions
+	result.put("ctEdit",ctEdit);
+	result.put("ctPropose",ctPropose);
+	result.put("ctApprove",ctApprove);
+	result.put("ctTemplates",ctTemplates);
+	result.put("users",userList);
+	result.put("proformaOwners",proformaOwnerMap);
+	return result.toString();
+}
