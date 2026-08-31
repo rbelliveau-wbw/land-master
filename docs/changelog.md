@@ -3,6 +3,12 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.68.1
+
+- **The combo popup sizes to its longest label** (up to 560px, clamped on-screen) instead
+  of locking to the input's width — company names were ellipsising at exactly the point
+  the series numbers stop looking identical.
+
 ## Proforma Manager 1.68.0
 
 - **Purchasing Company is a searchable combo** — the 200-option native select joins the
