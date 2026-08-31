@@ -10,7 +10,7 @@
       "tax-center": "19.10.0",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.5.1",
-      "settings-manager": "1.0.0"
+      "settings-manager": "1.0.1"
     },
     "stage": {
       "proforma-manager": "1.44.6",
@@ -29,7 +29,7 @@
       "tax-center": "19.10.0",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.5.1",
-      "settings-manager": "1.0.0"
+      "settings-manager": "1.0.1"
     }
   }
 }
