@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.63.0
+
+- **All four LOI pickers are searchable** — existing Sellers, existing Properties, and the
+  County and City on every Property row. They are `<input list>` over a `<datalist>`: type
+  to filter, no popup to position inside a scrolling table, keyboard still works.
+- **County and City are alphabetical**, sorted at load rather than by reordering the
+  literals so no entry can be dropped in the edit.
+- **Typed text is turned back into a real value on commit.** A county is snapped to its
+  canonical spelling ("bell" → "Bell"); anything not in the vocabulary is cleared and
+  flagged, because both are Creator picklists and free text fails at the save.
+- **Duplicate Seller names are disambiguated** with their record id, and a bare ambiguous
+  name refuses to resolve rather than picking one at random.
+- **The Add button stays off until the text resolves** to an actual record.
+- The validator's "City must be a picklist, not a text input" guard is rewritten rather
+  than dropped: City and County inputs must be bound to their vocabulary datalist.
+
 ## Proforma Manager 1.62.0
 
 - **Fixed: the close X leaked onto every dialog.** `display:grid` on `.cm-x` outranked the

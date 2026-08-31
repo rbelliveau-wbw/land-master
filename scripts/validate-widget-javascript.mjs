@@ -128,9 +128,10 @@ for (const required of [
 }
 for (const required of [
   'Canonical values copied from the Contract.City Creator picklist.',
-  'function cityOpts(selected)',
-  '<select data-loi-new-property="',
-  'data-loi-field="City">\'+cityOpts(r.City)',
+  '<datalist id="loiCityList">',
+  '<datalist id="loiCountyList">',
+  'function loiChoiceMatch(list,text)',
+  'if(canon===null){ t.value=""; canon=""; }',
   'table.sub.loi-data-table',
   '.loi-table-wrap{overflow-x:auto',
   'table.sub.loi-sellers th:nth-child(5){width:240px}',
@@ -138,8 +139,19 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI City picklist/layout polish is missing ${required}.`);
 }
-if (proformaHtml.includes('data-loi-field="City" placeholder="City"')) {
-  errors.push('proforma-manager: Property City must render as a picklist, not a text input.');
+// City and County are Creator picklists. They are allowed to render as a searchable
+// <input list=...> rather than a <select>, but ONLY bound to the vocabulary datalist -
+// never as a bare text field, which is what this guard originally caught.
+for (const field of ['City', 'County']) {
+  const hits = proformaHtml.match(new RegExp(`<input[^>]*data-loi-field="${field}"[^>]*>`, 'g')) || [];
+  if (!hits.length) {
+    errors.push(`proforma-manager: no Property ${field} picker found.`);
+  }
+  for (const tag of hits) {
+    if (!tag.includes(`list="loi${field}List"`)) {
+      errors.push(`proforma-manager: Property ${field} must be bound to the loi${field}List datalist, not a free text input.`);
+    }
+  }
 }
 if (proformaHtml.includes('class="btn rowact workflow-action loi')) {
   errors.push('proforma-manager: Submit LOI to Legal must not render as a standalone row action.');
