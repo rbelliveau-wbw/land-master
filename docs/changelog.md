@@ -3,6 +3,18 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.64.0
+
+- **Send for Approvals is on the Approvals tab.** The `[data-pf-appr-start]` click handler
+  already existed but nothing rendered one, so the row menu on the list was the only way to
+  start a chain. Same gate and the same why-icon as the menu item, so the two entry points
+  cannot disagree.
+- **Owner pills moved to the right-hand end of the record bar**, out of the header group
+  they were sharing with the Pro Forma name.
+- **The name gets the room back.** The bar's first column now outweighs the trailing rail
+  (1.75fr to 1fr), so "Spring Creek (Stylecraft Tree Lake) - North Austin" fits instead of
+  being clipped while the rail sat empty.
+
 ## Proforma Manager 1.63.0
 
 - **All four LOI pickers are searchable** — existing Sellers, existing Properties, and the
