@@ -3,6 +3,24 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.67.0
+
+- **TerraVault URL on every LOI Property row**, saved and staged, between Acres and
+  Seller. Mandatory once the LOI is under way — blank rows flag red, join the needs-data
+  list, and block the save ("Tract A needs a TerraVault URL").
+- **`proforma_save` published in Development** with the field: written on new-Property
+  inserts, and on edits only when non-blank — a widget whose `All_Property` read omitted
+  the field would otherwise send "" and wipe a stored URL. If saved rows show blank for
+  properties that have URLs, add `TerraVault_URL` to the `All_Property` report.
+- **Create Purchasing Company is entity-driven.** A dropdown with the two WBW series
+  entities plus a 4-digit Facility ID replaces free-text Company Name (and Account
+  Number is gone from the modal). The XXX in the series is the last 3 digits of the
+  Facility ID, and the full derived name renders in the modal the moment both are in —
+  "WBW Single Development Group, LLC-Series 417".
+- Facility ID is forced to digits, forced to 4; Create & Add stays disabled until valid.
+- **Production Creator still needs the Dev → Prod environment deploy** (field +
+  `proforma_save` + `getUserAccess`).
+
 ## Proforma Manager 1.66.0
 
 - **Native `<datalist>` dropdowns are gone — and banned.** The browser popup is an

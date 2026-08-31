@@ -486,6 +486,7 @@
                   						Facility_ID=ifnull(np.get("Facility_ID"),"")
                   						County=ifnull(np.get("County"),"")
 										City=ifnull(np.get("City"),"")
+										TerraVault_URL=ifnull(np.get("TerraVault_URL"),"")
 										Land_Type="LOI"
 										LOI=true
                   						Added_User=zoho.loginuser
@@ -558,6 +559,13 @@
                  						edP.Property_ID=ifnull(ep.get("Property_ID"),"");
                  						edP.County=ifnull(ep.get("County"),"");
                  						edP.City=ifnull(ep.get("City"),"");
+                 						// Guarded: a widget whose All_Property read omitted the field would send ""
+                 						// and wipe a stored URL. Blank means leave alone - the widget requires it anyway.
+                 						epTv = ifnull(ep.get("TerraVault_URL"),"").toString().trim();
+                 						if(epTv != "")
+                 						{
+                 							edP.TerraVault_URL=epTv;
+                 						}
                  						epAcres = ifnull(ep.get("Acres"),"").toString().trim();
                  						if(epAcres != "")
                  						{

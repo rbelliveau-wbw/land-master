@@ -134,7 +134,7 @@ for (const required of [
   'table.sub.loi-data-table',
   '.loi-table-wrap{overflow-x:auto',
   'table.sub.loi-sellers th:nth-child(5){width:240px}',
-  'table.sub.loi-props th:nth-child(7){width:44px}'
+  'table.sub.loi-props th:nth-child(8){width:44px}'
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI City picklist/layout polish is missing ${required}.`);
 }
