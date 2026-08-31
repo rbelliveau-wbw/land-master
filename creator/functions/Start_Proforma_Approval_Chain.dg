@@ -98,6 +98,10 @@
 						{
 							missingPropertyFields.add("Acres");
 						}
+						if(ifnull(propertyRow.TerraVault_URL,"").toString().trim() == "")
+						{
+							missingPropertyFields.add("TerraVault URL");
+						}
 						if(propertyRow.Seller == null)
 						{
 							missingPropertyFields.add("Seller");

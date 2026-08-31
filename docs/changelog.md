@@ -3,6 +3,14 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.68.2
+
+- **A missing TerraVault URL blocks Send for Approvals.** It joins the per-Property
+  readiness list, so the greyed button's tooltip, the why-icon and the click dialog all
+  name the row ("Eight Twenty Eight Test needs TerraVault URL").
+- **`Start_Proforma_Approval_Chain` enforces the same check server-side** — published in
+  Development; Production gets it with the environment deploy.
+
 ## Proforma Manager 1.68.1
 
 - **The combo popup sizes to its longest label** (up to 560px, clamped on-screen) instead
