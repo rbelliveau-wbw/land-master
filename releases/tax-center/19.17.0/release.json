@@ -1,0 +1,8 @@
+{
+  "widget": "tax-center",
+  "version": "19.17.0",
+  "created_at": "2026-09-01T17:03:08.189Z",
+  "source": "widgets/tax-center/src/app/widget.html",
+  "source_sha256": "efd64bedd6a79bd8346e2f5a27a3d88d5c80ca3a5095363accd5103ce29f318e",
+  "status": "candidate"
+}
