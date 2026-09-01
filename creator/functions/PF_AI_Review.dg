@@ -1,0 +1,84 @@
+string PF_AI_Review(string payload)
+{
+	// STUB — AI check of a Pro Forma against the founder's criteria in Settings.
+	// Called by Custom API Review_PF (dev) / Review_PF1 (prod) from the proforma-manager widget.
+	// Entire-JSON body arrives as the single string arg; also accepts a bare record id.
+	resp = Map();
+	try
+	{
+		// 1. Resolve the Pro Forma id from the payload (bare id or {"proformaId": ...}).
+		pfId = payload.trim();
+		if(pfId.startsWith("{"))
+		{
+			data = payload.toMap();
+			if(data.get("payload") != null)
+			{
+				data = data.get("payload").toString().toMap();
+			}
+			pfId = ifnull(data.get("proformaId"),"").toString().trim();
+		}
+		if(pfId == "")
+		{
+			resp.put("success",false);
+			resp.put("error","Pro Forma id is required.");
+			return resp.toString();
+		}
+		pf = Add_Pro_Forma[ID == pfId.toLong()];
+		if(pf.count() == 0)
+		{
+			resp.put("success",false);
+			resp.put("error","Pro Forma not found.");
+			return resp.toString();
+		}
+		// 2. Read the founder's criteria + provider/model from the Settings singleton.
+		settings = Settings[ID != 0];
+		criteria = ifnull(settings.PF_Review_Criteria,"").toString().trim();
+		provider = ifnull(settings.PF_Review_Provider,"openai").toString().trim().toLowerCase();
+		model = ifnull(settings.PF_Review_Model,"gpt-5.6-luna").toString().trim();
+		criteriaVersion = ifnull(settings.PF_Review_Criteria_Updated,"").toString();
+		if(criteria == "")
+		{
+			resp.put("success",false);
+			resp.put("error","PF Review Criteria is empty in Settings.");
+			return resp.toString();
+		}
+		// 3. TODO: build a compact deal summary (key fields + pre-computed ratios), not the raw record.
+		//    Include Lot_Mix_Row children and the headline numbers: Lots, Total_Acres, Land_Cost,
+		//    Sale_Price_FF, Gross_Sales, Total_Expenses, Net_Profit, ROI1, IRR, XIRR.
+		summary = Map();
+		summary.put("name",ifnull(pf.Name,""));
+		summary.put("lots",ifnull(pf.Lots,0));
+		summary.put("total_acres",ifnull(pf.Total_Acres,0));
+		summary.put("net_profit",ifnull(pf.Net_Profit,0));
+		summary.put("roi",ifnull(pf.ROI1,0));
+		summary.put("irr",ifnull(pf.IRR,0));
+		// 4. TODO: build the prompt. System = reviewer persona + criteria. User = summary JSON.
+		//    Require strict JSON back: {verdict: Pass|Watch|Fail, score: 0-100, summary, meets[], misses[], questions[]}.
+		// 5. TODO: invokeurl POST via Connection "openai" (or "openrouter" when provider == "openrouter")
+		//    body: {"model": model, "response_format": {"type":"json_object"}, "messages": [...]}.
+		//    Keep max_tokens small — invokeurl has a hard timeout.
+		// 6. TODO: parse choices[0].message.content into the result map below.
+		result = Map();
+		result.put("verdict","Watch");
+		result.put("score",0);
+		result.put("summary","STUB — AI review not wired yet.");
+		result.put("meets",List());
+		result.put("misses",List());
+		result.put("questions",List());
+		// 7. The widget writes AI_Review_* fields on the Pro Forma via sdkUpdateRecord
+		//    (prod silently drops some Deluge fetch-assign writes). Return everything it needs.
+		resp.put("success",true);
+		resp.put("proformaId",pfId);
+		resp.put("model",model);
+		resp.put("provider",provider);
+		resp.put("criteriaVersion",criteriaVersion);
+		resp.put("reviewedOn",zoho.currenttime.toString("yyyy-MM-dd HH:mm:ss"));
+		resp.put("result",result);
+	}
+	catch (e)
+	{
+		resp.put("success",false);
+		resp.put("error",e.toString());
+	}
+	return resp.toString();
+}
