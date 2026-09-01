@@ -1,0 +1,8 @@
+{
+  "widget": "contract-management",
+  "version": "1.51.0",
+  "created_at": "2026-09-01T20:51:31.983Z",
+  "source": "widgets/contract-management/src/app/widget.html",
+  "source_sha256": "3dc7d5bd5e59dfa39356919d87ab31acfd9888b9046257d9f7f3b76c778986ab",
+  "status": "candidate"
+}
