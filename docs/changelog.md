@@ -3,6 +3,13 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Send_Proforma_Approval_Email_With_Context — Deluge, published in Development (updated)
+
+- **The email buttons are a fixed 120×42** — real padding stacked on `mso-padding-alt`
+  ballooned them, so sizing now comes from td width/height attributes (the only sizing
+  Outlook's Word engine honours) with line-height centering, 14px gaps between buttons
+  and 26px above / 14px below the row.
+
 ## Send_Proforma_Approval_Email_With_Context — Deluge, published in Development
 
 - **A View button joins Approve and Deny** in the approval email, opening the same page
