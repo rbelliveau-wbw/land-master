@@ -28,7 +28,7 @@ should not need new colors.
 | --- | --- |
 | List toolbar | `.filterrow` — flat row, `h1` 18px/800 navy, `.scope-count` pill |
 | Search field | `.searchbox` + `.search-icon` — white, `#8fb2f3` border, blue icon chip |
-| Dropdown filter | `select.filter` — 30px, `#eef2f8`, transparent border |
+| Dropdown / picker | `.combo` + the shared `#comboPop` popup — **never** a native `<select>` (see below) |
 | List card | `.tablecard` > `.tscroll` > `.wtable`, sticky `th` |
 | Group header row | `tr.tgroup` + `.tgroup-name` + `.tgroup-n` |
 | Row controls | `.rowctl button` (30px chip), menu `.kmenu` |
@@ -42,3 +42,40 @@ should not need new colors.
 | Audit log button | `.auditbtn` + `.audit-n` badge |
 
 Pro Forma Manager 1.51.0 moved its main menu and editing screens onto this list.
+
+## Never use native `<select>` or `<datalist>`
+
+**Rule: no native dropdown popups anywhere in a Land Master widget.** This covers
+`<select>`, `<datalist>`, and anything else that opens an OS-drawn list.
+
+Why — this was called out on live screens more than once:
+
+- the popup is an unstyled OS overlay: wrong font, wrong colors, wrong metrics,
+  and it ignores every token in `:root`;
+- it clips and mispositions inside `overflow` containers, which is most of our
+  surfaces (scrolling tables, drill panels, modals);
+- it shows raw values with no context — no color chips, no counts, no secondary
+  line — so a status or a counterparty reads as a bare string;
+- next to the styled modules around it, it simply reads as broken.
+
+**Use instead:** the shared floating combo. A plain `<input>` (or a button-shaped
+trigger) backed by ONE `position:fixed` popup appended to `document.body`:
+
+- filter as the user types, but show the full list on open — only filter once
+  they actually edit;
+- ArrowUp / ArrowDown / Enter / Escape keyboard navigation, with the active
+  option scrolled into view;
+- selection dispatches synthetic `input` + `change` events so existing commit
+  handlers keep working unchanged;
+- commit snaps the text to the vocabulary or clears it — never leave a
+  free-typed value that the back end will reject;
+- the popup is `position:fixed` and appended to `body` precisely so an
+  `overflow:hidden` ancestor cannot clip it. Re-position or close it on scroll,
+  and close it before any re-render that would orphan the input it is bound to.
+
+Reference implementations: `loiCombo` / `#loiComboPop` in Pro Forma Manager
+(1.66.0) and the `msel` popover in Contract Management, which also covers the
+multi-select and single-select ("one of") cases.
+
+`scripts/validate-widget-javascript.mjs` hard-fails on `<datalist id=`. Keep that
+guard, and extend it rather than working around it.
