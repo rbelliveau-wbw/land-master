@@ -1,0 +1,67 @@
+string getContractAttachmentPreview(string contractId, string attachmentId)
+{
+	/********* RETURN AN EXACT BASE64 COPY OF ONE CONTRACT ATTACHMENT *********/
+	// Custom API link name expected by the widget:
+	// Get_Contract_Attachment_Preview
+	// The same exact-byte response powers both Preview and Download.
+	response = Map();
+	vContractId = ifnull(contractId,"").trim();
+	vAttachmentId = ifnull(attachmentId,"").trim();
+	if(vContractId == "" || vAttachmentId == "")
+	{
+		response.put("ok",false);
+		response.put("message","Missing Contract ID or attachment ID.");
+		return response.toString();
+	}
+	try
+	{
+		attachmentRows = Contract_Version[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+		if(attachmentRows.count() == 0)
+		{
+			response.put("ok",false);
+			response.put("message","Attachment record was not found for this Contract.");
+			return response.toString();
+		}
+		for each attachmentRow in attachmentRows
+		{
+			if(attachmentRow.File_field1 == null)
+			{
+				response.put("ok",false);
+				response.put("message","The attachment record does not contain a file.");
+				return response.toString();
+			}
+			encodedFile = zoho.encryption.base64Encode(attachmentRow.File_field1);
+			if(encodedFile == null || encodedFile == "")
+			{
+				response.put("ok",false);
+				response.put("message","Creator could not encode the attachment for preview or download.");
+				return response.toString();
+			}
+			fileName = "";
+			try
+			{
+				fileName = attachmentRow.File_field1.actualname;
+			}
+			catch (nameError)
+			{
+				fileName = "";
+			}
+			response.put("ok",true);
+			response.put("attachmentId",vAttachmentId);
+			response.put("contractId",vContractId);
+			response.put("fileName",fileName);
+			response.put("base64",encodedFile);
+			response.put("byteLength",(encodedFile.length() * 3 / 4).toLong());
+			return response.toString();
+		}
+	}
+	catch (previewError)
+	{
+		response.put("ok",false);
+		response.put("message","Attachment preview/download failed: " + previewError.toString());
+		return response.toString();
+	}
+	response.put("ok",false);
+	response.put("message","Attachment preview/download failed.");
+	return response.toString();
+}
