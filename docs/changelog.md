@@ -3,6 +3,32 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.69.0
+
+- **AI Review modal.** `⋮` → **AI Review** on a Pro Forma row, the verdict chip under its name, or the
+  new rail button on the Dashboard / Edit views opens a modal for that Pro Forma: its
+  current deal numbers, the history of `Proforma_AI_Review` runs (newest first; click one
+  to read it), and the selected run's verdict, score, summary, meets, misses and questions.
+  When a run is selected the numbers table shows the snapshot it judged beside today's
+  values and counts what changed since.
+- **Run AI Review** calls Custom API `Review_PF` (`Review_PF_DEV` in Development through
+  the standard routing) with `{proformaId, reviewedBy}`, prepends the result to the history
+  and stamps `AI_Review_Verdict / Score / Summary / Reviewed_On / Criteria_Version` on the
+  Pro Forma through the REST update, since production can drop the function's fetch-assign.
+  The button is greyed with a why-icon (same gate style as Send for Approvals) until the
+  user has `AI_Review` on User Access, the record is saved, unarchived and has no unsaved
+  edits.
+- Viewing history needs no grant. A missing history report reads as an empty history, not
+  an error, so production is inert until the Creator side is published there.
+- Rollback: `releases/proforma-manager/1.68.2`.
+
+## getUserAccess — Deluge, repo copy updated (apply the same edit in Development)
+
+- Reads the new `User_Access.AI_Review` checkbox and returns it as `pfAiReview`, which the
+  Pro Forma widget maps to `perms().aiReview`. Three lines: initialise `pfAiReview = false`,
+  set `pfAiReview = row.AI_Review == true` inside the row loop, and
+  `result.put("pfAiReview",pfAiReview)`.
+
 ## PF_AI_Review — Deluge, published in Development (repo mirror synced)
 
 - **The Pro Forma AI review function is fully written in Creator.** It builds a compact
