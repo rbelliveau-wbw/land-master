@@ -18,6 +18,37 @@
 						response.put("message","Pro Forma not found.");
 						return response;
 					}
+		accessRow = User_Access[User == zoho.loginuser];
+		if(accessRow.ID == null)
+		{
+			response.put("success",false);
+			response.put("message","A User Access record is required to send a Pro Forma for approvals.");
+			return response;
+		}
+		if(accessRow.Send_Pro_Formas_for_Approvals != true)
+		{
+			response.put("success",false);
+			response.put("message","You do not have Send Pro Formas for Approvals permission.");
+			return response;
+		}
+		canSendThisProforma = accessRow.Edit_All_Proformas == true;
+		if(canSendThisProforma == false && pf.Owner != null)
+		{
+			for each  ownerRow in pf.Owner
+			{
+				if(ownerRow.ID.toString() == accessRow.ID.toString())
+				{
+					canSendThisProforma = true;
+					break;
+				}
+			}
+		}
+		if(canSendThisProforma == false)
+		{
+			response.put("success",false);
+			response.put("message","You must be an owner of this Pro Forma to send it for approvals, unless you have Edit All Proformas.");
+			return response;
+		}
 					if(pf.Purchasing_Company == null)
 					{
 						response.put("success",false);

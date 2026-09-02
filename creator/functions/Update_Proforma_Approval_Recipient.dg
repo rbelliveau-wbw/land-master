@@ -23,9 +23,10 @@
 			proformaIdLong = proformaIdText.toLong();
 			approvalIdLong = approvalIdText.toLong();
 			// Recipient changes are allowed for approval-route administrators, existing
-			// owner-edit users on their own Pro Formas, and the dedicated Send Pro
-			// Formas for Approvals permission. Keep this server-side so the Custom API
-			// cannot bypass the widget's narrow recipient-only gate.
+			// owner-edit users on their own Pro Formas, and users with the dedicated
+			// Send Pro Formas for Approvals permission on their own Pro Formas (or on
+			// any Pro Forma when they also have Edit All Proformas). Keep this
+			// server-side so the Custom API cannot bypass the widget's narrow gate.
 			accessRow = User_Access[User == zoho.loginuser];
 			if(accessRow.ID == null)
 			{
@@ -33,21 +34,33 @@
 				response.put("message","A User Access record is required to update an approval recipient.");
 				return response;
 			}
-			canEditRecipient = accessRow.Send_Pro_Formas_for_Approvals == true || accessRow.Edit_All_Pro_Forma_Approvals == true;
-			if(canEditRecipient == false && accessRow.Owner_Edit_Send_Approvals == true)
+			pf = Add_Pro_Forma[ID == proformaIdLong];
+			if(pf.ID == null)
 			{
-				pf = Add_Pro_Forma[ID == proformaIdLong];
-				if(pf.ID != null && pf.Owner != null)
+				response.put("success",false);
+				response.put("message","Pro Forma not found.");
+				return response;
+			}
+			isPfOwner = false;
+			if(pf.Owner != null)
+			{
+				for each  ownerRow in pf.Owner
 				{
-					for each  ownerRow in pf.Owner
+					if(ownerRow.ID.toString() == accessRow.ID.toString())
 					{
-						if(ownerRow.ID.toString() == accessRow.ID.toString())
-						{
-							canEditRecipient = true;
-							break;
-						}
+						isPfOwner = true;
+						break;
 					}
 				}
+			}
+			canEditRecipient = accessRow.Edit_All_Pro_Forma_Approvals == true;
+			if(canEditRecipient == false && accessRow.Send_Pro_Formas_for_Approvals == true && (accessRow.Edit_All_Proformas == true || isPfOwner == true))
+			{
+				canEditRecipient = true;
+			}
+			if(canEditRecipient == false && accessRow.Owner_Edit_Send_Approvals == true && isPfOwner == true)
+			{
+				canEditRecipient = true;
 			}
 			if(canEditRecipient == false)
 			{
