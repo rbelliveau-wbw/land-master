@@ -104,7 +104,10 @@ for (const required of [
   'flags.Send_Pro_Formas_for_Approvals',
   'function canSendProformaApprovals(){ return !!perms().sendApprovals; }',
   'Tick \\u201CSend Pro Formas for Approvals\\u201D on your User Access record',
-  "+(canSendProformaApprovals()?'<button type=\"button\" class=\"pf-row-menu-item"
+  "+(canSendProformaApprovals()?'<button type=\"button\" class=\"pf-row-menu-item",
+  'function canEditProformaApprovalRecipientsFor(recOrId)',
+  'invokeProformaApprovalApi("updateProformaApprovalRecipient"',
+  'data-pf-appr-recipient='
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: dedicated Pro Forma send access is missing ${required}.`);
 }
