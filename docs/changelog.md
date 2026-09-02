@@ -3,6 +3,24 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## PF_AI_Review — Deluge, published in Development (repo mirror synced)
+
+- **The Pro Forma AI review function is fully written in Creator.** It builds a compact
+  deal summary (headline numbers with pre-computed ratios, plus the `Lot_Mix_Row`
+  children), sends it with the founder criteria from Settings to OpenAI through the
+  `openai` Connection, and normalises the strict-JSON reply into verdict / score /
+  summary / meets / misses / questions.
+- **Every run is kept as a `Proforma_AI_Review` row** carrying the exact Deal_Snapshot it
+  was judged on, and the latest verdict is stamped onto the Pro Forma's `AI_Review_*`
+  fields. Production can drop fetch-assign writes, so the widget must re-write those five
+  fields through the REST update after a successful response.
+- `dryRun: true` returns the exact request body without calling the model. Only the
+  `openai` provider is wired; any other provider fails closed.
+- The repo copy `creator/functions/PF_AI_Review.dg` was a stub and now mirrors the live
+  Development source. Still to do: the `Review_PF` Custom API and its Development twin,
+  the `AI_Review` grant in `getUserAccess`, the Proforma Manager action and result
+  panel, and the PF Review group in Settings Manager.
+
 ## Send_Proforma_Approval_Email_With_Context — Deluge, published in Development (updated)
 
 - **The email buttons are a fixed 120×42** — real padding stacked on `mso-padding-alt`

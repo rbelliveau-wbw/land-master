@@ -92,3 +92,11 @@ Pro Forma attachments use one `Contract_Version` record per file, matching the B
 The widget exposes the attachment workspace from both Dashboard and Edit. It supports multiple-file upload, embedded PDF/image/text/media preview, download, and delete, subject to ordinary Pro Forma edit permissions. The persistent `Pro Forma List` action is the canonical route back to the portfolio.
 
 The current committed Creator export predates the live `Contract_Version.Pro_Forma` field. Do not add it manually to `creator/generated/`; refresh the `.ds` export after the live Creator configuration is published.
+
+## AI review
+
+`PF_AI_Review(string payload)` judges one Pro Forma against the founder's criteria held on the Settings singleton (`PF_Review_Criteria`, `PF_Review_Provider`, `PF_Review_Model`, `PF_Review_Criteria_Updated`). It is exposed as Custom API `Review_PF` (production name; see `docs/custom-api-environment-routing.md` for the Development twin). Payload: `{"proformaId", "reviewedBy", "dryRun"}`. The widget must send `reviewedBy`: a Custom API runs as the authorising administrator, so `zoho.loginuserid` inside the function is not the requester.
+
+The function sends a compact deal summary (headline numbers with pre-computed ratios, plus the `Lot_Mix_Row` children), never the raw record, to OpenAI chat completions through the Connection with link name `openai` (`response_format: json_object`, `max_completion_tokens` 2000, no temperature) and normalises the reply to `{verdict: Pass|Watch|Fail, score: 0-100, summary, meets[], misses[], questions[]}`. Each run is inserted as a `Proforma_AI_Review` record (Pro_Forma lookup, Verdict, Score, Summary, Meets, Misses, Questions, Deal_Snapshot, Reviewed_On, Model, Criteria_Version, Reviewed_By), and the Pro Forma's `AI_Review_Verdict`, `AI_Review_Score`, `AI_Review_Summary`, `AI_Reviewed_On` and `AI_Review_Criteria_Version` are stamped by fetch-assign. Production can silently drop fetch-assign writes, so the widget re-writes those five fields through the REST update after a successful response.
+
+Access is the `AI_Review` checkbox on `User_Access`; `getUserAccess` must expose it as a flag before the widget can gate the action. Only the `openai` provider is wired: Deluge takes the Connection name as a literal, so OpenRouter would need its own Connection and a second `invokeurl` block.
