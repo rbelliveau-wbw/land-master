@@ -20,9 +20,42 @@
                  			response.put("message","Enter a valid approver email.");
                  			return response;
                  		}
-                 		proformaIdLong = proformaIdText.toLong();
-                 		approvalIdLong = approvalIdText.toLong();
-                 		// Fetch by the Creator record ID only. Combining the ID and Proforma
+			proformaIdLong = proformaIdText.toLong();
+			approvalIdLong = approvalIdText.toLong();
+			// Recipient changes are allowed for approval-route administrators, existing
+			// owner-edit users on their own Pro Formas, and the dedicated Send Pro
+			// Formas for Approvals permission. Keep this server-side so the Custom API
+			// cannot bypass the widget's narrow recipient-only gate.
+			accessRow = User_Access[User == zoho.loginuser];
+			if(accessRow.ID == null)
+			{
+				response.put("success",false);
+				response.put("message","A User Access record is required to update an approval recipient.");
+				return response;
+			}
+			canEditRecipient = accessRow.Send_Pro_Formas_for_Approvals == true || accessRow.Edit_All_Pro_Forma_Approvals == true;
+			if(canEditRecipient == false && accessRow.Owner_Edit_Send_Approvals == true)
+			{
+				pf = Add_Pro_Forma[ID == proformaIdLong];
+				if(pf.ID != null && pf.Owner != null)
+				{
+					for each  ownerRow in pf.Owner
+					{
+						if(ownerRow.ID.toString() == accessRow.ID.toString())
+						{
+							canEditRecipient = true;
+							break;
+						}
+					}
+				}
+			}
+			if(canEditRecipient == false)
+			{
+				response.put("success",false);
+				response.put("message","You do not have permission to update this approval recipient.");
+				return response;
+			}
+			// Fetch by the Creator record ID only. Combining the ID and Proforma
                  		// comparisons in one criteria expression caused Creator's
                  		// BIGINT-versus-STRING mismatch.
                  		approvalRow = Budget_Approvals[ID == approvalIdLong];
