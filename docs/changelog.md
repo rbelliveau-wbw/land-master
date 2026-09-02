@@ -3,6 +3,23 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.69.2
+
+- **An unpublished AI Review backend no longer pages anyone.** In production the history
+  report `All_Proforma_AI_Reviews` does not exist yet, so opening the modal made the shared
+  report reader log an ERROR (and send the automatic error email) even though the modal had
+  already degraded correctly to "Review history is unavailable here". `sdkGetAll` now takes
+  `{optional:true}`: a missing optional report logs at WARN and the rejection carries
+  `notFound`, which the modal remembers for the session so it stops firing four 404s per
+  open (Refresh still retries).
+- **A missing `Review_PF` custom API reads as "not published in this environment yet"**, logs
+  at WARN, and greys the Run button with that reason for the rest of the session. Real
+  failures still log at ERROR.
+- **The row menu chip and the View / Edit buttons now share one centre line.** The chip was
+  vertically aligned middle while the buttons aligned to the text baseline, which left the
+  chip about 2px lower than its neighbours.
+- Rollback: `releases/proforma-manager/1.69.1`.
+
 ## Proforma Manager 1.69.1
 
 - **Rows with an AI verdict chip are the same height as rows without one.** The chip under
