@@ -3,6 +3,16 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.70.0
+
+- **VP Compensation is fully gated by the User Access grant.** Without `VP_Compensation_Tab`
+  the tab is now actually hidden (its `hidden` flag was being overridden by the tab CSS, so it
+  still rendered; the Construction Curve tab had the same latent gap) and the Edit view's
+  live totals sidebar no longer lists G&A Overhead, Eng Overhead, Const Overhead, Interest or
+  Profit Share. Total Expenses and Net Profit are unchanged. Nowhere else in the widget
+  showed those five figures.
+- Rollback: `releases/proforma-manager/1.69.2`.
+
 ## Proforma Manager 1.69.2
 
 - **An unpublished AI Review backend no longer pages anyone.** In production the history
