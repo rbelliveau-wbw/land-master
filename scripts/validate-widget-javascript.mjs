@@ -89,6 +89,28 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: Pro Forma attachment workflow is missing ${required}.`);
 }
+for (const required of [
+  'data-addl-hide-empty="1"',
+  'S.ed.addlHideEmpty=!S.ed.addlHideEmpty',
+  'data-empty="',
+  'addl-cc-pill',
+  'Search items or cost codes…',
+  'var filtering=!!q||hideEmpty;'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: Additional Costs filtering/layout is missing ${required}.`);
+}
+for (const required of [
+  'flags.pfSendApprovals',
+  'flags.Send_Pro_Formas_for_Approvals',
+  'function canSendProformaApprovals(){ return !!perms().sendApprovals; }',
+  'Tick \\u201CSend Pro Formas for Approvals\\u201D on your User Access record',
+  "+(canSendProformaApprovals()?'<button type=\"button\" class=\"pf-row-menu-item"
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: dedicated Pro Forma send access is missing ${required}.`);
+}
+if (proformaHtml.includes('flags.send != null ? flags.send : flags.Send_for_Approvals')) {
+  errors.push('proforma-manager: Pro Forma send access still falls back to the Budget Send_for_Approvals flag.');
+}
 if (!proformaHtml.includes('data-act="attachments"') || !proformaHtml.includes('View Attachments</button>') || !proformaHtml.includes('openPfAttachments(id,"vList")')) {
   errors.push('proforma-manager: list action menu is missing the View Attachments route.');
 }
