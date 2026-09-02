@@ -21,6 +21,7 @@ string getUserAccess(string user)
 	pfDeleteArchive = false;
 	pfApprAll = false;
 	pfApprOwned = false;
+	pfSendApprovals = false;
 	pfOwnerEditSend = false;
 	pfAiReview = false;
 	// Contract flags
@@ -56,8 +57,11 @@ string getUserAccess(string user)
 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
-		// Targeted grant: a Pro Forma OWNER may edit it and send it for approvals,
-		// without the blanket reach of Edit All Proformas.
+		// Dedicated Pro Forma send permission. Do not inherit the Budget
+		// Send_for_Approvals flag or the owner-edit grant here.
+		pfSendApprovals = row.Send_Pro_Formas_for_Approvals == true;
+		// Targeted grant: a Pro Forma OWNER may edit it without the blanket
+		// reach of Edit All Proformas. Sending is controlled separately above.
 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
 		// AI Review: may run the founder-criteria AI review of a Pro Forma (PF_AI_Review)
 		pfAiReview = row.AI_Review == true;
@@ -125,6 +129,7 @@ string getUserAccess(string user)
 	result.put("pfDeleteArchive",pfDeleteArchive);
 	result.put("pfApprAll",pfApprAll);
 	result.put("pfApprOwned",pfApprOwned);
+	result.put("pfSendApprovals",pfSendApprovals);
 	result.put("pfOwnerEditSend",pfOwnerEditSend);
 	result.put("pfAiReview",pfAiReview);
 	// Contract permissions
