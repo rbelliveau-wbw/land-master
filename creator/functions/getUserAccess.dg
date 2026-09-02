@@ -22,6 +22,7 @@ string getUserAccess(string user)
 	pfApprAll = false;
 	pfApprOwned = false;
 	pfOwnerEditSend = false;
+	pfAiReview = false;
 	// Contract flags
 	ctEdit = false;
 	ctPropose = false;
@@ -58,6 +59,8 @@ string getUserAccess(string user)
 		// Targeted grant: a Pro Forma OWNER may edit it and send it for approvals,
 		// without the blanket reach of Edit All Proformas.
 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
+		// AI Review: may run the founder-criteria AI review of a Pro Forma (PF_AI_Review)
+		pfAiReview = row.AI_Review == true;
 		// Contract permissions
 		// ctEdit: full edit of contracts and their actions
 		// ctPropose: Dev Managers - propose contracts, propose/edit/reorder actions
@@ -123,6 +126,7 @@ string getUserAccess(string user)
 	result.put("pfApprAll",pfApprAll);
 	result.put("pfApprOwned",pfApprOwned);
 	result.put("pfOwnerEditSend",pfOwnerEditSend);
+	result.put("pfAiReview",pfAiReview);
 	// Contract permissions
 	result.put("ctEdit",ctEdit);
 	result.put("ctPropose",ctPropose);
