@@ -3,6 +3,14 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.69.1
+
+- **Rows with an AI verdict chip are the same height as rows without one.** The chip under
+  the Pro Forma name sat taller than its text line, so those rows grew about 3px and their
+  ⋮ / View / Edit buttons dropped out of line with the rows above and below. The chip now
+  fits inside the line.
+- Rollback: `releases/proforma-manager/1.69.0`.
+
 ## Proforma Manager 1.69.0
 
 - **AI Review modal.** `⋮` → **AI Review** on a Pro Forma row, the verdict chip under its name, or the
