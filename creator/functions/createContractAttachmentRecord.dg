@@ -1,0 +1,42 @@
+string createContractAttachmentRecord(string contractId)
+{
+	/********* CREATE EMPTY CONTRACT ATTACHMENT CHILD RECORD *********/
+	response = Map();
+	vContractId = ifnull(contractId,"").trim();
+	if(vContractId == "")
+	{
+		response.put("ok",false);
+		response.put("message","Missing Contract ID.");
+		return response.toString();
+	}
+	contractRows = Contract[ID == vContractId.toLong()];
+	if(contractRows.count() == 0)
+	{
+		response.put("ok",false);
+		response.put("message","Contract not found.");
+		return response.toString();
+	}
+	try
+	{
+		attachmentId = insert into Contract_Version
+		[
+			Contract1=vContractId.toLong()
+			Date_field1=zoho.currenttime
+			Email_Attachment=true
+			Added_User=zoho.loginuser
+		];
+		response.put("ok",true);
+		response.put("attachmentId",attachmentId.toString());
+		response.put("message","Attachment record created.");
+		return response.toString();
+	}
+	catch (createError)
+	{
+		response.put("ok",false);
+		response.put("message","Attachment record creation failed: " + createError.toString());
+		return response.toString();
+	}
+	response.put("ok",false);
+	response.put("message","Attachment record creation ended without a response.");
+	return response.toString();
+}

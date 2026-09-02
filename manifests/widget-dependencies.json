@@ -326,6 +326,21 @@
     "contract-management": {
       "custom_apis": [
         {
+          "name": "Create_Contract_Attachment_Record",
+          "config_key": "createAttachment",
+          "source": "customApis object"
+        },
+        {
+          "name": "Delete_Contract_Attachment",
+          "config_key": "deleteAttachment",
+          "source": "customApis object"
+        },
+        {
+          "name": "Get_Contract_Attachment_Preview",
+          "config_key": "attachmentPreview",
+          "source": "customApis object"
+        },
+        {
           "name": "Report_Proforma_Widget_Error",
           "config_key": "errorReport",
           "source": "customApis object"
@@ -358,7 +373,9 @@
         "ZOHO.CREATOR.API.deleteRecord",
         "ZOHO.CREATOR.API.getAllRecords",
         "ZOHO.CREATOR.API.invokeCustomApi",
+        "ZOHO.CREATOR.API.readFile",
         "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.API.uploadFile",
         "ZOHO.CREATOR.DATA",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
         "ZOHO.CREATOR.UTIL",

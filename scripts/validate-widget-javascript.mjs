@@ -57,6 +57,27 @@ const proformaHtml = fs.readFileSync(path.join(root, 'widgets/proforma-manager/s
 if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('POLISHED-CREATE-ACTION')) {
   errors.push('proforma-manager: polished New Pro Forma action is missing.');
 }
+
+const contractHtml = fs.readFileSync(path.join(root, 'widgets/contract-management/src/app/widget.html'), 'utf8');
+for (const required of [
+  'Create_Contract_Attachment_Record',
+  'Delete_Contract_Attachment',
+  'Get_Contract_Attachment_Preview',
+  'function invokeContractAttachmentApi(',
+  'function createContractAttachmentRecord('
+]) {
+  if (!contractHtml.includes(required)) errors.push(`contract-management: Contract attachment workflow is missing ${required}.`);
+}
+for (const [file, required] of [
+  ['createContractAttachmentRecord.dg', ['Contract1=vContractId.toLong()', 'Email_Attachment=true']],
+  ['deleteContractAttachment.dg', ['Contract1 == vContractId.toLong()', 'delete from Contract_Version']],
+  ['getContractAttachmentPreview.dg', ['Contract1 == vContractId.toLong()', 'zoho.encryption.base64Encode', 'response.put("base64",encodedFile)']]
+]) {
+  const source = fs.readFileSync(path.join(root, 'creator/functions', file), 'utf8');
+  for (const token of required) {
+    if (!source.includes(token)) errors.push(`${file}: Contract attachment function is missing ${token}.`);
+  }
+}
 for (const required of [
   'id="vAttachments"',
   'data-recview="attachments"',
