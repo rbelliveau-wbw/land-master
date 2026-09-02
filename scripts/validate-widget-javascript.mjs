@@ -102,9 +102,11 @@ for (const required of [
 for (const required of [
   'flags.pfSendApprovals',
   'flags.Send_Pro_Formas_for_Approvals',
-  'function canSendProformaApprovals(){ return !!perms().sendApprovals; }',
+  'function canSendProformaApprovalsFor(recOrId)',
+  'return !!p.sendApprovals&&!!rec&&(!!p.editAll||userOwnsPf(rec));',
   'Tick \\u201CSend Pro Formas for Approvals\\u201D on your User Access record',
-  "+(canSendProformaApprovals()?'<button type=\"button\" class=\"pf-row-menu-item",
+  'You must be an owner of this Pro Forma, unless you have Edit All Proformas',
+  "+(canSendProformaApprovalsFor(r)?'<button type=\"button\" class=\"pf-row-menu-item",
   'function canEditProformaApprovalRecipientsFor(recOrId)',
   'invokeProformaApprovalApi("updateProformaApprovalRecipient"',
   'data-pf-appr-recipient='
@@ -276,6 +278,21 @@ for (const required of [
   'pf.Status="Pending Approval";'
 ]) {
   if (!startProformaApproval.includes(required)) errors.push(`Start_Proforma_Approval_Chain: approval readiness/status guard is missing ${required}.`);
+}
+for (const required of [
+  'accessRow.Send_Pro_Formas_for_Approvals != true',
+  'canSendThisProforma = accessRow.Edit_All_Proformas == true;',
+  'You must be an owner of this Pro Forma to send it for approvals, unless you have Edit All Proformas.'
+]) {
+  if (!startProformaApproval.includes(required)) errors.push(`Start_Proforma_Approval_Chain: owner-scoped send access is missing ${required}.`);
+}
+const updateProformaApprovalRecipient = fs.readFileSync(path.join(root, 'creator/functions/Update_Proforma_Approval_Recipient.dg'), 'utf8');
+for (const required of [
+  'isPfOwner = false;',
+  'accessRow.Send_Pro_Formas_for_Approvals == true && (accessRow.Edit_All_Proformas == true || isPfOwner == true)',
+  'accessRow.Owner_Edit_Send_Approvals == true && isPfOwner == true'
+]) {
+  if (!updateProformaApprovalRecipient.includes(required)) errors.push(`Update_Proforma_Approval_Recipient: owner-scoped recipient access is missing ${required}.`);
 }
 const killProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Kill_Proforma_Approval_Flow.dg'), 'utf8');
 if (!killProformaApproval.includes('pf.Status="Draft";')) {
