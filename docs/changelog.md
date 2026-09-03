@@ -3,6 +3,26 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.71.3
+
+- **"Estimated Purchase Date" is now "Project Start"** everywhere the widget labels it: the
+  Project Schedule tab (and its Engineering Delay hint), the dashboard header, the
+  assumptions strip, the list column and the save validation. The Creator field is still
+  `Estimated_Purchase_Date`.
+- **Dashboard gains a "Land Purchase" row directly under Project Start.** It reads the first
+  purchase installment's month and appends "(1 of N)" when the land closes in more than one
+  takedown — "Feb, 2027 (1 of 2)". Rows without a date fall back to Project Start plus the
+  installment's month offset; no installments falls back to Project Start.
+- **AI Review is invisible without the User Access grant.** The row-menu item, the verdict
+  chip under the Pro Forma name and the Dashboard / Edit rail button now render only when
+  `perms().aiReview` is true, and the modal refuses to open without it; previously history
+  was viewable by anyone and only Run was gated. The rail button is re-evaluated whenever
+  permissions resolve.
+- `PF_AI_Review` repo copy: the function now refuses callers whose User Access row lacks
+  `AI_Review`, so a direct call to the all-users Custom API cannot bypass the widget gate.
+  Apply the same edit in Development (the Creator session had expired when this shipped).
+- Rollback: `releases/proforma-manager/1.71.2`.
+
 ## Proforma Manager 1.70.0
 
 - **VP Compensation is fully gated by the User Access grant.** Without `VP_Compensation_Tab`

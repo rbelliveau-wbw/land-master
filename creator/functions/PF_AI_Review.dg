@@ -30,6 +30,24 @@ string PF_AI_Review(string payload)
 			resp.put("error","Pro Forma id is required.");
 			return resp.toString();
 		}
+		// ---- 1b. Gate on the caller's User Access row -------------------------
+		// The widget hides every AI Review entry point behind the same AI_Review checkbox;
+		// this stops a direct call to the Custom API (scope = all users) from bypassing that.
+		// Mirrors getUserAccess: the caller is zoho.loginuser, matched on User_Access.User.
+		aiAllowed = false;
+		for each  ua in User_Access[User == zoho.loginuser]
+		{
+			if(ua.AI_Review == true)
+			{
+				aiAllowed = true;
+			}
+		}
+		if(!aiAllowed)
+		{
+			resp.put("success",false);
+			resp.put("error","AI Review is not enabled for your user.");
+			return resp.toString();
+		}
 		pf = Add_Pro_Forma[ID == pfId.toLong()];
 		if(pf.count() == 0)
 		{
