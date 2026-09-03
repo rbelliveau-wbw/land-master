@@ -3,6 +3,29 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.73.0
+
+- **"Download PDF" is now "Export"**, and it opens a chooser: the PDF (unchanged — the
+  server-built approval packet) or a real Excel workbook.
+- **The workbook is a genuine `.xlsx`**, not a spreadsheet-shaped PDF: eight sheets, with
+  numbers stored as numbers so they can be summed and charted.
+  - **Inputs** — every editable field grouped by editor tab (General, Site, Project
+    Schedule, Land Purchase/Sale, Overheads, LOI when filled), plus the computed income,
+    expense, Net Profit, ROI, IRR and XIRR lines.
+  - **Lot Mix**, **Purchase Installments**, **Sale Installments**, **PID-MUD**,
+    **Construction Curve** — one sheet each, omitted when the Pro Forma has no rows.
+  - **Additional Items** — only rows carrying a cost, since the editor keeps blank
+    scaffold rows that would just pad the sheet.
+  - **Phases** and **Months** — the Months & Phases tab output in full.
+- **Nothing new server-side.** The workbook is assembled in the browser from the header
+  record, `loadDetail`'s children and `computeProforma`'s output, so it needs no Custom API
+  and no Deluge function and works in every environment. SheetJS loads as an ES module from
+  `cdn.jsdelivr.net`, already whitelisted in the plugin manifest and already used for
+  `pdf.mjs`, and is cached after the first export.
+- If the engine cannot run, the inputs still export and the phase and month sheets are
+  skipped with a WARN rather than failing the whole workbook.
+- Rollback: `releases/proforma-manager/1.72.2`.
+
 ## Proforma Manager 1.72.2
 
 - **AI Review can stamp the date again.** `aiCreatorDateTime` built the value in the shape
