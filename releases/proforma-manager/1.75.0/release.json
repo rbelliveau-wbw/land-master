@@ -1,0 +1,8 @@
+{
+  "widget": "proforma-manager",
+  "version": "1.75.0",
+  "created_at": "2026-09-03T18:49:31.811Z",
+  "source": "widgets/proforma-manager/src/app/widget.html",
+  "source_sha256": "af75077c5a40a2223776cc730e072126d9052dde1d2a4b8023362a44ac02ea81",
+  "status": "candidate"
+}

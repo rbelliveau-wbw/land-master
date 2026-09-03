@@ -163,3 +163,24 @@ the quick view — the empty state then carries the reason as a tooltip and the 
 report and field. **The Creator-side fix is to add `Pro_Forma` to the `All_Proforma_AI_Reviews`
 quick view and publish the report component**, which also restores the cheaper filtered read.
 Covered by `scripts/test-proforma-ai-review-history.mjs`.
+
+## Dashboard Total column
+
+The dashboard's monthly table (`renderFlowTable`) paginates 24 months at a time. A frozen
+**Total** column sits between Category and the first month on every tab (Cash Flow, Inflows,
+Outflows), sticky at `left:220px` beside the Category column.
+
+- The total is summed over the **whole** `c.agg`, never the visible `cols` window — paging the
+  months must not change it.
+- It carries no colour of its own (`<td class="tot mono">`): the section band and the row's own
+  class already style it, and it never takes the red `neg` class.
+- Section rows are shown **unsigned** — Inflows/Outflows is context enough.
+- The two cash-flow rows are the exception. `Cash Flow Monthly` keeps its sign (no section above
+  it says which way the money went, and a loss shown positive reads backwards), and
+  `Cash Flow Cumulative` takes its **last** month rather than a sum — it is a running balance, so
+  summing it would add the balance to itself.
+
+Every row builder must emit exactly one total cell or the columns shear: `row`, both `rowX`
+branches, the three phase loops, and both `sect` branches (the month-strip band gets an empty
+`<td class="tot">`, the full-width band spans `FLOW_COLS+2`). Covered by
+`scripts/test-proforma-flow-total.mjs`.
