@@ -49,6 +49,11 @@ Chat history and model memory are not authoritative.
 8. Update the widget version and create an immutable release for deployable changes.
 9. Update documentation when behavior or contracts change.
 10. Include regression and rollback notes in every pull request.
+11. When you add a persisted Pro Forma child collection to the Proforma Manager model, add it
+    to `FORK_CHILD_LISTS` in the same change. Duplicate strips row IDs using that list; a
+    collection missing from it is copied with the source's row IDs and the save then
+    overwrites the original Pro Forma's rows. `scripts/test-proforma-duplicate.mjs` enforces
+    this — do not silence it.
 
 ## UI copy style
 

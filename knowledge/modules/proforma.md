@@ -100,3 +100,47 @@ The current committed Creator export predates the live `Contract_Version.Pro_For
 The function sends a compact deal summary (headline numbers with pre-computed ratios, plus the `Lot_Mix_Row` children), never the raw record, to OpenAI chat completions through the Connection with link name `openai` (`response_format: json_object`, `max_completion_tokens` 2000, no temperature) and normalises the reply to `{verdict: Pass|Watch|Fail, score: 0-100, summary, meets[], misses[], questions[]}`. Each run is inserted as a `Proforma_AI_Review` record (Pro_Forma lookup, Verdict, Score, Summary, Meets, Misses, Questions, Deal_Snapshot, Reviewed_On, Model, Criteria_Version, Reviewed_By), and the Pro Forma's `AI_Review_Verdict`, `AI_Review_Score`, `AI_Review_Summary`, `AI_Reviewed_On` and `AI_Review_Criteria_Version` are stamped by fetch-assign. Production can silently drop fetch-assign writes, so the widget re-writes those five fields through the REST update after a successful response (the date in the app format `dd-MMM-yyyy HH:mm:ss`, with a second attempt without the date if Creator rejects it).
 
 **Widget (Proforma Manager 1.69.0+).** The AI Review modal reads history from report **`All_Proforma_AI_Reviews`** (candidates in `CFG.reportCandidates`; a missing report reads as empty history) with criteria `(Pro_Forma == <id>)`, shows the record's current numbers beside the selected run's `Deal_Snapshot`, and runs a new review through `invokeAiReviewApi`. The list row chip and the record-rail button read the Pro Forma's own `AI_Review_*` fields, so `All_Pro_Formas_All_Fields` must include them. Running is gated by `perms().aiReview`, which `getUserAccess` returns as `pfAiReview` from the `User_Access.AI_Review` checkbox; viewing history has no gate. Only the `openai` provider is wired: Deluge takes the Connection name as a literal, so OpenRouter would need its own Connection and a second `invokeurl` block.
+
+## Duplicate (fork)
+
+`Duplicate` in the Pro Forma row's three-dot menu creates a forked Pro Forma. It is **not** a
+field-by-field copier — copiers drift the moment a field is added. The flow is:
+
+```text
+loadDetail(sourceId) → recordToModel() → forkModel() → editor (unsaved, id = null) → normal Save
+```
+
+- `forkModel` deep-copies the model, clears `ID` and `_stored`, renames via `forkName`
+  (`"Bell Sharkey" → "Bell Sharkey (Duplicate)"`, then `(Duplicate 2)`… on collision),
+  forces `Status = Draft` and `Lock_Inputs = false`, sets `Owner` to the creating user, and
+  strips the row ID from every collection in `FORK_CHILD_LISTS`.
+- Nothing is written until the user presses Save. Save runs the ordinary pipeline with
+  `id: ""`, so `Save_PF` inserts a new `Add_Pro_Forma` and new children, and the header
+  touch fires `RUN_EVERYTHING_ON_SUCCESS` to regenerate months and phases.
+- A child row that kept its ID would be an **update of the source's row**. Stripping every
+  ID is what makes the copy purely additive; `scripts/test-proforma-duplicate.mjs` asserts it
+  along with the source model being byte-identical after a fork.
+
+What a duplicate deliberately does not carry: approvals (`Budget_Approvals`), AI review
+records and the `AI_Review_*` stamps, attachments (`Contract_Version`), the LOI Worksheet and
+its Sellers/Properties, `LOI_Legal_Status` / `LOI_Approval_Token` / `LOI_Contract`, `Archive`,
+and every server-computed total. Most of these are excluded by construction: the copy only
+carries what `HEADER_FIELDS` and `buildSavePayload` carry. LOI *header* fields are in
+`HEADER_FIELDS` and are copied, since a fork is normally the same deal.
+
+**Keeping it in sync.** A new header field forks for free once it is in `HEADER_FIELDS`. A new
+child collection does not: add it to `FORK_CHILD_LISTS` as well, or its rows are copied with
+their source IDs and the save overwrites the original Pro Forma's rows.
+`scripts/test-proforma-duplicate.mjs` fails the build if `newModel` or `buildSavePayload`
+gains a collection that `FORK_CHILD_LISTS` does not list.
+
+## Save-path record-ID guards
+
+Three writes in the save pipeline build Creator criteria from the Pro Forma ID, and one of
+them (`deleteAllByCriteria` in the month/phase client fallback) deletes by that criteria. A
+blank ID turns `Proforma == <id>` into an unfiltered match, so a failed create could delete
+other Pro Formas' month and phase rows. Guards, all covered by the test:
+
+- the save pipeline throws before any ID-keyed step when the create returned no ID;
+- `writeLotMixViaSDK` returns early on a blank ID;
+- `deleteAllByCriteria` refuses a criteria whose operand is missing.
