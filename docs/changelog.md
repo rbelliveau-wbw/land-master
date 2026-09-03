@@ -3,6 +3,20 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.72.2
+
+- **AI Review can stamp the date again.** `aiCreatorDateTime` built the value in the shape
+  Creator reports *read back* (`dd-MMM-yyyy HH:mm:ss`), which an update rejects with code
+  3002 "Enter a valid date format for AI Reviewed On" — production hit this on every run.
+  The app is declared `date format = "MM/dd/yyyy"` with `time format = "12-hr"`, so a write
+  must be `MM/dd/yyyy hh:mm:ss AM/PM`; the same payload's `AI_Review_Criteria_Version`
+  (`09/03/2026 09:05:43 AM`) was accepted, which confirmed the shape.
+- The retry-without-the-date fallback stays as insurance, and `aiParseWhen` already read
+  both shapes, so history and display were never affected. No Deluge change needed.
+- **Read format is not write format in Creator** — the misleading comment on that helper is
+  corrected in place so this does not get reintroduced.
+- Rollback: `releases/proforma-manager/1.72.1`.
+
 ## Proforma Manager 1.72.1
 
 - **AI Review copy no longer names the founder.** The running state reads "Reviewing this
