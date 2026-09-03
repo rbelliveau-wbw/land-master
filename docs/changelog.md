@@ -3,6 +3,13 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.72.1
+
+- **AI Review copy no longer names the founder.** The running state reads "Reviewing this
+  Pro Forma…", the empty state "Run one to check the saved numbers.", and the row-menu
+  tooltip "AI review of this Pro Forma". Behaviour unchanged.
+- Rollback: `releases/proforma-manager/1.72.0`.
+
 ## Proforma Manager 1.72.0
 
 - **Pro Forma links you can paste.** Opening a Pro Forma (View, Edit, Approvals or
