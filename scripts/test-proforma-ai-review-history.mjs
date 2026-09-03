@@ -23,6 +23,7 @@ function extractFunction(name) {
 function harness(responses) {
   const reads = [];
   const logs = [];
+  const diagnosed = [];
   const S = { aiReviewsByPf: {}, aiReviewsLoading: {}, aiReviewsReportMissing: false };
   const CFG = { reports: { aiReviews: "All_Proforma_AI_Reviews" }, aiReviewProformaField: "Pro_Forma" };
   const sdkGetAll = (report, criteria) => {
@@ -39,6 +40,8 @@ function harness(responses) {
     "normalizeAiReview",
     "auditLog",
     "errMeta",
+    "diagnoseAiReviewHistory",
+    "aiReviewRec",
     `${extractFunction("loadAiReviews")}\nreturn loadAiReviews;`
   )(
     S,
@@ -47,9 +50,11 @@ function harness(responses) {
     (rows) => rows,
     (row) => (row ? { id: String(row.ID || ""), pfId: String(row.pf == null ? "" : row.pf) } : null),
     (level, message, meta) => logs.push({ level, message, meta }),
-    (e) => ({ message: String((e && e.message) || e) })
+    (e) => ({ message: String((e && e.message) || e) }),
+    (id) => { diagnosed.push(String(id)); return Promise.resolve(null); },
+    () => null
   );
-  return { loadAiReviews, reads, logs, S };
+  return { loadAiReviews, reads, logs, S, diagnosed };
 }
 
 const rowsFor = (...pf) => pf.map((p, i) => ({ ID: "air" + i, pf: p }));
@@ -90,6 +95,7 @@ const rowsFor = (...pf) => pf.map((p, i) => ({ ID: "air" + i, pf: p }));
   assert.equal(out.length, 0, "a missing report is an empty history");
   assert.equal(out.unavailable, true, "a missing report is reported as unavailable");
   assert.equal(h.S.aiReviewsReportMissing, true, "a missing report must stop the widget asking again");
+  assert.deepEqual(h.diagnosed, ["500"], "an unavailable history must run the audit-log diagnostic");
 }
 
 /* ── report exists but its quick view has no Pro_Forma column ──────────────── */
@@ -125,4 +131,85 @@ has(
   "the unavailable empty state must carry its reason as a tooltip"
 );
 
-console.log("Pro Forma AI review history criteria-failure recovery and scoping checks passed.");
+
+/* ── the diagnostic the audit log relies on ───────────────────────────────── */
+{
+  const calls = [];
+  const logs = [];
+  const answers = {
+    All_Proforma_AI_Reviews: { data: [{ ID: "9", Pro_Forma: { ID: "500" }, Verdict: "Watch" }], code: 3000 },
+  };
+  const diagnose = new Function(
+    "S",
+    "CFG",
+    "candidates",
+    "REPORT_CAND_MEMO",
+    "ZOHO",
+    "responseBad",
+    "lookupId",
+    "auditLog",
+    "errMeta",
+    "PFW_VERSION",
+    `${extractFunction("diagnoseAiReviewHistory")}\nreturn diagnoseAiReviewHistory;`
+  )(
+    { liveSDK: true, env: { name: "PRODUCTION" }, aiReviewsReportMissing: true },
+    { reports: { aiReviews: "All_Proforma_AI_Reviews" }, aiReviewProformaField: "Pro_Forma" },
+    () => ["All_Proforma_AI_Reviews", "All_AI_Reviews"],
+    {},
+    {
+      CREATOR: {
+        API: {
+          getAllRecords: (p) => {
+            calls.push({ report: p.reportName, criteria: p.criteria || "" });
+            const a = answers[p.reportName];
+            if (!a) return Promise.reject({ code: 2894, message: "No report named " + p.reportName });
+            if (p.criteria) return Promise.reject({ code: 3330, message: "invalid criteria" });
+            return Promise.resolve(a);
+          },
+        },
+      },
+    },
+    (r) => !r || (r.code && r.code !== 3000),
+    (v) => (v && typeof v === "object" ? v.ID : v),
+    (level, message, meta) => logs.push({ level, message, meta }),
+    (e) => ({ message: String((e && e.message) || e) }),
+    "1.75.0-test"
+  );
+
+  const out = await diagnose("500");
+  assert.deepEqual(
+    calls.map((c) => c.report + "|" + c.criteria),
+    ["All_Proforma_AI_Reviews|", "All_AI_Reviews|", "All_Proforma_AI_Reviews|(Pro_Forma == 500)"],
+    "the diagnostic must bare-read every candidate report, then try the criteria read"
+  );
+  assert.equal(logs.length, 1, "the diagnostic must emit exactly one audit entry");
+  assert.equal(logs[0].level, "warn", "the diagnostic must log at warn so it never sends the error email");
+  assert.match(logs[0].message, /AI REVIEW HISTORY DIAGNOSTIC/, "the entry must be findable by name in the log");
+
+  const bare = out.probes[0];
+  assert.equal(bare.rows, 1, "a candidate that answers must report its row count");
+  assert.equal(bare.proformaFieldPresent, true, "the probe must say whether the lookup column came back at all");
+  assert.deepEqual(bare.resolvedPfIds, ["500"], "the probe must resolve each row's Pro Forma id");
+  assert.ok(Array.isArray(bare.firstRowKeys) && bare.firstRowKeys.includes("Verdict"), "the probe must list the columns the report returns");
+
+  assert.equal(out.probes[1].code, 2894, "a missing report must be reported with its Creator code");
+  assert.equal(out.probes[2].code, 3330, "a refused criteria must be reported with its Creator code");
+  assert.equal(out.env, "PRODUCTION", "the entry must say which environment it ran in");
+  assert.equal(out.widget, "1.75.0-test", "the entry must say which widget build it ran from");
+}
+
+/* ── the diagnostic must actually be wired to both dead ends ──────────────── */
+{
+  const hasSrc = (re, message) => assert.ok(re.test(source), message);
+  hasSrc(
+    /if\(force\|\|!S\._aiDiagRan\)\{ S\._aiDiagRan=true; diagnoseAiReviewHistory\(id\); \}/,
+    "an unavailable history must trigger the diagnostic once per session"
+  );
+  hasSrc(
+    /rec\.AI_Review_Verdict[\s\S]{0,120}?diagnoseAiReviewHistory\(id\)/,
+    "an empty history on a record that already carries a verdict must trigger the diagnostic too"
+  );
+  hasSrc(/loadAiReviews\(id,true\)/, "the Refresh button must force a reload, which re-runs the diagnostic");
+}
+
+console.log("Pro Forma AI review history recovery, scoping, and audit-log diagnostic checks passed.");

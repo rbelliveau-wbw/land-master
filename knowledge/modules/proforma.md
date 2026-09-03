@@ -184,3 +184,23 @@ Every row builder must emit exactly one total cell or the columns shear: `row`, 
 branches, the three phase loops, and both `sect` branches (the month-strip band gets an empty
 `<td class="tot">`, the full-width band spans `FLOW_COLS+2`). Covered by
 `scripts/test-proforma-flow-total.mjs`.
+
+### AI review history diagnostic
+
+`diagnoseAiReviewHistory(pfId)` writes one audit entry, **`AI REVIEW HISTORY DIAGNOSTIC — copy
+this entry`**, at WARN (so it never triggers the automatic error email). It bare-reads every
+candidate report name in turn and then tries the criteria read, recording the raw Creator answer
+for each — code, row count, the first row's column names, whether the `Pro_Forma` key came back
+at all, and each row's resolved Pro Forma id. Read it like this:
+
+| What the probes show | What it means |
+| --- | --- |
+| every candidate `2894` / no report named | the report is not published in **this** environment |
+| bare read ok, criteria read errors | the criteria is being refused — the code says why |
+| bare read ok, `proformaFieldPresent: false` | the column is not in the report's quick view |
+| rows returned, no `resolvedPfIds` match | the rows live in another environment's app |
+
+It runs once per session when the history read fails, and again on every press of the modal's
+Refresh button. It also runs when the history reads back **empty on a record that already carries
+an `AI_Review_Verdict`** — the list chip reads those stamps, so a verdict with no history means
+the rows are somewhere the read cannot see.
