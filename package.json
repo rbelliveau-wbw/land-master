@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "validate": "node scripts/validate-repo.mjs && node scripts/validate-widget-javascript.mjs && node scripts/test-runtime-context.mjs && node scripts/test-critical-error-reporter.mjs && node scripts/test-budget-comparison-layout.mjs && node scripts/test-budget-permission-degradation.mjs && node scripts/test-land-master-mapping-draft.mjs && node scripts/test-manage-lots-widget.mjs && node scripts/test-proforma-duplicate.mjs",
+    "validate": "node scripts/validate-repo.mjs && node scripts/validate-widget-javascript.mjs && node scripts/test-runtime-context.mjs && node scripts/test-critical-error-reporter.mjs && node scripts/test-budget-comparison-layout.mjs && node scripts/test-budget-permission-degradation.mjs && node scripts/test-land-master-mapping-draft.mjs && node scripts/test-manage-lots-widget.mjs && node scripts/test-proforma-duplicate.mjs && node scripts/test-proforma-ai-review-history.mjs",
     "build:pages": "node scripts/build-pages.mjs",
     "release": "node scripts/create-release.mjs",
     "package:creator": "node scripts/package-creator.mjs",

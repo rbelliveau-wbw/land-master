@@ -144,3 +144,22 @@ other Pro Formas' month and phase rows. Guards, all covered by the test:
 - the save pipeline throws before any ID-keyed step when the create returned no ID;
 - `writeLotMixViaSDK` returns early on a blank ID;
 - `deleteAllByCriteria` refuses a criteria whose operand is missing.
+
+## AI review history read
+
+The history list reads `All_Proforma_AI_Reviews` with criteria `(Pro_Forma == <id>)`. A Creator
+report rejects a criteria naming a column that is **not in its quick view** with code `3330`,
+and `sdkGetAll` answers a criteria rejection by trying the NEXT report-name candidate — none of
+which exist — so a report that is present but missing the `Pro_Forma` column previously read as
+"no reviews report at all" and the modal showed `Review history is unavailable here.`
+
+`loadAiReviews` now retries the same report **without criteria** and scopes the rows in the
+widget, the way Pro Forma attachments already recover. The scoping rule inverts between the two
+reads: the filtered read keeps a row whose lookup is display-value-only, the unfiltered read
+drops any row that cannot prove it belongs to this record.
+
+If the unfiltered read returns rows but none names a Pro Forma, the column really is absent from
+the quick view — the empty state then carries the reason as a tooltip and the audit log names the
+report and field. **The Creator-side fix is to add `Pro_Forma` to the `All_Proforma_AI_Reviews`
+quick view and publish the report component**, which also restores the cheaper filtered read.
+Covered by `scripts/test-proforma-ai-review-history.mjs`.
