@@ -32,6 +32,10 @@ No Custom APIs. Reads and writes go through `ZOHO.CREATOR.API` only.
 - **Budget** — `COO_Approval_Threshold` (money), `Multi_Line`.
 - **Pro Forma Defaults** — the eight percentage fields in a grid, with a banner counting how many
   are blank (all 8 were blank as of 2026-08-27).
+- **AI Review** — `PF_Review_Criteria` (auto-growing textarea, sent verbatim to the model by
+  `PF_AI_Review`), `PF_Review_Provider` (`openai` only), `PF_Review_Model` (an OpenAI model id,
+  passed through as-is), `PF_Review_Criteria_Updated` (stamped by the widget whenever the criteria
+  change, so each review can record which version it judged against).
 - **Construction Curve** — the `Construction_Curve` grid, grouped by `Cost_Curve` with a
   per-curve **% total** badge that flags any curve not summing to 100%.
 - **Other fields** — anything on the record this widget does not explicitly model, rendered as
