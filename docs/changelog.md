@@ -18,9 +18,10 @@ Newest first. One entry per shipped version. Widget versions are what
   `perms().aiReview` is true, and the modal refuses to open without it; previously history
   was viewable by anyone and only Run was gated. The rail button is re-evaluated whenever
   permissions resolve.
-- `PF_AI_Review` repo copy: the function now refuses callers whose User Access row lacks
-  `AI_Review`, so a direct call to the all-users Custom API cannot bypass the widget gate.
-  Apply the same edit in Development (the Creator session had expired when this shipped).
+- `PF_AI_Review` repo copy: the function now asks `getUserAccess` for the caller's
+  `pfAiReview` and refuses without it, so a direct call to the all-users Custom API cannot
+  bypass the widget gate. Apply the same edit in Development (the Creator session had
+  expired when this shipped).
 - Rollback: `releases/proforma-manager/1.71.2`.
 
 ## Proforma Manager 1.70.0
