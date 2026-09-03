@@ -29,7 +29,7 @@ function build(S, canEditProbability = true) {
   return new Function(
     "S",
     "canEditProbability",
-    `${extractFunction("forkName")}\n${extractFunction("forkModel")}\n` +
+    `${extractFunction("forkName")}\n${extractFunction("forkModel")}\n${extractFunction("multiLookupIds")}\n` +
       `var FORK_CHILD_LISTS=${JSON.stringify(forkChildLists)};\n` +
       `return { forkName: forkName, forkModel: forkModel };`
   )(S, () => canEditProbability);
@@ -89,7 +89,7 @@ assert.equal(fork.ID, null, "the copy must have no record ID so Creator inserts 
 assert.equal(fork.Name, "Bell Sharkey (Duplicate)", "the copy must be renamed");
 assert.equal(fork.Status, "Draft", "a copy of an approved Pro Forma must be born Draft");
 assert.equal(fork.Lock_Inputs, "false", "a copy of a locked Pro Forma must be born unlocked");
-assert.equal(fork.Owner, "9001", "the copy must be owned by whoever made it");
+assert.equal(fork.Owner, "7,8,9001", "the copy must keep the source's owners and add whoever made it");
 assert.equal(fork._stored, null, "stored server returns describe the source and must not be carried over");
 assert.equal(fork.Territory, "North Austin", "every other header field must be copied verbatim");
 assert.equal(fork.Total_Acres, "146.7", "every other header field must be copied verbatim");
@@ -107,6 +107,32 @@ fork.purchaseInstallments[0].Cost = "1";
 fork.items[0].Item_Name = "changed";
 assert.equal(sourceModel.purchaseInstallments[0].Cost, "5000000", "editing the copy must not edit the source's rows");
 assert.equal(sourceModel.items[0].Item_Name, "Impact Fees", "editing the copy must not edit the source's rows");
+
+/* ── owners: the copy belongs to the same people as the source ────────────────── */
+{
+  const OWNERS = "4589000012345678,4589000012345679";
+  const withMe = (id) => build({ proformas: [], myAccessId: id });
+  assert.equal(
+    withMe("4589000099999999").forkModel({ Name: "A", Owner: OWNERS }).Owner,
+    OWNERS + ",4589000099999999",
+    "the source's owners must carry over, with the creating user added"
+  );
+  assert.equal(
+    withMe("4589000012345679").forkModel({ Name: "B", Owner: OWNERS }).Owner,
+    OWNERS,
+    "an owner who duplicates their own Pro Forma must not be listed twice"
+  );
+  assert.equal(
+    withMe("").forkModel({ Name: "C", Owner: OWNERS }).Owner,
+    OWNERS,
+    "an unresolved User Access id must not wipe the owners it could not add to"
+  );
+  assert.equal(
+    withMe("4589000099999999").forkModel({ Name: "D" }).Owner,
+    "4589000099999999",
+    "a source with no owners must still leave the copy owned by its creator"
+  );
+}
 
 /* ── stage: a copy must not inherit a closed deal's stage, or one it cannot change ── */
 {
