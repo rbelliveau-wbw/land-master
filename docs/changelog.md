@@ -3,6 +3,18 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.73.1
+
+- **The export chooser reads just "PDF" and "Excel."** The explanatory line under each is
+  gone; the detail moved to the button's tooltip.
+- **Both exports carry the date they were generated** — `Bell_Sharkey_ProForma_2026-09-03.xlsx`,
+  and the server's PDF filename gets the same suffix (skipped if it already ends in a date),
+  so a folder of exports sorts itself.
+- **The close button matches the AI Review modal** — 28px with the same SVG cross, instead of
+  inheriting the wider owner-picker button. Scoped to this modal, so the owner picker is
+  untouched.
+- Rollback: `releases/proforma-manager/1.73.0`.
+
 ## Proforma Manager 1.73.0
 
 - **"Download PDF" is now "Export"**, and it opens a chooser: the PDF (unchanged — the
