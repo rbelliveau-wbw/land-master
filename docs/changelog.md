@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.72.0
+
+- **Pro Forma links you can paste.** Opening a Pro Forma (View, Edit, Approvals or
+  Attachments) writes it into the Creator page URL as
+  `#Page:Proforma_Management1?proformaId=<id>`, so the address bar can be copied and sent
+  to a colleague; the pasted link lands on the Dashboard through the same path the approval
+  emails already use. Back to the list clears it. Only the id goes into the URL, so
+  switching segments on an open record never navigates.
+- Guards: unsaved edits block the URL update (Creator may treat the navigation as a page
+  reload), the URL is never re-sent when it already matches, and unsaved new records get no
+  address. A `view=edit|approvals|attachments` parameter is honoured on the way in if it is
+  ever declared on the page; nothing writes it today.
+- In the local harness the widget rewrites its own URL instead, so the flow can be tested
+  outside Creator.
+- Rollback: `releases/proforma-manager/1.71.3`.
+
 ## Proforma Manager 1.71.3
 
 - **"Estimated Purchase Date" is now "Project Start"** everywhere the widget labels it: the
