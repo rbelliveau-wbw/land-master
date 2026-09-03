@@ -212,4 +212,41 @@ has(
   hasSrc(/loadAiReviews\(id,true\)/, "the Refresh button must force a reload, which re-runs the diagnostic");
 }
 
-console.log("Pro Forma AI review history recovery, scoping, and audit-log diagnostic checks passed.");
+
+/* ── the report link name, and the config wiring that hid it ──────────────── */
+{
+  function block(startMarker) {
+    const i = source.indexOf(startMarker);
+    assert.notEqual(i, -1, `${startMarker} must exist`);
+    const open = source.indexOf("{", i);
+    let depth = 0;
+    for (let j = open; j < source.length; j += 1) {
+      if (source[j] === "{") depth += 1;
+      if (source[j] === "}") depth -= 1;
+      if (depth === 0) return source.slice(open, j + 1);
+    }
+    throw new Error(`Could not parse ${startMarker}`);
+  }
+  const reports = block("\n  reports: {");
+  const candidates = block("\n  reportCandidates: {");
+
+  const reportValues = new Set([...reports.matchAll(/:\s*"([^"]+)"/g)].map((m) => m[1]));
+  assert.ok(
+    reportValues.has("All_Proforma_Ai_Reviews"),
+    'the AI review report is All_Proforma_Ai_Reviews — Creator title-cased the form name, and report link names are case-sensitive to the record API'
+  );
+
+  /* candidates() looks the list up BY the configured report name. A key that matches no
+     configured report is a fallback list that can never run — which is how the AI review
+     history read lost its alternatives without anything failing loudly. */
+  const candidateKeys = [...candidates.matchAll(/^\s{4}(\w+):\s*\[/gm)].map((m) => m[1]);
+  assert.ok(candidateKeys.length >= 5, "reportCandidates must still list its report keys");
+  for (const key of candidateKeys) {
+    assert.ok(
+      reportValues.has(key),
+      `reportCandidates key "${key}" matches no value in CFG.reports, so candidates() can never find its fallback list — rename the key to the configured report name`
+    );
+  }
+}
+
+console.log("Pro Forma AI review history recovery, scoping, diagnostic, and report-name wiring checks passed.");

@@ -204,3 +204,21 @@ It runs once per session when the history read fails, and again on every press o
 Refresh button. It also runs when the history reads back **empty on a record that already carries
 an `AI_Review_Verdict`** — the list chip reads those stamps, so a verdict with no history means
 the rows are somewhere the read cannot see.
+
+### Report link name (the actual 2894 cause)
+
+The AI review history report is **`All_Proforma_Ai_Reviews`** — lower-case `Ai`. Creator
+title-cases each word when it auto-names a report, so the form `Proforma_AI_Review` produced
+`All_Proforma_Ai_Reviews`, not `All_Proforma_AI_Reviews`. Report link names are case-sensitive to
+the record API, so the all-caps spelling returned `2894 — No report named ... found` on every
+read, filtered and unfiltered alike, in an environment where the report was present the whole
+time. The Deluge insert keeps using the form name `Proforma_AI_Review`; only the report differs.
+
+Two guards came out of this:
+
+- `CFG.reportCandidates` is keyed by the configured report name — a key that matches no value in
+  `CFG.reports` is a fallback list `candidates()` can never reach.
+  `scripts/test-proforma-ai-review-history.mjs` fails the build on that drift.
+- **Open follow-up:** refresh the `.ds` export so `creator/generated/reports.json` carries the
+  live report list, then have `validate-repo.mjs` check every `CFG.reports.*` value against it.
+  That is the guard that would have caught this one before it shipped.
