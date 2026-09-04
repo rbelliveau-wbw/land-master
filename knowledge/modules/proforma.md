@@ -64,6 +64,12 @@ The Seller and Property grids use explicit per-column widths, polished field con
 
 `Add_Pro_Forma.Land_Cost_Acre` is a whole-dollar Creator currency field. The widget normalizes it to zero decimal places before calculation and save, then rescales purchase installments to the resulting land cost. `proforma_save` also applies `.round(0)` as a server-side safeguard. This prevents Creator error `3002` during the workflow-triggering header update.
 
+## Per-unit additional costs
+
+`Proforma_Item` stores optional `Unit` and `Per_Unit` inputs. In the Proforma Manager, a row-local, widget-only **Per Unit** toggle exposes those inputs and makes `Add_l_Cost` read-only. The supported units map to the Pro Forma header as follows: `Acre` → `Total_Acres`, `Lot` → `Lots`, and `LF` → `Total_Street_LF`.
+
+The widget calculates `Add_l_Cost = Per_Unit × selected header quantity` and persists the resulting `Add_l_Cost` alongside the two source inputs. All schedules, rollups, exports, reports, PDFs, and downstream Creator workflows continue to consume only `Add_l_Cost`; no downstream formula branches on the unit fields or the widget toggle.
+
 ## Writer template
 
 Current known LOI Writer merge template ID:
