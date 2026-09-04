@@ -196,7 +196,10 @@ const lacks = (re, message) => assert.ok(!re.test(source), message);
 
 has(/data-act="duplicate"/, "the row menu must expose a Duplicate button");
 has(/act==="duplicate"\) duplicateProforma\(id\)/, "the row menu must route Duplicate to duplicateProforma");
-has(/perms\(\)\.anyEdit\?'<button[^']*data-act="duplicate"/, "Duplicate must be hidden from read-only users");
+has(/function canDuplicatePf\(rec\)\{ return !!perms\(\)\.editAll \|\| userOwnsPf\(rec\); \}/, "Duplicate must require ownership or Edit All Proformas");
+has(/canDuplicatePf\(r\)\?'<button[^']*data-act="duplicate"/, "Duplicate must be hidden when the row is neither owned nor covered by Edit All Proformas");
+has(/if\(!canDuplicatePf\(rec\)\)\{ toast\("Only a Pro Forma owner or an Edit All Proformas administrator can duplicate it\./, "duplicateProforma must enforce the same owner/admin rule even when called directly");
+has(/if\(S\.ed&&S\.ed\._duplicateOf\)[\s\S]{0,260}?return !!source&&canDuplicatePf\(source\)/, "an authorized owner must remain allowed to save the staged duplicate");
 has(
   /function writeLotMixViaSDK\(pfId\)\{[\s\S]{0,600}?if\(!pfId\)\{[\s\S]{0,200}?return Promise\.resolve/,
   "the lot mix writer must refuse to run without a record ID, or its diff would delete other records' rows"

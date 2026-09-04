@@ -112,6 +112,10 @@ The function sends a compact deal summary (headline numbers with pre-computed ra
 `Duplicate` in the Pro Forma row's three-dot menu creates a forked Pro Forma. It is **not** a
 field-by-field copier — copiers drift the moment a field is added. The flow is:
 
+The action is visible and executable only when the current user's `User_Access` record is in
+the Pro Forma's `Owner` lookup or the user has `Edit_All_Proformas`. Ownership alone permits
+Duplicate; it does not depend on the separate `Edit_Owned_Proformas` grant.
+
 ```text
 loadDetail(sourceId) → recordToModel() → forkModel() → editor (unsaved, id = null) → normal Save
 ```
