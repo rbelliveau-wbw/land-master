@@ -70,6 +70,9 @@ The Seller and Property grids use explicit per-column widths, polished field con
 
 The widget calculates `Add_l_Cost = Per_Unit × selected header quantity` and persists the resulting `Add_l_Cost` alongside the two source inputs. All schedules, rollups, exports, reports, PDFs, and downstream Creator workflows continue to consume only `Add_l_Cost`; no downstream formula branches on the unit fields or the widget toggle.
 
+The Pro Forma list displays each record's Creator system creation date from `Added_Time`
+(with `Created_Time`, `Added_On`, and `Created_On` fallbacks) beside the record name.
+
 ## Writer template
 
 Current known LOI Writer merge template ID:
