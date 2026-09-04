@@ -51,6 +51,7 @@ assert.equal(off.Add_l_Cost, "777", "manual Add'l Cost must remain untouched whe
 
 assert.match(source, /data-per-unit=/, "each Additional Cost row must render a widget-only toggle");
 assert.match(source, /readonly aria-readonly="true"/, "the computed Add'l Cost input must be read-only");
+assert.match(source, /t\.getAttribute\("data-ik"\)===\"Per_Unit\"[\s\S]{0,180}?rerenderPane\("addl"\)/, "committing a Per Unit Cost must rerender and unlock scheduling controls");
 assert.match(source, /Unit:r\._perUnit\?\(r\.Unit\|\|""\):""/, "Unit must be included in the save payload");
 assert.match(source, /Per_Unit:r\._perUnit\?\(r\.Per_Unit\|\|""\):""/, "Per Unit Cost must be included in the save payload");
 
