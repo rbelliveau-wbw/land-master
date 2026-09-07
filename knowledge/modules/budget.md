@@ -25,6 +25,8 @@ Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator do
 
 ## Compact project and budget layout (122.25.0)
 
+122.25.3 softens the landing palette: blue-gray page background, blue project headers and edge accents, tinted metadata and table headers, and alternating phase rows. CSS-only presentation change in `budget-layout.css`, with widget/release version metadata updated. Expanded rows were visually checked; no dimensions, controls, Creator forms/fields, functions, or Custom APIs change, and no Creator publication is required. Rollback: `122.25.2`.
+
 122.25.2 increases breadcrumb text to 14px and the back control to 36px. Project search and project/territory/status filter changes expand matching projects; manual collapse still works afterward. The Pro Forma picker floats over the page instead of enlarging its metadata row, with aligned owner controls. Browser checks confirmed unchanged row height when opening the picker, automatic expansion, manual collapse, and navigation sizing. Frontend-only changes in `widget.html` and `budget-layout.css`; no Creator forms, fields, functions, APIs, or publication change. Rollback: `122.25.1`.
 
 122.25.1 removes the landing title/count row, places Expand/Collapse immediately after Status, and uses white bordered filter controls with a blue search icon. Changes are confined to `widget.html`, `budget-layout.css`, and release metadata; no Creator fields, functions, APIs, or publication are affected. Verified the heading removal, button position and expansion behavior in the browser; repository validation and Pages build pass. Rollback for this toolbar update is `122.25.0`.
