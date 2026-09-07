@@ -23,6 +23,17 @@ The working in-widget PDF preview uses `Get_Budget_Attachment_Preview`.
 
 Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator download URLs, or Creator stock preview links; those approaches previously produced blank pages or downloads instead of embedded previews.
 
+## Compact project and budget layout (122.25.0)
+
+- Projects start collapsed; the disclosure control or project heading shows their phase budgets. Expansion is retained while navigating within the widget. Project/phase search combines with the existing project, territory, and status filters.
+- Lifecycle statuses come from the loaded budgets, including blank statuses. The searchable Status dropdown supports multiple selections, Clear, Done, keyboard navigation, and Escape. No selection includes all statuses.
+- Users with owner-edit permission click populated owner names on project cards or phase budgets to open the existing owner dialog. Empty owners retain Add owners. Populated Project Pro Forma associations and external mapping values use the same hover affordance; existing permission checks and save paths still apply.
+- Category and line-item dimensions match 122.24.4. The lighter Budget/Pro Forma styling is in `widgets/budget-manager/src/app/budget-layout.css`; controls, financial columns, approval locks, and workflows remain available.
+- Frontend only: no Creator forms, fields, Deluge functions, or Custom API contracts changed. No Creator publication is required.
+- Existing data paths remain `Add_Budget.Status` / `Budget_Owner`, `Project.Proforma`, and `External_System_Mapping.Subdivision1` / `External_System` / `External_Code`. Frontend changes cover landing filter/card rendering, owner/mapping renderers, editor headings, and presentation CSS. Approval, financial calculation, export, attachment, and persistence functions are unchanged.
+- Regression: combine status/project/territory/search filters; expand projects and return from a phase; edit populated/empty owners and mappings with and without permission; open all phases, comparison, approvals, attachments, modifications, imports, and export menus. Local fixture writes are confined to the design lab.
+- Rollback: point `production.budget-manager` in `deploy/environments.json` to `122.24.4` and redeploy Pages. Keep the permanent Creator widget URL.
+
 ## Diagnostics
 
 The Audit Log control lives at the top-right of the application bar. It opens a right-side drawer consistent with Pro Forma Manager and must remain available in every Budget view.
