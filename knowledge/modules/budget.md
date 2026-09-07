@@ -25,6 +25,8 @@ Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator do
 
 ## Compact project and budget layout (122.25.0)
 
+122.25.1 removes the landing title/count row, places Expand/Collapse immediately after Status, and uses white bordered filter controls with a blue search icon. Changes are confined to `widget.html`, `budget-layout.css`, and release metadata; no Creator fields, functions, APIs, or publication are affected. Verified the heading removal, button position and expansion behavior in the browser; repository validation and Pages build pass. Rollback for this toolbar update is `122.25.0`.
+
 - Projects start collapsed; the disclosure control or project heading shows their phase budgets. Expansion is retained while navigating within the widget. Project/phase search combines with the existing project, territory, and status filters.
 - Lifecycle statuses come from the loaded budgets, including blank statuses. The searchable Status dropdown supports multiple selections, Clear, Done, keyboard navigation, and Escape. No selection includes all statuses.
 - Users with owner-edit permission click populated owner names on project cards or phase budgets to open the existing owner dialog. Empty owners retain Add owners. Populated Project Pro Forma associations and external mapping values use the same hover affordance; existing permission checks and save paths still apply.
