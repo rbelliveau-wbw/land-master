@@ -249,3 +249,7 @@ Centers the project, territory, and status clear buttons vertically in their fil
 Frontend-only: `widgets/budget-manager/src/app/widget.html` and `budget-layout.css`. Project selection is now a searchable multi-select; project, territory, status, and search selections clear directly from the toolbar. Project phase tables always remain visible and the expand/collapse controls are removed. Owner chips use PF initials avatars and a white capsule; the existing audit action uses the PF document icon/count. Existing owner permissions, mapping editors, table information, approvals, category expansion, calculations, fields, Creator functions and Custom APIs are unchanged.
 
 Regression: browser-check multiple project selections, each external clear control, search reset, visible phase tables, and owner editor opening. Run `npm run validate` and `npm run build:pages`. Promote production mapping only after immutable release validation; no Creator backend publication required. Rollback: restore production budget-manager mapping to `122.25.3` and rebuild Pages.
+
+### 122.26.2 — consistent clear-icon centering
+
+Center the search clear icon with the same flex alignment and line height as the project, territory, and status clear controls. CSS-only behavior change; fields, functions, APIs, permissions and filter behavior unchanged. Validate with repository checks and Pages build. No Creator publication required. Rollback production mapping to 122.26.1.
