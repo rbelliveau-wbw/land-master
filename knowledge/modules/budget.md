@@ -23,6 +23,14 @@ The working in-widget PDF preview uses `Get_Budget_Attachment_Preview`.
 
 Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator download URLs, or Creator stock preview links; those approaches previously produced blank pages or downloads instead of embedded previews.
 
+## Project Pro Forma controls (122.26.5)
+
+The comparison action uses a saturated blue background with white text and visible hover/focus states. A selected Pro Forma retains a white dropdown background and blue border. Frontend styling only; no Creator deployment or contract changes. Regression: selected/unselected dropdown, hover/focus, and comparison navigation. Rollback for both visual updates: `122.26.3`.
+
+## Single-owner project pill (122.26.4)
+
+A project with one owner uses an intrinsic-width pill, a singular Owner label, and an unbordered avatar/name inside the outer pill. Multiple-owner and empty states keep their existing layout; owner editing and permissions are unchanged. Frontend only: no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: single, multiple, and empty owners with and without editing permission; long names at narrow widths. Rollback release: `122.26.3`.
+
 ## Compact project and budget layout (122.25.0)
 
 122.25.3 softens the landing palette: blue-gray page background, blue project headers and edge accents, tinted metadata and table headers, and alternating phase rows. CSS-only presentation change in `budget-layout.css`, with widget/release version metadata updated. Expanded rows were visually checked; no dimensions, controls, Creator forms/fields, functions, or Custom APIs change, and no Creator publication is required. Rollback: `122.25.2`.

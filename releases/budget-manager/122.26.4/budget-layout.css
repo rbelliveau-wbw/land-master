@@ -53,7 +53,7 @@
 .powner-panel .powner-chips{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0}
 .powner-chip,.owner-chip{font-size:10px;font-weight:600;box-shadow:none}
 .pf-combo{flex:1;min-width:0}.pf-combo-btn{font-size:11px;min-height:28px;border-radius:7px;box-shadow:none}
-.pf-combo[data-selected]:not([data-selected='']) .pf-combo-btn{background:#fff;border-color:#9bb7dd;box-shadow:0 1px 3px #183c6310}
+.pf-combo[data-selected]:not([data-selected='']) .pf-combo-btn{background:transparent;border-color:transparent}
 .pf-combo[data-selected]:not([data-selected='']) .pf-combo-btn:not(:disabled):hover{background:var(--ptint);border-color:var(--primary-2)}
 .inline-edit-values{display:inline-flex;flex-wrap:wrap;align-items:center;gap:5px;max-width:100%;padding:3px 4px;margin:-3px -4px;border:1.5px solid transparent;border-radius:8px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
 .inline-edit-values:hover{background:var(--ptint);border-color:var(--primary-2)}
@@ -140,7 +140,3 @@
 .powner-single .powner-chip{border:0;background:transparent;padding:0;min-width:0;overflow-wrap:anywhere}
 .powner-single .inline-edit-values{min-width:0;border-radius:999px}
 .powner-single .powner-chips{min-width:0}
-
-.budget-project-actions .proj-action-btn.compare{background:linear-gradient(135deg,#2563eb,#1d4ed8);border-color:#1d4ed8;color:#fff;font-weight:750;box-shadow:0 2px 5px #1d4ed82b}
-.budget-project-actions .proj-action-btn.compare:hover{background:#1e40af;border-color:#1e40af;box-shadow:0 3px 7px #1d4ed83d}
-.budget-project-actions .proj-action-btn.compare:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
