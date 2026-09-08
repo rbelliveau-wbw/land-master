@@ -54,7 +54,7 @@ if (!budgetHtml.includes('class="audit-top-btn"') || !budgetHtml.includes('.audi
 }
 
 const proformaHtml = fs.readFileSync(path.join(root, 'widgets/proforma-manager/src/app/widget.html'), 'utf8');
-if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('POLISHED-CREATE-ACTION')) {
+if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('class="btn primary" id="btnNew"')) {
   errors.push('proforma-manager: polished New Pro Forma action is missing.');
 }
 

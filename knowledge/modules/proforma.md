@@ -241,3 +241,11 @@ Two guards came out of this:
 Frontend-only: `widgets/proforma-manager/src/app/report-layout.css` is scoped to `#vList`, with its stylesheet link/version in `widget.html`. Budget-style blue report headers, territory separators, and alternating rows reduce white glare. All report columns/actions, owner editing, audit, approvals, calculations, LOI, fields, Creator functions, and Custom APIs retain existing behavior.
 
 Regression: visually check main report with local mock data, retain horizontal scrolling and action controls; run `npm run validate` and `npm run build:pages`. No Creator backend publication required. Rollback: restore production proforma-manager mapping to `1.75.9` and rebuild Pages.
+
+## Scenario site inputs (1.75.11)
+
+Scenario Analysis includes Acres (Total_Acres), LF Street (Total_Street_LF), and Lot Size in front feet (Lot_Size_Ft), alongside the existing ten drivers. Controls are grouped into Site & Lots, Pricing, Sales Pace, and Schedule. Acres and lot size retain two decimal places; street length is a whole-foot quantity. Baseline comparisons, pins, Revert all, Refresh, and sensitivity ranking include all thirteen drivers.
+
+Changing Acres rescales purchase installments using the same path as Land Cost / Acre, preserving payment timing. Acre-, LF-, and lot-based additional costs are recalculated for the scenario quantity; manual additional costs remain fixed. Sensitivity calculations copy dependent rows so they cannot mutate the active scenario. Lot size changes the average front footage used for revenue without rewriting the saved lot mix. All changes are local what-if inputs; no Creator records, forms, functions, or Custom APIs change and no Creator deployment is required.
+
+Regression coverage: scripts/test-proforma-scenarios.mjs checks profit, IRR, installment totals/timing, per-unit costs, baseline isolation, decimal input, and snapshots. Browser verification covers editing, steppers, keyboard arrows, fractional deltas, pin/revert/refresh, and 1600/1024/768/390px layouts. Required release checks: npm run validate and npm run build:pages. Rollback: map production proforma-manager back to 1.75.10 and redeploy Pages.
