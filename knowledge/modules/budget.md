@@ -23,6 +23,10 @@ The working in-widget PDF preview uses `Get_Budget_Attachment_Preview`.
 
 Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator download URLs, or Creator stock preview links; those approaches previously produced blank pages or downloads instead of embedded previews.
 
+## Budget identity header (122.26.6)
+
+Phase and project editors group the title and status badges in a bordered, subtly shaded header with a blue accent, budget icon, and Phase budget / Project budget label. Titles expose heading semantics; narrow screens wrap badges below a divider. Changes: header rendering and layout CSS, version manifests, immutable release, and production mapping. No Creator forms, fields, functions, Custom APIs, or Creator deployment changes. Desktop and 390px header fixtures visually checked; regression scenarios include phase/project navigation, long titles, empty statuses, and locked/approved badges. Rollback: `122.26.5` via the production mapping.
+
 ## Project Pro Forma controls (122.26.5)
 
 The comparison action uses a saturated blue background with white text and visible hover/focus states. A selected Pro Forma retains a white dropdown background and blue border. Frontend styling only; no Creator deployment or contract changes. Regression: selected/unselected dropdown, hover/focus, and comparison navigation. Rollback for both visual updates: `122.26.3`.
