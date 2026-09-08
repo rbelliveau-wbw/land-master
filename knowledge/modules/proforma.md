@@ -265,3 +265,7 @@ The switch updates income, cash flow, profit, ROI, IRR/XIRR, peak cash, target h
 Verification: full repository validation and Pages build; revenue exclusion, return changes, timed cash flow, restored results, unchanged receipt data/classification, no-receipt cases, sensitivity inheritance, and snapshots in scripts/test-proforma-scenarios.mjs. Browser checks cover toggle/keyboard, headroom, badge, pin/revert/refresh, and responsive layouts from 390 to 1600px. Only widget source, tests, docs, and release metadata change; no Creator forms, fields, functions, or Custom APIs change, and no Creator deployment is required. Rollback: map production proforma-manager to 1.75.12.
 
 The 1.75.14 release also removes the explanatory note below Target Headroom and the AI review grade pill beneath each name in the main Pro Forma list. The record AI review action and review history remain available.
+
+### MUD switch copy (1.75.15)
+
+The scenario switch is labeled MUD and has no hover help text. Its accessible name and calculation behavior remain intact. Verification: repository validation, Pages build, and production preview label/tooltip check. Only widget copy, docs, and release metadata change; no Creator deployment required. Rollback: production proforma-manager 1.75.14.
