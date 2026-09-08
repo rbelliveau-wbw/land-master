@@ -240,6 +240,10 @@ Custom API binding were created in the **Development** environment (`land-master
 They require a Development → Stage → Production push before production users see them; re-verify
 the Custom API's function binding after that push.
 
+## 122.26.1 — centered filter clear controls
+
+Centers the project, territory, and status clear buttons vertically in their filter controls and centers each X with flex alignment and zero padding. Frontend styling only in `budget-layout.css`, plus widget version/release metadata; no Creator forms, fields, functions, Custom APIs, or backend publication changes. Browser verification covers open/closed dropdowns, centering at 1400/700/420px viewport widths, and clearing all three selections. Rollback: restore production budget-manager to `122.26.0` and rebuild Pages.
+
 ## 122.26.0 — always-visible phases and filter controls
 
 Frontend-only: `widgets/budget-manager/src/app/widget.html` and `budget-layout.css`. Project selection is now a searchable multi-select; project, territory, status, and search selections clear directly from the toolbar. Project phase tables always remain visible and the expand/collapse controls are removed. Owner chips use PF initials avatars and a white capsule; the existing audit action uses the PF document icon/count. Existing owner permissions, mapping editors, table information, approvals, category expansion, calculations, fields, Creator functions and Custom APIs are unchanged.
