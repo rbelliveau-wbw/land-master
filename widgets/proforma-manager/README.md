@@ -3,6 +3,8 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
+Current release: `1.75.10`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
 ## Baseline
 
 - Version: `1.44.6`

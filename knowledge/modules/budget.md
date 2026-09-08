@@ -239,3 +239,9 @@ The `Budget_Modification` form/report, `Budget_Approvals` changes, the Deluge fu
 Custom API binding were created in the **Development** environment (`land-master-development`).
 They require a Development → Stage → Production push before production users see them; re-verify
 the Custom API's function binding after that push.
+
+## 122.26.0 — always-visible phases and filter controls
+
+Frontend-only: `widgets/budget-manager/src/app/widget.html` and `budget-layout.css`. Project selection is now a searchable multi-select; project, territory, status, and search selections clear directly from the toolbar. Project phase tables always remain visible and the expand/collapse controls are removed. Owner chips use PF initials avatars and a white capsule; the existing audit action uses the PF document icon/count. Existing owner permissions, mapping editors, table information, approvals, category expansion, calculations, fields, Creator functions and Custom APIs are unchanged.
+
+Regression: browser-check multiple project selections, each external clear control, search reset, visible phase tables, and owner editor opening. Run `npm run validate` and `npm run build:pages`. Promote production mapping only after immutable release validation; no Creator backend publication required. Rollback: restore production budget-manager mapping to `122.25.3` and rebuild Pages.

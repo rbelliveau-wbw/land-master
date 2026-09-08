@@ -235,3 +235,9 @@ Two guards came out of this:
 - **Open follow-up:** refresh the `.ds` export so `creator/generated/reports.json` carries the
   live report list, then have `validate-repo.mjs` check every `CFG.reports.*` value against it.
   That is the guard that would have caught this one before it shipped.
+
+## 1.75.10 — main report palette
+
+Frontend-only: `widgets/proforma-manager/src/app/report-layout.css` is scoped to `#vList`, with its stylesheet link/version in `widget.html`. Budget-style blue report headers, territory separators, and alternating rows reduce white glare. All report columns/actions, owner editing, audit, approvals, calculations, LOI, fields, Creator functions, and Custom APIs retain existing behavior.
+
+Regression: visually check main report with local mock data, retain horizontal scrolling and action controls; run `npm run validate` and `npm run build:pages`. No Creator backend publication required. Rollback: restore production proforma-manager mapping to `1.75.9` and rebuild Pages.

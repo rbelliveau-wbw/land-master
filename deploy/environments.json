@@ -22,8 +22,8 @@
       "manage-lots": "0.1.0"
     },
     "production": {
-      "proforma-manager": "1.75.9",
-      "budget-manager": "122.25.3",
+      "proforma-manager": "1.75.10",
+      "budget-manager": "122.26.0",
       "land-master": "8.11.2",
       "contract-management": "1.57.0",
       "tax-center": "19.17.1",
