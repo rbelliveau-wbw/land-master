@@ -23,7 +23,7 @@
     },
     "production": {
       "proforma-manager": "1.75.10",
-      "budget-manager": "122.26.2",
+      "budget-manager": "122.26.3",
       "land-master": "8.11.2",
       "contract-management": "1.57.0",
       "tax-center": "19.17.1",

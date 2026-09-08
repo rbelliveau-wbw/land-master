@@ -253,3 +253,7 @@ Regression: browser-check multiple project selections, each external clear contr
 ### 122.26.2 — consistent clear-icon centering
 
 Center the search clear icon with the same flex alignment and line height as the project, territory, and status clear controls. CSS-only behavior change; fields, functions, APIs, permissions and filter behavior unchanged. Validate with repository checks and Pages build. No Creator publication required. Rollback production mapping to 122.26.1.
+
+### 122.26.3 — SVG clear icons
+
+Replace font-based multiplication characters in search, project, territory and status clear buttons with symmetric SVG paths. Explicit icon dimensions override search-icon styling. Browser verification with all selections active and a dropdown open confirms zero horizontal/vertical icon-center offset for all four buttons; screenshot reviewed. Frontend-only widget.html and budget-layout.css changes; filter behavior, permissions, fields, functions and APIs unchanged. Validate repository and Pages build; no Creator publication needed. Rollback production mapping to 122.26.2.

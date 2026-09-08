@@ -3,7 +3,7 @@
 
 Budget management, approvals, attachments, and pro forma comparison.
 
-Current release: `122.26.2`. Compact project cards with every phase always visible and Pro Forma styling; searchable multi-select project, territory, and lifecycle filters with external clear controls; direct owner/mapping editing. Category and item sizing remains at the original dimensions. See `../../knowledge/modules/budget.md` for regression and rollback notes. The release includes `src/app/budget-layout.css` alongside the existing widget files.
+Current release: `122.26.3`. Compact project cards with every phase always visible and Pro Forma styling; searchable multi-select project, territory, and lifecycle filters with external clear controls; direct owner/mapping editing. Category and item sizing remains at the original dimensions. See `../../knowledge/modules/budget.md` for regression and rollback notes. The release includes `src/app/budget-layout.css` alongside the existing widget files.
 
 ## Baseline
 
