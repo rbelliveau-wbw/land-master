@@ -23,6 +23,10 @@ The working in-widget PDF preview uses `Get_Budget_Attachment_Preview`.
 
 Do not replace it with `ZOHO.CREATOR.API.readFile`, blob URLs, direct Creator download URLs, or Creator stock preview links; those approaches previously produced blank pages or downloads instead of embedded previews.
 
+## Phase header label removal (122.26.7)
+
+Removes the Phase budget eyebrow; the phase title remains vertically centered beside its icon. Project budget labeling is unchanged. Promoted Budget Manager to development, stage, and production. Frontend only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: phase title, icon, and status rendering; project heading retains its label. Rollback mappings: development `122.24.4`, stage `122.24.3`, production `122.26.6`.
+
 ## Budget identity header (122.26.6)
 
 Phase and project editors group the title and status badges in a bordered, subtly shaded header with a blue accent, budget icon, and Phase budget / Project budget label. Titles expose heading semantics; narrow screens wrap badges below a divider. Changes: header rendering and layout CSS, version manifests, immutable release, and production mapping. No Creator forms, fields, functions, Custom APIs, or Creator deployment changes. Desktop and 390px header fixtures visually checked; regression scenarios include phase/project navigation, long titles, empty statuses, and locked/approved badges. Rollback: `122.26.5` via the production mapping.
