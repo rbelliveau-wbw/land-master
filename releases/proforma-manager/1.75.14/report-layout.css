@@ -1,0 +1,13 @@
+/* Main report: shared Budget palette; editor and workflow styles stay local. */
+#vList{background:#e5ecf3}
+#vList .list-head{background:#e5ecf3}
+#vList .list-card{border:1px solid #bdcfe1;border-radius:10px;background:#f4f7fb;box-shadow:0 2px 6px #203c600a}
+#vList .pf-list thead th{background:#d9e5f1;color:#496581;border-bottom:1px solid #c5d6e6}
+#vList .pf-list tbody tr:not(.grp-row):nth-child(odd){background:#f4f7fb}
+#vList .pf-list tbody tr:not(.grp-row):nth-child(even){background:#eaf1f7}
+#vList .pf-list tbody tr:not(.grp-row):hover{background:#dce9f6}
+#vList .pf-list tr.grp-row td{background:linear-gradient(110deg,#dce8f5,#eaf1f8);color:#183c63;border-top:1px solid #bdcfe1;border-bottom:1px solid #c5d6e6}
+#vList .pf-list tr.grp-row td:first-child{box-shadow:inset 4px 0 0 #6d95c0}
+#vList .pf-list tbody tr.archived-row{color:#718198}
+#vList .btn{border-radius:7px;box-shadow:none}
+#vList .filter{border-color:#bfd0e8;border-radius:8px}

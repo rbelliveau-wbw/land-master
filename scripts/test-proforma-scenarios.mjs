@@ -9,7 +9,7 @@ function fn(name){
  throw Error(name);
 }
 const ctx=vm.createContext({S:{dash:{}}, CFG:{irr:{}}, document:{querySelector:()=>null}, renderDashboard(){}, dealCancelRecalc(){}, dealScheduleRecalc(){}});
-const names=['num','intN','round2','hasVal','fmtN','fmt$','esc','ymAdd','additionalCostUnitQuantity','syncPerUnitAdditionalCost','syncAllPerUnitAdditionalCosts','computeProforma','modelToCalc','dealCloneWith','dealApplyDriver','dealFmtDelta','dealSnapshot','dealKpis','dealPeakCash','curveLengthValue','lookupDisplayValue'];
+const names=['num','intN','round2','hasVal','fmtN','fmt$','esc','ymAdd','additionalCostUnitQuantity','syncPerUnitAdditionalCost','syncAllPerUnitAdditionalCosts','computeProforma','modelToCalc','dealCloneWith','dealApplyDriver','dealFmtDelta','dealSnapshot','dealKpis','dealMudRevenueEnabled','dealSetMudRevenue','dealPeakCash','curveLengthValue','lookupDisplayValue'];
 vm.runInContext(names.map(fn).join('\n')+'\n'+source.match(/var DEAL_DRIVERS=\[[\s\S]*?\n\];/)[0],ctx);
 const model={Total_Acres:'100',Land_Cost_Acre:'10000',Total_Street_LF:'5000',Lot_Size_Ft:'50',Lots:'100',Phases:'1',Sale_Price_FF:'1500',Const_Cost_FF:'300',Engineering_Cost_Lot:'500',Engineering_Length_Months:'2',Engineering_Delay_Months:'0',Construction_Length:'2',Construction_Delay_Months:'0',Initial_Takedown:'10',Lots_per_Month:'10',purchaseInstallments:[{Cost:'250000',Percent1:'25',Month1:'1'},{Cost:'750000',Percent1:'75',Month1:'2'}],curve:[{Month_Number:'1',Percent_Cost:'50'},{Month_Number:'2',Percent_Cost:'50'}],items:[{_perUnit:true,Unit:'Acre',Per_Unit:'100',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'LF',Per_Unit:'2',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'Lot',Per_Unit:'10',Add_l_Cost:'1000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:false,Add_l_Cost:'777',Department:'Construction',Start_Phase:'1',End_Phase:'1'}]};
 const before=JSON.stringify(model);const base=ctx.computeProforma(model);
@@ -38,3 +38,40 @@ ctx.dealApplyDriver('Lot_Size_Ft','-3');assert.equal(ctx.S.dash.model.Lot_Size_F
 assert.match(ctx.dealFmtDelta(0.25,false,false,'acres',false),/0.25/);
 assert.equal(ctx.DEAL_DRIVERS.length,13);
 console.log('Scenario quantity, cash flow, per-unit cost, isolation, input precision and snapshot regressions passed.');
+
+// Revenue exclusions must affect both totals and the timed receipts, without deleting data.
+const mudModel=structuredClone(model);
+mudModel.MUD_PID='TRUE';
+mudModel.pidMud=[{ID:'receipt-1',Month1:'7',Cost:'125000'},{ID:'receipt-2',Month1:'25',Cost:'375000'}];
+const savedReceipts=JSON.stringify(mudModel.pidMud);
+ctx.S.dash.model=mudModel;
+const withMud=ctx.modelToCalc(mudModel);
+assert.equal(withMud.totals.MUD_Revenue,500000);
+assert.equal(ctx.dealMudRevenueEnabled(mudModel),true,'saved model defaults to including scheduled receipts');
+ctx.dealSetMudRevenue(false);
+const withoutMud=ctx.S.dash.calc;
+assert.equal(withoutMud.totals.MUD_Revenue,0);
+assert.equal(withMud.totals.Net_Profit-withoutMud.totals.Net_Profit,500000);
+assert.equal(withMud.totals.Total_Income-withoutMud.totals.Total_Income,500000);
+assert.equal(withMud.totals.Total_Expenses,withoutMud.totals.Total_Expenses);
+assert.equal(withoutMud.agg.reduce((sum,row)=>sum+row.pid,0),0);
+assert.notEqual(withoutMud.irr,withMud.irr);
+assert.notEqual(withoutMud.xirr,withMud.xirr);
+assert.notEqual(withoutMud.roi,withMud.roi);
+assert.ok(withoutMud.endMonth<withMud.endMonth,'excluded late receipts do not extend the scenario');
+assert.equal(JSON.stringify(mudModel.pidMud),savedReceipts);
+assert.equal(mudModel.MUD_PID,'TRUE','the saved classification is unchanged');
+const offPin=ctx.dealSnapshot(mudModel,withoutMud);
+assert.equal(offPin.mudRevenueEnabled,false);
+assert.equal(offPin.kpis.mud,0);
+const sensitivity=ctx.dealCloneWith(mudModel,'Total_Acres',110);
+assert.equal(ctx.modelToCalc(sensitivity).totals.MUD_Revenue,0,'headroom/sensitivity keep the toggle setting');
+ctx.dealSetMudRevenue(true);
+assert.deepEqual(ctx.S.dash.calc,withMud,'turning revenue back on restores every calculated result');
+assert.equal(offPin.mudRevenueEnabled,false,'pins retain their own setting');
+assert.equal(JSON.stringify(mudModel.pidMud),savedReceipts);
+ctx.S.dash.model=structuredClone(model);
+const empty=ctx.modelToCalc(ctx.S.dash.model);
+ctx.dealSetMudRevenue(false);
+assert.deepEqual(ctx.S.dash.calc,empty,'no receipts produces no artificial revenue or return change');
+console.log('MUD on/off revenue, cash flow, returns, sensitivity, snapshot and restoration checks passed.');
