@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Back-button cursor (1.75.16)
+
+The existing Pro Forma back-button design is retained, with an explicit pointer cursor on the button and SVG and a visible keyboard-focus outline. Attachment return also uses a pointer. The proposed budget-style title card remains a standalone mockup and is not part of this release. No forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: list return, attachment return, hover and keyboard focus. Rollback: `1.75.15`.
+
 ## Scope
 
 Pro forma creation and editing, phases/months, additional costs, purchasing company, seller/property LOI data, Writer-generated LOI documents, comparison views, and approvals.

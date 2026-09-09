@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Toolbar alignment and back button (122.26.8)
+
+Breadcrumb and action controls share a vertically centered desktop row, wrapping on smaller screens. Back buttons match the Pro Forma navy gradient, dimensions, hover, and focus styling; pointer cursor includes the SVG. Verified equal toolbar centerlines at 1600px and no horizontal overflow at 390px. Changes are presentation CSS, version metadata, release, and production mapping. No forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: back navigation, comparison return, keyboard focus, and narrow-screen controls. Rollback: `122.26.7`.
+
 ## Scope
 
 Budget landing, phase/category/item editing, HCSS and GP actuals, preliminary/unapproved/final states, approval tracks, attachments, PDF generation, and Proforma comparison.
