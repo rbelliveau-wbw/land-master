@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Centered record navigation (1.75.18)
+
+Equal outer grid columns center the record navigation independently of title and owner widths. On narrower screens the navigation remains centered on its own row. Browser measurements verified exact centering at 2200px and 900px with no page overflow. Presentation CSS, version metadata, release, and production mapping only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: dashboard/edit tabs, populated/empty owners, long titles, and responsive header. Rollback: `1.75.17`.
+
 ## Existing record header styling (1.75.17)
 
 The existing record bar now uses the Budget header palette: rounded border, subtle gradient, blue edge accent, and larger title. Existing back button, project dates, view switcher, owners, and dirty indicator are retained. Long names wrap; narrow navigation scrolls horizontally to preserve the animated single-row selection pill. Desktop header fixture and 390px overflow checked. CSS and release metadata only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: dashboard/edit/attachments, title/date wrapping, owner visibility, and view-switch navigation. Rollback: `1.75.16`.
