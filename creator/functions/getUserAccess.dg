@@ -29,6 +29,7 @@ string getUserAccess(string user)
 	ctPropose = false;
 	ctApprove = false;
 	ctTemplates = false;
+	ctDeleteArchive = false;
 	foundRow = false;
 	myId = "";
 	rows = User_Access[User == requester];
@@ -74,6 +75,7 @@ string getUserAccess(string user)
 		ctApprove = row.Approve_Contracts == true;
 		// ctTemplates: may edit the per-type action template checklists
 		ctTemplates = row.Manage_Action_Templates == true;
+		ctDeleteArchive = row.Delete_Archive_Contracts == true;
 		break;
 	}
 	// Roster: each user as {id, label, email}.
@@ -137,6 +139,7 @@ string getUserAccess(string user)
 	result.put("ctPropose",ctPropose);
 	result.put("ctApprove",ctApprove);
 	result.put("ctTemplates",ctTemplates);
+	result.put("ctDeleteArchive",ctDeleteArchive);
 	result.put("users",userList);
 	result.put("proformaOwners",proformaOwnerMap);
 	return result.toString();
