@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Centered editor controls (122.26.9)
+
+Equal outer toolbar columns center the entire editor control group across the page. Breadcrumb and controls retain a common vertical center on wide screens; controls use a centered second row below 1400px. Browser fixture verified horizontal center at 2200px, no breadcrumb overlap, and no page overflow at 390px. CSS and release metadata only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: wide/narrow toolbar, long breadcrumbs, and navigation. Rollback: `122.26.8`.
+
 ## Toolbar alignment and back button (122.26.8)
 
 Breadcrumb and action controls share a vertically centered desktop row, wrapping on smaller screens. Back buttons match the Pro Forma navy gradient, dimensions, hover, and focus styling; pointer cursor includes the SVG. Verified equal toolbar centerlines at 1600px and no horizontal overflow at 390px. Changes are presentation CSS, version metadata, release, and production mapping. No forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: back navigation, comparison return, keyboard focus, and narrow-screen controls. Rollback: `122.26.7`.

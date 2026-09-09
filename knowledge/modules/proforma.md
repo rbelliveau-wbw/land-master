@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Existing record header styling (1.75.17)
+
+The existing record bar now uses the Budget header palette: rounded border, subtle gradient, blue edge accent, and larger title. Existing back button, project dates, view switcher, owners, and dirty indicator are retained. Long names wrap; narrow navigation scrolls horizontally to preserve the animated single-row selection pill. Desktop header fixture and 390px overflow checked. CSS and release metadata only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: dashboard/edit/attachments, title/date wrapping, owner visibility, and view-switch navigation. Rollback: `1.75.16`.
+
 ## Back-button cursor (1.75.16)
 
 The existing Pro Forma back-button design is retained, with an explicit pointer cursor on the button and SVG and a visible keyboard-focus outline. Attachment return also uses a pointer. The proposed budget-style title card remains a standalone mockup and is not part of this release. No forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: list return, attachment return, hover and keyboard focus. Rollback: `1.75.15`.
