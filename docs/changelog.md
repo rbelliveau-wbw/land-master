@@ -3,6 +3,26 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.0
+
+- **An expanded contract reads as one card.** The drill panel now spans every column — it
+  was one column short, which left a blank strip and a stray navy rail on the right. While
+  a contract is open the other rows step back, its row is labelled "Working in", and an
+  "End of <contract> · Collapse" cap marks exactly where it stops.
+- **Status pickers can be scrolled.** The popup closed on any scroll, including a scroll of
+  its own option list; it now closes only when the page behind it moves.
+- **Subdivision names resolve for a subdivision with no lots yet.** The lot picker read
+  "Subdivision name unavailable" when the subdivision only existed on the contract (or was
+  filtered out as a placeholder). The name now comes from the contract's own lookup, the
+  full subdivision list is fetched for naming, and Change Lots & Pricing loads it too.
+- **Internal Approvals modal: Approvers and Attachments tabs.** Attachments chooses which
+  contract files ride the approval email. On Approvers, Status is read-only — a coloured
+  pill with the approved date, last reminder, or reject reason — the Email switch is
+  centred and reads "Emailed / Not emailed", a banner says only switched-on approvers get
+  the email, ⠿ drags an approver to a new place in the chain (sequence renumbers and saves),
+  and the footer note is gone.
+- Rollback: `releases/contract-management/1.58.1`.
+
 ## Proforma Manager 1.73.1
 
 - **The export chooser reads just "PDF" and "Excel."** The explanatory line under each is
