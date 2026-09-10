@@ -117,7 +117,7 @@ assert.equal(ctx.lotCountWarning(contract.Number_of_Lots,contract.Lots1),'1 sele
 // The Legal Review "Assigned to me" pill spans each existing assignment shape.
 ctx.ncLoginUser=()=>ctx.S.currentUser;
 ctx.daysSinceDate=()=>null;
-for (const name of ['reviewMe','reviewValueIsMine','reviewContractIsMine','reviewActionIsMine','reviewLOIIsMine','filteredLOIs','proposedContracts','proposedActions','waitingApprovals','reviewCount']) vm.runInContext(fn(name),ctx);
+for (const name of ['reviewMe','reviewValueIsMine','reviewContractIsMine','reviewActionIsMine','reviewLOIIsMine','filteredLOIs','proposedContracts','proposedActions','actionStandsAlone','looseProposedActions','waitingApprovals','reviewCount']) vm.runInContext(fn(name),ctx);
 ctx.S.currentUser='rbelliveau@wbdevelopment.com';
 ctx.S.myAccessId='42';
 ctx.S.loiMine=true;
@@ -143,5 +143,11 @@ assert.deepEqual(Array.from(ctx.filteredLOIs(),r=>r.ID),['loi-mine']);
 assert.deepEqual(Array.from(ctx.proposedContracts(),r=>r.ID),['contract-mine']);
 assert.deepEqual(Array.from(ctx.proposedActions(),r=>r.ID),['action-mine']);
 assert.deepEqual(Array.from(ctx.waitingApprovals(),r=>r.a.ID),['approval-mine']);
-assert.equal(ctx.reviewCount(),6,'Review tab badge stays global while the pill is active');
+/* 2 LOIs + 2 proposed contracts; both actions were proposed with a still-Proposed
+   contract, so they nest under it and are not their own queue items */
+assert.equal(ctx.reviewCount(),4,'Review tab badge stays global while the pill is active and counts a contract with its actions as one');
+ctx.S.contracts.push({ID:'contract-live',Status:'New',Owner:[{ID:'42'}],Contract_Name:'Live'});
+ctx.S.actions.push({ID:'action-loose',Status:'Proposed',Dev_Mgr:'RB',Contract1:{ID:'contract-live'},Sort_Order:3});
+assert.equal(ctx.reviewCount(),5,'an action proposed onto an existing contract counts on its own');
+assert.deepEqual(Array.from(ctx.looseProposedActions(),r=>r.ID),['action-loose'],'only standalone proposed actions are loose');
 console.log('Contract picker, popup, Legal assignment, permissions, and row metadata checks passed.');
