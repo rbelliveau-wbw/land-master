@@ -3,6 +3,15 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.4
+
+- **Approvals banner copy reworded** ("No approvers are currently selected to receive the
+  approval email. Enable Email for each approver who should be notified.").
+- **Add-approver row reads as a form**: bordered white email field, approval-type picker
+  directly beside it, no Enter hint, and the button just says Save.
+- Attachments tab empty state is just "No files on this contract yet".
+- Rollback: `releases/contract-management/1.59.3`.
+
 ## Contract Management 1.59.3
 
 - **Change Lots & Pricing no longer flickers on open.** Once the lots loaded, the modal was
