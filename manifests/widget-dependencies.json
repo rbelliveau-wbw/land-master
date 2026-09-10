@@ -430,9 +430,19 @@
       ]
     },
     "manage-lots": {
-      "custom_apis": [],
+      "custom_apis": [
+        {
+          "name": "Ingest_Plat",
+          "config_key": "platIngest",
+          "source": "customApis object"
+        }
+      ],
       "forms_referenced": [
-        "Builder_Takedown"
+        "Builder",
+        "Builder_Takedown",
+        "Lots",
+        "Settings",
+        "Subdivision"
       ],
       "reports_referenced": [
         "All_Builder_Takedowns",
@@ -441,14 +451,13 @@
         "All_Subdivisions"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
         "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.deleteRecord",
         "ZOHO.CREATOR.API.getAllRecords",
         "ZOHO.CREATOR.appName",
         "ZOHO.CREATOR.init"
       ],
       "external_domains": [
+        "cdnjs.cloudflare.com",
         "js.zohostatic.com"
       ]
     },
