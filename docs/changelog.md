@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.60.1
+
+- **Action dates open one calendar.** Start, Due, and Done keep the native date input as
+  their value carrier, but only the widget's quick-date popup receives pointer and keyboard
+  interaction, preventing Chromium's native calendar from opening underneath it.
+- **Assignee and other combo popovers stay open while the Contracts view scrolls.** The
+  popup follows its trigger instead of disappearing; its own option list remains scrollable.
+- **Counterparty pills line up in the contract list.** Contract Name now has a fixed internal
+  counterparty track, so different title lengths no longer make those pills stair-step.
+- **Legal Review adds an Assigned to me pill.** It matches the signed-in user against the
+  existing assignment field for pending LOIs, proposed contracts/actions, and approvals
+  waiting on a response. The Review tab badge continues to show the full queue.
+- Frontend only. No Creator fields, functions, or Custom APIs changed; no Creator publish is
+  required.
+- Rollback: `releases/contract-management/1.60.0`.
+
 ## Contract Management 1.60.0
 
 - **Send for Approvals is live in the widget.** The footer button calls the new Custom API

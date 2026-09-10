@@ -73,6 +73,16 @@ npm run release -- contract-management <new-version>
 npm run build:pages
 ```
 
+## Action popovers and Legal assignment filter (1.60.1)
+
+The three inline action dates keep `type=date` inputs as their persisted value carriers, but
+the date-cell wrapper is now the only interactive target and opens the widget quick-date
+popup. Searchable combos remain attached to their trigger while the surrounding Contracts
+view scrolls. Contract list counterparty pills occupy a fixed subcolumn within Contract Name.
+The Review toolbar's Assigned to me pill filters pending LOIs, proposed contracts/actions,
+and waiting approvals using their existing assignment fields; it does not change the global
+Review badge.
+
 ## Send for Approvals (1.60.0)
 
 The Internal Approvals modal's **Send for Approvals** button calls the Custom API

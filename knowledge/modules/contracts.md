@@ -1,6 +1,19 @@
 
 # Contracts Module
 
+## Action popovers and Legal assignment filter (1.60.1)
+
+Action Start, Due, and Done cells now exclusively open the widget quick-date popup while
+retaining their native date inputs as value carriers. Contract action combo popovers follow
+their trigger during view scrolling, so long assignee/status lists do not disappear. The
+Contract Name cell uses a fixed counterparty subcolumn so builder pills align across rows.
+
+Review includes an Assigned to me pill. It resolves the signed-in identity against existing
+fields only: Add_Pro_Forma Acquisition_Email/Owner, Contract Current_Approver/Owner/
+WBW_Point_Person, Contract_Actions Dev_Mgr, and Contract_Approvals Approver. The page narrows
+while the Review tab badge stays global. Frontend only; no Creator deployment is required.
+Rollback: 1.60.0.
+
 ## Editable lot count and takedown terms (1.58.1)
 
 Change Lots & Pricing now includes three compact groups: contract total, initial takedown, and ongoing takedowns. The five inputs update existing Contract fields Number_of_Lots, Initial_Takedown, Initial_Takedown_Days, Subsequent_Takedown_Lots, and Subsequent_Takedown_Days. Draft values survive lot-picker navigation; Cancel and the close button discard them. Whole nonnegative numbers are validated; optional cadence fields may be cleared.

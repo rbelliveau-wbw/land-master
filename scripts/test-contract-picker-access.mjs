@@ -3,6 +3,10 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const source = fs.readFileSync('widgets/contract-management/src/app/widget.html', 'utf8');
+assert.match(source, /\.dt-in\{[^}]*pointer-events:none/, 'native date carrier must not receive pointer input');
+assert.doesNotMatch(source, /onmousedown="qdOpen\(event,this\)"/, 'native date input must not open beside quick date');
+assert.match(source, /window\.addEventListener\("scroll",function\(e\)\{[\s\S]*?cboQueuePosition\(\);[\s\S]*?\},true\);/, 'combo follows its trigger while the Contracts view scrolls');
+assert.match(source, /\.cname-line\{display:grid;grid-template-columns:minmax\(0,1fr\) 112px/, 'counterparty pills need a fixed aligned subcolumn');
 function fn(name) {
   const start = source.indexOf('function ' + name + '(');
   assert.ok(start >= 0, name);
@@ -20,7 +24,7 @@ const ctx = {
   versionsFor: () => [{ID: 'attachment'}], esc: s => String(s), attr: s => String(s)
 };
 vm.createContext(ctx);
-for (const name of ['asList','lookupId','lotSubId','lpAllowedSubs','ncLoadPickerLots','ncApplyAccess','canDeleteArchive','sdkDeleteById','updateRecord','num','clpLookupOne','lotCountWarning','contractAttachmentButton','contractTitleExtras']) vm.runInContext(fn(name), ctx);
+for (const name of ['truthy','asList','lookupId','lotSubId','lpAllowedSubs','ncLoadPickerLots','ncApplyAccess','canDeleteArchive','sdkDeleteById','updateRecord','num','clpLookupOne','lotCountWarning','contractAttachmentButton','contractTitleExtras']) vm.runInContext(fn(name), ctx);
 await ctx.ncLoadPickerLots();
 assert.equal(requests[0].criteria, '(Subdivision == 441092600000784111)');
 assert.equal(ctx.S.lots.length, 2, 'retain lots from other subdivisions');
@@ -107,4 +111,35 @@ assert.equal(saved.payload.Number_of_Lots,50);
 assert.equal(saved.payload.Lots1[0],'1');
 assert.equal(contract.Number_of_Lots,50);
 assert.equal(ctx.lotCountWarning(contract.Number_of_Lots,contract.Lots1),'1 selected / 50 total lots');
-console.log('Contract subdivision queries, load errors, destructive-action permissions, and row metadata checks passed.');
+
+// The Legal Review "Assigned to me" pill spans each existing assignment shape.
+ctx.ncLoginUser=()=>ctx.S.currentUser;
+ctx.daysSinceDate=()=>null;
+for (const name of ['reviewMe','reviewValueIsMine','reviewContractIsMine','reviewActionIsMine','reviewLOIIsMine','filteredLOIs','proposedContracts','proposedActions','waitingApprovals','reviewCount']) vm.runInContext(fn(name),ctx);
+ctx.S.currentUser='rbelliveau@wbdevelopment.com';
+ctx.S.myAccessId='42';
+ctx.S.loiMine=true;
+ctx.S.loiSearch='';
+ctx.S.loiReviews=[
+  {ID:'loi-mine',LOI_Legal_Status:'Pending Approval',Acquisition_Email:'rbelliveau@wbdevelopment.com'},
+  {ID:'loi-other',LOI_Legal_Status:'Pending Approval',Acquisition_Email:'tparks@wbdevelopment.com'}
+];
+ctx.S.contracts=[
+  {ID:'contract-mine',Status:'Proposed',Owner:[{ID:'42'}],Contract_Name:'Mine'},
+  {ID:'contract-other',Status:'Proposed',Owner:[{ID:'99'}],Contract_Name:'Other'}
+];
+ctx.findContract=id=>ctx.S.contracts.find(c=>String(c.ID)===String(id));
+ctx.S.actions=[
+  {ID:'action-mine',Status:'Proposed',Dev_Mgr:'RB',Contract1:{ID:'contract-mine'},Sort_Order:1},
+  {ID:'action-other',Status:'Proposed',Dev_Mgr:'TP',Contract1:{ID:'contract-other'},Sort_Order:2}
+];
+ctx.S.approvals=[
+  {ID:'approval-mine',Status:'Awaiting Approval',Approver:'rbelliveau@wbdevelopment.com',Contract1:{ID:'contract-mine'}},
+  {ID:'approval-other',Status:'Awaiting Approval',Approver:'tparks@wbdevelopment.com',Contract1:{ID:'contract-other'}}
+];
+assert.deepEqual(Array.from(ctx.filteredLOIs(),r=>r.ID),['loi-mine']);
+assert.deepEqual(Array.from(ctx.proposedContracts(),r=>r.ID),['contract-mine']);
+assert.deepEqual(Array.from(ctx.proposedActions(),r=>r.ID),['action-mine']);
+assert.deepEqual(Array.from(ctx.waitingApprovals(),r=>r.a.ID),['approval-mine']);
+assert.equal(ctx.reviewCount(),6,'Review tab badge stays global while the pill is active');
+console.log('Contract picker, popup, Legal assignment, permissions, and row metadata checks passed.');
