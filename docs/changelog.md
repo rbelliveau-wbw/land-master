@@ -3,6 +3,12 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.3
+
+- **Change Lots & Pricing no longer flickers on open.** Once the lots loaded, the modal was
+  rebuilt and replayed its entrance animation; it now repaints its body in place.
+- Rollback: `releases/contract-management/1.59.2`.
+
 ## Contract Management 1.59.2
 
 - **Add-approver row matches the "Add a proposed action" row** — same dashed `.dadd`
