@@ -6,7 +6,9 @@ const source = fs.readFileSync('widgets/contract-management/src/app/widget.html'
 assert.match(source, /\.dt-in\{[^}]*pointer-events:none/, 'native date carrier must not receive pointer input');
 assert.doesNotMatch(source, /onmousedown="qdOpen\(event,this\)"/, 'native date input must not open beside quick date');
 assert.match(source, /window\.addEventListener\("scroll",function\(e\)\{[\s\S]*?cboQueuePosition\(\);[\s\S]*?\},true\);/, 'combo follows its trigger while the Contracts view scrolls');
-assert.match(source, /\.cname-line\{display:grid;grid-template-columns:minmax\(0,1fr\) 112px/, 'counterparty pills need a fixed aligned subcolumn');
+assert.match(source, /\.cname-line\{display:flex;flex-wrap:wrap/, 'counterparty pill and attachment count sit right after the title and wrap instead of clipping');
+assert.doesNotMatch(source, /\.bldr-pill\{[^}]*text-overflow:ellipsis/, 'counterparty pill must always show the full name');
+assert.match(source, /\.wtable td\.own-cell\{white-space:normal/, 'owner pills wrap so every owner is visible');
 function fn(name) {
   const start = source.indexOf('function ' + name + '(');
   assert.ok(start >= 0, name);
