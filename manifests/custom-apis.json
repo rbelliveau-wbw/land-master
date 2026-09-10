@@ -11,6 +11,15 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Create_Budget_Modification",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "createBudgetModification",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, key-value {itemId, modType, amount, reason, reference, effectiveDate, track}. Creates the modification + two approval rows (VP/CFO to rbelliveau) + first email atomically."
+    },
+    {
       "name": "Create_Contract_Attachment_Record",
       "consumers": [
         "widgets/contract-management/src/app/widget.html"
@@ -116,6 +125,14 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Ingest_Plat",
+      "consumers": [
+        "widgets/manage-lots/src/app/widget.html"
+      ],
+      "matching_creator_function": "Plat_AI_Ingest",
+      "confidence": "inferred-name-match"
+    },
+    {
       "name": "Kill_Proforma_Approval_Flow",
       "consumers": [
         "widgets/proforma-manager/src/app/widget.html"
@@ -146,6 +163,15 @@
       ],
       "matching_creator_function": "Manage_Proforma_Approval_Config",
       "confidence": "inferred-name-match"
+    },
+    {
+      "name": "Modification_Admin",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "modificationAdmin",
+      "confidence": "verified-2026-08-14",
+      "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master."
     },
     {
       "name": "Proforma_Bulk_Save",
@@ -209,6 +235,15 @@
       "confidence": "inferred-from-widget-source"
     },
     {
+      "name": "Send_Modification_Email",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "sendModificationEmail",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, application/json key-value {modificationId, action:'created'|'approved'|'rejected'}. Created via Custom API builder bound to Land Master DEVELOPMENT environment; verify binding after production push."
+    },
+    {
       "name": "Send_Proforma_Approval_Email",
       "consumers": [
         "widgets/proforma-manager/src/app/widget.html"
@@ -223,15 +258,6 @@
       ],
       "matching_creator_function": "sendApprovalEmail",
       "confidence": "inferred-name-match"
-    },
-    {
-      "name": "Send_Modification_Email",
-      "consumers": [
-        "widgets/budget-manager/src/app/widget.html"
-      ],
-      "matching_creator_function": "sendModificationEmail",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, application/json key-value {modificationId, action:'created'|'approved'|'rejected'}. Created via Custom API builder bound to Land Master DEVELOPMENT environment; verify binding after production push."
     },
     {
       "name": "setProjectProforma",
@@ -258,6 +284,15 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Submit_Budget_Modification",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "submitBudgetModification",
+      "confidence": "verified-2026-08-13",
+      "notes": "POST, OAuth2, All users, key-value {modificationId}. Promotes a Draft modification: builds the two-row chain if missing, marks Submitted, sends first email."
+    },
+    {
       "name": "syncBudgetApprovalStatus",
       "consumers": [
         "widgets/budget-manager/src/app/widget.html"
@@ -272,33 +307,6 @@
       ],
       "matching_creator_function": "Update_Proforma_Approval_Recipient",
       "confidence": "inferred-name-match"
-    },
-    {
-      "name": "Create_Budget_Modification",
-      "consumers": [
-        "widgets/budget-manager/src/app/widget.html"
-      ],
-      "matching_creator_function": "createBudgetModification",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, key-value {itemId, modType, amount, reason, reference, effectiveDate, track}. Creates the modification + two approval rows (VP/CFO to rbelliveau) + first email atomically."
-    },
-    {
-      "name": "Submit_Budget_Modification",
-      "consumers": [
-        "widgets/budget-manager/src/app/widget.html"
-      ],
-      "matching_creator_function": "submitBudgetModification",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, key-value {modificationId}. Promotes a Draft modification: builds the two-row chain if missing, marks Submitted, sends first email."
-    },
-    {
-      "name": "Modification_Admin",
-      "consumers": [
-        "widgets/budget-manager/src/app/widget.html"
-      ],
-      "matching_creator_function": "modificationAdmin",
-      "confidence": "verified-2026-08-14",
-      "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master."
     }
   ]
 }
