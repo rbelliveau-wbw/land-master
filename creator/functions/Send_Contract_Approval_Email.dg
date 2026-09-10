@@ -1,0 +1,286 @@
+map Send_Contract_Approval_Email(string contractId, string approvalId, string mode)
+{
+	/*  One approval email for ONE Contract_Approvals row.
+
+	    Same shell as Send_Proforma_Approval_Email_With_Context: navy header with
+	    the contract name, a "Current Step" badge, two summary panels (Contract
+	    Overview / Approval Chain), an attachments block, and fixed-size
+	    Approve / Reject / View buttons that survive Outlook.
+
+	    mode   "Send"      first send (from Send_Contract_Approvals)
+	           "Reminder"  re-send from the daily sendApprovalReminders job
+
+	    Attaches every Contract_Version whose Email_Attachment is checked.
+	    Stamps Last_Reminder_Date / Next_Reminder_Date on the approval row.
+	    Does NOT change Status - the caller owns that.                          */
+	response = Map();
+	try
+	{
+		contractIdText = ifnull(contractId,"").toString().trim();
+		approvalIdText = ifnull(approvalId,"").toString().trim();
+		modeText = ifnull(mode,"Send").toString().trim();
+		if(contractIdText == "" || approvalIdText == "")
+		{
+			response.put("success",false);
+			response.put("message","Contract ID and approval ID are required.");
+			return response;
+		}
+		contractIdLong = contractIdText.toLong();
+		approvalIdLong = approvalIdText.toLong();
+		contract = Contract[ID == contractIdLong];
+		approvalRow = Contract_Approvals[ID == approvalIdLong];
+		if(contract.ID == null || approvalRow.ID == null || approvalRow.Contract1 == null || approvalRow.Contract1.ID.toString() != contractIdLong.toString())
+		{
+			response.put("success",false);
+			response.put("message","Contract or approval row not found.");
+			return response;
+		}
+		toAddress = ifnull(approvalRow.Approver,"").toString().trim();
+		if(toAddress == "")
+		{
+			response.put("success",false);
+			response.put("message","Approval step " + ifnull(approvalRow.Approval_Sequence,"").toString() + " has no approver email.");
+			return response;
+		}
+		// ---------- attachments: every version flagged for the approval email ----------
+		attachedFiles = Contract_Version[Contract1 == contractIdLong && Email_Attachment == true].File_field1.getAll();
+		attachmentRows = "";
+		attachmentCount = 0;
+		versionRows = Contract_Version[Contract1 == contractIdLong && Email_Attachment == true] sort by Date_field1 desc;
+		for each  versionRow in versionRows
+		{
+			fileName = ifnull(versionRow.File_field1,"").toString();
+			if(fileName.contains("filepath="))
+			{
+				fileName = fileName.getSuffix("filepath=");
+				if(fileName.contains("&"))
+				{
+					fileName = fileName.getPrefix("&");
+				}
+			}
+			if(fileName.contains("/"))
+			{
+				fileName = fileName.subString(fileName.lastIndexOf("/") + 1);
+			}
+			if(fileName == "")
+			{
+				fileName = "Contract file";
+			}
+			safeFileName = fileName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			dateText = "";
+			if(versionRow.Date_field1 != null)
+			{
+				dateText = " &nbsp;&middot;&nbsp; " + versionRow.Date_field1.toString("MMM d, yyyy");
+			}
+			attachmentRows = attachmentRows + "<div style='margin-top:4px;color:#172033;font-size:13px;'>&#128206; " + safeFileName + "<span style='color:#64748b;'>" + dateText + "</span></div>";
+			attachmentCount = attachmentCount + 1;
+		}
+		// ---------- contract facts ----------
+		contractName = ifnull(contract.Contract_Name,"Contract #" + contractIdText).toString();
+		typeText = ifnull(contract.Contract_Type,"—").toString();
+		builderText = "—";
+		if(contract.Builder != null)
+		{
+			builderText = ifnull(contract.Builder.Builder_Name,"—").toString();
+		}
+		subdivisionText = "";
+		if(contract.Subdivision1 != null)
+		{
+			for each  subId in contract.Subdivision1
+			{
+				subRec = Subdivision[ID == subId];
+				if(subRec.ID != null)
+				{
+					subName = ifnull(subRec.Subdivision_Name,"").toString();
+					if(subName != "")
+					{
+						subdivisionText = if(subdivisionText == "",subName,subdivisionText + ", " + subName);
+					}
+				}
+			}
+		}
+		if(subdivisionText == "")
+		{
+			subdivisionText = "—";
+		}
+		territoryText = ifnull(contract.Territory,"—").toString();
+		pointPersonText = "";
+		if(contract.WBW_Point_Person != null)
+		{
+			for each  pp in contract.WBW_Point_Person
+			{
+				pointPersonText = if(pointPersonText == "",pp.toString(),pointPersonText + ", " + pp.toString());
+			}
+		}
+		if(pointPersonText == "")
+		{
+			pointPersonText = "—";
+		}
+		lotsText = "—";
+		if(contract.Number_of_Lots != null && contract.Number_of_Lots.toString() != "")
+		{
+			lotsText = contract.Number_of_Lots.toString() + " lots";
+			if(contract.Initial_Takedown != null && contract.Initial_Takedown.toString() != "")
+			{
+				lotsText = lotsText + " &nbsp;&middot;&nbsp; " + contract.Initial_Takedown.toString() + " initial";
+				if(contract.Initial_Takedown_Days != null && contract.Initial_Takedown_Days.toString() != "")
+				{
+					lotsText = lotsText + " within " + contract.Initial_Takedown_Days.toString() + " days";
+				}
+			}
+			if(contract.Subsequent_Takedown_Lots != null && contract.Subsequent_Takedown_Lots.toString() != "")
+			{
+				lotsText = lotsText + " &nbsp;&middot;&nbsp; then " + contract.Subsequent_Takedown_Lots.toString();
+				if(contract.Subsequent_Takedown_Days != null && contract.Subsequent_Takedown_Days.toString() != "")
+				{
+					lotsText = lotsText + " every " + contract.Subsequent_Takedown_Days.toString() + " days";
+				}
+			}
+		}
+		earnestText = "—";
+		if(contract.Earnest_Money != null && contract.Earnest_Money.toString() != "")
+		{
+			earnestText = thisapp.PF_Packet_Money(contract.Earnest_Money.toString());
+		}
+		totalPriceText = "—";
+		if(contract.Total_Contract_Price != null && contract.Total_Contract_Price.toString() != "")
+		{
+			totalPriceText = thisapp.PF_Packet_Money(contract.Total_Contract_Price.toString());
+		}
+		initiatedByText = ifnull(contract.Modified_User,ifnull(contract.Added_User,"—")).toString();
+		currentStepText = ifnull(approvalRow.Type1,"Approval").toString();
+		stepNumberText = ifnull(approvalRow.Approval_Sequence,"").toString();
+		// ---------- links (same public permalinks the report action uses) ----------
+		approveUrl = "https://creatorapp.zohopublic.com/wbdevelopment/land-master/view-perma/Approvals_HTML_Page/4rmNhzWYQvp62uhC832KNqhvBkdfuCdHaTRuAkPzRZVemp6h2k4OGUgyyJrsAwM4DS53SHuuJpdy3Bk5DuKFbFqey0y4VyMMdZs3?recordID=" + approvalRow.ID.toString() + "&status=Approved";
+		rejectUrl = "https://creatorapp.zohopublic.com/wbdevelopment/land-master/Contract_Approvals/record-edit/All_Contract_Approvals/" + approvalRow.ID.toString() + "/56FD5tkOEUKxhpxFhOkgQrUbN8yQVks7WpPAUU6R300UDB4bp59fsE4RDETy3Sp4yTUaMzeVmfY3OkmXRWSh3O2uXKn4pSrnGeOT";
+		viewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract?recLinkID=" + contractIdText + "&viewLinkName=All_Contracts";
+		// ---------- escape everything that came from a record ----------
+		safeContractName = contractName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeTypeText = typeText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeBuilderText = builderText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeSubdivisionText = subdivisionText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeTerritoryText = territoryText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safePointPersonText = pointPersonText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeInitiatedByText = initiatedByText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		safeCurrentStepText = currentStepText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		// ---------- subject ----------
+		subjectPrefix = "Approval required";
+		if(modeText == "Reminder")
+		{
+			subjectPrefix = "Reminder - approval still required";
+		}
+		subjectText = subjectPrefix + ": " + builderText + " " + currentStepText + " for " + subdivisionText;
+		// ---------- panels ----------
+		overviewRows = "";
+		overviewRows = overviewRows + "<tr><td width='40%' style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Type</td><td width='60%' style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeTypeText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Subdivision</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeSubdivisionText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Counterparty</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeBuilderText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Territory</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeTerritoryText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Point Person</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safePointPersonText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Lots</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + lotsText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Earnest Money</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + earnestText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Total Price</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#047857;border-bottom:1px solid #e5ebf3;'>" + totalPriceText + "</td></tr>";
+		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;'>Initiated By</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;'>" + safeInitiatedByText + "</td></tr>";
+		chainRows = "";
+		chain = Contract_Approvals[Contract1 == contractIdLong] sort by Approval_Sequence;
+		for each  step in chain
+		{
+			stepStatus = ifnull(step.Status,"Not Sent").toString();
+			stepColor = "#64748b";
+			stepBg = "#eef2f7";
+			stepLabel = stepStatus;
+			if(stepStatus == "Approved")
+			{
+				stepColor = "#047857";
+				stepBg = "#d1fae5";
+				stepLabel = "&#10003; Approved";
+			}
+			else if(stepStatus == "Awaiting Approval")
+			{
+				stepColor = "#b45309";
+				stepBg = "#fef3c7";
+				stepLabel = "Awaiting";
+			}
+			else if(stepStatus == "Rejected")
+			{
+				stepColor = "#b91c1c";
+				stepBg = "#fee2e2";
+				stepLabel = "&#10005; Rejected";
+			}
+			stepApprover = ifnull(step.Approver,"—").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			stepType = ifnull(step.Type1,"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			stepSeq = ifnull(step.Approval_Sequence,"").toString();
+			rowWeight = "600";
+			rowMark = "";
+			if(step.ID.toString() == approvalRow.ID.toString())
+			{
+				rowWeight = "800";
+				rowMark = " <span style='font-size:10px;font-weight:800;color:#2563eb;'>&larr; YOU</span>";
+			}
+			chainRows = chainRows + "<tr><td width='22' style='padding:7px 0;color:#94a3b8;font-size:12px;border-bottom:1px solid #e5ebf3;'>" + stepSeq + "</td><td style='padding:7px 0 7px 6px;font-weight:" + rowWeight + ";color:#172033;font-size:13px;border-bottom:1px solid #e5ebf3;word-break:break-all;'>" + stepApprover + rowMark + "<div style='font-size:11px;color:#64748b;font-weight:500;'>" + stepType + "</div></td><td align='right' style='padding:7px 0 7px 8px;border-bottom:1px solid #e5ebf3;white-space:nowrap;'><span style='display:inline-block;padding:2px 8px;border-radius:999px;background:" + stepBg + ";color:" + stepColor + ";font-size:11px;font-weight:800;'>" + stepLabel + "</span></td></tr>";
+		}
+		summaryPanels = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:18px;table-layout:fixed;'>" + "<tr>" + "<td width='50%' valign='top' style='padding-right:7px;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;background:#f8fafc;border:1px solid #dce5f0;border-radius:12px;'>" + "<tr><td style='padding:14px 16px 8px;'><div style='font-size:11px;font-weight:800;color:#173b68;text-transform:uppercase;letter-spacing:.08em;'>Contract Overview</div></td></tr>" + "<tr><td style='padding:0 16px 14px;'><table width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'>" + overviewRows + "</table></td></tr>" + "</table></td>" + "<td width='50%' valign='top' style='padding-left:7px;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;background:#f8fafc;border:1px solid #dce5f0;border-radius:12px;'>" + "<tr><td style='padding:14px 16px 8px;'><div style='font-size:11px;font-weight:800;color:#173b68;text-transform:uppercase;letter-spacing:.08em;'>Approval Chain</div></td></tr>" + "<tr><td style='padding:0 16px 14px;'><table width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'>" + chainRows + "</table></td></tr>" + "</table></td>" + "</tr></table>";
+		attachmentBlock = "";
+		if(attachmentCount > 0)
+		{
+			attachmentBlock = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:13px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;'>" + "<div style='font-weight:700;color:#173b68;'>Attached for your review (" + attachmentCount + ")</div>" + attachmentRows + "</td></tr></table>";
+		}
+		else
+		{
+			attachmentBlock = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:13px 15px;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;color:#92400e;font-size:13px;'>No contract file was attached to this email. Open the contract in Land Master to review the documents.</td></tr></table>";
+		}
+		reminderBlock = "";
+		if(modeText == "Reminder")
+		{
+			reminderBlock = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:18px;'>" + "<tr><td style='padding:14px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#9a3412;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;'>Reminder</div>" + "<div style='color:#431407;line-height:1.5;'>This approval has been waiting since " + ifnull(approvalRow.Last_Reminder_Date,zoho.currentdate).toString("MMM d, yyyy") + ". Your decision keeps the contract moving.</div>" + "</td></tr></table>";
+		}
+		// Fixed 120x42 button cells with bgcolor on the TD so Outlook keeps them as buttons.
+		decisionButtons = "<table role='presentation' cellpadding='0' cellspacing='0' border='0' style='margin:26px 0 14px;'><tr>" + "<td align='center' bgcolor='#047857' width='120' height='42' style='width:120px;height:42px;background-color:#047857;border:1px solid #065f46;border-radius:8px;'>" + "<a href='" + approveUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Approve</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#b42318' width='120' height='42' style='width:120px;height:42px;background-color:#b42318;border:1px solid #8f1d15;border-radius:8px;'>" + "<a href='" + rejectUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Reject</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#1e40af' width='120' height='42' style='width:120px;height:42px;background-color:#1e40af;border:1px solid #1e3a8a;border-radius:8px;'>" + "<a href='" + viewUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>View</a>" + "</td>" + "</tr></table>";
+		stepBadge = safeCurrentStepText;
+		if(stepNumberText != "")
+		{
+			stepBadge = "Step " + stepNumberText + " &nbsp;&middot;&nbsp; " + safeCurrentStepText;
+		}
+		messageHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;background:#ffffff;border-collapse:separate;border-spacing:0;font-family:Arial,Helvetica,sans-serif;'>" + "<tr><td style='background:#102f55;color:#ffffff;padding:24px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #2563eb;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'><tr>" + "<td valign='bottom' style='padding-right:20px;'>" + "<div style='font-size:11px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Contract Approval</div>" + "<div style='font-size:24px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safeContractName + "</div>" + "<div style='font-size:13px;color:#c9d8eb;margin-top:8px;'>" + safeBuilderText + " &nbsp;&middot;&nbsp; " + safeSubdivisionText + "</div>" + "</td>" + "<td width='170' valign='bottom' align='right'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#173f6f;border:1px solid #315983;border-radius:10px;'>" + "<tr><td align='left' style='padding:10px 12px;'>" + "<div style='font-size:9px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.09em;font-weight:700;'>Current Step</div>" + "<div style='font-size:15px;color:#ffffff;font-weight:700;margin-top:4px;'>" + stepBadge + "</div>" + "</td></tr></table></td>" + "</tr></table></td></tr>" + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>" + "<p style='margin:0 0 8px;font-size:15px;color:#172033;'>The <b>" + safeCurrentStepText + "</b> approval for this contract is pending with you.</p>" + "<p style='margin:0;color:#475569;line-height:1.55;'>Review the attached contract documents and record your decision below. Reject opens a short form where a reason is required.</p>" + reminderBlock + summaryPanels + attachmentBlock + decisionButtons + "<div style='font-size:12px;color:#64748b;margin-top:8px;'>Approve records your response as soon as the page opens. Reject asks for a reason and returns the contract to Legal.</div>" + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;'>Already have Land Master access? <a href='" + viewUrl + "' style='color:#2563eb;text-decoration:none;font-weight:600;'>Open the full contract</a></div>" + "</td></tr></table></td></tr></table>";
+		if(attachmentCount > 0)
+		{
+			sendmail
+			[
+				from :"Contracts@wbdevelopment.com"
+				to :toAddress
+				subject :subjectText
+				message :messageHtml
+				Attachments :file:attachedFiles
+			]
+		}
+		else
+		{
+			sendmail
+			[
+				from :"Contracts@wbdevelopment.com"
+				to :toAddress
+				subject :subjectText
+				message :messageHtml
+			]
+		}
+		// reminder cadence lives on the row: Reminder_Interval_Days (default 5)
+		intervalDays = ifnull(approvalRow.Reminder_Interval_Days,5).toLong();
+		if(intervalDays <= 0)
+		{
+			intervalDays = 5;
+		}
+		approvalRow.Last_Reminder_Date=zoho.currentdate;
+		approvalRow.Next_Reminder_Date=zoho.currentdate.addDay(intervalDays);
+		response.put("success",true);
+		response.put("message","Approval email sent to " + toAddress + ".");
+		response.put("approver",toAddress);
+		response.put("attachmentCount",attachmentCount);
+		response.put("nextReminder",zoho.currentdate.addDay(intervalDays).toString());
+	}
+	catch (e)
+	{
+		response.put("success",false);
+		response.put("message",e.toString());
+	}
+	return response;
+}

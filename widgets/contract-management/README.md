@@ -72,3 +72,18 @@ npm run package:creator -- contract-management
 npm run release -- contract-management <new-version>
 npm run build:pages
 ```
+
+## Send for Approvals (1.60.0)
+
+The Internal Approvals modal's **Send for Approvals** button calls the Custom API
+`Send_Contract_Approvals` (Development: `Send_Contract_Approvals_DEV`, resolved by
+`runtime-context.js`) with a JSON POST body `{"contractId":"…","user":"<bare Creator username>"}`.
+Both APIs expose the Deluge function `string Send_Contract_Approvals(string contractId)`
+(`creator/functions/Send_Contract_Approvals.dg`), which sends the styled email from
+`Send_Contract_Approval_Email` to every approver whose Email switch is on and who is still
+Not Sent, attaches every Contract_Version flagged `Email_Attachment`, flips those rows to
+Awaiting Approval, stamps `Last/Next_Reminder_Date`, and moves the contract to Awaiting
+Approvals. The daily `sendApprovalReminders` job re-sends the same email when a row's
+`Next_Reminder_Date` arrives. The button is enabled only when at least one approver is
+pending (Email on, Not Sent) and at least one file is attached; the function enforces the
+same rules server-side plus `User_Access.Edit_Contracts` for the caller.

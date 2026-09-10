@@ -3,6 +3,21 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.60.0
+
+- **Send for Approvals is live in the widget.** The footer button calls the new Custom API
+  `Send_Contract_Approvals` (`Send_Contract_Approvals_DEV` in Development) after an in-app
+  confirm listing who will be emailed. Enabled only when an approver is pending (Email on,
+  Not Sent) and a file is attached; the footer says why when it is not.
+- **Contract list: Builder column removed.** The counterparty rides the contract name as a
+  pill, Current Action takes the freed room and reads in navy with a blue marker.
+- Creator side (mirror only — needs the live function + APIs created): new
+  `Send_Contract_Approval_Email` (styled email in the Pro Forma approval shell, attaches every
+  Email-flagged file, stamps reminder dates), new `Send_Contract_Approvals` (the API function),
+  and `sendApprovalReminders` now re-sends due contract approvals every day before the
+  Settings-gated budget pass.
+- Rollback: `releases/contract-management/1.59.5`.
+
 ## Contract Management 1.59.5
 
 - **Row menu: Archive and Delete sit below a divider.** Delete is now just "Delete", in red,
