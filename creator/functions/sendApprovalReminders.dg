@@ -2,16 +2,50 @@ string sendApprovalReminders()
 {
 	/********* PENDING APPROVAL REMINDERS *********/
 	// Return Type: string
-	// Runs daily from a schedule and does nothing until Settings.
-	// Next_Approval_Reminder_Date has arrived. On the due date it re-sends the
-	// approval email for every Budget_Approvals row still sitting at Pending -
-	// budget tracks, Pro Formas, and Budget Modifications - then pushes the next
-	// reminder date out by Settings.Approval_Reminder_Interval_Days (default 3).
-	// The schedule runs daily rather than on a single date because a Creator
-	// schedule cannot retarget itself; the date field is the actual gate.
-	// Every due run emails rbelliveau@wbdevelopment.com a recap - a table of
-	// each reminder sent (type, recipient, role, item), or a "nothing to send"
-	// note when no pending rows needed one. Not-due daily runs stay silent.
+	// Runs daily from a schedule.
+	//
+	// Two passes:
+	//   1. CONTRACT approvals - every Contract_Approvals row still Awaiting
+	//      Approval whose own Next_Reminder_Date has arrived gets the styled
+	//      approval email again (Send_Contract_Approval_Email in "Reminder"
+	//      mode, which re-stamps Last/Next_Reminder_Date from the row's
+	//      Reminder_Interval_Days). This pass runs EVERY day: the cadence lives
+	//      on each row, not on Settings.
+	//   2. BUDGET / PRO FORMA / MODIFICATION approvals - unchanged: does nothing
+	//      until Settings.Next_Approval_Reminder_Date has arrived, then re-sends
+	//      for every Budget_Approvals row still Pending and pushes the next date
+	//      out by Settings.Approval_Reminder_Interval_Days (default 3).
+	//
+	// Every run that sends anything emails rbelliveau@wbdevelopment.com a recap
+	// table (type, recipient, role, item). A day with nothing due stays silent.
+	today = zoho.currentdate;
+	tdStyle = "padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f2744;";
+	thStyle = "padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5c7394;border-bottom:2px solid #cbd5e1;";
+	/********* PASS 1: CONTRACT APPROVALS *********/
+	contractCount = 0;
+	contractFailed = 0;
+	contractRows = "";
+	dueContractApprovals = Contract_Approvals[Status == "Awaiting Approval" && Next_Reminder_Date <= today && Contract1 != null];
+	for each  ca in dueContractApprovals
+	{
+		ctResp = thisapp.Send_Contract_Approval_Email(ca.Contract1.ID.toString(),ca.ID.toString(),"Reminder");
+		if(ifnull(ctResp.get("success"),false) == true)
+		{
+			contractCount = contractCount + 1;
+			itemLabel = ifnull(ca.Contract1.Contract_Name,"").trim();
+			if(itemLabel == "")
+			{
+				itemLabel = "Contract " + ca.Contract1.ID;
+			}
+			contractRows = contractRows + "<tr><td style='" + tdStyle + "'>Contract</td><td style='" + tdStyle + "'>" + ifnull(ca.Approver,"") + "</td><td style='" + tdStyle + "'>" + ifnull(ca.Type1,"") + "</td><td style='" + tdStyle + "'>" + itemLabel + "</td></tr>";
+		}
+		else
+		{
+			contractFailed = contractFailed + 1;
+			contractRows = contractRows + "<tr><td style='" + tdStyle + "color:#b91c1c;'>Contract (failed)</td><td style='" + tdStyle + "'>" + ifnull(ca.Approver,"") + "</td><td style='" + tdStyle + "'>" + ifnull(ca.Type1,"") + "</td><td style='" + tdStyle + "'>" + ifnull(ctResp.get("message"),"") + "</td></tr>";
+		}
+	}
+	/********* PASS 2: BUDGET / PRO FORMA / MODIFICATION (Settings gate) *********/
 	settingsRec = Settings[ID != 0];
 	if(settingsRec == null)
 	{
@@ -22,124 +56,153 @@ string sendApprovalReminders()
 	{
 		vInterval = 3;
 	}
-	today = zoho.currentdate;
 	vNext = settingsRec.Next_Approval_Reminder_Date;
+	budgetDue = true;
+	notDueNote = "";
 	if(vNext == null)
 	{
 		// First run: arm the schedule without blasting reminders immediately.
 		settingsRec.Next_Approval_Reminder_Date=today.addDay(vInterval);
-		return "Reminder date was empty; armed for " + today.addDay(vInterval).toString() + ".";
+		budgetDue = false;
+		notDueNote = "Budget reminder date was empty; armed for " + today.addDay(vInterval).toString() + ".";
 	}
-	if(vNext > today)
+	else if(vNext > today)
 	{
-		return "Not due yet. Next reminder " + vNext.toString() + ".";
+		budgetDue = false;
+		notDueNote = "Budget reminders not due yet. Next reminder " + vNext.toString() + ".";
 	}
 	budgetCount = 0;
 	proformaCount = 0;
 	modCount = 0;
 	skipped = 0;
 	recapRows = "";
-	tdStyle = "padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f2744;";
-	pendingRows = Budget_Approvals[Status == "Pending"];
-	for each  row in pendingRows
+	newNext = vNext;
+	if(budgetDue)
 	{
-		rowType = ifnull(row.Type1,"").trim();
-		approverEmail = ifnull(row.Approver,"").trim();
-		approverRole = ifnull(row.Title,"").trim();
-		sentThis = false;
-		displayType = rowType;
-		itemLabel = "";
-		if(rowType == "Modification")
+		pendingRows = Budget_Approvals[Status == "Pending"];
+		for each  row in pendingRows
 		{
-			if(row.Budget_Modification != null)
+			rowType = ifnull(row.Type1,"").trim();
+			approverEmail = ifnull(row.Approver,"").trim();
+			approverRole = ifnull(row.Title,"").trim();
+			sentThis = false;
+			displayType = rowType;
+			itemLabel = "";
+			if(rowType == "Modification")
 			{
-				modMsg = thisapp.sendModificationEmail(row.Budget_Modification.ID,"created");
-				modCount = modCount + 1;
-				sentThis = true;
-				itemLabel = ifnull(row.Budget_Modification.Reference_Number,"").trim();
-				if(itemLabel == "")
+				if(row.Budget_Modification != null)
 				{
-					itemLabel = "Modification " + row.Budget_Modification.ID;
+					modMsg = thisapp.sendModificationEmail(row.Budget_Modification.ID,"created");
+					modCount = modCount + 1;
+					sentThis = true;
+					itemLabel = ifnull(row.Budget_Modification.Reference_Number,"").trim();
+					if(itemLabel == "")
+					{
+						itemLabel = "Modification " + row.Budget_Modification.ID;
+					}
+					if(row.Budget != null)
+					{
+						itemLabel = itemLabel + " (" + ifnull(row.Budget.Budget_Name,"") + ")";
+					}
 				}
+				else
+				{
+					skipped = skipped + 1;
+				}
+			}
+			else if(rowType == "Pro Forma")
+			{
+				if(row.Proforma != null)
+				{
+					pfMsg = thisapp.Send_Proforma_Approval_Email(row.Proforma.ID.toString(),row.ID.toString());
+					proformaCount = proformaCount + 1;
+					sentThis = true;
+					itemLabel = ifnull(row.Proforma.Name,"").trim();
+					if(itemLabel == "")
+					{
+						itemLabel = "Pro Forma " + row.Proforma.ID;
+					}
+				}
+				else
+				{
+					skipped = skipped + 1;
+				}
+			}
+			else
+			{
 				if(row.Budget != null)
 				{
-					itemLabel = itemLabel + " (" + ifnull(row.Budget.Budget_Name,"") + ")";
+					budgetMsg = thisapp.sendApprovalEmail(row.Budget.ID,row.ID);
+					budgetCount = budgetCount + 1;
+					sentThis = true;
+					if(displayType == "")
+					{
+						displayType = "Budget";
+					}
+					itemLabel = ifnull(row.Budget.Budget_Name,"").trim();
+					if(itemLabel == "")
+					{
+						itemLabel = "Budget " + row.Budget.ID;
+					}
 				}
-			}
-			else
-			{
-				skipped = skipped + 1;
-			}
-		}
-		else if(rowType == "Pro Forma")
-		{
-			if(row.Proforma != null)
-			{
-				pfMsg = thisapp.Send_Proforma_Approval_Email(row.Proforma.ID.toString(),row.ID.toString());
-				proformaCount = proformaCount + 1;
-				sentThis = true;
-				itemLabel = ifnull(row.Proforma.Name,"").trim();
-				if(itemLabel == "")
+				else
 				{
-					itemLabel = "Pro Forma " + row.Proforma.ID;
+					skipped = skipped + 1;
 				}
 			}
-			else
+			if(sentThis)
 			{
-				skipped = skipped + 1;
+				recapRows = recapRows + "<tr><td style='" + tdStyle + "'>" + displayType + "</td><td style='" + tdStyle + "'>" + approverEmail + "</td><td style='" + tdStyle + "'>" + approverRole + "</td><td style='" + tdStyle + "'>" + itemLabel + "</td></tr>";
 			}
 		}
-		else
-		{
-			if(row.Budget != null)
-			{
-				budgetMsg = thisapp.sendApprovalEmail(row.Budget.ID,row.ID);
-				budgetCount = budgetCount + 1;
-				sentThis = true;
-				if(displayType == "")
-				{
-					displayType = "Budget";
-				}
-				itemLabel = ifnull(row.Budget.Budget_Name,"").trim();
-				if(itemLabel == "")
-				{
-					itemLabel = "Budget " + row.Budget.ID;
-				}
-			}
-			else
-			{
-				skipped = skipped + 1;
-			}
-		}
-		if(sentThis)
-		{
-			recapRows = recapRows + "<tr><td style='" + tdStyle + "'>" + displayType + "</td><td style='" + tdStyle + "'>" + approverEmail + "</td><td style='" + tdStyle + "'>" + approverRole + "</td><td style='" + tdStyle + "'>" + itemLabel + "</td></tr>";
-		}
+		newNext = today.addDay(vInterval);
+		settingsRec.Next_Approval_Reminder_Date=newNext;
 	}
-	newNext = today.addDay(vInterval);
-	settingsRec.Next_Approval_Reminder_Date=newNext;
-	totalSent = budgetCount + proformaCount + modCount;
+	/********* RECAP *********/
+	totalSent = budgetCount + proformaCount + modCount + contractCount;
+	if(totalSent == 0 && contractFailed == 0)
+	{
+		if(budgetDue)
+		{
+			// Due day with nothing pending: say so, as before.
+			recapBody = "<div style='font-family:Arial,Helvetica,sans-serif;'>";
+			recapBody = recapBody + "<h3 style='margin:0 0 4px 0;color:#0b2345;'>Approval reminders " + today.toString() + "</h3>";
+			recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>No pending approvals needed reminders. Next budget reminder " + newNext.toString() + ".</p></div>";
+			sendmail
+			[
+				from :"jking@wbdevelopment.com"
+				to :"rbelliveau@wbdevelopment.com"
+				subject :"Approval reminders: nothing to send"
+				message :recapBody
+			]
+			return "OK: nothing to send. Next budget reminder " + newNext.toString() + ".";
+		}
+		return notDueNote + " No contract reminders were due.";
+	}
 	skippedNote = "";
 	if(skipped > 0)
 	{
 		skippedNote = " " + skipped + " pending row(s) were skipped (missing linked record).";
 	}
-	thStyle = "padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#5c7394;border-bottom:2px solid #cbd5e1;";
+	if(contractFailed > 0)
+	{
+		skippedNote = skippedNote + " " + contractFailed + " contract reminder(s) failed to send.";
+	}
 	recapBody = "<div style='font-family:Arial,Helvetica,sans-serif;'>";
 	recapBody = recapBody + "<h3 style='margin:0 0 4px 0;color:#0b2345;'>Approval reminders " + today.toString() + "</h3>";
-	if(totalSent > 0)
+	summaryLine = totalSent + " reminder(s) - contracts " + contractCount + ", budgets " + budgetCount + ", pro formas " + proformaCount + ", modifications " + modCount + "." + skippedNote;
+	if(budgetDue)
 	{
-		recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>" + totalSent + " reminder(s) - budgets " + budgetCount + ", pro formas " + proformaCount + ", modifications " + modCount + "." + skippedNote + " Next reminder " + newNext.toString() + ".</p>";
-		recapBody = recapBody + "<table style='border-collapse:collapse;width:100%;max-width:720px;'><tr><th style='" + thStyle + "'>Type</th><th style='" + thStyle + "'>Sent To</th><th style='" + thStyle + "'>Role</th><th style='" + thStyle + "'>Item</th></tr>";
-		recapBody = recapBody + recapRows + "</table>";
-		emailSubject = "Approval reminders sent: " + totalSent + " (budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")";
+		summaryLine = summaryLine + " Next budget reminder " + newNext.toString() + ".";
 	}
 	else
 	{
-		recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>No pending approvals needed reminders." + skippedNote + " Next reminder " + newNext.toString() + ".</p>";
-		emailSubject = "Approval reminders: nothing to send";
+		summaryLine = summaryLine + " " + notDueNote;
 	}
-	recapBody = recapBody + "</div>";
+	recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>" + summaryLine + "</p>";
+	recapBody = recapBody + "<table style='border-collapse:collapse;width:100%;max-width:720px;'><tr><th style='" + thStyle + "'>Type</th><th style='" + thStyle + "'>Sent To</th><th style='" + thStyle + "'>Role / Step</th><th style='" + thStyle + "'>Item</th></tr>";
+	recapBody = recapBody + contractRows + recapRows + "</table></div>";
+	emailSubject = "Approval reminders sent: " + totalSent + " (contracts " + contractCount + ", budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")";
 	sendmail
 	[
 		from :"jking@wbdevelopment.com"
@@ -147,5 +210,5 @@ string sendApprovalReminders()
 		subject :emailSubject
 		message :recapBody
 	]
-	return "OK: reminders sent - budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ". Next reminder " + newNext.toString() + ".";
+	return "OK: reminders sent - contracts=" + contractCount + ", budgets=" + budgetCount + ", proformas=" + proformaCount + ", modifications=" + modCount + ", skipped=" + skipped + ", contractFailed=" + contractFailed + ".";
 }
