@@ -3,6 +3,16 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.5
+
+- **Row menu: Archive and Delete sit below a divider.** Delete is now just "Delete", in red,
+  with a bin icon.
+- **Cancelling Change Lots & Pricing no longer flashes the expanded contract** — the list is
+  not re-rendered when nothing changed.
+- **New Contract: Subdivision and Builder / Counterparty line up** under Type and Territory,
+  same widths and spacing, labels the same height whether or not they carry a pill.
+- Rollback: `releases/contract-management/1.59.4`.
+
 ## Contract Management 1.59.4
 
 - **Approvals banner copy reworded** ("No approvers are currently selected to receive the
