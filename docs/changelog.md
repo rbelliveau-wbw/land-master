@@ -3,6 +3,19 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.2
+
+- **Add-approver row matches the "Add a proposed action" row** — same dashed `.dadd`
+  component: plus chip, borderless field, type picker, Enter hint, Add.
+- **Remove an approver while it is still Not Sent.** A × appears on those rows only; the
+  confirm removes the record and closes the gap in the sequence numbers. Sent, awaiting,
+  approved and rejected rows keep no delete — they are the record of who was asked.
+- **Attachments modal: the Email switch no longer flashes the modal.** It flips in place;
+  the save runs behind it.
+- **Header no longer says "edits save instantly"**, and the add row's button is a "Save approver"
+  check button.
+- Rollback: `releases/contract-management/1.59.1`.
+
 ## Contract Management 1.59.1
 
 - **Open contract: one clean border.** The "Working in" kicker and the "End of … · Collapse"
