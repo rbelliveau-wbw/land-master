@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF Preview</title>
+<style>
+  :root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#e9edf3}
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e9edf3}
+  .shell{display:flex;flex-direction:column;width:100%;height:100%}
+  .toolbar{height:42px;flex:none;display:flex;align-items:center;gap:8px;padding:0 10px;background:#1f2937;color:#fff;border-bottom:1px solid rgba(255,255,255,.12)}
+  .title{min-width:0;flex:1;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .status{font-size:11px;color:#cbd5e1;white-space:nowrap}
+  .toolbtn{height:28px;min-width:30px;padding:0 9px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:#334155;color:#fff;font-size:12px;font-weight:800;cursor:pointer}
+  .toolbtn:hover{background:#475569}
+  .toolbtn:disabled{opacity:.45;cursor:not-allowed}
+  .viewer{position:relative;flex:1;min-height:0;overflow:auto;padding:18px;background:#6b7280}
+  .pages{display:flex;flex-direction:column;align-items:center;gap:18px;min-height:100%}
+  .page-wrap{background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.32)}
+  canvas{display:block;background:#fff}
+  .state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;background:#f8fafc;color:#52657d}
+  .state-card{max-width:460px}
+  .state h2{margin:0 0 7px;color:#17375f;font-size:16px}
+  .state p{margin:0;font-size:12px;line-height:1.55;white-space:pre-wrap}
+  .spinner{width:28px;height:28px;margin:0 auto 14px;border:3px solid #dbe4ef;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="toolbar">
+    <div class="title" id="title">PDF Preview</div>
+    <div class="status" id="status"></div>
+    <button class="toolbtn" id="zoomOut" type="button" title="Zoom out">−</button>
+    <button class="toolbtn" id="fitWidth" type="button" title="Fit width">Fit</button>
+    <button class="toolbtn" id="zoomIn" type="button" title="Zoom in">+</button>
+  </div>
+  <div class="viewer" id="viewer">
+    <div class="pages" id="pages"></div>
+    <div class="state" id="state"><div class="state-card"><div class="spinner"></div><h2>Preparing preview</h2><p>Loading PDF viewer…</p></div></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var viewer=document.getElementById("viewer");
+  var pagesNode=document.getElementById("pages");
+  var stateNode=document.getElementById("state");
+  var titleNode=document.getElementById("title");
+  var statusNode=document.getElementById("status");
+  var zoomOut=document.getElementById("zoomOut");
+  var zoomIn=document.getElementById("zoomIn");
+  var fitWidth=document.getElementById("fitWidth");
+  var pdfDoc=null;
+  var rawBytes=null;
+  var scaleMultiplier=1;
+  var renderToken=0;
+  var fileName="PDF Preview";
+
+  function post(type,payload){
+    try{ parent.postMessage(Object.assign({type:type},payload||{}),"*"); }catch(e){}
+  }
+  function showState(title,text,loading){
+    stateNode.style.display="flex";
+    stateNode.innerHTML="<div class='state-card'>"+(loading?"<div class='spinner'></div>":"")+"<h2>"+escapeHtml(title)+"</h2><p>"+escapeHtml(text||"")+"</p></div>";
+  }
+  function hideState(){ stateNode.style.display="none"; }
+  function escapeHtml(v){ return String(v==null?"":v).replace(/[&<>\"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+  function setButtons(disabled){ zoomOut.disabled=disabled; zoomIn.disabled=disabled; fitWidth.disabled=disabled; }
+
+  function fitScale(page){
+    var base=page.getViewport({scale:1});
+    var available=Math.max(260,(viewer.clientWidth||700)-42);
+    return Math.max(.25,Math.min(2.5,available/base.width));
+  }
+
+  function renderAll(){
+    if(!pdfDoc) return Promise.resolve();
+    var myToken=++renderToken;
+    setButtons(true);
+    showState("Rendering preview","",true);
+    pagesNode.innerHTML="";
+    statusNode.textContent=pdfDoc.numPages+" page"+(pdfDoc.numPages===1?"":"s");
+    var chain=Promise.resolve();
+    for(var n=1;n<=pdfDoc.numPages;n++){
+      (function(pageNo){
+        chain=chain.then(function(){
+          if(myToken!==renderToken) return;
+          return pdfDoc.getPage(pageNo).then(function(page){
+            if(myToken!==renderToken) return;
+            var viewport=page.getViewport({scale:fitScale(page)*scaleMultiplier});
+            var outputScale=Math.min(2,Math.max(1,window.devicePixelRatio||1));
+            var canvas=document.createElement("canvas");
+            var wrap=document.createElement("div");
+            wrap.className="page-wrap";
+            canvas.width=Math.max(1,Math.floor(viewport.width*outputScale));
+            canvas.height=Math.max(1,Math.floor(viewport.height*outputScale));
+            canvas.style.width=Math.floor(viewport.width)+"px";
+            canvas.style.height=Math.floor(viewport.height)+"px";
+            wrap.appendChild(canvas);
+            pagesNode.appendChild(wrap);
+            var ctx=canvas.getContext("2d",{alpha:false});
+            ctx.save();ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.restore();
+            return page.render({
+              canvasContext:ctx,
+              viewport:viewport,
+              transform:outputScale!==1?[outputScale,0,0,outputScale,0,0]:null,
+              background:"rgb(255,255,255)",
+              intent:"display"
+            }).promise;
+          });
+        });
+      })(n);
+    }
+    return chain.then(function(){
+      if(myToken!==renderToken) return;
+      hideState();
+      setButtons(false);
+      post("budget-pdf-preview-loaded",{pages:pdfDoc.numPages,fileName:fileName});
+    }).catch(function(err){
+      if(myToken!==renderToken) return;
+      setButtons(false);
+      showState("Could not render PDF",err&&err.message?err.message:String(err||"Unknown PDF rendering error."),false);
+      post("budget-pdf-preview-error",{message:err&&err.message?err.message:String(err||"Unknown PDF rendering error.")});
+    });
+  }
+
+  function decodeBase64Pdf(base64){
+    var text=String(base64||"").replace(/\s+/g,"").replace(/-/g,"+").replace(/_/g,"/");
+    while(text.length%4) text+="=";
+    var binary=atob(text);
+    var bytes=new Uint8Array(binary.length);
+    for(var i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i)&255;
+    var head="";
+    for(var h=0;h<Math.min(5,bytes.length);h++) head+=String.fromCharCode(bytes[h]);
+    if(head!=="%PDF-") throw new Error("Creator returned invalid PDF bytes.");
+    return bytes;
+  }
+
+  function loadPdf(base64,name){
+    if(!window.pdfjsLib){
+      showState("PDF viewer unavailable","The PDF.js library could not be loaded.",false);
+      post("budget-pdf-preview-error",{message:"PDF.js library did not load."});
+      return;
+    }
+    fileName=name||"PDF Preview";
+    titleNode.textContent=fileName;
+    try{
+      rawBytes=decodeBase64Pdf(base64);
+    }catch(decodeError){
+      showState("Could not open PDF",decodeError&&decodeError.message?decodeError.message:String(decodeError),false);
+      post("budget-pdf-preview-error",{message:decodeError&&decodeError.message?decodeError.message:String(decodeError)});
+      return;
+    }
+    scaleMultiplier=1;
+    showState("Opening PDF","",true);
+    try{
+      pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      var task=pdfjsLib.getDocument({
+        data:rawBytes,
+        enableXfa:true,
+        useSystemFonts:true,
+        disableFontFace:false,
+        isEvalSupported:false,
+        cMapUrl:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+        cMapPacked:true,
+        standardFontDataUrl:"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/"
+      });
+      task.promise.then(function(pdf){
+        pdfDoc=pdf;
+        return renderAll();
+      }).catch(function(err){
+        showState("Could not open PDF",err&&err.message?err.message:String(err||"Unknown PDF error."),false);
+        post("budget-pdf-preview-error",{message:err&&err.message?err.message:String(err||"Unknown PDF error.")});
+      });
+    }catch(err){
+      showState("Could not open PDF",err&&err.message?err.message:String(err||"Unknown PDF error."),false);
+      post("budget-pdf-preview-error",{message:err&&err.message?err.message:String(err||"Unknown PDF error.")});
+    }
+  }
+
+  zoomOut.addEventListener("click",function(){ if(!pdfDoc)return;scaleMultiplier=Math.max(.5,scaleMultiplier-.15);renderAll(); });
+  zoomIn.addEventListener("click",function(){ if(!pdfDoc)return;scaleMultiplier=Math.min(3,scaleMultiplier+.15);renderAll(); });
+  fitWidth.addEventListener("click",function(){ if(!pdfDoc)return;scaleMultiplier=1;renderAll(); });
+  window.addEventListener("resize",function(){ if(pdfDoc){clearTimeout(window.__pdfResizeTimer);window.__pdfResizeTimer=setTimeout(renderAll,180);} });
+  window.addEventListener("message",function(event){
+    var data=event.data||{};
+    if(data.type!=="budget-pdf-preview-load"||!data.base64) return;
+    loadPdf(data.base64,data.fileName);
+  });
+  setButtons(true);
+  post("budget-pdf-preview-ready",{});
+})();
+</script>
+</body>
+</html>
