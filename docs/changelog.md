@@ -3,6 +3,23 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Contract Management 1.59.1
+
+- **Open contract: one clean border.** The "Working in" kicker and the "End of … · Collapse"
+  cap from 1.59.0 are gone. The open row and its panel now share a single 2px blue border —
+  top edge on the row, both sides down the pair, bottom edge under the panel — while the
+  other rows still step back.
+- **Internal Approvals: toggles no longer flash the modal.** Email switches flip immediately
+  and the modal's parts are swapped in place; the save runs behind and reverts on failure.
+- **Email column is a bare on/off switch** — no "Emailed / Not emailed" text — and the
+  "not on the email" line under Not sent is gone.
+- **Add approver row rebuilt** as a bordered white field + type picker + Add. The sequence
+  box is gone — new approvers append to the end; drag ⠿ to move them.
+- **Send for Approvals stub** in the footer, disabled until at least one approver is emailed
+  and one file is attached; clicking it says the function is not connected yet.
+- Banner copy shortened.
+- Rollback: `releases/contract-management/1.59.0`.
+
 ## Contract Management 1.59.0
 
 - **An expanded contract reads as one card.** The drill panel now spans every column — it
