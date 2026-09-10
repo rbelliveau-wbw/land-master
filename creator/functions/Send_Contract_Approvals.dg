@@ -94,7 +94,10 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("message","Attach at least one file to the approval email (Attachments tab) before sending.");
 		return resp.toString();
 	}
-	pending = Contract_Approvals[Contract1 == cid && Approval_Email == true && Status == "Not Sent"] sort by Approval_Sequence;
+	/* A blank Status counts as Not Sent: rows inserted through the Data API
+	   (the widget's add-approver row before 1.60.4) never received the form's
+	   initial value, so an exact match silently skipped them. */
+	pending = Contract_Approvals[Contract1 == cid && Approval_Email == true && (Status == "Not Sent" || Status == null || Status == "")] sort by Approval_Sequence;
 	if(pending.count() == 0)
 	{
 		resp.put("success",false);
