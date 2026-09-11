@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-11T16:37:10.186Z",
+  "generated_at": "2026-09-11T18:29:38.716Z",
   "note": "Creator registrations use the stable Production URLs. The widget runtime selects environment-specific Custom APIs from Creator initialization context.",
   "environments": {
     "development": {
@@ -10,7 +10,7 @@
       "tax-center": "19.17.1",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.6.4",
-      "settings-manager": "1.1.0"
+      "settings-manager": "1.2.0"
     },
     "stage": {
       "proforma-manager": "1.44.6",
@@ -29,7 +29,7 @@
       "tax-center": "19.17.1",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.6.4",
-      "settings-manager": "1.1.0"
+      "settings-manager": "1.2.0"
     }
   }
 }

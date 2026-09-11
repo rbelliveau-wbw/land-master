@@ -36,6 +36,9 @@ No Custom APIs. Reads and writes go through `ZOHO.CREATOR.API` only.
   `PF_AI_Review`), `PF_Review_Provider` (`openai` only), `PF_Review_Model` (an OpenAI model id,
   passed through as-is), `PF_Review_Criteria_Updated` (stamped by the widget whenever the criteria
   change, so each review can record which version it judged against).
+- **AI Plat Import** — `Plat_Review_Criteria` (auto-growing textarea). When filled in it replaces the
+  built-in transcription instructions inside `Plat_AI_Ingest` for every plat tile; empty keeps the
+  default. Shares the AI Review provider and model.
 - **Construction Curve** — the `Construction_Curve` grid, grouped by `Cost_Curve` with a
   per-curve **% total** badge that flags any curve not summing to 100%.
 - **Other fields** — anything on the record this widget does not explicitly model, rendered as
