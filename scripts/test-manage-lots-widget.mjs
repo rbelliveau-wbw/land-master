@@ -95,6 +95,24 @@ assert.deepEqual(merged[2].conflicts, ["width=55"], "tiles that disagree on a va
 assert.deepEqual(merged[2].tiles, [1, 2], "origin tiles are kept for the locate button");
 assert.equal(merged[3].conflicts.length, 0, "agreeing tiles raise no conflict");
 
+/* A lot seen without its block in one tile (label sat in another tile) folds into the one row
+   that names the block; two candidate blocks keep the block-less row so a human decides. */
+const folded = mergePlatRows(normalizePlatRows([
+  { lot: "5", block: null, area: null, width: 50 },
+  { lot: "6", block: null, area: null, width: 50 },
+  { lot: "7", block: null, area: null, width: 50 },
+], 1).concat(normalizePlatRows([
+  { lot: "5", block: "18", area: null, width: 50 },
+  { lot: "6", block: "18", area: null, width: 51.67 },
+  { lot: "7", block: "18", area: null, width: null },
+  { lot: "7", block: "12", area: null, width: null },
+], 2)));
+assert.deepEqual(folded.map((r) => r.block + "|" + r.lot), ["|7", "12|7", "18|5", "18|6", "18|7"], "block-less sightings fold into the single named row; an ambiguous lot keeps its unknown row");
+assert.deepEqual(folded[2].tiles, [2, 1], "the folded row remembers both tiles");
+assert.equal(folded[2].seen, 2, "the folded row counts both sightings");
+assert.deepEqual(folded[3].conflicts, ["width=50"], "a width disagreement across the fold is flagged");
+assert.equal(folded[4].width, null, "an ambiguous lot does not receive the block-less width");
+
 assert.deepEqual(blockGaps([
   { block: "1", lot: "1" }, { block: "1", lot: "2" }, { block: "1", lot: "4" },
   { block: "2", lot: "3" }, { block: "", lot: "9" }, { block: "1", lot: "17A" },

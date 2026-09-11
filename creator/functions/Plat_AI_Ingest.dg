@@ -7,7 +7,8 @@ string Plat_AI_Ingest(string payload)
 	// Entire JSON: the whole POST body arrives as this single string arg (Save_PF pattern).
 	// Payload: {"mode":"ping"|"tile", "subdivisionName":"...", "subdivisionCode":"TRB05",
 	//           "tileIndex":3, "tileCount":28, "row":1, "col":3, "rows":4, "cols":7, "page":1,
-	//           "mime":"image/jpeg", "image":"<base64 without the data: prefix>", "requestedBy":"email"}
+	//           "mime":"image/jpeg", "image":"<base64 without the data: prefix>",
+	//           "overviewMime":"image/jpeg", "overview":"<base64 whole sheet, tile outlined>", "requestedBy":"email"}
 	// Returns:  {success, mode, provider, model, tileIndex, kind, rows:[{lot, block, area, width}],
 	//            totals:{lots, blocks}, usage, raw}
 	// Provider + model come from the Settings singleton (AI Review section). The key never
@@ -89,6 +90,14 @@ string Plat_AI_Ingest(string payload)
 		{
 			mime = "image/jpeg";
 		}
+		// Optional second image: the whole sheet, downscaled, with this tile outlined in magenta.
+		// Same rule as the tile - no trim() on a base64 body.
+		overview = ifnull(data.get("overview"),"").toString();
+		overviewMime = ifnull(data.get("overviewMime"),"image/jpeg").toString().trim();
+		if(overviewMime != "image/jpeg" && overviewMime != "image/png" && overviewMime != "image/webp")
+		{
+			overviewMime = "image/jpeg";
+		}
 		tileIndex = ifnull(data.get("tileIndex"),0).toString();
 		tileCount = ifnull(data.get("tileCount"),0).toString();
 		tileRow = ifnull(data.get("row"),0).toString();
@@ -102,7 +111,7 @@ string Plat_AI_Ingest(string payload)
 		// ---- 3. Prompt ---------------------------------------------------------
 		// The model transcribes; it never fills gaps. Anything it cannot read is left out so the
 		// widget's block-gap check surfaces it for a human instead of a guess landing in Lots.
-		systemMsg = "You are a meticulous data-entry clerk transcribing a recorded subdivision plat for a Texas residential land developer. " + "You receive ONE image tile cut from a larger plat sheet; neighbouring tiles overlap it, so partial rows at the edges are covered elsewhere. " + "The tile may show: (a) LOT SIZE TABLES whose columns are, in this order, LOT #, BLOCK #, AREA (SQ FT), WIDTH (FT) - the header row may be cut off, so trust the column order; " + "(b) part of the plat drawing, where each lot polygon carries its lot number and each block is labelled BLOCK n (the block label may sit far from some of its lots); " + "(c) unrelated content such as notes, signatures, certificates, curve tables, legends, street tables, or the location map - these produce no rows. " + "Transcribe EVERY lot that is fully legible in this tile, one row per lot. Copy numbers exactly as printed. " + "Never invent, infer, interpolate, or continue a sequence; if a value is cut off or unreadable, use null for area/width, and omit the row entirely when the lot number itself is unreadable. " + "If the block for a lot is not visible in this tile, set block to null rather than guessing. " + "Reply with ONE JSON object and nothing else, exactly this shape: " + "{\"kind\":\"table|drawing|none\",\"rows\":[{\"lot\":\"1\",\"block\":\"4\",\"area\":7187,\"width\":77}],\"totals\":{\"lots\":148,\"blocks\":4}}. " + "lot is the lot label as printed (a string, usually an integer); block is the block identifier as printed without the word BLOCK; area and width are numbers or null. " + "Include totals ONLY when a printed TOTAL LOTS or TOTAL BLOCKS figure is visible in this tile; otherwise omit the totals key. Use kind none and an empty rows array when the tile holds no lot data.";
+		systemMsg = "You are a meticulous data-entry clerk transcribing a recorded subdivision plat for a Texas residential land developer. " + "You receive ONE image tile cut from a larger plat sheet; neighbouring tiles overlap it, so partial rows at the edges are covered elsewhere. " + "The tile may show: (a) LOT SIZE TABLES whose columns are, in this order, LOT #, BLOCK #, AREA (SQ FT), WIDTH (FT) - the header row may be cut off, so trust the column order; " + "(b) part of the plat drawing, where each lot polygon carries its lot number and each block is labelled BLOCK n (the block label may sit far from some of its lots); " + "(c) unrelated content such as notes, signatures, certificates, curve tables, legends, street tables, or the location map - these produce no rows. " + "Transcribe EVERY lot that is fully legible in this tile, one row per lot. Copy numbers exactly as printed. " + "Never invent, infer, interpolate, or continue a sequence; if a value is cut off or unreadable, use null for area/width, and omit the row entirely when the lot number itself is unreadable. " + "If the block for a lot is not visible in this tile, set block to null rather than guessing. " + "When a second image is supplied it is the whole sheet with this tile outlined in a magenta box: use it only to see which block label each lot in the tile belongs to and whether the lot lies inside the bold subdivision boundary; read lot numbers, widths and areas from the tile image only. " + "Reply with ONE JSON object and nothing else, exactly this shape: " + "{\"kind\":\"table|drawing|none\",\"rows\":[{\"lot\":\"1\",\"block\":\"4\",\"area\":7187,\"width\":77}],\"totals\":{\"lots\":148,\"blocks\":4}}. " + "lot is the lot label as printed (a string, usually an integer); block is the block identifier as printed without the word BLOCK; area and width are numbers or null. " + "Include totals ONLY when a printed TOTAL LOTS or TOTAL BLOCKS figure is visible in this tile; otherwise omit the totals key. Use kind none and an empty rows array when the tile holds no lot data.";
 		if(criteria != "")
 		{
 			systemMsg = criteria;
@@ -120,6 +129,20 @@ string Plat_AI_Ingest(string payload)
 		parts = List();
 		parts.add(textPart);
 		parts.add(imagePart);
+		if(overview.length() > 0)
+		{
+			ovText = Map();
+			ovText.put("type","text");
+			ovText.put("text","Second image: the whole sheet, with the tile above outlined in a magenta box. Use it only to find the block label for each lot in the tile and to confirm the lot is inside the bold subdivision boundary.");
+			ovUrl = Map();
+			ovUrl.put("url","data:" + overviewMime + ";base64," + overview);
+			ovUrl.put("detail","high");
+			ovPart = Map();
+			ovPart.put("type","image_url");
+			ovPart.put("image_url",ovUrl);
+			parts.add(ovText);
+			parts.add(ovPart);
+		}
 		sysMap = Map();
 		sysMap.put("role","system");
 		sysMap.put("content",systemMsg);
