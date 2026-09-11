@@ -20,8 +20,15 @@ string Plat_AI_Ingest(string payload)
 		// that aborts past 50 ms / 100,000 iterations: "The regex match is taking more than
 		// 50ms or going beyond 100000 iterations." A tile payload is 200-400 KB of base64, so
 		// never call them on the whole payload or on the image - inspect a short prefix instead.
+		// left(n) throws "index values were invalid" when n exceeds the string length, so every
+		// left() below is guarded by length() first.
 		data = Map();
-		if(payload.left(20).trim().startsWith("{"))
+		head = payload;
+		if(payload.length() > 20)
+		{
+			head = payload.left(20);
+		}
+		if(head.trim().startsWith("{"))
 		{
 			data = payload.toMap();
 			if(data.get("payload") != null)
@@ -191,7 +198,12 @@ string Plat_AI_Ingest(string payload)
 		if(!content.startsWith("{"))
 		{
 			resp.put("success",false);
-			resp.put("error","Model reply was not JSON: " + content.left(200));
+			snippet = content;
+			if(content.length() > 200)
+			{
+				snippet = content.left(200);
+			}
+			resp.put("error","Model reply was not JSON: " + snippet);
 			return resp.toString();
 		}
 		// ---- 5. Forward the rows; the widget validates, merges, and flags them ----
@@ -203,7 +215,12 @@ string Plat_AI_Ingest(string payload)
 		{
 			resp.put("totals",parsed.get("totals"));
 		}
-		resp.put("raw",content.left(12000));
+		raw = content;
+		if(content.length() > 12000)
+		{
+			raw = content.left(12000);
+		}
+		resp.put("raw",raw);
 		resp.put("usage",ifnull(respMap.get("usage"),Map()));
 		resp.put("requestedBy",requestedBy);
 	}
