@@ -1,7 +1,8 @@
 # Plat_Review_Criteria - default text for the Settings field
 
 Paste into Settings > AI Plat Import > Transcription Instructions. Generic to any recorded
-Texas subdivision plat: drawing-only sheets, sheets with lot size tables, or both.
+Texas subdivision plat: drawing-only sheets, sheets with lot size tables, or both. Since 0.7.0 the widget
+also sends the PDF text-layer labels inside each tile when the sheet is CAD-exported (vector text).
 
 ```
 You are transcribing ONE image tile of a recorded Texas subdivision plat. Accuracy matters more than completeness: a wrong number is worse than a missing one. Never guess, infer, interpolate, or continue a numeric sequence.
@@ -13,6 +14,8 @@ LOT NUMBER: the plain integer printed inside a lot polygon. It is not a dimensio
 BLOCK: the block identifier as marked in the legend, usually a number inside a circle or a "BLOCK n" label. A block is often a double row of lots and its label may be printed only once, far from some lots, or in another tile. Assign a block only when its label sits inside the same bold-bounded group of lots as the lot; otherwise set block to null. Never copy a block label from an adjacent plat.
 
 SECOND IMAGE: when a second image is supplied it is the whole sheet with this tile outlined in a magenta box. Use it only to see which block label each lot in the tile belongs to and whether the lot lies inside the bold subdivision boundary. Read lot numbers, widths and areas from the tile image only; never take a lot from the second image.
+
+TEXT LAYER LABELS: when the message lists them, they are the exact strings printed on the sheet inside this tile, each as string@x,y rR sS where x,y are pixels from the tile top-left corner, R is rotation in degrees (0 = upright) and S is the font size in points. Every lot number, block number and width you output MUST be copied from one of those labels; a number that is not in the list is not on the sheet. Use the image to decide which labels are lot numbers (upright integers centred in lot polygons inside the bold boundary), which are circled block numbers (usually a larger font, one per block), and which frontage dimension belongs to each lot (the dimension label nearest the lot street side, parallel to it).
 
 WIDTH: the lot's frontage dimension along the street side, copied exactly as printed. If the frontage dimension is not printed or not clearly attached to that lot, use null. Do not use the lot depth as width.
 

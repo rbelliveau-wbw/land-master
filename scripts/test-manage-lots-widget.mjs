@@ -63,6 +63,9 @@ const mergePlatRows = new Function("natural", `return (${extractFunction("mergeP
 const blockGaps = new Function("natural", `return (${extractFunction("blockGaps")})`)(natural);
 const platRowIssues = new Function("str", `return (${extractFunction("platRowIssues")})`)(scalar);
 const platTileGrid = new Function(`return (${extractFunction("platTileGrid")})`)();
+const CFG = { plat: { textMaxChars: 40000 } };
+const platTextForTile = new Function("CFG", `return (${extractFunction("platTextForTile")})`)(CFG);
+const platMarkText = new Function(`return (${extractFunction("platMarkText")})`)();
 
 assert.equal(buildLotCode("TRB05", "1", "5"), "TRB05-B01-L05", "single digits are zero-padded like Deluge leftpad");
 assert.equal(buildLotCode("TRB05", "12", "126"), "TRB05-B12-L126", "two-digit blocks and three-digit lots are left as printed");
@@ -112,6 +115,37 @@ assert.deepEqual(folded[2].tiles, [2, 1], "the folded row remembers both tiles")
 assert.equal(folded[2].seen, 2, "the folded row counts both sightings");
 assert.deepEqual(folded[3].conflicts, ["width=50"], "a width disagreement across the fold is flagged");
 assert.equal(folded[4].width, null, "an ambiguous lot does not receive the block-less width");
+
+/* Vector text layer: labels inside the tile are handed to the model in tile pixels; what comes
+   back is checked against them so a misread digit or an invented lot is flagged, never silent. */
+const pageText = [
+  { s: "12", x: 1100, y: 1300, r: 0, sz: 11 },
+  { s: "13", x: 1160, y: 1300, r: 0, sz: 11 },
+  { s: "50.00'", x: 1120, y: 1250, r: 90, sz: 8 },
+  { s: "18", x: 1400, y: 1350, r: 0, sz: 13 },
+  { s: "N 73°45'04\" E", x: 1150, y: 1290, r: 90, sz: 8 },
+  { s: "C18", x: 1130, y: 1310, r: 0, sz: 8 },
+  { s: "7", x: 100, y: 100, r: 0, sz: 11 },
+];
+const tile = { x: 1024, y: 1024, w: 1024, h: 1024 };
+const tt = platTextForTile(pageText, tile);
+assert.deepEqual(tt.list.map((o) => o.s), ["12", "13", "50.00'", "18"], "only integers, dimensions and BLOCK labels inside the tile are sent; bearings, curve labels and other tiles are not");
+assert.deepEqual(tt.list[0], { s: "12", x: 76, y: 276, r: 0, sz: 11 }, "positions are relative to the tile's top-left corner");
+assert.equal(tt.block, "12@76,276 r0 s11 | 13@136,276 r0 s11 | 50.00'@96,226 r90 s8 | 18@376,326 r0 s13", "labels are packed as string@x,y rR sS");
+assert.deepEqual(Object.keys(tt.ints).sort(), ["12", "13", "18"]);
+assert.deepEqual(Object.keys(tt.dims), ["50"], "dimension strings are kept as numbers for width checks");
+
+const checked = platMarkText(normalizePlatRows([
+  { lot: "12", block: "18", width: 50 },
+  { lot: "17", block: "18", width: 50 },
+  { lot: "13", block: "18", width: 55 },
+], 3), tt);
+assert.deepEqual(checked.map((r) => [r.lot, r.offText, r.offWidth]), [["12", false, false], ["17", true, false], ["13", false, true]], "a lot or width the text layer never printed is flagged");
+assert.deepEqual(platRowIssues(Object.assign({ code: "AR05-B18-L17", conflicts: [] }, checked[1]), {}).map((x) => x.k + ":" + x.t), ["warn:Lot not in the sheet's text layer"]);
+const scanned = platMarkText(normalizePlatRows([{ lot: "9", block: "1" }], 1), { list: [], ints: {}, dims: {} });
+assert.equal(scanned[0].offText, undefined, "a scanned sheet with no text layer flags nothing");
+const verified = mergePlatRows(platMarkText(normalizePlatRows([{ lot: "12", block: "18" }], 1), { list: [{ s: "x" }], ints: {}, dims: {} }).concat(checked.slice(0, 1)));
+assert.equal(verified[0].offText, false, "a lot verified by any tile's text layer counts as verified after the merge");
 
 assert.deepEqual(blockGaps([
   { block: "1", lot: "1" }, { block: "1", lot: "2" }, { block: "1", lot: "4" },

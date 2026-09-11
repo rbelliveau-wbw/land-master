@@ -2,13 +2,13 @@
   "slug": "manage-lots",
   "name": "Manage Lots",
   "module": "lots",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "Multi-subdivision lot selection, in-widget Builder Takedown creation, grouped read-only takedown reporting, and AI plat import that stages Lots records for review.",
   "source_entry": "widgets/manage-lots/src/app/widget.html",
   "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Manage Lots",
-  "source_sha256": "d22c19d8b63446a711cb335992318fb11bed1e9eea4bd59839ceb0605f18f0ed",
+  "source_sha256": "d045ef4034446af83a24167042536fa741d5f8375cbb310abbaa8dcc6348d77a",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [
