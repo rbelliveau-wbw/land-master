@@ -43,6 +43,49 @@
                  		cashRows = Proforma_Months[Proforma == proformaIdLong && Master_Month == true && Month1 == 13 || Month1 == 25 || Month1 == 37 || Month1 == 49] sort by Month1;
                  		pfName = ifnull(pf.Name,"Pro Forma #" + proformaIdText).toString();
                  		territory = ifnull(pf.Territory,"Not provided").toString();
+                 		// Pro Forma owner names: User_Access.Full_Name, falling back to the login trimmed at "@"
+                 		// and "_" (the way the widget labels owners) for rows that have no Full_Name yet.
+                 		ownerNameList = List();
+                 		if(pf.Owner != null)
+                 		{
+                 			for each  ownerRow in pf.Owner
+                 			{
+                 				ownerAccess = User_Access[ID == ownerRow.ID];
+                 				if(ownerAccess.ID != null)
+                 				{
+                 					ownerName = ifnull(ownerAccess.Full_Name,"").toString().trim();
+                 					if(ownerName == "")
+                 					{
+                 						ownerName = ifnull(ownerAccess.User,"").toString().trim();
+                 						if(ownerName == "")
+                 						{
+                 							ownerName = ifnull(ownerAccess.Approver_Email,"").toString().trim();
+                 						}
+                 						if(ownerName.contains("@"))
+                 						{
+                 							ownerName = ownerName.getPrefix("@");
+                 						}
+                 						if(ownerName.contains("_"))
+                 						{
+                 							ownerName = ownerName.getPrefix("_");
+                 						}
+                 					}
+                 					if(ownerName != "" && ownerNameList.contains(ownerName) == false)
+                 					{
+                 						ownerNameList.add(ownerName);
+                 					}
+                 				}
+                 			}
+                 		}
+                 		ownerNamesLabel = "Not assigned";
+                 		if(ownerNameList.size() > 0)
+                 		{
+                 			ownerNamesLabel = ownerNameList.toString(", ");
+                 		}
+                 		if(ownerNamesLabel.length() > 96)
+                 		{
+                 			ownerNamesLabel = ownerNamesLabel.left(93) + "...";
+                 		}
                  		stage = ifnull(pf.Probability,"Not provided").toString();
                  		statusValue = ifnull(pf.Status,"Draft").toString();
                  		generatedLabel = zoho.currenttime.toString("MMM d, yyyy 'at' h:mm a");
@@ -147,8 +190,9 @@
                  		 */
                  		page = page + thisapp.PF_PDF_Rect(0,536,792,76,deepNavy,"",0);
                  		page = page + thisapp.PF_PDF_Rect(0,536,792,4,blue,"",0);
-                 		page = page + thisapp.PF_PDF_Text(28,581,20,"bold",white,pfName);
-                 		page = page + thisapp.PF_PDF_Text(28,558,8.5,"regular","0.77 0.85 0.95","Territory: " + territory + "   |   Stage: " + stage + "   |   Status: " + statusValue + "   |   Purchase: " + purchaseLabel + "   |   Completion: " + completionLabel);
+                 		page = page + thisapp.PF_PDF_Text(28,586,20,"bold",white,pfName);
+                 		page = page + thisapp.PF_PDF_Text(28,568,9.5,"bold","0.99 0.83 0.40","Acquisition Owner: " + ownerNamesLabel);
+                 		page = page + thisapp.PF_PDF_Text(28,553,8.5,"regular","0.77 0.85 0.95","Territory: " + territory + "   |   Stage: " + stage + "   |   Status: " + statusValue + "   |   Purchase: " + purchaseLabel + "   |   Completion: " + completionLabel);
                  		page = page + thisapp.PF_PDF_Rect(642,552,122,40,"0.09 0.27 0.49","0.20 0.42 0.68",0.5);
                  		page = page + thisapp.PF_PDF_Text(654,579,6.5,"bold","0.70 0.81 0.93","CURRENT STEP");
                  		page = page + thisapp.PF_PDF_Text(654,560,12,"bold",white,ifnull(approvalRow.Title,"Approver").toString());

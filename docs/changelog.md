@@ -3,6 +3,29 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.76.0
+
+- **Reject restarts the chain from step 1 and emails every Pro Forma owner.** Any pending step
+  can reject (the widget now shows Reject on step 1 too). The rejecting row keeps Rejected and
+  its note, the other rows go back to Not Sent, step 1 is re-sent with the rejection note, and
+  each owner gets a "Pro Forma rejected by <role>" email. Replaces return-to-previous-approver,
+  which left the CFO/COO holding something they could not fix.
+- **Owner names front and center.** The approval email header and the PDF packet header carry
+  "Acquisition Owner: …" (also the first Overview row of the email). Names come from the new
+  `User_Access.Full_Name`, falling back to the login trimmed at `@` / `_`.
+- **LOI tab renamed Offer.** Section 1 is "Offer Terms"; the record, hooks and Submit LOI to
+  Legal are unchanged.
+- **Properties note: one parcel per row.** A single CAD / Property ID per Property row, said at
+  the top of the section and in step 3 of the flow strip.
+- **Amount Per Acre is checked against Land Cost $ / Acre** the way Property acres are checked
+  against Total Acres: live green/red readout under the field and a save-blocking error on the
+  Offer pane when they differ.
+- Creator side (mirrored in `creator/functions/`, needs a Creator publish):
+  `Handle_Proforma_Approval_Action`, `Send_Proforma_Approval_Email_With_Context`,
+  `PF_Build_Proforma_Approval_PDF`; the public `Proforma_Approval_Response` page drops its
+  "VP step cannot be returned" guard. Requires the `User_Access.Full_Name` field.
+- Rollback: `releases/proforma-manager/1.75.18` and the previous function bodies in git.
+
 ## Contract Management 1.60.1
 
 - **Action dates open one calendar.** Start, Due, and Done keep the native date input as

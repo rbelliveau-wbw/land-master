@@ -1,7 +1,7 @@
 				 map Handle_Proforma_Approval_Action(string proformaId, string approvalId, string approvalAction, string approvalNote)
                  {
                  	response = Map();
-                 	try 
+                 	try
                  	{
                  		proformaIdText = ifnull(proformaId,"").toString().trim();
                  		approvalIdText = ifnull(approvalId,"").toString().trim();
@@ -108,53 +108,178 @@
                  				response.put("message","A note is required when denying a Pro Forma approval.");
                  				return response;
                  			}
-                 			if(row.Sort_Order == 1)
+                 			// A rejection from ANY step restarts the chain at step 1 - the VP is the person who
+                 			// can answer the objection - and every Pro Forma owner is told why. Snapshot every
+                 			// row first so a failed email can put the chain back exactly as it was.
+                 			chainRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+                 			firstRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == 1];
+                 			if(firstRow.ID == null)
                  			{
                  				response.put("success",false);
-                 				response.put("message","The first approval step cannot be returned to a prior approver.");
+                 				response.put("message","The first approval step could not be found.");
                  				return response;
                  			}
-                 			previousOrder = row.Sort_Order - 1;
-                 			previousRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == previousOrder];
-                 			if(previousRow.ID == null)
+                 			snapStatus = Map();
+                 			snapSent = Map();
+                 			snapResponded = Map();
+                 			snapNotes = Map();
+                 			for each  snapRow in chainRows
                  			{
-                 				response.put("success",false);
-                 				response.put("message","The prior approval row could not be found.");
-                 				return response;
+                 				snapKey = snapRow.ID.toString();
+                 				snapStatus.put(snapKey,ifnull(snapRow.Status,"Not Sent").toString());
+                 				snapNotes.put(snapKey,ifnull(snapRow.Approval_Notes,"").toString());
+                 				if(snapRow.Sent_Date != null)
+                 				{
+                 					snapSent.put(snapKey,snapRow.Sent_Date);
+                 				}
+                 				if(snapRow.Responded_Date != null)
+                 				{
+                 					snapResponded.put(snapKey,snapRow.Responded_Date);
+                 				}
                  			}
-                 			originalRowNote = ifnull(row.Approval_Notes,"").toString();
-                 			originalPreviousStatus = ifnull(previousRow.Status,"Approved").toString();
-                 			originalPreviousSentDate = previousRow.Sent_Date;
-                 			originalPreviousRespondedDate = previousRow.Responded_Date;
+                 			rejectedById = row.ID.toString();
+                 			rejectedRole = ifnull(row.Title,"Approver").toString();
+                 			firstRole = ifnull(firstRow.Title,"Step 1").toString();
+                 			for each  resetRow in chainRows
+                 			{
+                 				if(resetRow.ID.toString() != rejectedById)
+                 				{
+                 					resetRow.Status="Not Sent";
+                 					resetRow.Approval_Notes="";
+                 					resetRow.Sent_Date=null;
+                 					resetRow.Responded_Date=null;
+                 				}
+                 			}
                  			row.Approval_Notes=noteText;
                  			row.Status="Rejected";
                  			row.Responded_Date=zoho.currenttime;
-                 			downstreamRows = Budget_Approvals[Proforma == proformaIdLong && Sort_Order > row.Sort_Order];
-                 			for each  downstreamRow in downstreamRows
-                 			{
-                 				downstreamRow.Status="Not Sent";
-                 				downstreamRow.Sent_Date=null;
-                 				downstreamRow.Responded_Date=null;
-                 			}
-                 			previousRow.Status="Pending";
-                 			previousRow.Sent_Date=zoho.currenttime;
-                 			previousRow.Responded_Date=null;
-                 			emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,previousRow.ID.toString(),"Rejected",noteText,ifnull(row.Title,"Approver").toString());
+                 			// Step 1 is pending again. When step 1 itself rejected, it simply re-opens with its
+                 			// own note attached.
+                 			firstRow.Status="Pending";
+                 			firstRow.Sent_Date=zoho.currenttime;
+                 			firstRow.Responded_Date=null;
+                 			emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Rejected",noteText,rejectedRole);
                  			if(ifnull(emailResult.get("success"),false) != true)
                  			{
-                 				row.Status="Pending";
-                 				row.Responded_Date=null;
-                 				row.Approval_Notes=originalRowNote;
-                 				previousRow.Status=originalPreviousStatus;
-                 				previousRow.Sent_Date=originalPreviousSentDate;
-                 				previousRow.Responded_Date=originalPreviousRespondedDate;
+                 				for each  restoreRow in chainRows
+                 				{
+                 					restoreKey = restoreRow.ID.toString();
+                 					restoreRow.Status=ifnull(snapStatus.get(restoreKey),"Not Sent").toString();
+                 					restoreRow.Approval_Notes=ifnull(snapNotes.get(restoreKey),"").toString();
+                 					restoreRow.Sent_Date=snapSent.get(restoreKey);
+                 					restoreRow.Responded_Date=snapResponded.get(restoreKey);
+                 				}
                  				response.put("success",false);
-                 				response.put("message",ifnull(emailResult.get("message"),"The return approval email could not be sent."));
+                 				response.put("message",ifnull(emailResult.get("message"),"The restart approval email could not be sent."));
                  				return response;
                  			}
+                 			// Tell every Pro Forma owner. A failure here must not undo the restart - the chain is
+                 			// already live again - so it only changes the message. Owner names are User_Access.Full_Name,
+                 			// falling back to the login trimmed at "@" and "_" the way the widget labels owners.
+                 			ownerEmails = List();
+                 			ownerNames = List();
+                 			if(pf.Owner != null)
+                 			{
+                 				for each  ownerRow in pf.Owner
+                 				{
+                 					ownerAccess = User_Access[ID == ownerRow.ID];
+                 					if(ownerAccess.ID != null)
+                 					{
+                 						ownerUser = ifnull(ownerAccess.User,"").toString().trim();
+                 						ownerEmail = ifnull(ownerAccess.Approver_Email,"").toString().trim();
+                 						if(ownerEmail == "" && ownerUser.contains("@"))
+                 						{
+                 							ownerEmail = ownerUser;
+                 						}
+                 						if(ownerEmail != "" && ownerEmails.contains(ownerEmail) == false)
+                 						{
+                 							ownerEmails.add(ownerEmail);
+                 						}
+                 						ownerName = ifnull(ownerAccess.Full_Name,"").toString().trim();
+                 						if(ownerName == "")
+                 						{
+                 							ownerName = ownerUser;
+                 							if(ownerName == "")
+                 							{
+                 								ownerName = ownerEmail;
+                 							}
+                 							if(ownerName.contains("@"))
+                 							{
+                 								ownerName = ownerName.getPrefix("@");
+                 							}
+                 							if(ownerName.contains("_"))
+                 							{
+                 								ownerName = ownerName.getPrefix("_");
+                 							}
+                 						}
+                 						if(ownerName != "" && ownerNames.contains(ownerName) == false)
+                 						{
+                 							ownerNames.add(ownerName);
+                 						}
+                 					}
+                 				}
+                 			}
+                 			ownersNotified = false;
+                 			if(ownerEmails.size() > 0)
+                 			{
+                 				try
+                 				{
+                 					pfName = ifnull(pf.Name,"Pro Forma #" + proformaIdText).toString();
+                 					safePfName = thisapp.PF_Packet_Escape(pfName);
+                 					safeNote = thisapp.PF_Packet_Escape(noteText);
+                 					safeRole = thisapp.PF_Packet_Escape(rejectedRole);
+                 					safeFirstRole = thisapp.PF_Packet_Escape(firstRole);
+                 					reviewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Proforma_Management1?proformaId=" + proformaIdText;
+                 					ownerHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'><tr><td align='center' style='padding:24px 12px;'>";
+                 					ownerHtml = ownerHtml + "<table role='presentation' width='640' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:640px;background:#ffffff;border-collapse:separate;border-spacing:0;font-family:Arial,sans-serif;'>";
+                 					ownerHtml = ownerHtml + "<tr><td style='background:#7f1d1d;color:#ffffff;padding:22px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #dc2626;'>";
+                 					ownerHtml = ownerHtml + "<div style='font-size:11px;color:#fecaca;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Pro Forma Rejected</div>";
+                 					ownerHtml = ownerHtml + "<div style='font-size:22px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safePfName + "</div>";
+                 					ownerHtml = ownerHtml + "<div style='font-size:13px;color:#fee2e2;margin-top:8px;'>Rejected by <b>" + safeRole + "</b></div>";
+                 					ownerHtml = ownerHtml + "</td></tr>";
+                 					ownerHtml = ownerHtml + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>";
+                 					ownerHtml = ownerHtml + "<p style='margin:0 0 14px;font-size:15px;color:#172033;'>Approvals restarted from step 1 (<b>" + safeFirstRole + "</b>). You are an owner of this Pro Forma.</p>";
+                 					ownerHtml = ownerHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'><tr><td style='padding:14px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;'>";
+                 					ownerHtml = ownerHtml + "<div style='font-size:11px;font-weight:800;color:#9a3412;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;'>Rejection note from " + safeRole + "</div>";
+                 					ownerHtml = ownerHtml + "<div style='white-space:pre-wrap;color:#431407;line-height:1.5;'>" + safeNote + "</div>";
+                 					ownerHtml = ownerHtml + "</td></tr></table>";
+                 					ownerHtml = ownerHtml + "<table role='presentation' cellpadding='0' cellspacing='0' border='0' style='margin:22px 0 6px;'><tr>";
+                 					ownerHtml = ownerHtml + "<td align='center' bgcolor='#1e40af' width='160' height='42' style='width:160px;height:42px;background-color:#1e40af;border:1px solid #1e3a8a;border-radius:8px;'>";
+                 					ownerHtml = ownerHtml + "<a href='" + reviewUrl + "' style='display:block;width:160px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Open Pro Forma</a>";
+                 					ownerHtml = ownerHtml + "</td></tr></table>";
+                 					ownerHtml = ownerHtml + "</td></tr></table></td></tr></table>";
+                 					sendmail
+                 					[
+                 						from :zoho.adminuserid
+                 						to :ownerEmails
+                 						subject :"Pro Forma rejected by " + rejectedRole + ": " + pfName
+                 						message :ownerHtml
+                 					]
+                 					ownersNotified = true;
+                 				}
+                 				catch (ownerMailError)
+                 				{
+                 					ownersNotified = false;
+                 				}
+                 			}
                  			pf.Status="Pending Approval";
+                 			resultMessage = "Rejected. Approvals restarted from step 1 (" + firstRole + ")";
+                 			if(ownersNotified)
+                 			{
+                 				resultMessage = resultMessage + " and " + ownerEmails.size().toString() + " Pro Forma owner(s) notified.";
+                 			}
+                 			else if(ownerEmails.size() == 0)
+                 			{
+                 				resultMessage = resultMessage + ". No owner email is on file to notify.";
+                 			}
+                 			else
+                 			{
+                 				resultMessage = resultMessage + ". The owner notification email could not be sent.";
+                 			}
                  			response.put("success",true);
-                 			response.put("message","Denied and returned to " + ifnull(previousRow.Title,"the prior approver").toString() + ".");
+                 			response.put("message",resultMessage);
+                 			response.put("ownersNotified",ownersNotified);
+                 			response.put("ownerEmails",ownerEmails);
                  			return response;
                  		}
                  		response.put("success",false);

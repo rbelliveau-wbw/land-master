@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-11T14:30:35.896Z",
+  "generated_at": "2026-09-11T15:32:25.109Z",
   "note": "Creator registrations use the stable Production URLs. The widget runtime selects environment-specific Custom APIs from Creator initialization context.",
   "environments": {
     "development": {
-      "proforma-manager": "1.75.9",
+      "proforma-manager": "1.76.0",
       "budget-manager": "122.26.7",
       "land-master": "8.11.2",
       "contract-management": "1.60.11",
@@ -22,7 +22,7 @@
       "manage-lots": "0.1.0"
     },
     "production": {
-      "proforma-manager": "1.75.18",
+      "proforma-manager": "1.76.0",
       "budget-manager": "122.26.9",
       "land-master": "8.11.2",
       "contract-management": "1.60.11",

@@ -70,6 +70,45 @@
                  			roiText = thisapp.PF_Packet_Number(pf.ROI1.toString(),2) + "%";
                  		}
                  		netProfitText = thisapp.PF_Packet_Money(ifnull(pf.Net_Profit,0).toString());
+                 		// Pro Forma owner names: User_Access.Full_Name, falling back to the login trimmed at "@"
+                 		// and "_" (the way the widget labels owners) for rows that have no Full_Name yet.
+                 		ownerNameList = List();
+                 		if(pf.Owner != null)
+                 		{
+                 			for each  ownerRow in pf.Owner
+                 			{
+                 				ownerAccess = User_Access[ID == ownerRow.ID];
+                 				if(ownerAccess.ID != null)
+                 				{
+                 					ownerName = ifnull(ownerAccess.Full_Name,"").toString().trim();
+                 					if(ownerName == "")
+                 					{
+                 						ownerName = ifnull(ownerAccess.User,"").toString().trim();
+                 						if(ownerName == "")
+                 						{
+                 							ownerName = ifnull(ownerAccess.Approver_Email,"").toString().trim();
+                 						}
+                 						if(ownerName.contains("@"))
+                 						{
+                 							ownerName = ownerName.getPrefix("@");
+                 						}
+                 						if(ownerName.contains("_"))
+                 						{
+                 							ownerName = ownerName.getPrefix("_");
+                 						}
+                 					}
+                 					if(ownerName != "" && ownerNameList.contains(ownerName) == false)
+                 					{
+                 						ownerNameList.add(ownerName);
+                 					}
+                 				}
+                 			}
+                 		}
+                 		ownerNamesText = "Not assigned";
+                 		if(ownerNameList.size() > 0)
+                 		{
+                 			ownerNamesText = ownerNameList.toString(", ");
+                 		}
                  		// Read LOI terms from the saved LOI_Worksheet, Builder and Property records.
                  		loiContext = thisapp.PF_Get_Proforma_LOI_Snapshot(proformaIdText);
                  		if(ifnull(loiContext.get("success"),false) != true)
@@ -117,18 +156,25 @@
                  		safeRoutingNote = routingNoteText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
                  		safeRoutingRole = routingRoleText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
                  		safeSpecialProvisions = specialProvisionsText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		safeOwnerNames = ownerNamesText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+                 		introText = "The <b>" + safeCurrentStepText + "</b> approval is now pending with you.";
+                 		if(routingActionText == "Rejected")
+                 		{
+                 			introText = "<b>" + safeRoutingRole + "</b> rejected this Pro Forma, so approvals restarted from step 1. The <b>" + safeCurrentStepText + "</b> approval is now pending with you.";
+                 		}
                  		routingBlock = "";
                  		if(routingNoteText != "")
                  		{
                  			noteLabel = "Previous approver note";
                  			if(routingActionText == "Rejected")
                  			{
-                 				noteLabel = "Return note from " + safeRoutingRole;
+                 				noteLabel = "Rejection note from " + safeRoutingRole;
                  			}
                  			routingBlock = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:18px;'>" + "<tr><td style='padding:14px 16px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#9a3412;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;'>" + noteLabel + "</div>" + "<div style='white-space:pre-wrap;color:#431407;line-height:1.5;'>" + safeRoutingNote + "</div>" + "</td></tr></table>";
                  		}
                  		overviewRows = "";
-                 		overviewRows = overviewRows + "<tr><td width='44%' style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Territory</td><td width='56%' style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeTerritoryText + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td width='44%' style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Acquisition Owner</td><td width='56%' style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#1d4ed8;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeOwnerNames + "</td></tr>";
+                 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Territory</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;word-break:break-word;'>" + safeTerritoryText + "</td></tr>";
                  		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Stage</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeStageText + "</td></tr>";
                  		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Status</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeStatusText + "</td></tr>";
                  		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Current Step</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;border-bottom:1px solid #e5ebf3;'>" + safeCurrentStepText + "</td></tr>";
@@ -159,7 +205,7 @@
                  		// then ballooned them, so the size is now FIXED: 120x42 via td width/height
                  		// "Open the full Pro Forma" footer link.
                  		decisionButtons = "<table role='presentation' cellpadding='0' cellspacing='0' border='0' style='margin:26px 0 14px;'><tr>" + "<td align='center' bgcolor='#047857' width='120' height='42' style='width:120px;height:42px;background-color:#047857;border:1px solid #065f46;border-radius:8px;'>" + "<a href='" + approveUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Approve</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#b42318' width='120' height='42' style='width:120px;height:42px;background-color:#b42318;border:1px solid #8f1d15;border-radius:8px;'>" + "<a href='" + denyUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Deny</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#1e40af' width='120' height='42' style='width:120px;height:42px;background-color:#1e40af;border:1px solid #1e3a8a;border-radius:8px;'>" + "<a href='" + reviewUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>View</a>" + "</td>" + "</tr></table>";
-                 		messageHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;background:#ffffff;border-collapse:separate;border-spacing:0;'>" + "<tr><td style='background:#102f55;color:#ffffff;padding:24px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #2563eb;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'><tr>" + "<td valign='bottom' style='padding-right:20px;'>" + "<div style='font-size:11px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Pro Forma Approval</div>" + "<div style='font-size:24px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safePfName + "</div>" + "<div style='font-size:13px;color:#c9d8eb;margin-top:8px;'>" + safeTerritoryText + " &nbsp;&middot;&nbsp; " + safeStageText + "</div>" + "</td>" + "<td width='150' valign='bottom' align='right'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#173f6f;border:1px solid #315983;border-radius:10px;'>" + "<tr><td align='left' style='padding:10px 12px;'>" + "<div style='font-size:9px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.09em;font-weight:700;'>Current Step</div>" + "<div style='font-size:16px;color:#ffffff;font-weight:700;margin-top:4px;'>" + safeCurrentStepText + "</div>" + "</td></tr></table></td>" + "</tr></table></td></tr>" + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>" + "<p style='margin:0 0 8px;font-size:15px;color:#172033;'>The <b>" + safeCurrentStepText + "</b> approval is now pending with you.</p>" + "<p style='margin:0;color:#475569;line-height:1.55;'>" + legalInstruction + "</p>" + routingBlock + summaryPanels;
+                 		messageHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;background:#ffffff;border-collapse:separate;border-spacing:0;'>" + "<tr><td style='background:#102f55;color:#ffffff;padding:24px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #2563eb;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'><tr>" + "<td valign='bottom' style='padding-right:20px;'>" + "<div style='font-size:11px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Pro Forma Approval</div>" + "<div style='font-size:24px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safePfName + "</div>" + "<div style='font-size:14px;color:#ffffff;margin-top:9px;font-weight:700;'><span style='color:#fcd34d;'>Acquisition Owner:</span> " + safeOwnerNames + "</div>" + "<div style='font-size:13px;color:#c9d8eb;margin-top:6px;'>" + safeTerritoryText + " &nbsp;&middot;&nbsp; " + safeStageText + "</div>" + "</td>" + "<td width='150' valign='bottom' align='right'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#173f6f;border:1px solid #315983;border-radius:10px;'>" + "<tr><td align='left' style='padding:10px 12px;'>" + "<div style='font-size:9px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.09em;font-weight:700;'>Current Step</div>" + "<div style='font-size:16px;color:#ffffff;font-weight:700;margin-top:4px;'>" + safeCurrentStepText + "</div>" + "</td></tr></table></td>" + "</tr></table></td></tr>" + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>" + "<p style='margin:0 0 8px;font-size:15px;color:#172033;'>" + introText + "</p>" + "<p style='margin:0;color:#475569;line-height:1.55;'>" + legalInstruction + "</p>" + routingBlock + summaryPanels;
                  		if(specialProvisionsText != "")
                  		{
                  			messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:14px 16px;background:#fffaf0;border:1px solid #fde3a7;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#8a4b08;text-transform:uppercase;letter-spacing:.07em;'>Special Provisions</div>" + "<div style='margin-top:7px;white-space:pre-wrap;color:#4a3217;line-height:1.5;'>" + safeSpecialProvisions + "</div>" + "</td></tr></table>";

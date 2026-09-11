@@ -252,7 +252,7 @@ for (const required of [
   'Select a Purchasing Company',
   'Add at least one Seller record',
   'Add at least one Property record',
-  'Complete the LOI records before sending',
+  'Complete the Offer records before sending',
   'Cancel &amp; Reset Approvals'
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval readiness/reset behavior is missing ${required}.`);

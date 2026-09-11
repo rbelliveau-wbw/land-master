@@ -1,6 +1,23 @@
 
 # Proforma Module
 
+## Offer tab, rejection restart, owner names (1.76.0)
+
+The editor's `LOI` tab is now labelled **Offer** (it covers the LOI and the contract); the
+`data-pane="loi"` hook, the `LOI_Worksheet` record, and `Submit LOI to Legal` are unchanged.
+The Properties section opens with a one-line note, *one parcel per row* — a single CAD /
+Property ID per Property row. **Amount Per Acre** on the Offer tab is checked against
+**Land Cost $ / Acre** on General Information exactly the way Property acres are checked
+against Total Acres: a live green/red readout under the field and a save-blocking validation
+error on the Offer pane (`loiPriceCheck`, cents precision, judged only once both sides carry a
+value). Rejecting an approval now **restarts the chain at step 1 and emails every Pro Forma
+owner** — see *Approval flow*. Approval emails and the PDF packet carry the owners' names in the
+header. Creator side: `Handle_Proforma_Approval_Action`, `Send_Proforma_Approval_Email_With_Context`,
+`PF_Build_Proforma_Approval_PDF` and the public `Proforma_Approval_Response` page; owner names read
+`User_Access.Full_Name` (new field) and fall back to the login trimmed at `@` / `_`.
+Regression: Offer tab render, acre + price readouts, save validation, Reject on every pending
+step, mock reject restart. Rollback: `1.75.18` (widget) and the previous function bodies in git.
+
 ## Centered record navigation (1.75.18)
 
 Equal outer grid columns center the record navigation independently of title and owner widths. On narrower screens the navigation remains centered on its own row. Browser measurements verified exact centering at 2200px and 900px with no page overflow. Presentation CSS, version metadata, release, and production mapping only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: dashboard/edit tabs, populated/empty owners, long titles, and responsive header. Rollback: `1.75.17`.
@@ -26,6 +43,18 @@ VP → Legal → CFO → COO
 ```
 
 Approval configuration is editable through the Proforma widget, subject to permissions and active-chain protections.
+
+Rejection (any step, 1.76.0): a Reject with a note **restarts the chain from step 1**. The
+rejecting row keeps `Rejected` and its note, every other row returns to `Not Sent` with dates and
+notes cleared, and step 1 becomes `Pending` and receives the approval email with the rejection
+note (subject `Pro Forma returned by <role>: <name>`). Every Pro Forma owner
+(`Add_Pro_Forma.Owner` → `User_Access.Approver_Email`, else `User` when it is an email) gets a
+separate "Pro Forma rejected by <role>" email with the note; that email is non-fatal — a send
+failure only changes the response message. If the step-1 email fails the whole chain is
+restored from a snapshot. Step 1 can reject too: it simply re-opens as Pending with its own
+note. The Pro Forma stays `Pending Approval` and locked; use Cancel & Reset to edit it. The old
+behaviour returned the Pro Forma to the previous approver, which the CFO/COO found useless
+(they cannot fix anything) — the VP answers the objection and Acquisition is kept informed.
 
 Pro Forma approval access is independent from Budget approval access:
 
@@ -281,3 +310,16 @@ The 1.75.14 release also removes the explanatory note below Target Headroom and 
 ### MUD switch copy (1.75.15)
 
 The scenario switch is labeled MUD and has no hover help text. Its accessible name and calculation behavior remain intact. Verification: repository validation, Pages build, and production preview label/tooltip check. Only widget copy, docs, and release metadata change; no Creator deployment required. Rollback: production proforma-manager 1.75.14.
+
+## Template item backfill (added 2026-09-11)
+
+`backfillProformaTemplateItems(int proformaId)` (source `creator/functions/backfillProformaTemplateItems.dg`)
+adds every `Proforma_Item` template the given Pro Forma lacks, matched on `Cost_Code` inside the
+matching subform: Department "Construction" rows go to `Additional_Costs_Construction`
+(`Pro_Forma_Const`), everything else to `Additional_Costs_Development` (`Pro_Forma_Dev`), the same
+routing proforma_save uses. New rows have no `Add_l_Cost`, so no total or return changes. Idempotent;
+nightly per record via the batch workflow "Backfill Template Items - Pro Forma" plus an on-demand
+report action (`creator/workflows/Backfill_Template_Items.ds`). The widget save path deletes and
+re-inserts non-template rows from its payload, so a save from a stale session drops the new rows
+until the next nightly run. Same Deluge limits as the budget function: fetches need
+`range from 1 to 1000`, and 5,000 statements per execution rules out an all-records script.
