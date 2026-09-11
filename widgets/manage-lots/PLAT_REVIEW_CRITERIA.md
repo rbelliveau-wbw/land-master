@@ -14,6 +14,8 @@ BLOCK: the block identifier as marked in the legend, usually a number inside a c
 
 WIDTH: the lot's frontage dimension along the street side, copied exactly as printed. If the frontage dimension is not printed or not clearly attached to that lot, use null. Do not use the lot depth as width.
 
+READING LOT NUMBERS IN A DRAWING: lot numbers are upright (horizontal) integers near the centre of the polygon. Dimensions, bearings and easement labels are rotated to run along the lot lines and belong to the line, not the lot; text touching or crossing a lot number does not make it illegible if every digit can still be read. Drainage arrows and easement lines often overlap lot numbers; read through them. Every polygon between two lot lines inside the bold boundary that fronts a street is a lot and holds exactly one number. Lots within a block are numbered consecutively; if a number appears to be missing between two lots you have read, look again inside that polygon before omitting it. Still never fill a gap from the sequence alone.
+
 AREA: only when a square-foot area is printed for that lot or listed in a lot size table; never compute it. Otherwise null.
 
 LOT SIZE TABLES: columns in order LOT #, BLOCK #, AREA (SQ FT), WIDTH (FT); the header may be cut off, so trust the column order. Copy every legible row exactly.
