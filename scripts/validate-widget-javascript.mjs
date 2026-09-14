@@ -321,6 +321,13 @@ if (!proformaSave.includes('pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDec
   errors.push('proforma_save: Land_Cost_Acre must be rounded to Creator whole-dollar precision.');
 }
 for (const required of [
+  'function isSalePricePrecisionRejection(err)',
+  'forceClientSchedule=true;',
+  'if(forceClientSchedule||!CFG.serverEngine)'
+]) {
+  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: decimal Sale_Price_FF REST rejection fallback is missing ${required}.`);
+}
+for (const required of [
   'loiApprovalRows = Budget_Approvals[Proforma == pfKey];',
   'loiApprovalStarted = false;',
   'Cancel the approval flow before editing the LOI Worksheet.'

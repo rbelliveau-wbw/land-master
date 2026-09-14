@@ -3,6 +3,17 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.77.2
+
+- **Decimal Sale Price / FF values no longer turn a successful save into an error.** The widget
+  still stores the field at its configured two-decimal precision. If Creator's minimal
+  workflow-trigger update applies stale zero-decimal metadata, the widget preserves the saved
+  value and regenerates the month/phase schedule through its existing fallback writer.
+- Frontend only. `Add_Pro_Forma.Sale_Price_FF` remains unchanged; no Creator function, Custom API,
+  form, field, or workflow changes are required.
+- Regression: create and update with `Sale_Price_FF = 743.75`, ordinary server-engine saves, and
+  client/bulk schedule fallback. Rollback: `releases/proforma-manager/1.77.1`.
+
 ## Land Master 8.11.3
 
 - **Properties expose TerraVault URL in both editing surfaces.** The Properties grid supports
