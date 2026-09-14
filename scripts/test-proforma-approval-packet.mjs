@@ -19,6 +19,22 @@ for (const required of [
 }
 
 for (const required of [
+  'listSort:{key:"",dir:""}',
+  'data-list-sort="Name"',
+  'data-list-sort="Net_Profit"',
+  'data-list-sort="Estimated_Completion"',
+  'function cycleListSort(key)',
+  'S.listSort={key:key,dir:"asc"}',
+  'S.listSort={key:key,dir:"desc"}',
+  'S.listSort={key:"",dir:""}',
+  'if(t!==0)return t;',
+  'compareListValues(a,b,S.listSort.key,S.listSort.dir)',
+  'Sort ascending within each territory'
+]) {
+  assert.ok(widget.includes(required), `grouped territory sorting is missing ${required}`);
+}
+
+for (const required of [
   "PF_PDF_Rect(0,0,1224,792",
   '"LAND PURCHASE"',
   '"PID / MUD REIMBURSEMENTS"',
@@ -28,8 +44,13 @@ for (const required of [
   '"LOT SALES"',
   '"DEVELOPMENT COSTS"',
   '"CONSTRUCTION ADDITIONAL COSTS"',
-  "if(developmentItemCount < 14)",
-  "if(constructionItemCount < 5)",
+  'inflowLabels = {"Gross Sales","MUD Revenue","Reimbursements","Reimbursed Fees","Land Sales (Other)"}',
+  'outflowLabels = {"Land Cost","Engineering Base","Ent/Eng Add\'l","Construction Base","Construction Add\'l"}',
+  'returnLabels = {"ROI","IRR","XIRR"}',
+  '"Territory: " + territoryHeader + " | Stage: " + stage + " | Status: " + statusValue',
+  '"Purchase: " + purchaseLabel + " | Completion: " + completionLabel',
+  "if(developmentItemCount < 12)",
+  "if(constructionItemCount < 6)",
   "if(detailAdditionalItems.size() > 0)",
   "for each  costItem in detailAdditionalItems"
 ]) {

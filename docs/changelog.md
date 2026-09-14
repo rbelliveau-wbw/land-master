@@ -3,6 +3,22 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.77.1
+
+- **Page 1 now carries the Word template's complete financial summary.** Full Inflows and
+  Outflows sections list all five contributors, ROI/IRR/XIRR use equal stacked rows, and the
+  title card includes Territory, Stage, Status, Purchase, Completion, and Current Step.
+- **The page-one panel layout now matches the supplied 17 × 11 reference more closely.** Land
+  Purchase, PID/MUD, Site Info, Costs, Timeline, Lot Sales, Development Costs, and Construction
+  Additional Costs retain distinct homes without repeating page-one cost rows later.
+- **Every meaningful Pro Forma list column is sortable inside its Territory group.** Repeated
+  header clicks cycle ascending, descending, then back to the default alphabetical Pro Forma
+  order; Territory groups themselves stay alphabetical.
+- Creator side (mirrored in `creator/functions/`, requires a Creator publish):
+  `PF_Build_Proforma_Approval_PDF` and `PF_PDF_Compile`.
+- No forms, fields, Custom APIs, or workflow contracts changed.
+- Rollback: `releases/proforma-manager/1.77.0` and the previous two function bodies in git.
+
 ## Proforma Manager 1.77.0
 
 - **Locked Offer rows keep TerraVault usable.** When an approval locks the Pro Forma, a saved
