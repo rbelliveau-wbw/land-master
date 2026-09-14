@@ -3,6 +3,21 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.77.0
+
+- **Locked Offer rows keep TerraVault usable.** When an approval locks the Pro Forma, a saved
+  Property's TerraVault URL becomes a blue external link with a hand cursor instead of a
+  disabled input with a not-allowed cursor.
+- **Approval PDF page 1 follows the supplied 17 × 11 Word design.** The page brings together
+  Land Purchase, PID/MUD Reimbursements, Site Info, Costs, Timeline, Lot Sales, Development
+  Costs, Construction Additional Costs, return metrics, cash totals, and responsible parties.
+- **No repeated Additional Cost rows.** Development and Construction records shown on page 1
+  are excluded from the following detail pages; those pages are created only for overflow.
+- Creator side (mirrored in `creator/functions/`, requires a Creator publish):
+  `PF_Build_Proforma_Approval_PDF` and `PF_PDF_Compile`.
+- No forms, fields, Custom APIs, or workflow contracts changed.
+- Rollback: `releases/proforma-manager/1.76.0` and the previous two function bodies in git.
+
 ## Proforma Manager 1.76.0
 
 - **Reject restarts the chain from step 1 and emails every Pro Forma owner.** Any pending step
