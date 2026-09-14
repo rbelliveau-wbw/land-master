@@ -3,6 +3,16 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Land Master 8.11.3
+
+- **Properties expose TerraVault URL in both editing surfaces.** The Properties grid supports
+  the existing inline save behavior, and the full Property editor supports staged save.
+- Stored HTTP(S) values get an external-link button; bare host names are opened through HTTPS,
+  while non-web schemes are never placed in an anchor.
+- Uses the existing `Property.TerraVault_URL` field and `All_Property` report. No Creator
+  function, Custom API, form, or workflow changes are required.
+- Rollback: `releases/land-master/8.11.2`.
+
 ## Proforma Manager 1.77.1
 
 - **Page 1 now carries the Word template's complete financial summary.** Full Inflows and

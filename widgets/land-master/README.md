@@ -3,6 +3,8 @@
 
 Projects, subdivisions, companies, properties, related records, filters, and editing.
 
+Current release: `8.11.3`.
+
 ## Baseline
 
 - Version: `8.9.1`

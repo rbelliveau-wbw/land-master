@@ -12,6 +12,8 @@ Projects, subdivisions, properties, companies, builders, lots, milestones, forec
 - Subdivision Name, Code, and Status are read-only in the editor.
 - Use `Projects_Status` for the displayed project status when requested.
 - Facility IDs are strings; leading zeroes are significant.
+- Property rows and the full Property editor expose the existing `TerraVault_URL` field, with
+  a safe external-link action when a URL is present.
 - External System Mapping rows are added, edited, and marked for removal inline in the subdivision workspace. These changes remain staged until the user presses Save changes; no per-field or per-row inline save is allowed. The parent Subdivision is implicit and immutable, so only External System and External Code are shown.
 - The mapping editor uses the compact `+ Add` action and displays staged deletions as `Removed`; explanatory footer copy is intentionally omitted.
 
