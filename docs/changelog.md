@@ -14,6 +14,16 @@ Newest first. One entry per shipped version. Widget versions are what
 - Regression: create and update with `Sale_Price_FF = 743.75`, ordinary server-engine saves, and
   client/bulk schedule fallback. Rollback: `releases/proforma-manager/1.77.1`.
 
+## Land Master 8.11.4
+
+- **TerraVault URLs are normalized before Creator saves them.** Bare entries such as
+  `www.test.com` become canonical `https://www.test.com/` values in both the inline grid and
+  full Property editor save paths.
+- HTTP(S) URLs remain supported; invalid or non-web schemes are never converted into clickable
+  links. Uses the existing `Property.TerraVault_URL` field and `All_Property` report.
+- No Creator function, Custom API, form, or workflow changes are required.
+- Rollback: `releases/land-master/8.11.3`.
+
 ## Land Master 8.11.3
 
 - **Properties expose TerraVault URL in both editing surfaces.** The Properties grid supports
