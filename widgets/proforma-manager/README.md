@@ -29,3 +29,11 @@ npm run package:creator -- proforma-manager
 npm run release -- proforma-manager <new-version>
 npm run build:pages
 ```
+
+## Comments (1.78.0)
+
+The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses the Creator SDK to add Comment_Log records and update the report. Comment is mandatory multiline text; Project, Budget and Pro_Forma are optional parent lookups with at least one required by validation. User, Author_Name, Edited and Deleted are server-owned audit fields. Author_Name is stamped from User_Access.Full_Name with zoho.loginuser fallback. Added_Time, Modified_Time and Added_User use Creator system fields.
+
+Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
+
+The thread supports safe Markdown formatting, emoji, quote replies, search, copy, date separators, user colors and retained in-session drafts. Live SDK workflow execution and ordinary-user permissions still require DEV verification after the user-managed Creator deployment. Local browser create/edit/delete checks and automated identity, expiry and HTML-escaping tests passed. Roll back the widget by restoring the development/production mappings to 1.77.3; retain Comment_Log data and validation.

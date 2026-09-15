@@ -1,0 +1,68 @@
+// Comment_Log: Created or Edited -> Validations on form submission.
+// Runs for the widget's SDK addRecord/updateRecord writes, without skip_workflow.
+commentText = ifnull(input.Comment,"").trim();
+if(commentText == "" || commentText.length() > 60000)
+{
+	alert "Enter a comment between 1 and 60000 characters.";
+	cancel submit;
+}
+if(input.Project == null && input.Budget == null && input.Pro_Forma == null)
+{
+	alert "Link the comment to a Project, Budget, or Pro Forma.";
+	cancel submit;
+}
+existingComment = Comment_Log[ID == input.ID];
+if(existingComment.count() > 0)
+{
+	if(existingComment.Added_User != zoho.loginuser)
+	{
+		alert "Only the author can edit or delete this comment.";
+		cancel submit;
+	}
+	if(existingComment.Added_Time.addHour(24) <= zoho.currenttime)
+	{
+		alert "Comments can only be edited or deleted within 24 hours of posting.";
+		cancel submit;
+	}
+	if(existingComment.Deleted == true)
+	{
+		alert "A deleted comment cannot be changed.";
+		cancel submit;
+	}
+	input.Project = existingComment.Project;
+	input.Budget = existingComment.Budget;
+	input.Pro_Forma = existingComment.Pro_Forma;
+	input.User = existingComment.User;
+	input.Author_Name = existingComment.Author_Name;
+	input.Edited = existingComment.Edited;
+	if(input.Deleted == true)
+	{
+		input.Comment = "Deleted by user";
+	}
+	else
+	{
+		input.Deleted = false;
+		input.Comment = commentText;
+		if(commentText != ifnull(existingComment.Comment,""))
+		{
+			input.Edited = true;
+		}
+	}
+}
+else
+{
+	input.Comment = commentText;
+	input.User = zoho.loginuser;
+	input.Edited = false;
+	input.Deleted = false;
+	input.Author_Name = zoho.loginuser;
+	authorAccess = User_Access[User == zoho.loginuser];
+	if(authorAccess.count() > 0)
+	{
+		fullName = ifnull(authorAccess.Full_Name,"").trim();
+		if(fullName != "")
+		{
+			input.Author_Name = fullName;
+		}
+	}
+}

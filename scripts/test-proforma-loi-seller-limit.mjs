@@ -6,7 +6,8 @@ const root = process.cwd();
 const widget = fs.readFileSync(path.join(root, "widgets/proforma-manager/src/app/widget.html"), "utf8");
 const saveFn = fs.readFileSync(path.join(root, "creator/functions/proforma_save.dg"), "utf8");
 
-assert.ok(widget.includes('var PFW_VERSION="1.77.3";'));
+const config = JSON.parse(fs.readFileSync(path.join(root, "widgets/proforma-manager/widget.config.json"), "utf8"));
+assert.ok(widget.includes(`var PFW_VERSION="${config.version}";`));
 assert.ok(widget.includes('function creatorText(v,max){return String(v==null?"":v).trim().slice(0,max);}'));
 assert.ok(widget.includes('Builder_Name:creatorText(r.Builder_Name,50)'));
 assert.equal((widget.match(/maxlength="50" title="Seller names may contain up to 50 characters"/g) || []).length, 2);
