@@ -19,6 +19,9 @@ assert.equal(c.canChange({...row,Deleted:true},'alice',created+1000),false);
 assert.equal(c.canChange({...row,Added_Time:''},'alice',created+1000),false);
 assert.equal(c.canChange(row,'alice',created-1),false);
 assert.equal(c.canChange(row,'alice@zohocreator.com',created+1000),true);
+assert.equal(c.canChange({...row,Added_User:'Alice Smith',User:'alice@wbdevelopment.com'},'alice@wbdevelopment.com',created+1000),true,'Creator User field restores email ownership when Added User is a display name');
+assert.equal(c.timestamp('15-Sep-2026 08:29:10 AM'),Date.parse('2026-09-15T08:29:10-05:00'));
+assert.equal(c.timestamp('15-Sep-2026 08:29 PM'),Date.parse('2026-09-15T20:29:00-05:00'));
 const rich=c.markdown('**Bold** *italic* ~~old~~ `code`\n> quote\n- item\n[Site](https://example.com)');
 for(const tag of ['strong','em','s','code','blockquote','a'])assert.match(rich,new RegExp('<'+tag+'[ >]'));
 const xss=c.markdown('<img src=x onerror=alert(1)>\n[bad](javascript:alert(1))\nhttps://x.com/"onclick="oops');
@@ -30,6 +33,7 @@ const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf
 assert.match(source,/comments:1/);
 assert.match(source,/data-recview="comments"/);
 assert.match(source,/commentWrite\("updateRecord"/);
+assert.match(source,/\.pc-actions\{opacity:1!important\}/);
 assert.ok(!/function commentWrite[\s\S]*?function openPfComments/.exec(source)[0].includes('skip_workflow'));
 const workflow=fs.readFileSync('creator/workflows/Validate_Comment_Log.dg','utf8');
 for(const rule of ['existingComment.Added_User != zoho.loginuser','existingComment.Added_Time.addHour(24) <= zoho.currenttime','existingComment.Deleted == true','input.Comment = "Deleted by user"','authorAccess.Full_Name','input.Author_Name = zoho.loginuser'])assert.ok(workflow.includes(rule));

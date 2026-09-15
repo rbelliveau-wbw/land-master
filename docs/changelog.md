@@ -725,3 +725,6 @@ Newest first. One entry per shipped version. Widget versions are what
 ## 2026-09-15 — Pro Forma comments (1.78.0)
 
 Added the Comments tab beside Attachments, with a readable chronological discussion, rich text shortcuts, emoji, search, quote replies, and author edit/delete controls for 24 hours. Creator validation records Full_Name (username fallback), preserves original authorship/timestamps, marks edits, and retains deleted rows as Deleted by user. Form/report/workflow deployment is user-managed; end-to-end DEV validation is pending that deployment. Widget regression checks and local thread interactions pass. Rollback: Proforma Manager 1.77.3.
+## 2026-09-15 — Pro Forma comments display fix (1.78.1)
+
+Accepted Creator's 12-hour Added Time format so thread dates render, matched Creator email and display-name author identities so eligible Edit/Delete actions appear, and kept message actions visible. Simplified the header and composer labels. Rollback: Proforma Manager 1.78.0.
