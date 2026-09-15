@@ -3,6 +3,24 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.77.3
+
+- **Offer-tab LOI saves no longer fail when a Seller name exceeds Creator's 50-character
+  `Builder_Name` limit.** Seller inputs enforce the real field limit and both the widget payload
+  and `proforma_save` defensively cap legacy or externally supplied values before insert/update.
+- Existing LOI worksheet, Seller, and Property save behavior is unchanged. Creator function
+  changed: publish `proforma_save` for defense in depth; the released widget fixes this reported
+  UI path without a schema change. Rollback: `releases/proforma-manager/1.77.2`.
+
+## Land Master 8.11.5
+
+- **TerraVault fields accept links pasted in Markdown form.** Values such as `[Land
+  Projects](https://creatorapp.zoho.com/.../#Page:Land_Projects)` are unwrapped to their raw HTTPS
+  target before Creator validation, including Markdown-escaped underscores.
+- The same normalizer covers inline Property edits, the full editor, and external-link rendering.
+  No Creator function, Custom API, form, field, or workflow changes are required.
+- Rollback: `releases/land-master/8.11.4`.
+
 ## Proforma Manager 1.77.2
 
 - **Decimal Sale Price / FF values no longer turn a successful save into an error.** The widget

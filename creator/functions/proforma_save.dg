@@ -380,7 +380,11 @@
                  			sellerMapOut = List();
                  			for each  ns in ifnull(loi.get("newSellers"),List())
                  			{
-                 				nsName = ifnull(ns.get("Builder_Name"),"").toString().trim();
+								nsName = ifnull(ns.get("Builder_Name"),"").toString().trim();
+								if(nsName.length() > 50)
+								{
+									nsName = nsName.subString(0,50);
+								}
                  				if(nsName != "")
                  				{
                  					newB = insert into Builder
@@ -438,7 +442,11 @@
                  					edB = Builder[ID == esId.toLong()];
                  					if(edB != null)
                  					{
-                 						edName = ifnull(es.get("Builder_Name"),"").toString().trim();
+									edName = ifnull(es.get("Builder_Name"),"").toString().trim();
+										if(edName.length() > 50)
+										{
+											edName = edName.subString(0,50);
+										}
                  						if(edName != "")
                  						{
                  							edB.Builder_Name=edName;
