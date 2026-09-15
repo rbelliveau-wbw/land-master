@@ -25,6 +25,8 @@ assert.equal(c.timestamp('15-Sep-2026 08:29 PM'),Date.parse('2026-09-15T20:29:00
 assert.equal(c.timestamp('09/15/2026 01:40:27 PM'),Date.parse('2026-09-15T13:40:27-05:00'),'production Comment_Log Added Time format');
 const productionRow={Added_User:'wbdevelopment',User:'wbdevelopment',Added_Time:'09/15/2026 01:40:27 PM',Author_Name:'Robby Belliveau',Deleted:false};
 assert.equal(c.canChange(productionRow,'wbdevelopment',Date.parse('2026-09-15T13:41:00-05:00')),true,'production admin identity is eligible during the edit window');
+assert.equal(c.canChange(productionRow,'rbelliveau@wbdevelopment.com',Date.parse('2026-09-15T13:41:00-05:00'),['wbdevelopment']),true,'Robby admin alias maps only to Creator\'s stored admin identity');
+assert.equal(c.canChange(productionRow,'another-admin@wbdevelopment.com',Date.parse('2026-09-15T13:41:00-05:00')),false,'other administrators do not inherit the exception');
 const rich=c.markdown('**Bold** *italic* ~~old~~ `code`\n> quote\n- item\n[Site](https://example.com)');
 for(const tag of ['strong','em','s','code','blockquote','a'])assert.match(rich,new RegExp('<'+tag+'[ >]'));
 const xss=c.markdown('<img src=x onerror=alert(1)>\n[bad](javascript:alert(1))\nhttps://x.com/"onclick="oops');
@@ -36,6 +38,7 @@ const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf
 assert.match(source,/comments:1/);
 assert.match(source,/data-recview="comments"/);
 assert.match(source,/commentWrite\("updateRecord"/);
+assert.match(source,/rbelliveau@wbdevelopment\.com"\?\["wbdevelopment"\]:\[\]/);
 assert.match(source,/\.pc-actions\{opacity:1!important\}/);
 assert.ok(!/function commentWrite[\s\S]*?function openPfComments/.exec(source)[0].includes('skip_workflow'));
 const workflow=fs.readFileSync('creator/workflows/Validate_Comment_Log.dg','utf8');
