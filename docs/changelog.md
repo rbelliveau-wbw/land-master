@@ -3,6 +3,17 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Land Master 8.11.6
+
+- **Property TerraVault URLs now use Creator's composite URL wire format.** Inline edits, the
+  full Property editor, new records, and bulk updates send `value`, `url`, and `title` instead of
+  an invalid plain string. Bare hosts such as `test.com` and `www.test.com` are still normalized
+  to HTTPS first.
+- Stored URL objects, HTML anchors, Markdown links, and plain URLs all render back as a clean,
+  editable HTTPS value with the external-link button.
+- No Creator function, Custom API, form, field, or workflow changes are required.
+- Rollback: `releases/land-master/8.11.5`.
+
 ## Proforma Manager 1.77.3
 
 - **Offer-tab LOI saves no longer fail when a Seller name exceeds Creator's 50-character
