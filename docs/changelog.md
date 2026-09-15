@@ -739,3 +739,6 @@ Added the Comments tab beside Attachments, with a readable chronological discuss
 ## 2026-09-15 — Pro Forma comments display fix (1.78.1)
 
 Accepted Creator's 12-hour Added Time format so thread dates render, matched Creator email and display-name author identities so eligible Edit/Delete actions appear, and kept message actions visible. Simplified the header and composer labels. Rollback: Proforma Manager 1.78.0.
+## 2026-09-15 — Pro Forma comment production value fix (1.78.2)
+
+Matched live Comment_Log values: `MM/DD/YYYY hh:mm:ss AM/PM` timestamps and the `wbdevelopment` system user returned for the administrator session. Creator remains the authority for author-only 24-hour edits and deletes. Rollback: Proforma Manager 1.78.1.

@@ -34,6 +34,8 @@ npm run build:pages
 
 Version 1.78.1 adds Creator 12-hour timestamp parsing, reconciles system display names with login emails for author controls, keeps actions visible, and simplifies the thread header and composer labels.
 
+Version 1.78.2 accepts the live Creator `MM/DD/YYYY hh:mm:ss AM/PM` timestamp format and prioritizes Creator's canonical login identity, which is `wbdevelopment` for the administrator session.
+
 The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses the Creator SDK to add Comment_Log records and update the report. Comment is mandatory multiline text; Project, Budget and Pro_Forma are optional parent lookups with at least one required by validation. User, Author_Name, Edited and Deleted are server-owned audit fields. Author_Name is stamped from User_Access.Full_Name with zoho.loginuser fallback. Added_Time, Modified_Time and Added_User use Creator system fields.
 
 Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
