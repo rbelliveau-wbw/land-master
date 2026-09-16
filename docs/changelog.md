@@ -742,6 +742,10 @@ Accepted Creator's 12-hour Added Time format so thread dates render, matched Cre
 ## 2026-09-15 — Pro Forma comment production value fix (1.78.2)
 
 Matched live Comment_Log values: `MM/DD/YYYY hh:mm:ss AM/PM` timestamps and the `wbdevelopment` system user returned for the administrator session. Creator remains the authority for author-only 24-hour edits and deletes. Rollback: Proforma Manager 1.78.1.
+## 2026-09-15 — Pro Forma comment modal and activity icon (1.79.0)
+
+Replaced the record-level Comments tab with a header icon that preserves the current dashboard or editor view. The icon shows the Comment Log count and turns teal when there is an active comment from the past seven days. Comments open in a layered modal with a close control and Escape support; Copy was removed and Reply, Edit, and Delete were made more prominent. Rollback: Proforma Manager 1.78.3.
+
 ## 2026-09-15 — Pro Forma administrator comment ownership (1.78.3)
 
 Mapped `rbelliveau@wbdevelopment.com` to the legacy Creator author identity `wbdevelopment` for Comment Log UI controls only. The server-side workflow still verifies the logged-in Creator user and the 24-hour window before saving an edit or soft delete. Rollback: Proforma Manager 1.78.2.

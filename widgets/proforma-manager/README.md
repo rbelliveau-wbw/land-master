@@ -38,6 +38,8 @@ Version 1.78.2 accepts the live Creator `MM/DD/YYYY hh:mm:ss AM/PM` timestamp fo
 
 Version 1.78.3 adds the single administrator mapping from `rbelliveau@wbdevelopment.com` to Creator's legacy `wbdevelopment` author value. It only exposes controls for Robby's own eligible rows; Creator validation remains the authorization check for the write.
 
+Version 1.79.0 moves Comments into a modal opened from the record header icon. The icon displays the log count and highlights active comments from the last seven days without moving the user away from the open Pro Forma view.
+
 The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses the Creator SDK to add Comment_Log records and update the report. Comment is mandatory multiline text; Project, Budget and Pro_Forma are optional parent lookups with at least one required by validation. User, Author_Name, Edited and Deleted are server-owned audit fields. Author_Name is stamped from User_Access.Full_Name with zoho.loginuser fallback. Added_Time, Modified_Time and Added_User use Creator system fields.
 
 Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
