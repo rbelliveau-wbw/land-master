@@ -3,6 +3,12 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.79.2
+
+- **The active Pro Forma identity and dates persist across Dashboard, Edit, Approvals, and Attachments.** Opening a record directly into Edit or Attachments now also hydrates that shared header.
+- **Comments now sit to the right of record tabs and are 10% larger.** Every saved Pro Forma row also has a Comments icon immediately after Edit (or View for a read-only row), using the identical record-based visibility rule and existing Comments modal.
+- Frontend only. No Creator forms, fields, functions, Custom APIs, or workflows changed. Rollback: `releases/proforma-manager/1.79.1`.
+
 ## Land Master 8.11.6
 
 - **Property TerraVault URLs now use Creator's composite URL wire format.** Inline edits, the
