@@ -6,7 +6,7 @@ if(commentText == "" || commentText.length() > 60000)
 	alert "Enter a comment between 1 and 60000 characters.";
 	cancel submit;
 }
-if(input.Project == null && input.Budget == null && input.Pro_Forma == null && input.Contract == null)
+if(input.Project == null && input.Budget == null && input.Pro_Forma == null && input.Contract1 == null)
 {
 	alert "Link the comment to a Project, Budget, Pro Forma, or Contract.";
 	cancel submit;
@@ -32,7 +32,7 @@ if(existingComment.count() > 0)
 	input.Project = existingComment.Project;
 	input.Budget = existingComment.Budget;
 	input.Pro_Forma = existingComment.Pro_Forma;
-	input.Contract = existingComment.Contract;
+	input.Contract1 = existingComment.Contract1;
 	input.User = existingComment.User;
 	input.Author_Name = existingComment.Author_Name;
 	input.Edited = existingComment.Edited;
