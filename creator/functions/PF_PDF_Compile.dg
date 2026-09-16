@@ -31,9 +31,9 @@
                  		pageHeight = 612;
                  		footerEndX = 764;
                  		pageNumberX = 680;
-                 		if(pageCounter == 0)
-                 		{
-                 			// Page 1 follows the supplied 17 x 11 landscape approval-dashboard template.
+						if(pageCounter == 0 || baseStreamContent.contains("% OFFER_WIDE_PAGE"))
+						{
+							// The dashboard and one-page Offer summary use the 17 x 11 landscape canvas.
                  			pageWidth = 1224;
                  			pageHeight = 792;
                  			footerEndX = 1196;
