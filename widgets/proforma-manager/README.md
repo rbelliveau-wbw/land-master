@@ -40,6 +40,8 @@ Version 1.78.3 adds the single administrator mapping from `rbelliveau@wbdevelopm
 
 Version 1.79.0 moves Comments into a modal opened from the record header icon. The icon displays the log count and highlights active comments from the last seven days without moving the user away from the open Pro Forma view.
 
+Version 1.79.1 keeps the comment icon beside the record navigation across Dashboard, Edit, Approvals, and Attachments. It refines the modal to use a direct title and inline message editing with explicit Save and Cancel controls.
+
 The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses the Creator SDK to add Comment_Log records and update the report. Comment is mandatory multiline text; Project, Budget and Pro_Forma are optional parent lookups with at least one required by validation. User, Author_Name, Edited and Deleted are server-owned audit fields. Author_Name is stamped from User_Access.Full_Name with zoho.loginuser fallback. Added_Time, Modified_Time and Added_User use Creator system fields.
 
 Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
