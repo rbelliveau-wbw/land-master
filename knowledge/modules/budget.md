@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Comment Log on Projects and Budgets (122.27.0)
+
+Project cards use `Comment_Log.Project` for overarching project discussion; phase rows and the phase-editor toolbar use `Comment_Log.Budget` for budget-specific discussion. Counts and the teal recent-activity state share the Pro Forma seven-day rule. The Comment Log form/report and the `Validate_Comment_Log` workflow must expose and preserve both parent lookups. Rollback: `122.26.9`.
+
 ## Centered editor controls (122.26.9)
 
 Equal outer toolbar columns center the entire editor control group across the page. Breadcrumb and controls retain a common vertical center on wide screens; controls use a centered second row below 1400px. Browser fixture verified horizontal center at 2200px, no breadcrumb overlap, and no page overflow at 390px. CSS and release metadata only; no forms, fields, functions, Custom APIs, or Creator deployment changes. Regression: wide/narrow toolbar, long breadcrumbs, and navigation. Rollback: `122.26.8`.

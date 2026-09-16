@@ -3,6 +3,12 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Comments 1.79.4 / Contracts 1.60.14 / Budget Manager 122.27.0
+
+- Contract rows now open Comment Log discussions through the new `Contract` lookup. Budget Manager has separate Project-level and Budget-phase discussions, plus the same phase comment action in the editor toolbar.
+- Every instance shows its comment count and the teal/new-activity treatment for a non-deleted comment from the prior seven days. The first eight distinct authors in a thread receive distinct deterministic colors.
+- Comment Log validation now accepts and preserves the `Contract` parent lookup. Publish `Validate_Comment_Log` in Creator after the `Contract` lookup is available. Rollback: restore production mappings to Pro Forma `1.79.3`, Contracts `1.60.12`, and Budget Manager `122.26.9`.
+
 ## Proforma Manager 1.79.3
 
 - **List Comments icons now show their live count and new-activity state.** The count and teal/recent indicator use the same Comment Log data and seven-day definition as the record-header icon, including `4` comments with new activity where applicable.

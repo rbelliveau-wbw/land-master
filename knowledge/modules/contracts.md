@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Comment Log on contract rows (1.60.14)
+
+Each Contract row has a Comment Log action using `Comment_Log.Contract`. It mirrors the count and seven-day recent-activity treatment used for Pro Forma, Project, and Budget discussions. The `Contract` lookup must be published on Comment Log, and `Validate_Comment_Log` must preserve it on edits. Rollback: `1.60.12`.
+
 ## Action popovers and Legal assignment filter (1.60.1)
 
 Action Start, Due, and Done cells now exclusively open the widget quick-date popup while
