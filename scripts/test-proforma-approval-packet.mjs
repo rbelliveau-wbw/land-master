@@ -51,23 +51,45 @@ for (const required of [
   '"Purchase: " + purchaseLabel + " | Completion: " + completionLabel',
   "if(developmentItemCount < 12)",
   "if(constructionItemCount < 6)",
-  "if(detailAdditionalItems.size() > 0)",
-  "for each  costItem in detailAdditionalItems"
+  "if(detailAdditionalItemIds.size() > 0)",
+  "for each  detailAdditionalItemId in detailAdditionalItemIds",
+  "costItem = Proforma_Item[ID == detailAdditionalItemId];",
+  'rowHeight = 34;',
+  'categoryText.trim().toLowerCase() == "reimbursements"',
+  'rowFill = softGreen;',
+  'amountInk = green;',
+  'previewInk = green;',
+  '"Offer Summary"',
+  '"SELLERS AND CONTACTS"',
+  '"PROPERTY AND BUYER"',
+  '"TIMING, DEPOSITS AND EXTENSIONS"',
+  '"SPECIAL PROVISIONS"',
+  '"LEGAL NOTE"',
+  'if(pageStreams.size() < 2)'
 ]) {
   assert.ok(build.includes(required), `approval packet redesign is missing ${required}`);
 }
 
+assert.ok(build.includes("detailAdditionalItemIds = List();"), "overflow items must be stored by stable ID");
 assert.ok(
-  build.indexOf("detailAdditionalItems.add(costItem);") < build.indexOf("for each  costItem in detailAdditionalItems"),
-  "overflow rows must be selected before detail-page rendering"
+  build.indexOf("detailAdditionalItemIds.add(costItem.ID.toLong());") < build.indexOf("for each  detailAdditionalItemId in detailAdditionalItemIds"),
+  "overflow IDs must be collected before detail-page rendering"
 );
 assert.ok(
   !build.includes("Full itemization stays on the following pages"),
   "detail pages must not repeat page-one Additional Cost rows"
 );
+for (const forbidden of [
+  '"LOI Terms"',
+  '"LOI Timing, Deposits and Terms"',
+  '"Sellers and Properties"',
+  '"TOTAL ADDITIONAL COSTS"'
+]) {
+  assert.ok(!build.includes(forbidden), `approval packet still contains retired PDF copy ${forbidden}`);
+}
 
 for (const required of [
-  "if(pageCounter == 0)",
+  'baseStreamContent.contains("% OFFER_WIDE_PAGE")',
   "pageWidth = 1224;",
   "pageHeight = 792;",
   '/MediaBox [0 0 " + pageWidth + " " + pageHeight'

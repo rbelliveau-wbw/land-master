@@ -1,6 +1,20 @@
 
 # Proforma Module
 
+## Attorney-readable Offer packet (Creator function update, 2026-09-15)
+
+The approval packet uses **Offer** for all user-facing PDF headings and consolidates the Offer
+economics, sellers and contacts, buyer and property identifiers, timing, deposits, extensions,
+special provisions, and legal note onto one 17 x 11 landscape page. Additional Cost detail pages
+use fixed-height two-line rows, omit the misleading combined total, and render Reimbursements rows
+with a green credit treatment on both the executive preview and detail pages. Overflow rows retain
+their `Proforma_Item` IDs and are reloaded for detail-page rendering, preventing every overflow row
+from resolving to the final Additional Cost in the source loop. Creator functions:
+`PF_Build_Proforma_Approval_PDF` and `PF_PDF_Compile`; no form, field, workflow, or Custom API
+contract changes. Regression: empty and populated Offer fields, multiple sellers/properties,
+reimbursement and ordinary cost rows, detail-page continuation, and mixed-size PDF compilation.
+Rollback: restore the previous two function bodies from git.
+
 ## Offer tab, rejection restart, owner names (1.76.0)
 
 The editor's `LOI` tab is now labelled **Offer** (it covers the LOI and the contract); the
@@ -311,15 +325,12 @@ The 1.75.14 release also removes the explanatory note below Target Headroom and 
 
 The scenario switch is labeled MUD and has no hover help text. Its accessible name and calculation behavior remain intact. Verification: repository validation, Pages build, and production preview label/tooltip check. Only widget copy, docs, and release metadata change; no Creator deployment required. Rollback: production proforma-manager 1.75.14.
 
-## Template item backfill (added 2026-09-11)
+## Template item backfill, run-once schedule (added 2026-09-11)
 
-`backfillProformaTemplateItems(int proformaId)` (source `creator/functions/backfillProformaTemplateItems.dg`)
-adds every `Proforma_Item` template the given Pro Forma lacks, matched on `Cost_Code` inside the
-matching subform: Department "Construction" rows go to `Additional_Costs_Construction`
-(`Pro_Forma_Const`), everything else to `Additional_Costs_Development` (`Pro_Forma_Dev`), the same
-routing proforma_save uses. New rows have no `Add_l_Cost`, so no total or return changes. Idempotent;
-nightly per record via the batch workflow "Backfill Template Items - Pro Forma" plus an on-demand
-report action (`creator/workflows/Backfill_Template_Items.ds`). The widget save path deletes and
-re-inserts non-template rows from its payload, so a save from a stale session drops the new rows
-until the next nightly run. Same Deluge limits as the budget function: fetches need
-`range from 1 to 1000`, and 5,000 statements per execution rules out an all-records script.
+`creator/workflows/Backfill_Template_Items_Once_Proforma.dg` is a Creator Schedule (specific date
+and time, Repeat: Once) that adds the 2026-09 Amenities template codes 3851-3867 to every Pro Forma,
+routing Department "Construction" rows to `Pro_Forma_Const` and everything else to `Pro_Forma_Dev`
+like proforma_save. New rows carry no `Add_l_Cost`, so totals do not move. Idempotent, one aggregate
+count emailed at the end, ~2,800 statements against the 5,000-per-run schedule cap. The widget save
+path deletes and re-inserts non-template rows from its payload, so a save from a stale session drops
+the new rows; re-run the schedule if that happens.

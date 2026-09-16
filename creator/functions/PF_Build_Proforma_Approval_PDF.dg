@@ -418,14 +418,15 @@
 					page = page + thisapp.PF_PDF_Text(894,225,5.6,"bold",lightMuted,"ITEM");
 					page = page + thisapp.PF_PDF_Text(1065,225,5.6,"bold",lightMuted,"PHASE");
 					page = page + thisapp.PF_PDF_Text(1118,225,5.6,"bold",lightMuted,"AMOUNT");
-                 		developmentItemCount = 0;
-                 		constructionItemCount = 0;
-                 		detailAdditionalItems = List();
-                 		additionalTotal = 0;
-                 		for each  costItem in additionalItems
-                 		{
-                 			additionalTotal = additionalTotal + ifnull(costItem.Add_l_Cost,0).toDecimal();
-                 			departmentText = ifnull(costItem.Department,"Unassigned").toString();
+						developmentItemCount = 0;
+						constructionItemCount = 0;
+						/* Store IDs, not live record objects. Deluge otherwise resolves every
+						 * overflow entry to the final costItem when this list is rendered. */
+						detailAdditionalItemIds = List();
+						for each  costItem in additionalItems
+						{
+							departmentText = ifnull(costItem.Department,"Unassigned").toString();
+							categoryText = ifnull(costItem.Category,"Not provided").toString();
                  			if(departmentText == "Development")
                  			{
 							if(developmentItemCount < 12)
@@ -441,14 +442,22 @@
                  					{
                  						phaseText = phaseText + "-" + costItem.End_Phase.toString();
                  					}
-								page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",ink,itemText);
-								page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",muted,phaseText);
-								page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",ink,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
+								previewInk = ink;
+								previewMuted = muted;
+								if(categoryText.trim().toLowerCase() == "reimbursements")
+								{
+									page = page + thisapp.PF_PDF_Rect(892,rowY - 9,294,20,softGreen,"",0);
+									previewInk = green;
+									previewMuted = green;
+								}
+								page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",previewInk,itemText);
+								page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",previewMuted,phaseText);
+								page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
 								page = page + thisapp.PF_PDF_Rect(892,rowY - 8,294,0.5,softLine,"",0);
                  				}
                  				else
                  				{
-                 					detailAdditionalItems.add(costItem);
+							detailAdditionalItemIds.add(costItem.ID.toLong());
                  				}
                  				developmentItemCount = developmentItemCount + 1;
                  			}
@@ -467,20 +476,28 @@
                  					{
                  						phaseText = phaseText + "-" + costItem.End_Phase.toString();
                  					}
-								page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",ink,itemText);
-								page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",muted,phaseText);
-								page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",ink,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
+								previewInk = ink;
+								previewMuted = muted;
+								if(categoryText.trim().toLowerCase() == "reimbursements")
+								{
+									page = page + thisapp.PF_PDF_Rect(892,rowY - 9,294,20,softGreen,"",0);
+									previewInk = green;
+									previewMuted = green;
+								}
+								page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",previewInk,itemText);
+								page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",previewMuted,phaseText);
+								page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
 								page = page + thisapp.PF_PDF_Rect(892,rowY - 8,294,0.5,softLine,"",0);
                  				}
                  				else
                  				{
-                 					detailAdditionalItems.add(costItem);
+							detailAdditionalItemIds.add(costItem.ID.toLong());
                  				}
                  				constructionItemCount = constructionItemCount + 1;
                  			}
                  			else
                  			{
-                 				detailAdditionalItems.add(costItem);
+						detailAdditionalItemIds.add(costItem.ID.toLong());
                  			}
                  		}
 					if(developmentItemCount == 0)
@@ -505,7 +522,7 @@
                  		 * ADDITIONAL COST PAGES
                  		 * =========================================================
                  		 */
-                 		if(detailAdditionalItems.size() > 0)
+						if(detailAdditionalItemIds.size() > 0)
                  		{
                  		page = thisapp.PF_PDF_Rect(0,0,792,612,panel,"",0);
                  		page = page + thisapp.PF_PDF_Rect(0,556,792,56,navy,"",0);
@@ -520,8 +537,9 @@
                  		page = page + thisapp.PF_PDF_Text(692,528,7,"bold",white,"AMOUNT");
                  		y = 510;
                  		itemIndex = 0;
-                 		for each  costItem in detailAdditionalItems
-                 		{
+						for each  detailAdditionalItemId in detailAdditionalItemIds
+						{
+							costItem = Proforma_Item[ID == detailAdditionalItemId];
                  			itemIndex = itemIndex + 1;
                  			costValue = ifnull(costItem.Add_l_Cost,0).toDecimal();
                  			departmentText = ifnull(costItem.Department,"Unassigned").toString();
@@ -544,28 +562,12 @@
                  			{
                  				applicationText = applicationText + " | Month " + ifnull(costItem.Start_Month,"?") + "-" + ifnull(costItem.End_Month,"?");
                  			}
-                 			deptLines = thisapp.PF_PDF_Wrap(departmentText,13);
-                 			catLines = thisapp.PF_PDF_Wrap(categoryText,15);
-                 			itemLines = thisapp.PF_PDF_Wrap(itemText,48);
-                 			appLines = thisapp.PF_PDF_Wrap(applicationText,24);
-                 			maxLines = deptLines.size();
-                 			if(catLines.size() > maxLines)
-                 			{
-                 				maxLines = catLines.size();
-                 			}
-                 			if(itemLines.size() > maxLines)
-                 			{
-                 				maxLines = itemLines.size();
-                 			}
-                 			if(appLines.size() > maxLines)
-                 			{
-                 				maxLines = appLines.size();
-                 			}
-                 			rowHeight = 12 + maxLines * 10;
-                 			if(rowHeight < 26)
-                 			{
-                 				rowHeight = 26;
-                 			}
+							deptLines = thisapp.PF_PDF_Wrap(departmentText,13);
+							catLines = thisapp.PF_PDF_Wrap(categoryText,15);
+							itemLines = thisapp.PF_PDF_Wrap(itemText,48);
+							appLines = thisapp.PF_PDF_Wrap(applicationText,24);
+							// A fixed two-line row keeps the itemization visually scannable.
+							rowHeight = 34;
                  			if(y - rowHeight < 48)
                  			{
                  				pageStreams.add(page);
@@ -582,39 +584,67 @@
                  				page = page + thisapp.PF_PDF_Text(692,528,7,"bold",white,"AMOUNT");
                  				y = 510;
                  			}
-                 			rowFill = white;
-                 			if(itemIndex % 2 == 0)
-                 			{
-                 				rowFill = "0.95 0.97 0.99";
-                 			}
-                 			page = page + thisapp.PF_PDF_Rect(28,y - rowHeight,736,rowHeight,rowFill,line,0.35);
-                 			page = page + thisapp.PF_PDF_Text(34,y - 15,7,"regular",ink,itemIndex.toString());
-                 			lineY = y - 15;
-                 			for each  deptLine in deptLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(58,lineY,7,"regular",ink,deptLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			lineY = y - 15;
-                 			for each  catLine in catLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(142,lineY,7,"regular",ink,catLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			lineY = y - 15;
-                 			for each  itemLine in itemLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(236,lineY,7,"regular",ink,itemLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			lineY = y - 15;
-                 			for each  appLine in appLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(532,lineY,7,"regular",ink,appLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			page = page + thisapp.PF_PDF_Text(684,y - 15,7.5,"bold",ink,thisapp.PF_Packet_Money(costValue.toString()));
-                 			y = y - rowHeight;
+							rowFill = white;
+							rowInk = ink;
+							amountInk = ink;
+							if(categoryText.trim().toLowerCase() == "reimbursements")
+							{
+								rowFill = softGreen;
+								rowInk = green;
+								amountInk = green;
+							}
+							else if(itemIndex % 2 == 0)
+							{
+								rowFill = "0.95 0.97 0.99";
+							}
+							page = page + thisapp.PF_PDF_Rect(28,y - rowHeight,736,rowHeight,rowFill,line,0.35);
+							page = page + thisapp.PF_PDF_Text(34,y - 15,7,"regular",rowInk,itemIndex.toString());
+							lineY = y - 15;
+							shownLines = 0;
+							for each  deptLine in deptLines
+							{
+								if(shownLines < 2)
+								{
+									page = page + thisapp.PF_PDF_Text(58,lineY,7,"regular",rowInk,deptLine);
+									lineY = lineY - 10;
+								}
+								shownLines = shownLines + 1;
+							}
+							lineY = y - 15;
+							shownLines = 0;
+							for each  catLine in catLines
+							{
+								if(shownLines < 2)
+								{
+									page = page + thisapp.PF_PDF_Text(142,lineY,7,"regular",rowInk,catLine);
+									lineY = lineY - 10;
+								}
+								shownLines = shownLines + 1;
+							}
+							lineY = y - 15;
+							shownLines = 0;
+							for each  itemLine in itemLines
+							{
+								if(shownLines < 2)
+								{
+									page = page + thisapp.PF_PDF_Text(236,lineY,7,"regular",rowInk,itemLine);
+									lineY = lineY - 10;
+								}
+								shownLines = shownLines + 1;
+							}
+							lineY = y - 15;
+							shownLines = 0;
+							for each  appLine in appLines
+							{
+								if(shownLines < 2)
+								{
+									page = page + thisapp.PF_PDF_Text(532,lineY,7,"regular",rowInk,appLine);
+									lineY = lineY - 10;
+								}
+								shownLines = shownLines + 1;
+							}
+							page = page + thisapp.PF_PDF_Text(684,y - 15,7.5,"bold",amountInk,thisapp.PF_Packet_Money(costValue.toString()));
+							y = y - rowHeight;
                  		}
                  		if(itemIndex == 0)
                  		{
@@ -622,18 +652,7 @@
                  			page = page + thisapp.PF_PDF_Text(44,482,10,"italic",muted,"No non-zero Additional Costs are attached to this Pro Forma.");
                  			y = 450;
                  		}
-                 		if(y < 86)
-                 		{
-                 			pageStreams.add(page);
-                 			page = thisapp.PF_PDF_Rect(0,0,792,612,panel,"",0);
-                 			page = page + thisapp.PF_PDF_Rect(0,556,792,56,navy,"",0);
-                 			page = page + thisapp.PF_PDF_Text(28,582,17,"bold",white,"Additional Cost Summary");
-                 			y = 510;
-                 		}
-                 		page = page + thisapp.PF_PDF_Rect(532,y - 34,232,28,softBlue,blue,0.7);
-                 		page = page + thisapp.PF_PDF_Text(544,y - 23,8,"bold",navy,"TOTAL ADDITIONAL COSTS");
-                 		page = page + thisapp.PF_PDF_Text(684,y - 23,9,"bold",blue,thisapp.PF_Packet_Money(additionalTotal.toString()));
-                 		pageStreams.add(page);
+						pageStreams.add(page);
                  		}
                  		/*
                  		 * =========================================================
@@ -657,12 +676,17 @@
                  		 * header fields only when no linked Seller records exist.
                  		 */
                  		sellerNamesText = "";
-                 		sellerEmailsText = "";
-                 		sellerPhonesText = "";
-                 		sellerAddressesText = "";
-                 		for each  sellerItem in sellers
-                 		{
-                 			sellerNameText = ifnull(sellerItem.Builder_Name,"").toString().trim();
+						sellerEmailsText = "";
+						sellerPhonesText = "";
+						sellerAddressesText = "";
+						offerSellerNameById = Map();
+						for each  sellerItem in sellers
+						{
+							sellerNameText = ifnull(sellerItem.Builder_Name,"").toString().trim();
+							if(sellerItem.ID != null)
+							{
+								offerSellerNameById.put(sellerItem.ID.toString(),if(sellerNameText == "","Seller #" + sellerItem.ID.toString(),sellerNameText));
+							}
                  			if(sellerNameText != "")
                  			{
                  				if(sellerNamesText != "")
@@ -689,7 +713,16 @@
                  				}
                  				sellerPhonesText = sellerPhonesText + sellerPhoneText;
                  			}
-                 			sellerAddressText = ifnull(sellerItem.Address,"").toString().trim();
+							sellerAddressText = ifnull(sellerItem.Street_Address,ifnull(sellerItem.Address,"")).toString().trim();
+							sellerCityStateText = ifnull(sellerItem.City_State_ZIP,"").toString().trim();
+							if(sellerCityStateText != "")
+							{
+								if(sellerAddressText != "")
+								{
+									sellerAddressText = sellerAddressText + ", ";
+								}
+								sellerAddressText = sellerAddressText + sellerCityStateText;
+							}
                  			if(sellerAddressText != "")
                  			{
                  				if(sellerAddressesText != "")
@@ -726,9 +759,12 @@
                  		 * the LOI tab.
                  		 */
                  		propertyNamesText = "";
-                 		propertyLocationsText = "";
-                 		propertyCountiesText = "";
-                 		propertyIdsText = "";
+						propertyLocationsText = "";
+						propertyCountiesText = "";
+						propertyCitiesText = "";
+						propertyIdsText = "";
+						propertyFacilityIdsText = "";
+						propertySellerAssignmentsText = "";
                  		propertyAcresTotal = 0;
                  		for each  propertyItem in properties
                  		{
@@ -754,15 +790,24 @@
                  				}
                  				propertyLocationsText = propertyLocationsText + propertyLocationText;
                  			}
-                 			propertyCountyText = ifnull(propertyItem.County,"").toString().trim();
+							propertyCountyText = ifnull(propertyItem.County,"").toString().trim();
                  			if(propertyCountyText != "")
                  			{
                  				if(propertyCountiesText != "")
                  				{
                  					propertyCountiesText = propertyCountiesText + ", ";
                  				}
-                 				propertyCountiesText = propertyCountiesText + propertyCountyText;
-                 			}
+								propertyCountiesText = propertyCountiesText + propertyCountyText;
+							}
+							propertyCityText = ifnull(propertyItem.City,"").toString().trim();
+							if(propertyCityText != "")
+							{
+								if(propertyCitiesText != "")
+								{
+									propertyCitiesText = propertyCitiesText + ", ";
+								}
+								propertyCitiesText = propertyCitiesText + propertyCityText;
+							}
                  			propertyIdText = ifnull(propertyItem.Property_ID,"").toString().trim();
                  			if(propertyIdText != "")
                  			{
@@ -770,8 +815,30 @@
                  				{
                  					propertyIdsText = propertyIdsText + ", ";
                  				}
-                 				propertyIdsText = propertyIdsText + propertyIdText;
-                 			}
+								propertyIdsText = propertyIdsText + propertyIdText;
+							}
+							propertyFacilityIdText = ifnull(propertyItem.Facility_ID,"").toString().trim();
+							if(propertyFacilityIdText != "")
+							{
+								if(propertyFacilityIdsText != "")
+								{
+									propertyFacilityIdsText = propertyFacilityIdsText + ", ";
+								}
+								propertyFacilityIdsText = propertyFacilityIdsText + propertyFacilityIdText;
+							}
+							if(propertyItem.Seller != null)
+							{
+								propertySellerName = offerSellerNameById.get(propertyItem.Seller.toString());
+								if(propertySellerName == null)
+								{
+									propertySellerName = "Seller #" + propertyItem.Seller.toString();
+								}
+								if(propertySellerAssignmentsText != "")
+								{
+									propertySellerAssignmentsText = propertySellerAssignmentsText + "; ";
+								}
+								propertySellerAssignmentsText = propertySellerAssignmentsText + propertyNameText + ": " + propertySellerName;
+							}
                  			if(propertyItem.Acres != null && propertyItem.Acres.toString().trim() != "")
                  			{
                  				propertyAcresTotal = propertyAcresTotal + propertyItem.Acres.toDecimal();
@@ -927,319 +994,163 @@
                  		{
                  			loiEarnestDueDaysDisplay = thisapp.PF_Packet_Number(loiEarnestDueDays,0) + " days";
                  		}
-                 		/*
-                 		 * =========================================================
-                 		 * LOI PAGE 1 — CLEAN PARTIES, PROPERTY, AND ECONOMICS
-                 		 * =========================================================
-                 		 */
-                 		page = thisapp.PF_PDF_Rect(0,0,792,612,canvas,"",0);
-                 		page = page + thisapp.PF_PDF_Rect(0,536,792,76,deepNavy,"",0);
-                 		page = page + thisapp.PF_PDF_Rect(0,536,792,4,purple,"",0);
-                 		page = page + thisapp.PF_PDF_Text(28,581,18,"bold",white,"LOI Terms");
-                 		page = page + thisapp.PF_PDF_Text(28,558,8.2,"regular","0.77 0.85 0.95",pfName + "   |   Worksheet: " + loiName + "   |   Legal Status: " + loiStatus + "   |   Version: " + loiVersion);
-                 		/*
-                 		 * Featured economics cards.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Text(28,516,8.5,"bold",navy,"DEAL ECONOMICS");
-                 		economicX = {28,278,528};
-                 		economicLabels = {"TOTAL ACRES","AMOUNT PER ACRE","ESTIMATED PURCHASE PRICE"};
-                 		economicValues = {loiAcresDisplay,loiAmountPerAcreDisplay,loiEstimatedPriceDisplay};
-                 		economicColors = {blue,purple,green};
-                 		economicFills = {softBlue,softPurple,softGreen};
-                 		for each index economicIndex in economicX
-                 		{
-                 			x = economicX.get(economicIndex);
-                 			page = page + thisapp.PF_PDF_Rect(x,438,236,66,economicFills.get(economicIndex),softLine,0.35);
-                 			page = page + thisapp.PF_PDF_Rect(x,498,236,6,economicColors.get(economicIndex),"",0);
-                 			page = page + thisapp.PF_PDF_Text(x + 14,480,6.5,"bold",muted,economicLabels.get(economicIndex));
-                 			page = page + thisapp.PF_PDF_Text(x + 14,452,15,"bold",economicColors.get(economicIndex),economicValues.get(economicIndex));
-                 		}
-                 		/*
-                 		 * Parties panel.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Text(28,416,8.5,"bold",navy,"PARTIES");
-                 		page = page + thisapp.PF_PDF_Rect(28,172,356,230,white,line,0.35);
-                 		partyLabels = {"Seller(s)","Authorized Signer","Seller Email(s)","Seller Phone(s)","Seller Address(es)","Buyer / Seller Brokers"};
-                 		partyValues = {loiSeller,loiAuthorizedSigner,loiSellerEmail,loiSellerPhone,loiSellerCityStateZip,loiBuyerBroker + " / " + loiSellerBroker};
-                 		partyY = 374;
-                 		for each index partyIndex in partyLabels
-                 		{
-                 			if(partyIndex > 0)
-                 			{
-                 				page = page + thisapp.PF_PDF_Rect(40,partyY + 14,332,1,softLine,"",0);
-                 			}
-                 			page = page + thisapp.PF_PDF_Text(40,partyY,6.2,"bold",lightMuted,partyLabels.get(partyIndex));
-                 			partyValue = partyValues.get(partyIndex);
-                 			if(partyValue == null || partyValue.toString().trim() == "")
-                 			{
-                 				partyValue = "Not provided";
-                 			}
-                 			partyLines = thisapp.PF_PDF_Wrap(partyValue.toString(),45);
-                 			page = page + thisapp.PF_PDF_Text(40,partyY - 15,8.3,"bold",ink,partyLines.get(0));
-                 			if(partyLines.size() > 1)
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(40,partyY - 25,7.3,"regular",muted,partyLines.get(1));
-                 			}
-                 			partyY = partyY - 36;
-                 		}
-                 		/*
-                 		 * Property and buyer panel.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Text(404,416,8.5,"bold",navy,"PROPERTY AND BUYER");
-                 		page = page + thisapp.PF_PDF_Rect(404,172,360,230,white,line,0.35);
-                 		propertyLabels = {"Purchasing Company","Acquisition Email","Property / Location","Property County / City","CAD / Property ID","Total Acres"};
-                 		propertyValues = {companyName,loiAcquisitionEmail,loiStreetAddress,loiPropertyCounty + " / " + loiPropertyCity,loiCadId,loiAcresDisplay};
-                 		propertyY = 374;
-                 		for each index propertyPanelIndex in propertyLabels
-                 		{
-                 			if(propertyPanelIndex > 0)
-                 			{
-                 				page = page + thisapp.PF_PDF_Rect(416,propertyY + 14,336,1,softLine,"",0);
-                 			}
-                 			page = page + thisapp.PF_PDF_Text(416,propertyY,6.2,"bold",lightMuted,propertyLabels.get(propertyPanelIndex));
-                 			propertyValue = propertyValues.get(propertyPanelIndex);
-                 			if(propertyValue == null || propertyValue.toString().trim() == "")
-                 			{
-                 				propertyValue = "Not provided";
-                 			}
-                 			propertyValueLines = thisapp.PF_PDF_Wrap(propertyValue.toString(),45);
-                 			page = page + thisapp.PF_PDF_Text(416,propertyY - 15,8.3,"bold",ink,propertyValueLines.get(0));
-                 			if(propertyValueLines.size() > 1)
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(416,propertyY - 25,7.3,"regular",muted,propertyValueLines.get(1));
-                 			}
-                 			propertyY = propertyY - 36;
-                 		}
-                 		/*
-                 		 * Compact LOI metadata strip.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Rect(28,68,736,78,white,line,0.35);
-                 		metaLabels = {"WORKSHEET","LEGAL STATUS","RESPONSE DATE","ASSUMED EFFECTIVE DATE"};
-                 		metaValues = {loiName,loiStatus,loiResponseDate,loiEffectiveDate};
-                 		for each index metaIndex in metaLabels
-                 		{
-                 			metaX = 42 + metaIndex * 181;
-                 			if(metaIndex > 0)
-                 			{
-                 				page = page + thisapp.PF_PDF_Rect(metaX - 13,80,1,54,softLine,"",0);
-                 			}
-                 			page = page + thisapp.PF_PDF_Text(metaX,116,6.2,"bold",lightMuted,metaLabels.get(metaIndex));
-                 			metaValueLines = thisapp.PF_PDF_Wrap(metaValues.get(metaIndex),24);
-                 			page = page + thisapp.PF_PDF_Text(metaX,94,8.2,"bold",ink,metaValueLines.get(0));
-                 		}
-                 		pageStreams.add(page);
-                 		/*
-                 		 * =========================================================
-                 		 * LOI PAGE 2 — TIMING, DEPOSITS, AND NARRATIVE TERMS
-                 		 * =========================================================
-                 		 */
-                 		page = thisapp.PF_PDF_Rect(0,0,792,612,canvas,"",0);
-                 		page = page + thisapp.PF_PDF_Rect(0,536,792,76,deepNavy,"",0);
-                 		page = page + thisapp.PF_PDF_Rect(0,536,792,4,purple,"",0);
-                 		page = page + thisapp.PF_PDF_Text(28,581,18,"bold",white,"LOI Timing, Deposits and Terms");
-                 		page = page + thisapp.PF_PDF_Text(28,558,8.2,"regular","0.77 0.85 0.95",pfName + "   |   Complete saved LOI terms");
-                 		page = page + thisapp.PF_PDF_Text(28,516,8.5,"bold",navy,"TIMING");
-                 		timingX = {28,216,404,592};
-                 		timingLabels = {"INITIAL FEASIBILITY","CLOSE AFTER FEASIBILITY","PROJECTED HARD CLOSE","EARNEST MONEY DUE"};
-                 		timingValues = {loiFeasibilityDisplay,loiClosingDisplay,loiHardCloseDate,loiEarnestDueDate};
-                 		timingSubs = {"Review period","Closing period","Projected closing date",loiEarnestDueDaysDisplay + " after execution"};
-                 		for each index timingIndex in timingX
-                 		{
-                 			x = timingX.get(timingIndex);
-                 			page = page + thisapp.PF_PDF_Rect(x,438,172,66,white,line,0.35);
-                 			page = page + thisapp.PF_PDF_Rect(x,498,172,6,purple,"",0);
-                 			page = page + thisapp.PF_PDF_Text(x + 12,480,6.3,"bold",lightMuted,timingLabels.get(timingIndex));
-                 			page = page + thisapp.PF_PDF_Text(x + 12,458,10.5,"bold",ink,timingValues.get(timingIndex));
-                 			page = page + thisapp.PF_PDF_Text(x + 12,445,6.5,"regular",muted,timingSubs.get(timingIndex));
-                 		}
-                 		page = page + thisapp.PF_PDF_Text(28,416,8.5,"bold",navy,"DEPOSIT AND EXTENSION TERMS");
-                 		depositX = {28,216,404,592};
-                 		depositLabels = {"EARNEST MONEY","EXTENSIONS","DAYS PER EXTENSION","AMOUNT PER EXTENSION"};
-                 		depositValues = {loiEarnestMoneyDisplay,loiExtensionsDisplay,loiDaysPerExtensionDisplay,loiAmountPerExtensionDisplay};
-                 		depositColors = {green,blue,purple,orange};
-                 		depositFills = {softGreen,softBlue,softPurple,softOrange};
-                 		for each index depositIndex in depositX
-                 		{
-                 			x = depositX.get(depositIndex);
-                 			page = page + thisapp.PF_PDF_Rect(x,350,172,52,depositFills.get(depositIndex),softLine,0.35);
-                 			page = page + thisapp.PF_PDF_Text(x + 12,383,6.1,"bold",muted,depositLabels.get(depositIndex));
-                 			page = page + thisapp.PF_PDF_Text(x + 12,361,10.5,"bold",depositColors.get(depositIndex),depositValues.get(depositIndex));
-                 		}
-                 		/*
-                 		 * Special provisions panel.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Rect(28,166,736,158,white,line,0.35);
-                 		page = page + thisapp.PF_PDF_Rect(28,298,736,26,softOrange,"",0);
-                 		page = page + thisapp.PF_PDF_Text(40,307,7.5,"bold",navy,"SPECIAL PROVISIONS");
-                 		specialLines = thisapp.PF_PDF_Wrap(loiSpecialProvisions,116);
-                 		lineY = 278;
-                 		specialShown = 0;
-                 		for each  specialLine in specialLines
-                 		{
-                 			if(specialShown < 10)
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(40,lineY,7.5,"regular",ink,specialLine);
-                 				lineY = lineY - 11;
-                 			}
-                 			specialShown = specialShown + 1;
-                 		}
-                 		/*
-                 		 * Legal note panel.
-                 		 */
-                 		page = page + thisapp.PF_PDF_Rect(28,48,736,96,white,line,0.35);
-                 		page = page + thisapp.PF_PDF_Rect(28,118,736,26,softPurple,"",0);
-                 		page = page + thisapp.PF_PDF_Text(40,127,7.5,"bold",navy,"LEGAL NOTE");
-                 		legalLines = thisapp.PF_PDF_Wrap(loiLegalNote,116);
-                 		lineY = 98;
-                 		legalShown = 0;
-                 		for each  legalLine in legalLines
-                 		{
-                 			if(legalShown < 5)
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(40,lineY,7.5,"regular",ink,legalLine);
-                 				lineY = lineY - 11;
-                 			}
-                 			legalShown = legalShown + 1;
-                 		}
-                 		pageStreams.add(page);
-                 		/*
-                 		 * =========================================================
-                 		 * SELLERS AND PROPERTIES
-                 		 * =========================================================
-                 		 */
-                 		sellerNameById = Map();
-                 		for each  sellerRec in sellers
-                 		{
-                 			sellerNameById.put(sellerRec.ID.toString(),ifnull(sellerRec.Builder_Name,"Seller #" + sellerRec.ID).toString());
-                 		}
-                 		page = thisapp.PF_PDF_Rect(0,0,792,612,panel,"",0);
-                 		page = page + thisapp.PF_PDF_Rect(0,556,792,56,navy,"",0);
-                 		page = page + thisapp.PF_PDF_Text(28,582,17,"bold",white,"Sellers and Properties");
-                 		page = page + thisapp.PF_PDF_Text(28,563,8,"regular","0.82 0.89 0.98",pfName + " | saved records at " + generatedLabel);
-                 		page = page + thisapp.PF_PDF_Text(28,530,9,"bold",navy,"SELLERS");
-                 		page = page + thisapp.PF_PDF_Rect(28,496,736,24,navy,"",0);
-                 		page = page + thisapp.PF_PDF_Text(38,504,7,"bold",white,"SELLER");
-                 		page = page + thisapp.PF_PDF_Text(310,504,7,"bold",white,"EMAIL");
-                 		page = page + thisapp.PF_PDF_Text(580,504,7,"bold",white,"PHONE");
-                 		y = 490;
-                 		sellerIndex = 0;
-                 		for each  sellerItem in sellers
-                 		{
-                 			sellerIndex = sellerIndex + 1;
-                 			sellerRowFill = white;
-                 			if(sellerIndex % 2 == 0)
-                 			{
-                 				sellerRowFill = "0.95 0.97 0.99";
-                 			}
-                 			page = page + thisapp.PF_PDF_Rect(28,y - 25,736,25,sellerRowFill,line,0.35);
-                 			page = page + thisapp.PF_PDF_Text(38,y - 16,8,"bold",ink,ifnull(sellerItem.Builder_Name,"Seller").toString());
-                 			page = page + thisapp.PF_PDF_Text(310,y - 16,8,"regular",ink,ifnull(sellerItem.Email,"Not provided").toString());
-                 			page = page + thisapp.PF_PDF_Text(580,y - 16,8,"regular",ink,ifnull(sellerItem.Phone_Number,"Not provided").toString());
-                 			y = y - 25;
-                 		}
-                 		if(sellerIndex == 0)
-                 		{
-                 			page = page + thisapp.PF_PDF_Rect(28,445,736,45,white,line,0.5);
-                 			page = page + thisapp.PF_PDF_Text(40,463,9,"italic",muted,"No Sellers are linked to this Pro Forma.");
-                 			y = 435;
-                 		}
-                 		page = page + thisapp.PF_PDF_Text(28,y - 22,9,"bold",navy,"PROPERTIES");
-                 		y = y - 54;
-                 		page = page + thisapp.PF_PDF_Rect(28,y,736,24,navy,"",0);
-                 		page = page + thisapp.PF_PDF_Text(38,y + 8,7,"bold",white,"PROPERTY");
-                 		page = page + thisapp.PF_PDF_Text(205,y + 8,7,"bold",white,"CAD / PROPERTY ID");
-                 		page = page + thisapp.PF_PDF_Text(335,y + 8,7,"bold",white,"FACILITY ID");
-                 		page = page + thisapp.PF_PDF_Text(430,y + 8,7,"bold",white,"COUNTY");
-                 		page = page + thisapp.PF_PDF_Text(515,y + 8,7,"bold",white,"ACRES");
-                 		page = page + thisapp.PF_PDF_Text(575,y + 8,7,"bold",white,"SELLER ASSIGNMENT");
-                 		y = y - 6;
-                 		propertyIndex = 0;
-                 		for each  propertyItem in properties
-                 		{
-                 			propertyIndex = propertyIndex + 1;
-                 			assignedSellerText = "Not provided";
-                 			if(propertyItem.Seller != null)
-                 			{
-                 				sellerReferenceId = propertyItem.Seller.toString();
-                 				sellerReferenceName = sellerNameById.get(sellerReferenceId);
-                 				if(sellerReferenceName == null)
-                 				{
-                 					sellerReferenceName = "Seller #" + sellerReferenceId;
-                 				}
-                 				assignedSellerText = sellerReferenceName;
-                 			}
-                 			propertyText = ifnull(propertyItem.Common_Name,ifnull(propertyItem.Property_ID,"Property")).toString();
-                 			propertyLines = thisapp.PF_PDF_Wrap(propertyText,25);
-                 			sellerLines = thisapp.PF_PDF_Wrap(assignedSellerText,28);
-                 			rowLines = propertyLines.size();
-                 			if(sellerLines.size() > rowLines)
-                 			{
-                 				rowLines = sellerLines.size();
-                 			}
-                 			rowHeight = 12 + rowLines * 10;
-                 			if(rowHeight < 25)
-                 			{
-                 				rowHeight = 25;
-                 			}
-                 			if(y - rowHeight < 48)
-                 			{
-                 				pageStreams.add(page);
-                 				page = thisapp.PF_PDF_Rect(0,0,792,612,panel,"",0);
-                 				page = page + thisapp.PF_PDF_Rect(0,556,792,56,navy,"",0);
-                 				page = page + thisapp.PF_PDF_Text(28,582,17,"bold",white,"Properties - continued");
-                 				page = page + thisapp.PF_PDF_Text(28,563,8,"regular","0.82 0.89 0.98",pfName);
-                 				y = 520;
-                 				page = page + thisapp.PF_PDF_Rect(28,y,736,24,navy,"",0);
-                 				page = page + thisapp.PF_PDF_Text(38,y + 8,7,"bold",white,"PROPERTY");
-                 				page = page + thisapp.PF_PDF_Text(205,y + 8,7,"bold",white,"CAD / PROPERTY ID");
-                 				page = page + thisapp.PF_PDF_Text(335,y + 8,7,"bold",white,"FACILITY ID");
-                 				page = page + thisapp.PF_PDF_Text(430,y + 8,7,"bold",white,"COUNTY");
-                 				page = page + thisapp.PF_PDF_Text(515,y + 8,7,"bold",white,"ACRES");
-                 				page = page + thisapp.PF_PDF_Text(575,y + 8,7,"bold",white,"SELLER ASSIGNMENT");
-                 				y = y - 6;
-                 			}
-                 			rowFill = white;
-                 			if(propertyIndex % 2 == 0)
-                 			{
-                 				rowFill = "0.95 0.97 0.99";
-                 			}
-                 			page = page + thisapp.PF_PDF_Rect(28,y - rowHeight,736,rowHeight,rowFill,line,0.35);
-                 			lineY = y - 15;
-                 			for each  propertyLine in propertyLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(38,lineY,7,"regular",ink,propertyLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			page = page + thisapp.PF_PDF_Text(205,y - 15,7,"regular",ink,ifnull(propertyItem.Property_ID,"Not provided").toString());
-                 			page = page + thisapp.PF_PDF_Text(335,y - 15,7,"regular",ink,ifnull(propertyItem.Facility_ID,"Not provided").toString());
-                 			page = page + thisapp.PF_PDF_Text(430,y - 15,7,"regular",ink,ifnull(propertyItem.County,"Not provided").toString());
-                 			page = page + thisapp.PF_PDF_Text(515,y - 15,7,"bold",ink,thisapp.PF_Packet_Number(ifnull(propertyItem.Acres,"").toString(),2));
-                 			lineY = y - 15;
-                 			for each  sellerLine in sellerLines
-                 			{
-                 				page = page + thisapp.PF_PDF_Text(575,lineY,7,"regular",ink,sellerLine);
-                 				lineY = lineY - 10;
-                 			}
-                 			y = y - rowHeight;
-                 		}
-                 		if(propertyIndex == 0)
-                 		{
-                 			page = page + thisapp.PF_PDF_Rect(28,y - 50,736,45,white,line,0.5);
-                 			page = page + thisapp.PF_PDF_Text(40,y - 32,9,"italic",muted,"No Properties are linked to this Pro Forma.");
-                 		}
-                 		pageStreams.add(page);
+						/*
+						 * =========================================================
+						 * OFFER SUMMARY - ONE ATTORNEY-READABLE 17 x 11 PAGE
+						 * =========================================================
+						 */
+						page = "% OFFER_WIDE_PAGE\n" + thisapp.PF_PDF_Rect(0,0,1224,792,canvas,"",0);
+						page = page + thisapp.PF_PDF_Rect(0,716,1224,76,deepNavy,"",0);
+						page = page + thisapp.PF_PDF_Rect(0,716,1224,4,purple,"",0);
+						page = page + thisapp.PF_PDF_Text(28,758,19,"bold",white,"Offer Summary");
+						page = page + thisapp.PF_PDF_Text(28,735,8.5,"regular","0.77 0.85 0.95",pfName + "   |   Attorney review   |   Worksheet: " + loiName + "   |   Status: " + loiStatus + "   |   Version: " + loiVersion);
+						page = page + thisapp.PF_PDF_Text(28,693,8.5,"bold",navy,"DEAL ECONOMICS");
+						economicX = {28,278,528};
+						economicLabels = {"TOTAL ACRES","AMOUNT PER ACRE","ESTIMATED PURCHASE PRICE"};
+						economicValues = {loiAcresDisplay,loiAmountPerAcreDisplay,loiEstimatedPriceDisplay};
+						economicColors = {blue,purple,green};
+						economicFills = {softBlue,softPurple,softGreen};
+						for each index economicIndex in economicX
+						{
+							x = economicX.get(economicIndex);
+							page = page + thisapp.PF_PDF_Rect(x,620,236,58,economicFills.get(economicIndex),softLine,0.35);
+							page = page + thisapp.PF_PDF_Rect(x,672,236,6,economicColors.get(economicIndex),"",0);
+							page = page + thisapp.PF_PDF_Text(x + 14,654,6.5,"bold",muted,economicLabels.get(economicIndex));
+							page = page + thisapp.PF_PDF_Text(x + 14,630,13.5,"bold",economicColors.get(economicIndex),economicValues.get(economicIndex));
+						}
+						page = page + thisapp.PF_PDF_Rect(816,620,380,58,white,line,0.35);
+						metaLabels = {"RESPONSE DATE","EFFECTIVE DATE","HARD CLOSE","EARNEST DUE"};
+						metaValues = {loiResponseDate,loiEffectiveDate,loiHardCloseDate,loiEarnestDueDate};
+						for each index metaIndex in metaLabels
+						{
+							metaX = 828 + metaIndex * 92;
+							if(metaIndex > 0)
+							{
+								page = page + thisapp.PF_PDF_Rect(metaX - 8,628,1,42,softLine,"",0);
+							}
+							page = page + thisapp.PF_PDF_Text(metaX,656,5.5,"bold",lightMuted,metaLabels.get(metaIndex));
+							metaValueLines = thisapp.PF_PDF_Wrap(metaValues.get(metaIndex),14);
+							page = page + thisapp.PF_PDF_Text(metaX,636,7.2,"bold",ink,metaValueLines.get(0));
+						}
+
+						// Sellers and contacts.
+						page = page + thisapp.PF_PDF_Rect(28,326,370,270,white,line,0.35);
+						page = page + thisapp.PF_PDF_Rect(28,570,370,26,softBlue,"",0);
+						page = page + thisapp.PF_PDF_Text(40,579,8,"bold",navy,"SELLERS AND CONTACTS");
+						partyLabels = {"Seller(s)","Authorized signer","Seller email(s)","Seller phone(s)","Seller address(es)","Buyer / seller brokers"};
+						partyValues = {loiSeller,loiAuthorizedSigner,loiSellerEmail,loiSellerPhone,loiSellerCityStateZip,loiBuyerBroker + " / " + loiSellerBroker};
+						partyY = 548;
+						for each index partyIndex in partyLabels
+						{
+							if(partyIndex > 0)
+							{
+								page = page + thisapp.PF_PDF_Rect(40,partyY + 10,346,1,softLine,"",0);
+							}
+							partyValue = partyValues.get(partyIndex);
+							if(partyValue == null || partyValue.toString().trim() == "")
+							{
+								partyValue = "Not provided";
+							}
+							page = page + thisapp.PF_PDF_Text(40,partyY,5.8,"bold",lightMuted,partyLabels.get(partyIndex));
+							partyLines = thisapp.PF_PDF_Wrap(partyValue.toString(),52);
+							page = page + thisapp.PF_PDF_Text(40,partyY - 13,7.6,"bold",ink,partyLines.get(0));
+							if(partyLines.size() > 1)
+							{
+								page = page + thisapp.PF_PDF_Text(40,partyY - 23,6.7,"regular",muted,partyLines.get(1));
+							}
+							partyY = partyY - 40;
+						}
+
+						// Property, buyer, parcel identifiers, and seller assignments.
+						page = page + thisapp.PF_PDF_Rect(414,326,386,270,white,line,0.35);
+						page = page + thisapp.PF_PDF_Rect(414,570,386,26,softGreen,"",0);
+						page = page + thisapp.PF_PDF_Text(426,579,8,"bold",navy,"PROPERTY AND BUYER");
+						countyCityText = loiPropertyCounty + " / " + if(propertyCitiesText == "",loiPropertyCity,propertyCitiesText);
+						propertySummaryLabels = {"Purchasing company","Acquisition email","Property / location","County / city","CAD / Property ID","Facility ID","Parcel acres","Seller assignment"};
+						propertySummaryValues = {companyName,loiAcquisitionEmail,loiStreetAddress,countyCityText,loiCadId,if(propertyFacilityIdsText == "","Not provided",propertyFacilityIdsText),loiAcresDisplay,if(propertySellerAssignmentsText == "","Not provided",propertySellerAssignmentsText)};
+						propertyY = 548;
+						for each index propertyPanelIndex in propertySummaryLabels
+						{
+							if(propertyPanelIndex > 0)
+							{
+								page = page + thisapp.PF_PDF_Rect(426,propertyY + 7,362,1,softLine,"",0);
+							}
+							propertyValue = propertySummaryValues.get(propertyPanelIndex);
+							if(propertyValue == null || propertyValue.toString().trim() == "")
+							{
+								propertyValue = "Not provided";
+							}
+							page = page + thisapp.PF_PDF_Text(426,propertyY,5.4,"bold",lightMuted,propertySummaryLabels.get(propertyPanelIndex));
+							propertyValueLines = thisapp.PF_PDF_Wrap(propertyValue.toString(),56);
+							page = page + thisapp.PF_PDF_Text(426,propertyY - 12,7.1,"bold",ink,propertyValueLines.get(0));
+							if(propertyValueLines.size() > 1)
+							{
+								page = page + thisapp.PF_PDF_Text(426,propertyY - 21,6.3,"regular",muted,propertyValueLines.get(1));
+							}
+							propertyY = propertyY - 30;
+						}
+
+						// Timing, deposits, and extension terms.
+						page = page + thisapp.PF_PDF_Rect(816,326,380,270,white,line,0.35);
+						page = page + thisapp.PF_PDF_Rect(816,570,380,26,softPurple,"",0);
+						page = page + thisapp.PF_PDF_Text(828,579,8,"bold",navy,"TIMING, DEPOSITS AND EXTENSIONS");
+						termLabels = {"Initial feasibility","Close after feasibility","Projected hard close","Earnest money due","Earnest money","Extensions","Days per extension","Amount per extension","Response date","Assumed effective date"};
+						termValues = {loiFeasibilityDisplay,loiClosingDisplay,loiHardCloseDate,loiEarnestDueDate + " (" + loiEarnestDueDaysDisplay + " after execution)",loiEarnestMoneyDisplay,loiExtensionsDisplay,loiDaysPerExtensionDisplay,loiAmountPerExtensionDisplay,loiResponseDate,loiEffectiveDate};
+						termY = 548;
+						for each index termIndex in termLabels
+						{
+							if(termIndex > 0)
+							{
+								page = page + thisapp.PF_PDF_Rect(828,termY + 7,356,1,softLine,"",0);
+							}
+							page = page + thisapp.PF_PDF_Text(828,termY,6,"bold",lightMuted,termLabels.get(termIndex));
+							termLines = thisapp.PF_PDF_Wrap(termValues.get(termIndex),29);
+							page = page + thisapp.PF_PDF_Text(990,termY,7.2,"bold",ink,termLines.get(0));
+							termY = termY - 24;
+						}
+
+						// Narrative terms stay on this same page for attorney review.
+						page = page + thisapp.PF_PDF_Rect(28,52,772,246,white,line,0.35);
+						page = page + thisapp.PF_PDF_Rect(28,272,772,26,softOrange,"",0);
+						page = page + thisapp.PF_PDF_Text(40,281,7.5,"bold",navy,"SPECIAL PROVISIONS");
+						specialLines = thisapp.PF_PDF_Wrap(loiSpecialProvisions,116);
+						lineY = 252;
+						specialShown = 0;
+						for each  specialLine in specialLines
+						{
+							if(specialShown < 17)
+							{
+								page = page + thisapp.PF_PDF_Text(40,lineY,7.5,"regular",ink,specialLine);
+								lineY = lineY - 11;
+							}
+							specialShown = specialShown + 1;
+						}
+						page = page + thisapp.PF_PDF_Rect(816,52,380,246,white,line,0.35);
+						page = page + thisapp.PF_PDF_Rect(816,272,380,26,softPurple,"",0);
+						page = page + thisapp.PF_PDF_Text(828,281,7.5,"bold",navy,"LEGAL NOTE");
+						legalLines = thisapp.PF_PDF_Wrap(loiLegalNote,54);
+						lineY = 252;
+						legalShown = 0;
+						for each  legalLine in legalLines
+						{
+							if(legalShown < 17)
+							{
+								page = page + thisapp.PF_PDF_Text(828,lineY,7.5,"regular",ink,legalLine);
+								lineY = lineY - 11;
+							}
+							legalShown = legalShown + 1;
+						}
+						pageStreams.add(page);
                  		/*
                  		 * Expected minimum:
                  		 * 1. Executive dashboard with the first Additional Cost rows
-                 		 * 2. LOI page 1
-                 		 * 3. LOI page 2
-                 		 * 4. Sellers and Properties
-                 		 * Overflow Additional Costs are inserted after page 1 only when needed.
-                 		 */
-                 		if(pageStreams.size() < 4)
-                 		{
-                 			result.put("success",false);
-                 			result.put("message","Approval packet was incomplete before compilation. Expected the dashboard, complete LOI terms, and Sellers/Properties sections.");
+						 * 2. One-page Offer summary
+						 * Overflow Additional Costs are inserted after page 1 only when needed.
+						 */
+						if(pageStreams.size() < 2)
+						{
+							result.put("success",false);
+							result.put("message","Approval packet was incomplete before compilation. Expected the dashboard and complete Offer summary.");
                  			return result;
                  		}
                  		pdfText = thisapp.PF_PDF_Compile(pageStreams,"Pro Forma Approval Packet - " + pfName);
