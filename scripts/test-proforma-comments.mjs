@@ -47,6 +47,10 @@ assert.match(source,/if\(grpEd\) grpEd\.style\.display="none";/,'editor heading 
 assert.match(source,/if\(grpDash\) grpDash\.style\.display="";/,'record identity stays visible on every record tab');
 assert.match(source,/data-act="comments" data-actid/,'every saved Pro Forma row exposes the Comments modal action');
 assert.match(source,/act==="comments"\) openPfComments\(id,b\)/,'list Comments action opens the shared modal');
+assert.match(source,/function loadPfCommentSummaries\(\)/,'list comment summaries load once');
+assert.match(source,/\+pfListCommentAction\(r\)/,'list action renders its Comment Log badge');
+assert.match(source,/\.pf-row-comments\.has-recent/,'list action receives the same recent-activity state');
+assert.match(source,/loadPfCommentSummaries\(\);/,'list requests comment summaries after rendering');
 assert.match(source,/z-index:10060/);
 assert.doesNotMatch(source,/record\.Name\+" — Comments"/);
 assert.match(source,/commentWrite\("updateRecord"/);

@@ -3,6 +3,11 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
+## Proforma Manager 1.79.3
+
+- **List Comments icons now show their live count and new-activity state.** The count and teal/recent indicator use the same Comment Log data and seven-day definition as the record-header icon, including `4` comments with new activity where applicable.
+- Frontend only. No Creator forms, fields, functions, Custom APIs, or workflows changed. Rollback: `releases/proforma-manager/1.79.2`.
+
 ## Proforma Manager 1.79.2
 
 - **The active Pro Forma identity and dates persist across Dashboard, Edit, Approvals, and Attachments.** Opening a record directly into Edit or Attachments now also hydrates that shared header.

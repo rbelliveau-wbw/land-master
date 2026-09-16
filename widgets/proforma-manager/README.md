@@ -44,6 +44,8 @@ Version 1.79.1 keeps the comment icon beside the record navigation across Dashbo
 
 Version 1.79.2 keeps the Pro Forma identity and timeline visible on each record tab, moves the header Comments icon to the right of the record navigation and enlarges it by 10%, and adds the same Comments modal action to every saved Pro Forma in the list. The list action is intentionally independent of edit permission, matching the record-header control.
 
+Version 1.79.3 brings the list control to parity with the record header: it displays the Comment Log count and the teal/new-activity state, using the same seven-day activity rule. The comment summaries load once for the list and refresh the buttons without interrupting list navigation.
+
 The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses the Creator SDK to add Comment_Log records and update the report. Comment is mandatory multiline text; Project, Budget and Pro_Forma are optional parent lookups with at least one required by validation. User, Author_Name, Edited and Deleted are server-owned audit fields. Author_Name is stamped from User_Access.Full_Name with zoho.loginuser fallback. Added_Time, Modified_Time and Added_User use Creator system fields.
 
 Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
