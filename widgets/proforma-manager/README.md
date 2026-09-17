@@ -3,7 +3,7 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.79.13`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.79.14`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 ## Baseline
 
@@ -57,3 +57,7 @@ The thread supports safe Markdown formatting, emoji, quote replies, search, copy
 ## Navarro County (1.79.13)
 
 Added `Navarro` to County choices for existing and new Property rows. Existing choices and persistence behavior are retained. Creator County picklists are audited separately. Regression: select Navarro, retain existing counties, and validate the production Pages artifact. Rollback: restore the production mapping to `1.79.12`.
+
+## Number formatting and Special Provisions (1.79.14)
+
+Numeric Pro Forma inputs show thousands separators when focus leaves the field and return to plain numeric text for editing, preserving the existing model and Creator payload values. The Offer tab now shows Special Provisions once, defaults blank values to `None`, and notes that `None` is the expected entry when no provisions apply. No Creator deployment is required. Regression: edit a large numeric value, tab away, reopen it, save it, and verify the stored numeric value is unchanged; open an Offer with blank provisions and verify it displays `None`. Rollback: restore the production mapping to `1.79.13`.
