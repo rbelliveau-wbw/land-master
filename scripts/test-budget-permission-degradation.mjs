@@ -9,6 +9,10 @@ const source = fs.readFileSync(
   path.join(process.cwd(), 'widgets', 'budget-manager', 'src', 'app', 'widget.html'),
   'utf8'
 );
+const layout = fs.readFileSync(
+  path.join(process.cwd(), 'widgets', 'budget-manager', 'src', 'app', 'budget-layout.css'),
+  'utf8'
+);
 
 function block(fnName) {
   const start = source.indexOf(`function ${fnName}(`);
@@ -20,6 +24,8 @@ function block(fnName) {
 const loadExternal = block('loadExternalMappings');
 const heroMappings = block('renderHeroMappings');
 const heroMods = block('renderHeroMods');
+const directAccess = block('resolveCurrentUserPerms');
+const functionAccess = block('applyPermsFromFlags');
 
 const expectations = [
   ['loadExternalMappings records the permission-denied flag',
@@ -33,7 +39,13 @@ const expectations = [
   ['renderHeroMods is not gated on the mappings permission flag',
     () => heroMods.length > 0 && !/extMapDenied/.test(heroMods)],
   ['extMapDenied is declared on the state object',
-    () => /extMapDenied:\s*false/.test(source)]
+    () => /extMapDenied:\s*false/.test(source)],
+  ['Get_User_Access applies the saved Budget Assigned to Me preference',
+    () => /flags\.budgetAssignedToMe/.test(functionAccess) && /assignedToggle\.checked=S\.budgetAssignedToMe/.test(functionAccess)],
+  ['direct User_Access fallback reads the preference from its resolved row',
+    () => /firstRaw\(row,\["Budgets_Assigned_to_Me"\]\)/.test(directAccess) && !/flags\s*&&/.test(directAccess)],
+  ['desktop Budget filters have explicit compact maximum widths',
+    () => /landing-filter-toolbar>\.landing-filter-group\{flex:0 1 180px;max-width:180px\}/.test(layout) && /budget-search\{[^}]*max-width:340px/.test(layout)]
 ];
 
 const failures = expectations.filter(([, check]) => !check());
