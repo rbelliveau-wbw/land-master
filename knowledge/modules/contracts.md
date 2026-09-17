@@ -1,9 +1,9 @@
 
 # Contracts Module
 
-## Attachment and comment action size (1.60.18)
+## Attachment and comment action size (1.60.19)
 
-The contract-list attachment and comment controls are 15% larger. Attachments always show their count without a recent-activity glow; comments retain their existing seven-day activity signal. Rollback: `1.60.17`.
+The contract-list attachment and comment controls are 15% larger. Their compact 28.75px size and hover behavior are shared with Budget phase attachment and comment controls. Attachments always show their count without a recent-activity glow; comments retain their existing seven-day activity signal. Rollback: `1.60.18`.
 
 ## Comment Log on contract rows (1.60.14)
 
