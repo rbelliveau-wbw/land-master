@@ -3,9 +3,10 @@
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 
-## Comments 1.79.5 / Contracts 1.60.15 / Budget Manager 122.27.1
+## Comments 1.79.6 / Contracts 1.60.16 / Budget Manager 122.27.2
 
-- Legal and Budget comment controls now use the same 49.5px framed icon, count badge, and recent-activity dot as the Pro Forma header. The modal close icon now has an explicit white stroked X in both widgets.
+- Legal and Budget row controls are now matched 25px buttons. Legal attachments use the same visual state rules and count badge as comments, and both modal close icons are explicitly drawn.
+- Budget's shared comment thread now resolves the active `Project` or `Budget` field for every read and write. Switching from a Project thread to a Budget thread can no longer issue a `Project == budgetId` query and hide comments that the count badge has found.
 - Legal comment reads and writes use the Comment Log `Contract1` lookup. Budget comments resolve the underlying Add_Budget record ID instead of the landing-page Project grouping ID, preventing invalid Budget lookup submissions.
 - Publish `Validate_Comment_Log` in Creator with the `Contract1` field before using the Legal comment action. Rollback: restore production mappings to Comments `1.79.4`, Contracts `1.60.14`, and Budget Manager `122.27.0`.
 

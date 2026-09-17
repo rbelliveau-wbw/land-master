@@ -59,7 +59,7 @@ assert.match(source,/\.pc-actions\{opacity:1!important\}/);
 assert.ok(!/function commentWrite[\s\S]*?function openPfComments/.exec(source)[0].includes('skip_workflow'));
 const commentSource=fs.readFileSync('widgets/proforma-manager/src/app/comments.js','utf8');
 assert.match(commentSource,/onRows/);
-assert.match(commentSource,/parentField=api\.parentField\|\|'Pro_Forma'/,'the shared component supports each Comment Log parent lookup');
+assert.match(commentSource,/function parentField\(\)\{return typeof api\.parentField==='function'/,'the shared component resolves its parent lookup dynamically when needed');
 assert.match(commentSource,/PALETTE=\['blue','violet','teal','amber','rose','indigo','cyan','orange'\]/,'the thread provides eight author colors');
 assert.doesNotMatch(commentSource,/data-pc="copy"/);
 assert.doesNotMatch(commentSource,/pc-search|data-pc="refresh"/);
@@ -76,6 +76,7 @@ const contractSource=fs.readFileSync('widgets/contract-management/src/app/widget
 assert.match(contractSource,/parentField:'Contract1'/,'contract rows use Contract1 discussions');
 assert.match(contractSource,/Contract1 == /,'contract comment reads use the Contract1 lookup');
 assert.match(budgetSource,/function budgetCommentRecordId\(b\)/,'budget comments resolve the Add_Budget record ID instead of the grouped project ID');
+assert.match(budgetSource,/parentField:function\(\)\{return budgetCommentThreadField;/,'Project and Budget threads resolve their active lookup field independently');
 const commentCss=fs.readFileSync('widgets/proforma-manager/src/app/comments.css','utf8');
 assert.match(commentCss,/\.comment-activity-btn\{[^}]*width:49\.5px[^}]*height:49\.5px/,'Legal and Budget share the Pro Forma-sized comment control');
 assert.match(commentCss,/\.pf-comment-modal-close svg\{[^}]*stroke:currentColor/,'modal close icon is explicitly drawn in the header color');
