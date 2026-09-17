@@ -94,7 +94,8 @@ assert.match(budgetSource,/function loadBudgetAttachmentSummaries\(\)/,'Budget a
 assert.match(budgetSource,/openPhaseEditor\(attachment\.dataset\.budgetAttachments, "attachments"\)/,'Budget attachment buttons open the existing attachment workspace');
 assert.match(budgetSource,/\.ptable tbody td:first-child\{[^}]*overflow:visible/,'Budget action badges can render beyond the action cell');
 assert.match(budgetSource,/<col style='width:18%'><col style='width:22%'/,'Budget Actions column reserves room for View, Approvals, Attachments, and Comments');
-assert.match(contractSource,/\.cname-extras \.comment-activity-btn:hover\{[^}]*transform:translateY\(-1px\)[^}]*border-color:#82a9d8/,'Legal controls share the common hover treatment');
-assert.match(budgetSource,/\.project-comment:hover,\.phase-comment:hover,\.phase-attachment:hover\{[^}]*transform:translateY\(-1px\)[^}]*border-color:#82a9d8/,'Budget controls share the Legal hover treatment');
+assert.match(contractSource,/\.cname-extras \.comment-activity-btn:hover\{[^}]*border-color:#82a9d8[^}]*box-shadow:0 4px 10px/,'Legal controls use the smooth common hover treatment');
+assert.match(budgetSource,/\.project-comment:hover,\.phase-comment:hover,\.phase-attachment:hover\{[^}]*border-color:#82a9d8[^}]*box-shadow:0 4px 10px/,'Budget controls share the Legal hover treatment');
+assert.match(commentCss,/\.comment-activity-btn\{[^}]*transition:background \.18s ease,border-color \.18s ease,box-shadow \.18s ease,color \.18s ease/,'activity controls avoid hover translation and animate smoothly');
 assert.match(commentCss,/\.pf-comment-modal-close svg\{[^}]*stroke:currentColor/,'modal close icon is explicitly drawn in the header color');
 console.log('Comment authors, 24-hour boundaries, timezone, safe formatting and SDK contract verified.');
