@@ -34,3 +34,7 @@ Dedicated automated tests cover calculation and source-data edge cases, string I
 Existing development report UI and committed export confirm the relationships. Zoho SDK v2 custom field selection is used because the Lots quick view omits Lot_Size. Live SDK retrieval in the newly registered widget must be checked after Creator page placement; no new form, report, field, function, or API is being created.
 
 Release and permanent URL details are in `widgets/lot-sales-explorer/README.md`.
+
+## Released follow-up: Insights 1.1.0
+
+User requested current/previous calendar years first, history in the background, a cleaner shared-widget style, and a left menu with a Budget dashboard. This supersedes the original 13-month default. Budget clarification questions were asked; first-use scope/basis selectors avoid assuming their answers. See widgets/lot-sales-explorer/README.md for the implemented load-state, financial, and rollback contracts.

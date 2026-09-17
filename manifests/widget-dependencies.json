@@ -495,13 +495,21 @@
         "Lots",
         "Subdivision",
         "Project",
-        "Builder"
+        "Builder",
+        "Add_Budget",
+        "Budget_Category",
+        "Budget_Item",
+        "Budget_Modification"
       ],
       "reports_referenced": [
         "All_Lots_All_Fields",
         "All_Subdivisions",
         "All_Projects",
-        "All_Builders"
+        "All_Builders",
+        "All_Budgets",
+        "All_Budget_Categories",
+        "All_Budget_Items",
+        "All_Budget_Modifications"
       ],
       "custom_apis": [
         {

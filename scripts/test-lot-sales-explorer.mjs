@@ -63,4 +63,30 @@ await assert.rejects(()=>A.readAll({...api,getRecords:async c=>c.record_cursor?{
 await assert.rejects(()=>A.readAll({...api,getRecords:async()=>({code:2894,message:'No report'})},'Lots',null,['ID']),/No report/);
 assert.deepEqual(await A.readAll({getRecordCount:async()=>({code:3000,result:{records_count:'0'}}),getRecords:async()=>({code:3100})},'Lots',null,['ID']),[]);
 await assert.rejects(()=>A.readAll({...api,getRecords:async()=>({code:3100})},'Lots',null,['ID']),/loaded 0 of 1001/);
+const window = A.recentWindow(new Date(2026, 8, 17));
+assert.equal(window.from, '2025-01'); assert.equal(window.to, '2026-12');
+assert(window.criteria.includes("Close_Date >= '01/01/2025'"));
+assert(window.criteria.includes("Purchase_Date < '01/01/2027'"));
+const stagedData = { ...fixture, lots: [...fixture.lots,
+  { ...fixture.lots[0], ID:'cross-date', Close_Date:'2024-12-31', Purchase_Date:'2025-01-01' },
+  { ...fixture.lots[0], ID:'next-year', Close_Date:'2027-01-01', Purchase_Date:'' },
+  { ...fixture.lots[0], ID:'no-date', Close_Date:'', Purchase_Date:'' }] };
+const source = Object.fromEntries(Object.entries(A.reports).map(([key, report]) => [report, stagedData[key]]));
+const requests=[];
+const filtered = c => c.criteria ? source[c.report_name].filter(r => [M.date(r.Close_Date),M.date(r.Purchase_Date)].some(d=>d && d >= '2025-01-01' && d < '2027-01-01')) : source[c.report_name];
+const stagedApi = {
+  getRecordCount: async c => { requests.push(c); return {code:3000,result:{records_count:String(filtered(c).length)}}; },
+  getRecords: async c => {requests.push(c); const rows=filtered(c), offset=Number(c.record_cursor||0); return {code:3000,data:rows.slice(offset,offset+1000),...(offset+1000<rows.length?{record_cursor:String(offset+1000)}:{})};}
+};
+const recent=await A.loadRecent(stagedApi,null,{now:new Date(2026,8,17)});
+assert(recent.lots.some(r=>r.ID==='cross-date'), 'either date basis must be ready');
+assert(!recent.lots.some(r=>r.ID==='next-year'||r.ID==='no-date'));
+assert(recent.lots.length < stagedData.lots.length);
+assert(requests.filter(c=>c.report_name===A.reports.lots).every(c=>c.criteria===window.criteria),'count and every page share criteria');
+const historical=await A.loadHistory(stagedApi);
+assert.equal(historical.length,stagedData.lots.length);
+assert.equal(M.normalize({...recent,lots:historical}).length,historical.length,'complete snapshot replaces recent without duplicate rows');
+let cancelled=false, pageCalls=0;
+await assert.rejects(()=>A.readAll({getRecordCount:async()=>{cancelled=true;return {code:3000,result:{records_count:'1'}}},getRecords:async()=>{pageCalls++;return {code:3000,data:[{ID:'a'}]}}},'Lots',null,['ID'],{isCancelled:()=>cancelled}),/superseded/);
+assert.equal(pageCalls,0,'superseded loads stop before the next request');
 console.log('Lot Sales Explorer: calculations, date boundaries, scope, data quality, CSV safety, cursor pagination and incomplete-read guards passed.');

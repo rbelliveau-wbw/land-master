@@ -10,7 +10,7 @@ export function salesFixture(now = new Date()) {
     for (let phase = 1; phase <= 3; phase++) {
       const sid = 's' + t + phase, name = names[t] + ' — Phase ' + String(phase).padStart(2, '0');
       data.subdivisions.push({ ID: sid, Subdivision_Name: name, Project: { ID: pid, display_value: names[t] }, Territory: territories[t] });
-      for (let ago = 0; ago < 19; ago++) {
+      for (let ago = 0; ago < 31; ago++) {
         if ((t + phase + ago) % 7 === 0) continue;
         const month = new Date(now.getFullYear(), now.getMonth() - ago, 1);
         const date = month.getFullYear() + '-' + String(month.getMonth() + 1).padStart(2, '0') + '-08';

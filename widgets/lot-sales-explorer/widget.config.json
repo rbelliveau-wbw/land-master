@@ -1,14 +1,14 @@
 {
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
-  "module": "lots",
-  "version": "1.0.1",
-  "description": "Extensible data exploration module, starting with a read-only monthly lot-sales report.",
+  "module": "insights",
+  "version": "1.1.0",
+  "description": "Read-only Lot Sales and Budget dashboards with recent-year-first loading, background history, portfolio comparisons, filters, drilldowns and CSV export.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "b7bfb053dad4f84359c1954a82a766b291054fc316a1045f04dada7c15b0651d",
+  "source_sha256": "308128ba8291bbbeb87eda5788a782899aba4e6ac557291d69dd39a5d8ca954a",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

@@ -29,3 +29,7 @@ Use this pattern for small attachment, comment, and similar record actions acros
 - Reserve enough row width for every control and its count badge. Do not clip badges with `overflow:hidden`.
 
 The shared base implementation is `widgets/proforma-manager/src/app/comments.css`. Local module overrides should only change intentional size or layout differences and must preserve this visual and interaction treatment.
+
+## Dashboard workspaces
+
+Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a left dashboard menu. Use one short green dashboard title; omit decorative taglines. Keep tables horizontally scrollable within their panels, and turn sidebar navigation into a compact row on narrow screens. Background loading should name the unavailable scope while keeping completed views usable.
