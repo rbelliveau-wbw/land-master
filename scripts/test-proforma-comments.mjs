@@ -93,6 +93,7 @@ assert.match(budgetSource,/budgetAttachmentButton\(b, phaseName\(b\)\) \+\s*budg
 assert.match(budgetSource,/function loadBudgetAttachmentSummaries\(\)/,'Budget attachment counts load from Contract_Version records');
 assert.match(budgetSource,/openPhaseEditor\(attachment\.dataset\.budgetAttachments, "attachments"\)/,'Budget attachment buttons open the existing attachment workspace');
 assert.match(budgetSource,/\.ptable tbody td:first-child\{[^}]*overflow:visible/,'Budget action badges can render beyond the action cell');
+assert.match(budgetSource,/\.editor-action-controls #editorBudgetComments\{width:50px;height:50px/,'Budget editor comments control is twice the original 25px size');
 assert.match(budgetSource,/<col style='width:18%'><col style='width:22%'/,'Budget Actions column reserves room for View, Approvals, Attachments, and Comments');
 assert.match(contractSource,/\.cname-extras \.comment-activity-btn:hover\{[^}]*border-color:#82a9d8[^}]*box-shadow:0 4px 10px/,'Legal controls use the smooth common hover treatment');
 assert.match(budgetSource,/\.project-comment:hover,\.phase-comment:hover,\.phase-attachment:hover\{[^}]*border-color:#82a9d8[^}]*box-shadow:0 4px 10px/,'Budget controls share the Legal hover treatment');
