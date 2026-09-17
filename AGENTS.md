@@ -70,6 +70,8 @@ Chat history and model memory are not authoritative.
   `knowledge/design/style-guide.md` and apply the relevant guidance. Add a
   concise rule there when the user establishes a reusable styling preference.
 
+- Use custom searchable multi-select pickers for dropdown filters, matching Budget Manager. Do not introduce native browser select menus or month/date pickers in widget UI. For settings that require one value (such as sort order or a date basis), use the same searchable picker with single selection; clarify before changing their meaning to support multiple values.
+
 ## Drag-and-drop must animate
 
 - Any list a user can drag to reorder — subform rows, checklists, template
