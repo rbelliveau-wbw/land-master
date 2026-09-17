@@ -3,7 +3,8 @@ export function salesFixture(now = new Date()) {
   const data = { lots: [], subdivisions: [], projects: [], builders: [] };
   const territories = ['Bryan / College Station', 'Fort Hood', 'North Austin', 'San Antonio', 'Temple / Belton', 'Waco'];
   const names = ['Cedar Hollow', 'Copper Ridge', 'Juniper Creek', 'Oak Meadow', 'Stonebridge', 'Willow Bend'];
-  data.builders = ['Atlas Homes', 'Cedar Homebuilders', 'Pioneer Living', 'Other', 'Placeholder'].map((name, i) => ({ ID: 'b' + i, Builder_Name: name }));
+  data.builders = ['Atlas Homes', 'Cedar Homebuilders', 'Pioneer Living', 'Other', 'Placeholder'].map((name, i) => ({ ID: 'b' + i, Builder_Name: name, Type1: 'Builder' }));
+  data.builders.push({ID:'seller-only',Builder_Name:'A Seller Only',Type1:'Seller'});
   let sequence = 1;
   for (let t = 0; t < territories.length; t++) {
     const pid = 'p' + t; data.projects.push({ ID: pid, Project_Name: names[t] });

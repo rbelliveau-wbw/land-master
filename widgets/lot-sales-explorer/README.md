@@ -1,4 +1,4 @@
-# Land Master Insights 1.2.0
+# Land Master Insights 1.2.1
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by territory and subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -43,7 +43,7 @@ The recent slice supports either date basis, status, project, builder, territory
 
 Creator SDK v2 requests explicit fields using `field_config: custom`; Lot Size is absent from the existing report's quick-view columns. Cursor pagination and report-count reconciliation prevent silent truncation. Source: [Zoho Get Records](https://www.zoho.com/creator/help/js-api/v2/get-records.html), [SDK setup](https://help.zoho.com/portal/en/kb/creator/developer-guide/application-settings/widgets/articles/js-api-documentation).
 
-Required fields: Lots (`ID`, `Subdivision`, `Status`, `Close_Date`, `Purchase_Date`, `Base_Price`, `Lot_Size`, `Builder1`; optional display fields `Lot_Code`, `Block`, `Lot_Number`, `Archived`); Subdivision (`ID`, `Project`, `Subdivision_Name`, `Territory`); Project (`ID`, `Project_Name`); Builder (`ID`, `Builder_Name`). No data writes are performed.
+Required fields: Lots (`ID`, `Subdivision`, `Status`, `Close_Date`, `Purchase_Date`, `Base_Price`, `Lot_Size`, `Builder1`; optional display fields `Lot_Code`, `Block`, `Lot_Number`, `Archived`); Subdivision (`ID`, `Project`, `Subdivision_Name`, `Territory`); Project (`ID`, `Project_Name`); Builder (`ID`, `Builder_Name`, `Type1`). No data writes are performed.
 
 ## Verification and rollback
 
@@ -64,3 +64,7 @@ Territory, Project, Builder and Lot status use searchable multi-select popovers 
 Short reports anchor at the top. Long tables scroll internally with sticky headers and totals, the report footer stays visible, and month pagination is centered above the summary/table. Narrow screens have a separately scrollable filter panel. AGENTS.md and the style guide now document these reusable patterns.
 
 Verification: multi-value scope isolation, separate status aggregation and shared month ranges, totals and drilldown identity, existing loader/count/cancellation checks, custom picker search/keyboard/month navigation, Base sum, short/tall viewport alignment, footer visibility and 390px overflow checks. Run the full validation and Pages build before promotion. Changed assets are widget.html, sales-app/model.js, insights-shell.js, new insights-controls.js/css, release/config/deployment manifests, documentation and the sales regression script. Existing Lots/Subdivision/Project/Builder read fields and functions/Custom APIs are unchanged; no Creator deployment is required. Roll back by mapping production lot-sales-explorer to 1.1.1; the Insights URL remains unchanged.
+
+## 1.2.1 Builder picker
+
+The Builder dropdown only offers records with Type1 equal to Builder, sorted alphabetically. The adapter requests the existing Type1 field from All_Builders. All builder reference records remain available for historical lot labels; this changes picker options only, not the report’s default population or financial calculations. Regression: Builder entries appear alphabetically, Seller/City/County/Other types are absent, and selecting a builder still scopes the report. Changed source: creator-adapter.js, sales-app.js and versioned widget.html; fixture data adds a Seller for browser verification. No forms, fields, functions or Custom APIs change and no Creator deployment is required. Rollback: map production lot-sales-explorer to 1.2.0.
