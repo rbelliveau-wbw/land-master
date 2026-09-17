@@ -27,3 +27,7 @@ npm run package:creator -- tax-center
 npm run release -- tax-center <new-version>
 npm run build:pages
 ```
+
+## Navarro County (19.17.2)
+
+Property and parcel-year County editors always offer Navarro, including before the first Navarro record exists. Existing record-derived choices and data-filter counts are retained. No functions or Custom APIs change. Regression: Navarro selection, existing choices, and County save payloads. Rollback: restore the production mapping to `19.17.1`.

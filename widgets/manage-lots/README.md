@@ -45,3 +45,7 @@ Lot Code rule (must match Deluge `Set Lot Code if Manual Update` / `Mass Create 
 Copy `src/app/*` to a scratch folder, replace the `widgetsdk-min.js` script tag with a `seed.js` that defines `window.ZOHO.CREATOR` (`init`, `API.getAllRecords`, `API.addRecord`, `API.invokeCustomApi`) and serve it statically. `window.__MLW_TEST__` exposes `S`, `openPlatModal`, `platReadFile`, `platScan`, and the pure helpers for scripted checks.
 
 Version `0.3.0` added searchable multi-subdivision filtering, subdivision grouping, and scannable Builder Takedown lot details. Version `0.6.0` added Import Plat.
+
+## Navarro County (0.7.1)
+
+The Import Plat County dropdown now includes Navarro, matching the live Lots.County picklist. No functions or Custom APIs change. Regression: Navarro selection, existing choices, and County save payloads. Rollback: restore the production mapping to `0.7.0`.
