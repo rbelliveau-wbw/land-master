@@ -1,4 +1,8 @@
-# Compact icon buttons
+# Land Master style guide
+
+This guide captures reusable visual preferences established in production work.
+
+## Compact icon buttons
 
 Use this pattern for small attachment, comment, and similar record actions across Land Master widgets.
 

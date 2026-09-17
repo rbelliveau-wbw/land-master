@@ -62,6 +62,12 @@ Chat history and model memory are not authoritative.
   paragraphs explaining how a feature works. A heading, a short label, and the
   action button are enough; put any necessary explanation in a tooltip.
 
+## Visual style context
+
+- Before adding or revising UI that follows an established visual pattern, read
+  `knowledge/design/style-guide.md` and apply the relevant guidance. Add a
+  concise rule there when the user establishes a reusable styling preference.
+
 ## Drag-and-drop must animate
 
 - Any list a user can drag to reorder — subform rows, checklists, template
