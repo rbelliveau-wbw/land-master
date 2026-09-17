@@ -9,3 +9,5 @@
 
 - Recent-year results may display before history only when both date bases are fully covered by the same bounded query. First-sale dates, all-history results and exports must not imply completeness while history is pending or failed.
 - Budget scope and comparison basis are explicit choices. Match Budget Manager’s category Final, item GP/HCSS, signed approved modifications, and separate approval tracks; do not treat budget use as construction completion.
+
+- Every local script and stylesheet reference must carry the current widget version as its `v` query. The stable HTML loader alone does not invalidate Creator/browser asset caches.

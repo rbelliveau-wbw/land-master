@@ -11,3 +11,5 @@ The pure model, SDK adapter, and UI are separate. Future Pro Forma embedding sho
 ## Insights 1.1.0
 
 Adds a compact dashboard sidebar, a green Lot Sales heading, and the Budget dashboard. Lot Sales loads current/previous calendar years before a complete historical snapshot; incomplete history is explicitly gated and retryable without losing recent results. Budget scope and Final/Revised Final basis are selected explicitly on first use. GP actuals, HCSS actuals, approved modifications, pending modifications, and independent approval tracks remain distinct. Financial definitions and source fields are documented in the widget README. Existing report reads only; no Creator schema/functions/API changes. Rollback: 1.0.1.
+
+1.1.1: add version queries to all local scripts/styles after live Creator reused the prior sales controller beneath the new HTML. The permanent widget URL is unchanged.

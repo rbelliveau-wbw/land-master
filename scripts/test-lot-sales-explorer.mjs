@@ -6,6 +6,11 @@ const app = 'widgets/lot-sales-explorer/src/app/';
 await import('../' + app + 'sales-model.js');
 await import('../' + app + 'creator-adapter.js');
 const M = globalThis.LotSalesModel, A = globalThis.LotSalesCreator;
+const version = JSON.parse(fs.readFileSync('widgets/lot-sales-explorer/widget.config.json','utf8')).version;
+const html = fs.readFileSync(app + 'widget.html','utf8');
+for (const [,asset] of html.matchAll(/(?:src|href)="([a-z][a-z-]*\.(?:js|css)(?:\?[^\"]*)?)"/g)) {
+  assert.equal(new URL(asset,'https://widget.invalid/').searchParams.get('v'),version,'Local assets must change URL on every release: '+asset);
+}
 for (const file of fs.readdirSync(app).filter(file => file.endsWith('.js'))) new vm.Script(fs.readFileSync(app + file, 'utf8'), { filename: file });
 assert.equal(M.date('29-Feb-2024'), '2024-02-29');
 assert.equal(M.date('02/29/2025'), null);

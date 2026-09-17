@@ -1,4 +1,4 @@
-# Land Master Insights 1.1.0
+# Land Master Insights 1.1.1
 
 Read-only dashboard workspace with a left menu for Lot Sales and Budgets. The Lot Sales report is a monthly matrix grouped by territory and subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -54,3 +54,5 @@ Browser regression: filters, metric switch, drilldown, collapse/expand, month pa
 Release 1.0.1 renames the shell to Land Master Insights and publishes `/prod/insights/` as the primary URL. The original `/prod/lot-sales-explorer/` remains a compatibility path. Both paths use the same promoted release and in-document loader, preserving Creator context and query parameters. Source and release identifiers remain `lot-sales-explorer`. To roll back 1.1.0, map production `lot-sales-explorer` to `1.0.1`; both URLs remain available. No forms, fields, functions, or Custom APIs change.
 
 1.1.0 verification: recent/full-snapshot criteria and reconciliation; retry/cancellation; preserved project filter; complete-history gating; budget approval scopes, GP/HCSS separation, signed approved/pending modifications, empty/zero data; browser drilldowns and 390px page-overflow checks. Changed source includes shell, styling, report adapters/models/controllers, tests and fixtures. Creator publication is not required for users who already have read access to the existing reports.
+
+1.1.1 versions every local script and stylesheet URL. Live Creator verification exposed cached JavaScript surviving the stable HTML loader; asset version queries keep each release’s shell, adapter, model and UI together. Future releases must update those queries alongside the displayed version.
