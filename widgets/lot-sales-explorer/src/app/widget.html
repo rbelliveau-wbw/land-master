@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lot Sales Explorer</title>
+  <link rel="stylesheet" href="sales.css">
+  <style>.metric-switch{background:linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%)}.metric-switch button[aria-pressed="true"]{transform:translateY(-1px)}#matrix thead th.period-total{background:#1e456a;color:#fff}#matrix thead th.period-total small{color:#b3cee6}</style>
+  <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <script src="runtime-context.js"></script><script src="critical-error-reporter.js"></script>
+  <script src="sales-model.js"></script><script src="creator-adapter.js"></script>
+</head>
+<body>
+  <header class="app-bar"><div class="brand"><span class="brand-icon" aria-hidden="true">▥</span><span>LAND MASTER <b>Lot Sales Explorer</b></span></div><div class="app-actions"><span id="connection" role="status">Connecting…</span><button id="refresh" class="icon-button" title="Refresh report" aria-label="Refresh report">↻</button><button id="audit" class="icon-button" title="Diagnostics" aria-label="Diagnostics">☷</button></div></header>
+  <main>
+    <section class="heading"><div><div class="eyebrow">SALES INTELLIGENCE</div><h1>Lot sales, in perspective.</h1><p id="scopeLabel">Monthly performance across your subdivisions</p></div><button id="export" class="button" disabled><span aria-hidden="true">↓</span> Export CSV</button></section>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <section class="filters" aria-label="Report filters">
+      <div class="filter-row"><label>Territory<select id="territory"><option value="">All territories</option></select></label><label>Project<select id="project"><option value="">All projects</option></select></label><label>Builder<select id="builder"><option value="">All builders</option></select></label><label class="search-label">Search<input id="search" type="search" placeholder="Subdivision, project, or lot…"></label></div>
+      <div class="filter-row secondary"><label>Lot status<select id="status"><option value="Sold">Sold</option><option value="Contracted">Contracted</option></select></label><label>Date basis<select id="dateField"><option value="closeDate">Close date</option><option value="purchaseDate">Purchase date</option></select></label><label>Period<select id="period"><option value="13">Current + prior 12 months</option><option value="6">Current + prior 5 months</option><option value="ytd">Year to date</option><option value="all">All history</option><option value="custom">Custom range</option></select></label><label>From<input id="from" type="month"></label><span class="range-dash" aria-hidden="true">—</span><label>To<input id="to" type="month"></label><label class="check-label"><input id="excludeBuilders" type="checkbox" checked> Exclude unassigned / Other / Placeholder</label><button id="reset" class="text-button">Reset</button></div>
+    </section>
+    <section class="report-card" aria-label="Monthly lot sales">
+      <div class="report-toolbar"><div class="metric-switch" aria-label="Report metric"><button data-metric="avgPriceFF" aria-pressed="true">Price / FF</button><button data-metric="count" aria-pressed="false">Lot count</button></div><label class="compact-label">Measure<select id="metric"><option value="avgPriceFF">Average $/FF</option><option value="weightedPriceFF">Weighted $/FF</option><option value="count">Lot count</option><option value="avgPrice">Average base price</option><option value="totalPrice">Total base price</option></select></label><div class="toolbar-spacer"></div><label class="check-label"><input id="heat" type="checkbox" checked> Shading</label><button id="collapse" class="text-button">Collapse all</button><label class="compact-label">Sort<select id="sort"><option value="name">Subdivision</option><option value="count">Most lots</option><option value="price">Highest $/FF</option></select></label></div>
+      <div class="report-summary" id="summary"><span>Loading report…</span></div>
+      <div class="matrix-scroll" tabindex="0" role="region" aria-label="Scrollable monthly matrix"><table id="matrix"><caption class="sr-only">Lot sales by territory, subdivision, and month</caption><thead id="matrixHead"></thead><tbody id="matrixBody"></tbody><tfoot id="matrixFoot"></tfoot></table></div>
+      <div id="empty" class="empty"><div class="empty-symbol" aria-hidden="true">▥</div><h2>Connecting to your sales data</h2><p>Open this widget inside Land Master.</p></div>
+      <footer class="report-footer"><span id="definition">Base price only · excludes taxes, fees and interest</span><div class="month-pagination"><button id="newer" class="text-button" disabled>← Newer</button><span id="monthPage"></span><button id="older" class="text-button" disabled>Older →</button></div><span id="quality"></span></footer>
+    </section>
+    <div class="page-foot"><span id="updated">Read-only report</span><span>Lot Sales Explorer <span class="version">v1.0.0</span></span></div>
+  </main>
+  <dialog id="detail"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">LOT DETAIL</div><h2 id="detailTitle"></h2><p id="detailMeta"></p></div><button class="icon-button" id="closeDetail" aria-label="Close lot details">×</button></div><div class="detail-scroll"><table class="detail-table"><thead><tr><th>Lot</th><th>Builder</th><th>Status</th><th>Close date</th><th>Purchase date</th><th>Front ft</th><th>Base price</th><th>$/FF</th></tr></thead><tbody id="detailBody"></tbody></table></div><div class="dialog-foot"><span id="detailPage"></span><button id="detailPrev" class="text-button">Previous</button><button id="detailNext" class="text-button">Next</button><div class="toolbar-spacer"></div><button class="button" id="exportDetail">Export lots</button></div></dialog>
+  <dialog id="diagnostics"><div class="dialog-head"><h2>Diagnostics</h2><button id="closeAudit" class="icon-button" aria-label="Close diagnostics">×</button></div><pre id="auditText"></pre></dialog>
+  <script>
+    // SDK startup lives in the standalone shell; the report model remains embeddable.
+    function configureSalesReporter() {
+      LMCriticalErrors.configure({widget:"Lot Sales Explorer",version:"1.0.0",code:"LSE",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:LMRuntime.current});
+      LMCriticalErrors.markReady();
+    }
+    function initializeSalesCreator() {
+      // ZOHO.CREATOR.init is a v1-only requirement; SDK v2 initializes its own bridge.
+      return LMRuntime.capture();
+    }
+  </script>
+  <script src="sales-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "slug": "lot-sales-explorer",
+  "name": "Lot Sales Explorer",
+  "module": "lots",
+  "version": "1.0.0",
+  "description": "Read-only monthly lot-sales matrix with territory grouping, project/builder filters, configurable price and count measures, drilldown, and CSV export.",
+  "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
+  "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
+  "baseline_zip": null,
+  "html_title": "Lot Sales Explorer",
+  "source_sha256": "df2636e368d2a582780c85e83daed043c1b3b03e04d07506b29d38d9b273fe15",
+  "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+      "connect-src": []
+    },
+    "config": []
+  },
+  "dependency_inventory": "manifests/widget-dependencies.json#lot-sales-explorer",
+  "hosting_entry": "index.html (generated from app/widget.html)",
+  "trust": "Authored in-repo against existing Creator report contracts; synthetic fixtures excluded from releases."
+}

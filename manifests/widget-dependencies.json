@@ -489,6 +489,36 @@
         "fonts.gstatic.com",
         "static.zohocdn.com"
       ]
+    },
+    "lot-sales-explorer": {
+      "forms_referenced": [
+        "Lots",
+        "Subdivision",
+        "Project",
+        "Builder"
+      ],
+      "reports_referenced": [
+        "All_Lots_All_Fields",
+        "All_Subdivisions",
+        "All_Projects",
+        "All_Builders"
+      ],
+      "custom_apis": [
+        {
+          "name": "Report_Proforma_Widget_Error",
+          "config_key": "errorReport",
+          "source": "existing diagnostic reporter"
+        }
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.DATA.getRecords",
+        "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.UTIL.getInitParams"
+      ],
+      "external_domains": [
+        "static.zohocdn.com"
+      ]
     }
   }
 }

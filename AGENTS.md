@@ -39,6 +39,8 @@ Chat history and model memory are not authoritative.
 
 ## Change rules
 
+- Always ask clarifying questions before making a substantial assumption about scope, business rules, data meaning, or a consequential design choice. Continue independent work while waiting; do not treat silence as agreement to a major assumption. Use judgment for routine implementation details that do not materially change the requested outcome.
+
 1. Preserve unrelated functionality.
 2. Never invent a Creator form, report, page, field, function, or Custom API name.
 3. Search all callers before modifying a shared function or API contract.
