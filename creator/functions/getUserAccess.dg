@@ -24,6 +24,9 @@ string getUserAccess(string user)
 	pfSendApprovals = false;
 	pfOwnerEditSend = false;
 	pfAiReview = false;
+	budgetAssignedToMe = false;
+	proformaAssignedToMe = false;
+	legalAssignedToMe = false;
 	// Contract flags
 	ctEdit = false;
 	ctPropose = false;
@@ -66,6 +69,9 @@ string getUserAccess(string user)
 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
 		// AI Review: may run the founder-criteria AI review of a Pro Forma (PF_AI_Review)
 		pfAiReview = row.AI_Review == true;
+		budgetAssignedToMe = row.Budgets_Assigned_to_Me == true;
+		proformaAssignedToMe = row.Pro_Forma_Assigned_to_Me == true;
+		legalAssignedToMe = row.Legal_Assigned_to_Me == true;
 		// Contract permissions
 		// ctEdit: full edit of contracts and their actions
 		// ctPropose: Dev Managers - propose contracts, propose/edit/reorder actions
@@ -134,6 +140,9 @@ string getUserAccess(string user)
 	result.put("pfSendApprovals",pfSendApprovals);
 	result.put("pfOwnerEditSend",pfOwnerEditSend);
 	result.put("pfAiReview",pfAiReview);
+	result.put("budgetAssignedToMe",budgetAssignedToMe);
+	result.put("proformaAssignedToMe",proformaAssignedToMe);
+	result.put("legalAssignedToMe",legalAssignedToMe);
 	// Contract permissions
 	result.put("ctEdit",ctEdit);
 	result.put("ctPropose",ctPropose);

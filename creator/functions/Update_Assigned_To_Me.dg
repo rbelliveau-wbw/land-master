@@ -1,0 +1,64 @@
+string Update_Assigned_To_Me(string user, string area, bool enabled)
+{
+	/* This Custom API is intentionally the only write path used by the widgets.
+	   End users do not need User_Access form or report permissions. In production
+	   Creator supplies zoho.loginuser; the user argument only supports the DEV
+	   impersonation path used by the widget SDK. */
+	requester = zoho.loginuser;
+	if(requester == null || requester.trim() == "")
+	{
+		requester = user;
+	}
+	result = Map();
+	result.put("success",false);
+	if(requester == null || requester.trim() == "")
+	{
+		result.put("message","A signed-in Creator user is required.");
+		return result.toString();
+	}
+	key = area.toLowerCase().trim();
+	fieldName = "";
+	if(key == "budget" || key == "budgets")
+	{
+		fieldName = "Budgets_Assigned_to_Me";
+		key = "budget";
+	}
+	else if(key == "proforma" || key == "pro_forma" || key == "proformas")
+	{
+		fieldName = "Pro_Forma_Assigned_to_Me";
+		key = "proforma";
+	}
+	else if(key == "legal" || key == "contracts")
+	{
+		fieldName = "Legal_Assigned_to_Me";
+		key = "legal";
+	}
+	else
+	{
+		result.put("message","Unknown Assigned to Me area.");
+		return result.toString();
+	}
+	accessRow = User_Access[User == requester];
+	if(accessRow.ID == null)
+	{
+		result.put("message","No User Access record was found for the signed-in user.");
+		return result.toString();
+	}
+	if(fieldName == "Budgets_Assigned_to_Me")
+	{
+		accessRow.Budgets_Assigned_to_Me = enabled;
+	}
+	else if(fieldName == "Pro_Forma_Assigned_to_Me")
+	{
+		accessRow.Pro_Forma_Assigned_to_Me = enabled;
+	}
+	else
+	{
+		accessRow.Legal_Assigned_to_Me = enabled;
+	}
+	result.put("success",true);
+	result.put("area",key);
+	result.put("enabled",enabled);
+	result.put("userAccessId",accessRow.ID.toString());
+	return result.toString();
+}
