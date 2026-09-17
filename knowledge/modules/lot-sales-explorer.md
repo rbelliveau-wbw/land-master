@@ -1,4 +1,4 @@
-# Lot Sales Explorer
+# Land Master Insights
 
 Read-only standalone module for monthly lot sales by territory and subdivision, with project and builder filtering, financial metrics, lot counts, underlying lot drilldown, and CSV export.
 

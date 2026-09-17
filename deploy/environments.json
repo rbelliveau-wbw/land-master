@@ -30,7 +30,10 @@
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.1",
       "settings-manager": "1.2.0",
-      "lot-sales-explorer": "1.0.0"
+      "lot-sales-explorer": "1.0.1"
     }
+  },
+  "path_aliases": {
+    "insights": "lot-sales-explorer"
   }
 }

@@ -1,4 +1,4 @@
-# Lot Sales Explorer 1.0.0
+# Land Master Insights 1.0.1
 
 Standalone, read-only monthly sales matrix grouped by territory and subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -6,7 +6,7 @@ Standalone, read-only monthly sales matrix grouped by territory and subdivision.
 
 Register an externally hosted widget and put it on the desired Creator page:
 
-`https://rbelliveau-wbw.github.io/land-master/prod/lot-sales-explorer/`
+`https://rbelliveau-wbw.github.io/land-master/prod/insights/`
 
 Use this permanent URL, without a release version. It uses the repository's standard cache-busting loader and retains the parent Creator context. Outside Creator it displays an installation empty state; it never displays business records publicly or substitutes mock data for failed live requests.
 
@@ -36,4 +36,4 @@ Run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run
 
 Browser regression: filters, metric switch, drilldown, collapse/expand, month paging, missing-date/empty states, CSV export, reset, refresh, keyboard focus and 390px layout. Live Creator data retrieval still requires the new widget to be placed on a Creator page.
 
-This is the initial immutable release; there is no preceding release to promote. To disable it, remove its page placement while retaining its permanent URL and release artifact. Subsequent rollbacks change only the environment mapping.
+Release 1.0.1 renames the shell to Land Master Insights and publishes `/prod/insights/` as the primary URL. The original `/prod/lot-sales-explorer/` remains a compatibility path. Both paths use the same promoted release and in-document loader, preserving Creator context and query parameters. Source and release identifiers remain `lot-sales-explorer`. To roll back, map production `lot-sales-explorer` to `1.0.0`; both URLs remain available. No forms, fields, functions, or Custom APIs change.

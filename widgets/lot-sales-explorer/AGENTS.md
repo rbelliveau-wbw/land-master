@@ -1,4 +1,4 @@
-# Lot Sales Explorer
+# Land Master Insights
 
 - Keep the Creator adapter, pure report model, and UI separate; other widgets should be able to reuse the model without copying calculations.
 - Ask before changing financial metric definitions, date semantics, default data exclusions, or Pro Forma integration scope.

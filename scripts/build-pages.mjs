@@ -76,6 +76,14 @@ function verifyStableWidgetLoader(source, target, environment, widget, version) 
 }
 
 const rows = [];
+const aliases = config.path_aliases || {};
+for (const [alias, widget] of Object.entries(aliases)) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(alias) ||
+      !Object.values(config.environments).some(mapping => Object.hasOwn(mapping, widget)) ||
+      Object.values(config.environments).some(mapping => Object.hasOwn(mapping, alias))) {
+    throw new Error(`Invalid or conflicting widget path alias: ${alias} -> ${widget}`);
+  }
+}
 for (const [environment, widgets] of Object.entries(config.environments)) {
   const shortName = environment === 'development' ? 'dev' : environment === 'production' ? 'prod' : 'stage';
   for (const [widget, version] of Object.entries(widgets)) {
@@ -83,11 +91,14 @@ for (const [environment, widgets] of Object.entries(config.environments)) {
     if (!fs.existsSync(path.join(source, 'index.html'))) {
       throw new Error(`Missing release entry: ${widget} ${version}`);
     }
-    const target = path.join(out, shortName, widget);
-    copyDir(source, target);
-    writeStableWidgetLoader(target, widget, version);
-    verifyStableWidgetLoader(source, target, environment, widget, version);
-    rows.push({ environment, path: `${shortName}/${widget}/`, widget, version });
+    const paths = [widget, ...Object.keys(aliases).filter(alias => aliases[alias] === widget)];
+    for (const publishedPath of paths) {
+      const target = path.join(out, shortName, publishedPath);
+      copyDir(source, target);
+      writeStableWidgetLoader(target, publishedPath, version);
+      verifyStableWidgetLoader(source, target, environment, publishedPath, version);
+      rows.push({ environment, path: `${shortName}/${publishedPath}/`, widget, version });
+    }
   }
 }
 
