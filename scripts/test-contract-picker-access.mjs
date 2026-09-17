@@ -43,6 +43,13 @@ for (const flags of [null, {}, {found:true,ctEdit:true}, {found:false,ctDeleteAr
 }
 ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
 assert.equal(ctx.canDeleteArchive(), true);
+ctx.ncApplyAccess({found:true,legalAssignedToMe:'true'});
+assert.equal(ctx.S.loiMine, true, 'saved Legal preference accepts the normalized custom API value');
+ctx.ncApplyAccess({found:true,Legal_Assigned_to_Me:'true'});
+assert.equal(ctx.S.loiMine, true, 'saved Legal preference accepts the Creator field-name fallback');
+ctx.ncApplyAccess({found:true,legalAssignedToMe:'false',Legal_Assigned_to_Me:'true'});
+assert.equal(ctx.S.loiMine, false, 'normalized custom API key takes precedence over the field-name fallback');
+ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
 let deleteRequest;
 ctx.window = {ZOHO:{}};
 ctx.ZOHO = {CREATOR:{API:{deleteRecord:async args => { deleteRequest=args; return {code:3000}; }}}};

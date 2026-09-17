@@ -57,8 +57,22 @@ const proformaHtml = fs.readFileSync(path.join(root, 'widgets/proforma-manager/s
 if (!proformaHtml.includes('btn-new-icon') || !proformaHtml.includes('class="btn primary" id="btnNew"')) {
   errors.push('proforma-manager: polished New Pro Forma action is missing.');
 }
+const proformaAccessStart = proformaHtml.indexOf('function applyPermsFromFlags(');
+const proformaAccessEnd = proformaHtml.indexOf('\nfunction perms()', proformaAccessStart);
+const proformaAccessSource = proformaHtml.slice(proformaAccessStart, proformaAccessEnd);
+if (!proformaAccessSource.includes('S.proformaAssignedToMe=t(flags && (flags.proformaAssignedToMe != null ? flags.proformaAssignedToMe : flags.Pro_Forma_Assigned_to_Me));')) {
+  errors.push('proforma-manager: saved Assigned to Me preference is not applied while resolving User Access.');
+}
+const errorContextStart = proformaHtml.indexOf('function currentErrorContext(');
+const errorContextEnd = proformaHtml.indexOf('\nfunction compactAuditForEmail()', errorContextStart);
+if (proformaHtml.slice(errorContextStart, errorContextEnd).includes('proformaAssignedToMe')) {
+  errors.push('proforma-manager: Assigned to Me initialization leaked into error-context generation.');
+}
 
 const contractHtml = fs.readFileSync(path.join(root, 'widgets/contract-management/src/app/widget.html'), 'utf8');
+if (!contractHtml.includes('S.loiMine=truthy(flags.legalAssignedToMe != null ? flags.legalAssignedToMe : flags.Legal_Assigned_to_Me);')) {
+  errors.push('contract-management: saved Legal Assigned to Me preference is not normalized while resolving User Access.');
+}
 for (const required of [
   'Create_Contract_Attachment_Record',
   'Delete_Contract_Attachment',
