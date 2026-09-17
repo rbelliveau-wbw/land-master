@@ -1,4 +1,4 @@
-# Land Master Insights 1.2.1
+# Land Master Insights 1.2.2
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by territory and subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -68,3 +68,7 @@ Verification: multi-value scope isolation, separate status aggregation and share
 ## 1.2.1 Builder picker
 
 The Builder dropdown only offers records with Type1 equal to Builder, sorted alphabetically. The adapter requests the existing Type1 field from All_Builders. All builder reference records remain available for historical lot labels; this changes picker options only, not the report’s default population or financial calculations. Regression: Builder entries appear alphabetically, Seller/City/County/Other types are absent, and selecting a builder still scopes the report. Changed source: creator-adapter.js, sales-app.js and versioned widget.html; fixture data adds a Seller for browser verification. No forms, fields, functions or Custom APIs change and no Creator deployment is required. Rollback: map production lot-sales-explorer to 1.2.0.
+
+## 1.2.2 Dropdown chevrons
+
+Replaces the font-dependent caret character with a fixed-size SVG chevron centered vertically and consistently inset on all eight dropdown triggers. Source changes: insights-controls.js/css and versioned widget.html/sales-app.js. Browser verification checks every dropdown’s center alignment and right inset. No data rules, forms, fields, functions or Custom APIs change; no Creator deployment is required. Rollback: production lot-sales-explorer to 1.2.1.

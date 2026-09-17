@@ -248,13 +248,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "description": "Read-only Lot Sales dashboard with searchable multi-select filters, custom month controls, Base totals, recent-year-first loading and background history.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "196324d993d32f922c028869f6e7ae28c7d4dcce326fd8ac67ef873b1a9f38e0",
+      "source_sha256": "5d34a3983522d766470200e4d5e57f62ecb7852f792172ddf370b45db72ce043",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
