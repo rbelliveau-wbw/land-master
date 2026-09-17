@@ -3,7 +3,7 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.77.3`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.79.13`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 ## Baseline
 
@@ -53,3 +53,7 @@ The record Comments tab reads Comment_Log_Report scoped to Pro_Forma and uses th
 Deploy Validate_Comment_Log (Created or Edited / Validations on form submission) with the form and report before live testing. No Custom API changes are needed. SDK writes do not skip workflows. Validation enforces author-only changes within 24 hours of Added_Time, keeps parent and author immutable, marks edits, and replaces deleted content with Deleted by user while retaining its record. Comments are standalone and never copied when duplicating a Pro Forma.
 
 The thread supports safe Markdown formatting, emoji, quote replies, search, copy, date separators, user colors and retained in-session drafts. Live SDK workflow execution and ordinary-user permissions still require DEV verification after the user-managed Creator deployment. Local browser create/edit/delete checks and automated identity, expiry and HTML-escaping tests passed. Roll back the widget by restoring the development/production mappings to 1.77.3; retain Comment_Log data and validation.
+
+## Navarro County (1.79.13)
+
+Added `Navarro` to County choices for existing and new Property rows. Existing choices and persistence behavior are retained. Creator County picklists are audited separately. Regression: select Navarro, retain existing counties, and validate the production Pages artifact. Rollback: restore the production mapping to `1.79.12`.

@@ -3,7 +3,7 @@
 
 Projects, subdivisions, companies, properties, related records, filters, and editing.
 
-Current release: `8.11.6`.
+Current release: `8.11.7`.
 
 ## Baseline
 
@@ -43,3 +43,7 @@ npm run package:creator -- land-master
 npm run release -- land-master <new-version>
 npm run build:pages
 ```
+
+## Navarro County (8.11.7)
+
+Added `Navarro` to Property, Project, Subdivision, and Lot County choices. Existing choices and persistence behavior are retained. Creator County picklists are audited separately. Regression: select Navarro, retain existing counties, and validate the production Pages artifact. Rollback: restore the production mapping to `8.11.6`.

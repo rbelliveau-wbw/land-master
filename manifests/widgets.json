@@ -5,13 +5,13 @@
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.79.12",
+      "version": "1.79.13",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "9471195ead0bafca44f4775140f502ce94bc070740c319dd274dbe5879560168",
+      "source_sha256": "113f36508df64d390ddf7d87888b458858bea939f4ff8dec3aea22d7a4f07b2a",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.11.6",
+      "version": "8.11.7",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "dd8a73a330c782d11c9caa9baca0413f1e1bf15fc9bff4bf23dbb97e35c2af91",
+      "source_sha256": "b56b0a43959e0574df0f77014bb2d2ddc36c223fd4b9a82903f437c87bc6ed65",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [

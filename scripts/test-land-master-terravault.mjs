@@ -4,9 +4,10 @@ import path from "node:path";
 
 const root = process.cwd();
 const widget = fs.readFileSync(path.join(root, "widgets/land-master/src/app/widget.html"), "utf8");
+const config = JSON.parse(fs.readFileSync(path.join(root, "widgets/land-master/widget.config.json"), "utf8"));
 
 for (const required of [
-  'version: "8.11.6-TERRAVAULT-COMPOSITE"',
+  `version: "${config.version}-TERRAVAULT-COMPOSITE"`,
   'F("TerraVault_URL","TerraVault URL","url",rec.TerraVault_URL,{full:1})',
   '{label:"TerraVault URL",key:"TerraVault_URL",edit:"url"}',
   'function normalizeWebUrl(v)',
