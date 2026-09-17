@@ -34,6 +34,8 @@ assert.ok(!xss.includes('<img'));
 assert.ok(!xss.includes('href="javascript:'));
 assert.ok(!xss.includes('"onclick="'));
 assert.equal(c.color('alice'),c.color('ALICE'));
+assert.equal(c.id([{ID:'4410926000003957018'}]),'4410926000003957018','Creator lookup arrays resolve to their record ID');
+assert.equal(c.id({value:'4410926000003957019'}),'4410926000003957019','Creator lookup objects resolve alternate value shapes');
 const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 assert.match(source,/comments:1/);
 assert.match(source,/id="recCommentsBtn"/);
@@ -60,6 +62,8 @@ assert.ok(!/function commentWrite[\s\S]*?function openPfComments/.exec(source)[0
 const commentSource=fs.readFileSync('widgets/proforma-manager/src/app/comments.js','utf8');
 assert.match(commentSource,/onRows/);
 assert.match(commentSource,/function parentField\(\)\{return typeof api\.parentField==='function'/,'the shared component resolves its parent lookup dynamically when needed');
+assert.match(commentSource,/field=parentField\(\)[\s\S]*?id\(r\[field\]\)===pf/,'loaded rows are filtered against the active Project, Budget, Contract1, or Pro_Forma lookup');
+assert.doesNotMatch(commentSource,/id\(r\.Pro_Forma\)===pf/,'the shared modal does not discard non-Pro_Forma comment rows');
 assert.match(commentSource,/PALETTE=\['blue','violet','teal','amber','rose','indigo','cyan','orange'\]/,'the thread provides eight author colors');
 assert.doesNotMatch(commentSource,/data-pc="copy"/);
 assert.doesNotMatch(commentSource,/pc-search|data-pc="refresh"/);

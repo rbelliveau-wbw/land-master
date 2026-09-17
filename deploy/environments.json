@@ -22,10 +22,10 @@
       "manage-lots": "0.1.0"
     },
     "production": {
-      "proforma-manager": "1.79.6",
-      "budget-manager": "122.27.2",
+      "proforma-manager": "1.79.7",
+      "budget-manager": "122.27.3",
       "land-master": "8.11.6",
-      "contract-management": "1.60.16",
+      "contract-management": "1.60.17",
       "tax-center": "19.17.1",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.0",
