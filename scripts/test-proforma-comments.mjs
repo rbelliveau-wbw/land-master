@@ -82,6 +82,14 @@ assert.match(contractSource,/Contract1 == /,'contract comment reads use the Cont
 assert.match(budgetSource,/function budgetCommentRecordId\(b\)/,'budget comments resolve the Add_Budget record ID instead of the grouped project ID');
 assert.match(budgetSource,/parentField:function\(\)\{return budgetCommentThreadField;/,'Project and Budget threads resolve their active lookup field independently');
 const commentCss=fs.readFileSync('widgets/proforma-manager/src/app/comments.css','utf8');
-assert.match(commentCss,/\.comment-activity-btn\{[^}]*width:49\.5px[^}]*height:49\.5px/,'Legal and Budget share the Pro Forma-sized comment control');
+assert.match(contractSource,/contract-attachments" data-contract-attachments/,'Legal attachment buttons retain an attachment count without the glowing attachment state');
+assert.doesNotMatch(contractSource,/contract-attachments'\+\(count\?' has-files':'\)/,'Legal attachment buttons do not add a glow when files are present');
+assert.match(contractSource,/\.cname-extras \.comment-activity-btn\{[^}]*width:28\.75px[^}]*height:28\.75px/,'Legal attachment and comment controls are 15% larger');
+assert.match(budgetSource,/\.project-comment\{width:32\.5px;height:32\.5px/,'Budget project comment controls are 30% larger');
+assert.match(budgetSource,/\.phase-comment,\.phase-attachment\{width:28\.75px;height:28\.75px/,'Budget phase controls are 15% larger');
+assert.match(budgetSource,/function budgetAttachmentButton\(b,label\)/,'Budget phases have attachment controls');
+assert.match(budgetSource,/budgetAttachmentButton\(b, phaseName\(b\)\) \+\s*budgetCommentButton\("Budget"/,'Budget phase actions order attachments before comments');
+assert.match(budgetSource,/function loadBudgetAttachmentSummaries\(\)/,'Budget attachment counts load from Contract_Version records');
+assert.match(budgetSource,/openPhaseEditor\(attachment\.dataset\.budgetAttachments, "attachments"\)/,'Budget attachment buttons open the existing attachment workspace');
 assert.match(commentCss,/\.pf-comment-modal-close svg\{[^}]*stroke:currentColor/,'modal close icon is explicitly drawn in the header color');
 console.log('Comment authors, 24-hour boundaries, timezone, safe formatting and SDK contract verified.');

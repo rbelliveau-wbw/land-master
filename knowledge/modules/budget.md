@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Attachment and comment actions (122.27.4)
+
+Project comments are 30% larger. Each phase now shows its attachment count followed by its comment count; both phase controls are 15% larger. Attachment counts load from the existing `Contract_Version.Budget` records and open the phase's existing Attachments workspace. Rollback: `122.27.3`.
+
 ## Comment Log on Projects and Budgets (122.27.0)
 
 Project cards use `Comment_Log.Project` for overarching project discussion; phase rows and the phase-editor toolbar use `Comment_Log.Budget` for budget-specific discussion. Counts and the teal recent-activity state share the Pro Forma seven-day rule. The Comment Log form/report and the `Validate_Comment_Log` workflow must expose and preserve both parent lookups. Rollback: `122.26.9`.

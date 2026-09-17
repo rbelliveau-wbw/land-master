@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Attachment and comment action size (1.60.18)
+
+The contract-list attachment and comment controls are 15% larger. Attachments always show their count without a recent-activity glow; comments retain their existing seven-day activity signal. Rollback: `1.60.17`.
+
 ## Comment Log on contract rows (1.60.14)
 
 Each Contract row has a Comment Log action using `Comment_Log.Contract`. It mirrors the count and seven-day recent-activity treatment used for Pro Forma, Project, and Budget discussions. The `Contract` lookup must be published on Comment Log, and `Validate_Comment_Log` must preserve it on edits. Rollback: `1.60.12`.
