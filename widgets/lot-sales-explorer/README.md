@@ -1,4 +1,4 @@
-# Land Master Insights 1.2.2
+# Land Master Insights 1.3.0
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by territory and subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -72,3 +72,9 @@ The Builder dropdown only offers records with Type1 equal to Builder, sorted alp
 ## 1.2.2 Dropdown chevrons
 
 Replaces the font-dependent caret character with a fixed-size SVG chevron centered vertically and consistently inset on all eight dropdown triggers. Source changes: insights-controls.js/css and versioned widget.html/sales-app.js. Browser verification checks every dropdown’s center alignment and right inset. No data rules, forms, fields, functions or Custom APIs change; no Creator deployment is required. Rollback: production lot-sales-explorer to 1.2.1.
+
+## 1.3.0 Budget-style UI
+
+Insights now adopts the existing Budget Manager landing-combo and budget-layout.css patterns: white filter pills, a blue search icon and clear action, blue-gray card surfaces, navy actions, striped tables, compact typography and structured summary values. Every dropdown uses a geometrically centered SVG chevron with the Budget module’s rotation transition and menu fade. Selected multi-value filters have direct clear buttons; search focuses on open, selection preserves list scroll position, Escape returns focus, and menus stay within the viewport. Month controls use a geometric calendar icon. Reduced motion disables the new transitions.
+
+Changed UI files: insights-controls.js, new insights-theme.css, versioned widget.html/sales-app.js, config/release/deployment manifests and style guide. The existing report model, Builder Type1 restriction, date semantics, Base totals, separate Sold/Contracted populations, background loading, pinned footer and pagination are preserved. Browser regression: all eight chevron center offsets, open rotation/menu animation, searchable multi-selection, direct filter/search clearing, Escape focus, month popover and visible footer. Full validation and Pages build are required. No forms, fields, functions or Custom APIs change; no Creator deployment is required. Rollback: map production lot-sales-explorer to 1.2.2.
