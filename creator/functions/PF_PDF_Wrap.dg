@@ -1,6 +1,7 @@
 				 list PF_PDF_Wrap(string value, int maxChars)
                  {
                  	lines = List();
+	if(maxChars < 1) { maxChars = 1; }
                  	clean = thisapp.PF_PDF_Clean(value);
                  	if(clean == "")
                  	{
@@ -13,9 +14,24 @@
                  	{
                  		if(word.length() > maxChars)
                  		{
-                 			word = word.left(maxChars - 3) + "...";
+			if(current != "") { lines.add(current); current = ""; }
+                wordLength = word.length();
+                chunkCount = (wordLength / maxChars).ceil().toLong();
+                chunkStart = 0;
+                for each ignoredChunk in thisapp.forLoop(1,chunkCount)
+                {
+                    chunkEnd = chunkStart + maxChars;
+                    if(chunkEnd > wordLength) { chunkEnd = wordLength; }
+                    chunk = word.subString(chunkStart,chunkEnd);
+                    if(chunkEnd < wordLength) { lines.add(chunk); }
+                    else { current = chunk; }
+                    chunkStart = chunkEnd;
+                }
+                word = "";
                  		}
-                 		candidate = word;
+		if(word != "")
+		{
+			candidate = word;
                  		if(current != "")
                  		{
                  			candidate = current + " " + word;
@@ -32,6 +48,7 @@
                  			}
                  			current = word;
                  		}
+		}
                  	}
                  	if(current != "")
                  	{

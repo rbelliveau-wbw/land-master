@@ -710,10 +710,21 @@
                  			{
                  				loiRec.Assumed_Effective_Date=ws.get("Assumed_Effective_Date").toString().toDate("MM/dd/yyyy");
                  			}
-                 			if(ws.get("Projected_Hard_Close_Date") != null && ws.get("Projected_Hard_Close_Date").toString() != "")
-                 			{
-                 				loiRec.Projected_Hard_Close_Date=ws.get("Projected_Hard_Close_Date").toString().toDate("MM/dd/yyyy");
-                 			}
+                    else if(loiRec.Assumed_Effective_Date == null || ws.get("Assumed_Effective_Date") != null)
+                    {
+                        loiRec.Assumed_Effective_Date=zoho.currentdate;
+                    }
+			if(ws.get("Projected_Hard_Close_Date") != null)
+                    {
+                        if(ws.get("Projected_Hard_Close_Date").toString().trim() == "")
+                        {
+                            loiRec.Projected_Hard_Close_Date=null;
+                        }
+                        else
+                        {
+                            loiRec.Projected_Hard_Close_Date=ws.get("Projected_Hard_Close_Date").toString().toDate("MM/dd/yyyy");
+                        }
+                    }
                  			if(ws.get("Earnest_Money_Due_Date") != null && ws.get("Earnest_Money_Due_Date").toString() != "")
                  			{
                  				loiRec.Earnest_Money_Due_Date=ws.get("Earnest_Money_Due_Date").toString().toDate("MM/dd/yyyy");

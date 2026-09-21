@@ -16,6 +16,38 @@ string Get_Proforma_Approval_PDF(string payload)
 			resp.put("error","Pro Forma id is required.");
 			return resp.toString();
 		}
+		// Document export shares the authenticated export endpoint, but never submits to Legal.
+		if(ifnull(data.get("format"),"pdf").toString() == "docx")
+		{
+			exportPfId = pfId.toLong();
+			sellerCount = Builder[Proforma.contains(exportPfId.toString())].count();
+			propertyCount = Property[Proforma.contains(exportPfId.toString())].count();
+			if(sellerCount != 1 || propertyCount != 1)
+			{
+				resp.put("success",false);
+				resp.put("error","Manual preparation required: LOI/Contract export needs exactly one seller and one property.");
+				return resp.toString();
+			}
+			document = thisapp.PF_Build_LOI_Document(pfId);
+			if(ifnull(document.get("success"),false) != true)
+			{
+				resp.put("success",false);
+				resp.put("error",ifnull(document.get("message"),"Could not generate the Word document."));
+				return resp.toString();
+			}
+			encodedFile = zoho.encryption.base64Encode(document.get("file"));
+			if(encodedFile == null || encodedFile == "")
+			{
+				resp.put("success",false);
+				resp.put("error","Could not encode the Word document for download.");
+				return resp.toString();
+			}
+			resp.put("success",true);
+			resp.put("fileName",document.get("fileName"));
+			resp.put("base64",encodedFile);
+			resp.put("mimeType","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+			return resp.toString();
+		}
 		if(approvalId == "")
 		{
 			// default to the first approval step of the chain

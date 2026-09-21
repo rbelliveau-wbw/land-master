@@ -1,0 +1,564 @@
+map PF_Build_LOI_Document(string proformaId)
+{
+	result = Map();
+	trace = List();
+	stage = "start";
+	try
+	{
+		startEntry = Map();
+		startEntry.put("level","info");
+		startEntry.put("stage","start");
+		startEntry.put("message","LOI document generation started");
+		startEntry.put("meta",{"proformaId":proformaId,"loginUser":zoho.loginuser});
+		trace.add(startEntry);
+		if(proformaId == null || proformaId.trim() == "")
+		{
+			result.put("success",false);
+			result.put("message","No Pro Forma ID was supplied.");
+			result.put("stage",stage);
+			result.put("audit",trace);
+			return result;
+		}
+		stage = "load_proforma";
+		pfId = proformaId.toLong();
+		pf = Add_Pro_Forma[ID == pfId];
+		if(pf.ID == null)
+		{
+			result.put("success",false);
+			result.put("message","The Pro Forma record could not be found.");
+			result.put("stage",stage);
+			result.put("audit",trace);
+			return result;
+		}
+		loadEntry = Map();
+		loadEntry.put("level","info");
+		loadEntry.put("stage",stage);
+		loadEntry.put("message","Pro Forma loaded");
+		loadEntry.put("meta",{"proformaId":pf.ID.toString(),"name":ifnull(pf.Name,"")});
+		trace.add(loadEntry);
+		// ============================================================
+		// RESOLVE THE LOI WORKSHEET + THE SELLER / PROPERTY SUBFORM RECORDS
+		// These are the ONLY source of truth. The LOI Worksheet holds the terms
+		// and the buying entity (Company); the Seller / Property subforms create
+		// Builder / Property records linked through their multi-select "Proforma"
+		// lookup. The Pro Forma's own LOI fields are deprecated and are NOT read
+		// here except the dedicated authorized-signer field on the Pro Forma.
+		// ============================================================
+		stage = "resolve_subform_records";
+		loiRec = null;
+		for each  w in LOI_Worksheet[Proforma == pfId]
+		{
+			if(loiRec == null)
+			{
+				loiRec = w;
+			}
+			if(w.Is_Current == true)
+			{
+				loiRec = w;
+			}
+		}
+		sellerRec = null;
+		sellerCount = 0;
+		for each  sRec in Builder[Proforma.contains(pfId.toString())]
+		{
+			sellerCount = sellerCount + 1;
+			if(sellerRec == null)
+			{
+				sellerRec = sRec;
+			}
+		}
+		propRec = null;
+		propertyCount = 0;
+		for each  pRec in Property[Proforma.contains(pfId.toString())]
+		{
+			propertyCount = propertyCount + 1;
+			if(propRec == null)
+			{
+				propRec = pRec;
+			}
+		}
+		// ---- Seller fields: from the Builder (Seller) subform record ----
+		rSeller = "";
+		if(sellerRec != null && ifnull(sellerRec.Builder_Name,"").trim() != "")
+		{
+			rSeller = sellerRec.Builder_Name.trim();
+		}
+		rSellerEmail = "";
+		if(sellerRec != null && ifnull(sellerRec.Email,"").trim() != "")
+		{
+			rSellerEmail = sellerRec.Email.trim();
+		}
+		rSellerPhone = "";
+		if(sellerRec != null && ifnull(sellerRec.Phone_Number,"").trim() != "")
+		{
+			rSellerPhone = sellerRec.Phone_Number.trim();
+		}
+		rStreet = "";
+		if(sellerRec != null && ifnull(sellerRec.Street_Address,"").trim() != "")
+		{
+			rStreet = sellerRec.Street_Address.trim();
+		}
+		else if(sellerRec != null && ifnull(sellerRec.Address,"").trim() != "")
+		{
+			rStreet = sellerRec.Address.trim();
+		}
+		rSellerCityZip = "";
+		if(sellerRec != null && ifnull(sellerRec.City_State_ZIP,"").trim() != "")
+		{
+			rSellerCityZip = sellerRec.City_State_ZIP.trim();
+		}
+		// Authorized Signer for Seller is entered on the Pro Forma Offer form.
+		rAuthSigner = ifnull(pf.Authorized_Signer_for_Seller,"").trim();
+		// ---- Property fields: from the Property subform record ----
+		rCAD = "";
+		if(propRec != null && ifnull(propRec.Property_ID,"").trim() != "")
+		{
+			rCAD = propRec.Property_ID.trim();
+		}
+		rPropCounty = "";
+		if(propRec != null && ifnull(propRec.County,"").trim() != "")
+		{
+			rPropCounty = propRec.County.trim();
+		}
+		rPropCity = "";
+		if(propRec != null && ifnull(propRec.City,"").trim() != "")
+		{
+			rPropCity = propRec.City.trim();
+		}
+		// ---- LOI terms: from the LOI Worksheet record only ----
+		vEarnest = null;
+		if(loiRec != null && loiRec.Earnest_Money != null)
+		{
+			vEarnest = loiRec.Earnest_Money;
+		}
+		vFeas = null;
+		if(loiRec != null && loiRec.Initial_Feasibility_Days != null)
+		{
+			vFeas = loiRec.Initial_Feasibility_Days;
+		}
+		vExt = null;
+		if(loiRec != null && loiRec.Extensions != null)
+		{
+			vExt = loiRec.Extensions;
+		}
+		vDaysExt = null;
+		if(loiRec != null && loiRec.Days_Per_Extension != null)
+		{
+			vDaysExt = loiRec.Days_Per_Extension;
+		}
+		vAmtExt = null;
+		if(loiRec != null && loiRec.Amount_Per_Extension != null)
+		{
+			vAmtExt = loiRec.Amount_Per_Extension;
+		}
+		vClosing = null;
+		if(loiRec != null && loiRec.Closing_Days_After_Feasibility != null)
+		{
+			vClosing = loiRec.Closing_Days_After_Feasibility;
+		}
+		vResponse = null;
+		if(loiRec != null && loiRec.Response_Date != null)
+		{
+			vResponse = loiRec.Response_Date;
+		}
+		vAmtAcre = null;
+		if(loiRec != null && loiRec.Amount_Per_Acre != null)
+		{
+			vAmtAcre = loiRec.Amount_Per_Acre;
+		}
+		vTotalAcres = null;
+		if(loiRec != null && loiRec.Total_Acres != null)
+		{
+			vTotalAcres = loiRec.Total_Acres;
+		}
+		vLandCost = null;
+		if(loiRec != null && loiRec.Estimated_Price != null)
+		{
+			vLandCost = loiRec.Estimated_Price;
+		}
+		vSpecial = "";
+		if(loiRec != null && loiRec.Special_Provisions != null && loiRec.Special_Provisions.trim() != "")
+		{
+			vSpecial = loiRec.Special_Provisions;
+		}
+		vBrokerBuyer = "";
+		if(loiRec != null && loiRec.Buyer_Broker != null && loiRec.Buyer_Broker.trim() != "")
+		{
+			vBrokerBuyer = loiRec.Buyer_Broker;
+		}
+		vBrokerSeller = "";
+		if(loiRec != null && loiRec.Seller_Broker != null && loiRec.Seller_Broker.trim() != "")
+		{
+			vBrokerSeller = loiRec.Seller_Broker;
+		}
+		vAcqEmail = "";
+		if(loiRec != null && loiRec.Acquisition_Email != null && loiRec.Acquisition_Email.trim() != "")
+		{
+			vAcqEmail = loiRec.Acquisition_Email;
+		}
+		// Buying entity id: ALWAYS the LOI Worksheet Company.
+		vBuyingEntityId = null;
+		if(loiRec != null && loiRec.Company != null)
+		{
+			vBuyingEntityId = loiRec.Company;
+		}
+		subformEntry = Map();
+		subformEntry.put("level","info");
+		subformEntry.put("stage",stage);
+		subformEntry.put("message","LOI Worksheet, Seller and Property resolved from subform records");
+		subformEntry.put("meta",{"loiWorksheetId":if(loiRec != null,loiRec.ID.toString(),""),"sellerCount":sellerCount,"propertyCount":propertyCount,"sellerId":if(sellerRec != null,sellerRec.ID.toString(),""),"propertyId":if(propRec != null,propRec.ID.toString(),"")});
+		trace.add(subformEntry);
+		// ============================================================
+		// VALIDATE — NON-BLOCKING. Missing fields no longer stop the
+		// submission; they are recorded as warnings and stamped into the
+		// merged document as "[MISSING: <field>]" so Legal sees the gap.
+		// ============================================================
+		stage = "validate_loi";
+		missing = List();
+		mSeller = rSeller;
+		if(rSeller == "")
+		{
+			missing.add("Seller");
+			mSeller = "[MISSING: Seller]";
+		}
+		mStreet = rStreet;
+		if(rStreet == "")
+		{
+			missing.add("Street Address");
+			mStreet = "[MISSING: Street Address]";
+		}
+		mSellerCityZip = rSellerCityZip;
+		if(rSellerCityZip == "")
+		{
+			missing.add("Seller City State ZIP");
+			mSellerCityZip = "[MISSING: Seller City State ZIP]";
+		}
+		mSellerPhone = rSellerPhone;
+		if(rSellerPhone == "")
+		{
+			missing.add("Seller Phone");
+			mSellerPhone = "[MISSING: Seller Phone]";
+		}
+		mSellerEmail = rSellerEmail;
+		if(rSellerEmail == "")
+		{
+			missing.add("Seller Email");
+			mSellerEmail = "[MISSING: Seller Email]";
+		}
+		mCAD = rCAD;
+		if(rCAD == "")
+		{
+			missing.add("CAD ID");
+			mCAD = "[MISSING: CAD ID]";
+		}
+		mPropCounty = rPropCounty;
+		if(rPropCounty == "")
+		{
+			missing.add("Property County");
+			mPropCounty = "[MISSING: Property County]";
+		}
+		mPropCity = rPropCity;
+		if(rPropCity == "")
+		{
+			missing.add("Property City");
+			mPropCity = "[MISSING: Property City]";
+		}
+		if(vBuyingEntityId == null)
+		{
+			missing.add("Buying Entity");
+		}
+		if(vTotalAcres == null)
+		{
+			missing.add("Total Acres");
+		}
+		if(vAmtAcre == null)
+		{
+			missing.add("Land Cost per Acre");
+		}
+		if(vEarnest == null)
+		{
+			missing.add("Earnest Money");
+		}
+		if(vFeas == null)
+		{
+			missing.add("Initial Feasibility Days");
+		}
+		if(vExt == null)
+		{
+			missing.add("Extensions");
+		}
+		if(vDaysExt == null)
+		{
+			missing.add("Days per Extension");
+		}
+		if(vAmtExt == null)
+		{
+			missing.add("Amount per Extension");
+		}
+		if(vClosing == null)
+		{
+			missing.add("Closing Days after Feasibility");
+		}
+		if(vResponse == null)
+		{
+			missing.add("Response Date");
+		}
+		validationEntry = Map();
+		validationEntry.put("level",if(missing.size() > 0,"warn","success"));
+		validationEntry.put("stage",stage);
+		validationEntry.put("message",if(missing.size() > 0,"Generating with missing LOI fields (flagged in the document)","All required LOI fields are present"));
+		validationEntry.put("meta",{"missing":missing,"proceeding":true});
+		trace.add(validationEntry);
+		// ============================================================
+		// CONTRACT DEFAULTS — Territory (a Pro Forma field) is non-blocking too.
+		// ============================================================
+		stage = "resolve_contract_defaults";
+		contractTerritory = ifnull(pf.Territory,"").trim();
+		wbwPointPerson = "RH";
+		if(contractTerritory == "")
+		{
+			missing.add("Territory");
+			territoryWarnEntry = Map();
+			territoryWarnEntry.put("level","warn");
+			territoryWarnEntry.put("stage",stage);
+			territoryWarnEntry.put("message","Pro Forma Territory is blank; Contract created without a Territory");
+			territoryWarnEntry.put("meta",{"proformaId":pf.ID.toString(),"contractType":"Acquisition"});
+			trace.add(territoryWarnEntry);
+		}
+		contractDefaultsEntry = Map();
+		contractDefaultsEntry.put("level","info");
+		contractDefaultsEntry.put("stage",stage);
+		contractDefaultsEntry.put("message","Contract defaults resolved before Writer merge");
+		contractDefaultsEntry.put("meta",{"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":wbwPointPerson});
+		trace.add(contractDefaultsEntry);
+		stage = "resolve_buying_entity";
+		mBuyingEntity = "[MISSING: Buying Entity]";
+		if(vBuyingEntityId != null)
+		{
+			mBuyingEntity = vBuyingEntityId.toString();
+			companyRec = Company[ID == vBuyingEntityId];
+			if(companyRec.ID != null && companyRec.Company_Name != null && companyRec.Company_Name.trim() != "")
+			{
+				mBuyingEntity = companyRec.Company_Name.trim();
+			}
+		}
+		entityEntry = Map();
+		entityEntry.put("level","info");
+		entityEntry.put("stage",stage);
+		entityEntry.put("message","Buying entity resolved from LOI Worksheet");
+		entityEntry.put("meta",{"buyingEntityId":if(vBuyingEntityId != null,vBuyingEntityId.toString(),""),"buyingEntityName":mBuyingEntity});
+		trace.add(entityEntry);
+		// ============================================================
+		// BUILD MERGE DATA — worksheet / subform values, with "[MISSING: x]"
+		// stamped for any required field that is still blank.
+		// ============================================================
+		stage = "build_merge_data";
+		mergeRow = Map();
+		mergeRow.put("Seller",mSeller);
+		mergeRow.put("Authorized_Signer_for_Seller",rAuthSigner);
+		mergeRow.put("Street_Address",mStreet);
+		mergeRow.put("Seller_City_State_ZIP",mSellerCityZip);
+		mergeRow.put("Seller_Phone",mSellerPhone);
+		mergeRow.put("Seller_Email",mSellerEmail);
+		mergeRow.put("Buying_Entity",mBuyingEntity);
+		mergeRow.put("CAD_ID",mCAD);
+		mergeRow.put("Property_County",mPropCounty);
+		mergeRow.put("Property_City",mPropCity);
+		mergeRow.put("Total_Acres",if(vTotalAcres != null,vTotalAcres.toString(),"[MISSING: Total Acres]"));
+		mergeRow.put("Land_Cost",if(vLandCost != null,vLandCost.toString(),""));
+		mergeRow.put("Land_Cost_Written",if(vLandCost != null,vLandCost.round(0).toWords("en-us"),""));
+		mergeRow.put("Amount_per_Acre",if(vAmtAcre != null,vAmtAcre.toString(),"[MISSING: Land Cost per Acre]"));
+		mergeRow.put("Earnest_Money",if(vEarnest != null,vEarnest.toString(),"[MISSING: Earnest Money]"));
+		mergeRow.put("Earnest_Money_Written",if(vEarnest != null,vEarnest.round(0).toWords("en-us"),""));
+		mergeRow.put("Special_Provisions",if(vSpecial == null || vSpecial.trim() == "","None.",vSpecial));
+		mergeRow.put("Initial_Feasibility_Days",if(vFeas != null,vFeas.toString(),"[MISSING: Initial Feasibility Days]"));
+		mergeRow.put("Initial_Feasibility_Days_Written",if(vFeas != null,vFeas.toWords("en-us"),""));
+		mergeRow.put("Extensions",if(vExt != null,vExt.toString(),"[MISSING: Extensions]"));
+		mergeRow.put("Extensions_Written",if(vExt != null,vExt.toWords("en-us"),""));
+		mergeRow.put("Days_per_Extension",if(vDaysExt != null,vDaysExt.toString(),"[MISSING: Days per Extension]"));
+		mergeRow.put("Days_per_Extension_Written",if(vDaysExt != null,vDaysExt.toWords("en-us"),""));
+		mergeRow.put("Amount_per_Extension",if(vAmtExt != null,vAmtExt.toString(),"[MISSING: Amount per Extension]"));
+		mergeRow.put("Amount_per_Extension_Written",if(vAmtExt != null,vAmtExt.round(0).toWords("en-us"),""));
+		mergeRow.put("Closing_Days_Feas",if(vClosing != null,vClosing.toString(),"[MISSING: Closing Days after Feasibility]"));
+		mergeRow.put("Closing_Days_Feas_Written",if(vClosing != null,vClosing.toWords("en-us"),""));
+		mergeRow.put("Broker_Buyer",if(vBrokerBuyer == null || vBrokerBuyer.trim() == "","None",vBrokerBuyer));
+		mergeRow.put("Broker_Seller",if(vBrokerSeller == null || vBrokerSeller.trim() == "","None",vBrokerSeller));
+		mergeRow.put("Response_Date",if(vResponse != null,vResponse.toString("yyyy-MM-dd"),"[MISSING: Response Date]"));
+		mergeRow.put("Acquisition_Email",ifnull(vAcqEmail,""));
+		mergeEntry = Map();
+		mergeEntry.put("level","info");
+		mergeEntry.put("stage",stage);
+		mergeEntry.put("message","Writer merge map built");
+		mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"termsSource":if(loiRec != null,"loi_worksheet","blank"),"sellerSource":if(sellerRec != null,"subform","blank"),"propertySource":if(propRec != null,"subform","blank")});
+		trace.add(mergeEntry);
+		stage = "writer_merge";
+		writerDocumentId = "6kuqna9b27e6fe95b4f75a3920de1ff048543";
+		if(writerDocumentId == null || writerDocumentId.trim() == "")
+		{
+			result.put("success",false);
+			result.put("message","The Writer document ID is blank in Create_LOI_Contract.");
+			result.put("stage",stage);
+			result.put("audit",trace);
+			return result;
+		}
+		fileBaseName = ifnull(pf.Name,"Proforma").replaceAll("[^A-Za-z0-9 _-]","").trim().replaceAll(" +","_") + "_LOI_" + zoho.currentdate.toString("yyyyMMdd");
+		writerFieldIds = List();
+		writerFieldCheckSucceeded = false;
+		try
+		{
+			writerFieldsResponse = invokeurl
+			[
+				url :"https://www.zohoapis.com/writer/api/v1/documents/" + writerDocumentId + "/fields"
+				type :GET
+				connection:"zoho_writer"
+			];
+			writerMergeFields = writerFieldsResponse.get("merge");
+			if(writerMergeFields != null)
+			{
+				for each  writerFieldDef in writerMergeFields
+				{
+					if(writerFieldDef.get("id") != null)
+					{
+						writerFieldIds.add(writerFieldDef.get("id").toString());
+					}
+				}
+				writerFieldCheckSucceeded = true;
+			}
+			fieldAuditEntry = Map();
+			fieldAuditEntry.put("level","info");
+			fieldAuditEntry.put("stage","writer_field_check");
+			fieldAuditEntry.put("message","Writer merge field IDs loaded");
+			fieldAuditEntry.put("meta",{"count":writerFieldIds.size(),"ids":writerFieldIds});
+			trace.add(fieldAuditEntry);
+		}		catch (fieldCheckError)
+		{
+			fieldAuditEntry = Map();
+			fieldAuditEntry.put("level","warn");
+			fieldAuditEntry.put("stage","writer_field_check");
+			fieldAuditEntry.put("message","Could not retrieve Writer field IDs; merge will continue");
+			fieldAuditEntry.put("meta",{"error":fieldCheckError.message,"lineNo":fieldCheckError.lineNo});
+			trace.add(fieldAuditEntry);
+		}
+		expectedWriterFields = List();
+		expectedWriterFields.add("Seller");
+		expectedWriterFields.add("Authorized_Signer_for_Seller");
+		expectedWriterFields.add("Street_Address");
+		expectedWriterFields.add("Seller_City_State_ZIP");
+		expectedWriterFields.add("Seller_Phone");
+		expectedWriterFields.add("Seller_Email");
+		expectedWriterFields.add("Buying_Entity");
+		expectedWriterFields.add("CAD_ID");
+		expectedWriterFields.add("Property_County");
+		expectedWriterFields.add("Property_City");
+		expectedWriterFields.add("Total_Acres");
+		expectedWriterFields.add("Land_Cost");
+		expectedWriterFields.add("Land_Cost_Written");
+		expectedWriterFields.add("Amount_per_Acre");
+		expectedWriterFields.add("Earnest_Money");
+		expectedWriterFields.add("Earnest_Money_Written");
+		expectedWriterFields.add("Special_Provisions");
+		expectedWriterFields.add("Initial_Feasibility_Days");
+		expectedWriterFields.add("Initial_Feasibility_Days_Written");
+		expectedWriterFields.add("Extensions");
+		expectedWriterFields.add("Extensions_Written");
+		expectedWriterFields.add("Days_per_Extension");
+		expectedWriterFields.add("Days_per_Extension_Written");
+		expectedWriterFields.add("Amount_per_Extension");
+		expectedWriterFields.add("Amount_per_Extension_Written");
+		expectedWriterFields.add("Closing_Days_Feas");
+		expectedWriterFields.add("Closing_Days_Feas_Written");
+		expectedWriterFields.add("Broker_Buyer");
+		expectedWriterFields.add("Broker_Seller");
+		expectedWriterFields.add("Response_Date");
+		expectedWriterFields.add("Acquisition_Email");
+		if(writerFieldCheckSucceeded == true)
+		{
+			missingWriterFields = List();
+			for each  expectedWriterField in expectedWriterFields
+			{
+				if(writerFieldIds.contains(expectedWriterField) == false)
+				{
+					missingWriterFields.add(expectedWriterField);
+				}
+			}
+			if(missingWriterFields.size() > 0)
+			{
+				result.put("success",false);
+				result.put("message","The Writer template is missing or renamed these merge field IDs: " + missingWriterFields.toString(", "));
+				result.put("stage","writer_field_check");
+				result.put("writerFieldIds",writerFieldIds);
+				result.put("audit",trace);
+				return result;
+			}
+		}
+		mergeRows = List();
+		mergeRows.add(mergeRow);
+		mergeDataPayload = Map();
+		mergeDataPayload.put("data",mergeRows);
+		outputSettings = Map();
+		outputSettings.put("format","docx");
+		params = Map();
+		params.put("merge_data",mergeDataPayload.toString());
+		params.put("output_settings",outputSettings.toString());
+		params.put("filename",fileBaseName);
+		params.put("test_mode",false);
+		payloadAuditEntry = Map();
+		payloadAuditEntry.put("level","info");
+		payloadAuditEntry.put("stage","writer_payload");
+		payloadAuditEntry.put("message","Writer merge payload prepared as one-record JSON array");
+		payloadAuditEntry.put("meta",{"recordCount":mergeRows.size(),"fieldCount":mergeRow.size(),"payloadShape":"{data:[{...}]}"});
+		trace.add(payloadAuditEntry);
+		writerEntry = Map();
+		writerEntry.put("level","info");
+		writerEntry.put("stage",stage);
+		writerEntry.put("message","Calling Zoho Writer merge API");
+		writerEntry.put("meta",{"writerDocumentId":writerDocumentId,"connection":"zoho_writer","fileBaseName":fileBaseName,"testMode":false});
+		trace.add(writerEntry);
+		mergedFile = invokeurl
+		[
+			url :"https://www.zohoapis.com/writer/api/v1/documents/" + writerDocumentId + "/merge"
+			type :POST
+			parameters:params
+			connection:"zoho_writer"
+		];
+		if(isFile(mergedFile) == false)
+		{
+			failWriterEntry = Map();
+			failWriterEntry.put("level","error");
+			failWriterEntry.put("stage",stage);
+			failWriterEntry.put("message","Writer did not return a file");
+			failWriterEntry.put("meta",{"response":mergedFile});
+			trace.add(failWriterEntry);
+			result.put("success",false);
+			result.put("message","Zoho Writer did not return a DOCX file.");
+			result.put("stage",stage);
+			result.put("writerResponse",mergedFile);
+			result.put("audit",trace);
+			return result;
+		}
+		fileName = fileBaseName + ".docx";
+		mergedFile.setFileName(fileName);
+		writerOkEntry = Map();
+		writerOkEntry.put("level","success");
+		writerOkEntry.put("stage",stage);
+		writerOkEntry.put("message","Writer returned the merged DOCX");
+		writerOkEntry.put("meta",{"fileName":fileName});
+		trace.add(writerOkEntry);
+		result.put("success",true);
+		result.put("file",mergedFile);
+		result.put("fileName",fileName);
+		result.put("missing",missing);
+		result.put("audit",trace);
+		result.put("contractTerritory",contractTerritory);
+		result.put("wbwPointPerson",wbwPointPerson);
+		return result;
+	}
+	catch (e)
+	{
+		result.put("success",false);
+		result.put("message","LOI generation failed during " + stage + ": " + e.message);
+		result.put("stage",stage);
+		result.put("audit",trace);
+	}
+	return result;
+}

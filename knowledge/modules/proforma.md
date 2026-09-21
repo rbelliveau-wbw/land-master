@@ -1,6 +1,16 @@
 
 # Proforma Module
 
+## Offer packet, saved dates, and Word export (1.80.0)
+
+The approval packet extends the first-page reimbursement schedule to the bottom of the page, flows Additional Costs and notes in two columns, and adds complete MUD/PID/TIRZ installment pages sourced only from `Land_Installments` rows whose type is `PID/MUD`. Offer text and acquisition-owner names wrap without clipping, the old "Deal Economics" wording is removed, and comment history moves to dedicated pages that are omitted when no comments exist. `PF_PDF_Flow_Pages` handles flowing text blocks and `PF_PDF_Compile` supports packet-wide continuation pages.
+
+The Offer form exposes `LOI_Worksheet.Assumed_Effective_Date`, `LOI_Worksheet.Projected_Hard_Close_Date`, and `Add_Pro_Forma.Authorized_Signer_for_Seller`. Effective Date defaults to the current date when empty and remains editable. Projected Hard Close and Authorized Signer support enter, change, and clear operations. Earnest-money timing preserves relative text such as "90 days after execution" when no calendar due date exists.
+
+The export modal adds **LOI/Contract**. It reuses `Get_Proforma_Approval_PDF` with `format: "docx"`, calls the shared `PF_Build_LOI_Document` merge helper, and downloads the Writer result without creating a Contract, Contract Version, approval submission, or email. Exactly one Builder seller and one Property record are required; any other count returns a manual-preparation message. Development uses the existing `Get_Proforma_Approval_PDF` Custom API, and production uses `Get_Proforma_Approval_PDF1`; both target the same named function in their environment.
+
+Closed Pro Formas keep a grey disabled Edit button between View and Comments for users who otherwise have edit access. Regression coverage includes packet pagination and long text, optional comments, correct reimbursement type filtering, date/signer persistence contracts, DOCX boundaries, and closed-row alignment. Creator function drafts were compiled in Development; Creator publishing remains a separate human action. Rollback: map production proforma-manager to `1.79.14` and restore the previous Creator function bodies from git.
+
 ## Attorney-readable Offer packet (Creator function update, 2026-09-15)
 
 The approval packet uses **Offer** for all user-facing PDF headings and consolidates the Offer

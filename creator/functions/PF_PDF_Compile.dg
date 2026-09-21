@@ -31,7 +31,7 @@
                  		pageHeight = 612;
                  		footerEndX = 764;
                  		pageNumberX = 680;
-						if(pageCounter == 0 || baseStreamContent.contains("% OFFER_WIDE_PAGE"))
+						if(pageCounter == 0 || baseStreamContent.contains("% OFFER_WIDE_PAGE") || baseStreamContent.contains("% PACKET_WIDE_PAGE"))
 						{
 							// The dashboard and one-page Offer summary use the 17 x 11 landscape canvas.
                  			pageWidth = 1224;

@@ -37,7 +37,7 @@ for (const required of [
 for (const required of [
   "PF_PDF_Rect(0,0,1224,792",
   '"LAND PURCHASE"',
-  '"PID / MUD REIMBURSEMENTS"',
+  '"MUD / PID / TIRZ"',
   '"SITE INFO"',
   '"COSTS"',
   '"TIMELINE"',
@@ -51,13 +51,7 @@ for (const required of [
   '"Purchase: " + purchaseLabel + " | Completion: " + completionLabel',
   "if(developmentItemCount < 12)",
   "if(constructionItemCount < 6)",
-  "if(detailAdditionalItemIds.size() > 0)",
-  "for each  detailAdditionalItemId in detailAdditionalItemIds",
-  "costItem = Proforma_Item[ID == detailAdditionalItemId];",
-  'rowHeight = 34;',
   'categoryText.trim().toLowerCase() == "reimbursements"',
-  'rowFill = softGreen;',
-  'amountInk = green;',
   'previewInk = green;',
   '"Offer Summary"',
   '"SELLERS AND CONTACTS"',
@@ -70,15 +64,7 @@ for (const required of [
   assert.ok(build.includes(required), `approval packet redesign is missing ${required}`);
 }
 
-assert.ok(build.includes("detailAdditionalItemIds = List();"), "overflow items must be stored by stable ID");
-assert.ok(
-  build.indexOf("detailAdditionalItemIds.add(costItem.ID.toLong());") < build.indexOf("for each  detailAdditionalItemId in detailAdditionalItemIds"),
-  "overflow IDs must be collected before detail-page rendering"
-);
-assert.ok(
-  !build.includes("Full itemization stays on the following pages"),
-  "detail pages must not repeat page-one Additional Cost rows"
-);
+assert.ok(build.includes('thisapp.PF_PDF_Flow_Pages(costBlocks'), 'full two-column cost details');
 for (const forbidden of [
   '"LOI Terms"',
   '"LOI Timing, Deposits and Terms"',
@@ -97,4 +83,4 @@ for (const required of [
   assert.ok(compile.includes(required), `mixed-size PDF compiler is missing ${required}`);
 }
 
-console.log("Pro Forma locked TerraVault link and non-redundant approval packet checks passed.");
+console.log("Pro Forma locked TerraVault link and approval packet checks passed.");

@@ -3,7 +3,13 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.79.14`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.0`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Offer packet and document export (1.80.0)
+
+The Offer form now exposes editable Effective Date, Projected Hard Close, and Authorized Signer fields. A missing Effective Date defaults to today; the save path preserves explicit clearing of Projected Hard Close and Authorized Signer. The export modal adds LOI/Contract Word download and requires exactly one seller and one Property record, otherwise it directs the user to prepare the document manually.
+
+Approval packet PDFs use flowing two-column cost and note pages, a complete MUD/PID/TIRZ installment schedule, wrapped owner and Offer text, and a separate comment-history page only when comments exist. Closed Pro Formas keep the Edit button in its list position as a disabled grey control. Creator functions must be published separately from the externally hosted widget release. Rollback: map production proforma-manager to `1.79.14` and restore the prior Creator function bodies.
 
 ## Baseline
 
