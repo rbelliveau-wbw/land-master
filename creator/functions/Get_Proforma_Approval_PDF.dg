@@ -22,10 +22,10 @@ string Get_Proforma_Approval_PDF(string payload)
 			exportPfId = pfId.toLong();
 			sellerCount = Builder[Proforma.contains(exportPfId.toString())].count();
 			propertyCount = Property[Proforma.contains(exportPfId.toString())].count();
-			if(sellerCount != 1 || propertyCount != 1)
+			if(sellerCount != 1 || propertyCount < 1)
 			{
 				resp.put("success",false);
-				resp.put("error","Manual preparation required: LOI/Contract export needs exactly one seller and one property.");
+				resp.put("error","Manual preparation required: LOI/Contract export needs exactly one seller and at least one parcel.");
 				return resp.toString();
 			}
 			document = thisapp.PF_Build_LOI_Document(pfId);

@@ -69,12 +69,30 @@ map PF_Build_LOI_Document(string proformaId)
 		}
 		propRec = null;
 		propertyCount = 0;
+		propertyCadIds = List();
+		propertyCounties = List();
+		propertyCities = List();
 		for each  pRec in Property[Proforma.contains(pfId.toString())]
 		{
 			propertyCount = propertyCount + 1;
 			if(propRec == null)
 			{
 				propRec = pRec;
+			}
+			parcelId = ifnull(pRec.Property_ID,"").trim();
+			if(parcelId != "" && propertyCadIds.contains(parcelId) == false)
+			{
+				propertyCadIds.add(parcelId);
+			}
+			parcelCounty = ifnull(pRec.County,"").trim();
+			if(parcelCounty != "" && propertyCounties.contains(parcelCounty) == false)
+			{
+				propertyCounties.add(parcelCounty);
+			}
+			parcelCity = ifnull(pRec.City,"").trim();
+			if(parcelCity != "" && propertyCities.contains(parcelCity) == false)
+			{
+				propertyCities.add(parcelCity);
 			}
 		}
 		// ---- Seller fields: from the Builder (Seller) subform record ----
@@ -109,22 +127,10 @@ map PF_Build_LOI_Document(string proformaId)
 		}
 		// Authorized Signer for Seller is entered on the Pro Forma Offer form.
 		rAuthSigner = ifnull(pf.Authorized_Signer_for_Seller,"").trim();
-		// ---- Property fields: from the Property subform record ----
-		rCAD = "";
-		if(propRec != null && ifnull(propRec.Property_ID,"").trim() != "")
-		{
-			rCAD = propRec.Property_ID.trim();
-		}
-		rPropCounty = "";
-		if(propRec != null && ifnull(propRec.County,"").trim() != "")
-		{
-			rPropCounty = propRec.County.trim();
-		}
-		rPropCity = "";
-		if(propRec != null && ifnull(propRec.City,"").trim() != "")
-		{
-			rPropCity = propRec.City.trim();
-		}
+		// One Property record is one parcel. Merge all parcels owned by the single seller.
+		rCAD = propertyCadIds.toString(", ");
+		rPropCounty = propertyCounties.toString(", ");
+		rPropCity = propertyCities.toString(", ");
 		// ---- LOI terms: from the LOI Worksheet record only ----
 		vEarnest = null;
 		if(loiRec != null && loiRec.Earnest_Money != null)
