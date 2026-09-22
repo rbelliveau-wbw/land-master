@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.2`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.3`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Custom calendar navigation correction (1.80.3)
+
+The Offer calendar uses centered SVG chevrons for previous and next month navigation. Opening a blank date now starts on the current month instead of displaying an invalid `undefined 0` heading; a defensive fallback also protects the picker from malformed seed values. Regression: blank, populated, and malformed date initialization plus navigation icon geometry. Rollback: map production proforma-manager to `1.80.2`.
 
 ## Offer controls and PDF cleanup (1.80.2)
 

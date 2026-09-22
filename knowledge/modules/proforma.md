@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Custom calendar navigation correction (1.80.3)
+
+Offer date pickers render their month navigation with centered SVG chevrons. A blank field now seeds the picker from today's date, and invalid seed parts fall back to the browser's current month rather than producing `undefined 0`. No form, field, function, Custom API, or Creator workflow contract changed. Regression: blank, populated, and malformed date initialization plus previous/next control rendering. Rollback: promote widget `1.80.2`.
+
 ## Custom Offer dates and PDF field normalization (1.80.2)
 
 Response Date, Effective Date, and Projected Hard Close use the shared in-widget calendar picker and validate ISO dates before save; no native browser date input remains. Buyer Broker and Seller Broker share a row, with concise blank/`None` guidance on optional Offer fields. Loading a worksheet may display today's Effective Date default, but only a user edit sets `loiDirty`; opening Offer and immediately cancelling therefore leaves without the discard modal.
