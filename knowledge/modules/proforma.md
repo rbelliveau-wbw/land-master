@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Readable approval packet filenames (1.80.5)
+
+Browser-downloaded approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_<server timestamp>_<export date>.pdf`. Unsafe punctuation and the internal record ID are removed; the existing generation timestamp and ISO export date remain. The server packet contract is unchanged because the widget derives the final download name from the loaded Pro Forma and the timestamp already returned by Creator. Regression: named and fallback packets, special-character cleanup, retained timestamps, and packet export behavior. Rollback: promote widget `1.80.4`.
+
 ## Duplicate icon correction (1.80.4)
 
 The row action menu and unsaved-copy banner render the same complete two-sheet copy icon. This is a presentation-only correction; Duplicate permissions, source isolation, staging, and save behavior are unchanged. Regression: Duplicate action wiring, permissions, save safeguards, and exact icon geometry. Rollback: promote widget `1.80.3`.

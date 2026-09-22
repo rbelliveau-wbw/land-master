@@ -7,6 +7,38 @@ const widget = fs.readFileSync(path.join(root, "widgets/proforma-manager/src/app
 const build = fs.readFileSync(path.join(root, "creator/functions/PF_Build_Proforma_Approval_PDF.dg"), "utf8");
 const compile = fs.readFileSync(path.join(root, "creator/functions/PF_PDF_Compile.dg"), "utf8");
 
+function extractWidgetFunction(name) {
+  const start = widget.indexOf(`function ${name}(`);
+  assert.notEqual(start, -1, `${name} must exist`);
+  const brace = widget.indexOf("{", start);
+  let depth = 0;
+  for (let i = brace; i < widget.length; i += 1) {
+    if (widget[i] === "{") depth += 1;
+    if (widget[i] === "}") depth -= 1;
+    if (depth === 0) return widget.slice(start, i + 1);
+  }
+  throw new Error(`Could not parse ${name}`);
+}
+
+const packetFileName = new Function(
+  "S",
+  "exportDateStamp",
+  `${extractWidgetFunction("safePacketStem")}\n${extractWidgetFunction("proformaPacketFileName")}\nreturn proformaPacketFileName;`
+)(
+  { proformas: [{ ID: "4410926000004288980", Name: "Corsicana Trails (ORIGINAL) / Phase #1" }] },
+  () => "2026-09-22"
+);
+assert.equal(
+  packetFileName("4410926000004288980", "Proforma_Approval_Packet_4410926000004288980_20260922_103315.pdf"),
+  "Corsicana_Trails_ORIGINAL_Phase_1_Proforma_Packet_20260922_103315_2026-09-22.pdf",
+  "PDF filenames must lead with the sanitized Pro Forma name and retain both date stamps"
+);
+assert.equal(
+  packetFileName("missing", "Proforma_Approval_Packet.pdf"),
+  "Pro_Forma_Proforma_Packet_2026-09-22.pdf",
+  "PDF filenames must remain useful when the record name and server timestamp are unavailable"
+);
+
 for (const required of [
   ".loi-tv-link{",
   "cursor:pointer",
@@ -96,4 +128,4 @@ for (const required of [
   assert.ok(compile.includes(required), `mixed-size PDF compiler is missing ${required}`);
 }
 
-console.log("Pro Forma locked TerraVault link and approval packet checks passed.");
+console.log("Pro Forma locked TerraVault link, approval packet, and readable filename checks passed.");

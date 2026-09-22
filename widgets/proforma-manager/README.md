@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.4`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.5`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Readable approval packet filenames (1.80.5)
+
+Downloaded approval PDFs begin with the sanitized Pro Forma name, followed by `Proforma_Packet`, the server generation timestamp, and the export date. For example, `Corsicana Trails (ORIGINAL) / Phase #1` becomes `Corsicana_Trails_ORIGINAL_Phase_1_Proforma_Packet_20260922_103315_2026-09-22.pdf`; record IDs and filesystem-sensitive punctuation are omitted. Regression: named and fallback packets, special-character cleanup, retained timestamps, and packet export behavior. Rollback: map production proforma-manager to `1.80.4`.
 
 ## Duplicate icon correction (1.80.4)
 
