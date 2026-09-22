@@ -1,6 +1,12 @@
 
 # Proforma Module
 
+## Custom Offer dates and PDF field normalization (1.80.2)
+
+Response Date, Effective Date, and Projected Hard Close use the shared in-widget calendar picker and validate ISO dates before save; no native browser date input remains. Buyer Broker and Seller Broker share a row, with concise blank/`None` guidance on optional Offer fields. Loading a worksheet may display today's Effective Date default, but only a user edit sets `loiDirty`; opening Offer and immediately cancelling therefore leaves without the discard modal.
+
+`PF_Build_Proforma_Approval_PDF` mirrors the Effective Date default for older worksheets whose stored value is null, deduplicates Property County and City values while preserving first-seen order, and renders title-case labels including `County/City`. Creator Development contains the compiled function. Affected fields: `Add_Pro_Forma.Response_Date`, `LOI_Worksheet.Assumed_Effective_Date`, `LOI_Worksheet.Projected_Hard_Close_Date`, `LOI_Worksheet.Buyer_Broker`, `LOI_Worksheet.Seller_Broker`, `Property.County`, and `Property.City`. No Custom API contract changed. Regression: custom calendar mouse/keyboard use, date entry and clearing, untouched Cancel, missing and stored Effective Date packets, repeated County/City values, and mixed County/City order. Rollback: promote widget `1.80.1` and restore the previous PDF function body.
+
 ## Offer packet, saved dates, and Word export (1.80.0)
 
 The approval packet extends the first-page reimbursement schedule to the bottom of the page, flows Additional Costs and notes in two columns, and adds complete MUD/PID/TIRZ installment pages sourced only from `Land_Installments` rows whose type is `PID/MUD`. Offer text and acquisition-owner names wrap without clipping, the old "Deal Economics" wording is removed, and comment history moves to dedicated pages that are omitted when no comments exist. `PF_PDF_Flow_Pages` handles flowing text blocks and `PF_PDF_Compile` supports packet-wide continuation pages.

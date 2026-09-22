@@ -613,7 +613,10 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		{
 			loiResponseDate = pf.Response_Date.toString("MMM d, yyyy");
 		}
-		loiEffectiveDate = "Not provided";
+		/* The Offer UI defaults an empty Effective Date to today. Mirror that default
+		 * in generated packets so a worksheet created before the field was introduced
+		 * never renders a contradictory "Not provided" value. */
+		loiEffectiveDate = zoho.currentdate.toString("MMM d, yyyy");
 		loiHardCloseDate = "Not provided";
 		loiEarnestDueDate = "Not provided";
 		/*
@@ -708,6 +711,8 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		propertyLocationsText = "";
 		propertyCountiesText = "";
 		propertyCitiesText = "";
+		propertyCountyList = List();
+		propertyCityList = List();
 		propertyIdsText = "";
 		propertyFacilityIdsText = "";
 		propertySellerAssignmentsText = "";
@@ -737,22 +742,14 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				propertyLocationsText = propertyLocationsText + propertyLocationText;
 			}
 			propertyCountyText = ifnull(propertyItem.County,"").toString().trim();
-			if(propertyCountyText != "")
+			if(propertyCountyText != "" && propertyCountyList.contains(propertyCountyText) == false)
 			{
-				if(propertyCountiesText != "")
-				{
-					propertyCountiesText = propertyCountiesText + ", ";
-				}
-				propertyCountiesText = propertyCountiesText + propertyCountyText;
+				propertyCountyList.add(propertyCountyText);
 			}
 			propertyCityText = ifnull(propertyItem.City,"").toString().trim();
-			if(propertyCityText != "")
+			if(propertyCityText != "" && propertyCityList.contains(propertyCityText) == false)
 			{
-				if(propertyCitiesText != "")
-				{
-					propertyCitiesText = propertyCitiesText + ", ";
-				}
-				propertyCitiesText = propertyCitiesText + propertyCityText;
+				propertyCityList.add(propertyCityText);
 			}
 			propertyIdText = ifnull(propertyItem.Property_ID,"").toString().trim();
 			if(propertyIdText != "")
@@ -790,6 +787,8 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				propertyAcresTotal = propertyAcresTotal + propertyItem.Acres.toDecimal();
 			}
 		}
+		propertyCountiesText = propertyCountyList.toString(", ");
+		propertyCitiesText = propertyCityList.toString(", ");
 		loiStreetAddress = propertyNamesText;
 		if(propertyLocationsText != "")
 		{
@@ -996,7 +995,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		page = page + thisapp.PF_PDF_Rect(28,326,370,270,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(28,570,370,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(40,579,8,"bold",navy,"SELLERS AND CONTACTS");
-		partyLabels = {"Seller(s)","Authorized signer","Seller email(s)","Seller phone(s)","Seller address(es)","Buyer / seller brokers"};
+		partyLabels = {"Seller(s)","Authorized Signer","Seller Email(s)","Seller Phone(s)","Seller Address(es)","Buyer/Seller Brokers"};
 		partyValues = {loiSeller,loiAuthorizedSigner,loiSellerEmail,loiSellerPhone,loiSellerCityStateZip,loiBuyerBroker + " / " + loiSellerBroker};
 		partyY = 548;
 		for each index partyIndex in partyLabels
@@ -1038,7 +1037,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		page = page + thisapp.PF_PDF_Rect(414,570,386,26,softGreen,"",0);
 		page = page + thisapp.PF_PDF_Text(426,579,8,"bold",navy,"PROPERTY AND BUYER");
 		countyCityText = loiPropertyCounty + " / " + if(propertyCitiesText == "",loiPropertyCity,propertyCitiesText);
-		propertySummaryLabels = {"Purchasing company","Acquisition email","Property / location","County / city","CAD / Property ID","Facility ID","Parcel acres","Seller assignment"};
+		propertySummaryLabels = {"Purchasing Company","Acquisition Email","Property/Location","County/City","CAD/Property ID","Facility ID","Parcel Acres","Seller Assignment"};
 		propertySummaryValues = {companyName,loiAcquisitionEmail,loiStreetAddress,countyCityText,loiCadId,if(propertyFacilityIdsText == "","Not provided",propertyFacilityIdsText),loiAcresDisplay,if(propertySellerAssignmentsText == "","Not provided",propertySellerAssignmentsText)};
 		propertyY = 548;
 		for each index propertyPanelIndex in propertySummaryLabels
@@ -1079,7 +1078,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		page = page + thisapp.PF_PDF_Rect(816,326,380,270,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(816,570,380,26,softPurple,"",0);
 		page = page + thisapp.PF_PDF_Text(828,579,8,"bold",navy,"TIMING, DEPOSITS AND EXTENSIONS");
-		termLabels = {"Initial feasibility","Close after feasibility","Projected hard close","Earnest money due","Earnest money","Extensions","Days per extension","Amount per extension","Response date","Assumed effective date"};
+		termLabels = {"Initial Feasibility","Close After Feasibility","Projected Hard Close","Earnest Money Due","Earnest Money","Extensions","Days Per Extension","Amount Per Extension","Response Date","Assumed Effective Date"};
 		termValues = {loiFeasibilityDisplay,loiClosingDisplay,loiHardCloseDate,loiEarnestDueDisplay,loiEarnestMoneyDisplay,loiExtensionsDisplay,loiDaysPerExtensionDisplay,loiAmountPerExtensionDisplay,loiResponseDate,loiEffectiveDate};
 		termY = 548;
 		for each index termIndex in termLabels

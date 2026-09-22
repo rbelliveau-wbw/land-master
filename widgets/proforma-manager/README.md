@@ -3,7 +3,13 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.1`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.2`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Offer controls and PDF cleanup (1.80.2)
+
+Response Date, Effective Date, and Projected Hard Close use the widget's custom calendar instead of native browser date controls. Buyer Broker and Seller Broker share one row, and optional Offer fields explain when they can be blank or should use `None`. Opening Offer no longer marks an untouched Pro Forma dirty, so Cancel exits without a discard prompt unless the user actually changes a value.
+
+`PF_Build_Proforma_Approval_PDF` now uses the Offer's today default when an older worksheet has no Effective Date, emits each County and City once across multiple Property rows, and uses title case for field labels such as `County/City`. The function was compiled and saved in Creator Development with this release. Regression: all three calendar controls, entered/cleared date persistence, untouched Cancel, broker layout and copy, missing/stored Effective Date packets, and repeated/mixed County and City values. Rollback: map production proforma-manager to `1.80.1` and restore the previous `PF_Build_Proforma_Approval_PDF` body from git.
 
 ## Offer packet and document export (1.80.0)
 

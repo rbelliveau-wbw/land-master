@@ -24,6 +24,7 @@ assert.ok(texts.includes('Paul Shepherd, Travis'));
 assert.ok(texts.includes('Moltz'));
 assert.ok(!texts.includes('DEAL ECONOMICS'));
 assert.ok(texts.includes('90 days after execution'));
+assert.ok(texts.includes('Sep 21, 2026'),'missing stored Effective Date defaults to the packet generation date');
 assert.ok(!texts.includes('Not provided (90'));
 assert.equal(result.commentCount,0);
 assert.ok(!texts.includes('Pro Forma Comment History'));
@@ -31,6 +32,13 @@ assert.equal(pages.length,4,'dashboard, two-column costs, reimbursements, Offer'
 assert.ok(!texts.includes('$99,999,999')&&!texts.includes('$88,888,888'),'exclude wrong type and other Pro Forma');
 assert.ok(texts.includes('$24,276'),'total only eligible installments');
 assert.ok(r.draws.some(x=>x.x===640&&x.text.includes('Cost item')),'costs reach right column');
+for(const label of ['Authorized Signer','Buyer/Seller Brokers','Purchasing Company','Acquisition Email','Property/Location','County/City','CAD/Property ID','Parcel Acres','Seller Assignment','Initial Feasibility','Assumed Effective Date'])assert.ok(texts.includes(label),label);
+
+const repeatedProperties=structuredClone(fixture);
+repeatedProperties.Property=Array.from({length:4},(_,i)=>({ID:500+i,Proforma:1,Common_Name:'Parcel '+(i+1),Property_ID:String(48065+i),County:'Multiple',City:'Corsicana',Acres:45.5}));
+const repeated=buildFixture(repeatedProperties),repeatedText=repeated.r.draws.map(x=>x.text).join('\n');
+assert.ok(repeatedText.includes('Multiple / Corsicana'),'County/City displays each shared value once');
+assert.ok(!repeatedText.includes('Multiple, Multiple')&&!repeatedText.includes('Corsicana, Corsicana'),'County/City removes repeated property values');
 const wrapped=Array.from(r.run('thisapp.PF_PDF_Wrap("ABCDEFGHIJKLMNOPQRSTUVWXYZ end",5)'));
 assert.equal(wrapped.join('').replaceAll(' ',''),'ABCDEFGHIJKLMNOPQRSTUVWXYZend');
 assert.ok(wrapped.every(x=>x.length<=5));
