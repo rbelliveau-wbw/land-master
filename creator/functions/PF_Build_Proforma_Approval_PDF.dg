@@ -31,7 +31,29 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		* Parentheses ensure Additional Cost and cash snapshot filters
 		* apply only to this Pro Forma.
 		*/
-		additionalItems = Proforma_Item[(Pro_Forma_Const == proformaIdLong || Pro_Forma_Dev == proformaIdLong) && Add_l_Cost != null && Add_l_Cost != 0] sort by Department;
+		// Read the Pro Forma's actual child rows. A combined Proforma_Item criteria
+		// can omit Development rows even while the parent subform contains them.
+		additionalItemIds = List();
+		if(pf.Additional_Costs_Development != null)
+		{
+			for each developmentItem in pf.Additional_Costs_Development
+			{
+				if(developmentItem.Add_l_Cost != null && developmentItem.Add_l_Cost != 0)
+				{
+					additionalItemIds.add(developmentItem.ID.toString());
+				}
+			}
+		}
+		if(pf.Additional_Costs_Construction != null)
+		{
+			for each constructionItem in pf.Additional_Costs_Construction
+			{
+				if(constructionItem.Add_l_Cost != null && constructionItem.Add_l_Cost != 0)
+				{
+					additionalItemIds.add(constructionItem.ID.toString());
+				}
+			}
+		}
 		loi = LOI_Worksheet[Proforma == proformaIdLong && Is_Current == true];
 		if(loi.ID == null)
 		{
@@ -196,8 +218,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		constructionAdditionalTotal = 0;
 		impactFeesTotal = 0;
 		otherReimbursementsTotal = 0;
-		for each additionalTotalItem in additionalItems
+		for each additionalTotalItemId in additionalItemIds
 		{
+			additionalTotalItem = Proforma_Item[ID == additionalTotalItemId.toLong()];
 			additionalDepartment = ifnull(additionalTotalItem.Department,"").toString();
 			additionalCategory = ifnull(additionalTotalItem.Category,"").toString().trim().toLowerCase();
 			additionalAmount = ifnull(additionalTotalItem.Add_l_Cost,0).toDecimal();
@@ -227,7 +250,6 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		{
 			developmentAdditionalTotal = developmentHeaderTotal;
 		}
-		developmentUnitemized = developmentAdditionalTotal - developmentRecordedTotal;
 		roiDisplay = "Not provided";
 		if(pf.ROI1 != null && pf.ROI1.toString().trim() != "")
 		{
@@ -495,14 +517,14 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		/* Additional Cost previews. Detail pages contain only rows that do not fit here. */
 		page = page + thisapp.PF_PDF_Rect(882,286,314,382,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(882,642,314,26,softBlue,"",0);
-		page = page + thisapp.PF_PDF_Text(894,651,7.1,"bold",navy,"DEVELOPMENT COSTS");
+		page = page + thisapp.PF_PDF_Text(894,651,7.1,"bold",navy,"DEVELOPMENT ADD'L COSTS");
 		page = page + thisapp.PF_PDF_Text(1114,651,7.1,"bold",ink,thisapp.PF_Packet_Money(developmentAdditionalTotal.toString()));
 		page = page + thisapp.PF_PDF_Text(894,620,5.6,"bold",lightMuted,"ITEM");
 		page = page + thisapp.PF_PDF_Text(1065,620,5.6,"bold",lightMuted,"APPLICATION");
 		page = page + thisapp.PF_PDF_Text(1118,620,5.6,"bold",lightMuted,"AMOUNT");
 		page = page + thisapp.PF_PDF_Rect(882,44,314,228,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(882,246,314,26,softBlue,"",0);
-		page = page + thisapp.PF_PDF_Text(894,255,7.1,"bold",navy,"CONSTRUCTION ADDITIONAL COSTS");
+		page = page + thisapp.PF_PDF_Text(894,255,7.1,"bold",navy,"CONSTRUCTION ADD'L COSTS");
 		page = page + thisapp.PF_PDF_Text(1114,255,7.1,"bold",ink,thisapp.PF_Packet_Money(constructionAdditionalTotal.toString()));
 		page = page + thisapp.PF_PDF_Text(894,225,5.6,"bold",lightMuted,"ITEM");
 		page = page + thisapp.PF_PDF_Text(1065,225,5.6,"bold",lightMuted,"APPLICATION");
@@ -510,8 +532,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		developmentItemCount = 0;
 		constructionItemCount = 0;
 
-		for each  costItem in additionalItems
+		for each costItemId in additionalItemIds
 		{
+			costItem = Proforma_Item[ID == costItemId.toLong()];
 			departmentText = ifnull(costItem.Department,"Unassigned").toString();
 			categoryText = ifnull(costItem.Category,"Not provided").toString();
 			if(categoryText.trim().toLowerCase() != "reimbursements" && departmentText != "Construction")
@@ -575,20 +598,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				constructionItemCount = constructionItemCount + 1;
 			}
 		}
-		if(developmentUnitemized != 0)
-		{
-			if(developmentItemCount < 12)
-			{
-				rowY = 596 - developmentItemCount * 25;
-				page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",ink,"Unitemized Development cost");
-				page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",ink,thisapp.PF_Packet_Money(developmentUnitemized.toString()));
-				page = page + thisapp.PF_PDF_Rect(892,rowY - 8,294,0.5,softLine,"",0);
-			}
-			developmentItemCount = developmentItemCount + 1;
-		}
 		if(developmentItemCount == 0)
 		{
-			page = page + thisapp.PF_PDF_Text(894,592,6.2,"italic",muted,"No Development costs");
+			page = page + thisapp.PF_PDF_Text(894,592,6.2,"italic",muted,if(developmentAdditionalTotal != 0,"Development item rows unavailable","No Development costs"));
 		}
 		else if(developmentItemCount > 12)
 		{
@@ -614,8 +626,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		impactFeeBlocks = List();
 		otherReimbursementBlocks = List();
 		costNumber = 0;
-		for each costItem in additionalItems
+		for each costItemId in additionalItemIds
 		{
+			costItem = Proforma_Item[ID == costItemId.toLong()];
 			itemText = ifnull(costItem.Item_Name,"Additional Cost").toString();
 			code = ifnull(costItem.Cost_Code,"").toString().trim();
 			if(code != "") { itemText = code + " - " + itemText; }
@@ -674,24 +687,16 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				otherCostBlocks.add(block);
 			}
 		}
-		if(developmentUnitemized != 0)
-		{
-			block = Map();
-			block.put("title","Unitemized Development additional cost");
-			block.put("meta","Pro Forma total less itemized Development costs");
-			block.put("amount",thisapp.PF_Packet_Money(developmentUnitemized.toString()));
-			developmentCostBlocks.add(block);
-		}
 		costBlocks = List();
 		sectionBlock = Map();
-		sectionBlock.put("title","DEVELOPMENT COSTS");
+		sectionBlock.put("title","DEVELOPMENT ADD'L COSTS");
 		sectionBlock.put("amount",thisapp.PF_Packet_Money(developmentAdditionalTotal.toString()));
 		sectionBlock.put("section",true);
 		costBlocks.add(sectionBlock);
 		if(developmentCostBlocks.size() == 0)
 		{
 			block = Map();
-			block.put("title","No Development costs");
+			block.put("title",if(developmentAdditionalTotal != 0,"Development item rows unavailable","No Development costs"));
 			costBlocks.add(block);
 		}
 		else
@@ -699,7 +704,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			costBlocks.addAll(developmentCostBlocks);
 		}
 		sectionBlock = Map();
-		sectionBlock.put("title","CONSTRUCTION ADDITIONAL COSTS");
+		sectionBlock.put("title","CONSTRUCTION ADD'L COSTS");
 		sectionBlock.put("amount",thisapp.PF_Packet_Money(constructionAdditionalTotal.toString()));
 		sectionBlock.put("section",true);
 		costBlocks.add(sectionBlock);
@@ -1409,11 +1414,11 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			packetPfName = "Pro_Forma";
 		}
 		result.put("fileName",packetPfName + "_Proforma_Packet_" + zoho.currentdate.toString("yyyy-MM-dd") + ".pdf");
-		result.put("containsAdditionalCosts",additionalItems.count() > 0);
+		result.put("containsAdditionalCosts",additionalItemIds.size() > 0);
 		result.put("containsLOITerms",true);
 		result.put("commentCount",commentRows.count());
 		result.put("pageCount",pageStreams.size());
-		result.put("additionalCostCount",additionalItems.count());
+		result.put("additionalCostCount",additionalItemIds.size());
 		result.put("sellerCount",sellers.count());
 		result.put("propertyCount",properties.count());
 		return result;

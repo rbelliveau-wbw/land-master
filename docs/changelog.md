@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-22 — Approval packet Development cost itemization
+
+- Read Development and Construction additional-cost items from the Pro Forma's linked child grids so saved Development rows appear in the PDF again. Removed the invented “Unitemized Development” line; a nonzero total with inaccessible rows now says the item rows are unavailable.
+- Renamed both first-page and detail-page sections to **Development Add'l Costs** and **Construction Add'l Costs**. The function is saved in Creator Development; environment publication remains with the user. Regression: linked Development items, missing child rows, section labels, and packet export. Rollback: restore the prior `PF_Build_Proforma_Approval_PDF` function body from git.
+
 ## 2026-09-22 — Pro Forma approval packet layout and reimbursement grouping
 
 - Reworked the packet dashboard and Additional Costs pages to match the annotated acquisition one-sheet while retaining reimbursement and Offer pages.

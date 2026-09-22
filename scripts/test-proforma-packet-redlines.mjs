@@ -13,7 +13,12 @@ export const fixture={
   Comment_Log:[],Builder:[],Property:[]
 };
 export function buildFixture(data=fixture){
-  const r=packetRuntime(process.cwd(),data);
+  const linked=structuredClone(data);
+  for(const pf of linked.Add_Pro_Forma){
+    pf.Additional_Costs_Development ??= (linked.Proforma_Item||[]).filter(item=>String(item.Pro_Forma_Dev)===String(pf.ID));
+    pf.Additional_Costs_Construction ??= (linked.Proforma_Item||[]).filter(item=>String(item.Pro_Forma_Const)===String(pf.ID));
+  }
+  const r=packetRuntime(process.cwd(),linked);
   const result=r.run('thisapp.PF_Build_Proforma_Approval_PDF("1","2")');
   assert.equal(result.success,true,result.message);
   const pages=JSON.parse(JSON.stringify(r.run('capturedPages')));
@@ -49,9 +54,21 @@ const missingDevelopment=structuredClone(fixture);
 missingDevelopment.Add_Pro_Forma[0].Entitlement_Engineering_Addl=1119390;
 missingDevelopment.Proforma_Item=[{ID:901,Pro_Forma_Const:1,Department:'Construction',Category:'Streets',Item_Name:'Roads',Add_l_Cost:4600000}];
 const missingDevelopmentText=buildFixture(missingDevelopment).r.draws.map(x=>x.text).join('\n');
-assert.ok(missingDevelopmentText.includes('DEVELOPMENT COSTS')&&missingDevelopmentText.includes('$1,119,390'),'persisted Development total survives absent child rows');
-assert.ok(missingDevelopmentText.includes('Unitemized Development cost'),'missing detail is disclosed rather than reported as zero');
+assert.ok(missingDevelopmentText.includes('DEVELOPMENT ADD\'L COSTS')&&missingDevelopmentText.includes('$1,119,390'),'persisted Development total survives absent child rows');
+assert.ok(missingDevelopmentText.includes('Development item rows unavailable'),'missing detail is disclosed rather than invented');
+assert.ok(!missingDevelopmentText.includes('Unitemized Development'),'never fabricate an unitemized Development cost');
 assert.ok(!missingDevelopmentText.includes('No Development costs'),'nonzero Development costs are never described as absent');
+const linkedDevelopment=structuredClone(fixture);
+linkedDevelopment.Proforma_Item=[];
+linkedDevelopment.Add_Pro_Forma[0].Entitlement_Engineering_Addl=1119390;
+linkedDevelopment.Add_Pro_Forma[0].Additional_Costs_Development=[
+  {ID:920,Department:'Development',Category:'Full Development',Item_Name:'Design',Cost_Code:4010,Add_l_Cost:119390},
+  {ID:921,Department:'Development',Category:'Amenities-DEV',Item_Name:'Park',Cost_Code:4510,Add_l_Cost:1000000}
+];
+linkedDevelopment.Proforma_Item=linkedDevelopment.Add_Pro_Forma[0].Additional_Costs_Development;
+const linkedDevelopmentText=buildFixture(linkedDevelopment).r.draws.map(x=>x.text).join('\n');
+for(const name of ['Design','Park'])assert.ok(linkedDevelopmentText.includes(name),'linked Development item '+name+' renders');
+assert.ok(!linkedDevelopmentText.includes('Unitemized Development'),'linked rows replace the unitemized fallback');
 const engineeringDevelopment=structuredClone(fixture);
 engineeringDevelopment.Proforma_Item=[{ID:902,Pro_Forma_Dev:1,Department:'Engineering',Category:'Engineering',Item_Name:'Site design',Add_l_Cost:75000}];
 const engineeringDevelopmentText=buildFixture(engineeringDevelopment).r.draws.map(x=>x.text).join('\n');
