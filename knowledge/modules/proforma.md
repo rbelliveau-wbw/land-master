@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Simplified packet date (1.80.6)
+
+Browser-downloaded approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The redundant `YYYYMMDD_HHMMSS` server timestamp is omitted; the ISO date reflects the generation date. The Creator packet response remains unchanged. Regression: named and fallback packets, special-character cleanup, a single generation date, and packet export behavior. Rollback: promote widget `1.80.5`.
+
 ## Readable approval packet filenames (1.80.5)
 
 Browser-downloaded approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_<server timestamp>_<export date>.pdf`. Unsafe punctuation and the internal record ID are removed; the existing generation timestamp and ISO export date remain. The server packet contract is unchanged because the widget derives the final download name from the loaded Pro Forma and the timestamp already returned by Creator. Regression: named and fallback packets, special-character cleanup, retained timestamps, and packet export behavior. Rollback: promote widget `1.80.4`.

@@ -29,15 +29,16 @@ const packetFileName = new Function(
   () => "2026-09-22"
 );
 assert.equal(
-  packetFileName("4410926000004288980", "Proforma_Approval_Packet_4410926000004288980_20260922_103315.pdf"),
-  "Corsicana_Trails_ORIGINAL_Phase_1_Proforma_Packet_20260922_103315_2026-09-22.pdf",
-  "PDF filenames must lead with the sanitized Pro Forma name and retain both date stamps"
+  packetFileName("4410926000004288980"),
+  "Corsicana_Trails_ORIGINAL_Phase_1_Proforma_Packet_2026-09-22.pdf",
+  "PDF filenames must lead with the sanitized Pro Forma name and end with the generation date"
 );
 assert.equal(
-  packetFileName("missing", "Proforma_Approval_Packet.pdf"),
+  packetFileName("missing"),
   "Pro_Forma_Proforma_Packet_2026-09-22.pdf",
-  "PDF filenames must remain useful when the record name and server timestamp are unavailable"
+  "PDF filenames must remain useful when the record name is unavailable"
 );
+assert.ok(!packetFileName("4410926000004288980").includes("20260922_103315"), "PDF filenames must omit the compact server timestamp");
 
 for (const required of [
   ".loi-tv-link{",
