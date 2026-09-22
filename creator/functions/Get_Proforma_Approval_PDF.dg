@@ -76,7 +76,13 @@ string Get_Proforma_Approval_PDF(string payload)
 			return resp.toString();
 		}
 		resp.put("success",true);
-		resp.put("fileName",ifnull(packet.get("fileName"),"Proforma_Approval_Packet.pdf"));
+		fallbackPf = Add_Pro_Forma[ID == pfId.toLong()];
+		fallbackPfName = ifnull(fallbackPf.Name,"Pro Forma").toString().replaceAll("['’]","").replaceAll("[^A-Za-z0-9]+","_").replaceAll("_+","_").replaceAll("^_+","").replaceAll("_+$","");
+		if(fallbackPfName == "")
+		{
+			fallbackPfName = "Pro_Forma";
+		}
+		resp.put("fileName",ifnull(packet.get("fileName"),fallbackPfName + "_Proforma_Packet_" + zoho.currentdate.toString("yyyy-MM-dd") + ".pdf"));
 		resp.put("pdfText",ifnull(packet.get("pdfText"),""));
 	}	catch (e)
 	{

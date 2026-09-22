@@ -7,7 +7,7 @@ Current release: `1.80.6`. The main report shares Budget’s softer blue headers
 
 ## Simplified packet date (1.80.6)
 
-Downloaded approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The compact server timestamp is omitted, and the remaining ISO date is the packet generation date. Regression: named and fallback packets, special-character cleanup, a single generation date, and packet export behavior. Rollback: map production proforma-manager to `1.80.5`.
+Downloaded and emailed approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The widget, packet builder, authenticated download API, and approval-email fallback all use the same name; the compact server timestamp and record ID are omitted. Creator functions affected: `PF_Build_Proforma_Approval_PDF`, `Get_Proforma_Approval_PDF`, and `Send_Proforma_Approval_Email_With_Context`. Regression: named and fallback packets, special-character cleanup, a single generation date, browser downloads, API responses, and email attachments. Rollback: map production proforma-manager to `1.80.5` and restore the three prior Creator function bodies.
 
 ## Readable approval packet filenames (1.80.5)
 

@@ -3,7 +3,7 @@
 
 ## Simplified packet date (1.80.6)
 
-Browser-downloaded approval PDFs use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The redundant `YYYYMMDD_HHMMSS` server timestamp is omitted; the ISO date reflects the generation date. The Creator packet response remains unchanged. Regression: named and fallback packets, special-character cleanup, a single generation date, and packet export behavior. Rollback: promote widget `1.80.5`.
+Browser downloads, Creator API responses, and approval-email attachments use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The redundant `YYYYMMDD_HHMMSS` timestamp and record ID are omitted; the ISO date reflects generation. Functions: `PF_Build_Proforma_Approval_PDF`, `Get_Proforma_Approval_PDF`, and `Send_Proforma_Approval_Email_With_Context`. No form, field, or Custom API name changed. Regression: named and fallback packets, special-character cleanup, a single generation date, browser downloads, API responses, and email attachments. Rollback: promote widget `1.80.5` and restore the three prior function bodies.
 
 ## Readable approval packet filenames (1.80.5)
 

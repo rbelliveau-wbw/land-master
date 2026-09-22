@@ -1187,7 +1187,12 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		}
 		result.put("success",true);
 		result.put("pdfText",pdfText);
-		result.put("fileName","Proforma_Approval_Packet_" + proformaIdText + "_" + zoho.currenttime.toString("yyyyMMdd_HHmmss") + ".pdf");
+		packetPfName = pfName.replaceAll("['’]","").replaceAll("[^A-Za-z0-9]+","_").replaceAll("_+","_").replaceAll("^_+","").replaceAll("_+$","");
+		if(packetPfName == "")
+		{
+			packetPfName = "Pro_Forma";
+		}
+		result.put("fileName",packetPfName + "_Proforma_Packet_" + zoho.currentdate.toString("yyyy-MM-dd") + ".pdf");
 		result.put("containsAdditionalCosts",additionalItems.count() > 0);
 		result.put("containsLOITerms",true);
 		result.put("commentCount",commentRows.count());

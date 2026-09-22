@@ -37,7 +37,12 @@
                  			return response;
                  		}
                  		pdfText = ifnull(packet.get("pdfText"),"").toString();
-                 		packetFileName = ifnull(packet.get("fileName"),"Proforma_Approval_Packet.pdf").toString();
+		fallbackPacketPfName = ifnull(pf.Name,"Pro Forma").toString().replaceAll("['’]","").replaceAll("[^A-Za-z0-9]+","_").replaceAll("_+","_").replaceAll("^_+","").replaceAll("_+$","");
+		if(fallbackPacketPfName == "")
+		{
+			fallbackPacketPfName = "Pro_Forma";
+		}
+		packetFileName = ifnull(packet.get("fileName"),fallbackPacketPfName + "_Proforma_Packet_" + zoho.currentdate.toString("yyyy-MM-dd") + ".pdf").toString();
                  		if(pdfText == "")
                  		{
                  			response.put("success",false);

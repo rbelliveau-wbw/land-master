@@ -6,6 +6,8 @@ const root = process.cwd();
 const widget = fs.readFileSync(path.join(root, "widgets/proforma-manager/src/app/widget.html"), "utf8");
 const build = fs.readFileSync(path.join(root, "creator/functions/PF_Build_Proforma_Approval_PDF.dg"), "utf8");
 const compile = fs.readFileSync(path.join(root, "creator/functions/PF_PDF_Compile.dg"), "utf8");
+const endpoint = fs.readFileSync(path.join(root, "creator/functions/Get_Proforma_Approval_PDF.dg"), "utf8");
+const approvalEmail = fs.readFileSync(path.join(root, "creator/functions/Send_Proforma_Approval_Email_With_Context.dg"), "utf8");
 
 function extractWidgetFunction(name) {
   const start = widget.indexOf(`function ${name}(`);
@@ -39,6 +41,13 @@ assert.equal(
   "PDF filenames must remain useful when the record name is unavailable"
 );
 assert.ok(!packetFileName("4410926000004288980").includes("20260922_103315"), "PDF filenames must omit the compact server timestamp");
+
+for (const [source, label] of [[build, "packet builder"], [endpoint, "download endpoint"], [approvalEmail, "approval email"]]) {
+  assert.ok(source.includes('_Proforma_Packet_" + zoho.currentdate.toString("yyyy-MM-dd") + ".pdf"'), `${label} must use the canonical name and ISO generation date`);
+  assert.ok(source.includes('replaceAll("[^A-Za-z0-9]+","_")'), `${label} must sanitize the Pro Forma name for filesystems`);
+  assert.ok(!source.includes('"Proforma_Approval_Packet.pdf"'), `${label} must not retain the old generic fallback name`);
+  assert.ok(!source.includes('zoho.currenttime.toString("yyyyMMdd_HHmmss")'), `${label} must not retain the compact timestamp`);
+}
 
 for (const required of [
   ".loi-tv-link{",
