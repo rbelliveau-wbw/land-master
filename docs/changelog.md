@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-22 — Pro Forma confirmations and packet reading flow
+
+- Pro Forma archive, restore, and delete confirmations identify the record by name. Delete checks for LOI worksheets first and shows a separate protected-record modal with an Archive action. The server still enforces LOI protection and now deletes scoped `Comment_Log` child records before deleting the parent Pro Forma.
+- The approval packet shows Impact Fees and Reimbursements totals in their green section headers, labels the sale schedule **Land Sale Installments**, and presents Comments in up to three dated, color-accented cards per row. Long comments continue on later cards/pages without losing text.
+- Widget `1.80.12` is promoted to Production; Creator Development functions `PF_Build_Proforma_Approval_PDF`, `PF_PDF_Flow_Pages`, and `proforma_save` must be published by the user before the backend changes reach Production. Regression: archive/delete naming, LOI block and alternate Archive action, scoped comment deletion, header totals, three-column comments, and long text. Rollback: map Production to Proforma Manager `1.80.11` and restore the previous three function bodies from git.
+
 ## 2026-09-22 — Approval packet Development cost itemization
 
 - Read Development and Construction additional-cost items from the Pro Forma's linked child grids so saved Development rows appear in the PDF again. Removed the invented “Unitemized Development” line; a nonzero total with inaccessible rows now says the item rows are unavailable.

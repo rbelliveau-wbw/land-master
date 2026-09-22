@@ -52,6 +52,149 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 	{
 		topY = subY - 10;
 	}
+	// Comments read as a dated conversation, not as financial line items. Keep
+	// chronology left-to-right in each row, with a complete card on one page.
+	if(title == "Comments")
+	{
+		commentColumns = 3;
+		if(blocks.size() < 3)
+		{
+			commentColumns = blocks.size();
+		}
+		commentWidth = 360;
+		commentGap = 400;
+		commentBodyChars = 36;
+		commentAuthorChars = 30;
+		if(commentColumns == 2)
+		{
+			commentWidth = 560;
+			commentGap = 600;
+			commentBodyChars = 60;
+			commentAuthorChars = 48;
+		}
+		else if(commentColumns == 1)
+		{
+			commentWidth = 1144;
+			commentBodyChars = 120;
+			commentAuthorChars = 90;
+		}
+		commentCards = List();
+		commentNumber = 0;
+		for each commentBlock in blocks
+		{
+			commentNumber = commentNumber + 1;
+			commentLines = List();
+			commentBody = ifnull(commentBlock.get("body"),"").toString();
+			for each commentParagraph in commentBody.toList("\n")
+			{
+				if(commentParagraph.trim() == "")
+				{
+					commentLines.add("");
+				}
+				else
+				{
+					commentLines.addAll(thisapp.PF_PDF_Wrap(commentParagraph,commentBodyChars));
+				}
+			}
+			if(commentLines.size() == 0)
+			{
+				commentLines.add("");
+			}
+			partLines = List();
+			partNumber = 1;
+			for each commentLine in commentLines
+			{
+				partLines.add(commentLine);
+				if(partLines.size() == 36)
+				{
+					commentCard = Map();
+					commentCard.put("title",ifnull(commentBlock.get("title"),"Unknown author").toString());
+					commentCard.put("meta",ifnull(commentBlock.get("meta"),"").toString());
+					commentCard.put("lines",partLines);
+					commentCard.put("number",commentNumber);
+					commentCard.put("part",partNumber);
+					commentCards.add(commentCard);
+					partLines = List();
+					partNumber = partNumber + 1;
+				}
+			}
+			if(partLines.size() > 0)
+			{
+				commentCard = Map();
+				commentCard.put("title",ifnull(commentBlock.get("title"),"Unknown author").toString());
+				commentCard.put("meta",ifnull(commentBlock.get("meta"),"").toString());
+				commentCard.put("lines",partLines);
+				commentCard.put("number",commentNumber);
+				commentCard.put("part",partNumber);
+				commentCards.add(commentCard);
+			}
+		}
+		page = base;
+		rowY = topY;
+		rowCards = List();
+		cardIndex = 0;
+		for each commentCard in commentCards
+		{
+			cardIndex = cardIndex + 1;
+			rowCards.add(commentCard);
+			if(rowCards.size() == commentColumns || cardIndex == commentCards.size())
+			{
+				rowHeight = 0;
+				for each rowCard in rowCards
+				{
+					authorLabel = rowCard.get("title").toString();
+					if(rowCard.get("part") > 1)
+					{
+						authorLabel = authorLabel + " (continued)";
+					}
+					cardHeight = 64 + thisapp.PF_PDF_Wrap(authorLabel,commentAuthorChars).size() * 12 + rowCard.get("lines").size() * 12;
+					if(cardHeight > rowHeight)
+					{
+						rowHeight = cardHeight;
+					}
+				}
+				if(rowY - rowHeight < 48)
+				{
+					pages.add(page);
+					page = base;
+					rowY = topY;
+				}
+				commentColumn = 0;
+				for each rowCard in rowCards
+				{
+					x = 40 + commentColumn * commentGap;
+					accent = "0.16 0.37 0.80";
+					if(commentColumn == 1) { accent = "0.04 0.50 0.42"; }
+					else if(commentColumn == 2) { accent = "0.40 0.31 0.70"; }
+					authorLabel = rowCard.get("title").toString();
+					if(rowCard.get("part") > 1) { authorLabel = authorLabel + " (continued)"; }
+					authorLines = thisapp.PF_PDF_Wrap(authorLabel,commentAuthorChars);
+					cardHeight = 64 + authorLines.size() * 12 + rowCard.get("lines").size() * 12;
+					page = page + thisapp.PF_PDF_Rect(x,rowY - cardHeight,commentWidth,cardHeight,"0.985 0.990 1.00","0.84 0.88 0.93",0.45);
+					page = page + thisapp.PF_PDF_Rect(x,rowY - cardHeight,3,cardHeight,accent,"",0);
+					page = page + thisapp.PF_PDF_Text(x + 15,rowY - 16,7,"bold",accent,"COMMENT " + rowCard.get("number").toString());
+					authorY = rowY - 33;
+					for each authorLine in authorLines
+					{
+						page = page + thisapp.PF_PDF_Text(x + 15,authorY,10,"bold","0.05 0.16 0.30",authorLine);
+						authorY = authorY - 12;
+					}
+					page = page + thisapp.PF_PDF_Text(x + 15,authorY - 5,7.6,"regular","0.38 0.47 0.59",rowCard.get("meta").toString());
+					bodyY = authorY - 29;
+					for each bodyLine in rowCard.get("lines")
+					{
+						page = page + thisapp.PF_PDF_Text(x + 15,bodyY,9,"regular","0.10 0.17 0.27",bodyLine);
+						bodyY = bodyY - 12;
+					}
+					commentColumn = commentColumn + 1;
+				}
+				rowY = rowY - rowHeight - 16;
+				rowCards = List();
+			}
+		}
+		pages.add(page);
+		return pages;
+	}
 	page = base;
 	column = 0;
 	y = topY;
@@ -82,7 +225,12 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 			page = page + thisapp.PF_PDF_Text(x,y - 7,8.5,"bold","0.05 0.16 0.30",blockTitle);
 			if(amount != "")
 			{
-				page = page + thisapp.PF_PDF_Text(x + columnWidth - 112,y - 7,8.5,"bold","0.07 0.12 0.20",amount);
+				sectionAmountColor = "0.07 0.12 0.20";
+				if(ifnull(block.get("credit"),false) == true)
+				{
+					sectionAmountColor = "0.04 0.50 0.25";
+				}
+				page = page + thisapp.PF_PDF_Text(x + columnWidth - 112,y - 7,8.5,"bold",sectionAmountColor,amount);
 			}
 			y = y - 38;
 		}

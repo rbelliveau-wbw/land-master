@@ -730,30 +730,24 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		{
 			sectionBlock = Map();
 			sectionBlock.put("title","IMPACT FEES");
+			sectionBlock.put("amount",thisapp.PF_Packet_Money(impactFeesTotal.toString()));
+			sectionBlock.put("credit",true);
 			sectionBlock.put("section",true);
 			costBlocks.add(sectionBlock);
 			costBlocks.addAll(impactFeeBlocks);
-			block = Map();
-			block.put("title","IMPACT FEES SUBTOTAL");
-			block.put("amount",thisapp.PF_Packet_Money(impactFeesTotal.toString()));
-			block.put("credit",true);
-			costBlocks.add(block);
 		}
 		if(otherReimbursementBlocks.size() > 0)
 		{
 			sectionBlock = Map();
 			sectionBlock.put("title","REIMBURSEMENTS");
+			sectionBlock.put("amount",thisapp.PF_Packet_Money(otherReimbursementsTotal.toString()));
+			sectionBlock.put("credit",true);
 			sectionBlock.put("section",true);
 			costBlocks.add(sectionBlock);
 			costBlocks.addAll(otherReimbursementBlocks);
-			block = Map();
-			block.put("title","REIMBURSEMENTS SUBTOTAL");
-			block.put("amount",thisapp.PF_Packet_Money(otherReimbursementsTotal.toString()));
-			block.put("credit",true);
-			costBlocks.add(block);
 		}
 		sectionBlock = Map();
-		sectionBlock.put("title","LAND SALE INSTALLMENT DETAILS");
+		sectionBlock.put("title","LAND SALE INSTALLMENTS");
 		sectionBlock.put("amount",thisapp.PF_Packet_Money(saleInstallmentTotal.toString()));
 		sectionBlock.put("section",true);
 		costBlocks.add(sectionBlock);
@@ -1385,7 +1379,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(ownerOverflowBlocks,"Acquisition owners",pfName,1));
 		if(commentBlocks.size() > 0)
 		{
-			pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(commentBlocks,"Comments",pfName,1));
+			pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(commentBlocks,"Comments",pfName,3));
 		}
 		/*
 		* Expected minimum:

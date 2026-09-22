@@ -326,11 +326,22 @@
                  				deleteIds.add(monthRec.ID);
                  			}
                  			deleted.put("Proforma_Months",deleteIds.size());
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Proforma_Months[ID == childId];
-                 			}
-                 			// Do not delete or modify LOI Worksheets, Companies, Builders/Sellers,
+			for each  childId in deleteIds
+			{
+				delete from Proforma_Months[ID == childId];
+			}
+			deleteStage = "proforma_comments";
+			deleteIds = List();
+			for each commentRec in Comment_Log[Pro_Forma == pfKey]
+			{
+				deleteIds.add(commentRec.ID);
+			}
+			deleted.put("Comment_Log",deleteIds.size());
+			for each childId in deleteIds
+			{
+				delete from Comment_Log[ID == childId];
+			}
+			// Do not delete or modify LOI Worksheets, Companies, Builders/Sellers,
                  			// or Properties. The LOI protection check above prevents orphaning them.
                  			deleteStage = "parent_proforma";
                  			delete from Add_Pro_Forma[ID == pfKey];

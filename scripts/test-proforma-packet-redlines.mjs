@@ -38,7 +38,7 @@ assert.equal(pages.length,4,'dashboard, three-column costs, reimbursements, Offe
 assert.ok(!texts.includes('$99,999,999')&&!texts.includes('$88,888,888'),'exclude wrong type and other Pro Forma');
 assert.ok(texts.includes('$24,276'),'total only eligible installments');
 assert.ok(r.draws.some(x=>x.x>=440&&x.text.includes('Cost item')),'costs flow beyond the first of three columns');
-for(const label of ['LAND PURCHASE / INSTALLMENTS','PID / MUD REIMBURSEMENTS','FT. ST. / LOT','ESTIMATED PURCHASE','ENGINEERING START / DELAY','RECURRING TAKEDOWN','LOT MIX','CONST ADD\'L COST / LOT','LAND SALE INSTALLMENT DETAILS'])assert.ok(texts.includes(label),label);
+for(const label of ['LAND PURCHASE / INSTALLMENTS','PID / MUD REIMBURSEMENTS','FT. ST. / LOT','ESTIMATED PURCHASE','ENGINEERING START / DELAY','RECURRING TAKEDOWN','LOT MIX','CONST ADD\'L COST / LOT','LAND SALE INSTALLMENTS'])assert.ok(texts.includes(label),label);
 assert.ok(texts.includes('7/month'),'recurring takedown remains monthly');
 assert.ok(texts.includes('50s: 450, 60s: 225'),'lot mix is sourced from persisted child rows');
 assert.ok(texts.includes('$6,815'),'construction additional cost per lot is Construction Add\'l divided by lots');
@@ -91,12 +91,26 @@ const pageHas=(page,value)=>page.includes(Buffer.from(value).toString('hex'));
 const costPage=grouped.pages.find(page=>pageHas(page,'Additional Costs, Reimbursements and Notes'));
 const pidPage=grouped.pages.find(page=>pageHas(page,'PID / MUD Reimbursements'));
 assert.ok(costPage&&pidPage,'Additional Costs and PID/MUD keep separate pages');
-for(const value of ['Impact Fees: Water','Oversizing Agreement','Offsite lift station upgrade','IMPACT FEES SUBTOTAL','REIMBURSEMENTS SUBTOTAL'])
+for(const value of ['Impact Fees: Water','Oversizing Agreement','Offsite lift station upgrade','IMPACT FEES','REIMBURSEMENTS','$50,000','$1,000,000'])
   assert.ok(pageHas(costPage,value),value+' belongs on the Additional Costs page');
 assert.ok(!pageHas(pidPage,'Impact Fees: Water')&&!pageHas(pidPage,'Oversizing Agreement'),'cost-row reimbursements do not repeat on PID/MUD page');
 assert.ok(pageHas(pidPage,'PID / MUD SUBTOTAL')&&pageHas(pidPage,'$514,955'),'PID/MUD has its own scoped subtotal');
-assert.ok(costPage.indexOf(Buffer.from('IMPACT FEES').toString('hex'))<costPage.indexOf(Buffer.from('LAND SALE INSTALLMENT DETAILS').toString('hex')),'reimbursements precede Land Sale');
+assert.ok(costPage.indexOf(Buffer.from('IMPACT FEES').toString('hex'))<costPage.indexOf(Buffer.from('LAND SALE INSTALLMENTS').toString('hex')),'reimbursements precede Land Sale');
+assert.ok(!pageHas(costPage,'REIMBURSEMENTS SUBTOTAL')&&!pageHas(costPage,'IMPACT FEES SUBTOTAL'),'section totals belong in their headers');
 assert.ok(!pageHas(costPage,'Unitemized Development additional cost'),'reimbursement rows do not inflate the Development reconciliation');
+const groupedDraws=grouped.r.draws;
+const reimbursementHeading=groupedDraws.find(x=>x.text==='REIMBURSEMENTS');
+const reimbursementAmount=groupedDraws.find(x=>x.text==='$1,000,000'&&x.y===reimbursementHeading?.y);
+assert.ok(reimbursementAmount,'green reimbursement total sits in its section heading');
+const shortComments=structuredClone(fixture);
+shortComments.Comment_Log=[
+  {ID:400,Pro_Forma:1,Author_Name:'First Author',Added_Time:'Sep 22, 2026 2:24 PM',Comment:'First note'},
+  {ID:401,Pro_Forma:1,Author_Name:'Second Author',Added_Time:'Sep 22, 2026 3:06 PM',Comment:'Second note'},
+  {ID:402,Pro_Forma:1,Author_Name:'Third Author',Added_Time:'Sep 23, 2026 8:30 AM',Comment:'Third note'}
+];
+const short=buildFixture(shortComments);
+assert.deepEqual(short.r.draws.filter(x=>/^COMMENT [123]$/.test(x.text)).map(x=>x.x),[55,455,855],'three comments use three side-by-side cards');
+assert.ok(short.r.draws.some(x=>x.text==='Third note'),'comment body remains visible');
 const wrapped=Array.from(r.run('thisapp.PF_PDF_Wrap("ABCDEFGHIJKLMNOPQRSTUVWXYZ end",5)'));
 assert.equal(wrapped.join('').replaceAll(' ',''),'ABCDEFGHIJKLMNOPQRSTUVWXYZend');
 assert.ok(wrapped.every(x=>x.length<=5));
