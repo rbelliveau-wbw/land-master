@@ -18,6 +18,19 @@ for (const required of [
   assert.ok(widget.includes(required), `locked TerraVault link is missing ${required}`);
 }
 
+assert.ok(
+  widget.includes('#edPanes.readonly .ed-pane:not([data-pane="approvals"]) textarea'),
+  "Pro Forma read-only mode must leave authorized approval notes interactive"
+);
+assert.ok(
+  widget.includes('#edPanes.input-lock .ed-pane:not([data-pane="loi"]):not([data-pane="approvals"]) textarea{'),
+  "approval notes must not inherit the locked financial-input appearance"
+);
+assert.ok(
+  !widget.includes('#edPanes.readonly textarea,'),
+  "read-only styling must not disable every approval textarea globally"
+);
+
 for (const required of [
   'listSort:{key:"",dir:""}',
   'data-list-sort="Name"',

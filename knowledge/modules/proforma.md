@@ -58,6 +58,10 @@ The existing Pro Forma back-button design is retained, with an explicit pointer 
 
 Pro forma creation and editing, phases/months, additional costs, purchasing company, seller/property LOI data, Writer-generated LOI documents, comparison views, and approvals.
 
+The Pro Forma list always renders View and Edit for every row. Edit is blue when `canEditPf` allows the record and remains visible in a gray disabled state when the viewer lacks access or the approval flow is complete. For owned-only users, the disabled action explains that they can edit only Pro Formas they own. This is presentation feedback only; the existing permission and direct-route guards remain authoritative.
+
+The Pro Forma read-only state excludes the Approvals pane. Controls in that pane are rendered only after their own approval permissions pass, so the assigned owner can enter and save a pending approval note even when they cannot edit the surrounding Pro Forma.
+
 ## Approval flow
 
 Current intended single sequence:

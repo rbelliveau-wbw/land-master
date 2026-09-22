@@ -3,7 +3,7 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.0`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.1`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 ## Offer packet and document export (1.80.0)
 
@@ -67,3 +67,7 @@ Added `Navarro` to County choices for existing and new Property rows. Existing c
 ## Number formatting and Special Provisions (1.79.14)
 
 Numeric Pro Forma inputs show thousands separators when focus leaves the field and return to plain numeric text for editing, preserving the existing model and Creator payload values. The Offer tab now shows Special Provisions once, defaults blank values to `None`, and notes that `None` is the expected entry when no provisions apply. No Creator deployment is required. Regression: edit a large numeric value, tab away, reopen it, save it, and verify the stored numeric value is unchanged; open an Offer with blank provisions and verify it displays `None`. Rollback: restore the production mapping to `1.79.13`.
+
+## Persistent Edit action and active approval notes (1.80.1)
+
+Every Pro Forma row now shows Edit. Records the viewer can edit retain the blue action; records outside an owned-only user's scope show a gray disabled action with an ownership-specific reason. Closed records and completed approval flows also show the disabled action with the applicable explanation. An assigned approval owner can now type and save the active approval note even when the surrounding Pro Forma is read-only because they do not own it. Existing `canEditPf`, approval ownership, and direct-route guards remain authoritative. No forms, fields, functions, Custom APIs, or Creator deployment change. Regression: all-access, owned-only owned/unowned, no-edit-access, closed and completed-approval rows, and an active approver on an unowned Pro Forma. Rollback: restore the production mapping to `1.80.0`.
