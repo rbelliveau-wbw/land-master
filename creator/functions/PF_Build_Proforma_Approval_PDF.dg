@@ -342,7 +342,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			{
 				page = page + thisapp.PF_PDF_Rect(returnX.get(returnIndex) - 14,732,0.6,24,"0.78 0.84 0.91","",0);
 			}
-			page = page + thisapp.PF_PDF_Text(returnX.get(returnIndex),748,7.2,"bold",muted,returnLabels.get(returnIndex));
+			page = page + thisapp.PF_PDF_Text(returnX.get(returnIndex),748,10,"bold",muted,returnLabels.get(returnIndex));
 			page = page + thisapp.PF_PDF_Text(returnX.get(returnIndex) + 55,746,10.5,"bold",blue,returnValues.get(returnIndex));
 		}
 		page = page + thisapp.PF_PDF_Rect(472,682,584,34,white,line,0.35);
@@ -352,47 +352,47 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		flowColors = {green,red,navy};
 		for each index flowIndex in flowLabels
 		{
-			page = page + thisapp.PF_PDF_Text(flowX.get(flowIndex),700,6.2,"bold",muted,flowLabels.get(flowIndex));
-			page = page + thisapp.PF_PDF_Text(flowX.get(flowIndex) + 62,698,9.5,"bold",flowColors.get(flowIndex),flowValues.get(flowIndex));
+			page = page + thisapp.PF_PDF_Text(flowX.get(flowIndex),701,10,"bold",muted,flowLabels.get(flowIndex));
+			page = page + thisapp.PF_PDF_Text(flowX.get(flowIndex),688,10,"bold",flowColors.get(flowIndex),flowValues.get(flowIndex));
 		}
 		page = page + thisapp.PF_PDF_Rect(1070,682,126,82,deepNavy,"",0);
 		page = page + thisapp.PF_PDF_Rect(1082,704,102,42,"0.09 0.25 0.44","0.20 0.42 0.68",0.5);
 		page = page + thisapp.PF_PDF_Text(1092,732,5.5,"bold","0.70 0.81 0.93","CURRENT STEP");
 		page = page + thisapp.PF_PDF_Text(1092,714,9.5,"bold",white,ifnull(approvalRow.Title,"Approver").toString());
 		/* Complete Inflows and Outflows sections from the Word template. */
-		page = page + thisapp.PF_PDF_Rect(28,512,151,156,white,line,0.35);
-		page = page + thisapp.PF_PDF_Rect(28,512,4,156,green,"",0);
+		page = page + thisapp.PF_PDF_Rect(28,506,151,162,white,line,0.35);
+		page = page + thisapp.PF_PDF_Rect(28,506,4,162,green,"",0);
 		page = page + thisapp.PF_PDF_Text(40,646,6.2,"bold",green,"TOTAL INFLOWS");
 		page = page + thisapp.PF_PDF_Text(40,623,11.5,"bold",green,thisapp.PF_Packet_Money(ifnull(pf.Total_Income,0).toString()));
 		inflowLabels = {"Gross Sales","MUD Revenue","Reimbursements","Reimbursed Fees","Land Sales (Other)"};
 		inflowValues = {thisapp.PF_Packet_Money(ifnull(pf.Gross_Sales,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.MUD_Revenue,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Reimbursements,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Reimbursed_Fees,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Land_Sale,0).toString())};
 		for each index inflowIndex in inflowLabels
 		{
-			flowRowY = 600 - inflowIndex * 16;
-			page = page + thisapp.PF_PDF_Text(40,flowRowY,5.6,"regular",muted,inflowLabels.get(inflowIndex));
-			page = page + thisapp.PF_PDF_Text(112,flowRowY,5.5,"bold",ink,inflowValues.get(inflowIndex));
+			flowRowY = 608 - inflowIndex * 21;
+			page = page + thisapp.PF_PDF_Text(40,flowRowY,10,"regular",muted,inflowLabels.get(inflowIndex));
+			page = page + thisapp.PF_PDF_Text(40,flowRowY - 11,10,"bold",ink,inflowValues.get(inflowIndex));
 		}
-		page = page + thisapp.PF_PDF_Rect(193,512,151,156,white,line,0.35);
-		page = page + thisapp.PF_PDF_Rect(193,512,4,156,red,"",0);
+		page = page + thisapp.PF_PDF_Rect(193,506,151,162,white,line,0.35);
+		page = page + thisapp.PF_PDF_Rect(193,506,4,162,red,"",0);
 		page = page + thisapp.PF_PDF_Text(205,646,6.2,"bold",red,"TOTAL OUTFLOWS");
 		page = page + thisapp.PF_PDF_Text(205,623,11.5,"bold",red,thisapp.PF_Packet_Money(ifnull(pf.Total_Expenses,0).toString()));
 		outflowLabels = {"Land Cost","Engineering Base","Ent/Eng Add'l","Construction Base","Construction Add'l"};
 		outflowValues = {thisapp.PF_Packet_Money(ifnull(pf.Land_Cost,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Entitlement_Cost,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Entitlement_Engineering_Addl,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Construction_Cost_Base,0).toString()),thisapp.PF_Packet_Money(ifnull(pf.Construction_Cost_Addl,0).toString())};
 		for each index outflowIndex in outflowLabels
 		{
-			flowRowY = 600 - outflowIndex * 16;
-			page = page + thisapp.PF_PDF_Text(205,flowRowY,5.6,"regular",muted,outflowLabels.get(outflowIndex));
-			page = page + thisapp.PF_PDF_Text(276,flowRowY,5.5,"bold",ink,outflowValues.get(outflowIndex));
+			flowRowY = 608 - outflowIndex * 21;
+			page = page + thisapp.PF_PDF_Text(205,flowRowY,10,"regular",muted,outflowLabels.get(outflowIndex));
+			page = page + thisapp.PF_PDF_Text(205,flowRowY - 11,10,"bold",ink,outflowValues.get(outflowIndex));
 		}
 		/* Main panel shells and section headers. */
 		page = page + thisapp.PF_PDF_Rect(358,512,316,156,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(358,642,316,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(370,651,7.1,"bold",navy,"LAND PURCHASE / INSTALLMENTS");
-		page = page + thisapp.PF_PDF_Text(570,651,7.1,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Land_Cost,0).toString()) + " / " + purchaseRows.count().toString());
+		page = page + thisapp.PF_PDF_Text(570,651,10,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Land_Cost,0).toString()) + " / " + purchaseRows.count().toString());
 		page = page + thisapp.PF_PDF_Rect(688,44,180,624,white,line,0.35);
-		page = page + thisapp.PF_PDF_Rect(688,642,180,26,softBlue,"",0);
-		page = page + thisapp.PF_PDF_Text(700,651,6.1,"bold",navy,"PID / MUD REIMBURSEMENTS");
-		page = page + thisapp.PF_PDF_Text(790,651,6.1,"bold",ink,thisapp.PF_Packet_Money(pidMudTotal.toString()));
+		page = page + thisapp.PF_PDF_Rect(688,618,180,50,softBlue,"",0);
+		page = page + thisapp.PF_PDF_Text(700,649,10,"bold",navy,"PID / MUD REIMBURSEMENTS");
+		page = page + thisapp.PF_PDF_Text(700,633,10,"bold",ink,thisapp.PF_Packet_Money(pidMudTotal.toString()));
 		page = page + thisapp.PF_PDF_Rect(28,286,316,212,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(28,472,316,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(40,481,7.1,"bold",navy,"SITE INFO");
@@ -402,43 +402,43 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		page = page + thisapp.PF_PDF_Rect(28,44,316,228,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(28,246,316,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(40,255,7.1,"bold",navy,"LOT SALES");
-		page = page + thisapp.PF_PDF_Text(240,255,7.1,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Gross_Sales,0).toString()));
+		page = page + thisapp.PF_PDF_Text(240,255,10,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Gross_Sales,0).toString()));
 		page = page + thisapp.PF_PDF_Rect(358,44,316,228,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(358,246,316,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(370,255,7.1,"bold",navy,"COSTS");
-		page = page + thisapp.PF_PDF_Text(520,255,6.5,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Total_Expenses,0).toString()) + " / " + thisapp.PF_Packet_Money(projectCostPerLot.toString()) + "/lot");
+		page = page + thisapp.PF_PDF_Text(520,255,10,"bold",ink,thisapp.PF_Packet_Money(ifnull(pf.Total_Expenses,0).toString()) + " / " + thisapp.PF_Packet_Money(projectCostPerLot.toString()) + "/lot");
 		/* Land Purchase installment table from the supplied page-one template. */
 		page = page + thisapp.PF_PDF_Rect(370,614,292,20,"0.95 0.97 0.99",line,0.35);
-		page = page + thisapp.PF_PDF_Text(378,621,5.6,"bold",muted,"MONTH");
-		page = page + thisapp.PF_PDF_Text(438,621,5.6,"bold",muted,"%");
-		page = page + thisapp.PF_PDF_Text(496,621,5.6,"bold",muted,"AMOUNT");
-		page = page + thisapp.PF_PDF_Text(602,621,5.6,"bold",muted,"DATE");
+		page = page + thisapp.PF_PDF_Text(378,621,10,"bold",muted,"MONTH");
+		page = page + thisapp.PF_PDF_Text(438,621,10,"bold",muted,"%");
+		page = page + thisapp.PF_PDF_Text(496,621,10,"bold",muted,"AMOUNT");
+		page = page + thisapp.PF_PDF_Text(602,621,10,"bold",muted,"DATE");
 		purchaseIndex = 0;
 		for each  purchaseItem in purchaseRows
 		{
 			if(purchaseIndex < 2)
 			{
 				rowY = 592 - purchaseIndex * 24;
-				page = page + thisapp.PF_PDF_Text(378,rowY,6.4,"bold",ink,ifnull(purchaseItem.Month1,"-").toString());
-				page = page + thisapp.PF_PDF_Text(438,rowY,6.4,"regular",ink,thisapp.PF_Packet_Number(ifnull(purchaseItem.Percent1,"").toString(),2));
-				page = page + thisapp.PF_PDF_Text(496,rowY,6.4,"bold",ink,thisapp.PF_Packet_Money(ifnull(purchaseItem.Cost,0).toString()));
+				page = page + thisapp.PF_PDF_Text(378,rowY,10,"bold",ink,ifnull(purchaseItem.Month1,"-").toString());
+				page = page + thisapp.PF_PDF_Text(438,rowY,10,"regular",ink,thisapp.PF_Packet_Number(ifnull(purchaseItem.Percent1,"").toString(),2));
+				page = page + thisapp.PF_PDF_Text(496,rowY,10,"bold",ink,thisapp.PF_Packet_Money(ifnull(purchaseItem.Cost,0).toString()));
 				purchaseDateRow = "-";
 				if(purchaseItem.Date1 != null)
 				{
 					purchaseDateRow = purchaseItem.Date1.toString("MMM yyyy");
 				}
-				page = page + thisapp.PF_PDF_Text(602,rowY,6.2,"regular",muted,purchaseDateRow);
+				page = page + thisapp.PF_PDF_Text(602,rowY,10,"regular",muted,purchaseDateRow);
 				page = page + thisapp.PF_PDF_Rect(372,rowY - 7,286,0.5,softLine,"",0);
 			}
 			purchaseIndex = purchaseIndex + 1;
 		}
 		if(purchaseIndex == 0)
 		{
-			page = page + thisapp.PF_PDF_Text(378,582,6.4,"italic",muted,"No purchase installments");
+			page = page + thisapp.PF_PDF_Text(378,582,10,"italic",muted,"No purchase installments");
 		}
 		else if(purchaseIndex > 2)
 		{
-			page = page + thisapp.PF_PDF_Text(378,530,5.8,"bold",muted,"+ " + (purchaseIndex - 2).toString() + " more in Pro Forma");
+			page = page + thisapp.PF_PDF_Text(378,530,10,"bold",muted,"+ " + (purchaseIndex - 2).toString() + " more in Pro Forma");
 		}
 		/* Site Info: each detailed value has one home on page 1. */
 		siteLabels = {"TOTAL ACRES","LOTS","PHASES","TOTAL STREET LF","LOT SIZE FT","EST LOTS / ACRE","FT. ST. / LOT"};
@@ -446,8 +446,8 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		for each index siteIndex in siteLabels
 		{
 			rowY = 448 - siteIndex * 24;
-			page = page + thisapp.PF_PDF_Text(40,rowY,5.8,"bold",lightMuted,siteLabels.get(siteIndex));
-			page = page + thisapp.PF_PDF_Text(206,rowY,7.2,"bold",ink,siteValues.get(siteIndex));
+			page = page + thisapp.PF_PDF_Text(40,rowY,10,"bold",muted,siteLabels.get(siteIndex));
+			page = page + thisapp.PF_PDF_Text(206,rowY,10,"bold",ink,siteValues.get(siteIndex));
 			page = page + thisapp.PF_PDF_Rect(40,rowY - 8,292,0.5,softLine,"",0);
 		}
 		costLabels = {"LAND COST / ACRE","ENGINEERING / LOT","BASE CONST / LF","BASE CONST / LOT","CONST ADD'L COST / LOT","DEV COST / LOT","TOTAL / LOT EXCL LAND"};
@@ -455,8 +455,8 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		for each index costIndex in costLabels
 		{
 			rowY = 220 - costIndex * 24;
-			page = page + thisapp.PF_PDF_Text(370,rowY,5.8,"bold",lightMuted,costLabels.get(costIndex));
-			page = page + thisapp.PF_PDF_Text(536,rowY,7.2,"bold",ink,costValues.get(costIndex));
+			page = page + thisapp.PF_PDF_Text(370,rowY,10,"bold",muted,costLabels.get(costIndex));
+			page = page + thisapp.PF_PDF_Text(542,rowY,10,"bold",ink,costValues.get(costIndex));
 			page = page + thisapp.PF_PDF_Rect(370,rowY - 8,292,0.5,softLine,"",0);
 		}
 		timelineLabels = {"ESTIMATED PURCHASE","ENGINEERING START / DELAY","ENGINEERING LENGTH","CONSTRUCTION START / DELAY","CONSTRUCTION LENGTH","ESTIMATED COMPLETION","LAND SALE INSTALLMENTS"};
@@ -464,8 +464,8 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		for each index timelineIndex in timelineLabels
 		{
 			rowY = 448 - timelineIndex * 24;
-			page = page + thisapp.PF_PDF_Text(370,rowY,5.8,"bold",lightMuted,timelineLabels.get(timelineIndex));
-			page = page + thisapp.PF_PDF_Text(536,rowY,7.2,"bold",ink,timelineValues.get(timelineIndex));
+			page = page + thisapp.PF_PDF_Text(370,rowY,10,"bold",muted,timelineLabels.get(timelineIndex));
+			page = page + thisapp.PF_PDF_Text(542,rowY,10,"bold",ink,timelineValues.get(timelineIndex));
 			page = page + thisapp.PF_PDF_Rect(370,rowY - 8,292,0.5,softLine,"",0);
 		}
 		lotSaleLabels = {"SALE PRICE / FF","ESTIMATED LOT PRICE","INITIAL TAKEDOWN","RECURRING TAKEDOWN","LOT MIX"};
@@ -473,62 +473,62 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		for each index lotSaleIndex in lotSaleLabels
 		{
 			rowY = 220 - lotSaleIndex * 36;
-			page = page + thisapp.PF_PDF_Text(40,rowY,5.8,"bold",lightMuted,lotSaleLabels.get(lotSaleIndex));
-			lotSaleLines = thisapp.PF_PDF_Wrap(lotSaleValues.get(lotSaleIndex),28);
+			page = page + thisapp.PF_PDF_Text(40,rowY,10,"bold",muted,lotSaleLabels.get(lotSaleIndex));
+			lotSaleLines = thisapp.PF_PDF_Wrap(lotSaleValues.get(lotSaleIndex),20);
 			lotSaleLineY = rowY;
 			for each lotSaleLine in lotSaleLines
 			{
-				page = page + thisapp.PF_PDF_Text(206,lotSaleLineY,7.2,"bold",ink,lotSaleLine);
-				lotSaleLineY = lotSaleLineY - 9;
+				page = page + thisapp.PF_PDF_Text(206,lotSaleLineY,10,"bold",ink,lotSaleLine);
+				lotSaleLineY = lotSaleLineY - 13;
 			}
-			page = page + thisapp.PF_PDF_Rect(40,rowY - 8,292,0.5,softLine,"",0);
+			page = page + thisapp.PF_PDF_Rect(40,lotSaleLineY + 5,292,0.5,softLine,"",0);
 		}
 		/* PID / MUD reimbursement schedule from the supplied page-one template. */
-		page = page + thisapp.PF_PDF_Rect(700,616,156,20,"0.95 0.97 0.99",line,0.35);
-		page = page + thisapp.PF_PDF_Text(708,623,5.2,"bold",muted,"MONTH");
-		page = page + thisapp.PF_PDF_Text(744,623,5.2,"bold",muted,"DATE");
-		page = page + thisapp.PF_PDF_Text(794,623,5.2,"bold",muted,"AMOUNT");
+		page = page + thisapp.PF_PDF_Rect(700,590,156,20,"0.95 0.97 0.99",line,0.35);
+		page = page + thisapp.PF_PDF_Text(708,597,10,"bold",muted,"MO");
+		page = page + thisapp.PF_PDF_Text(744,597,10,"bold",muted,"DATE");
+		page = page + thisapp.PF_PDF_Text(794,597,10,"bold",muted,"AMOUNT");
 		pidMudIndex = 0;
 		for each  pidMudItem in pidMudRows
 		{
 			if(pidMudIndex < 20)
 			{
-				rowY = 594 - pidMudIndex * 26;
-				page = page + thisapp.PF_PDF_Text(708,rowY,6.2,"bold",ink,ifnull(pidMudItem.Month1,"-").toString());
+				rowY = 574 - pidMudIndex * 26;
+				page = page + thisapp.PF_PDF_Text(708,rowY,10,"bold",ink,ifnull(pidMudItem.Month1,"-").toString());
 				pidMudDate = "-";
 				if(pidMudItem.Date1 != null)
 				{
 					pidMudDate = pidMudItem.Date1.toString("MMM yyyy");
 				}
-				page = page + thisapp.PF_PDF_Text(744,rowY,5.8,"regular",muted,pidMudDate);
-				page = page + thisapp.PF_PDF_Text(794,rowY,5.6,"bold",ink,thisapp.PF_Packet_Money(ifnull(pidMudItem.Cost,0).toString()));
+				page = page + thisapp.PF_PDF_Text(744,rowY,10,"regular",muted,pidMudDate);
+				page = page + thisapp.PF_PDF_Text(794,rowY,10,"bold",ink,thisapp.PF_Packet_Money(ifnull(pidMudItem.Cost,0).toString()));
 				page = page + thisapp.PF_PDF_Rect(706,rowY - 8,142,0.5,softLine,"",0);
 			}
 			pidMudIndex = pidMudIndex + 1;
 		}
 		if(pidMudIndex == 0)
 		{
-			page = page + thisapp.PF_PDF_Text(708,590,6.2,"italic",muted,"No scheduled reimbursements");
+			page = page + thisapp.PF_PDF_Text(708,574,10,"italic",muted,"No scheduled reimbursements");
 		}
 		else if(pidMudIndex > 20)
 		{
-			page = page + thisapp.PF_PDF_Text(708,58,5.2,"bold",muted,"+ " + (pidMudIndex - 20).toString() + " more; see reimbursement detail");
+			page = page + thisapp.PF_PDF_Text(708,58,10,"bold",muted,"More in reimbursement detail");
 		}
 		/* Additional Cost previews. Detail pages contain only rows that do not fit here. */
 		page = page + thisapp.PF_PDF_Rect(882,286,314,382,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(882,642,314,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(894,651,7.1,"bold",navy,"DEVELOPMENT ADD'L COSTS");
-		page = page + thisapp.PF_PDF_Text(1114,651,7.1,"bold",ink,thisapp.PF_Packet_Money(developmentAdditionalTotal.toString()));
-		page = page + thisapp.PF_PDF_Text(894,620,5.6,"bold",lightMuted,"ITEM");
-		page = page + thisapp.PF_PDF_Text(1065,620,5.6,"bold",lightMuted,"APPLICATION");
-		page = page + thisapp.PF_PDF_Text(1118,620,5.6,"bold",lightMuted,"AMOUNT");
+		page = page + thisapp.PF_PDF_Text(1114,651,10,"bold",ink,thisapp.PF_Packet_Money(developmentAdditionalTotal.toString()));
+		page = page + thisapp.PF_PDF_Text(894,620,10,"bold",muted,"ITEM");
+		page = page + thisapp.PF_PDF_Text(1065,620,10,"bold",muted,"APPL.");
+		page = page + thisapp.PF_PDF_Text(1118,620,10,"bold",muted,"AMOUNT");
 		page = page + thisapp.PF_PDF_Rect(882,44,314,228,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(882,246,314,26,softBlue,"",0);
 		page = page + thisapp.PF_PDF_Text(894,255,7.1,"bold",navy,"CONSTRUCTION ADD'L COSTS");
-		page = page + thisapp.PF_PDF_Text(1114,255,7.1,"bold",ink,thisapp.PF_Packet_Money(constructionAdditionalTotal.toString()));
-		page = page + thisapp.PF_PDF_Text(894,225,5.6,"bold",lightMuted,"ITEM");
-		page = page + thisapp.PF_PDF_Text(1065,225,5.6,"bold",lightMuted,"APPLICATION");
-		page = page + thisapp.PF_PDF_Text(1118,225,5.6,"bold",lightMuted,"AMOUNT");
+		page = page + thisapp.PF_PDF_Text(1114,255,10,"bold",ink,thisapp.PF_Packet_Money(constructionAdditionalTotal.toString()));
+		page = page + thisapp.PF_PDF_Text(894,225,10,"bold",muted,"ITEM");
+		page = page + thisapp.PF_PDF_Text(1065,225,10,"bold",muted,"APPL.");
+		page = page + thisapp.PF_PDF_Text(1118,225,10,"bold",muted,"AMOUNT");
 		developmentItemCount = 0;
 		constructionItemCount = 0;
 
@@ -543,14 +543,14 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				{
 					rowY = 596 - developmentItemCount * 25;
 					itemText = ifnull(costItem.Item_Name,"Additional Cost").toString();
-					if(itemText.length() > 26)
+					if(itemText.length() > 22)
 					{
-						itemText = itemText.left(23) + "...";
+						itemText = itemText.left(19) + "...";
 					}
 					phaseText = ifnull(costItem.Cost_Application,"-").toString();
-					if(phaseText.length() > 12)
+					if(phaseText.length() > 8)
 					{
-						phaseText = phaseText.left(9) + "...";
+						phaseText = phaseText.left(5) + "...";
 					}
 					previewInk = ink;
 					previewMuted = muted;
@@ -560,9 +560,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 						previewInk = green;
 						previewMuted = green;
 					}
-					page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",previewInk,itemText);
-					page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",previewMuted,phaseText);
-					page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
+					page = page + thisapp.PF_PDF_Text(894,rowY,10,"regular",previewInk,itemText);
+					page = page + thisapp.PF_PDF_Text(1065,rowY,10,"regular",previewMuted,phaseText);
+					page = page + thisapp.PF_PDF_Text(1118,rowY,10,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
 					page = page + thisapp.PF_PDF_Rect(892,rowY - 8,294,0.5,softLine,"",0);
 				}
 				developmentItemCount = developmentItemCount + 1;
@@ -573,14 +573,14 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				{
 					rowY = 202 - constructionItemCount * 23;
 					itemText = ifnull(costItem.Item_Name,"Additional Cost").toString();
-					if(itemText.length() > 26)
+					if(itemText.length() > 22)
 					{
-						itemText = itemText.left(23) + "...";
+						itemText = itemText.left(19) + "...";
 					}
 					phaseText = ifnull(costItem.Cost_Application,"-").toString();
-					if(phaseText.length() > 12)
+					if(phaseText.length() > 8)
 					{
-						phaseText = phaseText.left(9) + "...";
+						phaseText = phaseText.left(5) + "...";
 					}
 					previewInk = ink;
 					previewMuted = muted;
@@ -590,9 +590,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 						previewInk = green;
 						previewMuted = green;
 					}
-					page = page + thisapp.PF_PDF_Text(894,rowY,6.1,"regular",previewInk,itemText);
-					page = page + thisapp.PF_PDF_Text(1065,rowY,6.1,"regular",previewMuted,phaseText);
-					page = page + thisapp.PF_PDF_Text(1118,rowY,6.1,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
+					page = page + thisapp.PF_PDF_Text(894,rowY,10,"regular",previewInk,itemText);
+					page = page + thisapp.PF_PDF_Text(1065,rowY,10,"regular",previewMuted,phaseText);
+					page = page + thisapp.PF_PDF_Text(1118,rowY,10,"bold",previewInk,thisapp.PF_Packet_Money(ifnull(costItem.Add_l_Cost,0).toString()));
 					page = page + thisapp.PF_PDF_Rect(892,rowY - 8,294,0.5,softLine,"",0);
 				}
 				constructionItemCount = constructionItemCount + 1;
@@ -600,19 +600,19 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		}
 		if(developmentItemCount == 0)
 		{
-			page = page + thisapp.PF_PDF_Text(894,592,6.2,"italic",muted,if(developmentAdditionalTotal != 0,"Development item rows unavailable","No Development costs"));
+			page = page + thisapp.PF_PDF_Text(894,592,10,"italic",muted,if(developmentAdditionalTotal != 0,"Development item rows unavailable","No Development costs"));
 		}
 		else if(developmentItemCount > 12)
 		{
-			page = page + thisapp.PF_PDF_Text(894,300,5.8,"bold",muted,"+ " + (developmentItemCount - 12).toString() + " more in cost details");
+			page = page + thisapp.PF_PDF_Text(894,300,10,"bold",muted,"+ " + (developmentItemCount - 12).toString() + " more in cost details");
 		}
 		if(constructionItemCount == 0)
 		{
-			page = page + thisapp.PF_PDF_Text(894,198,6.2,"italic",muted,"No Construction costs");
+			page = page + thisapp.PF_PDF_Text(894,198,10,"italic",muted,"No Construction costs");
 		}
 		else if(constructionItemCount > 6)
 		{
-			page = page + thisapp.PF_PDF_Text(894,58,5.8,"bold",muted,"+ " + (constructionItemCount - 6).toString() + " more in cost details");
+			page = page + thisapp.PF_PDF_Text(894,58,10,"bold",muted,"+ " + (constructionItemCount - 6).toString() + " more in cost details");
 		}
 		pageStreams.add(page);
 		/*
