@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Editable financial input guidance (1.80.9)
+
+Land Purchase / Sale and PIDs/MUD use the Additional Costs input-guidance treatment for incomplete editable values. The first missing value pulses with a pale-blue field and blue border; dependent missing values keep a steady outline. Optional Land Sale fields remain neutral until one side of the sale pair is entered. Read-only, calculated, complete, and locked controls do not receive guidance. Frontend only; no Creator schema or API change. Regression: purchase installments, optional sales, PID/MUD sequencing, complete rows, and locked inputs. Rollback: promote widget `1.80.6`.
+
 ## Simplified packet date (1.80.6)
 
 Browser downloads, Creator API responses, and approval-email attachments use `<Sanitized Pro Forma Name>_Proforma_Packet_YYYY-MM-DD.pdf`. The redundant `YYYYMMDD_HHMMSS` timestamp and record ID are omitted; the ISO date reflects generation. Functions: `PF_Build_Proforma_Approval_PDF`, `Get_Proforma_Approval_PDF`, and `Send_Proforma_Approval_Email_With_Context`. No form, field, or Custom API name changed. Regression: named and fallback packets, special-character cleanup, a single generation date, browser downloads, API responses, and email attachments. Rollback: promote widget `1.80.5` and restore the three prior function bodies.

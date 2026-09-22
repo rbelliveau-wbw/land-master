@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.6`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.9`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Editable financial input guidance (1.80.9)
+
+Land Purchase / Sale and PIDs/MUD now reuse Additional Costs' pale-blue, blue-border guidance for incomplete editable values. Required purchase-installment count and blank row amounts pulse first; dependent month fields and incomplete optional sale pairs use the steady outline. Complete, calculated, read-only, and untouched optional fields remain neutral. Frontend only; no Creator form, field, function, or Custom API changed. Regression: purchase rows, optional sale pairs, PID/MUD row sequencing, locked inputs, and completed values. Rollback: map production proforma-manager to `1.80.6`.
 
 ## Simplified packet date (1.80.6)
 
