@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Approval packet one-sheet layout (Creator Development, 2026-09-22)
+
+The approval packet dashboard mirrors the acquisition one-sheet: owners live under the Pro Forma name; returns and flow totals use compact horizontal bands; Current Step is a standalone card; and Site Info, Lot Sales, Land Purchase, Timeline, Costs, PID/MUD reimbursements, and Additional Cost previews follow the approved four-column order. Lot Mix comes from `Lot_Mix_Row`; recurring takedown remains monthly; First Lot Sale and DEV VP are omitted. **Const Add'l Cost / Lot** is `Construction_Cost_Addl / Lots`. The Additional Costs, Reimbursements and Notes pages flow through three columns with Development first, Construction second, separate Impact Fees and Reimbursements sections and subtotals, then Land Sale Installment Details. Reimbursement rows are excluded from Development and Construction cost totals and their reconciliation. PID/MUD installments stay on their own schedule page with a subtotal. Offer Summary and Offer Details pages remain, while the comment history heading is shortened to **Comments**. Functions: `PF_Build_Proforma_Approval_PDF` and `PF_PDF_Flow_Pages`. No form, field, workflow, or Custom API contract changed. The revised builder was saved in Creator Development. Stage and Production publication is reserved for the user. Regression: empty/populated lot mixes, zero lots, monthly takedown, purchase/sale/PID installments, mixed cost departments, long notes, pagination, Offer pages, reimbursement detail, and comments. Rollback: restore both previous function bodies from git.
+
 ## Financial input visibility refinement (1.80.10)
 
 Purchase and sale installment rows always outline their editable Month, %, and Amount fields, including prefilled generated rows. PID/MUD is ordered Month, Amount, Type, Date and highlights both blank Month and Amount on new rows. The Purchase Installments count field is narrower. Locked controls remain neutral. Frontend only; no Creator schema or API change. Regression: generated installments, PID/MUD blank and complete rows, locked inputs, dates, and recalculation. Rollback: promote widget `1.80.9`.

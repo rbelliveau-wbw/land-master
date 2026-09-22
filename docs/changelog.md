@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-22 — Pro Forma approval packet layout and reimbursement grouping
+
+- Reworked the packet dashboard and Additional Costs pages to match the annotated acquisition one-sheet while retaining reimbursement and Offer pages.
+- Added persisted Lot Mix, monthly recurring takedown, timeline delays/lengths, land-sale installment details, section totals, and three-column cost flow.
+- Defined **Const Add'l Cost / Lot** as `Construction_Cost_Addl / Lots`; removed DEV VP and First Lot Sale from the dashboard; renamed comment history to **Comments**.
+- Moved Impact Fees and other reimbursement cost rows into separate subtotaled sections on the Additional Costs page before Land Sale details. PID/MUD installments retain their own schedule page and subtotal. Development cost reconciliation excludes the reimbursement rows.
+- Creator functions only: `PF_Build_Proforma_Approval_PDF` and `PF_PDF_Flow_Pages`. The revised builder was saved in Creator Development; Stage and Production publication is reserved for the user.
+
 Newest first. One entry per shipped version. Widget versions are what
 `deploy/environments.json` points at; Deluge entries need a Creator publish.
 

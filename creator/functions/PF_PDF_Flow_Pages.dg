@@ -11,10 +11,18 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 	{
 		columnCount = 2;
 	}
+	else if(columns == 3)
+	{
+		columnCount = 3;
+	}
 	columnWidth = 1168;
 	if(columnCount == 2)
 	{
 		columnWidth = 568;
+	}
+	else if(columnCount == 3)
+	{
+		columnWidth = 368;
 	}
 	// Conservative character budgets at 9pt, including wide glyphs.
 	textChars = 115;
@@ -23,6 +31,11 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 	{
 		textChars = 60;
 		titleChars = 47;
+	}
+	else if(columnCount == 3)
+	{
+		textChars = 38;
+		titleChars = 30;
 	}
 	base = "% PACKET_WIDE_PAGE\n" + thisapp.PF_PDF_Rect(0,0,1224,792,"0.98 0.99 1.00","",0);
 	base = base + thisapp.PF_PDF_Rect(0,732,1224,60,"0.05 0.16 0.30","",0);
@@ -46,6 +59,35 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 	{
 		blockTitle = ifnull(block.get("title"),"").toString();
 		amount = ifnull(block.get("amount"),"").toString();
+		isSection = ifnull(block.get("section"),false);
+		if(isSection == true)
+		{
+			if(y < 92)
+			{
+				column = column + 1;
+				if(column >= columnCount)
+				{
+					pages.add(page);
+					page = base;
+					column = 0;
+				}
+				y = topY;
+			}
+			x = 40 + column * 600;
+			if(columnCount == 3)
+			{
+				x = 40 + column * 400;
+			}
+			page = page + thisapp.PF_PDF_Rect(x - 8,y - 17,columnWidth - 8,28,"0.92 0.95 1.00","0.84 0.88 0.93",0.35);
+			page = page + thisapp.PF_PDF_Text(x,y - 7,8.5,"bold","0.05 0.16 0.30",blockTitle);
+			if(amount != "")
+			{
+				page = page + thisapp.PF_PDF_Text(x + columnWidth - 112,y - 7,8.5,"bold","0.07 0.12 0.20",amount);
+			}
+			y = y - 38;
+		}
+		else
+		{
 		blockLines = List();
 		for each titleLine in thisapp.PF_PDF_Wrap(blockTitle,titleChars)
 		{
@@ -94,6 +136,10 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 			y = topY;
 		}
 		x = 40 + column * 600;
+		if(columnCount == 3)
+		{
+			x = 40 + column * 400;
+		}
 		color = "0.07 0.12 0.20";
 		if(ifnull(block.get("credit"),false) == true)
 		{
@@ -127,6 +173,7 @@ list PF_PDF_Flow_Pages(list blocks, string title, string subtitle, int columns)
 		}
 		page = page + thisapp.PF_PDF_Line(x,y - 2,x + columnWidth - 24,y - 2,"0.84 0.88 0.93",0.4);
 		y = y - 15;
+		}
 	}
 	pages.add(page);
 	return pages;

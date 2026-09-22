@@ -91,8 +91,8 @@ for (const required of [
 
 for (const required of [
   "PF_PDF_Rect(0,0,1224,792",
-  '"LAND PURCHASE"',
-  '"MUD / PID / TIRZ"',
+  '"LAND PURCHASE / INSTALLMENTS"',
+  '"PID / MUD REIMBURSEMENTS"',
   '"SITE INFO"',
   '"COSTS"',
   '"TIMELINE"',
@@ -102,7 +102,7 @@ for (const required of [
   'inflowLabels = {"Gross Sales","MUD Revenue","Reimbursements","Reimbursed Fees","Land Sales (Other)"}',
   'outflowLabels = {"Land Cost","Engineering Base","Ent/Eng Add\'l","Construction Base","Construction Add\'l"}',
   'returnLabels = {"ROI","IRR","XIRR"}',
-  '"Territory: " + territoryHeader + " | Stage: " + stage + " | Status: " + statusValue',
+  'territoryHeader + " | Stage: " + stage + " | Status: " + statusValue',
   '"Purchase: " + purchaseLabel + " | Completion: " + completionLabel',
   "if(developmentItemCount < 12)",
   "if(constructionItemCount < 6)",
@@ -119,7 +119,7 @@ for (const required of [
   assert.ok(build.includes(required), `approval packet redesign is missing ${required}`);
 }
 
-assert.ok(build.includes('thisapp.PF_PDF_Flow_Pages(costBlocks'), 'full two-column cost details');
+assert.ok(build.includes('thisapp.PF_PDF_Flow_Pages(costBlocks,"Additional Costs, Reimbursements and Notes",pfName,3)'), 'full three-column cost and reimbursement details');
 for (const forbidden of [
   '"LOI Terms"',
   '"LOI Timing, Deposits and Terms"',
