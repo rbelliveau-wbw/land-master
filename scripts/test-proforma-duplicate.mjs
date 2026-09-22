@@ -195,6 +195,8 @@ const has = (re, message) => assert.ok(re.test(source), message);
 const lacks = (re, message) => assert.ok(!re.test(source), message);
 
 has(/data-act="duplicate"/, "the row menu must expose a Duplicate button");
+has(/data-act="duplicate"[\s\S]{0,400}?<rect x="8" y="8" width="14" height="14" rx="2" ry="2"><\/rect><path d="M4 16c-1\.1 0-2-\.9-2-2V4c0-1\.1\.9-2 2-2h10c1\.1 0 2 \.9 2 2"><\/path>/, "Duplicate must use the complete standard copy icon");
+lacks(/data-act="duplicate"[\s\S]{0,400}?M5 15H4a1 1 0 0 1-1-1/, "Duplicate must not use the partial back-sheet icon that collapses at menu size");
 has(/act==="duplicate"\) duplicateProforma\(id\)/, "the row menu must route Duplicate to duplicateProforma");
 has(/function canDuplicatePf\(rec\)\{ return !!perms\(\)\.editAll \|\| userOwnsPf\(rec\); \}/, "Duplicate must require ownership or Edit All Proformas");
 has(/canDuplicatePf\(r\)\?'<button[^']*data-act="duplicate"/, "Duplicate must be hidden when the row is neither owned nor covered by Edit All Proformas");

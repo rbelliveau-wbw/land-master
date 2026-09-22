@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.3`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.4`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Duplicate icon correction (1.80.4)
+
+The Pro Forma action menu and unsaved-duplicate banner use the complete standard copy icon. Both document outlines remain recognizable at the compact menu size instead of reducing the back sheet to a stray mark. Regression: Duplicate action wiring, permissions, save safeguards, and exact icon geometry. Rollback: map production proforma-manager to `1.80.3`.
 
 ## Custom calendar navigation correction (1.80.3)
 

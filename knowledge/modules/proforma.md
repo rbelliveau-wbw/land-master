@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Duplicate icon correction (1.80.4)
+
+The row action menu and unsaved-copy banner render the same complete two-sheet copy icon. This is a presentation-only correction; Duplicate permissions, source isolation, staging, and save behavior are unchanged. Regression: Duplicate action wiring, permissions, save safeguards, and exact icon geometry. Rollback: promote widget `1.80.3`.
+
 ## Custom calendar navigation correction (1.80.3)
 
 Offer date pickers render their month navigation with centered SVG chevrons. A blank field now seeds the picker from today's date, and invalid seed parts fall back to the browser's current month rather than producing `undefined 0`. No form, field, function, Custom API, or Creator workflow contract changed. Regression: blank, populated, and malformed date initialization plus previous/next control rendering. Rollback: promote widget `1.80.2`.
