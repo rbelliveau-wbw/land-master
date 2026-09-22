@@ -28,6 +28,10 @@ npm run release -- tax-center <new-version>
 npm run build:pages
 ```
 
+## Tax Parcel Year acreage source (19.17.3)
+
+The parcel-year Acres column shows only `Tax_Parcel_Year.Acres`. A blank TPY acreage remains blank instead of falling back to the linked `Property.Acres`. No functions or Custom APIs change. Regression: TPY acreage display, inline edit, and linked-property enrichment for County, legal description, and Company. Rollback: restore the production mapping to `19.17.2`.
+
 ## Navarro County (19.17.2)
 
 Property and parcel-year County editors always offer Navarro, including before the first Navarro record exists. Existing record-derived choices and data-filter counts are retained. No functions or Custom APIs change. Regression: Navarro selection, existing choices, and County save payloads. Rollback: restore the production mapping to `19.17.1`.

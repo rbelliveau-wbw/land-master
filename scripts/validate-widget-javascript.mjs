@@ -73,6 +73,14 @@ const contractHtml = fs.readFileSync(path.join(root, 'widgets/contract-managemen
 if (!contractHtml.includes('S.loiMine=truthy(flags.legalAssignedToMe != null ? flags.legalAssignedToMe : flags.Legal_Assigned_to_Me);')) {
   errors.push('contract-management: saved Legal Assigned to Me preference is not normalized while resolving User Access.');
 }
+
+const taxCenterHtml = fs.readFileSync(path.join(root, 'widgets/tax-center/src/app/widget.html'), 'utf8');
+if (taxCenterHtml.includes('if(!r.acres&&match.acres)r.acres=match.acres;')) {
+  errors.push('tax-center: blank Tax Parcel Year Acres must not fall back to linked Property Acres.');
+}
+if (!taxCenterHtml.includes("acres:cleanText(getValue(row,['Acres']))")) {
+  errors.push('tax-center: Tax Parcel Year Acres must continue to map directly from the TPY record.');
+}
 for (const required of [
   'Create_Contract_Attachment_Record',
   'Delete_Contract_Attachment',
