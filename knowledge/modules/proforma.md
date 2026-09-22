@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Financial input visibility refinement (1.80.10)
+
+Purchase and sale installment rows always outline their editable Month, %, and Amount fields, including prefilled generated rows. PID/MUD is ordered Month, Amount, Type, Date and highlights both blank Month and Amount on new rows. The Purchase Installments count field is narrower. Locked controls remain neutral. Frontend only; no Creator schema or API change. Regression: generated installments, PID/MUD blank and complete rows, locked inputs, dates, and recalculation. Rollback: promote widget `1.80.9`.
+
 ## Editable financial input guidance (1.80.9)
 
 Land Purchase / Sale and PIDs/MUD use the Additional Costs input-guidance treatment for incomplete editable values. The first missing value pulses with a pale-blue field and blue border; dependent missing values keep a steady outline. Optional Land Sale fields remain neutral until one side of the sale pair is entered. Read-only, calculated, complete, and locked controls do not receive guidance. Frontend only; no Creator schema or API change. Regression: purchase installments, optional sales, PID/MUD sequencing, complete rows, and locked inputs. Rollback: promote widget `1.80.6`.

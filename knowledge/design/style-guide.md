@@ -43,4 +43,4 @@ Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a le
 
 ## Editable input guidance
 
-- In Pro Forma input tables, use the Additional Costs treatment to identify the next missing editable value: a pale-blue field with a blue border and restrained pulse for the first value, followed by a steady blue outline for dependent values. Do not highlight read-only, calculated, complete, or untouched optional fields.
+- In Pro Forma input tables, use the Additional Costs treatment to identify the next missing editable value: a pale-blue field with a blue border and restrained pulse for the first value, followed by a steady blue outline for dependent values. Prefilled generated rows may keep a steady outline on every editable cell so users can distinguish them from calculated values. Do not highlight read-only, calculated, locked, complete conditional, or untouched optional fields.

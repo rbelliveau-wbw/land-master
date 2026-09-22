@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.9`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.10`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Financial input visibility refinement (1.80.10)
+
+Purchase and sale installment rows always outline Month, %, and Amount while editable because those generated rows arrive prefilled. PID/MUD rows use Month, Amount, Type, Date order, and both blank Month and Amount fields highlight on a newly added row. The Purchase Installments count control is capped near half its prior width. Locked controls remain neutral. Frontend only; no Creator form, field, function, or Custom API changed. Regression: generated purchase/sale rows, PID/MUD new and complete rows, locked inputs, derived dates, and installment recalculation. Rollback: map production proforma-manager to `1.80.9`.
 
 ## Editable financial input guidance (1.80.9)
 
