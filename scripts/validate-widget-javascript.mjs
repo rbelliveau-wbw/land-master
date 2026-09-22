@@ -82,6 +82,15 @@ if (!taxCenterHtml.includes("acres:cleanText(getValue(row,['Acres']))")) {
   errors.push('tax-center: Tax Parcel Year Acres must continue to map directly from the TPY record.');
 }
 for (const required of [
+  'function formatCurrencyInput(el)',
+  'function unformatCurrencyInput(el)',
+  "querySelectorAll('input.money')",
+  "el.addEventListener('blur',function(){formatCurrencyInput(el);});",
+  "bindCurrencyInputs($('modalBody'));"
+]) {
+  if (!taxCenterHtml.includes(required)) errors.push(`tax-center: Edit TPY currency formatting is missing ${required}.`);
+}
+for (const required of [
   'Create_Contract_Attachment_Record',
   'Delete_Contract_Attachment',
   'Get_Contract_Attachment_Preview',

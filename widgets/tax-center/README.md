@@ -28,6 +28,10 @@ npm run release -- tax-center <new-version>
 npm run build:pages
 ```
 
+## Edit TPY currency formatting (19.17.4)
+
+Dollar-value fields in the Edit Tax Parcel Year modal display as US currency when the modal opens and whenever focus leaves the input. Focus removes the dollar sign and grouping commas for editing, and saves continue to send normalized numeric values. No functions or Custom APIs change. Regression: all eight Edit TPY dollar fields, blank values, focus/blur formatting, and save normalization. Rollback: restore the production mapping to `19.17.3`.
+
 ## Tax Parcel Year acreage source (19.17.3)
 
 The parcel-year Acres column shows only `Tax_Parcel_Year.Acres`. A blank TPY acreage remains blank instead of falling back to the linked `Property.Acres`. No functions or Custom APIs change. Regression: TPY acreage display, inline edit, and linked-property enrichment for County, legal description, and Company. Rollback: restore the production mapping to `19.17.2`.
