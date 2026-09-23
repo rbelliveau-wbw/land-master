@@ -11,6 +11,9 @@ assert.ok(menuAt>=0&&menuAt<viewAt,'the three-dot menu is rendered to the left o
 assert.match(widget,/data-budget-manage='delete'/,'the menu exposes Delete');
 assert.match(widget,/data-budget-manage='" \+ \(archived \? "restore" : "archive"\)/,'the menu toggles Archive and Restore');
 assert.match(widget,/disabled aria-disabled='true'/,'users without permission still see disabled menu options');
+assert.match(widget,/\.budget-row-menu-pop\{display:none;position:fixed;z-index:4200/,'the menu uses a viewport layer that cannot be clipped by project cards');
+assert.match(widget,/\.budget-row-menu-item:disabled,.budget-row-menu-item\.is-off\{opacity:\.48;cursor:default/,'disabled actions retain a normal cursor');
+assert.doesNotMatch(widget,/\.budget-row-menu-item:disabled[^}]*cursor:not-allowed/,'disabled actions do not show the prohibited cursor');
 assert.match(widget,/Delete_Archive_Budgets/,'the widget reads the Budget delete/archive permission');
 for(const label of ['Budget items','Budget categories','Budget month schedules','Approval records','Budget modifications','Attachments and contract versions','Comments']) assert.ok(widget.includes('"'+label+'"'),'the delete modal lists '+label);
 

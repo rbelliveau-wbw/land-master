@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-22 — Budget Manager 122.27.13 menu layering
+
+- The phase-row three-dot menu now renders as a viewport-level fixed layer, repositions with scrolling/resizing, and flips above when needed, so project-card overflow cannot clip it.
+- Disabled Archive/Delete options remain grey but keep the normal cursor, including the disabled Delete icon. Regression: menu placement, disabled styling, and existing archive/delete behavior. Rollback: map all environments to `122.27.12`.
+
 ## 2026-09-22 — Budget archive and scoped deletion
 
 - Budget rows now place a Pro Forma-style three-dot menu immediately left of View. Archive/Restore and Delete remain visible but disabled unless the current User Access row has `Delete_Archive_Budgets` enabled.
