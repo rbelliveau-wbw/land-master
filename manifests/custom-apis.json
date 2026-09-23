@@ -157,6 +157,15 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Manage_Budget",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "manageBudget",
+      "confidence": "verified-2026-09-22",
+      "notes": "POST, OAuth2, All users, application/json key-value {budgetId, action:'archive'|'restore'|'delete', userAccessId}. Resolves zoho.loginuser, requires the matching User_Access ID, and enforces User_Access.Delete_Archive_Budgets. Delete removes the budget and its scoped approval, modification, item, category, month, attachment, and comment children after clearing import-item lookup links."
+    },
+    {
       "name": "Manage_Proforma_Approval_Config",
       "consumers": [
         "widgets/proforma-manager/src/app/widget.html"

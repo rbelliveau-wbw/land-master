@@ -1,6 +1,12 @@
 
 # Budget Module
 
+## Archive and delete controls (122.27.12)
+
+Each phase row shows a three-dot menu before View. Archive/Restore and Delete are always present; users without `User_Access.Delete_Archive_Budgets` see both disabled. The server repeats the permission check through `Manage_Budget`, so the UI is not the security boundary.
+
+Archive writes `Add_Budget.Archived`. Delete permanently removes the selected budget's `Budget_Approvals`, `Budget_Modification`, `Budget_Item`, `Budget_Category`, `Budget_Months`, `Contract_Version`, and `Comment_Log` children before removing `Add_Budget`. Existing `Budget_Import_Item` history is retained and its deleted-item lookup assignments are cleared. The confirmation modal lists the seven deleted child object types. `All_Budgets` must expose `Archived`; `getUserAccess` must return `budgetDeleteArchive`; Custom API `Manage_Budget` is POST/OAuth2/All users with `{budgetId, action, userAccessId}`. Rollback: Creator prior app version and widget `122.27.11`.
+
 ## Attachment and comment actions (122.27.5)
 
 Project comments are 30% larger. Each phase now shows a Legal-matching paperclip attachment count followed by its comment count; both phase controls match Legal at 28.75px with the same hover treatment. The Actions column is sized for all four controls and lets count badges render without clipping. Attachment counts load from the existing `Contract_Version.Budget` records and open the phase's existing Attachments workspace. Rollback: `122.27.4`.

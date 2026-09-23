@@ -1,0 +1,132 @@
+string manageBudget(string budgetId, string action, string userAccessId)
+{
+	result = Map();
+	result.put("success",false);
+	result.put("action",ifnull(action,"").toString().trim().toLowerCase());
+	budgetIdText = ifnull(budgetId,"").toString().trim();
+	actionText = ifnull(action,"").toString().trim().toLowerCase();
+	accessIdText = ifnull(userAccessId,"").toString().trim();
+	if(budgetIdText == "")
+	{
+		result.put("error","Budget id is required.");
+		return result.toString();
+	}
+	if(actionText != "archive" && actionText != "restore" && actionText != "delete")
+	{
+		result.put("error","Action must be archive, restore, or delete.");
+		return result.toString();
+	}
+	if(accessIdText == "")
+	{
+		result.put("error","Delete & Archive Budgets access is required.");
+		return result.toString();
+	}
+	accessRow = User_Access[User == zoho.loginuser];
+	if(accessRow == null || accessRow.ID.toString() != accessIdText || accessRow.Delete_Archive_Budgets != true)
+	{
+		result.put("error","Delete & Archive Budgets access is required.");
+		return result.toString();
+	}
+	budgetKey = budgetIdText.toLong();
+	budgetRow = Add_Budget[ID == budgetKey];
+	if(budgetRow == null)
+	{
+		result.put("error","Budget " + budgetIdText + " was not found.");
+		return result.toString();
+	}
+	if(actionText == "archive" || actionText == "restore")
+	{
+		archiveValue = actionText == "archive";
+		budgetRow.Archived=archiveValue;
+		result.put("success",true);
+		result.put("id",budgetIdText);
+		result.put("archived",archiveValue);
+		return result.toString();
+	}
+	deleted = Map();
+	deleteIds = List();
+	for each approvalRow in Budget_Approvals[Budget == budgetKey]
+	{
+		deleteIds.add(approvalRow.ID);
+	}
+	deleted.put("Budget_Approvals",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Budget_Approvals[ID == childId];
+	}
+	deleteIds = List();
+	for each modificationRow in Budget_Modification[Budget == budgetKey]
+	{
+		deleteIds.add(modificationRow.ID);
+	}
+	deleted.put("Budget_Modification",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Budget_Modification[ID == childId];
+	}
+	itemIds = List();
+	for each itemRow in Budget_Item[Budget == budgetKey]
+	{
+		itemIds.add(itemRow.ID);
+	}
+	unlinkedImports = 0;
+	for each itemId in itemIds
+	{
+		for each importRow in Budget_Import_Item[Budget_Item == itemId]
+		{
+			importRow.Budget_Item=null;
+			unlinkedImports = unlinkedImports + 1;
+		}
+	}
+	deleted.put("Budget_Item",itemIds.size());
+	deleted.put("Budget_Import_Item_Links_Cleared",unlinkedImports);
+	for each childId in itemIds
+	{
+		delete from Budget_Item[ID == childId];
+	}
+	deleteIds = List();
+	for each categoryRow in Budget_Category[Budget == budgetKey]
+	{
+		deleteIds.add(categoryRow.ID);
+	}
+	deleted.put("Budget_Category",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Budget_Category[ID == childId];
+	}
+	deleteIds = List();
+	for each monthRow in Budget_Months[Budget == budgetKey]
+	{
+		deleteIds.add(monthRow.ID);
+	}
+	deleted.put("Budget_Months",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Budget_Months[ID == childId];
+	}
+	deleteIds = List();
+	for each attachmentRow in Contract_Version[Budget == budgetKey]
+	{
+		deleteIds.add(attachmentRow.ID);
+	}
+	deleted.put("Contract_Version",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Contract_Version[ID == childId];
+	}
+	deleteIds = List();
+	for each commentRow in Comment_Log[Budget == budgetKey]
+	{
+		deleteIds.add(commentRow.ID);
+	}
+	deleted.put("Comment_Log",deleteIds.size());
+	for each childId in deleteIds
+	{
+		delete from Comment_Log[ID == childId];
+	}
+	delete from Add_Budget[ID == budgetKey];
+	result.put("success",true);
+	result.put("id",budgetIdText);
+	result.put("deleted",deleted);
+	return result.toString();
+}

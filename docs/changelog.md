@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-22 — Budget archive and scoped deletion
+
+- Budget rows now place a Pro Forma-style three-dot menu immediately left of View. Archive/Restore and Delete remain visible but disabled unless the current User Access row has `Delete_Archive_Budgets` enabled.
+- `Add_Budget.Archived` is exposed in `All_Budgets`. Delete confirmation lists every scoped child collection; `Manage_Budget` resolves `zoho.loginuser`, requires its matching User Access ID and permission server-side, clears Budget Import Item assignments, then deletes approvals, modifications, items, categories, month schedules, attachments/contract versions, comments, and the parent budget.
+- Budget Manager `122.27.12` is promoted through development, stage, and production. Creator components: `Add_Budget.Archived`, `User_Access.Delete_Archive_Budgets`, All Budgets report field, `getUserAccess`, `manageBudget`, and the `Manage_Budget` Custom API. Regression: authorized/unauthorized menus, archive/restore, delete disclosure and cascade ordering, import-history preservation, approvals, attachments, and comments. Rollback: map all environments to `122.27.11`; in Creator, publish the prior app version.
+
 ## 2026-09-22 — Pro Forma confirmations and packet reading flow
 
 - Pro Forma archive, restore, and delete confirmations identify the record by name. Delete checks for LOI worksheets first and shows a separate protected-record modal with an Archive action. The server still enforces LOI protection and now deletes scoped `Comment_Log` child records before deleting the parent Pro Forma.

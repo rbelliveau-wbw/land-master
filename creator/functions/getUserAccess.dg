@@ -11,6 +11,7 @@ string getUserAccess(string user)
 	viewImports = false;
 	editImports = false;
 	modAdmin = false;
+	budgetDeleteArchive = false;
 	// Pro Forma flags
 	pfEditAll = false;
 	pfEditOwned = false;
@@ -51,6 +52,7 @@ string getUserAccess(string user)
 		editImports = row.Edit_Budget_Import_Items == true;
 		// Modification admin: full control of Modifications + their approvals
 		modAdmin = row.Edit_Delete_All_Modifications == true;
+		budgetDeleteArchive = row.Delete_Archive_Budgets == true;
 		// Pro Forma permissions
 		pfEditAll = row.Edit_All_Proformas == true;
 		pfEditOwned = row.Edit_Owned_Proformas == true;
@@ -127,6 +129,7 @@ string getUserAccess(string user)
 	result.put("viewImports",viewImports);
 	result.put("editImports",editImports);
 	result.put("modAdmin",modAdmin);
+	result.put("budgetDeleteArchive",budgetDeleteArchive);
 	// Pro Forma permissions
 	result.put("pfEditAll",pfEditAll);
 	result.put("pfEditOwned",pfEditOwned);

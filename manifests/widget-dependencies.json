@@ -193,6 +193,11 @@
           "source": "customApis object"
         },
         {
+          "name": "Manage_Budget",
+          "config_key": "manageBudget",
+          "source": "customApis object"
+        },
+        {
           "name": "Report_Proforma_Widget_Error",
           "config_key": "errorReport",
           "source": "customApis object"
@@ -225,6 +230,9 @@
         "Budget_Category",
         "Budget_Import_Item",
         "Budget_Item",
+        "Budget_Modification",
+        "Budget_Months",
+        "Comment_Log",
         "Contract_Version",
         "Lots",
         "Proforma_Item",
@@ -237,6 +245,7 @@
         "All_Budget_Categories",
         "All_Budget_Item_Imports",
         "All_Budget_Items",
+        "All_Budget_Modifications",
         "All_Budgets",
         "All_Contract_Versions",
         "All_Pro_Formas",

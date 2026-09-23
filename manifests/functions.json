@@ -770,6 +770,33 @@
       "line_end": 19154
     },
     {
+      "name": "manageBudget",
+      "return_type": "string",
+      "parameters": [
+        { "type": "string", "name": "budgetId" },
+        { "type": "string", "name": "action" },
+        { "type": "string", "name": "userAccessId" }
+      ],
+      "source": "creator/functions/manageBudget.dg",
+      "reads_or_writes_forms": [
+        "Add_Budget",
+        "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Import_Item",
+        "Budget_Item",
+        "Budget_Modification",
+        "Budget_Months",
+        "Comment_Log",
+        "Contract_Version",
+        "User_Access"
+      ],
+      "thisapp_calls": [],
+      "possible_calls": ["List", "Map", "add", "ifnull", "put", "size", "toLong", "toLowerCase", "toString", "trim"],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false
+    },
+    {
       "name": "Manage_Proforma_Approval_Config",
       "return_type": "map",
       "parameters": [
