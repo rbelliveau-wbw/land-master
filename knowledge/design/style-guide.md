@@ -57,6 +57,8 @@ Keep phase cards to the left of the inputs and the live schedule to the right wh
 
 Keep the timeline a compact card capped at 340px instead of stretching across a wide monitor. Put the overall lot-allocation status beside the selected phase heading in a clearly bordered pill, using green for balanced and red for over/under.
 
+Keep the Escalator switch in the Markup & Escalator header. Show the base lot price and the price after markup together in a small pill; align Markup, Lot price, Annual escalator, and Esc start date in two columns when enabled. Briefly highlight the schedule when the selected phase changes, and honor reduced-motion settings.
+
 ## Filter and month pickers
 
 - Dropdown filters use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that have one meaningful value use the same searchable visual pattern with single selection.

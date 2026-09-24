@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Pricing preview and phase feedback (1.80.24, 2026-09-24)
+
+The Lot Sales pricing card puts the Escalator switch in its header. The first row shows Additional markup and a compact lot-price pill: "Base price" includes the one-time markup, while "Before markup" shows the original price per lot. The second row shows Annual escalator and Esc start date only when enabled. The pill updates as markup is typed, uses the same whole-dollar base and separate markup rounding as a one-lot sale, and does not change `Sale_Price_FF`, `Lot_Size_Ft`, or stored phase inputs. The right-hand schedule briefly highlights when the selected phase changes; reduced-motion settings disable the animation. This is widget-only. No Creator forms, fields, functions, or Custom APIs change. Regression: positive/negative/zero markup display, four-field alignment, conditional escalator inputs, phase-only animation, and pricing calculation. Rollback widget release: `1.80.23`.
+
 ## Temporary migration edit access (1.80.23, 2026-09-24)
 
 Only Robby's `rbelliveau` account receives **Mega Admin Mode** to open, edit, and deliberately re-save existing Pro Formas during migration regardless of ownership, edit grants, completed approvals, closed stage/status, or manual input locks. Everyone else keeps the original restrictions. Creator `proforma_save` resolves the submitted `userAccessId` using its existing requester convention and bypasses completed-approval rejection only for that named User_Access profile's financial save, phase save, and phase finalization. The widget additionally matches the SDK login and resolved access roster entry. The saved lock value, lifecycle status, archive state, owners, and approval rows are retained; the migration does not reset approvals. Input validation and migration verification still run. New-record permissions and unrelated approval/LOI/management actions retain their checks.
