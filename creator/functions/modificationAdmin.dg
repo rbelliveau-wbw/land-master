@@ -2,7 +2,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 {
 	/********* MODIFICATION ADMIN *********/
 	// Return Type: string ("OK: ..." or "ERROR: ...")
-	// actions: "update" | "delete" | "reopen" | "repair"
+	// actions: "update" | "delete" | "reopen" | "repair" | "check-send" | "repair-send"
 	// - update: edit fields on any modification (modificationId + optional fields).
 	// - delete: remove a modification AND its approval chain; recalcs Revised_Final
 	//   if the modification was Approved.
@@ -15,6 +15,103 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
 	// (repair is also invoked automatically on inconsistency detection).
 	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vAction == "check-send" || vAction == "repair-send")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+		firstRow = null;
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(firstRow == null)
+			{
+				firstRow = row;
+			}
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		repairError = "";
+		if(vAction == "repair-send" && ifnull(modRec.Status,"").trim() == "Submitted" && firstRow != null && approvedCount == 0 && (pendingCount == 0 || (pendingCount == 1 && ifnull(firstRow.Status,"").trim() == "Pending")) && firstRow.Sent_Date == null && (ifnull(firstRow.Status,"").trim() == "Not Sent" || ifnull(firstRow.Status,"").trim() == "Pending"))
+		{
+			try
+			{
+				emailResult = thisapp.sendModificationEmail(vModId,"created");
+				if(!ifnull(emailResult,"").startsWith("Modification email sent"))
+				{
+					repairError = ifnull(emailResult,"Approval email could not be sent.");
+				}
+			}
+			catch (repairException)
+			{
+				repairError = repairException.toString();
+			}
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+		firstRow = null;
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(firstRow == null)
+			{
+				firstRow = row;
+			}
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		result = Map();
+		result.put("ok",true);
+		result.put("modificationId",vModId.toString());
+		result.put("status",ifnull(modRec.Status,"").trim());
+		result.put("rowCount",rowCount);
+		result.put("pendingCount",pendingCount);
+		result.put("approvedCount",approvedCount);
+		firstId = "";
+		firstStatus = "";
+		firstRole = "";
+		firstAddress = "";
+		firstSent = "";
+		if(firstRow != null)
+		{
+			firstId = firstRow.ID.toString();
+			firstStatus = ifnull(firstRow.Status,"").trim();
+			firstRole = ifnull(firstRow.Title,"").trim();
+			firstAddress = ifnull(firstRow.Approver,"").trim();
+			if(firstRow.Sent_Date != null)
+			{
+				firstSent = firstRow.Sent_Date.toString();
+			}
+		}
+		result.put("firstId",firstId);
+		result.put("firstStatus",firstStatus);
+		result.put("role",firstRole);
+		result.put("address",firstAddress);
+		result.put("sentDate",firstSent);
+		result.put("repairError",repairError);
+		return result.toString();
+	}
 	if(vAction == "update")
 	{
 		vModId = modificationId.toLong();

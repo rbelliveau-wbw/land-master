@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Send for Approvals progress (1.80.13)
+
+The Send for Approvals confirmation now opens a Pro Forma styled, accessible three-step progress dialog. The existing `Start_Proforma_Approval_Chain` Custom API accepts a JSON string in its existing `proformaId` argument for targeted `Check` and one `Repair` mode. The widget polls that record about once per second, requires the parent Pending Approval and locked, the first row as the only Pending approval with no Approved rows, and a populated delivery stamp, role, and address. Its display advances at 560 ms per step, stays open at success or failure, and ends after 20 seconds with Retry email or Try again. The backend leaves `Sent_Date` blank until its existing email helper succeeds, and a repeated Start avoids duplicate delivery after a lost response. Publish the updated Creator function before promoting `1.80.13`. Regression: initial send, delayed email, failed email, ambiguous response, retry, duplicate click, keyboard focus/Tab/Escape, and Submit to Legal. Rollback: restore `1.80.12` and the prior Start function body.
+
 ## Approval packet one-sheet layout (Creator Development, 2026-09-22)
 
 Pro Forma delete/archive confirmations name the record. Delete checks for a linked LOI worksheet before showing a destructive confirmation; linked LOIs instead produce a protected-record modal offering Archive. `proforma_save` repeats the LOI guard and deletes only `Comment_Log` rows whose `Pro_Forma` matches the deleted record, along with its other financial children. Packet reimbursement subtotals sit in their section headings, the sale heading reads **Land Sale Installments**, and Comments use up to three dated cards per row with overflow into later cards and pages. The widget is published independently from the Creator functions; environment publication of the functions remains with the user.

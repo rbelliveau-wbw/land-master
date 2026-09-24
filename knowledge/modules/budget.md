@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Modification send progress (122.27.16)
+
+Both the new Modification composer and an existing Draft's Submit for approval action open the same accessible, paced progress dialog used by Budget approvals. It verifies only the targeted modification through `Modification_Admin` `check-send`, with one `repair-send` attempt after five seconds and a 20-second deadline. Success requires Submitted, a linked approval chain, the first row as the only Pending row, no Approved rows, and a populated `Sent_Date`, role, and email address. The create and submit functions now return the modification ID or a recoverable result even when email fails; retry checks persisted state before sending again. The dialog keeps success, email warning, or error visible until dismissal and blocks duplicate submission. Release `122.27.16` requires publishing `modificationAdmin`, `createBudgetModification`, and `submitBudgetModification` before widget promotion. Regression: both submit paths, delayed email, missing recipient, email exception, duplicate click, ambiguous create response, focus/Tab/Escape, and existing Budget approval. Rollback: restore `122.27.15` and the prior three Creator function bodies.
+
 ## Approval progress presentation (122.27.15)
 
 The approval dialog follows Pro Forma Submit to Legal's visual pattern: gradient navy header and progress bar, three numbered phase rows with Running/Up next/Done/Failed chips, and a footer that holds Retry email, Try again, and Close as appropriate. Verified phase updates are displayed one at a time, 560 ms apart; only the display is paced. The API poll interval and 20-second reconciliation deadline are unchanged. The dialog never auto-closes, and Close remains disabled until a terminal result. Focus stays inside the dialog; Escape works after the result is safe to dismiss. The Creator function and Custom API are unchanged from `122.27.14`.

@@ -15,6 +15,40 @@ string submitBudgetModification(int modificationId)
 	{
 		return "ERROR: Modification not found.";
 	}
+	if(ifnull(modRec.Status,"") != "Draft" && ifnull(modRec.Status,"") != "Submitted")
+	{
+		return "ERROR: This modification cannot be submitted from its current status.";
+	}
+	firstExisting = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+	if(ifnull(modRec.Status,"") == "Submitted" && firstExisting.count() > 0)
+	{
+		firstSubmitted = null;
+		pendingSubmitted = 0;
+		approvedSubmitted = 0;
+		for each  submittedRow in firstExisting
+		{
+			if(firstSubmitted == null)
+			{
+				firstSubmitted = submittedRow;
+			}
+			if(ifnull(submittedRow.Status,"") == "Pending")
+			{
+				pendingSubmitted = pendingSubmitted + 1;
+			}
+			if(ifnull(submittedRow.Status,"") == "Approved")
+			{
+				approvedSubmitted = approvedSubmitted + 1;
+			}
+		}
+		if(approvedSubmitted > 0)
+		{
+			return "ERROR: Modification approvals are already in progress.";
+		}
+		if(firstSubmitted != null && ifnull(firstSubmitted.Status,"") == "Pending" && firstSubmitted.Sent_Date != null && pendingSubmitted == 1)
+		{
+			return "OK: Modification already submitted and first approval email sent.";
+		}
+	}
 	vBudgetId = 0;
 	if(modRec.Budget != null)
 	{
@@ -109,6 +143,14 @@ string submitBudgetModification(int modificationId)
 		}
 	}
 	modRec.Status="Submitted";
-	emailMsg = thisapp.sendModificationEmail(vModId, "created");
+	emailMsg = "";
+	try
+	{
+		emailMsg = thisapp.sendModificationEmail(vModId, "created");
+	}
+	catch (emailException)
+	{
+		emailMsg = "Approval email could not be sent: " + emailException.toString();
+	}
 	return "OK: Modification submitted. " + ifnull(emailMsg,"");
 }

@@ -2,8 +2,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 {
 	/********* CREATE BUDGET MODIFICATION *********/
 	// Return Type: string ("OK: ..." or "ERROR: ...")
-	// Creates the Budget_Modification record, its approval chain, and sends the
-	// first approval email — atomically, so the widget only submits inputs.
+	// Creates the Budget_Modification record and its approval chain, then attempts
+	// the first approval email. Always return the new ID when delivery fails so
+	// the widget can reconcile that record without creating a duplicate.
 	// Chain rules (current): two approvals, both to rbelliveau@wbdevelopment.com,
 	// as VP (Sort 1) then CFO (Sort 2). Recipients are editable from the widget.
 	vItemId = itemId.toLong();
@@ -162,6 +163,14 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		}
 	}
 	// First approval email (marks the first row Pending + stamps Sent_Date).
-	emailMsg = thisapp.sendModificationEmail(newModId, "created");
+	emailMsg = "";
+	try
+	{
+		emailMsg = thisapp.sendModificationEmail(newModId, "created");
+	}
+	catch (emailException)
+	{
+		emailMsg = "Approval email could not be sent: " + emailException.toString();
+	}
 	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");
 }

@@ -4,6 +4,13 @@
 	try
 	{
 		proformaIdText = ifnull(proformaId,"").toString().trim();
+		progressMode = "Start";
+		if(proformaIdText.startsWith("{"))
+		{
+			progressInput = proformaIdText.toMap();
+			proformaIdText = ifnull(progressInput.get("id"),"").toString().trim();
+			progressMode = ifnull(progressInput.get("mode"),"Start").toString().trim();
+		}
 		if(proformaIdText == "")
 		{
 			response.put("success",false);
@@ -47,6 +54,107 @@
 		{
 			response.put("success",false);
 			response.put("message","You must be an owner of this Pro Forma to send it for approvals, unless you have Edit All Proformas.");
+			return response;
+		}
+		// Targeted reconciliation uses the existing Custom API argument. Check never
+		// mutates; Repair makes one bounded attempt to restore the first route/email.
+		if(progressMode == "Check" || progressMode == "Repair")
+		{
+			progressRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+			progressFirst = null;
+			progressCount = 0;
+			progressPending = 0;
+			progressApproved = 0;
+			for each  progressRow in progressRows
+			{
+				progressCount = progressCount + 1;
+				if(progressFirst == null)
+				{
+					progressFirst = progressRow;
+				}
+				if(ifnull(progressRow.Status,"").trim() == "Pending")
+				{
+					progressPending = progressPending + 1;
+				}
+				if(ifnull(progressRow.Status,"").trim() == "Approved")
+				{
+					progressApproved = progressApproved + 1;
+				}
+			}
+			repairError = "";
+			if(progressMode == "Repair" && (ifnull(pf.Status,"").trim() == "Draft" || ifnull(pf.Status,"").trim() == "Pending Approval") && progressFirst != null && progressApproved == 0 && (progressPending == 0 || (progressPending == 1 && ifnull(progressFirst.Status,"").trim() == "Pending")) && (ifnull(progressFirst.Status,"").trim() == "Not Sent" || ifnull(progressFirst.Status,"").trim() == "Pending"))
+			{
+				progressFirst.Status="Pending";
+				pf.Lock_Inputs=true;
+				pf.Status="Pending Approval";
+				if(progressFirst.Sent_Date == null)
+				{
+					try
+					{
+						repairEmail = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,progressFirst.ID.toString(),"Started","","System");
+						if(ifnull(repairEmail.get("success"),false) != true)
+						{
+							repairError = ifnull(repairEmail.get("message"),"Approval email could not be sent.").toString();
+						}
+					}
+					catch (repairException)
+					{
+						repairError = repairException.toString();
+					}
+				}
+			}
+			progressRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+			progressFirst = null;
+			progressCount = 0;
+			progressPending = 0;
+			progressApproved = 0;
+			for each  progressRow in progressRows
+			{
+				progressCount = progressCount + 1;
+				if(progressFirst == null)
+				{
+					progressFirst = progressRow;
+				}
+				if(ifnull(progressRow.Status,"").trim() == "Pending")
+				{
+					progressPending = progressPending + 1;
+				}
+				if(ifnull(progressRow.Status,"").trim() == "Approved")
+				{
+					progressApproved = progressApproved + 1;
+				}
+			}
+			firstIdText = "";
+			firstStatusText = "";
+			firstRoleText = "";
+			firstAddressText = "";
+			firstSentText = "";
+			if(progressFirst != null)
+			{
+				firstIdText = progressFirst.ID.toString();
+				firstStatusText = ifnull(progressFirst.Status,"").trim();
+				firstRoleText = ifnull(progressFirst.Title,"").trim();
+				firstAddressText = ifnull(progressFirst.Approver,"").trim();
+				if(progressFirst.Sent_Date != null)
+				{
+					firstSentText = progressFirst.Sent_Date.toString();
+				}
+			}
+			response.put("success",true);
+			response.put("mode",progressMode);
+			response.put("proformaId",proformaIdText);
+			response.put("status",ifnull(pf.Status,"").toString().trim());
+			response.put("locked",pf.Lock_Inputs == true);
+			response.put("rowCount",progressCount);
+			response.put("pendingCount",progressPending);
+			response.put("approvedCount",progressApproved);
+			response.put("firstId",firstIdText);
+			response.put("firstStatus",firstStatusText);
+			response.put("role",firstRoleText);
+			response.put("address",firstAddressText);
+			response.put("sentDate",firstSentText);
+			response.put("emailSent",firstSentText != "");
+			response.put("repairError",repairError);
 			return response;
 		}
 					if(pf.Purchasing_Company == null)
@@ -160,6 +268,34 @@
 			response.put("message","Add at least one approval step before submitting this Pro Forma.");
 			return response;
 		}
+		// A lost API response must not restart an already delivered chain.
+		firstExisting = null;
+		existingPending = 0;
+		existingApproved = 0;
+		for each  existingRow in rows
+		{
+			if(firstExisting == null)
+			{
+				firstExisting = existingRow;
+			}
+			if(ifnull(existingRow.Status,"").trim() == "Pending")
+			{
+				existingPending = existingPending + 1;
+			}
+			if(ifnull(existingRow.Status,"").trim() == "Approved")
+			{
+				existingApproved = existingApproved + 1;
+			}
+		}
+		if(firstExisting != null && ifnull(firstExisting.Status,"").trim() == "Pending" && firstExisting.Sent_Date != null && existingPending == 1 && existingApproved == 0)
+		{
+			pf.Status="Pending Approval";
+			pf.Lock_Inputs=true;
+			response.put("success",true);
+			response.put("message","Approval request was already sent to " + ifnull(firstExisting.Title,"the first approver") + ".");
+			response.put("pendingApprovalId",firstExisting.ID.toString());
+			return response;
+		}
 		missingRecipients = List();
 		missingTitles = List();
 		expectedOrder = 1;
@@ -206,7 +342,8 @@
 			return response;
 		}
 		firstRow.Status="Pending";
-		firstRow.Sent_Date=zoho.currenttime;
+		// The email helper stamps Sent_Date only after sendmail succeeds.
+		firstRow.Sent_Date=null;
 		firstRow.Responded_Date=null;
 		pf.Lock_Inputs=true;
 		emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Started","","System");

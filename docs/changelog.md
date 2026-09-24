@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Pro Forma and Modification send progress
+
+Pro Forma Send for Approvals and both Budget Modification submission paths use accessible, paced progress dialogs with targeted checks, one repair, an email retry, and a bounded terminal result. New candidate releases: Pro Forma Manager `1.80.13` and Budget Manager `122.27.16`. Creator functions `Start_Proforma_Approval_Chain`, `modificationAdmin`, `createBudgetModification`, and `submitBudgetModification` must be published before either widget is promoted. Rollback: previous widget mappings and these four prior function bodies.
+
 ## 2026-09-24 — Budget approval progress presentation (122.27.15)
 
 Budget Approval Progress now matches Pro Forma's Submit to Legal run modal: navy progress header, numbered phase rows, status chips, and footer actions. Verified phases appear at 560 ms intervals so fast responses remain readable; approval writes and targeted checks are not delayed, and the terminal result remains until dismissed. The Creator function and Custom API contract are unchanged from `122.27.14`. Regression: instant success, delayed routing, email warning, conflict/error, retry, final approval, focus, and reduced motion. Rollback: map the Development widget to `122.27.14` (Stage/Production remain `122.27.13` until the Creator function is published).
