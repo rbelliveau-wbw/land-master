@@ -73,6 +73,7 @@ const sourceModel = {
   items: [{ ID: "it1", Item_Name: "Impact Fees", Add_l_Cost: "125000" }],
   curve: [{ ID: "c1", Month_Number: "1", Percent_Cost: "3" }],
   lotMix: [{ ID: "lm1", Lot_Size_Ft: "50", Lot_Count: "117", Price_LF: "1200" }],
+  phaseSales: [{ ID: "ph1", Phase: "1", Total_Lots: "117", Initial_Take_Lots: "24", Lots_Per_Take: "8" }],
 };
 const before = JSON.parse(JSON.stringify(sourceModel));
 
@@ -244,8 +245,8 @@ lacks(
   "duplicateProforma must not touch the record URL — navigateParentURL would reload the page and drop the copy"
 );
 has(
-  /if\(isNew && !apiMissing\)\{/,
-  "a create must not be blind-retried: the payload carries id:\"\", so a retry inserts a second Pro Forma"
+  /if\(\(isNew\|\|phaseSalesAdopted\(m\)\) && !apiMissing\)\{/,
+  "a create or phase-sales save must not be blind-retried: the server may already have written the record"
 );
 has(/pfId=createdRecordId\(resp\);/, "the SDK-fallback create must read the new record ID the same way the rest of the widget does");
 

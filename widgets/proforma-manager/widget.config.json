@@ -2,7 +2,7 @@
   "slug": "proforma-manager",
   "name": "Proforma Manager",
   "module": "proforma",
-  "version": "1.80.13",
+  "version": "1.80.14",
   "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
   "source_entry": "widgets/proforma-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",

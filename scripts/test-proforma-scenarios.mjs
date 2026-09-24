@@ -36,7 +36,8 @@ ctx.dealApplyDriver('Total_Acres','123.456');assert.equal(ctx.S.dash.model.Total
 ctx.dealApplyDriver('Total_Street_LF','6,123.7');assert.equal(ctx.S.dash.model.Total_Street_LF,'6124');
 ctx.dealApplyDriver('Lot_Size_Ft','-3');assert.equal(ctx.S.dash.model.Lot_Size_Ft,'0.01');
 assert.match(ctx.dealFmtDelta(0.25,false,false,'acres',false),/0.25/);
-assert.equal(ctx.DEAL_DRIVERS.length,13);
+assert.equal(ctx.DEAL_DRIVERS.length,11);
+assert.ok(!ctx.DEAL_DRIVERS.some(d=>d.group==='Sales Pace'));
 console.log('Scenario quantity, cash flow, per-unit cost, isolation, input precision and snapshot regressions passed.');
 
 // Revenue exclusions must affect both totals and the timed receipts, without deleting data.

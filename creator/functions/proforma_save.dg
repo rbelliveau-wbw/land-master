@@ -12,7 +12,199 @@
                  		isNew = false;
                  		header = Map();
                  		deleteStage = "";
-                 		op = ifnull(data.get("op"),"").toString().trim();
+							op = ifnull(data.get("op"),"").toString().trim();
+							if(op == "save_phase_sales")
+							{
+								if(pfId == "" || !pfId.isNumber())
+								{
+									resp.put("success",false);
+									resp.put("error","A saved Pro Forma ID is required for phase sales.");
+									return resp.toString();
+								}
+								phasePf = Add_Pro_Forma[ID == pfId.toLong()];
+								if(phasePf == null)
+								{
+									resp.put("success",false);
+									resp.put("error","Pro Forma was not found for phase sales.");
+									return resp.toString();
+								}
+								phaseApprovalRows = Budget_Approvals[Proforma == phasePf.ID];
+								phaseApprovalComplete = phaseApprovalRows.count() > 0;
+								for each phaseApprovalRow in phaseApprovalRows
+								{
+									if(ifnull(phaseApprovalRow.Status,"Not Sent").toString() != "Approved")
+									{
+										phaseApprovalComplete = false;
+									}
+								}
+								if(phaseApprovalComplete || ifnull(phasePf.Status,"").toString() == "Approved")
+								{
+									resp.put("success",false);
+									resp.put("error","Approved Pro Formas cannot change phase sales.");
+									return resp.toString();
+								}
+								phaseInputs = data.get("phaseSales");
+								if(phaseInputs == null || phaseInputs.size() != ifnull(phasePf.Phases,0))
+								{
+									resp.put("success",false);
+									resp.put("error","Provide one phase-sales row for each active phase.");
+									return resp.toString();
+								}
+								phaseNumber = 1;
+								allocated = 0;
+								seenPhaseIds = List();
+								for each r in phaseInputs
+								{
+									if(r.get("Phase") == null || r.get("Total_Lots") == null || r.get("Initial_Take_Lots") == null || r.get("Initial_Delay_Months") == null)
+									{
+										resp.put("success",false);
+										resp.put("error","Phase number, lots, initial take, and delay are required.");
+										return resp.toString();
+									}
+									lots = r.get("Total_Lots").toString().toLong();
+									initial = r.get("Initial_Take_Lots").toString().toLong();
+									delay = r.get("Initial_Delay_Months").toString().toLong();
+									firstDelay = if(ifnull(r.get("First_Recurring_Delay_Months"),"").toString() == "",0,r.get("First_Recurring_Delay_Months").toString().toLong());
+									perTake = if(ifnull(r.get("Lots_Per_Take"),"").toString() == "",0,r.get("Lots_Per_Take").toString().toLong());
+									frequency = ifnull(r.get("Take_Frequency"),"").toString();
+									rate = if(ifnull(r.get("Annual_Escalator_Pct"),"").toString() == "",0,r.get("Annual_Escalator_Pct").toString().toDecimal());
+									markup = if(ifnull(r.get("Additional_Markup_Pct"),"").toString() == "",0,r.get("Additional_Markup_Pct").toString().toDecimal());
+									enabled = ifnull(r.get("Escalator_Enabled"),false).toString().toLowerCase() == "true";
+									if(r.get("Phase").toString().toLong() != phaseNumber || lots < 1 || initial < 1 || initial > lots || delay < 0 || rate < 0 || (frequency != "Monthly" && frequency != "Quarterly"))
+									{
+										resp.put("success",false);
+										resp.put("error","Phase " + phaseNumber + " has invalid lot, frequency, delay, or escalator inputs.");
+										return resp.toString();
+									}
+									if(lots > initial)
+									{
+										if(firstDelay < 1 || perTake < 1)
+										{
+											resp.put("success",false);
+											resp.put("error","Phase " + phaseNumber + " needs a positive recurring delay and lots per take.");
+											return resp.toString();
+										}
+									}
+									if(enabled && rate > 0 && ifnull(r.get("Esc_Start_Date"),"").toString() == "")
+									{
+										resp.put("success",false);
+										resp.put("error","Phase " + phaseNumber + " needs an escalator start date.");
+										return resp.toString();
+									}
+									if(ifnull(r.get("Esc_Start_Date"),"").toString() != "")
+									{
+										validatedDate = r.get("Esc_Start_Date").toString().toDate("MM/dd/yyyy");
+									}
+									rowId = ifnull(r.get("ID"),"").toString().trim();
+									if(rowId != "")
+									{
+										if(!rowId.isNumber())
+										{
+											resp.put("success",false);
+											resp.put("error","Phase " + phaseNumber + " has an invalid ID.");
+											return resp.toString();
+										}
+										if(seenPhaseIds.contains(rowId) || Proforma_Phase[ID == rowId.toLong() && Pro_Forma == phasePf.ID] == null)
+										{
+											resp.put("success",false);
+											resp.put("error","Phase " + phaseNumber + " ID is duplicated or does not belong to this Pro Forma.");
+											return resp.toString();
+										}
+										seenPhaseIds.add(rowId);
+									}
+									allocated = allocated + lots;
+									phaseNumber = phaseNumber + 1;
+								}
+								if(allocated != phasePf.Lots)
+								{
+									resp.put("success",false);
+									resp.put("error","Phase allocations are " + allocated + " lots; project has " + phasePf.Lots + ".");
+									return resp.toString();
+								}
+								retainedIds = List();
+								phaseNumber = 1;
+								for each r in phaseInputs
+								{
+									rowId = ifnull(r.get("ID"),"").toString().trim();
+									if(rowId != "")
+									{
+										phaseRec = Proforma_Phase[ID == rowId.toLong() && Pro_Forma == phasePf.ID];
+									}
+									else
+									{
+										phaseRec = Proforma_Phase[Pro_Forma == phasePf.ID && Phase == phaseNumber];
+									}
+									lots = r.get("Total_Lots").toString().toLong();
+									initial = r.get("Initial_Take_Lots").toString().toLong();
+									delay = r.get("Initial_Delay_Months").toString().toLong();
+									firstDelay = if(ifnull(r.get("First_Recurring_Delay_Months"),"").toString() == "",0,r.get("First_Recurring_Delay_Months").toString().toLong());
+									perTake = if(ifnull(r.get("Lots_Per_Take"),"").toString() == "",0,r.get("Lots_Per_Take").toString().toLong());
+									frequency = r.get("Take_Frequency").toString();
+									rate = if(ifnull(r.get("Annual_Escalator_Pct"),"").toString() == "",0,r.get("Annual_Escalator_Pct").toString().toDecimal());
+									markup = if(ifnull(r.get("Additional_Markup_Pct"),"").toString() == "",0,r.get("Additional_Markup_Pct").toString().toDecimal());
+									enabled = ifnull(r.get("Escalator_Enabled"),false).toString().toLowerCase() == "true";
+									escDate = null;
+									if(ifnull(r.get("Esc_Start_Date"),"").toString() != "")
+									{
+										escDate = r.get("Esc_Start_Date").toString().toDate("MM/dd/yyyy");
+									}
+									if(phaseRec == null)
+									{
+										newPhaseId = insert into Proforma_Phase
+										[
+											Pro_Forma=phasePf.ID
+											Phase=phaseNumber
+											Total_Lots=lots
+											Initial_Take_Lots=initial
+											Initial_Delay_Months=delay
+											First_Recurring_Delay_Months=firstDelay
+											Lots_Per_Take=perTake
+											Take_Frequency=frequency
+											Escalator_Enabled=enabled
+											Annual_Escalator_Pct=rate
+											Esc_Start_Date=escDate
+											Additional_Markup_Pct=markup
+											Added_User=zoho.loginuser
+										];
+										retainedIds.add(newPhaseId.toLong());
+									}
+									else
+									{
+										phaseRec.Phase=phaseNumber;
+										phaseRec.Total_Lots=lots;
+										phaseRec.Initial_Take_Lots=initial;
+										phaseRec.Initial_Delay_Months=delay;
+										phaseRec.First_Recurring_Delay_Months=firstDelay;
+										phaseRec.Lots_Per_Take=perTake;
+										phaseRec.Take_Frequency=frequency;
+										phaseRec.Escalator_Enabled=enabled;
+										phaseRec.Annual_Escalator_Pct=rate;
+										phaseRec.Esc_Start_Date=escDate;
+										phaseRec.Additional_Markup_Pct=markup;
+										retainedIds.add(phaseRec.ID.toLong());
+									}
+									phaseNumber = phaseNumber + 1;
+								}
+								removePhaseIds = List();
+								for each oldPhase in Proforma_Phase[Pro_Forma == phasePf.ID]
+								{
+									if(!retainedIds.contains(oldPhase.ID.toLong()))
+									{
+										removePhaseIds.add(oldPhase.ID.toLong());
+									}
+								}
+								for each removePhaseId in removePhaseIds
+								{
+									delete from Proforma_Phase[ID == removePhaseId];
+								}
+								phasePf.Same_Lot_Sales_All_Phases = ifnull(data.get("sameLotSalesAllPhases"),false).toString().toLowerCase() == "true";
+								phasePf.Lot_Sales_Schedule_Version = 2;
+								resp.put("success",true);
+								resp.put("id",pfId);
+								resp.put("phaseIds",retainedIds);
+								resp.put("action","phase_sales_saved");
+								return resp.toString();
+							}
                  		if(op == "quick_create_company")
                  		{
                  			comp = data.get("company");
@@ -812,6 +1004,16 @@
 						resp.put("success",false);
 						resp.put("error","This Pro Forma is fully approved and can never be unlocked or edited.");
 						return resp.toString();
+					}
+					if(ifnull(pf.Lot_Sales_Schedule_Version,0).toLong() == 2)
+					{
+						incomingPhaseSales = data.get("phaseSales");
+						if(incomingPhaseSales == null)
+						{
+							resp.put("success",false);
+							resp.put("error","This Pro Forma uses phase-level lot sales. Reload it in the current DEV widget before saving.");
+							return resp.toString();
+						}
 					}
 				}
                  		instIds = List();
