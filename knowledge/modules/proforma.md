@@ -1,6 +1,12 @@
 
 # Proforma Module
 
+## Phase rail and legacy lot split (1.80.20, 2026-09-24)
+
+The Lot Sales editor puts phase cards on the left, inputs in the middle, and a live Phase N - Schedule on the right. Phase cards show lots, acres, construction end, and sales window. The schedule uses bold event/month labels, filled blue dots with a line that stops at the final take, a route icon, and a recurring-delay badge. The tab label is not repeated in the pane.
+
+Suggested phase allocations again follow the legacy round-up rule: earlier phases receive up to `ceil(total lots / phase count)` and the last gets the remainder. Sparse projects reserve at least one lot for every remaining phase. Saved custom allocations are not rewritten. This is a widget-only release: no Creator forms, fields, functions, workflows, Custom APIs, or records are changed. Regression: layout/order, schedule labels, delay, final timeline node, 1,789/10, 337/2, sparse allocations, custom allocation preservation, and legacy preview. Rollback: map Development and Production to widget `1.80.19`.
+
 ## Compact Lot Sales editor and detailed export (1.80.19, 2026-09-24)
 
 Lot Sales is a separate editor tab immediately after Project Schedule. Its phase cards use a compact, capped-width layout with a schedule timeline; Monthly/Quarterly and the shared-settings/escalator switches use pill controls. Project Start and Esc Start Date use a custom month/year picker. A newly selected month saves as its first day. A blank Esc Start Date defaults to the first sale month for that phase, and an auto-filled date follows schedule changes until the user explicitly selects another month. Existing saved dates are not silently changed. The Months & Phases preview and the existing Excel export now show phase-sale inputs and the six monthly pricing/escalator components; new columns stay blank on legacy records.

@@ -50,7 +50,13 @@ assert.equal(engine.plan({...pricing,baseUnitPrice:5,phases:[{Phase:1,Total_Lots
   Additional_Markup_Pct:-10}]}).events[0].Additional_Markup_Income,-1);
 
 const allocations=engine.allocatedLots(179,10);
-assert.deepEqual(allocations,[17,17,17,17,17,17,17,17,17,26]);
+assert.deepEqual(allocations,[18,18,18,18,18,18,18,18,18,17]);
+assert.deepEqual(engine.allocatedLots(337,2),[169,168],
+  'a two-phase suggestion must keep the old rounded-up-first allocation');
+assert.deepEqual(engine.allocatedLots(1789,10),[179,179,179,179,179,179,179,179,179,178],
+  'only the final phase receives the legacy allocation remainder');
+assert.deepEqual(engine.allocatedLots(11,10),[2,1,1,1,1,1,1,1,1,1],
+  'small projects must reserve at least one lot for each remaining phase');
 const phaseRows=allocations.map((lots,i)=>({ID:'phase-'+(i+1),Phase:i+1,Total_Lots:lots,
   Initial_Take_Lots:1,Initial_Delay_Months:0,First_Recurring_Delay_Months:1,
   Lots_Per_Take:lots,Take_Frequency:'Monthly',Escalator_Enabled:false}));
@@ -59,12 +65,19 @@ assert.equal(chained.phases[0].Const_End_Month,36);
 assert.equal(chained.phases[1].Const_End_Month,chained.phases[0].Lot_Sale_End_Month);
 assert.equal(chained.phases[9].ID,'phase-10');
 assert.equal(chained.events.reduce((s,e)=>s+e.Lots_Sold,0),179);
+const customRows=[{...phaseRows[0],Total_Lots:200,Initial_Take_Lots:20,Lots_Per_Take:7},
+  {...phaseRows[1],Phase:2,Total_Lots:137,Initial_Take_Lots:20,Lots_Per_Take:7}];
+const customPlan=engine.plan({...defaults,totalLots:337,phaseCount:2,phases:customRows});
+assert.deepEqual(customPlan.phases.map(p=>p.Total_Lots),[200,137],
+  'planning must respect a saved custom phase allocation, not reseed it');
+assert.deepEqual(customRows.map(p=>p.Total_Lots),[200,137],
+  'planning must not mutate saved custom phase inputs');
 const scenario=engine.scenarioLots(phaseRows,200);
 assert.equal(scenario.reduce((s,r)=>s+Number(r.Total_Lots),0),200);
 assert.ok(scenario.every(r=>Number(r.Initial_Take_Lots)>=1 && Number(r.Initial_Take_Lots)<=Number(r.Total_Lots)));
 assert.equal(phaseRows.reduce((s,r)=>s+r.Total_Lots,0),179,'scenario did not mutate the saved allocation');
 assert.throws(()=>engine.scenarioLots(phaseRows,9),/fewer than active phases/);
-assert.throws(()=>engine.plan({...defaults,phaseCount:10,phases:phaseRows.map((r,i)=>i===9?{...r,Total_Lots:25}:r)}),/1 under/);
+assert.throws(()=>engine.plan({...defaults,phaseCount:10,phases:phaseRows.map((r,i)=>i===9?{...r,Total_Lots:16}:r)}),/1 under/);
 assert.throws(()=>one({Initial_Take_Lots:180}),/exceeds/);
 assert.throws(()=>one({Initial_Take_Lots:0}),/at least 1/);
 assert.throws(()=>one({Lots_Per_Take:0}),/at least 1/);
@@ -127,6 +140,68 @@ assert.match(widget,/m\.purchaseDate=parseDateAny\(month\)/,
 assert.match(widget,/phaseRow\.Esc_Start_Date=month\+"-01"/,
   'Esc Start selection should persist the first day of the selected month');
 
+// Render the phase pane with a real schedule so layout checks cover the visible
+// content, not merely source fragments or a brittle whole-page snapshot.
+const phaseRenderContext=vm.createContext({
+  S:{ed:{model:{Lots:179,Phases:1,Total_Acres:53.4,
+    Lot_Sales_Schedule_Version:'2',Same_Lot_Sales_All_Phases:false,
+    phaseSales:[{Phase:1,Total_Lots:179,Initial_Take_Lots:35,
+      Initial_Delay_Months:0,First_Recurring_Delay_Months:3,
+      Lots_Per_Take:20,Take_Frequency:'Monthly',Escalator_Enabled:false,
+      Annual_Escalator_Pct:0,Additional_Markup_Pct:0,
+      Esc_Start_Date:'2030-09-01'}]},phaseSelected:0}},
+  phaseSalesAdopted:()=>true,
+  phaseSalesDefaultEscDates:()=>{},
+  phaseSalesBalance:()=>({allocated:179,expected:179,delta:0}),
+  phaseSalesPlan:()=>monthly,
+  phaseSalesField:(label)=>`<span data-test-field="${label}"></span>`,
+  num:Number,
+  fmtN:(value,digits)=>Number(value).toFixed(digits),
+  esc:String,
+  intN:Number,
+  dateToCreatorValue:String,
+});
+vm.runInContext(widgetFunction('panePhaseSales'),phaseRenderContext);
+const phaseHtml=phaseRenderContext.panePhaseSales();
+const phaseWorkspace=phaseHtml.indexOf('class="ps-workspace"');
+const phaseNav=phaseHtml.indexOf('class="ps-nav"');
+const phaseEditor=phaseHtml.indexOf('class="ps-editor"');
+const phaseSummary=phaseHtml.indexOf('class="ps-summary"');
+assert.ok(phaseWorkspace>=0 && phaseNav>phaseWorkspace && phaseEditor>phaseNav && phaseSummary>phaseEditor,
+  'the phase cards, main inputs, and schedule must appear left to right');
+assert.doesNotMatch(phaseHtml,/<(?:div|h3)[^>]*>Lot Sales(?:\s|<)/,
+  'the active phase pane should not repeat the Lot Sales tab label as headings');
+const phaseCard=phaseHtml.match(/<button\b[^>]*data-ps-select="0"[^>]*>([\s\S]*?)<\/button>/)?.[1];
+assert.ok(phaseCard,'a phase-selection card should be visible');
+assert.match(phaseCard,/179 lots/,'the phase card should identify its allocation');
+assert.match(phaseCard,/53\.40 acres/,'the phase card should show acreage context');
+assert.match(phaseCard,/Month 36/,'the phase card should show schedule context');
+assert.match(phaseHtml,/<h4[^>]*>[\s\S]*?Phase 1 - Schedule<\/h4>/,
+  'the right-hand timeline should be headed Phase 1 - Schedule');
+assert.match(phaseHtml,/<aside class="ps-summary"[^>]*><h4><svg[\s\S]*?<\/svg>Phase 1 - Schedule<\/h4>/,
+  'restore the schedule graphic in its heading');
+assert.doesNotMatch(phaseHtml,/Phase 1 · project months/,
+  'remove the duplicate phase caption beneath the schedule heading');
+assert.match(phaseHtml,/<span class="ps-delay-badge">3 months later &#8595;<\/span>/,
+  'the timeline should show the first-recurring delay badge');
+for(const [label,month] of [['Construction ends',36],['Initial take',37],
+  ['Recurring takes begin',40],['Final take',47]]){
+  assert.ok(phaseHtml.includes(`<span class="ps-milestone-title">${label} (Month ${month})</span>`),
+    `${label} should display its month beside the dot`);
+}
+assert.equal((phaseHtml.match(/class="ps-milestone"/g)||[]).length,4,
+  'construction, initial, recurring, and final takes each need a dot');
+assert.match(widget,/\.ps-milestone-title\{[^}]*font-weight:800/,
+  'the milestone name and month should be bold');
+assert.match(phaseHtml,/Then 20 lots every month/,
+  'the schedule should explain the recurring take cadence');
+assert.doesNotMatch(widget.match(/\.ps-timeline\{([^}]*)\}/)?.[1]||'',/border-left/,
+  'the timeline must not draw a line below the final take');
+assert.match(widget.match(/\.ps-milestone::before\{([^}]*)\}/)?.[1]||'',/background:#28588e/,
+  'all milestone dots, not just the first, should be filled blue');
+assert.match(widget,/\.ps-milestone:not\(:last-child\)::after\{[^}]*background:#a7c1e5/,
+  'only non-final milestones should draw a connector to the next dot');
+
 // The Esc Start default is the first day of each phase's first lot-sale month.
 const monthContext=vm.createContext({PhaseSalesEngine:engine});
 vm.runInContext(['num','intN','ymAdd','ymToInput','phaseSalesAdopted','phaseSalesPlan',
@@ -138,6 +213,9 @@ const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
   Sale_Price_FF:1000,Lot_Size_Ft:50,purchaseDate:{y:2027,m:1}};
 const seeded=monthContext.phaseSalesSeed(monthModel);
 assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-03-01','2027-06-01']);
+const seeded337=monthContext.phaseSalesSeed({...monthModel,Lots:337,Phases:2});
+assert.deepEqual(Array.from(seeded337,r=>Number(r.Total_Lots)),[169,168],
+  'the widget adoption preview must use the legacy first-phase remainder rule');
 seeded[0].Esc_Start_Date='2027-03-15';
 seeded[1].Esc_Start_Date='';
 monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
