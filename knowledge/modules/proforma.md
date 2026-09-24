@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Construction gate polish (1.80.15, 2026-09-24)
+
+The widget gate drops the unclear “Pro Forma development preview” line and uses a compact hard-hat graphic with restrained blue and amber accents. The access code is masked in the input; the code, tab-session unlock behavior, and DEV-only phase-sales save boundary are unchanged. The legacy-to-phase preview now says why the one-time change is needed and clarifies that Approve stages the mapping in memory; only Save persists it. This is still a client-side UI gate, not authentication. Development and Production map to `1.80.15`; Stage remains at `1.80.13`. No Creator forms, fields, functions, or Custom APIs change. Regression: fresh-session gate layout at desktop and phone widths, keyboard entry, incorrect and correct code, tab-session persistence, legacy Pro Forma navigation after unlock, suggested-phase copy and staging before Save. Rollback: map Development and Production back to `1.80.14`.
+
 ## Production widget preview gate (1.80.14, 2026-09-24)
 
 The Production Pro Forma widget maps to immutable release `1.80.14`. Its Under Construction access-code overlay covers the widget for every user and remembers an unlock only for the current browser tab session. The code is embedded client-side, so this is a UI deterrent, not secure authentication or a substitute for Creator permissions. Production Creator functions and schema are unchanged; phase-level lot-sales saves remain DEV-only, while unmigrated Pro Formas continue using legacy calculations. Regression: overlay on fresh Production sessions, unlocked navigation and legacy edit/save, and explicit rejection of phase-level saves outside DEV. Rollback: map Production back to `1.80.13`; no Production record migration is part of this promotion.
