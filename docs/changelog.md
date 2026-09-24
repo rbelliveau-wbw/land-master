@@ -1,8 +1,12 @@
 # Changelog
 
+## 2026-09-24 — Reusable approval progress design
+
+`knowledge/design/approval-progress.md` records the shared approval interaction, targeted verification, retry, terminal-state, and accessibility pattern. Root `AGENTS.md` requires it to be read before approval work in an existing or new module; the style guide and knowledge index also point to it. Documentation only; no Creator component or widget release changed.
+
 ## 2026-09-24 — Pro Forma and Modification send progress
 
-Pro Forma Send for Approvals and both Budget Modification submission paths use accessible, paced progress dialogs with targeted checks, one repair, an email retry, and a bounded terminal result. New candidate releases: Pro Forma Manager `1.80.13` and Budget Manager `122.27.16`. Creator functions `Start_Proforma_Approval_Chain`, `modificationAdmin`, `createBudgetModification`, and `submitBudgetModification` must be published before either widget is promoted. Rollback: previous widget mappings and these four prior function bodies.
+Pro Forma Send for Approvals and both Budget Modification submission paths use accessible, paced progress dialogs with targeted checks, one repair, an email retry, and a bounded terminal result. Pro Forma Manager `1.80.13` and Budget Manager `122.27.16` are promoted to Development, Stage, and Production. Creator functions `Start_Proforma_Approval_Chain`, `modificationAdmin`, `createBudgetModification`, `submitBudgetModification`, and the earlier Budget `handleApprovalAction` change were published as Creator version `8.56` through Stage and Production. Rollback: previous widget mappings and prior function bodies.
 
 ## 2026-09-24 — Budget approval progress presentation (122.27.15)
 
