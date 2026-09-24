@@ -134,7 +134,8 @@
                  				originalNextSentDate = nextRow.Sent_Date;
                  				originalNextRespondedDate = nextRow.Responded_Date;
                  				nextRow.Status="Pending";
-                 				nextRow.Sent_Date=zoho.currenttime;
+				// The email helper stamps Sent_Date only after sendmail succeeds.
+				nextRow.Sent_Date=null;
                  				nextRow.Responded_Date=null;
                  				emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,nextRow.ID.toString(),"Approved",noteText,ifnull(row.Title,"Approver").toString());
                  				if(ifnull(emailResult.get("success"),false) != true)

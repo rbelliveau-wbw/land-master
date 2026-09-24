@@ -37,6 +37,10 @@ Use the equivalent three short, truthful phases for a new object. A phase is Don
 - If the initial write returns an error or times out, check persisted state before deciding what happened. A repeated Start or Approve must be idempotent or guarded against duplicate rows, delivery, and financial writes.
 - If a check mode returns an old text response instead of the targeted status snapshot, stop polling immediately. Show a terminal error that says verification is unavailable and the action may have been saved. Never infer success from the write response, and require the matching Creator function to be published before this modal can verify the flow.
 
+### Creator deployment check
+
+GitHub Pages promotion does not deploy Deluge functions. Before publishing Creator, compare the Development editor with the matching `creator/functions/` source for every changed approval function. After publishing, run a read-only targeted check through the Production Custom API using an existing record. Confirm that it returns the structured snapshot expected by the widget; a successful write or an old text response is insufficient. The current rejection checks are `handleApprovalAction` (`CheckReject`), `Handle_Proforma_Approval_Action` (`CheckReject`), `modificationAdmin` (`check-reject`), and `Review_LOI_Request` (`CHECK_REJECT`). Never run a repair mode merely to test deployment.
+
 ### Current success predicates
 
 | Flow | Verified success requires |
