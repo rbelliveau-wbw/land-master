@@ -60,7 +60,8 @@
 										phaseApprovalComplete = false;
 									}
 								}
-								if(!migrationEditAccess && (phaseApprovalComplete || ifnull(phasePf.Status,"").toString() == "Approved"))
+                                phaseSaveProtected = phaseApprovalComplete || ifnull(phasePf.Status,"").toString() == "Approved";
+                                if(!migrationEditAccess && phaseSaveProtected)
 								{
 									resp.put("success",false);
 									resp.put("error","Approved Pro Formas cannot change phase sales.");
@@ -252,7 +253,8 @@
 										finalApprovalComplete = false;
 									}
 								}
-								if(!migrationEditAccess && (finalApprovalComplete || ifnull(finalPf.Status,"").toString() == "Approved"))
+                                finalSaveProtected = finalApprovalComplete || ifnull(finalPf.Status,"").toString() == "Approved";
+                                if(!migrationEditAccess && finalSaveProtected)
 								{
 									resp.put("success",false);
 									resp.put("error","Approved Pro Formas cannot finish a phase-sales change.");
@@ -1125,7 +1127,8 @@
 							approvalIsComplete = false;
 						}
 					}
-					if(!migrationEditAccess && (approvalIsComplete || ifnull(pf.Status,"").toString() == "Approved"))
+                    headerSaveProtected = approvalIsComplete || ifnull(pf.Status,"").toString() == "Approved";
+                    if(!migrationEditAccess && headerSaveProtected)
 					{
 						resp.put("success",false);
 						resp.put("error","This Pro Forma is fully approved and can never be unlocked or edited.");
