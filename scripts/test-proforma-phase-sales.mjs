@@ -99,7 +99,8 @@ function widgetFunction(name){
   throw Error(`Unclosed ${name}`);
 }
 const context=vm.createContext({PhaseSalesEngine:engine,CFG:{irr:{maxIterations:25}}});
-vm.runInContext(['num','intN','hasVal','round2','ymAdd','parseMonthList','computeProforma']
+vm.runInContext(['num','intN','hasVal','round2','ymAdd','parseMonthList',
+  'phaseSalesPersisted','phaseSalesActive','computeProforma']
   .map(widgetFunction).join('\n'),context);
 const adopted=context.computeProforma({Lots:10,Phases:1,Total_Acres:10,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
@@ -116,6 +117,36 @@ assert.equal(adopted.totals.Total_Income,535000);
 assert.equal(adopted.months.reduce((s,r)=>s+(r.Finished_Lot_Sales||0),0),535000);
 assert.equal(adopted.months.find(r=>r.Lots_Sold===10).Escalator_Interest_Accrued,25000);
 assert.equal(adopted.schedule.takedownStartMonth,3);
+// A legacy one-take later phase has a gap in its monthly receipts. The phase
+// engine must sell those lots when the record is converted on Save.
+const oneTakeInputs={Lots:4,Phases:2,Total_Acres:4,
+  Engineering_Delay_Months:0,Engineering_Length_Months:1,
+  Construction_Delay_Months:0,Construction_Length:1,
+  Sale_Price_FF:1000,Lot_Size_Ft:50,Engineering_Cost_Lot:0,Const_Cost_FF:0,
+  Total_Street_LF:0,Land_Cost_Acre:0,purchaseDate:{y:2027,m:1},
+  Initial_Takedown:2,Lots_per_Month:2,items:[],curve:[],
+  purchaseInstallments:[],saleInstallments:[],pidMud:[]};
+const legacyOneTake=context.computeProforma(oneTakeInputs);
+const convertedOneTake=context.computeProforma({...oneTakeInputs,
+  Lot_Sales_Schedule_Version:'2',phaseSales:[
+    {Phase:1,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,
+      First_Recurring_Delay_Months:1,Lots_Per_Take:2,Take_Frequency:'Monthly',
+      Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0},
+    {Phase:2,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,
+      First_Recurring_Delay_Months:1,Lots_Per_Take:2,Take_Frequency:'Monthly',
+      Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}]});
+assert.deepEqual(Array.from(legacyOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2]],
+  'legacy monthly receipts omit a later phase that sells in a single take');
+assert.deepEqual(Array.from(convertedOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2],[4,2]],
+  'conversion must sell the later phase rather than preserving the legacy one-take gap');
+const dollarPlan=engine.plan({...pricing,totalLots:3,baseUnitPrice:100.5,
+  phases:[{Phase:1,Total_Lots:3,Initial_Take_Lots:1,Initial_Delay_Months:0,
+    First_Recurring_Delay_Months:1,Lots_Per_Take:1,Take_Frequency:'Monthly',
+    Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}]});
+assert.equal(dollarPlan.summary.finishedLotSales,303,
+  'the phase engine rounds each take to whole dollars');
+assert.notEqual(dollarPlan.summary.finishedLotSales,3*100.5,
+  'per-take rounding can differ from the old unrounded sales basis');
 assert.match(widget,/<button data-pane="sched">Project Schedule<\/button>\s*<button data-pane="lotsales">Lot Sales<\/button>/,
   'Lot Sales must be its own tab immediately after Project Schedule');
 assert.match(widget,/data-pane="lotsales"[^\n]*panePhaseSales\(\)/,
@@ -169,6 +200,18 @@ const phaseEditor=phaseHtml.indexOf('class="ps-editor"');
 const phaseSummary=phaseHtml.indexOf('class="ps-summary"');
 assert.ok(phaseWorkspace>=0 && phaseNav>phaseWorkspace && phaseEditor>phaseNav && phaseSummary>phaseEditor,
   'the phase cards, main inputs, and schedule must appear left to right');
+// Source order alone did not catch an unclosed Recurring Takes group that nested
+// the schedule inside the editor and forced it below the inputs.
+const phaseContainers=[];
+for(const tag of phaseHtml.match(/<\/?(?:div|nav|aside)\b[^>]*>/g)||[]){
+  if(tag.startsWith('</')){phaseContainers.pop();continue;}
+  const className=tag.match(/\bclass="([^"]*)"/)?.[1]||'';
+  if(className==='ps-summary'){
+    assert.equal(phaseContainers.at(-1),'ps-workspace',
+      'the schedule must be a direct grid child beside the editor');
+  }
+  phaseContainers.push(className);
+}
 const phaseBalance=phaseHtml.indexOf('class="ps-balance');
 const phaseBody=phaseHtml.indexOf('class="sect-body"');
 assert.ok(phaseBalance>=0 && phaseBalance<phaseBody && phaseBody<phaseWorkspace,
@@ -230,9 +273,10 @@ assert.match(widget,/\.ps-milestone:not\(:last-child\)::after\{[^}]*background:#
   'only non-final milestones should draw a connector to the next dot');
 
 // The Esc Start default is the first day of each phase's first lot-sale month.
-const monthContext=vm.createContext({PhaseSalesEngine:engine});
-vm.runInContext(['num','intN','ymAdd','ymToInput','phaseSalesAdopted','phaseSalesPlan',
-  'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed']
+const monthContext=vm.createContext({PhaseSalesEngine:engine,S:{phaseSalesReady:true}});
+vm.runInContext(['num','intN','ymAdd','ymToInput','phaseSalesPersisted','phaseSalesActive','phaseSalesAdopted','phaseSalesPlan',
+  'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed',
+  'phaseSalesPrepareDraft','phaseSalesSeedWhenReady']
   .map(widgetFunction).join('\n'),monthContext);
 const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
@@ -243,6 +287,34 @@ assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-03-01','2027-06-0
 const seeded337=monthContext.phaseSalesSeed({...monthModel,Lots:337,Phases:2});
 assert.deepEqual(Array.from(seeded337,r=>Number(r.Total_Lots)),[169,168],
   'the widget adoption preview must use the legacy first-phase remainder rule');
+const seeded1789=monthContext.phaseSalesSeed({...monthModel,Lots:1789,Phases:10,
+  Initial_Takedown:35,Lots_per_Month:20});
+const unopenedLegacy={...monthModel,Lots:1789,Phases:10,Initial_Takedown:35,Lots_per_Month:20,
+  Lot_Sales_Schedule_Version:'',phaseSales:[]};
+monthContext.phaseSalesPrepareDraft(unopenedLegacy);
+assert.equal(unopenedLegacy.Lot_Sales_Schedule_Version,'',
+  'opening an old Pro Forma must not mark it migrated');
+assert.equal(unopenedLegacy.Initial_Takedown,35);
+assert.equal(unopenedLegacy.Lots_per_Month,20);
+assert.equal(unopenedLegacy._phaseSalesDraft,true);
+assert.equal(monthContext.phaseSalesActive(unopenedLegacy),true);
+assert.deepEqual(Array.from(unopenedLegacy.phaseSales,r=>Number(r.Total_Lots)),
+  [179,179,179,179,179,179,179,179,179,178]);
+assert.deepEqual(Array.from(seeded1789,r=>Number(r.Total_Lots)),
+  [179,179,179,179,179,179,179,179,179,178],
+  'conversion keeps the legacy rounded-up earlier phases and smaller final phase');
+assert.equal(Number(seeded1789[0].Initial_Take_Lots),35,
+  'phase 1 inherits the original initial take');
+assert.ok(seeded1789.slice(1).every(r=>Number(r.Initial_Take_Lots)===20),
+  'later phases start with the original continued take');
+assert.ok(seeded1789.every(r=>Number(r.Lots_Per_Take)===20
+  && r.Take_Frequency==='Monthly'
+  && Number(r.Initial_Delay_Months)===0
+  && Number(r.First_Recurring_Delay_Months)===1
+  && String(r.Escalator_Enabled)==='false'
+  && Number(r.Annual_Escalator_Pct)===0
+  && Number(r.Additional_Markup_Pct)===0),
+  'legacy phase defaults are monthly with no delay, escalator, or markup');
 seeded[0].Esc_Start_Date='2027-03-15';
 seeded[1].Esc_Start_Date='';
 monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
@@ -264,17 +336,37 @@ assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
   'Project Start changes must preserve a user-chosen Esc date');
 assert.equal(seeded[1].Esc_Start_Date,'2027-08-01',
   'Project Start changes should update untouched auto-derived Esc dates');
+const capabilityCalls=[];
+const capabilityContext=vm.createContext({
+  S:{liveSDK:true,useMock:false,env:{name:'PRODUCTION'},phaseSalesReady:false},
+  saveApiCandidateNames:()=>['Save_PF1'],
+  sdkInvoke:(cfg)=>{capabilityCalls.push(cfg);return Promise.resolve({success:false,error:'unknown operation'});},
+  auditLog:()=>{}
+});
+vm.runInContext(['parseSaveApiResult','probePhaseSalesSupport'].map(widgetFunction).join('\n'),capabilityContext);
+assert.equal(await capabilityContext.probePhaseSalesSupport(),false,
+  'an older Production function must keep the widget on legacy saves');
+assert.ok(capabilityCalls.every(call=>call.api_name==='Save_PF1'
+  && JSON.parse(call.payload?.payload||call.parameters?.payload).id==='0'),
+  'capability probes must be read-only and never cross Creator environments');
+capabilityContext.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',
+  savePhaseSales:true,finalizePhaseSales:true});
+assert.equal(await capabilityContext.probePhaseSalesSupport(),true,
+  'the phase editor should activate after Creator is deployed');
+assert.equal(capabilityContext.S.phaseSalesReady,true);
 assert.match(widget,/op:"save_phase_sales"/);
+assert.match(widget,/op:"finalize_phase_sales"/);
 assert.match(widget,/Phase-sales server schedule verified/);
-assert.match(widget,/Phase-level lot sales can only be saved in DEV/);
+assert.match(widget,/phase_sales_capabilities/);
+assert.doesNotMatch(widget,/Phase-level lot sales can only be saved in DEV/);
 assert.doesNotMatch(widget,/Pro Forma development preview/);
-assert.match(widget,/This one-time update gives each phase its own schedule\. Approve to stage it; Save to make the change\./);
+assert.match(widget,/Defaults from your old model:/);
+assert.doesNotMatch(widget,/Approve phase schedule/);
 assert.match(widget,/id="constructionCode" type="password"/);
-assert.ok(widget.indexOf('This one-time update gives each phase its own schedule.') < widget.indexOf('<table><thead><tr><th>Phase</th>'),
-  'one-time migration note must appear above the suggested-phase matrix');
 assert.match(widget,/if\(phaseSalesAdopted\(m\)\)\{\s*if\(!ver\.verified/);
 const saveFn=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 assert.match(saveFn,/if\(op == "save_phase_sales"\)/);
+assert.match(saveFn,/if\(op == "finalize_phase_sales"\)/);
 assert.match(saveFn,/phasePf\.Lot_Sales_Schedule_Version = 2/);
 assert.match(saveFn,/seenPhaseIds\.add\(rowId\)/);
 assert.match(saveFn,/for each removePhaseId in removePhaseIds/);
