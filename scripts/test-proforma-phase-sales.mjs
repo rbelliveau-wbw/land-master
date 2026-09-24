@@ -381,8 +381,8 @@ const sharedToggle={checked:true,focused:false,
   focus(){this.focused=true;}};
 sharedHost.onchange({target:sharedToggle});
 await Promise.resolve();
-assert.equal(modalOptions.title,'Copy Phase 1 settings?');
-assert.equal(modalOptions.message,'Later phases’ inputs will be replaced.');
+assert.equal(modalOptions.title,'Apply to all?');
+assert.equal(modalOptions.message,'Later phase settings will be replaced; lot counts stay.');
 assert.equal(modalOptions.okLabel,'Apply');
 assert.equal(modalOptions.cancelLabel,'Cancel');
 assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false','Cancel keeps sharing off');
