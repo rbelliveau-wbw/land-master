@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.26`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.27`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Partial save retry (1.80.27)
+
+If Creator saves the parent record but a later phase or lot-mix write fails, the editor retains that record ID, shows Save incomplete, and lets the user retry without creating another Pro Forma. Creator Development also uses fetched-record counts to insert missing phase rows and reject phase IDs from another Pro Forma. Environment promotion remains with the user. Rollback widget release: `1.80.26`.
 
 ## Lot pricing and draft flow (1.80.26)
 
