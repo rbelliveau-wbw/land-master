@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Approval Reject button styling
+
+Budget, Budget Modification, Pro Forma, and Contract Legal LOI Reject actions now rest with a red outline and pale red surface; hover darkens them slightly. Budget Modification and LOI rejection confirmation buttons match. No Creator forms, fields, functions, or Custom APIs changed. Budget Manager `122.27.19`, Pro Forma Manager `1.80.17`, and Contract Management `1.60.28` are promoted to Development and Production; Stage remains on its prior versions. Regression: reject action and confirmation visibility, hover, keyboard focus, disabled state, unrelated delete actions, and existing approval flows. Rollback: map Development and Production to `122.27.18`, `1.80.16`, and `1.60.27`, respectively.
+
 ## 2026-09-24 — Contract editor title and note icon (1.60.27)
 
 Change Lots & Pricing now puts the contract name in the modal title and the operation in the small label above it. Its close X and the action-row Add Note plus are centered SVGs. The design guide records why font glyphs can look low in centered controls and how to avoid it. Frontend only; no Creator deployment. Regression: long names, modal close/cancel/save, Add Note alignment and activation. Rollback: map Contract Management to `1.60.26`.

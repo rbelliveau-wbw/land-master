@@ -9,9 +9,11 @@ Before adding or revising an approval action in any module, read
 modal appearance, paced phases, accessible controls, and the targeted
 verification and recovery behavior that must accompany the visual treatment.
 
-In Pro Forma approval rows, keep Reject as a white button with a clear red border
-and red label in its resting, hover, and focused states. The action must stay
-recognizable before hover.
+Across Budget, Budget Modification, Pro Forma, and Contract approval actions,
+show Reject with a `#b91c1c` outline and label on a pale red `#fef2f2` surface
+at rest. Hover darkens the outline and label to `#991b1b` and the surface to
+`#fee2e2`. Use the same treatment for an approval rejection confirmation.
+Keep unrelated destructive actions on their existing styles.
 
 ## Compact icon buttons
 
