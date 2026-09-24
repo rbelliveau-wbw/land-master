@@ -116,8 +116,9 @@ assert.match(backend,/migrationEditAccess = false;/);
 assert.match(backend,/migrationAccess = User_Access\[ID == migrationAccessId.toLong\(\)\]/);
 assert.match(backend,/migrationUser = ifnull\(migrationAccess.User,""\)/);
 assert.match(backend,/resp.put\("migrationEditor",migrationEditor\)/);
-for(const name of ['phaseApprovalComplete','finalApprovalComplete','approvalIsComplete']){
-  assert.match(backend,new RegExp(`if\\(!migrationEditAccess && \\(${name} \\|\\|`));
+for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['finalApprovalComplete','finalSaveProtected'],['approvalIsComplete','headerSaveProtected']]){
+  assert.ok(backend.includes(flag+' = '+name+' || '));
+  assert.ok(backend.includes('if(!migrationEditAccess && '+flag+')'));
 }
 assert.equal((backend.match(/if\(!migrationEditAccess &&/g)||[]).length,3,'only the three financial-save guards are bypassed');
 assert.match(backend,/if\(approvalComplete \|\| ifnull\(quickPf.Status/,'explicit unlock stays guarded');
