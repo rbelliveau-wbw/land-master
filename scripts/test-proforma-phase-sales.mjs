@@ -158,7 +158,7 @@ assert.match(widget,/<link rel="stylesheet" href="phase-month-picker\.css">/);
 assert.match(widgetFunction('phaseMonthTrigger'),/data-month-kind/);
 assert.match(widgetFunction('paneSchedule'),/phaseMonthTrigger\('project',m\.purchaseDate\)/,
   'Project Start should use the custom month picker');
-assert.match(widgetFunction('phaseSalesField'),/phaseMonthTrigger\('esc',v,i\)/,
+assert.match(widgetFunction('phaseSalesField'),/phaseMonthTrigger\('esc',v,i,locked\)/,
   'Esc Start Date should use the custom month picker');
 assert.doesNotMatch(widgetFunction('paneSchedule'),/type="month"/,
   'Project Start should not fall back to the native month input');
@@ -194,7 +194,7 @@ const phaseRenderContext=vm.createContext({
   intN:Number,
   dateToCreatorValue:String,
 });
-vm.runInContext(['phaseLotPriceValues','refreshPhaseLotPricePill','panePhaseSales']
+vm.runInContext(['phaseSalesSharedLocked','phaseLotPriceValues','refreshPhaseLotPricePill','panePhaseSales']
   .map(widgetFunction).join('\n'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
 assert.match(phaseHtml,/Markup &amp; Escalator/);
@@ -313,9 +313,110 @@ assert.match(widget.match(/\.ps-milestone::before\{([^}]*)\}/)?.[1]||'',/backgro
 assert.match(widget,/\.ps-milestone:not\(:last-child\)::after\{[^}]*background:#a7c1e5/,
   'only non-final milestones should draw a connector to the next dot');
 
+// Sharing is confirmed before it copies Phase 1 inputs; later phase lot counts
+// stay editable even while the other sales controls are disabled.
+const sharedModel={Lots:10,Phases:2,Total_Acres:5,Sale_Price_FF:1000,Lot_Size_Ft:50,
+  Lot_Sales_Schedule_Version:'2',Same_Lot_Sales_All_Phases:'false',phaseSales:[
+    {Phase:1,Total_Lots:'4',Initial_Take_Lots:'2',Initial_Delay_Months:'1',
+      First_Recurring_Delay_Months:'2',Lots_Per_Take:'1',Take_Frequency:'Quarterly',
+      Escalator_Enabled:'true',Annual_Escalator_Pct:'3',Esc_Start_Date:'2028-01-01',
+      Additional_Markup_Pct:'5'},
+    {Phase:2,Total_Lots:'6',Initial_Take_Lots:'5',Initial_Delay_Months:'0',
+      First_Recurring_Delay_Months:'1',Lots_Per_Take:'2',Take_Frequency:'Monthly',
+      Escalator_Enabled:'false',Annual_Escalator_Pct:'0',Esc_Start_Date:'2029-01-01',
+      Additional_Markup_Pct:'0'}]};
+const sharedContext=vm.createContext({
+  S:{ed:{model:sharedModel,phaseSelected:1,dirty:false}},
+  phaseSalesAdopted:()=>true,phaseSalesDefaultEscDates:()=>{},
+  phaseSalesBalance:()=>({allocated:10,expected:10,delta:0}),
+  phaseSalesPlan:()=>({phases:[],events:[]}),
+  num:Number,intN:Number,fmtN:(value,digits)=>Number(value).toFixed(digits),
+  fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
+  esc:String,dateToCreatorValue:String,
+});
+vm.runInContext(['phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
+  'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','panePhaseSales']
+  .map(widgetFunction).join('\n'),sharedContext);
+assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),false);
+sharedContext.phaseSalesSetShared(sharedModel,true);
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'6','sharing keeps phase allocations');
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'2');
+assert.equal(sharedModel.phaseSales[1].Take_Frequency,'Quarterly');
+assert.equal(sharedModel.phaseSales[1].Esc_Start_Date,'2028-01-01');
+assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),true);
+const sharedPhaseHtml=sharedContext.panePhaseSales();
+function phaseInput(html,key){return html.match(new RegExp(`<input[^>]*data-ps-k="${key}"[^>]*>`))?.[0]||'';}
+assert.ok(phaseInput(sharedPhaseHtml,'Total_Lots'));
+assert.doesNotMatch(phaseInput(sharedPhaseHtml,'Total_Lots'),/\bdisabled\b/,
+  'Lots in phase remains editable');
+for(const key of ['Initial_Take_Lots','Initial_Delay_Months','First_Recurring_Delay_Months',
+  'Lots_Per_Take','Additional_Markup_Pct','Annual_Escalator_Pct']){
+  assert.match(phaseInput(sharedPhaseHtml,key),/\bdisabled\b/,`${key} should be locked on Phase 2`);
+}
+assert.match(sharedPhaseHtml,/data-ps-frequency="Monthly"[^>]*disabled/);
+assert.match(sharedPhaseHtml,/data-ps-frequency="Quarterly"[^>]*disabled/);
+assert.match(sharedPhaseHtml,/data-ps-enable="1"[^>]*disabled/);
+assert.match(sharedPhaseHtml,/data-month-kind="esc"[^>]*disabled/);
+sharedContext.S.ed.phaseSelected=0;
+const firstPhaseHtml=sharedContext.panePhaseSales();
+assert.doesNotMatch(phaseInput(firstPhaseHtml,'Initial_Take_Lots'),/\bdisabled\b/,
+  'Phase 1 remains editable');
+sharedContext.phaseSalesSetShared(sharedModel,false);
+sharedContext.S.ed.phaseSelected=1;
+assert.doesNotMatch(phaseInput(sharedContext.panePhaseSales(),'Initial_Take_Lots'),/\bdisabled\b/,
+  'turning sharing off restores editing without clearing copied values');
+sharedModel.phaseSales[1].Initial_Take_Lots='5';
+const sharedHost={addEventListener(){}};
+let modalOptions,confirmChoice=false,refreshes=0;
+sharedContext.document={getElementById:()=>sharedHost,querySelector:()=>null};
+sharedContext.uiConfirm=options=>{modalOptions=options;return Promise.resolve(confirmChoice);};
+sharedContext.updateDirtyChip=()=>{};
+sharedContext.rerenderPane=()=>{refreshes++;};
+sharedContext.recalcLive=()=>{};
+sharedContext.formatNumericInputs=()=>{};
+vm.runInContext(widgetFunction('wireEditInputs'),sharedContext);
+sharedContext.wireEditInputs();
+const sharedToggle={checked:true,focused:false,
+  getAttribute(name){return name==='data-ps-shared'?'1':null;},
+  focus(){this.focused=true;}};
+sharedHost.onchange({target:sharedToggle});
+await Promise.resolve();
+assert.equal(modalOptions.title,'Copy Phase 1 settings?');
+assert.equal(modalOptions.message,'Later phases’ inputs will be replaced.');
+assert.equal(modalOptions.okLabel,'Apply');
+assert.equal(modalOptions.cancelLabel,'Cancel');
+assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false','Cancel keeps sharing off');
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'5','Cancel preserves later phase inputs');
+assert.equal(sharedContext.S.ed.dirty,false,'Cancel does not dirty the form');
+assert.equal(sharedToggle.checked,false);
+assert.equal(refreshes,0);
+confirmChoice=true;sharedToggle.checked=true;
+sharedHost.onchange({target:sharedToggle});
+await Promise.resolve();
+assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'true');
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'2');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'6');
+assert.equal(sharedContext.S.ed.dirty,true);
+assert.equal(refreshes,1);
+const blockedInput={value:'99',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'1'}[name]||null;}};
+sharedHost.oninput({target:blockedInput});
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'2','later phase edits cannot change shared inputs');
+assert.equal(blockedInput.value,'2');
+const lotsInput={value:'7',getAttribute(name){return {'data-ps-k':'Total_Lots','data-ps-i':'1'}[name]||null;}};
+sharedHost.oninput({target:lotsInput});
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','later phase lot counts still change');
+const firstInput={value:'3',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'0'}[name]||null;}};
+sharedHost.oninput({target:firstInput});
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','Phase 1 edits propagate while sharing is on');
+sharedToggle.checked=false;
+sharedHost.onchange({target:sharedToggle});
+assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false');
+assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','turning sharing off keeps the copied values');
+
 // The Esc Start default is the first day of each phase's first lot-sale month.
 const monthContext=vm.createContext({PhaseSalesEngine:engine,S:{phaseSalesReady:true}});
-vm.runInContext(['num','intN','ymAdd','ymToInput','phaseSalesPersisted','phaseSalesActive','phaseSalesAdopted','phaseSalesPlan',
+vm.runInContext(['num','intN','round2','ymAdd','ymToInput','lotMixRollup','syncLotMixDerived',
+  'phaseSalesPersisted','phaseSalesActive','phaseSalesAdopted','phaseSalesPlan',
   'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed',
   'phaseSalesPrepareDraft','phaseSalesSeedWhenReady']
   .map(widgetFunction).join('\n'),monthContext);
@@ -330,7 +431,7 @@ assert.deepEqual(Array.from(seeded337,r=>Number(r.Total_Lots)),[169,168],
   'the widget adoption preview must use the legacy first-phase remainder rule');
 const seeded1789=monthContext.phaseSalesSeed({...monthModel,Lots:1789,Phases:10,
   Initial_Takedown:35,Lots_per_Month:20});
-const unopenedLegacy={...monthModel,Lots:1789,Phases:10,Initial_Takedown:35,Lots_per_Month:20,
+const unopenedLegacy={...monthModel,ID:'legacy-1',Lots:1789,Phases:10,Initial_Takedown:35,Lots_per_Month:20,
   Lot_Sales_Schedule_Version:'',phaseSales:[]};
 monthContext.phaseSalesPrepareDraft(unopenedLegacy);
 assert.equal(unopenedLegacy.Lot_Sales_Schedule_Version,'',
@@ -356,6 +457,58 @@ assert.ok(seeded1789.every(r=>Number(r.Lots_Per_Take)===20
   && Number(r.Annual_Escalator_Pct)===0
   && Number(r.Additional_Markup_Pct)===0),
   'legacy phase defaults are monthly with no delay, escalator, or markup');
+const freshMix={...monthModel,ID:null,Lots:'',Phases:5,phaseSales:[],lotMix:[]};
+monthContext.phaseSalesPrepareDraft(freshMix);
+assert.equal(freshMix.phaseSales.length,0,'a blank new PF starts without phase rows');
+freshMix.lotMix=[{Lot_Size_Ft:'55',Lot_Count:'15',Price_LF:'1000'}];
+monthContext.syncLotMixDerived(freshMix);
+monthContext.phaseSalesSeedWhenReady(freshMix);
+assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),15,
+  'derived lots from Lot Mix should seed the phase editor without saving or reopening');
+freshMix.lotMix[0].Lot_Count='155';
+monthContext.syncLotMixDerived(freshMix);
+monthContext.phaseSalesSeedWhenReady(freshMix);
+assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),155,
+  'generated phase allocations should follow the finished lot count while it is typed');
+freshMix._phaseSalesAutoSeed=false;
+freshMix.lotMix[0].Lot_Count='160';
+monthContext.syncLotMixDerived(freshMix);
+monthContext.phaseSalesSeedWhenReady(freshMix);
+assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),155,
+  'editing phase rows must stop automatic allocation changes');
+assert.match(widgetFunction('wireEditInputs'),/if\(kind==="lotmix"\)\{\s*syncLotMixDerived\(m\);\s*phaseSalesSeedWhenReady\(m\);/,
+  'the live Lot Mix input handler must seed phase rows after updating derived Lots');
+const tabKeys=['gen','sched','lotsales','land','pid','addl','curve','loi','approvals','months'];
+const tabButtons=tabKeys.map(key=>({key,hidden:false,style:{display:''},disabled:false,title:'',attrs:{},
+  getAttribute(name){return name==='data-pane'?this.key:this.attrs[name];},
+  setAttribute(name,value){this.attrs[name]=value;},
+  removeAttribute(name){delete this.attrs[name];}}));
+const tabContext=vm.createContext({
+  S:{ed:{isNew:true,model:{ID:null},errors:{gen:['Name required'],sched:['Project Start required'],lotsales:['Phase plan required'],land:['Purchase installments required']}}},
+  document:{querySelectorAll:()=>tabButtons},edPaneLabel:key=>key,
+});
+vm.runInContext(widgetFunction('refreshNewPfTabAccess'),tabContext);
+function openTabs(){return tabButtons.filter(button=>!button.disabled).map(button=>button.key);}
+tabContext.refreshNewPfTabAccess();
+assert.deepEqual(openTabs(),['gen'],'a blank PF should start on General Information');
+tabContext.S.ed.errors.gen=[];
+tabContext.refreshNewPfTabAccess();
+assert.deepEqual(openTabs(),['gen','sched'],'Project Schedule unlocks as soon as General Information is valid');
+tabContext.S.ed.errors.sched=[];
+tabContext.refreshNewPfTabAccess();
+assert.deepEqual(openTabs(),['gen','sched','lotsales'],'Lot Sales unlocks as soon as Project Schedule is valid');
+tabContext.S.ed.errors.lotsales=[];
+tabContext.refreshNewPfTabAccess();
+assert.deepEqual(openTabs(),['gen','sched','lotsales','land'],'Land unlocks after the phase plan is valid');
+tabContext.S.ed.errors.land=[];
+tabContext.refreshNewPfTabAccess();
+assert.ok(openTabs().includes('months'),'later optional panes and the computed preview unlock when prior panes are valid');
+assert.ok(!openTabs().includes('approvals'),'an unsaved PF cannot open Approvals');
+assert.equal(tabButtons.find(button=>button.key==='approvals').attrs['aria-disabled'],'true');
+tabContext.S.ed.isNew=false;
+tabContext.S.ed.model.ID='saved-pf';
+tabContext.refreshNewPfTabAccess();
+assert.deepEqual(openTabs(),tabKeys,'saved PFs preserve direct access to every permission-visible pane');
 seeded[0].Esc_Start_Date='2027-03-15';
 seeded[1].Esc_Start_Date='';
 monthContext.phaseSalesDefaultEscDates(monthModel,seeded);

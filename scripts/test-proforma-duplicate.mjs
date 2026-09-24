@@ -160,6 +160,55 @@ assert.equal(sourceModel.items[0].Item_Name, "Impact Fees", "editing the copy mu
 const sparse = forkModel({ ID: "2002", Name: "Sparse" });
 forkChildLists.forEach((k) => assert.ok(Array.isArray(sparse[k]), `${k} must be normalised to an array`));
 
+/* ── legacy duplicates get the same phase draft as new/edit ──────────────── */
+{
+  const duplicateSource = extractFunction("duplicateProforma");
+  assert.match(
+    duplicateSource,
+    /var copy=forkModel\(recordToModel\(rec, det\)\);[\s\S]*?phaseSalesPrepareDraft\(copy\);[\s\S]*?return copy;/,
+    "Duplicate must prepare phase sales before calculating or rendering the staged copy"
+  );
+  const prepare = new Function(
+    "S", "PhaseSalesEngine",
+    ["intN", "phaseSalesPersisted", "phaseSalesPrepareDraft", "phaseSalesSeed", "phaseSalesDefaultEscDates"]
+      .map(extractFunction).join("\n") + "\nreturn phaseSalesPrepareDraft;"
+  );
+  const phaseEngine = { allocatedLots: (lots, phases) =>
+    Array.from({ length: phases }, (_, i) => i === phases - 1
+      ? lots - Math.ceil(lots / phases) * i : Math.ceil(lots / phases)) };
+  const legacySource = { ...sourceModel, phaseSales: [], Phases: "2", Lots: "117",
+    Initial_Takedown: "24", Lots_per_Month: "8", purchaseDate: null };
+  const legacyFork = forkModel(legacySource);
+  prepare({ phaseSalesReady: true }, phaseEngine)(legacyFork);
+  assert.equal(legacyFork._phaseSalesDraft, true);
+  assert.deepEqual(legacyFork.phaseSales.map((r) => Number(r.Total_Lots)), [59, 58]);
+  assert.deepEqual(legacyFork.phaseSales.map((r) => Number(r.Initial_Take_Lots)), [24, 8]);
+  assert.ok(legacyFork.phaseSales.every((r) => r.ID === null), "draft phase rows insert on first save");
+  assert.deepEqual(legacySource.phaseSales, [], "preparing the fork cannot mutate the source");
+  const adopted = new Function("m", ["phaseSalesPersisted", "phaseSalesActive", "phaseSalesAdopted"]
+    .map(extractFunction).join("\n") + "\nreturn phaseSalesAdopted(m);");
+  const renderSchedule = new Function(
+    "S", "CFG", "phaseSalesAdopted", "fld", "inputF", "selectF", "statFld", "phaseMonthTrigger",
+    extractFunction("paneSchedule") + "\nreturn paneSchedule();"
+  );
+  const scheduleHtml = renderSchedule({ ed: { model: legacyFork } }, { choices: { constLength: [] } },
+    adopted, (label) => label, () => "", () => "", () => "", () => "");
+  assert.equal(adopted(legacyFork), true);
+  assert.doesNotMatch(scheduleHtml, /Initial Takedown|Lots per Month/,
+    "Project Schedule must hide the two legacy take fields on a prepared duplicate");
+
+  const unreadyFork = forkModel(legacySource);
+  prepare({ phaseSalesReady: false }, phaseEngine)(unreadyFork);
+  assert.equal(unreadyFork._phaseSalesDraft, undefined,
+    "do not offer phase inputs when the matching Creator API cannot save them");
+
+  const persistedFork = forkModel({ ...sourceModel, Lot_Sales_Schedule_Version: "2" });
+  prepare({ phaseSalesReady: true }, phaseEngine)(persistedFork);
+  assert.equal(persistedFork._phaseSalesDraft, undefined,
+    "a saved phase schedule is copied, never replaced with defaults");
+  assert.equal(persistedFork.phaseSales[0].Initial_Take_Lots, "24");
+}
+
 /* ── drift guard: every child collection must be declared in FORK_CHILD_LISTS ─ */
 {
   const newModelSrc = extractFunction("newModel");

@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.10`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.25`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Lot pricing and draft flow (1.80.25)
+
+Lot Mix and PID/MUD use explicit Add actions with centered SVG plus icons and clearly outlined editable cells. Typing in Lot Mix never creates a second row; repeated Add clicks reuse an untouched blank row. The unsaved title card follows the draft name, territory, start, and calculated completion. New Pro Formas unlock editor tabs in order as each preceding pane passes validation, and Lot Mix changes seed the Lot Sales phase plan immediately. Duplicates prepare the same phase draft when the Creator save API reports support. Same for all phases confirms before replacing later inputs and then locks those inputs except Lots in phase. Creator environments without phase-sales support retain the legacy flow until the backend is published. Rollback: map Production to `1.80.24`.
 
 ## Financial input visibility refinement (1.80.10)
 
