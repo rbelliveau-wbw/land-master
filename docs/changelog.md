@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Stop approval polling on outdated Creator checks
+
+Budget, Budget Modification, Pro Forma, and Contract approval progress now stop promptly when a deployed Creator function returns an old text response instead of its targeted check snapshot. The modal explains that the action may have been saved and does not claim routing or email success. This prevents repeated error reports and a misleading timeout. Widget releases: Budget Manager `122.27.20`, Pro Forma Manager `1.80.18`, Contract Management `1.60.29`. No Creator function source changed here; publishing the previously committed approval functions remains required to restore verified success in Production. Regression: legacy check responses, safe Try again, current structured checks, and existing approval flows. Rollback: map Development and Production to `122.27.19`, `1.80.17`, and `1.60.28`.
+
 ## 2026-09-24 — Approval Reject button styling
 
 Budget, Budget Modification, Pro Forma, and Contract Legal LOI Reject actions now rest with a red outline and pale red surface; hover darkens them slightly. Budget Modification and LOI rejection confirmation buttons match. No Creator forms, fields, functions, or Custom APIs changed. Budget Manager `122.27.19`, Pro Forma Manager `1.80.17`, and Contract Management `1.60.28` are promoted to Development and Production; Stage remains on its prior versions. Regression: reject action and confirmation visibility, hover, keyboard focus, disabled state, unrelated delete actions, and existing approval flows. Rollback: map Development and Production to `122.27.18`, `1.80.16`, and `1.60.27`, respectively.

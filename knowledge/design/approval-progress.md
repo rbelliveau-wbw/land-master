@@ -35,6 +35,7 @@ Use the equivalent three short, truthful phases for a new object. A phase is Don
 - The check response should identify the target and include the parent state, relevant row IDs/statuses/order, pending and approved counts, delivery stamp, recipient role/address, and any object-specific finalization evidence. Scope counts to that track or approval chain.
 - Treat `Sent_Date` (or an equivalent delivery stamp) as evidence **only when the email helper writes it after sendmail succeeds**. Clear a stale stamp before activating a new recipient. A submitted request or queued email is not proof that email was sent.
 - If the initial write returns an error or times out, check persisted state before deciding what happened. A repeated Start or Approve must be idempotent or guarded against duplicate rows, delivery, and financial writes.
+- If a check mode returns an old text response instead of the targeted status snapshot, stop polling immediately. Show a terminal error that says verification is unavailable and the action may have been saved. Never infer success from the write response, and require the matching Creator function to be published before this modal can verify the flow.
 
 ### Current success predicates
 

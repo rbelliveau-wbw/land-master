@@ -113,4 +113,38 @@ assert.match(contract,/LOI_REJECT_LABELS=\["Recording Legal rejection"/);
 assert.match(contract,/decision:mode==="Check"\?"CHECK_REJECT":"REJECT"/);
 assert.match(loiReview,/"CHECK_REJECT"/);
 assert.match(modAdmin,/vAction == "check-reject" \|\| vAction == "repair-reject"/);
+// An older Creator function can accept the decision but return plain text for
+// the new check mode. This must stop reconciliation rather than poll until timeout.
+const oldBudgetResponse={code:3000,result:'Development CFO is currently Rejected. No action was taken because this approval is not Pending.'};
+const budgetApiContext={sdkRunBudgetFunction(){return Promise.resolve(oldBudgetResponse);}};
+vm.runInNewContext(budget.slice(budget.indexOf('function approvalProgressPayload('),budget.indexOf('function approvalProgressButtons(')),budgetApiContext);
+for(const kind of ['reject','modreject']){
+  const p={kind,budgetId:'100',approvalId:'200',modificationId:'300',note:'test'};
+  await assert.rejects(budgetApiContext.approvalProgressApi(p,'Check'),/targeted approval status/i);
+  assert.equal(p.reconciliationUnavailable,true,`${kind} must flag an outdated Creator check`);
+}
+const oldPfContext={S:{liveSDK:true},invokeProformaApprovalApi(){return Promise.resolve({success:true,message:'Approval is not Pending.'});}};
+vm.runInNewContext(proforma.slice(proforma.indexOf('function pfRejectSnapshot('),proforma.indexOf('function pfApprovalSnapshot(')),oldPfContext);
+const oldPf={kind:'reject',id:'100',approvalId:'200',note:'test'};
+await assert.rejects(oldPfContext.pfProgressSnapshot(oldPf,'Check'),/targeted Pro Forma approval status/i);
+assert.equal(oldPf.reconciliationUnavailable,true);
+oldPfContext.invokeProformaApprovalApi=()=>Promise.resolve({success:false,message:'Approval is not Pending.'});
+oldPf.reconciliationUnavailable=false;
+await assert.rejects(oldPfContext.pfProgressSnapshot(oldPf,'Check'),/targeted Pro Forma approval status/i);
+assert.equal(oldPf.reconciliationUnavailable,true);
+const oldContractContext={CFG:{customApis:{reviewLOI:'Review_LOI_Request',sendContractApprovals:'Send_Contract_Approvals'}},S:{currentUser:'user@example.com'},window:{},sdkInvoke(){return Promise.resolve({success:true,proformaId:'100',message:'Rejected.'});},unwrapApi(resp){return resp;}};
+vm.runInNewContext(contract.slice(contract.indexOf('function contractProgressMissingCheck('),contract.indexOf('function contractProgressRender(')),oldContractContext);
+const oldLoi={kind:'loireject',pfId:'100',token:'token',note:'test'};
+await assert.rejects(oldContractContext.contractProgressCall(oldLoi,'Check'),/targeted approval status/i);
+assert.equal(oldLoi.reconciliationUnavailable,true);
+oldContractContext.sdkInvoke=()=>Promise.resolve({success:false,status:'Rejected',message:'This LOI is no longer pending Legal approval.'});
+oldLoi.reconciliationUnavailable=false;
+await assert.rejects(oldContractContext.contractProgressCall(oldLoi,'Check'),/targeted approval status/i);
+assert.equal(oldLoi.reconciliationUnavailable,true);
+const oldSend={kind:'send',cid:'500',ids:['10']};
+await assert.rejects(oldContractContext.contractProgressCall(oldSend,'Check'),/targeted approval status/i);
+assert.equal(oldSend.reconciliationUnavailable,true);
+assert.match(budget,/if \(p\.reconciliationUnavailable\) \{\s*finishApprovalProgress\(p, "error"/);
+assert.match(proforma,/if\(p\.reconciliationUnavailable\)\{pfApprovalFinish\(p,"error"/);
+assert.match(contract,/if\(p\.reconciliationUnavailable\)\{contractProgressFinish\(p,"error"/);
 console.log('Approval send and rejection progress verification passed.');
