@@ -51,6 +51,10 @@ Use SVGs with a centered `viewBox` for small plus signs, chevrons, close icons, 
 
 Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a left dashboard menu. Use one short green dashboard title; omit decorative taglines. Keep tables horizontally scrollable within their panels, and turn sidebar navigation into a compact row on narrow screens. Background loading should name the unavailable scope while keeping completed views usable.
 
+## Phase schedule editors
+
+Keep phase cards to the left of the inputs and the live schedule to the right when space allows. Show quantities and timing on the cards, avoid repeating the tab name in pane headings, and put the event and month together in bold beside filled timeline dots. End the connector at the final event.
+
 ## Filter and month pickers
 
 - Dropdown filters use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that have one meaningful value use the same searchable visual pattern with single selection.
