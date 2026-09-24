@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.28`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.29`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Phase schedule save guard (1.80.29)
+
+The phase schedule version check treats a temporarily missing editor model as inactive instead of throwing during the save's verification flow. Persisted v2 and unsaved phase drafts still activate the phase schedule. This is a widget-only fix; no Creator deployment is required. Regression: duplicate and save a phase-based Pro Forma, verify generated months and phases, and confirm both persisted and draft schedules still activate. Rollback widget release: `1.80.28`.
 
 ## Compact add actions and centered delete icons (1.80.28)
 
