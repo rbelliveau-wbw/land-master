@@ -194,6 +194,17 @@ const phaseRenderContext=vm.createContext({
 });
 vm.runInContext(widgetFunction('panePhaseSales'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
+assert.match(phaseHtml,/Markup &amp; Escalator/);
+assert.match(phaseHtml,/data-test-field="Additional markup"/,'markup remains visible with escalator off');
+assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
+  'escalator inputs render only when enabled');
+phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=true;
+const enabledPhaseHtml=phaseRenderContext.panePhaseSales();
+assert.match(enabledPhaseHtml,/data-test-field="Annual escalator"/);
+assert.match(enabledPhaseHtml,/data-test-field="Esc start date"/);
+assert.ok(enabledPhaseHtml.indexOf('data-test-field="Additional markup"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"'));
+phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=false;
+assert.equal(phaseRenderContext.S.ed.model.phaseSales[0].Esc_Start_Date,'2030-09-01','rendering hidden fields preserves their model values');
 const phaseWorkspace=phaseHtml.indexOf('class="ps-workspace"');
 const phaseNav=phaseHtml.indexOf('class="ps-nav"');
 const phaseEditor=phaseHtml.indexOf('class="ps-editor"');
@@ -214,8 +225,9 @@ for(const tag of phaseHtml.match(/<\/?(?:div|nav|aside)\b[^>]*>/g)||[]){
 }
 const phaseBalance=phaseHtml.indexOf('class="ps-balance');
 const phaseBody=phaseHtml.indexOf('class="sect-body"');
-assert.ok(phaseBalance>=0 && phaseBalance<phaseBody && phaseBody<phaseWorkspace,
-  'put allocation status in the section heading so it does not consume a blank row above the workspace');
+const phaseControls=phaseHtml.indexOf('class="ps-phase-controls"');
+assert.ok(phaseBody<phaseWorkspace && phaseBalance>phaseEditor && phaseBalance<phaseControls,
+  'put the allocation pill beside the selected phase heading, above its input controls');
 assert.doesNotMatch(phaseHtml,/class="ps-head"/,
   'the Lot Sales workspace should start immediately below its section heading');
 assert.doesNotMatch(phaseHtml,/<(?:div|h3)[^>]*>Lot Sales(?:\s|<)/,
@@ -243,6 +255,7 @@ assert.ok(phaseTrack && Number(phaseTrack[1])>=200,
   'the phase-card column should be wider than the old 155px rail');
 assert.doesNotMatch(widget,/\.ps-summary\{[^}]*grid-column\s*:\s*2\b/,
   'the schedule must not be pushed under the editor by a responsive grid-column rule');
+assert.match(desktopTracks,/minmax\(230px,340px\)/,'the desktop timeline track must stop growing at card width');
 const stackBreakpoint=widget.match(/@media\(max-width:(\d+)px\)\{\.ps-workspace\{grid-template-columns:minmax\(0,1fr\)/)?.[1];
 assert.ok(stackBreakpoint && Number(stackBreakpoint)<=760,
   'keep the schedule beside the editor until a genuinely narrow mobile width');
