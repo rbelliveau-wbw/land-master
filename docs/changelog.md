@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Budget approval progress presentation (122.27.15)
+
+Budget Approval Progress now matches Pro Forma's Submit to Legal run modal: navy progress header, numbered phase rows, status chips, and footer actions. Verified phases appear at 560 ms intervals so fast responses remain readable; approval writes and targeted checks are not delayed, and the terminal result remains until dismissed. The Creator function and Custom API contract are unchanged from `122.27.14`. Regression: instant success, delayed routing, email warning, conflict/error, retry, final approval, focus, and reduced motion. Rollback: map the Development widget to `122.27.14` (Stage/Production remain `122.27.13` until the Creator function is published).
+
 ## 2026-09-23 — Budget approval progress (122.27.14)
 
 Budget Manager verifies each approval's successor, email delivery stamp, and final track/financial state in an accessible progress dialog. The existing `Handle_Approval_Action` API gains targeted Check and one Repair mode; `sendApprovalEmail` and `syncBudgetApprovalStatus` remain the routing helpers. Promote the Creator function before the widget release. Rollback: Budget Manager `122.27.13` and the prior Creator function body.

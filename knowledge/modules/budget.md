@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Approval progress presentation (122.27.15)
+
+The approval dialog follows Pro Forma Submit to Legal's visual pattern: gradient navy header and progress bar, three numbered phase rows with Running/Up next/Done/Failed chips, and a footer that holds Retry email, Try again, and Close as appropriate. Verified phase updates are displayed one at a time, 560 ms apart; only the display is paced. The API poll interval and 20-second reconciliation deadline are unchanged. The dialog never auto-closes, and Close remains disabled until a terminal result. Focus stays inside the dialog; Escape works after the result is safe to dismiss. The Creator function and Custom API are unchanged from `122.27.14`.
+
 ## Approval progress and reconciliation (122.27.14)
 
 Budget track Approve opens an in-widget dialog immediately. It shows Recording approval, Activating the next approver, and Sending approval email; the final approver sees Completing approval track and Finalizing budget instead. The dialog polls only the existing `Handle_Approval_Action` Custom API with `approvalAction: "Check"` about once per second. The updated `handleApprovalAction` function returns the scoped approval row and track snapshot. Success requires the triggering row Approved, its immediate successor as the only Pending row, and both `emailSent` and `sentDate`. `emailSent` is derived from `Budget_Approvals.Sent_Date`, which is now cleared when the successor activates and stamped only by `sendApprovalEmail` after `sendmail` succeeds. A final step also requires every track row Approved, no Pending row, the `Add_Budget` track status Approved, and reconciled `Budget_Item`, `Budget_Category`, and budget Final/Unapproved totals.
