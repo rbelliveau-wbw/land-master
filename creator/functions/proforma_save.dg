@@ -16,7 +16,7 @@
                         if(migrationEditor != "" && migrationAccessId != "" && migrationAccessId.isNumber())
                         {
                             migrationAccess = User_Access[ID == migrationAccessId.toLong()];
-                            if(migrationAccess != null)
+                            if(migrationAccess.count() > 0)
                             {
                                 migrationUser = ifnull(migrationAccess.User,"").toString().trim().toLowerCase();
                                 migrationEditAccess = migrationUser == migrationEditor || migrationUser == migrationEditor + "@wbdevelopment.com";
@@ -45,7 +45,7 @@
 									return resp.toString();
 								}
 								phasePf = Add_Pro_Forma[ID == pfId.toLong()];
-								if(phasePf == null)
+								if(phasePf.count() == 0)
 								{
 									resp.put("success",false);
 									resp.put("error","Pro Forma was not found for phase sales.");
@@ -128,7 +128,8 @@
 											resp.put("error","Phase " + phaseNumber + " has an invalid ID.");
 											return resp.toString();
 										}
-										if(seenPhaseIds.contains(rowId) || Proforma_Phase[ID == rowId.toLong() && Pro_Forma == phasePf.ID] == null)
+										ownedPhase = Proforma_Phase[ID == rowId.toLong() && Pro_Forma == phasePf.ID];
+										if(seenPhaseIds.contains(rowId) || ownedPhase.count() == 0)
 										{
 											resp.put("success",false);
 											resp.put("error","Phase " + phaseNumber + " ID is duplicated or does not belong to this Pro Forma.");
@@ -172,7 +173,7 @@
 									{
 										escDate = r.get("Esc_Start_Date").toString().toDate("MM/dd/yyyy");
 									}
-									if(phaseRec == null)
+									if(phaseRec.count() == 0)
 									{
 										newPhaseId = insert into Proforma_Phase
 										[
@@ -238,7 +239,7 @@
 									return resp.toString();
 								}
 								finalPf = Add_Pro_Forma[ID == pfId.toLong()];
-								if(finalPf == null)
+								if(finalPf.count() == 0)
 								{
 									resp.put("success",false);
 									resp.put("error","Pro Forma was not found while finishing phase sales.");
@@ -1100,7 +1101,7 @@
                  			];
                  			pfKey = newRec.toLong();
                  			pf = Add_Pro_Forma[ID == pfKey];
-                 			if(pf == null)
+							if(pf.count() == 0)
                  			{
                  				resp.put("success",false);
                  				resp.put("error","New pro forma could not be read back after insert.");
@@ -1111,7 +1112,7 @@
                  		{
                  			pfIdLong = pfId.toLong();
                  			pf = Add_Pro_Forma[ID == pfIdLong];
-                 			if(pf == null)
+							if(pf.count() == 0)
                  			{
                  				resp.put("success",false);
                  				resp.put("error","Pro forma " + pfId + " not found.");

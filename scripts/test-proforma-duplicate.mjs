@@ -278,8 +278,8 @@ has(/overlay\(true,"Creating duplicate"/, "clicking Duplicate must show progress
 has(/edTitle"\)\.textContent="Duplicate of "\+srcName\+" \(unsaved\)"/, "the editor title must say the copy is unsaved");
 has(/function unsavedEditorOpen\(viewName\)/, "an unsaved editor must have a single definition of 'has no record'");
 has(
-  /var recId=unsavedEditorOpen\(name\)\?"":/,
-  "the record slider must not resolve a stale record id while an unsaved record is open"
+  /var recId=\(unsavedEditorOpen\(name\)\|\|\(name==="vEdit"&&S\.ed&&S\.ed\.partialSave\)\)\?"":/,
+  "the record slider must not leave an unsaved or incomplete editor"
 );
 has(
   /var pfId=unsavedEditorOpen\(S\.view\)\?"":/,
@@ -298,5 +298,73 @@ has(
   "a create or phase-sales save must not be blind-retried: the server may already have written the record"
 );
 has(/pfId=createdRecordId\(resp\);/, "the SDK-fallback create must read the new record ID the same way the rest of the widget does");
+
+/* A successful Save_PF1 create followed by a failed phase write must remain an
+   editable, visibly incomplete record. The next payload uses this ID to update it. */
+{
+  const saveSource = extractFunction("saveProforma");
+  has(/id: m\.ID\|\|""/, "the next Save_PF1 payload must use the model's persisted record ID");
+  assert.ok(/headerWriteConfirmed=true;/.test(saveSource), "the first confirmed Creator write must be tracked");
+  assert.ok(/if\(headerWriteConfirmed\) markPartialProformaSave\(m,pfId,phaseSalesAdopted\(m\)&&!phaseInputsConfirmed\)/.test(saveSource),
+    "a later failure must mark the confirmed record incomplete");
+  assert.ok(/S\.ed\.partialSave=null;/.test(saveSource), "a completed save must clear the incomplete state");
+  const shown = {};
+  const elements = {
+    edTitle: { textContent: "Duplicate of Chance Ranch (unsaved)" },
+    edDirty: { classList: { toggle: (name, value) => { shown[name] = value; } } },
+    btnSave: { dataset: {}, disabled: true, title: "" },
+    edPartialSaveBanner: { classList: { toggle: (name, value) => { shown.partial = value; } } },
+    edPartialSaveText: { textContent: "" },
+  };
+  const model = { ID: null, Name: "Chance Ranch (Duplicate)" };
+  const S = { ed: { id: null, isNew: true, model, dirty: false,
+    _duplicateOf: "source-id", _duplicateName: "Chance Ranch" } };
+  const calls = [];
+  const helpers = new Function("S", "document", "syncPersistentRecordHeader", "fillEdSwitch",
+    "syncRecSwitch", "editorHasSaveWork", "syncDuplicateBanner",
+    ["syncPartialSaveBanner", "updateDirtyChip", "markPartialProformaSave"]
+      .map(extractFunction).join("\n") + "\nreturn { markPartialProformaSave, syncPartialSaveBanner };"
+  )(S, { getElementById: (id) => elements[id] }, () => calls.push("header"),
+    () => calls.push("picker"), () => calls.push("switch"), () => !!(S.ed.dirty || S.ed.partialSave), () => {});
+
+  assert.equal(helpers.markPartialProformaSave(model, " 4410926000004872014 ", true), true);
+  assert.equal(model.ID, "4410926000004872014", "retry must update the created record");
+  assert.equal(S.ed.id, model.ID);
+  assert.equal(S.ed.isNew, false, "a partial create is no longer an unsaved duplicate");
+  assert.equal(S.ed.dirty, true, "a failed phase write cannot leave the editor clean");
+  assert.equal(S.ed._duplicateOf, undefined, "the source record must not remain the editor identity");
+  assert.equal(elements.btnSave.disabled, false, "Save must remain available for the same record");
+  assert.equal(shown.partial, true, "the incomplete state must remain visible after the toast expires");
+  assert.match(elements.edPartialSaveText.textContent, /4410926000004872014 exists; phase inputs were not confirmed/);
+  assert.deepEqual(calls, ["header", "picker", "switch"]);
+  S.ed.partialSave = null;
+  helpers.syncPartialSaveBanner();
+  assert.equal(shown.partial, false, "the warning must clear after a complete save");
+}
+
+/* A row-level or read failure must not flow into the success handler, which would
+   clear the incomplete banner and tell the user the Pro Forma was saved. */
+{
+  const saveSource = extractFunction("saveProforma");
+  assert.ok(/return saveLotMixOrFail\(pfId\)\.then\(function\(\)\{ return result; \}\)/.test(saveSource),
+    "the lot-mix step must reject before the save-complete branch");
+  const lotMixFn = extractFunction("saveLotMixOrFail");
+  const run = (outcome) => new Function("writeLotMixViaSDK", `${lotMixFn}\nreturn saveLotMixOrFail;`)(
+    () => outcome)("4410926000004872014");
+  assert.deepEqual(await run(Promise.resolve({ errors: [] })), { errors: [] });
+  await assert.rejects(run(Promise.resolve(undefined)),
+    (err) => err.terminal === true && /no result/.test(err.message));
+  await assert.rejects(run(Promise.resolve({ errors: [{ err: Error("one row rejected") }] })),
+    (err) => err.terminal === true && /1 failed/.test(err.message));
+  await assert.rejects(run(Promise.reject(Error("read denied"))),
+    (err) => err.terminal === true && /could not be confirmed/.test(err.message));
+
+  const readFn = extractFunction("writeLotMixViaSDK");
+  const readOnlyFailure = new Function("S", "CFG", "sdkGetAll", "auditLog", `${readFn}\nreturn writeLotMixViaSDK;`)(
+    { ed: { model: {} } }, { reports: { lotMixRows: "All_Lot_Mix_Rows" } },
+    () => Promise.reject(Error("lookup unavailable")), () => {});
+  await assert.rejects(readOnlyFailure("4410926000004872014"), /lookup unavailable/,
+    "a failed existing-row lookup must stop before any insert or delete");
+}
 
 console.log("Pro Forma Duplicate naming, additive-copy, source-immutability, drift-guard, and save-guard checks passed.");

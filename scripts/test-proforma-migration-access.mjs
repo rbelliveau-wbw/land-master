@@ -19,7 +19,7 @@ function extract(name,text=source){
 }
 const names=['migrationAccountAccess','migrationEditAccess','canOpenPfEditor','canEditPf',
   'canSavePf','canEditOwner','boolValue','protectedInputLock','isInputLocked','savedInputLock',
-  'isLOIApprovalLocked','editorHasSaveWork','applyInputLock','applyEditGating','updateDirtyChip'];
+  'isLOIApprovalLocked','editorHasSaveWork','applyInputLock','applyEditGating','syncPartialSaveBanner','updateDirtyChip'];
 function harness(overrides={}){
   const S={migrationEditor:'rbelliveau',currentUser:'rbelliveau@wbdevelopment.com',myAccessId:'1001',
     users:[{id:'1001',label:'rbelliveau'},{id:'1002',label:'other'}],

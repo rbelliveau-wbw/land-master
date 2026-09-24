@@ -1,6 +1,16 @@
 
 # Proforma Module
 
+## Compact add actions and centered delete icons (1.80.28, 2026-09-24)
+
+Lot Mix and PID/MUD add buttons display “Add” while retaining specific accessible names. Their row delete icons use SVG strokes centered inside the action cell. Production maps to widget `1.80.28`; the user will promote the Creator function separately. Regression: both Add actions, centered delete icons, row removal, and the existing partial-save retry. Widget rollback: `1.80.26`.
+
+## Retry after a partial save (1.80.27, 2026-09-24)
+
+`proforma_save` now uses fetched-record counts when phase rows are absent. A new phase is inserted instead of attempting to update an empty result, and supplied phase IDs are checked against the current Pro Forma. The same count guard handles missing parent and migration access records. The function was compiled and saved in Creator Development; Creator Stage and Production promotion remains with the user.
+
+When the parent save succeeds but a later phase or lot-mix step fails, the widget retains the returned record ID, keeps Save enabled, and labels the save incomplete. Retrying updates that record. The phase-save correction still requires the user's Creator promotion. No new forms, fields, or Custom APIs are required. Regression: duplicate then save with no existing phase rows, retry after a failed phase write, owned/unowned phase IDs, successful finalization, and a failure before parent creation. Widget rollback: `1.80.26`; assess saved phase rows before restoring the older Creator function.
+
 ## Lot pricing, draft navigation, and duplicate phase sales (1.80.25, 2026-09-24)
 
 Lot Mix creates rows only through Add lot type, reuses an untouched blank row, and outlines editable size, count, and price inputs. PID/MUD uses the same explicit Add pattern and outlines editable Month and Amount inputs while leaving calculated Type and Date neutral. Plus marks are centered SVGs. The record title and dates follow unsaved editor inputs and live calculations. New Pro Formas unlock tabs in order as the previous pane passes its existing save validation; saved Pro Formas retain direct navigation. Lot Mix totals seed and refresh an untouched phase-sales draft as they are entered; manual phase edits stop automatic reallocation. Unsaved duplicates prepare phase defaults before their first render when the environment's Creator capability probe succeeds, hiding legacy Initial Takedown and Lots per Month inputs. Enabling Same for all phases asks for confirmation before replacing later phase settings; while enabled, later phases keep only Lots in phase editable.

@@ -1197,8 +1197,7 @@ table.sub.lotmix-table input[data-ik]:not(:disabled){height:32px;border:1px soli
 table.sub.lotmix-table input[data-ik]:not(:disabled):hover:not(:focus){background:#f0f6ff;border-color:#87aee2}
 table.sub.lotmix-table input[data-ik]:not(:disabled):focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
 table.sub.lotmix-table input[data-mixprice]{height:32px;padding:5px 9px;color:#526783;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
-table.sub.lotmix-table td.row-action-cell,table.sub.pid-table td.row-action-cell{padding:8px 6px;text-align:center}
-table.sub.lotmix-table .rowdel{width:26px;height:26px;padding:0;border:1px solid transparent;display:inline-grid;place-items:center}
+table.sub.lotmix-table .rowdel{width:26px;height:26px;padding:0;border:1px solid transparent;display:inline-grid;place-items:center;font-size:18px}
 table.sub.lotmix-table .rowdel:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
 .lotmix-toolbar{border-top:1px solid #e9eff8;background:#f8fbff;padding:7px 8px}
 .lotmix-add{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:3px 9px 3px 5px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--primary-2);font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
@@ -1214,9 +1213,8 @@ table.sub.pid-table input[data-ik]:not(:disabled){height:32px;border:1px solid #
 table.sub.pid-table input[data-ik]:not(:disabled):hover:not(:focus){background:#f0f6ff;border-color:#87aee2}
 table.sub.pid-table input[data-ik]:not(:disabled):focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
 table.sub.pid-table input[readonly]{height:32px;color:#526783}
-table.sub.pid-table .rowdel{width:26px;height:26px;padding:0;border:1px solid transparent;display:inline-grid;place-items:center}
+table.sub.pid-table .rowdel{width:26px;height:26px;padding:0;border:1px solid transparent;display:inline-grid;place-items:center;font-size:18px}
 table.sub.pid-table .rowdel:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
-table.sub.lotmix-table .rowdel svg,table.sub.pid-table .rowdel svg{display:block;width:13px;height:13px;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .pid-toolbar{border-top:1px solid #e9eff8;background:#f8fbff;padding:7px 8px}
 .pid-add{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:3px 9px 3px 5px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--primary-2);font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
 .pid-add:hover{background:#eef5ff;border-color:#cbd9eb;box-shadow:0 2px 6px rgba(21,61,108,.08)}
@@ -2160,7 +2158,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.28";
+var PFW_VERSION="1.80.27";
 function initializeConstructionGate(){
   var gate=document.getElementById("constructionGate"), form=document.getElementById("constructionForm");
   var input=document.getElementById("constructionCode"), error=document.getElementById("constructionError");
@@ -9845,10 +9843,10 @@ function lotMixGrid(){
       +'<td style="width:110px"><input class="num" data-ik="Lot_Count" type="number" step="1" aria-label="Lot count, row '+(i+1)+'" value="'+esc(r.Lot_Count||"")+'"/></td>'
       +'<td style="width:130px"><input class="num" data-ik="Price_LF" type="number" step="0.01" aria-label="Lot price per linear foot, row '+(i+1)+'" value="'+esc(r.Price_LF||"")+'"/></td>'
       +'<td style="width:130px"><input readonly data-mixprice="'+i+'" aria-label="Calculated lot price, row '+(i+1)+'" value="'+esc(lotMixRowPrice(r))+'"/></td>'
-      +'<td class="row-action-cell" style="width:38px"><button type="button" class="rowdel" data-del="1" title="Remove lot type" aria-label="Remove lot type, row '+(i+1)+'"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4l12 12M16 4L4 16"/></svg></button></td></tr>';
+      +'<td style="width:34px"><button type="button" class="rowdel" data-del="1" title="Remove lot type" aria-label="Remove lot type, row '+(i+1)+'">×</button></td></tr>';
   }).join("");
   return '<div class="sub-wrap fit lotmix-wrap"><table class="sub lotmix-table"><thead><tr><th>Lot Size (Ft)</th><th>Lot Count</th><th>Lot Price $/LF</th><th>Lot Price $</th><th></th></tr></thead><tbody id="lotMixBody">'
-    +rows+'</tbody></table><div class="lotmix-toolbar"><button type="button" class="lotmix-add" id="btnAddLotMix" aria-label="Add lot type"><span class="lotmix-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add</button></div></div>';
+    +rows+'</tbody></table><div class="lotmix-toolbar"><button type="button" class="lotmix-add" id="btnAddLotMix"><span class="lotmix-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add lot type</button></div></div>';
 }
 function addLotMixRow(){
   var m=S.ed.model;
@@ -9894,12 +9892,12 @@ function panePid(){
       +'<td style="width:140px"><input class="num money'+(needAmount?' need-first':'')+'" data-ik="Cost" inputmode="decimal" aria-label="PID/MUD amount, row '+(i+1)+'" value="'+esc(inFmt$(r.Cost))+'"/></td>'
       +'<td style="width:96px"><input readonly aria-label="Payment type, row '+(i+1)+'" value="PID/MUD"/></td>'
       +'<td style="width:110px"><input readonly aria-label="Calculated payment date, row '+(i+1)+'" value="'+esc(ymShort(parseDateAny(r.Date1)))+'"/></td>'
-      +'<td class="row-action-cell" style="width:38px"><button type="button" class="rowdel" data-del="1" title="Remove PID/MUD payment" aria-label="Remove PID/MUD payment, row '+(i+1)+'"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4l12 12M16 4L4 16"/></svg></button></td></tr>';
+      +'<td style="width:34px"><button type="button" class="rowdel" data-del="1" title="Remove PID/MUD payment" aria-label="Remove PID/MUD payment, row '+(i+1)+'">×</button></td></tr>';
   }).join("");
   return '<div class="sect-head">PID / MUD Reimbursements</div><div class="sect-body">'
     +'<div class="sub-wrap fit pid-wrap"><table class="sub pid-table"><thead><tr><th>Month</th><th>Amount</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody id="pidBody">'
     +(rows||'<tr><td colspan="5" style="color:var(--faint);padding:12px">No PID/MUD payments</td></tr>')+'</tbody></table>'
-    +'<div class="pid-toolbar"><button type="button" class="pid-add" id="btnAddPid" aria-label="Add PID/MUD payment"><span class="pid-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add</button></div></div>'
+    +'<div class="pid-toolbar"><button type="button" class="pid-add" id="btnAddPid"><span class="pid-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add PID/MUD payment</button></div></div>'
     +'<div class="hint" style="color:var(--muted)"></div></div>';
 }
 function addPidRow(){
