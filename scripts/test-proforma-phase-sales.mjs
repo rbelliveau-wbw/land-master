@@ -175,6 +175,7 @@ assert.match(widget,/phaseRow\.Esc_Start_Date=month\+"-01"/,
 // content, not merely source fragments or a brittle whole-page snapshot.
 const phaseRenderContext=vm.createContext({
   S:{ed:{model:{Lots:179,Phases:1,Total_Acres:53.4,
+    Sale_Price_FF:1000,Lot_Size_Ft:50,
     Lot_Sales_Schedule_Version:'2',Same_Lot_Sales_All_Phases:false,
     phaseSales:[{Phase:1,Total_Lots:179,Initial_Take_Lots:35,
       Initial_Delay_Months:0,First_Recurring_Delay_Months:3,
@@ -188,13 +189,19 @@ const phaseRenderContext=vm.createContext({
   phaseSalesField:(label)=>`<span data-test-field="${label}"></span>`,
   num:Number,
   fmtN:(value,digits)=>Number(value).toFixed(digits),
+  fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
   esc:String,
   intN:Number,
   dateToCreatorValue:String,
 });
-vm.runInContext(widgetFunction('panePhaseSales'),phaseRenderContext);
+vm.runInContext(['phaseLotPriceValues','refreshPhaseLotPricePill','panePhaseSales']
+  .map(widgetFunction).join('\n'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
 assert.match(phaseHtml,/Markup &amp; Escalator/);
+assert.ok(phaseHtml.indexOf('class="ps-price-head"')<phaseHtml.indexOf('class="ps-group-body"',phaseHtml.indexOf('class="ps-price-head"')),
+  'the Escalator switch belongs in the pricing section header');
+assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?Base price <b data-ps-marked-price>\$50,000<\/b>[\s\S]*?Before markup <b data-ps-base-price>\$50,000<\/b>/,
+  'show the current base price including markup and the original lot price');
 assert.match(phaseHtml,/data-test-field="Additional markup"/,'markup remains visible with escalator off');
 assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
   'escalator inputs render only when enabled');
@@ -203,8 +210,29 @@ const enabledPhaseHtml=phaseRenderContext.panePhaseSales();
 assert.match(enabledPhaseHtml,/data-test-field="Annual escalator"/);
 assert.match(enabledPhaseHtml,/data-test-field="Esc start date"/);
 assert.ok(enabledPhaseHtml.indexOf('data-test-field="Additional markup"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"'));
+assert.ok(enabledPhaseHtml.indexOf('data-test-field="Additional markup"')<enabledPhaseHtml.indexOf('id="psLotPricePill"')
+  && enabledPhaseHtml.indexOf('id="psLotPricePill"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"')
+  && enabledPhaseHtml.indexOf('data-test-field="Annual escalator"')<enabledPhaseHtml.indexOf('data-test-field="Esc start date"'),
+  'markup and lot price form the first row; escalator rate and date form the second');
 phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=false;
 assert.equal(phaseRenderContext.S.ed.model.phaseSales[0].Esc_Start_Date,'2030-09-01','rendering hidden fields preserves their model values');
+phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='10';
+assert.deepEqual(Array.from(Object.values(phaseRenderContext.phaseLotPriceValues(phaseRenderContext.S.ed.model,phaseRenderContext.S.ed.model.phaseSales[0]))),[50000,55000]);
+assert.match(phaseRenderContext.panePhaseSales(),/Base price <b data-ps-marked-price>\$55,000<\/b>/);
+const basePriceText={textContent:''},markedPriceText={textContent:''};
+phaseRenderContext.document={getElementById:()=>({querySelector:(selector)=>selector==='[data-ps-base-price]'?basePriceText:markedPriceText})};
+phaseRenderContext.refreshPhaseLotPricePill();
+assert.equal(basePriceText.textContent,'$50,000');
+assert.equal(markedPriceText.textContent,'$55,000');
+assert.match(widget,/if\(phaseKey==="Additional_Markup_Pct"\)refreshPhaseLotPricePill\(\)/,
+  'typing markup should refresh the pill before the field loses focus');
+phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='-10';
+assert.match(phaseRenderContext.panePhaseSales(),/Base price <b data-ps-marked-price>\$45,000<\/b>/);
+phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='0';
+phaseRenderContext.S.ed.phaseSwitchPulse=true;
+assert.match(phaseRenderContext.panePhaseSales(),/class="ps-summary phase-updating"/,
+  'changing phases highlights the refreshed schedule');
+assert.equal(phaseRenderContext.S.ed.phaseSwitchPulse,false,'the phase animation runs once per selection');
 const phaseWorkspace=phaseHtml.indexOf('class="ps-workspace"');
 const phaseNav=phaseHtml.indexOf('class="ps-nav"');
 const phaseEditor=phaseHtml.indexOf('class="ps-editor"');
