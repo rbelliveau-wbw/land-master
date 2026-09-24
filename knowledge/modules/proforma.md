@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Phase card and schedule placement (1.80.21, 2026-09-24)
+
+The allocation badge sits in the Phase schedule heading, eliminating the blank row above the editor. Wider, shorter phase cards show `Const ends Mth` and `Sales Mths`; the phase rail has no fixed height or internal scrollbar, so all cards use the modal's vertical space. The desktop grid keeps the schedule to the right of the inputs and uses the remaining width. It stacks only on narrow phone-sized viewports. This is widget-only; no Creator forms, fields, functions, workflows, Custom APIs, or records change. Regression: 10+ phase cards, desktop three-column placement, phone wrapping, allocation badge, and existing phase inputs/schedule. Rollback: map Development and Production to widget `1.80.20`.
+
 ## Phase rail and legacy lot split (1.80.20, 2026-09-24)
 
 The Lot Sales editor puts phase cards on the left, inputs in the middle, and a live Phase N - Schedule on the right. Phase cards show lots, acres, construction end, and sales window. The schedule uses bold event/month labels, filled blue dots with a line that stops at the final take, a route icon, and a recurring-delay badge. The tab label is not repeated in the pane.
