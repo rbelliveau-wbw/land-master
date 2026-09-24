@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Contract editor title and note icon (1.60.27)
+
+Change Lots & Pricing now puts the contract name in the modal title and the operation in the small label above it. Its close X and the action-row Add Note plus are centered SVGs. The design guide records why font glyphs can look low in centered controls and how to avoid it. Frontend only; no Creator deployment. Regression: long names, modal close/cancel/save, Add Note alignment and activation. Rollback: map Contract Management to `1.60.26`.
+
 ## 2026-09-24 — Verified rejection progress
 
 Budget, Pro Forma, Budget Modification, and Contract Legal LOI rejection paths now use the existing accessible, paced approval modal with targeted status checks, safe retry, and a bounded terminal result. Pro Forma Reject stays white with a red outline. Budget Manager `122.27.18`, Pro Forma Manager `1.80.16`, and Contract Management `1.60.26` require updated Creator functions `handleApprovalAction`, `modificationAdmin`, `Handle_Proforma_Approval_Action`, and `Review_LOI_Request` before the new reconciliation modes work in Production. Notification responses without durable stamps show a warning rather than a delivery claim. Rollback: prior widget mappings and function bodies.
