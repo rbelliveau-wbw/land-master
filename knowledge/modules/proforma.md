@@ -1,6 +1,12 @@
 
 # Proforma Module
 
+## Compact Lot Sales editor and detailed export (1.80.19, 2026-09-24)
+
+Lot Sales is a separate editor tab immediately after Project Schedule. Its phase cards use a compact, capped-width layout with a schedule timeline; Monthly/Quarterly and the shared-settings/escalator switches use pill controls. Project Start and Esc Start Date use a custom month/year picker. A newly selected month saves as its first day. A blank Esc Start Date defaults to the first sale month for that phase, and an auto-filled date follows schedule changes until the user explicitly selects another month. Existing saved dates are not silently changed. The Months & Phases preview and the existing Excel export now show phase-sale inputs and the six monthly pricing/escalator components; new columns stay blank on legacy records.
+
+This release changes only the externally hosted widget. Production phase-sales saves remain DEV-only; no Creator fields, functions, workflows, Custom APIs, or records are changed by the UI promotion. Regression: tab order, phase editing, balanced allocations, month picker keyboard/viewport behavior, first-day date saves, auto versus explicit Esc dates, locked/read-only controls, preview and Excel fields, and legacy blanks. Rollback: map Development and Production to widget `1.80.18`.
+
 ## Rejection progress and button (1.80.16)
 
 Reject keeps a white, red-outlined button at rest and on hover. With a required note, it opens the existing paced approval modal. `Handle_Proforma_Approval_Action` accepts `CheckReject` and `RepairReject` through its existing Custom API. Success requires the rejecting row's note, one Pending VP row, no Approved rows, Pending Approval parent status, and VP role, address, and delivery stamp. A first-row self-restart uses the acknowledged write or a changed stamp to avoid mistaking a previously saved identical note for a completed rejection. The repair can send missing mail only for a distinct rejected row. Notification or route failures remain visible until dismissal. Creator deployment: `Handle_Proforma_Approval_Action`; no new fields or Custom APIs. Regression: rejection from VP and later steps, email failure, owner notification failure, ambiguous response, keyboard and duplicate click. Rollback: widget `1.80.15` and prior function body.
