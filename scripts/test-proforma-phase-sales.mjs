@@ -420,6 +420,14 @@ vm.runInContext(['num','intN','round2','ymAdd','ymToInput','lotMixRollup','syncL
   'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed',
   'phaseSalesPrepareDraft','phaseSalesSeedWhenReady']
   .map(widgetFunction).join('\n'),monthContext);
+for(const missing of [undefined,null]){
+  assert.equal(monthContext.phaseSalesPersisted(missing),false,
+    'missing models have no persisted phase schedule');
+  assert.equal(monthContext.phaseSalesAdopted(missing),false,
+    'a transient missing model must not crash phase-schedule checks');
+}
+assert.equal(monthContext.phaseSalesAdopted({Lot_Sales_Schedule_Version:'2'}),true);
+assert.equal(monthContext.phaseSalesAdopted({_phaseSalesDraft:true}),true);
 const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
   Construction_Delay_Months:0,Construction_Length:1,

@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Missing-model phase schedule guard (1.80.29, 2026-09-24)
+
+The widget's phase schedule check now returns inactive if called before an editor model is available. This prevents the `Lot_Sales_Schedule_Version` JavaScript error seen after a duplicate's server month rows were generated. Persisted version 2 and unsaved phase drafts retain their existing behavior. This changes no Creator forms, fields, functions, workflows, or Custom APIs, so no Creator promotion is needed. Regression: null/undefined model checks, v2 and draft checks, duplicate save, phase/month verification, and incomplete-save recovery. Production widget rollback: `1.80.28`.
+
 ## Compact add actions and centered delete icons (1.80.28, 2026-09-24)
 
 Lot Mix and PID/MUD add buttons display “Add” while retaining specific accessible names. Their row delete icons use SVG strokes centered inside the action cell. Production maps to widget `1.80.28`; the user will promote the Creator function separately. Regression: both Add actions, centered delete icons, row removal, and the existing partial-save retry. Widget rollback: `1.80.26`.
