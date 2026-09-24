@@ -1,6 +1,6 @@
 # Pro Forma phase sales implementation contract
 
-Status: Creator Development backend installed; widget release `1.80.14` is a candidate and the Development mapping is staged in Git, but GitHub Pages has not yet published this branch. No record has been migrated. Production promotion and production migration are outside this authorization.
+Status: Creator Development backend installed; widget release `1.80.14` is a candidate and the Development mapping is staged in draft PR #112. The branch's Pages build passed but deployment was rejected by the `github-pages` environment protection rule, which does not allow this feature branch. The DEV widget has not been published and no record has been migrated. Production promotion and production migration are outside this authorization.
 
 ## Confirmed business rules
 
@@ -46,7 +46,7 @@ Live Development inspection confirms that `RUN_EVERYTHING_ON_SUCCESS` currently 
 
 ## Remaining before claiming end-to-end DEV completion
 
-1. Publish the staged Development-only Pages mapping from the reviewed Git change and confirm the stable DEV URL serves `1.80.14`.
+1. Obtain authorization to merge the DEV-only mapping to `main`, which is the allowed Pages deployment branch. Then confirm the stable DEV URL serves `1.80.14`. Do not bypass the GitHub environment protection rule.
 2. Use the adoption preview to migrate one draft DEV test record (candidate `asd`, ID `4410926000002947007`), then verify write/reload parity and preserving its phase IDs. Do not touch a Production record.
 3. Exercise new-record save, native Creator save, phase-count decrease, duplicate isolation, scenario restoration, gate behavior, and approval/report consumers in the live Development app. The local `npm.cmd run validate` suite and `npm.cmd run build:pages` currently pass.
 4. Refresh the Creator export after live verification; the committed generated schema is from August 6 and must not be treated as a deployment artifact for the new fields.

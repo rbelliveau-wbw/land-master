@@ -2,7 +2,7 @@
 
 ## 2026-09-24 — Pro Forma phase sales DEV candidate (1.80.14)
 
-Creator Development has the new phase/month fields, versioned phase, month, sales and totals workflows, and `Save_PF` phase-input operation. The widget candidate adds the one-tab construction modal, phase-level sale editor and migration preview, simple noncompounding escalation, independent markup, exact allocation validation, and DEV-only strict server save verification. Obsolete sales-pace scenario drivers are removed. Production mapping is unchanged. `npm.cmd run validate` and `npm.cmd run build:pages` pass; live DEV widget publication, one-record migration and end-to-end parity checks remain pending. Rollback before migration: map Development back to `1.80.13`; see `docs/proforma-phase-sales-implementation-contract.md` for post-migration caveat.
+Creator Development has the new phase/month fields, versioned phase, month, sales and totals workflows, and `Save_PF` phase-input operation. The widget candidate adds the one-tab construction modal, phase-level sale editor and migration preview, simple noncompounding escalation, independent markup, exact allocation validation, and DEV-only strict server save verification. Obsolete sales-pace scenario drivers are removed. Production mapping is unchanged. `npm.cmd run validate` and `npm.cmd run build:pages` pass; a branch Pages build also passed, but protected-environment deployment rejected the branch. A reviewed merge to `main` is required before live DEV widget publication, one-record migration and end-to-end parity checks. Rollback before migration: map Development back to `1.80.13`; see `docs/proforma-phase-sales-implementation-contract.md` for post-migration caveat.
 
 ## 2026-09-24 — Reusable approval progress design
 
