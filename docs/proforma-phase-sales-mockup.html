@@ -1,0 +1,292 @@
+<div id="lot-sales-v2" aria-label="Lot sales input screen" data-preview="side">
+<style>
+#lot-sales-v2{--ls-bg:light-dark(#f6f8fb,#101721);--ls-paper:light-dark(#ffffff,#192330);--ls-text:light-dark(#182c44,#e4ecf6);--ls-muted:light-dark(#63738a,#a6b4c6);--ls-border:light-dark(#e2e8f0,#344254);--ls-blue:light-dark(#285cd6,#99b8ff);--ls-blue-text:light-dark(#ffffff,#15274d);--ls-soft:light-dark(#edf3ff,#233451);--ls-input:light-dark(#ffffff,#1d2a3b);--ls-track:light-dark(#f3f5f9,#121d2c);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.45;color:var(--ls-text);background:var(--ls-bg);border:1px solid var(--ls-border);border-radius:16px;overflow:hidden;text-align:left}
+#lot-sales-v2 *{box-sizing:border-box}
+#lot-sales-v2 button,#lot-sales-v2 input,#lot-sales-v2 select{font:inherit}
+#lot-sales-v2 button{cursor:pointer}
+#lot-sales-v2 .ls-header{padding:26px 30px 22px;background:var(--ls-paper);border-bottom:1px solid var(--ls-border)}
+#lot-sales-v2 .ls-crumb{font-size:12px;color:var(--ls-muted);display:flex;align-items:center;gap:10px;margin-bottom:13px}
+#lot-sales-v2 .ls-crumb span:last-child{color:var(--ls-text)}
+#lot-sales-v2 .ls-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#lot-sales-v2 .ls-title-row .ls-toggle{color:var(--ls-text);background:var(--ls-track);padding:10px 12px;border-radius:8px}
+#lot-sales-v2 h1{font-size:28px;line-height:1.2;letter-spacing:-.8px;font-weight:500;margin:0}
+#lot-sales-v2 .ls-subtitle{font-size:13px;color:var(--ls-muted);margin:8px 0 0}
+#lot-sales-v2 .ls-mock{font-size:11px;letter-spacing:.02em;background:var(--ls-track);border-radius:5px;padding:5px 8px;color:var(--ls-muted);white-space:nowrap}
+#lot-sales-v2 .ls-main{padding:22px 30px 0}
+#lot-sales-v2 .ls-phasebar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+#lot-sales-v2 .ls-phasepick{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#lot-sales-v2 .ls-phasepick label{font-size:12px;color:var(--ls-muted)}
+#lot-sales-v2 select{max-width:100%;color:var(--ls-text);background:var(--ls-input);border:1px solid var(--ls-border);border-radius:8px;padding:10px 32px 10px 12px;font-size:13px;min-height:42px}
+#lot-sales-v2 #ls-phase{font-size:14px;font-weight:500;min-width:128px}
+#lot-sales-v2 .ls-phase-detail{font-size:12px;color:var(--ls-muted)}
+#lot-sales-v2 .ls-available{display:flex;align-items:center;gap:7px;color:var(--ls-muted);font-size:12px}
+#lot-sales-v2 .ls-content{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;align-items:start}
+#lot-sales-v2 .ls-form{background:var(--ls-paper);border:1px solid var(--ls-border);border-radius:12px;overflow:hidden;min-width:0}
+#lot-sales-v2 .ls-section{padding:23px 24px;border-bottom:1px solid var(--ls-border)}
+#lot-sales-v2 .ls-section:last-child{border-bottom:0}
+#lot-sales-v2 .ls-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
+#lot-sales-v2 h2{font-size:16px;letter-spacing:-.2px;font-weight:500;margin:0;display:flex;gap:10px;align-items:center}
+#lot-sales-v2 .ls-number{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ls-border);color:var(--ls-muted);border-radius:7px;font-size:11px;width:25px;height:25px;flex-shrink:0}
+#lot-sales-v2 .ls-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+#lot-sales-v2 .ls-field{display:block;min-width:0;font-size:12px;color:var(--ls-text)}
+#lot-sales-v2 .ls-label{display:block;margin-bottom:8px}
+#lot-sales-v2 .ls-input{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;background:var(--ls-input);border:1px solid var(--ls-border);border-radius:8px;min-width:0}
+#lot-sales-v2 .ls-input:focus-within{border-color:var(--ls-blue)}
+#lot-sales-v2 input[type=number],#lot-sales-v2 input[type=date]{width:100%;min-width:0;height:38px;border:0;background:transparent;color:var(--ls-text);font-size:16px;font-variant-numeric:tabular-nums;outline-offset:2px}
+#lot-sales-v2 input[type=number]{appearance:textfield;-moz-appearance:textfield}
+#lot-sales-v2 input::-webkit-inner-spin-button{appearance:none}
+#lot-sales-v2 .ls-unit{color:var(--ls-muted);font-size:12px;white-space:nowrap}
+#lot-sales-v2 .ls-help{display:block;font-size:11px;color:var(--ls-muted);margin-top:7px;line-height:1.5}
+#lot-sales-v2 .ls-cadence{display:flex;gap:3px;padding:3px;border:1px solid var(--ls-border);border-radius:8px;background:var(--ls-track);min-height:44px}
+#lot-sales-v2 .ls-cadence button{flex:1;min-width:0;border:0;border-radius:5px;color:var(--ls-muted);font-size:12px;background:transparent;padding:6px}
+#lot-sales-v2 .ls-cadence button[aria-pressed=true]{background:var(--ls-paper);color:var(--ls-blue);box-shadow:0 1px 3px light-dark(#112e5514,#00000030)}
+#lot-sales-v2 .ls-wait{margin-top:20px;background:var(--ls-track);padding:14px;border-radius:9px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+#lot-sales-v2 .ls-wait .ls-label{margin-bottom:3px}
+#lot-sales-v2 .ls-wait .ls-help{margin:0}
+#lot-sales-v2 .ls-wait select{width:156px;font-size:12px}
+#lot-sales-v2 .ls-custom{grid-column:1/-1;max-width:220px}
+#lot-sales-v2 .ls-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ls-muted);cursor:pointer}
+#lot-sales-v2 .ls-toggle input{appearance:none;background:var(--ls-border);border-radius:20px;width:32px;height:19px;position:relative;margin:0;cursor:pointer}
+#lot-sales-v2 .ls-toggle input:after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:var(--ls-paper);left:3px;top:3px}
+#lot-sales-v2 .ls-toggle input:checked{background:var(--ls-blue)}
+#lot-sales-v2 .ls-toggle input:checked:after{left:16px;background:var(--ls-blue-text)}
+#lot-sales-v2 fieldset{border:0;padding:0;margin:0;min-width:0}
+#lot-sales-v2 fieldset:disabled{opacity:.45}
+#lot-sales-v2 .ls-esc-help{margin-top:12px}
+#lot-sales-v2 .ls-summary{background:var(--ls-paper);border:1px solid var(--ls-border);border-radius:12px;overflow:hidden}
+#lot-sales-v2 .ls-summary-top{padding:19px 20px 17px;border-bottom:1px solid var(--ls-border)}
+#lot-sales-v2 .ls-summary-heading{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+#lot-sales-v2 .ls-summary-heading i{color:var(--ls-blue)}
+#lot-sales-v2 .ls-preview-meta{font-size:11px;color:var(--ls-muted);margin-top:4px}
+#lot-sales-v2 .ls-timeline{padding:23px 20px 16px}
+#lot-sales-v2 .ls-event{position:relative;padding:0 0 23px 25px;border-left:1px solid var(--ls-border);margin-left:5px}
+#lot-sales-v2 .ls-event:before{content:'';position:absolute;left:-5px;top:5px;width:9px;height:9px;border:2px solid var(--ls-blue);border-radius:50%;background:var(--ls-paper)}
+#lot-sales-v2 .ls-event:first-child:before{background:var(--ls-blue)}
+#lot-sales-v2 .ls-event:last-child{border-left-color:transparent;padding-bottom:0}
+#lot-sales-v2 .ls-event-label{font-size:11px;color:var(--ls-muted)}
+#lot-sales-v2 .ls-event-value{font-size:17px;letter-spacing:-.3px;margin-top:3px;font-weight:500}
+#lot-sales-v2 .ls-event-time{font-size:12px;margin-top:3px;color:var(--ls-muted)}
+#lot-sales-v2 .ls-gap{font-size:11px;color:var(--ls-blue);background:var(--ls-soft);display:inline-block;padding:4px 8px;border-radius:5px;margin-top:12px}
+#lot-sales-v2 .ls-repeat{font-size:11px;color:var(--ls-muted);margin-top:10px;line-height:1.6}
+#lot-sales-v2 .ls-summary-total{margin:4px 20px 17px;padding-top:14px;border-top:1px solid var(--ls-border);font-size:12px;display:flex;justify-content:space-between;gap:10px}
+#lot-sales-v2 .ls-summary-total span:last-child{color:var(--ls-muted)}
+#lot-sales-v2 .ls-esc-summary{background:var(--ls-soft);padding:15px 20px;font-size:12px;line-height:1.6;color:var(--ls-text)}
+#lot-sales-v2 .ls-esc-summary span{display:block;font-size:11px;color:var(--ls-muted);margin-top:2px}
+#lot-sales-v2 .ls-error{font-size:12px;color:light-dark(#b33832,#ffa29b);margin-top:12px}
+#lot-sales-v2 .ls-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:21px 0 23px}
+#lot-sales-v2 .ls-status{font-size:11px;color:var(--ls-muted)}
+#lot-sales-v2 .ls-save{display:flex;gap:8px;align-items:center;border:0;border-radius:8px;padding:11px 17px;font-size:13px;font-weight:500;color:var(--ls-blue-text);background:var(--ls-blue)}
+#lot-sales-v2 button:disabled{cursor:default;opacity:.45}
+#lot-sales-v2 [hidden]{display:none!important}
+#lot-sales-v2[data-preview=below] .ls-content{grid-template-columns:1fr}
+#lot-sales-v2[data-preview=below] .ls-timeline{display:flex;gap:24px}
+#lot-sales-v2[data-preview=below] .ls-event{flex:1}
+#lot-sales-v2[data-density=compact] .ls-section{padding:17px 20px}
+@media(max-width:850px){#lot-sales-v2 .ls-content{grid-template-columns:1fr}#lot-sales-v2 .ls-timeline{display:flex;gap:20px}#lot-sales-v2 .ls-event{flex:1}#lot-sales-v2 .ls-summary-total{margin-top:0}#lot-sales-v2 .ls-esc-summary{padding:12px 20px}}
+@media(max-width:520px){#lot-sales-v2 .ls-header{padding:22px 18px}#lot-sales-v2 .ls-main{padding:18px 16px 0}#lot-sales-v2 .ls-section{padding:20px 17px}#lot-sales-v2 .ls-fields{grid-template-columns:1fr;gap:16px}#lot-sales-v2 .ls-wait{grid-template-columns:1fr}#lot-sales-v2 .ls-wait select{width:100%}#lot-sales-v2 .ls-timeline,#lot-sales-v2[data-preview=below] .ls-timeline{display:block}#lot-sales-v2 h1{font-size:25px}#lot-sales-v2 .ls-mock{display:none}#lot-sales-v2 .ls-phase-detail{font-size:11px}#lot-sales-v2 .ls-footer{align-items:stretch}#lot-sales-v2 .ls-save{justify-content:center}#lot-sales-v2 .ls-status{width:100%}}
+@media(pointer:coarse){#lot-sales-v2 .ls-toggle{min-height:44px}#lot-sales-v2 .ls-cadence{min-height:48px}#lot-sales-v2 select{min-height:44px;font-size:16px}}
+#lot-sales-v2{color-scheme:light;--ls-bg:#f0f3f7;--ls-paper:#fff;--ls-text:#0b2345;--ls-muted:#627995;--ls-border:#d7e2f2;--ls-blue:#285b97;--ls-blue-text:#fff;--ls-soft:#eaf1fc;--ls-input:#eef2f8;--ls-track:#f8faff;border-radius:10px;font-family:"Segoe UI",Arial,sans-serif}
+#lot-sales-v2 .ls-header{padding:16px 20px;background:linear-gradient(110deg,#e8f0fd,#f8faff);border-top:3px solid #285b97}
+#lot-sales-v2 .ls-crumb{margin-bottom:7px;font-size:11px}
+#lot-sales-v2 h1{font-size:21px;letter-spacing:-.3px}
+#lot-sales-v2 .ls-workspace{display:grid;grid-template-columns:210px minmax(0,1fr)}
+#lot-sales-v2 .ls-sidebar{background:#edf3fc;border-right:1px solid var(--ls-border);padding:16px 10px}
+#lot-sales-v2 .ls-sidebar-title{display:flex;justify-content:space-between;padding:0 8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+#lot-sales-v2 .ls-sidebar-title span{color:var(--ls-muted);letter-spacing:0}
+#lot-sales-v2 .ls-phase-list{display:grid;gap:5px}
+#lot-sales-v2 .ls-phase-button{display:block;width:100%;padding:10px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ls-text);text-align:left}
+#lot-sales-v2 .ls-phase-button:hover{background:#edf3fc;border-color:#cbd9eb}
+#lot-sales-v2 .ls-phase-button[aria-pressed=true]{background:linear-gradient(115deg,#173d72,#285b97);border-color:#285b97;color:#fff;box-shadow:0 3px 8px #173d7224}
+#lot-sales-v2 .ls-phase-button[aria-pressed=true] small,#lot-sales-v2 .ls-phase-button[aria-pressed=true] .ls-phase-sub{color:#d9e7fc}
+#lot-sales-v2 .ls-phase-line{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;font-weight:500}
+#lot-sales-v2 .ls-phase-line small{font-size:11px;color:var(--ls-muted);font-weight:400}
+#lot-sales-v2 .ls-phase-sub{display:block;margin-top:4px;font-size:11px;color:var(--ls-muted)}
+#lot-sales-v2 .ls-main{padding:17px 16px 0;min-width:0}
+#lot-sales-v2 .ls-phasebar{justify-content:flex-start;gap:12px 20px;margin-bottom:15px}
+#lot-sales-v2 .ls-phasepick{gap:7px;display:grid}
+#lot-sales-v2 .ls-phase-name{font-size:16px;font-weight:500}
+#lot-sales-v2 .ls-phasebar>.ls-toggle{padding:8px 10px;border:1px solid var(--ls-border);border-radius:7px;background:var(--ls-paper);color:var(--ls-text)}
+#lot-sales-v2 .ls-phase-lots{width:120px;flex-shrink:0}
+#lot-sales-v2 .ls-phase-lots .ls-help{margin-top:4px}
+#lot-sales-v2 .ls-available{margin-left:auto;font-size:11px}
+#lot-sales-v2 .ls-content{grid-template-columns:minmax(0,1fr) 205px;gap:14px}
+#lot-sales-v2 .ls-form{background:transparent;border:0;border-radius:0;overflow:visible;display:grid;gap:14px}
+#lot-sales-v2 .ls-section{padding:0;background:var(--ls-paper);border:1px solid var(--ls-border);border-radius:9px;overflow:hidden;box-shadow:0 2px 4px #15314f09}
+#lot-sales-v2 .ls-section:last-child{border-bottom:1px solid var(--ls-border)}
+#lot-sales-v2 .ls-section-title{padding:11px 14px;margin:0;background:#f8faff;border-bottom:1px solid #e5edf8;min-height:41px}
+#lot-sales-v2 .ls-section:nth-child(1) .ls-section-title{background:#e5eefc;border-left:4px solid #285b97;padding-left:10px;color:#173d72}
+#lot-sales-v2 .ls-section:nth-child(2) .ls-section-title{background:#eaf1ff;border-left:4px solid #5676bc;padding-left:10px;color:#304f89}
+#lot-sales-v2 .ls-section:nth-child(3) .ls-section-title{background:#e6f4f1;border-left:4px solid #2b8074;padding-left:10px;color:#21675e}
+#lot-sales-v2 h2{font-size:11px;font-weight:500;letter-spacing:.065em;text-transform:uppercase}
+#lot-sales-v2 .ls-number{display:none}
+#lot-sales-v2 .ls-section>.ls-fields,#lot-sales-v2 .ls-section>fieldset{padding:16px}
+#lot-sales-v2 .ls-fields{gap:14px}
+#lot-sales-v2 #ls-esc-fields .ls-fields{grid-template-columns:1fr 1fr}
+#lot-sales-v2 #ls-esc-fields .ls-field:last-child{grid-column:1/-1;max-width:250px}
+#lot-sales-v2 .ls-label{font-size:11px;font-weight:500;letter-spacing:.035em;text-transform:uppercase;color:#617995;margin-bottom:6px}
+#lot-sales-v2 .ls-input{min-height:34px;border-radius:6px;padding:0 9px}
+#lot-sales-v2 input[type=number],#lot-sales-v2 input[type=date],#lot-sales-v2 input[data-numeric]{height:30px;font-size:13px;font-weight:500}
+#lot-sales-v2 input[data-numeric]{width:100%;min-width:0;border:0;background:transparent;color:var(--ls-text);text-align:right;font-variant-numeric:tabular-nums}
+#lot-sales-v2 .ls-unit{font-size:11px}
+#lot-sales-v2 .ls-cadence{min-height:34px;border-radius:6px}
+#lot-sales-v2 .ls-cadence button{padding:3px 5px;font-size:11px}
+#lot-sales-v2 .ls-cadence button[aria-pressed=true]{background:#173d72;color:#fff}
+#lot-sales-v2 .ls-wait{margin:0 16px;padding:12px 0;border-top:1px solid var(--ls-border);border-radius:0;background:transparent}
+#lot-sales-v2 .ls-wait select{min-height:34px;padding-top:6px;padding-bottom:6px;width:142px}
+#lot-sales-v2 #ls-wait-help{margin:0 16px 14px}
+#lot-sales-v2 .ls-summary{border-radius:9px;box-shadow:0 2px 4px #15314f09}
+#lot-sales-v2 .ls-summary-top{padding:12px 14px;background:linear-gradient(115deg,#173d72,#285b97);color:#fff}
+#lot-sales-v2 .ls-summary-top .ls-preview-meta{color:#d9e7fc}
+#lot-sales-v2 .ls-summary-heading{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+#lot-sales-v2 .ls-timeline{padding:18px 15px}
+#lot-sales-v2 .ls-event{padding-left:18px;padding-bottom:19px}
+#lot-sales-v2 .ls-event-value{font-size:14px}
+#lot-sales-v2 .ls-summary-total{margin:0 14px 14px;font-size:11px}
+#lot-sales-v2 .ls-esc-summary{padding:12px 14px;font-size:11px;background:#e6f4f1;color:#21675e}
+#lot-sales-v2 .ls-save{padding:9px 14px;background:linear-gradient(145deg,#163f77,#0b2345);border-radius:7px;font-size:12px}
+#lot-sales-v2 .ls-footer{padding:16px 0}
+#lot-sales-v2[data-density=compact] .ls-section{padding:0}
+#lot-sales-v2[data-density=compact] .ls-section>.ls-fields,#lot-sales-v2[data-density=compact] .ls-section>fieldset{padding:12px}
+@media(max-width:920px){#lot-sales-v2 .ls-content{grid-template-columns:1fr}#lot-sales-v2 .ls-timeline{display:flex;gap:12px}#lot-sales-v2 .ls-event{flex:1}#lot-sales-v2 .ls-available{margin-left:0}}
+@media(max-width:640px){#lot-sales-v2 .ls-workspace{grid-template-columns:1fr}#lot-sales-v2 .ls-sidebar{border-right:0;border-bottom:1px solid var(--ls-border);padding:12px}#lot-sales-v2 .ls-phase-list{grid-template-columns:1fr 1fr}#lot-sales-v2 .ls-phasebar{gap:12px}#lot-sales-v2 .ls-available{width:100%}}
+@media(max-width:520px){#lot-sales-v2 .ls-fields{grid-template-columns:1fr}#lot-sales-v2 .ls-wait{grid-template-columns:1fr}#lot-sales-v2 .ls-wait select{width:100%}#lot-sales-v2 .ls-timeline,#lot-sales-v2[data-preview=below] .ls-timeline{display:block}#lot-sales-v2 .ls-phase-button{padding:9px 7px}#lot-sales-v2 .ls-phase-sub{font-size:11px}}
+@media(pointer:coarse){#lot-sales-v2 input[data-numeric],#lot-sales-v2 input[type=date]{font-size:16px;min-height:40px}#lot-sales-v2 .ls-cadence{min-height:44px}}
+</style>
+<header class="ls-header">
+  <div class="ls-crumb">Pro Forma <span>/</span> <span>Sales assumptions</span></div>
+  <div class="ls-title-row"><h1>Lot Sales</h1><span class="ls-mock">Input mockup</span></div>
+</header>
+<div class="ls-workspace">
+<aside class="ls-sidebar"><div class="ls-sidebar-title">Phases <span>10</span></div><nav class="ls-phase-list" id="ls-phase-list" aria-label="Select phase"></nav></aside>
+<main class="ls-main">
+  <div class="ls-phasebar">
+    <div class="ls-phasepick"><span class="ls-phase-name" id="ls-phase-name">Phase 1</span><span class="ls-phase-detail" id="ls-phase-detail">53.40 acres</span></div>
+    <label class="ls-field ls-phase-lots"><span class="ls-label">Lots in Phase</span><span class="ls-input"><input id="ls-phase-lots" type="number" min="1" step="1" value="179" aria-describedby="ls-phase-lots-help"><span class="ls-unit">lots</span></span><span class="ls-help" id="ls-phase-lots-help">This phase only</span></label>
+    <label class="ls-toggle"><input id="ls-same" type="checkbox" role="switch">Same for all phases</label>
+    <div class="ls-available"><span id="ls-available">Construction ends · Month 36</span></div>
+  </div>
+  <div class="ls-content">
+    <div>
+      <div class="ls-form">
+        <section class="ls-section">
+          <div class="ls-section-title"><h2><span class="ls-number">1</span>Initial take</h2></div>
+          <div class="ls-fields">
+            <label class="ls-field"><span class="ls-label">Initial lots</span><span class="ls-input"><input id="ls-initial" type="number" min="1" max="179" step="1" value="35"><span class="ls-unit">lots</span></span></label>
+            <label class="ls-field"><span class="ls-label">Initial Delay</span><span class="ls-input"><input id="ls-delay" type="number" min="0" step="1" value="0" aria-describedby="ls-initial-help"><span class="ls-unit">months</span></span><span class="ls-help" id="ls-initial-help">0 = first sale the month after construction ends.</span></label>
+          </div>
+          <div class="ls-wait">
+            <label for="ls-wait" class="ls-field"><span class="ls-label">First recurring take</span><span class="ls-help">After initial take</span></label>
+            <select id="ls-wait" aria-describedby="ls-wait-help"><option value="1">1 month later</option><option value="3" selected>3 months later</option><option value="6">6 months later</option><option value="custom">Custom delay</option></select>
+            <label class="ls-field ls-custom" id="ls-custom-field" hidden><span class="ls-label">Custom delay</span><span class="ls-input"><input id="ls-custom" type="number" min="1" step="1" value="3"><span class="ls-unit">months</span></span></label>
+          </div>
+          <span class="ls-help" id="ls-wait-help">Starts Month 40</span>
+        </section>
+        <section class="ls-section">
+          <div class="ls-section-title"><h2><span class="ls-number">2</span>Recurring takes</h2></div>
+          <div class="ls-fields">
+            <label class="ls-field"><span class="ls-label">Lots per take</span><span class="ls-input"><input id="ls-pace" type="number" min="1" step="1" value="20"><span class="ls-unit">lots</span></span></label>
+            <div class="ls-field"><span class="ls-label" id="ls-frequency-label">Frequency</span><div class="ls-cadence" role="group" aria-labelledby="ls-frequency-label"><button type="button" data-cadence="1" aria-pressed="true">Monthly</button><button type="button" data-cadence="3" aria-pressed="false">Quarterly</button></div></div>
+          </div>
+        </section>
+        <section class="ls-section">
+          <div class="ls-section-title"><h2><span class="ls-number">3</span>Price escalator</h2><label class="ls-toggle"><span id="ls-esc-state">On</span><input id="ls-enabled" type="checkbox" role="switch" aria-label="Include price escalator" checked></label></div>
+          <fieldset id="ls-esc-fields"><div class="ls-fields">
+            <label class="ls-field"><span class="ls-label">Annual escalator</span><span class="ls-input"><input id="ls-rate" type="number" min="0" step="0.25" value="5"><span class="ls-unit">% / year</span></span></label>
+            <label class="ls-field"><span class="ls-label">Additional Markup</span><span class="ls-input"><input id="ls-markup" type="number" min="0" step="0.25" value="0"><span class="ls-unit">%</span></span></label>
+            <label class="ls-field"><span class="ls-label">Esc Start Date</span><span class="ls-input"><input id="ls-date" type="date" value="2029-01-01"></span></label>
+          </div></fieldset>
+        </section>
+      </div>
+      <div id="ls-error" class="ls-error" role="alert" hidden></div>
+    </div>
+    <aside class="ls-summary" aria-label="Live take schedule">
+      <div class="ls-summary-top"><div class="ls-summary-heading"><i data-lucide="route" aria-hidden="true"></i>Your schedule</div><div class="ls-preview-meta" id="ls-preview-meta">Phase 1 · project months</div></div>
+      <div id="ls-schedule" aria-live="polite">
+        <div class="ls-timeline">
+          <div class="ls-event"><div class="ls-event-label">Construction ends</div><div class="ls-event-value" id="ls-construction-time">Month 36</div><div class="ls-event-time" id="ls-initial-gap">No delay · first sale next month</div></div>
+          <div class="ls-event"><div class="ls-event-label">Initial take</div><div class="ls-event-value" id="ls-initial-value">35 lots</div><div class="ls-event-time" id="ls-initial-time">Month 37</div><div class="ls-gap" id="ls-gap">3 months later ↓</div></div>
+          <div class="ls-event" id="ls-recurring-event"><div class="ls-event-label">Recurring takes begin</div><div class="ls-event-value" id="ls-recurring-value">20 lots</div><div class="ls-event-time" id="ls-recurring-time">Month 40</div><div class="ls-repeat" id="ls-repeat">Then 20 lots every month</div></div>
+          <div class="ls-event" id="ls-final-event"><div class="ls-event-label">Final take</div><div class="ls-event-value" id="ls-final-value">4 lots</div><div class="ls-event-time" id="ls-final-time">Month 47</div></div>
+        </div>
+        <div class="ls-summary-total"><span id="ls-total">179 lots sold</span><span id="ls-count">9 takes</span></div>
+      </div>
+      <div class="ls-esc-summary" id="ls-esc-summary">5% annual escalator<span>Starting Jan 1, 2029</span></div>
+    </aside>
+  </div>
+  <footer class="ls-footer"><span class="ls-status" id="ls-status" aria-live="polite">Phase 1 only</span><button class="ls-save" id="ls-save" type="button"><span id="ls-save-label">Save phase</span><i data-lucide="arrow-right" aria-hidden="true"></i></button></footer>
+</main>
+</div>
+<script>
+(()=>{
+  const root=document.getElementById('lot-sales-v2');
+  const el=id=>root.querySelector('#ls-'+id);
+  const phases=Array.from({length:10},(_,i)=>({total:i===9?178:179,end:36+9*i,initial:35,delay:0,pace:20,cadence:1,waitChoice:'3',wait:3,enabled:true,rate:5,markup:0,date:new Date(Date.UTC(2026,36+9*i,1)).toISOString().slice(0,10),dirty:false}));
+  let selected=0,same=false;
+  function syncPhases(){
+    if(!same)return;
+    const source=phases[selected];
+    phases.forEach(p=>{for(const key of ['initial','delay','pace','cadence','waitChoice','wait','enabled','rate','markup','date'])p[key]=source[key];p.dirty=true;});
+  }
+  phases.forEach((p,i)=>{const button=document.createElement('button');button.type='button';button.className='ls-phase-button';button.dataset.phase=i;button.setAttribute('aria-pressed',String(i===0));button.setAttribute('aria-label','Phase '+(i+1)+', '+p.total+' lots');button.innerHTML='<span class="ls-phase-line">Phase '+(i+1)+'<small>'+p.total+' lots</small></span><span class="ls-phase-sub"></span>';button.addEventListener('click',()=>{selected=i;load();});el('phase-list').append(button);});
+  function updatePhaseList(){root.querySelectorAll('[data-phase]').forEach(button=>{const i=Number(button.dataset.phase),p=phases[i],lots=Number.isInteger(p.total)&&p.total>0?p.total.toLocaleString('en-US')+' lots':'Set lots';button.setAttribute('aria-pressed',String(i===selected));button.setAttribute('aria-label','Phase '+(i+1)+', '+lots);button.querySelector('.ls-phase-line small').textContent=lots;button.querySelector('.ls-phase-sub').textContent='Const. end M'+p.end+' · '+(Number.isFinite(p.delay)?'Sale M'+(p.end+1+p.delay):'Incomplete');});}
+  function load(){
+    const p=phases[selected];
+    for(const key of ['initial','delay','pace','rate','markup','date'])el(key).value=p[key];
+    el('phase-lots').value=Number.isFinite(p.total)?p.total:'';
+    el('wait').value=p.waitChoice;el('custom').value=p.wait;el('enabled').checked=p.enabled;
+    el('initial').max=same?Math.min(...phases.map(phase=>phase.total)):p.total;
+    el('phase-name').textContent='Phase '+(selected+1);el('save-label').textContent=same?'Save all phases':'Save phase';
+    el('phase-detail').textContent='53.40 acres';
+    el('available').textContent='Construction ends · Month '+p.end;
+    el('preview-meta').textContent='Phase '+(selected+1)+' · project months';
+    el('status').textContent=(same?'All 10 phases':'Phase '+(selected+1)+' only')+(p.dirty?' · Unsaved':'');
+    render();formatNumbers();
+  }
+  function render(){
+    const p=phases[selected],remaining=p.total-p.initial,month=p.end+1+p.delay;
+    updatePhaseList();
+    root.querySelectorAll('[data-cadence]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.cadence)===p.cadence)));
+    el('custom-field').hidden=p.waitChoice!=='custom';el('esc-fields').disabled=!p.enabled;el('esc-state').textContent=p.enabled?'On':'Off';
+    let error='';
+    const maxInitial=same?Math.min(...phases.map(phase=>phase.total)):p.total;
+    el('initial').max=Number.isFinite(maxInitial)?maxInitial:'';
+    const invalidPhase=same?phases.findIndex(phase=>!Number.isInteger(phase.total)||phase.total<1):(!Number.isInteger(p.total)||p.total<1?selected:-1);
+    if(invalidPhase>=0)error='Phase '+(invalidPhase+1)+': enter at least 1 whole lot.';
+    else if(!Number.isInteger(p.initial)||p.initial<1||p.initial>maxInitial)error='Initial take: enter 1–'+maxInitial+' whole lots.';
+    else if(!Number.isInteger(p.delay)||p.delay<0)error='Initial Delay must be zero or more whole months.';
+    else if(!Number.isInteger(p.pace)||p.pace<1)error='Enter at least 1 whole lot per recurring take.';
+    else if(!Number.isInteger(p.wait)||p.wait<1)error='Enter a delay of at least 1 whole month.';
+    else if(p.enabled&&(!Number.isFinite(p.rate)||p.rate<0||!Number.isFinite(p.markup)||p.markup<0||!p.date))error='Enter valid escalator and markup percentages and a start date.';
+    el('error').textContent=error;el('error').hidden=!error;el('save').disabled=!!error;el('schedule').hidden=!!error;
+    if(error){el('wait-help').textContent='Complete the inputs to see your schedule.';return;}
+    const first=month+p.wait,n=Math.ceil(remaining/p.pace),last=first+(n-1)*p.cadence;
+    const interval=p.cadence===1?'every month':'every 3 months';
+    el('wait-help').textContent=remaining>0?'Starts Month '+first+(same?' · Phase '+(selected+1):''):'All lots in initial take';
+    el('construction-time').textContent='Month '+p.end;el('initial-gap').textContent=p.delay===0?'No delay · first sale next month':p.delay+(p.delay===1?' full month':' full months')+' before first sale';
+    el('initial-value').textContent=p.initial.toLocaleString('en-US')+' lots';el('initial-time').textContent='Month '+month;
+    el('gap').hidden=n===0;el('gap').textContent=p.wait+(p.wait===1?' month later ↓':' months later ↓');
+    el('recurring-event').hidden=n===0;el('recurring-value').textContent=Math.min(remaining,p.pace)+' lots';el('recurring-time').textContent='Month '+first;
+    el('repeat').hidden=n<3;el('repeat').textContent='Then '+p.pace+' lots '+interval;
+    el('final-event').hidden=n<2;el('final-value').textContent=(remaining-(n-1)*p.pace)+' lots';el('final-time').textContent='Month '+last;
+    el('total').textContent=p.total.toLocaleString('en-US')+' lots sold';el('count').textContent=(n+1).toLocaleString('en-US')+' '+(n===0?'take':'takes');
+    el('esc-summary').replaceChildren();
+    if(p.enabled){el('esc-summary').append(document.createTextNode(p.rate+'% annual escalator'));const markup=document.createElement('span');markup.textContent='Additional markup: '+p.markup+'%';el('esc-summary').append(markup);const date=document.createElement('span');date.textContent='From '+new Date(p.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · example';el('esc-summary').append(date);}
+    else el('esc-summary').textContent='Price escalator is off for this phase.';
+  }
+  function changed(){phases[selected].dirty=true;syncPhases();el('status').textContent=(same?'All 10 phases':'Phase '+(selected+1))+' · Unsaved';render();}
+  el('same').addEventListener('change',()=>{same=el('same').checked;syncPhases();load();});
+  el('phase-lots').addEventListener('input',()=>{phases[selected].total=el('phase-lots').value===''?NaN:Number(el('phase-lots').value.replace(/,/g,''));phases[selected].dirty=true;el('status').textContent='Phase '+(selected+1)+' lot count · Unsaved';render();});
+  for(const key of ['initial','delay','pace','rate','markup','date'])el(key).addEventListener('input',()=>{const value=key==='date'?el(key).value:(el(key).value===''?NaN:Number(el(key).value.replace(/,/g,'')));phases[selected][key]=value;changed();});
+  root.querySelectorAll('[data-cadence]').forEach(b=>b.addEventListener('click',()=>{phases[selected].cadence=Number(b.dataset.cadence);changed();}));
+  el('wait').addEventListener('change',()=>{const p=phases[selected];p.waitChoice=el('wait').value;p.wait=p.waitChoice==='custom'?Number(el('custom').value):Number(p.waitChoice);changed();});
+  el('custom').addEventListener('input',()=>{phases[selected].wait=el('custom').value===''?NaN:Number(el('custom').value.replace(/,/g,''));changed();});
+  el('enabled').addEventListener('change',()=>{phases[selected].enabled=el('enabled').checked;changed();});
+  el('save').addEventListener('click',()=>{if(same)phases.forEach(p=>p.dirty=false);else phases[selected].dirty=false;el('status').textContent=(same?'All phases':'Phase '+(selected+1))+' saved in preview';});
+  function formatNumbers(){root.querySelectorAll('input[data-numeric]').forEach(input=>{if(input!==document.activeElement&&input.value!==''&&Number.isFinite(Number(input.value.replace(/,/g,'')))){const parts=input.value.replace(/,/g,'').split('.');parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');input.value=parts.join('.');}});}
+  root.querySelectorAll('input[type=number]').forEach(input=>{input.type='text';input.inputMode='decimal';input.dataset.numeric='true';input.addEventListener('focus',()=>input.value=input.value.replace(/,/g,''));input.addEventListener('blur',formatNumbers);});
+  load();
+  const design={preview:'side',density:'comfortable'};
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>{root.dataset.preview=design.preview;root.dataset.density=design.density;}});tweak.addSelect(design,'preview',{label:'Schedule position',options:[{label:'Beside inputs',value:'side'},{label:'Below inputs',value:'below'}]});tweak.addSelect(design,'density',{label:'Input spacing',options:['comfortable','compact']});}
+})();
+</script>
+</div>
