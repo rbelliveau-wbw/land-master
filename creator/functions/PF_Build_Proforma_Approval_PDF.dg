@@ -468,8 +468,53 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			page = page + thisapp.PF_PDF_Text(542,rowY,10,"bold",ink,timelineValues.get(timelineIndex));
 			page = page + thisapp.PF_PDF_Rect(370,rowY - 8,292,0.5,softLine,"",0);
 		}
+		initialTakeLabel = thisapp.PF_Packet_Number(ifnull(pf.Initial_Takedown,"").toString(),0);
+		recurringTakeLabel = thisapp.PF_Packet_Number(ifnull(pf.Lots_per_Month,"").toString(),0) + "/month";
+		if(ifnull(pf.Lot_Sales_Schedule_Version,0).toLong() == 2)
+		{
+			pdfPhases = Proforma_Phase[Pro_Forma == pf.ID] sort by Phase;
+			initialTakeLabel = "See phase schedule";
+			recurringTakeLabel = "See phase schedule";
+			firstPdfPhase = Proforma_Phase[(Pro_Forma == pf.ID) && (Phase == 1)];
+			if(firstPdfPhase != null)
+			{
+				firstInitial = ifnull(firstPdfPhase.Initial_Take_Lots,0).toLong();
+				firstRecurring = ifnull(firstPdfPhase.Lots_Per_Take,0).toLong();
+				firstHasRecurring = ifnull(firstPdfPhase.Total_Lots,0).toLong() > firstInitial;
+				firstFrequency = ifnull(firstPdfPhase.Take_Frequency,"Monthly").toString();
+				frequencySuffix = if(firstFrequency == "Quarterly","/quarter","/month");
+				allInitialSame = true;
+				allRecurringSame = true;
+				for each pdfPhase in pdfPhases
+				{
+					if(ifnull(pdfPhase.Initial_Take_Lots,0).toLong() != firstInitial)
+					{
+						allInitialSame = false;
+					}
+					phaseHasRecurring = ifnull(pdfPhase.Total_Lots,0).toLong() > ifnull(pdfPhase.Initial_Take_Lots,0).toLong();
+					if(phaseHasRecurring != firstHasRecurring || (phaseHasRecurring && (ifnull(pdfPhase.Lots_Per_Take,0).toLong() != firstRecurring || ifnull(pdfPhase.Take_Frequency,"").toString() != firstFrequency)))
+					{
+						allRecurringSame = false;
+					}
+				}
+				initialTakeLabel = thisapp.PF_Packet_Number(firstInitial.toString(),0);
+				if(pdfPhases.count() > 1)
+				{
+					initialTakeLabel = initialTakeLabel + if(allInitialSame," / phase"," (P1; varies)");
+				}
+				recurringTakeLabel = "No recurring take";
+				if(firstHasRecurring)
+				{
+					recurringTakeLabel = thisapp.PF_Packet_Number(firstRecurring.toString(),0) + frequencySuffix;
+				}
+				if(pdfPhases.count() > 1 && !allRecurringSame)
+				{
+					recurringTakeLabel = recurringTakeLabel + " (P1; varies)";
+				}
+			}
+		}
 		lotSaleLabels = {"SALE PRICE / FF","ESTIMATED LOT PRICE","INITIAL TAKEDOWN","RECURRING TAKEDOWN","LOT MIX"};
-		lotSaleValues = {thisapp.PF_Packet_Money(ifnull(pf.Sale_Price_FF,0).toString()),thisapp.PF_Packet_Money(lotSalePrice.toString()),thisapp.PF_Packet_Number(ifnull(pf.Initial_Takedown,"").toString(),0),thisapp.PF_Packet_Number(ifnull(pf.Lots_per_Month,"").toString(),0) + "/month",lotMixLabel};
+		lotSaleValues = {thisapp.PF_Packet_Money(ifnull(pf.Sale_Price_FF,0).toString()),thisapp.PF_Packet_Money(lotSalePrice.toString()),initialTakeLabel,recurringTakeLabel,lotMixLabel};
 		for each index lotSaleIndex in lotSaleLabels
 		{
 			rowY = 220 - lotSaleIndex * 36;

@@ -13,6 +13,14 @@
                  		header = Map();
                  		deleteStage = "";
 							op = ifnull(data.get("op"),"").toString().trim();
+							if(op == "phase_sales_capabilities")
+							{
+								resp.put("success",true);
+								resp.put("action","phase_sales_capabilities");
+								resp.put("savePhaseSales",true);
+								resp.put("finalizePhaseSales",true);
+								return resp.toString();
+							}
 							if(op == "save_phase_sales")
 							{
 								if(pfId == "" || !pfId.isNumber())
@@ -203,6 +211,109 @@
 								resp.put("id",pfId);
 								resp.put("phaseIds",retainedIds);
 								resp.put("action","phase_sales_saved");
+								return resp.toString();
+							}
+							if(op == "finalize_phase_sales")
+							{
+								if(pfId == "" || !pfId.isNumber())
+								{
+									resp.put("success",false);
+									resp.put("error","A saved Pro Forma ID is required to finish phase sales.");
+									return resp.toString();
+								}
+								finalPf = Add_Pro_Forma[ID == pfId.toLong()];
+								if(finalPf == null)
+								{
+									resp.put("success",false);
+									resp.put("error","Pro Forma was not found while finishing phase sales.");
+									return resp.toString();
+								}
+								finalApprovalRows = Budget_Approvals[Proforma == finalPf.ID];
+								finalApprovalComplete = finalApprovalRows.count() > 0;
+								for each finalApprovalRow in finalApprovalRows
+								{
+									if(ifnull(finalApprovalRow.Status,"Not Sent").toString() != "Approved")
+									{
+										finalApprovalComplete = false;
+									}
+								}
+								if(finalApprovalComplete || ifnull(finalPf.Status,"").toString() == "Approved")
+								{
+									resp.put("success",false);
+									resp.put("error","Approved Pro Formas cannot finish a phase-sales change.");
+									return resp.toString();
+								}
+								if(ifnull(finalPf.Lot_Sales_Schedule_Version,0).toLong() != 2)
+								{
+									resp.put("success",false);
+									resp.put("error","The phase-sales schedule has not been saved for this Pro Forma.");
+									return resp.toString();
+								}
+								finalPhases = Proforma_Phase[Pro_Forma == finalPf.ID] sort by Phase;
+								if(finalPhases.count() != ifnull(finalPf.Phases,0).toLong() || finalPhases.count() < 1)
+								{
+									resp.put("success",false);
+									resp.put("error","The phase rows do not match the project phase count; legacy inputs were kept.");
+									return resp.toString();
+								}
+								finalPhaseNumber = 1;
+								finalAllocated = 0;
+								for each finalPhase in finalPhases
+								{
+									if(ifnull(finalPhase.Phase,0).toLong() != finalPhaseNumber || ifnull(finalPhase.Total_Lots,0).toLong() < 1 || ifnull(finalPhase.Initial_Take_Lots,0).toLong() < 1 || ifnull(finalPhase.Initial_Take_Lots,0).toLong() > ifnull(finalPhase.Total_Lots,0).toLong())
+									{
+										resp.put("success",false);
+										resp.put("error","Phase " + finalPhaseNumber + " is incomplete; legacy inputs were kept.");
+										return resp.toString();
+									}
+									finalAllocated = finalAllocated + finalPhase.Total_Lots.toLong();
+									finalPhaseNumber = finalPhaseNumber + 1;
+								}
+								if(finalAllocated != ifnull(finalPf.Lots,0).toLong())
+								{
+									resp.put("success",false);
+									resp.put("error","The phase lots do not match project lots; legacy inputs were kept.");
+									return resp.toString();
+								}
+								finalMonths = Proforma_Months[(Proforma == finalPf.ID) && (Master_Month == true)];
+								finalSold = 0;
+								finalMonthSales = 0.0;
+								for each finalMonth in finalMonths
+								{
+									finalSold = finalSold + ifnull(finalMonth.Lots_Sold,0).toLong();
+									finalMonthSales = finalMonthSales + ifnull(finalMonth.Finished_Lot_Sales,0).toDecimal();
+								}
+								if(finalMonths.count() < 1 || finalSold != ifnull(finalPf.Lots,0).toLong())
+								{
+									resp.put("success",false);
+									resp.put("error","The recalculated month schedule has not sold every lot; legacy inputs were kept.");
+									return resp.toString();
+								}
+								if(finalMonthSales.round(2) != ifnull(finalPf.Gross_Sales,0).toDecimal().round(2))
+								{
+									resp.put("success",false);
+									resp.put("error","The recalculated sales do not match the Pro Forma total; legacy inputs were kept.");
+									return resp.toString();
+								}
+								oldInitial = finalPf.Initial_Takedown;
+								oldPace = finalPf.Lots_per_Month;
+								try
+								{
+									finalPf.Initial_Takedown = null;
+									finalPf.Lots_per_Month = null;
+								}
+								catch (clearError)
+								{
+									finalPf.Initial_Takedown = oldInitial;
+									finalPf.Lots_per_Month = oldPace;
+									resp.put("success",false);
+									resp.put("error","The phase schedule saved, but the legacy inputs could not be cleared: " + clearError.toString());
+									return resp.toString();
+								}
+								resp.put("success",true);
+								resp.put("id",pfId);
+								resp.put("action","phase_sales_finalized");
+								resp.put("legacyCleared",true);
 								return resp.toString();
 							}
                  		if(op == "quick_create_company")

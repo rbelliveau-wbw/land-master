@@ -25,10 +25,14 @@ const format={
   fmtPct:(v,dec=2)=>`${Number(v).toFixed(dec)}%`,
   num:v=>Number(v||0),
   esc:v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;'),
-  proformaInputRows:()=>[['Section','Field','Value']]
+  xOwners:()=>'',
+  xDate:()=>'',
+  proformaLifecycleStatus:()=>'',
+  LOI_FIELD_DEFS:[]
 };
 const ctx=vm.createContext({...format,S:{ed:{calc:null}},document:{getElementById:()=>null}});
-vm.runInContext(widgetFunction('buildProformaWorkbook')+'\n'+widgetFunction('renderMonthsPane'),ctx);
+vm.runInContext(widgetFunction('phaseSalesDisplaySummary')+'\n'+widgetFunction('proformaInputRows')+'\n'
+  +widgetFunction('buildProformaWorkbook')+'\n'+widgetFunction('renderMonthsPane'),ctx);
 const X={utils:{
   book_new:()=>({SheetNames:[],Sheets:{}}),
   aoa_to_sheet:rows=>({rows}),
@@ -66,6 +70,22 @@ assert.equal(legacyPhaseRow[legacyPhaseHead.indexOf('Escalator Enabled')],'', 'l
 assert.equal(legacyPhaseRow[legacyPhaseHead.indexOf('Initial Take Lots')],'');
 assert.equal(legacyMonthRow[legacyMonthHead.indexOf('Base Lot Sales')],'', 'legacy month fields stay blank');
 assert.equal(legacyMonthRow[legacyMonthHead.indexOf('Escalator Applied %')],'');
+
+const phaseModel={Lot_Sales_Schedule_Version:'2',Initial_Takedown:null,Lots_per_Month:null,
+  phaseSales:[{Initial_Take_Lots:35,Lots_Per_Take:20,Take_Frequency:'Monthly'},
+    {Initial_Take_Lots:20,Lots_Per_Take:20,Take_Frequency:'Monthly'}]};
+const phaseInputs=ctx.proformaInputRows(phaseModel,{});
+assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Phase 1 Initial Take'&&row[2]===35));
+assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Phase 1 Recurring Take'&&row[2]===20));
+assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Later Phases'&&row[2].startsWith('Different')));
+assert.ok(!phaseInputs.some(row=>row[1]==='Initial Takedown'||row[1]==='Lots per Month'),
+  'converted inputs must not export blank legacy take fields');
+const draftInputs=ctx.proformaInputRows({...phaseModel,Lot_Sales_Schedule_Version:'1',_phaseSalesDraft:true},{});
+assert.ok(draftInputs.some(row=>row[1]==='Phase 1 Initial Take'&&row[2]===35),
+  'in-memory phase drafts need the same summary before Save');
+const legacyInputs=ctx.proformaInputRows({Initial_Takedown:35,Lots_per_Month:20},{});
+assert.ok(legacyInputs.some(row=>row[1]==='Initial Takedown'&&row[2]===35));
+assert.ok(legacyInputs.some(row=>row[1]==='Lots per Month'&&row[2]===20));
 
 const host={innerHTML:''};
 ctx.document.getElementById=()=>host;
