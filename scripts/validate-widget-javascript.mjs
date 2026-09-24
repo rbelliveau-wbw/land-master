@@ -381,3 +381,4 @@ if (errors.length) {
 }
 
 console.log(`Parsed JavaScript and verified critical-error reporting for ${widgets.length} widgets.`);
+await import('./test-budget-approval-progress.mjs');

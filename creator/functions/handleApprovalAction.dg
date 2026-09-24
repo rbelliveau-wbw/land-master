@@ -48,7 +48,7 @@
                  		return "Budget not found.";
                  	}
                  	/********* LOAD CURRENT APPROVAL *********/
-                 	currentRows = Budget_Approvals[ID == vApprovalId.toLong()];
+                 	currentRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
                  	if(currentRows.count() == 0)
                  	{
                  		return "Approval row not found.";
@@ -81,6 +81,159 @@
                  	if(vCurrentSort == 0)
                  	{
                  		return "Sort Order is blank for " + vCurrentRole + ".";
+                 	}
+                 	/********* TARGETED APPROVAL RECONCILIATION *********/
+                 	// Check is read-only. Repair is idempotent and may be called only once by the widget.
+                 	// Sent_Date is the delivery marker: sendApprovalEmail stamps it after sendmail succeeds.
+                 	if(vAction == "Check" || vAction == "Repair")
+                 	{
+                 		repairError = "";
+                 		trackRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+                 		nextId = "";
+                 		nextOrder = 999999;
+                 		for each  row in trackRows
+                 		{
+                 			rowOrder = ifnull(row.Sort_Order,0).toLong();
+                 			if(rowOrder > vCurrentSort && rowOrder < nextOrder)
+                 			{
+                 				nextOrder = rowOrder;
+                 				nextId = row.ID.toString();
+                 			}
+                 		}
+                 		if(vAction == "Repair" && vCurrentStatus == "Approved")
+                 		{
+                 			if(nextId != "")
+                 			{
+                 				for each  row in trackRows
+                 				{
+                 					if(row.ID.toString() != nextId && ifnull(row.Status,"").trim() == "Pending")
+                 					{
+                 						row.Status="Not Sent";
+                 						row.Sent_Date=null;
+                 					}
+                 				}
+                 				nextRepairRows = Budget_Approvals[ID == nextId.toLong()];
+                 				for each  nextRepair in nextRepairRows
+                 				{
+                 					if(ifnull(nextRepair.Status,"").trim() != "Pending")
+                 					{
+                 						nextRepair.Status="Pending";
+                 						nextRepair.Sent_Date=null;
+                 						nextRepair.Responded_Date=null;
+                 					}
+                 					if(nextRepair.Sent_Date == null)
+                 					{
+                 						try
+                 						{
+                 							thisapp.sendApprovalEmail(vBudgetId.toLong(),nextId.toLong());
+                 						}
+                 						catch (sendError)
+                 						{
+                 							repairError = "The approval email could not be sent: " + sendError.toString();
+                 						}
+                 					}
+                 				}
+                 			}
+                 			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 		}
+                 		// Read the specific track again after a repair; never fetch unrelated budgets.
+                 		trackRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+                 		pendingCount = 0;
+                 		approvedCount = 0;
+                 		rowCount = 0;
+                 		nextStatus = "";
+                 		nextRole = "";
+                 		nextEmail = "";
+                 		nextSentDate = "";
+                 		for each  row in trackRows
+                 		{
+                 			rowCount = rowCount + 1;
+                 			rowStatus = ifnull(row.Status,"").trim();
+                 			if(rowStatus == "Pending")
+                 			{
+                 				pendingCount = pendingCount + 1;
+                 			}
+                 			if(rowStatus == "Approved")
+                 			{
+                 				approvedCount = approvedCount + 1;
+                 			}
+                 			if(row.ID.toString() == nextId)
+                 			{
+                 				nextStatus = rowStatus;
+                 				nextRole = ifnull(row.Title,"").trim();
+                 				nextEmail = ifnull(row.Approver,"").trim();
+                 				if(row.Sent_Date != null)
+                 				{
+                 					nextSentDate = row.Sent_Date.toString();
+                 				}
+                 			}
+                 		}
+                 		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+                 		parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+                 		if(vApprovalType == "Construction")
+                 		{
+                 			parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+                 		}
+                 		financialFinalized = false;
+                 		if(nextId == "" && rowCount > 0 && approvedCount == rowCount)
+                 		{
+                 			financialFinalized = true;
+                 			grandFinalCheck = 0.0;
+                 			budgetCategories = Budget_Category[Budget == vBudgetId.toLong()];
+                 			for each  cat in budgetCategories
+                 			{
+                 				dept = ifnull(cat.Deparment,"").trim().toLowerCase();
+                 				inTrack = (vApprovalType == "Construction" && dept.contains("construction")) || (vApprovalType == "Development" && (dept.contains("development") || dept.contains("engineering")));
+                 				itemFinal = 0.0;
+                 				catItems = Budget_Item[Budget_Category == cat.ID];
+                 				for each  item in catItems
+                 				{
+                 					itemFinal = itemFinal + ifnull(item.Budget_Ttl,0).toDecimal();
+                 					if(inTrack && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
+                 					{
+                 						financialFinalized = false;
+                 					}
+                 				}
+                 				catFinal = ifnull(cat.Budget_Total,0).toDecimal();
+                 				if(catFinal != itemFinal)
+                 				{
+                 					financialFinalized = false;
+                 				}
+                 				grandFinalCheck = grandFinalCheck + catFinal;
+                 			}
+                 			if(grandFinalCheck != ifnull(budgetRec.Budget_Grand_Total,0).toDecimal())
+                 			{
+                 				financialFinalized = false;
+                 			}
+                 		}
+                 		if(vAction == "Repair" && nextId == "" && financialFinalized && parentStatus != "Approved")
+                 		{
+                 			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+                 			budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+                 			parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+                 			if(vApprovalType == "Construction")
+                 			{
+                 				parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+                 			}
+                 		}
+                 		progress = Map();
+                 		progress.put("ok",true);
+                 		progress.put("budgetId",vBudgetId);
+                 		progress.put("approvalId",vApprovalId);
+                 		progress.put("track",vApprovalType);
+                 		progress.put("currentStatus",ifnull(currentApproval.Status,"").trim());
+                 		progress.put("nextId",nextId);
+                 		progress.put("nextStatus",nextStatus);
+                 		progress.put("pendingCount",pendingCount);
+                 		progress.put("role",nextRole);
+                 		progress.put("address",nextEmail);
+                 		progress.put("emailSent",nextSentDate != "");
+                 		progress.put("sentDate",nextSentDate);
+                 		progress.put("allApproved",rowCount > 0 && approvedCount == rowCount);
+                 		progress.put("parentStatus",parentStatus);
+                 		progress.put("financialFinalized",financialFinalized);
+                 		progress.put("repairError",repairError);
+                 		return progress.toString();
                  	}
                  	/********* FORMAT NOTE *********/
                  	vNote = vNote.replaceAll("\r\n","\n");
@@ -150,7 +303,8 @@
                  			for each  nextApproval in nextRows
                  			{
                  				nextApproval.Status="Pending";
-                 				nextApproval.Sent_Date=zoho.currentdate;
+                 				// Only sendApprovalEmail may stamp Sent_Date after sendmail succeeds.
+                 				nextApproval.Sent_Date=null;
                  				nextApproval.Responded_Date=null;
                  			}
                  			emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),nextApprovalId.toLong());

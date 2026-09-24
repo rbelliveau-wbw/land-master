@@ -1,6 +1,14 @@
 
 # Budget Module
 
+## Approval progress and reconciliation (122.27.14)
+
+Budget track Approve opens an in-widget dialog immediately. It shows Recording approval, Activating the next approver, and Sending approval email; the final approver sees Completing approval track and Finalizing budget instead. The dialog polls only the existing `Handle_Approval_Action` Custom API with `approvalAction: "Check"` about once per second. The updated `handleApprovalAction` function returns the scoped approval row and track snapshot. Success requires the triggering row Approved, its immediate successor as the only Pending row, and both `emailSent` and `sentDate`. `emailSent` is derived from `Budget_Approvals.Sent_Date`, which is now cleared when the successor activates and stamped only by `sendApprovalEmail` after `sendmail` succeeds. A final step also requires every track row Approved, no Pending row, the `Add_Budget` track status Approved, and reconciled `Budget_Item`, `Budget_Category`, and budget Final/Unapproved totals.
+
+After five seconds without verification, the widget makes one `Repair` call through the same API. It can activate the immediate successor and send its missing email, or resync a completed track's parent status. It never replays financial finalization on a partial result, because that would risk clearing Final amounts. The modal ends after 20 seconds with a notification warning (active successor, missing email) or a conflict/error, offering Retry email or Try again as appropriate. Escape and Close work only after a terminal state; approval actions remain disabled while the dialog is open. The API keeps its existing POST name, OAuth scope, and argument list; no new Creator form, field, report, or Custom API registration is needed.
+
+Creator deployment is required: save `handleApprovalAction` in Development, publish only that function through Stage and Production, then promote the widget release. Regression: middle/final approval, delayed routing, email failure and retry, wrong or multiple Pending rows, stale action, final financial mismatch, request/API failure, timeout, duplicate click, keyboard focus/Tab/Escape, and narrow viewport. Rollback: map Budget Manager to `122.27.13` and restore the previous `handleApprovalAction` body from git through Creator publication.
+
 ## Archive and delete controls (122.27.12)
 
 Each phase row shows a three-dot menu before View. Archive/Restore and Delete are always present; users without `User_Access.Delete_Archive_Budgets` see both disabled. The server repeats the permission check through `Manage_Budget`, so the UI is not the security boundary.

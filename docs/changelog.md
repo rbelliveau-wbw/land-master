@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-23 — Budget approval progress (122.27.14)
+
+Budget Manager verifies each approval's successor, email delivery stamp, and final track/financial state in an accessible progress dialog. The existing `Handle_Approval_Action` API gains targeted Check and one Repair mode; `sendApprovalEmail` and `syncBudgetApprovalStatus` remain the routing helpers. Promote the Creator function before the widget release. Rollback: Budget Manager `122.27.13` and the prior Creator function body.
+
 ## 2026-09-22 — Budget Manager 122.27.13 menu layering
 
 - The phase-row three-dot menu now renders as a viewport-level fixed layer, repositions with scrolling/resizing, and flips above when needed, so project-card overflow cannot clip it.

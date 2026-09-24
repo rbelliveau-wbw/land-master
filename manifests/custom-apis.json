@@ -114,6 +114,7 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "handleApprovalAction",
+      "notes": "POST, OAuth2, All users. Existing {budgetId,approvalId,approvalAction,approvalNote}; approvalAction Check returns a targeted JSON-string snapshot of the triggering budget track, immediate successor, email delivery stamp, parent track, and financial finalization. Repair makes one idempotent routing/email attempt after an approved row; no new Custom API registration is required.",
       "confidence": "inferred-name-match"
     },
     {
