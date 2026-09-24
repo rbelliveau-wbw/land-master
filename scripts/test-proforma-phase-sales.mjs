@@ -103,6 +103,62 @@ assert.equal(adopted.totals.Total_Income,535000);
 assert.equal(adopted.months.reduce((s,r)=>s+(r.Finished_Lot_Sales||0),0),535000);
 assert.equal(adopted.months.find(r=>r.Lots_Sold===10).Escalator_Interest_Accrued,25000);
 assert.equal(adopted.schedule.takedownStartMonth,3);
+assert.match(widget,/<button data-pane="sched">Project Schedule<\/button>\s*<button data-pane="lotsales">Lot Sales<\/button>/,
+  'Lot Sales must be its own tab immediately after Project Schedule');
+assert.match(widget,/data-pane="lotsales"[^\n]*panePhaseSales\(\)/,
+  'the Lot Sales pane must render the phase editor');
+assert.doesNotMatch(widgetFunction('paneSchedule'),/panePhaseSales\(/,
+  'Project Schedule must no longer embed the Lot Sales editor');
+assert.match(widget,/<script src="phase-month-picker\.js"><\/script>/);
+assert.match(widget,/<link rel="stylesheet" href="phase-month-picker\.css">/);
+assert.match(widgetFunction('phaseMonthTrigger'),/data-month-kind/);
+assert.match(widgetFunction('paneSchedule'),/phaseMonthTrigger\('project',m\.purchaseDate\)/,
+  'Project Start should use the custom month picker');
+assert.match(widgetFunction('phaseSalesField'),/phaseMonthTrigger\('esc',v,i\)/,
+  'Esc Start Date should use the custom month picker');
+assert.doesNotMatch(widgetFunction('paneSchedule'),/type="month"/,
+  'Project Start should not fall back to the native month input');
+assert.match(widgetFunction('panePhaseSales'),/class="ps-frequency"/,
+  'Monthly and Quarterly should use the segmented pill control');
+assert.match(widget,/PFMonthPicker\.open\(monthTrigger,selectedMonth,function\(month\)/,
+  'the custom month trigger should open the month picker');
+assert.match(widget,/m\.purchaseDate=parseDateAny\(month\)/,
+  'Project Start selection should write the selected month to the model');
+assert.match(widget,/phaseRow\.Esc_Start_Date=month\+"-01"/,
+  'Esc Start selection should persist the first day of the selected month');
+
+// The Esc Start default is the first day of each phase's first lot-sale month.
+const monthContext=vm.createContext({PhaseSalesEngine:engine});
+vm.runInContext(['num','intN','ymAdd','ymToInput','phaseSalesAdopted','phaseSalesPlan',
+  'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed']
+  .map(widgetFunction).join('\n'),monthContext);
+const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
+  Engineering_Delay_Months:0,Engineering_Length_Months:1,
+  Construction_Delay_Months:0,Construction_Length:1,
+  Sale_Price_FF:1000,Lot_Size_Ft:50,purchaseDate:{y:2027,m:1}};
+const seeded=monthContext.phaseSalesSeed(monthModel);
+assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-03-01','2027-06-01']);
+seeded[0].Esc_Start_Date='2027-03-15';
+seeded[1].Esc_Start_Date='';
+monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
+assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
+  'do not overwrite an existing saved Esc Start Date');
+assert.equal(seeded[1].Esc_Start_Date,'2027-06-01');
+monthModel.purchaseDate={y:2027,m:2};
+seeded[1].Esc_Start_Date='';
+monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
+assert.equal(seeded[1].Esc_Start_Date,'2027-07-01',
+  'a blank Esc Start default follows a changed Project Start month');
+monthModel.Lot_Sales_Schedule_Version='2';
+monthModel.phaseSales=seeded;
+seeded[0]._autoEscStart=false;
+seeded[1]._autoEscStart=true;
+monthModel.purchaseDate={y:2027,m:3};
+monthContext.phaseSalesRefreshAutoEscDates(monthModel);
+assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
+  'Project Start changes must preserve a user-chosen Esc date');
+assert.equal(seeded[1].Esc_Start_Date,'2027-08-01',
+  'Project Start changes should update untouched auto-derived Esc dates');
 assert.match(widget,/op:"save_phase_sales"/);
 assert.match(widget,/Phase-sales server schedule verified/);
 assert.match(widget,/Phase-level lot sales can only be saved in DEV/);
