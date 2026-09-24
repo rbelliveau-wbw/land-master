@@ -1,6 +1,6 @@
 # Approval progress pattern
 
-This is Robby's preferred interaction for sending, advancing, and completing approvals in Land Master. Read this document **before designing or changing an approval flow in any module**, including a new module. The module's business rules determine who approves and what is finalized; this document defines how the user sees and safely recovers from that work.
+This is Robby's preferred interaction for sending, advancing, rejecting, and completing approvals in Land Master. Read this document **before designing or changing an approval flow in any module**, including a new module. The module's business rules determine who approves and what is finalized; this document defines how the user sees and safely recovers from that work.
 
 ## The experience
 
@@ -20,6 +20,10 @@ This is Robby's preferred interaction for sending, advancing, and completing app
 | Pro Forma Send for Approvals | Recording approval request | Activating the first approver | Sending approval email |
 | Budget Modification, create or submit Draft | Recording modification | Activating the first approver | Sending approval email |
 | Contract Send for Approvals | Recording approval request | Activating approvers | Sending approval emails |
+| Budget Reject | Recording rejection | Returning to the previous approver | Sending return email |
+| Pro Forma Reject | Recording rejection | Restarting approval at VP | Sending return email |
+| Budget Modification Reject | Recording rejection | Closing approval chain | Notifying prior approvers |
+| Contract Legal LOI Reject | Recording Legal rejection | Returning LOI to Pro Forma | Notifying Acquisition |
 
 Use the equivalent three short, truthful phases for a new object. A phase is Done only when the targeted persisted state supports it; an API call returning without an error is not proof of routing, delivery, or finalization.
 
@@ -42,6 +46,10 @@ Use the equivalent three short, truthful phases for a new object. A phase is Don
 | Pro Forma Send for Approvals | Parent is **Pending Approval** and locked; a chain exists; the first row is the **only Pending** row; no row is Approved; `Sent_Date`, role, and address are populated. |
 | Budget Modification create or Draft submit | Modification is **Submitted**; linked approval rows exist; the first row is the **only Pending** row; no row is Approved; `Sent_Date`, role, and address are populated. Both entry paths use the same progress flow. |
 | Contract Send for Approvals | The contract is **Awaiting Approvals**; every approver selected at submission is **Awaiting Approval**; each has `Last_Reminder_Date` stamped by the email helper after `sendmail`; recipient addresses are known. The Contract Custom API checks only the selected row IDs and can repair unsent rows once. |
+| Budget Reject | The triggering row is **Rejected**; its immediate predecessor is the only **Pending** row in the track; the parent track is **Pending**; and that predecessor has a role, address, and `Sent_Date` stamped after the return email succeeds. `RepairReject` can activate only that predecessor and send only missing mail. |
+| Pro Forma Reject | The rejecting row is **Rejected** (or the first row is back to **Pending** after rejecting itself); VP is the only Pending row, no row is Approved, the parent is **Pending Approval**, and VP has a delivery stamp, role, and address. For a first-row self-restart, a lost response cannot always be distinguished from a previously saved identical note; show an error instead of claiming success or blindly resending. |
+| Budget Modification Reject | The targeted row and parent modification are **Rejected**, its note matches, and no row remains Pending. The email result can confirm notifications during the active request. There is no persistent rejection-notification stamp; an ambiguous email response yields a warning and cannot be resent automatically. |
+| Contract Legal LOI Reject | The target Pro Forma has `LOI_Legal_Status=Rejected`, the Legal note matches, and the approval token is cleared. The write response confirms an Acquisition notification only after `sendmail` succeeds. If the response is lost, show a warning; a guarded retry may repeat the decision only while the LOI is still Pending Approval. |
 
 For a new module, write its equivalent parent, row, delivery, and finalization predicates before building the modal. Do not copy Budget's financial rules or Pro Forma's role order into an unrelated object.
 
@@ -54,6 +62,8 @@ For a new module, write its equivalent parent, row, delivery, and finalization p
 | Conflict/error | Explain the failed or unknown verification concisely, without claiming routing succeeded. Examples: **“Approval was recorded, but routing or finalization could not be verified.”** or **“The approval could not be verified. Check its status before trying again.”** Offer **Try again** and **Close**. |
 
 `Try again` must first re-read the targeted persisted state. It may perform one safe, idempotent repair or retry appropriate to that state; it must not blindly repeat a create, send duplicate mail, advance a second successor, or replay partial financial finalization. If a create response lacks an ID, resolve a unique persisted record before reconciling; otherwise show an error that asks the user to inspect the list. The next retry attempt still has its own deadline and terminal result.
+
+For terminal rejections with no persisted notification stamp, use **Try again** to recheck the record. Do not label it **Retry email** or resend an ambiguous notification. A successful status check proves the rejection, not email delivery.
 
 The modal can show a failure on phase 1, 2, or 3 according to what is known. A notification warning marks routing Done and email Needs retry. Never mark a later phase Done based only on elapsed time.
 

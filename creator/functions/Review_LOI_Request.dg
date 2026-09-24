@@ -16,6 +16,32 @@
                  			result.put("message","The Pro Forma record could not be found.");
                  			return result.toString();
                  		}
+			if(ifnull(decision,"").trim().toUpperCase() == "CHECK_REJECT")
+			{
+				// The token is cleared on a completed decision. The exact Legal note
+				// identifies that result without exposing other Pro Forma fields.
+				checkStatus = ifnull(pf.LOI_Legal_Status,"").trim();
+				checkNote = ifnull(legalNote,"").trim();
+				checkToken = ifnull(tokenId,"").trim();
+				if(checkStatus == "Pending Approval" && (checkToken == "" || checkToken != ifnull(pf.LOI_Approval_Token,"").trim()))
+				{
+					result.put("success",false);
+					result.put("message","The LOI approval token is invalid or expired.");
+					return result.toString();
+				}
+				if(checkStatus == "Rejected" && (checkNote == "" || checkNote != ifnull(pf.LOI_Legal_Note,"").trim()))
+				{
+					result.put("success",false);
+					result.put("message","The rejection note did not match this LOI.");
+					return result.toString();
+				}
+				result.put("success",true);
+				result.put("proformaId",pf.ID.toString());
+				result.put("status",checkStatus);
+				result.put("noteMatches",checkStatus == "Rejected" && checkNote == ifnull(pf.LOI_Legal_Note,"").trim());
+				result.put("tokenCleared",ifnull(pf.LOI_Approval_Token,"").trim() == "");
+				return result.toString();
+			}
                  		if(ifnull(pf.LOI_Legal_Status,"") != "Pending Approval")
                  		{
                  			result.put("success",false);
@@ -42,6 +68,7 @@
                  			pf.LOI_Legal_Status="Rejected";
                  			pf.LOI_Legal_Note=noteValue;
                  			pf.LOI_Approval_Token="";
+				notificationSent = false;
                  			if(pf.Acquisition_Email != null && pf.Acquisition_Email.trim() != "")
                  			{
                  				sendmail
@@ -51,11 +78,14 @@
                  					subject :"LOI Rejected by Legal - " + ifnull(pf.Name,"Pro Forma")
                  					message :"Legal rejected the LOI for <b>" + ifnull(pf.Name,"Pro Forma") + "</b>.<br><br><b>Legal note:</b><br>" + noteValue
                  				]
+				notificationSent = true;
                  			}
                  			result.put("success",true);
                  			result.put("decision","REJECT");
                  			result.put("message","LOI rejected and returned to the Pro Forma.");
                  			result.put("proformaId",pf.ID.toString());
+				result.put("notificationSent",notificationSent);
+				result.put("notificationAddress",ifnull(pf.Acquisition_Email,"").trim());
                  			return result.toString();
                  		}
                  		if(decisionValue != "APPROVE")

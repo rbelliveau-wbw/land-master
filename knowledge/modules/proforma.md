@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Rejection progress and button (1.80.16)
+
+Reject keeps a white, red-outlined button at rest and on hover. With a required note, it opens the existing paced approval modal. `Handle_Proforma_Approval_Action` accepts `CheckReject` and `RepairReject` through its existing Custom API. Success requires the rejecting row's note, one Pending VP row, no Approved rows, Pending Approval parent status, and VP role, address, and delivery stamp. A first-row self-restart uses the acknowledged write or a changed stamp to avoid mistaking a previously saved identical note for a completed rejection. The repair can send missing mail only for a distinct rejected row. Notification or route failures remain visible until dismissal. Creator deployment: `Handle_Proforma_Approval_Action`; no new fields or Custom APIs. Regression: rejection from VP and later steps, email failure, owner notification failure, ambiguous response, keyboard and duplicate click. Rollback: widget `1.80.15` and prior function body.
+
 ## Construction gate polish (1.80.15, 2026-09-24)
 
 The widget gate drops the unclear “Pro Forma development preview” line and uses a compact hard-hat graphic with restrained blue and amber accents. The access code is masked in the input; the code, tab-session unlock behavior, and DEV-only phase-sales save boundary are unchanged. The legacy-to-phase preview now says why the one-time change is needed and clarifies that Approve stages the mapping in memory; only Save persists it. This is still a client-side UI gate, not authentication. Development and Production map to `1.80.15`; Stage remains at `1.80.13`. No Creator forms, fields, functions, or Custom APIs change. Regression: fresh-session gate layout at desktop and phone widths, keyboard entry, incorrect and correct code, tab-session persistence, legacy Pro Forma navigation after unlock, suggested-phase copy and staging before Save. Rollback: map Development and Production back to `1.80.14`.

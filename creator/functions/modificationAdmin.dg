@@ -15,6 +15,57 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
 	// (repair is also invoked automatically on inconsistency detection).
 	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vAction == "check-reject" || vAction == "repair-reject")
+	{
+		vModId = modificationId.toLong();
+		vRowId = ifnull(reference,"").trim();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null || vRowId == "")
+		{
+			return "ERROR: Modification or approval row not found.";
+		}
+		targetRows = Budget_Approvals[ID == vRowId.toLong() && Budget_Modification == vModId && Type1 == "Modification"];
+		if(targetRows.count() != 1)
+		{
+			return "ERROR: Target approval row not found.";
+		}
+		targetRow = null;
+		for each  oneRow in targetRows
+		{
+			targetRow = oneRow;
+		}
+		if(vAction == "repair-reject" && ifnull(targetRow.Status,"").trim() == "Rejected" && ifnull(modRec.Status,"").trim() == "Submitted")
+		{
+			modRec.Status="Rejected";
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		result = Map();
+		result.put("ok",true);
+		result.put("modificationId",vModId.toString());
+		result.put("approvalId",vRowId);
+		result.put("status",ifnull(modRec.Status,"").trim());
+		result.put("currentStatus",ifnull(targetRow.Status,"").trim());
+		result.put("noteMatches",ifnull(targetRow.Approval_Notes,"").trim() == ifnull(reason,"").trim());
+		result.put("rowCount",rowCount);
+		result.put("pendingCount",pendingCount);
+		result.put("approvedCount",approvedCount);
+		return result.toString();
+	}
 	if(vAction == "check-send" || vAction == "repair-send")
 	{
 		vModId = modificationId.toLong();

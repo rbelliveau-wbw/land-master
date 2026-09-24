@@ -42,6 +42,65 @@
                  			response.put("message","Approval row not found for this Pro Forma.");
                  			return response;
                  		}
+		if(actionText == "CheckReject" || actionText == "RepairReject")
+		{
+			chainRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+			firstRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == 1];
+			if(firstRow.ID == null)
+			{
+				response.put("success",false);
+				response.put("message","The first approval step could not be found.");
+				return response;
+			}
+			isFirst = firstRow.ID.toString() == approvalIdText;
+			noteMatches = noteText != "" && ifnull(row.Approval_Notes,"").toString() == noteText;
+			if(actionText == "RepairReject" && ifnull(firstRow.Status,"") == "Pending" && firstRow.Sent_Date == null && noteMatches && ifnull(row.Status,"") == "Rejected")
+			{
+				emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Rejected",noteText,ifnull(row.Title,"Approver").toString());
+				if(ifnull(emailResult.get("success"),false) != true)
+				{
+					response.put("repairError",ifnull(emailResult.get("message"),"The restart email could not be sent."));
+				}
+			}
+			chainRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+			firstRow = Budget_Approvals[Proforma == proformaIdLong && Sort_Order == 1];
+			pendingCount = 0;
+			approvedCount = 0;
+			rowCount = 0;
+			for each  chainRow in chainRows
+			{
+				rowCount = rowCount + 1;
+				if(ifnull(chainRow.Status,"") == "Pending")
+				{
+					pendingCount = pendingCount + 1;
+				}
+				if(ifnull(chainRow.Status,"") == "Approved")
+				{
+					approvedCount = approvedCount + 1;
+				}
+			}
+			response.put("success",true);
+			response.put("proformaId",proformaIdText);
+			response.put("approvalId",approvalIdText);
+			response.put("status",ifnull(pf.Status,"").toString());
+			response.put("currentStatus",ifnull(row.Status,"").toString());
+			response.put("noteMatches",noteMatches);
+			response.put("isFirst",isFirst);
+			response.put("firstId",firstRow.ID.toString());
+			response.put("firstStatus",ifnull(firstRow.Status,"").toString());
+			response.put("rowCount",rowCount);
+			response.put("pendingCount",pendingCount);
+			response.put("approvedCount",approvedCount);
+			response.put("role",ifnull(firstRow.Title,"").toString());
+			response.put("address",ifnull(firstRow.Approver,"").toString());
+			firstSent = "";
+			if(firstRow.Sent_Date != null)
+			{
+				firstSent = firstRow.Sent_Date.toString();
+			}
+			response.put("sentDate",firstSent);
+			return response;
+		}
                  		if(actionText == "Pending")
                  		{
                  			if(row.Status != "Pending")
@@ -156,7 +215,7 @@
                  			// Step 1 is pending again. When step 1 itself rejected, it simply re-opens with its
                  			// own note attached.
                  			firstRow.Status="Pending";
-                 			firstRow.Sent_Date=zoho.currenttime;
+					firstRow.Sent_Date=null;
                  			firstRow.Responded_Date=null;
                  			emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Rejected",noteText,rejectedRole);
                  			if(ifnull(emailResult.get("success"),false) != true)

@@ -176,6 +176,109 @@
 		startProgress.put("emailSent",firstSentDate != "");
 		return startProgress.toString();
                  	}
+	/********* TARGETED REJECTION RECONCILIATION *********/
+	// A rejection returns this track to its immediate predecessor. Repair never
+	// repeats the rejection; it only restores that predecessor and missing mail.
+	if(vAction == "CheckReject" || vAction == "RepairReject")
+	{
+		rejectRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		previousId = "";
+		previousOrder = 0;
+		for each  rejectRow in rejectRows
+		{
+			rejectOrder = ifnull(rejectRow.Sort_Order,0).toLong();
+			if(rejectOrder < vCurrentSort && rejectOrder > previousOrder)
+			{
+				previousOrder = rejectOrder;
+				previousId = rejectRow.ID.toString();
+			}
+		}
+		if(previousId == "")
+		{
+			return "There is no previous approver for this rejection.";
+		}
+		repairError = "";
+		previousRows = Budget_Approvals[ID == previousId.toLong() && Budget == vBudgetId.toLong()];
+		if(vAction == "RepairReject" && vCurrentStatus == "Rejected")
+		{
+			otherPending = 0;
+			for each  rejectRow in rejectRows
+			{
+				if(rejectRow.ID.toString() != previousId && ifnull(rejectRow.Status,"").trim() == "Pending")
+				{
+					otherPending = otherPending + 1;
+				}
+			}
+			if(otherPending == 0)
+			{
+				for each  previousRow in previousRows
+				{
+					if(ifnull(previousRow.Status,"").trim() != "Pending")
+					{
+						previousRow.Status="Pending";
+						previousRow.Sent_Date=null;
+						previousRow.Responded_Date=null;
+					}
+					thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+					if(previousRow.Sent_Date == null)
+					{
+						try
+						{
+							thisapp.sendApprovalEmail(vBudgetId.toLong(),previousId.toLong());
+						}
+						catch (rejectMailError)
+						{
+							repairError = rejectMailError.toString();
+						}
+					}
+				}
+			}
+		}
+		rejectRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		pendingCount = 0;
+		previousStatus = "";
+		previousSent = "";
+		previousRole = "";
+		previousAddress = "";
+		for each  rejectRow in rejectRows
+		{
+			if(ifnull(rejectRow.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(rejectRow.ID.toString() == previousId)
+			{
+				previousStatus = ifnull(rejectRow.Status,"").trim();
+				previousRole = ifnull(rejectRow.Title,"").trim();
+				previousAddress = ifnull(rejectRow.Approver,"").trim();
+				if(rejectRow.Sent_Date != null)
+				{
+					previousSent = rejectRow.Sent_Date.toString();
+				}
+			}
+		}
+		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+		parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+		if(vApprovalType == "Construction")
+		{
+			parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+		}
+		rejectProgress = Map();
+		rejectProgress.put("ok",true);
+		rejectProgress.put("budgetId",vBudgetId);
+		rejectProgress.put("approvalId",vApprovalId);
+		rejectProgress.put("currentStatus",ifnull(currentApproval.Status,"").trim());
+		rejectProgress.put("previousId",previousId);
+		rejectProgress.put("previousStatus",previousStatus);
+		rejectProgress.put("pendingCount",pendingCount);
+		rejectProgress.put("parentStatus",parentStatus);
+		rejectProgress.put("role",previousRole);
+		rejectProgress.put("address",previousAddress);
+		rejectProgress.put("sentDate",previousSent);
+		rejectProgress.put("emailSent",previousSent != "");
+		rejectProgress.put("repairError",repairError);
+		return rejectProgress.toString();
+	}
 	/********* TARGETED APPROVAL RECONCILIATION *********/
                  	// Check is read-only. Repair is idempotent and may be called only once by the widget.
                  	// Sent_Date is the delivery marker: sendApprovalEmail stamps it after sendmail succeeds.
@@ -590,7 +693,7 @@
                  					if(apprIdText == previousApprovalId)
                  					{
                  						ar.Status="Pending";
-                 						ar.Sent_Date=zoho.currentdate;
+						ar.Sent_Date=null;
                  						ar.Responded_Date=null;
                  					}
                  					else if(apprSort > vCurrentSort)
@@ -602,8 +705,8 @@
                  				}
                  			}
                  		}
-                 		emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),previousApprovalId.toLong());
-                 		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),previousApprovalId.toLong());
                  		return vApprovalType + " " + vCurrentRole + " rejected. Sent back to previous approver. " + emailResp + " " + syncResp;
                  	}
                  	return "Unsupported approval action: " + vAction;

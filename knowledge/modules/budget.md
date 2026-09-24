@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Rejection progress (122.27.18)
+
+Development and Construction Reject open the same paced modal as Approve. `Handle_Approval_Action` accepts `CheckReject` and `RepairReject` for the targeted budget and row. It verifies the rejecting row is Rejected, its immediate predecessor is the only Pending row, the parent track is Pending, and the predecessor's `Sent_Date` was stamped after return mail. `RepairReject` only reactivates that predecessor and sends missing mail. Budget Modification's confirmed Reject also opens progress: `Modification_Admin` `check-reject` verifies the targeted row and parent are Rejected, the note matches, and no row remains Pending; `repair-reject` can reconcile the parent without resending notifications. Its email helper has no persisted notification stamp, so a lost response yields a warning instead of a delivery claim. Both paths use a 20-second deadline and one guarded repair. Creator deployment: `handleApprovalAction` and `modificationAdmin`; no new fields or Custom APIs. Regression: prior-approver return, failed mail, missing predecessor, modification rejection with and without prior approvers, ambiguous response, retries, duplicate clicks, focus/Tab/Escape. Rollback: widget `122.27.17` and prior function bodies.
+
 ## Approval initiation progress (122.27.17)
 
 The Development and Construction track Submit for Approval actions open the same modal as Budget Approve. `startApprovalChain` guards an already active track and leaves the first row's `Sent_Date` empty until `sendApprovalEmail` succeeds. The existing `Handle_Approval_Action` API supports `CheckStart` and `RepairStart` for the selected budget, track, and first row. Success requires a Pending parent track, exactly one Pending row (the first), no Approved row, and a populated delivery stamp, role, and address. An active first approver without a stamp ends in the email warning; an unverified route ends in error. A retry checks the targeted state before a safe email repair or start. Rollback: Budget Manager `122.27.16` plus the prior `startApprovalChain` and `handleApprovalAction` function bodies.

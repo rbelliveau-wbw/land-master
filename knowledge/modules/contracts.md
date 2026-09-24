@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Legal LOI rejection progress (1.60.26)
+
+After the existing confirmation, Reject LOI opens the Contract progress modal with Legal rejection, Pro Forma return, and Acquisition notification phases. `Review_LOI_Request` supports targeted `CHECK_REJECT` using the original token while Pending or the exact Legal note after rejection. Success verifies `LOI_Legal_Status=Rejected`, the note, and cleared token. The write response reports a notification only after sendmail succeeds; no persisted notification stamp exists, so an ambiguous response ends in a warning and never triggers a blind resend. One automatic retry is allowed only if the targeted check still finds Pending Approval, within the 20-second deadline. Creator deployment: `Review_LOI_Request`; no new fields or Custom APIs. Regression: success, no Acquisition email, email failure after status write, ambiguous response, stale token, retry, focus/Tab/Escape, duplicate click. Rollback: widget `1.60.25` and prior function body.
+
 ## Send for Approvals progress (1.60.25)
 
 The existing confirmation opens a progress modal as soon as Send now is clicked. It checks only the contract and selected `Contract_Approvals` row IDs through the existing `Send_Contract_Approvals` Custom API in `Check` mode, about once per second. `Repair` sends only unsent selected rows. Success requires the parent Contract status `Awaiting Approvals`, every selected row `Awaiting Approval`, and every row's `Last_Reminder_Date` stamped after the email helper succeeds, with recipient addresses present. Partial activation or missing delivery evidence ends in an email warning with Retry email; other unverified states end in an error with Try again. The modal stays open until dismissal and blocks duplicate sends. The DEV widget supplies `wbdevelopment` only for the Development `rbelliveau` access alias; Production keeps the logged-in username. The function still enforces `User_Access.Edit_Contracts`. No new Creator fields, reports, or Custom API registrations. Rollback: Contract Management `1.60.24` and the previous `Send_Contract_Approvals` body.

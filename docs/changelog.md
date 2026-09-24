@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-24 — Verified rejection progress
+
+Budget, Pro Forma, Budget Modification, and Contract Legal LOI rejection paths now use the existing accessible, paced approval modal with targeted status checks, safe retry, and a bounded terminal result. Pro Forma Reject stays white with a red outline. Budget Manager `122.27.18`, Pro Forma Manager `1.80.16`, and Contract Management `1.60.26` require updated Creator functions `handleApprovalAction`, `modificationAdmin`, `Handle_Proforma_Approval_Action`, and `Review_LOI_Request` before the new reconciliation modes work in Production. Notification responses without durable stamps show a warning rather than a delivery claim. Rollback: prior widget mappings and function bodies.
+
 ## 2026-09-24 — Approval-start progress and DEV access alias
 
 Budget Development/Construction Submit for Approval and Contract Send for Approvals now use the accessible, paced approval progress modal with targeted reconciliation, one repair, bounded timeout, and visible terminal states. Budget Manager `122.27.17` and Contract Management `1.60.25` require the updated `startApprovalChain`, `handleApprovalAction`, and `Send_Contract_Approvals` functions before widget promotion. Development `Get_User_Access_DEV` calls `getUserAccessDev`, a short wrapper mapping only Robby's DEV identity to the existing `wbdevelopment` User Access row; Production `Get_User_Access` remains bound to the unchanged shared `getUserAccess`. Regression: start success, delayed email, missing stamp, conflicting rows, safe retry, duplicate click, keyboard focus and Escape. Rollback: prior widget mappings and function bodies; retain the DEV wrapper only while this account alias is needed.

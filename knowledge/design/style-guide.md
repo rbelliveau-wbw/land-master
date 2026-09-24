@@ -9,6 +9,10 @@ Before adding or revising an approval action in any module, read
 modal appearance, paced phases, accessible controls, and the targeted
 verification and recovery behavior that must accompany the visual treatment.
 
+In Pro Forma approval rows, keep Reject as a white button with a clear red border
+and red label in its resting, hover, and focused states. The action must stay
+recognizable before hover.
+
 ## Compact icon buttons
 
 Use this pattern for small attachment, comment, and similar record actions across Land Master widgets.
