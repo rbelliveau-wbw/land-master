@@ -169,13 +169,40 @@ const phaseEditor=phaseHtml.indexOf('class="ps-editor"');
 const phaseSummary=phaseHtml.indexOf('class="ps-summary"');
 assert.ok(phaseWorkspace>=0 && phaseNav>phaseWorkspace && phaseEditor>phaseNav && phaseSummary>phaseEditor,
   'the phase cards, main inputs, and schedule must appear left to right');
+const phaseBalance=phaseHtml.indexOf('class="ps-balance');
+const phaseBody=phaseHtml.indexOf('class="sect-body"');
+assert.ok(phaseBalance>=0 && phaseBalance<phaseBody && phaseBody<phaseWorkspace,
+  'put allocation status in the section heading so it does not consume a blank row above the workspace');
+assert.doesNotMatch(phaseHtml,/class="ps-head"/,
+  'the Lot Sales workspace should start immediately below its section heading');
 assert.doesNotMatch(phaseHtml,/<(?:div|h3)[^>]*>Lot Sales(?:\s|<)/,
   'the active phase pane should not repeat the Lot Sales tab label as headings');
 const phaseCard=phaseHtml.match(/<button\b[^>]*data-ps-select="0"[^>]*>([\s\S]*?)<\/button>/)?.[1];
 assert.ok(phaseCard,'a phase-selection card should be visible');
 assert.match(phaseCard,/179 lots/,'the phase card should identify its allocation');
 assert.match(phaseCard,/53\.40 acres/,'the phase card should show acreage context');
-assert.match(phaseCard,/Month 36/,'the phase card should show schedule context');
+assert.match(phaseCard,/Const ends Mth 36/,'the phase card should show compact construction timing');
+assert.match(phaseCard,/Sales Mths 37[–-]47/,'the phase card should show compact sale timing');
+assert.ok((phaseCard.match(/<br\s*\/?\s*>/gi)||[]).length<=1,
+  'phase-card timing should use at most one deliberate line break');
+const navRules=Array.from(widget.matchAll(/\.ps-nav\{([^}]*)\}/g),match=>match[1]);
+assert.ok(navRules.length,'the phase navigation needs a layout rule');
+for(const navStyle of navRules){
+  assert.doesNotMatch(navStyle,/max-height|overflow(?:-x|-y)?\s*:\s*(?:auto|scroll)/,
+    'phase cards should use available space rather than an internal scrollbar');
+}
+const workspaceStyle=widget.match(/\.ps-workspace\{([^}]*)\}/)?.[1]||'';
+const desktopTracks=workspaceStyle.match(/grid-template-columns\s*:\s*([^;}]*)/)?.[1]||'';
+assert.equal((desktopTracks.match(/minmax\(/g)||[]).length,3,
+  'desktop Lot Sales needs side-by-side phase cards, editor, and schedule columns');
+const phaseTrack=desktopTracks.match(/minmax\(\s*\d+px\s*,\s*(\d+)px\s*\)/);
+assert.ok(phaseTrack && Number(phaseTrack[1])>=200,
+  'the phase-card column should be wider than the old 155px rail');
+assert.doesNotMatch(widget,/\.ps-summary\{[^}]*grid-column\s*:\s*2\b/,
+  'the schedule must not be pushed under the editor by a responsive grid-column rule');
+const stackBreakpoint=widget.match(/@media\(max-width:(\d+)px\)\{\.ps-workspace\{grid-template-columns:minmax\(0,1fr\)/)?.[1];
+assert.ok(stackBreakpoint && Number(stackBreakpoint)<=760,
+  'keep the schedule beside the editor until a genuinely narrow mobile width');
 assert.match(phaseHtml,/<h4[^>]*>[\s\S]*?Phase 1 - Schedule<\/h4>/,
   'the right-hand timeline should be headed Phase 1 - Schedule');
 assert.match(phaseHtml,/<aside class="ps-summary"[^>]*><h4><svg[\s\S]*?<\/svg>Phase 1 - Schedule<\/h4>/,
