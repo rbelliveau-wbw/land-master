@@ -1,0 +1,9 @@
+string getUserAccessDev(string user)
+{
+	requester = if(user != null && user != "",user,zoho.loginuser);
+	if(requester == "rbelliveau" || requester == "rbelliveau@wbdevelopment.com")
+	{
+		requester = "wbdevelopment";
+	}
+	return thisapp.getUserAccess(requester);
+}

@@ -1,6 +1,10 @@
 
 # Budget Module
 
+## Approval initiation progress (122.27.17)
+
+The Development and Construction track Submit for Approval actions open the same modal as Budget Approve. `startApprovalChain` guards an already active track and leaves the first row's `Sent_Date` empty until `sendApprovalEmail` succeeds. The existing `Handle_Approval_Action` API supports `CheckStart` and `RepairStart` for the selected budget, track, and first row. Success requires a Pending parent track, exactly one Pending row (the first), no Approved row, and a populated delivery stamp, role, and address. An active first approver without a stamp ends in the email warning; an unverified route ends in error. A retry checks the targeted state before a safe email repair or start. Rollback: Budget Manager `122.27.16` plus the prior `startApprovalChain` and `handleApprovalAction` function bodies.
+
 ## Modification send progress (122.27.16)
 
 Both the new Modification composer and an existing Draft's Submit for approval action open the same accessible, paced progress dialog used by Budget approvals. It verifies only the targeted modification through `Modification_Admin` `check-send`, with one `repair-send` attempt after five seconds and a 20-second deadline. Success requires Submitted, a linked approval chain, the first row as the only Pending row, no Approved rows, and a populated `Sent_Date`, role, and email address. The create and submit functions now return the modification ID or a recoverable result even when email fails; retry checks persisted state before sending again. The dialog keeps success, email warning, or error visible until dismissal and blocks duplicate submission. Release `122.27.16` requires publishing `modificationAdmin`, `createBudgetModification`, and `submitBudgetModification` before widget promotion. Regression: both submit paths, delayed email, missing recipient, email exception, duplicate click, ambiguous create response, focus/Tab/Escape, and existing Budget approval. Rollback: restore `122.27.15` and the prior three Creator function bodies.

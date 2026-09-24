@@ -16,8 +16,10 @@ This is Robby's preferred interaction for sending, advancing, and completing app
 | --- | --- | --- | --- |
 | Budget, non-final Approve | Recording approval | Activating the next approver | Sending approval email |
 | Budget, final Approve | Recording approval | Completing approval track | Finalizing budget |
+| Budget Development/Construction Submit for Approval | Recording approval request | Activating the first approver | Sending approval email |
 | Pro Forma Send for Approvals | Recording approval request | Activating the first approver | Sending approval email |
 | Budget Modification, create or submit Draft | Recording modification | Activating the first approver | Sending approval email |
+| Contract Send for Approvals | Recording approval request | Activating approvers | Sending approval emails |
 
 Use the equivalent three short, truthful phases for a new object. A phase is Done only when the targeted persisted state supports it; an API call returning without an error is not proof of routing, delivery, or finalization.
 
@@ -36,8 +38,10 @@ Use the equivalent three short, truthful phases for a new object. A phase is Don
 | --- | --- |
 | Budget, non-final Approve | Triggering row is **Approved**; its **immediate successor** is the **only Pending** row in that track; `emailSent === true`; `Sent_Date` is populated; recipient role and address are known. |
 | Budget, final Approve | Triggering row and all rows in the track are **Approved**; no row is Pending; the parent budget track is **Approved**; the relevant financial finalization state and totals reconcile. There is no next-approver email phase. |
+| Budget Development/Construction start | The selected track is **Pending**; its first row is the **only Pending** row; no row is Approved; the first row ID matches the targeted row; `emailSent` is true and `Sent_Date`, role, and address are populated. `startApprovalChain` refuses to restart an already active track. |
 | Pro Forma Send for Approvals | Parent is **Pending Approval** and locked; a chain exists; the first row is the **only Pending** row; no row is Approved; `Sent_Date`, role, and address are populated. |
 | Budget Modification create or Draft submit | Modification is **Submitted**; linked approval rows exist; the first row is the **only Pending** row; no row is Approved; `Sent_Date`, role, and address are populated. Both entry paths use the same progress flow. |
+| Contract Send for Approvals | The contract is **Awaiting Approvals**; every approver selected at submission is **Awaiting Approval**; each has `Last_Reminder_Date` stamped by the email helper after `sendmail`; recipient addresses are known. The Contract Custom API checks only the selected row IDs and can repair unsent rows once. |
 
 For a new module, write its equivalent parent, row, delivery, and finalization predicates before building the modal. Do not copy Budget's financial rules or Pro Forma's role order into an unrelated object.
 
@@ -65,6 +69,7 @@ The modal can show a failure on phase 1, 2, or 3 according to what is known. A n
 - [Budget Approval Progress and Budget Modification send flow](../../widgets/budget-manager/src/app/widget.html): `approvalProgress*`, `inspectApprovalProgress`, `openModificationProgress`.
 - [Pro Forma Send for Approvals flow](../../widgets/proforma-manager/src/app/widget.html): `pfApproval*`, `runStartProformaApproval`.
 - [Budget reconciliation function](../../creator/functions/handleApprovalAction.dg), [Modification reconciliation function](../../creator/functions/modificationAdmin.dg), and [Pro Forma start/check/repair function](../../creator/functions/Start_Proforma_Approval_Chain.dg).
+- [Contract Send for Approvals flow](../../widgets/contract-management/src/app/widget.html) and [targeted Contract reconciliation function](../../creator/functions/Send_Contract_Approvals.dg).
 - [Focused regression checks](../../scripts/test-send-approval-progress.mjs) and module-specific rules in [Budget](../modules/budget.md) and [Pro Forma](../modules/proforma.md).
 
 For each new approval flow, verify immediate open, fast success with readable phases, delayed routing, email failure and Retry email, stale/conflicting rows, ambiguous write response, timeout, safe Try again, duplicate clicks, final-step reconciliation if applicable, keyboard focus/Tab/Escape, narrow viewport, and reduced motion. Document the object-specific predicates, Creator function/API contract, permissions, and rollback in that module's knowledge page.

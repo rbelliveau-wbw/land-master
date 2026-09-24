@@ -78,11 +78,105 @@
                  	{
                  		return "Unsupported approval type: " + vApprovalType;
                  	}
-                 	if(vCurrentSort == 0)
+	if(vCurrentSort == 0)
+	{
+		return "Sort Order is blank for " + vCurrentRole + ".";
+	}
+	// Reconcile the start of one budget track using its first approval row.
+	// CheckStart is read-only. RepairStart sends only a missing first email;
+	// it never resets a started chain or advances another approver.
+	if(vAction == "CheckStart" || vAction == "RepairStart")
                  	{
-                 		return "Sort Order is blank for " + vCurrentRole + ".";
+		startRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		firstId = "";
+		firstSort = 999999;
+		startPending = 0;
+		startApproved = 0;
+		startCount = 0;
+		for each  startRow in startRows
+		{
+			startCount = startCount + 1;
+			startSort = ifnull(startRow.Sort_Order,0).toLong();
+			if(startSort > 0 && startSort < firstSort)
+			{
+				firstSort = startSort;
+				firstId = startRow.ID.toString();
+			}
+			if(ifnull(startRow.Status,"").trim() == "Pending")
+			{
+				startPending = startPending + 1;
+			}
+			if(ifnull(startRow.Status,"").trim() == "Approved")
+			{
+				startApproved = startApproved + 1;
+			}
+		}
+		if(firstId != vApprovalId)
+		{
+			return "The requested row is not the first approver in this track.";
+		}
+		firstRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
+		firstStatus = "";
+		firstSentDate = "";
+		firstRole = "";
+		firstAddress = "";
+		for each  firstRow in firstRows
+		{
+			firstStatus = ifnull(firstRow.Status,"").trim();
+			firstRole = ifnull(firstRow.Title,"").trim();
+			firstAddress = ifnull(firstRow.Approver,"").trim();
+			if(firstRow.Sent_Date != null)
+			{
+				firstSentDate = firstRow.Sent_Date.toString();
+			}
+		}
+		if(vAction == "RepairStart" && firstStatus == "Pending" && startPending == 1 && startApproved == 0)
+		{
+			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			if(firstSentDate == "")
+			{
+				try
+				{
+					thisapp.sendApprovalEmail(vBudgetId.toLong(),vApprovalId.toLong());
+				}
+				catch (startMailError)
+				{
+					// The next check reports the persisted state without claiming delivery.
+				}
+			}
+			firstRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
+			for each  firstRow in firstRows
+			{
+				if(firstRow.Sent_Date != null)
+				{
+					firstSentDate = firstRow.Sent_Date.toString();
+				}
+			}
+		}
+		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+		startParent = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+		if(vApprovalType == "Construction")
+		{
+			startParent = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+		}
+		startProgress = Map();
+		startProgress.put("ok",true);
+		startProgress.put("budgetId",vBudgetId);
+		startProgress.put("approvalId",vApprovalId);
+		startProgress.put("track",vApprovalType);
+		startProgress.put("parentStatus",startParent);
+		startProgress.put("rowCount",startCount);
+		startProgress.put("pendingCount",startPending);
+		startProgress.put("approvedCount",startApproved);
+		startProgress.put("firstId",firstId);
+		startProgress.put("firstStatus",firstStatus);
+		startProgress.put("role",firstRole);
+		startProgress.put("address",firstAddress);
+		startProgress.put("sentDate",firstSentDate);
+		startProgress.put("emailSent",firstSentDate != "");
+		return startProgress.toString();
                  	}
-                 	/********* TARGETED APPROVAL RECONCILIATION *********/
+	/********* TARGETED APPROVAL RECONCILIATION *********/
                  	// Check is read-only. Repair is idempotent and may be called only once by the widget.
                  	// Sent_Date is the delivery marker: sendApprovalEmail stamps it after sendmail succeeds.
                  	if(vAction == "Check" || vAction == "Repair")

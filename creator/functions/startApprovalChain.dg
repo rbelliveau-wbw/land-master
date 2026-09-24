@@ -60,10 +60,19 @@
                  			}
                  		}
                  	}
-                 	if(firstApprovalId == 0)
-                 	{
-                 		return "No " + vApprovalType + " approval rows found. No budget values were changed.";
-                 	}
+                  if(firstApprovalId == 0)
+                  {
+	return "No " + vApprovalType + " approval rows found. No budget values were changed.";
+                  }
+                  // A lost response must not restart an active track, reset its
+                  // financial values, or send the first email a second time.
+                  for each  existingRow in budgetRec.Approvals
+                  {
+	if(ifnull(existingRow.Type1,"").trim() == vApprovalType && (ifnull(existingRow.Status,"").trim() == "Pending" || ifnull(existingRow.Status,"").trim() == "Approved"))
+	{
+		return vApprovalType + " approval track is already active. Check its persisted state before retrying.";
+	}
+                  }
                  	/*****************************************************
                  	 * CLEAR THIS TRACK'S FINAL VALUES
                  	 *
@@ -175,11 +184,12 @@
                  	for each  firstApproval in firstApprovalRows
                  	{
                  		firstApproval.Status="Pending";
-                 		firstApproval.Sent_Date=zoho.currentdate;
+					// sendApprovalEmail stamps Sent_Date only after sendmail succeeds.
+					firstApproval.Sent_Date=null;
                  		firstApproval.Responded_Date=null;
                  	}
-                 	emailResp = thisapp.sendApprovalEmail(vBudgetId,firstApprovalId);
-                 	syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId,vApprovalType);
+                  syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId,vApprovalType);
+                  emailResp = thisapp.sendApprovalEmail(vBudgetId,firstApprovalId);
                  	if(vApprovalType == "Development")
                  	{
                  		stageResp = "Cleared " + affectedItemCount + " Development/Engineering Final items and staged " + stagedItemCount + " Preliminary items totaling " + stagedTotal + " into Unapproved.";

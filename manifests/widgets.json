@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T22:19:02.580Z",
+  "generated_at": "2026-09-24T11:39:00.824Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.27.16",
+      "version": "122.27.17",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "4087744a1fced7e681594cce38c7cbd5c0bcb9d016f4e4e6f8442a330930c6a4",
+      "source_sha256": "ee97ff9d6eacf1995328917a49be3c276db78d165939a280ba4667e46e34781c",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.60.24",
+      "version": "1.60.25",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "3136771dd33cf1b2140ba2f67502bca3e24c1db473d90aea22b189c32d3dd43c",
+      "source_sha256": "8dcb6b71de5da6ecf86408a2483f18419969c0083aef52ee69738332ec949884",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

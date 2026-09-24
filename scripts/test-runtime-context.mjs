@@ -28,6 +28,14 @@ for (const widget of widgets) {
   if (runtime.apiName('Modification_Admin') !== 'Modification_Admin') failures.push(`${widget}: production routing failed`);
 }
 
+const sharedAccess = fs.readFileSync(path.join(root, 'creator/functions/getUserAccess.dg'), 'utf8');
+const devAccess = fs.readFileSync(path.join(root, 'creator/functions/getUserAccessDev.dg'), 'utf8');
+if (sharedAccess.includes('requester == "rbelliveau"')) failures.push('Production access function contains the DEV alias');
+if (!devAccess.includes('requester = "wbdevelopment";') || !devAccess.includes('return thisapp.getUserAccess(requester);')) {
+  failures.push('DEV access wrapper must map the one admin identity and reuse shared permissions');
+}
+if (devAccess.includes('editAll =') || devAccess.includes('pfEditAll =')) failures.push('DEV wrapper duplicated permission rules');
+
 if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);

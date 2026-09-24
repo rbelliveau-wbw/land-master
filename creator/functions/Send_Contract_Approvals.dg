@@ -35,6 +35,8 @@ string Send_Contract_Approvals(string contractId)
 	raw = ifnull(contractId,"").toString().trim();
 	cid = 0;
 	requester = "";
+	mode = "Send";
+	targetIds = List();
 	if(raw.startsWith("{"))
 	{
 		pm = raw.toMap();
@@ -45,6 +47,14 @@ string Send_Contract_Approvals(string contractId)
 		if(pm.get("user") != null)
 		{
 			requester = pm.get("user").toString().trim();
+		}
+		if(pm.get("mode") != null)
+		{
+			mode = pm.get("mode").toString().trim();
+		}
+		if(pm.get("targetIds") != null)
+		{
+			targetIds = pm.get("targetIds");
 		}
 	}
 	else if(raw != "")
@@ -87,6 +97,77 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("message","This contract is complete and locked.");
 		return resp.toString();
 	}
+	// Reconcile only the approvers selected when the widget opened progress.
+	// A repair emails an unsent target at most once and never replays a sent row.
+	if(mode == "Check" || mode == "Repair")
+	{
+		if(targetIds.size() == 0)
+		{
+			resp.put("ok",false);
+			resp.put("message","No approval rows were supplied for verification.");
+			return resp.toString();
+		}
+		activeCount = 0;
+		sentCount = 0;
+		missingCount = 0;
+		addresses = List();
+		roles = List();
+		for each  targetId in targetIds
+		{
+			targetRow = Contract_Approvals[ID == targetId.toString().toLong() && Contract1 == cid];
+			if(targetRow.ID == null || targetRow.Approval_Email != true)
+			{
+				resp.put("ok",false);
+				resp.put("message","A selected approver is missing or no longer enabled for email.");
+				return resp.toString();
+			}
+			rowStatus = ifnull(targetRow.Status,"").toString().trim();
+			if(mode == "Repair" && (rowStatus == "Not Sent" || rowStatus == "") && targetRow.Last_Reminder_Date == null)
+			{
+				repairResult = thisapp.Send_Contract_Approval_Email(cid.toString(),targetRow.ID.toString(),"Send");
+				if(ifnull(repairResult.get("success"),false) == true)
+				{
+					targetRow.Status="Awaiting Approval";
+					targetRow.Reject_Reason=null;
+					if(ifnull(contract.Status,"").toString() != "Awaiting Approvals")
+					{
+						contract.Status="Awaiting Approvals";
+						contract.Current_Approver=ifnull(targetRow.Approver,"").toString();
+					}
+				}
+				rowStatus = ifnull(targetRow.Status,"").toString().trim();
+			}
+			if(rowStatus == "Awaiting Approval")
+			{
+				activeCount = activeCount + 1;
+				if(targetRow.Last_Reminder_Date != null)
+				{
+					sentCount = sentCount + 1;
+				}
+				else
+				{
+					missingCount = missingCount + 1;
+				}
+			}
+			else
+			{
+				missingCount = missingCount + 1;
+			}
+			addresses.add(ifnull(targetRow.Approver,"").toString());
+			roles.add(ifnull(targetRow.Type1,"").toString());
+		}
+		contract = Contract[ID == cid];
+		resp.put("ok",true);
+		resp.put("contractId",cid.toString());
+		resp.put("parentStatus",ifnull(contract.Status,"").toString());
+		resp.put("targetCount",targetIds.size());
+		resp.put("activeCount",activeCount);
+		resp.put("sentCount",sentCount);
+		resp.put("missingCount",missingCount);
+		resp.put("addresses",addresses);
+		resp.put("roles",roles);
+		return resp.toString();
+	}
 	attachedCount = Contract_Version[Contract1 == cid && Email_Attachment == true].count();
 	if(attachedCount == 0)
 	{
@@ -107,6 +188,9 @@ string Send_Contract_Approvals(string contractId)
 	firstApprover = "";
 	for each  row in pending
 	{
+		// A prior draft/restart may retain an old reminder stamp. The helper
+		// creates fresh delivery evidence after sendmail succeeds.
+		row.Last_Reminder_Date=null;
 		emailResp = thisapp.Send_Contract_Approval_Email(cid.toString(),row.ID.toString(),"Send");
 		if(ifnull(emailResp.get("success"),false) == true)
 		{
