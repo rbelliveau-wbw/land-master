@@ -1,51 +1,35 @@
 
-# Land Master Engineering Repository #
+# Land Master Engineering Repository
 
-Company-owned source, knowledge, Creator metadata, and release tooling for the Land Master Zoho Creator application.
-
-This package was assembled from:
-
-- the Zoho Creator export generated August 6, 2026
-- six uploaded working widget packages
-- curated Land Master engineering rules and known working solutions
-
-## What is included
-
-- **6 widget baselines** with original ZIPs and extracted source
-- **57 Creator forms** and **1269 parsed fields**
-- **70 reports**
-- **17 pages**
-- **53 extracted custom Deluge functions**
-- workflow and connection inventories
-- Codex `AGENTS.md` instructions and reusable skills
-- GitHub Actions for validation and GitHub Pages deployment
-- immutable external-hosting releases and Development/Stage/Production mapping
+Source, Creator metadata, knowledge, immutable widget releases, and deployment tooling for the Land Master Zoho Creator application.
 
 ## Start here
 
-1. Read [`START_HERE.md`](START_HERE.md).
-2. Create a **private** repository in the company GitHub organization.
-3. Upload the contents of this folder, not the outer ZIP itself.
-4. Enable GitHub Actions.
-5. Run the `CI` workflow.
-6. Configure GitHub Pages to deploy from GitHub Actions.
-7. Register only the Development external-widget URLs in Creator first.
+1. Read [AGENTS.md](AGENTS.md) and the applicable widget's `AGENTS.md` before making changes.
+2. Use the [knowledge base](knowledge/README.md) for module rules, design preferences, decisions, and known incidents. For approval work in any module, read the [approval progress pattern](knowledge/design/approval-progress.md).
+3. Check the current source under `widgets/<widget>/src/`, Creator functions under `creator/functions/`, and the [environment mappings](deploy/environments.json). The generated Creator metadata comes from a committed export and can lag the live application.
+4. Follow the [release process](docs/release-process.md) for immutable widget versions, promotion, and rollback. Existing Creator widget URLs are permanent; promotion changes the environment mapping rather than the registered URL.
 
-## Local validation
+## Validate locally
 
-Requires Node.js 20 or newer and Python 3.11 or newer.
+Node.js 20 or newer is required. The repository has no npm package dependencies.
 
 ```bash
 npm run validate
 npm run build:pages
 ```
 
-No npm dependencies are required for the initial baseline tooling.
+## Repository map
 
-## Important trust labels
+| Path | Purpose |
+| --- | --- |
+| `widgets/` | Current widget source, configuration, and widget-specific instructions |
+| `creator/functions/` | Versioned Deluge function source |
+| `creator/generated/` | Schema extracted from the committed Creator export; verify against live metadata for new work |
+| `manifests/` | Machine-readable widget and Custom API contracts; inferred mappings are labeled |
+| `knowledge/` | Current module rules, design standards, decisions, and incident history |
+| `releases/` | Immutable widget releases retained for deployment and rollback |
+| `deploy/environments.json` | Development, Stage, and Production widget version mapping |
+| `scripts/` | Validation, release, and Pages build tooling |
 
-- `creator/generated/*`: generated from the uploaded Creator `.ds` export
-- `widgets/*/src/*`: extracted unchanged from uploaded widget ZIPs
-- `manifests/custom-apis.json`: inferred from widget source and must be verified in Creator
-- `knowledge/*`: curated operational documentation; update it through pull requests
-
+The GitHub Pages site contains widget assets built from `releases/` and `deploy/environments.json`; repository documentation is not part of the served widget bundle.
