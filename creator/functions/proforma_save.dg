@@ -1,13 +1,27 @@
 				 string proforma_save(string payload)
                  {
                  	resp = Map();
+                    // MEGA ADMIN MODE: set migrationEditor to "" after migration, then promote Creator.
+                    // Uses this API's User_Access requester convention, not zoho.loginuser (the API authorizer).
+                    migrationEditor = "rbelliveau";
+                    migrationEditAccess = false;
                  	try 
                  	{
                  		data = payload.toMap();
                  		if(data.get("header") == null && data.get("payload") != null)
                  		{
-                 			data = data.get("payload").toString().toMap();
-                 		}
+                            data = data.get("payload").toString().toMap();
+                        }
+                        migrationAccessId = ifnull(data.get("userAccessId"),"").toString().trim();
+                        if(migrationEditor != "" && migrationAccessId != "" && migrationAccessId.isNumber())
+                        {
+                            migrationAccess = User_Access[ID == migrationAccessId.toLong()];
+                            if(migrationAccess != null)
+                            {
+                                migrationUser = ifnull(migrationAccess.User,"").toString().trim().toLowerCase();
+                                migrationEditAccess = migrationUser == migrationEditor || migrationUser == migrationEditor + "@wbdevelopment.com";
+                            }
+                        }
                  		pfId = ifnull(data.get("id"),"").toString().trim();
                  		isNew = false;
                  		header = Map();
@@ -19,6 +33,7 @@
 								resp.put("action","phase_sales_capabilities");
 								resp.put("savePhaseSales",true);
 								resp.put("finalizePhaseSales",true);
+                                resp.put("migrationEditor",migrationEditor);
 								return resp.toString();
 							}
 							if(op == "save_phase_sales")
@@ -45,7 +60,7 @@
 										phaseApprovalComplete = false;
 									}
 								}
-								if(phaseApprovalComplete || ifnull(phasePf.Status,"").toString() == "Approved")
+								if(!migrationEditAccess && (phaseApprovalComplete || ifnull(phasePf.Status,"").toString() == "Approved"))
 								{
 									resp.put("success",false);
 									resp.put("error","Approved Pro Formas cannot change phase sales.");
@@ -237,7 +252,7 @@
 										finalApprovalComplete = false;
 									}
 								}
-								if(finalApprovalComplete || ifnull(finalPf.Status,"").toString() == "Approved")
+								if(!migrationEditAccess && (finalApprovalComplete || ifnull(finalPf.Status,"").toString() == "Approved"))
 								{
 									resp.put("success",false);
 									resp.put("error","Approved Pro Formas cannot finish a phase-sales change.");
@@ -1110,7 +1125,7 @@
 							approvalIsComplete = false;
 						}
 					}
-					if(approvalIsComplete || ifnull(pf.Status,"").toString() == "Approved")
+					if(!migrationEditAccess && (approvalIsComplete || ifnull(pf.Status,"").toString() == "Approved"))
 					{
 						resp.put("success",false);
 						resp.put("error","This Pro Forma is fully approved and can never be unlocked or edited.");

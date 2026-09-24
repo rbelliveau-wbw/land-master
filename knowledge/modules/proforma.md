@@ -1,6 +1,14 @@
 
 # Proforma Module
 
+## Temporary migration edit access (1.80.23, 2026-09-24)
+
+Only Robby's `rbelliveau` account receives **Mega Admin Mode** to open, edit, and deliberately re-save existing Pro Formas during migration regardless of ownership, edit grants, completed approvals, closed stage/status, or manual input locks. Everyone else keeps the original restrictions. Creator `proforma_save` resolves the submitted `userAccessId` using its existing requester convention and bypasses completed-approval rejection only for that named User_Access profile's financial save, phase save, and phase finalization. The widget additionally matches the SDK login and resolved access roster entry. The saved lock value, lifecycle status, archive state, owners, and approval rows are retained; the migration does not reset approvals. Input validation and migration verification still run. New-record permissions and unrelated approval/LOI/management actions retain their checks.
+
+The single server-side `migrationEditor` switch and restoration prompt are in `knowledge/operations/proforma-migration-access.md`. The widget reads it through the same environment's existing read-only capabilities operation; a missing or empty value leaves normal restrictions in force. Production widget rollback: `1.80.22`. Creator deployment required: `proforma_save`; environment promotion remains with the user. No forms, fields, or Custom API names change. No records are migrated by this release.
+
+The overall lots-allocated status moves beside the selected phase heading in a bordered green/red pill. The right-hand schedule card and desktop grid track are capped at 340px. Phase lots are 110px wide, other numeric inputs cap at 140px, and the month picker caps at 175px. **Markup & Escalator** keeps independent markup first and enlarges the Escalator switch; annual rate and start month appear only when enabled, retaining stored values while off. Responsive stacking and the Under Construction modal remain intact.
+
 ## Open-on-demand phase defaults and verified save (1.80.22, 2026-09-24)
 
 The Lot Sales tab now opens old Pro Formas directly in an editable phase schedule—there is no preview or approval step. Defaults are held only in the editor: earlier phases get the old rounded-up lot allocation and the final phase gets the remainder; phase 1 starts with the old initial take, later phases start with the old monthly take, and every phase uses that monthly recurring take with zero initial delay, one-month first-recurring delay, no escalator, and no markup. A short note above the cards identifies those defaults. Opening a record does not write data or mark it dirty; Save is available to convert it. The live editor uses phase math, while an unopened legacy dashboard/export retains its stored legacy math.
