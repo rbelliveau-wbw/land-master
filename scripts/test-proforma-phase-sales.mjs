@@ -106,6 +106,11 @@ assert.equal(adopted.schedule.takedownStartMonth,3);
 assert.match(widget,/op:"save_phase_sales"/);
 assert.match(widget,/Phase-sales server schedule verified/);
 assert.match(widget,/Phase-level lot sales can only be saved in DEV/);
+assert.doesNotMatch(widget,/Pro Forma development preview/);
+assert.match(widget,/This one-time update gives each phase its own schedule\. Approve to stage it; Save to make the change\./);
+assert.match(widget,/id="constructionCode" type="password"/);
+assert.ok(widget.indexOf('This one-time update gives each phase its own schedule.') < widget.indexOf('<table><thead><tr><th>Phase</th>'),
+  'one-time migration note must appear above the suggested-phase matrix');
 assert.match(widget,/if\(phaseSalesAdopted\(m\)\)\{\s*if\(!ver\.verified/);
 const saveFn=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 assert.match(saveFn,/if\(op == "save_phase_sales"\)/);
