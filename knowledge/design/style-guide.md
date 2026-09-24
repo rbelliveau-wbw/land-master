@@ -51,6 +51,10 @@ Use SVGs with a centered `viewBox` for small plus signs, chevrons, close icons, 
 
 Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a left dashboard menu. Use one short green dashboard title; omit decorative taglines. Keep tables horizontally scrollable within their panels, and turn sidebar navigation into a compact row on narrow screens. Background loading should name the unavailable scope while keeping completed views usable.
 
+## Dashboard phase timeline
+
+In the Pro Forma dashboard's phase timeline, use module-toned blue for Engineering, golden yellow for Construction, and green for Lot sales. Align every phase to the same month grid so concurrent stages are visible, and provide the stage details on hover and keyboard focus.
+
 ## Phase schedule editors
 
 Keep phase cards to the left of the inputs and the live schedule to the right when space allows. Make each card unmistakably interactive with a visible selected state, chevron, hover, and keyboard focus. The three pieces must be sibling grid items so the schedule cannot accidentally fall below the input column. Show quantities and timing on the cards, avoid repeating the tab name in pane headings, and put the event and month together in bold beside filled timeline dots. End the connector at the final event. Give desktop cards enough width to avoid needless wrapping, and use page vertical space instead of a separately scrolling phase rail.

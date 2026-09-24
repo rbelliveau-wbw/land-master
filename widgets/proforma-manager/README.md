@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.29`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.30`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Dashboard phase timeline (1.80.30)
+
+The Timeline pill beside Cash Flow, Inflows, and Outflows shows Engineering, Construction, and Lot sales windows for every phase on the dashboard's shared 24-month axis. Hover or focus a stage for dates, model months, duration, phase lots, and relevant calculated cost or actual modeled closing totals. The colored sales window can contain months without closings. This is widget-only; no Creator deployment is required. Regression: legacy and v2 phase schedules, overlap, page boundaries, no-closing windows, tooltips, narrow-screen controls, empty schedules, and existing cash-flow tabs. Rollback: map Production to `1.80.29`.
 
 ## Phase schedule save guard (1.80.29)
 

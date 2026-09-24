@@ -1,6 +1,12 @@
 
 # Proforma Module
 
+## Dashboard phase timeline (1.80.30, 2026-09-24)
+
+The dashboard's Cash Flow / Inflows / Outflows control adds Timeline. It uses the same 24-month pager and aligns each phase's Engineering, Construction, and Lot sales windows on one month grid. The stages use module-toned blue, golden yellow, and green. Hover or keyboard focus gives the phase's calendar and model-month range, duration, allocated lots, and relevant calculated base cost or modeled lot closings and finished-lot sales. A sales window can include months with no closing, particularly in a quarterly phase schedule; the detail distinguishes the window from actual closings.
+
+This is a read-only widget change. It displays existing `Proforma_Phase` timing and lot fields and calculated `Proforma_Months` values; it adds no Creator form, field, function, workflow, or Custom API and requires no Creator deployment. Regression: legacy and phase-sales v2 schedules, overlapping stages, 24-month paging and clipped windows, months without closings, hover and keyboard focus, empty schedules, narrow-screen controls and sticky phase labels, and Cash Flow / Inflows / Outflows switching. Production widget rollback: `1.80.29`.
+
 ## Missing-model phase schedule guard (1.80.29, 2026-09-24)
 
 The widget's phase schedule check now returns inactive if called before an editor model is available. This prevents the `Lot_Sales_Schedule_Version` JavaScript error seen after a duplicate's server month rows were generated. Persisted version 2 and unsaved phase drafts retain their existing behavior. This changes no Creator forms, fields, functions, workflows, or Custom APIs, so no Creator promotion is needed. Regression: null/undefined model checks, v2 and draft checks, duplicate save, phase/month verification, and incomplete-save recovery. Production widget rollback: `1.80.28`.
