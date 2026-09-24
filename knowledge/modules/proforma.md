@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Production widget preview gate (1.80.14, 2026-09-24)
+
+The Production Pro Forma widget maps to immutable release `1.80.14`. Its Under Construction access-code overlay covers the widget for every user and remembers an unlock only for the current browser tab session. The code is embedded client-side, so this is a UI deterrent, not secure authentication or a substitute for Creator permissions. Production Creator functions and schema are unchanged; phase-level lot-sales saves remain DEV-only, while unmigrated Pro Formas continue using legacy calculations. Regression: overlay on fresh Production sessions, unlocked navigation and legacy edit/save, and explicit rejection of phase-level saves outside DEV. Rollback: map Production back to `1.80.13`; no Production record migration is part of this promotion.
+
 ## Send for Approvals progress (1.80.13)
 
 The Send for Approvals confirmation now opens a Pro Forma styled, accessible three-step progress dialog. The existing `Start_Proforma_Approval_Chain` Custom API accepts a JSON string in its existing `proformaId` argument for targeted `Check` and one `Repair` mode. The widget polls that record about once per second, requires the parent Pending Approval and locked, the first row as the only Pending approval with no Approved rows, and a populated delivery stamp, role, and address. Its display advances at 560 ms per step, stays open at success or failure, and ends after 20 seconds with Retry email or Try again. The backend leaves `Sent_Date` blank until its existing email helper succeeds, and a repeated Start avoids duplicate delivery after a lost response. Publish the updated Creator function before promoting `1.80.13`. Regression: initial send, delayed email, failed email, ambiguous response, retry, duplicate click, keyboard focus/Tab/Escape, and Submit to Legal. Rollback: restore `1.80.12` and the prior Start function body.
