@@ -2,6 +2,13 @@
 
 This guide captures reusable visual preferences established in production work.
 
+## Approval progress
+
+Before adding or revising an approval action in any module, read
+[`approval-progress.md`](approval-progress.md). It defines the preferred in-widget
+modal appearance, paced phases, accessible controls, and the targeted
+verification and recovery behavior that must accompany the visual treatment.
+
 ## Compact icon buttons
 
 Use this pattern for small attachment, comment, and similar record actions across Land Master widgets.

@@ -10,6 +10,7 @@ This directory is the durable context used by engineers, ChatGPT, and Codex.
 - `knowledge/modules/` describes current intended behavior.
 - `knowledge/incidents/` records failures, root causes, and successful fixes.
 - `knowledge/decisions/` records architectural choices.
+- `knowledge/design/approval-progress.md` is the required interaction and verification pattern for approvals in existing and new modules.
 - `knowledge/migration/` supports moving from the personal ChatGPT account to the work workspace.
 - `knowledge/architecture/critical-error-reporting.md` documents the shared LLM-friendly critical-error email contract.
 

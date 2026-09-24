@@ -70,6 +70,12 @@ Chat history and model memory are not authoritative.
   `knowledge/design/style-guide.md` and apply the relevant guidance. Add a
   concise rule there when the user establishes a reusable styling preference.
 
+- Before designing or changing any approval initiation, routing, email, or
+  finalization flow in any existing or new module, read
+  `knowledge/design/approval-progress.md`. Apply its progress modal,
+  reconciliation, retry, terminal-state, and accessibility contract; define
+  object-specific success predicates in the module documentation.
+
 - Use custom searchable multi-select pickers for dropdown filters, matching Budget Manager. Do not introduce native browser select menus or month/date pickers in widget UI. For settings that require one value (such as sort order or a date basis), use the same searchable picker with single selection; clarify before changing their meaning to support multiple values.
 
 ## Drag-and-drop must animate
