@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.6
+# Land Master Insights 1.5.7
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -20,7 +20,7 @@ No new Creator forms, fields, functions, or Custom APIs are required. The dorman
 - The lot-count matrix displays blank cells where the count is zero. The full-history subdivision tooltip shows Total, Sold, Contracted, and Open, where Open includes every status other than Sold or Contracted. These counts ignore the report's date, status, builder, and search filters. A green check appears only when every lot in the subdivision is Sold; counts and checks wait for complete history.
 - Sold and Contracted can both be selected, with separate summary, territory/subdivision groups, drilldowns, totals and CSV rows. Their financial totals are never blended. The date basis remains explicit and user-controlled (Close Date or Purchase Date); no contract-date meaning is inferred. Records without the selected date are excluded from month buckets and counted in the footer.
 - First lot sale is the earliest Sold Close Date across all dates within the territory/project/builder/search scope. Average front ft uses positive widths in the selected status and date range. Both column headers label their different scopes.
-- Archived lots remain included in historical reporting. All-history month columns paginate 13 at a time; totals always cover the entire selected period. Exports include every month in the period, regardless of the visible window.
+- Archived lots remain included in historical reporting. Every selected month remains available through horizontal table scrolling; totals cover the entire selected period. Exports include every month in the period.
 - A missing subdivision lookup is labeled Unknown/Unassigned; it is never matched by display name. Creator IDs are strings throughout.
 
 ## Progressive loading (1.1.0)
@@ -50,7 +50,7 @@ Required fields: Lots (`ID`, `Subdivision`, `Status`, `Close_Date`, `Purchase_Da
 
 Run `node scripts/test-lot-sales-explorer.mjs`, `node scripts/test-insights-budgets.mjs`, `npm run validate`, and `npm run build:pages`. The dedicated test covers dates, mixed widths, missing values, scope isolation, IDs, CSV formula escaping, cursor pagination, duplicate-page failures and count mismatches. `node scripts/preview-lot-sales.mjs` serves synthetic local fixtures for browser checks; fixtures are outside widget source and never published.
 
-Browser regression: filters, metric switch, drilldown, collapse/expand, month paging, missing-date/empty states, CSV export, reset, refresh, keyboard focus and 390px layout. The expanded loader and budget queries still require verification in the registered Creator widget. Local fixtures simulate delayed and interrupted historical requests.
+Browser regression: filters, measure selection, drilldown, individual group collapse/expand, horizontal month scrolling, missing-date/empty states, CSV export, reset, refresh, keyboard focus and 390px layout. The expanded loader and budget queries still require verification in the registered Creator widget. Local fixtures simulate delayed and interrupted historical requests.
 
 Release 1.0.1 renames the shell to Land Master Insights and publishes `/prod/insights/` as the primary URL. The original `/prod/lot-sales-explorer/` remains a compatibility path. Both paths use the same promoted release and in-document loader, preserving Creator context and query parameters. Source and release identifiers remain `lot-sales-explorer`. To roll back 1.1.0, map production `lot-sales-explorer` to `1.0.1`; both URLs remain available. No forms, fields, functions, or Custom APIs change.
 
@@ -117,3 +117,9 @@ Search, Lot Status, Period, and All filters share one desktop row. Report totals
 Lot Status, Period, Group By, and Measure are visible together in a compact report setup row. Search, filter settings, table settings, and month navigation share the next row; the text-heavy summary strip is removed. Group and measure controls retain their custom single-choice menus, and the selected measure labels the report's period column. Collapsed group rows continue to show values recomputed from their filtered lots for the selected period and visible months, with Sold and Contracted kept separate. This is a frontend layout release; Creator forms, fields, functions, Custom APIs, and financial definitions are unchanged.
 
 Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run build:pages`; check desktop and narrow layouts, filter and month navigation, all six measures, group rollups, keyboard selection, drilldowns, and CSV export. Rollback: map production `lot-sales-explorer` to `1.5.5` and rebuild Pages.
+
+## 1.5.7 Header controls and simplified month range
+
+Group By and Measure return to the first and fourth table column headers as custom single-choice dropdowns. Search, Lot Status, Period, All filters, and active filter chips share a horizontal top row on wide screens and wrap on narrow screens. A small range pill shows the first and last selected month and the month count. All selected months remain available by scrolling the matrix horizontally, without month-page controls. Table view, Sort, and Collapse All controls are removed; each group can still be collapsed or expanded individually, with its aggregate values visible when closed. The underlying report filters, measure definitions, grouped totals, CSV export, and Creator data contract are unchanged.
+
+Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run build:pages`; check desktop and narrow layouts, custom header pickers, search/status/period filters, the full month range and horizontal scrolling, individual group rollups, drilldowns, and CSV export. No Creator forms, fields, functions, Custom APIs, or Creator deployment change. Rollback: map production `lot-sales-explorer` to `1.5.6` and rebuild Pages.

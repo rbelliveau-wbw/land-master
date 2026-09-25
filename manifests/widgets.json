@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T17:31:24Z",
+  "generated_at": "2026-09-25T19:47:01Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -248,13 +248,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-        "version": "1.5.6",
+        "version": "1.5.7",
         "description": "Read-only Lot Sales dashboard with Project, Territory, and Builder grouping, subdivision hover cards, and lot-detail groups by builder and selected date basis.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-        "source_sha256": "cc646af7008f765087eb3c4a95854a0e0511d2169224062e3085782fa0999df8",
+        "source_sha256": "5f34915cc6001bbb40d3f50dccee2850688d131b983422fbed99ba07129a1568",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
