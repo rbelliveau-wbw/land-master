@@ -110,4 +110,32 @@ context.renderFlowTable();
 assert.ok(!elements.get("flowBody").innerHTML.includes("Phase Increase"),
   "legacy sales retain their existing single Finished Lot Sales line");
 
+/* The dashboard assumption must show the persisted frontage price to cents;
+   the neighboring financial totals retain their usual whole-dollar display. */
+elements.set("kpis", {innerHTML: ""});
+elements.set("assump", {innerHTML: ""});
+elements.set("vDash", {classList: {toggle() {}}});
+context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Lot_Size_Ft: "56"};
+context.S.dash.calc = {totals: {Gross_Sales: 8088630, Total_Income: 8088630,
+  Total_Expenses: 1430000, Net_Profit: 6658630}, schedule: {}, cashPosition: []};
+context.syncPersistentRecordHeader = () => {};
+context.renderDashboardOwners = () => {};
+context.renderDealRoom = () => {};
+context.renderFlowTable = () => {};
+context.phaseSalesDisplaySummary = () => null;
+context.ymLabel = () => "Jan 2030";
+context.landPurchaseLabel = () => "—";
+vm.runInContext(extractFunction("renderDashboard"), context);
+context.renderDashboard();
+assert.match(elements.get("assump").innerHTML,
+  /<label>Sale Price \/ FF<\/label><b>\$1,444\.45<\/b>/,
+  "the saved Sale Price / FF must show both decimal places on the dashboard");
+assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,630<\/div>/,
+  "Net Profit retains its whole-dollar presentation");
+context.S.dash.model.Sale_Price_FF = "1500";
+context.renderDashboard();
+assert.match(elements.get("assump").innerHTML,
+  /<label>Sale Price \/ FF<\/label><b>\$1,500\.00<\/b>/,
+  "whole-number Sale Price / FF values still show two decimal places");
+
 console.log("Pro Forma dashboard Total column placement, scope, and sign checks passed.");

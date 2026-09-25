@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.41`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.42`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Dashboard Sale Price / FF precision (1.80.42)
+
+The Dashboard assumptions strip displays Sale Price / FF with two decimal places, including trailing zeros, so a saved value such as `1444.45` appears as `$1,444.45`. Financial totals keep their whole-dollar format. This is a widget display change; it does not change `Add_Pro_Forma.Sale_Price_FF` storage, calculations, Creator functions, or Custom APIs, and requires no Creator deployment. Regression: fractional and whole-dollar Sale Price / FF values, Net Profit formatting, and the existing dashboard cash-flow detail. Widget rollback: map Development and Production to `1.80.41`.
 
 ## Phase pricing detail and verified fractional save (1.80.41)
 

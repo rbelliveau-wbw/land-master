@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Dashboard Sale Price / FF cents (1.80.42, 2026-09-25)
+
+The Dashboard assumptions strip formats the saved `Add_Pro_Forma.Sale_Price_FF` value with two decimal places, so `1444.45` appears as `$1,444.45` and `1500` as `$1,500.00`. Other financial totals remain whole dollars. This is a widget display change; it does not alter the field value, calculations, Creator functions, or Custom APIs, and needs no Creator deployment. Regression: fractional and whole-dollar prices on Dashboard, Net Profit formatting, and Cash Flow detail. Widget rollback: map Development and Production to `1.80.41`.
+
 ## Fractional Lot Mix price and phase pricing QA (1.80.41, 2026-09-25)
 
 Production `Add_Pro_Forma.Sale_Price_FF` was published with Max Digits 14 and Decimal Points 2. Max Digits 10 with Decimal Points 2 had still produced a Creator max-digits validation error during the report update that triggers the Pro Forma engine. In live Production QA, test Pro Forma `4410926000004947002` saved a blended `Sale_Price_FF` of `1444.45` from a `1500.01`/LF Lot Mix row using widget `1.80.41`. Its dashboard showed Gross Sales $8,088,630 and Net Profit $6,658,630, with 47 saved month rows and January 2030 completion. After the record was locked, Lot Sales phase cards still changed the viewed phase; inputs and Save stayed disabled. This verifies the combined published field configuration and widget save path, without proving that either the field change or widget retry alone resolved the prior validation rejection. No Creator function, workflow, or Custom API changed in this release.

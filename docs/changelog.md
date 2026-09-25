@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-25 — Pro Forma Dashboard Sale Price / FF cents (1.80.42)
+
+The Dashboard assumptions strip now always shows Sale Price / FF to two decimals; the saved `1444.45` displays as `$1,444.45`, and `1500` displays as `$1,500.00`. Financial KPIs such as Net Profit retain whole-dollar formatting. This changes only widget presentation of `Add_Pro_Forma.Sale_Price_FF`; no Creator function, workflow, or Custom API changes and no Creator deployment is required. Regression: fractional and whole-dollar assumption values, whole-dollar Net Profit, and Dashboard Cash Flow detail. Widget rollback: map Development and Production to `1.80.41`.
+
 ## 2026-09-25 — Pro Forma phase pricing display and verified fractional save (1.80.41)
 
 Lot Sales pairs project month numbers with calendar month/year, defaults an untouched Esc Start Date to the month after that phase's first sale, and calls the one-time pricing control Phase Increase. The phase schedule shows the final sale's per-lot base, increase, escalator, finished price, growth from the first sale, and the increase that would carry that finished price into the next phase. Dashboard Cash Flow and Inflows show Base Price, Phase Increase, and Escalator as detail beneath Finished Lot Sales without adding them again to Total Income. For fractional `Sale_Price_FF`, the workflow-triggering report update supplies the exact two-decimal value and tries the second confirmed Pro Forma report only on Creator's specific zero-decimal rejection; the widget still requires server month/phase parity.
