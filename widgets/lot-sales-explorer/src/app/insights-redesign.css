@@ -1,0 +1,49 @@
+/* Option 1: the Lot Sales controls, in the Budget module's visual language. */
+#salesDashboard .sales-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:0;padding:13px 17px;margin-bottom:11px;border:1px solid #b9cde6;border-radius:10px;background:linear-gradient(110deg,#fff 0%,#f5f9ff 65%,#e6effc 100%);box-shadow:inset 4px 0 0 #2563eb,0 3px 10px #183c6309}
+#salesDashboard .sales-eyebrow{font-size:9px;font-weight:750;letter-spacing:1.2px;text-transform:uppercase;color:#5c7394;margin-bottom:3px}
+#salesDashboard .sales-heading .dashboard-title{font-size:22px;line-height:1.15;letter-spacing:-.5px;text-transform:none;color:#0b2345;margin:0}
+#salesDashboard .sales-heading #scopeLabel{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#salesDashboard .sales-filters{display:block;flex:none;max-height:none;overflow:visible;background:#f4f7fb;border:1px solid #bdcfe1;border-radius:10px 10px 0 0;padding:13px 15px;margin-bottom:0;box-shadow:none}
+#salesDashboard .sales-filters.is-expanded{max-height:min(56vh,480px);overflow:auto;overscroll-behavior:contain}
+#salesDashboard .sales-search-row{width:100%}
+#salesDashboard .sales-search-row .search-label{display:block;width:100%;min-width:0;color:#5c7394;font-size:10px;font-weight:650}
+#salesDashboard .sales-search-row .report-search{width:100%;height:38px;margin-top:5px}
+#salesDashboard .sales-search-row .report-search input{height:35px}
+#salesDashboard .sales-primary-filters{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap;margin-top:11px}
+#salesDashboard .sales-primary-filters>label{display:flex;flex-direction:column;gap:5px;min-width:130px;color:#5c7394;font-size:10px;font-weight:650}
+#salesDashboard .sales-primary-filters>label:first-child{flex:0 1 170px}
+#salesDashboard .sales-primary-filters>label:nth-child(2){flex:0 1 260px}
+#salesDashboard .sales-panel-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:5px 11px;border:1px solid #bfd0e8;border-radius:8px;background:#fff;color:#0b2345;font:inherit;font-size:11px;font-weight:650;white-space:nowrap}
+#salesDashboard .sales-panel-toggle:hover{background:#f8fbff;border-color:#7da5e3}
+#salesDashboard .sales-panel-toggle:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+#salesDashboard .sales-panel-toggle svg{width:12px;height:12px;flex:none;transition:transform .14s}
+#salesDashboard .sales-panel-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+#salesDashboard .sales-filter-summary{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}
+#salesDashboard .sales-filter-chips{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+#salesDashboard .sales-filter-chip{display:inline-flex;align-items:center;min-height:22px;padding:3px 9px;border:1px solid #c4d6ee;border-radius:999px;background:#fff;color:#315c92;font-size:10px;font-weight:600;line-height:1.25}
+#salesDashboard .sales-filter-summary #reset{margin-left:2px;font-size:10px}
+#salesDashboard .sales-more-filters{margin-top:13px;padding-top:11px;border-top:1px solid #cbd9e8}
+#salesDashboard .sales-more-filters[hidden],#salesDashboard .sales-table-view[hidden]{display:none!important}
+#salesDashboard .sales-filter-group+.sales-filter-group{margin-top:12px}
+#salesDashboard .sales-filter-group h2{font-size:11px;font-weight:750;color:#31557e;margin:0 0 9px}
+#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#salesDashboard .sales-location-fields>label,#salesDashboard .sales-date-fields>label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#5c7394;font-size:10px;font-weight:650}
+#salesDashboard .sales-more-filters .check-label{display:flex;align-items:center;gap:6px;margin-top:11px;font-size:10px}
+#salesDashboard .sales-more-filters .month-trigger{width:100%}
+#salesDashboard .sales-report-toolbar{display:flex;align-items:stretch;flex-direction:column;gap:0;padding:0;background:#fff;box-shadow:none}
+#salesDashboard .sales-report-primary{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;width:100%;padding:12px 15px}
+#salesDashboard .sales-report-primary .metric-switch{flex:none}
+#salesDashboard .sales-report-primary .compact-label{display:flex;flex-direction:column;gap:5px;min-width:160px}
+#salesDashboard .sales-report-primary .compact-label .picker-trigger{width:210px;max-width:100%}
+#salesDashboard .sales-report-primary .toolbar-spacer{flex:1}
+#salesDashboard .sales-table-view{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:10px 15px;border-top:1px solid #dce6f1;background:#f4f7fb}
+#salesDashboard .sales-table-view .compact-label{display:flex;flex-direction:column;gap:5px;min-width:155px}
+#salesDashboard .sales-table-view .compact-label .picker-trigger{width:190px;max-width:100%}
+#salesDashboard .sales-table-view #collapse{align-self:flex-end}
+#salesDashboard .report-card{border-top:0;border-radius:0 0 10px 10px}
+#salesDashboard #matrix tbody td:not(:first-child),#salesDashboard #matrix tfoot td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+#salesDashboard #matrix tbody tr.territory th{background:linear-gradient(110deg,#dce8f5,#eaf1f8)!important;box-shadow:inset 3px 0 0 #6d95c0;color:#31557e}
+#salesDashboard .single-popover .picker-option.selected{box-shadow:inset 3px 0 0 #2563eb;background:#eaf1fa;color:#0b2345}
+@media(max-width:700px){#salesDashboard .sales-heading{padding:11px 13px}#salesDashboard .sales-heading .dashboard-title{font-size:19px}#salesDashboard .sales-filters{max-height:none;padding:11px}#salesDashboard .sales-filters.is-expanded{max-height:50vh}#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}#salesDashboard .sales-report-primary{padding:9px;gap:8px}#salesDashboard .sales-report-primary .metric-switch{flex:1 1 100%;width:fit-content}#salesDashboard .sales-report-primary .compact-label{flex:1 1 170px}#salesDashboard .sales-report-primary .compact-label .picker-trigger{width:100%}#salesDashboard .sales-table-view{padding:9px}}
+@media(max-width:420px){#salesDashboard .sales-primary-filters>label{flex:1 1 100%!important}#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{grid-template-columns:1fr}#salesDashboard .sales-table-view .compact-label{flex:1 1 100%}#salesDashboard .sales-table-view .compact-label .picker-trigger{width:100%}}
+@media(prefers-reduced-motion:reduce){#salesDashboard .sales-panel-toggle svg{transition:none}}

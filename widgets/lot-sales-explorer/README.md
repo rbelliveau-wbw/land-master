@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.3
+# Land Master Insights 1.5.4
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -103,3 +103,7 @@ The subdivision card closes after the pointer leaves both its row name and the c
 ## 1.5.3 Lot detail date groups
 
 Lot Detail retains alphabetical Builder sections and adds a date heading within each Builder, using the selected Date Basis. Close Date or Purchase Date groups sort newest first; Purchase Date groups include lots that have no Close Date. Group headings repeat at page boundaries so each page remains readable. The report filters, totals, and CSV data do not change. Frontend and pure report-model changes only; no Creator form, field, function, Custom API, or Creator deployment is required. Regression: both date bases, purchase-only lots, builder ordering, page boundaries, and drilldown export. Rollback: map production `lot-sales-explorer` to `1.5.2` and rebuild Pages.
+
+## 1.5.4 Lot Sales filter layout
+
+The approved top filter bar puts search, Lot Status, and Period first. An expandable All filters section holds Location and Dates & Data, while active filters remain visible as chips. Table view holds Group By, Sort, and Collapse/Expand All. Single-value settings use the existing custom checkbox-free picker; Territory, Project, Builder, and Lot Status remain searchable multi-selects. The Shading checkbox is removed and its default table shading remains. Data definitions, queries, exports, pagination, and drilldowns do not change. This is a frontend-only release; no Creator forms, fields, functions, Custom APIs, or Creator deployment change. Regression: custom single and multi-select menus, preset and custom dates, filter summaries, reset, metrics, grouping, sorting, collapsing, CSV, and narrow layout. Rollback: map production `lot-sales-explorer` to `1.5.3` and rebuild Pages.
