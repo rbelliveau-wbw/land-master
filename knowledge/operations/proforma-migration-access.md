@@ -22,8 +22,8 @@ Keep the new phase model, migrated data, and all normal profile permissions. No 
 
 ## Exact scope
 
-- Widget: existing-record Edit, financial inputs, direct edit links, Save, and deliberate no-change re-save are available only when the SDK login and resolved User_Access roster entry match the account named by the server. No generic admin-role or Development-user alias grants this bypass.
-- Creator `proforma_save`: uses its existing `userAccessId` requester convention, resolves that User_Access row, and bypasses completed-approval rejection for the ordinary financial save, `save_phase_sales`, and `finalize_phase_sales` only when its User matches `migrationEditor` or that username at `wbdevelopment.com`. Missing, malformed, unknown, or non-matching IDs get the original gates. All three save calls carry the current access ID.
+- Widget: existing-record Edit, financial inputs, direct edit links, Save, and deliberate no-change re-save require the signed-in SDK login `rbelliveau@wbdevelopment.com` and the resolved User_Access roster row. Production resolves that login to row `4410926000004465004` with User `wbdevelopment`; this exact ID and label are accepted as the migration alias. No generic admin-role grant is used.
+- Creator `proforma_save`: uses its existing `userAccessId` requester convention, resolves that User_Access row, and bypasses completed-approval rejection for the ordinary financial save, `save_phase_sales`, and `finalize_phase_sales` only when its User matches `migrationEditor`, that username at `wbdevelopment.com`, or the exact Production alias row above. Missing, malformed, unknown, or non-matching IDs get the original gates. All three save calls carry the current access ID.
 - Identity limitation: the existing administrator-scoped Custom API receives requester identity in the payload; this profile check is not a new tamper-proof authentication boundary. Do not use `zoho.loginuser` alone to authorize the bypass because it can identify the API authorizer instead of the widget user.
 - Preserve the saved `Lock_Inputs` value in both the header and workflow-triggering touch. A UI bypass never becomes a stored unlock. List lock indicators and owner-edit checks use the original lock calculation.
 - Approval actions/routing/reset, LOI worksheet approval locks, explicit unlock actions, owner grants, delete/archive rights, attachments, and the Under Construction access gate retain their checks. Input validation, balanced phase allocations, capability checks, and post-save verification remain enforced.
@@ -31,7 +31,7 @@ Keep the new phase model, migrated data, and all normal profile permissions. No 
 
 ## Deployment and regression
 
-Production widget release: `1.80.23`. Creator deployment required: updated `proforma_save`, used by the existing environment-routed `Save_PF` APIs. No schema or API names change. The user retains control of Creator environment promotion; publishing the widget cannot install this function, and the bypass stays off until the matching backend is deployed.
+Initial Production widget release: `1.80.23`. The Production alias correction requires widget `1.80.37` and a matching Creator `proforma_save` promotion, used by the existing environment-routed `Save_PF` APIs. No schema or API names change. The user retains control of Creator environment promotion; publishing the widget cannot install this function, and the bypass stays off for the alias until the matching backend is deployed.
 
 Affected existing forms: `Add_Pro_Forma`, `Proforma_Phase`, and `Proforma_Months` through the normal save pipeline. No persisted fields are added. An unchanged migration re-save retains `Status`, `Probability`, `Owner`, `Archive`, `Lock_Inputs`, and approval records.
 

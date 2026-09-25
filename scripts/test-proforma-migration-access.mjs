@@ -62,6 +62,18 @@ for(const rec of records){
   if(rec.Lock_Inputs==='true')assert.equal(h.context.canEditOwner(rec),false,'owner controls retain their lock');
   assert.equal(JSON.stringify(rec),before,'gating must not mutate records');
 }
+// Production maps Robby's SDK login to the wbdevelopment User_Access row.
+for(const rec of records){
+  const h=harness({myAccessId:'4410926000004465004',
+    users:[{id:'4410926000004465004',label:'wbdevelopment'}]});
+  assert.equal(h.context.canOpenPfEditor(rec),true);
+  assert.equal(h.context.canSavePf(rec),true);
+}
+{
+  const h=harness({currentUser:'another@wbdevelopment.com',myAccessId:'4410926000004465004',
+    users:[{id:'4410926000004465004',label:'wbdevelopment'}]});
+  assert.equal(h.context.migrationAccountAccess(),false,'the shared Creator alias alone does not grant widget access');
+}
 // An approved record with a stored false lock must not be silently changed to true, either.
 {
   const h=harness(),rec={ID:'2006',Status:'Approved',Lock_Inputs:'false'};
@@ -115,6 +127,7 @@ assert.match(backend,/migrationEditor = "rbelliveau";/);
 assert.match(backend,/migrationEditAccess = false;/);
 assert.match(backend,/migrationAccess = User_Access\[ID == migrationAccessId.toLong\(\)\]/);
 assert.match(backend,/migrationUser = ifnull\(migrationAccess.User,""\)/);
+assert.match(backend,/migrationAccessId == "4410926000004465004" && migrationUser == "wbdevelopment"/);
 assert.match(backend,/resp.put\("migrationEditor",migrationEditor\)/);
 for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['finalApprovalComplete','finalSaveProtected'],['approvalIsComplete','headerSaveProtected']]){
   assert.ok(backend.includes(flag+' = '+name+' || '));
@@ -123,7 +136,8 @@ for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['final
 assert.equal((backend.match(/if\(!migrationEditAccess &&/g)||[]).length,3,'only the three financial-save guards are bypassed');
 assert.match(backend,/if\(approvalComplete \|\| ifnull\(quickPf.Status/,'explicit unlock stays guarded');
 assert.match(backend,/if\(loiApprovalStarted \|\| loiPfStatus == "Pending Approval"/,'LOI approval guard stays');
-assert.equal(extract('initializeConstructionGate'),extract('initializeConstructionGate',baseline),
+assert.equal(extract('initializeConstructionGate').replaceAll('\r\n','\n'),
+  extract('initializeConstructionGate',baseline).replaceAll('\r\n','\n'),
   'the Under Construction modal and tab-session unlock behavior must remain unchanged');
 
 // Missing/disabled capability must clear a previously cached account grant.

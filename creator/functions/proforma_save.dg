@@ -19,7 +19,7 @@
                             if(migrationAccess.count() > 0)
                             {
                                 migrationUser = ifnull(migrationAccess.User,"").toString().trim().toLowerCase();
-                                migrationEditAccess = migrationUser == migrationEditor || migrationUser == migrationEditor + "@wbdevelopment.com";
+                                migrationEditAccess = migrationUser == migrationEditor || migrationUser == migrationEditor + "@wbdevelopment.com" || (migrationEditor == "rbelliveau" && migrationAccessId == "4410926000004465004" && migrationUser == "wbdevelopment");
                             }
                         }
                  		pfId = ifnull(data.get("id"),"").toString().trim();
