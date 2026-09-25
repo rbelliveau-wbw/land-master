@@ -50,6 +50,8 @@ Use SVGs with a centered `viewBox` for small plus signs, chevrons, close icons, 
 ## Dashboard workspaces
 
 Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a left dashboard menu. Use one short green dashboard title; omit decorative taglines. Keep tables horizontally scrollable within their panels, and turn sidebar navigation into a compact row on narrow screens. Background loading should name the unavailable scope while keeping completed views usable.
+Use title case for Insights field labels and table headings. Center dialog close icons with SVG geometry and turn them red on hover.
+Insights subdivision details use a compact card anchored to the row on hover or keyboard focus. Keep its action reachable as the pointer crosses into the card, use the Land Master navy and teal palette, and keep the card inside the viewport.
 
 ## Dashboard phase timeline
 

@@ -49,7 +49,6 @@
     $('export').disabled = true; $('newer').disabled = true; $('older').disabled = true; $('monthPage').textContent = '—';
   }
   function render() {
-    hideSubdivisionCard();
     InsightsControls.syncAll();
     if (!state.loaded) return;
     historyStatus();
@@ -96,7 +95,7 @@
         const counts = allCounts?.get(row.id);
         const soldOut = counts && counts.total > 0 && counts.sold === counts.total;
         const badge = soldOut ? '<span class="sold-out-badge" title="Sold Out" aria-label="Sold Out"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '';
-        html += '<tr><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (r.statuses.length > 1 ? '<small class="status-tag">' + esc(row.status) + '</small>' : '') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + decimal(row.stats.avgWidth) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
+        html += '<tr><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="View subdivision details for ' + esc(row.name) + '">' + esc(row.name) + '</button>' + badge + (r.statuses.length > 1 ? '<small class="status-tag">' + esc(row.status) + '</small>' : '') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + decimal(row.stats.avgWidth) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
       });
     });
     $('matrixBody').innerHTML = html;
@@ -104,7 +103,7 @@
     $('collapse').textContent = [...groups.keys()].every(t => state.collapsed.has(t)) ? 'Expand all' : 'Collapse all';
     if (state.lots.some(lot => lot.missingSubdivision)) notice('Some lots reference subdivisions unavailable to you. Those rows are labeled Unknown or Unassigned.');
   }
-  function update() { hideSubdivisionCard(); state.monthOffset = 0; render(); }
+  function update() { if ($('subdivisionCard').open) $('subdivisionCard').close(); state.monthOffset = 0; render(); }
   function saveCsv(filename, rows) {
     const url = URL.createObjectURL(new Blob([M.csv(rows)], { type: 'text/csv;charset=utf-8' })), a = document.createElement('a');
     a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -140,37 +139,9 @@
     $('detailMeta').textContent = (month ? monthLabel(month) : monthLabel(r.from) + ' – ' + monthLabel(r.to)) + ' · ' + row.status + ' · ' + state.detailLots.length + ' lots';
     detailRows(); $('detail').showModal();
   }
-  let cardTrigger = null, cardHideTimer = null;
-  function cancelCardHide() { clearTimeout(cardHideTimer); cardHideTimer = null; }
-  function hideSubdivisionCard() {
-    cancelCardHide();
-    $('subdivisionCard').hidden = true;
-    if (cardTrigger) cardTrigger.setAttribute('aria-expanded', 'false');
-    cardTrigger = null;
-    state.cardRowKey = '';
-  }
-  function scheduleCardHide() {
-    cancelCardHide();
-    cardHideTimer = setTimeout(() => {
-      if ($('subdivisionCard').matches(':hover') || cardTrigger?.matches(':hover') || $('subdivisionCard').contains(document.activeElement) || cardTrigger?.matches(':focus-visible')) return;
-      hideSubdivisionCard();
-    }, 220);
-  }
-  function positionSubdivisionCard() {
-    if (!cardTrigger || $('subdivisionCard').hidden) return;
-    const card = $('subdivisionCard'), anchor = cardTrigger.getBoundingClientRect(), margin = 12, gap = 10;
-    const width = card.offsetWidth, height = card.offsetHeight;
-    const left = Math.max(margin, Math.min(anchor.left, innerWidth - width - margin));
-    const below = anchor.bottom + gap, above = anchor.top - height - gap;
-    const top = below + height <= innerHeight - margin ? below : above >= margin ? above : Math.max(margin, Math.min(below, innerHeight - height - margin));
-    card.style.left = Math.round(left) + 'px'; card.style.top = Math.round(top) + 'px';
-  }
-  function openSubdivisionCard(key, trigger) {
+  function openSubdivisionCard(key) {
     const row = state.report?.rows.find(item => item.key === key);
-    if (!row || !trigger) { hideSubdivisionCard(); return; }
-    cancelCardHide();
-    if (cardTrigger && cardTrigger !== trigger) cardTrigger.setAttribute('aria-expanded', 'false');
-    cardTrigger = trigger; cardTrigger.setAttribute('aria-expanded', 'true');
+    if (!row) { if ($('subdivisionCard').open) $('subdivisionCard').close(); return; }
     state.cardRowKey = key;
     const counts = state.historyReady ? M.subdivisionCounts(state.lots).get(row.id) : null;
     const field = state.report.dateField === 'closeDate' ? 'Close Date' : 'Purchase Date';
@@ -179,14 +150,13 @@
     const item = (label, value) => '<div class="subdivision-card-stat"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>';
     $('subdivisionCardTitle').textContent = row.name;
     $('subdivisionCardContext').textContent = row.project + ' · ' + row.territory + (state.report.groupBy === 'builder' ? ' · ' + row.builder : '');
-    $('subdivisionCardBody').innerHTML = '<section><div class="subdivision-card-section-head"><h3>All Lots</h3><span>Complete History</span></div><div class="subdivision-card-grid all-lots-grid">' +
+    $('subdivisionCardBody').innerHTML = '<section><h3>All Lots</h3><div class="subdivision-card-grid all-lots-grid">' +
       (counts ? item('Total', integer(counts.total)) + item('Sold', integer(counts.sold)) + item('Contracted', integer(counts.contracted)) + item('Open', integer(counts.open)) : '<p>' + (state.historyError ? 'All-lot counts unavailable' : 'All-lot counts loading') + '</p>') +
-      '</div>' + (counts && counts.total ? '<div class="subdivision-card-progress" role="img" aria-label="' + esc(counts.sold + ' of ' + counts.total + ' lots sold') + '"><span style="width:' + (counts.sold / counts.total * 100).toFixed(1) + '%"></span></div>' : '') + '</section><section><div class="subdivision-card-section-head"><h3>Selected View</h3><span>' + esc(row.status + ' · ' + monthLabel(state.report.from) + ' – ' + monthLabel(state.report.to)) + '</span></div><div class="subdivision-card-grid">' +
+      '</div></section><section><h3>Selected View</h3><p>' + esc(row.status + ' · ' + monthLabel(state.report.from) + ' – ' + monthLabel(state.report.to)) + '</p><div class="subdivision-card-grid">' +
       item('Lots', integer(row.stats.count)) + item('Builders', integer(builders.size)) + item('Average Front Ft', decimal(row.stats.avgWidth)) + item('Average Base $/FF', moneyFF(row.stats.avgPriceFF)) +
       item('Total Base Price', money(row.stats.totalPrice)) + item('Latest ' + field, dateLabel(lastDate)) + item('First Lot Sale', state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') +
       '</div></section>';
-    $('subdivisionCard').hidden = false;
-    positionSubdivisionCard();
+    if (!$('subdivisionCard').open) $('subdivisionCard').showModal();
   }
   function historyStatus() {
     $('historyBanner').hidden = state.historyReady || !state.loaded;
@@ -207,6 +177,7 @@
       state.lots = M.normalize({ ...state.references, lots }); state.historyReady = true;
       const scroll = document.querySelector('.matrix-scroll'), left = scroll.scrollLeft, top = scroll.scrollTop;
       render(); scroll.scrollLeft = left; scroll.scrollTop = top;
+      if ($('subdivisionCard').open) openSubdivisionCard(state.cardRowKey);
       $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' · ' + integer(state.lots.length) + ' lots · All history loaded';
       // Open drilldowns keep their original snapshot until closed; refreshing never changes rows under the pointer.
       if ($('detail').open) $('detailMeta').textContent += ' · Snapshot from opening';
@@ -214,6 +185,7 @@
     } catch (error) {
       if (generation !== state.generation) return;
       state.historyError = error.message; log('History failed: ' + error.message); render();
+      if ($('subdivisionCard').open) openSubdivisionCard(state.cardRowKey);
       $('historyBanner').title = error.message;
     }
   }
@@ -222,7 +194,7 @@
     state.busy = true; state.loaded = false; state.historyReady = false; state.historyError = null; state.report = null;
     $('refresh').disabled = true; $('export').disabled = true; $('historyBanner').hidden = true;
     if ($('detail').open) $('detail').close();
-    hideSubdivisionCard();
+    if ($('subdivisionCard').open) $('subdivisionCard').close();
     $('connection').textContent = 'Loading…'; $('summary').textContent = 'Loading current and previous year…'; notice(''); blank('Loading recent sales', 'Current and previous calendar years load first.');
     try {
       const data = await LotSalesCreator.loadRecent(ZOHO.CREATOR.DATA, null, { isCancelled: () => generation !== state.generation });
@@ -252,31 +224,19 @@
   $('matrixBody').addEventListener('click', e => { const group = e.target.closest('[data-group]'), cell = e.target.closest('[data-subdivision]'), card = e.target.closest('[data-card]');
     if (group) { const name = group.dataset.group; if (state.collapsed.has(name)) state.collapsed.delete(name); else state.collapsed.add(name); render(); }
     if (cell) openDetail(cell.dataset.subdivision, cell.dataset.month);
-    if (card && (e.detail === 0 || matchMedia('(hover: none)').matches)) openSubdivisionCard(card.dataset.card, card);
+    if (card) openSubdivisionCard(card.dataset.card);
   });
-  $('matrixBody').addEventListener('pointerover', e => { const trigger = e.target.closest('[data-card]'); if (trigger && e.pointerType !== 'touch' && !trigger.contains(e.relatedTarget)) openSubdivisionCard(trigger.dataset.card, trigger); });
-  $('matrixBody').addEventListener('pointerout', e => { const trigger = e.target.closest('[data-card]'); if (trigger && !trigger.contains(e.relatedTarget)) scheduleCardHide(); });
-  let suppressCardFocus = false;
-  $('matrixBody').addEventListener('focusin', e => { const trigger = e.target.closest('[data-card]'); if (trigger && !suppressCardFocus) openSubdivisionCard(trigger.dataset.card, trigger); });
-  $('matrixBody').addEventListener('focusout', e => { if (e.target.closest('[data-card]')) scheduleCardHide(); });
-  $('subdivisionCard').addEventListener('pointerenter', cancelCardHide);
-  $('subdivisionCard').addEventListener('pointerleave', scheduleCardHide);
-  $('subdivisionCard').addEventListener('focusin', cancelCardHide);
-  $('subdivisionCard').addEventListener('focusout', scheduleCardHide);
-  document.querySelector('.matrix-scroll').addEventListener('scroll', hideSubdivisionCard, { passive: true });
-  window.addEventListener('resize', hideSubdivisionCard);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('subdivisionCard').hidden) { hideSubdivisionCard(); e.stopPropagation(); } });
   $('newer').addEventListener('click', () => { state.monthOffset = Math.max(0, state.monthOffset - ($('period').value === 'twoYears' ? 24 : 13)); render(); });
   $('older').addEventListener('click', () => { state.monthOffset += $('period').value === 'twoYears' ? 24 : 13; render(); });
   $('closeDetail').addEventListener('click', () => $('detail').close());
-  $('closeSubdivisionCard').addEventListener('click', () => { const trigger = cardTrigger; hideSubdivisionCard(); suppressCardFocus = true; trigger?.focus(); queueMicrotask(() => { suppressCardFocus = false; }); });
-  $('viewSubdivisionLots').addEventListener('click', () => { const key = state.cardRowKey; hideSubdivisionCard(); openDetail(key, ''); });
+  $('closeSubdivisionCard').addEventListener('click', () => $('subdivisionCard').close());
+  $('viewSubdivisionLots').addEventListener('click', () => { const key = state.cardRowKey; $('subdivisionCard').close(); openDetail(key, ''); });
   $('detailPrev').addEventListener('click', () => { state.detailOffset -= 100; detailRows(); });
   $('detailNext').addEventListener('click', () => { state.detailOffset += 100; detailRows(); });
   $('exportDetail').addEventListener('click', () => saveCsv('lot-sales-detail.csv', [['Lot','Subdivision','Project','Territory','Builder','Status','Close Date','Purchase Date','Front Ft','Base Price','Base $/FF','Interest','Interest $/FF','Escalator %','Total Price','Price $/FF','Notes'], ...state.detailLots.map(l => { const total = M.totalPrice(l), validWidth = l.width !== null && l.width > 0; return [l.code,l.subdivision,l.project,l.territory,l.builder,l.status,l.closeDate,l.purchaseDate,l.width,l.price,l.price !== null && l.price >= 0 && validWidth ? l.price / l.width : '',l.interest,l.interest !== null && validWidth ? l.interest / l.width : '',l.escalator,total,total !== null && total >= 0 && validWidth ? total / l.width : '',l.notes]; })]));
   $('export').addEventListener('click', exportMatrix);
   $('reset').addEventListener('click', () => { ['territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('excludeBuilders').checked = true; $('metric').value = 'avgPriceFF'; $('sort').value = 'name'; state.collapsed.clear(); applyPeriod(); update(); });
-  $('audit').addEventListener('click', () => { $('auditText').textContent = 'Land Master Insights v1.5.1\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
+  $('audit').addEventListener('click', () => { $('auditText').textContent = 'Land Master Insights v1.5.0\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('refresh').addEventListener('click', () => { if (InsightsShell.current() === 'sales') void load(); });
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });

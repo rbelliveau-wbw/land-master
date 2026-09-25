@@ -248,13 +248,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.4.0",
-      "description": "Read-only Lot Sales dashboard with Base and Price per-front-foot views, interest and escalator detail, subdivision lot counts, and background history.",
+      "version": "1.5.1",
+      "description": "Read-only Lot Sales dashboard with Project, Territory, and Builder grouping, subdivision hover cards, purchase-date drilldowns, and background history.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "d41aba03b35ecda0ffd2c7ae8ef5a76769f76f1585b9d8580a717d993935e135",
+      "source_sha256": "6b9e626b0a2ea433e5408eb9b1b454311dae6b91d9e7b00b59c10606dc108894",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
