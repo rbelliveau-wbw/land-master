@@ -17,8 +17,9 @@ export function salesFixture(now = new Date()) {
         const date = month.getFullYear() + '-' + String(month.getMonth() + 1).padStart(2, '0') + '-08';
         for (let lot = 1; lot <= 2 + (t + phase + ago) % 5; lot++) {
           const width = [40, 45, 50, 55, 60][(lot + phase) % 5], priceFF = 680 + t * 95 + phase * 40 + (18 - ago) * 7;
-          data.lots.push({ ID: String(9000000000000000000n + BigInt(sequence++)), Subdivision: { ID: sid, display_value: name }, Status: lot === 1 && ago < 2 ? 'Contracted' : 'Sold',
+          data.lots.push({ ID: String(9000000000000000000n + BigInt(sequence++)), Subdivision: { ID: sid, display_value: name }, Status: t === 0 && phase === 1 ? 'Sold' : lot === 1 && ago < 2 ? 'Contracted' : 'Sold',
             Close_Date: lot === 1 && ago < 2 ? '' : date, Purchase_Date: date, Base_Price: sequence % 37 === 0 ? '' : String(priceFF * width), Lot_Size: sequence % 43 === 0 ? '0' : String(width),
+            Interest1: sequence % 5 === 0 ? String(width * 25) : '', Escalator: sequence % 5 === 0 ? '3.5' : '', Notes: sequence % 11 === 0 ? 'Synthetic interest review note' : '',
             Builder1: data.builders[(lot + t) % 3] ? { ID: data.builders[(lot + t) % 3].ID, display_value: data.builders[(lot + t) % 3].Builder_Name } : '',
             Lot_Code: 'DEMO-' + sid.toUpperCase() + '-B01-L' + sequence, Block: '01', Lot_Number: String(sequence), Archived: ago > 12 });
         }

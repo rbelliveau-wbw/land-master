@@ -6,6 +6,8 @@ Source: `widgets/lot-sales-explorer/src/app/`. Detailed contract, installation, 
 
 Uses existing `Lots → Subdivision → Project` relationships and Builder lookup. No Pro Forma model changes or Creator schema changes. Financial measures use Base_Price and Lot_Size (front footage). Sold and Contracted remain distinct. Data retrieval follows the signed-in user's Creator permissions; no unauthenticated business data is included in hosted assets.
 
+Insights 1.4.0 adds Price/FF as the mean of `(Base_Price + Interest1) / Lot_Size` for eligible lots. `Escalator` is shown as a percentage, not added separately to price. Drilldown and CSV expose the recorded Interest, Escalator and Notes. Subdivision Total/Sold/Contracted/Open counts use all lots after complete history loads; Open means a status other than Sold or Contracted. Sold out requires every lot to have status Sold. The prior Base/FF calculation and default filters are unchanged. No Creator backend deployment is needed; rollback release is 1.3.0.
+
 The pure model, SDK adapter, and UI are separate. Future Pro Forma embedding should reuse the model and project scope rather than copying financial formulas.
 
 ## Insights 1.1.0
