@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.5
+# Land Master Insights 1.5.6
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -111,3 +111,9 @@ The approved top filter bar puts search, Lot Status, and Period first. An expand
 ## 1.5.5 Compact report controls and group rollups
 
 Search, Lot Status, Period, and All filters share one desktop row. Report totals, month paging, and Table view share the next compact row. Group By now sits in the Subdivision column header, and the full Measure choice sits in the Period header; on narrow screens Measure moves into the visible report toolbar. The redundant metric pill switch and separate Measure field are removed. Collapsed Project, Territory, and Builder groups show their earliest complete-history sale date, average frontage, selected-period measure, and values for each visible month. Aggregates are recomputed from the group's filtered lots so averages and weighted measures retain their definitions and Sold/Contracted remain separate. No Creator forms, fields, functions, Custom APIs, or backend deployment change. Regression: all six measures, grouped monthly and period totals, mixed statuses, Builder partitioning, paging, keyboard selection, collapse/expand, and narrow layout. Rollback: map production `lot-sales-explorer` to `1.5.4` and rebuild Pages.
+
+## 1.5.6 Report setup and compact matrix
+
+Lot Status, Period, Group By, and Measure are visible together in a compact report setup row. Search, filter settings, table settings, and month navigation share the next row; the text-heavy summary strip is removed. Group and measure controls retain their custom single-choice menus, and the selected measure labels the report's period column. Collapsed group rows continue to show values recomputed from their filtered lots for the selected period and visible months, with Sold and Contracted kept separate. This is a frontend layout release; Creator forms, fields, functions, Custom APIs, and financial definitions are unchanged.
+
+Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run build:pages`; check desktop and narrow layouts, filter and month navigation, all six measures, group rollups, keyboard selection, drilldowns, and CSV export. Rollback: map production `lot-sales-explorer` to `1.5.5` and rebuild Pages.
