@@ -51,6 +51,15 @@ assert.equal(all.months.length, 13);
 assert.equal(all.months[0], '2026-09');
 assert(all.lots.every(l=>l.status==='Sold'));
 assert.equal(all.groupBy, 'project');
+const detailLots = [
+  {builder:'DR Horton',code:'old',closeDate:'2026-07-02',purchaseDate:'2026-07-02'},
+  {builder:'DR Horton',code:'new',closeDate:'2026-07-23',purchaseDate:'2026-07-23'},
+  {builder:'DR Horton',code:'purchase-only',closeDate:null,purchaseDate:'2026-08-01'},
+  {builder:'Ashton',code:'first',closeDate:'2026-06-01',purchaseDate:'2026-06-01'}
+];
+assert.deepEqual(M.sortDetailLots(detailLots,'closeDate').map(l=>l.code),['first','new','old','purchase-only']);
+assert.deepEqual(M.sortDetailLots(detailLots,'purchaseDate').map(l=>l.code),['first','purchase-only','new','old']);
+assert.equal(detailLots[0].code,'old','drilldown sorting must not mutate report rows');
 assert(all.rows.every(row => row.groupName === row.project), 'Project is the default report grouping');
 const byTerritory = M.report(lots, {from:'2025-09',to:'2026-09',status:'Sold',groupBy:'territory'});
 assert(byTerritory.rows.every(row => row.groupName === row.territory));

@@ -1,0 +1,8 @@
+{
+  "widget": "lot-sales-explorer",
+  "version": "1.5.3",
+  "created_at": "2026-09-25T17:39:04.022Z",
+  "source": "widgets/lot-sales-explorer/src/app/widget.html",
+  "source_sha256": "4247d6a05e4f942a0495e0e34cd8999892d75453b536fb3ae353588653146b22",
+  "status": "candidate"
+}

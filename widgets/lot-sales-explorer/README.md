@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.2
+# Land Master Insights 1.5.3
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -99,3 +99,7 @@ Hovering or focusing a subdivision name opens a compact Land Master styled card 
 ## 1.5.2 Hover dismissal and single-select menus
 
 The subdivision card closes after the pointer leaves both its row name and the card, while the brief crossing delay keeps View Lots reachable. Keyboard focus remains an independent way to open and use it. Group By and Sort retain the custom Land Master picker styling but show compact single-choice menus without checkboxes, search, or a Done button. Frontend only; no Creator fields, forms, functions, Custom APIs, or financial definitions change. Regression: hover-away dismissal, name-to-card transfer, focused control dismissal, keyboard access, Group By/Sort selection and sorting, and narrow viewport placement. Rollback: map production `lot-sales-explorer` to `1.5.1` and rebuild Pages.
+
+## 1.5.3 Lot detail date groups
+
+Lot Detail retains alphabetical Builder sections and adds a date heading within each Builder, using the selected Date Basis. Close Date or Purchase Date groups sort newest first; Purchase Date groups include lots that have no Close Date. Group headings repeat at page boundaries so each page remains readable. The report filters, totals, and CSV data do not change. Frontend and pure report-model changes only; no Creator form, field, function, Custom API, or Creator deployment is required. Regression: both date bases, purchase-only lots, builder ordering, page boundaries, and drilldown export. Rollback: map production `lot-sales-explorer` to `1.5.2` and rebuild Pages.
