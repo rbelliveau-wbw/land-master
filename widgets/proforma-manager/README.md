@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.32`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.33`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Outflow totals in phase hover cards (1.80.33)
+
+The extra outflow section from `1.80.32` is removed. Existing Engineering and Construction phase cards show their corresponding project-wide Base and Add'l totals; every stage card also shows project Land Cost and Total Outflows. Phase-specific base cost remains separate from project totals. No Creator deployment is required. Regression: existing phase bar layout, all five outflow categories and grand total in the appropriate hover/focus cards, legacy and v2 schedules, page clipping, and cash-flow tabs. Rollback: map Production to `1.80.31` to retain the timeline without project outflow details; `1.80.32` restores the separate outflow tracks.
 
 ## Timeline project outflows (1.80.32)
 

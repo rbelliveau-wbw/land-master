@@ -55,11 +55,6 @@ function render(calculation,model,firstMonth){
 }
 function segmentTags(html,stage){
   return [...html.matchAll(/<button\b[^>]*class="[^"]*pt-segment\b[^"]*"[^>]*>/g)]
-    .map(m=>m[0]).filter(tag=>!tag.includes('pt-spend') &&
-      (tag.match(/class="([^"]+)"/)?.[1].split(' ')||[]).includes(`pt-${stage}`));
-}
-function spendTags(html,stage){
-  return [...html.matchAll(/<button\b[^>]*class="[^"]*pt-spend\b[^"]*"[^>]*>/g)]
     .map(m=>m[0]).filter(tag=>(tag.match(/class="([^"]+)"/)?.[1].split(' ')||[]).includes(`pt-${stage}`));
 }
 function geometry(tag){
@@ -146,52 +141,29 @@ assert.match(gapHtml,/Mth 25[–-]28/,
 assert.match(gapHtml,/4 lots closed in 2 closing months/,
   'the sales tooltip distinguishes the closing months from the sales window');
 
-// Every KPI outflow category appears below the phase schedule on the same month
-// axis. The monthly markers use calculated aggregate spend, while totals use the
-// same project totals as the dashboard card.
+// The existing phase cards carry the corresponding project totals from the KPI,
+// with no extra rows below the timeline. Phase base cost stays phase-specific.
 const spending=context.computeProforma(base);
-for(const row of spending.agg){
-  row.landCost=0;row.engByPhase={};row.engAddl=0;row.constByPhase={};row.constAddl=0;
-}
-function spendAt(month,field,amount){spending.agg.find(row=>row.m===month)[field]=amount;}
-spendAt(1,'landCost',600);
-spendAt(5,'landCost',400);
-spendAt(1,'engByPhase',{'1':100});
-spendAt(2,'engByPhase',{'1':200});
-spendAt(7,'engAddl',50);
-spendAt(13,'constByPhase',{'1':300});
-spendAt(14,'constAddl',75);
 Object.assign(spending.totals,{Land_Cost:1000,Entitlement_Cost:300,
   Entitlement_Engineering_Addl:50,Construction_Cost_Base:300,
   Construction_Cost_Addl:75,Total_Expenses:1725});
 const spendHtml=render(spending,base,1);
-assert.match(spendHtml,/Total outflows<\/span><span class="pt-outflow-grand">\$1,725/);
-assert.equal((spendHtml.match(/class="pt-cost-row"/g)||[]).length,5,
-  'the timeline includes all five project outflow categories');
-for(const [key,label,amount] of [['land','Land Cost','$1,000'],
-    ['eng-base','Engineering Base','$300'],['eng-addl',"Ent/Eng Add'l",'$50'],
-    ['const-base','Construction Base','$300'],['const-addl',"Construction Add'l",'$75']]){
-  assert.equal(spendTags(spendHtml,key).length,key==='land'?2:1,
-    `${label} has a timed spend bar for each separate spending window`);
-  assert.match(spendTags(spendHtml,key)[0],new RegExp(`data-pt-category-total="\\${amount}"`),
-    `${label} bar retains the dashboard category total`);
+assert.doesNotMatch(spendHtml,/pt-outflow-head|pt-cost-row|pt-spend/,
+  'the timeline has no extra outflow section or bars');
+const engCard=segmentTags(spendHtml,'eng')[0];
+const constCard=segmentTags(spendHtml,'const')[0];
+const salesCard=segmentTags(render(spending,base,25),'sales')[0];
+for(const tag of [engCard,constCard,salesCard]){
+  assert.match(tag,/data-pt-land-cost="\$1,000"/,'each card includes project Land Cost');
+  assert.match(tag,/data-pt-outflows="\$1,725"/,'each card includes Total Outflows');
 }
-assert.deepEqual(geometry(spendTags(spendHtml,'eng-base')[0]),[0,8.3333],
-  'consecutive engineering spending spans months one and two');
-assert.deepEqual(geometry(spendTags(spendHtml,'land')[1]),[16.6667,4.1667],
-  'separate land installments retain their distinct month positions');
-assert.match(spendHtml,/pt-spend pt-eng-base[^>]*data-pt-amount="\$300"[^>]*>2m<\/button>/,
-  'the two-month spend bar reports its full amount and duration');
-assert.deepEqual(geometry(spendTags(spendHtml,'const-addl')[0]),[54.1667,4.1667],
-  'construction additional cost sits at its actual month on the shared axis');
-const laterSpend=render(spending,base,25);
-assert.equal(spendTags(laterSpend,'land').length,0,
-  'spend markers disappear outside the selected month page');
-assert.doesNotMatch(laterSpend,/No monthly allocation/,
-  'a spend category on another page is not mislabeled as unscheduled');
-for(const row of spending.agg)row.engAddl=0;
-assert.match(render(spending,base,1),/Ent\/Eng Add&#39;l[\s\S]*?No monthly allocation/,
-  'a category total with no calculated monthly allocation receives an honest label');
+assert.match(engCard,/data-pt-project-a-label="Engineering Base" data-pt-project-a-value="\$300"/);
+assert.match(engCard,/data-pt-project-b-label="Ent\/Eng Add&#39;l" data-pt-project-b-value="\$50"/);
+assert.match(constCard,/data-pt-project-a-label="Construction Base" data-pt-project-a-value="\$300"/);
+assert.match(constCard,/data-pt-project-b-label="Construction Add&#39;l" data-pt-project-b-value="\$75"/);
+assert.match(salesCard,/data-pt-project-a-label=""/,'sales has no unrelated stage cost');
+assert.match(widgetFunction('flowTimelineTooltipShow'),/summaryRow\('Land Cost',data\.ptLandCost\)/,
+  'the hover card renders the project outflow figures');
 
 const empty=render({phases:[],agg:[]},base,1);
 assert.match(empty,/pt-empty/, 'incomplete schedules have a useful empty state');

@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Project outflows in phase hover cards (1.80.33, 2026-09-24)
+
+The separate outflow section from `1.80.32` is removed. Engineering hover and keyboard-focus cards show project Engineering Base and Ent/Eng Add'l totals alongside the existing phase-specific base cost; Construction cards show Construction Base and Construction Add'l the same way. All phase cards show project Land Cost and Total Outflows. These values come from the same dashboard totals as the Total Outflows KPI and are explicitly labeled as project figures rather than phase allocations. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: legacy and v2 phase timing, all KPI outflow figures in the corresponding cards, phase-specific cost, lot sales detail, month labels, page clipping, hover/focus, and no added outflow tracks. Production widget rollback: `1.80.31` for the earlier timeline, or `1.80.32` for the separate tracks.
+
 ## Timeline project outflows (1.80.32, 2026-09-24)
 
 Below the phase rows, the dashboard Timeline aligns Land Cost, Engineering Base, Ent/Eng Add'l, Construction Base, and Construction Add'l spending to the same month axis. Exact category and Total Outflows figures come from the dashboard totals; spend bars use calculated monthly outflows and group consecutive scheduled months. Hover or keyboard focus shows the spend window, amount, category total, and overall outflows. A category total without scheduled monthly spend is labeled without inventing a date. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: category-to-KPI reconciliation, purchase installments, base and additional cost timing, separated and consecutive spends, page clipping, phase overlap, focus, and other Cash Flow tabs. Production widget rollback: `1.80.31`.
