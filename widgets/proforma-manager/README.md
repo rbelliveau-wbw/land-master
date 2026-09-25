@@ -3,8 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.35`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.36`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
+## Repeated phase save after server recalculation (1.80.36)
+
+Phase sales saves match existing rows by phase number. The Creator server already supports this lookup, and it prevents a stale row ID from blocking a second save in the same browser session after recalculation rebuilt phase rows. No Creator publish is needed. Regression: save, reopen, save again; verify the phase schedule, financial values, and restored delay. Rollback: map Development and Production to `1.80.35`.
 ## Phase-window additional costs (1.80.35)
 
 Engineering and Construction hover/focus cards now show their own phase-window Add'l cost from calculated monthly rows, beside the existing phase base cost. Project Land Cost, project category totals, and Total Outflows are removed from individual phase cards; those figures remain on the dashboard KPI. Lot sales cards retain closing information. No Creator deployment is required. Regression: distinct and overlapping phases, stage month boundaries and paging, zero additional costs, lot sales detail, and legacy/v2 schedules. Rollback: map Production to `1.80.34`.

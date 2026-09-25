@@ -1,6 +1,9 @@
 
 # Proforma Module
 
+## Repeated phase save after server recalculation (1.80.36, 2026-09-24)
+
+The phase-sales save payload leaves child IDs blank so the existing Creator `save_phase_sales` function upserts rows by phase number. This avoids an invalid cached row ID after the server rebuilds Proforma_Phase rows on the previous save. Phase inputs and server-generated months still pass the existing parity checks. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator publish is needed. Regression: save, reopen, save again in one browser session; verify phase delay, schedule, and financial values. Production widget rollback: `1.80.35`.
 ## Phase-window additional costs (1.80.35, 2026-09-24)
 
 Engineering and Construction timeline hover/focus cards sum the calculated additional-cost month rows whose stage phase matches the hovered phase and whose model month lies within that stage's start and end months. Each card pairs its phase base cost with its own Ent/Eng Add'l or Construction Add'l cost. Project Land Cost, project category totals, and Total Outflows no longer appear on phase cards; the dashboard KPI still shows them. Lot sales detail and timeline bar layout are unchanged. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: legacy and v2 schedules, distinct and overlapping phase month rows, zero costs, paging, hover/focus, and sales windows. Production widget rollback: `1.80.34` for the earlier phase schedule fixes, or `1.80.33` for the earlier timeline hover cards.

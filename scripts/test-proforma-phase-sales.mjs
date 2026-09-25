@@ -623,6 +623,17 @@ capabilityContext.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sale
 assert.equal(await capabilityContext.probePhaseSalesSupport(),true,
   'the phase editor should activate after Creator is deployed');
 assert.equal(capabilityContext.S.phaseSalesReady,true);
+const savePayloadContext=vm.createContext({S:{myAccessId:'user-1'},
+  buildHeaderData:()=>({}),multiLookupIds:v=>v,phaseSalesAdopted:()=>true,
+  hasVal:v=>v!=null&&v!=='',parseMonthList:()=>[],monthListToCsv:()=>'',
+  dateToCreatorValue:v=>v});
+vm.runInContext(widgetFunction('buildSavePayload'),savePayloadContext);
+const phaseDraft={ID:'proforma-1',purchaseInstallments:[],saleInstallments:[],
+  pidMud:[],items:[],curve:[],phaseSales:[{ID:'stale-phase-row',Phase:1,Total_Lots:10}]};
+assert.equal(savePayloadContext.buildSavePayload(phaseDraft,{}).phaseSales[0].ID,'',
+  'phase saves use the server phase number to avoid stale row IDs after recalculation');
+assert.equal(phaseDraft.phaseSales[0].ID,'stale-phase-row',
+  'building the save payload must not mutate the editor draft');
 assert.match(widget,/op:"save_phase_sales"/);
 assert.match(widget,/op:"finalize_phase_sales"/);
 assert.match(widget,/Phase-sales server schedule verified/);
