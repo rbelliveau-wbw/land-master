@@ -3,8 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.33`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.34`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
+## Phase sales scenario and live validation (1.80.34)
+
+Lot what-ifs carry scaled phase allocations into the active scenario and Revert All restores the baseline. Blank automatic escalator dates resolve before calculations, phase edits refresh the visible schedule without replacing the active input, and invalid phase plans disable Save and show unavailable financial figures. Phase delay tests cover construction dates and the timing of additional cost applications. This is widget-only; no Creator deployment is required. Regression: phase scenario isolation, escalator date, allocation validation and save guard, and timing of Engineering End, Construction Start, Construction End, Across Phases, and Specific Months costs. Rollback: map Development and Production to `1.80.33`.
 ## Outflow totals in phase hover cards (1.80.33)
 
 The extra outflow section from `1.80.32` is removed. Existing Engineering and Construction phase cards show their corresponding project-wide Base and Add'l totals; every stage card also shows project Land Cost and Total Outflows. Phase-specific base cost remains separate from project totals. No Creator deployment is required. Regression: existing phase bar layout, all five outflow categories and grand total in the appropriate hover/focus cards, legacy and v2 schedules, page clipping, and cash-flow tabs. Rollback: map Production to `1.80.31` to retain the timeline without project outflow details; `1.80.32` restores the separate outflow tracks.

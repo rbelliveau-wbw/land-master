@@ -25,8 +25,9 @@ const context = vm.createContext({
   document: {getElementById: element, querySelectorAll: () => []},
   debounce: fn => fn,
   syncAllPerUnitAdditionalCosts: () => false,
+  phaseSalesActive: () => false,
   modelToCalc: m => ({
-    totals: {}, roi: null, irr: null, xirr: null, months: [], phases: [],
+    totals: {}, roi: null, irr: null, xirr: null, months: [], phases: [], warnings: [],
     schedule: {estimatedCompletion: m.purchaseDate && m.scheduleReady ? {y: 2028, m: 12} : null}
   }),
   ymLabel: d => d ? `${months[d.m - 1]}, ${d.y}` : "—",
@@ -36,7 +37,7 @@ const context = vm.createContext({
   fmt$: v => String(v),
   fmtPct: v => String(v),
   fmtN: v => String(v),
-  refreshComputedInputs() {}, refreshLOICompleteness() {}, updateTabWarnings() {}
+  refreshComputedInputs() {}, refreshPhaseSalesFeedback() {}, refreshLOICompleteness() {}, updateTabWarnings() {}
 });
 vm.runInContext(source.slice(headerStart, headerEnd), context);
 vm.runInContext(source.slice(recalcStart, recalcEnd), context);

@@ -139,6 +139,60 @@ assert.deepEqual(Array.from(legacyOneTake.months.filter(r=>r.Lots_Sold).map(r=>[
   'legacy monthly receipts omit a later phase that sells in a single take');
 assert.deepEqual(Array.from(convertedOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2],[4,2]],
   'conversion must sell the later phase rather than preserving the legacy one-take gap');
+// A phase-1 sales delay moves phase 2's engineering and construction windows.
+// Additional costs tied to those anchors must move with them, while costs tied
+// to explicit calendar months must stay in their chosen months.
+const timingBase={...oneTakeInputs,Lots:20,Phases:2,Engineering_Length_Months:2,
+  Construction_Length:2,Initial_Takedown:5,Lots_per_Month:5,
+  Lot_Sales_Schedule_Version:'2',phaseSales:[1,2].map(phase=>({Phase:phase,
+    Total_Lots:10,Initial_Take_Lots:5,Initial_Delay_Months:0,
+    First_Recurring_Delay_Months:1,Lots_Per_Take:5,Take_Frequency:'Monthly',
+    Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0})),
+  curve:[{Month_Number:1,Percent_Cost:50},{Month_Number:2,Percent_Cost:50}]};
+const delayed={...timingBase,phaseSales:timingBase.phaseSales.map((row,i)=>({...row,
+  Initial_Delay_Months:i===0?1:0}))};
+const normalTiming=context.computeProforma({...timingBase,items:[]});
+const lateTiming=context.computeProforma({...delayed,items:[]});
+for(const field of ['Eng_Start_Month','Eng_End_Month','Const_Start_Month','Const_End_Month','Lot_Sale_Start_Month']){
+  assert.equal(lateTiming.phases[1][field],normalTiming.phases[1][field]+1,
+    `phase 1's sales delay moves phase 2 ${field}`);
+}
+function appliedMonths(input,application){
+  const item={Item_Name:'Timing fixture',Category:'Engineering',Department:'Development',
+    Add_l_Cost:'1200',Cost_Application:application,Start_Phase:'2',End_Phase:'2',
+    Specific_Months_List:application==='Specific Months'?'2,3':''};
+  const calc=context.computeProforma({...input,items:[item]});
+  const byMonth=new Map();
+  for(const row of calc.months){
+    const amount=row.Entitlement_Engineering_Addl||0;
+    if(amount)byMonth.set(row.Month1,(byMonth.get(row.Month1)||0)+amount);
+  }
+  return {calc,months:[...byMonth.keys()].sort((a,b)=>a-b),total:[...byMonth.values()].reduce((a,b)=>a+b,0)};
+}
+for(const [application,anchor] of [['Engineering End','Eng_End_Month'],
+  ['Construction Start','Const_Start_Month'],['Construction End','Const_End_Month']]){
+  const before=appliedMonths(timingBase,application),after=appliedMonths(delayed,application);
+  assert.deepEqual(before.months,[normalTiming.phases[1][anchor]],application+' uses its phase anchor');
+  assert.deepEqual(after.months,[lateTiming.phases[1][anchor]],application+' follows the moved anchor');
+  assert.equal(before.total,1200);assert.equal(after.total,1200);
+}
+const acrossBefore=appliedMonths(timingBase,'Across Phases');
+const acrossAfter=appliedMonths(delayed,'Across Phases');
+assert.deepEqual(acrossAfter.months,acrossBefore.months.map(month=>month+1),
+  'Across Phases moves with the phase-2 engineering window');
+assert.equal(acrossBefore.total,1200);assert.equal(acrossAfter.total,1200);
+const fixedBefore=appliedMonths(timingBase,'Specific Months');
+const fixedAfter=appliedMonths(delayed,'Specific Months');
+assert.deepEqual(fixedBefore.months,[2,3]);assert.deepEqual(fixedAfter.months,[2,3]);
+assert.equal(fixedAfter.total,1200);
+const shiftedConstruction={...timingBase,Construction_Delay_Months:1};
+const constructionBefore=context.computeProforma({...timingBase,items:[]});
+const constructionAfter=context.computeProforma({...shiftedConstruction,items:[]});
+assert.equal(constructionAfter.phases[0].Const_Start_Month,constructionBefore.phases[0].Const_Start_Month+1);
+assert.equal(appliedMonths(shiftedConstruction,'Construction Start').total,1200);
+assert.notEqual(constructionAfter.months.find(row=>row.Lots_Sold)?.Month1,
+  constructionBefore.months.find(row=>row.Lots_Sold)?.Month1);
+console.log('Phase delays, construction dates, and additional-cost application timing passed.');
 const dollarPlan=engine.plan({...pricing,totalLots:3,baseUnitPrice:100.5,
   phases:[{Phase:1,Total_Lots:3,Initial_Take_Lots:1,Initial_Delay_Months:0,
     First_Recurring_Delay_Months:1,Lots_Per_Take:1,Take_Frequency:'Monthly',
