@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Phase timeline duration bars and detail cards (1.80.31, 2026-09-24)
+
+The dashboard Timeline uses compact squared bars that display the full Engineering, Construction, or Lot sales duration in months. When the current 24-month page clips a stage, the label still reports the full duration. Stage-colored hover and keyboard-focus cards group calendar and model-month dates, duration, phase lots, and the relevant calculated costs or lot-closing and finished-sales totals. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: legacy and phase-sales v2 schedules, overlapping stages, narrow and clipped bars, hover and focus, no-closing windows, paging, and Cash Flow / Inflows / Outflows switching. Production widget rollback: `1.80.30`.
+
 ## Dashboard phase timeline (1.80.30, 2026-09-24)
 
 The dashboard's Cash Flow / Inflows / Outflows control adds Timeline. It uses the same 24-month pager and aligns each phase's Engineering, Construction, and Lot sales windows on one month grid. The stages use module-toned blue, golden yellow, and green. Hover or keyboard focus gives the phase's calendar and model-month range, duration, allocated lots, and relevant calculated base cost or modeled lot closings and finished-lot sales. A sales window can include months with no closing, particularly in a quarterly phase schedule; the detail distinguishes the window from actual closings.

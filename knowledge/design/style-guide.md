@@ -53,7 +53,7 @@ Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a le
 
 ## Dashboard phase timeline
 
-In the Pro Forma dashboard's phase timeline, use module-toned blue for Engineering, golden yellow for Construction, and green for Lot sales. Align every phase to the same month grid so concurrent stages are visible, and provide the stage details on hover and keyboard focus.
+In the Pro Forma dashboard's phase timeline, use module-toned blue for Engineering, golden yellow for Construction, and green for Lot sales. Align every phase to the same month grid so concurrent stages are visible. Use compact, lightly squared bars with the full stage duration in months printed inside; keep the full duration visible when a bar is clipped by the current page. Give hover and keyboard focus a stage-tinted detail card with the date window, duration, phase lots, and stage-specific calculated totals.
 
 ## Phase schedule editors
 

@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.30`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.31`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Phase timeline duration bars and stage detail cards (1.80.31)
+
+The Engineering, Construction, and Lot sales bars have compact squared styling and show each stage's full length in months, including on a clipped page. Hover or keyboard focus opens a stage-colored card with dates, model months, duration, phase lots, and the relevant calculated cost or modeled closing and sales totals. This is widget-only; no Creator deployment is required. Regression: legacy and v2 phase schedules, stage overlap, short and clipped bars, tooltips, keyboard focus, 24-month paging, and existing cash-flow tabs. Rollback: map Production to `1.80.30`.
 
 ## Dashboard phase timeline (1.80.30)
 

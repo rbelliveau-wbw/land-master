@@ -96,13 +96,28 @@ for(const [label,model] of [['legacy',base],['v2',adopted]]){
       ...segmentTags(second,'const'),...segmentTags(second,'sales')]){
     assert.match(tag,/\bdata-tip="[^"]+"/,`${label} stages provide hover detail`);
     assert.match(tag,/\baria-label="[^"]+"/,`${label} stages provide focus detail`);
+    assert.match(tag,/\bdata-pt-duration="\d+ months?"/,`${label} stages expose the full segment length`);
+    assert.match(tag,/\bdata-pt-period="[^"]+"/,`${label} stages expose their calendar dates`);
   }
+  assert.match(first,/\bpt-eng[^>]*>Eng · 12 mo<\/button>/,
+    `${label} engineering bars show their length in months`);
+  assert.match(first,/\bpt-const[^>]*>Const · 12 mo<\/button>/,
+    `${label} construction bars show their length in months`);
+  assert.match(second,/\bpt-sales[^>]*>Sales · 12 mo<\/button>/,
+    `${label} sales bars show their length in months`);
+  const clipped=render(calculation,model,12);
+  assert.match(clipped,/\bpt-eng[^>]*pt-cut-left[^>]*>12m<\/button>/,
+    `${label} a narrow clipped segment still shows the full segment duration`);
   assert.match(segmentTags(first,'eng')[0],/Base engineering cost:/,
     `${label} engineering hover has its calculated cost`);
+  assert.match(segmentTags(first,'eng')[0],/data-pt-metric-label="Base engineering cost"/,
+    `${label} engineering has a structured tooltip metric`);
   assert.match(segmentTags(first,'const')[0],/Base construction cost:/,
     `${label} construction hover has its calculated cost`);
   assert.match(segmentTags(second,'sales')[0],/lots closed in .*closing month/,
     `${label} lot sales hover has calculated closing detail`);
+  assert.match(segmentTags(second,'sales')[0],/data-pt-total-label="Finished lot sales"/,
+    `${label} sales has a structured revenue row`);
 }
 
 // The green span is a sales window, including months with no closing. A
