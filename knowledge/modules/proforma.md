@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Creator-formatted escalator dates and saved-month parity (1.80.38, 2026-09-24)
+
+The phase-sales engine now reads Creator's `MM/dd/yyyy` Esc Start Date with the correct year capture. Previously, a positive annual rate produced a NaN elapsed month and blank finished lot sales in the widget preview; on Chance Ranch (Duplicate pls), enabling a 2% escalator immediately reduced displayed gross lot sales by $16.2 million before any save. The engine now rejects any nonfinite sale amount rather than allowing it to become a blank/zero display. After save, the widget compares each generated sale month against the Creator report for lots, base sales, markup, escalator fields, and finished sales; omitted zero-valued fields count as zero. No Creator form, field, function, workflow, or Custom API changes. No Creator publish is needed. Regression: ISO and Creator date formats, Chance Ranch phase 1 sales, positive/zero escalator rates, per-month saved parity, save/reopen on the authorized duplicate. Rollback: remap Development and Production to `1.80.37`.
+
 ## Repeated phase save after server recalculation (1.80.36, 2026-09-24)
 
 The phase-sales save payload leaves child IDs blank so the existing Creator `save_phase_sales` function upserts rows by phase number. This avoids an invalid cached row ID after the server rebuilds Proforma_Phase rows on the previous save. Phase inputs and server-generated months still pass the existing parity checks. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator publish is needed. Regression: save, reopen, save again in one browser session; verify phase delay, schedule, and financial values. Production widget rollback: `1.80.35`.

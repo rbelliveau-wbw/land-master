@@ -42,6 +42,21 @@ assert.deepEqual([atStart.Base_Lot_Sales,atStart.Additional_Markup_Income,
 assert.equal(priced('2027-02-01').Escalator_Interest_Accrued,2083);
 assert.equal(priced('2026-03-01').Escalator_Interest_Accrued,25000);
 assert.equal(priced('2026-03-01').Finished_Lot_Sales,535000);
+assert.equal(priced('03/01/2026').Finished_Lot_Sales,535000,
+  'Creator MM/dd/yyyy dates must retain escalated finished sales');
+assert.equal(priced('02/01/2027').Escalator_Elapsed_Months,1,
+  'Creator MM/dd/yyyy dates must yield a finite elapsed month count');
+assert.deepEqual(engine.monthOf('12/01/2030'),{y:2030,m:12});
+const chanceEsc=engine.plan({totalLots:200,phaseCount:1,engineeringDelay:9,
+  engineeringLength:6,constructionDelay:10,constructionLength:11,
+  purchaseDate:{y:2027,m:9},baseUnitPrice:81000,phases:[{Phase:1,
+    Total_Lots:200,Initial_Take_Lots:35,Initial_Delay_Months:0,
+    First_Recurring_Delay_Months:11,Lots_Per_Take:35,Take_Frequency:'Monthly',
+    Escalator_Enabled:true,Annual_Escalator_Pct:2,Esc_Start_Date:'12/01/2030',
+    Additional_Markup_Pct:1}]});
+assert.equal(chanceEsc.events.find(e=>e.Month1===50).Escalator_Elapsed_Months,10);
+assert.equal(chanceEsc.summary.finishedLotSales,16582050,
+  'Chance Ranch Phase 1 sales must survive Creator date formatting');
 assert.equal(priced('2027-04-01').Escalator_Interest_Accrued,0);
 assert.equal(priced('',{Escalator_Enabled:false,Additional_Markup_Pct:-2}).Finished_Lot_Sales,490000);
 assert.equal(engine.plan({...pricing,baseUnitPrice:5,phases:[{Phase:1,Total_Lots:10,
@@ -100,8 +115,21 @@ function widgetFunction(name){
 }
 const context=vm.createContext({PhaseSalesEngine:engine,CFG:{irr:{maxIterations:25}}});
 vm.runInContext(['num','intN','hasVal','round2','ymAdd','parseMonthList',
-  'phaseSalesPersisted','phaseSalesActive','computeProforma']
+  'phaseSalesPersisted','phaseSalesActive','computeProforma','phaseSaleMonthMismatches']
   .map(widgetFunction).join('\n'),context);
+const expectedSale={Month1:48,Master_Month:true,Lot_Sale_Phase:1,Lots_Sold:35,
+  Base_Lot_Sales:2835000,Additional_Markup_Income:28350,
+  Escalator_Interest_Accrued:51975,Escalator_Percentage:2,
+  Escalator_Elapsed_Months:11,Escalator_Applied_Pct:11/6,
+  Finished_Lot_Sales:2915325};
+assert.deepEqual(Array.from(context.phaseSaleMonthMismatches([expectedSale],
+  [{...expectedSale,Master_Month:'true'}])),[]);
+assert.match(context.phaseSaleMonthMismatches([expectedSale],
+  [{...expectedSale,Master_Month:'true',Finished_Lot_Sales:null}]).join(','),
+  /month 48 Finished_Lot_Sales/);
+assert.match(context.phaseSaleMonthMismatches([expectedSale],
+  [{...expectedSale,Master_Month:'true',Escalator_Elapsed_Months:0}]).join(','),
+  /month 48 Escalator_Elapsed_Months/);
 const adopted=context.computeProforma({Lots:10,Phases:1,Total_Acres:10,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
   Construction_Delay_Months:0,Construction_Length:1,
