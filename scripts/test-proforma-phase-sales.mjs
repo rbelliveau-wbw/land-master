@@ -185,6 +185,19 @@ const fixedBefore=appliedMonths(timingBase,'Specific Months');
 const fixedAfter=appliedMonths(delayed,'Specific Months');
 assert.deepEqual(fixedBefore.months,[2,3]);assert.deepEqual(fixedAfter.months,[2,3]);
 assert.equal(fixedAfter.total,1200);
+const shiftedEngineering={...timingBase,Engineering_Delay_Months:Number(timingBase.Engineering_Delay_Months||0)+1};
+const engineeringAfter=context.computeProforma({...shiftedEngineering,items:[]});
+for(const field of ['Eng_Start_Month','Eng_End_Month','Const_Start_Month','Const_End_Month']){
+  assert.ok(engineeringAfter.phases[1][field]>normalTiming.phases[1][field],
+    `engineering delay moves phase 2 ${field}`);
+}
+for(const [application,anchor] of [['Engineering End','Eng_End_Month'],
+  ['Construction Start','Const_Start_Month'],['Construction End','Const_End_Month']]){
+  const shifted=appliedMonths(shiftedEngineering,application);
+  assert.deepEqual(shifted.months,[engineeringAfter.phases[1][anchor]],
+    `engineering delay moves ${application} spend to its new phase anchor`);
+  assert.equal(shifted.total,1200);
+}
 const shiftedConstruction={...timingBase,Construction_Delay_Months:1};
 const constructionBefore=context.computeProforma({...timingBase,items:[]});
 const constructionAfter=context.computeProforma({...shiftedConstruction,items:[]});
