@@ -469,6 +469,8 @@ sharedContext.updateDirtyChip=()=>{};
 sharedContext.rerenderPane=()=>{refreshes++;};
 sharedContext.recalcLive=()=>{};
 sharedContext.formatNumericInputs=()=>{};
+sharedContext.canSavePf=()=>true;
+sharedContext.isInputLocked=()=>false;
 vm.runInContext(widgetFunction('wireEditInputs'),sharedContext);
 sharedContext.wireEditInputs();
 const sharedToggle={checked:true,focused:false,

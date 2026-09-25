@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Lot Sales phase navigation while read only (1.80.39, 2026-09-25)
+
+Locked and permission based read only Pro Formas keep Lot Sales phase cards available for mouse and keyboard navigation. Selecting a phase changes only the displayed inputs and schedule; it does not mark the record dirty. Lot Sales fields, switches, frequency choices, and month pickers remain disabled, and their change handlers reject edits when saving is unavailable. This is a widget only change. No Creator forms, fields, functions, workflows, or Custom APIs change, and no Creator deployment is required. Regression: locked owned record, read only permission, approved record, phase card click and keyboard activation, field edit attempts, and unlocked editing. Production widget rollback: `1.80.38`.
+
 ## Creator-formatted escalator dates and saved-month parity (1.80.38, 2026-09-24)
 
 The phase-sales engine now reads Creator's `MM/dd/yyyy` Esc Start Date with the correct year capture. Previously, a positive annual rate produced a NaN elapsed month and blank finished lot sales in the widget preview; on Chance Ranch (Duplicate pls), enabling a 2% escalator immediately reduced displayed gross lot sales by $16.2 million before any save. The engine now rejects any nonfinite sale amount rather than allowing it to become a blank/zero display. After save, the widget compares each generated sale month against the Creator report for lots, base sales, markup, escalator fields, and finished sales; omitted zero-valued fields count as zero. No Creator form, field, function, workflow, or Custom API changes. No Creator publish is needed. Regression: ISO and Creator date formats, Chance Ranch phase 1 sales, positive/zero escalator rates, per-month saved parity, save/reopen on the authorized duplicate. Rollback: remap Development and Production to `1.80.37`.
