@@ -2,7 +2,7 @@
 
 ## 2026-09-25 — Pro Forma two-decimal save trigger (1.80.40)
 
-The Pro Forma server-engine header touch retries the Creator SDK's direct-data update shape only when its first update returns the specific `Sale_Price_FF` zero-decimal validation error. The saved two-decimal sale price is preserved; other field-validation failures remain terminal, and phase sales still require server month parity. This is a widget-only change to the `All_Pro_Formas_All_Fields` update call; no Creator form, field, function, or Custom API source changed. Regression: fractional sale price save, phase month and gross-sales parity, unrelated validation failures, and locked record behavior. Rollback: map Development and Production Pro Forma Manager to `1.80.39`.
+The Pro Forma server-engine header touch tried the SDK's direct-data shape after a `Sale_Price_FF` zero-decimal rejection. Live Production testing showed that Creator rejects the direct shape with `2945 EXTRA_KEY_FOUND_IN_JSON`, while the documented nested shape still returns `3002` for a valid two-decimal price. The test Pro Forma was restored to its original pricing, saved with verified month/financial parity, and relocked. Development and Production were rolled back to `1.80.39`; the `1.80.40` release remains an immutable record of the failed experiment. No Creator form, field, function, or Custom API source changed. The effective Production `Add_Pro_Forma.Sale_Price_FF` precision must be verified and corrected to two decimals before retesting. Rollback release: `1.80.39`.
 
 ## 2026-09-24 — Stop approval polling on outdated Creator checks
 

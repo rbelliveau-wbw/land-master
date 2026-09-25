@@ -3,11 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.40`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Latest release artifact: `1.80.40`; Development and Production run `1.80.39` after the live precision retry failed. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 ## Two-decimal sale price save trigger (1.80.40)
 
-When a report update that triggers the Creator server engine rejects the persisted two-decimal `Sale_Price_FF` with stale zero-decimal validation, retry only that update with the SDK's direct-data envelope. The first write was rejected, so its workflow did not run. The widget still requires server-generated phase months and financial parity before reporting a successful save. No Creator component changes are included. Regression: fractional price, server phase/month totals, and unrelated terminal validation. Rollback: map Development and Production to `1.80.39`.
+Live Production testing rejected the direct-data retry with `2945 EXTRA_KEY_FOUND_IN_JSON`; the documented data envelope still rejects a persisted fractional `Sale_Price_FF` with `3002`. Development and Production were returned to `1.80.39`. The original test pricing was restored, saved, and relocked. Verify and publish the two-decimal Creator field validation setting before retesting a fractional price. No Creator component changes are included in `1.80.40`.
 
 ## Repeated phase save after server recalculation (1.80.36)
 
