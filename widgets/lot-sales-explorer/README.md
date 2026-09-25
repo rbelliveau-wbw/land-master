@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.4
+# Land Master Insights 1.5.5
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -107,3 +107,7 @@ Lot Detail retains alphabetical Builder sections and adds a date heading within 
 ## 1.5.4 Lot Sales filter layout
 
 The approved top filter bar puts search, Lot Status, and Period first. An expandable All filters section holds Location and Dates & Data, while active filters remain visible as chips. Table view holds Group By, Sort, and Collapse/Expand All. Single-value settings use the existing custom checkbox-free picker; Territory, Project, Builder, and Lot Status remain searchable multi-selects. The Shading checkbox is removed and its default table shading remains. Data definitions, queries, exports, pagination, and drilldowns do not change. This is a frontend-only release; no Creator forms, fields, functions, Custom APIs, or Creator deployment change. Regression: custom single and multi-select menus, preset and custom dates, filter summaries, reset, metrics, grouping, sorting, collapsing, CSV, and narrow layout. Rollback: map production `lot-sales-explorer` to `1.5.3` and rebuild Pages.
+
+## 1.5.5 Compact report controls and group rollups
+
+Search, Lot Status, Period, and All filters share one desktop row. Report totals, month paging, and Table view share the next compact row. Group By now sits in the Subdivision column header, and the full Measure choice sits in the Period header; on narrow screens Measure moves into the visible report toolbar. The redundant metric pill switch and separate Measure field are removed. Collapsed Project, Territory, and Builder groups show their earliest complete-history sale date, average frontage, selected-period measure, and values for each visible month. Aggregates are recomputed from the group's filtered lots so averages and weighted measures retain their definitions and Sold/Contracted remain separate. No Creator forms, fields, functions, Custom APIs, or backend deployment change. Regression: all six measures, grouped monthly and period totals, mixed statuses, Builder partitioning, paging, keyboard selection, collapse/expand, and narrow layout. Rollback: map production `lot-sales-explorer` to `1.5.4` and rebuild Pages.
