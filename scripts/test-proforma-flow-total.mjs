@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, "widgets/proforma-manager/src/app/widget.html"), "utf8");
@@ -56,5 +57,57 @@ assert.ok(
   "the Total column must be frozen beside the 220px Category column"
 );
 assert.ok(/table\.flow thead th\.tot\{z-index:3/.test(css), "the Total header must sit above the sticky body cells");
+
+/* Phase-sales detail must use the same month receipts as Finished Lot Sales. It is
+   descriptive and must not increase Total Income a second time. */
+const elements = new Map(["flowTableWrap", "flowTimelineWrap", "flowTimelineTooltip", "flowHead",
+  "flowBody", "flowPrev", "flowNext", "flowYr"].map(id => [id, {
+  innerHTML: "", hidden: false, disabled: false, textContent: ""
+}]));
+const context = vm.createContext({
+  S: {dash: {tab: "cash", page: 0, expanded: {}, model: {purchaseDate: {y: 2027, m: 1}}, calc: null}},
+  document: {getElementById: id => elements.get(id), querySelectorAll: () => []},
+  FLOW_COLS: 24, MONTHS_S: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  num: value => Number(value || 0), fmtN: value => String(value), esc: value => String(value),
+  phaseSalesAdopted: model => model.v2,
+  ymKey: date => `${date.y}-${String(date.m).padStart(2, "0")}`,
+  ymAdd: (date, n) => { const month = date.y * 12 + date.m - 1 + n; return {y: Math.floor(month / 12), m: month % 12 + 1}; },
+  monthsBetween: (a, b) => (b.y - a.y) * 12 + b.m - a.m
+});
+vm.runInContext(["fmt$", "dashboardSalesBreakdown"].map(extractFunction).join("\n") + "\n" + flow, context);
+const agg = [1, 2].map(month => ({m: month, date: {y: 2027, m: month}, fls: month === 1 ? 109 : 30,
+  landSale: 0, pid: 0, reimb: 0, reimbFees: 0, totalIncome: month === 1 ? 109 : 30,
+  landCost: 0, engByPhase: {}, engAddl: 0, constByPhase: {}, constAddl: 0,
+  totalExpenses: 0, cash: month === 1 ? 109 : 30, runCash: month === 1 ? 109 : 139}));
+context.S.dash.calc = {agg, phases: [], months: [
+  {Month1: 1, Base_Lot_Sales: 70, Additional_Markup_Income: 7,
+    Escalator_Interest_Accrued: 3, Finished_Lot_Sales: 80},
+  {Month1: 1, Base_Lot_Sales: 30, Additional_Markup_Income: -3,
+    Escalator_Interest_Accrued: 2, Finished_Lot_Sales: 29},
+  {Month1: 2, Base_Lot_Sales: 40, Additional_Markup_Income: -10,
+    Escalator_Interest_Accrued: 0, Finished_Lot_Sales: 30}
+]};
+context.S.dash.model.v2 = true;
+context.renderFlowTable();
+const body = elements.get("flowBody").innerHTML;
+for (const label of ["Finished Lot Sales", "Base Price", "Phase Increase", "Escalator", "Total Income"])
+  assert.ok(body.includes(label), `${label} should appear in phase-sales inflows`);
+assert.ok(body.indexOf("Finished Lot Sales") < body.indexOf("Base Price") &&
+  body.indexOf("Base Price") < body.indexOf("Phase Increase") &&
+  body.indexOf("Phase Increase") < body.indexOf("Escalator"), "breakdown should sit below its parent");
+assert.match(body, /Base Price<\/td><td class="tot mono">\$140<\/td>/,
+  "base price should sum both rows in the same month and the whole schedule");
+assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\)<\/td>/,
+  "phase increases and decreases should retain their net dollar value and sign");
+assert.match(body, /Escalator<\/td><td class="tot mono">\$5<\/td>/);
+assert.match(body, /Total Income<\/td><td class="tot mono">\$139<\/td>/,
+  "breakdown must not be added again to total income");
+context.S.dash.tab = "in";
+context.renderFlowTable();
+assert.ok(elements.get("flowBody").innerHTML.includes("Phase Increase"), "Inflows tab uses the same detail");
+context.S.dash.model.v2 = false;
+context.renderFlowTable();
+assert.ok(!elements.get("flowBody").innerHTML.includes("Phase Increase"),
+  "legacy sales retain their existing single Finished Lot Sales line");
 
 console.log("Pro Forma dashboard Total column placement, scope, and sign checks passed.");

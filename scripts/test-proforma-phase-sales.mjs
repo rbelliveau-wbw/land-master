@@ -269,8 +269,9 @@ assert.match(widget,/phaseRow\.Esc_Start_Date=month\+"-01"/,
 // Render the phase pane with a real schedule so layout checks cover the visible
 // content, not merely source fragments or a brittle whole-page snapshot.
 const phaseRenderContext=vm.createContext({
+  MONTHS_S:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   S:{ed:{model:{Lots:179,Phases:1,Total_Acres:53.4,
-    Sale_Price_FF:1000,Lot_Size_Ft:50,
+    Sale_Price_FF:1000,Lot_Size_Ft:50,purchaseDate:{y:2027,m:1},
     Lot_Sales_Schedule_Version:'2',Same_Lot_Sales_All_Phases:false,
     phaseSales:[{Phase:1,Total_Lots:179,Initial_Take_Lots:35,
       Initial_Delay_Months:0,First_Recurring_Delay_Months:3,
@@ -284,28 +285,35 @@ const phaseRenderContext=vm.createContext({
   phaseSalesField:(label)=>`<span data-test-field="${label}"></span>`,
   num:Number,
   fmtN:(value,digits)=>Number(value).toFixed(digits),
-  fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
+  fmt$:(value,opts={})=>value==null?'—':'$'+Number(value).toLocaleString('en-US',{
+    minimumFractionDigits:opts.cents?2:0,maximumFractionDigits:opts.cents?2:0}),
+  fmtPct:(value,digits)=>value==null?'—':value.toFixed(digits)+'%',
   esc:String,
   intN:Number,
   dateToCreatorValue:String,
 });
-vm.runInContext(['phaseSalesSharedLocked','phaseLotPriceValues','refreshPhaseLotPricePill','panePhaseSales']
+vm.runInContext(['ymAdd','ymShort','phaseSalesSharedLocked','phaseLotPriceValues',
+  'phaseSaleUnitPriceParts','phaseMonthText','refreshPhaseLotPricePill','panePhaseSales']
   .map(widgetFunction).join('\n'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
-assert.match(phaseHtml,/Markup &amp; Escalator/);
+assert.match(phaseHtml,/Phase Increase &amp; Escalator/);
 assert.ok(phaseHtml.indexOf('class="ps-price-head"')<phaseHtml.indexOf('class="ps-group-body"',phaseHtml.indexOf('class="ps-price-head"')),
   'the Escalator switch belongs in the pricing section header');
-assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?Base price <b data-ps-marked-price>\$50,000<\/b>[\s\S]*?Before markup <b data-ps-base-price>\$50,000<\/b>/,
-  'show the current base price including markup and the original lot price');
-assert.match(phaseHtml,/data-test-field="Additional markup"/,'markup remains visible with escalator off');
+assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?With phase increase <b data-ps-marked-price>\$50,000<\/b>[\s\S]*?Base price <b data-ps-base-price>\$50,000<\/b>/,
+  'show the phase-adjusted price and the original base price with clear labels');
+assert.match(phaseHtml,/data-test-field="Phase increase"/,'phase increase remains visible with escalator off');
+assert.match(phaseHtml,/Final lot sale · price per lot/);
+assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b>/);
+assert.match(phaseHtml,/Growth to final <b>0\.00%<\/b>/);
+assert.match(phaseHtml,/Suggested next phase increase to carry this price <b>0\.00%<\/b>/);
 assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
   'escalator inputs render only when enabled');
 phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=true;
 const enabledPhaseHtml=phaseRenderContext.panePhaseSales();
 assert.match(enabledPhaseHtml,/data-test-field="Annual escalator"/);
 assert.match(enabledPhaseHtml,/data-test-field="Esc start date"/);
-assert.ok(enabledPhaseHtml.indexOf('data-test-field="Additional markup"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"'));
-assert.ok(enabledPhaseHtml.indexOf('data-test-field="Additional markup"')<enabledPhaseHtml.indexOf('id="psLotPricePill"')
+assert.ok(enabledPhaseHtml.indexOf('data-test-field="Phase increase"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"'));
+assert.ok(enabledPhaseHtml.indexOf('data-test-field="Phase increase"')<enabledPhaseHtml.indexOf('id="psLotPricePill"')
   && enabledPhaseHtml.indexOf('id="psLotPricePill"')<enabledPhaseHtml.indexOf('data-test-field="Annual escalator"')
   && enabledPhaseHtml.indexOf('data-test-field="Annual escalator"')<enabledPhaseHtml.indexOf('data-test-field="Esc start date"'),
   'markup and lot price form the first row; escalator rate and date form the second');
@@ -313,7 +321,7 @@ phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=false;
 assert.equal(phaseRenderContext.S.ed.model.phaseSales[0].Esc_Start_Date,'2030-09-01','rendering hidden fields preserves their model values');
 phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='10';
 assert.deepEqual(Array.from(Object.values(phaseRenderContext.phaseLotPriceValues(phaseRenderContext.S.ed.model,phaseRenderContext.S.ed.model.phaseSales[0]))),[50000,55000]);
-assert.match(phaseRenderContext.panePhaseSales(),/Base price <b data-ps-marked-price>\$55,000<\/b>/);
+assert.match(phaseRenderContext.panePhaseSales(),/With phase increase <b data-ps-marked-price>\$55,000<\/b>/);
 const basePriceText={textContent:''},markedPriceText={textContent:''};
 phaseRenderContext.document={getElementById:()=>({querySelector:(selector)=>selector==='[data-ps-base-price]'?basePriceText:markedPriceText})};
 phaseRenderContext.refreshPhaseLotPricePill();
@@ -322,7 +330,7 @@ assert.equal(markedPriceText.textContent,'$55,000');
 assert.match(widget,/if\(phaseKey==="Additional_Markup_Pct"\)refreshPhaseLotPricePill\(\)/,
   'typing markup should refresh the pill before the field loses focus');
 phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='-10';
-assert.match(phaseRenderContext.panePhaseSales(),/Base price <b data-ps-marked-price>\$45,000<\/b>/);
+assert.match(phaseRenderContext.panePhaseSales(),/With phase increase <b data-ps-marked-price>\$45,000<\/b>/);
 phaseRenderContext.S.ed.model.phaseSales[0].Additional_Markup_Pct='0';
 phaseRenderContext.S.ed.phaseSwitchPulse=true;
 assert.match(phaseRenderContext.panePhaseSales(),/class="ps-summary phase-updating"/,
@@ -359,8 +367,9 @@ const phaseCard=phaseHtml.match(/<button\b[^>]*data-ps-select="0"[^>]*>([\s\S]*?
 assert.ok(phaseCard,'a phase-selection card should be visible');
 assert.match(phaseCard,/179 lots/,'the phase card should identify its allocation');
 assert.match(phaseCard,/53\.40 acres/,'the phase card should show acreage context');
-assert.match(phaseCard,/Const ends Mth 36/,'the phase card should show compact construction timing');
-assert.match(phaseCard,/Sales Mths 37[–-]47/,'the phase card should show compact sale timing');
+assert.match(phaseCard,/Const ends Mth 36 · Dec 2029/,'the phase card should show construction timing and calendar month');
+assert.match(phaseCard,/Sales Mths 37[–-]47 · Jan 2030[–-]Nov 2030/,'the phase card should show project and calendar sale timing');
+assert.match(phaseHtml,/Construction ends · Month 36 · Dec 2029/);
 assert.ok((phaseCard.match(/<br\s*\/?\s*>/gi)||[]).length<=1,
   'phase-card timing should use at most one deliberate line break');
 const navRules=Array.from(widget.matchAll(/\.ps-nav\{([^}]*)\}/g),match=>match[1]);
@@ -392,8 +401,9 @@ assert.match(phaseHtml,/<span class="ps-delay-badge">3 months later &#8595;<\/sp
   'the timeline should show the first-recurring delay badge');
 for(const [label,month] of [['Construction ends',36],['Initial take',37],
   ['Recurring takes begin',40],['Final take',47]]){
-  assert.ok(phaseHtml.includes(`<span class="ps-milestone-title">${label} (Month ${month})</span>`),
-    `${label} should display its month beside the dot`);
+  const calendar=phaseRenderContext.phaseMonthText(phaseRenderContext.S.ed.model,month);
+  assert.ok(phaseHtml.includes(`<span class="ps-milestone-title">${label} (${calendar})</span>`),
+    `${label} should display month number and calendar month beside the dot`);
 }
 assert.equal((phaseHtml.match(/class="ps-milestone"/g)||[]).length,4,
   'construction, initial, recurring, and final takes each need a dot');
@@ -407,6 +417,20 @@ assert.match(widget.match(/\.ps-milestone::before\{([^}]*)\}/)?.[1]||'',/backgro
   'all milestone dots, not just the first, should be filled blue');
 assert.match(widget,/\.ps-milestone:not\(:last-child\)::after\{[^}]*background:#a7c1e5/,
   'only non-final milestones should draw a connector to the next dot');
+const pricedPlan=one({Escalator_Enabled:true,Annual_Escalator_Pct:3,
+  Esc_Start_Date:'2030-02-01',Additional_Markup_Pct:10});
+phaseRenderContext.phaseSalesPlan=()=>pricedPlan;
+Object.assign(phaseRenderContext.S.ed.model.phaseSales[0],{
+  Escalator_Enabled:true,Annual_Escalator_Pct:3,Esc_Start_Date:'2030-02-01',Additional_Markup_Pct:10});
+const pricedHtml=phaseRenderContext.panePhaseSales();
+assert.match(pricedHtml,/Base<\/span><b>\$50,000\.00<\/b>/);
+assert.match(pricedHtml,/Phase increase<\/span><b>\$5,000\.00<\/b>/);
+assert.match(pricedHtml,/Escalator<\/span><b>\$1,125\.00<\/b>/);
+assert.match(pricedHtml,/Finished price<\/span><b>\$56,125\.00<\/b>/);
+assert.match(pricedHtml,/First sale \$55,000\.00 · Growth to final <b>\+2\.05%<\/b>/,
+  'compare finished price per lot, so smaller final takes do not distort the increase');
+assert.match(pricedHtml,/Suggested next phase increase to carry this price <b>12\.25%<\/b>/,
+  'the next phase setting must compare final finished price to the shared project base');
 
 // Sharing is confirmed before it copies Phase 1 inputs; later phase lot counts
 // stay editable even while the other sales controls are disabled.
@@ -420,6 +444,7 @@ const sharedModel={Lots:10,Phases:2,Total_Acres:5,Sale_Price_FF:1000,Lot_Size_Ft
       First_Recurring_Delay_Months:'1',Lots_Per_Take:'2',Take_Frequency:'Monthly',
       Escalator_Enabled:'false',Annual_Escalator_Pct:'0',Esc_Start_Date:'2029-01-01',
       Additional_Markup_Pct:'0'}]};
+let autoDateRefreshes=0;
 const sharedContext=vm.createContext({
   S:{ed:{model:sharedModel,phaseSelected:1,dirty:false}},
   phaseSalesAdopted:()=>true,phaseSalesDefaultEscDates:()=>{},
@@ -428,9 +453,10 @@ const sharedContext=vm.createContext({
   num:Number,intN:Number,fmtN:(value,digits)=>Number(value).toFixed(digits),
   fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
   esc:String,dateToCreatorValue:String,
+  phaseSalesRefreshAutoEscDates:()=>{autoDateRefreshes++;},
 });
 vm.runInContext(['phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
-  'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','panePhaseSales']
+  'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','phaseSaleUnitPriceParts','panePhaseSales']
   .map(widgetFunction).join('\n'),sharedContext);
 assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),false);
 sharedContext.phaseSalesSetShared(sharedModel,true);
@@ -505,12 +531,13 @@ assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','later phase lot counts st
 const firstInput={value:'3',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'0'}[name]||null;}};
 sharedHost.oninput({target:firstInput});
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','Phase 1 edits propagate while sharing is on');
+assert.equal(autoDateRefreshes,2,'lot allocations and take edits refresh automatic Esc Start dates while typed');
 sharedToggle.checked=false;
 sharedHost.onchange({target:sharedToggle});
 assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false');
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','turning sharing off keeps the copied values');
 
-// The Esc Start default is the first day of each phase's first lot-sale month.
+// The Esc Start default is the first day of the month after each phase's first sale.
 const monthContext=vm.createContext({PhaseSalesEngine:engine,S:{phaseSalesReady:true}});
 vm.runInContext(['num','intN','round2','ymAdd','ymToInput','lotMixRollup','syncLotMixDerived',
   'phaseSalesPersisted','phaseSalesActive','phaseSalesAdopted','phaseSalesPlan',
@@ -530,7 +557,19 @@ const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
   Construction_Delay_Months:0,Construction_Length:1,
   Sale_Price_FF:1000,Lot_Size_Ft:50,purchaseDate:{y:2027,m:1}};
 const seeded=monthContext.phaseSalesSeed(monthModel);
-assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-03-01','2027-06-01']);
+assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-04-01','2027-07-01']);
+const withEsc={...monthModel,Lot_Sales_Schedule_Version:'2',phaseSales:seeded};
+seeded[0].Escalator_Enabled='true';seeded[0].Annual_Escalator_Pct='3';
+const firstSalePlan=monthContext.phaseSalesPlan(withEsc,seeded);
+assert.equal(firstSalePlan.events.find(event=>event.Phase===1).Escalator_Elapsed_Months,0,
+  'an automatically defaulted Esc Start Date must not escalate the first actual sale');
+seeded[0].Escalator_Enabled='false';seeded[0].Annual_Escalator_Pct='0';
+seeded[0].Initial_Delay_Months='1';
+monthContext.phaseSalesRefreshAutoEscDates(withEsc);
+assert.equal(seeded[0].Esc_Start_Date,'2027-05-01',
+  'an automatic Esc date advances when the first lot sale moves one month later');
+seeded[0].Initial_Delay_Months='0';
+monthContext.phaseSalesRefreshAutoEscDates(withEsc);
 const seeded337=monthContext.phaseSalesSeed({...monthModel,Lots:337,Phases:2});
 assert.deepEqual(Array.from(seeded337,r=>Number(r.Total_Lots)),[169,168],
   'the widget adoption preview must use the legacy first-phase remainder rule');
@@ -619,11 +658,11 @@ seeded[1].Esc_Start_Date='';
 monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
 assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
   'do not overwrite an existing saved Esc Start Date');
-assert.equal(seeded[1].Esc_Start_Date,'2027-06-01');
+assert.equal(seeded[1].Esc_Start_Date,'2027-07-01');
 monthModel.purchaseDate={y:2027,m:2};
 seeded[1].Esc_Start_Date='';
 monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
-assert.equal(seeded[1].Esc_Start_Date,'2027-07-01',
+assert.equal(seeded[1].Esc_Start_Date,'2027-08-01',
   'a blank Esc Start default follows a changed Project Start month');
 monthModel.Lot_Sales_Schedule_Version='2';
 monthModel.phaseSales=seeded;
@@ -633,7 +672,7 @@ monthModel.purchaseDate={y:2027,m:3};
 monthContext.phaseSalesRefreshAutoEscDates(monthModel);
 assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
   'Project Start changes must preserve a user-chosen Esc date');
-assert.equal(seeded[1].Esc_Start_Date,'2027-08-01',
+assert.equal(seeded[1].Esc_Start_Date,'2027-09-01',
   'Project Start changes should update untouched auto-derived Esc dates');
 const capabilityCalls=[];
 const capabilityContext=vm.createContext({

@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Latest release artifact: `1.80.40`; Development and Production run `1.80.39` after the live precision retry failed. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.41`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Phase pricing detail and decimal save diagnostic (1.80.41)
+
+Lot Sales shows calendar dates beside month numbers, starts an untouched escalator the month after the phase's first sale, and labels its one-time markup Phase Increase. The phase summary shows final-sale per-lot price components, growth from the first sale, and a next-phase carry-forward percentage. Dashboard Cash Flow and Inflows show the same three sales components as detail below Finished Lot Sales; financial totals are unchanged. A fractional `Sale_Price_FF` is now sent explicitly on the engine-triggering update, with a retry through the confirmed `All_Pro_Formas` report on only the specific zero-decimal validation error. The widget still requires server month and phase parity. This is widget-only; verify the fractional save live before treating the API rejection as resolved. Rollback: map Development and Production to `1.80.39`.
 
 ## Two-decimal sale price save trigger (1.80.40)
 
