@@ -1,6 +1,12 @@
 
 # Proforma Module
 
+## Fractional Lot Mix price and phase pricing QA (1.80.41, 2026-09-25)
+
+Production `Add_Pro_Forma.Sale_Price_FF` was published with Max Digits 14 and Decimal Points 2. Max Digits 10 with Decimal Points 2 had still produced a Creator max-digits validation error during the report update that triggers the Pro Forma engine. In live Production QA, test Pro Forma `4410926000004947002` saved a blended `Sale_Price_FF` of `1444.45` from a `1500.01`/LF Lot Mix row using widget `1.80.41`. Its dashboard showed Gross Sales $8,088,630 and Net Profit $6,658,630, with 47 saved month rows and January 2030 completion. After the record was locked, Lot Sales phase cards still changed the viewed phase; inputs and Save stayed disabled. This verifies the combined published field configuration and widget save path, without proving that either the field change or widget retry alone resolved the prior validation rejection. No Creator function, workflow, or Custom API changed in this release.
+
+Lot Sales now pairs project month numbers with calendar months. An untouched Esc Start Date defaults to the month after the phase's first actual lot sale; explicit dates remain fixed. The pricing card uses **Phase Increase**, with **Base price** before that increase and **With phase increase** after it. The right schedule summarizes the final sale's per-lot base, phase increase, escalator, and finished price, plus growth from the first sale and the next-phase increase suggested to carry forward the final price. The suggestion compares the final price with the shared project base; growth compares final with first finished price. Dashboard Cash Flow and Inflows show the component sales rows beneath Finished Lot Sales without counting them again in total inflows.
+
 ## Lot Sales phase navigation while read only (1.80.39, 2026-09-25)
 
 Locked and permission based read only Pro Formas keep Lot Sales phase cards available for mouse and keyboard navigation. Selecting a phase changes only the displayed inputs and schedule; it does not mark the record dirty. Lot Sales fields, switches, frequency choices, and month pickers remain disabled, and their change handlers reject edits when saving is unavailable. This is a widget only change. No Creator forms, fields, functions, workflows, or Custom APIs change, and no Creator deployment is required. Regression: locked owned record, read only permission, approved record, phase card click and keyboard activation, field edit attempts, and unlocked editing. Production widget rollback: `1.80.38`.
