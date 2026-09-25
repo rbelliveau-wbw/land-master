@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.42`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.43`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Compact pricing summary, cash-flow detail, timeline, and module entry (1.80.43)
+
+The Lot Sales final-price summary uses shorter labels while retaining first-sale price, final-sale growth, and the next-phase increase needed to match the final price. Finished Lot Sales detail starts collapsed on Dashboard Cash Flow and Inflows and expands to Base Price, Phase Increase, and Escalator without changing totals. Timeline shows Engineering in yellow and Construction in blue, with patterned spans for months without sales inside a sales phase. The widget's temporary module access-code overlay has been removed; Creator and Pro Forma record permissions still apply. This release changes widget presentation and entry only; no Creator form, field, function, or Custom API deployment is required. Regression: phase pricing numbers, expanded/collapsed financial rows and totals, timeline month gaps and paging, module entry, record locks, and approvals. Rollback: map Development and Production to `1.80.42`.
 
 ## Dashboard Sale Price / FF precision (1.80.42)
 

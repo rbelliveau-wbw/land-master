@@ -86,6 +86,8 @@ for(const [label,model] of [['legacy',base],['v2',adopted]]){
     `${label} page 2 shows Phase 2 construction overlapping Phase 1 sales`);
   assert.equal(segmentTags(second,'sales').length,2,
     `${label} page 2 shows both sales windows`);
+  assert.doesNotMatch(second,/<span class="pt-sale-gap" aria-hidden="true"/,
+    `${label} consecutive closing months have no false gap marker`);
   assert.deepEqual(segmentTags(first,'eng').map(geometry),[[0,50],[50,50]],
     `${label} page 1 places consecutive engineering windows against the same month columns`);
   assert.deepEqual(segmentTags(second,'sales').map(geometry),[[0,50],[50,50]],
@@ -120,8 +122,8 @@ for(const [label,model] of [['legacy',base],['v2',adopted]]){
     `${label} sales has a structured revenue row`);
 }
 
-// The green span is a sales window, including months with no closing. A
-// two-take adopted schedule closes in M25 and M28, with no closing in M26–27.
+// The green span is the sales window, with a hatched section for months
+// between actual closings. This schedule closes in M25 and M28, not M26–27.
 const gapModel={...base,Lots:4,Phases:1,phaseSales:[{
   Phase:1,Total_Lots:4,Initial_Take_Lots:2,Initial_Delay_Months:0,
   First_Recurring_Delay_Months:3,Lots_Per_Take:2,Take_Frequency:'Monthly',
@@ -136,10 +138,34 @@ assert.deepEqual(Array.from(gap.months.filter(r=>Number(r.Lots_Sold)>0),
 const gapHtml=render(gap,gapModel,25);
 assert.equal(segmentTags(gapHtml,'sales').length,1,
   'the continuous sales window must remain visible across months without a closing');
+assert.match(gapHtml,/<span class="pt-sale-gap" aria-hidden="true" style="left:25\.0000%;width:50\.0000%"><\/span>/,
+  'the two no-sale months are hatched at their exact position inside the four-month sales bar');
+assert.match(gapHtml,/No sales<\/span>/,'the legend explains the hatched section');
+assert.match(segmentTags(gapHtml,'sales')[0],/2 months without sales/,
+  'the sales bar exposes the no-sale period to assistive technology');
+const clippedGapHtml=render(gap,gapModel,27);
+assert.match(clippedGapHtml,/<span class="pt-sale-gap" aria-hidden="true" style="left:0\.0000%;width:50\.0000%"><\/span>/,
+  'the hatched gap is clipped and repositioned with the visible month page');
 assert.match(gapHtml,/Mth 25[–-]28/,
   'the sales tooltip names the complete window despite the gap');
 assert.match(gapHtml,/4 lots closed in 2 closing months/,
   'the sales tooltip distinguishes the closing months from the sales window');
+assert.match(segmentTags(gapHtml,'sales')[0],/data-pt-metric-note="in 2 closing months · 2 no-sale months"/,
+  'the detail card identifies the pause in sales');
+const longGapModel={...gapModel,phaseSales:[{...gapModel.phaseSales[0],First_Recurring_Delay_Months:8}]};
+const longGap=context.computeProforma(longGapModel);
+assert.deepEqual(Array.from(longGap.months.filter(r=>Number(r.Lots_Sold)>0),r=>Number(r.Month1)),[25,33]);
+const longGapHtml=render(longGap,longGapModel,25);
+assert.match(longGapHtml,/<span class="pt-sale-gap" aria-hidden="true" style="left:11\.1111%;width:77\.7778%"><\/span>/,
+  'a long seven-month pause fills precisely its seven month columns');
+assert.match(segmentTags(longGapHtml,'sales')[0],/7 months without sales/);
+
+// Use the requested stage colors consistently in the bars, legend, and cards.
+assert.match(source,/\.pt-legend \.pt-eng\{background:#e6bb4b\}/);
+assert.match(source,/\.pt-legend \.pt-const\{background:#2c6fac\}/);
+assert.match(source,/\.pt-segment\.pt-eng\{background:#e6bb4b;color:#483409\}/);
+assert.match(source,/\.pt-segment\.pt-const\{background:#2c6fac\}/);
+assert.match(source,/\.pt-tooltip\[data-stage="const"\]\{--pt-tip-mark:#2c6fac/);
 
 // Additional costs use calculated month rows for the hovered phase and stage
 // window. Adjacent/overlapping phases must not inherit the project grand total.

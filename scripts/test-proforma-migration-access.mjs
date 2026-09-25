@@ -4,7 +4,6 @@ import vm from 'node:vm';
 
 const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 const backend=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
-const baseline=fs.readFileSync('releases/proforma-manager/1.80.22/index.html','utf8');
 function extract(name,text=source){
   const start=text.indexOf(`function ${name}(`);
   assert.ok(start>=0,`${name} exists`);
@@ -136,9 +135,8 @@ for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['final
 assert.equal((backend.match(/if\(!migrationEditAccess &&/g)||[]).length,3,'only the three financial-save guards are bypassed');
 assert.match(backend,/if\(approvalComplete \|\| ifnull\(quickPf.Status/,'explicit unlock stays guarded');
 assert.match(backend,/if\(loiApprovalStarted \|\| loiPfStatus == "Pending Approval"/,'LOI approval guard stays');
-assert.equal(extract('initializeConstructionGate').replaceAll('\r\n','\n'),
-  extract('initializeConstructionGate',baseline).replaceAll('\r\n','\n'),
-  'the Under Construction modal and tab-session unlock behavior must remain unchanged');
+assert.doesNotMatch(source,/constructionGate|constructionCode|initializeConstructionGate|pf-construction-unlocked-v1|"0424"/,
+  'the temporary Pro Forma module password gate must be removed');
 
 // Missing/disabled capability must clear a previously cached account grant.
 {
@@ -153,4 +151,4 @@ assert.equal(extract('initializeConstructionGate').replaceAll('\r\n','\n'),
   h.context.sdkInvoke=()=>Promise.reject(Error('unavailable'));
   await h.context.probePhaseSalesSupport();assert.equal(h.context.migrationAccountAccess(),false);
 }
-console.log('Pro Forma migration access: account-only bypass, original gates restored, locks retained, Under Construction unchanged.');
+console.log('Pro Forma migration access: account-only bypass, record locks retained, temporary module password removed.');

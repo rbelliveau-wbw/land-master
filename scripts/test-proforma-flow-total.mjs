@@ -92,6 +92,11 @@ context.renderFlowTable();
 const body = elements.get("flowBody").innerHTML;
 for (const label of ["Finished Lot Sales", "Base Price", "Phase Increase", "Escalator", "Total Income"])
   assert.ok(body.includes(label), `${label} should appear in phase-sales inflows`);
+assert.match(body, /data-xbucket="finishedLotSales"[^>]*><td><button[^>]*aria-expanded="false"[^>]*aria-controls="flowLotbase flowLotincrease flowLotescalator"/,
+  "Finished Lot Sales starts collapsed with a keyboard-accessible toggle");
+for (const key of ["base", "increase", "escalator"])
+  assert.match(body, new RegExp(`class="xchild hid" id="flowLot${key}" data-xof="finishedLotSales"`),
+    `${key} detail is hidden by default`);
 assert.ok(body.indexOf("Finished Lot Sales") < body.indexOf("Base Price") &&
   body.indexOf("Base Price") < body.indexOf("Phase Increase") &&
   body.indexOf("Phase Increase") < body.indexOf("Escalator"), "breakdown should sit below its parent");
@@ -102,9 +107,22 @@ assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\)<\/td>/,
 assert.match(body, /Escalator<\/td><td class="tot mono">\$5<\/td>/);
 assert.match(body, /Total Income<\/td><td class="tot mono">\$139<\/td>/,
   "breakdown must not be added again to total income");
+context.S.dash.expanded.finishedLotSales = true;
+context.renderFlowTable();
+assert.match(elements.get("flowBody").innerHTML, /data-xbucket="finishedLotSales"[^>]*><td><button[^>]*aria-expanded="true"/,
+  "expanding Finished Lot Sales exposes its open state");
+for (const key of ["base", "increase", "escalator"])
+  assert.match(elements.get("flowBody").innerHTML,
+    new RegExp(`class="xchild" id="flowLot${key}" data-xof="finishedLotSales"`),
+    `${key} detail is visible when expanded`);
 context.S.dash.tab = "in";
 context.renderFlowTable();
-assert.ok(elements.get("flowBody").innerHTML.includes("Phase Increase"), "Inflows tab uses the same detail");
+assert.match(elements.get("flowBody").innerHTML, /data-xbucket="finishedLotSales"[^>]*><td><button[^>]*aria-expanded="true"/,
+  "Inflows tab uses the same expanded sales breakdown");
+context.S.dash.expanded.finishedLotSales = false;
+context.renderFlowTable();
+assert.match(elements.get("flowBody").innerHTML, /class="xchild hid" id="flowLotincrease"/,
+  "Inflows tab also collapses the breakdown");
 context.S.dash.model.v2 = false;
 context.renderFlowTable();
 assert.ok(!elements.get("flowBody").innerHTML.includes("Phase Increase"),

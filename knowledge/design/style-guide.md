@@ -55,7 +55,7 @@ Insights subdivision details use a compact card anchored to the row on hover or 
 
 ## Dashboard phase timeline
 
-In the Pro Forma dashboard's phase timeline, use module-toned blue for Engineering, golden yellow for Construction, and green for Lot sales. Align every phase to the same month grid so concurrent stages are visible. Use compact, lightly squared bars with the full stage duration in months printed inside; keep the full duration visible when a bar is clipped by the current page. Give hover and keyboard focus a stage-tinted detail card with the date window, duration, phase lots, and stage-specific calculated totals. Engineering and Construction cards show only the additional cost from calculated monthly rows assigned to that phase within the hovered stage window. Keep project grand totals on the dashboard KPI, outside individual phase cards.
+In the Pro Forma dashboard's phase timeline, use golden yellow for Engineering, module-toned blue for Construction, and green for Lot sales. Align every phase to the same month grid so concurrent stages are visible. Use compact, lightly squared bars with the full stage duration in months printed inside; keep the full duration visible when a bar is clipped by the current page. Hatch months without sales between a phase's first and last closing month, and explain the hatch in the legend. Give hover and keyboard focus a stage-tinted detail card with the date window, duration, phase lots, and stage-specific calculated totals. Engineering and Construction cards show only the additional cost from calculated monthly rows assigned to that phase within the hovered stage window. Keep project grand totals on the dashboard KPI, outside individual phase cards.
 
 ## Phase schedule editors
 

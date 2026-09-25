@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Pricing summary, cash-flow expansion, timeline, and entry (1.80.43, 2026-09-25)
+
+The Lot Sales summary retains the first finished sale price, growth to the final sale, and the next-phase increase that matches the final sale using shorter labels. On Dashboard Cash Flow and Inflows, Finished Lot Sales has a keyboard-accessible breakdown toggle; Base Price, Phase Increase, and Escalator start hidden and do not add to Total Income again. Timeline colors are Engineering yellow, Construction blue, and Lot Sales green. Hatched spans within a Lot Sales phase mark months with no sales between selling months. The widget's temporary access-code gate is gone; normal Creator access and record-level read-only controls remain. No Creator form, field, function, workflow, or Custom API changes and no Creator publish is required. Regression: summary math, expanded/collapsed detail and totals, timeline stage and gap rendering across month pages, module loading, and locked Pro Formas. Widget rollback: `1.80.42`.
+
 ## Dashboard Sale Price / FF cents (1.80.42, 2026-09-25)
 
 The Dashboard assumptions strip formats the saved `Add_Pro_Forma.Sale_Price_FF` value with two decimal places, so `1444.45` appears as `$1,444.45` and `1500` as `$1,500.00`. Other financial totals remain whole dollars. This is a widget display change; it does not alter the field value, calculations, Creator functions, or Custom APIs, and needs no Creator deployment. Regression: fractional and whole-dollar prices on Dashboard, Net Profit formatting, and Cash Flow detail. Widget rollback: map Development and Production to `1.80.41`.

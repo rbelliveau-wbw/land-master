@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-25 — Pro Forma pricing copy, cash-flow detail, timeline, and entry (1.80.43)
+
+Lot Sales uses shorter final-price labels while keeping first-sale price, final-sale growth, and the next-phase increase needed to match the final price. Finished Lot Sales detail on Dashboard Cash Flow and Inflows is expandable and starts collapsed; its Base Price, Phase Increase, and Escalator rows still reconcile to the same totals. Timeline uses yellow for Engineering and blue for Construction, and patterns months with no sales between selling months in a phase. The temporary widget access-code overlay is removed; Creator and Pro Forma record permissions remain. This is a widget-only release; no Creator form, field, function, or Custom API deployment is required. Regression: pricing figures, detail expansion and totals, timeline gaps and page edges, direct module entry, locked records, and approvals. Widget rollback: map Development and Production to `1.80.42`.
+
 ## 2026-09-25 — Pro Forma Dashboard Sale Price / FF cents (1.80.42)
 
 The Dashboard assumptions strip now always shows Sale Price / FF to two decimals; the saved `1444.45` displays as `$1,444.45`, and `1500` displays as `$1,500.00`. Financial KPIs such as Net Profit retain whole-dollar formatting. This changes only widget presentation of `Add_Pro_Forma.Sale_Price_FF`; no Creator function, workflow, or Custom API changes and no Creator deployment is required. Regression: fractional and whole-dollar assumption values, whole-dollar Net Profit, and Dashboard Cash Flow detail. Widget rollback: map Development and Production to `1.80.41`.

@@ -304,8 +304,8 @@ assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?With phase increase <b 
 assert.match(phaseHtml,/data-test-field="Phase increase"/,'phase increase remains visible with escalator off');
 assert.match(phaseHtml,/Final lot sale · price per lot/);
 assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b>/);
-assert.match(phaseHtml,/Growth to final <b>0\.00%<\/b>/);
-assert.match(phaseHtml,/Suggested next phase increase to carry this price <b>0\.00%<\/b>/);
+assert.match(phaseHtml,/Final <b>0\.00%<\/b>/);
+assert.match(phaseHtml,/Next phase increase to match final <b>0\.00%<\/b>/);
 assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
   'escalator inputs render only when enabled');
 phaseRenderContext.S.ed.model.phaseSales[0].Escalator_Enabled=true;
@@ -427,9 +427,9 @@ assert.match(pricedHtml,/Base<\/span><b>\$50,000\.00<\/b>/);
 assert.match(pricedHtml,/Phase increase<\/span><b>\$5,000\.00<\/b>/);
 assert.match(pricedHtml,/Escalator<\/span><b>\$1,125\.00<\/b>/);
 assert.match(pricedHtml,/Finished price<\/span><b>\$56,125\.00<\/b>/);
-assert.match(pricedHtml,/First sale \$55,000\.00 · Growth to final <b>\+2\.05%<\/b>/,
+assert.match(pricedHtml,/First sale \$55,000\.00 · Final <b>\+2\.05%<\/b>/,
   'compare finished price per lot, so smaller final takes do not distort the increase');
-assert.match(pricedHtml,/Suggested next phase increase to carry this price <b>12\.25%<\/b>/,
+assert.match(pricedHtml,/Next phase increase to match final <b>12\.25%<\/b>/,
   'the next phase setting must compare final finished price to the shared project base');
 
 // Sharing is confirmed before it copies Phase 1 inputs; later phase lot counts
@@ -711,7 +711,6 @@ assert.doesNotMatch(widget,/Phase-level lot sales can only be saved in DEV/);
 assert.doesNotMatch(widget,/Pro Forma development preview/);
 assert.match(widget,/Defaults from your old model:/);
 assert.doesNotMatch(widget,/Approve phase schedule/);
-assert.match(widget,/id="constructionCode" type="password"/);
 assert.match(widget,/if\(phaseSalesAdopted\(m\)\)\{\s*if\(!ver\.verified/);
 const saveFn=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 assert.match(saveFn,/if\(op == "save_phase_sales"\)/);
