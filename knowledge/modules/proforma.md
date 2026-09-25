@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Timeline project outflows (1.80.32, 2026-09-24)
+
+Below the phase rows, the dashboard Timeline aligns Land Cost, Engineering Base, Ent/Eng Add'l, Construction Base, and Construction Add'l spending to the same month axis. Exact category and Total Outflows figures come from the dashboard totals; spend bars use calculated monthly outflows and group consecutive scheduled months. Hover or keyboard focus shows the spend window, amount, category total, and overall outflows. A category total without scheduled monthly spend is labeled without inventing a date. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: category-to-KPI reconciliation, purchase installments, base and additional cost timing, separated and consecutive spends, page clipping, phase overlap, focus, and other Cash Flow tabs. Production widget rollback: `1.80.31`.
+
 ## Phase timeline duration bars and detail cards (1.80.31, 2026-09-24)
 
 The dashboard Timeline uses compact squared bars that display the full Engineering, Construction, or Lot sales duration in months. When the current 24-month page clips a stage, the label still reports the full duration. Stage-colored hover and keyboard-focus cards group calendar and model-month dates, duration, phase lots, and the relevant calculated costs or lot-closing and finished-sales totals. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: legacy and phase-sales v2 schedules, overlapping stages, narrow and clipped bars, hover and focus, no-closing windows, paging, and Cash Flow / Inflows / Outflows switching. Production widget rollback: `1.80.30`.

@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.31`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.32`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Timeline project outflows (1.80.32)
+
+The Timeline adds Total Outflows and five aligned spend tracks: Land Cost, Engineering Base, Ent/Eng Add'l, Construction Base, and Construction Add'l. Each row displays the exact dashboard category total; timed bars use the calculated monthly amounts and show the scheduled window amount and project totals on hover or keyboard focus. An outflow without allocated monthly spend is labeled accordingly. This is widget-only; no Creator deployment is required. Regression: all five totals and month positions, separated and consecutive spend months, 24-month paging, phase overlap, focus and hover, and cash-flow tabs. Rollback: map Production to `1.80.31`.
 
 ## Phase timeline duration bars and stage detail cards (1.80.31)
 
