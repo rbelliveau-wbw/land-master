@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.7
+# Land Master Insights 1.5.8
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -123,3 +123,9 @@ Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`
 Group By and Measure return to the first and fourth table column headers as custom single-choice dropdowns. Search, Lot Status, Period, All filters, and active filter chips share a horizontal top row on wide screens and wrap on narrow screens. A small range pill shows the first and last selected month and the month count. All selected months remain available by scrolling the matrix horizontally, without month-page controls. Table view, Sort, and Collapse All controls are removed; each group can still be collapsed or expanded individually, with its aggregate values visible when closed. The underlying report filters, measure definitions, grouped totals, CSV export, and Creator data contract are unchanged.
 
 Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run build:pages`; check desktop and narrow layouts, custom header pickers, search/status/period filters, the full month range and horizontal scrolling, individual group rollups, drilldowns, and CSV export. No Creator forms, fields, functions, Custom APIs, or Creator deployment change. Rollback: map production `lot-sales-explorer` to `1.5.6` and rebuild Pages.
+
+## 1.5.8 Navy and teal color refinement
+
+Lot Sales uses a softer slate-blue canvas with stronger navy and teal accents in the title, matrix header, group bands, selected measure column, and totals. Filter and table layout, control placement, report calculations, and interactions are unchanged. This is a frontend-only visual release; no Creator forms, fields, functions, Custom APIs, or Creator deployment change.
+
+Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow layouts for readable contrast, unchanged picker positions and grouping behavior, and no overflow. Rollback: map production `lot-sales-explorer` to `1.5.7` and rebuild Pages.
