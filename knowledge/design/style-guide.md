@@ -67,7 +67,7 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 ## Filter and month pickers
 
-- Dropdown filters use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that have one meaningful value use the same searchable visual pattern with single selection.
+- Dropdown filters use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that have one meaningful value use custom single-select popovers. Insights Group By and Sort use short option menus without checkboxes, search, or Done.
 - Use a custom month/year popover instead of the browser's native month picker. Support keyboard navigation and Escape, and keep popovers within the widget viewport.
 - Anchor short reports at the top. Long reports scroll inside their matrix; totals and the report footer remain visible. Center month pagination above the report.
 - Insights follows Budget Manager's `budget-layout.css` palette and `landing-combo` controls: white filter pills, centered SVG chevrons rotating on open, a short menu fade, focused search, selection counts, direct clear buttons, and pale-blue card/table surfaces. Use geometric icons instead of font glyphs for control alignment, and respect reduced motion.

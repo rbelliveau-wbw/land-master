@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.5.1",
-  "description": "Read-only Lot Sales dashboard with Project, Territory, and Builder grouping, subdivision hover cards, purchase-date drilldowns, and background history.",
+  "version": "1.5.2",
+  "description": "Read-only Lot Sales dashboard with Project, Territory, and Builder grouping, dismissible subdivision hover cards, custom single-select menus, purchase-date drilldowns, and background history.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "6b9e626b0a2ea433e5408eb9b1b454311dae6b91d9e7b00b59c10606dc108894",
+  "source_sha256": "01693a3587266f0454e3b1808c1a3d5172263c140aee0607540262e84c79078d",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

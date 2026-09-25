@@ -12,6 +12,8 @@ Insights 1.5.0 defaults Group By to Project; Builder partitions each subdivision
 
 Insights 1.5.1 presents the subdivision details on hover or keyboard focus in a compact Land Master styled card. Touch and keyboard activation remain available; moving from the name into the card keeps its View Lots action usable. Counts and financial definitions are unchanged. Rollback release is 1.5.0.
 
+Insights 1.5.2 closes the card after the pointer leaves its trigger and card, with a short crossing delay. Group By and Sort use compact custom single-select menus without checkbox marks. Data and financial rules are unchanged. Rollback release is 1.5.1.
+
 The pure model, SDK adapter, and UI are separate. Future Pro Forma embedding should reuse the model and project scope rather than copying financial formulas.
 
 ## Insights 1.1.0

@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.1
+# Land Master Insights 1.5.2
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -95,3 +95,7 @@ Frontend and pure report-model changes only. Existing Creator forms, fields, fun
 ## 1.5.1 Subdivision hover card
 
 Hovering or focusing a subdivision name opens a compact Land Master styled card beside the row. The card retains the 1.5.0 all-history and selected-view information, adds a sold-progress bar, and keeps View Lots accessible while the pointer moves into the card. Escape or leaving the card closes it; touch and keyboard activation can open it without hover. The card stays within the viewport, and scrolling the matrix closes it. No report data or Creator read contract changes. Regression: hover transfer from name to card, focus and Escape, touch activation, viewport edges, narrow screen, delayed history, and View Lots drilldown. Rollback: map production `lot-sales-explorer` to `1.5.0` and rebuild Pages.
+
+## 1.5.2 Hover dismissal and single-select menus
+
+The subdivision card closes after the pointer leaves both its row name and the card, while the brief crossing delay keeps View Lots reachable. Keyboard focus remains an independent way to open and use it. Group By and Sort retain the custom Land Master picker styling but show compact single-choice menus without checkboxes, search, or a Done button. Frontend only; no Creator fields, forms, functions, Custom APIs, or financial definitions change. Regression: hover-away dismissal, name-to-card transfer, focused control dismissal, keyboard access, Group By/Sort selection and sorting, and narrow viewport placement. Rollback: map production `lot-sales-explorer` to `1.5.1` and rebuild Pages.
