@@ -1,9 +1,8 @@
 				 string proforma_save(string payload)
                  {
                  	resp = Map();
-                    // MEGA ADMIN MODE: set migrationEditor to "" after migration, then promote Creator.
-                    // Uses this API's User_Access requester convention, not zoho.loginuser (the API authorizer).
-                    migrationEditor = "rbelliveau";
+                    // Migration access is disabled; the original save gates remain active.
+                    migrationEditor = "";
                     migrationEditAccess = false;
                  	try 
                  	{

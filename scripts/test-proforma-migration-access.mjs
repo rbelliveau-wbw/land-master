@@ -123,7 +123,7 @@ assert.ok(source.includes('var inputLocked=protectedInputLock(r)'));
 assert.ok(extract('buildSavePayload').includes('userAccessId:String(S.myAccessId||"")'));
 assert.match(source,/var phasePayload=\{op:"save_phase_sales",id:pfId,\s*userAccessId:String\(S.myAccessId\|\|""\)/);
 assert.match(source,/op:"finalize_phase_sales",id:pfId,userAccessId:String\(S.myAccessId\|\|""\)/);
-assert.match(backend,/migrationEditor = "rbelliveau";/);
+assert.match(backend,/migrationEditor = "";/);
 assert.match(backend,/migrationEditAccess = false;/);
 assert.match(backend,/migrationAccess = User_Access\[ID == migrationAccessId.toLong\(\)\]/);
 assert.match(backend,/migrationUser = ifnull\(migrationAccess.User,""\)/);
