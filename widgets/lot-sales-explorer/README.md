@@ -129,3 +129,9 @@ Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`
 Lot Sales uses a softer slate-blue canvas with stronger navy and teal accents in the title, matrix header, group bands, selected measure column, and totals. Filter and table layout, control placement, report calculations, and interactions are unchanged. This is a frontend-only visual release; no Creator forms, fields, functions, Custom APIs, or Creator deployment change.
 
 Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow layouts for readable contrast, unchanged picker positions and grouping behavior, and no overflow. Rollback: map production `lot-sales-explorer` to `1.5.7` and rebuild Pages.
+
+## 1.5.9 Matrix navigation and detail readability
+
+The selected month-range pill is centered in the title bar with larger, bold text. On desktop, Group, First Lot Sale, Avg Front Ft, and Measure remain visible while month columns scroll; narrow screens keep Group pinned so month values have room. The Measure column is about 30% narrower, and month-cell spacing is tighter. Numeric drilldown values use a subtle dotted underline with clear hover and keyboard-focus states. The lot-detail dialog expands to the available desktop width so its columns fit without horizontal scrolling at standard desktop sizes. Report calculations, filters, and Creator contracts are unchanged.
+
+Verification: run `npm run validate` and `npm run build:pages`; check pinned header/body/footer alignment and collapsed groups while scrolling, date-pill centering, metric selection, value drilldowns, and detail-dialog overflow at desktop and narrow widths. This is a frontend-only release with no Creator deployment. Rollback: map production `lot-sales-explorer` to `1.5.8` and rebuild Pages.
