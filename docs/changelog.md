@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-25 — Pro Forma two-decimal save trigger (1.80.40)
+
+The Pro Forma server-engine header touch retries the Creator SDK's direct-data update shape only when its first update returns the specific `Sale_Price_FF` zero-decimal validation error. The saved two-decimal sale price is preserved; other field-validation failures remain terminal, and phase sales still require server month parity. This is a widget-only change to the `All_Pro_Formas_All_Fields` update call; no Creator form, field, function, or Custom API source changed. Regression: fractional sale price save, phase month and gross-sales parity, unrelated validation failures, and locked record behavior. Rollback: map Development and Production Pro Forma Manager to `1.80.39`.
+
 ## 2026-09-24 — Stop approval polling on outdated Creator checks
 
 Budget, Budget Modification, Pro Forma, and Contract approval progress now stop promptly when a deployed Creator function returns an old text response instead of its targeted check snapshot. The modal explains that the action may have been saved and does not claim routing or email success. This prevents repeated error reports and a misleading timeout. Widget releases: Budget Manager `122.27.20`, Pro Forma Manager `1.80.18`, Contract Management `1.60.29`. No Creator function source changed here; publishing the previously committed approval functions remains required to restore verified success in Production. Regression: legacy check responses, safe Try again, current structured checks, and existing approval flows. Rollback: map Development and Production to `122.27.19`, `1.80.17`, and `1.60.28`.
