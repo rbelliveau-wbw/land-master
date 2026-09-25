@@ -141,29 +141,38 @@ assert.match(gapHtml,/Mth 25[–-]28/,
 assert.match(gapHtml,/4 lots closed in 2 closing months/,
   'the sales tooltip distinguishes the closing months from the sales window');
 
-// The existing phase cards carry the corresponding project totals from the KPI,
-// with no extra rows below the timeline. Phase base cost stays phase-specific.
+// Additional costs use calculated month rows for the hovered phase and stage
+// window. Adjacent/overlapping phases must not inherit the project grand total.
 const spending=context.computeProforma(base);
-Object.assign(spending.totals,{Land_Cost:1000,Entitlement_Cost:300,
-  Entitlement_Engineering_Addl:50,Construction_Cost_Base:300,
-  Construction_Cost_Addl:75,Total_Expenses:1725});
-const spendHtml=render(spending,base,1);
-assert.doesNotMatch(spendHtml,/pt-outflow-head|pt-cost-row|pt-spend/,
-  'the timeline has no extra outflow section or bars');
-const engCard=segmentTags(spendHtml,'eng')[0];
-const constCard=segmentTags(spendHtml,'const')[0];
-const salesCard=segmentTags(render(spending,base,25),'sales')[0];
-for(const tag of [engCard,constCard,salesCard]){
-  assert.match(tag,/data-pt-land-cost="\$1,000"/,'each card includes project Land Cost');
-  assert.match(tag,/data-pt-outflows="\$1,725"/,'each card includes Total Outflows');
+function costRow(month,phaseKey,phase){
+  const row=spending.months.find(r=>r.Month1===month && r[phaseKey]===phase);
+  assert.ok(row,`month ${month} has ${phaseKey} ${phase}`);
+  return row;
 }
-assert.match(engCard,/data-pt-project-a-label="Engineering Base" data-pt-project-a-value="\$300"/);
-assert.match(engCard,/data-pt-project-b-label="Ent\/Eng Add&#39;l" data-pt-project-b-value="\$50"/);
-assert.match(constCard,/data-pt-project-a-label="Construction Base" data-pt-project-a-value="\$300"/);
-assert.match(constCard,/data-pt-project-b-label="Construction Add&#39;l" data-pt-project-b-value="\$75"/);
-assert.match(salesCard,/data-pt-project-a-label=""/,'sales has no unrelated stage cost');
-assert.match(widgetFunction('flowTimelineTooltipShow'),/summaryRow\('Land Cost',data\.ptLandCost\)/,
-  'the hover card renders the project outflow figures');
+costRow(1,'Eng_Phase',1).Entitlement_Engineering_Addl=10;
+costRow(13,'Eng_Phase',2).Entitlement_Engineering_Addl=20;
+costRow(13,'Const_Phase',1).Construction_Cost_Addl=40;
+costRow(25,'Const_Phase',2).Construction_Cost_Addl=50;
+Object.assign(spending.totals,{Entitlement_Engineering_Addl:17608200,
+  Construction_Cost_Addl:5580000,Land_Cost:26536062,Total_Expenses:88824612});
+const firstSpend=render(spending,base,1),secondSpend=render(spending,base,25);
+assert.doesNotMatch(firstSpend,/pt-outflow-head|pt-cost-row|pt-spend/,
+  'the timeline has no added outflow section or bars');
+const engCards=segmentTags(firstSpend,'eng');
+assert.match(engCards[0],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$10"/,
+  'Phase 1 engineering shows only its own additional cost');
+assert.match(engCards[1],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$20"/,
+  'Phase 2 engineering excludes Phase 1 cost during overlap');
+assert.match(segmentTags(firstSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$40"/,
+  'Phase 1 construction shows its additional cost');
+assert.match(segmentTags(secondSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$50"/,
+  'Phase 2 construction shows its additional cost after paging');
+assert.match(segmentTags(secondSpend,'sales')[0],/data-pt-addl-label=""/,
+  'sales has no unrelated additional cost');
+assert.doesNotMatch(firstSpend,/88,824,612|17,608,200|26,536,062/,
+  'grand totals are absent from phase cards');
+assert.match(widgetFunction('flowTimelineTooltipShow'),/if\(data\.ptAddlLabel\) body\.appendChild\(row\(data\.ptAddlLabel,data\.ptAddlValue/,
+  'the hover card renders the phase additional cost');
 
 const empty=render({phases:[],agg:[]},base,1);
 assert.match(empty,/pt-empty/, 'incomplete schedules have a useful empty state');

@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Phase-window additional costs (1.80.35, 2026-09-24)
+
+Engineering and Construction timeline hover/focus cards sum the calculated additional-cost month rows whose stage phase matches the hovered phase and whose model month lies within that stage's start and end months. Each card pairs its phase base cost with its own Ent/Eng Add'l or Construction Add'l cost. Project Land Cost, project category totals, and Total Outflows no longer appear on phase cards; the dashboard KPI still shows them. Lot sales detail and timeline bar layout are unchanged. No Creator forms, fields, functions, workflows, or Custom APIs change; no Creator deployment is needed. Regression: legacy and v2 schedules, distinct and overlapping phase month rows, zero costs, paging, hover/focus, and sales windows. Production widget rollback: `1.80.34` for the earlier phase schedule fixes, or `1.80.33` for the earlier timeline hover cards.
+
 ## Phase sales scenario and live validation (1.80.34, 2026-09-24)
 
 Lot-count what-ifs now carry their scaled phase allocations into the active scenario and restore the saved phase rows on Revert All. A blank automatic Esc Start Date is resolved before a live calculation, so entering a rate cannot temporarily erase a phase's sales. Numeric phase edits refresh the phase cards, allocation badge, date, and take schedule while retaining focus in the edited field. An invalid phase plan shows unavailable financial figures and disables Save until its Lot Sales error is corrected; save-time validation remains in place. Phase timing tests cover downstream Engineering End, Construction Start, Construction End, Across Phases, and Specific Months additional-cost applications. This is a widget-only change; no Creator forms, fields, functions, workflows, or Custom APIs change. Regression: saved scenario isolation, repeated lot what-ifs and revert, automatic versus chosen escalator dates, invalid allocation feedback, editor focus, phase delay and construction delay cost timing. Rollback: map Development and Production to widget `1.80.33`.
