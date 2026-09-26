@@ -141,3 +141,9 @@ Verification: run `npm run validate` and `npm run build:pages`; check pinned hea
 The Measure picker explicitly labels the existing average Base Price plus Interest per front foot, and adds average and total Base Price plus Interest dollar measures. A blank Interest value counts as zero; a lot without Base Price does not contribute to these measures. Base-only measures keep their existing definitions. The Measure column grows from 116px to 140px, about 20%, while the four desktop context columns remain pinned. The data-quality footer shows the missing $/FF count only for per-foot measures.
 
 Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`, and `npm run build:pages`; check all eight Measure options, monthly and selected-period values, CSV, collapsed group totals, and pinned-column alignment after the width change. No Creator forms, fields, functions, Custom APIs, or Creator deployment change. Rollback: map production `lot-sales-explorer` to `1.5.9` and rebuild Pages.
+
+## 1.5.11 Grouped Measure picker
+
+The Measure dropdown shows all eight choices without an internal scrollbar. Per FF, Base Price, and Lot Count headings separate the choices, while the existing custom single-select and keyboard behavior remain intact. The popup is wider and repositions within the viewport, including on narrow and short screens. Calculations, table geometry, and Creator contracts are unchanged.
+
+Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow/short viewports for all visible choices, no popup clipping or internal scrollbar, and keyboard Home/End/Enter/Escape selection. Rollback: map production `lot-sales-explorer` to `1.5.10` and rebuild Pages.

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T03:03:22.015Z",
+  "generated_at": "2026-09-26T03:11:16.999Z",
   "note": "Creator registrations use the stable Production URLs. The widget runtime selects environment-specific Custom APIs from Creator initialization context.",
   "environments": {
     "development": {
@@ -30,7 +30,7 @@
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.1",
       "settings-manager": "1.2.0",
-      "lot-sales-explorer": "1.5.10"
+      "lot-sales-explorer": "1.5.11"
     }
   },
   "path_aliases": {
