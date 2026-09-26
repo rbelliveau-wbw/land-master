@@ -147,3 +147,9 @@ Verification: run `node scripts/test-lot-sales-explorer.mjs`, `npm run validate`
 The Measure dropdown shows all eight choices without an internal scrollbar. Per FF, Base Price, and Lot Count headings separate the choices, while the existing custom single-select and keyboard behavior remain intact. The popup is wider and repositions within the viewport, including on narrow and short screens. Calculations, table geometry, and Creator contracts are unchanged.
 
 Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow/short viewports for all visible choices, no popup clipping or internal scrollbar, and keyboard Home/End/Enter/Escape selection. Rollback: map production `lot-sales-explorer` to `1.5.10` and rebuild Pages.
+
+## 1.5.12 Group and export visual polish
+
+Export CSV keeps its mint gradient when hovered, with only its border and shadow changing, avoiding the abrupt flat-color flash. The Group By and Measure columns share dark teal headers and pale teal body cells. Group rows use a darker label band with larger, bolder section names. Filtering, grouping, calculations, CSV contents, and Creator contracts are unchanged.
+
+Verification: run `npm run validate` and `npm run build:pages`; inspect enabled and disabled Export hover, desktop and narrow matrix colors, expanded and collapsed group rows, and pinned-column scrolling. This is a frontend-only release with no Creator deployment. Rollback: map production `lot-sales-explorer` to `1.5.11` and rebuild Pages.

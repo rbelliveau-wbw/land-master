@@ -54,6 +54,7 @@ Use title case for Insights field labels and table headings. Center dialog close
 Insights subdivision details use a compact card anchored to the row on hover or keyboard focus. Keep its action reachable as the pointer crosses into the card, use the Land Master navy and teal palette, and keep the card inside the viewport.
 For Insights matrices, soften broad white areas with slate-blue surfaces and use stronger navy and teal accents on headings and group bands. Keep numeric cells and hover states easy to read; color changes should not move report controls.
 In wide Insights matrices, pin the descriptive columns during horizontal scrolling and keep a visible but restrained click cue on drilldown values. On narrow screens, pin only the name column so month values remain readable.
+Give Group By and Measure columns the same teal emphasis. Make grouped section names clear with a dark, high-contrast band; keep gradient action-button surfaces steady on hover and change only border or shadow.
 
 ## Dashboard phase timeline
 
