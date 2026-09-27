@@ -153,3 +153,9 @@ Verification: run `npm run validate` and `npm run build:pages`; inspect desktop 
 Export CSV keeps its mint gradient when hovered, with only its border and shadow changing, avoiding the abrupt flat-color flash. The Group By and Measure columns share dark teal headers and pale teal body cells. Group rows use a darker label band with larger, bolder section names. Filtering, grouping, calculations, CSV contents, and Creator contracts are unchanged.
 
 Verification: run `npm run validate` and `npm run build:pages`; inspect enabled and disabled Export hover, desktop and narrow matrix colors, expanded and collapsed group rows, and pinned-column scrolling. This is a frontend-only release with no Creator deployment. Rollback: map production `lot-sales-explorer` to `1.5.11` and rebuild Pages.
+
+## 1.5.13 Navy and slate palette
+
+Lot Sales shifts its aqua accents to the Budget module's navy and slate blues across the title, filters, grouped matrix, Measure menu, Export CSV, and subdivision card. Group By and Measure remain matched, and Export retains a stable gradient during hover. Green remains on semantic sold-out and progress states. This is a visual-only release; layout, filtering, calculations, exports, and Creator contracts are unchanged.
+
+Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow layouts, selected columns, expanded/collapsed group contrast, Measure options, subdivision card, and Export hover. Rollback: map production `lot-sales-explorer` to `1.5.12` and rebuild Pages.
