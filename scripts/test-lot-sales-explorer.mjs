@@ -64,6 +64,8 @@ const detailLots = [
 ];
 assert.deepEqual(M.sortDetailLots(detailLots,'closeDate').map(l=>l.code),['first','new','old','purchase-only']);
 assert.deepEqual(M.sortDetailLots(detailLots,'purchaseDate').map(l=>l.code),['first','purchase-only','new','old']);
+assert.deepEqual(M.selectDetailLots(detailLots,'purchaseDate','2026-08').map(l=>l.code),['purchase-only'],'monthly totals include purchase-only lots on Purchase Date basis');
+assert.deepEqual(M.selectDetailLots(detailLots,'closeDate','2026-07').map(l=>l.code),['new','old'],'Close Date month drilldown excludes lots without a close date');
 assert.equal(detailLots[0].code,'old','drilldown sorting must not mutate report rows');
 assert(all.rows.every(row => row.groupName === row.project), 'Project is the default report grouping');
 const byTerritory = M.report(lots, {from:'2025-09',to:'2026-09',status:'Sold',groupBy:'territory'});
@@ -90,6 +92,10 @@ const multi = M.reportSelection(lots,{projectIds:['p0','p1'],territories:['Bryan
 assert.equal(multi.reports.length,2);
 assert(multi.lots.every(l=>['p0','p1'].includes(l.projectId)&&['b0','b1'].includes(l.builderId)),'OR within a filter, AND across filters');
 assert(multi.reports.every(r=>r.lots.every(l=>l.status===r.status)),'status totals must not blend');
+for (const part of multi.reports) {
+  const month = part.lots[0]?.purchaseDate.slice(0,7), detail = M.selectDetailLots(part.lots,'purchaseDate',month);
+  assert(detail.length > 0 && detail.every(l=>l.status===part.status),'monthly total drilldown must retain status scope');
+}
 assert(multi.reports.every(r=>r.from===multi.from&&r.to===multi.to),'status columns use a shared month range');
 assert.equal(new Set(multi.rows.map(r=>r.key)).size,multi.rows.length,'drilldown keys distinguish statuses in the same subdivision');
 assert.equal(M.reportSelection(lots,{projectIds:['not-a-project'],statuses:['Sold']}).lots.length,0);

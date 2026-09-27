@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.8
+# Land Master Insights 1.5.14
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -159,3 +159,9 @@ Verification: run `npm run validate` and `npm run build:pages`; inspect enabled 
 Lot Sales shifts its aqua accents to the Budget module's navy and slate blues across the title, filters, grouped matrix, Measure menu, Export CSV, and subdivision card. Group By and Measure remain matched, and Export retains a stable gradient during hover. Green remains on semantic sold-out and progress states. This is a visual-only release; layout, filtering, calculations, exports, and Creator contracts are unchanged.
 
 Verification: run `npm run validate` and `npm run build:pages`; inspect desktop and narrow layouts, selected columns, expanded/collapsed group contrast, Measure options, subdivision card, and Export hover. Rollback: map production `lot-sales-explorer` to `1.5.12` and rebuild Pages.
+
+## 1.5.14 Full-cell and monthly total drilldowns
+
+Each populated subdivision value uses the whole matrix cell as its click and keyboard focus target, including the selected-period total. Each populated Sold or Contracted total at the bottom opens Lot Detail for that status and month across all selected subdivisions; the bottom selected-period total opens the full selected range. Empty cells stay inert. Lot Detail retains its Builder and selected-date grouping, pagination, and CSV export. Totals and financial definitions do not change, and Sold and Contracted remain separate.
+
+Verification: run `npm run validate` and `npm run build:pages`; click the edge of a subdivision month cell, open a bottom monthly total, check its lot count and status scope, and check keyboard focus and pagination. Frontend and pure report-model changes only; no Creator form, field, function, Custom API, or Creator deployment is required. Rollback: map production `lot-sales-explorer` to `1.5.13` and rebuild Pages.
