@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.14
+# Land Master Insights 1.5.15
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -165,3 +165,7 @@ Verification: run `npm run validate` and `npm run build:pages`; inspect desktop 
 Each populated subdivision value uses the whole matrix cell as its click and keyboard focus target, including the selected-period total. Each populated Sold or Contracted total at the bottom opens Lot Detail for that status and month across all selected subdivisions; the bottom selected-period total opens the full selected range. Empty cells stay inert. Lot Detail retains its Builder and selected-date grouping, pagination, and CSV export. Totals and financial definitions do not change, and Sold and Contracted remain separate.
 
 Verification: run `npm run validate` and `npm run build:pages`; click the edge of a subdivision month cell, open a bottom monthly total, check its lot count and status scope, and check keyboard focus and pagination. Frontend and pure report-model changes only; no Creator form, field, function, Custom API, or Creator deployment is required. Rollback: map production `lot-sales-explorer` to `1.5.13` and rebuild Pages.
+
+## 1.5.15 Sticky Measure and footer correction
+
+The full-cell click rule preserves sticky positioning for populated Measure cells and footer totals. Measure values remain aligned with their header during horizontal scrolling, and the footer remains pinned during vertical scrolling. The full-cell drilldowns from 1.5.14 remain active. Frontend CSS only; no Creator form, field, function, Custom API, or Creator deployment is required. Regression: horizontal Measure alignment, vertical footer position, edge-of-cell drilldown, desktop and narrow widths. Rollback: map production `lot-sales-explorer` to `1.5.13` and rebuild Pages; 1.5.14 contains the sticky-column regression.
