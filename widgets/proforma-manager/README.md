@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.43`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.44`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## User-entered phase sales only (1.80.44)
+
+Lot Sales uses saved `Proforma_Phase` inputs and leaves missing phase assumptions blank for the user to enter. It no longer derives takes, frequency, delays, allocations, escalation dates, or phase increases from deprecated `Add_Pro_Forma.Initial_Takedown` and `Lots_per_Month`, nor does it require those fields to be cleared after saving. Existing saved phase inputs are preserved even when the report does not return the version marker. A complete phase plan remains required to save, and the server month and phase reconciliation still verifies the result. The companion `proforma_save` and approval-packet function sources remove their deprecated-field reads and writes; publish those Creator functions separately. Regression: old records with 0/0 or nonzero deprecated values, previously saved phase rows without a visible marker, blank new phases and duplicates, explicit frequency/escalator choices, save/reopen, approval packet, and server parity. Widget rollback: map Production to `1.80.43` after assessing any newly entered phase schedules.
 
 ## Compact pricing summary, cash-flow detail, timeline, and module entry (1.80.43)
 

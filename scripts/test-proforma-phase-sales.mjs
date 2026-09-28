@@ -64,14 +64,7 @@ assert.equal(engine.plan({...pricing,baseUnitPrice:5,phases:[{Phase:1,Total_Lots
   Lots_Per_Take:9,Take_Frequency:'Monthly',Escalator_Enabled:false,
   Additional_Markup_Pct:-10}]}).events[0].Additional_Markup_Income,-1);
 
-const allocations=engine.allocatedLots(179,10);
-assert.deepEqual(allocations,[18,18,18,18,18,18,18,18,18,17]);
-assert.deepEqual(engine.allocatedLots(337,2),[169,168],
-  'a two-phase suggestion must keep the old rounded-up-first allocation');
-assert.deepEqual(engine.allocatedLots(1789,10),[179,179,179,179,179,179,179,179,179,178],
-  'only the final phase receives the legacy allocation remainder');
-assert.deepEqual(engine.allocatedLots(11,10),[2,1,1,1,1,1,1,1,1,1],
-  'small projects must reserve at least one lot for each remaining phase');
+const allocations=[18,18,18,18,18,18,18,18,18,17];
 const phaseRows=allocations.map((lots,i)=>({ID:'phase-'+(i+1),Phase:i+1,Total_Lots:lots,
   Initial_Take_Lots:1,Initial_Delay_Months:0,First_Recurring_Delay_Months:1,
   Lots_Per_Take:lots,Take_Frequency:'Monthly',Escalator_Enabled:false}));
@@ -145,8 +138,8 @@ assert.equal(adopted.totals.Total_Income,535000);
 assert.equal(adopted.months.reduce((s,r)=>s+(r.Finished_Lot_Sales||0),0),535000);
 assert.equal(adopted.months.find(r=>r.Lots_Sold===10).Escalator_Interest_Accrued,25000);
 assert.equal(adopted.schedule.takedownStartMonth,3);
-// A legacy one-take later phase has a gap in its monthly receipts. The phase
-// engine must sell those lots when the record is converted on Save.
+// The phase engine must sell every user-entered one-take phase even when an old
+// record still carries deprecated pace fields and lacks a version marker.
 const oneTakeInputs={Lots:4,Phases:2,Total_Acres:4,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
   Construction_Delay_Months:0,Construction_Length:1,
@@ -154,19 +147,22 @@ const oneTakeInputs={Lots:4,Phases:2,Total_Acres:4,
   Total_Street_LF:0,Land_Cost_Acre:0,purchaseDate:{y:2027,m:1},
   Initial_Takedown:2,Lots_per_Month:2,items:[],curve:[],
   purchaseInstallments:[],saleInstallments:[],pidMud:[]};
-const legacyOneTake=context.computeProforma(oneTakeInputs);
-const convertedOneTake=context.computeProforma({...oneTakeInputs,
-  Lot_Sales_Schedule_Version:'2',phaseSales:[
+const manualOneTake=context.computeProforma({...oneTakeInputs,
+  phaseSales:[
     {Phase:1,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,
       First_Recurring_Delay_Months:1,Lots_Per_Take:2,Take_Frequency:'Monthly',
       Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0},
     {Phase:2,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,
       First_Recurring_Delay_Months:1,Lots_Per_Take:2,Take_Frequency:'Monthly',
       Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}]});
-assert.deepEqual(Array.from(legacyOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2]],
-  'legacy monthly receipts omit a later phase that sells in a single take');
-assert.deepEqual(Array.from(convertedOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2],[4,2]],
-  'conversion must sell the later phase rather than preserving the legacy one-take gap');
+assert.deepEqual(Array.from(manualOneTake.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2],[4,2]],
+  'saved phase rows determine receipts even without a version marker');
+const changedDeprecated=context.computeProforma({...oneTakeInputs,Initial_Takedown:999,
+  Lots_per_Month:999,phaseSales:[
+    {Phase:1,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,Take_Frequency:'Monthly'},
+    {Phase:2,Total_Lots:2,Initial_Take_Lots:2,Initial_Delay_Months:0,Take_Frequency:'Monthly'}]});
+assert.deepEqual(Array.from(changedDeprecated.months.filter(r=>r.Lots_Sold).map(r=>[r.Month1,r.Lots_Sold])),[[3,2],[4,2]],
+  'deprecated pace values cannot affect phase receipts');
 // A phase-1 sales delay moves phase 2's engineering and construction windows.
 // Additional costs tied to those anchors must move with them, while costs tied
 // to explicit calendar months must stay in their chosen months.
@@ -279,7 +275,6 @@ const phaseRenderContext=vm.createContext({
       Annual_Escalator_Pct:0,Additional_Markup_Pct:0,
       Esc_Start_Date:'2030-09-01'}]},phaseSelected:0}},
   phaseSalesAdopted:()=>true,
-  phaseSalesDefaultEscDates:()=>{},
   phaseSalesBalance:()=>({allocated:179,expected:179,delta:0}),
   phaseSalesPlan:()=>monthly,
   phaseSalesField:(label)=>`<span data-test-field="${label}"></span>`,
@@ -444,16 +439,14 @@ const sharedModel={Lots:10,Phases:2,Total_Acres:5,Sale_Price_FF:1000,Lot_Size_Ft
       First_Recurring_Delay_Months:'1',Lots_Per_Take:'2',Take_Frequency:'Monthly',
       Escalator_Enabled:'false',Annual_Escalator_Pct:'0',Esc_Start_Date:'2029-01-01',
       Additional_Markup_Pct:'0'}]};
-let autoDateRefreshes=0;
 const sharedContext=vm.createContext({
   S:{ed:{model:sharedModel,phaseSelected:1,dirty:false}},
-  phaseSalesAdopted:()=>true,phaseSalesDefaultEscDates:()=>{},
+  phaseSalesAdopted:()=>true,
   phaseSalesBalance:()=>({allocated:10,expected:10,delta:0}),
   phaseSalesPlan:()=>({phases:[],events:[]}),
   num:Number,intN:Number,fmtN:(value,digits)=>Number(value).toFixed(digits),
   fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
   esc:String,dateToCreatorValue:String,
-  phaseSalesRefreshAutoEscDates:()=>{autoDateRefreshes++;},
 });
 vm.runInContext(['phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
   'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','phaseSaleUnitPriceParts','panePhaseSales']
@@ -531,18 +524,19 @@ assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','later phase lot counts st
 const firstInput={value:'3',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'0'}[name]||null;}};
 sharedHost.oninput({target:firstInput});
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','Phase 1 edits propagate while sharing is on');
-assert.equal(autoDateRefreshes,2,'lot allocations and take edits refresh automatic Esc Start dates while typed');
+assert.equal(sharedModel.phaseSales[1].Esc_Start_Date,'2028-01-01',
+  'lot allocations and take edits do not change the user-entered Esc Start Date');
 sharedToggle.checked=false;
 sharedHost.onchange({target:sharedToggle});
 assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false');
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','turning sharing off keeps the copied values');
 
-// The Esc Start default is the first day of the month after each phase's first sale.
+// A loaded Pro Forma keeps its user-entered rows. Missing rows are structural
+// placeholders only; no lot count, pace, delay, frequency, or escalation is inferred.
 const monthContext=vm.createContext({PhaseSalesEngine:engine,S:{phaseSalesReady:true}});
 vm.runInContext(['num','intN','round2','ymAdd','ymToInput','lotMixRollup','syncLotMixDerived',
   'phaseSalesPersisted','phaseSalesActive','phaseSalesAdopted','phaseSalesPlan',
-  'phaseSalesDefaultEscDates','phaseSalesRefreshAutoEscDates','phaseSalesSeed',
-  'phaseSalesPrepareDraft','phaseSalesSeedWhenReady']
+  'phaseSalesResize','phaseSalesPrepareDraft']
   .map(widgetFunction).join('\n'),monthContext);
 for(const missing of [undefined,null]){
   assert.equal(monthContext.phaseSalesPersisted(missing),false,
@@ -550,78 +544,70 @@ for(const missing of [undefined,null]){
   assert.equal(monthContext.phaseSalesAdopted(missing),false,
     'a transient missing model must not crash phase-schedule checks');
 }
-assert.equal(monthContext.phaseSalesAdopted({Lot_Sales_Schedule_Version:'2'}),true);
-assert.equal(monthContext.phaseSalesAdopted({_phaseSalesDraft:true}),true);
-const monthModel={Lots:10,Phases:2,Initial_Takedown:2,Lots_per_Month:2,
+assert.equal(monthContext.phaseSalesAdopted({Lot_Sales_Schedule_Version:''}),true,
+  'the editor is active even when the version marker is missing');
+const monthModel={Lots:10,Phases:2,Initial_Takedown:999,Lots_per_Month:999,
   Engineering_Delay_Months:0,Engineering_Length_Months:1,
   Construction_Delay_Months:0,Construction_Length:1,
   Sale_Price_FF:1000,Lot_Size_Ft:50,purchaseDate:{y:2027,m:1}};
-const seeded=monthContext.phaseSalesSeed(monthModel);
-assert.deepEqual(Array.from(seeded,r=>r.Esc_Start_Date),['2027-04-01','2027-07-01']);
-const withEsc={...monthModel,Lot_Sales_Schedule_Version:'2',phaseSales:seeded};
-seeded[0].Escalator_Enabled='true';seeded[0].Annual_Escalator_Pct='3';
-const firstSalePlan=monthContext.phaseSalesPlan(withEsc,seeded);
-assert.equal(firstSalePlan.events.find(event=>event.Phase===1).Escalator_Elapsed_Months,0,
-  'an automatically defaulted Esc Start Date must not escalate the first actual sale');
-seeded[0].Escalator_Enabled='false';seeded[0].Annual_Escalator_Pct='0';
-seeded[0].Initial_Delay_Months='1';
-monthContext.phaseSalesRefreshAutoEscDates(withEsc);
-assert.equal(seeded[0].Esc_Start_Date,'2027-05-01',
-  'an automatic Esc date advances when the first lot sale moves one month later');
-seeded[0].Initial_Delay_Months='0';
-monthContext.phaseSalesRefreshAutoEscDates(withEsc);
-const seeded337=monthContext.phaseSalesSeed({...monthModel,Lots:337,Phases:2});
-assert.deepEqual(Array.from(seeded337,r=>Number(r.Total_Lots)),[169,168],
-  'the widget adoption preview must use the legacy first-phase remainder rule');
-const seeded1789=monthContext.phaseSalesSeed({...monthModel,Lots:1789,Phases:10,
-  Initial_Takedown:35,Lots_per_Month:20});
-const unopenedLegacy={...monthModel,ID:'legacy-1',Lots:1789,Phases:10,Initial_Takedown:35,Lots_per_Month:20,
-  Lot_Sales_Schedule_Version:'',phaseSales:[]};
-monthContext.phaseSalesPrepareDraft(unopenedLegacy);
-assert.equal(unopenedLegacy.Lot_Sales_Schedule_Version,'',
-  'opening an old Pro Forma must not mark it migrated');
-assert.equal(unopenedLegacy.Initial_Takedown,35);
-assert.equal(unopenedLegacy.Lots_per_Month,20);
-assert.equal(unopenedLegacy._phaseSalesDraft,true);
-assert.equal(monthContext.phaseSalesActive(unopenedLegacy),true);
-assert.deepEqual(Array.from(unopenedLegacy.phaseSales,r=>Number(r.Total_Lots)),
-  [179,179,179,179,179,179,179,179,179,178]);
-assert.deepEqual(Array.from(seeded1789,r=>Number(r.Total_Lots)),
-  [179,179,179,179,179,179,179,179,179,178],
-  'conversion keeps the legacy rounded-up earlier phases and smaller final phase');
-assert.equal(Number(seeded1789[0].Initial_Take_Lots),35,
-  'phase 1 inherits the original initial take');
-assert.ok(seeded1789.slice(1).every(r=>Number(r.Initial_Take_Lots)===20),
-  'later phases start with the original continued take');
-assert.ok(seeded1789.every(r=>Number(r.Lots_Per_Take)===20
-  && r.Take_Frequency==='Monthly'
-  && Number(r.Initial_Delay_Months)===0
-  && Number(r.First_Recurring_Delay_Months)===1
-  && String(r.Escalator_Enabled)==='false'
-  && Number(r.Annual_Escalator_Pct)===0
-  && Number(r.Additional_Markup_Pct)===0),
-  'legacy phase defaults are monthly with no delay, escalator, or markup');
-const freshMix={...monthModel,ID:null,Lots:'',Phases:5,phaseSales:[],lotMix:[]};
+const loaded={...monthModel,ID:'saved-1',Lot_Sales_Schedule_Version:'',
+  phaseSales:[{ID:'row-1',Phase:1,Total_Lots:'4',Initial_Take_Lots:'2',
+    Initial_Delay_Months:'3',First_Recurring_Delay_Months:'2',Lots_Per_Take:'1',
+    Take_Frequency:'Quarterly',Escalator_Enabled:'true',Annual_Escalator_Pct:'4',
+    Esc_Start_Date:'2027-01-01',Additional_Markup_Pct:'5'}]};
+const loadedRow=structuredClone(loaded.phaseSales[0]);
+monthContext.phaseSalesPrepareDraft(loaded);
+assert.deepEqual(loaded.phaseSales[0],loadedRow,
+  'loading without a version marker preserves the complete saved phase row');
+assert.equal(loaded.phaseSales.length,2);
+assert.deepEqual(Object.keys(loaded.phaseSales[1]).sort(),['ID','Phase'],
+  'a missing phase gets only structural fields, without inferred pace');
+assert.equal(loaded.phaseSales[1].Phase,2);
+assert.equal(loaded.Lot_Sales_Schedule_Version,'',
+  'opening the editor does not write the workflow marker');
+const outputOnly={...monthModel,ID:'saved-output-only',Lot_Sales_Schedule_Version:'',
+  phaseSales:[{ID:'phase-one',Phase:1,Total_Lots:'5'},
+    {ID:'phase-two',Phase:2,Total_Lots:'5'}]};
+monthContext.phaseSalesPrepareDraft(outputOnly);
+assert.equal(outputOnly.phaseSales[0].Total_Lots,'5');
+assert.equal(outputOnly.phaseSales[0].Initial_Take_Lots,undefined,
+  'an output-only phase row does not inherit an initial take');
+assert.equal(outputOnly.phaseSales[0].Take_Frequency,undefined,
+  'an output-only phase row does not inherit Monthly frequency');
+assert.throws(()=>monthContext.phaseSalesPlan(outputOnly),/initial take.*required/,
+  'output-only rows do not make a valid user pace');
+const fieldContext=vm.createContext({esc:String,phaseMonthTrigger:()=>''});
+vm.runInContext(widgetFunction('phaseSalesField'),fieldContext);
+assert.match(fieldContext.phaseSalesField('Initial lots','Initial_Take_Lots',outputOnly.phaseSales[0],0),
+  /value=""[^>]*aria-label="Initial lots"/,
+  'an output-only row shows an editable blank initial-take input');
+const blank={...monthModel,ID:'saved-2',phaseSales:[]};
+monthContext.phaseSalesPrepareDraft(blank);
+assert.equal(blank.phaseSales.length,2);
+assert.ok(blank.phaseSales.every(row=>Object.keys(row).length===2),
+  'stale deprecated fields cannot populate new phase rows');
+const freshMix={...monthModel,ID:null,Lots:'',Phases:'',phaseSales:[],lotMix:[]};
 monthContext.phaseSalesPrepareDraft(freshMix);
 assert.equal(freshMix.phaseSales.length,0,'a blank new PF starts without phase rows');
+freshMix.Phases=5;
+monthContext.phaseSalesResize(freshMix);
+assert.equal(freshMix.phaseSales.length,5,
+  'choosing the phase count creates structural rows only');
 freshMix.lotMix=[{Lot_Size_Ft:'55',Lot_Count:'15',Price_LF:'1000'}];
 monthContext.syncLotMixDerived(freshMix);
-monthContext.phaseSalesSeedWhenReady(freshMix);
-assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),15,
-  'derived lots from Lot Mix should seed the phase editor without saving or reopening');
+assert.equal(freshMix.phaseSales.length,5,
+  'derived lots from Lot Mix do not change the phase count');
+assert.ok(freshMix.phaseSales.every(row=>Object.keys(row).length===2),
+  'Lot Mix cannot generate lot allocation or pace');
 freshMix.lotMix[0].Lot_Count='155';
 monthContext.syncLotMixDerived(freshMix);
-monthContext.phaseSalesSeedWhenReady(freshMix);
-assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),155,
-  'generated phase allocations should follow the finished lot count while it is typed');
-freshMix._phaseSalesAutoSeed=false;
+assert.ok(freshMix.phaseSales.every(row=>row.Total_Lots===undefined),
+  'changes to project lots leave phase allocation blank');
+freshMix.phaseSales[0].Total_Lots='20';
 freshMix.lotMix[0].Lot_Count='160';
 monthContext.syncLotMixDerived(freshMix);
-monthContext.phaseSalesSeedWhenReady(freshMix);
-assert.equal(freshMix.phaseSales.reduce((sum,row)=>sum+Number(row.Total_Lots),0),155,
-  'editing phase rows must stop automatic allocation changes');
-assert.match(widgetFunction('wireEditInputs'),/if\(kind==="lotmix"\)\{\s*syncLotMixDerived\(m\);\s*phaseSalesSeedWhenReady\(m\);/,
-  'the live Lot Mix input handler must seed phase rows after updating derived Lots');
+assert.equal(freshMix.phaseSales[0].Total_Lots,'20',
+  'Lot Mix changes preserve manual phase allocation');
 const tabKeys=['gen','sched','lotsales','land','pid','addl','curve','loi','approvals','months'];
 const tabButtons=tabKeys.map(key=>({key,hidden:false,style:{display:''},disabled:false,title:'',attrs:{},
   getAttribute(name){return name==='data-pane'?this.key:this.attrs[name];},
@@ -653,27 +639,8 @@ tabContext.S.ed.isNew=false;
 tabContext.S.ed.model.ID='saved-pf';
 tabContext.refreshNewPfTabAccess();
 assert.deepEqual(openTabs(),tabKeys,'saved PFs preserve direct access to every permission-visible pane');
-seeded[0].Esc_Start_Date='2027-03-15';
-seeded[1].Esc_Start_Date='';
-monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
-assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
-  'do not overwrite an existing saved Esc Start Date');
-assert.equal(seeded[1].Esc_Start_Date,'2027-07-01');
-monthModel.purchaseDate={y:2027,m:2};
-seeded[1].Esc_Start_Date='';
-monthContext.phaseSalesDefaultEscDates(monthModel,seeded);
-assert.equal(seeded[1].Esc_Start_Date,'2027-08-01',
-  'a blank Esc Start default follows a changed Project Start month');
-monthModel.Lot_Sales_Schedule_Version='2';
-monthModel.phaseSales=seeded;
-seeded[0]._autoEscStart=false;
-seeded[1]._autoEscStart=true;
-monthModel.purchaseDate={y:2027,m:3};
-monthContext.phaseSalesRefreshAutoEscDates(monthModel);
-assert.equal(seeded[0].Esc_Start_Date,'2027-03-15',
-  'Project Start changes must preserve a user-chosen Esc date');
-assert.equal(seeded[1].Esc_Start_Date,'2027-09-01',
-  'Project Start changes should update untouched auto-derived Esc dates');
+assert.doesNotMatch(widget,/function phaseSalesDefaultEscDates\(/,
+  'the widget no longer supplies an Esc Start Date');
 const capabilityCalls=[];
 const capabilityContext=vm.createContext({
   S:{liveSDK:true,useMock:false,env:{name:'PRODUCTION'},phaseSalesReady:false},
@@ -688,7 +655,7 @@ assert.ok(capabilityCalls.every(call=>call.api_name==='Save_PF1'
   && JSON.parse(call.payload?.payload||call.parameters?.payload).id==='0'),
   'capability probes must be read-only and never cross Creator environments');
 capabilityContext.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',
-  savePhaseSales:true,finalizePhaseSales:true});
+  savePhaseSales:true,finalizePhaseSales:false});
 assert.equal(await capabilityContext.probePhaseSalesSupport(),true,
   'the phase editor should activate after Creator is deployed');
 assert.equal(capabilityContext.S.phaseSalesReady,true);
@@ -704,17 +671,17 @@ assert.equal(savePayloadContext.buildSavePayload(phaseDraft,{}).phaseSales[0].ID
 assert.equal(phaseDraft.phaseSales[0].ID,'stale-phase-row',
   'building the save payload must not mutate the editor draft');
 assert.match(widget,/op:"save_phase_sales"/);
-assert.match(widget,/op:"finalize_phase_sales"/);
+assert.doesNotMatch(widget,/op:"finalize_phase_sales"/);
 assert.match(widget,/Phase-sales server schedule verified/);
 assert.match(widget,/phase_sales_capabilities/);
 assert.doesNotMatch(widget,/Phase-level lot sales can only be saved in DEV/);
 assert.doesNotMatch(widget,/Pro Forma development preview/);
-assert.match(widget,/Defaults from your old model:/);
+assert.doesNotMatch(widget,/Defaults from your old model:/);
 assert.doesNotMatch(widget,/Approve phase schedule/);
 assert.match(widget,/if\(phaseSalesAdopted\(m\)\)\{\s*if\(!ver\.verified/);
 const saveFn=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 assert.match(saveFn,/if\(op == "save_phase_sales"\)/);
-assert.match(saveFn,/if\(op == "finalize_phase_sales"\)/);
+assert.doesNotMatch(saveFn,/if\(op == "finalize_phase_sales"\)/);
 assert.match(saveFn,/phasePf\.Lot_Sales_Schedule_Version = 2/);
 assert.match(saveFn,/seenPhaseIds\.add\(rowId\)/);
 assert.match(saveFn,/for each removePhaseId in removePhaseIds/);

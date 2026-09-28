@@ -468,31 +468,52 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			page = page + thisapp.PF_PDF_Text(542,rowY,10,"bold",ink,timelineValues.get(timelineIndex));
 			page = page + thisapp.PF_PDF_Rect(370,rowY - 8,292,0.5,softLine,"",0);
 		}
-		initialTakeLabel = thisapp.PF_Packet_Number(ifnull(pf.Initial_Takedown,"").toString(),0);
-		recurringTakeLabel = thisapp.PF_Packet_Number(ifnull(pf.Lots_per_Month,"").toString(),0) + "/month";
-		if(ifnull(pf.Lot_Sales_Schedule_Version,0).toLong() == 2)
+		initialTakeLabel = "Phase schedule incomplete";
+		recurringTakeLabel = "Phase schedule incomplete";
+		pdfPhases = Proforma_Phase[Pro_Forma == pf.ID] sort by Phase;
+		pdfScheduleComplete = pdfPhases.count() > 0 && pdfPhases.count() == ifnull(pf.Phases,0).toLong();
+		pdfPhaseNumber = 1;
+		pdfAllocatedLots = 0;
+		for each pdfPhase in pdfPhases
 		{
-			pdfPhases = Proforma_Phase[Pro_Forma == pf.ID] sort by Phase;
-			initialTakeLabel = "See phase schedule";
-			recurringTakeLabel = "See phase schedule";
+			if(ifnull(pdfPhase.Phase,0).toLong() != pdfPhaseNumber || pdfPhase.Total_Lots == null || pdfPhase.Initial_Take_Lots == null || pdfPhase.Initial_Delay_Months == null || ifnull(pdfPhase.Total_Lots,0).toLong() < 1 || ifnull(pdfPhase.Initial_Take_Lots,0).toLong() < 1 || ifnull(pdfPhase.Initial_Delay_Months,0).toLong() < 0 || ifnull(pdfPhase.Initial_Take_Lots,0).toLong() > ifnull(pdfPhase.Total_Lots,0).toLong())
+			{
+				pdfScheduleComplete = false;
+			}
+			else if(ifnull(pdfPhase.Total_Lots,0).toLong() > ifnull(pdfPhase.Initial_Take_Lots,0).toLong() && (pdfPhase.First_Recurring_Delay_Months == null || pdfPhase.Lots_Per_Take == null || ifnull(pdfPhase.First_Recurring_Delay_Months,0).toLong() < 1 || ifnull(pdfPhase.Lots_Per_Take,0).toLong() < 1))
+			{
+				pdfScheduleComplete = false;
+			}
+			if(ifnull(pdfPhase.Take_Frequency,"").toString() != "Monthly" && ifnull(pdfPhase.Take_Frequency,"").toString() != "Quarterly")
+			{
+				pdfScheduleComplete = false;
+			}
+			pdfAllocatedLots = pdfAllocatedLots + ifnull(pdfPhase.Total_Lots,0).toLong();
+			pdfPhaseNumber = pdfPhaseNumber + 1;
+		}
+		if(pdfAllocatedLots != ifnull(pf.Lots,0).toLong())
+		{
+			pdfScheduleComplete = false;
+		}
+		if(pdfScheduleComplete)
+		{
 			firstPdfPhase = Proforma_Phase[(Pro_Forma == pf.ID) && (Phase == 1)];
 			if(firstPdfPhase != null)
 			{
-				firstInitial = ifnull(firstPdfPhase.Initial_Take_Lots,0).toLong();
-				firstRecurring = ifnull(firstPdfPhase.Lots_Per_Take,0).toLong();
-				firstHasRecurring = ifnull(firstPdfPhase.Total_Lots,0).toLong() > firstInitial;
-				firstFrequency = ifnull(firstPdfPhase.Take_Frequency,"Monthly").toString();
+				firstInitial = firstPdfPhase.Initial_Take_Lots.toLong();
+				firstHasRecurring = firstPdfPhase.Total_Lots.toLong() > firstInitial;
+				firstFrequency = firstPdfPhase.Take_Frequency.toString();
 				frequencySuffix = if(firstFrequency == "Quarterly","/quarter","/month");
 				allInitialSame = true;
 				allRecurringSame = true;
 				for each pdfPhase in pdfPhases
 				{
-					if(ifnull(pdfPhase.Initial_Take_Lots,0).toLong() != firstInitial)
+					if(pdfPhase.Initial_Take_Lots.toLong() != firstInitial)
 					{
 						allInitialSame = false;
 					}
-					phaseHasRecurring = ifnull(pdfPhase.Total_Lots,0).toLong() > ifnull(pdfPhase.Initial_Take_Lots,0).toLong();
-					if(phaseHasRecurring != firstHasRecurring || (phaseHasRecurring && (ifnull(pdfPhase.Lots_Per_Take,0).toLong() != firstRecurring || ifnull(pdfPhase.Take_Frequency,"").toString() != firstFrequency)))
+					phaseHasRecurring = pdfPhase.Total_Lots.toLong() > pdfPhase.Initial_Take_Lots.toLong();
+					if(phaseHasRecurring != firstHasRecurring || (phaseHasRecurring && (ifnull(pdfPhase.Lots_Per_Take,0).toLong() != ifnull(firstPdfPhase.Lots_Per_Take,0).toLong() || pdfPhase.Take_Frequency.toString() != firstFrequency)))
 					{
 						allRecurringSame = false;
 					}
@@ -505,7 +526,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 				recurringTakeLabel = "No recurring take";
 				if(firstHasRecurring)
 				{
-					recurringTakeLabel = thisapp.PF_Packet_Number(firstRecurring.toString(),0) + frequencySuffix;
+					recurringTakeLabel = thisapp.PF_Packet_Number(firstPdfPhase.Lots_Per_Take.toString(),0) + frequencySuffix;
 				}
 				if(pdfPhases.count() > 1 && !allRecurringSame)
 				{

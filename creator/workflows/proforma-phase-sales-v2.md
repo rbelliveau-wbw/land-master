@@ -1,5 +1,9 @@
 # DEV `RUN_EVERYTHING_ON_SUCCESS` phase-sales branches
 
+## Current input contract (2026-09-28)
+
+The widget uses saved `Proforma_Phase` inputs and requires the user to fill any missing phase rows. `Initial_Takedown` and `Lots_per_Month` are deprecated and are ignored by the widget and updated `proforma_save`. `save_phase_sales` sets `Lot_Sales_Schedule_Version = 2` after persisting phase rows so this workflow's version-2 branches calculate Creator months. A blank marker in an all-fields report must not cause the widget to invent phase pace or display old header values. This document mirrors four branches only; obtain the full live workflow before deploying or changing its version-1 bodies.
+
 The live Development workflow has 13 actions. Only actions 1 (phase builder), 2
 (month builder), 3 (lot sales), and 12 (totals) gained a version-2 branch. Their
 existing version-1 bodies remain inside `else` unchanged. This is a source

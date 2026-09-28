@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import '../widgets/proforma-manager/src/app/phase-sales-engine.js';
 
 const widget=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 function widgetFunction(name){
@@ -30,8 +31,9 @@ const format={
   proformaLifecycleStatus:()=>'',
   LOI_FIELD_DEFS:[]
 };
-const ctx=vm.createContext({...format,S:{ed:{calc:null}},document:{getElementById:()=>null}});
-vm.runInContext(widgetFunction('phaseSalesDisplaySummary')+'\n'+widgetFunction('proformaInputRows')+'\n'
+const ctx=vm.createContext({...format,S:{ed:{calc:null}},PhaseSalesEngine:globalThis.PhaseSalesEngine,
+  document:{getElementById:()=>null}});
+vm.runInContext(widgetFunction('phaseSalesPlan')+'\n'+widgetFunction('phaseSalesDisplaySummary')+'\n'+widgetFunction('proformaInputRows')+'\n'
   +widgetFunction('buildProformaWorkbook')+'\n'+widgetFunction('renderMonthsPane'),ctx);
 const X={utils:{
   book_new:()=>({SheetNames:[],Sheets:{}}),
@@ -63,29 +65,39 @@ assert.equal(monthRow[monthHead.indexOf('Additional Markup Income')],-10000);
 assert.equal(monthRow[monthHead.indexOf('Escalator Interest Accrued')],0);
 assert.equal(monthRow[monthHead.indexOf('Escalator Applied %')],0);
 
-const legacy=ctx.buildProformaWorkbook(X,{}, {phases:[{Phase:1,Total_Lots:10}],months:[{Month1:3,Master_Month:true,Lots_Sold:10,Finished_Lot_Sales:500000}]});
-const [legacyPhaseHead,legacyPhaseRow]=sheet(legacy,'Phases');
-const [legacyMonthHead,legacyMonthRow]=sheet(legacy,'Months');
-assert.equal(legacyPhaseRow[legacyPhaseHead.indexOf('Escalator Enabled')],'', 'legacy phase fields stay blank');
-assert.equal(legacyPhaseRow[legacyPhaseHead.indexOf('Initial Take Lots')],'');
-assert.equal(legacyMonthRow[legacyMonthHead.indexOf('Base Lot Sales')],'', 'legacy month fields stay blank');
-assert.equal(legacyMonthRow[legacyMonthHead.indexOf('Escalator Applied %')],'');
+const incomplete=ctx.buildProformaWorkbook(X,{}, {phases:[{Phase:1,Total_Lots:10}],months:[{Month1:3,Master_Month:true,Lots_Sold:10,Finished_Lot_Sales:500000}]});
+const [incompletePhaseHead,incompletePhaseRow]=sheet(incomplete,'Phases');
+const [incompleteMonthHead,incompleteMonthRow]=sheet(incomplete,'Months');
+assert.equal(incompletePhaseRow[incompletePhaseHead.indexOf('Escalator Enabled')],'', 'missing phase inputs stay blank');
+assert.equal(incompletePhaseRow[incompletePhaseHead.indexOf('Initial Take Lots')],'');
+assert.equal(incompleteMonthRow[incompleteMonthHead.indexOf('Base Lot Sales')],'', 'missing month components stay blank');
+assert.equal(incompleteMonthRow[incompleteMonthHead.indexOf('Escalator Applied %')],'');
 
-const phaseModel={Lot_Sales_Schedule_Version:'2',Initial_Takedown:null,Lots_per_Month:null,
-  phaseSales:[{Initial_Take_Lots:35,Lots_Per_Take:20,Take_Frequency:'Monthly'},
-    {Initial_Take_Lots:20,Lots_Per_Take:20,Take_Frequency:'Monthly'}]};
+const phaseModel={Lot_Sales_Schedule_Version:'',Initial_Takedown:999,Lots_per_Month:999,
+  Lots:100,Phases:2,Engineering_Delay_Months:0,Engineering_Length_Months:1,
+  Construction_Delay_Months:0,Construction_Length:1,purchaseDate:{y:2027,m:1},
+  Sale_Price_FF:1000,Lot_Size_Ft:50,
+  phaseSales:[{Phase:1,Total_Lots:50,Initial_Take_Lots:35,Initial_Delay_Months:0,
+    First_Recurring_Delay_Months:1,Lots_Per_Take:20,Take_Frequency:'Monthly',
+    Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0},
+    {Phase:2,Total_Lots:50,Initial_Take_Lots:20,Initial_Delay_Months:0,
+      First_Recurring_Delay_Months:1,Lots_Per_Take:20,Take_Frequency:'Monthly',
+      Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}]};
 const phaseInputs=ctx.proformaInputRows(phaseModel,{});
 assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Phase 1 Initial Take'&&row[2]===35));
 assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Phase 1 Recurring Take'&&row[2]===20));
 assert.ok(phaseInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Later Phases'&&row[2].startsWith('Different')));
 assert.ok(!phaseInputs.some(row=>row[1]==='Initial Takedown'||row[1]==='Lots per Month'),
-  'converted inputs must not export blank legacy take fields');
-const draftInputs=ctx.proformaInputRows({...phaseModel,Lot_Sales_Schedule_Version:'1',_phaseSalesDraft:true},{});
-assert.ok(draftInputs.some(row=>row[1]==='Phase 1 Initial Take'&&row[2]===35),
-  'in-memory phase drafts need the same summary before Save');
-const legacyInputs=ctx.proformaInputRows({Initial_Takedown:35,Lots_per_Month:20},{});
-assert.ok(legacyInputs.some(row=>row[1]==='Initial Takedown'&&row[2]===35));
-assert.ok(legacyInputs.some(row=>row[1]==='Lots per Month'&&row[2]===20));
+  'old header pace values must never appear in the export');
+const incompleteInputs=ctx.proformaInputRows({Initial_Takedown:35,Lots_per_Month:20},{});
+assert.ok(!incompleteInputs.some(row=>row[1]==='Initial Takedown'||row[1]==='Lots per Month'),
+  'deprecated fields are ignored even when phase inputs are missing');
+assert.ok(incompleteInputs.some(row=>row[0]==='Lot Sales'&&row[1]==='Phase Schedule'&&row[2]==='Incomplete'),
+  'an empty phase schedule exports its incomplete state rather than a pace');
+const outputOnlyInputs=ctx.proformaInputRows({...phaseModel,
+  phaseSales:[{Phase:1,Total_Lots:50},{Phase:2,Total_Lots:50}]},{});
+assert.ok(outputOnlyInputs.some(row=>row[1]==='Phase Schedule'&&row[2]==='Incomplete'),
+  'phase rows with only calculated lot allocations are not a valid pace');
 
 const host={innerHTML:''};
 ctx.document.getElementById=()=>host;

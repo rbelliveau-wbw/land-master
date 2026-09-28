@@ -18,7 +18,7 @@ function widgetFunction(name){
 }
 
 // Use the live widget calculator and its actual phase-sale engine. These month
-// ranges are the data the timeline receives for existing and adopted Pro Formas.
+// ranges are the data the timeline receives from user-entered phase rows.
 const context=vm.createContext({
   PhaseSalesEngine:globalThis.PhaseSalesEngine,
   CFG:{irr:{maxIterations:25}},
@@ -31,7 +31,6 @@ vm.runInContext(['num','intN','hasVal','round2','ymAdd','ymKey','ymLabel','ymSho
 const base={Lots:48,Phases:2,Total_Acres:48,
   Engineering_Delay_Months:0,Engineering_Length_Months:12,
   Construction_Delay_Months:0,Construction_Length:12,
-  Initial_Takedown:2,Lots_per_Month:2,
   Sale_Price_FF:1000,Lot_Size_Ft:50,Engineering_Cost_Lot:1000,
   Const_Cost_FF:300,Total_Street_LF:4800,Land_Cost_Acre:0,
   purchaseDate:{y:2027,m:1},items:[],curve:[],purchaseInstallments:[],
@@ -41,6 +40,8 @@ const adopted={...base,Lot_Sales_Schedule_Version:'2',phaseSales:[1,2].map(Phase
   First_Recurring_Delay_Months:1,Lots_Per_Take:2,Take_Frequency:'Monthly',
   Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0
 }))};
+const withoutMarker={...adopted,Lot_Sales_Schedule_Version:'',
+  Initial_Takedown:999,Lots_per_Month:999};
 const expectedWindows=[
   [1,12,13,24,25,36],
   [13,24,25,36,37,48]
@@ -62,7 +63,7 @@ function geometry(tag){
   assert.ok(match,'stage bars have positions on the shared month axis');
   return [Number(match[1]),Number(match[2])];
 }
-for(const [label,model] of [['legacy',base],['v2',adopted]]){
+for(const [label,model] of [['saved',adopted],['saved rows without marker',withoutMarker]]){
   const calculation=context.computeProforma(model);
   assert.equal(calculation.phases.length,2,`${label} has two calculated phases`);
   assert.deepEqual(JSON.parse(JSON.stringify(calculation.phases.map(p=>stageKeys.map(k=>p[k])))),expectedWindows,
@@ -169,7 +170,7 @@ assert.match(source,/\.pt-tooltip\[data-stage="const"\]\{--pt-tip-mark:#2c6fac/)
 
 // Additional costs use calculated month rows for the hovered phase and stage
 // window. Adjacent/overlapping phases must not inherit the project grand total.
-const spending=context.computeProforma(base);
+const spending=context.computeProforma(withoutMarker);
 function costRow(month,phaseKey,phase){
   const row=spending.months.find(r=>r.Month1===month && r[phaseKey]===phase);
   assert.ok(row,`month ${month} has ${phaseKey} ${phase}`);
@@ -181,7 +182,7 @@ costRow(13,'Const_Phase',1).Construction_Cost_Addl=40;
 costRow(25,'Const_Phase',2).Construction_Cost_Addl=50;
 Object.assign(spending.totals,{Entitlement_Engineering_Addl:17608200,
   Construction_Cost_Addl:5580000,Land_Cost:26536062,Total_Expenses:88824612});
-const firstSpend=render(spending,base,1),secondSpend=render(spending,base,25);
+const firstSpend=render(spending,withoutMarker,1),secondSpend=render(spending,withoutMarker,25);
 assert.doesNotMatch(firstSpend,/pt-outflow-head|pt-cost-row|pt-spend/,
   'the timeline has no added outflow section or bars');
 const engCards=segmentTags(firstSpend,'eng');

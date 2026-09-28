@@ -69,12 +69,12 @@ const context = vm.createContext({
   document: {getElementById: id => elements.get(id), querySelectorAll: () => []},
   FLOW_COLS: 24, MONTHS_S: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   num: value => Number(value || 0), fmtN: value => String(value), esc: value => String(value),
-  phaseSalesAdopted: model => model.v2,
   ymKey: date => `${date.y}-${String(date.m).padStart(2, "0")}`,
   ymAdd: (date, n) => { const month = date.y * 12 + date.m - 1 + n; return {y: Math.floor(month / 12), m: month % 12 + 1}; },
   monthsBetween: (a, b) => (b.y - a.y) * 12 + b.m - a.m
 });
-vm.runInContext(["fmt$", "dashboardSalesBreakdown"].map(extractFunction).join("\n") + "\n" + flow, context);
+vm.runInContext(["fmt$", "phaseSalesPersisted", "phaseSalesActive", "phaseSalesAdopted",
+  "dashboardSalesBreakdown"].map(extractFunction).join("\n") + "\n" + flow, context);
 const agg = [1, 2].map(month => ({m: month, date: {y: 2027, m: month}, fls: month === 1 ? 109 : 30,
   landSale: 0, pid: 0, reimb: 0, reimbFees: 0, totalIncome: month === 1 ? 109 : 30,
   landCost: 0, engByPhase: {}, engAddl: 0, constByPhase: {}, constAddl: 0,
@@ -87,7 +87,6 @@ context.S.dash.calc = {agg, phases: [], months: [
   {Month1: 2, Base_Lot_Sales: 40, Additional_Markup_Income: -10,
     Escalator_Interest_Accrued: 0, Finished_Lot_Sales: 30}
 ]};
-context.S.dash.model.v2 = true;
 context.renderFlowTable();
 const body = elements.get("flowBody").innerHTML;
 for (const label of ["Finished Lot Sales", "Base Price", "Phase Increase", "Escalator", "Total Income"])
@@ -123,10 +122,12 @@ context.S.dash.expanded.finishedLotSales = false;
 context.renderFlowTable();
 assert.match(elements.get("flowBody").innerHTML, /class="xchild hid" id="flowLotincrease"/,
   "Inflows tab also collapses the breakdown");
-context.S.dash.model.v2 = false;
+context.S.dash.model.Lot_Sales_Schedule_Version = '';
+context.S.dash.model.Initial_Takedown = 99;
+context.S.dash.model.Lots_per_Month = 99;
 context.renderFlowTable();
-assert.ok(!elements.get("flowBody").innerHTML.includes("Phase Increase"),
-  "legacy sales retain their existing single Finished Lot Sales line");
+assert.ok(elements.get("flowBody").innerHTML.includes("Phase Increase"),
+  "saved month components are displayed even without a version marker or with deprecated pace fields");
 
 /* The dashboard assumption must show the persisted frontage price to cents;
    the neighboring financial totals retain their usual whole-dollar display. */
@@ -135,7 +136,8 @@ elements.set("assump", {innerHTML: ""});
 elements.set("vDash", {classList: {toggle() {}}});
 context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Lot_Size_Ft: "56"};
 context.S.dash.calc = {totals: {Gross_Sales: 8088630, Total_Income: 8088630,
-  Total_Expenses: 1430000, Net_Profit: 6658630}, schedule: {}, cashPosition: []};
+  Total_Expenses: 1430000, Net_Profit: 6658630}, schedule: {}, cashPosition: [],
+  phases: [], warnings: []};
 context.syncPersistentRecordHeader = () => {};
 context.renderDashboardOwners = () => {};
 context.renderDealRoom = () => {};

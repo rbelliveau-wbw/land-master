@@ -39,7 +39,18 @@ assert.ok(!texts.includes('$99,999,999')&&!texts.includes('$88,888,888'),'exclud
 assert.ok(texts.includes('$24,276'),'total only eligible installments');
 assert.ok(r.draws.some(x=>x.x>=440&&x.text.includes('Cost item')),'costs flow beyond the first of three columns');
 for(const label of ['LAND PURCHASE / INSTALLMENTS','PID / MUD REIMBURSEMENTS','FT. ST. / LOT','ESTIMATED PURCHASE','ENGINEERING START / DELAY','RECURRING TAKEDOWN','LOT MIX','CONST ADD\'L COST / LOT','LAND SALE INSTALLMENTS'])assert.ok(texts.includes(label),label);
-assert.ok(texts.includes('7/month'),'recurring takedown remains monthly');
+assert.match(texts,/Phase schedule[\s\S]*incomplete/,
+  'missing user-entered phase rows are identified as incomplete');
+assert.ok(!texts.includes('7/month'),
+  'deprecated Lots_per_Month does not supply a PDF take');
+const savedPhaseFixture=structuredClone(fixture);
+savedPhaseFixture.Add_Pro_Forma[0].Phases=1;
+savedPhaseFixture.Proforma_Phase=[{ID:700,Pro_Forma:1,Phase:1,Total_Lots:675,
+  Initial_Take_Lots:35,Initial_Delay_Months:0,First_Recurring_Delay_Months:1,
+  Lots_Per_Take:7,Take_Frequency:'Monthly'}];
+const savedPhaseText=buildFixture(savedPhaseFixture).r.draws.map(x=>x.text).join('\n');
+assert.ok(savedPhaseText.includes('7/month'),
+  'a complete saved phase row supplies the monthly PDF take');
 assert.ok(texts.includes('50s: 450, 60s: 225'),'lot mix is sourced from persisted child rows');
 assert.ok(texts.includes('$6,815'),'construction additional cost per lot is Construction Add\'l divided by lots');
 assert.ok(texts.includes('Comments')===false,'empty comments do not add a page');

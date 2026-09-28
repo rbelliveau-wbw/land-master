@@ -121,18 +121,19 @@ assert.ok(source.includes('var headerTouch={Name:m.Name,Lock_Inputs:savedInputLo
 assert.ok(source.includes('var inputLocked=protectedInputLock(r)'));
 assert.ok(extract('buildSavePayload').includes('userAccessId:String(S.myAccessId||"")'));
 assert.match(source,/var phasePayload=\{op:"save_phase_sales",id:pfId,\s*userAccessId:String\(S.myAccessId\|\|""\)/);
-assert.match(source,/op:"finalize_phase_sales",id:pfId,userAccessId:String\(S.myAccessId\|\|""\)/);
+assert.doesNotMatch(source,/op:"finalize_phase_sales"/,
+  'verified phase sales no longer require a second legacy-field finalization call');
 assert.match(backend,/migrationEditor = "";/);
 assert.match(backend,/migrationEditAccess = false;/);
 assert.match(backend,/migrationAccess = User_Access\[ID == migrationAccessId.toLong\(\)\]/);
 assert.match(backend,/migrationUser = ifnull\(migrationAccess.User,""\)/);
 assert.match(backend,/migrationAccessId == "4410926000004465004" && migrationUser == "wbdevelopment"/);
 assert.match(backend,/resp.put\("migrationEditor",migrationEditor\)/);
-for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['finalApprovalComplete','finalSaveProtected'],['approvalIsComplete','headerSaveProtected']]){
+for(const [name,flag] of [['phaseApprovalComplete','phaseSaveProtected'],['approvalIsComplete','headerSaveProtected']]){
   assert.ok(backend.includes(flag+' = '+name+' || '));
   assert.ok(backend.includes('if(!migrationEditAccess && '+flag+')'));
 }
-assert.equal((backend.match(/if\(!migrationEditAccess &&/g)||[]).length,3,'only the three financial-save guards are bypassed');
+assert.equal((backend.match(/if\(!migrationEditAccess &&/g)||[]).length,2,'only the header and phase-save guards are bypassed');
 assert.match(backend,/if\(approvalComplete \|\| ifnull\(quickPf.Status/,'explicit unlock stays guarded');
 assert.match(backend,/if\(loiApprovalStarted \|\| loiPfStatus == "Pending Approval"/,'LOI approval guard stays');
 assert.doesNotMatch(source,/constructionGate|constructionCode|initializeConstructionGate|pf-construction-unlocked-v1|"0424"/,
@@ -143,9 +144,9 @@ assert.doesNotMatch(source,/constructionGate|constructionCode|initializeConstruc
   const h=harness();h.S.liveSDK=true;h.S.env={name:'PRODUCTION'};
   h.context.saveApiCandidateNames=()=>['Save_PF'];h.context.auditLog=()=>{};
   vm.runInContext(extract('parseSaveApiResult')+'\n'+extract('probePhaseSalesSupport'),h.context);
-  h.context.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',savePhaseSales:true,finalizePhaseSales:true,migrationEditor:'rbelliveau'});
+  h.context.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',savePhaseSales:true,finalizePhaseSales:false,migrationEditor:'rbelliveau'});
   await h.context.probePhaseSalesSupport();assert.equal(h.context.migrationAccountAccess(),true);
-  h.context.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',savePhaseSales:true,finalizePhaseSales:true,migrationEditor:''});
+  h.context.sdkInvoke=()=>Promise.resolve({success:true,action:'phase_sales_capabilities',savePhaseSales:true,finalizePhaseSales:false,migrationEditor:''});
   await h.context.probePhaseSalesSupport();assert.equal(h.context.migrationAccountAccess(),false);
   h.S.migrationEditor='rbelliveau';
   h.context.sdkInvoke=()=>Promise.reject(Error('unavailable'));

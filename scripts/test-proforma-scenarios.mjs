@@ -10,9 +10,9 @@ function fn(name){
  throw Error(name);
 }
 const ctx=vm.createContext({S:{dash:{}}, CFG:{irr:{}}, PhaseSalesEngine:globalThis.PhaseSalesEngine, document:{querySelector:()=>null}, renderDashboard(){}, dealCancelRecalc(){}, dealScheduleRecalc(){}});
-const names=['num','intN','round2','hasVal','fmtN','fmt$','esc','ymAdd','ymToInput','parseMonthList','phaseSalesPersisted','phaseSalesActive','phaseSalesPlan','phaseSalesDefaultEscDates','additionalCostUnitQuantity','syncPerUnitAdditionalCost','syncAllPerUnitAdditionalCosts','computeProforma','modelToCalc','dealCloneWith','dealApplyDriver','dealFmtDelta','dealSnapshot','dealKpis','dealMudRevenueEnabled','dealSetMudRevenue','dealPeakCash','curveLengthValue','lookupDisplayValue'];
+const names=['num','intN','round2','hasVal','fmtN','fmt$','esc','ymAdd','ymToInput','parseMonthList','phaseSalesPersisted','phaseSalesActive','phaseSalesPlan','additionalCostUnitQuantity','syncPerUnitAdditionalCost','syncAllPerUnitAdditionalCosts','computeProforma','modelToCalc','dealCloneWith','dealApplyDriver','dealFmtDelta','dealSnapshot','dealKpis','dealMudRevenueEnabled','dealSetMudRevenue','dealPeakCash','curveLengthValue','lookupDisplayValue'];
 vm.runInContext(names.map(fn).join('\n')+'\n'+source.match(/var DEAL_DRIVERS=\[[\s\S]*?\n\];/)[0],ctx);
-const model={Total_Acres:'100',Land_Cost_Acre:'10000',Total_Street_LF:'5000',Lot_Size_Ft:'50',Lots:'100',Phases:'1',Sale_Price_FF:'1500',Const_Cost_FF:'300',Engineering_Cost_Lot:'500',Engineering_Length_Months:'2',Engineering_Delay_Months:'0',Construction_Length:'2',Construction_Delay_Months:'0',Initial_Takedown:'10',Lots_per_Month:'10',purchaseInstallments:[{Cost:'250000',Percent1:'25',Month1:'1'},{Cost:'750000',Percent1:'75',Month1:'2'}],curve:[{Month_Number:'1',Percent_Cost:'50'},{Month_Number:'2',Percent_Cost:'50'}],items:[{_perUnit:true,Unit:'Acre',Per_Unit:'100',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'LF',Per_Unit:'2',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'Lot',Per_Unit:'10',Add_l_Cost:'1000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:false,Add_l_Cost:'777',Department:'Construction',Start_Phase:'1',End_Phase:'1'}]};
+const model={Total_Acres:'100',Land_Cost_Acre:'10000',Total_Street_LF:'5000',Lot_Size_Ft:'50',Lots:'100',Phases:'1',Sale_Price_FF:'1500',Const_Cost_FF:'300',Engineering_Cost_Lot:'500',Engineering_Length_Months:'2',Engineering_Delay_Months:'0',Construction_Length:'2',Construction_Delay_Months:'0',Initial_Takedown:'99',Lots_per_Month:'99',purchaseDate:{y:2027,m:1},phaseSales:[{Phase:1,Total_Lots:100,Initial_Take_Lots:10,Initial_Delay_Months:0,First_Recurring_Delay_Months:1,Lots_Per_Take:10,Take_Frequency:'Monthly',Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}],purchaseInstallments:[{Cost:'250000',Percent1:'25',Month1:'1'},{Cost:'750000',Percent1:'75',Month1:'2'}],curve:[{Month_Number:'1',Percent_Cost:'50'},{Month_Number:'2',Percent_Cost:'50'}],items:[{_perUnit:true,Unit:'Acre',Per_Unit:'100',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'LF',Per_Unit:'2',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'Lot',Per_Unit:'10',Add_l_Cost:'1000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:false,Add_l_Cost:'777',Department:'Construction',Start_Phase:'1',End_Phase:'1'}]};
 const before=JSON.stringify(model);const base=ctx.computeProforma(model);
 for(const [key,val] of [['Total_Acres',110.25],['Total_Street_LF',6000],['Lot_Size_Ft',55.25],['Lots',110],['Land_Cost_Acre',11000]]){
  const changed=ctx.dealCloneWith(model,key,val),calc=ctx.modelToCalc(changed);
@@ -108,8 +108,13 @@ autoDate.phaseSales[1].Escalator_Enabled='true';
 autoDate.phaseSales[1].Annual_Escalator_Pct='5';
 autoDate.phaseSales[1].Esc_Start_Date='';
 const pricedPhase=ctx.modelToCalc(autoDate);
-assert.ok(autoDate.phaseSales[1].Esc_Start_Date,'a visible automatic escalation date must exist in the calculation model');
-assert.equal(pricedPhase.months.reduce((sum,row)=>sum+(row.Lots_Sold||0),0),20);
-assert.ok(pricedPhase.totals.Gross_Sales>=phaseBase.totals.Gross_Sales,
-  'enabling an escalation rate with the default date cannot erase a phase of sales');
-console.log('Phase lot scenarios, baseline isolation, and automatic escalator-date calculations passed.');
+assert.equal(autoDate.phaseSales[1].Esc_Start_Date,'',
+  'scenario calculations must not invent an escalation date');
+assert.match(pricedPhase.warnings.join(' '),/Esc Start Date/,
+  'the user must supply an Esc Start Date for an enabled rate');
+autoDate.phaseSales[1].Esc_Start_Date='2027-01-01';
+const chosenDate=ctx.modelToCalc(autoDate);
+assert.equal(chosenDate.months.reduce((sum,row)=>sum+(row.Lots_Sold||0),0),20);
+assert.ok(chosenDate.totals.Gross_Sales>=phaseBase.totals.Gross_Sales,
+  'user-entered escalation dates retain phase sales');
+console.log('Phase lot scenarios, baseline isolation, and user-entered escalator-date calculations passed.');
