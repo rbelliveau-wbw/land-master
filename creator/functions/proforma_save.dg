@@ -1036,6 +1036,7 @@
 						resp.put("error","This Pro Forma is fully approved and can never be unlocked or edited.");
 						return resp.toString();
 					}
+				}
                  		instIds = List();
                  		for each  instGr in pf.Land_Purchase_Installments
                  		{
