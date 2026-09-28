@@ -1,6 +1,6 @@
-# Land Master Insights 1.5.17
+# Land Master Insights 1.5.18
 
-Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
+Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
 ## Creator installation
 
@@ -15,7 +15,7 @@ The `User_Access` form must contain `Lot_Sales_Dashboard` and `View_Total_Lot_Re
 ## Data rules and controls
 
 - Initial view uses the supplied reference: Sold, Close Date, current and previous calendar year, excluding builders with blank names or exact case-insensitive names Other / Placeholder. These are visible, editable filters, not permanent record exclusions.
-- Mean $/FF averages each eligible lot's `Base_Price / Lot_Size`. Weighted $/FF divides eligible base-price sum by eligible frontage sum. Both are available in Measure. Zero prices remain zero; missing/negative price and nonpositive frontage are excluded from $/FF and reported in the data-quality count. Lot count still includes those lots.
+- Mean $/FF averages each eligible lot's `Base_Price / Lot_Size`. Zero prices remain zero; missing/negative price and nonpositive frontage are excluded from $/FF and reported in the data-quality count. Lot count still includes those lots.
 - Base-price measures exclude tax, interest, fees, and escalators. Price/FF uses Base_Price + Interest1 for each lot, then averages the eligible lots' price per front foot. A blank Interest1 counts as zero when Base_Price is present. Escalator is displayed as its stored percentage and is not added again. No inferred closing proceeds are displayed.
 - The lot-count matrix displays blank cells where the count is zero. The full-history subdivision tooltip shows Total, Sold, Contracted, and Open, where Open includes every status other than Sold or Contracted. These counts ignore the report's date, status, builder, and search filters. A green check appears only when every lot in the subdivision is Sold; counts and checks wait for complete history.
 - Sold and Contracted can both be selected, with separate summary, territory/subdivision groups, drilldowns, totals and CSV rows. Their financial totals are never blended. The date basis remains explicit and user-controlled (Close Date or Purchase Date); no contract-date meaning is inferred. Records without the selected date are excluded from month buckets and counted in the footer.
@@ -179,3 +179,7 @@ This is a widget display restriction. `All_Lots_All_Fields` still returns raw `B
 ## 1.5.17 Access refresh cleanup
 
 When Refresh checks access again, the widget removes previously rendered matrix, card, and detail rows before applying the result. A revoked dashboard grant therefore leaves no stale report content in the page. This release supersedes the unpromoted 1.5.16 candidate. Regression: refresh after access revocation, denied and failed access states, and both revenue settings. Rollback: restore the prior `getUserAccess` body and map the widget to `1.5.15`.
+
+## 1.5.18 Weighted per-foot removal
+
+The Measure picker no longer offers Weighted Base $/FF. The pure report model no longer calculates or exposes `weightedPriceFF`; the data-quality note continues to apply to the two remaining per-foot measures. All other measures, drilldowns, and exports keep their existing definitions. This is a widget-only change; no Creator form, field, function, Custom API, or Creator deployment changes. Regression: verify both remaining per-foot measures, Base Price measures, Lot Count, the Measure picker, and report CSV. Rollback: map production `lot-sales-explorer` to `1.5.17` and rebuild Pages.

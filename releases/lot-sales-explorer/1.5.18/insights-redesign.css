@@ -1,0 +1,177 @@
+/* Lot Sales: compact filters above the matrix; report choices live in the table headings. */
+#salesDashboard{flex:1 1 auto;min-height:0}
+#salesDashboard .sales-top-card{flex:none;min-width:0;margin-bottom:8px;border:1px solid #b9cde6;border-radius:10px;background:#f8fbff;box-shadow:inset 4px 0 0 #2563eb,0 3px 10px #183c6309}
+#salesDashboard .sales-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:0;margin:0;padding:9px 14px 8px;border:0;border-bottom:1px solid #d9e5f1;border-radius:10px 10px 0 0;background:linear-gradient(110deg,#fff 0%,#f8fbff 70%,#eaf2fd 100%);box-shadow:none}
+#salesDashboard .sales-eyebrow{margin-bottom:2px;color:#5c7394;font-size:9px;font-weight:750;letter-spacing:1.2px;text-transform:uppercase}
+#salesDashboard .sales-heading .dashboard-title{margin:0;color:#0b2345;font-size:20px;line-height:1.15;letter-spacing:-.4px;text-transform:none}
+#salesDashboard .sales-heading #scopeLabel{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+#salesDashboard .sales-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+#salesDashboard .sales-range-pill{display:inline-flex;align-items:center;justify-content:center;min-height:26px;max-width:360px;padding:4px 11px;border:1px solid #d0dfed;border-radius:999px;background:#f3f7fc;color:#506c8c;font-size:10px;font-weight:650;line-height:1.25;white-space:nowrap;font-variant-numeric:tabular-nums}
+#salesDashboard .sales-filters,#salesDashboard .sales-filters.is-expanded{display:block;flex:none;min-width:0;max-height:none;overflow:visible;margin:0;padding:9px 14px 10px;border:0;border-radius:0 0 10px 10px;background:transparent;box-shadow:none}
+#salesDashboard .sales-filter-toolbar{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;width:100%;min-width:0}
+#salesDashboard .sales-filter-toolbar .search-label{display:flex;flex:1 1 300px;flex-direction:column;gap:4px;min-width:230px;max-width:500px;color:#5c7394;font-size:10px;font-weight:650}
+#salesDashboard .sales-filter-toolbar .search-label .report-search{width:100%;height:34px;margin:0}
+#salesDashboard .sales-filter-toolbar .search-label .report-search input{height:30px}
+#salesDashboard .sales-primary-filter{display:flex;flex:0 1 155px;flex-direction:column;gap:4px;min-width:135px;max-width:165px;color:#2d5277;font-size:10px;font-weight:700}
+#salesDashboard .sales-period-filter{flex-basis:220px;min-width:190px;max-width:235px}
+#salesDashboard .sales-primary-filter .picker-wrap,#salesDashboard .sales-primary-filter .picker-trigger{width:100%;min-width:0}
+#salesDashboard .sales-primary-filter .picker-trigger{height:34px;min-height:34px;border-color:#adc7e2;background:#fff;color:#0b2345;box-shadow:0 1px 2px #1437590a}
+#salesDashboard .sales-primary-filter .picker-trigger:hover{border-color:#6d9bcf;background:#fbfdff}
+#salesDashboard .sales-primary-filter .picker-value{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#salesDashboard .sales-panel-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:34px;padding:5px 11px;border:1px solid #bfd0e8;border-radius:8px;background:#fff;color:#0b2345;font:inherit;font-size:11px;font-weight:650;white-space:nowrap}
+#salesDashboard .sales-panel-toggle:hover{background:#f8fbff;border-color:#7da5e3}
+#salesDashboard .sales-panel-toggle:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+#salesDashboard .sales-panel-toggle svg{width:12px;height:12px;flex:none;transition:transform .14s}
+#salesDashboard .sales-panel-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+#salesDashboard .sales-filter-summary{display:flex;align-items:center;gap:5px;flex:1 1 240px;min-width:0;min-height:34px;margin:0}
+#salesDashboard .sales-filter-chips{display:flex;align-items:center;gap:5px;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:thin}
+#salesDashboard .sales-filter-chip{display:inline-flex;align-items:center;flex:none;min-height:21px;padding:3px 8px;border:1px solid #d0dfef;border-radius:999px;background:#fff;color:#41668c;font-size:9.5px;font-weight:600;line-height:1.2;white-space:nowrap}
+#salesDashboard .sales-filter-summary #reset{flex:none;margin-left:1px;font-size:10px}
+#salesDashboard .sales-more-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:17px;max-width:1140px;max-height:min(29vh,245px);overflow:auto;overscroll-behavior:contain;margin-top:9px;padding:9px 2px 1px;border-top:1px solid #cfdeed}
+#salesDashboard .sales-more-filters[hidden]{display:none!important}
+#salesDashboard .sales-filter-group+.sales-filter-group{margin:0}
+#salesDashboard .sales-filter-group h2{margin:0 0 8px;color:#31557e;font-size:11px;font-weight:750}
+#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#salesDashboard .sales-location-fields>label,#salesDashboard .sales-date-fields>label{display:flex;flex-direction:column;gap:5px;min-width:0;color:#5c7394;font-size:10px;font-weight:650}
+#salesDashboard .sales-more-filters .check-label{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:10px}
+#salesDashboard .sales-more-filters .month-trigger{width:100%}
+#salesDashboard .report-card{flex:1 1 auto;min-height:0;border:1px solid #bdcfe1;border-radius:10px;background:#f4f7fb}
+#salesDashboard .sales-picker-backing{display:none!important}
+#salesDashboard #matrix thead th.sticky{min-width:var(--sticky);width:var(--sticky);max-width:var(--sticky)}
+#salesDashboard #matrix thead th:has(.sales-header-picker){height:45px;padding:5px 9px!important;vertical-align:middle}
+#salesDashboard #matrix thead th.sticky:has(.sales-header-picker){padding-left:12px!important}
+#salesDashboard #matrix thead th.period-total{min-width:165px;font-size:10px;line-height:1.2}
+#salesDashboard .sales-header-picker{display:block;max-width:100%}
+#salesDashboard .sales-header-picker .picker-wrap{width:100%}
+#salesDashboard .sales-header-picker .picker-trigger{width:100%;min-width:0;height:29px;min-height:29px;padding:0 26px 0 8px;border:1px solid #b8cce3;border-radius:6px;background:#fff;color:#0b2345;font-size:10px;font-weight:700;text-align:left;box-shadow:none}
+#salesDashboard .sales-header-picker .picker-trigger:hover{border-color:#75a0d2;background:#f9fcff}
+#salesDashboard .sales-header-picker .picker-caret{right:7px;width:11px;height:11px}
+#salesDashboard #groupBySlot .picker-trigger{max-width:170px}
+#salesDashboard #metricSlot .picker-trigger{min-width:145px;max-width:195px}
+#salesDashboard #matrix tbody td:not(:first-child),#salesDashboard #matrix tfoot td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+#salesDashboard #matrix tbody tr.territory th{background:linear-gradient(110deg,#dce8f5,#eaf1f8)!important;box-shadow:inset 3px 0 0 #6d95c0;color:#31557e}
+.single-popover .picker-option.selected{box-shadow:inset 3px 0 0 #2563eb;background:#eaf1fa;color:#0b2345}
+#salesDashboard #matrix tbody tr.territory.is-collapsed th,#salesDashboard #matrix tbody tr.territory.is-collapsed td{background:#e5eef8!important;border-top:1px solid #bfd3e7;border-bottom:1px solid #bfd3e7;color:#234b73;font-weight:700;font-variant-numeric:tabular-nums}
+#salesDashboard #matrix tbody tr.territory.is-collapsed th.sticky{box-shadow:inset 3px 0 0 #6d95c0,2px 0 4px #14345308}
+#salesDashboard #matrix tbody tr.territory.is-collapsed td.period-total{background:#dce9f7!important;color:#183c63}
+#salesDashboard #matrix tbody tr.territory.is-collapsed td.identity{font-size:10px;font-weight:600;color:#496581}
+#salesDashboard #matrix tbody tr.territory.is-collapsed .sales-group-count{display:block;margin:2px 0 0 20px;color:#607d9c;font-size:9px;font-weight:500;white-space:normal}
+#salesDashboard #matrix tbody tr.territory.is-collapsed .territory-toggle{max-width:100%;white-space:normal}
+@media(max-width:1150px){#salesDashboard .sales-filter-toolbar .search-label{flex-basis:270px}#salesDashboard .sales-filter-summary{flex-basis:230px}}
+@media(max-width:850px){#salesDashboard .sales-more-filters{grid-template-columns:1fr;gap:12px;max-height:min(32vh,245px)}#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{grid-template-columns:repeat(3,minmax(0,190px))}}
+@media(max-width:700px){#salesDashboard .sales-heading{padding:9px 11px 7px}#salesDashboard .sales-heading .dashboard-title{font-size:18px}#salesDashboard .sales-filters,#salesDashboard .sales-filters.is-expanded{padding:7px 10px 9px}#salesDashboard .sales-filter-toolbar .search-label{flex-basis:100%;max-width:none}#salesDashboard .sales-filter-summary{flex-basis:100%;min-height:24px}#salesDashboard .sales-more-filters{max-height:min(27vh,210px)}#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){#salesDashboard .sales-heading{flex-wrap:wrap}#salesDashboard .sales-heading-actions{width:100%;justify-content:space-between}#salesDashboard .sales-range-pill{flex:1;max-width:none;min-width:0;font-size:9.5px}#salesDashboard .sales-primary-filter{flex:1 1 125px;max-width:none}#salesDashboard .sales-period-filter{flex:1.3 1 175px;min-width:150px}#salesDashboard .sales-filter-summary{order:1}#salesDashboard .sales-panel-toggle{order:0}}
+@media(max-width:420px){#salesDashboard .sales-location-fields,#salesDashboard .sales-date-fields{grid-template-columns:1fr}#salesDashboard .sales-range-pill{white-space:normal;text-align:center;line-height:1.15}#salesDashboard .sales-filter-toolbar{gap:7px}#salesDashboard .sales-filter-summary{overflow:hidden}}
+@media(prefers-reduced-motion:reduce){#salesDashboard .sales-panel-toggle svg{transition:none}}
+
+/* Navy Budget-inspired color pass; keep the compact controls and table geometry intact. */
+#salesDashboard{--sales-navy:#173b64;--sales-blue:#1e4f85;--sales-ink:#153955;--sales-mist:#eaf1f9;--sales-line:#b8cce2}
+#salesDashboard .sales-top-card{border-color:#a9bfd9;background:var(--sales-mist);box-shadow:inset 4px 0 0 #5d86ba,0 4px 14px #173b641a}
+#salesDashboard .sales-heading{border-bottom-color:#294f80;background:linear-gradient(108deg,#173b64 0%,#173f70 56%,#1d4f76 100%)}
+#salesDashboard .sales-eyebrow{color:#bcd6f4}
+#salesDashboard .sales-heading .dashboard-title{color:#fff}
+#salesDashboard .sales-range-pill{border-color:#8eadd2;background:#ffffff21;color:#edf5ff}
+#salesDashboard .sales-heading #export{border-color:#a5c3e5;background:linear-gradient(135deg,#f1f7ff,#d7e6f7);color:#173c64;box-shadow:0 2px 7px #092c3d35}
+#salesDashboard .sales-heading #export:not(:disabled):hover{border-color:#94b6df;background:#f4f8ff;box-shadow:0 3px 9px #092c3d3d}
+#salesDashboard .sales-filters,#salesDashboard .sales-filters.is-expanded{background:linear-gradient(180deg,#ecf3fa,#e4edf8)}
+#salesDashboard .sales-filter-toolbar .search-label,#salesDashboard .sales-primary-filter{color:#244869}
+#salesDashboard .report-search{border-color:#9bb9db;background:#fff;box-shadow:0 0 0 2px #1e4f850d,0 2px 5px #173b6410}
+#salesDashboard .report-search>svg{background:#1e4f85;box-shadow:0 2px 4px #1e4f8536}
+#salesDashboard .report-search:focus-within{border-color:#285d97;box-shadow:0 0 0 3px #285d9728}
+#salesDashboard .sales-primary-filter .picker-trigger{border-color:#a9c1df;background:#f8fbff;color:var(--sales-ink)}
+#salesDashboard .sales-primary-filter .picker-trigger:hover{border-color:#6c97c8;background:#fff}
+#salesDashboard .sales-panel-toggle{border-color:#a9c1df;background:#f3f7fc;color:#1d4a78}
+#salesDashboard .sales-panel-toggle:hover{border-color:#6c97c8;background:#e7effa}
+#salesDashboard .sales-filter-chip{border-color:#b9cde3;background:#f4f8fd;color:#315b86}
+#salesDashboard .sales-more-filters{border-top-color:#b8cbe0}
+#salesDashboard .sales-filter-group h2{color:#264e7b}
+#salesDashboard .report-card{border-color:#a9bfd9;background:#eaf1f9;box-shadow:0 3px 12px #173b6414}
+#salesDashboard #matrix thead th{border-bottom-color:#9db6d3;background:linear-gradient(180deg,#d3e1f0,#c4d7eb);color:var(--sales-ink)}
+#salesDashboard #matrix thead th small{color:#516f91}
+#salesDashboard #matrix thead th.sticky{background:linear-gradient(180deg,#bed3e9,#adc8e3)}
+#salesDashboard #matrix thead th.period-total{border-color:#173e69;background:linear-gradient(180deg,#1a4b7b,#0e315b)!important;color:#fff!important}
+#salesDashboard #matrix thead th.period-total small{color:#cfe2fb!important}
+#salesDashboard .sales-header-picker .picker-trigger{border-color:#9bbadd;background:#f7faff;color:#1f4b78}
+#salesDashboard .sales-header-picker .picker-trigger:hover{border-color:#6c9acb;background:#fff}
+#salesDashboard #metricSlot .picker-trigger{border-color:#b8d0ec;background:#f3f7fd;color:#1a4775}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(odd) td{background-color:#eef3f7}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(even) td{background-color:#e1eaf1}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(odd) td.period-total{background-color:#e4edf8;color:#1c4772}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(even) td.period-total{background-color:#d8e6f5;color:#1c4772}
+#salesDashboard #matrix tbody tr:not(.territory):hover td{background-color:#dbe8f6!important}
+#salesDashboard #matrix tbody tr:not(.territory):hover td.period-total{background-color:#c8dcf2!important}
+#salesDashboard #matrix tbody tr.territory th{border-top:1px solid #b9cde3;border-bottom-color:#b9cde3;background:linear-gradient(110deg,#d4e2f1,#e5eef9)!important;box-shadow:inset 3px 0 0 #5c8dbf;color:#1d466f}
+#salesDashboard #matrix tbody tr.territory th:last-child{color:#4c6e94}
+#salesDashboard #matrix tbody tr.territory.is-collapsed th,#salesDashboard #matrix tbody tr.territory.is-collapsed td{border-top-color:#abc4e0;border-bottom-color:#abc4e0;background:#dce8f5!important;color:#214c79}
+#salesDashboard #matrix tbody tr.territory.is-collapsed th.sticky{box-shadow:inset 3px 0 0 #5c8dbf,2px 0 4px #14345308}
+#salesDashboard #matrix tbody tr.territory.is-collapsed td.period-total{background:#c8dcf0!important;color:#1c4772}
+#salesDashboard #matrix tfoot td,#salesDashboard #matrix tfoot td.sticky{border-top-color:#a8c2df;background:#d8e6f4;color:#123b54}
+#salesDashboard #matrix tfoot td.period-total{background:#c5d9ee;color:#1c4772}
+#salesDashboard .report-footer{border-top-color:#b8cce2;background:#e8f0f9;color:#3c5f86}
+
+/* Keep the reporting context centered and the four descriptive columns in view. */
+#salesDashboard .sales-heading{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+#salesDashboard .sales-heading-actions{justify-self:end}
+#salesDashboard .sales-range-pill{justify-self:center;max-width:none;padding:5px 13px;font-size:12px;font-weight:800;letter-spacing:.1px}
+#salesDashboard #matrix{--sales-name-width:240px;--sales-date-width:112px;--sales-front-width:96px;--sales-measure-width:140px}
+#salesDashboard #matrix thead th:first-child,#salesDashboard #matrix tbody tr>*:first-child,#salesDashboard #matrix tfoot td:first-child{min-width:var(--sales-name-width);width:var(--sales-name-width);max-width:var(--sales-name-width)}
+#salesDashboard #matrix thead th:nth-child(2),#salesDashboard #matrix tbody td:nth-child(2),#salesDashboard #matrix tfoot td:nth-child(2){min-width:var(--sales-date-width);width:var(--sales-date-width);max-width:var(--sales-date-width)}
+#salesDashboard #matrix thead th:nth-child(3),#salesDashboard #matrix tbody td:nth-child(3),#salesDashboard #matrix tfoot td:nth-child(3){min-width:var(--sales-front-width);width:var(--sales-front-width);max-width:var(--sales-front-width)}
+#salesDashboard #matrix thead th:nth-child(4),#salesDashboard #matrix tbody td:nth-child(4),#salesDashboard #matrix tfoot td:nth-child(4){min-width:var(--sales-measure-width);width:var(--sales-measure-width);max-width:var(--sales-measure-width)}
+#salesDashboard #matrix thead th.period-total{min-width:var(--sales-measure-width)}
+#salesDashboard #metricSlot .picker-trigger{min-width:0;max-width:none}
+#salesDashboard #metricSlot .picker-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#salesDashboard #matrix thead th:nth-child(n+5){min-width:72px;padding-left:6px;padding-right:6px}
+#salesDashboard #matrix tbody td:nth-child(n+5),#salesDashboard #matrix tfoot td:nth-child(n+5){padding-left:6px;padding-right:6px}
+@media(min-width:651px){
+  #salesDashboard #matrix thead th:nth-child(2),#salesDashboard #matrix tbody td:nth-child(2),#salesDashboard #matrix tfoot td:nth-child(2){position:sticky;left:var(--sales-name-width)}
+  #salesDashboard #matrix thead th:nth-child(3),#salesDashboard #matrix tbody td:nth-child(3),#salesDashboard #matrix tfoot td:nth-child(3){position:sticky;left:calc(var(--sales-name-width) + var(--sales-date-width))}
+  #salesDashboard #matrix thead th:nth-child(4),#salesDashboard #matrix tbody td:nth-child(4),#salesDashboard #matrix tfoot td:nth-child(4){position:sticky;left:calc(var(--sales-name-width) + var(--sales-date-width) + var(--sales-front-width));box-shadow:3px 0 7px #123c5740}
+  #salesDashboard #matrix thead th:nth-child(n+2):nth-child(-n+4){z-index:6}
+  #salesDashboard #matrix tbody td:nth-child(n+2):nth-child(-n+4){z-index:2}
+  #salesDashboard #matrix tfoot td:nth-child(n+2):nth-child(-n+4){z-index:4}
+  #salesDashboard #matrix tbody tr.territory.is-collapsed td:nth-child(n+2):nth-child(-n+4){z-index:2}
+}
+@media(max-width:650px){#salesDashboard #matrix{--sales-name-width:185px}#salesDashboard .sales-heading{grid-template-columns:minmax(0,1fr) auto;gap:6px}#salesDashboard .sales-heading-actions{grid-column:2;grid-row:1;width:auto}#salesDashboard .sales-range-pill{grid-column:1/-1;grid-row:2;font-size:11px;min-width:0}#salesDashboard #matrix thead th:first-child,#salesDashboard #matrix tbody tr>*:first-child,#salesDashboard #matrix tfoot td:first-child{min-width:var(--sales-name-width);width:var(--sales-name-width);max-width:var(--sales-name-width)}}
+
+/* Data values are actions: a quiet dotted cue at rest, clear focus and hover states. */
+#salesDashboard #matrix .cell-button{width:auto;min-height:25px;margin-left:auto;padding:2px 4px;border-radius:4px;color:#1f4e7c;text-decoration:underline dotted #6c9bc7;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer}
+#salesDashboard #matrix .cell-button:hover{background:#d4e5f7;color:#173f6b;text-decoration-style:solid;box-shadow:0 0 0 1px #9bbce0}
+#salesDashboard #matrix .cell-button:focus-visible{outline:2px solid #2d64a0;outline-offset:1px;background:#e5f0fc;text-decoration-style:solid}
+#salesDashboard #matrix tbody td.drill-cell,#salesDashboard #matrix tfoot td.drill-cell{height:43px;padding:0;cursor:pointer}
+#salesDashboard #matrix tbody td.drill-cell{position:relative}
+#salesDashboard #matrix tfoot td.drill-cell{position:sticky;bottom:0}
+@media(min-width:651px){#salesDashboard #matrix tbody td.drill-cell:nth-child(4){position:sticky;left:calc(var(--sales-name-width) + var(--sales-date-width) + var(--sales-front-width))}}
+#salesDashboard #matrix .drill-cell .cell-button{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;width:100%;height:100%;min-height:0;margin:0;padding:0 10px;border-radius:0;background:transparent}
+#salesDashboard #matrix .drill-cell .cell-button:hover{background:#d4e5f7;color:#173f6b;box-shadow:inset 0 0 0 1px #9bbce0;filter:none}
+#salesDashboard #matrix .drill-cell .cell-button:focus-visible{outline:2px solid #2d64a0;outline-offset:-3px;background:#e5f0fc}
+
+/* Show all detail columns together on desktop; retain scrolling only on narrow screens. */
+#detail{width:min(1500px,calc(100vw - 36px));max-width:calc(100vw - 36px)}
+#detail .detail-table th,#detail .detail-table td{padding:9px 8px}
+#detail .detail-table{width:100%}
+
+/* Measure choices are grouped and fully visible without an inner scrollbar. */
+#metricPopup .picker-options{max-height:none;overflow:visible;padding:6px}
+#metricPopup .picker-option-group+.picker-option-group{margin-top:4px;padding-top:4px;border-top:1px solid #d9e4f1}
+#metricPopup .picker-group-label{padding:3px 9px 4px;color:#315d8a;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+#metricPopup .picker-option{min-height:29px;padding:5px 10px;line-height:1.2}
+@media(max-height:350px){#metricPopup .picker-options{padding:4px}#metricPopup .picker-option{min-height:26px;padding:3px 8px}#metricPopup .picker-group-label{padding:2px 8px;font-size:8px}#metricPopup .picker-option-group+.picker-option-group{margin-top:2px;padding-top:2px}}
+
+/* Keep Export's gradient stable on hover; only its border and shadow change. */
+#salesDashboard .sales-heading #export{transition:border-color .18s ease,box-shadow .18s ease,color .18s ease}
+#salesDashboard .sales-heading #export:not(:disabled):hover{border-color:#9bbce2;background:linear-gradient(135deg,#f1f7ff,#d7e6f7);color:#173c64;box-shadow:0 4px 12px #092c3d40;filter:none}
+#salesDashboard .sales-heading #export:disabled:hover{border-color:#a5c3e5;background:linear-gradient(135deg,#f1f7ff,#d7e6f7);box-shadow:0 2px 7px #092c3d35;filter:none}
+
+/* The two report-choice columns share a navy treatment; group names anchor each section. */
+#salesDashboard #matrix thead th.sticky{border-color:#173e69;background:linear-gradient(180deg,#1a4b7b,#0e315b)!important;color:#fff!important}
+#salesDashboard #groupBySlot .picker-trigger{border-color:#b8d0ec;background:#f3f7fd;color:#1a4775}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(odd) td.sticky{background-color:#e4edf8}
+#salesDashboard #matrix tbody tr:not(.territory):nth-child(even) td.sticky{background-color:#d8e6f5}
+#salesDashboard #matrix tbody tr:not(.territory):hover td.sticky{background-color:#c8dcf2!important}
+#salesDashboard #matrix tfoot td.sticky{background:#c5d9ee;color:#1c4772}
+#salesDashboard #matrix tbody tr.territory th.sticky,#salesDashboard #matrix tbody tr.territory.is-collapsed th.sticky{border-bottom-color:#2e5c91;background:linear-gradient(115deg,#173f70,#102f56)!important;color:#f3f8ff!important;box-shadow:inset 4px 0 0 #78a9e2,2px 0 5px #103a502b}
+#salesDashboard #matrix tbody tr.territory .territory-toggle{font-size:12px;font-weight:780;letter-spacing:.1px}
+#salesDashboard #matrix tbody tr.territory.is-collapsed .sales-group-count{color:#d1e4f9}
+.dashboard-access-message{display:grid;place-items:center;min-height:min(55vh,520px);padding:30px;border:1px solid #c6d8ea;border-radius:14px;background:linear-gradient(145deg,#f8fbff,#e8f1fa);text-align:center;box-shadow:0 10px 30px #153b6312}
+.dashboard-access-message h1{max-width:560px;margin:0;color:#173b62;font-size:clamp(18px,2vw,24px);line-height:1.35;letter-spacing:-.3px}
