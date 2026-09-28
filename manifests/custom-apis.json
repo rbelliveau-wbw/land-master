@@ -102,6 +102,7 @@
     {
       "name": "Get_User_Access",
       "consumers": [
+        "widgets/lot-sales-explorer/src/app/insights-access.js",
         "widgets/proforma-manager/src/app/widget.html",
         "widgets/budget-manager/src/app/widget.html"
       ],

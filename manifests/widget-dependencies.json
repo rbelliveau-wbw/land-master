@@ -501,6 +501,7 @@
     },
     "lot-sales-explorer": {
       "forms_referenced": [
+        "User_Access",
         "Lots",
         "Subdivision",
         "Project",
@@ -521,6 +522,11 @@
         "All_Budget_Modifications"
       ],
       "custom_apis": [
+        {
+          "name": "Get_User_Access",
+          "config_key": "getUserAccess",
+          "source": "insights-access.js"
+        },
         {
           "name": "Report_Proforma_Widget_Error",
           "config_key": "errorReport",

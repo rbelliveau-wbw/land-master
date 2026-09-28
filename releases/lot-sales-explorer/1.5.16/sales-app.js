@@ -80,6 +80,7 @@
     if (!state.permissions?.lotSalesDashboard) return;
     hideSubdivisionCard();
     enforceRevenueAccess();
+    InsightsControls.syncAll();
     renderFilterSummary();
     if (!state.loaded) return;
     historyStatus();
@@ -342,7 +343,7 @@
   }
   $('allFilters').addEventListener('click', () => setPanel('allFilters', 'moreFilters', $('moreFilters').hidden));
   $('reset').addEventListener('click', () => { ['territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('excludeBuilders').checked = true; $('metric').value = 'avgPriceFF'; state.collapsed.clear(); applyPeriod(); update(); });
-  $('audit').addEventListener('click', () => { $('auditText').textContent = 'Land Master Insights v1.5.17\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
+  $('audit').addEventListener('click', () => { $('auditText').textContent = 'Land Master Insights v1.5.16\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('refresh').addEventListener('click', () => { if (InsightsShell.connected()) void authorizeAndLoad(); });
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
@@ -350,9 +351,6 @@
   async function authorizeAndLoad() {
     const generation = ++state.generation;
     state.permissions = null; state.loaded = false; state.historyReady = false; state.report = null; state.lots = [];
-    state.references = null; state.window = null; state.detailLots = [];
-    ['matrixHead','matrixBody','matrixFoot','detailBody','subdivisionCardBody'].forEach(id => { $(id).innerHTML = ''; });
-    $('updated').textContent = 'Read-only report';
     InsightsShell.setAccess(null);
     $('refresh').disabled = true;
     if ($('detail').open) $('detail').close();

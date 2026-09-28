@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Land Master Insights</title>
-  <link rel="stylesheet" href="sales.css?v=1.5.17">
-  <link rel="stylesheet" href="insights.css?v=1.5.17">
-  <link rel="stylesheet" href="insights-controls.css?v=1.5.17">
-  <link rel="stylesheet" href="insights-theme.css?v=1.5.17">
-  <link rel="stylesheet" href="insights-redesign.css?v=1.5.17">
+  <link rel="stylesheet" href="sales.css?v=1.5.16">
+  <link rel="stylesheet" href="insights.css?v=1.5.16">
+  <link rel="stylesheet" href="insights-controls.css?v=1.5.16">
+  <link rel="stylesheet" href="insights-theme.css?v=1.5.16">
+  <link rel="stylesheet" href="insights-redesign.css?v=1.5.16">
   <style>#matrix thead th.period-total{background:#1e456a;color:#fff}#matrix thead th.period-total small{color:#b3cee6}</style>
   <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
-  <script src="runtime-context.js?v=1.5.17"></script><script src="critical-error-reporter.js?v=1.5.17"></script>
-  <script src="sales-model.js?v=1.5.17"></script><script src="creator-adapter.js?v=1.5.17"></script><script src="insights-access.js?v=1.5.17"></script>
+  <script src="runtime-context.js?v=1.5.16"></script><script src="critical-error-reporter.js?v=1.5.16"></script>
+  <script src="sales-model.js?v=1.5.16"></script><script src="creator-adapter.js?v=1.5.16"></script><script src="insights-access.js?v=1.5.16"></script>
 
 </head>
 <body>
@@ -43,7 +43,7 @@
     <section class="heading"><div><h1 class="dashboard-title">BUDGETS</h1><p id="budgetScope">Budget overview</p></div><button id="budgetRefresh" class="button">↻ Refresh budgets</button></section>
     <div id="budgetContent" aria-live="polite"><div class="empty"><h2>Connecting to budgets</h2></div></div>
   </section>
-    <div class="page-foot"><span id="updated">Read-only report</span><span>Land Master Insights <span class="version">v1.5.17</span></span></div>
+    <div class="page-foot"><span id="updated">Read-only report</span><span>Land Master Insights <span class="version">v1.5.16</span></span></div>
   </main>
   </div>
   <dialog id="detail"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">LOT DETAIL</div><h2 id="detailTitle"></h2><p id="detailMeta"></p></div><button class="icon-button dialog-close" id="closeDetail" aria-label="Close lot details"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div><div class="detail-scroll"><table class="detail-table"><thead><tr><th>Lot</th><th>Builder</th><th>Status</th><th>Close Date</th><th>Purchase Date</th><th>Front Ft</th><th>Base Price</th><th>Base $/FF</th><th>Interest</th><th>Interest $/FF</th><th>Escalator</th><th>Total Price</th><th>Price $/FF</th><th>Notes</th></tr></thead><tbody id="detailBody"></tbody></table></div><div class="dialog-foot"><span id="detailPage"></span><button id="detailPrev" class="text-button">Previous</button><button id="detailNext" class="text-button">Next</button><div class="toolbar-spacer"></div><button class="button" id="exportDetail">Export Lots</button></div></dialog>
@@ -53,7 +53,7 @@
   <script>
     // SDK startup lives in the standalone shell; the report model remains embeddable.
     function configureSalesReporter() {
-      LMCriticalErrors.configure({widget:"Land Master Insights",version:"1.5.17",code:"LSE",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:LMRuntime.current});
+      LMCriticalErrors.configure({widget:"Land Master Insights",version:"1.5.16",code:"LSE",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:LMRuntime.current});
       LMCriticalErrors.markReady();
     }
     function initializeSalesCreator() {
@@ -61,8 +61,8 @@
       return LMRuntime.capture();
     }
   </script>
-  <script src="insights-shell.js?v=1.5.17"></script>
-  <script src="insights-controls.js?v=1.5.17"></script>
-  <script src="sales-app.js?v=1.5.17"></script>
+  <script src="insights-shell.js?v=1.5.16"></script>
+  <script src="insights-controls.js?v=1.5.16"></script>
+  <script src="sales-app.js?v=1.5.16"></script>
 </body>
 </html>

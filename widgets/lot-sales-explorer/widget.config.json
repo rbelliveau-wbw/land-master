@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.5.15",
-  "description": "Read-only Lot Sales dashboard with full-cell drilldowns and status-scoped monthly total details.",
+  "version": "1.5.17",
+  "description": "Read-only Lot Sales dashboard with User_Access visibility gates for the dashboard and absolute revenue.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "696693fba523a6a06a769f200adfebee5e033cd820f35edf6c375dc01ba1ce65",
+  "source_sha256": "87555d6d5c6b2f3039835b0a2d48de8c1f5e313f6a1fcae8aa47b83fce8bda8e",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

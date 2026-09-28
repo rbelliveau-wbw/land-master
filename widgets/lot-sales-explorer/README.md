@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.15
+# Land Master Insights 1.5.17
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, weighted $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Contracted status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -10,7 +10,7 @@ Register an externally hosted widget and put it on the desired Creator page:
 
 Use this permanent URL, without a release version. It uses the repository's standard cache-busting loader and retains the parent Creator context. Outside Creator it displays an installation empty state; it never displays business records publicly or substitutes mock data for failed live requests.
 
-No new Creator forms, fields, functions, or Custom APIs are required. The dormant Budgets module, when enabled, reads `All_Budgets`, `All_Budget_Categories`, `All_Budget_Items`, and `All_Budget_Modifications`. Users need existing read access to `All_Lots_All_Fields`, `All_Subdivisions`, `All_Projects`, and `All_Builders`, including the requested fields. Widget registration/page placement is the only new Creator setup. No Pro Forma changes are part of this release.
+The `User_Access` form must contain `Lot_Sales_Dashboard` and `View_Total_Lot_Revenue`, and the updated `getUserAccess` function must be published behind the existing `Get_User_Access` Custom API (and the Development wrapper). The dormant Budgets module, when enabled, reads `All_Budgets`, `All_Budget_Categories`, `All_Budget_Items`, and `All_Budget_Modifications`. Users need existing read access to `All_Lots_All_Fields`, `All_Subdivisions`, `All_Projects`, and `All_Builders`, including the requested fields. No Pro Forma changes are part of this release.
 
 ## Data rules and controls
 
@@ -169,3 +169,13 @@ Verification: run `npm run validate` and `npm run build:pages`; click the edge o
 ## 1.5.15 Sticky Measure and footer correction
 
 The full-cell click rule preserves sticky positioning for populated Measure cells and footer totals. Measure values remain aligned with their header during horizontal scrolling, and the footer remains pinned during vertical scrolling. The full-cell drilldowns from 1.5.14 remain active. Frontend CSS only; no Creator form, field, function, Custom API, or Creator deployment is required. Regression: horizontal Measure alignment, vertical footer position, edge-of-cell drilldown, desktop and narrow widths. Rollback: map production `lot-sales-explorer` to `1.5.13` and rebuild Pages; 1.5.14 contains the sticky-column regression.
+
+## 1.5.16 Dashboard and revenue visibility
+
+`getUserAccess` returns `lotSalesDashboard` from `User_Access.Lot_Sales_Dashboard` and `viewTotalLotRevenue` from `User_Access.View_Total_Lot_Revenue`. The widget reads those flags before requesting lot records. Without dashboard access it hides the Lot Sales navigation and report and says, “Contact your administrator to be granted access to dashboards.” Failed access checks also prevent loading records and show a retry message. Without revenue access, all four Base Price Measure options are unavailable, and absolute Base Price, Interest, and Total Price amounts are omitted from Lot Detail, subdivision cards, and lot CSV exports. Per-foot measures and Lot Count remain available. The report CSV uses only the allowed Measure.
+
+This is a widget display restriction. `All_Lots_All_Fields` still returns raw `Base_Price` and `Interest1` to the browser so it can calculate per-foot measures. For data-level secrecy, Creator report/field permissions or a server-side aggregate API must also restrict those raw values. Publish the updated Deluge function before promoting this widget. No new delete permission is introduced. Regression: dashboard grant on/off and access failure; revenue grant on/off across Measure, matrix, cards, details, and exports; DEV/production access API routing. Rollback: restore the prior `getUserAccess` body and map the widget to `1.5.15`.
+
+## 1.5.17 Access refresh cleanup
+
+When Refresh checks access again, the widget removes previously rendered matrix, card, and detail rows before applying the result. A revoked dashboard grant therefore leaves no stale report content in the page. This release supersedes the unpromoted 1.5.16 candidate. Regression: refresh after access revocation, denied and failed access states, and both revenue settings. Rollback: restore the prior `getUserAccess` body and map the widget to `1.5.15`.

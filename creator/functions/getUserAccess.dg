@@ -12,6 +12,9 @@ string getUserAccess(string user)
 	editImports = false;
 	modAdmin = false;
 	budgetDeleteArchive = false;
+	// Data Insights permissions
+	lotSalesDashboard = false;
+	viewTotalLotRevenue = false;
 	// Pro Forma flags
 	pfEditAll = false;
 	pfEditOwned = false;
@@ -53,6 +56,8 @@ string getUserAccess(string user)
 		// Modification admin: full control of Modifications + their approvals
 		modAdmin = row.Edit_Delete_All_Modifications == true;
 		budgetDeleteArchive = row.Delete_Archive_Budgets == true;
+		lotSalesDashboard = row.Lot_Sales_Dashboard == true;
+		viewTotalLotRevenue = row.View_Total_Lot_Revenue == true;
 		// Pro Forma permissions
 		pfEditAll = row.Edit_All_Proformas == true;
 		pfEditOwned = row.Edit_Owned_Proformas == true;
@@ -130,6 +135,8 @@ string getUserAccess(string user)
 	result.put("editImports",editImports);
 	result.put("modAdmin",modAdmin);
 	result.put("budgetDeleteArchive",budgetDeleteArchive);
+	result.put("lotSalesDashboard",lotSalesDashboard);
+	result.put("viewTotalLotRevenue",viewTotalLotRevenue);
 	// Pro Forma permissions
 	result.put("pfEditAll",pfEditAll);
 	result.put("pfEditOwned",pfEditOwned);
