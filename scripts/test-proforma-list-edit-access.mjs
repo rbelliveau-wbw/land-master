@@ -8,7 +8,7 @@ const renderList = widget.slice(renderStart, renderEnd);
 
 assert.ok(renderStart >= 0 && renderEnd > renderStart, "Pro Forma list renderer must be available");
 assert.ok(
-  renderList.includes("rowEditDisabledReason=rowCanEdit?\"\":proformaEditDisabledReason(r,approvalState,rowClosed)"),
+  renderList.includes("rowEditDisabledReason=rowCanEdit?\"\":proformaEditDisabledReason(r,approvalState)"),
   "the list must resolve a disabled Edit reason for every non-editable row"
 );
 assert.ok(

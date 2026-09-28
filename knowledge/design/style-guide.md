@@ -62,6 +62,8 @@ In the Pro Forma dashboard's phase timeline, use golden yellow for Engineering, 
 
 ## Phase schedule editors
 
+Keep Pro Forma editor tabs in a compact, horizontally scrollable strip with a clear blue active state, restrained hover, and visible keyboard focus. Tabs stay in place on hover.
+
 Keep phase cards to the left of the inputs and the live schedule to the right when space allows. Make each card unmistakably interactive with a visible selected state, chevron, hover, and keyboard focus. The three pieces must be sibling grid items so the schedule cannot accidentally fall below the input column. Show quantities and timing on the cards, avoid repeating the tab name in pane headings, and put the event and month together in bold beside filled timeline dots. End the connector at the final event. Give desktop cards enough width to avoid needless wrapping, and use page vertical space instead of a separately scrolling phase rail.
 
 Keep the timeline a compact card capped at 340px instead of stretching across a wide monitor. Put the overall lot-allocation status beside the selected phase heading in a clearly bordered pill, using green for balanced and red for over/under.

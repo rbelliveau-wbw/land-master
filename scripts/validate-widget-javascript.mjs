@@ -165,7 +165,7 @@ for (const required of [
   'function proformaApprovalLockReason(pfOrId)',
   'Cancel the approval flow before unlocking this Pro Forma.',
   'This Pro Forma is fully approved. An approval administrator can cancel and reset the approval flow to unlock it.',
-  'rowCanEdit=rowHasEditAccess&&!approvalState.complete&&!rowClosed',
+  'rowCanEdit=rowHasEditAccess&&!approvalState.complete',
   'rowCanLock=canEditPf(r)&&!approvalState.started&&!approvalState.complete'
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: approval-protected lock is missing ${required}.`);

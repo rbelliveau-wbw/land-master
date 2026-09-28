@@ -1,6 +1,10 @@
 
 # Proforma Module
 
+## Lot Sales FF summary, editor tabs, and Closed Won Edit (1.80.45, 2026-09-28)
+
+The Lot Sales final sale summary shows Finished Price / FF below Finished price. It divides the final sale's finished price per lot by `Add_Pro_Forma.Lot_Size_Ft`, which is the lot-count-weighted average frontage when Lot Mix has multiple sizes, and displays whole dollars. The editor tabs use a compact blue strip with horizontal scrolling at narrow widths. In the Pro Forma list, Closed Won and other closed stages no longer disable Edit by themselves: users with `Edit_All_Proformas` or applicable owned-record access can open and save those records. A completed approval still disables editing. This release changes only widget display and list gating; no Creator form, field, function, workflow, or Custom API changes are required. Regression: single and mixed lot sizes, incomplete schedule, Closed Won with edit access, Closed Won without edit access, and fully approved records. Production widget rollback: `1.80.44`.
+
 ## Manual Lot Sales schedule (2026-09-28)
 
 `Proforma_Phase` rows are the only lot-sales pace inputs. The widget shows the rows returned by `All_Pro_Formas_All_Fields` even when `Lot_Sales_Schedule_Version` is blank. When a phase row is missing, it creates only a blank structural row with `ID` and `Phase`; the user enters allocation, initial take, delays, recurring take, frequency, phase increase, and any escalator settings. Lot Mix and project lot-count changes do not allocate phase lots or fill a pace. An empty Esc Start Date remains empty until the user supplies it. Existing values in `Add_Pro_Forma.Initial_Takedown` and `Add_Pro_Forma.Lots_per_Month` are ignored for editing, calculations, dashboard display, validation, and Excel export.

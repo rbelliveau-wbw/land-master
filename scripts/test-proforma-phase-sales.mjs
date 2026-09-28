@@ -110,6 +110,18 @@ const context=vm.createContext({PhaseSalesEngine:engine,CFG:{irr:{maxIterations:
 vm.runInContext(['num','intN','hasVal','round2','ymAdd','parseMonthList',
   'phaseSalesPersisted','phaseSalesActive','computeProforma','phaseSaleMonthMismatches']
   .map(widgetFunction).join('\n'),context);
+vm.runInContext(['lotMixRollup','phaseSaleUnitPriceParts','finishedPricePerFF']
+  .map(widgetFunction).join('\n'),context);
+const mixedLots=context.lotMixRollup({lotMix:[
+  {Lot_Size_Ft:40,Lot_Count:40,Price_LF:1000},
+  {Lot_Size_Ft:60,Lot_Count:60,Price_LF:1000}
+]});
+assert.equal(mixedLots.lotSize,52,'the mixed-lot denominator is average frontage per lot');
+const finalUnit=context.phaseSaleUnitPriceParts({Lots_Sold:2,Finished_Lot_Sales:124800});
+assert.equal(context.finishedPricePerFF({Lot_Size_Ft:mixedLots.lotSize},finalUnit),1200);
+assert.equal(context.finishedPricePerFF({Lot_Size_Ft:0},finalUnit),null);
+assert.ok(widget.includes('Finished Price / FF</span><b>'),
+  'the Lot Sales summary includes final price per front foot after finished price');
 const expectedSale={Month1:48,Master_Month:true,Lot_Sale_Phase:1,Lots_Sold:35,
   Base_Lot_Sales:2835000,Additional_Markup_Income:28350,
   Escalator_Interest_Accrued:51975,Escalator_Percentage:2,
@@ -288,7 +300,7 @@ const phaseRenderContext=vm.createContext({
   dateToCreatorValue:String,
 });
 vm.runInContext(['ymAdd','ymShort','phaseSalesSharedLocked','phaseLotPriceValues',
-  'phaseSaleUnitPriceParts','phaseMonthText','refreshPhaseLotPricePill','panePhaseSales']
+  'phaseSaleUnitPriceParts','finishedPricePerFF','phaseMonthText','refreshPhaseLotPricePill','panePhaseSales']
   .map(widgetFunction).join('\n'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
 assert.match(phaseHtml,/Phase Increase &amp; Escalator/);
@@ -299,6 +311,7 @@ assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?With phase increase <b 
 assert.match(phaseHtml,/data-test-field="Phase increase"/,'phase increase remains visible with escalator off');
 assert.match(phaseHtml,/Final lot sale · price per lot/);
 assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b>/);
+assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b><\/div><div class="ps-final-price-row"><span>Finished Price \/ FF<\/span><b>\$1,000<\/b>/);
 assert.match(phaseHtml,/Final <b>0\.00%<\/b>/);
 assert.match(phaseHtml,/Next phase increase to match final <b>0\.00%<\/b>/);
 assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
@@ -449,7 +462,7 @@ const sharedContext=vm.createContext({
   esc:String,dateToCreatorValue:String,
 });
 vm.runInContext(['phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
-  'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','phaseSaleUnitPriceParts','panePhaseSales']
+  'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','phaseSaleUnitPriceParts','finishedPricePerFF','panePhaseSales']
   .map(widgetFunction).join('\n'),sharedContext);
 assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),false);
 sharedContext.phaseSalesSetShared(sharedModel,true);
