@@ -16,6 +16,8 @@ function fn(name) {
   if (source.slice(start, lineEnd).trim().endsWith('}')) return source.slice(start, lineEnd);
   return source.slice(start, source.indexOf('\n}', start) + 2);
 }
+const lotStateForStatus = new Function('lpIsOn','lpClaimedBy','truthy', `return (${fn('lotState')})`)(() => false, () => null, Boolean);
+assert.equal(lotStateForStatus({ID:'1',Status:'Scheduled'}), 'scheduled', 'scheduled lots must be visibly locked in the contract picker');
 const requests = [];
 const ctx = {
   S: {nc: {sub: ['441092600000784111']}, lots: [{ID: '1', Subdivision: {ID: 'other'}}], acc: {}, homeSection: 'contracts'},

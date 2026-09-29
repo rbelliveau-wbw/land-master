@@ -27,6 +27,7 @@ const scalar = (value) => {
 const natural = (a, b) => scalar(a).localeCompare(scalar(b), undefined, { numeric: true, sensitivity: "base" });
 const lotBlock = new Function("str", `return (${extractFunction("lotBlock")})`)(scalar);
 const lotDetailParts = new Function("str", `return (${extractFunction("lotDetailParts")})`)(scalar);
+const eligible = new Function("str", "truthy", "inTakedown", `return (${extractFunction("eligible")})`)(scalar, Boolean, () => false);
 
 assert.equal(lotBlock({ Block: "A" }), "A", "letter blocks must remain visible");
 assert.equal(lotBlock({ Block: { display_value: "B2" } }), "B2", "Creator display objects must remain visible");
@@ -37,6 +38,10 @@ assert.deepEqual(lotDetailParts([{ display_value: "AAA01-B01-L15 - Sold" }, { di
   { code: "AAA01-B01-L15", status: "Sold" },
   { code: "AAA01-B01-L16", status: "Open" },
 ], "lot relationship details must split into readable code and status values");
+assert.deepEqual(lotDetailParts("AAA01-B01-L17 - Scheduled"), [{ code: "AAA01-B01-L17", status: "Scheduled" }]);
+assert.equal(eligible({ Status: "Open" }), true);
+assert.equal(eligible({ Status: "Scheduled" }), false, "scheduled lots cannot enter another takedown");
+assert.equal(eligible({ Status: "Contracted" }), false, "builder-assigned lots cannot enter another takedown");
 
 assert.match(source, /takedowns:\s*"All_Builder_Takedowns"/, "Builder Takedowns report must be loaded");
 assert.match(source, /View only/, "Builder Takedowns view must remain read-only");

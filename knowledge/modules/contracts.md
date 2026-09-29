@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Scheduled lots in the picker (1.60.30 candidate)
+
+Scheduled lots appear as a distinct locked state in the Lot Contract picker. Only Open lots remain selectable. No Creator form or API change is needed for this widget display; the Creator status and workflow changes are tracked in `creator/workflows/scheduled-lot-status.md`. Regression: Open selection, Scheduled/Contracted/Sold locking, claims, and picker counts. Production remains on 1.60.29; rollback: 1.60.29.
+
 ## Lot editor heading and action icon (1.60.27)
 
 Change Lots & Pricing shows the contract name as the modal title, with the operation in the smaller label above it. The modal close button and action-row Add Note button use centered SVG symbols instead of font glyphs. Frontend only; no Creator form, field, function, or Custom API change. Regression: long contract names, modal close/cancel/save, and Add Note alignment and click behavior. Rollback: `1.60.26` via the production mapping.

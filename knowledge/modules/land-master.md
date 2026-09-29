@@ -1,6 +1,10 @@
 
 # Land Master Module
 
+## Lot Status (8.11.8 candidate)
+
+The lot editor offers Open, Contracted, Scheduled, and Sold to match the Creator Add Lots form. Creator workflows derive the saved status from Close Date, Purchase Date, and real builder assignment. This widget release is a candidate; Production remains on 8.11.7. Regression: edit and reopen a Scheduled lot; verify the status picker retains all four choices. Rollback: 8.11.7.
+
 ## Scope
 
 Projects, subdivisions, properties, companies, builders, lots, milestones, forecasts, takedown schedules, related records, search, filters, and edit dialogs.

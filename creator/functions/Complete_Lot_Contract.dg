@@ -160,7 +160,18 @@ string Complete_Lot_Contract(string contractId)
 						lotRow.Escalator=pr.Escalator;
 					}
 					lotRow.Builder1=c.Builder;
-					lotRow.Status="Contracted";
+					if(lotRow.Close_Date != null)
+					{
+						lotRow.Status="Sold";
+					}
+					else if(lotRow.Purchase_Date != null)
+					{
+						lotRow.Status="Scheduled";
+					}
+					else
+					{
+						lotRow.Status="Contracted";
+					}
 					lotRow.Contract1=cid;
 					if(tdsched.count() > 0)
 					{

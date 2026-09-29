@@ -5,6 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const widget = fs.readFileSync(path.join(root, "widgets/land-master/src/app/widget.html"), "utf8");
 const config = JSON.parse(fs.readFileSync(path.join(root, "widgets/land-master/widget.config.json"), "utf8"));
+assert.match(widget, /lotStatus:\["Open","Contracted","Scheduled","Sold"\]/, "lot editor must offer the Scheduled status");
 
 for (const required of [
   `version: "${config.version}-TERRAVAULT-COMPOSITE"`,
