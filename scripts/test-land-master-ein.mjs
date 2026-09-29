@@ -19,7 +19,7 @@ for (const entry of ['12345678', '1234567890', '1-23456789', '123-456789', '12-3
 }
 
 assert.match(widget, /F\("EIN","EIN","ein",rec\.EIN\)/, 'Company editor must load EIN');
-assert.match(widget, /\{label:"EIN",key:"EIN",edit:"ein"\}/, 'Companies table must edit EIN');
+assert.match(widget, /\{label:"MGMT Co\. EIN",key:"EIN",edit:"ein"\}/, 'Companies table must show the requested heading and edit EIN');
 assert.match(widget, /if\(ft==='ein'\)\{raw=validateEinInput\(el,\$\("panelMsg"\)\);if\(raw===null\)return;\}/, 'full editor must reject invalid EIN before save');
 assert.match(widget, /if\(ftype==='ein'\)\{raw=validateEinInput\(el,null\);if\(raw===null\)return;\}/, 'inline editor must reject invalid EIN before save');
 

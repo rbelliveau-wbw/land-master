@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-29 — Company EIN column label (Land Master 8.11.10)
+
+The Companies column header now reads `MGMT Co. EIN`. No data contract changed. Rollback: `8.11.9`.
+
 ## 2026-09-29 — Company EIN entry (Land Master 8.11.9)
 
 The Companies tab shows and edits the existing user-added `EIN` field. The Company modal and inline table accept exactly nine digits or `XX-XXXXXXX`, format nine digits before saving, and reject other nonblank values. A Creator on-validate workflow source is prepared for the Company form; it must be published in Creator to enforce the rule for native form and other API saves. `EIN` must be visible in the `All_Companies` report's quick or detail view so the widget can read it. No function or Custom API changed. Regression: Company create, modal edit, inline edit, leading zeroes, valid formatted values, invalid characters/length, blank value, and unrelated Company saves. Widget rollback: `8.11.8`; Creator workflow rollback is separate.

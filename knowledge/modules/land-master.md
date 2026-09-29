@@ -1,11 +1,11 @@
 
 # Land Master Module
 
-## Company EIN (8.11.9)
+## Company EIN (8.11.10)
 
-The Companies table and full Company editor expose the existing user-added `EIN` single-line field. A nonblank entry must be exactly nine ASCII digits or `XX-XXXXXXX`; nine digits are normalized with the hyphen before the widget saves. Invalid entries stay in the editor with an error state. The field remains optional because the Creator field was not marked required in the available metadata. The source for a Creator `Company` form on-validate workflow is in `creator/workflows/Validate_Company_EIN.dg`; publishing it is needed to apply the same rule to native Creator form submissions and other API clients. `EIN` must also be visible in the `All_Companies` report's quick or detail view for the widget's existing `getAllRecords` call to load saved values. The local generated field metadata predates this user-added field and should be refreshed from a current Creator export.
+The Companies table labels the EIN column `MGMT Co. EIN`. The full Company editor exposes the existing user-added `EIN` single-line field. A nonblank entry must be exactly nine ASCII digits or `XX-XXXXXXX`; nine digits are normalized with the hyphen before the widget saves. Invalid entries stay in the editor with an error state. The field remains optional because the Creator field was not marked required in the available metadata. The source for a Creator `Company` form on-validate workflow is in `creator/workflows/Validate_Company_EIN.dg`; publishing it is needed to apply the same rule to native Creator form submissions and other API clients. `EIN` must also be visible in the `All_Companies` report's quick or detail view for the widget's existing `getAllRecords` call to load saved values. The local generated field metadata predates this user-added field and should be refreshed from a current Creator export.
 
-Regression: create a company, edit its EIN in the modal and inline table, try raw and formatted entries, reject misplaced punctuation and extra characters, clear an optional EIN, and verify unrelated Company edits. Rollback widget release: `8.11.8`; remove the Creator workflow separately if necessary.
+Regression: confirm the `MGMT Co. EIN` heading, create a company, edit its EIN in the modal and inline table, try raw and formatted entries, reject misplaced punctuation and extra characters, clear an optional EIN, and verify unrelated Company edits. Rollback widget release: `8.11.9`; remove the Creator workflow separately if necessary.
 
 ## Lot Status (8.11.8 candidate)
 
