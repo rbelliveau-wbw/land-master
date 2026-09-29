@@ -1,6 +1,14 @@
 
 # Budget Module
 
+## Requests workspace start (122.27.23)
+
+The phase editor's Modifications tab is now Requests. Approvals, Attachments, and Requests keep the budget identity heading but hide the owners, metrics, category summaries, and compact approvals row. Requests has a Request menu with Budget Modification (the existing composer and approval flow) and Check/Wire Request, plus separate columns for existing modifications and check/wire requests. The modification close button now uses a centered SVG, as do the new request steps.
+
+Check/Wire Request begins with Check or Wire, uses the existing finalized-budget-item picker, then shows the selected item, a Department derived from its category (Engineering maps to Development), an editable Request Date defaulted to today, and a blank editable Date Needed. This first pass stops there; it does not create a record or start approval. The read-only request list uses `All_Wire_Requests` scoped to `Budget` in Creator Development. The `Check_Wire_Request` form and report remain Development-only from the earlier form setup; Stage and Production show an availability state until the owner publishes them. No Creator function or Custom API changed for this widget release.
+
+Regression checks: mode visibility and return to View/Edit, existing modification creation/detail actions, Request menu, Check and Wire selection, finalized-item filter/search, both Department mappings, editable dates and Back state, centered close buttons, and narrow modal layout. Rollback the widget by mapping `budget-manager` to `122.27.22`; Creator components are unchanged by this release.
+
 ## Manual header inputs and per-unit preliminary pricing (2026-09-29)
 
 The phase budget header's five inputs belong to `Add_Budget`: `Lot_Total_Residential` (Lots), `Acres`, `Equiv_LF_of_Street` (Equiv. LF), `Lot_Price`, and `Land_Cost`. Users enter them in the Budget Manager under the existing edit permission and approval locks. Lot Price and Land Cost were already manual; Lots, Acres, and Equiv. LF are newly editable. Existing saved values remain in place. The Budget no longer refreshes those quantities from Zoho Projects/Analytics or the linked Subdivision.
