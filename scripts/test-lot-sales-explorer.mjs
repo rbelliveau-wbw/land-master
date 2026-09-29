@@ -16,6 +16,10 @@ assert.doesNotMatch(html, /<option value="Contracted">Contracted<\/option>/);
 assert.match(salesApp, /function syncDateBasis\(\)/);
 assert.match(salesApp, /option\[value="closeDate"\]'\)\.hidden = scheduled/);
 assert.match(salesApp, /subdivisionBuilderBreakdown\(state\.lots, row\.id\)/);
+assert.doesNotMatch(salesApp, />Builder breakdown</);
+assert.doesNotMatch(salesApp, /'No status'/);
+assert.match(salesApp, /\.filter\(Boolean\)\)\]/,'blank Zoho project statuses are excluded from the picker');
+assert.match(theme, /\.builder-matrix-name\{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis\}/);
 assert.match(html, /<input id="hideEmpty" type="checkbox" role="switch">/);
 assert.match(html, /<select id="projectStatus" multiple data-picker="multi">/);
 assert.doesNotMatch(html, /SUBDIVISION SNAPSHOT/);
@@ -71,6 +75,8 @@ assert.deepEqual(M.builderStatusMatrix(breakdown),[
   {builder:'Builder B',Sold:1,Scheduled:0,Contracted:1,total:2}
 ],'builder columns total Sold, Scheduled, and Contracted lots');
 assert.deepEqual(M.builderStatusMatrix(M.subdivisionBuilderBreakdown([{subdivisionId:'s1',status:'Open',builder:'Unassigned'}],'s1')),[],'Open-only inventory adds no builder column');
+assert.equal(M.truncateBuilderName('JNC Development (Saratoga)'), 'JNC Development (Sarato...');
+assert.equal(M.truncateBuilderName('JNC Development (Sarato').length,23,'23-character names stay intact');
 assert.deepEqual(M.monthRange('2025-12','2026-02'), ['2026-02','2026-01','2025-12']);
 assert.throws(() => M.monthRange('2026-03','2026-02'));
 const fixture = salesFixture(new Date(2026, 8, 17));
@@ -82,7 +88,6 @@ assert.equal(lots[0].id, fixture.lots[0].ID);
 assert.equal(lots[0].projectId, 'p0');
 assert.equal(lots[0].projectStatus, 'Active','Zoho project status comes from Subdivision');
 assert.equal(M.reportSelection(lots,{projectStatuses:['Active','Planning'],statuses:['Sold']}).rows.every(row=>['s01','s02'].includes(row.id)),true,'multiple project statuses scope subdivision rows');
-assert(M.reportSelection(lots,{projectStatuses:['__NO_STATUS__'],statuses:['Sold']}).rows.every(row=>!['s01','s02'].includes(row.id)),'No status scopes blank Subdivision values');
 assert.equal(JSON.stringify(fixture), original);
 assert.equal(M.normalize({...fixture,lots:[{...fixture.lots[0],Status:'Contracted',Close_Date:'',Purchase_Date:'2026-08-01'}]})[0].status,'Scheduled','purchase-dated lots appear Scheduled before Creator Production is reconciled');
 assert.equal(M.normalize({...fixture,lots:[{...fixture.lots[0],Status:'Scheduled',Close_Date:'2026-08-15',Purchase_Date:'2026-08-01'}]})[0].status,'Sold','Close Date takes priority over Purchase Date');
