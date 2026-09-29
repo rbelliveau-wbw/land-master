@@ -171,14 +171,30 @@
                  				pdfHtml = pdfHtml + "</div>";
                  				pdfHtml = pdfHtml + "<table class='lines'>";
                  				pdfHtml = pdfHtml + "<thead><tr>";
-                 				pdfHtml = pdfHtml + "<th style='width:8%;'>Code</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:22%;'>Budget Item</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Preliminary</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Unapproved</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:11%;'>Final</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:11%;'>HCSS Actuals</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:11%;'>GP Actuals</th>";
-                 				pdfHtml = pdfHtml + "<th style='width:15%;'>Notes</th>";
+                                 if(isApprovedExport == false)
+                                 {
+                                     pdfHtml = pdfHtml + "<th style='width:7%;'>Code</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:20%;'>Budget Item</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:6%;text-align:left;'>Unit</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Cost per Unit</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Preliminary</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Unapproved</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Final</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>HCSS Actuals</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:9%;'>GP Actuals</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:13%;'>Notes</th>";
+                                 }
+                                 else
+                                 {
+                                     pdfHtml = pdfHtml + "<th style='width:8%;'>Code</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:22%;'>Budget Item</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Preliminary</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Unapproved</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Final</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:11%;'>HCSS Actuals</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:11%;'>GP Actuals</th>";
+                                     pdfHtml = pdfHtml + "<th style='width:15%;'>Notes</th>";
+                                 }
                  				pdfHtml = pdfHtml + "</tr></thead><tbody>";
                  				categoryItems = Budget_Item[Budget_Category == cat.ID] sort by Cost_Code;
                  				for each  item in categoryItems
@@ -193,6 +209,18 @@
                  					itemCodeSafe = itemCodeSafe.replaceAll("&","&amp;");
                  					itemCodeSafe = itemCodeSafe.replaceAll("<","&lt;");
                  					itemCodeSafe = itemCodeSafe.replaceAll(">","&gt;");
+                                     if(isApprovedExport == false)
+                                     {
+                                         unitSafe = ifnull(item.Unit,"");
+                                         unitSafe = unitSafe.replaceAll("&","&amp;");
+                                         unitSafe = unitSafe.replaceAll("<","&lt;");
+                                         unitSafe = unitSafe.replaceAll(">","&gt;");
+                                         perUnitDisplay = "";
+                                         if(item.Per_Unit != null)
+                                         {
+                                             perUnitDisplay = item.Per_Unit.toDecimal().text("$#,##0.00");
+                                         }
+                                     }
                  					itemNote = ifnull(item.Description,"");
                  					itemNote = itemNote.replaceAll("<br>","\n");
                  					itemNote = itemNote.replaceAll("<br/>","\n");
@@ -236,6 +264,11 @@
                  					pdfHtml = pdfHtml + "<tr>";
                  					pdfHtml = pdfHtml + "<td class='code'>" + itemCodeSafe + "</td>";
                  					pdfHtml = pdfHtml + "<td>" + itemNameSafe + "</td>";
+                                     if(isApprovedExport == false)
+                                     {
+                                         pdfHtml = pdfHtml + "<td style='text-align:left;'>" + unitSafe + "</td>";
+                                         pdfHtml = pdfHtml + "<td class='money'>" + perUnitDisplay + "</td>";
+                                     }
                  					pdfHtml = pdfHtml + "<td class='money'>" + prelimDisplay + "</td>";
                  					pdfHtml = pdfHtml + "<td class='money'>" + unapprovedDisplay + "</td>";
                  					pdfHtml = pdfHtml + "<td class='money'>" + finalDisplay + "</td>";
@@ -382,14 +415,16 @@
                  		excelXml = excelXml + "</Table></Worksheet>";
                  		/********* BUDGET DETAIL WORKSHEET *********/
                  		excelXml = excelXml + "<Worksheet ss:Name='Budget Detail'><Table>";
-                 		excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='180'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='260'/>";
+                             excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='180'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='65'/><Column ss:Width='100'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='260'/>";
                  		excelXml = excelXml + "<Row ss:StyleID='Header'>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>Department</Data></Cell>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category Code</Data></Cell>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category</Data></Cell>";
-                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost Code</Data></Cell>";
-                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Budget Item</Data></Cell>";
-                 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Preliminary</Data></Cell>";
+                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost Code</Data></Cell>";
+                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Budget Item</Data></Cell>";
+                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Unit</Data></Cell>";
+                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost per Unit</Data></Cell>";
+                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Preliminary</Data></Cell>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>Unapproved</Data></Cell>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>Final</Data></Cell>";
                  		excelXml = excelXml + "<Cell><Data ss:Type='String'>HCSS Actuals</Data></Cell>";
@@ -432,6 +467,17 @@
                  				itemNameXml = itemNameXml.replaceAll(">","&gt;");
                  				itemNameXml = itemNameXml.replaceAll("\"","&quot;");
                  				itemNameXml = itemNameXml.replaceAll("'","&apos;");
+                                 unitXml = ifnull(item.Unit,"");
+                                 unitXml = unitXml.replaceAll("&","&amp;");
+                                 unitXml = unitXml.replaceAll("<","&lt;");
+                                 unitXml = unitXml.replaceAll(">","&gt;");
+                                 unitXml = unitXml.replaceAll("\"","&quot;");
+                                 unitXml = unitXml.replaceAll("'","&apos;");
+                                 perUnitPriceCellXml = "<Cell/>";
+                                 if(item.Per_Unit != null)
+                                 {
+                                     perUnitPriceCellXml = "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + item.Per_Unit.toDecimal() + "</Data></Cell>";
+                                 }
                  				itemNoteXml = ifnull(item.Description,"");
                  				itemNoteXml = itemNoteXml.replaceAll("<br>","\n");
                  				itemNoteXml = itemNoteXml.replaceAll("<br/>","\n");
@@ -472,6 +518,8 @@
                  				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + categoryNameXml + "</Data></Cell>";
                  				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemCodeXml + "</Data></Cell>";
                  				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemNameXml + "</Data></Cell>";
+                                 excelXml = excelXml + "<Cell><Data ss:Type='String'>" + unitXml + "</Data></Cell>";
+                                 excelXml = excelXml + perUnitPriceCellXml;
                  				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + prelimValue + "</Data></Cell>";
                  				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + unapprovedValue + "</Data></Cell>";
                  				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + finalValue + "</Data></Cell>";
