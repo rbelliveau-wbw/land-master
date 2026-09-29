@@ -1,6 +1,12 @@
 
 # Budget Module
 
+## Approval sidebar clipping fix (122.27.25)
+
+The phase View/Edit approval card now gives long approver emails room to wrap beside the status badge, and its desktop width increases from 285px to 315px. The approval status remains fully visible inside the card; the category summary tables continue to fit beside it. This is a frontend layout change only. No Creator form, field, function, Custom API, approval routing, or record data changes.
+
+Regression: check the approval card at wide and narrower desktop widths with long emails and all statuses, both summary tables, and the phase View/Edit modes. Rollback by mapping `budget-manager` to `122.27.24` and rebuilding Pages.
+
 ## Check and Wire request details (122.27.24)
 
 The Requests menu now has three direct choices: Bud Mod, Check Request, and Wire Request. Check and Wire open the existing finalized-budget-item picker immediately, then a request details modal. The selected item's Department appears as a chip beside its name and code. Request Date defaults to today, Date Needed starts blank, and both use the widget's custom calendar picker while remaining editable. Request Amount is entered in the modal.
