@@ -53,6 +53,7 @@ Insights uses the Budget/Pro Forma pale-blue palette, compact controls, and a le
 Use title case for Insights field labels and table headings. Center dialog close icons with SVG geometry and turn them red on hover.
 Insights subdivision details use a compact card anchored to the row on hover or keyboard focus. Keep its action reachable as the pointer crosses into the card, use the Land Master navy and slate-blue palette, and keep the card inside the viewport.
 Keep the lot-status builder breakdown visible inside the subdivision card; the progress bar is a compact summary, not a hidden-detail control.
+Show subdivision builders as columns in a compact status matrix, with Sold, Scheduled, and Contracted rows and a combined total for each builder at the bottom. Keep the status labels visible when additional builders require horizontal scrolling.
 For Insights matrices, soften broad white areas with slate-blue surfaces and use stronger navy accents on headings and group bands. Keep numeric cells and hover states easy to read; color changes should not move report controls.
 In wide Insights matrices, pin the descriptive columns during horizontal scrolling and keep a visible but restrained click cue on drilldown values. On narrow screens, pin only the name column so month values remain readable.
 Give Group By and Measure columns the same navy emphasis. Make grouped section names clear with a dark, high-contrast band; keep gradient action-button surfaces steady on hover and change only border or shadow.

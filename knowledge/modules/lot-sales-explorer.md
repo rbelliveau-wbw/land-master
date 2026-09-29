@@ -22,6 +22,10 @@ The subdivision card omits the visible “All Lots” and “Complete History”
 
 The card's builder breakdown lists Sold, Scheduled, and Contracted only. Open remains in the count tiles and unfilled progress track, but its empty builder group is omitted. The requested builder-column layout is a design mockup for review and is not part of this widget release. No Creator form, field, function, report, or Custom API change. Regression: status counts and visible breakdown groups. Widget rollback: `1.5.22`.
 
+## Insights 1.5.24 — builder status matrix
+
+The subdivision card now shows builders as columns and Sold, Scheduled, and Contracted as rows. The footer of each builder column totals those three statuses. The status column stays visible when more than four builders require horizontal scrolling. The all-lot count tiles, progress bar, Open count, and selected-view calculations are unchanged. No Creator form, field, function, report, or Custom API change. Regression: builder ordering, sparse statuses, totals, Open-only inventory, narrow card, and many-builder overflow. Widget rollback: `1.5.23`.
+
 Insights 1.4.0 adds Price/FF as the mean of `(Base_Price + Interest1) / Lot_Size` for eligible lots. `Escalator` is shown as a percentage, not added separately to price. Drilldown and CSV expose the recorded Interest, Escalator and Notes. Subdivision Total/Sold/Contracted/Open counts use all lots after complete history loads; Open means a status other than Sold or Contracted. Sold out requires every lot to have status Sold. The prior Base/FF calculation and default filters are unchanged. No Creator backend deployment is needed; rollback release is 1.3.0.
 
 Insights 1.5.0 defaults Group By to Project; Builder partitions each subdivision's selected lots by builder. Clicking a subdivision opens a card with all-history counts and selected-view metrics. Contracted selection switches Date Basis to Purchase Date; users may then choose another basis. Lot detail groups builders alphabetically and sorts each builder's lots by Purchase Date newest first. Existing Creator read fields and financial definitions are unchanged. Rollback release is 1.4.0.

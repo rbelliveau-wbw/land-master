@@ -65,6 +65,11 @@ const breakdown=M.subdivisionBuilderBreakdown([
 assert.deepEqual(breakdown.Sold,[{builder:'Builder A',count:1},{builder:'Builder B',count:1}]);
 assert.deepEqual(breakdown.Scheduled,[{builder:'Builder A',count:1}]);
 assert.deepEqual(breakdown.Contracted,[{builder:'Builder B',count:1}]);
+assert.deepEqual(M.builderStatusMatrix(breakdown),[
+  {builder:'Builder A',Sold:1,Scheduled:1,Contracted:0,total:2},
+  {builder:'Builder B',Sold:1,Scheduled:0,Contracted:1,total:2}
+],'builder columns total Sold, Scheduled, and Contracted lots');
+assert.deepEqual(M.builderStatusMatrix(M.subdivisionBuilderBreakdown([{subdivisionId:'s1',status:'Open',builder:'Unassigned'}],'s1')),[],'Open-only inventory adds no builder column');
 assert.deepEqual(M.monthRange('2025-12','2026-02'), ['2026-02','2026-01','2025-12']);
 assert.throws(() => M.monthRange('2026-03','2026-02'));
 const fixture = salesFixture(new Date(2026, 8, 17));
