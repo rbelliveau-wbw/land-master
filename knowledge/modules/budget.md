@@ -1,6 +1,24 @@
 
 # Budget Module
 
+## Manual header inputs and per-unit preliminary pricing (2026-09-29)
+
+The phase budget header's five inputs belong to `Add_Budget`: `Lot_Total_Residential` (Lots), `Acres`, `Equiv_LF_of_Street` (Equiv. LF), `Lot_Price`, and `Land_Cost`. Users enter them in the Budget Manager under the existing edit permission and approval locks. Lot Price and Land Cost were already manual; Lots, Acres, and Equiv. LF are newly editable. Existing saved values remain in place. The Budget no longer refreshes those quantities from Zoho Projects/Analytics or the linked Subdivision.
+
+Each `Budget_Item` has optional `Unit` (`Acre`, `LF`, `Lot`) and `Per_Unit` (USD currency, two decimal places) fields, matching the Pro Forma item fields. The row's Per Unit switch is widget state; the two source values and calculated `Prelim_Budget_Ttl` are persisted. The selected unit maps to that phase budget's manual header input:
+
+| Unit | Budget quantity |
+| --- | --- |
+| Acre | `Add_Budget.Acres` |
+| LF | `Add_Budget.Equiv_LF_of_Street` |
+| Lot | `Add_Budget.Lot_Total_Residential` |
+
+With Per Unit on, `Prelim_Budget_Ttl = round2(quantity × Per_Unit)` and the calculated total is read-only in the widget. As in Pro Forma, a unit, a positive unit cost, and a positive matching header quantity are required for a calculated row. A header quantity edit recalculates its dependent rows. Switching Per Unit off clears `Unit` and `Per_Unit` and returns the preliminary total to manual entry; the current total remains available to edit. Existing reimbursement credit sign rules and Development/Construction approval locks still apply to the resulting preliminary amount. The widget continues to save the normal preliminary total used by category, grand-total, approval, and comparison calculations; there is no separate downstream per-unit total.
+
+Creator Development now has two optional `Budget_Item` fields (`Unit`, `Per_Unit`), both `All_Budget_Items` report quick-view columns for SDK reload, removal of the three quantity `disable` statements from `Hide_Disable_Fields_Budge`, and removal of the three `Budget_Category` plus three `Add_Budget` quantity assignments from `Update_Budgets_w_Projects1`. That schedule continues to import Subdivision data and update budget Project, Status, and Phase identity fields. No new Custom API or standalone Deluge calculation function is required; the widget calculates and persists the preliminary amount. The exact Creator edits and remaining verification are in `creator/workflows/BUDGET_MANUAL_METRICS_CREATOR_DEV_HANDOFF.md` and the two adjacent scoped workflow patches. Development schedules are suspended, so the persisted source can be checked there, while the next executing environment must verify that manual values are not overwritten. A real SDK record fetch has not yet been verified.
+
+The Creator changes remain in Development for the owner to promote through Stage and Production. Select only the two fields, the item report, and the two workflow components; the widget's GitHub Pages promotion is independent of Creator publication. Regression checks: manual header save/reload, all three unit calculations, zero/missing quantity and rate validation, switching back to manual entry, header quantity changes, reimbursement credits, both approval track locks, and a schedule run after Creator promotion. Rollback the widget by restoring its previous `production.budget-manager` release mapping; restore the prior two workflow actions through Creator publication if their behavior must be reversed. Leave optional item fields in place to preserve saved data.
+
 ## Rejection progress (122.27.18)
 
 Development and Construction Reject open the same paced modal as Approve. `Handle_Approval_Action` accepts `CheckReject` and `RepairReject` for the targeted budget and row. It verifies the rejecting row is Rejected, its immediate predecessor is the only Pending row, the parent track is Pending, and the predecessor's `Sent_Date` was stamped after return mail. `RepairReject` only reactivates that predecessor and sends missing mail. Budget Modification's confirmed Reject also opens progress: `Modification_Admin` `check-reject` verifies the targeted row and parent are Rejected, the note matches, and no row remains Pending; `repair-reject` can reconcile the parent without resending notifications. Its email helper has no persisted notification stamp, so a lost response yields a warning instead of a delivery claim. Both paths use a 20-second deadline and one guarded repair. Creator deployment: `handleApprovalAction` and `modificationAdmin`; no new fields or Custom APIs. Regression: prior-approver return, failed mail, missing predecessor, modification rejection with and without prior approvers, ambiguous response, retries, duplicate clicks, focus/Tab/Escape. Rollback: widget `122.27.17` and prior function bodies.
