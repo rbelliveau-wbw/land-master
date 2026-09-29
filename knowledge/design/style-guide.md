@@ -54,6 +54,7 @@ Use title case for Insights field labels and table headings. Center dialog close
 Insights subdivision details use a compact card anchored to the row on hover or keyboard focus. Keep its action reachable as the pointer crosses into the card, use the Land Master navy and slate-blue palette, and keep the card inside the viewport.
 Keep the lot-status builder breakdown visible inside the subdivision card; the progress bar is a compact summary, not a hidden-detail control.
 Show subdivision builders as rows in a compact matrix, with Total, Sold, Scheduled, and Contracted columns in that order. Keep builder names visible when a narrow card requires horizontal scrolling.
+In grouped lot detail, show count badges beside builder and date headings using totals from the full filtered drill-through, including lots on later pages.
 For Insights matrices, soften broad white areas with slate-blue surfaces and use stronger navy accents on headings and group bands. Keep numeric cells and hover states easy to read; color changes should not move report controls.
 In wide Insights matrices, pin the descriptive columns during horizontal scrolling and keep a visible but restrained click cue on drilldown values. On narrow screens, pin only the name column so month values remain readable.
 Give Group By and Measure columns the same navy emphasis. Make grouped section names clear with a dark, high-contrast band; keep gradient action-button surfaces steady on hover and change only border or shadow.
