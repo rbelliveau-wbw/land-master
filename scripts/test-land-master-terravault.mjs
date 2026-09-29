@@ -19,7 +19,7 @@ for (const required of [
   'target="_blank" rel="noopener noreferrer"',
   'type="url" placeholder="https://…"',
   "e.stopPropagation();return;",
-  "inputRaw(el,ftype),orig=String(el.getAttribute('data-original')||'')",
+  "var orig=String(el.getAttribute('data-original')||'')",
   "if(ftype==='url'){var normalized=normalizeWebUrl(raw)",
   "if(ftype==='url')return creatorUrlPayload(raw)",
   "else if(ftype==='url')rec[field]=normalizeWebUrl(raw)"

@@ -1,0 +1,16 @@
+// Form link name: Company (display name: Add Company).
+// Record event: created or edited. Trigger: on validate.
+// The field is optional; when supplied it must be exactly nine digits.
+einValue = ifnull(input.EIN,"").toString();
+if(einValue != "")
+{
+	if(einValue.matches("[0-9]{9}"))
+	{
+		input.EIN = einValue.subString(0,2) + "-" + einValue.subString(2,9);
+	}
+	else if(!einValue.matches("[0-9]{2}-[0-9]{7}"))
+	{
+		alert "EIN must be 9 digits or XX-XXXXXXX.";
+		cancel submit;
+	}
+}

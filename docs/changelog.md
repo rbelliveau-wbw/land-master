@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-29 — Company EIN entry (Land Master 8.11.9)
+
+The Companies tab shows and edits the existing user-added `EIN` field. The Company modal and inline table accept exactly nine digits or `XX-XXXXXXX`, format nine digits before saving, and reject other nonblank values. A Creator on-validate workflow source is prepared for the Company form; it must be published in Creator to enforce the rule for native form and other API saves. `EIN` must be visible in the `All_Companies` report's quick or detail view so the widget can read it. No function or Custom API changed. Regression: Company create, modal edit, inline edit, leading zeroes, valid formatted values, invalid characters/length, blank value, and unrelated Company saves. Widget rollback: `8.11.8`; Creator workflow rollback is separate.
+
 ## 2026-09-25 — Pro Forma pricing copy, cash-flow detail, timeline, and entry (1.80.43)
 
 Lot Sales uses shorter final-price labels while keeping first-sale price, final-sale growth, and the next-phase increase needed to match the final price. Finished Lot Sales detail on Dashboard Cash Flow and Inflows is expandable and starts collapsed; its Base Price, Phase Increase, and Escalator rows still reconcile to the same totals. Timeline uses yellow for Engineering and blue for Construction, and patterns months with no sales between selling months in a phase. The temporary widget access-code overlay is removed; Creator and Pro Forma record permissions remain. This is a widget-only release; no Creator form, field, function, or Custom API deployment is required. Regression: pricing figures, detail expansion and totals, timeline gaps and page edges, direct module entry, locked records, and approvals. Widget rollback: map Development and Production to `1.80.42`.
