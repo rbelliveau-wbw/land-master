@@ -8,6 +8,15 @@ await import('../' + app + 'creator-adapter.js');
 const M = globalThis.LotSalesModel, A = globalThis.LotSalesCreator;
 const version = JSON.parse(fs.readFileSync('widgets/lot-sales-explorer/widget.config.json','utf8')).version;
 const html = fs.readFileSync(app + 'widget.html','utf8');
+const salesApp = fs.readFileSync(app + 'sales-app.js','utf8');
+const theme = fs.readFileSync(app + 'insights-theme.css','utf8');
+assert.match(html, /<option value="Scheduled">Scheduled<\/option>/);
+assert.doesNotMatch(html, /<option value="Contracted">Contracted<\/option>/);
+assert.match(salesApp, /function syncDateBasis\(\)/);
+assert.match(salesApp, /option\[value="closeDate"\]'\)\.hidden = scheduled/);
+assert.match(salesApp, /subdivisionBuilderBreakdown\(state\.lots, row\.id\)/);
+assert.match(salesApp, /tabindex="0" role="group"/);
+assert.match(theme, /\.progress-scheduled\{background:#e7aa35\}/);
 for (const [,asset] of html.matchAll(/(?:src|href)="([a-z][a-z-]*\.(?:js|css)(?:\?[^\"]*)?)"/g)) {
   assert.equal(new URL(asset,'https://widget.invalid/').searchParams.get('v'),version,'Local assets must change URL on every release: '+asset);
 }
@@ -41,10 +50,20 @@ assert.equal(totalStats.totalPriceWithInterest,225000,'total Base + Interest exc
 assert.equal(M.stats([{price:100000,interest:null,width:50}]).totalPriceWithInterest,100000,'blank Interest is zero');
 assert.equal(M.stats([{price:null,interest:5000,width:50}]).avgPriceWithInterest,null,'Interest alone is not a sale price');
 for (const metric of ['avgTotalPriceFF','avgPriceWithInterest','totalPriceWithInterest']) assert(html.includes('value="'+metric+'"'),metric+' must be selectable');
-assert.deepEqual(M.subdivisionCounts([{subdivisionId:'s1',status:'Sold'},{subdivisionId:'s1',status:'Contracted'},{subdivisionId:'s1',status:'Open'},{subdivisionId:'s1',status:'On Hold'}]).get('s1'),{total:4,sold:1,contracted:1,open:2});
+assert.deepEqual(M.subdivisionCounts([{subdivisionId:'s1',status:'Sold'},{subdivisionId:'s1',status:'Scheduled'},{subdivisionId:'s1',status:'Contracted'},{subdivisionId:'s1',status:'Open'},{subdivisionId:'s1',status:'On Hold'}]).get('s1'),{total:5,sold:1,scheduled:1,contracted:1,open:2});
+const breakdown=M.subdivisionBuilderBreakdown([
+  {subdivisionId:'s1',status:'Sold',builder:'Builder B'}, {subdivisionId:'s1',status:'Sold',builder:'Builder A'},
+  {subdivisionId:'s1',status:'Scheduled',builder:'Builder A'}, {subdivisionId:'s1',status:'Contracted',builder:'Builder B'},
+  {subdivisionId:'s2',status:'Sold',builder:'Other'}
+],'s1');
+assert.deepEqual(breakdown.Sold,[{builder:'Builder A',count:1},{builder:'Builder B',count:1}]);
+assert.deepEqual(breakdown.Scheduled,[{builder:'Builder A',count:1}]);
+assert.deepEqual(breakdown.Contracted,[{builder:'Builder B',count:1}]);
 assert.deepEqual(M.monthRange('2025-12','2026-02'), ['2026-02','2026-01','2025-12']);
 assert.throws(() => M.monthRange('2026-03','2026-02'));
-const fixture = salesFixture(new Date(2026, 8, 17)), original = JSON.stringify(fixture), lots = M.normalize(fixture);
+const fixture = salesFixture(new Date(2026, 8, 17));
+fixture.lots.push({...fixture.lots[0],ID:'scheduled-lot',Status:'Scheduled',Close_Date:'',Purchase_Date:'2026-08-01'});
+const original = JSON.stringify(fixture), lots = M.normalize(fixture);
 assert.equal(lots[0].id, fixture.lots[0].ID);
 assert.equal(lots[0].projectId, 'p0');
 assert.equal(JSON.stringify(fixture), original);
@@ -90,19 +109,21 @@ const noClose = M.report(lots,{status:'Contracted',dateField:'closeDate'});
 assert.equal(noClose.stats.count,0);
 assert(noClose.missingDates>0);
 assert.equal(M.report(lots,{projectId:'not-a-project'}).stats.count,0);
-const multi = M.reportSelection(lots,{projectIds:['p0','p1'],territories:['Bryan / College Station','Fort Hood'],builderIds:['b0','b1'],statuses:['Sold','Contracted'],dateField:'purchaseDate',from:'2025-01',to:'2026-12'});
-assert.equal(multi.reports.length,2);
+const multi = M.reportSelection(lots,{projectIds:['p0','p1'],territories:['Bryan / College Station','Fort Hood'],builderIds:['b0','b1'],statuses:['Sold','Scheduled'],dateField:'closeDate',from:'2025-01',to:'2026-12'});
+assert.equal(multi.reports.length,1,'Sold and Scheduled share one combined report');
+assert.equal(multi.dateField,'purchaseDate','Scheduled always uses Purchase Date');
 assert(multi.lots.every(l=>['p0','p1'].includes(l.projectId)&&['b0','b1'].includes(l.builderId)),'OR within a filter, AND across filters');
-assert(multi.reports.every(r=>r.lots.every(l=>l.status===r.status)),'status totals must not blend');
-for (const part of multi.reports) {
-  const month = part.lots[0]?.purchaseDate.slice(0,7), detail = M.selectDetailLots(part.lots,'purchaseDate',month);
-  assert(detail.length > 0 && detail.every(l=>l.status===part.status),'monthly total drilldown must retain status scope');
-}
-assert(multi.reports.every(r=>r.from===multi.from&&r.to===multi.to),'status columns use a shared month range');
-assert.equal(new Set(multi.rows.map(r=>r.key)).size,multi.rows.length,'drilldown keys distinguish statuses in the same subdivision');
+assert(multi.lots.some(l=>l.status==='Sold')&&multi.lots.some(l=>l.status==='Scheduled'),'combined report contains both statuses');
+assert.equal(multi.rows.reduce((n,row)=>n+row.stats.count,0),multi.lots.length,'subdivision rows add Sold and Scheduled lots');
+assert.equal(new Set(multi.rows.map(r=>r.key)).size,multi.rows.length,'combined view has one row per subdivision and builder scope');
+assert.equal(multi.reports[0].stats.count,multi.lots.length,'combined footer counts each lot once');
+assert(multi.rows.some(row=>row.lots.some(lot=>lot.status==='Sold')&&row.lots.some(lot=>lot.status==='Scheduled')),'status lines merge within a subdivision');
+const scheduledOnly=M.reportSelection(lots,{statuses:['Scheduled'],dateField:'closeDate',from:'2026-08',to:'2026-08'});
+assert.equal(scheduledOnly.stats.count,1);
+assert.equal(scheduledOnly.dateField,'purchaseDate');
 assert.equal(M.reportSelection(lots,{projectIds:['not-a-project'],statuses:['Sold']}).lots.length,0);
-assert.equal(M.reportSelection(lots,{projectIds:[],statuses:[]}).reports.length,2,'empty multi-select means all available choices');
-const historyComparison=M.reportSelection(lots,{statuses:['Sold','Contracted'],dateField:'purchaseDate'});
+assert.deepEqual(M.reportSelection(lots,{projectIds:[],statuses:[]}).statuses,['Sold','Scheduled'],'empty multi-select means both available choices');
+const historyComparison=M.reportSelection(lots,{statuses:['Sold','Scheduled'],dateField:'purchaseDate'});
 assert(historyComparison.reports.every(r=>r.months.join(',')===historyComparison.months.join(',')));
 assert(M.csv([['=CMD()', 'a,b', '"quote"']]).includes("'=CMD()"));
 assert(M.csv([['a,b']]).includes('"a,b"'));
