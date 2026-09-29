@@ -1,6 +1,14 @@
 
 # Budget Module
 
+## Check and Wire request details (122.27.24)
+
+The Requests menu now has three direct choices: Bud Mod, Check Request, and Wire Request. Check and Wire open the existing finalized-budget-item picker immediately, then a request details modal. The selected item's Department appears as a chip beside its name and code. Request Date defaults to today, Date Needed starts blank, and both use the widget's custom calendar picker while remaining editable. Request Amount is entered in the modal.
+
+The modal previews the selected item's Final Budget, approved prior modifications, current modification (zero until a request can link one), Revised Final, GP Actuals, Remaining to Spend, and Remaining After Current Request, all to the cent. A negative after-request balance shows the budget modification warning. This remains a preview-only first step: Check and Wire requests are not saved or submitted, and the Development-only Creator form/report are not promoted by this widget release. No Creator function or Custom API changed.
+
+Regression: verify all three menu choices, Check and Wire item search/finalized filtering, Development and Construction Department chips, calendar month navigation and selection, date and amount edits, one-cent overage warning, Back/Close, and the existing Bud Mod flow. Rollback the widget by mapping `budget-manager` to `122.27.23` and rebuilding Pages; Creator components are unchanged.
+
 ## Requests workspace start (122.27.23)
 
 The phase editor's Modifications tab is now Requests. Approvals, Attachments, and Requests keep the budget identity heading but hide the owners, metrics, category summaries, and compact approvals row. Requests has a Request menu with Budget Modification (the existing composer and approval flow) and Check/Wire Request, plus separate columns for existing modifications and check/wire requests. The modification close button now uses a centered SVG, as do the new request steps.
