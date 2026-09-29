@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.21
+# Land Master Insights 1.5.22
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, lot count, average base price, and total base price. Filter by territory, project, builder, Sold/Scheduled status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
