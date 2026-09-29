@@ -10,12 +10,18 @@ const version = JSON.parse(fs.readFileSync('widgets/lot-sales-explorer/widget.co
 const html = fs.readFileSync(app + 'widget.html','utf8');
 const salesApp = fs.readFileSync(app + 'sales-app.js','utf8');
 const theme = fs.readFileSync(app + 'insights-theme.css','utf8');
+const redesign = fs.readFileSync(app + 'insights-redesign.css','utf8');
 assert.match(html, /<option value="Scheduled">Scheduled<\/option>/);
 assert.doesNotMatch(html, /<option value="Contracted">Contracted<\/option>/);
 assert.match(salesApp, /function syncDateBasis\(\)/);
 assert.match(salesApp, /option\[value="closeDate"\]'\)\.hidden = scheduled/);
 assert.match(salesApp, /subdivisionBuilderBreakdown\(state\.lots, row\.id\)/);
-assert.match(salesApp, /tabindex="0" role="group"/);
+assert.match(html, /<input id="hideEmpty" type="checkbox" role="switch">/);
+assert.doesNotMatch(html, /SUBDIVISION SNAPSHOT/);
+assert.match(salesApp, /!f\.hideEmpty && !state\.historyReady/);
+assert.match(salesApp, /View All Lots/);
+assert.match(theme, /\.subdivision-progress-breakdown\{display:block/);
+assert.match(redesign, /\.sales-empty-toggle\{/);
 assert.match(theme, /\.progress-scheduled\{background:#e7aa35\}/);
 for (const [,asset] of html.matchAll(/(?:src|href)="([a-z][a-z-]*\.(?:js|css)(?:\?[^\"]*)?)"/g)) {
   assert.equal(new URL(asset,'https://widget.invalid/').searchParams.get('v'),version,'Local assets must change URL on every release: '+asset);
@@ -128,6 +134,27 @@ assert.equal(M.reportSelection(lots,{projectIds:['not-a-project'],statuses:['Sol
 assert.deepEqual(M.reportSelection(lots,{projectIds:[],statuses:[]}).statuses,['Sold','Scheduled'],'empty multi-select means both available choices');
 const historyComparison=M.reportSelection(lots,{statuses:['Sold','Scheduled'],dateField:'purchaseDate'});
 assert(historyComparison.reports.every(r=>r.months.join(',')===historyComparison.months.join(',')));
+const inventoryBase={...lots[0],projectId:'p0',project:'Project A',territory:'Waco',builderId:'b0',builder:'Builder A',excludedBuilder:false};
+const inventory=[
+  {...inventoryBase,id:'active',subdivisionId:'active',subdivision:'Active Phase',status:'Sold',closeDate:'2026-06-01',purchaseDate:'2026-05-01',price:null,width:null},
+  {...inventoryBase,id:'contracted',subdivisionId:'future',subdivision:'Future Phase',status:'Contracted',closeDate:null,purchaseDate:null,builderId:'b1',builder:'Builder B'},
+  {...inventoryBase,id:'future-open',subdivisionId:'future',subdivision:'Future Phase',status:'Open',closeDate:null,purchaseDate:null,builderId:'b2',builder:'Builder C'},
+  {...inventoryBase,id:'unassigned',subdivisionId:'open',subdivision:'Open Phase',status:'Open',closeDate:null,purchaseDate:null,builderId:'',builder:'Placeholder',excludedBuilder:true},
+  {...inventoryBase,id:'old',subdivisionId:'old',subdivision:'Past Phase',status:'Sold',closeDate:'2024-06-01',purchaseDate:'2024-05-01'}
+];
+const inventoryFilters={statuses:['Sold'],from:'2026-01',to:'2026-12',hideEmpty:false,excludeBuilders:false};
+const showInventory=M.reportSelection(inventory,inventoryFilters);
+assert.deepEqual([...new Set(showInventory.rows.map(row=>row.id))].sort(),['active','future','old','open']);
+assert.equal(showInventory.lots.length,1,'only selected-period Sold lots enter report totals');
+assert.equal(showInventory.reports[0].stats.count,1);
+assert(showInventory.rows.filter(row=>row.id!=='active').every(row=>row.stats.count===0&&row.cells.size===0),'undated and out-of-period subdivisions have blank report values');
+assert.equal(showInventory.rows.find(row=>row.id==='active').stats.avgPriceFF,null,'a missing price does not make a lot-count row empty');
+assert.deepEqual(M.reportSelection(inventory,{...inventoryFilters,hideEmpty:true}).rows.map(row=>row.id),['active'],'Hide Empty removes rows without selected lots');
+assert(!M.reportSelection(inventory,{...inventoryFilters,excludeBuilders:true}).rows.some(row=>row.id==='open'),'builder exclusion remains available as an explicit filter');
+assert.deepEqual([...new Set(M.reportSelection(inventory,{...inventoryFilters,projectIds:['not-this-project']}).rows.map(row=>row.id))],[],'project scope applies to the all-subdivision inventory');
+const builderInventory=M.reportSelection(inventory,{...inventoryFilters,groupBy:'builder'});
+assert.equal(builderInventory.rows.filter(row=>row.id==='future').length,2,'Builder grouping shows each builder with populated lots');
+assert.equal(new Set(builderInventory.rows.map(row=>row.key)).size,builderInventory.rows.length,'Builder inventory rows have unique keys');
 assert(M.csv([['=CMD()', 'a,b', '"quote"']]).includes("'=CMD()"));
 assert(M.csv([['a,b']]).includes('"a,b"'));
 const records = Array.from({length:1001},(_,i)=>({ID:String(9000000000000000000n + BigInt(i))}));
