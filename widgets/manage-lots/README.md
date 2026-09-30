@@ -34,7 +34,7 @@ Lot Code rule (must match Deluge `Set Lot Code if Manual Update` / `Mass Create 
 
 ## Creator contracts
 
-- Reports: `All_Subdivisions`, `All_Builders`, `All_Lots_All_Fields`, `All_Builder_Takedowns`
+- Reports: `All_Subdivisions`, `All_Builders`, `All_Lots_All_Fields`, `All_Builder_Takedowns`; optional read-only Legal context from `All_Contracts1` and `All_Active_Lots_Contracts_View`
 - Create forms: `Builder_Takedown`, `Lots`
 - Custom API: `Ingest_Plat` (`Ingest_Plat_DEV`) → Deluge `Plat_AI_Ingest`
 - Settings fields read server-side: `PF_Review_Provider`, `PF_Review_Model`
@@ -49,3 +49,46 @@ Version `0.3.0` added searchable multi-subdivision filtering, subdivision groupi
 ## Navarro County (0.7.1)
 
 The Import Plat County dropdown now includes Navarro, matching the live Lots.County picklist. No functions or Custom APIs change. Regression: Navarro selection, existing choices, and County save payloads. Rollback: restore the production mapping to `0.7.0`.
+
+## Lots and Takedowns polish (0.8.0)
+
+Subdivision options keep the name and availability/sold badges on one line. The
+popover expands on desktop and truncates long names on narrow screens, with the
+full name in its title. Selection updates retain the option nodes, keyboard focus,
+search and scroll. Counts, sorted subdivisions and lot lookups are indexed once
+per fetched collection; filter changes render only the active tab.
+
+Block headers use a block-number mark, title, lot/available counts and a compact
+Select available action. Lot tiles use Legal's green Available, orange contract
+claim, indigo Contracted, amber Scheduled, slate Sold and red On Hold palette,
+plus an orange In takedown state and a neutral unavailable/archived state. A
+counted legend tracks the visible tiles and selection. Held Open lots and Open
+lots on contracts retain the existing takedown eligibility rules; colors convey
+record context rather than adding a new restriction.
+
+Hover waits 320 ms for the first card, then swaps immediately between tiles.
+Keyboard focus shows the same card, including on unavailable lots. Cards show
+code, subdivision, block, lot, status, width, buyer, price, address and notes when
+returned, with linked contract/takedown context. Drag, scroll, resize, Escape and
+repaint dismiss them. Text is escaped and the card stays inside the viewport.
+
+`All_Contracts1` loads after required data so Legal context does not delay the
+grid. `All_Lots_All_Fields` omits `Lot_Size` in the committed quick view, so the
+first hover needing width reads `All_Active_Lots_Contracts_View` for that
+subdivision and caches the result until Refresh. These optional reads honor
+existing Creator report permissions; failures are logged and omit extra context.
+There are no permission changes, new fields, functions or Custom APIs, and no
+Creator backend publication is needed. Existing `Builder_Takedown`/`Lots` create
+payloads and the final fresh eligibility check are unchanged.
+
+Regression evidence: Node checks cover cache reuse/invalidation, exact string
+IDs, state precedence (including Scheduled), rejected/archived contract release,
+held-lot eligibility and deduplicated width reads. Browser checks cover dropdown
+alignment and stable focus, mobile layout, colors, unavailable-lot keyboard
+details, drag selection, read-only takedowns and rejection of a stale selection.
+In a local 9,600-lot/120-subdivision fixture, median option-click handler time fell
+from roughly 55–66 ms to 3–4 ms; this measures local rendering, not Creator
+network latency. Live Creator writes were not exercised during these checks.
+
+Rollback: restore `deploy/environments.json` production `manage-lots` to `0.7.3`
+and redeploy Pages. The permanent Production widget URL remains unchanged.

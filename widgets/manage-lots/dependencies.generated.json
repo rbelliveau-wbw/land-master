@@ -9,13 +9,16 @@
   "forms_referenced": [
     "Builder",
     "Builder_Takedown",
+    "Contract",
     "Lots",
     "Settings",
     "Subdivision"
   ],
   "reports_referenced": [
+    "All_Active_Lots_Contracts_View",
     "All_Builder_Takedowns",
     "All_Builders",
+    "All_Contracts1",
     "All_Lots_All_Fields",
     "All_Subdivisions"
   ],

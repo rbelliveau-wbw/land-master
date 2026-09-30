@@ -186,4 +186,57 @@ for (const field of ["Lot_Code", "Status", "Subdivision", "Subdivision_Code", "P
   assert.match(source, new RegExp(`\\b${field}\\b`), `Lots payload must carry ${field}`);
 }
 
-console.log("Manage Lots multi-subdivision, lot-detail, drag-selection, read-only takedown, and AI plat import checks passed.");
+/* Cached counts, refreshed data, string IDs and Legal status tints. */
+const fixture = { lots: [], subdivisions: [{ ID: "90071992547409931", Subdivision_Name: "Phase 1" }], takedowns: [], contracts: [], takedownLotIds: new Set() };
+const helpers = new Function("S", "str", "natural", `
+  var dataIndex=null,emptyStats={total:0,available:0,sold:0};
+  ${["truthy", "idOf", "relationEmpty", "relationIds", "lotSubdivisionId", "inTakedown", "eligible", "indexes", "subdivisionStats", "lotById", "lotState"].map(extractFunction).join("\n")}
+  return {indexes,subdivisionStats,lotById,lotState,eligible};
+`)(fixture, scalar, natural);
+const sid = "90071992547409931";
+fixture.lots = [
+  { ID: "90071992547409941", Subdivision: { ID: sid }, Status: "Open", Archived: "false" },
+  { ID: "90071992547409942", Subdivision: { ID: sid }, Status: "Open", On_Hold: "true" },
+  { ID: "90071992547409943", Subdivision: { ID: sid }, Status: "Contracted" },
+  { ID: "90071992547409944", Subdivision: { ID: sid }, Status: "Sold" },
+  { ID: "90071992547409945", Subdivision: { ID: sid }, Status: "Open", Archived: "true" },
+  { ID: "90071992547409946", Subdivision: { ID: sid }, Status: "Open", Add_Builder_Takedown_Name: { ID: "90071992547409951" } },
+];
+assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 2, sold: 1 });
+const cached = helpers.indexes();
+for (let i = 0; i < 500; i += 1) assert.equal(helpers.indexes(), cached, "filter clicks must reuse the existing index");
+assert.equal(helpers.lotById("90071992547409941"), fixture.lots[0], "IDs larger than safe integers must remain exact");
+assert.deepEqual(fixture.lots.map(helpers.lotState), ["open", "hold", "contracted", "sold", "other", "takedown"]);
+assert.equal(helpers.lotState({ ID: "90071992547409947", Status: "Scheduled" }), "scheduled", "Scheduled must retain Legal's amber tint");
+assert.equal(helpers.eligible(fixture.lots[1]), true, "On Hold is a visual flag, not a new eligibility rule");
+fixture.contracts = [{ ID: "90071992547409961", Status: "Draft", Lots1: [{ ID: fixture.lots[0].ID }] }];
+assert.equal(helpers.lotState(fixture.lots[0]), "claim", "in-flight contracts must get Legal's orange tint");
+assert.equal(helpers.eligible(fixture.lots[0]), true, "Legal context must not change the takedown business rules");
+fixture.contracts = [{ ID: "90071992547409961", Status: "Approval Rejected", Lots1: [{ ID: fixture.lots[0].ID }] }];
+assert.equal(helpers.lotState(fixture.lots[0]), "open", "rejected contracts release the visual claim");
+fixture.contracts = [{ ID: "90071992547409961", Archive: "true", Lots1: [{ ID: fixture.lots[0].ID }] }];
+assert.equal(helpers.lotState(fixture.lots[0]), "open", "archived contracts release the visual claim");
+fixture.lots = fixture.lots.map(l => ({ ...l, Status: "Sold" }));
+assert.notEqual(helpers.indexes(), cached, "refresh must invalidate cached counts");
+assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 0, sold: 6 });
+assert.match(extractFunction("latestSelected"), /getAll\(CFG\.reports\.lots\)/, "submission must still reread lots");
+assert.match(extractFunction("latestSelected"), /!eligible\(map\[id\]\)/, "submission must reject stale eligibility");
+assert.doesNotMatch(extractFunction("applySubdivisionFilter"), /renderSubdivisionOptions/, "selection must preserve picker nodes and focus");
+let detailCalls = 0;
+const detailReader = new Function("S", "CFG", "getAll", "auditLog", "lotById", `
+  var lotDetails=new Map(),lotDetailLoads=new Map(),hoverId="",hoverX=0,hoverY=0;
+  var $=()=>null;
+  ${extractFunction("loadLotDetails")}
+  return {loadLotDetails,lotDetails};
+`)({ live: true }, { reports: { lotDetails: "All_Active_Lots_Contracts_View" } }, async (report, criteria) => {
+  detailCalls++;
+  assert.equal(report, "All_Active_Lots_Contracts_View");
+  assert.equal(criteria, `(Subdivision == ${sid})`);
+  return [{ ID: fixture.lots[0].ID, Lot_Size: 45 }];
+}, () => {}, () => null);
+await Promise.all([detailReader.loadLotDetails(sid), detailReader.loadLotDetails(sid)]);
+assert.equal(detailCalls, 1, "hover enrichment must share one fetch per subdivision");
+assert.equal(detailReader.lotDetails.get(fixture.lots[0].ID).Lot_Size, 45);
+await detailReader.loadLotDetails("invalid-subdivision");
+assert.equal(detailCalls, 1, "unverified lookup IDs must never enter Creator criteria");
+console.log("Manage Lots cache invalidation, Legal status tints, eligibility, string IDs, multi-subdivision, drag-selection, read-only takedown, and AI plat import checks passed.");

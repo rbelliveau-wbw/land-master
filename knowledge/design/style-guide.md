@@ -85,5 +85,11 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 ## Editable input guidance
 
 - In Pro Forma input tables, use the Additional Costs treatment to identify the next missing editable value: a pale-blue field with a blue border and restrained pulse for the first value, followed by a steady blue outline for dependent values. Prefilled generated rows may keep a steady outline on every editable cell so users can distinguish them from calculated values. Do not highlight read-only, calculated, locked, complete conditional, or untouched optional fields.
+
+## Lots and Takedowns
+
+- Keep subdivision filter names and count badges on one line; allow a wider desktop popover and truncate long names on narrow screens.
+- Lot grids follow Legal's status palette, counted legend and hover detail cards. Block headers pair a rounded block-number mark with a clear title, compact counts and a pale-blue selection action.
+- Keep status coloring independent of each module's eligibility rules. Unavailable lots still expose details through hover and keyboard focus.
 - In Budget Manager, pulse required header metrics and the active per-unit input in yellow only while their value is missing or zero. Clear the pulse as soon as a valid value is entered; prompt for Unit before Cost per Unit. Do not pulse a completed, locked, or optional input.
 - In manually added financial rows, keep an explicit Add button below the table; typing in a field must never create another row. Use a centered SVG plus in the action and a visible outline on editable cells, including prefilled values.
