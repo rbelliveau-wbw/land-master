@@ -4,6 +4,8 @@ import path from "node:path";
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, "widgets/manage-lots/src/app/widget.html"), "utf8");
+const countsSource = fs.readFileSync(path.join(root, "widgets/manage-lots/src/app/subdivision-counts.js"), "utf8");
+const counts = new Function("module", `${countsSource}\nreturn module.exports;`)({ exports: {} });
 
 function extractFunction(name) {
   const start = source.indexOf(`function ${name}(`);
@@ -73,8 +75,8 @@ const beforeSelection=countLotStats([
 assert.deepEqual(beforeSelection.get(sid),{total:4,available:1,sold:1,scheduled:2},'counts must include Scheduled lots before subdivision selection');
 const readyScopes=new Set(),freshCounts={total:3,available:1,sold:2,scheduled:0};
 const pickStats=new Function('S','subdivisionReady','subdivisionCounts','indexes','emptyStats',`return (${extractFunction('subdivisionStats')})`)({live:true},readyScopes,beforeSelection,()=>({stats:new Map([[sid,freshCounts]])}),{total:0,available:0,sold:0,scheduled:0});
-assert.equal(pickStats(sid),beforeSelection.get(sid),'unselected subdivisions use the completed shared count load');
-readyScopes.add(sid);assert.equal(pickStats(sid),freshCounts,'fresh scoped records supersede the shared counts after selection');
+assert.equal(pickStats(sid),beforeSelection.get(sid),'unselected subdivisions use independently loaded counts');
+readyScopes.add(sid);assert.equal(pickStats(sid),freshCounts,'fresh scoped records supersede background counts after selection');
 fixture.lots = [
   { ID: "90071992547409941", Subdivision: { ID: sid }, Status: "Open", Archived: "false" },
   { ID: "90071992547409942", Subdivision: { ID: sid }, Status: "Open", On_Hold: "true" },
@@ -147,4 +149,97 @@ const visibleTakedowns=new Function('S','$','idOf','str','takedownNewest',`retur
 assert.deepEqual(visibleTakedowns().map(t=>t.Name),['Latest','Older'],'the takedown tab must show latest records without inheriting the Lots filter');
 takedownState.takedownSubdivisionIds=['a'];assert.deepEqual(visibleTakedowns().map(t=>t.Name),['Older'],'a chosen takedown subdivision filters the list');
 takedownState.takedownSubdivisionIds=[];assert.equal(visibleTakedowns().length,2,'clearing the optional filter restores all takedowns');
-console.log("Manage Lots cache invalidation, Legal status tints, eligibility, string IDs, multi-subdivision, drag-selection, read-only takedown, and AI plat import checks passed.");
+
+// Aggregate count envelopes must distinguish a real zero from a failed/malformed read.
+for (const response of [{code:3000,result:{records_count:'0'}},{result:{records_count:'17'}},{records_count:5},{record_count:'6'},{count:7}]) {
+  assert.equal(counts.extractCount(response), Number(response.result?.records_count ?? response.records_count ?? response.record_count ?? response.count));
+}
+for (const response of [null,{}, {code:1030,result:{records_count:'0'}},{result:{code:3330,records_count:0}}, {code:3000,error:'denied',count:0},{code:3000,result:{error:'denied',records_count:0}},
+  ...[null,false,{},[], '', ' ', -1,1.5, 'abc', Number.MAX_SAFE_INTEGER+1].map(records_count=>({code:3000,result:{records_count}}))]) {
+  assert.equal(counts.extractCount(response),null,'invalid counts must remain unknown, never display a false zero');
+}
+
+const claims = {takedownLotIds:new Set(['90071992547409999','90071992547410000'])};
+const criteriaFor = new Function('S',`return (${extractFunction('subdivisionCountCriteria')})`)(claims);
+const scope = `(Subdivision == ${sid})`;
+assert.equal(criteriaFor(sid,'sold'),`${scope} && (Status == "Sold")`);
+assert.equal(criteriaFor(sid,'scheduled'),`${scope} && (Status == "Scheduled")`);
+assert.equal(criteriaFor(sid,'available'),`${scope} && ((Status == "Open") || (Status == "Contracted")) && (Archived == false) && (Add_Builder_Takedown_Name == null) && (ID != 90071992547409999) && (ID != 90071992547410000)`, 'every reverse takedown claim must be excluded without converting IDs to numbers');
+assert.throws(()=>criteriaFor('untrusted-id','available'),/invalid/);
+assert.throws(()=>criteriaFor(sid,'unknown'),/Unknown/);
+claims.takedownLotIds.add('untrusted-id');assert.throws(()=>criteriaFor(sid,'available'),/invalid/);
+claims.takedownLotIds=new Set(Array.from({length:100},(_,i)=>String(100000+i)));
+assert.equal(criteriaFor(sid,'available'),null,'oversized exclusions must use scoped rows rather than omit claims');
+let aggregateReads=0,scopedReads=0;
+const largeScopeReader=new Function('ZOHO','subdivisionCountCriteria','fallbackSubdivisionCount','LMSubdivisionCounts','sdkResponseInfo','auditLog','errText','CFG',`
+  var loadGeneration=1,availableCountsUseRows=false;
+  return (${extractFunction('readSubdivisionCount')});
+`)({CREATOR:{API:{getRecordCount:async()=>{aggregateReads++;return {code:3000,result:{records_count:999}};}}}},criteriaFor,async(id,field)=>{
+  scopedReads++;assert.equal(id,sid);assert.equal(field,'available');return 4;
+},counts,sdkResponseInfo,()=>{},String,{reports:{lotsList:'All_Active_Lots_List_View'}});
+assert.equal(await largeScopeReader(sid,'available'),4);
+assert.equal(aggregateReads,0,'large exclusion sets must never send a truncated aggregate criterion');
+assert.equal(scopedReads,1);
+
+// Fallback rows retain server-side relationship filtering even when the quick
+// view omits the lookup field. Reverse claims still use the local eligibility rule.
+const fallbackCalls=[];
+fixture.takedownLotIds.add('90071992547409999');
+const fallbackStats=new Function('eligible','lotSubdivisionId','str',`return (${extractFunction('countLotStats')})`)(helpers.eligible,l=>String(l.Subdivision.ID),scalar);
+function makeFallback(read){return new Function('CFG','getAll','countLotStats','subdivisionCountCriteria','emptyStats',`
+  var subdivisionCountFallbacks=new Map();return (${extractFunction('fallbackSubdivisionCount')});
+`)({reports:{lotsList:'All_Active_Lots_List_View'}},read,fallbackStats,criteriaFor,{total:0,available:0,scheduled:0,sold:0});}
+const fallback=makeFallback(async(report,criteria)=>{
+  fallbackCalls.push({report,criteria});
+  assert.equal(report,'All_Active_Lots_List_View');assert.ok(criteria.includes(scope),'fallback must never download all subdivisions');
+  if(criteria.includes('"Contracted"')){
+    assert.ok(criteria.includes('(Archived == false)'));
+    assert.ok(criteria.includes('(Add_Builder_Takedown_Name == null)'),'missing lookup values cannot silently count as empty');
+    return [{ID:'1',Subdivision:{ID:sid},Status:'Contracted'},{ID:'90071992547409999',Subdivision:{ID:sid},Status:'Open'}];
+  }
+  return [{ID:'2',Subdivision:{ID:sid},Status:criteria.includes('"Scheduled"')?'Scheduled':'Sold'}];
+});
+assert.equal(await fallback(sid,'available'),1,'reverse claims remain unavailable in the scoped fallback');
+assert.equal(await fallback(sid,'available'),1);assert.equal(fallbackCalls.length,1,'fallback reads are shared');
+assert.equal(await fallback(sid,'scheduled'),1);assert.equal(await fallback(sid,'sold'),1);
+await assert.rejects(()=>makeFallback(async()=>{throw {code:1030};})(sid,'available'),error=>error.code===1030,'a failed fallback cannot publish zero');
+
+// Controlled responses reproduce the minute-long global barrier without sleeping.
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+const jobs=new Map(),started=[],changed=[];
+let active=0,maxActive=0;
+const queue=counts.create({concurrency:2,read(id,field){
+  const key=`${id}:${field}`;assert.ok(!jobs.has(key),`duplicate count request ${key}`);
+  active++;maxActive=Math.max(maxActive,active);started.push(key);
+  return new Promise((resolve,reject)=>jobs.set(key,{resolve,reject})).finally(()=>{active--;});
+},changed(id){changed.push(id);}});
+const fields=['available','scheduled','sold'];
+queue.request(['a','b'],fields);await flush();
+assert.deepEqual(started,['a:available','a:scheduled']);
+jobs.get('a:scheduled').resolve(2);await flush();
+assert.equal(queue.values.get('a').scheduled,2,'fast badges must publish while another response is still pending');
+assert.equal(queue.values.get('a').available,null,'pending available counts must remain unknown');
+assert.equal(started.at(-1),'a:sold');
+queue.request(['c','c'],fields);queue.request(['a'],fields);
+jobs.get('a:sold').resolve(1);await flush();
+assert.equal(started.at(-1),'c:available','newly visible subdivisions must jump ahead of queued offscreen reads');
+jobs.get('c:available').resolve(5);await flush();
+assert.equal(started.at(-1),'c:scheduled');
+jobs.get('c:scheduled').reject(new Error('Permission denied'));await flush();
+assert.equal(queue.values.get('c').scheduled,null);
+assert.match(queue.error('c','scheduled').message,/Permission/);
+queue.request(['c'],fields);await flush();
+assert.equal(started.filter(key=>key==='c:scheduled').length,1,'scroll/search must not retry failed reads repeatedly');
+assert.equal(started.filter(key=>key==='c:available').length,1,'scroll/search must reuse completed reads');
+assert.equal(started.filter(key=>key==='c:sold').length,1,'scroll/search must share in-flight reads');
+jobs.get('c:sold').resolve(3);await flush();
+assert.equal(started.at(-1),'b:available');
+assert.equal(maxActive,2,'the scheduler must bound simultaneous Creator requests');
+const changesBeforeStop=changed.length,startsBeforeStop=started.length;
+queue.stop();jobs.get('a:available').resolve(99);jobs.get('b:available').resolve(88);await flush();
+queue.request(['d'],fields);await flush();
+assert.equal(changed.length,changesBeforeStop,'a refresh must discard stale count completions');
+assert.equal(queue.values.get('a').available,null);
+assert.equal(queue.values.has('b'),false);
+assert.equal(started.length,startsBeforeStop,'stopping must cancel queued work and prevent new requests');
+console.log("Manage Lots bounded/incremental counts, criteria safety, cache invalidation, Legal tints, eligibility, string IDs, selection, and read-only takedown checks passed.");

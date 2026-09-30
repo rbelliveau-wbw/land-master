@@ -468,6 +468,7 @@
       "sdk_calls": [
         "ZOHO.CREATOR.API.addRecord",
         "ZOHO.CREATOR.API.getAllRecords",
+        "ZOHO.CREATOR.API.getRecordCount",
         "ZOHO.CREATOR.appName",
         "ZOHO.CREATOR.init"
       ],
