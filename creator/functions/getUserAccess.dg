@@ -27,7 +27,6 @@ string getUserAccess(string user)
 	pfApprOwned = false;
 	pfSendApprovals = false;
 	pfSubmitLegal = false;
-	pfOwnerEditSend = false;
 	pfAiReview = false;
 	budgetAssignedToMe = false;
 	proformaAssignedToMe = false;
@@ -71,7 +70,6 @@ string getUserAccess(string user)
 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
 		pfSendApprovals = row.Send_Pro_Formas_for_Approvals == true;
 		pfSubmitLegal = row.Submit_to_Legal_Module == true;
-		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
 		pfAiReview = row.AI_Review == true;
 		budgetAssignedToMe = row.Budgets_Assigned_to_Me == true;
 		proformaAssignedToMe = row.Pro_Forma_Assigned_to_Me == true;
@@ -140,7 +138,6 @@ string getUserAccess(string user)
 	result.put("pfApprOwned",pfApprOwned);
 	result.put("pfSendApprovals",pfSendApprovals);
 	result.put("pfSubmitLegal",pfSubmitLegal);
-	result.put("pfOwnerEditSend",pfOwnerEditSend);
 	result.put("pfAiReview",pfAiReview);
 	result.put("budgetAssignedToMe",budgetAssignedToMe);
 	result.put("proformaAssignedToMe",proformaAssignedToMe);

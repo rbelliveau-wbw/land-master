@@ -325,8 +325,9 @@ for (const required of [
 const updateProformaApprovalRecipient = fs.readFileSync(path.join(root, 'creator/functions/Update_Proforma_Approval_Recipient.dg'), 'utf8');
 for (const required of [
   'isPfOwner = false;',
-  'accessRow.Send_Pro_Formas_for_Approvals == true && (accessRow.Edit_All_Proformas == true || isPfOwner == true)',
-  'accessRow.Owner_Edit_Send_Approvals == true && isPfOwner == true'
+  'if(canEditRecipient == false && accessRow.Send_Pro_Formas_for_Approvals == true)',
+  'if(accessRow.Edit_All_Proformas == true || isPfOwner == true)',
+  'accessRow.Edit_Owned_Proformas == true && isPfOwner == true'
 ]) {
   if (!updateProformaApprovalRecipient.includes(required)) errors.push(`Update_Proforma_Approval_Recipient: owner-scoped recipient access is missing ${required}.`);
 }

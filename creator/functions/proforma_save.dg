@@ -365,12 +365,37 @@
                  				resp.put("action","lock_updated");
                  				return resp.toString();
                  			}
-                 			if(quickAccess.Edit_Proforma_Owner != true && quickAccess.Edit_Budget_Owners != true)
-                 			{
+			// Never trust a supplied User Access ID when changing ownership.
+			ownerActor = User_Access[User == zoho.loginuser];
+			canUpdateOwners = false;
+			if(ownerActor.count() > 0)
+			{
+				canUpdateOwners = ownerActor.Edit_Proforma_Owner == true || ownerActor.Edit_Budget_Owners == true;
+				if(!canUpdateOwners && ownerActor.Edit_Owned_Proformas == true && quickPf.Owner != null)
+				{
+					for each existingOwner in quickPf.Owner
+					{
+						if(existingOwner.ID.toString() == ownerActor.ID.toString()) { canUpdateOwners = true; }
+					}
+				}
+			}
+			if(!canUpdateOwners)
+			{
                  				resp.put("success",false);
-                 				resp.put("error","Edit Pro Forma Owners access is required.");
+				resp.put("error","Edit Pro Forma Owner access, or Edit Owned Pro Formas on a Pro Forma you already own, is required.");
                  				return resp.toString();
                  			}
+			ownerChangeLocked = quickPf.Lock_Inputs == true || ifnull(quickPf.Status,"") == "Approved";
+			for each ownerApproval in Budget_Approvals[Proforma == pfKey]
+			{
+				if(ifnull(ownerApproval.Status,"Not Sent") != "Not Sent") { ownerChangeLocked = true; }
+			}
+			if(ownerChangeLocked)
+			{
+				resp.put("success",false);
+				resp.put("error","Unlock the Pro Forma and cancel active approvals before changing owners.");
+				return resp.toString();
+			}
                  			ownerIds = List();
                  			for each  ownerValue in ifnull(data.get("ownerIds"),List())
                  			{
@@ -1037,6 +1062,59 @@
 						return resp.toString();
 					}
 				}
+				// Validate changed owner assignments before a normal save writes any child rows.
+		if(!isNew && header.get("Owner") != null)
+		{
+			requestedOwnerIds = List();
+			for each requestedOwner in header.get("Owner")
+			{
+				requestedOwnerText = ifnull(requestedOwner,"").toString().trim();
+				if(requestedOwnerText != "" && !requestedOwnerIds.contains(requestedOwnerText)) { requestedOwnerIds.add(requestedOwnerText); }
+			}
+			currentOwnerIds = List();
+			for each currentOwner in pf.Owner { currentOwnerIds.add(currentOwner.ID.toString()); }
+			ownerAssignmentChanged = requestedOwnerIds.size() > 0 && requestedOwnerIds.size() != currentOwnerIds.size();
+			for each requestedOwnerId in requestedOwnerIds
+			{
+				if(!currentOwnerIds.contains(requestedOwnerId)) { ownerAssignmentChanged = true; }
+			}
+			if(ownerAssignmentChanged)
+			{
+				quickPf = pf;
+				pfKey = pf.ID;
+			// Never trust a supplied User Access ID when changing ownership.
+			ownerActor = User_Access[User == zoho.loginuser];
+			canUpdateOwners = false;
+			if(ownerActor.count() > 0)
+			{
+				canUpdateOwners = ownerActor.Edit_Proforma_Owner == true || ownerActor.Edit_Budget_Owners == true;
+				if(!canUpdateOwners && ownerActor.Edit_Owned_Proformas == true && quickPf.Owner != null)
+				{
+					for each existingOwner in quickPf.Owner
+					{
+						if(existingOwner.ID.toString() == ownerActor.ID.toString()) { canUpdateOwners = true; }
+					}
+				}
+			}
+			if(!canUpdateOwners)
+			{
+				resp.put("success",false);
+				resp.put("error","Edit Pro Forma Owner access, or Edit Owned Pro Formas on a Pro Forma you already own, is required.");
+				return resp.toString();
+			}
+			ownerChangeLocked = quickPf.Lock_Inputs == true || ifnull(quickPf.Status,"") == "Approved";
+			for each ownerApproval in Budget_Approvals[Proforma == pfKey]
+			{
+				if(ifnull(ownerApproval.Status,"Not Sent") != "Not Sent") { ownerChangeLocked = true; }
+			}
+			if(ownerChangeLocked)
+			{
+				resp.put("success",false);
+				resp.put("error","Unlock the Pro Forma and cancel active approvals before changing owners.");
+				return resp.toString();
+			}
+						}
+		}
                  		instIds = List();
                  		for each  instGr in pf.Land_Purchase_Installments
                  		{

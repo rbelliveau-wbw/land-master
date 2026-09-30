@@ -54,11 +54,14 @@
 				}
 			}
 			canEditRecipient = accessRow.Edit_All_Pro_Forma_Approvals == true;
-			if(canEditRecipient == false && accessRow.Send_Pro_Formas_for_Approvals == true && (accessRow.Edit_All_Proformas == true || isPfOwner == true))
+			if(canEditRecipient == false && accessRow.Send_Pro_Formas_for_Approvals == true)
 			{
-				canEditRecipient = true;
+				if(accessRow.Edit_All_Proformas == true || isPfOwner == true)
+				{
+					canEditRecipient = true;
+				}
 			}
-			if(canEditRecipient == false && accessRow.Owner_Edit_Send_Approvals == true && isPfOwner == true)
+			if(canEditRecipient == false && accessRow.Edit_Owned_Proformas == true && isPfOwner == true)
 			{
 				canEditRecipient = true;
 			}

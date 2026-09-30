@@ -22,7 +22,7 @@ const names=['migrationAccountAccess','migrationEditAccess','canOpenPfEditor','c
 function harness(overrides={}){
   const S={migrationEditor:'rbelliveau',currentUser:'rbelliveau@wbdevelopment.com',myAccessId:'1001',
     users:[{id:'1001',label:'rbelliveau'},{id:'1002',label:'other'}],
-    perms:{editAll:false,editOwned:false,ownerEditSend:false,anyEdit:false,readOnly:true,editOwner:true},
+    perms:{editAll:false,editOwned:false,anyEdit:false,readOnly:true,editOwner:true},
     ed:{dirty:false,model:null},...overrides};
   function control(loi=false){return {disabled:true,dataset:{inputLock:'1'},
     closest:()=>loi?{}:null,matches:()=>false};}

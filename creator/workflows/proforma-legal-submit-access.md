@@ -24,3 +24,13 @@ The Dashboard header and list menu share the same permission/eligibility predica
 Regression: granted user with eligible record; no grant or missing flag; partial approval; unlocked/archived/already submitted PF; missing buying entity; duplicate click; final approval with repeated recipient, missing recipient, or mail failure; next-approver and rejection routing. Tests use offline records and mail fixtures; no real approval, Legal submission, or email was executed for QA.
 
 Rollback widget: map Development and Production to `1.80.45`. Creator rollback requires reverting the changed functions separately; retain the new field and current grants unless deliberately reversing the access policy.
+
+## Owner permission split (1.80.48)
+
+Retire User_Access.Owner_Edit_Send_Approvals from the form and report, and remove its flag from getUserAccess and the widget. Creator's Field References view showed no remaining dependencies after getUserAccess was updated. Field deletion remains subject to Zoho's irreversible-data-loss confirmation. The user confirmed only two super administrators held the retired grant and already hold the replacement grants; no User Access record assignments are migrated.
+
+Edit_Owned_Proformas grants record editing, approval-route configuration, recipient changes, and Owner-list changes only while the signed-in user is already an owner. Existing dedicated owner-management and approval-administrator grants retain their scope. Ownership changes remain blocked while locked or approvals have started, including when submitted as part of a normal save. Removing oneself from the Owner list removes owned-record access on subsequent actions.
+
+Send_Pro_Formas_for_Approvals remains a separate grant: the sender must own the PF or also have Edit All Proformas. The live Development Start_Proforma_Approval_Chain was read and verified to already enforce this rule; it does not reference the retired field. No approval-send grant is inferred from editing or ownership alone.
+
+Additional changed Creator functions: getUserAccess, proforma_save (update_owners and normal-save preflight), Update_Proforma_Approval_Recipient, and Manage_Proforma_Approval_Config. Custom API signatures remain unchanged. Verify owner/non-owner, locked/approved/active-approval PFs, dedicated administrators, send-only users, spoofed userAccessId, and normal-save owner changes. Regression script: scripts/test-proforma-owner-permissions.mjs.

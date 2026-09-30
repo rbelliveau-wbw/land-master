@@ -23,6 +23,26 @@
                  			response.put("message","Pro Forma not found.");
                  			return response;
                  		}
+				// Approval-route configuration uses the same owner scope as the widget.
+		configAccess = User_Access[User == zoho.loginuser];
+		canConfigureRoute = false;
+		if(configAccess.count() > 0)
+		{
+			canConfigureRoute = configAccess.Edit_All_Pro_Forma_Approvals == true;
+			if(!canConfigureRoute && configAccess.Edit_Owned_Proformas == true && pf.Owner != null)
+			{
+				for each configOwner in pf.Owner
+				{
+					if(configOwner.ID.toString() == configAccess.ID.toString()) { canConfigureRoute = true; }
+				}
+			}
+		}
+		if(!canConfigureRoute)
+		{
+			response.put("success",false);
+			response.put("message","Edit All Pro Forma Approvals, or Edit Owned Pro Formas on a Pro Forma you own, is required to configure the route.");
+			return response;
+		}
                  		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
                  		// The route is configuration data only until the chain starts.
                  		// Once any row has moved beyond Not Sent, cancel the flow before editing it.
