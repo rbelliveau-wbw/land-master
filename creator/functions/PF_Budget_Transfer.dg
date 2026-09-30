@@ -1,0 +1,271 @@
+string PF_Budget_Transfer(string payload)
+{
+    response = Map();
+    response.put("success",false);
+    wrote = false;
+    completed = List();
+    try
+    {
+        data = payload.toMap();
+        op = ifnull(data.get("op"),"").toString();
+        if(op == "budget_transfer_capabilities")
+        {
+            response.put("success",true);
+            response.put("action",op);
+            response.put("budgetTransferVersion",1);
+            return response.toString();
+        }
+        if(op != "budget_transfer_preview" && op != "budget_transfer_apply")
+        {
+            response.put("error","Unknown Budget transfer operation.");
+            return response.toString();
+        }
+        // Resolve the authenticated caller, never a client-supplied access ID.
+        actor = User_Access[User == zoho.loginuser];
+        if(actor.count() != 1 || (actor.Edit_All_Budgets != true && actor.Edit_Owned_Budgets != true))
+        {
+            response.put("error","Budget edit access is required.");
+            return response.toString();
+        }
+        pfText = ifnull(data.get("id"),"").toString();
+        projectText = ifnull(data.get("projectId"),"").toString();
+        if(!pfText.isNumber() || !projectText.isNumber())
+        {
+            response.put("error","A saved Pro Forma and Project are required.");
+            return response.toString();
+        }
+        pf = Add_Pro_Forma[ID == pfText.toLong()];
+        project = Project[ID == projectText.toLong()];
+        if(pf.count() != 1 || project.count() != 1)
+        {
+            response.put("error","Pro Forma or Project was not found.");
+            return response.toString();
+        }
+        ctx = Map();
+        ctx.put("actor",actor.ID.toString());
+        pm = Map();
+        pm.put("Name",ifnull(pf.Name,""));
+        pm.put("Phases",ifnull(pf.Phases,0));
+        pm.put("Lots",ifnull(pf.Lots,0));
+        pm.put("Total_Acres",ifnull(pf.Total_Acres,0));
+        pm.put("Total_Street_LF",ifnull(pf.Total_Street_LF,0));
+        pm.put("Lot_Size_Ft",ifnull(pf.Lot_Size_Ft,0));
+        pm.put("Sale_Price_FF",ifnull(pf.Sale_Price_FF,0));
+        pm.put("Land_Cost_Acre",ifnull(pf.Land_Cost_Acre,0));
+        pm.put("Engineering_Cost_Lot",ifnull(pf.Engineering_Cost_Lot,0));
+        pm.put("Const_Cost_FF",ifnull(pf.Const_Cost_FF,0));
+        pm.put("ID",pf.ID.toString());
+        pm.put("Modified_Time",pf.Modified_Time.toString());
+        ctx.put("pf",pm);
+        projectMap = Map();
+        projectMap.put("ID",project.ID.toString());
+        projectMap.put("Project_Name",project.Project_Name);
+        projectMap.put("Proforma",ifnull(project.Proforma,"").toString());
+        projectMap.put("Modified_Time",project.Modified_Time.toString());
+        ctx.put("project",projectMap);
+        phaseRows = List();
+        for each r in Proforma_Phase[Pro_Forma == pf.ID] sort by ID
+        {
+            m = Map(); m.put("ID",r.ID.toString()); m.put("Phase",ifnull(r.Phase,0)); m.put("Total_Lots",ifnull(r.Total_Lots,0));
+            phaseRows.add(m);
+        }
+        ctx.put("phases",phaseRows);
+        itemRows = List();
+        for each sourceItem in Proforma_Item[(Pro_Forma_Dev == pf.ID || Pro_Forma_Const == pf.ID)] sort by ID
+        {
+            m = Map();
+            m.put("Item_Name",ifnull(sourceItem.Item_Name,""));
+            m.put("Category",ifnull(sourceItem.Category,""));
+            m.put("Department",ifnull(sourceItem.Department,""));
+            m.put("Cost_Code",ifnull(sourceItem.Cost_Code,0));
+            m.put("Add_l_Cost",ifnull(sourceItem.Add_l_Cost,0));
+            m.put("Unit",ifnull(sourceItem.Unit,""));
+            m.put("Per_Unit",ifnull(sourceItem.Per_Unit,0));
+            m.put("Cost_Application",ifnull(sourceItem.Cost_Application,""));
+            m.put("Start_Phase",ifnull(sourceItem.Start_Phase,0));
+            m.put("End_Phase",ifnull(sourceItem.End_Phase,0));
+            m.put("Description",ifnull(sourceItem.Description,""));
+            m.put("Template_Item",ifnull(sourceItem.Template_Item,false));
+            m.put("ID",sourceItem.ID.toString());
+            itemRows.add(m);
+        }
+        ctx.put("items",itemRows);
+        subs = List(); budgets = List(); categories = List(); items = List(); approvals = List(); modifications = List();
+        for each sub in Subdivision[Project == project.ID] sort by ID
+        {
+            m = Map(); m.put("ID",sub.ID.toString()); m.put("Subdivision_Name",sub.Subdivision_Name); m.put("Phase",ifnull(sub.Phase,0)); subs.add(m);
+            for each b in Add_Budget[Subdivision1 == sub.ID && Archived != true] sort by ID
+            {
+                m = Map();
+                m.put("Budget_Name",ifnull(b.Budget_Name,""));
+                m.put("Archived",ifnull(b.Archived,false));
+                m.put("Lock_Prelim_Budget",ifnull(b.Lock_Prelim_Budget,false));
+                m.put("Lock_Final_Budget",ifnull(b.Lock_Final_Budget,false));
+                m.put("Development_Budget_Approval_Status",ifnull(b.Development_Budget_Approval_Status,""));
+                m.put("Const_Budget_Approval_Status",ifnull(b.Const_Budget_Approval_Status,""));
+                m.put("Prelim_Budget_Grand_Total",ifnull(b.Prelim_Budget_Grand_Total,0));
+                m.put("Unapproved_Final_Budget_Grand_Total",ifnull(b.Unapproved_Final_Budget_Grand_Total,0));
+                m.put("Budget_Grand_Total",ifnull(b.Budget_Grand_Total,0));
+                m.put("Const_Cost_to_Date",ifnull(b.Const_Cost_to_Date,0));
+                m.put("Lot_Total_Residential",ifnull(b.Lot_Total_Residential,0));
+                m.put("Acres",ifnull(b.Acres,0));
+                m.put("Equiv_LF_of_Street",ifnull(b.Equiv_LF_of_Street,0));
+                m.put("Lot_Price",ifnull(b.Lot_Price,0));
+                m.put("Land_Cost",ifnull(b.Land_Cost,0));
+                m.put("ID",b.ID.toString()); m.put("Subdivision1",sub.ID.toString()); m.put("Modified_Time",b.Modified_Time.toString());
+                canEdit = actor.Edit_All_Budgets == true;
+                if(!canEdit && actor.Edit_Owned_Budgets == true && b.Budget_Owner != null)
+                {
+                    for each owner in b.Budget_Owner { if(owner.ID == actor.ID) { canEdit = true; } }
+                }
+                if(!canEdit)
+                {
+                    response.put("error","Budget edit access is required for every Project subdivision.");
+                    return response.toString();
+                }
+                m.put("_canEdit",canEdit); budgets.add(m);
+                for each c in Budget_Category[Budget == b.ID] sort by ID
+                {
+                    m = Map();
+                    m.put("Lock_Category",ifnull(c.Lock_Category,false));
+                m.put("Template_Item",ifnull(c.Template_Item,false));
+                m.put("Prelim_Budget_Total",ifnull(c.Prelim_Budget_Total,0));
+                m.put("Unapproved_Final_Budget_Total",ifnull(c.Unapproved_Final_Budget_Total,0));
+                m.put("Budget_Total",ifnull(c.Budget_Total,0));
+                m.put("Actual_Total",ifnull(c.Actual_Total,0));
+                m.put("Add_l_Cost_Total",ifnull(c.Add_l_Cost_Total,0));
+                    m.put("ID",c.ID.toString()); m.put("Budget",b.ID.toString()); m.put("Modified_Time",c.Modified_Time.toString()); categories.add(m);
+                }
+                for each i in Budget_Item[Budget == b.ID] sort by ID
+                {
+                    m = Map();
+                    m.put("Item_Name",ifnull(i.Item_Name,""));
+                m.put("Category",ifnull(i.Category,""));
+                m.put("Department",ifnull(i.Department,""));
+                m.put("Cost_Code",ifnull(i.Cost_Code,0));
+                m.put("Description",ifnull(i.Description,""));
+                m.put("Template_Item",ifnull(i.Template_Item,false));
+                m.put("Unit",ifnull(i.Unit,""));
+                m.put("Per_Unit",ifnull(i.Per_Unit,0));
+                m.put("Prelim_Budget_Ttl",ifnull(i.Prelim_Budget_Ttl,0));
+                m.put("Unapproved_Final_Budget_Ttl",ifnull(i.Unapproved_Final_Budget_Ttl,0));
+                m.put("Budget_Ttl",ifnull(i.Budget_Ttl,0));
+                m.put("Add_l_Cost",ifnull(i.Add_l_Cost,0));
+                m.put("PROJ_Actual",ifnull(i.PROJ_Actual,0));
+                m.put("HCSS_Actuals",ifnull(i.HCSS_Actuals,0));
+                m.put("Cost_to_Complete",ifnull(i.Cost_to_Complete,0));
+                    m.put("ID",i.ID.toString()); m.put("Budget",b.ID.toString()); m.put("Budget_Category",ifnull(i.Budget_Category,"").toString()); m.put("Modified_Time",i.Modified_Time.toString()); items.add(m);
+                }
+                for each a in Budget_Approvals[Budget == b.ID] sort by ID
+                {
+                    m = Map(); m.put("ID",a.ID.toString()); m.put("Budget",b.ID.toString()); m.put("Status",ifnull(a.Status,"Not Sent")); approvals.add(m);
+                }
+                for each modificationRec in Budget_Modification[Budget == b.ID] sort by ID
+                {
+                    m = Map(); m.put("ID",modificationRec.ID.toString()); m.put("Budget",b.ID.toString()); m.put("Status",ifnull(modificationRec.Status,"Draft")); m.put("Amount",ifnull(modificationRec.Amount,0)); modifications.add(m);
+                }
+            }
+        }
+        ctx.put("subdivisions",subs); ctx.put("budgets",budgets); ctx.put("categories",categories); ctx.put("budgetItems",items); ctx.put("approvals",approvals); ctx.put("modifications",modifications);
+        mapping = ifnull(data.get("mapping"),Map());
+        // Hash the complete source and destination snapshot BEFORE the planner adds derived amounts.
+        signature = zoho.encryption.sha256(ctx.toString() + mapping.toString());
+        response.put("context",ctx);
+        plan = thisapp.PF_Budget_Transfer_Plan(ctx,mapping);
+        response.put("action",op); response.put("plan",plan); response.put("token",signature);
+        if(op == "budget_transfer_preview")
+        {
+            response.put("success",true);
+            return response.toString();
+        }
+        if(plan.get("canSend") != true)
+        {
+            response.put("error","Budget transfer is blocked. Refresh the preview and resolve its errors.");
+            return response.toString();
+        }
+        if(ifnull(data.get("token"),"").toString() != signature)
+        {
+            response.put("error","Source or target data changed. Refresh the preview before sending.");
+            return response.toString();
+        }
+        // No client-supplied cost amounts or item IDs are accepted. Every write is recomputed above.
+        for each phase in plan.get("phases")
+        {
+            b = Add_Budget[ID == phase.get("budgetId").toLong()];
+            h = phase.get("header");
+            wrote = true;
+            b.Lot_Total_Residential = h.get("Lot_Total_Residential").toLong();
+            b.Acres = h.get("Acres");
+            b.Equiv_LF_of_Street = h.get("Equiv_LF_of_Street");
+            b.Lot_Price = h.get("Lot_Price");
+            b.Land_Cost = h.get("Land_Cost");
+            for each w in phase.get("writes")
+            {
+                i = Budget_Item[ID == w.get("itemId").toLong() && Budget == b.ID];
+                i.Unit = if(w.get("unit") == "",null,w.get("unit"));
+                i.Per_Unit = if(w.get("unit") == "",null,w.get("rate"));
+                // Budget quantities are the arbiter for per-unit costs.
+                amount = w.get("amount");
+                if(w.get("unit") != "")
+                {
+                    qty = 0;
+                    if(w.get("unit") == "Lot") { qty = b.Lot_Total_Residential; }
+                    if(w.get("unit") == "Acre") { qty = b.Acres; }
+                    if(w.get("unit") == "LF") { qty = b.Equiv_LF_of_Street; }
+                    amount = qty * w.get("rate");
+                    amount = amount.round(2);
+                    if(w.get("amount") < 0) { amount = 0 - amount.abs(); }
+                }
+                i.Prelim_Budget_Ttl = amount;
+                i.Description = w.get("notes");
+            }
+            for each c in Budget_Category[Budget == b.ID && Template_Item != true]
+            {
+                c.Lot_Total_Residential = b.Lot_Total_Residential;
+                c.Acres = b.Acres;
+                c.Equiv_LF_of_Street = b.Equiv_LF_of_Street;
+                c.Prelim_Budget_Total = ifnull(Budget_Item[Budget_Category == c.ID && Template_Item != true].sum(Prelim_Budget_Ttl),0);
+            }
+            b.Prelim_Budget_Grand_Total = ifnull(Budget_Category[Budget == b.ID && Template_Item != true].sum(Prelim_Budget_Total),0);
+            // Verify each persisted destination before reporting success.
+            if(b.Lot_Total_Residential != h.get("Lot_Total_Residential") || b.Acres != h.get("Acres") || b.Equiv_LF_of_Street != h.get("Equiv_LF_of_Street") || b.Lot_Price != h.get("Lot_Price") || b.Land_Cost != h.get("Land_Cost") || b.Prelim_Budget_Grand_Total != phase.get("total"))
+            {
+                response.put("error","Budget quantities or totals did not verify. Inspect the affected Budgets before retrying.");
+                response.put("partial",true); response.put("completed",completed);
+                return response.toString();
+            }
+            for each w in phase.get("writes")
+            {
+                i = Budget_Item[ID == w.get("itemId").toLong() && Budget == b.ID];
+                if(i.Prelim_Budget_Ttl != w.get("amount") || ifnull(i.Unit,"") != w.get("unit") || ifnull(i.Per_Unit,0) != w.get("rate") || ifnull(i.Description,"") != w.get("notes"))
+                {
+                    response.put("error","Budget Item values did not verify. Inspect the affected Budgets before retrying.");
+                    response.put("partial",true); response.put("completed",completed);
+                    return response.toString();
+                }
+            }
+            completed.add(b.ID.toString());
+        }
+        project.Proforma = pf.ID;
+        if(project.Proforma != pf.ID)
+        {
+            response.put("error","Budget costs were saved, but the Project Pro Forma association did not verify.");
+            response.put("partial",true); response.put("completed",completed);
+            return response.toString();
+        }
+        response.put("success",true);
+        response.put("completed",completed);
+        response.put("message","Costs sent to " + completed.size() + " Budgets.");
+        return response.toString();
+    }
+    catch (transferError)
+    {
+        response.put("success",false);
+        response.put("error",transferError.toString());
+        response.put("partial",wrote);
+        response.put("completed",completed);
+        return response.toString();
+    }
+    response.put("error","Budget transfer ended without a response.");
+    return response.toString();
+}

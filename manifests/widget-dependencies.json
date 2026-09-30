@@ -93,11 +93,25 @@
           "name": "Update_Proforma_Approval_Recipient",
           "config_key": "updateProformaApprovalRecipient",
           "source": "customApis object"
+        },
+        {
+          "name": "PF_Budget_Transfer",
+          "config_key": "budgetTransferCall",
+          "source": "dedicated transfer API; Production binding after Creator publish"
+        },
+        {
+          "name": "PF_Budget_Transfer_DEV",
+          "config_key": "budgetTransferCall",
+          "source": "LMRuntime Development mapping; verified Creator Microservices"
         }
       ],
       "forms_referenced": [
+        "Add_Budget",
         "Add_Pro_Forma",
         "Budget_Approvals",
+        "Budget_Category",
+        "Budget_Item",
+        "Budget_Modification",
         "Builder",
         "Company",
         "Construction_Curve",
@@ -111,11 +125,15 @@
         "Proforma_Phase",
         "Project",
         "Property",
+        "Subdivision",
         "User_Access"
       ],
       "reports_referenced": [
         "All_Additional_Items",
         "All_Budget_Approvals",
+        "All_Budget_Categories",
+        "All_Budget_Items",
+        "All_Budgets",
         "All_Builders",
         "All_Companies",
         "All_Construction_Cost_Curves",
@@ -125,7 +143,9 @@
         "All_Pro_Formas_All_Fields",
         "All_Proforma_Months",
         "All_Proforma_Phases",
+        "All_Projects",
         "All_Property",
+        "All_Subdivisions",
         "LOI_Worksheet_Report",
         "Proforma_Item_Report"
       ],

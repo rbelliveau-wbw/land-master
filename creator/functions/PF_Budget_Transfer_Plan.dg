@@ -1,0 +1,228 @@
+map PF_Budget_Transfer_Plan(map ctx, map mapping)
+{
+    plan = Map();
+    errors = List();
+    outliers = List();
+    phases = List();
+    pf = ctx.get("pf");
+    count = ifnull(pf.get("Phases"),0).toLong();
+    if(count < 1 || count > 100 || count != ifnull(pf.get("Phases"),0))
+    {
+        errors.add("PF must have between 1 and 100 phases.");
+        count = 0;
+    }
+    if(count != ctx.get("subdivisions").size()) { errors.add("PF phase count must match Project subdivision count."); }
+    phaseLots = Map();
+    totalLots = 0;
+    for each phaseRow in ctx.get("phases")
+    {
+        phaseKey = ifnull(phaseRow.get("Phase"),0).toDecimal();
+        phaseMapKey = phaseKey.toString();
+        if(phaseKey == phaseKey.floor()) { phaseMapKey = phaseKey.toLong().toString(); }
+        lots = ifnull(phaseRow.get("Total_Lots"),0).toDecimal();
+        if(phaseKey != phaseKey.floor() || phaseKey < 1 || phaseKey > count || phaseLots.get(phaseMapKey) != null || lots < 0 || lots != lots.floor()) { errors.add("Invalid or duplicate saved Proforma Phase lot allocation."); }
+        phaseLots.put(phaseMapKey,lots);
+        totalLots = totalLots + lots;
+    }
+    if(phaseLots.size() != count || totalLots != ifnull(pf.get("Lots"),0)) { errors.add("Saved Proforma Phase lot counts must match PF phases and total lots."); }
+    applications = {"Across Phases","Engineering End","Construction Start","Construction End"};
+    units = {"Lot","Acre","LF"};
+    seen = List();
+    grandTotal = 0;
+    if(count > 0)
+    {
+        p = 0;
+        for each ignoredPhase in thisapp.forLoop(1,count)
+        {
+            p = p + 1;
+            sid = ifnull(mapping.get(p.toString()),"").toString();
+            phase = Map();
+            phase.put("phase",p);
+            phase.put("subdivisionId",sid);
+            phase.put("subdivision","Choose subdivision");
+            phase.put("budgetId","");
+            phase.put("budget","");
+            lines = List();
+            writes = List();
+            phaseErrors = List();
+            h = Map();
+            h.put("Lot_Total_Residential",ifnull(phaseLots.get(p.toString()),0));
+            acres = ifnull(pf.get("Total_Acres"),0) / count;
+            h.put("Acres",acres.round(2));
+            street = ifnull(pf.get("Total_Street_LF"),0) / count;
+            h.put("Equiv_LF_of_Street",street.round(2));
+            lotPrice = ifnull(pf.get("Lot_Size_Ft"),0) * ifnull(pf.get("Sale_Price_FF"),0);
+            h.put("Lot_Price",lotPrice.round(2));
+            h.put("Land_Cost",ifnull(pf.get("Land_Cost_Acre"),0));
+            phase.put("header",h);
+            foundSub = false;
+            for each sub in ctx.get("subdivisions")
+            {
+                if(sub.get("ID") == sid) { foundSub = true; phase.put("subdivision",sub.get("Subdivision_Name")); }
+            }
+            if(!foundSub) { phaseErrors.add("Choose a Project subdivision."); }
+            if(seen.contains(sid)) { phaseErrors.add("Each subdivision must be used once."); }
+            seen.add(sid);
+            matches = List();
+            for each budget in ctx.get("budgets")
+            {
+                if(budget.get("Subdivision1") == sid && budget.get("Archived") != true) { matches.add(budget); }
+            }
+            phaseTotal = 0;
+            if(foundSub && matches.size() == 1)
+            {
+                b = matches.get(0);
+                bid = b.get("ID");
+                phase.put("budgetId",bid);
+                phase.put("budget",b.get("Budget_Name"));
+                if(b.get("_canEdit") != true) { phaseErrors.add("Budget edit access is required."); }
+                if(b.get("Lock_Prelim_Budget") == true || b.get("Lock_Final_Budget") == true || (ifnull(b.get("Development_Budget_Approval_Status"),"") != "" && b.get("Development_Budget_Approval_Status") != "Not Sent") || (ifnull(b.get("Const_Budget_Approval_Status"),"") != "" && b.get("Const_Budget_Approval_Status") != "Not Sent")) { phaseErrors.add("Budget is locked or has started approvals."); }
+                for each approval in ctx.get("approvals")
+                {
+                    if(approval.get("Budget") == bid && (ifnull(approval.get("Status"),"") != "" && approval.get("Status") != "Not Sent")) { phaseErrors.add("Budget has started approvals."); }
+                }
+                for each modification in ifnull(ctx.get("modifications"),List())
+                {
+                    if(modification.get("Budget") == bid && (ifnull(modification.get("Amount"),0) != 0 || (ifnull(modification.get("Status"),"") != "" && modification.get("Status") != "Draft"))) { phaseErrors.add("Budget has existing modifications."); }
+                }
+                notEmpty = false;
+                for each field in {"Prelim_Budget_Grand_Total","Unapproved_Final_Budget_Grand_Total","Budget_Grand_Total","Const_Cost_to_Date"}
+                {
+                    if(ifnull(b.get(field),0) != 0) { notEmpty = true; }
+                }
+                its = List();
+                cs = Map();
+                for each c in ctx.get("categories")
+                {
+                    if(c.get("Budget") == bid && c.get("Template_Item") != true)
+                    {
+                        cs.put(c.get("ID"),c);
+                        if(c.get("Lock_Category") == true) { phaseErrors.add("Budget category is locked."); }
+                        for each field in {"Prelim_Budget_Total","Unapproved_Final_Budget_Total","Budget_Total","Actual_Total","Add_l_Cost_Total"}
+                        {
+                            if(ifnull(c.get(field),0) != 0) { notEmpty = true; }
+                        }
+                    }
+                }
+                for each i in ctx.get("budgetItems")
+                {
+                    if(i.get("Budget") == bid && i.get("Template_Item") != true)
+                    {
+                        its.add(i);
+                        for each field in {"Prelim_Budget_Ttl","Unapproved_Final_Budget_Ttl","Budget_Ttl","Add_l_Cost","PROJ_Actual","HCSS_Actuals","Cost_to_Complete","Per_Unit"}
+                        {
+                            if(ifnull(i.get(field),0) != 0) { notEmpty = true; }
+                        }
+                        if(ifnull(i.get("Unit"),"") != "") { notEmpty = true; }
+                    }
+                }
+                if(notEmpty) { phaseErrors.add("Only empty Budgets can receive costs."); }
+                sources = List();
+                for each code in {2101,3100}
+                {
+                    src = Map();
+                    src.put("base",true);
+                    src.put("Item_Name",if(code == 2101,"Entitlement & Eng","Construction Base"));
+                    src.put("Cost_Code",code);
+                    src.put("Department",if(code == 2101,"Engineering","Construction"));
+                    src.put("amount",if(code == 2101,ifnull(pf.get("Engineering_Cost_Lot"),0) * ifnull(pf.get("Lots"),0) / count,ifnull(pf.get("Const_Cost_FF"),0) * ifnull(pf.get("Total_Street_LF"),0) / count).round(2));
+                    sources.add(src);
+                }
+                for each sourceRow in ctx.get("items")
+                {
+                    src = sourceRow;
+                    cost = ifnull(src.get("Add_l_Cost"),0);
+                    unit = ifnull(src.get("Unit"),"").toString();
+                    rate = ifnull(src.get("Per_Unit"),0);
+                    if(src.get("Template_Item") != true && (cost != 0 || rate != 0 || unit != ""))
+                    {
+                        app = ifnull(src.get("Cost_Application"),"").toString();
+                        sp = ifnull(src.get("Start_Phase"),0);
+                        ep = ifnull(src.get("End_Phase"),0);
+                        if(ifnull(src.get("Category"),"").toString().trim().toLowerCase() == "reimbursements" && ifnull(src.get("Item_Name"),"").toString().trim().toLowerCase().startsWith("impact fees"))
+                        {
+                            app = "Across Phases"; sp = 1; ep = count;
+                        }
+                        reason = "";
+                        scope = false;
+                        if(!applications.contains(app)) { reason = if(app == "Specific Months","Specific Months has no unambiguous phase allocation.","Cost Application has no unambiguous phase allocation."); scope = p == 1; }
+                        else if(sp < 1 || ep < sp || ep > count || sp != sp.floor() || ep != ep.floor()) { reason = "Phase range is missing or invalid."; scope = p == 1; }
+                        else if(p >= sp && p <= ep)
+                        {
+                            scope = true;
+                            if((unit != "" || rate != 0) && (!units.contains(unit) || rate <= 0)) { reason = "Per-unit pricing is incomplete."; }
+                            else
+                            {
+                                qty = 0;
+                                if(unit == "Lot") { qty = h.get("Lot_Total_Residential"); }
+                                if(unit == "Acre") { qty = h.get("Acres"); }
+                                if(unit == "LF") { qty = h.get("Equiv_LF_of_Street"); }
+                                src.put("amount",if(unit == "",cost / (ep - sp + 1),rate * qty).round(2));
+                                sources.add(src);
+                            }
+                        }
+                        if(scope && reason != "")
+                        {
+                            o = Map();
+                            o.put("source",src.get("Item_Name")); o.put("code",src.get("Cost_Code")); o.put("amount",cost); o.put("notes",ifnull(src.get("Description"),"")); o.put("reason",reason); o.put("phase",if(p == 1,null,p));
+                            outliers.add(o);
+                        }
+                    }
+                }
+                writeMap = Map();
+                for each src in sources
+                {
+                    reason = "";
+                    found = List();
+                    for each i in its
+                    {
+                        if(i.get("Cost_Code") == src.get("Cost_Code") && i.get("Department") == src.get("Department")) { found.add(i); }
+                    }
+                    target = Map();
+                    if(found.size() != 1) { reason = if(found.size() > 1,"Multiple matching Budget Item lines.","Matching Budget Item/category is missing."); }
+                    else
+                    {
+                        target = found.get(0);
+                        if(cs.get(target.get("Budget_Category")) == null) { reason = "Matching Budget Item/category is missing."; }
+                    }
+                    unit = ifnull(src.get("Unit"),"").toString();
+                    rate = ifnull(src.get("Per_Unit"),0);
+                    prior = writeMap.get(target.get("ID"));
+                    if(reason == "" && prior != null && (unit != "" || prior.get("unit") != "")) { reason = "Per-unit and other costs share this Budget line."; }
+                    if(reason == "" && unit != "" && src.get("amount") <= 0) { reason = "Target Budget has no " + unit + " quantity."; }
+                    if(reason != "")
+                    {
+                        if(src.get("base") == true) { phaseErrors.add(src.get("Cost_Code") + " â€” " + reason); }
+                        else
+                        {
+                            o = Map(); o.put("source",src.get("Item_Name")); o.put("code",src.get("Cost_Code")); o.put("amount",src.get("Add_l_Cost")); o.put("notes",ifnull(src.get("Description"),"")); o.put("reason",reason); o.put("phase",p); outliers.add(o);
+                        }
+                    }
+                    else
+                    {
+                        amount = src.get("amount");
+                        if(src.get("Cost_Code").toString().startsWith("8") || ifnull(target.get("Category"),"").toString().toLowerCase().contains("reimbursement")) { amount = 0 - amount.abs(); }
+                        notes = ifnull(src.get("Description"),"").toString();
+                        if(prior == null)
+                        {
+                            prior = Map(); prior.put("itemId",target.get("ID")); prior.put("categoryId",target.get("Budget_Category")); prior.put("amount",0); prior.put("unit",unit); prior.put("rate",rate); prior.put("notes",ifnull(target.get("Description"),"").toString());
+                        }
+                        accumulated = prior.get("amount") + amount;
+                        prior.put("amount",accumulated.round(2));
+                        existingNotes = prior.get("notes");
+                        if(notes != "" && !existingNotes.contains(notes)) { prior.put("notes",existingNotes + if(existingNotes == "","","\n\n") + notes); }
+                        writeMap.put(target.get("ID"),prior);
+                        line = Map(); line.put("source",src.get("Item_Name")); line.put("code",src.get("Cost_Code")); line.put("target",target.get("Item_Name")); line.put("amount",amount); line.put("unit",unit); line.put("rate",rate); line.put("notes",notes); lines.add(line);
+                    }
+                }
+                for each key in writeMap.keys() { w = writeMap.get(key); writes.add(w); phaseTotal = phaseTotal + w.get("amount"); }
+            }
+            else if(foundSub) { phaseErrors.add(if(matches.size() > 1,"More than one active Budget exists for this subdivision.","An existing Budget is required.")); }
+            phase.put("lines",lines); phase.put("writes",writes); phase.put("errors",phaseErrors); phase.put("total",phaseTotal.round(2)); phases.add(phase);
+            for each error in phaseErrors { errors.add("Phase " + p + ": " + error); }
+            grandTotal = grandTotal + phaseTotal;
+        }
+    }
+    plan.put("phases",phases); plan.put("errors",errors); plan.put("outliers",outliers); plan.put("canSend",errors.size() == 0); plan.put("total",grandTotal.round(2));
+    return plan;
+}

@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-function translate(source) {
+export function translate(source) {
   const literals=[];
   let s=source.replace(/"(?:\\.|[^"\\])*"|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, token=>{
     if(!token.startsWith('"'))return '';
