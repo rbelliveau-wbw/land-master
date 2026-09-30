@@ -2,6 +2,12 @@
 
 This is a widget, two Deluge functions, and a dedicated Custom API. No form workflow or `proforma_save` change is part of this feature. Normal PF Save never initiates a transfer.
 
+## Access update — 1.80.50
+
+Development `User_Access` now has an unchecked decision box **Send Costs to Budgets** (`Send_Costs_to_Budgets`) under Proformas. Publish this field with the updated `getUserAccess` and `PF_Budget_Transfer` functions, then grant it only to intended senders. `getUserAccess` returns `pfSendCostsToBudgets`; the widget hides the list action and prevents opening or sending when false or missing. `PF_Budget_Transfer` checks the signed-in user's field on every preview and apply request. Existing destination Budget edit permissions still apply. No User Access records were granted automatically, and no PF save or workflow changes are involved.
+
+The Development field and both function edits are saved in Creator. The user promotes these Creator changes. The Production widget is **1.80.50**; it deliberately hides Send until the field and functions are published and a user is granted access. If the original transfer functions or Production Custom API are still pending, complete the Creator handoff below as well. Widget rollback for this access update is **1.80.49**.
+
 ## Creator handoff
 
 The following functions are saved and compiler-checked in Land Master Development. Publish them through the normal Creator environment promotion:
@@ -13,7 +19,7 @@ Development Custom API `PF_Budget_Transfer_DEV` uses POST, OAuth2, All users, `a
 
 After publishing the functions, configure Production Custom API **PF_Budget_Transfer** with the same settings, selecting the **Production** Land Master application. The widget will remain preview-only in Production until that endpoint exists and returns capability version 1. Do not point the Production endpoint at Development. Stage can use `PF_Budget_Transfer_STAGE` if this widget release is later promoted there; this release changes only Development and Production widget mappings.
 
-`Budget_Item.Unit` (Lot/Acre/LF) and `Budget_Item.Per_Unit` already exist in Development from the separate Budget per-unit work. Publish those fields with their existing Budget Manager support if they have not yet reached Production. This request adds no fields and does not change their workflows. Permanent widget URLs stay unchanged.
+`Budget_Item.Unit` (Lot/Acre/LF) and `Budget_Item.Per_Unit` already exist in Development from the separate Budget per-unit work. Publish those fields with their existing Budget Manager support if they have not yet reached Production. The initial transfer release added no fields; the 1.80.50 access update adds `User_Access.Send_Costs_to_Budgets`. Permanent widget URLs stay unchanged.
 
 ## Transfer contract
 

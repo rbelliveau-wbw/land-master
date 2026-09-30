@@ -47,7 +47,19 @@ const collision=fixture();collision.items.push({...collision.items[1],ID:'other'
 const missing=fixture();missing.budgetItems=missing.budgetItems.filter(i=>i.Cost_Code!==3400);assert.ok(run(missing).outliers.some(o=>/missing/.test(o.reason)));
 for(const unit of ['Acre','LF']){const c=fixture();c.items[1].Unit=unit;const r=run(c);assert.equal(r.phases[0].lines.find(l=>l.unit===unit).amount,Math.round(25.5*(unit==='Acre'?8.88:1468)*100)/100);}
 const ui=fs.readFileSync(folder+'budget-transfer-ui.js','utf8');new vm.Script(ui);assert.match(ui,/data-phase-tab/);assert.match(ui,/plan.phases.filter/);assert.match(ui,/e.stopPropagation/);
+assert.match(ui,/!s\.api\.canSend\(\)/);assert.match(ui,/!api\.canSend\(\)/);
 const widget=fs.readFileSync(folder+'widget.html','utf8');assert.match(widget,/Send Costs to Budgets/);assert.match(widget,/function budgetTransferCall/);assert.ok(!widget.slice(widget.indexOf('function budgetTransferCall'),widget.indexOf('function openBudgetTransfer')).includes('invokeSaveApiOp'));
+const accessCode=widget.slice(widget.indexOf('function accessTruthy('),widget.indexOf('function perms(){'));
+const accessContext={S:{currentUser:'test-user',view:'vList'},document:{getElementById:()=>null},auditLog:()=>{},syncApprovalAccessVisibility:()=>{},syncSubmitLegalButton:()=>{},syncAiReviewRailBtn:()=>{}};
+vm.createContext(accessContext);vm.runInContext(accessCode,accessContext);
+for(const [flags,allowed] of [[{},false],[{pfSendCostsToBudgets:false},false],[{pfSendCostsToBudgets:true},true],[{Send_Costs_to_Budgets:true},true]]){
+  accessContext.applyPermsFromFlags(flags,'test');assert.equal(accessContext.S.perms.sendCostsToBudgets,allowed);
+}
+assert.match(widget,/perms\(\)\.sendCostsToBudgets\?'<button type="button" class="pf-row-menu-item" data-act="budget-transfer"/);
+assert.match(widget,/if\(!perms\(\)\.sendCostsToBudgets\)\{toast\("Send Costs to Budgets access is required\./);
+assert.match(widget,/pfSendCostsToBudgets != null \? flags\.pfSendCostsToBudgets : flags\.Send_Costs_to_Budgets/);
 assert.match(widget.slice(widget.indexOf('function budgetTransferCall'),widget.indexOf('function openBudgetTransfer')),/var name="PF_Budget_Transfer"/);
+const accessFn=fs.readFileSync('creator/functions/getUserAccess.dg','utf8');assert.match(accessFn,/pfSendCostsToBudgets = row\.Send_Costs_to_Budgets == true/);assert.match(accessFn,/result\.put\("pfSendCostsToBudgets",pfSendCostsToBudgets\)/);
+const transferFn=fs.readFileSync('creator/functions/PF_Budget_Transfer.dg','utf8');assert.match(transferFn,/actor\.count\(\) != 1 \|\| actor\.Send_Costs_to_Budgets != true/);assert.ok(transferFn.indexOf('actor.Send_Costs_to_Budgets')<transferFn.indexOf('pf = Add_Pro_Forma'));
 assert.ok(!fs.readFileSync('creator/functions/proforma_save.dg','utf8').includes('PF_Budget_Transfer'));
 console.log('Pro Forma Budget transfer: allocation, notes, phase lots, per-unit, credits, exclusions, locks, emptiness, and Creator/widget parity passed.');

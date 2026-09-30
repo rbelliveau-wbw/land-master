@@ -22,6 +22,11 @@ string PF_Budget_Transfer(string payload)
         }
         // Resolve the authenticated caller, never a client-supplied access ID.
         actor = User_Access[User == zoho.loginuser];
+        if(actor.count() != 1 || actor.Send_Costs_to_Budgets != true)
+        {
+            response.put("error","Send Costs to Budgets access is required.");
+            return response.toString();
+        }
         if(actor.count() != 1 || (actor.Edit_All_Budgets != true && actor.Edit_Owned_Budgets != true))
         {
             response.put("error","Budget edit access is required.");

@@ -12,7 +12,7 @@ http.createServer((req,res)=>{
  }
  if(url.pathname.startsWith('/code/')){
   const name=url.pathname.slice(6);
-  if(!['PF_Budget_Transfer_Plan.dg','PF_Budget_Transfer.dg'].includes(name)){res.writeHead(404);res.end();return;}
+  if(!['PF_Budget_Transfer_Plan.dg','PF_Budget_Transfer.dg','getUserAccess.dg'].includes(name)){res.writeHead(404);res.end();return;}
   res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<meta charset="utf-8"><label>Deluge source<textarea aria-label="Deluge source" style="width:95%;height:90vh">'+escape(fs.readFileSync('creator/functions/'+name,'utf8'))+'</textarea></label>');return;
  }
  const file=path.resolve(root,'.'+(url.pathname==='/'?'/widget.html':decodeURIComponent(url.pathname)));
