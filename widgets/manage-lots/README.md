@@ -80,3 +80,9 @@ Builder Takedowns defaults to all records, newest first within subdivision group
 ## Optional takedown filters (0.8.5)
 
 Builder Takedowns defaults to all records, newest first within subdivision groups. Its subdivision filter is independent of the Lots tab; clearing it restores all takedowns. Changing this optional filter does not fetch lots or clear the staged Lots selection. Production 0.8.5 includes the rejected-empty-response correction and Import Lots label; spreadsheet 0.9.3 includes these corrections and creation progress.
+
+## Loading diagnostics and import wording (0.8.6 / 0.9.4)
+
+Every report page logs its report name, exact criteria, page size, build version, response type/keys, decoded code and code path, row count, elapsed time, and a bounded error preview. Subdivision merges log each report count and sold totals. Opening Audit Log adds current filter/cache state and subdivision names/codes. Empty-result handling supports JSON strings and nested result/responseText/message envelopes; other errors remain blocking. Build-loaded entries identify stale widgets. Logs omit successful record contents and URL query parameters. The close button uses a centered SVG. Production modal copy uses Import lots, File, Review, Import, and Existing lots; unknown counts show a dash.
+
+Regression evidence: plain/string/nested empty SDK responses, full pagination guard, permission errors, report criteria and code-path logging, independent takedown filters, browser audit drawer, modal copy and geometric close-icon centering. Backend publication is still required for the prepared spreadsheet importer. Settings wording deploys independently without modifying stored instructions. Rollback: manage-lots 0.8.5 and settings-manager 1.2.0.

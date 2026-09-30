@@ -110,19 +110,23 @@ await detailReader.loadLotDetails("invalid-subdivision");
 assert.equal(detailCalls, 1, "unverified lookup IDs must never enter Creator criteria");
 // Sold records from the full list report supplement the all-fields report within the selected scope.
 const scopeCalls=[];
-const scopeReader=new Function('CFG','getAll',`return (${extractFunction('readSubdivisionLots')})`)({reports:{lots:'All_Lots_All_Fields',lotsList:'All_Active_Lots_List_View'}},async(report,criteria)=>{
+const scopeReader=new Function('CFG','getAll','auditLog','subdivisionName','str',`return (${extractFunction('readSubdivisionLots')})`)({reports:{lots:'All_Lots_All_Fields',lotsList:'All_Active_Lots_List_View'}},async(report,criteria)=>{
   scopeCalls.push({report,criteria});
   if(report==='All_Lots_All_Fields')return [{ID:'501',Subdivision:{ID:sid},Status:'Open',Archived:true}];
   return Array.from({length:42},(_,i)=>({ID:String(501+i),Subdivision:{ID:sid},Status:i?'Sold':'Open',Block:'7',Lot_Number:i+1}));
-});
+},()=>{},()=> 'Fixture subdivision',scalar);
 const scoped=await scopeReader(sid);assert.equal(scoped.length,42);assert.equal(scoped.filter(l=>l.Status==='Sold').length,41);assert.equal(scoped[0].Archived,true,'list enrichment must preserve fields missing from that report');assert.ok(scopeCalls.every(c=>c.criteria===`(Subdivision == ${sid})`));
 await assert.rejects(()=>scopeReader('untrusted-id'),/invalid/);
 let pages=0;
-const paged=new Function('CFG','ZOHO','emptyResponse','responseBad',`return (${extractFunction('getAll')})`)({pageSize:2,maxPages:2},{CREATOR:{API:{getAllRecords:async()=>{pages++;return {data:[{ID:'1'},{ID:'2'}]};}}}},()=>false,()=>false);
+const paged=new Function('CFG','ZOHO','emptyResponse','responseBad','sdkResponseInfo','auditLog','safeStringify',`return (${extractFunction('getAll')})`)({pageSize:2,maxPages:2},{CREATOR:{API:{getAllRecords:async()=>{pages++;return {data:[{ID:'1'},{ID:'2'}]};}}}},()=>false,()=>false,()=>({}),()=>{},JSON.stringify);
 await assert.rejects(()=>paged('Lots',`(Subdivision == ${sid})`),/incomplete/);assert.equal(pages,2,'a full last page must fail, never silently truncate');
-const emptyResponse=new Function(`return (${extractFunction('emptyResponse')})`)();
-const getAllFor=(request)=>new Function('CFG','ZOHO','emptyResponse','responseBad',`return (${extractFunction('getAll')})`)({pageSize:2,maxPages:5},{CREATOR:{API:{getAllRecords:request}}},emptyResponse,()=>false);
+const sdkResponseInfo=new Function(`return (${extractFunction('sdkResponseInfo')})`)();
+const emptyResponse=new Function('sdkResponseInfo',`return (${extractFunction('emptyResponse')})`)(sdkResponseInfo);
+const reportAudit=[];
+const getAllFor=(request)=>new Function('CFG','ZOHO','emptyResponse','responseBad','sdkResponseInfo','auditLog','safeStringify',`return (${extractFunction('getAll')})`)({version:'test',pageSize:2,maxPages:5},{CREATOR:{API:{getAllRecords:request}}},emptyResponse,()=>false,sdkResponseInfo,(level,msg,meta)=>reportAudit.push({level,msg,meta}),JSON.stringify);
 assert.deepEqual(await getAllFor(async()=>{throw {code:3100,message:'No records found for the given criteria.'};})('Lots'),[],'Creator rejects its promise for an empty scope; this is not a loading error');
+for(const response of ['{"code":3100,"message":"No records found for the given criteria."}',{responseText:'{"code":3100}'},{result:'{"code":3100}'},{message:'{"code":3100}'}])assert.deepEqual(await getAllFor(async()=>{throw response;})('Lots','(Subdivision == 101)'),[],'wrapped/string Creator empty responses must be decoded');
+assert.ok(reportAudit.some(e=>e.meta.codePath==='root.json.code'&&e.meta.criteria==='(Subdivision == 101)'&&e.meta.report==='Lots'),'audit must identify exact report, criteria, and the code location in the response');
 assert.deepEqual(await getAllFor(async a=>{if(a.page===1)return {data:[{ID:'1'},{ID:'2'}]};throw {code:'3100'};})('Lots'),[{ID:'1'},{ID:'2'}],'an empty rejected last page must preserve already-loaded lots');
 await assert.rejects(()=>getAllFor(async()=>{throw {code:1030,message:'Permission denied'};})('Lots'),e=>e.code===1030,'permission errors must remain blocking');
 const takedownState={subdivisionIds:['lot-view-sub'],takedownSubdivisionIds:[],takedowns:[{ID:'10',Name:'Older',Subdivision1:{ID:'a'},Added_Time:'01-Jan-2025 10:00:00'},{ID:'11',Name:'Latest',Subdivision1:{ID:'b'},Added_Time:'30-Sep-2026 10:00:00'}]};

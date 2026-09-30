@@ -1,0 +1,8 @@
+{
+  "widget": "manage-lots",
+  "version": "0.8.6",
+  "created_at": "2026-09-30T15:22:40.442Z",
+  "source": "releases/manage-lots/0.8.5/index.html (loading diagnostics and modal copy)",
+  "source_sha256": "23d7b9401fc7ceb6b7a4b3c6de98ee0cf4ce1abf6efb893f25c1ece3c37271d4",
+  "status": "candidate"
+}
