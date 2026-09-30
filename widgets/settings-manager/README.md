@@ -72,4 +72,4 @@ read-only demo record so layout can be checked offline.
 
 ## Spreadsheet import instructions (1.3.0)
 
-AI Spreadsheet Import reuses Settings.Plat_Review_Criteria for CSV/XLSX column mapping and subdivision matching. Use starter instructions fills the editable field and saves through the usual autosave path; stored instructions are never replaced automatically. Publish the updated Plat_AI_Ingest function before promoting this version alongside manage-lots 0.9.0.
+AI Spreadsheet Import reuses Settings.Plat_Review_Criteria for CSV/XLSX column mapping and subdivision matching. Use starter instructions fills the editable field and saves through the usual autosave path; stored instructions are never replaced automatically. Publish the updated Plat_AI_Ingest function before promoting this version alongside manage-lots 0.9.3.

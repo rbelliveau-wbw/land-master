@@ -15,7 +15,7 @@
 - The OpenAI call lives in Deluge `Plat_AI_Ingest` behind Custom API `Ingest_Plat` (`_DEV` in Development). Provider and model are read from the Settings singleton; the key stays in the `openai` Connection. Never put a key or a direct `api.openai.com` call in the widget.
 - Respect the `Lots` field limits before insert: `Block` ≤ 2 characters, `Lot_Number` ≤ 3 digits, `City`/`County` must be picklist values.
 - No native dialogs; use `piConfirm`.
-- Require `spreadsheet_schema == 2` from the API before staging. Publish the updated backend before promoting manage-lots 0.9.0 and settings-manager 1.3.0.
+- Require `spreadsheet_schema == 2` from the API before staging. Publish the updated backend before promoting manage-lots 0.9.3 and settings-manager 1.3.0.
 
 ## Required reading
 

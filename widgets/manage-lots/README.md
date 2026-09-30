@@ -6,7 +6,7 @@ Select Open and Contracted subdivision lots, create Builder Takedowns, and revie
 
 Loads each selected subdivision using criteria on All_Lots_All_Fields and All_Active_Lots_List_View, then merges by string record ID. The second report is the all-status list shown in Creator and supplies sold rows and block details. Counts are unknown until the scope loads; incomplete reads and permission failures are displayed rather than treated as zero lots. Completed scopes are cached until Refresh. The previous application-wide lot read could silently stop after 10,000 records; pagination now fails explicitly at its limit.
 
-## Spreadsheet import (0.9.0, candidate)
+## Spreadsheet import (0.9.3, candidate)
 
 Import Lots opens Spreadsheet → Review → Import. Select subdivisions, upload CSV or XLSX, and stage rows through Ingest_Plat. Every worksheet is read, and original source row/cell values are retained. AI returns column mappings only; the frontend copies the lot/block/width cells, checks source references and selected subdivision IDs, and flags phase/project conflicts and possible omitted rows. No numeric sequences are generated.
 
@@ -18,7 +18,7 @@ Limits: CSV/XLSX only, 10 MB, 5,000 nonempty rows, 100,000 cells. AI batches con
 
 ## Publication and rollback
 
-See creator/handoffs/spreadsheet-lot-import.md. Backend publication is required before promoting manage-lots 0.9.0 and settings-manager 1.3.0. The current production manage-lots 0.8.1 remains functional with the earlier API. The updated backend retains legacy tile mode for rollback.
+See creator/handoffs/spreadsheet-lot-import.md. Backend publication is required before promoting manage-lots 0.9.3 and settings-manager 1.3.0. The current production manage-lots 0.8.1 remains functional with the earlier API. The updated backend retains legacy tile mode for rollback.
 
 Tests: npm run validate, npm run build:pages, scripts/test-spreadsheet-lot-import.mjs and scripts/test-manage-lots-widget.mjs. Local browser QA uses mocked Creator responses, including the provided 97-row sample, a 42-lot/41-sold scope, phase mismatch, explicit confirmation, partial failures/retry, and the old API compatibility gate. Live Creator/model execution requires the user's publication and authenticated session.
 
@@ -64,3 +64,19 @@ network latency. Live Creator writes were not exercised during these checks.
 
 Rollback: restore `deploy/environments.json` production `manage-lots` to `0.7.3`
 and redeploy Pages. The permanent Production widget URL remains unchanged.
+
+## Import progress (0.9.3)
+
+The import modal stays open throughout sequential creation, with a prominent progress bar, completed/total count, current lot code, and created/not-created totals. Progress advances only after each record resolves or is explicitly skipped. Editing, duplicate submission, and closing are disabled during creation. Failed rows stay staged for review and retry. The production-only 0.8.2 patch renames the existing button to Import Lots; its earlier creation progress modal is retained.
+
+## Creator empty-result regression (0.8.3)
+
+Creator getAllRecords can reject the promise with code 3100 when a filtered scope or final page is empty. The reader now handles that empty result on both resolved and rejected responses, preserving rows already fetched. All other errors continue to block loading and imports. Production also includes the Import Lots label. Regression tests cover rejected empty first/final pages and permission errors.
+
+## Optional takedown filters (0.8.5)
+
+Builder Takedowns defaults to all records, newest first within subdivision groups. Its subdivision filter is independent of the Lots tab; clearing it restores all takedowns. Changing this optional filter does not fetch lots or clear the staged Lots selection. Production 0.8.5 includes the rejected-empty-response correction and Import Lots label; spreadsheet 0.9.3 includes these corrections and creation progress.
+
+## Optional takedown filters (0.8.5)
+
+Builder Takedowns defaults to all records, newest first within subdivision groups. Its subdivision filter is independent of the Lots tab; clearing it restores all takedowns. Changing this optional filter does not fetch lots or clear the staged Lots selection. Production 0.8.5 includes the rejected-empty-response correction and Import Lots label; spreadsheet 0.9.3 includes these corrections and creation progress.
