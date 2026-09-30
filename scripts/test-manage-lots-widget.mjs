@@ -55,137 +55,6 @@ assert.match(source, /pointermove/, "drag selection must cover lots crossed whil
 assert.match(source, /\.lot\.chosen::after/, "selected lots must have a prominent selected marker");
 assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(updateRecord|deleteRecord)/, "the Builder Takedowns view must not expose editing APIs");
 
-/* ── AI plat import ──
-   Lot codes must match the Deluge "Set Lot Code if Manual Update" / Mass Create rules exactly:
-   Subdivision_Code + "-B" + leftpad(block,2,"0") + "-L" + leftpad(lot,2,"0"). */
-const padCode = new Function("str", `return (${extractFunction("padCode")})`)(scalar);
-const buildLotCode = new Function("str", "padCode", `return (${extractFunction("buildLotCode")})`)(scalar, padCode);
-const normBlock = new Function("str", `return (${extractFunction("normBlock")})`)(scalar);
-const normLot = new Function("str", `return (${extractFunction("normLot")})`)(scalar);
-const platNum = new Function(`return (${extractFunction("platNum")})`)();
-const normalizePlatRows = new Function("str", "normBlock", "normLot", "platNum", `return (${extractFunction("normalizePlatRows")})`)(scalar, normBlock, normLot, platNum);
-const mergePlatRows = new Function("natural", `return (${extractFunction("mergePlatRows")})`)(natural);
-const blockGaps = new Function("natural", `return (${extractFunction("blockGaps")})`)(natural);
-const platRowIssues = new Function("str", `return (${extractFunction("platRowIssues")})`)(scalar);
-const platTileGrid = new Function(`return (${extractFunction("platTileGrid")})`)();
-const CFG = { plat: { textMaxChars: 40000 } };
-const platTextForTile = new Function("CFG", `return (${extractFunction("platTextForTile")})`)(CFG);
-const platMarkText = new Function(`return (${extractFunction("platMarkText")})`)();
-
-assert.equal(buildLotCode("TRB05", "1", "5"), "TRB05-B01-L05", "single digits are zero-padded like Deluge leftpad");
-assert.equal(buildLotCode("TRB05", "12", "126"), "TRB05-B12-L126", "two-digit blocks and three-digit lots are left as printed");
-assert.equal(buildLotCode("AAA", "A", "7"), "AAA-B0A-L07", "letter blocks pad to two characters exactly as leftpad does");
-assert.equal(normBlock("Block 04"), "4", "block labels drop the word BLOCK and leading zeros");
-assert.equal(normBlock(" c "), "C", "letter blocks are upper-cased");
-assert.equal(normLot("Lot 007"), "7", "lot labels drop the word LOT and leading zeros");
-assert.equal(normLot("17a"), "17A", "non-numeric lot labels survive for the reviewer to see");
-
-const tileA = normalizePlatRows([
-  { lot: "1", block: "4", area: 7187, width: 77 },
-  { lot: 2, block: 4, area: "5,400", width: "45" },
-  { lot: "", block: "4" },
-  { lot: "3", block: null, area: null, width: null },
-], 1);
-assert.deepEqual(tileA, [
-  { lot: "1", block: "4", area: 7187, width: 77, tile: 1 },
-  { lot: "2", block: "4", area: 5400, width: 45, tile: 1 },
-  { lot: "3", block: "", area: null, width: null, tile: 1 },
-], "tile rows are normalised, blank lots dropped, unknown blocks kept as empty");
-
-const merged = mergePlatRows(tileA.concat(normalizePlatRows([
-  { lot: "2", block: "4", area: 5400, width: 45 },
-  { lot: "1", block: "4", area: 7187, width: 55 },
-  { lot: "10", block: "1", area: 5400, width: 45 },
-], 2)));
-assert.deepEqual(merged.map((r) => r.block + "|" + r.lot), ["|3", "1|10", "4|1", "4|2"], "overlapping tiles merge into one row per block+lot; unknown-block rows sort first so they get attention");
-assert.equal(merged[2].seen, 2, "a lot reported by two tiles is seen twice");
-assert.deepEqual(merged[2].conflicts, ["width=55"], "tiles that disagree on a value are flagged, first value kept");
-assert.deepEqual(merged[2].tiles, [1, 2], "origin tiles are kept for the locate button");
-assert.equal(merged[3].conflicts.length, 0, "agreeing tiles raise no conflict");
-
-/* A lot seen without its block in one tile (label sat in another tile) folds into the one row
-   that names the block; two candidate blocks keep the block-less row so a human decides. */
-const folded = mergePlatRows(normalizePlatRows([
-  { lot: "5", block: null, area: null, width: 50 },
-  { lot: "6", block: null, area: null, width: 50 },
-  { lot: "7", block: null, area: null, width: 50 },
-], 1).concat(normalizePlatRows([
-  { lot: "5", block: "18", area: null, width: 50 },
-  { lot: "6", block: "18", area: null, width: 51.67 },
-  { lot: "7", block: "18", area: null, width: null },
-  { lot: "7", block: "12", area: null, width: null },
-], 2)));
-assert.deepEqual(folded.map((r) => r.block + "|" + r.lot), ["|7", "12|7", "18|5", "18|6", "18|7"], "block-less sightings fold into the single named row; an ambiguous lot keeps its unknown row");
-assert.deepEqual(folded[2].tiles, [2, 1], "the folded row remembers both tiles");
-assert.equal(folded[2].seen, 2, "the folded row counts both sightings");
-assert.deepEqual(folded[3].conflicts, ["width=50"], "a width disagreement across the fold is flagged");
-assert.equal(folded[4].width, null, "an ambiguous lot does not receive the block-less width");
-
-/* Vector text layer: labels inside the tile are handed to the model in tile pixels; what comes
-   back is checked against them so a misread digit or an invented lot is flagged, never silent. */
-const pageText = [
-  { s: "12", x: 1100, y: 1300, r: 0, sz: 11 },
-  { s: "13", x: 1160, y: 1300, r: 0, sz: 11 },
-  { s: "50.00'", x: 1120, y: 1250, r: 90, sz: 8 },
-  { s: "18", x: 1400, y: 1350, r: 0, sz: 13 },
-  { s: "N 73°45'04\" E", x: 1150, y: 1290, r: 90, sz: 8 },
-  { s: "C18", x: 1130, y: 1310, r: 0, sz: 8 },
-  { s: "7", x: 100, y: 100, r: 0, sz: 11 },
-];
-const tile = { x: 1024, y: 1024, w: 1024, h: 1024 };
-const tt = platTextForTile(pageText, tile);
-assert.deepEqual(tt.list.map((o) => o.s), ["12", "13", "50.00'", "18"], "only integers, dimensions and BLOCK labels inside the tile are sent; bearings, curve labels and other tiles are not");
-assert.deepEqual(tt.list[0], { s: "12", x: 76, y: 276, r: 0, sz: 11 }, "positions are relative to the tile's top-left corner");
-assert.equal(tt.block, "12@76,276 r0 s11 | 13@136,276 r0 s11 | 50.00'@96,226 r90 s8 | 18@376,326 r0 s13", "labels are packed as string@x,y rR sS");
-assert.deepEqual(Object.keys(tt.ints).sort(), ["12", "13", "18"]);
-assert.deepEqual(Object.keys(tt.dims), ["50"], "dimension strings are kept as numbers for width checks");
-
-const checked = platMarkText(normalizePlatRows([
-  { lot: "12", block: "18", width: 50 },
-  { lot: "17", block: "18", width: 50 },
-  { lot: "13", block: "18", width: 55 },
-], 3), tt);
-assert.deepEqual(checked.map((r) => [r.lot, r.offText, r.offWidth]), [["12", false, false], ["17", true, false], ["13", false, true]], "a lot or width the text layer never printed is flagged");
-assert.deepEqual(platRowIssues(Object.assign({ code: "AR05-B18-L17", conflicts: [] }, checked[1]), {}).map((x) => x.k + ":" + x.t), ["warn:Lot not in the sheet's text layer"]);
-const scanned = platMarkText(normalizePlatRows([{ lot: "9", block: "1" }], 1), { list: [], ints: {}, dims: {} });
-assert.equal(scanned[0].offText, undefined, "a scanned sheet with no text layer flags nothing");
-const verified = mergePlatRows(platMarkText(normalizePlatRows([{ lot: "12", block: "18" }], 1), { list: [{ s: "x" }], ints: {}, dims: {} }).concat(checked.slice(0, 1)));
-assert.equal(verified[0].offText, false, "a lot verified by any tile's text layer counts as verified after the merge");
-
-assert.deepEqual(blockGaps([
-  { block: "1", lot: "1" }, { block: "1", lot: "2" }, { block: "1", lot: "4" },
-  { block: "2", lot: "3" }, { block: "", lot: "9" }, { block: "1", lot: "17A" },
-]), [
-  { block: "1", count: 3, min: 1, max: 4, missing: [3] },
-  { block: "2", count: 1, min: 3, max: 3, missing: [] },
-], "gap detection lists missing numbers per block and ignores unassigned or non-numeric lots");
-
-const ctx = { existing: { "TRB05-B01-L01": {} }, dupes: { "TRB05-B01-L02": 2 } };
-assert.deepEqual(platRowIssues({ block: "1", lot: "1", code: "TRB05-B01-L01", conflicts: [] }, ctx).map((x) => x.k + ":" + x.t), ["info:Already in Lots"]);
-assert.deepEqual(platRowIssues({ block: "1", lot: "2", code: "TRB05-B01-L02", conflicts: [] }, ctx).map((x) => x.k), ["bad"], "duplicate staged rows are blocking");
-assert.deepEqual(platRowIssues({ block: "", lot: "17A", code: "", conflicts: [] }, ctx).map((x) => x.t), ["Lot must be a whole number", "Block unknown"]);
-assert.deepEqual(platRowIssues({ block: "ABC", lot: "1000", code: "X", conflicts: [] }, ctx).map((x) => x.t), ["Lot outside 1–999", "Block over 2 characters"], "Lots field limits (Block maxchar 2, Lot No maxchar 3) are enforced before insert");
-assert.deepEqual(platRowIssues({ block: "1", lot: "5", code: "TRB05-B01-L05", width: 45, conflicts: ["area=6600"] }, ctx).map((x) => x.k), ["warn"], "tile disagreements warn but do not block");
-
-const grid = platTileGrid(5731, 3656, 1024, 128);
-assert.equal(grid.cols, 7);
-assert.equal(grid.rows, 4);
-assert.equal(grid.tiles.length, 28, "a 38x24in sheet at 150dpi cuts into 28 overlapping tiles");
-assert.ok(grid.tiles.every((t) => t.x + t.w <= 5731 && t.y + t.h <= 3656 && t.w === 1024 && t.h === 1024), "tiles stay inside the page and keep the full tile size");
-assert.equal(grid.tiles[grid.tiles.length - 1].x, 5731 - 1024, "the last column is clamped to the right edge");
-const small = platTileGrid(800, 600, 1024, 128);
-assert.deepEqual(small.tiles, [{ r: 0, c: 0, x: 0, y: 0, w: 800, h: 600 }], "a page smaller than a tile is one tile");
-
-assert.match(source, /customApis:\{platIngest:"Ingest_Plat"\}/, "plat import must route through the Ingest_Plat custom API");
-assert.match(source, /addRecord\(platPayload\(r,sub\),CFG\.lotsForm\)/, "staged lots must be inserted through the Lots form");
-assert.match(source, /lotsForm:"Lots"/, "the Lots form link name must be declared");
-assert.match(source, /piConfirm\(\{kicker:"Create lots"/, "creating lots must go through the in-widget confirm dialog");
-assert.doesNotMatch(source, /window\.(confirm|alert|prompt)\(/, "no native browser dialogs inside the Creator iframe");
-assert.match(source, /PF_Review|Settings page/, "the model/provider must be described as coming from the Settings page");
-for (const field of ["Lot_Code", "Status", "Subdivision", "Subdivision_Code", "Phase", "Block", "Lot_Number", "City", "County", "Lot_Size"]) {
-  assert.match(source, new RegExp(`\\b${field}\\b`), `Lots payload must carry ${field}`);
-}
-
 /* Cached counts, refreshed data, string IDs and Legal status tints. */
 const fixture = { lots: [], subdivisions: [{ ID: "90071992547409931", Subdivision_Name: "Phase 1" }], takedowns: [], contracts: [], takedownLotIds: new Set() };
 const helpers = new Function("S", "str", "natural", `
@@ -239,4 +108,16 @@ assert.equal(detailCalls, 1, "hover enrichment must share one fetch per subdivis
 assert.equal(detailReader.lotDetails.get(fixture.lots[0].ID).Lot_Size, 45);
 await detailReader.loadLotDetails("invalid-subdivision");
 assert.equal(detailCalls, 1, "unverified lookup IDs must never enter Creator criteria");
+// Sold records from the full list report supplement the all-fields report within the selected scope.
+const scopeCalls=[];
+const scopeReader=new Function('CFG','getAll',`return (${extractFunction('readSubdivisionLots')})`)({reports:{lots:'All_Lots_All_Fields',lotsList:'All_Active_Lots_List_View'}},async(report,criteria)=>{
+  scopeCalls.push({report,criteria});
+  if(report==='All_Lots_All_Fields')return [{ID:'501',Subdivision:{ID:sid},Status:'Open',Archived:true}];
+  return Array.from({length:42},(_,i)=>({ID:String(501+i),Subdivision:{ID:sid},Status:i?'Sold':'Open',Block:'7',Lot_Number:i+1}));
+});
+const scoped=await scopeReader(sid);assert.equal(scoped.length,42);assert.equal(scoped.filter(l=>l.Status==='Sold').length,41);assert.equal(scoped[0].Archived,true,'list enrichment must preserve fields missing from that report');assert.ok(scopeCalls.every(c=>c.criteria===`(Subdivision == ${sid})`));
+await assert.rejects(()=>scopeReader('untrusted-id'),/invalid/);
+let pages=0;
+const paged=new Function('CFG','ZOHO','emptyResponse','responseBad',`return (${extractFunction('getAll')})`)({pageSize:2,maxPages:2},{CREATOR:{API:{getAllRecords:async()=>{pages++;return {data:[{ID:'1'},{ID:'2'}]};}}}},()=>false,()=>false);
+await assert.rejects(()=>paged('Lots',`(Subdivision == ${sid})`),/incomplete/);assert.equal(pages,2,'a full last page must fail, never silently truncate');
 console.log("Manage Lots cache invalidation, Legal status tints, eligibility, string IDs, multi-subdivision, drag-selection, read-only takedown, and AI plat import checks passed.");

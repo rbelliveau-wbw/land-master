@@ -30,7 +30,6 @@
     "ZOHO.CREATOR.init"
   ],
   "external_domains": [
-    "cdnjs.cloudflare.com",
     "js.zohostatic.com"
   ]
 }

@@ -1,7 +1,1 @@
-# Spreadsheet import instructions
-
-The existing Settings.Plat_Review_Criteria field now guides CSV/XLSX lot staging. Paste this starter text into that field, or use Settings Manager 1.3.0's Use starter instructions button. The backend appends the required JSON response format; custom instructions do not need to describe it.
-
 Read only the uploaded spreadsheet and the selected subdivisions. Identify Block, Lot, and Size/Width columns; Size means lot width in feet, never area. Use Project, subdivision name, and Phase metadata to match each row to a selected subdivision. If the phase or subdivision conflicts or is ambiguous, leave the subdivision unresolved for review. Copy only explicitly listed lots; never fill gaps, extend sequences, or invent values. Skip blank rows, headings, notes, and totals. Preserve each sheet name, original row number, and source column indexes. Flag duplicates and uncertain mappings for review. Nothing is imported until the user confirms the staged rows.
-
-Publish the updated Plat_AI_Ingest function before promoting the spreadsheet widgets. Existing image transcription instructions should be replaced after publication.
