@@ -1,6 +1,6 @@
 # Manage Lots Codex Instructions
 
-- A lot is selectable only when `Status == "Open"`, `Archived` is false, and `Add_Builder_Takedown_Name` is empty.
+- A lot is selectable only when `Status == "Open"` or `Status == "Contracted"`, `Archived` is false, and `Add_Builder_Takedown_Name` is empty.
 - Re-read lot records immediately before creating a takedown and reject the entire submission if any selected lot is no longer eligible.
 - Create takedowns through the `Builder_Takedown` form so existing Creator form workflows remain authoritative.
 - Treat all Creator record IDs as strings.

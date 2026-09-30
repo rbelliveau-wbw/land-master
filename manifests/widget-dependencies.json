@@ -462,7 +462,8 @@
         "All_Builders",
         "All_Contracts1",
         "All_Lots_All_Fields",
-        "All_Subdivisions"
+        "All_Subdivisions",
+        "All_Active_Lots_List_View"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.API.addRecord",

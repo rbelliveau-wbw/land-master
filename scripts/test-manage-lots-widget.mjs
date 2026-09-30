@@ -41,7 +41,7 @@ assert.deepEqual(lotDetailParts([{ display_value: "AAA01-B01-L15 - Sold" }, { di
 assert.deepEqual(lotDetailParts("AAA01-B01-L17 - Scheduled"), [{ code: "AAA01-B01-L17", status: "Scheduled" }]);
 assert.equal(eligible({ Status: "Open" }), true);
 assert.equal(eligible({ Status: "Scheduled" }), false, "scheduled lots cannot enter another takedown");
-assert.equal(eligible({ Status: "Contracted" }), false, "builder-assigned lots cannot enter another takedown");
+assert.equal(eligible({ Status: "Contracted" }), true, "contracted lots are selectable at the user’s request");
 
 assert.match(source, /takedowns:\s*"All_Builder_Takedowns"/, "Builder Takedowns report must be loaded");
 assert.match(source, /View only/, "Builder Takedowns view must remain read-only");
@@ -202,7 +202,7 @@ fixture.lots = [
   { ID: "90071992547409945", Subdivision: { ID: sid }, Status: "Open", Archived: "true" },
   { ID: "90071992547409946", Subdivision: { ID: sid }, Status: "Open", Add_Builder_Takedown_Name: { ID: "90071992547409951" } },
 ];
-assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 2, sold: 1 });
+assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 3, sold: 1 });
 const cached = helpers.indexes();
 for (let i = 0; i < 500; i += 1) assert.equal(helpers.indexes(), cached, "filter clicks must reuse the existing index");
 assert.equal(helpers.lotById("90071992547409941"), fixture.lots[0], "IDs larger than safe integers must remain exact");
@@ -219,8 +219,8 @@ assert.equal(helpers.lotState(fixture.lots[0]), "open", "archived contracts rele
 fixture.lots = fixture.lots.map(l => ({ ...l, Status: "Sold" }));
 assert.notEqual(helpers.indexes(), cached, "refresh must invalidate cached counts");
 assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 0, sold: 6 });
-assert.match(extractFunction("latestSelected"), /getAll\(CFG\.reports\.lots\)/, "submission must still reread lots");
-assert.match(extractFunction("latestSelected"), /!eligible\(map\[id\]\)/, "submission must reject stale eligibility");
+assert.match(extractFunction("latestSelected"), /readSubdivisionLots\(sid\)/, "submission must still reread lots");
+assert.match(extractFunction("latestSelected"), /!eligible\(map.get\(id\)\)/, "submission must reject stale eligibility");
 assert.doesNotMatch(extractFunction("applySubdivisionFilter"), /renderSubdivisionOptions/, "selection must preserve picker nodes and focus");
 let detailCalls = 0;
 const detailReader = new Function("S", "CFG", "getAll", "auditLog", "lotById", `
