@@ -1,0 +1,9 @@
+string getLandMasterChoices()
+{
+    choices = Map();
+    choices.put("City",thisapp.variables.City.toString().toList(","));
+    choices.put("County",thisapp.variables.County.toString().toList(","));
+    choices.put("Territory",thisapp.variables.Territory.toString().toList(","));
+    return choices.toString();
+}
+

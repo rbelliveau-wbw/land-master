@@ -2,6 +2,10 @@
 
 This guide captures reusable visual preferences established in production work.
 
+## Record dropdowns
+
+Use the same custom searchable picker for widget record dropdowns as for filters. Single-value fields stay single-select; collections such as Project Properties use multi-select with a selection count, Clear, Select visible, and Done. Keep the selection staged until the record Save action. Put Territory on the Project widget editor and inherit it into new phases; omit the separate phase Territory input. Avoid redundant `Record fields` headings above editor labels. These preferences apply to the widgets, not native Creator form workflows.
+
 ## Approval progress
 
 Before adding or revising an approval action in any module, read

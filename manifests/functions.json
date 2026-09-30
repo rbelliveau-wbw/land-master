@@ -1884,6 +1884,20 @@
       "contains_invokeurl": false,
       "line_start": 23467,
       "line_end": 23480
+    },
+    {
+      "name": "getLandMasterChoices",
+      "return_type": "string",
+      "parameters": [],
+      "source": "creator/functions/getLandMasterChoices.dg",
+      "reads_or_writes_forms": [],
+      "thisapp_calls": [],
+      "app_variables": [
+        "City",
+        "County",
+        "Territory"
+      ],
+      "notes": "Verified saved and executed in Creator Development on 2026-09-30. Read-only; returns JSON lists. User will promote the backend."
     }
   ]
 }

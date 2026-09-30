@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const source=fs.readFileSync('widgets/land-master/src/app/widget.html','utf8');
+function section(start,end){return source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));}
+const fields={City:'Houston',County:'Harris',Territory:'South Austin',Project_Name:'Example',Company1:'4410926000000000001'};
+const context=vm.createContext({OPTS:{},S:{choicesReady:false,projects:[{ID:'4410926000000000002',Territory:'Houston'}]},
+  projectFieldValue:field=>fields[field]||'',defaultSubName:()=> 'Phase 1',lookupId:value=>String(value?.ID||value||''),findIn:(list,id)=>list.find(r=>String(r.ID)===String(id)),
+  LMRuntime:{apiName:name=>name+'_DEV'},parseFunctionResult:r=>({ok:r.code===3000,result:r.result})});
+vm.runInContext(section('function applyLocationChoices','function loadData'),context);
+vm.runInContext(section('function subdivisionPayloadFromRow','function createStagedSubdivisions'),context);
+vm.runInContext(section('function inheritSubdivisionTerritory','function savePanel(){'),context);
+const choices={City:['Houston',' Austin ','Houston'],County:['Harris','Bell'],Territory:['Houston','South Austin']};
+context.applyLocationChoices(choices);
+assert.deepEqual(Array.from(context.OPTS.projectCity),['Houston','Austin']);
+assert.equal(context.OPTS.projectCity,context.OPTS.subCity);
+assert.equal(context.OPTS.propertyCounty,context.OPTS.lotCounty);
+assert.throws(()=>context.applyLocationChoices({City:[],County:[]}),/Territory/);
+context.invokeErrorApi=async args=>{assert.equal(args.api_name,'Get_Land_Master_Choices_DEV');assert.equal(args.http_method,'GET');return {code:3000,result:JSON.stringify(choices)};};
+await context.loadLocationChoices();
+assert.equal(context.S.choicesReady,true);
+context.invokeErrorApi=async()=>({code:5000,result:'bad'});
+await assert.rejects(context.loadLocationChoices());
+assert.equal(context.S.choicesReady,false);
+context.applyLocationChoices(choices);
+let data=context.subdivisionPayloadFromRow({name:'Phase A',phase:'2',territory:'WRONG',devCompany:'4410926000000000003'},'4410926000000000002');
+assert.equal(data.Territory,'South Austin','phase inherits current Project choice rather than an old row choice');
+assert.equal(data.City,'Houston');assert.equal(data.County,'Harris');
+assert.equal(data.Project,'4410926000000000002');assert.equal(data.Company1,'4410926000000000003');
+fields.Territory='';
+assert.equal(context.subdivisionPayloadFromRow({},'4410926000000000002').Territory,undefined);
+data={Project:'4410926000000000002'};
+context.inheritSubdivisionTerritory(data,{},true);
+assert.equal(data.Territory,'Houston');
+data={Notes:'untouched'};
+assert.equal(context.inheritSubdivisionTerritory(data,{Project:{ID:'4410926000000000002'}},false),null,'unrelated edits preserve saved subdivision Territory');
+data={Project:''};context.inheritSubdivisionTerritory(data,{},false);assert.equal(data.Territory,'');
+const project=section('} else if(type==="project")', '} else if(type==="milestone")');
+assert.match(project,/F\("Territory","Territory","select"/);
+assert.doesNotMatch(project,/F\("Proforma"/);
+assert.doesNotMatch(section('function subdivisionSubformInner','function subdivisionSubformHTML'),/data-sub-field="territory"|<th>Territory<\/th>/);
+assert.doesNotMatch(source,/Record fields|Ctrl\/Cmd-click/);
+assert.match(source,/inheritSubdivisionTerritory\(data,rec,S.editorNew\)/);
+console.log('Land Master shared choices, API errors, Territory inheritance, and editor contracts passed.');

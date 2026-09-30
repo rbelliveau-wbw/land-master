@@ -304,7 +304,12 @@
       ]
     },
     "land-master": {
-      "custom_apis": [],
+      "custom_apis": [
+        {
+          "name": "Get_Land_Master_Choices",
+          "source": "loadLocationChoices; environment suffix selected by LMRuntime.apiName"
+        }
+      ],
       "forms_referenced": [
         "Additional_Items",
         "Builder",

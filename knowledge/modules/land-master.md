@@ -1,6 +1,20 @@
 
 # Land Master Module
 
+## Project pickers (8.12.0 candidate)
+
+The Land & Projects widget uses custom searchable single-select controls for record dropdowns and a searchable multi-select for Properties. The backing selections keep the existing Creator save and staged-change behavior. Project Details includes the user-added `Project.Territory` field, omits the Proforma input and the `Record fields` heading, and hides Territory from phase rows and Subdivision widget editors. New phase payloads copy the current Project City, County, and Territory. New or reparented Subdivisions created in the widget inherit the selected Project Territory; unrelated edits preserve existing Subdivision Territory.
+
+`getLandMasterChoices` reads the app variables `City`, `County`, and `Territory` and returns JSON arrays. The widget calls GET `Get_Land_Master_Choices` through environment-aware API routing once per load. The enabled Development API is `Get_Land_Master_Choices_DEV` (OAuth2, All users, no arguments, Standard response). Location choices no longer use hardcoded geographic lists. The requested Development variable values are recorded in `creator/app-variables/location-choices.json`: 76 cities, 23 counties, and 10 territories. The original unused TEXT `City` variable was preserved as `City_Legacy`; the new `City` variable is a COLLECTION.
+
+All UI changes are scoped to the widget. No native form workflow is required: the newly created `Location Choices - Project` workflow was deleted, and the temporary changes to the existing Subdivision on-load and Project-input workflows were restored. The user's existing Territory field was retained.
+
+Backend promotion remains with the user. Publish the user-added Project Territory field and the variables/function, then create the Production GET `Get_Land_Master_Choices` API bound to the Production function with the same Development contract. Ensure `All_Projects` includes Territory in API-visible fields for reopening existing Projects. Only then promote widget release 8.12.0. Production mapping remains 8.11.10 until those dependencies are ready; do not bind the Production API to a Development function. Stage also needs its own `_STAGE` API before promoting this widget there.
+
+Verification: shared-choice parsing and errors, location payload inheritance, string record IDs, legacy values, required City/County, single-select search, filtered Properties multi-selection/Clear/Select visible, Escape dismissing only the picker, staged phase creation, and inline save feedback. Local browser SDK fixtures verified Project and phase save payloads without writing live records. Rollback widget: 8.11.10. No form-workflow rollback is required.
+
+Changed files: widget HTML, searchable picker JS/CSS, widget config and manifests, choices function and variable snapshot, regression test, and this module/style documentation. Immutable release files are under `releases/land-master/8.12.0/`.
+
 ## Company EIN (8.11.10)
 
 The Companies table labels the EIN column `MGMT Co. EIN`. The full Company editor exposes the existing user-added `EIN` single-line field. A nonblank entry must be exactly nine ASCII digits or `XX-XXXXXXX`; nine digits are normalized with the hyphen before the widget saves. Invalid entries stay in the editor with an error state. The field remains optional because the Creator field was not marked required in the available metadata. The source for a Creator `Company` form on-validate workflow is in `creator/workflows/Validate_Company_EIN.dg`; publishing it is needed to apply the same rule to native Creator form submissions and other API clients. `EIN` must also be visible in the `All_Companies` report's quick or detail view for the widget's existing `getAllRecords` call to load saved values. The local generated field metadata predates this user-added field and should be refreshed from a current Creator export.
