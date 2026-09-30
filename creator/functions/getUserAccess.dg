@@ -26,6 +26,7 @@ string getUserAccess(string user)
 	pfApprAll = false;
 	pfApprOwned = false;
 	pfSendApprovals = false;
+	pfSubmitLegal = false;
 	pfOwnerEditSend = false;
 	pfAiReview = false;
 	budgetAssignedToMe = false;
@@ -53,9 +54,9 @@ string getUserAccess(string user)
 		editOwners = row.Edit_Budget_Owners == true;
 		viewImports = row.View_Budget_Import_Items == true;
 		editImports = row.Edit_Budget_Import_Items == true;
-		// Modification admin: full control of Modifications + their approvals
 		modAdmin = row.Edit_Delete_All_Modifications == true;
 		budgetDeleteArchive = row.Delete_Archive_Budgets == true;
+		// Data Insights permissions
 		lotSalesDashboard = row.Lot_Sales_Dashboard == true;
 		viewTotalLotRevenue = row.View_Total_Lot_Revenue == true;
 		// Pro Forma permissions
@@ -68,31 +69,22 @@ string getUserAccess(string user)
 		pfDeleteArchive = row.Delete_Archive_Pro_Formas == true;
 		pfApprAll = row.Edit_All_Pro_Forma_Approvals == true;
 		pfApprOwned = row.Edit_Owned_Pro_Forma_Approvals == true;
-		// Dedicated Pro Forma send permission. Do not inherit the Budget
-		// Send_for_Approvals flag or the owner-edit grant here.
 		pfSendApprovals = row.Send_Pro_Formas_for_Approvals == true;
-		// Targeted grant: a Pro Forma OWNER may edit it without the blanket
-		// reach of Edit All Proformas. Sending is controlled separately above.
+		pfSubmitLegal = row.Submit_to_Legal_Module == true;
 		pfOwnerEditSend = row.Owner_Edit_Send_Approvals == true;
-		// AI Review: may run the founder-criteria AI review of a Pro Forma (PF_AI_Review)
 		pfAiReview = row.AI_Review == true;
 		budgetAssignedToMe = row.Budgets_Assigned_to_Me == true;
 		proformaAssignedToMe = row.Pro_Forma_Assigned_to_Me == true;
 		legalAssignedToMe = row.Legal_Assigned_to_Me == true;
 		// Contract permissions
-		// ctEdit: full edit of contracts and their actions
-		// ctPropose: Dev Managers - propose contracts, propose/edit/reorder actions
-		// ctApprove: Legal - approve proposed contracts and proposed actions
 		ctEdit = row.Edit_Contracts == true;
 		ctPropose = row.Propose_Contract_Changes == true;
 		ctApprove = row.Approve_Contracts == true;
-		// ctTemplates: may edit the per-type action template checklists
 		ctTemplates = row.Manage_Action_Templates == true;
 		ctDeleteArchive = row.Delete_Archive_Contracts == true;
 		break;
 	}
 	// Roster: each user as {id, label, email}.
-	// id is the User_Access record ID stored by Budget_Owner / Owner.
 	userList = List();
 	allRows = User_Access[ID != null];
 	for each  r in allRows
@@ -103,9 +95,7 @@ string getUserAccess(string user)
 		m.put("email",r.User.toString());
 		userList.add(m);
 	}
-	// The Owner lookup can be hidden or blank in report API responses for users
-	// without owner-edit access. Return the authoritative Owner IDs server-side so
-	// the widget can still display ownership and enforce Edit Owned Pro Formas.
+	// Return authoritative Pro Forma Owner IDs server-side.
 	proformaOwnerMap = Map();
 	allProformas = Add_Pro_Forma[ID != null];
 	for each  pfRec in allProformas
@@ -135,6 +125,7 @@ string getUserAccess(string user)
 	result.put("editImports",editImports);
 	result.put("modAdmin",modAdmin);
 	result.put("budgetDeleteArchive",budgetDeleteArchive);
+	// Data Insights permissions
 	result.put("lotSalesDashboard",lotSalesDashboard);
 	result.put("viewTotalLotRevenue",viewTotalLotRevenue);
 	// Pro Forma permissions
@@ -148,6 +139,7 @@ string getUserAccess(string user)
 	result.put("pfApprAll",pfApprAll);
 	result.put("pfApprOwned",pfApprOwned);
 	result.put("pfSendApprovals",pfSendApprovals);
+	result.put("pfSubmitLegal",pfSubmitLegal);
 	result.put("pfOwnerEditSend",pfOwnerEditSend);
 	result.put("pfAiReview",pfAiReview);
 	result.put("budgetAssignedToMe",budgetAssignedToMe);

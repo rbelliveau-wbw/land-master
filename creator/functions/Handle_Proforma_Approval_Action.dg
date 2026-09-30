@@ -155,9 +155,32 @@
                  				response.put("message","Approved and routed to " + ifnull(nextRow.Title,"the next approver").toString() + ".");
                  				return response;
                  			}
+			// Missing sequence numbers must not finalize an incomplete route.
+			finalRows = Budget_Approvals[Proforma == proformaIdLong];
+			for each finalRow in finalRows
+			{
+				if(ifnull(finalRow.Status,"") != "Approved")
+				{
+					row.Status="Pending";
+					row.Responded_Date=null;
+					row.Approval_Notes=originalRowNote;
+					response.put("success",false);
+					response.put("message","The approval route is incomplete. All approvers must approve before finalization.");
+					return response;
+				}
+			}
                  			pf.Status="Approved";
+			// Notification failure never undoes a completed approval or reopens the route.
+			completionResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,approvalIdText,"Completed",noteText,ifnull(row.Title,"Approver").toString());
+			completionSent = ifnull(completionResult.get("success"),false) == true;
                  			response.put("success",true);
-                 			response.put("message","Final approval completed. The Pro Forma is now approved.");
+			response.put("completionEmailSent",completionSent);
+			response.put("message","Final approval completed. The Pro Forma is fully approved and ready to be submitted to the Legal Module. All approvers have been notified.");
+			if(completionSent == false)
+			{
+				response.put("notificationWarning",ifnull(completionResult.get("message"),"The completion email could not be sent."));
+				response.put("message","Final approval completed. The Pro Forma is fully approved and ready to be submitted to the Legal Module, but the completion email could not be sent to all approvers.");
+			}
                  			return response;
                  		}
                  		if(actionText == "Rejected")
@@ -310,7 +333,7 @@
                  					ownerHtml = ownerHtml + "</td></tr></table></td></tr></table>";
                  					sendmail
                  					[
-                 						from :zoho.adminuserid
+						from :"Notifications@wbdevelopment.com"
                  						to :ownerEmails
                  						subject :"Pro Forma rejected by " + rejectedRole + ": " + pfName
                  						message :ownerHtml

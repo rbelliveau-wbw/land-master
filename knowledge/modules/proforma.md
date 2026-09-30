@@ -1,6 +1,13 @@
 
 # Proforma Module
 
+## Completion email and Submit to Legal access (1.80.47, 2026-09-30)
+
+Final approval notifies all approvers with the existing email design and PDF, a role/email/date approver list, and an Open Pro Forma link to the Dashboard. Mail failure reports a warning without reopening approval. The Dashboard header and list menu offer Submit to Legal only with the dedicated User Access **Submit to Legal Module** grant and an approved, locked, active PF with a buying entity. The Creator submission function enforces the signed-in user's grant and authoritative prerequisites before Writer or Contract writes. LOI terms that are incomplete retain the existing warning/confirmation. Request Purchasing Entity is removed from the three-dot menu.
+
+Creator form/report/function changes are saved in Development for the user to promote. Production widget mapping is independent: until Creator is promoted and the user grants the new permission, submission remains unavailable. See [verified change and promotion notes](../../creator/workflows/proforma-legal-submit-access.md) for forms, fields, functions, APIs, tests, and rollback. Widget rollback: 1.80.45.
+
+
 ## Lot Sales FF summary, editor tabs, and Closed Won Edit (1.80.45, 2026-09-28)
 
 The Lot Sales final sale summary shows Finished Price / FF below Finished price. It divides the final sale's finished price per lot by `Add_Pro_Forma.Lot_Size_Ft`, which is the lot-count-weighted average frontage when Lot Mix has multiple sizes, and displays whole dollars. The editor tabs use a compact blue strip with horizontal scrolling at narrow widths. In the Pro Forma list, Closed Won and other closed stages no longer disable Edit by themselves: users with `Edit_All_Proformas` or applicable owned-record access can open and save those records. A completed approval still disables editing. This release changes only widget display and list gating; no Creator form, field, function, workflow, or Custom API changes are required. Regression: single and mixed lot sizes, incomplete schedule, Closed Won with edit access, Closed Won without edit access, and fully approved records. Production widget rollback: `1.80.44`.

@@ -28,6 +28,41 @@
                  			response.put("message","No email address is assigned to the " + ifnull(approvalRow.Title,"current").toString() + " approval.");
                  			return response;
                  		}
+		completionEmail = ifnull(routingAction,"").toString() == "Completed";
+		completionRecipients = List();
+		completionRowsHtml = "";
+		if(completionEmail)
+		{
+			completionRows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+			if(ifnull(pf.Status,"") != "Approved" || completionRows.count() == 0)
+			{
+				response.put("success",false);
+				response.put("message","The Pro Forma is not fully approved.");
+				return response;
+			}
+			for each completionRow in completionRows
+			{
+				completionAddress = ifnull(completionRow.Approver,"").toString().trim().toLowerCase();
+				if(ifnull(completionRow.Status,"") != "Approved" || completionAddress == "")
+				{
+					response.put("success",false);
+					response.put("message","Every approval must be complete and have an email address before notifying all approvers.");
+					return response;
+				}
+				if(completionRecipients.contains(completionAddress) == false)
+				{
+					completionRecipients.add(completionAddress);
+				}
+				completionRole = thisapp.PF_Packet_Escape(ifnull(completionRow.Title,"Approver").toString());
+				completionAddressHtml = thisapp.PF_Packet_Escape(completionAddress);
+				completionDate = "—";
+				if(completionRow.Responded_Date != null)
+				{
+					completionDate = completionRow.Responded_Date.toString("MMM dd, yyyy HH:mm");
+				}
+				completionRowsHtml = completionRowsHtml + "<tr><td style='padding:10px;border-bottom:1px solid #e5ebf3;'><b>" + completionRole + "</b><br><span style='color:#64748b;word-break:break-word;'>" + completionAddressHtml + "</span></td><td style='padding:10px;border-bottom:1px solid #e5ebf3;color:#047857;'>Approved<br><span style='font-size:12px;color:#64748b;'>" + completionDate + "</span></td></tr>";
+			}
+		}
                  		// Build the complete Deluge-generated PDF packet.
                  		packet = thisapp.PF_Build_Proforma_Approval_PDF(proformaIdText,approvalIdText);
                  		if(ifnull(packet.get("success"),false) != true)
@@ -54,11 +89,16 @@
                  		approveUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Approve";
                  		denyUrl = publicApprovalPageUrl + "?approvalId=" + approvalRow.ID.toString() + "&action1=Deny";
                  		reviewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Proforma_Management1?proformaId=" + proformaIdText;
+		if(completionEmail){ reviewUrl = reviewUrl + "&view=dashboard"; }
                  		pfName = ifnull(pf.Name,"Pro Forma #" + proformaIdText).toString();
                  		territoryText = ifnull(pf.Territory,"—").toString();
                  		stageText = ifnull(pf.Probability,"—").toString();
                  		statusText = ifnull(pf.Status,"Draft").toString();
                  		currentStepText = ifnull(approvalRow.Title,"Approver").toString();
+		if(completionEmail)
+		{
+			currentStepText = "Fully Approved";
+		}
                  		purchaseDateText = "—";
                  		completionDateText = "—";
                  		if(pf.Estimated_Purchase_Date != null)
@@ -147,6 +187,10 @@
                  		{
                  			subjectPrefix = "Pro Forma returned by " + routingRoleText;
                  		}
+		if(completionEmail)
+		{
+			subjectPrefix = "Pro Forma fully approved - Ready for Legal Module";
+		}
                  		subjectText = subjectPrefix + ": " + pfName;
                  		// Escape all user-entered or record text before inserting it into HTML.
                  		safePfName = pfName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
@@ -167,6 +211,10 @@
                  		{
                  			introText = "<b>" + safeRoutingRole + "</b> rejected this Pro Forma, so approvals restarted from step 1. The <b>" + safeCurrentStepText + "</b> approval is now pending with you.";
                  		}
+		if(completionEmail)
+		{
+			introText = "This Pro Forma is <b>fully approved</b> by all approvers.";
+		}
                  		routingBlock = "";
                  		if(routingNoteText != "")
                  		{
@@ -210,23 +258,50 @@
                  		// then ballooned them, so the size is now FIXED: 120x42 via td width/height
                  		// "Open the full Pro Forma" footer link.
                  		decisionButtons = "<table role='presentation' cellpadding='0' cellspacing='0' border='0' style='margin:26px 0 14px;'><tr>" + "<td align='center' bgcolor='#047857' width='120' height='42' style='width:120px;height:42px;background-color:#047857;border:1px solid #065f46;border-radius:8px;'>" + "<a href='" + approveUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Approve</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#b42318' width='120' height='42' style='width:120px;height:42px;background-color:#b42318;border:1px solid #8f1d15;border-radius:8px;'>" + "<a href='" + denyUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>Deny</a>" + "</td>" + "<td width='14' style='width:14px;font-size:1px;line-height:1px;'>&nbsp;</td>" + "<td align='center' bgcolor='#1e40af' width='120' height='42' style='width:120px;height:42px;background-color:#1e40af;border:1px solid #1e3a8a;border-radius:8px;'>" + "<a href='" + reviewUrl + "' style='display:block;width:120px;height:42px;line-height:42px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;text-align:center;border-radius:8px;'>View</a>" + "</td>" + "</tr></table>";
+
+        decisionHelp = "<div style='font-size:12px;color:#64748b;margin-top:8px;'>Approve records the response when the approval page opens. Deny opens a page where a note is required.</div>";
+        if(completionEmail)
+        {
+            legalInstruction = "It is ready to be submitted to the <b>Legal Module</b>. Open the Pro Forma and select <b>Submit to Legal</b>.";
+            routingBlock = routingBlock + "<div style='margin-top:18px;font-size:14px;font-weight:700;color:#173b68;'>Approvers</div><table width='100%' cellpadding='0' cellspacing='0' style='margin-top:8px;border:1px solid #dce5f0;border-collapse:collapse;'>" + completionRowsHtml + "</table>";
+            decisionButtons = "<table role='presentation' cellpadding='0' cellspacing='0' style='margin:26px 0 14px;'><tr><td bgcolor='#1e40af' style='background:#1e40af;border-radius:8px;padding:13px 20px;'><a href='" + reviewUrl + "' style='font-family:Arial,sans-serif;font-size:14px;font-weight:700;color:#ffffff !important;text-decoration:none !important;'>Open Pro Forma</a></td></tr></table>";
+            decisionHelp = "";
+        }
+
                  		messageHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;background:#ffffff;border-collapse:separate;border-spacing:0;'>" + "<tr><td style='background:#102f55;color:#ffffff;padding:24px 26px;border-radius:15px 15px 0 0;border-bottom:4px solid #2563eb;'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='table-layout:fixed;'><tr>" + "<td valign='bottom' style='padding-right:20px;'>" + "<div style='font-size:11px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;'>Pro Forma Approval</div>" + "<div style='font-size:24px;font-weight:700;line-height:1.2;margin-top:7px;'>" + safePfName + "</div>" + "<div style='font-size:14px;color:#ffffff;margin-top:9px;font-weight:700;'><span style='color:#fcd34d;'>Acquisition Owner:</span> " + safeOwnerNames + "</div>" + "<div style='font-size:13px;color:#c9d8eb;margin-top:6px;'>" + safeTerritoryText + " &nbsp;&middot;&nbsp; " + safeStageText + "</div>" + "</td>" + "<td width='150' valign='bottom' align='right'>" + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#173f6f;border:1px solid #315983;border-radius:10px;'>" + "<tr><td align='left' style='padding:10px 12px;'>" + "<div style='font-size:9px;color:#a9bfd8;text-transform:uppercase;letter-spacing:.09em;font-weight:700;'>Current Step</div>" + "<div style='font-size:16px;color:#ffffff;font-weight:700;margin-top:4px;'>" + safeCurrentStepText + "</div>" + "</td></tr></table></td>" + "</tr></table></td></tr>" + "<tr><td style='padding:22px 24px 24px;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;border-bottom:1px solid #dce5f0;border-radius:0 0 15px 15px;'>" + "<p style='margin:0 0 8px;font-size:15px;color:#172033;'>" + introText + "</p>" + "<p style='margin:0;color:#475569;line-height:1.55;'>" + legalInstruction + "</p>" + routingBlock + summaryPanels;
                  		if(specialProvisionsText != "")
                  		{
                  			messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:14px 16px;background:#fffaf0;border:1px solid #fde3a7;border-radius:10px;'>" + "<div style='font-size:11px;font-weight:800;color:#8a4b08;text-transform:uppercase;letter-spacing:.07em;'>Special Provisions</div>" + "<div style='margin-top:7px;white-space:pre-wrap;color:#4a3217;line-height:1.5;'>" + safeSpecialProvisions + "</div>" + "</td></tr></table>";
                  		}
-                 		messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:13px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;'>" + "<div style='font-weight:700;color:#173b68;'>Attached approval packet</div>" + "<div style='margin-top:5px;color:#475569;font-size:13px;'>Includes the executive summary, all non-zero Additional Costs, complete LOI terms, Sellers, and Properties.</div>" + "</td></tr></table>" + decisionButtons + "<div style='font-size:12px;color:#64748b;margin-top:8px;'>Approve records the response when the approval page opens. Deny opens a page where a note is required.</div>" + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;'>Already have Land Master access? <a href='" + reviewUrl + "' style='color:#2563eb;text-decoration:none;font-weight:600;'>Open the full Pro Forma</a></div>" + "</td></tr></table></td></tr></table>";
-                 		sendmail
-                 		[
-                 			from :zoho.adminuserid
-                 			to :toAddress
-                 			subject :subjectText
-                 			message :messageHtml
-                 			Attachments :file:pdfFile
-                 		]
-                 		approvalRow.Sent_Date=zoho.currenttime;
-                 		response.put("success",true);
-                 		response.put("message","Approval email and PDF packet sent to " + toAddress + ".");
+		messageHtml = messageHtml + "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='margin-top:16px;'>" + "<tr><td style='padding:13px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;'>" + "<div style='font-weight:700;color:#173b68;'>Attached approval packet</div>" + "<div style='margin-top:5px;color:#475569;font-size:13px;'>Includes the executive summary, all non-zero Additional Costs, complete LOI terms, Sellers, and Properties.</div>" + "</td></tr></table>" + decisionButtons + decisionHelp + "<div style='margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;font-size:12px;color:#64748b;'>Already have Land Master access? <a href='" + reviewUrl + "' style='color:#2563eb;text-decoration:none;font-weight:600;'>Open the full Pro Forma</a></div>" + "</td></tr></table></td></tr></table>";
+        if(completionEmail)
+        {
+            sendmail
+            [
+                from :"Notifications@wbdevelopment.com"
+                to :completionRecipients
+                subject :subjectText
+                message :messageHtml
+                Attachments :file:pdfFile
+            ]
+            response.put("success",true);
+            response.put("message","Completion email and PDF packet sent to all approvers.");
+            response.put("recipientCount",completionRecipients.size());
+        }
+        else
+        {
+            sendmail
+            [
+                from :"Notifications@wbdevelopment.com"
+                to :toAddress
+                subject :subjectText
+                message :messageHtml
+                Attachments :file:pdfFile
+            ]
+            approvalRow.Sent_Date=zoho.currenttime;
+            response.put("success",true);
+            response.put("message","Approval email and PDF packet sent to " + toAddress + ".");
+        }
                  		response.put("packetFileName",packetFileName);
                  		response.put("pageCount",packet.get("pageCount"));
                  		response.put("additionalCostCount",packet.get("additionalCostCount"));

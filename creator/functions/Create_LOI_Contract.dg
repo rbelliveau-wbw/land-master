@@ -3,8 +3,62 @@ string Create_LOI_Contract(string proformaId)
 	result = Map();
 	trace = List();
 	stage = "writer_merge";
-	try
+	try 
 	{
+		// Submission authority comes only from the dedicated permission for the signed-in user.
+		legalAccess = User_Access[User == zoho.loginuser];
+		if(legalAccess.count() == 0 || legalAccess.Submit_to_Legal_Module != true)
+		{
+			result.put("success",false);
+			result.put("message","Submit to Legal Module access is required.");
+			return result.toString();
+		}
+		if(proformaId == null || proformaId.trim() == "")
+		{
+			result.put("success",false);
+			result.put("message","No Pro Forma ID was supplied.");
+			return result.toString();
+		}
+		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+		if(pf.count() == 0)
+		{
+			result.put("success",false);
+			result.put("message","The Pro Forma record could not be found.");
+			return result.toString();
+		}
+		legalApprovalRows = Budget_Approvals[Proforma == pf.ID];
+		legalFullyApproved = ifnull(pf.Status,"") == "Approved";
+		if(legalApprovalRows.count() > 0)
+		{
+			legalFullyApproved = true;
+			for each  legalApproval in legalApprovalRows
+			{
+				if(ifnull(legalApproval.Status,"") != "Approved")
+				{
+					legalFullyApproved = false;
+				}
+			}
+		}
+		if(!legalFullyApproved || pf.Lock_Inputs != true || pf.Archive == true || ifnull(pf.Status,"") == "LOI in Progress")
+		{
+			result.put("success",false);
+			result.put("message","The Pro Forma must be fully approved, locked, active, and not already submitted to Legal.");
+			return result.toString();
+		}
+		loiRec = null;
+		for each  worksheet in LOI_Worksheet[Proforma == pf.ID]
+		{
+			if(loiRec == null || worksheet.Is_Current == true)
+			{
+				loiRec = worksheet;
+			}
+		}
+		if(loiRec == null || loiRec.Company == null)
+		{
+			result.put("success",false);
+			result.put("message","Select the Purchasing Company in the LOI Worksheet before submitting to Legal.");
+			return result.toString();
+		}
 		document = thisapp.PF_Build_LOI_Document(proformaId);
 		if(ifnull(document.get("success"),false) != true)
 		{
@@ -25,10 +79,10 @@ string Create_LOI_Contract(string proformaId)
 		   newly created ones use the new scheme. */
 		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
 		contractId = null;
-		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == "Acquisition")];
+		existingContract = Contract[Contract_Name == contractName && Contract_Type == "Acquisition"];
 		if(existingContract.ID == null)
 		{
-			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == "Acquisition")];
+			existingContract = Contract[Contract_Name == legacyContractName && Contract_Type == "Acquisition"];
 		}
 		if(existingContract.ID != null)
 		{
@@ -77,7 +131,7 @@ string Create_LOI_Contract(string proformaId)
 		existingActionCount = Contract_Actions[Contract1 == contractId].count();
 		if(existingActionCount == 0)
 		{
-			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Template_Action == true)] sort by Sort_Order;
+			templateActions = Contract_Actions[Contract1 == null && Type_field == "Acquisition" && Template_Action == true] sort by Sort_Order;
 			seededCount = 0;
 			seededTitles = List();
 			for each  templateAction in templateActions
@@ -100,7 +154,8 @@ string Create_LOI_Contract(string proformaId)
 						Status="Proposed"
 						Complete=false
 						Current_Action=isFirstAction
-					];
+						Added_User=zoho.loginuser
+					]
 					seededTitles.add(actionTitle);
 				}
 			}
@@ -120,7 +175,7 @@ string Create_LOI_Contract(string proformaId)
 				   nothing to work through. */
 				/* Distinguish "no template exists" from "the rows are there but not
 				   flagged", which is the one way the flag check can bite. */
-				untaggedCount = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition")].count();
+				untaggedCount = Contract_Actions[Contract1 == null && Type_field == "Acquisition"].count();
 				noTemplateEntry = Map();
 				noTemplateEntry.put("level","warn");
 				noTemplateEntry.put("stage",stage);

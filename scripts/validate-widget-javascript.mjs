@@ -174,7 +174,8 @@ for (const required of [
   'function isLOIApprovalLocked(m)',
   'host.classList.toggle("approval-lock",approvalLocked);',
   'Approval in progress — Pro Forma and LOI inputs are locked.',
-  'canSubmitLOI=canEditPf(r)&&approvalState.complete&&!archived&&!loiDone',
+  'canSubmitLOI=canSubmitPfToLegal(r)',
+  'rec.ID && perms().submitLegal && fullyApproved',
   'The Pro Forma must be fully approved before submitting the LOI to Legal.',
   'LOI Worksheet save blocked — approvals have started'
 ]) {
