@@ -2,13 +2,13 @@
   "slug": "manage-lots",
   "name": "Manage Lots",
   "module": "lots",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Multi-subdivision Open/Contracted lot selection, Builder Takedowns, Legal status and hover details, and AI CSV/XLSX lot staging with review before import.",
   "source_entry": "widgets/manage-lots/src/app/widget.html",
   "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Manage Lots",
-  "source_sha256": "4ce3f4c79aaef4d592eb1b5db6bf1503dc8030e30ea901e67f3de6c3e78dc71e",
+  "source_sha256": "ce58ed0189b148b7a5bafabf36e7f28174295aae7bbde1a9f9ea234866087302",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [
