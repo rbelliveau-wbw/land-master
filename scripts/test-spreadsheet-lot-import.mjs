@@ -19,7 +19,7 @@ assert.throws(()=>api.stage(source,[{...mapping[0],block_column:9}],[sub]),/inva
 assert.throws(()=>api.stage(source,[{...mapping[0],subdivision_id:'other'}],[sub]),/outside your selection/);
 assert.throws(()=>api.stage(source,[mapping[0],mapping[0]],[sub]),/same source row twice/);
 const unresolved=api.stage(source,[{...mapping[0],subdivision_id:'',issue:'Phase 6 does not match selected Phase 7'}],[sub])[0];
-assert.ok(api.issues(unresolved,[sub],[unresolved],new Set(),['Seguin'],['Guadalupe']).includes('Choose a subdivision'));
+assert.ok(api.issues(unresolved,[sub],[unresolved],new Set(),['Seguin'],['Guadalupe']).includes('Subdivision not verified; check the attached file'));
 const wronglyMatched=api.stage(source,[mapping[0]],[sub]);api.checkMetadata(source,wronglyMatched,[{...sub,Phase:'7'}]);assert.equal(wronglyMatched[0].subId,'','client must catch a phase mismatch even if AI missed it');
 assert.ok(api.issues(rows[0],[sub],rows,new Set([api.code(sub,'1','1')]),['Seguin'],['Guadalupe']).includes('Already in Lots'));
 assert.ok(api.issues({...rows[0],lot:'1000'},[sub],[],new Set(),['Seguin'],['Guadalupe']).includes('Lot must be 1–999'));
