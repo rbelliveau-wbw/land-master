@@ -8,7 +8,7 @@
 
 ## Spreadsheet Import
 
-- The subdivision(s) are chosen before the spreadsheet is read; `Lot_Code` is `Subdivision_Code + "-B" + leftpad(block,2,"0") + "-L" + leftpad(lot,2,"0")` — identical to the Deluge `Set Lot Code if Manual Update` workflow. `padCode` / `buildLotCode` are unit-tested; do not change the padding without changing Deluge.
+- Import chooses exactly one subdivision in a searchable dropdown. City and County are read-only subdivision values. Keep the chosen filename visible through screen updates. Steps are Attach, Review, Create; Next checks source rows with progress, and Create Lots names the database action. `Lot_Code` is `Subdivision_Code + "-B" + leftpad(block,2,"0") + "-L" + leftpad(lot,2,"0")` — identical to the Deluge `Set Lot Code if Manual Update` workflow. `padCode` / `buildLotCode` are unit-tested; do not change the padding without changing Deluge.
 - AI identifies source rows and column indexes only. The widget copies values from those cells, validates provenance and phase/project metadata, and flags unclassified possible lot rows for manual review. Never infer or complete lot sequences.
 - Nothing is written to `Lots` until the reviewer confirms in the in-widget dialog. Inserts go through `addRecord` on form `Lots` one record at a time; lots are re-read first so existing codes are skipped, and Creator's unique `Lot_Code` remains the last line of defence.
 - `Lot_Size` is width in feet (the app formats it as `45Ft`). Area is never treated as width or saved to Lot_Size.
