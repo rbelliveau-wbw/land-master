@@ -58,11 +58,23 @@ assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(updateRecord|deleteRecord)/, "
 /* Cached counts, refreshed data, string IDs and Legal status tints. */
 const fixture = { lots: [], subdivisions: [{ ID: "90071992547409931", Subdivision_Name: "Phase 1" }], takedowns: [], contracts: [], takedownLotIds: new Set() };
 const helpers = new Function("S", "str", "natural", `
-  var dataIndex=null,emptyStats={total:0,available:0,sold:0};
+  var dataIndex=null,emptyStats={total:0,available:0,sold:0,scheduled:0};
   ${["truthy", "idOf", "relationEmpty", "relationIds", "lotSubdivisionId", "inTakedown", "eligible", "indexes", "subdivisionStats", "lotById", "lotState"].map(extractFunction).join("\n")}
   return {indexes,subdivisionStats,lotById,lotState,eligible};
 `)(fixture, scalar, natural);
 const sid = "90071992547409931";
+const countLotStats=new Function('eligible','lotSubdivisionId','str',`return (${extractFunction('countLotStats')})`)(eligible,l=>String(l.Subdivision.ID),scalar);
+const beforeSelection=countLotStats([
+  {ID:'1',Subdivision:{ID:sid},Status:'Open'},
+  {ID:'2',Subdivision:{ID:sid},Status:'Scheduled'},
+  {ID:'3',Subdivision:{ID:sid},Status:' scheduled '},
+  {ID:'4',Subdivision:{ID:sid},Status:'Sold'},
+]);
+assert.deepEqual(beforeSelection.get(sid),{total:4,available:1,sold:1,scheduled:2},'counts must include Scheduled lots before subdivision selection');
+const readyScopes=new Set(),freshCounts={total:3,available:1,sold:2,scheduled:0};
+const pickStats=new Function('S','subdivisionReady','subdivisionCounts','indexes','emptyStats',`return (${extractFunction('subdivisionStats')})`)({live:true},readyScopes,beforeSelection,()=>({stats:new Map([[sid,freshCounts]])}),{total:0,available:0,sold:0,scheduled:0});
+assert.equal(pickStats(sid),beforeSelection.get(sid),'unselected subdivisions use the completed shared count load');
+readyScopes.add(sid);assert.equal(pickStats(sid),freshCounts,'fresh scoped records supersede the shared counts after selection');
 fixture.lots = [
   { ID: "90071992547409941", Subdivision: { ID: sid }, Status: "Open", Archived: "false" },
   { ID: "90071992547409942", Subdivision: { ID: sid }, Status: "Open", On_Hold: "true" },
@@ -71,7 +83,7 @@ fixture.lots = [
   { ID: "90071992547409945", Subdivision: { ID: sid }, Status: "Open", Archived: "true" },
   { ID: "90071992547409946", Subdivision: { ID: sid }, Status: "Open", Add_Builder_Takedown_Name: { ID: "90071992547409951" } },
 ];
-assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 3, sold: 1 });
+assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 3, sold: 1, scheduled: 0 });
 const cached = helpers.indexes();
 for (let i = 0; i < 500; i += 1) assert.equal(helpers.indexes(), cached, "filter clicks must reuse the existing index");
 assert.equal(helpers.lotById("90071992547409941"), fixture.lots[0], "IDs larger than safe integers must remain exact");
@@ -87,7 +99,7 @@ fixture.contracts = [{ ID: "90071992547409961", Archive: "true", Lots1: [{ ID: f
 assert.equal(helpers.lotState(fixture.lots[0]), "open", "archived contracts release the visual claim");
 fixture.lots = fixture.lots.map(l => ({ ...l, Status: "Sold" }));
 assert.notEqual(helpers.indexes(), cached, "refresh must invalidate cached counts");
-assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 0, sold: 6 });
+assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 0, sold: 6, scheduled: 0 });
 assert.match(extractFunction("latestSelected"), /readSubdivisionLots\(sid\)/, "submission must still reread lots");
 assert.match(extractFunction("latestSelected"), /!eligible\(map.get\(id\)\)/, "submission must reject stale eligibility");
 assert.doesNotMatch(extractFunction("applySubdivisionFilter"), /renderSubdivisionOptions/, "selection must preserve picker nodes and focus");
