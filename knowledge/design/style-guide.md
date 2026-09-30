@@ -95,3 +95,5 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 - In manually added financial rows, keep an explicit Add button below the table; typing in a field must never create another row. Use a centered SVG plus in the action and a visible outline on editable cells, including prefilled values.
 
 - Lot-selection tiles use darker slate gray for Sold/unavailable and a deeper blue for Contracted/selected. Pair unavailable states with a light diagonal texture and a small SVG lock; show these cues from actual selection eligibility, retaining status colors and hover details. Single subdivision selection in import uses the standard floating searchable popover, with focused search, selected checkmark, rounded options and border, viewport positioning, and keyboard/Escape/outside-click controls. Keep the search inside the popover.
+
+- Spreadsheet import review uses one modal-body vertical scroll area, with uncapped tables and sticky column headings. Its compact subdivision header pairs identity/location with clearly labeled import totals and per-block lot counts; keep these distinct from existing subdivision inventory.

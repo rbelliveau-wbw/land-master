@@ -81,7 +81,7 @@
   <script>
   (function(){
     "use strict";
-    var CFG={version:"0.9.8",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View"},form:"Builder_Takedown",lotsForm:"Lots",
+    var CFG={version:"0.9.7",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View"},form:"Builder_Takedown",lotsForm:"Lots",
       /* Plat import: Custom API Ingest_Plat wraps standalone Deluge Plat_AI_Ingest (Development resolves to Ingest_Plat_DEV via LMRuntime.apiName). */
       customApis:{platIngest:"Ingest_Plat"}};
     var S={live:false,view:"lots",audit:[],auditSeq:0,auditErrs:0,subdivisions:[],builders:[],lots:[],takedowns:[],contracts:[],takedownLotIds:new Set(),selected:new Set(),subdivisionIds:[],takedownSubdivisionIds:[],busy:false,drag:{active:false,selecting:true,seen:new Set(),moved:false,pointerId:null}};

@@ -23,6 +23,16 @@ assert.ok(api.issues(unresolved,[sub],[unresolved],new Set(),['Seguin'],['Guadal
 const wronglyMatched=api.stage(source,[mapping[0]],[sub]);api.checkMetadata(source,wronglyMatched,[{...sub,Phase:'7'}]);assert.equal(wronglyMatched[0].subId,'','client must catch a phase mismatch even if AI missed it');
 assert.ok(api.issues(rows[0],[sub],rows,new Set([api.code(sub,'1','1')]),['Seguin'],['Guadalupe']).includes('Already in Lots'));
 assert.ok(api.issues({...rows[0],lot:'1000'},[sub],[],new Set(),['Seguin'],['Guadalupe']).includes('Lot must be 1–999'));
+// Import reporting counts staged lots rather than spreadsheet metadata/header rows.
+const report=(draft,existing=new Set())=>api.reviewSummary(draft,[sub],existing,['Seguin'],['Guadalupe']);
+const summary=report(rows);
+assert.equal(source.length,100);assert.equal(summary.total,97);assert.equal(summary.selected,97);assert.equal(summary.ready,97);assert.equal(summary.needsReview,0);
+assert.deepEqual(summary.blocks.map(b=>[b.block,b.total,b.selected]),[['1',50,50],['2',47,47]]);
+const unchecked=rows.map((r,i)=>({...r,on:i!==0}));assert.equal(report(unchecked).selected,96);assert.equal(report(unchecked).blocks[0].total,50,'unchecking a lot must not change the file block total');
+const duplicates=report(rows.concat({...rows[0]}));assert.equal(duplicates.conflicts,2);assert.equal(duplicates.needsReview,2);assert.equal(duplicates.ready,96);
+const existingConflict=report(rows,new Set(['AR06-B01-L01']));assert.equal(existingConflict.conflicts,1);assert.equal(existingConflict.ready,96);
+const unresolvedReport=report([{...rows[0],subId:''},{...rows[1],block:'TOO-LONG'}]);assert.equal(unresolvedReport.unassigned,2);assert.equal(unresolvedReport.blocks.length,0);
+const createdReport=report([{...rows[0],created:true,on:false},{...rows[1]}],new Set(['AR06-B01-L01']));assert.equal(createdReport.created,1);assert.equal(createdReport.needsReview,0);assert.equal(createdReport.selected,1);
 // Exercise the bundled parser, including multiple worksheets and original blank-row numbering.
 const sandbox={};vm.createContext(sandbox);vm.runInContext(fs.readFileSync('widgets/manage-lots/src/app/vendor/xlsx.full.min.js','utf8'),sandbox);const XLSX=sandbox.XLSX;
 const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['Block','Lot','Size'],[],[1,1,50]]),'Phase 6');XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['Block','Lot','Size'],[2,2,60]]),'Phase 7');
