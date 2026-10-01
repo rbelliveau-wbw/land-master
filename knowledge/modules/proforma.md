@@ -7,6 +7,10 @@ The three-dot menu opens a top-aligned modal with a Project picker, phase tabs, 
 Transfers use two dedicated Deluge functions and a separate PF_Budget_Transfer Custom API. Normal Pro Forma Save and form workflows are unchanged. Functions and the Development API are saved in Creator; the user publishes the functions and configures the Production API after publication. Production stays preview-only until the dedicated endpoint is ready. See [Creator handoff, fields, verification, and rollback](../../creator/functions/PF_BUDGET_TRANSFER_HANDOFF.md). Widget rollback: 1.80.48.
 # Proforma Module
 
+## Decimal input preservation (1.80.51, 2026-10-01)
+
+Editable dollar amounts, prices, rates, percentages, acreage, and frontage preserve entered decimals on blur and in save payloads. Land Cost / Acre no longer rounds to whole dollars; Total Acres no longer reduces precision to fit old metadata. Counts, phase/installment numbers, month/day offsets, and Street LF reject fractions. Creator `proforma_save` removes explicit Land Cost / Acre and Total Acres rounding and validates integer inputs before writes. [Affected fields, deployment, regression, and rollback](../../docs/proforma-decimal-inputs-1.80.51.md).
+
 ## Send Costs to Budgets permission (1.80.50, 2026-09-30)
 
 `User_Access.Send_Costs_to_Budgets` is an unchecked decision box under Proformas. `getUserAccess` returns `pfSendCostsToBudgets`; the PF widget hides the list action and blocks the modal and send when the grant is absent. `PF_Budget_Transfer` checks the logged-in user's grant on preview and apply in addition to existing Budget edit rights. The field and function edits are saved in Development for Creator promotion; no user was granted access automatically. Production widget rollback: 1.80.49. [Creator promotion details](../../creator/functions/PF_BUDGET_TRANSFER_HANDOFF.md).
@@ -318,7 +322,7 @@ The Seller and Property grids use explicit per-column widths, polished field con
 
 ## Numeric precision
 
-`Add_Pro_Forma.Land_Cost_Acre` is a whole-dollar Creator currency field. The widget normalizes it to zero decimal places before calculation and save, then rescales purchase installments to the resulting land cost. `proforma_save` also applies `.round(0)` as a server-side safeguard. This prevents Creator error `3002` during the workflow-triggering header update.
+As of 1.80.51, `Add_Pro_Forma.Land_Cost_Acre` preserves entered decimals. Live Creator Development metadata confirms Currency with Max Digits 14 and Decimal Points 2. The widget and `proforma_save` no longer round it to whole dollars. Creator field validation still applies; the widget sends the entered precision rather than reducing it to fit a field limit.
 
 ## Per-unit additional costs
 

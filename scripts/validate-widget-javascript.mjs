@@ -342,20 +342,11 @@ for (const forbidden of [
   if (proformaHtml.includes(forbidden)) errors.push('proforma-manager: approval lifecycle writes must stay inside Deluge APIs so status-only REST updates do not rerun RUN_EVERYTHING.');
 }
 
-for (const required of [
-  'function normalizeLandCostPerAcre(m,rescaleInstallments)',
-  'inputF("Land_Cost_Acre",{type:"number",step:"1"})',
-  'var INT_HDR={ Land_Cost_Acre:1,',
-  'if(normalizeLandCostPerAcre(m0,true))',
-  'Land Cost / Acre normalized before save'
-]) {
-  if (!proformaHtml.includes(required)) errors.push(`proforma-manager: whole-dollar Land_Cost_Acre handling is missing ${required}.`);
+for (const forbidden of ['normalizeLandCostPerAcre', 'var DECIMAL2_HDR=', 'var INT_HDR=']) {
+  if(proformaHtml.includes(forbidden)) errors.push('proforma-manager: user inputs must retain entered decimals: '+forbidden);
 }
-if (proformaHtml.indexOf('if(normalizeLandCostPerAcre(m0,true))') > proformaHtml.indexOf('var m=S.ed.model, errs=validateModel(m);')) {
-  errors.push('proforma-manager: Land_Cost_Acre must be normalized before save validation.');
-}
-if (!proformaSave.includes('pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal().round(0);')) {
-  errors.push('proforma_save: Land_Cost_Acre must be rounded to Creator whole-dollar precision.');
+for (const field of ['Land_Cost_Acre','Total_Acres']) {
+  if(!proformaSave.includes('pf.'+field+'=header.get("'+field+'").toDecimal();')) errors.push('proforma_save: preserve decimals in '+field);
 }
 for (const required of [
   'function isSalePricePrecisionRejection(err)',

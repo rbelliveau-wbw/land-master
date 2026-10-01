@@ -2,6 +2,8 @@
 
 This guide captures reusable visual preferences established in production work.
 
+Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
+
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.
 
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.

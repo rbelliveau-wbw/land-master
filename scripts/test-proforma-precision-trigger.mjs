@@ -86,6 +86,9 @@ const whole = await runTouch("1444", success);
 assert.equal(whole.calls.length, 1);
 assert.equal(Object.hasOwn(whole.calls[0].data, "Sale_Price_FF"), false);
 
+const precise = await runTouch("1444.4567", success);
+assert.equal(precise.calls[0].data.Sale_Price_FF, "1444.4567", "trigger must not round the stored price");
+
 const otherError = { response: { code: 3002, error: { Name: "Name is required" } } };
 const unrelated = await runTouch("1444.45", otherError, success);
 assert.equal(unrelated.calls.length, 1);

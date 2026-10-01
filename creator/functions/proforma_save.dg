@@ -26,6 +26,57 @@
                  		header = Map();
                  		deleteStage = "";
 							op = ifnull(data.get("op"),"").toString().trim();
+		// Reject fractional counts and calendar offsets before any record writes.
+		wholeInputRules = Map();
+		wholeInputRules.put("header",{"Total_Street_LF","Lots","Phases","Purchase_Installments","Sale_Installments","Engineering_Length_Months","Construction_Length","Engineering_Delay_Months","Construction_Delay_Months","Initial_Feasibility_Days","Extensions","Days_per_Extension","Closing_Days_Feas"});
+		wholeInputRules.put("worksheet",{"Earnest_Money_Due_Days","Initial_Feasibility_Days","Extensions","Days_Per_Extension","Closing_Days_After_Feasibility","Version_Number"});
+		wholeInputRules.put("phaseSales",{"Phase","Total_Lots","Initial_Take_Lots","Initial_Delay_Months","First_Recurring_Delay_Months","Lots_Per_Take"});
+		wholeInputRules.put("purchaseInstallments",{"Installment","Month1"});
+		wholeInputRules.put("saleInstallments",{"Installment","Month1"});
+		wholeInputRules.put("pidMud",{"Installment","Month1"});
+		wholeInputRules.put("items",{"Start_Phase","End_Phase","Start_Month","End_Month"});
+		wholeInputRules.put("curve",{"Month_Number"});
+		for each wholeGroupKey in wholeInputRules.keys()
+		{
+			wholeInputRows = List();
+			if(wholeGroupKey == "header")
+			{
+				if(data.get("header") != null)
+				{
+					wholeInputRows.add(data.get("header"));
+				}
+			}
+			else if(wholeGroupKey == "worksheet")
+			{
+				wholeLoiInput = ifnull(data.get("loi"),Map());
+				if(wholeLoiInput.get("worksheet") != null)
+				{
+					wholeInputRows.add(wholeLoiInput.get("worksheet"));
+				}
+			}
+			else
+			{
+				wholeInputRows = ifnull(data.get(wholeGroupKey),List());
+			}
+			for each wholeInputRow in wholeInputRows
+			{
+				for each wholeFieldKey in wholeInputRules.get(wholeGroupKey)
+				{
+					wholeRaw = ifnull(wholeInputRow.get(wholeFieldKey),"").toString().trim();
+					if(wholeRaw != "")
+					{
+						wholeValue = wholeRaw.toDecimal();
+						if(wholeValue != wholeValue.round(0))
+						{
+							resp.put("success",false);
+							resp.put("error",wholeFieldKey + " must be a whole number.");
+							return resp.toString();
+						}
+					}
+				}
+			}
+		}
+
 							if(op == "phase_sales_capabilities")
 							{
 								resp.put("success",true);
@@ -1302,11 +1353,11 @@
                  		}
                  		if(header.get("Total_Acres") != null && header.get("Total_Acres").toString() != "")
                  		{
-                 			pf.Total_Acres=header.get("Total_Acres").toDecimal().round(2);
+			pf.Total_Acres=header.get("Total_Acres").toDecimal();
                  		}
                  		if(header.get("Land_Cost_Acre") != null && header.get("Land_Cost_Acre").toString() != "")
                  		{
-				 			pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal().round(0);
+			pf.Land_Cost_Acre=header.get("Land_Cost_Acre").toDecimal();
                  		}
                  		if(header.get("Sale_Price_FF") != null && header.get("Sale_Price_FF").toString() != "")
                  		{
