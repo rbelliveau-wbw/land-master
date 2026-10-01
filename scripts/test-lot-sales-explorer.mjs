@@ -124,6 +124,29 @@ assert.equal(M.detailGroupCounts(detailLots,'closeDate').dates.get(JSON.stringif
 const pagedCounts = M.detailGroupCounts(Array.from({length:101},(_,i)=>({...detailLots[0],code:String(i)})),'purchaseDate');
 assert.equal(pagedCounts.builders.get('DR Horton'),101,'builder count includes later detail pages');
 assert.equal(pagedCounts.dates.get(JSON.stringify(['DR Horton','2026-07-02'])),101,'date count includes later detail pages');
+const statusDetailLots = [
+  {...detailLots[0], status:'Contracted'},
+  {...detailLots[0], status:'Sold', code:'sold-old', closeDate:'2024-07-02'},
+  {...detailLots[0], status:'Sold', code:'sold-new'},
+  {...detailLots[2], status:'Scheduled'},
+  {...detailLots[0], status:'On Hold', closeDate:null, purchaseDate:null},
+  {...detailLots[0], status:'', closeDate:null, purchaseDate:null}
+];
+const inventoryBefore = JSON.stringify(statusDetailLots);
+assert.deepEqual(M.selectSubdivisionDetailLots(statusDetailLots,'All','closeDate').map(l=>M.detailStatus(l)),['Sold','Sold','Scheduled','Contracted','Open','Open'],'All groups status before builder and date');
+assert.deepEqual(M.selectSubdivisionDetailLots(statusDetailLots,'Sold','closeDate').map(l=>l.code),['sold-new','sold-old'],'full inventory retains sales outside the report period, newest dates first');
+assert.equal(M.selectSubdivisionDetailLots(statusDetailLots,'Open','closeDate').length,2,'Open matches the card and includes unknown/blank statuses');
+assert.equal(M.detailDateField(statusDetailLots[3],'closeDate'),'purchaseDate','Scheduled groups by Purchase Date without inventing Close Dates');
+assert.equal(JSON.stringify(statusDetailLots),inventoryBefore,'status selection never mutates report/inventory lots');
+const inventoryCounts = M.detailGroupCounts(statusDetailLots,'closeDate',true);
+assert.equal(inventoryCounts.builders.get(JSON.stringify(['Sold','DR Horton'])),2);
+assert.equal(inventoryCounts.builders.get(JSON.stringify(['Contracted','DR Horton'])),1,'builder totals are separated by status');
+assert.equal(inventoryCounts.dates.get(JSON.stringify(['Scheduled','DR Horton','2026-08-01'])),1);
+assert.equal(inventoryCounts.statuses.get('Open'),2);
+const pagedInventory = M.detailGroupCounts(Array.from({length:101},()=>statusDetailLots[1]),'closeDate',true);
+assert.equal(pagedInventory.statuses.get('Sold'),101,'status count includes later pages');
+assert.equal(pagedInventory.builders.get(JSON.stringify(['Sold','DR Horton'])),101,'status-builder counts include later pages');
+assert.equal(pagedInventory.dates.get(JSON.stringify(['Sold','DR Horton','2024-07-02'])),101,'status-date counts include later pages');
 assert(all.rows.every(row => row.groupName === row.project), 'Project is the default report grouping');
 const byTerritory = M.report(lots, {from:'2025-09',to:'2026-09',status:'Sold',groupBy:'territory'});
 assert(byTerritory.rows.every(row => row.groupName === row.territory));
