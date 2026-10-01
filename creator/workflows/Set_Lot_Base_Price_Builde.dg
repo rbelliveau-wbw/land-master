@@ -1,7 +1,7 @@
 // Contract / on add or edit / on success.
 // Delegate every Lot write to the guarded fill-only completion function.
 // Do not retain the old pricing/builder/status writes or status reconciliation.
-if(input.Contract_Type == "Lot" && input.Status == "Complete")
+	if((input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && input.Status == "Complete")
 {
     completionResult = thisapp.Complete_Lot_Contract(input.ID.toString());
     completionMap = completionResult.toMap();

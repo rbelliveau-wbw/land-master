@@ -1,0 +1,32 @@
+if(input.Status == "Complete" && (input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && input.Subdivision1.size() > 0)
+{
+    phaseCodes = List();
+    for each subId in input.Subdivision1
+    {
+        sub = Subdivision[ID == subId];
+        if(sub.ID != null)
+        {
+            phaseCodes.add(ifnull(sub.Subdivision_Code,"").toString());
+        }
+    }
+    phaseCodes.sort();
+    tdCode = phaseCodes.toString("+") + " - " + input.Builder.Builder_Name;
+    existingTdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
+    if(existingTdsched.count() == 0)
+    {
+        insert into Takedown_Schedule
+        [
+            Added_User=zoho.loginuser
+            Subdivisions=input.Subdivision1
+            Builder1=input.Builder
+            Status="Active"
+            Total_Lot_Obligation=input.Number_of_Lots
+            Initial_Takedown=input.Initial_Takedown
+            Initial_Delay_Days=input.Initial_Takedown_Days
+            Continued_Takedown=input.Subsequent_Takedown_Lots
+            Continued_Takedown_Delay_Days=input.Subsequent_Takedown_Days
+            Add_Contract_Contract_Name=input.ID
+            Takedown_Schedule_Code=tdCode
+        ]
+    }
+}

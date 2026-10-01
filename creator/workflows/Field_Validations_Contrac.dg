@@ -1,0 +1,19 @@
+if((input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && input.Builder == null)
+{
+ alert "Lot contracts must have a Builder / Counterparty selection.";
+ cancel submit;
+}
+if(input.Contract_Type == "Lot (Amendment)" && input.Subdivision1.size() == 0)
+{
+ alert "Lot (Amendment) must have a Subdivision selection.";
+ cancel submit;
+}
+if(input.Parent_Contract != null)
+{
+ parentMaster = Contract[ID == input.Parent_Contract];
+ if(input.Contract_Type != "Lot (Amendment)" || parentMaster.Contract_Type != "Lot (Master)" || parentMaster.Builder != input.Builder || parentMaster.ID == input.ID)
+ {
+  alert "The optional parent must be a Lot (Master) with the same Builder / Counterparty.";
+  cancel submit;
+ }
+}

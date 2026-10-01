@@ -1,0 +1,70 @@
+//disable on contract
+disable Takedown_Schedule1;
+disable Current_Action;
+disable Current_Approver;
+disable Status;
+disable Company_Entity;
+disable Project;
+disable County;
+disable City;
+disable Total_Contract_Price;
+disable Earnest_Money;
+//disable on Internal Approvals
+hide Approvals1.Contract_Template;
+disable Approvals1.Approval_Date;
+disable Approvals1.Approval_Sequence;
+disable Approvals1.Status;
+disable Approvals1.Last_Reminder_Date;
+//disable on pricing
+disable Pricing.Base_Price;
+disable Pricing.Lot_Size;
+if((input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && input.Subdivision1.size() > 0)
+{
+ show Number_of_Lots;
+ show Earnest_Money_Per_Lot;
+ show Initial_Takedown_Days;
+ show Initial_Takedown;
+ show Subsequent_Takedown_Lots;
+ show Subsequent_Takedown_Days;
+ show Lots1;
+ show Pricing;
+ show Lot_Block_Description;
+}
+else
+{
+ hide Number_of_Lots;
+ hide Earnest_Money_Per_Lot;
+ hide Initial_Takedown_Days;
+ hide Initial_Takedown;
+ hide Subsequent_Takedown_Lots;
+ hide Subsequent_Takedown_Days;
+ hide Lots1;
+ hide Pricing;
+ hide Lot_Block_Description;
+}
+if(input.Contract_Type == "Lot (Amendment)")
+{
+ show Parent_Contract;
+}
+else
+{
+ hide Parent_Contract;
+}
+hide Approvals1.Approval_Sequence;
+hide Total_Contract_Price;
+hide Earnest_Money;
+hide Hide;
+hide Approvals1.Reject_Reason;
+hide Approvals1.Unhide;
+hide Approvals1.Approval_Action;
+hide Contract_Actions.Type_field;
+hide Contract_Actions.Contract1;
+show Contract_Actions.Sort_Order;
+for each ca in input.Approvals1
+{
+ if(ca.Reject_Reason != null)
+ {
+  show Approvals1.Reject_Reason;
+  disable Approvals1.Reject_Reason;
+ }
+}

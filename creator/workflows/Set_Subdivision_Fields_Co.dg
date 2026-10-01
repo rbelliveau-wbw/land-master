@@ -1,0 +1,36 @@
+input.Company_Entity = input.Subdivision1.Company1;
+input.Project = input.Subdivision1.Project;
+input.County = input.Subdivision1.County;
+input.City = input.Subdivision1.City;
+if((input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && input.Subdivision1.size() > 0)
+{
+ show Number_of_Lots;
+ show Earnest_Money_Per_Lot;
+ show Initial_Takedown_Days;
+ show Initial_Takedown;
+ show Subsequent_Takedown_Lots;
+ show Subsequent_Takedown_Days;
+ show Lots1;
+ show Pricing;
+ show Lot_Block_Description;
+}
+else
+{
+ hide Number_of_Lots;
+ hide Earnest_Money_Per_Lot;
+ hide Initial_Takedown_Days;
+ hide Initial_Takedown;
+ hide Subsequent_Takedown_Lots;
+ hide Subsequent_Takedown_Days;
+ hide Lots1;
+ hide Pricing;
+ hide Lot_Block_Description;
+}
+if(input.Contract_Type == "Lot (Amendment)")
+{
+ show Parent_Contract;
+}
+else
+{
+ hide Parent_Contract;
+}

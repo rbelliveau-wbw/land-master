@@ -1,0 +1,8 @@
+if(input.Status == "Complete" && (input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)") && (input.Subdivision1.size() > 0 || input.Lots1.size() > 0))
+{
+ if(input.Number_of_Lots == null || input.Initial_Takedown == null || input.Initial_Takedown_Days == null || input.Subsequent_Takedown_Lots == null || input.Subsequent_Takedown_Days == null)
+ {
+  alert "Please add all Lot Takedown details before moving to Complete.";
+  cancel submit;
+ }
+}
