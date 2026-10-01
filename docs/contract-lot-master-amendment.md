@@ -1,6 +1,6 @@
 # Lot Master and Amendment release
 
-Contract Management 1.60.36 adds two Lot types. Rename the native Contract.Contract_Type choice Lot to Lot (Master), and add Lot (Amendment). Rename the corresponding Contract_Actions.Type_field choice and add Amendment there as well. Creator applies the renamed choice to existing records; there is no bulk record migration.
+Contract Management 1.60.36 adds two Lot types; 1.60.37 removes a stale builder hint identified in the production smoke check. Rename the native Contract.Contract_Type choice Lot to Lot (Master), and add Lot (Amendment). Rename the corresponding Contract_Actions.Type_field choice and add Amendment there as well. Creator applies the renamed choice to existing records; there is no bulk record migration.
 
 Master subdivisions are optional. Lot selection, pricing and takedown terms appear once a subdivision is selected. A Master without subdivisions or lots can complete without creating schedules or writing Lots. Amendment subdivisions are required at creation, editing and completion.
 
