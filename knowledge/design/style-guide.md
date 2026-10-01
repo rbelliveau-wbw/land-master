@@ -107,3 +107,5 @@ Phase removal uses a soft red square button with a pale red surface and visible 
 Searchable dropdown placeholders use Search plus the field name in title case, such as Search Subtype. Omit action prefixes such as Edit.
 
 Land Master searchable dropdowns in reports, filters, and modals share the report filter palette, compact bold option text, header search, border, shadow, and footer. Their close buttons use a centered SVG X on a pale red surface with a soft red outline. Keep single/multi-selection behavior intact.
+
+Center custom selection and success checkmarks with an explicit SVG, a path bounding box centered in its viewBox, and grid/flex alignment. Avoid font glyphs for checkmarks.

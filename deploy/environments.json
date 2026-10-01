@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T13:56:12.013Z",
+  "generated_at": "2026-10-01T14:17:00.776Z",
   "note": "Creator registrations use the stable Production URLs. The widget runtime selects environment-specific Custom APIs from Creator initialization context.",
   "environments": {
     "development": {
@@ -24,7 +24,7 @@
     "production": {
       "proforma-manager": "1.80.50",
       "budget-manager": "122.27.25",
-      "land-master": "8.12.3",
+      "land-master": "8.12.4",
       "contract-management": "1.60.32",
       "tax-center": "19.17.4",
       "milestone-gantt": "1.1.1",
