@@ -189,3 +189,7 @@ Also report:
 - whether a Creator deployment is required
 - regression scenarios
 - rollback release
+
+## Close and remove X buttons — required
+
+Every button that uses an X to close or remove something MUST visually center the X. Use an SVG with symmetric paths around the viewBox midpoint, explicit width/height, zero button padding, border-box sizing, and grid place-items:center or equivalent flex centering. Never use a text glyph or positional nudges. Verify the rendered icon at its actual button size before shipping; an off-center X is unacceptable. Keep phase removal compact: 23px button, 12px SVG, thin 1.5px stroke, soft red outline and surface.

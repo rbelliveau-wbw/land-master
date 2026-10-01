@@ -6,7 +6,7 @@ function section(start,end){return source.slice(source.indexOf(start),source.ind
 const fields={City:'Houston',County:'Harris',Territory:'South Austin',Project_Name:'Example',Company1:'4410926000000000001'};
 const context=vm.createContext({OPTS:{},S:{choicesReady:false,projects:[{ID:'4410926000000000002',Territory:'Houston'}]},
   projectFieldValue:field=>fields[field]||'',defaultSubName:()=> 'Phase 1',lookupId:value=>String(value?.ID||value||''),findIn:(list,id)=>list.find(r=>String(r.ID)===String(id)),
-  LOCATION_CHOICES_SNAPSHOT:JSON.parse(fs.readFileSync('creator/app-variables/location-choices.json','utf8')),diag:()=>{},LMRuntime:{apiName:name=>name+'_DEV'},parseFunctionResult:r=>({ok:r.code===3000,result:r.result})});
+  LOCATION_CHOICES_SNAPSHOT:JSON.parse(fs.readFileSync('creator/app-variables/location-choices.json','utf8')),auditOnly:(label,details,isErr)=>{assert.equal(isErr,false);assert.equal(details.source,"saved app-variable snapshot");},LMRuntime:{apiName:name=>name+'_DEV'},parseFunctionResult:r=>({ok:r.code===3000,result:r.result})});
 vm.runInContext(section('function applyLocationChoices','function loadData'),context);
 vm.runInContext(section('function subdivisionPayloadFromRow','function createStagedSubdivisions'),context);
 vm.runInContext(section('function inheritSubdivisionTerritory','function savePanel(){'),context);
@@ -63,3 +63,7 @@ for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Lan
  assert.equal(context.label({getAttribute:()=>input}),expected);
 }
 console.log('All New modals open after API failure; saved choices and clean search labels passed.');
+
+assert.match(source,/searchable-pickers\.js\?v=8\.12\.3/);
+assert.match(source,/searchable-pickers\.css\?v=8\.12\.3/);
+assert.doesNotMatch(source, /(?:lookup-popup-close|project-popup-close)[^>]*>×/);

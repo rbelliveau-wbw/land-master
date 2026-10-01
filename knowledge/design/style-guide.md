@@ -105,3 +105,5 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 Phase removal uses a soft red square button with a pale red surface and visible outline. Center the X with SVG geometry and grid alignment; retain an accessible Remove phase label.
 
 Searchable dropdown placeholders use Search plus the field name in title case, such as Search Subtype. Omit action prefixes such as Edit.
+
+Land Master searchable dropdowns in reports, filters, and modals share the report filter palette, compact bold option text, header search, border, shadow, and footer. Their close buttons use a centered SVG X on a pale red surface with a soft red outline. Keep single/multi-selection behavior intact.
