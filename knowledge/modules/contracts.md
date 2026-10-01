@@ -1,6 +1,12 @@
 
 # Contracts Module
 
+## Lot family branch rows (1.60.41)
+
+The Lot report groups each visible Master with its linked Amendments. Masters show a matching Amendment count and a separate keyboard-accessible collapse control; nested rows use blue branch connectors, a shared left rail, and subtle blue surfaces. Child rows no longer repeat the Master name when it is visible above them. Filtered children retain their parent label when the Master is outside the results, even if that family was collapsed. Unlinked Amendments remain standalone. Family collapse survives rerenders and remains separate from action/details expansion; hidden drill rows do not dim the report. Board parent labels and status colors are unchanged.
+
+Changed files: Contract widget source/config, immutable 1.60.41 release, widget manifest, production mapping, style guide and existing Lot type regression script. Existing Contract.ID, Contract_Type and Parent_Contract are read only. No forms, fields, functions or Custom APIs change; no Creator deployment required. Regression: multiple families and children, collapse/expand, filtered-out Master, optional/unrecognized parent, retained Board label, action drill, focus, and narrow report scrolling. Required repository validation and Pages build pass before promotion. Rollback: restore production mapping to Contract Management 1.60.40 and redeploy Pages.
+
 ## Inline Contract header and Lot type editing (1.60.40)
 
 The detail Edit page aligns Back, contract identity, Edit/Attachments/Approvals and summary fields in one horizontal header, scrolling on narrow screens. Its Lot Type picker opens the existing staged Lot editor with Master/Amendment choices; Parent Master appears only for Amendment, remains optional and filters to same-builder Masters. Save writes only changed Contract type/scope/parent fields when lots/pricing are unchanged; incomplete existing lot terms do not block that edit. Converting a Master already referenced by children is blocked after a fresh read. Switching to Master clears the parent. Completed-owner editing stays confined to the active Lot editor and cannot change unrelated types or reopen status. Open in Creator is removed from the detail header and available in the three-dot menu only to Robby's existing identity aliases.
