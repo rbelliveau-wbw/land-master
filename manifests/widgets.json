@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T18:08:09.762Z",
+  "generated_at": "2026-10-01T19:17:24.624Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.60.37",
+      "version": "1.60.38",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "4ae21016a936a5ad7e12da2976a207985abb7d8436fc445ca4becf0633da4bd7",
+      "source_sha256": "2225c95fead0a0d298ccd54aab416f54907bd557ae6c0dfc17918c65a5d0c211",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

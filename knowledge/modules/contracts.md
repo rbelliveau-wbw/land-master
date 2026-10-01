@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Compact Lot hover cards (1.60.38)
+
+Removed the generic backfill availability/preservation footer from the shared Lot picker hover card, covering new contracts and Change Lots & Pricing for both Master and Amendment types and all Lot statuses. Contract claim and On Hold warnings remain, along with Robby's private top banner and all selection/completion protections. Frontend only: no forms, fields, functions or Custom APIs change; no Creator deployment. Verify hover details and blocked/hold warnings with the existing regression suite and Pages build. Rollback: widget 1.60.37 through the production mapping.
+
 ## Lot Master and Amendment (1.60.36–1.60.37)
 
 The native Lot choice is renamed Lot (Master), with no bulk record migration. Lot (Amendment) is added to Contract and action-template type choices. UI dropdowns, filters, creation, Lots & Pricing, exports and completion handle both types in the same Lot main-list section. Master subdivisions are optional and reveal lot selection/pricing when selected. Amendment subdivisions are mandatory; its Parent_Contract lookup remains optional and accepts only Masters with the same Builder/Counterparty. Linked Amendments appear indented below their Master with an Amendment badge and parent name.
