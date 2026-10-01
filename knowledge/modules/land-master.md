@@ -57,3 +57,9 @@ Zoho Creator 403/code `2899` means the requesting user lacks permission to add r
 Subdivision Development Company (`Company1`) is a mandatory Creator lookup. Do not offer Clear selection for this field in either lookup editor mode, and reject empty lookup choices before sending an update. Land Company and other optional entity lookups may still be cleared.
 
 The Subdivisions table's `Projects_Status` pills mirror Budget Manager's phase-status color map, including aliases and its deterministic palette for unrecognized values. Normalize slash spacing so values such as `Road Prep / Pave` resolve to Budget Manager's `road prep/pave` color. Do not apply this phase palette to generic `Status` columns.
+
+## Project picker completion (8.12.1)
+
+Property selections display and search Property_ID while saving string Creator record IDs. Phase removal uses an outlined soft red button with a centered SVG X. The shared location choices and Project/phase Territory behavior remain as in 8.12.0, including its Production backend prerequisites. Regression: search and select multiple Property_ID values, save/reopen their lookup associations, remove a staged phase, and verify the inherited Territory payload. Changed files: widget HTML/CSS, widget config, widget manifest, style/module documentation, and immutable release. No new fields, functions, or APIs are introduced by 8.12.1. Rollback Production: 8.11.10.
+
+Production prerequisites were confirmed complete by the user on October 1, 2026; Production is promoted to 8.12.1.
