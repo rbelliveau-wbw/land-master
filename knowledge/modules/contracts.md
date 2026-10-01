@@ -1,6 +1,12 @@
 
 # Contracts Module
 
+## Inline Contract header and Lot type editing (1.60.40)
+
+The detail Edit page aligns Back, contract identity, Edit/Attachments/Approvals and summary fields in one horizontal header, scrolling on narrow screens. Its Lot Type picker opens the existing staged Lot editor with Master/Amendment choices; Parent Master appears only for Amendment, remains optional and filters to same-builder Masters. Save writes only changed Contract type/scope/parent fields when lots/pricing are unchanged; incomplete existing lot terms do not block that edit. Converting a Master already referenced by children is blocked after a fresh read. Switching to Master clears the parent. Completed-owner editing stays confined to the active Lot editor and cannot change unrelated types or reopen status. Open in Creator is removed from the detail header and available in the three-dot menu only to Robby's existing identity aliases.
+
+Files: Contract widget source/config, immutable release, widget manifest, production mapping, style guide and Contract regression scripts. Fields: existing Contract.Contract_Type, Parent_Contract and Subdivision1 only; no schema/functions/Custom APIs change, no Creator deployment. Regression: staged conversion/cancel, optional/mismatched parent, required Amendment subdivisions, Master parent clearing, linked-child guard, unchanged pricing/lots, completed-owner bounds, private Creator menu and desktop/narrow header. Full validation and Pages build required. Rollback: widget 1.60.38.
+
 ## Compact Lot hover cards (1.60.38)
 
 Removed the generic backfill availability/preservation footer from the shared Lot picker hover card, covering new contracts and Change Lots & Pricing for both Master and Amendment types and all Lot statuses. Contract claim and On Hold warnings remain, along with Robby's private top banner and all selection/completion protections. Frontend only: no forms, fields, functions or Custom APIs change; no Creator deployment. Verify hover details and blocked/hold warnings with the existing regression suite and Pages build. Rollback: widget 1.60.37 through the production mapping.

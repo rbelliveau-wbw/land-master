@@ -6,12 +6,14 @@ function fn(name){ const start=source.indexOf('function '+name+'('); assert.ok(s
 const c={ID:'123',Contract_Type:'Lot',Status:'Complete',Owner:[{ID:'42'}]};
 const ctx={S:{myAccessId:'42',currentUser:'rbelliveau@wbdevelopment.com',acc:{known:true,edit:false},clp:{cid:'123',lots0:[]},nc:{lotIds:[]},contracts:[c],lots:[]},CFG:{reports:{contracts:'contracts',pricing:'pricing',lots:'lots'},forms:{pricing:'pricingForm'}},findContract:()=>c,lpIsOn:id=>ctx.S.nc.lotIds.includes(String(id)),sdkGetAll:async()=>[],updateRecord:async()=>{},ncLoadPickerLots:async()=>{}};
 vm.createContext(ctx);
-for(const name of ['asList','truthy','lookupId','displayValue','isLotType','isLotContract','num','ownerIds','canEdit','contractLocked','lockedById','mayChangeLotsPricing','lockOwnerContract','lockBlocks','contractBackfillBanner','lotOpen','lpClaimIndex','lpClaimedBy','lotPickable','lotBlank','lotMissingWrites','healLotWrites','clpBackfillLinks','clpValidateLots']) vm.runInContext(fn(name),ctx);
+for(const name of ['asList','truthy','lookupId','displayValue','isLotType','isLotContract','num','ownerIds','canEdit','contractLocked','lockedById','mayChangeLotsPricing','lockOwnerContract','lockBlocks','isRobby','contractBackfillBanner','lotOpen','lpClaimIndex','lpClaimedBy','lotPickable','lotBlank','lotMissingWrites','healLotWrites','clpBackfillLinks','clpValidateLots']) vm.runInContext(fn(name),ctx);
 assert.equal(ctx.mayChangeLotsPricing('123'),true);
 ctx.S.myAccessId='99'; ctx.S.acc.edit=true;
 assert.equal(ctx.mayChangeLotsPricing('123'),false,'general edit alone cannot unlock a completed contract');
 ctx.S.myAccessId='42'; c.Contract_Type='Deed'; assert.equal(ctx.mayChangeLotsPricing('123'),false); c.Contract_Type='Lot';
 assert.equal(ctx.lockBlocks('contracts','123',{Lots1:['1']}),false);
+assert.equal(ctx.lockBlocks('contracts','123',{Contract_Type:'Lot (Amendment)',Parent_Contract:'9'}),false);
+assert.equal(ctx.lockBlocks('contracts','123',{Contract_Type:'Deed'}),true,'Lot editing cannot convert to unrelated contract types');
 assert.equal(ctx.lockBlocks('contracts','123',{Status:'New'}),true,'backfill must never reopen the contract');
 assert.equal(ctx.lockBlocks('contracts','123',{Lots1:['1'],Builder:'9'}),true);
 ctx.S.pricing=[{ID:'5',Contract1:{ID:'123'}}]; ctx.S.actions=[];ctx.S.approvals=[];ctx.S.versions=[];

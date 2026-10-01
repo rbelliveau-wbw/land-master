@@ -93,14 +93,14 @@ assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed contracts remain l
 ctx.S.myAccessId='42';
 assert.equal(ctx.mayChangeLotsPricing('123'),true,'completed Lot contracts allow owners to backfill');
 ownedLot.Status='New';
-for (const name of ['lotParentOptions','lotParentValid','lotValidateParent','lotTypeLabel','clpTermFields','clpTermChanges','clpSave']) vm.runInContext(fn(name), ctx);
+for (const name of ['lotParentOptions','lotParentValid','lotValidateParent','lotTypeLabel','clpTermFields','clpTermChanges','clpScopeChanges','clpValidateType','clpSave']) vm.runInContext(fn(name), ctx);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'1.5'}), /whole numbers/);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'-1'}), /whole numbers/);
 const changes=ctx.clpTermChanges({Number_of_Lots:20,Initial_Takedown:10}, {Number_of_Lots:'30',Initial_Takedown:''});
 assert.equal(changes.Number_of_Lots,30);
 assert.equal(changes.Initial_Takedown,null,'blank cadence clears the persisted value');
 // A terms-only edit must work with zero selected lots and must not delete pricing.
-const contract={ID:'123',Number_of_Lots:40};
+const contract={ID:'123',Contract_Type:'Lot (Master)',Number_of_Lots:40};
 ctx.S.nc={type:'Lot (Master)',parent:'',sub:[],lotIds:[],ppf:{}};
 ctx.S.clp={cid:'123',lots0:[],ppf0:'{}',terms:{Number_of_Lots:'45',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
 ctx.S.pricing=[{ID:'existing-pricing'}];
@@ -139,6 +139,18 @@ assert.equal(saved.payload.Number_of_Lots,50);
 assert.equal(saved.payload.Lots1[0],'1');
 assert.equal(contract.Number_of_Lots,50);
 assert.equal(ctx.lotCountWarning(contract.Number_of_Lots,contract.Lots1),'1 selected / 50 total lots');
+
+// Converting type without changing selected lots or pricing must only write type.
+contract.Subdivision1=[{ID:'20'}];
+ctx.S.nc={type:'Lot (Amendment)',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
+ctx.S.clp={cid:'123',lots0:['1'],ppf0:'{"50":1000}',terms:{Number_of_Lots:'50',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
+ctx.sdkGetAll=async()=>[contract];
+ctx.ncLotSizes=()=>{throw Error('Type-only conversion must not reconcile pricing');};
+const converted=new Promise(resolve=>{ctx.closeOverlays=resolve;});
+ctx.clpSave();await converted;
+assert.deepEqual(JSON.parse(JSON.stringify(saved.payload)),{Contract_Type:'Lot (Amendment)'});
+assert.equal(contract.Contract_Type,'Lot (Amendment)');
+assert.equal(ctx.S.pricing[0].ID,'existing-pricing');
 
 // The Legal Review "Assigned to me" pill spans each existing assignment shape.
 ctx.ncLoginUser=()=>ctx.S.currentUser;
