@@ -6,7 +6,7 @@ function section(start,end){return source.slice(source.indexOf(start),source.ind
 const fields={City:'Houston',County:'Harris',Territory:'South Austin',Project_Name:'Example',Company1:'4410926000000000001'};
 const context=vm.createContext({OPTS:{},S:{choicesReady:false,projects:[{ID:'4410926000000000002',Territory:'Houston'}]},
   projectFieldValue:field=>fields[field]||'',defaultSubName:()=> 'Phase 1',lookupId:value=>String(value?.ID||value||''),findIn:(list,id)=>list.find(r=>String(r.ID)===String(id)),
-  LMRuntime:{apiName:name=>name+'_DEV'},parseFunctionResult:r=>({ok:r.code===3000,result:r.result})});
+  LOCATION_CHOICES_SNAPSHOT:JSON.parse(fs.readFileSync('creator/app-variables/location-choices.json','utf8')),diag:()=>{},LMRuntime:{apiName:name=>name+'_DEV'},parseFunctionResult:r=>({ok:r.code===3000,result:r.result})});
 vm.runInContext(section('function applyLocationChoices','function loadData'),context);
 vm.runInContext(section('function subdivisionPayloadFromRow','function createStagedSubdivisions'),context);
 vm.runInContext(section('function inheritSubdivisionTerritory','function savePanel(){'),context);
@@ -20,8 +20,14 @@ context.invokeErrorApi=async args=>{assert.equal(args.api_name,'Get_Land_Master_
 await context.loadLocationChoices();
 assert.equal(context.S.choicesReady,true);
 context.invokeErrorApi=async()=>({code:5000,result:'bad'});
-await assert.rejects(context.loadLocationChoices());
-assert.equal(context.S.choicesReady,false);
+await context.loadLocationChoices();
+assert.equal(context.S.choicesReady,true);
+assert.equal(context.S.choicesSource,'snapshot');
+assert.ok(context.OPTS.projectCity.includes('Houston'));
+context.invokeErrorApi=async()=>{throw {code:9350,message:'Custom API does not exist'};};
+await context.loadLocationChoices();
+assert.equal(context.S.choicesReady,true);
+assert.equal(context.OPTS.territory.length,10);
 context.applyLocationChoices(choices);
 let data=context.subdivisionPayloadFromRow({name:'Phase A',phase:'2',territory:'WRONG',devCompany:'4410926000000000003'},'4410926000000000002');
 assert.equal(data.Territory,'South Austin','phase inherits current Project choice rather than an old row choice');
@@ -42,3 +48,18 @@ assert.doesNotMatch(section('function subdivisionSubformInner','function subdivi
 assert.doesNotMatch(source,/Record fields|Ctrl\/Cmd-click/);
 assert.match(source,/inheritSubdivisionTerritory\(data,rec,S.editorNew\)/);
 console.log('Land Master shared choices, API errors, Territory inheritance, and editor contracts passed.');
+
+const modalNode={classList:{add:()=>{}},setAttribute:()=>{}};
+Object.assign(context,{$:()=>modalNode,withDiscardConfirm:(message,accept)=>accept(),newDefaults:()=>({}),renderPanel:()=>{}});
+const modalStart=source.indexOf('function openNewEditor('),modalEnd=source.indexOf('\n',modalStart);
+vm.runInContext(source.slice(modalStart,modalEnd),context);
+for(const type of ['property','project','subdivision','company','lot','builder','takedown','builderTakedown']){
+ context.S.liveSDK=true;context.S.choicesReady=false;context.S.modalOpen=false;
+ context.openNewEditor(type);assert.equal(context.S.modalOpen,true,type+' must open');assert.equal(context.S.editorType,type);
+}
+const picker=fs.readFileSync('widgets/land-master/src/app/searchable-pickers.js','utf8');
+vm.runInContext(picker.slice(picker.indexOf('  function label('),picker.indexOf('  function selected(')),context);
+for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Land Type'],['Search and edit County','County'],['City *','City']]){
+ assert.equal(context.label({getAttribute:()=>input}),expected);
+}
+console.log('All New modals open after API failure; saved choices and clean search labels passed.');

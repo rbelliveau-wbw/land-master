@@ -103,3 +103,5 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 - Populate Subdivision review pins the subdivision identity, import totals and per-block counts above one scrolling lot list with sticky column headings. Place totals beside identity on desktop; keep the summary out of the vertical scroller. Show the subdivision per lot as read-only text and use Lot Size (Ft) for width. Keep import counts distinct from existing subdivision inventory.
 
 Phase removal uses a soft red square button with a pale red surface and visible outline. Center the X with SVG geometry and grid alignment; retain an accessible Remove phase label.
+
+Searchable dropdown placeholders use Search plus the field name in title case, such as Search Subtype. Omit action prefixes such as Edit.
