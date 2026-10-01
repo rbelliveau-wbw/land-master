@@ -28,9 +28,14 @@ string Complete_Lot_Contract(string contractId)
 	   of the Custom API ({"contractId":"..."}) - accept both */
 	raw = contractId.trim();
 	cid = 0;
+	mode = "Complete";
 	if(raw.startsWith("{"))
 	{
 		pm = raw.toMap();
+		if(pm.get("mode") != null)
+		{
+			mode = pm.get("mode").toString();
+		}
 		if(pm.get("contractId") != null)
 		{
 			cid = pm.get("contractId").toLong();
@@ -55,6 +60,23 @@ string Complete_Lot_Contract(string contractId)
 	{
 		resp.put("error","Not a Lot contract");
 		return resp.toString();
+	}
+	resp.put("preserveExisting",true);
+	if(mode == "Check")
+	{
+		resp.put("contractId",cid.toString());
+		return resp.toString();
+	}
+	// Refuse a conflicting association before creating schedules or writing lots.
+	for each lotId in c.Lots1
+	{
+		lotCheck = Lots[ID == lotId];
+		otherContracts = Contract[(Lots1 == lotId) && (ID != cid)];
+		if(otherContracts.count() > 0 || (lotCheck.count() > 0 && lotCheck.Contract1 != null && lotCheck.Contract1 != cid))
+		{
+			resp.put("error","A selected lot belongs to another contract. Remove it before completing.");
+			return resp.toString();
+		}
 	}
 	/* ---- step: takedown details present ----------------------------------
 	   Mirrors the "Lot Contract Required Fields" form workflow. The widget
@@ -102,7 +124,28 @@ string Complete_Lot_Contract(string contractId)
 	sTd = Map();
 	sTd.put("key","takedown");
 	sTd.put("label","Takedown Schedule created");
-	tdCode = c.Subdivision1.Subdivision_Code + " - " + c.Builder.Builder_Name;
+	phaseCodes = List();
+	for each  subId in c.Subdivision1
+	{
+		sub = Subdivision[ID == subId];
+		if(sub.ID != null)
+		{
+			phaseCodes.add(ifnull(sub.Subdivision_Code,"").toString());
+		}
+	}
+	phaseCodes.sort();
+	tdCode = phaseCodes.toString("+") + " - " + c.Builder.Builder_Name;
+	overlaps = List();
+	for each  subId in c.Subdivision1
+	{
+		for each  other in Takedown_Schedule[Builder1 == c.Builder && Subdivisions == subId && Takedown_Schedule_Code != tdCode]
+		{
+			if(!overlaps.contains(other.Takedown_Schedule_Code))
+			{
+				overlaps.add(other.Takedown_Schedule_Code);
+			}
+		}
+	}
 	tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
 	tdExisted = tdsched.count() > 0;
 	if(tdsched.count() == 0)
@@ -124,6 +167,12 @@ string Complete_Lot_Contract(string contractId)
 		tdsched = Takedown_Schedule[Takedown_Schedule_Code == tdCode];
 	}
 	sTd.put("code",tdCode);
+	sTd.put("phases",phaseCodes);
+	sTd.put("overlaps",overlaps);
+	if(overlaps.size() > 0)
+	{
+		sTd.put("detail",tdCode + " · overlaps existing schedule(s): " + overlaps.toString(", "));
+	}
 	if(tdsched.count() > 0)
 	{
 		sTd.put("scheduleId",tdsched.ID.toString());
@@ -154,26 +203,38 @@ string Complete_Lot_Contract(string contractId)
 				pr = Contract_Pricing[Contract1 == cid && Lot_Size == lotRow.Lot_Size];
 				if(pr.count() > 0)
 				{
-					lotRow.Base_Price=pr.Base_Price;
-					if(pr.Escalator != null)
+					if(lotRow.Base_Price == null && pr.Base_Price != null)
+					{
+						lotRow.Base_Price=pr.Base_Price;
+					}
+					if(lotRow.Escalator == null && pr.Escalator != null)
 					{
 						lotRow.Escalator=pr.Escalator;
 					}
-					lotRow.Builder1=c.Builder;
-					if(lotRow.Close_Date != null)
+					if(lotRow.Builder1 == null && c.Builder != null)
 					{
-						lotRow.Status="Sold";
+						lotRow.Builder1=c.Builder;
 					}
-					else if(lotRow.Purchase_Date != null)
+					if(ifnull(lotRow.Status,"").trim() == "")
 					{
-						lotRow.Status="Scheduled";
+						if(lotRow.Close_Date != null)
+						{
+							lotRow.Status="Sold";
+						}
+						else if(lotRow.Purchase_Date != null)
+						{
+							lotRow.Status="Scheduled";
+						}
+						else
+						{
+							lotRow.Status="Contracted";
+						}
 					}
-					else
+					if(lotRow.Contract1 == null)
 					{
-						lotRow.Status="Contracted";
+						lotRow.Contract1=cid;
 					}
-					lotRow.Contract1=cid;
-					if(tdsched.count() > 0)
+					if(lotRow.Contract_Schedule == null && tdsched.count() > 0)
 					{
 						lotRow.Contract_Schedule=tdsched.ID;
 					}
@@ -209,7 +270,7 @@ string Complete_Lot_Contract(string contractId)
 	else if(skippedList.size() == 0)
 	{
 		sLots.put("state","done");
-		sLots.put("detail",updatedList.size().toString() + " lots set to Contracted and priced");
+		sLots.put("detail",updatedList.size().toString() + " lots checked; only blank fields filled");
 	}
 	else
 	{

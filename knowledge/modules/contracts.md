@@ -1,6 +1,20 @@
 
 # Contracts Module
 
+## Owner backfill and fill-only completion (1.60.34)
+
+Owners of Lot contracts may use Change Lots & Pricing after Complete. General editors keep their existing open-contract access; completed non-owned contracts and unrelated completed-contract writes remain locked. The write exception is scoped to the active Lots & Pricing session, the same contract, its lot/count/takedown fields and pricing rows. Saving selected lots to a completed contract fills only an absent Lots.Contract1 link; no pricing, builder, status, size or schedule is rewritten by backfill. Removed lots retain existing Lot data and links.
+
+Unassigned Sold lots are selectable alongside Open lots. Both Lots.Contract1 and other contracts' Lots1 associations block reuse, including archived/rejected contracts. Existing lots on the edited contract can remain selected. Save refreshes the selected subdivisions and rechecks eligibility; link backfill rereads each target lot. A missing Contract1 report column is unknown, so it cannot authorize Sold selection or a link write. Scheduled/Contracted lots remain unavailable for new selection.
+
+The top amber backfill banner appears only for Robby's signed-in Creator identities (`rbelliveau@wbdevelopment.com`, `rbelliveau`, `wbdevelopment`). It explains completed-owner editing, unassigned Sold selection and fill-only completion.
+
+Complete_Lot_Contract now fills only blank Base_Price, Escalator, Builder1, Status, Contract1 and Contract_Schedule. Zero prices/escalators, Open/Scheduled/Sold statuses, existing builders and links are preserved. Lot_Size and all other Lot fields are untouched. A blank status uses Close_Date, then Purchase_Date, then Contracted. The widget repair pass uses the same rule, rereads target lots, skips omitted fields and reports repair failures. Conflicting contract associations stop server completion before schedule/lot writes. Existing multi-phase schedule naming and overlap detection from the live Development function are retained.
+
+Creator deployment required: `Complete_Lot_Contract` behind the existing Custom API and Contract on-success `Set_Lot_Base_Price_Builde`. The native workflow delegates to the guarded function and no longer recalculates populated statuses. No new forms, fields or APIs. The existing Create Takedown Schedule 2 workflow was audited: it creates missing schedules only and does not write Lots. `mode: Check` is read-only only after the new function is published; never send it to an older function, which ignores the mode. Test targets: owner/non-owner, save guard, existing associations, Sold selection, numeric zero, all statuses, omitted report fields, failed repairs and repeated completion. Required checks: full validation and Pages build. Rollback: widget 1.60.32 plus the previous live function/workflow bodies (rollback restores their overwrite behavior).
+
+Deployment verified October 1, 2026: Creator Stage and Production V9.20 include only the guarded function and native Contract workflow. The live Contracts Lots report already exposes Contract and Contract Schedule. Widget 1.60.34 is promoted through the stable Production URL.
+
 ## Contract owner lot editing (1.60.31)
 
 For an open Lot contract, Change Lots & Pricing is available to a listed Contract.Owner even without User_Access.Edit_Contracts. General editors retain access. Both entry points and the open/save handlers use the same check; completed contracts stay locked. Ownership is matched by the signed-in User_Access row ID from Get_User_Access. Frontend only; no Creator form, field, function, or Custom API change, and no Creator deployment. Regression: owner, non-owner, general editor, unresolved user, completed contract, and save. Rollback: `1.60.30` via the production mapping.

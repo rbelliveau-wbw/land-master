@@ -28,7 +28,7 @@ const ctx = {
   versionsFor: () => [{ID: 'attachment'}], esc: s => String(s), attr: s => String(s)
 };
 vm.createContext(ctx);
-for (const name of ['truthy','asList','lookupId','lotSubId','lpAllowedSubs','ncLoadPickerLots','ncApplyAccess','canDeleteArchive','sdkDeleteById','updateRecord','num','clpLookupOne','lotCountWarning','contractAttachmentButton','contractTitleExtras','ownerIds','canEdit','contractLocked','lockedById','mayChangeLotsPricing']) vm.runInContext(fn(name), ctx);
+for (const name of ['truthy','asList','lookupId','lotSubId','lpAllowedSubs','ncLoadPickerLots','ncApplyAccess','canDeleteArchive','sdkDeleteById','updateRecord','num','clpLookupOne','lotCountWarning','contractAttachmentButton','contractTitleExtras','ownerIds','canEdit','contractLocked','lockedById','isLotContract','mayChangeLotsPricing']) vm.runInContext(fn(name), ctx);
 await ctx.ncLoadPickerLots();
 assert.equal(requests[0].criteria, '(Subdivision == 441092600000784111)');
 assert.equal(ctx.S.lots.length, 2, 'retain lots from other subdivisions');
@@ -77,7 +77,7 @@ assert.match(row, /0 selected \/ 40 total lots/);
 assert.match(row, /title="Attachments"/);
 assert.equal(ctx.lotCountWarning(2,[{ID:'1'},{ID:'2'},{ID:'2'}]), '');
 assert.equal(ctx.lotCountWarning(3,[{ID:'1'},{ID:'2'}]), '2 selected / 3 total lots');
-const ownedLot={ID:'123',Status:'New',Owner:[{ID:'42'},{ID:'99'}]};
+const ownedLot={ID:'123',Contract_Type:'Lot',Status:'New',Owner:[{ID:'42'},{ID:'99'}]};
 ctx.findContract=()=>ownedLot;
 ctx.S.myAccessId='42';
 ctx.ncApplyAccess({found:true,ctEdit:false});
@@ -90,6 +90,8 @@ ctx.ncApplyAccess({found:true,ctEdit:true});
 assert.equal(ctx.mayChangeLotsPricing('123'),true,'general editors retain access');
 ownedLot.Status='Complete';
 assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed contracts remain locked');
+ctx.S.myAccessId='42';
+assert.equal(ctx.mayChangeLotsPricing('123'),true,'completed Lot contracts allow owners to backfill');
 ownedLot.Status='New';
 for (const name of ['clpTermFields','clpTermChanges','clpSave']) vm.runInContext(fn(name), ctx);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'1.5'}), /whole numbers/);
@@ -127,6 +129,7 @@ ctx.S.clp={cid:'123',lots0:[],ppf0:'{"50":1000}',terms:{Number_of_Lots:'50',Init
 ctx.S.lpLoading=false; ctx.S.lpLoadError='';
 ctx.ncPricingDone=()=>true;
 ctx.ncLotSizes=()=>[{size:50,count:1}];
+ctx.clpValidateLots=async()=>{};
 ctx.pricingFor=()=>[{ID:'existing-pricing',Lot_Size:50,Price_per_Ft:1000,Base_Price:50000}];
 ctx.sdkGetAll=async ()=>ctx.pricingFor();
 const combined=new Promise(resolve=>{ctx.closeOverlays=resolve;});
