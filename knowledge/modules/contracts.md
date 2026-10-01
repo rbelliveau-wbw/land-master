@@ -1,6 +1,10 @@
 
 # Contracts Module
 
+## Bolder rounded Lot branches (1.60.42)
+
+Lot family branch strokes increase from 2px to 3px, use a deeper blue, and end with a 9px rounded elbow. The matching family rail increases from 3px to 4px. Existing row tints, indentation, filtering, collapse controls and status colors are retained. Changed files: Contract widget source/config, immutable release 1.60.42, manifest, production mapping and style/module documentation. No forms, fields, functions or Custom APIs change; no Creator deployment required. Verify single/multiple children, rounded final branch, collapse/expand and report scrolling, then run repository validation and Pages build. Rollback: restore production Contract Management 1.60.41 and redeploy Pages.
+
 ## Lot family branch rows (1.60.41)
 
 The Lot report groups each visible Master with its linked Amendments. Masters show a matching Amendment count and a separate keyboard-accessible collapse control; nested rows use blue branch connectors, a shared left rail, and subtle blue surfaces. Child rows no longer repeat the Master name when it is visible above them. Filtered children retain their parent label when the Master is outside the results, even if that family was collapsed. Unlinked Amendments remain standalone. Family collapse survives rerenders and remains separate from action/details expansion; hidden drill rows do not dim the report. Board parent labels and status colors are unchanged.
