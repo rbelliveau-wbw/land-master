@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.29
+# Land Master Insights 1.5.30
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, lot count, average base price, and total base price. Filter by Subdivision's Zoho Project Status, territory, project, builder, Sold/Scheduled status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.
 
@@ -14,6 +14,7 @@ The `User_Access` form must contain `Lot_Sales_Dashboard` and `View_Total_Lot_Re
 
 ## Data rules and controls
 
+- Lot detail uses a fixed viewport-relative height across populated and empty status tabs. The status slider is centered, and the table has small side gutters while keeping its own scrolling region and visible header/footer.
 - The subdivision card's View Lots / View All Lots action opens the subdivision's complete inventory across all dates, ignoring the report's status, date, builder and search filters. It waits for complete history. A counted slider switches between Sold, Scheduled, Contracted, Open and All; the initial selection matches a single report status, otherwise All. Open uses the same catch-all definition as the card. Each status retains builder grouping, newest selected dates first, then lot code. All adds colored status bands in Sold/Scheduled/Contracted/Open order above builder and date groups. Scheduled groups by Purchase Date; the other statuses retain the report's date basis. Missing dates have their own group. Counts include later pages, switching status resets pagination, and Export Lots exports every lot in the selected tab with existing revenue permissions. Report-cell and total drilldowns retain the report's selected month/period and do not show this inventory slider.
 - Initial view uses Sold, Close Date, the current and previous calendar year, and all populated subdivisions after full history loads. Hide Empty and Exclude Unassigned / Other / Placeholder are off by default; both remain editable filters.
 - Mean $/FF averages each eligible lot's `Base_Price / Lot_Size`. Zero prices remain zero; missing/negative price and nonpositive frontage are excluded from $/FF and reported in the data-quality count. Lot count still includes those lots.
