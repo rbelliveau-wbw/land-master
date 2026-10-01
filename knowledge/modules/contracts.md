@@ -1,6 +1,12 @@
 
 # Contracts Module
 
+## Temporary all-status backfill (1.60.35)
+
+All Lots in the selected contract subdivisions are selectable regardless of Status or the Lot record Contract1 lookup. Only another Contract.Lots1 selection blocks assignment, including archived/rejected contracts. The edited contract does not block its own lots. Status colors remain descriptive; locks and hover messages identify parent contract claims. Both new-contract creation and Lots & Pricing save refresh parent claims before writing. Completion uses the same parent-only conflict rule. Populated Lot fields and links are still preserved; an orphaned existing Lot.Contract1 is never replaced. Robbys private banner describes the temporary rule.
+
+Affected forms/fields: Contract.Lots1; Lots.Contract1 is filled only if blank. Creator deployment: Complete_Lot_Contract behind the existing API; native workflow delegates unchanged. Regression: every status, blank/unknown status, legacy Lot lookup, own/other/archived parent claims, refreshed claims and failed reads, preserved pricing/builder/status/links. Validation and Pages build required. Rollback widget 1.60.34 and Creator V9.20.
+
 ## Owner backfill and fill-only completion (1.60.34)
 
 Owners of Lot contracts may use Change Lots & Pricing after Complete. General editors keep their existing open-contract access; completed non-owned contracts and unrelated completed-contract writes remain locked. The write exception is scoped to the active Lots & Pricing session, the same contract, its lot/count/takedown fields and pricing rows. Saving selected lots to a completed contract fills only an absent Lots.Contract1 link; no pricing, builder, status, size or schedule is rewritten by backfill. Removed lots retain existing Lot data and links.

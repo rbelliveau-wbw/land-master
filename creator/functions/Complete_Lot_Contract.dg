@@ -70,9 +70,8 @@ string Complete_Lot_Contract(string contractId)
 	// Refuse a conflicting association before creating schedules or writing lots.
 	for each lotId in c.Lots1
 	{
-		lotCheck = Lots[ID == lotId];
 		otherContracts = Contract[(Lots1 == lotId) && (ID != cid)];
-		if(otherContracts.count() > 0 || (lotCheck.count() > 0 && lotCheck.Contract1 != null && lotCheck.Contract1 != cid))
+		if(otherContracts.count() > 0)
 		{
 			resp.put("error","A selected lot belongs to another contract. Remove it before completing.");
 			return resp.toString();
