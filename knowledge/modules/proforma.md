@@ -4,6 +4,8 @@
 
 Picker fix in 1.80.52: expanded Project/Subdivision choices grow within the modal's scrolling body, and input filters visible choices ignoring case and surrounding whitespace. [Verification and rollback](../../docs/proforma-budget-picker-1.80.52.md).
 
+In 1.80.53, Project and Subdivision options sort alphabetically by display name; the search field and result list have separate spacing for their focus outlines. [Verification and rollback](../../docs/proforma-budget-picker-1.80.53.md).
+
 The three-dot menu opens a top-aligned modal with a Project picker, phase tabs, and a selected phase/subdivision mapping and cost breakdown. Users can transfer only into existing empty Budgets when the PF phase count matches Project subdivisions. Budget lots use saved Proforma_Phase.Total_Lots; acres and street LF divide evenly; lot price and land cost carry over. Base costs map to 2101 Design and 3100 Full Construction Roll-Up. Explicit phase-range additional costs allocate to those phases, Reimbursements items starting with Impact Fees spread across all phases, and per-unit rows keep their rates and use destination Budget quantities. Notes are preserved; ambiguous or Specific Months costs appear as Not Migrated.
 
 Transfers use two dedicated Deluge functions and a separate PF_Budget_Transfer Custom API. Normal Pro Forma Save and form workflows are unchanged. Functions and the Development API are saved in Creator; the user publishes the functions and configures the Production API after publication. Production stays preview-only until the dedicated endpoint is ready. See [Creator handoff, fields, verification, and rollback](../../creator/functions/PF_BUDGET_TRANSFER_HANDOFF.md). Widget rollback: 1.80.48.

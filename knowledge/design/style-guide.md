@@ -10,6 +10,8 @@ Contract detail headers align Back, record identity, view tabs and summary field
 
 ## Record dropdowns
 
+Alphabetize record picker options by display name. Keep a visible gap between the search field and results, allowing room for focus outlines so adjacent controls never overlap.
+
 Use the same custom searchable picker for widget record dropdowns as for filters. Single-value fields stay single-select; collections such as Project Properties use multi-select with a selection count, Clear, Select visible, and Done. Keep the selection staged until the record Save action. Put Territory on the Project widget editor and inherit it into new phases; omit the separate phase Territory input. Avoid redundant `Record fields` headings above editor labels. These preferences apply to the widgets, not native Creator form workflows.
 
 ## Approval progress
