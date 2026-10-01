@@ -7,6 +7,15 @@ const root=path.resolve('widgets/proforma-manager/src/app');
 const escape=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 http.createServer((req,res)=>{
  const url=new URL(req.url,'http://127.0.0.1');
+ if(url.pathname==='/transfer-responsive-fixture'){
+  const width=url.searchParams.get('size')==='short'?800:390,height=width===800?400:844;
+  res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><title>Transfer responsive fixture</title><style>body{margin:0;background:#e1e7ef}iframe{display:block;border:0}</style><iframe title="Responsive transfer" src="/transfer-ui-fixture" width="'+width+'" height="'+height+'"></iframe>');return;
+ }
+ if(url.pathname==='/transfer-ui-fixture'){
+  const html=fs.readFileSync(path.join(root,'widget.html'),'utf8').replace(/<script src="https:\/\/static\.zohocdn\.com[^"]*"><\/script>/,"");
+  const harness=fs.readFileSync('scripts/fixtures/proforma-budget-transfer-review.html','utf8').replace('__FIXTURE_JSON__',JSON.stringify(fixture()));
+  res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html.replace('</body>',harness+'</body>'));return;
+ }
  if(url.pathname==='/transfer-fixture'){
   res.setHeader('Content-Type','text/html; charset=utf-8');res.end(fs.readFileSync('scripts/fixtures/proforma-budget-transfer.html','utf8').replace('__FIXTURE_JSON__',JSON.stringify(fixture())));return;
  }

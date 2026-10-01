@@ -29,6 +29,13 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
     units = {"Lot","Acre","LF"};
     seen = List();
     grandTotal = 0;
+    headerOverrides = ifnull(ctx.get("headerOverrides"),Map());
+    headerFields = {"Lot_Total_Residential","Acres","Equiv_LF_of_Street","Lot_Price","Land_Cost"};
+    for each editPhase in headerOverrides.keys()
+    {
+        if(!editPhase.toString().isNumber()) { errors.add("Unknown phase in Budget edits."); }
+        else if(editPhase.toDecimal() < 1 || editPhase.toDecimal() > count || editPhase.toDecimal() != editPhase.toDecimal().floor() || editPhase.toString() != editPhase.toLong().toString()) { errors.add("Unknown phase in Budget edits."); }
+    }
     if(count > 0)
     {
         p = 0;
@@ -54,6 +61,19 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
             lotPrice = ifnull(pf.get("Lot_Size_Ft"),0) * ifnull(pf.get("Sale_Price_FF"),0);
             h.put("Lot_Price",lotPrice.round(2));
             h.put("Land_Cost",ifnull(pf.get("Land_Cost_Acre"),0));
+            edits = ifnull(headerOverrides.get(p.toString()),Map());
+            for each field in edits.keys()
+            {
+                raw = ifnull(edits.get(field),"").toString().trim();
+                if(!headerFields.contains(field)) { phaseErrors.add("Unknown Budget metric."); }
+                else if(!raw.isNumber()) { phaseErrors.add(field + " must be a nonnegative number."); }
+                else
+                {
+                    value = raw.toDecimal();
+                    if(value < 0 || (field == "Lot_Total_Residential" && (value != value.floor() || value > 9007199254740991)) || (field != "Lot_Total_Residential" && value != value.round(2))) { phaseErrors.add(field + " must be nonnegative with valid precision."); }
+                    else { h.put(field,value); }
+                }
+            }
             phase.put("header",h);
             foundSub = false;
             for each sub in ctx.get("subdivisions")

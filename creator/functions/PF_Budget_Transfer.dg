@@ -12,7 +12,7 @@ string PF_Budget_Transfer(string payload)
         {
             response.put("success",true);
             response.put("action",op);
-            response.put("budgetTransferVersion",1);
+            response.put("budgetTransferVersion",if(data.get("budgetTransferClientVersion") == 2,2,1));
             return response.toString();
         }
         if(op != "budget_transfer_preview" && op != "budget_transfer_apply")
@@ -173,6 +173,7 @@ string PF_Budget_Transfer(string payload)
         }
         ctx.put("subdivisions",subs); ctx.put("budgets",budgets); ctx.put("categories",categories); ctx.put("budgetItems",items); ctx.put("approvals",approvals); ctx.put("modifications",modifications);
         mapping = ifnull(data.get("mapping"),Map());
+        ctx.put("headerOverrides",ifnull(data.get("headerOverrides"),Map()));
         // Hash the complete source and destination snapshot BEFORE the planner adds derived amounts.
         signature = zoho.encryption.sha256(ctx.toString() + mapping.toString());
         response.put("context",ctx);
@@ -193,7 +194,7 @@ string PF_Budget_Transfer(string payload)
             response.put("error","Source or target data changed. Refresh the preview before sending.");
             return response.toString();
         }
-        // No client-supplied cost amounts or item IDs are accepted. Every write is recomputed above.
+        // Only the five validated destination metrics can be overridden. Cost amounts and item IDs are recomputed above.
         for each phase in plan.get("phases")
         {
             b = Add_Budget[ID == phase.get("budgetId").toLong()];

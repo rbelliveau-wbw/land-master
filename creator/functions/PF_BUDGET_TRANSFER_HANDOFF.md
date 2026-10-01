@@ -2,6 +2,14 @@
 
 This is a widget, two Deluge functions, and a dedicated Custom API. No form workflow or `proforma_save` change is part of this feature. Normal PF Save never initiates a transfer.
 
+## Destination metric editing — 1.80.54
+
+`PF_Budget_Transfer_Plan` accepts optional `ctx.headerOverrides`, keyed by phase number then one of `Lot_Total_Residential`, `Acres`, `Equiv_LF_of_Street`, `Lot_Price`, or `Land_Cost`. `PF_Budget_Transfer` takes the same object in preview/apply payloads, includes it in the snapshot token, recomputes all amounts, writes the five destination headers, and verifies them. Lots must be nonnegative safe whole numbers; the other values must be nonnegative with at most two decimal places. Unknown fields/phases block sending. Edited quantities recalculate per-unit costs; saved PF/phase values and base allocations are unchanged.
+
+Capabilities negotiate version 2 when `budgetTransferClientVersion:2` is requested; legacy clients continue receiving version 1. New widgets block edited transfers against a version 1 endpoint. Automatic mapping hides the subdivision picker only for a unique saved Phase match; unresolved/ambiguous phases retain manual assignment. See [1.80.54 deployment and regression notes](../../docs/proforma-budget-transfer-review-1.80.54.md).
+
+Both transfer functions were selectively published to Stage and Production as Land Master 9.25 on 2026-10-01. The unrelated Contracts archive schedule was excluded. Earlier handoff sections below describe the original rollout; this update requires no new field or Custom API registration.
+
 ## Access update — 1.80.50
 
 Development `User_Access` now has an unchecked decision box **Send Costs to Budgets** (`Send_Costs_to_Budgets`) under Proformas. Publish this field with the updated `getUserAccess` and `PF_Budget_Transfer` functions, then grant it only to intended senders. `getUserAccess` returns `pfSendCostsToBudgets`; the widget hides the list action and prevents opening or sending when false or missing. `PF_Budget_Transfer` checks the signed-in user's field on every preview and apply request. Existing destination Budget edit permissions still apply. No User Access records were granted automatically, and no PF save or workflow changes are involved.

@@ -123,3 +123,5 @@ Land Master searchable dropdowns in reports, filters, and modals share the repor
 Center custom selection and success checkmarks with an explicit SVG, a path bounding box centered in its viewBox, and grid/flex alignment. Avoid font glyphs for checkmarks.
 
 Import Lots Attach and spreadsheet-checking dialogs fit their contents with a compact centered width and automatic height. Keep the lot-review table in its larger workspace. Cap compact dialogs to the viewport and scroll their body when needed.
+
+Budget transfer review uses outlined editable fields inside pale-blue metric cards, destination identity above the matrix, and compact cost-code badges in ascending Budget Item order. Keep the modal footer visible and use one body scroller on desktop; unresolved phase mappings show a distinct assignment row.
