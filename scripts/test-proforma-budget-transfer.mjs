@@ -75,6 +75,7 @@ const accessFn=fs.readFileSync('creator/functions/getUserAccess.dg','utf8');asse
 const transferFn=fs.readFileSync('creator/functions/PF_Budget_Transfer.dg','utf8');assert.match(transferFn,/actor\.count\(\) != 1 \|\| actor\.Send_Costs_to_Budgets != true/);assert.ok(transferFn.indexOf('actor.Send_Costs_to_Budgets')<transferFn.indexOf('pf = Add_Pro_Forma'));
 assert.match(transferFn,/budgetTransferVersion",if\(data\.get\("budgetTransferClientVersion"\) == 2,2,1\)/);
 assert.match(widget,/budgetTransferClientVersion:2/);
+for(const asset of ['budget-transfer-model.js','budget-transfer-ui.js','budget-transfer.css'])assert.ok(widget.includes(asset+'?v='),'transfer assets must bust prior browser caches');
 assert.ok(transferFn.indexOf('ctx.put("headerOverrides"')<transferFn.indexOf('signature = zoho.encryption.sha256'),'preview token covers edited destination metrics');
 assert.ok(!fs.readFileSync('creator/functions/proforma_save.dg','utf8').includes('PF_Budget_Transfer'));
 console.log('Pro Forma Budget transfer: allocation, notes, phase lots, per-unit, credits, exclusions, locks, emptiness, and Creator/widget parity passed.');

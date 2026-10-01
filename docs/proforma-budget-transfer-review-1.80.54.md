@@ -1,6 +1,6 @@
 # Budget transfer review — 1.80.54
 
-The transfer modal sorts Budget Item cost codes ascending, automatically maps unique saved subdivision Phase numbers, and shows a subdivision picker when the mapping is missing or ambiguous. The phase tabs remain. Project/Subdivision alphabetical filtering and separated search/results spacing from 1.80.53 remain in place.
+The transfer modal sorts Budget Item cost codes ascending, automatically maps unique saved subdivision Phase numbers, and shows a subdivision picker when the mapping is missing or ambiguous. The phase tabs remain. Project/Subdivision alphabetical filtering and separated search/results spacing from 1.80.53 remain in place. Production follow-up **1.80.55** versions the three transfer asset URLs after the live browser check detected cached 1.80.53 scripts/CSS surviving a normal reload.
 
 Lots, Acres, Equiv. LF, Lot Price, and Land Cost are editable values for the destination Budget. Edits stay isolated by phase and survive switching tabs. Reset values restores that phase's defaults. Lots must be nonnegative whole numbers; other values permit two decimal places, matching destination field precision. Invalid values block send. Inputs preserve decimals and show grouping/currency formatting on blur.
 
@@ -17,7 +17,7 @@ The redesign adds destination identity, outlined editable metric cards, cost-cod
 
 ## Deployment
 
-Both functions were saved and compiler-checked in Creator Development, then selectively published through Stage to Production as Land Master **9.25**, package **Budget transfer review 1.80.54**, on 2026-10-01. The selected package contained exactly two components; the unrelated Contracts archive schedule remained unchecked. The environment page confirmed Stage and Production at 9.25. No API registration change was required. Widget Production uses immutable 1.80.54 at its existing permanent URL.
+Both functions were saved and compiler-checked in Creator Development, then selectively published through Stage to Production as Land Master **9.25**, package **Budget transfer review 1.80.54**, on 2026-10-01. The selected package contained exactly two components; the unrelated Contracts archive schedule remained unchecked. The environment page confirmed Stage and Production at 9.25. No API registration change was required. Widget Production uses immutable **1.80.55** at its existing permanent URL; 1.80.54 remains immutable.
 
 ## Regression and rollback
 
