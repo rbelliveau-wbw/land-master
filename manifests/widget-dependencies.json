@@ -308,6 +308,11 @@
         {
           "name": "Get_Land_Master_Choices",
           "source": "loadLocationChoices; environment suffix selected by LMRuntime.apiName"
+        },
+        {
+          "name": "Ingest_Plat",
+          "config_key": "platIngest",
+          "source": "customApis object"
         }
       ],
       "forms_referenced": [
@@ -342,7 +347,8 @@
         "All_Projects",
         "All_Property",
         "All_Subdivisions",
-        "All_Takedown_Schedules"
+        "All_Takedown_Schedules",
+        "All_Active_Lots_List_View"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.API",
@@ -466,19 +472,12 @@
       ]
     },
     "manage-lots": {
-      "custom_apis": [
-        {
-          "name": "Ingest_Plat",
-          "config_key": "platIngest",
-          "source": "customApis object"
-        }
-      ],
+      "custom_apis": [],
       "forms_referenced": [
         "Builder",
         "Builder_Takedown",
         "Contract",
         "Lots",
-        "Settings",
         "Subdivision"
       ],
       "reports_referenced": [

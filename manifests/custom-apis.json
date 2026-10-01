@@ -129,7 +129,7 @@
     {
       "name": "Ingest_Plat",
       "consumers": [
-        "widgets/manage-lots/src/app/widget.html"
+        "widgets/land-master/src/app/lot-import.js"
       ],
       "matching_creator_function": "Plat_AI_Ingest",
       "confidence": "inferred-name-match"

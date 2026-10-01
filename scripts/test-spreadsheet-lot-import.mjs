@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import '../widgets/manage-lots/src/app/spreadsheet-import.js';
+import '../widgets/land-master/src/app/spreadsheet-import.js';
 const api=globalThis.LMSpreadsheetImport;
 assert.deepEqual(api.parseCSV('\uFEFFBlock,Lot,Size\r\n1,"2",50\r\n"a,b","two\nlines","a""b"'),[['Block','Lot','Size'],['1','2','50'],['a,b','two\nlines','a"b']]);
 assert.throws(()=>api.parseCSV('"unfinished'),/unfinished/);
@@ -34,8 +34,8 @@ const existingConflict=report(rows,new Set(['AR06-B01-L01']));assert.equal(exist
 const unresolvedReport=report([{...rows[0],subId:''},{...rows[1],block:'TOO-LONG'}]);assert.equal(unresolvedReport.unassigned,2);assert.equal(unresolvedReport.blocks.length,0);
 const createdReport=report([{...rows[0],created:true,on:false},{...rows[1]}],new Set(['AR06-B01-L01']));assert.equal(createdReport.created,1);assert.equal(createdReport.needsReview,0);assert.equal(createdReport.selected,1);
 // Exercise the bundled parser, including multiple worksheets and original blank-row numbering.
-const sandbox={};vm.createContext(sandbox);vm.runInContext(fs.readFileSync('widgets/manage-lots/src/app/vendor/xlsx.full.min.js','utf8'),sandbox);const XLSX=sandbox.XLSX;
+const sandbox={};vm.createContext(sandbox);vm.runInContext(fs.readFileSync('widgets/land-master/src/app/vendor/xlsx.full.min.js','utf8'),sandbox);const XLSX=sandbox.XLSX;
 const book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['Block','Lot','Size'],[],[1,1,50]]),'Phase 6');XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['Block','Lot','Size'],[2,2,60]]),'Phase 7');
 const xlsxRows=api.readWorkbook(XLSX.write(book,{type:'array',bookType:'xlsx'}),XLSX);assert.equal(xlsxRows.length,4);assert.equal(xlsxRows[1].row,3);assert.equal(xlsxRows[3].sheet,'Phase 7');assert.equal(xlsxRows[3].cells[2],'60');assert.ok(api.batches(xlsxRows).every(b=>b.every(r=>r.sheet===b[0].sheet)));
-const backend=fs.readFileSync('creator/functions/Plat_AI_Ingest.dg','utf8');assert.match(backend,/spreadsheet_schema",2/);assert.match(backend,/Plat_Review_Criteria/);assert.match(backend,/Mandatory response contract/);assert.doesNotMatch(backend,/\bwhile\s*\(|containsKey/);assert.doesNotMatch(fs.readFileSync('widgets/manage-lots/src/app/spreadsheet-import.js','utf8'),/api\.openai\.com/);
+const backend=fs.readFileSync('creator/functions/Plat_AI_Ingest.dg','utf8');assert.match(backend,/spreadsheet_schema",2/);assert.match(backend,/Plat_Review_Criteria/);assert.match(backend,/Mandatory response contract/);assert.doesNotMatch(backend,/\bwhile\s*\(|containsKey/);assert.doesNotMatch(fs.readFileSync('widgets/land-master/src/app/spreadsheet-import.js','utf8'),/api\.openai\.com/);
 console.log('Spreadsheet lot import: CSV/XLSX, provenance, omissions, ambiguity, duplicate checks, batch limits, field bounds, and backend compatibility passed.');
