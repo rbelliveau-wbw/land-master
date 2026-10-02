@@ -24,6 +24,9 @@ const clone = value => JSON.parse(JSON.stringify(value));
 const landingCategoryFields = JSON.parse(source.match(/landingCategoryFields:\s*(\[[^\]]+\])/)[1]);
 assert.deepEqual(landingCategoryFields,['ID','Budget','Deparment','Prelim_Budget_Total','Budget_Total']);
 assert.match(source,/getUserAccess:\s*"Get_User_Access_Lean"/,'the selected permission API is the registered lean endpoint');
+const hardcodedStart = source.indexOf('var HARDCODED_PERMS = {'), hardcodedEnd = source.indexOf('\n};',hardcodedStart) + 3;
+assert.ok(hardcodedStart >= 0 && hardcodedEnd > hardcodedStart,'the existing portal override map exists');
+const hardcodedSource = source.slice(hardcodedStart,hardcodedEnd);
 
 assert.match(source, /creator\/widgets\/version\/2\.0\/widgetsdk-min\.js/);
 assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(getAllRecords|updateRecord|addRecord|getRecordById|uploadFile|readFile|invokeCustomApi)\(/);
@@ -124,12 +127,13 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
       const found = suffix === '_DEV' ? config.payload.user === 'rbelliveau' : !('query_params' in config) && !('payload' in config);
       return {code:3000,result:JSON.stringify({found,hasRow:found,editAll:found,editOwned:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,budgetDeleteArchive:false,myId:found ? roster[0].id : '',users:roster})};
     }}}},
-    $:() => null,applyHardcodedPerms:() => false,auditLog:() => {},
+    $:() => null,auditLog:() => {},
     sdkGetAllRecords:() => {throw new Error('Successful native access must not fall back to a report');},
     cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
     Promise,URLSearchParams,Error
-  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
+  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
   access.window = access;
+  vm.runInContext(hardcodedSource,access);
   await access.loadUserAccess();
   assert.equal(nativeCalls.length,1,'actual startup permission caller uses one native access request');
   assert.equal(access.S.perms.hasRow,true,'server session resolves access even when its Creator username differs from the SDK email localpart');
@@ -154,10 +158,53 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
       assert.equal(access.S.myAccessId,'','failed access cannot retain a prior owner identity');
       assert.equal(Object.entries(access.S.perms).filter(([key]) => key !== 'readOnly').every(([,value]) => value === false),true,'every action permission is denied after lean failure');
     }
+    access.ZOHO.CREATOR.DATA.invokeCustomApi = async () => ({code:3000,result:JSON.stringify({...denied,found:true,hasRow:true,myId:roster[0].id})});
+    await access.loadUserAccess();
+    assert.equal(access.S.perms.hasRow,true,'a reduced profile can retain its authoritative access row');
+    assert.equal(access.S.perms.readOnly,true,'an authoritative row with all capabilities disabled remains read-only');
+    assert.equal(access.S.myAccessId,roster[0].id,'reduced access retains the real ownership identity without granting actions');
     access.ZOHO.CREATOR.DATA.invokeCustomApi = async () => ({code:3000,result:JSON.stringify(denied)});
     await access.loadUserAccess();
     assert.equal(access.S.perms.readOnly,true,'a valid no-row response remains denied');
     assert.deepEqual(clone(access.S.accessUsers),roster,'an authoritative no-row response retains its read-only display roster');
+  }
+}
+
+const deniedPortalFlags = {found:false,hasRow:false,editAll:false,editOwned:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,budgetDeleteArchive:false,myId:'',users:[]};
+const portalGrantKeys = ['editAll','editOwned','apprAll','apprOwned','send','editOwners','viewImports','editImports'];
+for(const suffix of ['', '_STAGE', '_DEV'])for(const user of ['aarmbrust','aarmburst','AArmbrust@example.test','AArmburst@example.test','ordinary_no_row@example.test']) {
+  const nativeCalls = [];
+  let nativeResponse = {code:3000,result:JSON.stringify(deniedPortalFlags)};
+  const portal = install({
+    S:{liveSDK:true,currentUser:user},CFG:{customApis:{getUserAccess:'Get_User_Access_Lean'}},
+    LMRuntime:{apiName:name => name + suffix},LMData:{request:(_task,invoke) => Promise.resolve().then(invoke)},
+    ZOHO:{CREATOR:{DATA:{invokeCustomApi:async config => {
+      nativeCalls.push(clone(config));
+      if(nativeResponse instanceof Error)throw nativeResponse;
+      return nativeResponse;
+    }}}},
+    $:() => null,auditLog:() => {},sdkGetAllRecords:() => {throw new Error('Lean access cannot grant through a report fallback');},
+    cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),Promise,Error,URLSearchParams
+  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
+  portal.window = portal;vm.runInContext(hardcodedSource,portal);
+  assert.deepEqual(Object.keys(portal.HARDCODED_PERMS).sort(),['aarmbrust','aarmburst'],'no new portal aliases are introduced');
+  await portal.loadUserAccess();
+  const expectedNative = suffix === '_DEV'
+    ? {api_name:'Get_User_Access_Lean_DEV',http_method:'POST',content_type:'application/json',payload:{user:user.toLowerCase().split('@')[0]}}
+    : {api_name:'Get_User_Access_Lean' + suffix,http_method:'GET',content_type:'application/json'};
+  assert.deepEqual(nativeCalls[0],expectedNative,'real portal permission callers preserve authoritative native transport');
+  const knownPortal = !user.startsWith('ordinary');
+  for(const key of portalGrantKeys)assert.equal(portal.S.perms[key],knownPortal,'valid no-row responses retain exactly the existing portal grants');
+  assert.equal(portal.S.perms.readOnly,!knownPortal);
+  assert.equal(portal.S.perms.hasRow,knownPortal,'the established portal capability marker remains unchanged');
+  assert.equal(portal.S.perms.modAdmin,false);assert.equal(portal.S.perms.deleteArchive,false);
+  assert.equal(portal.S.myAccessId,'','portal exceptions do not invent a User_Access record ID');
+  for(const failure of [new Error('Lean API unavailable'),{code:2898,message:'No permission'},{code:3000,result:'{}'},{code:3000,result:JSON.stringify({...deniedPortalFlags,hasRow:true})}]) {
+    nativeResponse = failure;
+    await portal.loadUserAccess();
+    assert.equal(portal.S.perms.readOnly,true,'API errors and malformed responses remain denied for portal identities too');
+    assert.equal(Object.entries(portal.S.perms).filter(([key]) => key !== 'readOnly').every(([,value]) => value === false),true);
+    assert.equal(portal.S.myAccessId,'');
   }
 }
 

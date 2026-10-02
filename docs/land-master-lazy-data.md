@@ -1,6 +1,6 @@
-# Land Master four-core loading (8.13.4 candidate)
+# Land Master four-core loading (8.13.5 candidate)
 
-The SDK v2 transport gate in `8.13.3` loaded all 14 reports inside authenticated Production, including 25,527 lots. `8.13.4` defers the ten related reports until a screen needs them. It retains complete, full-field, counted reads; no report is replaced by a preview, display-field projection, or fixed record cap.
+The SDK v2 transport gate in `8.13.3` loaded all 14 reports inside authenticated Production, including 25,527 lots. `8.13.4` introduced deferred related reports and passed the normal authenticated Development UI gate; candidate `8.13.5` adds bulk-save control locking. These increments retain complete, full-field, counted reads; no report is replaced by a preview, display-field projection, or fixed record cap.
 
 ## Dependency contract
 
@@ -35,9 +35,11 @@ Refreshing is rejected while a panel is dirty or saving, or a bulk update is sav
 
 Staged External Mapping saves continue to reconcile local rows and preserve failed drafts. The lot importer still performs fresh counted reads of both selected-subdivision reports before duplicate checks and writes one reviewed record at a time. This increment adds no Creator fields, functions, APIs or permissions, and keeps normal Creator workflows enabled.
 
+Bulk saving locks the selected field and its value controls until every requested update has settled. An already-open picker closes. A defensive field-change handler restores the active field without replacing its value input, and another Apply while saving is ignored. Partial failures re-enable the same controls and keep the exact submitted value for an explicit retry. A behavioral test runs the actual bulk functions through a successful update, denied update, attempted field switch and retry, including a `000073` facility identifier.
+
 ## Validation and live gate
 
-`node scripts/test-land-master-sdk-v2.mjs` includes the actual controller and widget entry-point tests in `test-land-master-lazy-data.mjs`. They exercise four-core startup, atomic failures, full search/sort/usage results, unknown versus empty counts, deferred retries, shared in-flight reads, scope/editor/bulk races, superseded refreshes and draft protection. The existing choices, mapping, spreadsheet and lot-import suites remain required. These tests do not establish live Creator latency.
+`node scripts/test-land-master-sdk-v2.mjs` includes the actual controller and widget entry-point tests in `test-land-master-lazy-data.mjs`. They exercise four-core startup, atomic failures, full search/sort/usage results, unknown versus empty counts, deferred retries, shared in-flight reads, scope/editor/bulk races, partial-failure bulk retries, superseded refreshes and draft protection. The existing choices, mapping, spreadsheet and lot-import suites remain required. These tests do not establish live Creator latency.
 
 Before promotion, verify inside authenticated Development:
 
@@ -47,6 +49,8 @@ Before promotion, verify inside authenticated Development:
 4. Open an existing Subdivision and compare every related tab count with the transport baseline. A dependency error must show Retry and retain the table; it must not show zero rows as if the read succeeded.
 5. Stage a mapping or Project phase draft and verify a section change requires discard. After a failed save, confirm the draft remains present. For any persisted reversible note test, record the original value, save, reread, restore, and reread again.
 6. Open bulk Seller choices and close before their load completes. Confirm the old completion cannot enable or populate the closed window. Verify a selected subdivision import still rereads fresh lots and blocks incomplete inventories before insertion.
+
+For `8.13.5`, also verify that the bulk field and value picker are locked during saving, then re-enabled with the entered value preserved after a denied or partial update. This recovery test must use safe Development records and restore any successful changes.
 
 `land-core-ready`, `land-resource-ready`, `land-editor-ready`, `land-load`, `land-render`, and `first-usable-render` make startup and deferred stages visible. Shared response-size metrics are serialized SDK JSON estimates, not network transfer bytes. Compare the candidate's live metrics before making a latency claim.
 

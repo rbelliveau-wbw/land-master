@@ -19,7 +19,7 @@ const fixture={
 };
 function harness({read,choices}={}){
   const reads=[],nodes=new Map(),statuses=[],metrics=[],renders=[],panels=[],errors=[];
-  function node(id){if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',value:'',style:{},disabled:false,classList:{add(){},remove(){},toggle(){}},setAttribute(){},querySelector(){return null;}});return nodes.get(id);}
+  function node(id){if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',value:'',style:{},disabled:false,classList:{add(){},remove(){},toggle(){}},setAttribute(){},querySelector(){return null;},querySelectorAll(){return [];}});return nodes.get(id);}
   const c=vm.createContext({document:{getElementById:node,querySelector:()=>null,querySelectorAll:()=>[]},CFG:{version:'test',tablePageSize:100},OPTS:{},FILTER_DEFS:{},
     sdkGetAll(report,criteria,onProgress,options){reads.push({report,options});return Promise.resolve(read?read(report,options,reads.length):fixture[report]);},
     loadLocationChoices:choices||(async()=>{}),LMPerf:{start(){},end(name,meta){metrics.push({name,...meta});},mark(name,meta){metrics.push({name,...meta});}},diag(label,details){if(details?.error)errors.push(details.error);},beginLoadProgress(){},updateLoadProgress(){},finishLoadProgress(){},setLoadRendering(){},
@@ -79,6 +79,20 @@ held=deferred();h=harness({read:report=>report==='All_Builders'?held.promise:fix
 vm.runInContext(section('function optionsHTML','function recordTitle'),h.c);vm.runInContext(section('function bulkFieldDefs','function bulkInput'),h.c);
 h.c.S.checked={'101':true};h.c.openBulkModal();h.nodes.get('bulkField').value='Seller';h.c.renderBulkValue();await settle();assert.equal(h.nodes.get('bulkApplyBtn').disabled,true);assert.match(h.nodes.get('bulkValueWrap').innerHTML,/Loading choices/);h.c.closeBulkModal();held.resolve(fixture.All_Builders);await settle();assert.equal(h.c.S.bulkOpen,false);assert.equal(h.nodes.get('bulkApplyBtn').disabled,true);assert.match(h.nodes.get('bulkValueWrap').innerHTML,/Loading choices/);
 h.c.openBulkModal();h.nodes.get('bulkField').value='Seller';h.c.renderBulkValue();await settle();assert.equal(h.nodes.get('bulkApplyBtn').disabled,false,h.errors.at(-1)?.message);assert.match(h.nodes.get('bulkValueWrap').innerHTML,/Builder A/);
+
+// The actual bulk functions lock field/value controls and retain the submitted string after a partial failure.
+h=harness();await h.c.loadData();h.c.S.scope='cos';h.c.S.checked={'401':true,'402':true};
+vm.runInContext(section('function optionsHTML','function recordTitle'),h.c);vm.runInContext(section('function inputRaw','function performExternalMappingOperation'),h.c);vm.runInContext(section('function bulkFieldDefs','/* root rendering */'),h.c);
+h.c.openBulkModal();h.nodes.get('bulkField').value='Facility_ID';h.c.renderBulkValue();await settle();
+const valueControl={value:'000073',disabled:false,getAttribute:name=>name==='data-ftype'?'text':''};
+const valueWrap=h.nodes.get('bulkValueWrap');valueWrap.querySelector=()=>valueControl;valueWrap.querySelectorAll=()=>[valueControl];const valueMarkup=valueWrap.innerHTML;
+let save=deferred(),writes=[],closedPicker=0;h.c.LMPickers={close(){closedPicker++;}};h.c.renderBulk=()=>{};
+h.c.updateRecord=(id,data,report)=>{writes.push({id,data,report});return writes.length===1?save.promise:Promise.reject({code:2899,message:'Denied'});};
+h.c.applyBulk();assert.equal(h.c.S.bulkSaving,true);assert.equal(h.nodes.get('bulkField').disabled,true);assert.equal(valueControl.disabled,true);assert.equal(closedPicker,1);
+const choiceToken=h.c.S.bulkChoiceToken;h.nodes.get('bulkField').value='Account_Number';h.c.renderBulkValue();h.c.applyBulk();await settle();
+assert.equal(h.c.S.bulkField,'Facility_ID');assert.equal(h.nodes.get('bulkField').value,'Facility_ID');assert.equal(h.c.S.bulkChoiceToken,choiceToken);assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(writes.length,1,'a repeated Apply during saving cannot replay requests');
+save.resolve({code:3000,data:{ID:'401'}});await settle();assert.equal(h.c.S.bulkSaving,false);assert.equal(h.c.S.bulkOpen,true);assert.equal(h.nodes.get('bulkField').disabled,false);assert.equal(valueControl.disabled,false);assert.equal(h.nodes.get('bulkApplyBtn').disabled,false);assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(h.nodes.get('bulkMsgModal').textContent,'Saved 1 · 1 failed');assert.equal(writes[0].data.Facility_ID,'000073');assert.equal(writes[1].data.Facility_ID,'000073');
+h.c.updateRecord=(id,data,report)=>{writes.push({id,data,report});return Promise.resolve({code:3000,data:{ID:id}});};h.c.applyBulk();await settle();assert.equal(writes.length,4);assert.ok(writes.every(write=>write.report==='All_Companies'&&write.data.Facility_ID==='000073'),'explicit retry keeps the original field and exact leading-zero value');assert.equal(h.c.S.bulkOpen,false);assert.equal(h.c.S.bulkSaving,false);
 
 // Creating a subdivision needs only builder choices; existing related tab counts require their complete reports.
 h=harness();await h.c.loadData();await h.c.startEditorRequest('subdivision',null,true);assert.deepEqual(h.reads.slice(4).map(r=>r.report),['All_Builders']);assert.equal(h.c.S.panelDirty,true);h.c.closeRecordModal(true);await h.c.startEditorRequest('subdivision','301',false);const tabs=h.c.descriptor('subdivision',h.c.S.subdivisions[0]).tabs;assert.equal(tabs.find(t=>t.id==='milestones').count,1);assert.equal(tabs.find(t=>t.id==='forecasts').count,0);assert.equal(h.c.LandData.status('lots'),'idle');
