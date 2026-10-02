@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 const context = {};
 vm.runInNewContext(fs.readFileSync('widgets/lot-sales-explorer/src/app/insights-access.js', 'utf8'), context);
@@ -11,8 +12,7 @@ const creator = result => ({ DATA: { invokeCustomApi: async input => {
   request = input;
   assert(!Object.hasOwn(input, 'parameters'), 'v2 rejects the legacy GET parameters key');
   if (input.http_method === 'GET') {
-    assert.equal(typeof input.query_params, 'string', 'the real SDK forwards query_params verbatim and needs an encoded query string');
-    assert.deepEqual([...new URLSearchParams(input.query_params).keys()], ['user'], 'GET arguments travel only through query_params');
+    assert.equal(Object.hasOwn(input, 'query_params'), false, 'Production/Stage access must use the authenticated Deluge actor, without deriving a username from the native email');
     assert.equal(Object.hasOwn(input, 'payload'), false, 'GET has no JSON body');
   } else {
     assert.equal(input.http_method, 'POST');
@@ -27,7 +27,7 @@ assert.equal(access.lotSalesDashboard, true);
 assert.equal(access.viewTotalLotRevenue, false);
 assert.equal(request.api_name, 'Get_User_Access');
 assert.equal(request.http_method, 'GET');
-assert.equal(request.query_params, 'user=viewer');
+assert.equal(Object.hasOwn(request, 'query_params'), false);
 assert.equal(request.content_type, 'application/json');
 
 access = await load(creator({ code: 3000, result: JSON.stringify({ hasRow: true, lotSalesDashboard: true, viewTotalLotRevenue: true }) }), runtime('DEVELOPMENT'));
@@ -40,10 +40,9 @@ access = await load(creator({ code: 3000, result: { details: { output: JSON.stri
 assert.equal(access.lotSalesDashboard, true);
 assert.equal(request.api_name, 'Get_User_Access_STAGE', 'Stage remains isolated rather than selecting a Production API');
 assert.equal(request.http_method, 'GET');
-assert.equal(request.query_params, 'user=viewer', 'normalization matches the existing username contract');
+assert.equal(Object.hasOwn(request, 'query_params'), false, 'Stage also preserves the backend current-session fallback');
 await load(creator({ code: 3000, result: JSON.stringify({ hasRow: true, lotSalesDashboard: true }) }), runtime('PRODUCTION', 'viewer+qa&scope=test@example.com'));
-assert.equal(request.query_params, 'user=viewer%2Bqa%26scope%3Dtest', 'a username cannot introduce another query argument');
-assert.equal(new URLSearchParams(request.query_params).get('user'), 'viewer+qa&scope=test');
+assert.equal(Object.hasOwn(request, 'query_params'), false, 'An email alias cannot override the backend session actor');
 
 access = await load(creator({ code: 3000, result: JSON.stringify({ hasRow: true, lotSalesDashboard: true, viewTotalLotRevenue: true }) }), runtime('PRODUCTION'));
 assert.equal(access.viewTotalLotRevenue, true, 'the standard JSON string result envelope remains supported');
@@ -59,6 +58,43 @@ await assert.rejects(load(creator({ code: 3000, result: 'not JSON' }), runtime('
 await assert.rejects(load(creator({ code: 3000 }), runtime('PRODUCTION', '')), /could not be identified/);
 let failedRequest;
 await assert.rejects(load({ DATA: { invokeCustomApi: async input => { failedRequest = input; throw { code: 9350, message: 'No API named' }; } } }, runtime('PRODUCTION')), error => error.code === 9350);
-assert.equal(failedRequest.query_params, 'user=viewer', 'a rejected real v2 call preserves its original error and request contract');
+assert.equal(Object.hasOwn(failedRequest, 'query_params'), false, 'A rejected access request preserves the current-session contract');
 assert.equal(Object.hasOwn(failedRequest, 'parameters'), false);
-console.log('Insights access: environment routing, deny-by-default flags, missing users, and API failures passed.');
+
+// Execute the saved full function: the session username deliberately differs from
+// both the native email and its local part, matching the live regression trigger.
+const fullFunction = translate(fs.readFileSync('creator/functions/getUserAccess.dg', 'utf8')).js;
+function fullAccess(user) {
+  const backend = vm.createContext({user});
+  vm.runInContext(`
+    const rows = [{ID:'900000000000000001',User:'fixture_session_actor',Lot_Sales_Dashboard:true,View_Total_Lot_Revenue:true}];
+    function choose(condition, yes, no) { return condition ? yes : no; }
+    function List() { return []; }
+    function Map() { return {put(key, value) { this[key] = value; }, toString() { return JSON.stringify(this); }}; }
+    Array.prototype.add = function(value) { this.push(value); };
+    function query(form, predicate) { return (form === 'User_Access' ? rows : []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate); }
+    const zoho = {loginuser:'fixture_session_actor'};
+    ${fullFunction}
+    var response = getUserAccess(user);
+  `, backend);
+  return {code:3000,result:backend.response};
+}
+assert.equal(JSON.parse(fullAccess('unrelated_mailbox').result).hasRow, false, 'Inferring the email local part would miss the actual access row.');
+for (const environment of ['PRODUCTION', 'STAGE']) {
+  const actor = runtime(environment, 'unrelated_mailbox@example.test');
+  const native = {DATA:{invokeCustomApi: async input => {
+    assert.equal(input.api_name, environment === 'STAGE' ? 'Get_User_Access_STAGE' : 'Get_User_Access');
+    assert.equal(input.http_method, 'GET');
+    for (const key of ['query_params','parameters','payload']) assert.equal(Object.hasOwn(input,key),false);
+    return fullAccess(undefined);
+  }}};
+  const verified = await load(native, actor);
+  assert.equal(verified.hasRow, true);
+  assert.equal(verified.lotSalesDashboard, true);
+  assert.equal(verified.viewTotalLotRevenue, true);
+  assert.equal(actor.current().user, 'unrelated_mailbox@example.test', 'Backend session fallback must not rewrite the runtime/cache identity.');
+}
+await load(creator({code:3000,result:JSON.stringify({hasRow:true,lotSalesDashboard:true})}),runtime('DEVELOPMENT',' VIEWER+QA@EXAMPLE.COM '));
+assert.equal(request.payload.user,'viewer+qa','Development keeps its existing normalized POST/View-as alias contract.');
+await assert.rejects(load(creator({code:3000}),runtime('PRODUCTION','(unknown)')),/could not be identified/);
+console.log('Insights access: authenticated session fallback, actual Deluge username parity, isolated DEV POST/Stage GET, deny-by-default flags, missing users, and API failures passed.');

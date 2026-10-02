@@ -44,7 +44,7 @@ const transport = install({
   LMRuntime:{apiName:name => name + '_DEV'},
   LMData:{request:(_task, invoke) => Promise.resolve().then(() => {requestExecutions++;return invoke();}), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
   auditLog:(level,message) => {if(level === 'success')savedLogs.push(message);}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
-  Promise, setTimeout, Date, Error
+  Promise, setTimeout, Date, Error, URLSearchParams
 }, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
 transport.window = transport;
 
@@ -73,12 +73,66 @@ await transport.sdkInvokeCustomApi('Get_User_Access_Lean',{__method:'GET',__para
 assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access_Lean_DEV',http_method:'POST',content_type:'application/json',payload:{user:'reviewer'}}},'the registered lean Development endpoint uses the same POST binding without switching the selected access API');
 transport.LMRuntime.apiName = name => name;
 await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'reviewer+one@example.test',label:'two & three'}});
-assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access',http_method:'GET',content_type:'application/json',query_params:'user=reviewer%2Bone%40example.test&label=two%20%26%20three'}},'Production uses an encoded query string, never an object coerced by the native SDK');
+assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access',http_method:'GET',content_type:'application/json'}},'Production access relies on the authenticated server session without a guessed identity');
+for(const suffix of ['', '_STAGE'])for(const apiName of ['Get_User_Access','Get_User_Access_Lean']) {
+  transport.LMRuntime.apiName = name => name + suffix;
+  const accessParams = {user:' RBelliveau@wbdevelopment.com '};
+  await transport.sdkInvokeCustomApi(apiName,{__method:'GET',__params:accessParams});
+  assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:apiName + suffix,http_method:'GET',content_type:'application/json'}},'Production and Stage access send neither query parameters nor a user payload');
+  assert.equal(accessParams.user,' RBelliveau@wbdevelopment.com ','access transport does not mutate caller parameters');
+  await transport.sdkInvokeCustomApi(apiName,{user:'RBelliveau@wbdevelopment.com'});
+  assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:apiName + suffix,http_method:'GET',content_type:'application/json'}},'Production and Stage current-session access never transmit an explicit identity');
+}
+transport.LMRuntime.apiName = name => name;
+await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:'user=RBelliveau%40wbdevelopment.com&label=two%20%26%20three'});
+assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access',http_method:'GET',content_type:'application/json'},'current-session access also omits encoded string identity parameters');
 transport.LMRuntime.apiName = name => name + '_DEV';
-await transport.sdkInvokeCustomApi('Other_Read_API',{__method:'GET',__params:{user:'reviewer'}});
-assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Other_Read_API_DEV',http_method:'GET',content_type:'application/json',query_params:'user=reviewer'}},'other Development APIs retain their existing method');
+await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'RBelliveau@wbdevelopment.com'}});
+assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access_DEV',http_method:'POST',content_type:'application/json',payload:{user:'rbelliveau'}},'Development still sends the username to its existing server-side wbdevelopment alias');
+await transport.sdkInvokeCustomApi('Get_User_Access_Lean',{__method:'GET',__params:'user=RBelliveau%40wbdevelopment.com'});
+assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access_Lean_DEV',http_method:'POST',content_type:'application/json',payload:{user:'rbelliveau'}},'Development retains its explicit identity contract for encoded parameters too');
+for(const suffix of ['', '_DEV', '_STAGE']) {
+  transport.LMRuntime.apiName = name => name + suffix;
+  await transport.sdkInvokeCustomApi('Other_Read_API',{__method:'GET',__params:{user:'Reviewer+one@Example.test',label:'two & three'}});
+  assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Other_Read_API' + suffix,http_method:'GET',content_type:'application/json',query_params:'user=Reviewer%2Bone%40Example.test&label=two%20%26%20three'}},'unrelated APIs retain encoded email and method in every environment');
+  await transport.sdkInvokeCustomApi('Other_Write_API',{user:'Reviewer@Example.test'});
+  assert.deepEqual(calls.pop().config,{api_name:'Other_Write_API' + suffix,http_method:'POST',content_type:'application/json',payload:{user:'Reviewer@Example.test'}},'unrelated API body email contracts remain intact');
+}
+transport.LMRuntime.apiName = name => name + '_DEV';
 
 assert.equal(savedLogs.length,2,'actual record response validation permits only confirmed add/update success');
+
+for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Access','Get_User_Access_Lean']) {
+  // Deliberately different: the email localpart cannot identify the server's Creator user.
+  const nativeCalls = [], roster = [{id:'900000000000000001',label:'Creator Session User',email:'creator_session_username'}];
+  const access = install({
+    S:{liveSDK:true,currentUser:'rbelliveau@wbdevelopment.com'},
+    CFG:{customApis:{getUserAccess:apiName}},
+    LMRuntime:{apiName:name => name + suffix},
+    LMData:{request:(_task,invoke) => Promise.resolve().then(invoke)},
+    ZOHO:{CREATOR:{DATA:{invokeCustomApi:async config => {
+      nativeCalls.push(clone(config));
+      const expected = suffix === '_DEV'
+        ? {api_name:apiName + suffix,http_method:'POST',content_type:'application/json',payload:{user:'rbelliveau'}}
+        : {api_name:apiName + suffix,http_method:'GET',content_type:'application/json'};
+      assert.deepEqual(clone(config),expected,'actual current-session caller uses server identity outside Development');
+      const found = suffix === '_DEV' ? config.payload.user === 'rbelliveau' : !('query_params' in config) && !('payload' in config);
+      return {code:3000,result:JSON.stringify({found,hasRow:found,editAll:found,myId:found ? roster[0].id : '',users:roster})};
+    }}}},
+    $:() => null,applyHardcodedPerms:() => false,auditLog:() => {},
+    sdkGetAllRecords:() => {throw new Error('Successful native access must not fall back to a report');},
+    cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
+    Promise,URLSearchParams,Error
+  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','parseAccessFnResponse','applyPermsFromFlags','loadUserAccess']);
+  access.window = access;
+  await access.loadUserAccess();
+  assert.equal(nativeCalls.length,1,'actual startup permission caller uses one native access request');
+  assert.equal(access.S.perms.hasRow,true,'server session resolves access even when its Creator username differs from the SDK email localpart');
+  assert.equal(access.S.perms.editAll,true);
+  assert.equal(access.S.myAccessId,roster[0].id,'ownership identity remains a string record ID');
+  assert.deepEqual(clone(access.S.accessUsers),roster,'owner roster labels and identities are preserved');
+  assert.equal(access.S.currentUser,'rbelliveau@wbdevelopment.com','server identity resolution does not rewrite the SDK login context');
+}
 
 const successfulResponses = [
   {code:3000,data:{ID:'900000000000000001'},message:'success'},

@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.28.6"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.28.5"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
@@ -1739,7 +1739,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.28.6">
+<link rel="stylesheet" href="budget-layout.css?v=122.28.5">
 </head>
 <body>
 
@@ -2490,7 +2490,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.28.6", code:"BMW",
+  widget:"Budget Manager", version:"122.28.5", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -2758,31 +2758,31 @@ function sdkInvokeCustomApi(apiName, payload) {
     var clean = {}; for (var k in payload){ if (k !== "__method" && k !== "__params" && payload.hasOwnProperty(k)) clean[k] = payload[k]; }
     payload = clean;
   }
-  // Production/Stage access is for the authenticated session. Let Deluge use
-  // zoho.loginuser: an SDK email localpart is not a reliable Creator username.
-  if (/^Get_User_Access(?:_Lean)?(?:_STAGE)?$/i.test(apiName)) {
-    method = "GET";
-    qparams = null;
-    payload = {};
-  }
-  // The confirmed Development access endpoint is POST with an explicit View-as user.
-  // Decide after runtime routing; its server wrapper handles the verified alias.
-  if (/^Get_User_Access(?:_Lean)?_DEV$/i.test(apiName)) {
+  // User_Access.User stores Creator usernames in every environment.
+  // Normalize only the access APIs; other APIs may require a complete email address.
+  if (/^Get_User_Access(?:_Lean)?(?:_DEV|_STAGE)?$/i.test(apiName)) {
     if (typeof qparams === "string") {
       var accessQuery = {};
       new URLSearchParams(qparams).forEach(function(value,key){ accessQuery[key] = value; });
       qparams = accessQuery;
     }
+    if (qparams && qparams.user != null) {
+      qparams = Object.assign({}, qparams);
+      qparams.user = cleanVal(qparams.user).toLowerCase().split("@")[0];
+    }
+    if (payload.user != null) {
+      payload = Object.assign({}, payload);
+      payload.user = cleanVal(payload.user).toLowerCase().split("@")[0];
+    }
+  }
+  // The confirmed Development access endpoint is POST. Decide after runtime routing.
+  if (/^Get_User_Access(?:_Lean)?_DEV$/i.test(apiName)) {
     if (method === "GET") {
       var accessPayload = {}, accessParams = qparams || {};
       for (var accessKey in accessParams) { if (Object.prototype.hasOwnProperty.call(accessParams, accessKey)) accessPayload[accessKey] = accessParams[accessKey]; }
       for (var bodyKey in payload) { if (Object.prototype.hasOwnProperty.call(payload, bodyKey)) accessPayload[bodyKey] = payload[bodyKey]; }
       payload = accessPayload;
       method = "POST";
-    }
-    if (payload.user != null) {
-      payload = Object.assign({}, payload);
-      payload.user = cleanVal(payload.user).toLowerCase().split("@")[0];
     }
   }
   var config = {
@@ -12094,10 +12094,7 @@ function loadUserAccess(){
   // Preferred path: an elevated Deluge custom function returns the current user's flags
   // (end users typically lack direct read permission on the User_Access report → 403/2898).
   if (S.liveSDK) {
-    var accessApi = window.LMRuntime ? LMRuntime.apiName(CFG.customApis.getUserAccess) : CFG.customApis.getUserAccess;
-    var accessRequest = { __method: "GET" };
-    if (/^Get_User_Access(?:_Lean)?_DEV$/i.test(accessApi)) accessRequest.__params = { user: S.currentUser || "" };
-    return sdkRunBudgetFunction("getUserAccess", accessRequest)
+    return sdkRunBudgetFunction("getUserAccess", { __method: "GET", __params: { user: S.currentUser || "" } })
       .then(function(resp){
         var flags = parseAccessFnResponse(resp);
         if (flags) { applyPermsFromFlags(flags, "function"); return; }
@@ -12293,7 +12290,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.28.6",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.28.5",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;
