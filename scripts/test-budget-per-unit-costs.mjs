@@ -33,6 +33,7 @@ const context = vm.createContext({
   canEditBudget: budget => budget.canEdit !== false,
   clearTimeout: () => {}, setTimeout: callback => { callback(); return 1; },
   setEdAutosave: () => {}, markInputState: () => {},
+  flushBudgetDeferredEditorRefresh: () => {}, // The lazy-feature suite exercises actual refresh consumption separately.
   sdkUpdateRecord: (_form, id, fields) => { writes.push({id, fields}); return Promise.resolve(); },
   CFG:{forms:{item:"Budget_Item"}}, auditLog: () => {}, setMsg: () => {}, toastShow: () => {},
   v: value => Math.round(Number(value) || 0), itemModAgg: () => ({approved:0}), canSubmitMod: () => false,

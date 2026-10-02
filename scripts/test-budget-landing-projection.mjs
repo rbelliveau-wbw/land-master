@@ -47,7 +47,7 @@ const context = vm.createContext({
 });
 context.window = context;
 vm.runInContext(adapter,context);
-for(const name of ['cleanVal','isObj','rawPath','firstRaw','lookupId','getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','validateLandingCategoryRows','loadAll','budgetApprovalStatus','trackIsApproved','catDept','v','landingCategoryTotal','budgetTotal','loadBudgetDetail'])vm.runInContext(block(name),context);
+for(const name of ['cleanVal','isObj','rawPath','firstRaw','lookupId','getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','validateLandingCategoryRows','groupLandingCategories','loadAll','budgetApprovalStatus','trackIsApproved','catDept','v','landingCategoryTotal','budgetTotal','budgetDetailPublishAllowed','budgetDetailReady','loadBudgetDetail'])vm.runInContext(block(name),context);
 await context.loadAll();
 const landingRequest = nativeCalls.find(config => config.report_name === 'categories');
 assert.equal(landingRequest.field_config,'custom');

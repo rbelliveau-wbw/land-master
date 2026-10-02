@@ -51,7 +51,7 @@ const transport = install({
   LMData:{request:(_task, invoke) => Promise.resolve().then(() => {requestExecutions++;return invoke();}), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
   auditLog:(level,message) => {if(level === 'success')savedLogs.push(message);}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
   Promise, setTimeout, Date, Error, URLSearchParams
-}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
+}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
 transport.window = transport;
 
 await transport.sdkGetAllRecords('All_Budget_Items', '(Budget_Category == 1)');
@@ -336,19 +336,20 @@ function startupHarness() {
     renderProjList:() => renders.push({categories:clone(context.S.landingCategories),ready:context.S.startupReady}),renderApprQueue:() => {},
     loadBudgetCommentSummaries:() => {},loadBudgetAttachmentSummaries:() => {},applyDeepLink:() => {},
     $:id => dom[id],safeStringify:JSON.stringify,shortErr:error => error?.message || String(error)
-  },['budgetMeasured','validateLandingCategoryRows','loadAll','boot']);
+  },['budgetMeasured','validateLandingCategoryRows','groupLandingCategories','loadAll','boot']);
   context.window = context;
   return {context,gates,access,renders,requested,readConfigs,dom};
 }
 const startup = startupHarness();
 const started = startup.context.boot();
 await turn();
-assert.equal(startup.requested.length,7,'independent startup reads are dispatched together through the shared bounded adapter');
+assert.equal(startup.requested.length,5,'only the critical first-screen reports are dispatched through the bounded adapter');
+assert.deepEqual(startup.requested.slice().sort(),['approvals','budgets','categories','projects','subdivisions']);
 assert.deepEqual(clone(startup.readConfigs.find(read => read.name === 'categories')),{name:'categories',criteria:'',options:{fields:landingCategoryFields}},'startup alone projects the five complete landing fields');
 assert.equal(startup.readConfigs.filter(read => read.options?.fields).length,1,'other critical/editor datasets keep full fields');
 startup.gates.budgets.resolve([{ID:'1',Name:'Phase'}]);
 startup.gates.subdivisions.resolve([{ID:'2'}]);startup.gates.projects.resolve([{ID:'3'}]);
-startup.gates.approvals.resolve([{ID:'4',Status:'Pending'}]);startup.gates.proformas.resolve([{ID:'5',Name:'PF'}]);startup.gates.modifications.resolve([]);
+startup.gates.approvals.resolve([{ID:'4',Status:'Pending'}]); // Optional report promises remain stalled throughout first usability.
 await turn();
 assert.equal(startup.renders.length,0,'late categories cannot cause partial-total rendering');
 assert.equal(startup.context.S.budgets.length,0,'the startup snapshot remains unpublished while a critical report is pending');
@@ -381,7 +382,7 @@ const detail = install({
   S:{categories:{},items:{},detailLoads:{},detailGeneration:{}},CFG:{reports:{categories:'categories',items:'items'}},Promise,
   sdkGetAllRecords:(report,criteria) => {detailCalls.push({report,criteria});return report === 'categories' ? detailGate.promise : Promise.resolve([{ID:'3',Budget_Category:{ID:'2'}}]);},
   setLoad:() => {},auditLog:() => {},compareCategoryRecords:() => 0,compareItemRecords:() => 0
-},['loadBudgetDetail']);
+},['budgetDetailPublishAllowed','budgetDetailReady','loadBudgetDetail']);
 const first = detail.loadBudgetDetail('1'), second = detail.loadBudgetDetail(1);
 assert.equal(first,second,'concurrent requests for a string/numeric equivalent ID share one promise');
 detailGate.resolve([{ID:'2'}]);await first;
@@ -392,7 +393,8 @@ await detail.loadBudgetDetail('1');assert.equal(detailCalls.length,2,'complete d
 const staleGate = deferred(), freshGate = deferred();let categoryReads = 0;
 detail.S.categories = {};detail.S.items = {};
 detail.sdkGetAllRecords = report => report === 'categories' ? (++categoryReads === 1 ? staleGate.promise : freshGate.promise) : Promise.resolve([{ID:'latest-item'}]);
-detail.invalidateBudgetTransport = () => {};
+detail.invalidateBudgetReports = () => {};
+vm.runInContext(block('budgetDetailPublishAllowed'),detail);
 vm.runInContext(block('reloadBudgetItems'),detail);
 const stale = detail.loadBudgetDetail('1');
 const staleRejected = assert.rejects(stale,/superseded/);
@@ -409,4 +411,5 @@ assert.match(preReadyDom.projList.innerHTML,/Loading budgets/);
 assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does not claim zero pending approvals');
 
 await import('./test-budget-landing-projection.mjs');
+await import('./test-budget-deferred-features.mjs');
 console.log('Budget SDK v2 envelopes, native mutation success/failure validation, lean permission degradation, safe retries, complete parallel startup and detail deduplication passed.');

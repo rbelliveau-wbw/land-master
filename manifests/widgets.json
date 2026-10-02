@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T20:38:12.858Z",
+  "generated_at": "2026-10-02T22:54:27.935Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.28.8",
+      "version": "122.28.9",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "442a9f5ebe48cfd5f0abe65e7812651f41844c4eeba78ecef0ad0aaa570cf9ed",
+      "source_sha256": "9735d71be30c11f6146fe3e0a3813c1da5c5768b73577c23f47521aa3829ad47",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.13.5",
+      "version": "8.13.6",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "c824d881cbca1697e617288da2e40300cc23020cd3449c54125cc834e3dddbaa",
+      "source_sha256": "4892e0788c5655ceb4e160301df0c0bc16948b1e034522bdf952d68d45a42929",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [

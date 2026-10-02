@@ -30,6 +30,9 @@ function harness({read,choices}={}){
   vm.runInContext(section('function $(id)','var LOAD_WEIGHTS'),c);
   vm.runInContext(section('/* record descriptors */','function renderTable'),c);
   vm.runInContext(section('function withDiscardConfirm','function inputRaw'),c);
+  vm.runInContext(section('function setCoreRefreshing','function tableInlineSave'),c);
+  vm.runInContext(section('function closeProjectPopup','function updateProjectPopupCount'),c);
+  vm.runInContext(section('function closeLookupPopup','function lookupChoiceRequired'),c);
   vm.runInContext(section('function ensureScopeData','$("scopeSeg")'),c);
   vm.runInContext(section('function loadData','var lotImport='),c);
   Object.assign(c,{setStatus:(kind,text)=>statuses.push({kind,text}),renderBanners(){},renderAll(){renders.push(c.S.scope);},renderPanel(){panels.push({type:c.S.editorType,id:c.S.editorId,builders:c.S.builders.length,proformas:c.S.proformas.length});}});
@@ -94,8 +97,59 @@ assert.equal(h.c.S.bulkField,'Facility_ID');assert.equal(h.nodes.get('bulkField'
 save.resolve({code:3000,data:{ID:'401'}});await settle();assert.equal(h.c.S.bulkSaving,false);assert.equal(h.c.S.bulkOpen,true);assert.equal(h.nodes.get('bulkField').disabled,false);assert.equal(valueControl.disabled,false);assert.equal(h.nodes.get('bulkApplyBtn').disabled,false);assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(h.nodes.get('bulkMsgModal').textContent,'Saved 1 · 1 failed');assert.equal(writes[0].data.Facility_ID,'000073');assert.equal(writes[1].data.Facility_ID,'000073');
 h.c.updateRecord=(id,data,report)=>{writes.push({id,data,report});return Promise.resolve({code:3000,data:{ID:id}});};h.c.applyBulk();await settle();assert.equal(writes.length,4);assert.ok(writes.every(write=>write.report==='All_Companies'&&write.data.Facility_ID==='000073'),'explicit retry keeps the original field and exact leading-zero value');assert.equal(h.c.S.bulkOpen,false);assert.equal(h.c.S.bulkSaving,false);
 
+function inlineFixture(h){
+ vm.runInContext(section('function inputRaw','function performExternalMappingOperation'),h.c);
+ vm.runInContext(section('function tableInlineSave','var NEW_TYPES='),h.c);
+ vm.runInContext(section('function bulkFieldDefs','/* root rendering */'),h.c);
+ h.c.markInlineState=()=>{};
+ function control({field='Notes',value='new draft',original='keep me',ftype='text',id='101'}={}){
+  const attrs={'data-field':field,'data-ftype':ftype,'data-original':original};
+  return{value,disabled:false,classList:{add(){},remove(){},toggle(){}},closest:()=>({getAttribute:()=>id}),getAttribute:key=>attrs[key]||'',setAttribute:(key,value)=>{attrs[key]=value;},querySelector:()=>null};
+ }
+ return control;
+}
+
+// A refresh freezes the mounted table immediately; callable write/popup/bulk paths reject mid-read actions.
+let refreshing=false,choiceGate=deferred();writes=[];
+h=harness({read:report=>structuredClone(fixture[report]),choices:()=>refreshing?choiceGate.promise:Promise.resolve()});await h.c.loadData();let control=inlineFixture(h),notes=control();
+h.c.updateRecord=(...args)=>{writes.push(args);return Promise.resolve();};h.c.S.checked={'101':true};refreshing=true;loading=h.c.loadData();await settle();
+assert.equal(h.c.S.coreRefreshing,true);assert.equal(h.nodes.get('tableScroll').inert,true);assert.equal(h.nodes.get('bulkbar').inert,true);
+assert.equal(h.c.tableInlineSave(notes),false);assert.equal(h.c.openProjectPopup(notes),false);h.c.S.projectPopupId='101';h.c.S.projectPopupButton=notes;assert.equal(h.c.saveProjectPopup(),false);h.c.S.projectPopupId=null;h.c.S.projectPopupButton=null;
+assert.equal(h.c.openLookupPopup(notes),false);assert.equal(h.c.saveLookupChoice('402'),false);assert.equal(h.c.openBulkModal(),false);assert.equal(h.c.applyBulk(),false);assert.equal(h.c.S.bulkOpen,false);assert.equal(writes.length,0);
+choiceGate.resolve();await loading;assert.equal(h.c.S.coreRefreshing,false);assert.equal(h.nodes.get('tableScroll').inert,false);assert.equal(h.c.S.properties[0].Notes,'keep me');
+
+// In the opposite ordering a pending native inline write prevents collection replacement until its model patch settles.
+h=harness({read:report=>structuredClone(fixture[report])});await h.c.loadData();control=inlineFixture(h);notes=control();held=deferred();writes=[];
+h.c.updateRecord=(...args)=>{writes.push(args);return held.promise;};const record=h.c.S.properties[0],beforeWriteReads=h.reads.length,beforeWriteGeneration=h.c.LandData.generation();const saving=h.c.tableInlineSave(notes);
+assert.equal(h.c.S.tableWrites,1);assert.equal(writes.length,1);assert.equal(h.c.tableInlineSave(notes),false,'a duplicate call cannot replay an active write');
+await assert.rejects(h.c.loadData(),/Finish or discard/);assert.equal(h.reads.length,beforeWriteReads);assert.equal(h.c.LandData.generation(),beforeWriteGeneration);assert.equal(h.c.S.properties[0],record);
+h.c.S.scope='cos';held.resolve({code:3000,data:{ID:'101'}});await saving;assert.equal(h.c.S.tableWrites,0);assert.equal(record.Notes,'new draft');assert.equal(h.c.S.properties[0].Notes,'new draft');assert.equal(h.statuses.at(-1).text,'Saved');
+h=harness({read:report=>structuredClone(fixture[report])});await h.c.loadData();control=inlineFixture(h);notes=control();writes=[];const deniedWrite={code:2899,message:'Denied'};h.c.updateRecord=(...args)=>{writes.push(args);return Promise.reject(deniedWrite);};await h.c.tableInlineSave(notes);assert.equal(h.c.S.tableWrites,0);assert.equal(writes.length,1);assert.equal(h.errors.at(-1),deniedWrite);assert.equal(h.statuses.at(-1).text,'Inline save failed');assert.equal(h.c.S.properties[0].Notes,'keep me');
+
+// Project and searchable lookup writes use the same refresh exclusion through their actual save callbacks.
+for(const kind of ['project','lookup']){
+ h=harness({read:report=>structuredClone(fixture[report])});await h.c.loadData();control=inlineFixture(h);held=deferred();writes=[];h.c.updateRecord=(...args)=>{writes.push(args);return held.promise;};
+ const button=control({field:kind==='project'?'Projects':'Company1',original:kind==='project'?'201':'401'});
+ let writing;if(kind==='project'){h.c.S.projectPopupId='101';h.c.S.projectPopupButton=button;h.c.document.querySelectorAll=selector=>selector.startsWith('#projectPopupList')?[{value:'201'},{value:'202'}]:[];writing=h.c.saveProjectPopup();}else{h.c.S.lookupPopupId='101';h.c.S.lookupPopupField='Company1';h.c.S.lookupPopupKind='company';h.c.S.lookupPopupMode='table';h.c.S.lookupPopupButton=button;writing=h.c.saveLookupChoice('402');}
+ assert.equal(h.c.S.tableWrites,1);assert.equal(writes.length,1);const count=h.reads.length;await assert.rejects(h.c.loadData(),/Finish or discard/);assert.equal(h.reads.length,count);
+ held.resolve({code:3000,data:{ID:'101'}});await writing;assert.equal(h.c.S.tableWrites,0);if(kind==='project')assert.deepEqual(Array.from(h.c.S.properties[0].Projects,x=>x.ID),['201','202']);else assert.equal(h.c.S.properties[0].Company1.ID,'402');
+}
+
+// Unblurred inline and project drafts prevent refresh before any read or DOM replacement starts.
+for(const kind of ['inline','project']){
+ h=harness();await h.c.loadData();control=inlineFixture(h);notes=control();if(kind==='inline')h.c.document.querySelectorAll=selector=>selector.startsWith('#tableScroll')?[notes]:[];else{h.c.S.projectPopupId='101';h.c.S.projectPopupButton=control({original:'201'});h.c.document.querySelectorAll=selector=>selector.startsWith('#projectPopupList')?[{value:'202'}]:[];}
+ const generation=h.c.LandData.generation(),reads=h.reads.length;await assert.rejects(h.c.loadData(),/Finish or discard/);assert.equal(h.c.LandData.generation(),generation);assert.equal(h.reads.length,reads);assert.equal(notes.value,'new draft');assert.equal(h.c.S.coreRefreshing,false);
+}
+
+// A failed refresh releases its edit lock; a superseded read cannot release the newer generation's lock.
+let failCore=false;h=harness({read:report=>failCore&&report==='All_Property'?Promise.reject(new Error('Denied')):fixture[report]});await h.c.loadData();failCore=true;await assert.rejects(h.c.loadData(),/Denied/);assert.equal(h.c.S.coreRefreshing,false);assert.equal(h.nodes.get('tableScroll').inert,false);
+let choiceCalls=0,firstChoice=deferred(),secondChoice=deferred();h=harness({choices:()=>++choiceCalls===1?firstChoice.promise:secondChoice.promise});const stale=h.c.loadData().catch(error=>error);await settle();const newer=h.c.loadData();await settle();firstChoice.resolve();assert.equal((await stale).cancelled,true);assert.equal(h.c.S.coreRefreshing,true);assert.equal(h.nodes.get('tableScroll').inert,true);secondChoice.resolve();await newer;assert.equal(h.c.S.coreRefreshing,false);
+
+// Defensive generation verification refuses a Saved claim when a native response belongs to a replaced model.
+h=harness();await h.c.loadData();control=inlineFixture(h);notes=control();held=deferred();h.c.updateRecord=()=>held.promise;const uncertain=h.c.tableInlineSave(notes);h.c.LandData.beginRefresh();held.resolve({code:3000,data:{ID:'101'}});await uncertain;assert.equal(h.c.S.tableWrites,0);assert.equal(h.statuses.at(-1).text,'Inline save failed');assert.equal(h.c.S.properties[0].Notes,'keep me');
+
 // Creating a subdivision needs only builder choices; existing related tab counts require their complete reports.
 h=harness();await h.c.loadData();await h.c.startEditorRequest('subdivision',null,true);assert.deepEqual(h.reads.slice(4).map(r=>r.report),['All_Builders']);assert.equal(h.c.S.panelDirty,true);h.c.closeRecordModal(true);await h.c.startEditorRequest('subdivision','301',false);const tabs=h.c.descriptor('subdivision',h.c.S.subdivisions[0]).tabs;assert.equal(tabs.find(t=>t.id==='milestones').count,1);assert.equal(tabs.find(t=>t.id==='forecasts').count,0);assert.equal(h.c.LandData.status('lots'),'idle');
 assert.deepEqual(Array.from(h.c.LMLandData.editorDependencies('builderTakedown',false)).sort(),['properties','projects','subdivisions','companies','builderTakedowns','builders','lots','additionalItems'].sort());
 
-console.log('Land Master lazy data: actual four-core startup, atomic failure, complete search/sort/counts, deferred retries, truthful unknown counts, editor and scope dependencies, shared reads, stale refresh cancellation, closed-panel guards, and draft protection passed.');
+console.log('Land Master lazy data: actual four-core startup, atomic failure, complete search/sort/counts, deferred retries, truthful unknown counts, editor and scope dependencies, shared reads, stale refresh cancellation, closed-panel guards, bulk retry preservation, and pending refresh/write/draft exclusion passed.');
