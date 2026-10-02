@@ -128,4 +128,6 @@ Import Lots Attach and spreadsheet-checking dialogs fit their contents with a co
 
 Budget transfer review uses outlined editable fields inside pale-blue metric cards, destination identity above the matrix, and compact cost-code badges in ascending Budget Item order. Keep the modal footer visible and use one body scroller on desktop; unresolved phase mappings show a distinct assignment row.
 
+Keep Budget transfer destination metrics compact beside the Budget identity on wide screens. Center the small phase pill slider beneath that row, using the shared Pro Forma pill styling and omitting lot counts from the phase buttons.
+
 Budget transfer matrices follow Budget Manager's single Item column with destination name and Cost_Code pill, pale category bands with blue circular collapse chevrons and department pills, department/category subtotals, and round note pencils (amber when a note exists). Center pencils against the full row including notes. Edit destination notes in a compact Save/Cancel dialog; keep PF notes unchanged. Put selected-phase and all-phase totals in the pinned footer with two-decimal currency, counts, and concise transfer status.
