@@ -2,6 +2,8 @@
 
 This guide captures reusable visual preferences established in production work.
 
+Forecast Manager schedule progress uses blue for Sold and dark yellow (`#b8860b`) for Scheduled. When there are scheduled lots, show current and projected completion together in parentheses (`51% → 56%`). Keep the Sold/Scheduled counts below the bar; show the Scheduled count only when positive.
+
 Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
 
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.
