@@ -1,0 +1,78 @@
+# Remaining Creator SDK v2 migration
+
+Read-only source audit, 2026-10-02. This plan follows the current Budget, Land & Projects, and Insights transport/performance work. It does not establish that a candidate has passed live Creator testing. No widget source, Creator component, environment mapping, or immutable release is changed by this document.
+
+## Scope and order
+
+Six current widget sources still load SDK 1.0 and call `ZOHO.CREATOR.init()`. Migrate one widget, complete its individual Development test, and record the result before moving to the next. Keep existing business behavior, field coverage, loading order, form workflows, and Custom API contracts. Separate transport corrections from further loading/performance redesign.
+
+| Order | Widget | Current source version | Why this order |
+| --- | --- | --- | --- |
+| 1 | Milestone Gantt | 1.1.1 | Two report readers and an explicit date update; smallest transport surface. |
+| 2 | Settings Manager | 1.3.1 | Small datasets exercise create/update/delete, but singleton configuration and autosave need careful persisted checks. |
+| 3 | Manage Lots | 0.9.14 | Exercises scoped counts, queued reads, and pre-submit eligibility checks. |
+| 4 | Tax Center | 19.17.4 | Multiple reader implementations and count/search sequencing make this a larger migration. |
+| 5 | Contract Management | 1.60.42 | Adds private deep links, attachment transport, Custom APIs, and permission-sensitive writes. |
+| 6 | Proforma Manager | 1.80.60 | Most extensive save, child-row, attachment, owner, approval, and deep-link contracts. |
+
+Versions are audit snapshots, not new release reservations. Check current source and mappings again before beginning each increment.
+
+## Shared transport requirements
+
+Zoho's [widget SDK documentation](https://help.zoho.com/portal/en/kb/creator/developer-guide/application-settings/widgets/articles/js-api-documentation) states that SDK initialization is required only for v1. A CDN-only change therefore leaves the existing `init()` gates wrong. Use the existing tested v2 pattern: await [`UTIL.getInitParams()`](https://www.zoho.com/creator/help/js-api/v2/get-init-params.html), capture authenticated environment/user/app through `LMRuntime`, and then begin live reads. An embedded connection failure must stay an error, with no synthetic business data substituted. Keep the permanent loader and original Creator parent/query context intact.
+
+| Existing v1 call | v2 transport | Preserve/check |
+| --- | --- | --- |
+| `API.getAllRecords` | `DATA.getRecords`, via canonical `LMData.readAll` | Cursor pagination, count reconciliation, complete snapshots, all required fields, string IDs, raw denied/error codes, cancellation. Numeric page loops cannot remain active. |
+| `API.getRecordCount` | `DATA.getRecordCount` | `report_name`, criteria, `result.records_count`; legitimate zero is different from denied, missing, or malformed count. Count-only views should remain count-only. |
+| `API.addRecord` | `DATA.addRecords` | Documented payload; create the same form and leave default workflows enabled. Do not convert single-record business actions into new bulk behavior. |
+| `API.updateRecord` | `DATA.updateRecordById` | Same record and changed fields, string ID, per-record response success and persisted reread. |
+| `API.deleteRecord` | `DATA.deleteRecords` or `DATA.deleteRecordById` according to existing semantics | Preserve criteria-scoped multi-row operations. Single-row operations must not delete additional matches. Check per-record results and required continuation for batches. |
+| `API.invokeCustomApi` | `DATA.invokeCustomApi` | Existing `api_name`, method and environment routing; GET `query_params` must be an encoded query string, omitted when empty; POST `payload` stays an object. No new authentication or user scope. |
+| `API.uploadFile` / `API.readFile` | `FILE.uploadFile` / `FILE.readFile` | `report_name`, `field_name`, string `id`, and optional `file_path`; preserve Custom API preview first and ordinary-user fallback permissions. |
+| `UTIL.getQueryParams` / `UTIL.navigateParentURL` | Same documented v2 UTIL tasks | Responses may be plain objects; retain existing query/init/raw-URL fallbacks and popup/same-window behavior. |
+
+Primary references: [v2 overview](https://www.zoho.com/creator/help/js-api/v2/), [Custom API](https://www.zoho.com/creator/help/js-api/v2/custom-api.html), [delete records](https://www.zoho.com/creator/help/js-api/v2/delete-records.html), [delete by ID](https://www.zoho.com/creator/help/js-api/v2/delete-record-by-id.html), [file upload](https://www.zoho.com/creator/help/js-api/v2/upload-file.html), [file read](https://www.zoho.com/creator/help/js-api/v2/read-file.html), [query parameters](https://www.zoho.com/creator/help/js-api/v2/get-query-params.html).
+
+The canonical adapter is `shared/creator-data.js`; `scripts/sync-shared-widget-data.mjs` currently copies it only to Budget, Land & Projects, and Insights. Extend that explicit list for each adopted widget, then verify byte identity with a regression check. Route any new count calls through `LMData.request` when they share the same SDK workload. Preserve narrower per-widget sequencing where it has resolved Creator SDK failures. Invalidate relevant caches before mutation or refresh; reads required for eligibility/save verification must be fresh. Do not narrow Settings fields because its generic editor deliberately exposes unknown fields.
+
+The current SDK2 runtime copies in Budget, Land & Projects, and Insights give explicit native environment fragments authority over URL/referrer hints, reject malformed explicit fragments, propagate failed handshakes, and expose the authenticated `appLinkName` cache key. Adopt that runtime when each remaining widget changes to SDK2. `scripts/test-runtime-context.mjs` inventories all nine widgets and applies the stricter checks automatically to sources whose SDK tag is v2. Keep the six v1 runtime copies unchanged until their individual migrations. Live Development returned code `1060` for an object in `query_params`; the downloaded SDK forwards it verbatim, so a CDN/version-shaped mock is insufficient evidence for the GET argument contract.
+
+## Source inventory and individual tests
+
+Line references below refer to `widgets/<slug>/src/app/widget.html` at this audit snapshot. Every remaining SDK tag is on line 7.
+
+| Widget | Verified methods and source locations | Individual Development acceptance tests |
+| --- | --- | --- |
+| `milestone-gantt` | `getAllRecords` 936; `updateRecord` 1603; init gate 1690. `fetchAllRows` 932 loads `All_Subdivisions` and `All_Milestones`, page size 200 / cap 60. | Match subdivision/milestone IDs, names, dates and timeline against the v1 baseline. Read a multi-page fixture with no omission. A rejected/incomplete report must not become a blank successful timeline. Explicitly update one authorized test milestone date, reread its exact persisted date and dependent visible date fields, then restore the fixture date. Verify date format and timeline edit/cancel/retry. |
+| `settings-manager` | `getAllRecords` 450; `updateRecord` 482; `addRecord` 505; criteria `deleteRecord` 519; parent navigation 1326; init gate 1359. Reports configured at 269. Read retries currently remove `field_config` after a failure (444); cap is 25 pages. | Read the full singleton and every configured option/curve report, including generic Other fields. Preserve zero/duplicate-record messaging and selected record identity; duplicate detection currently warns, it does not disable every write. Verify 700 ms batched autosave and persisted list-field values, not just top-level success. Create/edit/delete an authorized disposable `Construction_Curve` with the `Settings` parent link, then reread. Test rejection retains pending changes. Do not use scheduling timestamps, danger toggles, model/provider or review instructions as casual transport test values. Never create another Settings row. |
+| `manage-lots` | `getAllRecords` 80; `addRecord` 82; count bridge 135–145; scoped merge 164; immediate pre-submit reread 243; init gate 264. `subdivision-counts.js` owns a four-worker queue. | Match each visible subdivision's available/scheduled/sold counts, including zero and count-to-scoped-rows fallback. Keep missing/denied counts unavailable. Verify two-report lot merge, labels/hover details, and quick subdivision changes cannot publish stale rows/counts. Reread selected lots and takedowns immediately before submission; one changed/claimed lot rejects the entire submission. On a disposable authorized fixture, create one `Builder_Takedown` through the form and check workflow results. Do not reintroduce the removed spreadsheet importer. Run existing `test-manage-lots-widget.mjs`. |
+| `tax-center` | Page transport 1916–1919; reader variants 2006/2060/2104/2122; count 2233; update 2422; add 3987; optional height utility 3912; init gate 5743. The later `reloadAllData` 4922 is effective; scoped validated search reader is 4927. | Preserve reference-only startup and scoped search rather than turning startup into a full parcel scan. Match search/facet counts and loaded unique parcel-year IDs for zero, multi-page, and criteria-limited results. Preserve `maxAutoRows` narrowing guard and Property_ID / Property / Subdivision / Company matching. Count/read rescue failures must not authorize partial bulk results. Cancel/change search while reading; previous generation cannot overwrite current results. On a disposable fixture verify one create/update plus reread and exact numeric/date/relationship values. Test existing serialized count/search policy before relaxing concurrency. Check optional iframe-height behavior without inventing a replacement API. |
+| `contract-management` | Query 2130; reads 2344; Custom API bridge 2368; update 2413; add 2452; criteria delete 2484; popup navigation 2497; attachment read/upload 6506/6512; preview wrapper 6618; init gate 9301. | Match list/editor field coverage, owner and assigned-to-me access, Master/Amendment relations, and fresh lot-claim checks. Open existing `contractId` and controlled LOI `loiReviewId` / `tokenId` links; never include token values in logs. Verify a disposable draft create/edit/delete and comments/child rows with per-record success. Upload/download a non-sensitive test attachment, preserve exact bytes and existing preview-first/fallback permissions. Verify approval progress/reconciliation through non-sending mocks; separately record any live workflow actions performed on approved test fixtures. Run existing picker, lot-type/backfill and send-progress suites. |
+| `proforma-manager` | Core reads 2737 plus separate read 5386; add 2793; update 2849; criteria delete 2954; dynamic comment API calls 5147–5172; attachment upload/read 5226–5231; Custom API bridges 2626/3308; init params 3294; query/init/raw deep-link resolver 12717–12765; init gate/mock fallback 12879–12908. | Match full list and selected-record fields, roster and Pro Forma owner-map fallback, all read-only permissions and deep-link tabs/months. Exercise comments, attachment preview/upload/fallback, duplicate (no inherited child IDs), save/reopen/save-again, partial-save retry, phase rows, Lot Mix, additional-cost rows and Creator saved-month parity on an approved disposable fixture. Retain approval sequence/progress, LOI, PDF/Writer and budget-transfer contracts. Criteria deletion of more than 200 children must use v2 continuation and verify complete deletion before rebuild. Run the existing Pro Forma regression suite. Keep current PF transfer implementation work separate. |
+
+SDK v2 [`deleteRecords`](https://www.zoho.com/creator/help/js-api/v2/delete-records.html) fails when more than 200 rows match unless its supported batch mechanism is requested; `process_until_limit` and `more_records` require explicit handling. Pro Forma's current deletion loop comment at 11342 assumes the v1 behavior, so translating only its method name is insufficient.
+
+## Development release gate for each widget
+
+1. Record the currently mapped Development release and actual Creator widget placement before modifying it. Current `deploy/environments.json` routes Production registration URLs by runtime environment only for Budget, Land & Projects, Insights and its alias. Do not assume the other six Production registration URLs already select Development assets. Verify the placement/loader configuration without changing the permanent URL contract.
+2. Add a focused transport test with a v2-only SDK stub: no `init()`, no `API.*`, plain init/query objects, required snake-case arguments, exact large string IDs, two cursor pages, count mismatch/repeated cursor, zero versus denied, per-record write rejection, cancellation and retry. File-owning widgets also need exact-byte and file-path fixtures. Existing business suites supplement this test rather than proving live transport.
+3. Run the focused test, affected business regressions, `npm run validate`, `npm run build:pages`, and `git diff --check`. Keep new release versions/mappings owned by the coordinated release step.
+4. Create an immutable candidate and promote **only that widget** to Development. Open it inside authenticated Creator Development, prove environment/user/app and candidate version, then perform the widget's matrix above. A directly hosted preview or a Production frontend showing a Development label alone is not sufficient.
+5. Record baseline and candidate first usable render, count/read request count, response-size estimate, unique row counts and errors. The shared size metric estimates serialized response size; it is not actual network bytes. Keep tokens, raw private rows and attachment content out of telemetry. Verify at least the signed-in user's normal permission scope; reduced-permission live testing is separately unverified if no such session is available.
+6. Record pass/fail and any unperformed scenario. A failed test holds the individual widget at its last verified Development release; repair and retest before proceeding. Production mapping and Creator business schema/functions/APIs need no change merely to replace the SDK transport. Explicit production promotion is a separate coordinated step.
+
+## Creator page candidates
+
+`creator/generated/PAGES.md` comes from the 2026-08-06 export and proves historical link names, not the current widget placement. Verify the actual Development page before a live test. Repository references are stronger for the two noted pages below.
+
+| Widget | Repository page link(s) to verify | Evidence |
+| --- | --- | --- |
+| Milestone Gantt | `Milestone_Gantt_View` | Generated page registry. |
+| Settings Manager | `Settings1` | Generated registry and `widgets/settings-manager/README.md` identify the widget's replaced Settings iframe. |
+| Manage Lots | `Lot_Management`, `Lot_Management_V2` | Both historical page links exist; verify the currently registered Manage Lots widget rather than assuming either. |
+| Tax Center | `Tax_Parcel_Management` | Generated registry. |
+| Contract Management | `Contracts` | Generated registry has `contractId`, `loiReviewId`, `tokenId`, consistent with current source. `Contract_Management` / `Contract_Mgmt` also exist historically. |
+| Proforma Manager | `Proforma_Management1` | Current source `PAGE_LINK_NAME` and module release notes use this link. Registry also contains `Proforma_Management`; its older parameters differ. |
+
+No live Creator read/write or performance result is claimed by this plan.

@@ -49,7 +49,8 @@
     const query=options.criteria?{criteria:options.criteria}:{};
     const promise=(async()=>{
       check();
-      const countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});});check();
+      let countResponse;
+      try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();
       const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count;
       const expected=Number(rawCount);
       if(code(countResponse)!=='3000'||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(expected)||expected<0)throw failure(report,countResponse);
@@ -59,7 +60,7 @@
       if(expected===0)return finish();
       for(pages=1;pages<=Math.ceil(expected/200)+1;pages++){
         check();const config={report_name:report,max_records:1000,field_config:fields?'custom':'all',...query};if(fields)config.fields=fields;if(cursor)config.record_cursor=cursor;
-        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return finish(error);if(error.cancelled)throw error;throw failure(report,error);}
+        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return finish(error);if(error&&error.cancelled)throw error;throw failure(report,error);}
         check();if(code(response)==='3100'||code(response)==='9280')return finish(response);
         if(code(response)!=='3000'||!Array.isArray(response.data))throw failure(report,response);
         for(const row of response.data){const rawId=row&&row.ID,id=rawId==null?'':String(rawId);if(!id.trim()||(typeof rawId==='number'&&!Number.isSafeInteger(rawId))||ids.has(id))throw failure(report,response,report+': missing, unsafe, or duplicate record ID across pages. Refresh to retry.');ids.add(id);rows.push(row);}

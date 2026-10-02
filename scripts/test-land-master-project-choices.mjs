@@ -16,7 +16,7 @@ assert.deepEqual(Array.from(context.OPTS.projectCity),['Houston','Austin']);
 assert.equal(context.OPTS.projectCity,context.OPTS.subCity);
 assert.equal(context.OPTS.propertyCounty,context.OPTS.lotCounty);
 assert.throws(()=>context.applyLocationChoices({City:[],County:[]}),/Territory/);
-context.invokeErrorApi=async args=>{assert.equal(args.api_name,'Get_Land_Master_Choices_DEV');assert.equal(args.http_method,'GET');return {code:3000,result:JSON.stringify(choices)};};
+context.invokeErrorApi=async args=>{assert.equal(args.api_name,'Get_Land_Master_Choices_DEV');assert.equal(args.http_method,'GET');assert.equal(Object.hasOwn(args,'query_params'),false,'the native SDK GET request must omit unused query parameters');return {code:3000,result:JSON.stringify(choices)};};
 await context.loadLocationChoices();
 assert.equal(context.S.choicesReady,true);
 context.invokeErrorApi=async()=>({code:5000,result:'bad'});
@@ -64,6 +64,6 @@ for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Lan
 }
 console.log('All New modals open after API failure; saved choices and clean search labels passed.');
 
-assert.match(source,/searchable-pickers\.js\?v=8\.13\.2/);
-assert.match(source,/searchable-pickers\.css\?v=8\.13\.2/);
+assert.match(source,/searchable-pickers\.js\?v=8\.13\.3/);
+assert.match(source,/searchable-pickers\.css\?v=8\.13\.3/);
 assert.doesNotMatch(source, /(?:lookup-popup-close|project-popup-close)[^>]*>×/);

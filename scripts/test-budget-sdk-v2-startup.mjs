@@ -26,7 +26,8 @@ assert.match(source, /creator\/widgets\/version\/2\.0\/widgetsdk-min\.js/);
 assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(getAllRecords|updateRecord|addRecord|getRecordById|uploadFile|readFile|invokeCustomApi)\(/);
 assert.doesNotMatch(source, /ZOHO\.CREATOR\.init\(/);
 
-const calls = [], invalidations = [];
+const calls = [], invalidations = [], savedLogs = [];
+let requestExecutions = 0;
 const methods = ['updateRecordById', 'addRecords', 'getRecordById', 'invokeCustomApi'];
 const DATA = Object.fromEntries(methods.map(method => [method, async config => {
   calls.push({ method, config:clone(config) });
@@ -41,11 +42,10 @@ const transport = install({
   CFG:{forms:{item:'Budget_Item', budget:'Add_Budget', approval:'Budget_Approvals', project:'Project', importItem:'Budget_Import_Item', modification:'Budget_Modification'}, reports:{items:'All_Budget_Items', budgets:'All_Budgets', approvals:'All_Budget_Approvals', projects:'All_Projects', importItems:'All_Budget_Item_Imports', modifications:'All_Budget_Modifications'}, reportCandidates:{All_Budget_Items:['All_Budget_Items','Budget_Item_Report']}},
   ZOHO:{CREATOR:{DATA,FILE}},
   LMRuntime:{apiName:name => name + '_DEV'},
-  LMData:{request:(_task, invoke) => Promise.resolve().then(invoke), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
-  auditLog:() => {}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
-  isUpdateSuccess:response => String(response?.code) === '3000',
+  LMData:{request:(_task, invoke) => Promise.resolve().then(() => {requestExecutions++;return invoke();}), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
+  auditLog:(level,message) => {if(level === 'success')savedLogs.push(message);}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
   Promise, setTimeout, Date, Error
-}, ['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
+}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
 transport.window = transport;
 
 await transport.sdkGetAllRecords('All_Budget_Items', '(Budget_Category == 1)');
@@ -62,10 +62,55 @@ assert.deepEqual(calls.pop().config,{report_name:'All_Contract_Versions',id:'900
 assert.equal(await transport.sdkReadFile('All_Contract_Versions','900000000000000001','File_field1','test.pdf'),'file content');
 assert.deepEqual(calls.pop().config,{report_name:'All_Contract_Versions',id:'900000000000000001',field_name:'File_field1',file_path:'test.pdf'});
 await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'reviewer'}});
-assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access_DEV',http_method:'GET',content_type:'application/json',query_params:{user:'reviewer'}});
+assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access_DEV',http_method:'POST',content_type:'application/json',payload:{user:'reviewer'}});
 await transport.sdkInvokeCustomApi('Handle_Approval_Action',{budgetId:'1',approvalAction:'Check'});
 assert.deepEqual(calls.pop().config,{api_name:'Handle_Approval_Action_DEV',http_method:'POST',content_type:'application/json',payload:{budgetId:'1',approvalAction:'Check'}});
 assert.equal(invalidations.length,3,'successful add/update/upload invalidate transport data');
+assert.equal(requestExecutions,7,'the bounded request stub executes each real native SDK callback');
+await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'Reviewer@zohocreator.com'}});
+assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access_DEV',http_method:'POST',content_type:'application/json',payload:{user:'reviewer'}}},'runtime-resolved Development access uses POST and its verified username binding');
+await transport.sdkInvokeCustomApi('Get_User_Access_Lean',{__method:'GET',__params:{user:'Reviewer@zohocreator.com'}});
+assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access_Lean_DEV',http_method:'POST',content_type:'application/json',payload:{user:'reviewer'}}},'the registered lean Development endpoint uses the same POST binding without switching the selected access API');
+transport.LMRuntime.apiName = name => name;
+await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'reviewer+one@example.test',label:'two & three'}});
+assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Get_User_Access',http_method:'GET',content_type:'application/json',query_params:'user=reviewer%2Bone%40example.test&label=two%20%26%20three'}},'Production uses an encoded query string, never an object coerced by the native SDK');
+transport.LMRuntime.apiName = name => name + '_DEV';
+await transport.sdkInvokeCustomApi('Other_Read_API',{__method:'GET',__params:{user:'reviewer'}});
+assert.deepEqual(calls.pop(),{method:'invokeCustomApi',config:{api_name:'Other_Read_API_DEV',http_method:'GET',content_type:'application/json',query_params:'user=reviewer'}},'other Development APIs retain their existing method');
+
+assert.equal(savedLogs.length,2,'actual record response validation permits only confirmed add/update success');
+
+const successfulResponses = [
+  {code:3000,data:{ID:'900000000000000001'},message:'success'},
+  {code:'3000',data:{ID:'900000000000000001'},message:'Data Updated Successfully!'},
+  {code:3000,result:[{code:3000,data:{ID:'900000000000000001'},message:'Data Added Successfully!'}]},
+  {code:3000,result:[{code:3000,data:{ID:'1'}},{code:3000,data:{ID:'2'}}]}
+];
+for(const response of successfulResponses)assert.equal(transport.isUpdateSuccess(response),true,'documented SDK2 direct and per-record successes are accepted');
+const mutationFailures = [
+  ['update',{code:2945,message:'Invalid input'},'2945'],
+  ['update',{code:3000,result:[{code:2899,message:'No permission'}]},'2899'],
+  ['add',{code:3000,result:[{code:2945,message:'Invalid input'}]},'2945'],
+  ['update',{code:3000,result:[{code:3000,data:{ID:'1'}},{code:2899,message:'No permission'}]},'2899'],
+  ['add',{code:3000,result:[{code:3000,data:{ID:'1'}},{code:2945,message:'Invalid input'}]},'2945'],
+  ['update',{code:3000,result:[{code:3000,data:{ID:'1'}},{code:2894,message:'No report named Budget_Item'}]},'2894']
+];
+for(const method of ['update','add'])for(const response of [null,undefined,{},'success',{code:3000},{code:3000,data:{}},{code:3000,data:{ID:123}},{code:3000,result:[]},{code:3000,result:{}},{code:3000,result:[{code:3000,data:{}}]},{code:3000,result:[null]}])mutationFailures.push([method,response,'MALFORMED_MUTATION_RESPONSE']);
+for(const [method,response,code] of mutationFailures) {
+  const priorInvalidations=invalidations.length, priorLogs=savedLogs.length;
+  let writes=0;
+  const native=async () => {writes++;return response;};
+  if(method === 'update')DATA.updateRecordById=native;else DATA.addRecords=native;
+  const mutation=method === 'update' ? transport.sdkUpdateRecord('Budget_Item','1',{Description:'Latest'}) : transport.sdkAddRecord('Comment_Log',{Comment:'Latest'});
+  await assert.rejects(mutation,error => error.code === code && error.raw === response && error.response === response,'failed SDK2 mutation preserves the failing code and raw response');
+  assert.equal(writes,1,'failed, mixed and malformed mutations are not replayed');
+  assert.equal(invalidations.length,priorInvalidations,'failed mutations cannot invalidate as confirmed success');
+  assert.equal(savedLogs.length,priorLogs,'failed mutations cannot report Saved');
+  assert.equal(transport.isUpdateSuccess(response),false,'real success validator rejects failure/malformed fixtures');
+}
+assert.equal(transport.responseLooksBad({code:3000,result:[{code:2899,message:'No permission'}]}),true,'generic response checks also inspect per-record failures');
+assert.equal(transport.budgetSdkCode({code:3000,result:[{code:2899,message:'No permission'}]}),'2899','nested failing codes take precedence over the request-level 3000');
+
 
 let attempts = 0;
 DATA.updateRecordById = async () => { attempts++; throw new Error('Response lost after write'); };
@@ -190,4 +235,4 @@ preReady.renderProjList();preReady.renderApprQueue();
 assert.match(preReadyDom.projList.innerHTML,/Loading budgets/);
 assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does not claim zero pending approvals');
 
-console.log('Budget SDK v2 envelopes, safe retries, complete parallel startup and detail deduplication passed.');
+console.log('Budget SDK v2 envelopes, native mutation success/failure validation, safe retries, complete parallel startup and detail deduplication passed.');

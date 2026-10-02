@@ -87,6 +87,22 @@ for (const phase of ['count', 'records']) {
   const api = {getRecordCount: async () => phase === 'count' ? denied : count(1), getRecords: async () => denied};
   await assert.rejects(data.readAll(options(api)), error => error.code === '2898' && error.permissionDenied === true && error.response === denied);
 }
+for (const phase of ['count', 'records']) for (const raw of [{code: 2898}, {code: '500', description: 'Temporary SDK failure'}, Object.assign(new Error('Read refused'), {code: 'fixture-code', permissionDenied: true})]) {
+  const {data} = harness();
+  let attempts = 0, records = 0;
+  const api = {
+    getRecordCount: async () => {if (phase === 'count' && attempts++ === 0) throw raw; return count(1);},
+    getRecords: async () => {records++; if (phase === 'records' && attempts++ === 0) throw raw; return page([row('retry-after-rejection')]);}
+  };
+  await assert.rejects(data.readAll(options(api)), error => error !== raw && error.code === String(raw.code) && error.response === raw && error.cause === raw && error.permissionDenied === (String(raw.code) === '2898' || !!raw.permissionDenied) && typeof error.message === 'string' && error.message.length > 0);
+  if (phase === 'count') assert.equal(records, 0, 'A rejected count cannot start record paging.');
+  assert.equal((await data.readAll(options(api)))[0].ID, 'retry-after-rejection', 'Rejected count/page failures detach the failed in-flight promise so a new read can retry.');
+}
+for (const phase of ['count', 'records']) {
+  const {data} = harness(), raw = null;
+  const api = {getRecordCount: async () => {if (phase === 'count') throw raw; return count(1);}, getRecords: async () => {throw raw;}};
+  await assert.rejects(data.readAll(options(api)), error => error.response === raw && error.cause === raw && /readable response/.test(error.message), 'Even null SDK rejections must become a useful failed-load message.');
+}
 {
   const {data} = harness(), raw = Object.assign(new Error('Read refused'), {code: 'fixture-code', permissionDenied: true});
   await assert.rejects(data.readAll(options({getRecordCount: async () => count(1), getRecords: async () => {throw raw;}})), error => error.code === 'fixture-code' && error.permissionDenied === true && error.cause === raw);
@@ -143,6 +159,20 @@ for (const terminal of ['3100', '9280']) for (const thrown of [false, true]) {
   await data.readAll({...config, fresh: true}); assert.equal(counts, 5, 'Fresh reads bypass cached results.');
   await data.readAll({...config, fields: ['ID']}); assert.equal(counts, 6, 'Different field projections must not share cached rows.');
   await data.readAll({...config, criteria: '(Status == "Active")'}); assert.equal(counts, 7, 'Different criteria must not share cached rows.');
+}
+{
+  const window = {location: {href: 'https://example.test/prod/land-master/', ancestorOrigins: []}}, context = vm.createContext({window, document: {referrer: ''}, Promise});
+  vm.runInContext(fs.readFileSync(new URL('../widgets/land-master/src/app/runtime-context.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(source, context);
+  let counts = 0;
+  const api = {getRecordCount: async () => {counts++; return count(1);}, getRecords: async () => page([row(window.LMRuntime.current().appLinkName)])};
+  const config = options(api, {ttlMs: 60000});
+  window.LMRuntime.apply({envUrlFragment: '', loginUser: 'actor', appLinkName: 'first-app'});
+  assert.equal((await window.LMData.readAll(config))[0].ID, 'first-app');
+  window.LMRuntime.apply({envUrlFragment: '', loginUser: 'actor', appLinkName: 'second-app'});
+  assert.equal((await window.LMData.readAll(config))[0].ID, 'second-app', 'The actual runtime must expose the app key used by the canonical cache.');
+  await window.LMData.readAll(config);
+  assert.equal(counts, 2, 'A cached report stays separated by authenticated app, not just stubbed test context.');
 }
 {
   const {data} = harness(), firstPage = gate(); let counts = 0, records = 0, saved = 'before-write';

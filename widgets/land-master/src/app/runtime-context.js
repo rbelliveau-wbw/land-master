@@ -1,1 +1,66 @@
-(function(global){"use strict";var state={environment:"UNKNOWN",user:"",fragment:"",params:{}};function text(v){return String(v==null?"":v).trim();}function detect(p){p=p||{};var f=text(p.envUrlFragment||p.env_url_fragment||p.environment||p.Environment||p.env),s=[f];try{s.push(document.referrer||"");}catch(e){}try{s.push(global.location&&global.location.href||"");}catch(e){}try{var o=global.location&&global.location.ancestorOrigins;for(var i=0;o&&i<o.length;i++)s.push(o[i]||"");}catch(e){}var j=s.join(" ");if(/(?:environment[\/:=-]?|\/)(development|dev)(?:[\/.?#&\s-]|$)/i.test(j)||/\/dev\//i.test(j))return"DEVELOPMENT";if(/(?:environment[\/:=-]?|\/)(stage|staging)(?:[\/.?#&\s-]|$)/i.test(j)||/\/stage\//i.test(j))return"STAGE";if(/\/prod(?:uction)?\//i.test(j)||f==="")return"PRODUCTION";return"UNKNOWN";}function user(p){p=p||{};var v=p.loginUser||p.login_user||p.user||p.loginEmailId||p.userEmail||"";if(v)return text(v);try{var z=global.ZOHO&&global.ZOHO.CREATOR;return text(z&&(z.loginUser||z.LOGIN_USER)||(global.appsetup&&global.appsetup.loginUser)||"");}catch(e){return"";}}function apply(p){state.params=p||{};state.fragment=text(state.params.envUrlFragment||state.params.env_url_fragment||state.params.environment||"");state.environment=detect(state.params);state.user=user(state.params);return current();}function current(){return{environment:state.environment,user:state.user||"(unknown)",environmentFragment:state.fragment};}function capture(){var z=global.ZOHO&&global.ZOHO.CREATOR,r=null;try{r=z&&z.UTIL&&typeof z.UTIL.getInitParams==="function"?z.UTIL.getInitParams():(z&&typeof z.getInitParams==="function"?z.getInitParams():null);}catch(e){}return Promise.resolve(r).then(apply,function(){return apply(null);});}function apiName(n){n=text(n);if(!n)return n;if(state.environment==="DEVELOPMENT"){if(n==="Save_PF1"||n==="Save_PF")return"Save_PF";if(n==="Get_Proforma_Approval_PDF1"||n==="Get_Proforma_Approval_PDF")return"Get_Proforma_Approval_PDF";return/_DEV$/i.test(n)?n:n+"_DEV";}if(state.environment==="STAGE")return/_STAGE$/i.test(n)?n:n+"_STAGE";return n;}global.LMRuntime={capture:capture,current:current,apiName:apiName,apply:apply};})(window);
+(function (global) {
+  "use strict";
+  var state = {environment:"UNKNOWN",user:"",fragment:"",params:{},appLinkName:""};
+  function text(value) { return String(value == null ? "" : value).trim(); }
+  function nativeEnvironment(params) {
+    params = params || {};
+    var keys = ["envUrlFragment","env_url_fragment"];
+    for (var i = 0; i < keys.length; i++) {
+      if (!Object.prototype.hasOwnProperty.call(params, keys[i])) continue;
+      var fragment = params[keys[i]];
+      if (typeof fragment !== "string") throw new Error("Creator did not identify a recognized environment.");
+      fragment = fragment.trim();
+      if (fragment === "") return "PRODUCTION";
+      if (/^\/?environment\/development\/?$/i.test(fragment)) return "DEVELOPMENT";
+      if (/^\/?environment\/(?:stage|staging)\/?$/i.test(fragment)) return "STAGE";
+      throw new Error("Creator did not identify a recognized environment.");
+    }
+    return null;
+  }
+  function detect(params) {
+    var native = nativeEnvironment(params);
+    if (native) return native;
+    var hints = [text(params && (params.environment || params.Environment || params.env))];
+    try { hints.push(document.referrer || ""); } catch (ignore) {}
+    try { hints.push(global.location && global.location.href || ""); } catch (ignore) {}
+    try { var origins = global.location && global.location.ancestorOrigins; for (var i = 0; origins && i < origins.length; i++) hints.push(origins[i] || ""); } catch (ignore) {}
+    var joined = hints.join(" ");
+    if (/(?:environment[\/:=-]?|\/)(development|dev)(?:[\/.?#&\s-]|$)/i.test(joined) || /\/dev\//i.test(joined)) return "DEVELOPMENT";
+    if (/(?:environment[\/:=-]?|\/)(stage|staging)(?:[\/.?#&\s-]|$)/i.test(joined) || /\/stage\//i.test(joined)) return "STAGE";
+    if (/\/prod(?:uction)?\//i.test(joined)) return "PRODUCTION";
+    return "UNKNOWN";
+  }
+  function user(params) {
+    params = params || {};
+    var value = params.loginUser || params.login_user || params.user || params.loginEmailId || params.userEmail || "";
+    if (value) return text(value);
+    try { var creator = global.ZOHO && global.ZOHO.CREATOR; return text(creator && (creator.loginUser || creator.LOGIN_USER) || global.appsetup && global.appsetup.loginUser || ""); } catch (ignore) { return ""; }
+  }
+  function apply(params) {
+    params = params || {};
+    state = {environment:"UNKNOWN",user:"",params:params,fragment:text(params.envUrlFragment || params.env_url_fragment || params.environment || ""),appLinkName:text(params.appLinkName || params.app_link_name || "")};
+    state.environment = detect(params);
+    state.user = user(params);
+    return current();
+  }
+  function current() { return {environment:state.environment,user:state.user || "(unknown)",environmentFragment:state.fragment,appLinkName:state.appLinkName}; }
+  function capture() {
+    return Promise.resolve().then(function () {
+      var creator = global.ZOHO && global.ZOHO.CREATOR;
+      if (!creator || !creator.UTIL || typeof creator.UTIL.getInitParams !== "function") throw new Error("Creator session context is unavailable.");
+      return creator.UTIL.getInitParams();
+    }).then(apply);
+  }
+  function apiName(name) {
+    name = text(name);
+    if (!name) return name;
+    if (state.environment === "DEVELOPMENT") {
+      if (name === "Save_PF1" || name === "Save_PF") return "Save_PF";
+      if (name === "Get_Proforma_Approval_PDF1" || name === "Get_Proforma_Approval_PDF") return "Get_Proforma_Approval_PDF";
+      return /_DEV$/i.test(name) ? name : name + "_DEV";
+    }
+    if (state.environment === "STAGE") return /_STAGE$/i.test(name) ? name : name + "_STAGE";
+    return name;
+  }
+  global.LMRuntime = {capture:capture,current:current,apiName:apiName,apply:apply};
+})(window);

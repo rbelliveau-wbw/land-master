@@ -11,7 +11,7 @@ assert.doesNotMatch(source,/CREATOR\.API|CREATOR\.init\(|buildEnvelopes|tryEnvel
 const calls=[],requests=[];
 let response={code:3000,result:[{code:3000,data:{ID:'90071992547409931'}}]};
 const context=vm.createContext({S:{liveSDK:true,demo:false},CFG:{reportCandidates:{All_Lots_All_Fields:['All_Lots_All_Fields','All_Active_Lots']}},diag(){},
-  LMData:{request:async(task,fn)=>{requests.push(task);return fn();}},
+  LMData:{request:async(task,fn)=>{requests.push(task);return fn();},code:value=>String(value?.code||'')},
   ZOHO:{CREATOR:{DATA:{addRecords:async args=>{calls.push({method:'add',args});return response;},updateRecordById:async args=>{calls.push({method:'update',args});return response;},deleteRecords:async args=>{calls.push({method:'delete',args});return response;},invokeCustomApi:async args=>{calls.push({method:'custom',args});return response;}}}},
   reportForType:type=>type==='externalMapping'?'All_External_System_Mappings':undefined});
 context.window=context;
@@ -34,16 +34,30 @@ for(const action of [()=>context.createRecord('lot',data),()=>context.updateReco
 assert.equal(calls.length,before+3,'inner failures must not trigger guessed-envelope retries');
 response={code:'3000',result:[{code:'3000',data:{ID:id}}]};assert.equal(context.isSuccess(response),true);
 response={code:3000,result:[{code:3000,data:{ID:id}},{code:2945,message:'Invalid input'}]};assert.equal(context.isSuccess(response),false);
+await assert.rejects(context.createRecord('lot',data),e=>String(e.code)==='2945','a success item cannot hide a later failed item');
+response={code:3000,data:{ID:id}};assert.equal(context.extractRecordId(await context.createRecord('lot',data)),id,'native single-record success must remain supported');
+for(const malformed of [{code:3000},{code:3000,result:[]},{code:3000,data:{}},{code:3000,data:{ID:123}},{data:{ID:id}},{code:3000,result:[{code:3000}]}]){
+  response=malformed;assert.equal(context.isSuccess(response),false);const requestCount=calls.length;
+  for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>e.message==='Creator did not confirm the record change.'&&e.response===malformed);
+  assert.equal(calls.length,requestCount+3,'unconfirmed record changes must fail without automatic replay');
+}
 context.S.liveSDK=false;await assert.rejects(context.createRecord('lot',data),e=>e.message==='Creator connection required.');context.S.liveSDK=true;
 const custom={api_name:'Get_Land_Master_Choices_DEV',http_method:'GET'};response={code:3000,result:{City:[]}};await context.invokeErrorApi(custom);assert.equal(calls.at(-1).args,custom);assert.equal(requests.at(-1),'custom:Get_Land_Master_Choices_DEV');
+assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false,'no-argument GET calls must omit query_params');
+const audit={api_name:'Report_Proforma_Widget_Error_DEV',http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify({subject:'test',body:'example'})}};await context.invokeErrorApi(audit);assert.equal(calls.at(-1).args,audit);assert.equal(JSON.parse(calls.at(-1).args.payload.payload).subject,'test');assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false);
 
 const readCalls=[],progress=[];
-context.LMData.readAll=async options=>{readCalls.push(options);if(options.reportName==='All_Lots_All_Fields')throw {code:2898};options.onProgress({page:1,count:1,expected:1,done:true});return [{ID:id,Facility_ID:'000073',Notes:'full editor field'}];};
+context.LMData.readAll=async options=>{readCalls.push(options);if(options.reportName==='All_Lots_All_Fields')throw {code:2894};options.onProgress({page:1,count:1,expected:1,done:true});return [{ID:id,Facility_ID:'000073',Notes:'full editor field'}];};
 const rows=await context.sdkGetAll('All_Lots_All_Fields','(Subdivision == 90071992547409932)',info=>progress.push(info));
 assert.equal(rows[0].Notes,'full editor field');assert.equal(readCalls.length,2);
 assert.ok(readCalls.every(c=>c.fresh===true&&c.fields===undefined&&c.criteria==='(Subdivision == 90071992547409932)'));
 assert.equal(progress.at(-1).report,'All_Lots_All_Fields');assert.equal(progress.at(-1).expected,1);
-context.LMData.readAll=async()=>{throw {code:2898};};await assert.rejects(context.sdkGetAll('All_Companies'),e=>String(e.error.code)==='2898');
+for(const error of [{code:2898,message:'Denied'},{code:2899,message:'Denied'},new Error('All_Lots_All_Fields: loaded 10000 of 10100 records. Refresh to retry a complete snapshot.'),new Error('Load superseded.')]){
+  readCalls.length=0;context.LMData.readAll=async options=>{readCalls.push(options);throw error;};
+  await assert.rejects(context.sdkGetAll('All_Lots_All_Fields'),e=>e===error);
+  assert.equal(readCalls.length,1,'denied, incomplete, and canceled reads must not switch to a narrower report');assert.equal(readCalls[0].reportName,'All_Lots_All_Fields');
+}
+context.LMData.readAll=async()=>{throw {code:2894};};await assert.rejects(context.sdkGetAll('All_Companies'),e=>String(e.error.code)==='2894');
 
 function initHarness({framed=true,getInitParams=async()=>({appLinkName:'land',envUrlFragment:'/environment/development'})}={}){
   const statuses=[],events=[],timers=new Map();let next=0,loaded=0,demo=0,applied=0,handshakes=0;
