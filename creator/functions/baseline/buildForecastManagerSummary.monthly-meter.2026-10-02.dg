@@ -4,10 +4,6 @@ string buildForecastManagerSummary(int subdivisionId)
 	monthStart = zoho.currentdate.toStartOfMonth();
 	nextMonthStart = monthStart.addMonth(1);
 	monthForecastLabel = monthStart.toString("MMMM") + " Forecast";
-	recent30Start = zoho.currentdate.subDay(30);
-	recent90Start = zoho.currentdate.subDay(90);
-	recent6Start = zoho.currentdate.subMonth(6);
-	recent12Start = zoho.currentdate.subMonth(12);
 	// ---------- CSS ----------
 	html = html + "<style>";
 	html = html + ".fm-scroll{width:100%;overflow-x:auto;padding-bottom:8px;}";
@@ -60,8 +56,6 @@ string buildForecastManagerSummary(int subdivisionId)
 	html = html + ".fm-mini{border:1px solid #d9deea;border-radius:12px;padding:10px;background:#ffffff;}";
 	html = html + ".fm-mini-k{font-size:11px;color:#667089;text-transform:uppercase;letter-spacing:.05em;}";
 	html = html + ".fm-mini-v{font-size:17px;font-weight:700;color:#1f2a44;margin-top:4px;}";
-	html = html + ".fm-contract-scope{margin-top:16px;padding-top:14px;border-top:2px solid #d9deea;}";
-	html = html + ".fm-contract-scope .fm-card-title{color:#285b97;}";
 	html = html + ".fm-empty{padding:16px;background:#ffffff;border:1px dashed #c8d3e6;border-radius:12px;color:#667089;font-size:13px;min-width:0;}";
 	html = html + "</style>";
 	// ---------- wrapper ----------
@@ -85,13 +79,12 @@ string buildForecastManagerSummary(int subdivisionId)
 			projectStatus = ifnull(subRec.Status,"");
 			totalLots = ifnull(subRec.Total_Lots,0);
 			lotTotalResidential = ifnull(subRec.Lot_Total_Residential,0);
-			lotsSold = Lots[(Subdivision == subdivisionId) && (Status == "Sold")].count();
-			lotsScheduled = Lots[(Subdivision == subdivisionId) && (Status == "Scheduled")].count();
+			lotsSold = Lots[Subdivision == subdivisionId && Status == "Sold"].count();
+			lotsScheduled = Lots[Subdivision == subdivisionId && Status == "Scheduled"].count();
 			equivLF = ifnull(subRec.Equiv_LF_of_Street,0);
 			// Single-phase schedules use their own totals. Multi-phase schedules use contract lots.
 			phaseObligationBySchedule = Map();
 			phaseSoldBySchedule = Map();
-			phaseMetricsBySchedule = Map();
 			singlePhaseObligation = 0;
 			singlePhaseSold = 0;
 			phaseContractLotIds = List();
@@ -106,15 +99,6 @@ string buildForecastManagerSummary(int subdivisionId)
 				summaryKey = summarySchedule.ID.toString();
 				phaseObligation = 0;
 				phaseSold = 0;
-				phaseLiveSold = 0;
-				phaseScheduled = 0;
-				phaseMonthSold = 0;
-				phaseLast30 = 0;
-				phaseLast90 = 0;
-				phaseLast6 = 0;
-				phaseLast12 = 0;
-				phaseLastClose = null;
-				phaseLastCloseAmount = 0;
 				isMultiPhaseSchedule = false;
 				if(summarySchedule.Subdivisions != null)
 				{
@@ -126,7 +110,7 @@ string buildForecastManagerSummary(int subdivisionId)
 					if(summarySchedule.Builder1 != null)
 					{
 						// Freeze forecastable capacity at the start of this month.
-						phaseSold = Lots[(Subdivision == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Status == "Sold") && (Close_Date != null) && (Close_Date < monthStart)].count();
+						phaseSold = Lots[Subdivision == subdivisionId && Builder1 == summarySchedule.Builder1 && Status == "Sold" && Close_Date != null && Close_Date < monthStart].count();
 					}
 					singlePhaseObligation = singlePhaseObligation + phaseObligation;
 					singlePhaseSold = singlePhaseSold + phaseSold;
@@ -141,52 +125,9 @@ string buildForecastManagerSummary(int subdivisionId)
 						{
 							if(contractLotIds.size() > 0)
 							{
-								for each  phaseLot in Lots[(ID in contractLotIds) && (Subdivision == subdivisionId)]
+								for each  phaseLot in Lots[ID in contractLotIds && Subdivision == subdivisionId]
 								{
 									phaseObligation = phaseObligation + 1;
-									if(phaseLot.Status == "Scheduled")
-									{
-										phaseScheduled = phaseScheduled + 1;
-									}
-									if(phaseLot.Status == "Sold")
-									{
-										phaseLiveSold = phaseLiveSold + 1;
-										if(phaseLot.Close_Date != null)
-										{
-											if(phaseLot.Close_Date >= monthStart && phaseLot.Close_Date < nextMonthStart)
-											{
-												phaseMonthSold = phaseMonthSold + 1;
-											}
-											if(phaseLot.Close_Date <= zoho.currentdate)
-											{
-												if(phaseLot.Close_Date >= recent30Start)
-												{
-													phaseLast30 = phaseLast30 + 1;
-												}
-												if(phaseLot.Close_Date >= recent90Start)
-												{
-													phaseLast90 = phaseLast90 + 1;
-												}
-												if(phaseLot.Close_Date >= recent6Start)
-												{
-													phaseLast6 = phaseLast6 + 1;
-												}
-												if(phaseLot.Close_Date >= recent12Start)
-												{
-													phaseLast12 = phaseLast12 + 1;
-												}
-												if(phaseLastClose == null || phaseLot.Close_Date > phaseLastClose)
-												{
-													phaseLastClose = phaseLot.Close_Date;
-													phaseLastCloseAmount = 1;
-												}
-												else if(phaseLot.Close_Date == phaseLastClose)
-												{
-													phaseLastCloseAmount = phaseLastCloseAmount + 1;
-												}
-											}
-										}
-									}
 									if(!phaseContractLotIds.contains(phaseLot.ID))
 									{
 										phaseContractLotIds.add(phaseLot.ID);
@@ -206,18 +147,6 @@ string buildForecastManagerSummary(int subdivisionId)
 				}
 				phaseObligationBySchedule.put(summaryKey,phaseObligation);
 				phaseSoldBySchedule.put(summaryKey,phaseSold);
-				phaseMetrics = Map();
-				phaseMetrics.put("multi",isMultiPhaseSchedule);
-				phaseMetrics.put("sold",phaseLiveSold);
-				phaseMetrics.put("scheduled",phaseScheduled);
-				phaseMetrics.put("monthSold",phaseMonthSold);
-				phaseMetrics.put("last30",phaseLast30);
-				phaseMetrics.put("last90",phaseLast90);
-				phaseMetrics.put("last6",phaseLast6);
-				phaseMetrics.put("last12",phaseLast12);
-				phaseMetrics.put("lastClose",phaseLastClose);
-				phaseMetrics.put("lastCloseAmount",phaseLastCloseAmount);
-				phaseMetricsBySchedule.put(summaryKey,phaseMetrics);
 				// Forecast records are keyed by phase and builder, not contract.
 				if(summarySchedule.Builder1 != null)
 				{
@@ -225,11 +154,11 @@ string buildForecastManagerSummary(int subdivisionId)
 					{
 						phaseForecastBuilderIds.add(summarySchedule.Builder1);
 						// This month's full forecast still covers the start-of-month pool.
-						builderForecastCoverage = ifnull(Forecast[(Subdivision1 == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Forecast_Start_Date >= monthStart)].sum(Forecasted_Lots),0);
+						builderForecastCoverage = ifnull(Forecast[Subdivision1 == subdivisionId && Builder1 == summarySchedule.Builder1 && Forecast_Start_Date >= monthStart].sum(Forecasted_Lots),0);
 						phaseForecastByBuilder.put(summarySchedule.Builder1.toString(),builderForecastCoverage);
 						// Current-month closings consume only the monthly meter, not forecastable capacity.
-						monthForecast = ifnull(Forecast[(Subdivision1 == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Forecast_Start_Date >= monthStart) && (Forecast_Start_Date < nextMonthStart)].sum(Forecasted_Lots),0);
-						monthSold = Lots[(Subdivision == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Status == "Sold") && (Close_Date != null) && (Close_Date >= monthStart) && (Close_Date < nextMonthStart)].count();
+						monthForecast = ifnull(Forecast[Subdivision1 == subdivisionId && Builder1 == summarySchedule.Builder1 && Forecast_Start_Date >= monthStart && Forecast_Start_Date < nextMonthStart].sum(Forecasted_Lots),0);
+						monthSold = Lots[Subdivision == subdivisionId && Builder1 == summarySchedule.Builder1 && Status == "Sold" && Close_Date != null && Close_Date >= monthStart && Close_Date < nextMonthStart].count();
 						monthForecastByBuilder.put(summarySchedule.Builder1.toString(),monthForecast);
 						monthSoldByBuilder.put(summarySchedule.Builder1.toString(),monthSold);
 						phaseForecastedLots = phaseForecastedLots + builderForecastCoverage;
@@ -340,14 +269,14 @@ string buildForecastManagerSummary(int subdivisionId)
 					builderForecastedLots = ifnull(phaseForecastByBuilder.get(ts.Builder1.toString()),0);
 					builderMonthForecast = ifnull(monthForecastByBuilder.get(ts.Builder1.toString()),0);
 					builderMonthSold = ifnull(monthSoldByBuilder.get(ts.Builder1.toString()),0);
-					builderLotsSold = Lots[(Subdivision == subdivisionId) && (Builder1 == ts.Builder1) && (Status == "Sold")].count();
-					builderLotsScheduled = Lots[(Subdivision == subdivisionId) && (Builder1 == ts.Builder1) && (Status == "Scheduled")].count();
+					builderLotsSold = Lots[Subdivision == subdivisionId && Builder1 == ts.Builder1 && Status == "Sold"].count();
+					builderLotsScheduled = Lots[Subdivision == subdivisionId && Builder1 == ts.Builder1 && Status == "Scheduled"].count();
 					if(ts.Subdivisions != null)
 					{
-						for each scheduleSubdivision in ts.Subdivisions
+						for each  scheduleSubdivision in ts.Subdivisions
 						{
-							scheduleLotsSold = scheduleLotsSold + Lots[(Subdivision == scheduleSubdivision) && (Builder1 == ts.Builder1) && (Status == "Sold")].count();
-							scheduleLotsScheduled = scheduleLotsScheduled + Lots[(Subdivision == scheduleSubdivision) && (Builder1 == ts.Builder1) && (Status == "Scheduled")].count();
+							scheduleLotsSold = scheduleLotsSold + Lots[Subdivision == scheduleSubdivision && Builder1 == ts.Builder1 && Status == "Sold"].count();
+							scheduleLotsScheduled = scheduleLotsScheduled + Lots[Subdivision == scheduleSubdivision && Builder1 == ts.Builder1 && Status == "Scheduled"].count();
 						}
 					}
 				}
@@ -374,18 +303,8 @@ string buildForecastManagerSummary(int subdivisionId)
 				totalObligation = ifnull(phaseObligationBySchedule.get(scheduleKey),0);
 				phaseLotsSold = ifnull(phaseSoldBySchedule.get(scheduleKey),0);
 				builderUnforecastedLots = totalObligation - phaseLotsSold - builderForecastedLots;
-				// Keep the full schedule obligation, even when future lots are not populated.
+				// Progress, expected takedowns and recent sales remain schedule-wide.
 				scheduleObligation = ifnull(ts.Total_Lot_Obligation,0);
-				phaseMetrics = phaseMetricsBySchedule.get(scheduleKey);
-				isMultiPhaseSchedule = phaseMetrics.get("multi");
-				progressLabel = "Schedule Progress";
-				contractProgressDisplay = "0%";
-				contractProgressBarStyle = "";
-				contractSalesText = scheduleLotsSold.toString() + " Lots Sold";
-				if(scheduleLotsScheduled > 0)
-				{
-					contractSalesText = contractSalesText + " - " + scheduleLotsScheduled.toString() + " Lots Scheduled";
-				}
 				if(builderUnforecastedLots < 0)
 				{
 					builderUnforecastedClass = "fm-builder-stat fm-builder-stat-neg";
@@ -399,54 +318,6 @@ string buildForecastManagerSummary(int subdivisionId)
 					soldPercent = (scheduleLotsSold * 100.0) / scheduleObligation;
 					projectedPercent = ((scheduleLotsSold + scheduleLotsScheduled) * 100.0) / scheduleObligation;
 					expectedPercent = (lotsExpected * 100.0) / scheduleObligation;
-				}
-				if(isMultiPhaseSchedule)
-				{
-					contractSoldPercent = soldPercent;
-					contractProjectedPercent = projectedPercent;
-					if(contractSoldPercent > 100)
-					{
-						contractSoldPercent = 100;
-					}
-					if(contractProjectedPercent > 100)
-					{
-						contractProjectedPercent = 100;
-					}
-					contractProgressDisplay = contractSoldPercent.toLong().toString() + "%";
-					contractProgressBarStyle = "background:linear-gradient(90deg,#0d5bd7 0%,#0d5bd7 " + contractSoldPercent.toString() + "%";
-					if(scheduleLotsScheduled > 0 && scheduleObligation > 0)
-					{
-						contractProgressDisplay = contractProgressDisplay + " &rarr; " + contractProjectedPercent.toLong().toString() + "%";
-						contractProgressBarStyle = contractProgressBarStyle + ",#b8860b " + contractSoldPercent.toString() + "%,#b8860b " + contractProjectedPercent.toString() + "%";
-					}
-					contractProgressBarStyle = contractProgressBarStyle + ",#edf2fb " + contractProjectedPercent.toString() + "%,#edf2fb 100%);";
-					// Every main-card actual uses the selected phase's linked contract lots.
-					progressLabel = "Phase Progress";
-					builderLotsSold = phaseMetrics.get("sold");
-					builderLotsScheduled = phaseMetrics.get("scheduled");
-					builderMonthSold = phaseMetrics.get("monthSold");
-					last30 = phaseMetrics.get("last30");
-					last90 = phaseMetrics.get("last90");
-					last6 = phaseMetrics.get("last6");
-					last12 = phaseMetrics.get("last12");
-					lastTakedownText = "";
-					phaseLastClose = phaseMetrics.get("lastClose");
-					if(phaseLastClose != null)
-					{
-						lastTakedownText = phaseLastClose.toString("MM/dd/yyyy");
-					}
-					lastTakedownAmount = phaseMetrics.get("lastCloseAmount");
-					scheduleLotsSold = builderLotsSold;
-					scheduleLotsScheduled = builderLotsScheduled;
-					soldPercent = 0.0;
-					projectedPercent = 0.0;
-					expectedPercent = 0.0;
-					// Shared expected takes cannot be allocated to a phase implicitly.
-					if(totalObligation > 0)
-					{
-						soldPercent = (builderLotsSold * 100.0) / totalObligation;
-						projectedPercent = ((builderLotsSold + builderLotsScheduled) * 100.0) / totalObligation;
-					}
 				}
 				if(soldPercent < 0)
 				{
@@ -522,20 +393,11 @@ string buildForecastManagerSummary(int subdivisionId)
 				html = html + "<div class='fm-builder-head'>";
 				html = html + "<div class='fm-builder-title-wrap'>";
 				html = html + "<div class='fm-builder-name'>" + builderName + "</div>";
-				contractedLabel = totalObligation.toString() + " Lots Contracted";
-				if(isMultiPhaseSchedule)
-				{
-					contractedLabel = contractedLabel + " &middot; " + subCode;
-					if(totalObligation == 0)
-					{
-						contractedLabel = "0 Lots Populated &middot; " + subCode;
-					}
-				}
-				html = html + "<div class='fm-builder-sub'>" + contractedLabel + "</div>";
+				html = html + "<div class='fm-builder-sub'>" + totalObligation.toString() + " Lots Contracted</div>";
 				html = html + "</div>";
 				html = html + "<div class='" + builderUnforecastedClass + "'><div class='fm-builder-stat-k'>Unforecasted Lots</div><div class='fm-builder-stat-v'>" + builderUnforecastedLots.toString() + "</div></div>";
 				html = html + "</div>";
-				html = html + "<div class='fm-progress-label'>" + progressLabel + " (" + progressDisplay + ")</div>";
+				html = html + "<div class='fm-progress-label'>Schedule Progress (" + progressDisplay + ")</div>";
 				html = html + "<div class='fm-progress-wrap'>";
 				html = html + "<div class='fm-progress' style='" + progressBarStyle + "'></div>";
 				html = html + "<div class='fm-progress-meta'>";
@@ -555,13 +417,6 @@ string buildForecastManagerSummary(int subdivisionId)
 				html = html + "<div class='fm-month'><div class='fm-month-head'><div class='fm-month-label'>" + monthForecastLabel + "</div><div class='" + builderMonthStatusClass + "'>" + builderMonthSalesText + "</div></div>";
 				html = html + "<div class='fm-month-track' role='progressbar' aria-label='" + monthForecastLabel + " sold' aria-valuemin='0' aria-valuemax='100' aria-valuenow='" + builderMonthPercent.toLong().toString() + "' aria-valuetext='" + builderMonthSalesText + "'><div class='fm-month-fill' style='width:" + builderMonthPercent.toString() + "%;'></div></div></div>";
 				html = html + "<table class='fm-table'>";
-				if(isMultiPhaseSchedule)
-				{
-					html = html + "<tr><td>Last Closing Date</td><td>" + lastTakedownText + "</td></tr>";
-					html = html + "<tr><td>Last Closing (Lots)</td><td>" + lastTakedownAmount.toString() + "</td></tr>";
-				}
-				else
-				{
 				html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
 				html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
 				html = html + "<tr><td>Initial Take (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
@@ -570,7 +425,6 @@ string buildForecastManagerSummary(int subdivisionId)
 				html = html + "<tr><td>Takedown End Date</td><td>" + takedownEndText + "</td></tr>";
 				html = html + "<tr><td>Last Takedown Date</td><td>" + lastTakedownText + "</td></tr>";
 				html = html + "<tr><td>Last Take (Lots)</td><td>" + lastTakedownAmount.toString() + "</td></tr>";
-				}
 				html = html + "</table>";
 				html = html + "<div style='height:10px;'></div>";
 				html = html + "<div class='fm-card-title'>Recent Sales</div>";
@@ -580,24 +434,6 @@ string buildForecastManagerSummary(int subdivisionId)
 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 6 Month</div><div class='fm-mini-v'>" + last6.toString() + "</div></div>";
 				html = html + "<div class='fm-mini'><div class='fm-mini-k'>Last 12 Month</div><div class='fm-mini-v'>" + last12.toString() + "</div></div>";
 				html = html + "</div>";
-				if(isMultiPhaseSchedule)
-				{
-					html = html + "<div class='fm-contract-scope'><div class='fm-card-title'>Contract Schedule &mdash; All " + ts.Subdivisions.size().toString() + " Phases</div>";
-					html = html + "<div class='fm-builder-sub'>" + scheduleObligation.toString() + " Lots Obligated</div>";
-					html = html + "<div class='fm-progress-label'>Overall Progress (" + contractProgressDisplay + ")</div><div class='fm-progress-wrap'><div class='fm-progress' style='" + contractProgressBarStyle + "'></div><div class='fm-progress-meta'><div class='fm-progress-sold'>" + contractSalesText + "</div></div></div>";
-					html = html + "<table class='fm-table'>";
-					html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
-					html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
-					html = html + "<tr><td>Initial Take (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
-					html = html + "<tr><td>Cont'd Take (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
-					html = html + "<tr><td>Cont'd Take (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
-					html = html + "<tr><td>Takedown End Date</td><td>" + takedownEndText + "</td></tr>";
-					html = html + "<tr><td>Lots Expected</td><td>" + lotsExpected.toString() + "</td></tr>";
-					html = html + "<tr><td>Last 30 Day Sales</td><td>" + ifnull(ts.Last_30_Day_Sales,0).toString() + "</td></tr>";
-					html = html + "<tr><td>Last 90 Day Sales</td><td>" + ifnull(ts.Last_90_Day_Sales,0).toString() + "</td></tr>";
-					html = html + "<tr><td>Last 6 Month Sales</td><td>" + ifnull(ts.Last_6_Month_Sales,0).toString() + "</td></tr>";
-					html = html + "<tr><td>Last 12 Month Sales</td><td>" + ifnull(ts.Last_12_Month_Sales,0).toString() + "</td></tr></table></div>";
-				}
 				html = html + "</div>";
 			}
 			if(!scheduleFoundForSub)

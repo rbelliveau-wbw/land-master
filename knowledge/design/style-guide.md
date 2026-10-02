@@ -6,6 +6,8 @@ Forecast Manager schedule progress uses blue for Sold and dark yellow (`#b8860b`
 
 Below each Forecast Manager builder's overall progress, show a separate green monthly forecast meter (`#14845a`) with the current month and `10 of 10 sold` above it. Omit the secondary Sold this month / lots left caption. Keep monthly consumption separate from lifetime schedule progress and the beginning-of-month Unforecasted balance.
 
+For multi-phase Forecast Manager schedules, label the primary bar Phase Progress and keep its counts, monthly actuals and recent sales scoped to that phase. Put whole-schedule progress and shared terms below a divider labeled Contract Schedule — All N Phases. Preserve the full obligation when future phases have not yet been populated. Single-phase cards keep their existing layout.
+
 Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
 
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.

@@ -5,13 +5,16 @@ import assert from 'node:assert/strict';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 const source=fs.readFileSync(new URL('../creator/functions/buildForecastManagerSummary.dg',import.meta.url),'utf8');
-let {js}=translate(source);
-js=js.replace(/row\.Subdivisions == subdivisionId/g,'row.Subdivisions?.includes(subdivisionId)')
+function executable(source){
+  let {js}=translate(source);
+  return js.replace(/row\.Subdivisions == subdivisionId/g,'row.Subdivisions?.includes(subdivisionId)')
   .replace(/ID in contractLotIds/g,'contractLotIds.includes(row.ID)')
   .replace(/\.sum\(Forecasted_Lots\)/g,'.sum("Forecasted_Lots")');
+}
+const js=executable(source);
 const date=s=>Date.parse(s+'T00:00:00Z');
 const names={1:'DR Horton',2:'C.A. Doose',3:'StyleCraft',4:'First Omega'};
-function run(tables,now='2026-10-02',subdivisionId=1){
+function run(tables,now='2026-10-02',subdivisionId=1,body=js){
   const context=vm.createContext({tablesJson:JSON.stringify(tables),names,now:date(now),subdivisionId});
   vm.runInContext(`
     const tables=JSON.parse(tablesJson);
@@ -24,15 +27,23 @@ function run(tables,now='2026-10-02',subdivisionId=1){
     Array.prototype.sum=function(field){return this.reduce((sum,row)=>sum+(row[field]??0),0);};
     Number.prototype.toLong=function(){return Math.trunc(this);};
     const numberToString=Number.prototype.toString;
-    Number.prototype.toString=function(format){return format==='MMMM'?new Date(Number(this)).toLocaleString('en-US',{month:'long',timeZone:'UTC'}):numberToString.call(this);};
+    Number.prototype.toString=function(format){
+      const d=new Date(Number(this));
+      if(format==='MMMM')return d.toLocaleString('en-US',{month:'long',timeZone:'UTC'});
+      if(format==='MM/dd/yyyy')return String(d.getUTCMonth()+1).padStart(2,'0')+'/'+String(d.getUTCDate()).padStart(2,'0')+'/'+d.getUTCFullYear();
+      return numberToString.call(this);
+    };
     Number.prototype.addMonth=function(n){const d=new Date(Number(this));d.setUTCMonth(d.getUTCMonth()+n);return +d;};
+    Number.prototype.subMonth=function(n){return this.addMonth(-n);};
+    Number.prototype.subDay=function(n){return Number(this)-n*86400000;};
+    Number.prototype.toStartOfMonth=function(){const d=new Date(Number(this));return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1);};
     Object.defineProperty(Number.prototype,'Builder_Name',{get(){return names[Number(this)]??'';}});
     function query(form,predicate){
       const rows=(tables[form]??[]).map(row=>new Proxy(row,{get(o,k){return o[k]??null;}})).filter(predicate);
       return new Proxy(rows,{get(o,k){return k in o || typeof k==='symbol'?o[k]:o[0]?.[k]??null;}});
     }
-    const zoho={currentdate:{toStartOfMonth(){const d=new Date(now);return Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1);}}};
-    ${js}
+    const zoho={currentdate:now};
+    ${body}
     var result=buildForecastManagerSummary(subdivisionId);
   `,context);
   return context.result;
@@ -108,12 +119,58 @@ const multiHtml=run(multi);
 assert.deepEqual(values(multiHtml),[0,0]);
 assert.match(multiHtml,/3 Lots Contracted/);
 assert.match(multiHtml,/1 Lots Sold - 1 Lots Scheduled/);
-assert.match(multiHtml,/Schedule Progress \(50% &rarr; 66%\)/);
+assert.match(multiHtml,/Phase Progress \(33% &rarr; 66%\)/);
+assert.match(multiHtml,/Overall Progress \(50% &rarr; 66%\)/);
+assert.match(multiHtml,/Contract Schedule &mdash; All 2 Phases/);
+assert.match(multiHtml,/6 Lots Obligated/);
+assert.match(multiHtml,/<tr><td>Last Closing Date<\/td><td>10\/02\/2026<\/td>/);
+assert.match(multiHtml,/<tr><td>Last Closing \(Lots\)<\/td><td>1<\/td>/);
 assert.match(monthMeter(multiHtml),/1 of 2 sold/);
 assert.match(monthMeter(multiHtml),/aria-valuenow='50'/);
 assert.match(run({...multi,Takedown_Schedule:[]}),/No Takedown Schedule records/);
 assert.equal(values(run(multi,'2026-10-02',null)).length,0);
-console.log('PASS: phase-specific contract lots/forecast, schedule-wide live progress, empty schedules and null subdivision');
+console.log('PASS: phase-specific contract lots, actuals and progress, distinct whole-schedule progress, empty schedules and null subdivision');
+
+// A declared contract obligation includes phases whose lots are not populated yet.
+const turnbo={Subdivision:[{...subdivision,Subdivision_Name:'Turnbo Ranch - Phase 04',Subdivision_Code:'TR04'}],Takedown_Schedule:[{...schedule(1,363,[1,2,3,4],77),Initial_Takedown:50,Initial_Delay_Days:90,Continued_Takedown:50,Continued_Takedown_Delay_Days:90,Lots_Expected:50,Last_90_Day_Sales:50,Last_6_Month_Sales:100,Last_12_Month_Sales:100}],Contract:[{ID:77,Lots1:[]}],Lots:[],Forecast:[forecast(1,'2026-10-01',19),forecast(1,'2026-11-01',121)]};
+for(let i=1;i<=140;i++){turnbo.Contract[0].Lots1.push(i);turnbo.Lots.push(lot(i,1,'Contracted'));}
+for(let i=141;i<=171;i++){turnbo.Contract[0].Lots1.push(i);turnbo.Lots.push(lot(i,1,'Contracted',null,2));}
+for(let i=172;i<=271;i++)turnbo.Lots.push(lot(i,1,'Sold','2026-08-01',2));
+const turnboHtml=run(turnbo);
+assert.deepEqual(values(turnboHtml),[0,0]);
+assert.match(turnboHtml,/140 Lots Contracted &middot; TR04/);
+assert.match(turnboHtml,/Phase Progress \(0%\)/);
+assert.match(turnboHtml,/363 Lots Obligated/);
+assert.match(turnboHtml,/Overall Progress \(27%\)/);
+assert.match(turnboHtml,/100 Lots Sold/);
+assert.match(monthMeter(turnboHtml),/0 of 19 sold/);
+assert.doesNotMatch(turnboHtml.split("<div class='fm-contract-scope'>")[0],/50 Lots Expected|fm-mini-v'>100/);
+const emptyPhase=run({...turnbo,Subdivision:[{...subdivision,ID:3,Subdivision_Code:'TR07'}]},'2026-10-02',3);
+assert.match(emptyPhase,/0 Lots Populated &middot; TR07/);
+assert.match(emptyPhase,/363 Lots Obligated/);
+assert.doesNotMatch(emptyPhase,/NaN|Infinity/);
+
+// Membership, rather than a second Builder filter, controls phase actuals.
+const isolated=structuredClone(multi);
+isolated.Lots.push(lot(90,1,'Sold','2026-10-02'),lot(91,1,'Scheduled'));
+isolated.Lots[0].Builder1=2;
+isolated.Lots[2].Status='Sold';isolated.Lots[2].Close_Date=date('2026-09-01');
+const isolatedHtml=run(isolated);
+assert.deepEqual(values(isolatedHtml),[-1,-1]);
+assert.match(isolatedHtml,/Phase Progress \(66% &rarr; 100%\)/);
+assert.match(monthMeter(isolatedHtml),/1 of 2 sold/);
+assert.match(isolatedHtml,/<tr><td>Last Closing \(Lots\)<\/td><td>1<\/td>/);
+assert.match(isolatedHtml,/fm-mini-k'>Last 30 Day<\/div><div class='fm-mini-v'>1/);
+assert.match(isolatedHtml,/fm-mini-k'>Last 90 Day<\/div><div class='fm-mini-v'>2/);
+const sameDay=structuredClone(isolated);
+sameDay.Lots[2].Close_Date=date('2026-10-02');
+assert.match(run(sameDay),/<tr><td>Last Closing \(Lots\)<\/td><td>2<\/td>/);
+
+const previous=executable(fs.readFileSync(new URL('../creator/functions/baseline/buildForecastManagerSummary.monthly-meter.2026-10-02.dg',import.meta.url),'utf8'));
+const withoutCss=s=>s.replace(/<style>[\s\S]*?<\/style>/,'');
+assert.equal(withoutCss(run(tables)),withoutCss(run(tables,'2026-10-02',1,previous)));
+assert.equal(withoutCss(run(editedForecastTables)),withoutCss(run(editedForecastTables,'2026-10-02',1,previous)));
+console.log('PASS: unpopulated future phases preserve full obligation; contract membership scopes phase actuals, recent sales and latest closing; single-phase HTML equals the previous function');
 
 const progressTables={Subdivision:[subdivision],Takedown_Schedule:[{...schedule(1,10),Lots_Expected:9}],Lots:[...Array.from({length:5},(_,i)=>lot(i+1,1,'Sold','2026-09-01')),...Array.from({length:2},(_,i)=>lot(i+10,1,'Scheduled'))],Forecast:[]};
 assert.match(run(progressTables),/#b8860b 50%,#b8860b 70%,#f6a6a6 70%,#f6a6a6 90%/);
@@ -130,4 +187,5 @@ console.log('PASS: gold segment, projected percentage, expected-sales overlap, 1
 if(process.argv.includes('--preview')){
   const directory=new URL('../../tmp/',import.meta.url);
   fs.writeFileSync(new URL('forecast-summary-wildwood-preview.html',directory),'<!doctype html><meta charset="utf-8"><title>Wildwood regression preview</title><body style="margin:0;padding:20px;background:#f5f7fb"><p style="font:14px Arial">Forecast Manager — audited Wildwood regression data</p>'+html);
+  fs.writeFileSync(new URL('forecast-summary-turnbo-preview.html',directory),'<!doctype html><meta charset="utf-8"><title>Turnbo phase scope regression preview</title><body style="margin:0;padding:20px;background:#f5f7fb"><p style="font:14px Arial">Forecast Manager — Turnbo Phase 04 regression fixture</p>'+turnboHtml);
 }
