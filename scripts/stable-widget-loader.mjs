@@ -1,7 +1,13 @@
 // Keep Creator's registered iframe URL and SDK message context unchanged.
 // Only the document content and asset base follow the authenticated environment.
+export function htmlAssetFingerprint(html) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < html.length; index++) hash = Math.imul(hash ^ html.charCodeAt(index), 0x01000193) >>> 0;
+  return html.length.toString(36) + '-' + hash.toString(16).padStart(8, '0');
+}
 // Change asset attributes only; never serialize the document or scan inline script/style contents.
 export function stampLocalAssets(html, version) {
+  const fingerprint = htmlAssetFingerprint(html);
   const tags = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<(?:[^"'<>]|"[^"]*"|'[^']*')*>/g;
   const rawTags = /^(?:script|style|textarea|title|xmp|iframe|noembed|noframes|noscript|plaintext)$/i;
   const decode = value => value.replace(/&(?:#(\d+);?|#x([\da-f]+);?|(amp|colon|sol|bsol|num|quest|tab|newline);)/gi, (entity, decimal, hex, name) => {
@@ -19,7 +25,7 @@ export function stampLocalAssets(html, version) {
     const before = fragment ? value.slice(0, fragment.index) : value, after = fragment ? value.slice(fragment.index) : '';
     const separator = decode(before).includes('?') ? /[?&]$/.test(decode(before)) ? '' : '&' : '?';
     const encoded = encodeURIComponent(String(version)).replace(/['"<>]/g, char => '%' + char.charCodeAt(0).toString(16).toUpperCase());
-    return before + separator + '_lmv=' + encoded + after;
+    return before + separator + '_lmv=' + encoded + '&_lmh=' + fingerprint + after;
   }
   let output = '', previous = 0, match;
   while ((match = tags.exec(html))) {
@@ -95,6 +101,7 @@ export function stableWidgetLoader(widget, version, routeEnvironment = false, en
 (function () {
   var finished = false, loading = false, timer = null, fetchAbort = null;
   var releaseVersions = ${versions};
+  var htmlAssetFingerprint = ${htmlAssetFingerprint.toString()};
   var stampLocalAssets = ${stampLocalAssets.toString()};
   function clearDeadline() {
     if (timer !== null) clearTimeout(timer);

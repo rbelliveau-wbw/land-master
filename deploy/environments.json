@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T21:51:08.472Z",
+  "generated_at": "2026-10-02T21:59:22.572Z",
   "note": "Creator registrations retain stable Production URLs. Budget and Land Master loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
@@ -25,8 +25,8 @@
     },
     "production": {
       "proforma-manager": "1.80.61",
-      "budget-manager": "122.28.6",
-      "land-master": "8.13.3",
+      "budget-manager": "122.28.8",
+      "land-master": "8.13.5",
       "contract-management": "1.60.42",
       "tax-center": "19.17.4",
       "milestone-gantt": "1.1.1",

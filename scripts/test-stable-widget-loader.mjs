@@ -1,10 +1,18 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import crypto from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {assertReleaseSource} from './lib/release-source-guard.mjs';
 import vm from 'node:vm';
-import {stableWidgetLoader, stampLocalAssets} from './stable-widget-loader.mjs';
+import {stableWidgetLoader, stampLocalAssets, htmlAssetFingerprint} from './stable-widget-loader.mjs';
 
 const documentHtml = '<html><head><script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script><script src="./creator-data.js"></script><link rel="stylesheet" href="./widget.css"></head><body>Ready</body></html>';
 const response = (html = documentHtml) => ({ok: true, text: async () => html});
 const mappedVersions = {dev:'2.0-dev',stage:'3.0-stage',prod:'1.0-prod'};
+const documentFingerprint = htmlAssetFingerprint(documentHtml);
 const deferred = () => {
   let resolve, reject;
   const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
@@ -79,8 +87,8 @@ for (const [fragment, env] of [['', 'prod'], ['environment/development', 'dev'],
   assert.equal(r.state.writes.length, 1);
   assert(r.state.writes[0].includes(`<base href="https://rbelliveau-wbw.github.io/land-master/${env}/budget-manager/">`));
   assert(r.state.writes[0].includes('widgetsdk-min.js'), 'replacement must reinstall SDK listeners');
-  assert(r.state.writes[0].includes(`src="./creator-data.js?_lmv=${mappedVersions[env]}"`), 'helper cache key must follow native environment release, not the registered URL release');
-  assert(r.state.writes[0].includes(`href="./widget.css?_lmv=${mappedVersions[env]}"`));
+  assert(r.state.writes[0].includes(`src="./creator-data.js?_lmv=${mappedVersions[env]}&_lmh=${documentFingerprint}"`), 'helper cache key includes native environment release and actual fetched document fingerprint');
+  assert(r.state.writes[0].includes(`href="./widget.css?_lmv=${mappedVersions[env]}&_lmh=${documentFingerprint}"`));
   assert(r.state.writes[0].includes('src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"'), 'external SDK URL stays exact');
   assert.equal(r.location.href, 'https://rbelliveau-wbw.github.io/land-master/prod/budget-manager/?creatorContext=preserved#embedded');
   assert.equal(r.window.parent, r.parent, 'versioning must retain the original Creator parent and query/fragment context');
@@ -156,7 +164,7 @@ for (const options of [{framed: false}, {routed: false}]) {
   assert.equal(r.state.handshakeCalls, 0);
   assert.equal(r.state.fetchCalls[0].url.split('?')[0], './widget.html');
   assert(r.state.writes[0].includes('widgetsdk-min.js'));
-  assert(r.state.writes[0].includes('src="./creator-data.js?_lmv=url-version"'), 'standalone/nonrouted document uses its selected URL release');
+  assert(r.state.writes[0].includes(`src="./creator-data.js?_lmv=url-version&_lmh=${documentFingerprint}"`), 'standalone/nonrouted document uses its selected URL release plus actual document fingerprint');
   assert.equal(r.timers.size, 0);
   const pending = deferred();
   const stalled = harness(null, {...options, fetchImpl: () => pending.promise});
@@ -173,7 +181,7 @@ for (const options of [{framed: false}, {routed: false}]) {
   await r.sdkLoad();
   assert.equal(new URL(r.state.fetchCalls[0].url).pathname, '/land-master/dev/lot-sales-explorer/widget.html', 'alias resolves canonical widget directory');
   assert(r.state.writes[0].includes('<base href="https://rbelliveau-wbw.github.io/land-master/dev/lot-sales-explorer/">'));
-  assert(r.state.writes[0].includes('src="./creator-data.js?_lmv=1.5-dev"'));
+  assert(r.state.writes[0].includes(`src="./creator-data.js?_lmv=1.5-dev&_lmh=${documentFingerprint}"`));
   assert.equal(r.location.href, 'https://rbelliveau-wbw.github.io/land-master/prod/insights/?creatorContext=preserved#embedded');
 }
 {
@@ -189,13 +197,14 @@ for (const options of [{framed: false}, {routed: false}]) {
 <script src="module.mjs&#35;encoded-fragment"></script>
 <script src="encoded.js&#63;key=1&amp;other=2"></script>
 </head></html>`;
+  const fingerprint = htmlAssetFingerprint(original);
   const expected = `<html><head data-hint="> preserved">
-<SCRIPT defer data-template="src='./fake.js'" SRC = './runtime-context.js?existing=1&amp;other=2&_lmv=release-2#ready'></SCRIPT>
-<script src=../creator-data.js?_lmv=release-2#boot></script>
-<link HREF="app.css?v=old&_lmv=release-2#theme" media="screen" ReL='alternate StyleSheet'>
-<link rel=stylesheet href='theme.css?_lmv=release-2'>
-<script src="module.mjs?_lmv=release-2&#35;encoded-fragment"></script>
-<script src="encoded.js&#63;key=1&amp;other=2&_lmv=release-2"></script>
+<SCRIPT defer data-template="src='./fake.js'" SRC = './runtime-context.js?existing=1&amp;other=2&_lmv=release-2&_lmh=${fingerprint}#ready'></SCRIPT>
+<script src=../creator-data.js?_lmv=release-2&_lmh=${fingerprint}#boot></script>
+<link HREF="app.css?v=old&_lmv=release-2&_lmh=${fingerprint}#theme" media="screen" ReL='alternate StyleSheet'>
+<link rel=stylesheet href='theme.css?_lmv=release-2&_lmh=${fingerprint}'>
+<script src="module.mjs?_lmv=release-2&_lmh=${fingerprint}&#35;encoded-fragment"></script>
+<script src="encoded.js&#63;key=1&amp;other=2&_lmv=release-2&_lmh=${fingerprint}"></script>
 </head></html>`;
   assert.equal(stampLocalAssets(original, 'release-2'), expected, 'Only intended asset URL values change; quotes, attributes, queries, fragments and surrounding document bytes remain exact.');
   const r = harness({envUrlFragment:'environment/stage'}, {fetchImpl:() => Promise.resolve(response(original)),versions:{dev:'release-1',stage:'release-2',prod:'release-3'}});
@@ -222,8 +231,100 @@ for (const options of [{framed: false}, {routed: false}]) {
   assert.equal(stampLocalAssets(unchanged, 'release-2'), unchanged, 'External/vendor/Creator file URLs, inline text, comments, nonstylesheet links and ordinary element URLs must remain byte-identical.');
 }
 {
-  assert.equal(stampLocalAssets("<script src='local.js'></script>", `release '2' & "3"`), "<script src='local.js?_lmv=release%20%272%27%20%26%20%223%22'></script>", 'Release value is encoded without breaking attribute quotes.');
-  assert.equal(stampLocalAssets('<link rel="stylesheet" href="/assets/app.css"><script src="./app.js?v=original#load"></script>', 'next'), '<link rel="stylesheet" href="/assets/app.css?_lmv=next"><script src="./app.js?v=original&_lmv=next#load"></script>');
+  const quoteFixture = "<script src='local.js'></script>";
+  assert.equal(stampLocalAssets(quoteFixture, `release '2' & "3"`), `<script src='local.js?_lmv=release%20%272%27%20%26%20%223%22&_lmh=${htmlAssetFingerprint(quoteFixture)}'></script>`, 'Release value is encoded without breaking attribute quotes.');
+  const localFixture = '<link rel="stylesheet" href="/assets/app.css"><script src="./app.js?v=original#load"></script>', fingerprint = htmlAssetFingerprint(localFixture);
+  assert.equal(stampLocalAssets(localFixture, 'next'), `<link rel="stylesheet" href="/assets/app.css?_lmv=next&_lmh=${fingerprint}"><script src="./app.js?v=original&_lmv=next&_lmh=${fingerprint}#load"></script>`);
   assert.equal(stampLocalAssets('<script>unclosed raw content <link rel="stylesheet" href="raw.css">', 'next'), '<script>unclosed raw content <link rel="stylesheet" href="raw.css">', 'An unclosed raw block must not be rewritten as markup.');
 }
-console.log('Stable frontend loader checks passed: authoritative environment asset versions, canonical aliases, exact tag-bound stamping, immutable document preservation, bounded script/handshake/fetch/body, abort, late-result guards, SDK reinstall, and fresh retry.');
+assert.equal(htmlAssetFingerprint(''), '0-811c9dc5');
+assert.equal(htmlAssetFingerprint('a'), '1-e40c292c', 'FNV-1a known vector pins actual fingerprint computation.');
+assert.notEqual(htmlAssetFingerprint('abc'), htmlAssetFingerprint('abd'), 'Equal-length changed content must affect this fixture cache key.');
+assert.notEqual(htmlAssetFingerprint('😃'), htmlAssetFingerprint('😄'), 'UTF16 content changes are included.');
+{
+  const priorHtml = documentHtml.replace('Ready', 'Release 1.5.36'), currentHtml = documentHtml.replace('Ready', 'Release 1.5.37');
+  const oldMap = {dev:'1.5.36',stage:'1.5.36',prod:'1.5.36'};
+  for (const options of [{}, {routed:false}, {framed:false}]) {
+    const prior = harness({envUrlFragment:''}, {...options,versions:oldMap,fetchImpl:() => Promise.resolve(response(priorHtml))});
+    const current = harness({envUrlFragment:''}, {...options,versions:oldMap,fetchImpl:() => Promise.resolve(response(currentHtml))});
+    if (options.routed === false || options.framed === false) {await flush();} else {await prior.sdkLoad(); await current.sdkLoad();}
+    const source = result => result.state.writes[0].match(/src="(\.\/creator-data\.js[^\"]*)"/)[1];
+    const oldUrl = new URL(source(prior), prior.location.href), currentUrl = new URL(source(current), current.location.href);
+    assert.equal(oldUrl.searchParams.get('_lmv'), currentUrl.searchParams.get('_lmv'), 'Fixture deliberately retains the old permanent loader version table.');
+    assert.notEqual(oldUrl.searchParams.get('_lmh'), currentUrl.searchParams.get('_lmh'), 'New fetched HTML must create a different helper cache URL despite a stale loader map.');
+    assert.equal(currentUrl.searchParams.get('_lmh'), htmlAssetFingerprint(currentHtml), 'Fingerprint uses raw fetched document, before base insertion or attribute stamping.');
+    assert(current.state.writes[0].includes('Release 1.5.37'));
+    assert.equal(current.state.fetchCalls.length, 1, 'Fingerprinting requires no metadata or second network read.');
+    assert.equal(current.timers.size, 0);
+    const repeat = stampLocalAssets(currentHtml, oldMap.prod);
+    assert.equal(repeat, stampLocalAssets(currentHtml, oldMap.prod), 'Identical immutable HTML gets stable asset URLs without per-startup cache churn.');
+  }
+}
+{
+  const root = new URL('../', import.meta.url), widgetRoot = new URL('widgets/', root);
+  for (const widget of fs.readdirSync(widgetRoot, {withFileTypes:true}).filter(entry => entry.isDirectory()).map(entry => entry.name)) {
+    const configPath = new URL(`widgets/${widget}/widget.config.json`, root), sourcePath = new URL(`widgets/${widget}/src/app/widget.html`, root);
+    if (!fs.existsSync(configPath) || !fs.existsSync(sourcePath)) continue;
+    const {version} = JSON.parse(fs.readFileSync(configPath, 'utf8')), html = fs.readFileSync(sourcePath, 'utf8');
+    assert(html.includes(version), `${widget}: current source HTML must change its version marker even when only helper files change.`);
+    const oldStamped = stampLocalAssets(html, 'stale-loader-map');
+    const nextHtml = html.replaceAll(version, 'next-release-marker'), nextStamped = stampLocalAssets(nextHtml, 'stale-loader-map');
+    assert.notEqual(htmlAssetFingerprint(html), htmlAssetFingerprint(nextHtml), `${widget}: release marker changes must invalidate the fetched-content cache key.`);
+    assert.notEqual(oldStamped, nextStamped);
+  }
+}
+{
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'creator-release-guard-'));
+  const widget = 'fixture-widget', version = '1.2.4';
+  const sourceDir = path.join(directory, 'widgets', widget, 'src', 'app'), configPath = path.join(directory, 'widgets', widget, 'widget.config.json'), sourcePath = path.join(sourceDir, 'widget.html'), target = path.join(directory, 'releases', widget, version);
+  const writeSource = (configVersion, html) => {fs.mkdirSync(sourceDir, {recursive:true}); fs.writeFileSync(configPath, JSON.stringify({version:configVersion})); fs.writeFileSync(sourcePath, html);};
+  const createRelease = () => spawnSync(process.execPath, [fileURLToPath(new URL('./create-release.mjs', import.meta.url)),widget,version], {cwd:directory,encoding:'utf8'});
+  try {
+    writeSource(version, '<script>const version="1.2.4";</script>');
+    const result = assertReleaseSource(directory, widget, version);
+    assert.equal(result.sourceHash, crypto.createHash('sha256').update(fs.readFileSync(sourcePath)).digest('hex'));
+    assert.equal(fs.existsSync(target), false, 'Successful preflight performs no release writes.');
+    writeSource('1.2.3', '<script>const version="1.2.4";</script>');
+    assert.throws(() => assertReleaseSource(directory, widget, version), /config version must match/);
+    const mismatch = createRelease(); assert.notEqual(mismatch.status, 0); assert.match(mismatch.stderr, /config version must match/);
+    assert.equal(fs.existsSync(target), false);
+    writeSource(version, '<script>const version="1.2.3";</script>');
+    assert.throws(() => assertReleaseSource(directory, widget, version), /Stamp the requested version/);
+    writeSource(version, '<script>const version="1.2.40";</script>');
+    assert.throws(() => assertReleaseSource(directory, widget, version), /Stamp the requested version/, 'A different longer version is not the requested version marker.');
+    writeSource(version, '<script>const version="1.2.4";</script>');
+    fs.mkdirSync(target, {recursive:true}); fs.writeFileSync(path.join(target, 'untouched'), 'immutable sentinel');
+    assert.throws(() => assertReleaseSource(directory, widget, version), /already exists and is immutable/);
+    assert.equal(fs.readFileSync(path.join(target, 'untouched'), 'utf8'), 'immutable sentinel');
+    // This test-owned directory is inside the unique temporary root, never a real release.
+    fs.rmSync(target, {recursive:true});
+    const prior = path.join(directory, 'releases', widget, '1.2.3'); fs.mkdirSync(prior, {recursive:true});
+    fs.writeFileSync(path.join(prior, 'release.json'), JSON.stringify({version:'1.2.3',source_sha256:result.sourceHash}));
+    assert.throws(() => assertReleaseSource(directory, widget, version), /Source HTML matches prior release/, 'A helper-only change cannot create another release with identical HTML.');
+    const duplicate = createRelease(); assert.notEqual(duplicate.status, 0); assert.match(duplicate.stderr, /Source HTML matches prior release/);
+    assert.equal(fs.existsSync(target), false);
+    const historical = path.join(directory, 'releases', widget, 'historical'); fs.mkdirSync(historical, {recursive:true});
+    fs.writeFileSync(path.join(historical, 'release.json'), '{historical nonstandard metadata');
+    const nullMetadata = path.join(directory, 'releases', widget, 'historical-null'); fs.mkdirSync(nullMetadata, {recursive:true}); fs.writeFileSync(path.join(nullMetadata, 'release.json'), 'null');
+    writeSource(version, '<script>const version="1.2.4-LAZY";</script>');
+    assertReleaseSource(directory, widget, version);
+    assert.equal(fs.readFileSync(path.join(historical, 'release.json'), 'utf8'), '{historical nonstandard metadata', 'Existing historical metadata is never repaired/rejected retroactively.');
+    const created = createRelease(); assert.equal(created.status, 0, created.stderr);
+    assert(fs.readFileSync(path.join(target, 'index.html')).equals(fs.readFileSync(sourcePath)), 'Actual release CLI preserves source document bytes after passing preflight.');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(target, 'release.json'), 'utf8')).source_sha256, crypto.createHash('sha256').update(fs.readFileSync(sourcePath)).digest('hex'));
+    const repeat = createRelease(); assert.notEqual(repeat.status, 0); assert.match(repeat.stderr, /already exists and is immutable/);
+    const widgetRoot = new URL('../widgets/', import.meta.url);
+    for (const entry of fs.readdirSync(widgetRoot, {withFileTypes:true}).filter(entry => entry.isDirectory())) {
+      const config = new URL(`${entry.name}/widget.config.json`, widgetRoot), source = new URL(`${entry.name}/src/app/widget.html`, widgetRoot);
+      if (!fs.existsSync(config) || !fs.existsSync(source)) continue;
+      const current = JSON.parse(fs.readFileSync(config, 'utf8')), tempSource = path.join(directory, 'widgets', entry.name, 'src', 'app');
+      fs.mkdirSync(tempSource, {recursive:true}); fs.copyFileSync(config, path.join(directory, 'widgets', entry.name, 'widget.config.json')); fs.copyFileSync(source, path.join(tempSource, 'widget.html'));
+      assertReleaseSource(directory, entry.name, current.version);
+      assert.equal(fs.existsSync(path.join(directory, 'releases', entry.name, current.version)), false, `${entry.name}: actual source fixture is accepted without writing a release.`);
+    }
+  } finally {
+    assert.equal(path.dirname(directory), os.tmpdir()); assert(path.basename(directory).startsWith('creator-release-guard-'));
+    fs.rmSync(directory, {recursive:true,force:true});
+  }
+}
+console.log('Stable frontend loader checks passed: fetched-content fingerprints defeat stale loader maps, all-nine release-marker preflight/temp filesystem guards, authoritative environment asset versions, canonical aliases, exact tag-bound stamping, immutable document preservation, bounded script/handshake/fetch/body, abort, late-result guards, SDK reinstall, and fresh retry.');
