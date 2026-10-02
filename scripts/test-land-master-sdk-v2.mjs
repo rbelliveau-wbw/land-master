@@ -59,13 +59,15 @@ for(const error of [{code:2898,message:'Denied'},{code:2899,message:'Denied'},ne
 }
 context.LMData.readAll=async()=>{throw {code:2894};};await assert.rejects(context.sdkGetAll('All_Companies'),e=>String(e.error.code)==='2894');
 
-function initHarness({framed=true,getInitParams=async()=>({appLinkName:'land',envUrlFragment:'/environment/development'})}={}){
+function initHarness({framed=true,getInitParams=async()=>({appLinkName:'land',envUrlFragment:'/environment/development',loginUser:'native-fixture'})}={}){
   const statuses=[],events=[],timers=new Map();let next=0,loaded=0,demo=0,applied=0,handshakes=0;
   const c=vm.createContext({S:{liveSDK:false,demo:false,errorQueue:[]},document:{referrer:framed?'https://creatorapp.zoho.com/example/land/':''},
     setTimeout(fn){timers.set(++next,fn);return next;},clearTimeout(id){timers.delete(id);},setStatus:(kind,text)=>statuses.push({kind,text}),loadDemo(){demo++;},loadData:async()=>{loaded++;},auditOnly(){},queueErrorEmail(){},scheduleErrorEmail(){},diag(){},
-    LMPerf:{start(name){events.push(name+':start');},end(name,meta){events.push({name,...meta});}},LMRuntime:{apply(params){applied++;assert.equal(params.appLinkName,'land');return {environment:'DEVELOPMENT'};}},LMData:{},
+    LMPerf:{start(name){events.push(name+':start');},end(name,meta){events.push({name,...meta});}},LMData:{},
     ZOHO:{CREATOR:{UTIL:{getInitParams(){handshakes++;return getInitParams();}},DATA:{getRecords(){}}}},location:{href:'https://example.test/widget.html'}});
   c.window=c;c.parent=framed?{}:c;
+  vm.runInContext(fs.readFileSync('widgets/land-master/src/app/runtime-context.js','utf8'),c);
+  const apply=c.LMRuntime.apply;c.LMRuntime.apply=params=>{applied++;return apply(params);};
   vm.runInContext(section('function creatorFrameContext','S.tablePageSize=CFG.tablePageSize'),c);
   return {c,statuses,events,timers,handshakes:()=>handshakes,stats:()=>({loaded,demo,applied})};
 }
@@ -73,7 +75,16 @@ let h=initHarness();await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{
 h=initHarness();h.c.LMFrontendContext={params:{appLinkName:'cached-routing-only',envUrlFragment:'/environment/development'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.handshakes(),1,'cached loader parameters must not skip the fresh native handshake');
 h=initHarness({getInitParams:async()=>{throw {code:5000};}});h.c.LMFrontendContext={params:{appLinkName:'land'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.c.S.liveSDK,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');assert.equal(h.handshakes(),1);
 h=initHarness({framed:false,getInitParams:async()=>{throw new Error('outside Creator');}});await h.c.initializeCreatorV2();assert.equal(h.stats().demo,1);assert.equal(h.stats().loaded,0);
-let release;h=initHarness({getInitParams:()=>new Promise(resolve=>{release=resolve;})});const initialization=h.c.initializeCreatorV2();await Promise.resolve();h.timers.values().next().value();release({appLinkName:'land'});await initialization;assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.statuses.at(-1).text,'Creator connection failed');
+let release,retry=false;h=initHarness({getInitParams:()=>retry?Promise.resolve({appLinkName:'land',envUrlFragment:'/environment/development',loginUser:'retry-fixture'}):new Promise(resolve=>{release=resolve;})});const initialization=h.c.initializeCreatorV2();await Promise.resolve();h.timers.values().next().value();assert.equal(h.c.S.liveSDK,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');retry=true;await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.handshakes(),2);release({appLinkName:'late-production',envUrlFragment:'',loginUser:'late-fixture'});await initialization;assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.c.LMRuntime.current().environment,'DEVELOPMENT');assert.equal(h.c.LMRuntime.current().user,'retry-fixture','expired native reply cannot replace successful retry actor');
+for(const params of [{},[],null,7,'native-context',{envUrlFragment:'/environment/development'},{envUrlFragment:'/environment/development',loginUser:[]},{envUrlFragment:'/environment/development',loginUser:{}},{envUrlFragment:'/environment/development',loginUser:7},{envUrlFragment:'/environment/development',loginUser:false},{envUrlFragment:'/environment/development',loginUser:'(unknown)'},{loginUser:'native-fixture'}]){
+  h=initHarness({getInitParams:async()=>params});await h.c.initializeCreatorV2();assert.equal(h.stats().loaded,0,'missing/malformed context or actor must not start report reads');assert.equal(h.stats().demo,0);assert.equal(h.c.S.liveSDK,false);assert.equal(h.c.S.demo,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');assert.equal(h.timers.size,0);
+}
+for(const fixture of [c=>{c.ZOHO.CREATOR.loginUser='global-fixture';},c=>{c.ZOHO.CREATOR.LOGIN_USER='global-fixture';},c=>{c.appsetup={loginUser:'global-fixture'};}]){
+  h=initHarness({getInitParams:async()=>({envUrlFragment:'/environment/development'})});fixture(h.c);await h.c.initializeCreatorV2();assert.equal(h.stats().loaded,1);assert.equal(h.c.S.liveSDK,true);assert.equal(h.c.LMRuntime.current().user,'global-fixture','real native global actor remains a valid fallback');
+}
+for(const actor of [{},[],7,false]){
+  h=initHarness({getInitParams:async()=>({envUrlFragment:'/environment/development'})});h.c.ZOHO.CREATOR.loginUser=actor;await h.c.initializeCreatorV2();assert.equal(h.stats().loaded,0,'nonstring native global actor cannot start reads');assert.equal(h.c.S.liveSDK,false);assert.equal(h.c.LMRuntime.current().user,'(unknown)');
+}
 
 console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, fresh native handshake with cached loader context, and late-handshake guards passed.');
 await import('./test-land-master-lazy-data.mjs');

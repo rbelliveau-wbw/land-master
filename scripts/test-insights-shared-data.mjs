@@ -113,8 +113,8 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
   const refresh = source.split('\n').find(line => line.trim().startsWith("$('refresh').addEventListener('click'"));
   const pending = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return {promise, resolve, reject}; };
   const flush = async () => { for (let i = 0; i < 24; i++) await Promise.resolve(); };
-  function setup(getInitParams) {
-    const timers = new Map(), events = {native: 0, permissions: 0, connected: 0, reporter: 0, messages: []};
+  function setup(getInitParams, actualAccess = false) {
+    const timers = new Map(), events = {native: 0, permissions: 0, nativeAccess:0, connected: 0, reporter: 0, messages: []};
     const elements = {connection: {}, summary: {}, refresh: {addEventListener(event, callback) { assert.equal(event, 'click'); this.callback = callback; }}};
     let nextTimer = 0, isConnected = false;
     const context = vm.createContext({
@@ -122,18 +122,23 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
       location: {hostname: 'creator.zoho.com', href: 'https://example.test/prod/lot-sales-explorer/'}, document: {referrer: ''},
       setTimeout(callback, ms) { const id = ++nextTimer; timers.set(id, {callback, ms}); return id; },
       clearTimeout(id) { timers.delete(id); },
-      $: id => elements[id], log: message => events.messages.push(message), notice: message => events.messages.push(message),
-      InsightsShell: {connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { assert.equal(value, null); events.messages.push(message); }},
-      LMCriticalErrors: {configure() { events.reporter++; }, markReady() {}},
+      $: id => elements[id]||(actualAccess?elements[id]={innerHTML:'',open:false}:undefined), log: message => events.messages.push(message), notice: message => events.messages.push(message),
+      InsightsShell: {connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { if(!actualAccess)assert.equal(value, null); events.messages.push(message); }},
+      LMCriticalErrors: {configure() { events.reporter++; }, markReady() {},breadcrumb(){}},
       authorizeAndLoad: async () => { events.permissions++; },
       ZOHO: {CREATOR: {
         init() { assert.fail('SDK1 initialization cannot be used by the SDK2 startup.'); },
-        DATA: {getRecords() { assert.fail('Failed initialization cannot read or invent report rows.'); }, getRecordCount() { assert.fail('Failed initialization cannot obtain business counts.'); }},
+        DATA: {getRecords() { assert.fail('Failed initialization cannot read or invent report rows.'); }, getRecordCount() { assert.fail('Failed initialization cannot obtain business counts.'); },invokeCustomApi:async()=>{events.nativeAccess++;return{code:3000,result:{found:true,lotSalesDashboard:true}};}},
         UTIL: {getInitParams() { events.native++; return getInitParams(); }}
       }}
     });
     context.window = context; context.parent = {};
     vm.runInContext(fs.readFileSync(app + 'runtime-context.js', 'utf8'), context);
+    if(actualAccess){
+      context.state={generation:0};context.hideSubdivisionCard=()=>{};context.enforceRevenueAccess=()=>{};context.load=async()=>{events.permissions++;};
+      vm.runInContext(fs.readFileSync(app+'insights-access.js','utf8'),context);
+      vm.runInContext(source.slice(source.indexOf('  async function authorizeAndLoad()'),source.indexOf('  let starting = false;')),context);
+    }
     vm.runInContext(inline, context);
     vm.runInContext(startup, context);
     vm.runInContext(refresh, context);
@@ -176,5 +181,12 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
     getter = () => Promise.resolve(params); r.elements.refresh.callback(); await flush();
     assert.equal(r.events.native, 2); assert.equal(r.events.permissions, 1); assert.equal(r.events.connected, 1);
   }
+  for(const invalid of [{},[],{envUrlFragment:''},{envUrlFragment:'',loginUser:{}},{envUrlFragment:'',loginUser:[]},{envUrlFragment:'',loginUser:0},{envUrlFragment:'',loginUser:false}]) {
+    let getter=()=>Promise.resolve(invalid);const r=setup(()=>getter(),true);await r.context.start();
+    assert.equal(r.events.nativeAccess,0,'actual Insights access guard must block native API calls for missing or malformed actor');assert.equal(r.events.permissions,0,'actual Insights authorization cannot start reports for missing or malformed actor');assert.equal(r.elements.refresh.disabled,false);
+    getter=()=>Promise.resolve(params);r.elements.refresh.callback();await flush();assert.equal(r.events.native,2);assert.equal(r.events.permissions,1);assert.equal(r.events.connected,1);
+  }
+  for(const actor of [{},[],7,false]) {const r=setup(()=>Promise.resolve({envUrlFragment:''}),true);r.context.ZOHO.CREATOR.loginUser=actor;await r.context.start();assert.equal(r.events.nativeAccess,0);assert.equal(r.events.permissions,0);assert.equal(r.events.connected,0);}
+  const inherited=setup(()=>Promise.resolve({envUrlFragment:''}),true);inherited.context.ZOHO.CREATOR.loginUser='genuine-global-actor';await inherited.context.start();assert.equal(inherited.events.nativeAccess,1);assert.equal(inherited.events.permissions,1);assert.equal(inherited.events.connected,1);assert.equal(inherited.context.LMRuntime.current().user,'genuine-global-actor');
 }
 console.log('PASS: Insights canonical data/history/error contracts, dynamic diagnostics, and bounded native startup with fail-closed late-context guards and fresh retry.');

@@ -31,16 +31,30 @@
     return "UNKNOWN";
   }
   function user(params) {
-    params = params || {};
-    var value = params.loginUser || params.login_user || params.user || params.loginEmailId || params.userEmail || "";
-    if (value) return text(value);
-    try { var creator = global.ZOHO && global.ZOHO.CREATOR; return text(creator && (creator.loginUser || creator.LOGIN_USER) || global.appsetup && global.appsetup.loginUser || ""); } catch (ignore) { return ""; }
+    function actor(value) {
+      if (value == null) return "";
+      if (typeof value !== "string") throw new Error("Creator did not identify a valid connected user.");
+      return value.trim();
+    }
+    var keys = ["loginUser", "login_user", "user", "loginEmailId", "userEmail"];
+    for (var i = 0; i < keys.length; i++) {
+      var value = actor(params[keys[i]]);
+      if (value) return value;
+    }
+    var creator, setup;
+    try { creator = global.ZOHO && global.ZOHO.CREATOR; setup = global.appsetup; } catch (ignore) { return ""; }
+    var fallbacks = [creator && creator.loginUser, creator && creator.LOGIN_USER, setup && setup.loginUser];
+    for (var j = 0; j < fallbacks.length; j++) {
+      var fallback = actor(fallbacks[j]);
+      if (fallback) return fallback;
+    }
+    return "";
   }
   function apply(params) {
-    params = params || {};
-    state = {environment:"UNKNOWN",user:"",params:params,fragment:text(params.envUrlFragment || params.env_url_fragment || params.environment || ""),appLinkName:text(params.appLinkName || params.app_link_name || "")};
-    state.environment = detect(params);
-    state.user = user(params);
+    state = {environment:"UNKNOWN",user:"",fragment:"",params:{},appLinkName:""};
+    if (!params || typeof params !== "object" || Array.isArray(params)) throw new Error("Creator initialization parameters are unavailable.");
+    var environment = detect(params), connectedUser = user(params);
+    state = {environment:environment,user:connectedUser,params:params,fragment:text(params.envUrlFragment || params.env_url_fragment || params.environment || ""),appLinkName:text(params.appLinkName || params.app_link_name || "")};
     return current();
   }
   function current() { return {environment:state.environment,user:state.user || "(unknown)",environmentFragment:state.fragment,appLinkName:state.appLinkName}; }

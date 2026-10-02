@@ -54,6 +54,38 @@ for (const widget of sdk2Widgets) {
     assert.equal(runtime.current().environment, 'UNKNOWN', 'an invalid handshake cannot retain a previous native environment');
     assert.equal(runtime.current().user, '(unknown)', 'an invalid handshake cannot retain a previous user');
   }
+  for (const params of [null, undefined, [], [1], 0, 7, false, true, '', 'native-context']) {
+    runtime.apply({envUrlFragment:'',loginUser:'previous-user',appLinkName:'previous-app'});
+    assert.throws(() => runtime.apply(params), /initialization parameters/);
+    assert.deepEqual(JSON.parse(JSON.stringify(runtime.current())), {environment:'UNKNOWN',user:'(unknown)',environmentFragment:'',appLinkName:''}, `${widget}: malformed native params reset the whole context before rejection`);
+  }
+  for (const key of ['loginUser','login_user','user','loginEmailId','userEmail']) {
+    for (const actor of [{}, [], ['actor'], 0, 7, false, true]) {
+      runtime.apply({envUrlFragment:'',loginUser:'previous-user',appLinkName:'previous-app'});
+      window.ZOHO.CREATOR.loginUser='valid-global-fallback';
+      assert.throws(() => runtime.apply({envUrlFragment:'/environment/development',[key]:actor}), /valid connected user/, `${widget}: nonstring selected ${key} is not replaced by a global fallback`);
+      assert.equal(runtime.current().environment,'UNKNOWN','a malformed actor cannot publish a partially recognized environment');
+      assert.equal(runtime.current().user,'(unknown)','a malformed actor cannot preserve or stringify identity');
+      delete window.ZOHO.CREATOR.loginUser;
+    }
+    assert.equal(runtime.apply({envUrlFragment:'',[key]:' alias-actor '}).user,'alias-actor','native string actor aliases remain supported');
+  }
+  for (const key of ['loginUser','LOGIN_USER']) {
+    for (const actor of [{}, [], ['actor'], 0, 7, false, true]) {
+      window.ZOHO.CREATOR[key]=actor;
+      assert.throws(() => runtime.apply({envUrlFragment:''}), /valid connected user/);
+      assert.equal(runtime.current().environment,'UNKNOWN');
+      assert.equal(runtime.current().user,'(unknown)');
+      delete window.ZOHO.CREATOR[key];
+    }
+    window.ZOHO.CREATOR[key]=' genuine-global-actor ';
+    assert.equal(runtime.apply({envUrlFragment:''}).user,'genuine-global-actor',`${widget}: native global ${key} string remains a valid fallback`);
+    assert.equal(runtime.apply({envUrlFragment:'',loginUser:'native-first'}).user,'native-first','a native param string retains precedence');
+    delete window.ZOHO.CREATOR[key];
+  }
+  window.appsetup={loginUser:{}};assert.throws(() => runtime.apply({envUrlFragment:''}), /valid connected user/);assert.equal(runtime.current().environment,'UNKNOWN');
+  window.appsetup.loginUser='setup-actor';assert.equal(runtime.apply({envUrlFragment:''}).user,'setup-actor');delete window.appsetup;
+  assert.equal(runtime.apply({envUrlFragment:''}).user,'(unknown)','a missing actor remains unknown for the actual startup gate to reject');
   runtime.apply({loginUser: 'fallback-user', appLinkName: 'fallback-app'});
   assert.equal(runtime.current().environment, 'DEVELOPMENT', 'URL fallback remains only when no native fragment was supplied');
   window.ZOHO.CREATOR.UTIL = {getInitParams: async () => ({envUrlFragment: '', loginUser: 'fresh-user', appLinkName: 'fresh-app'})};

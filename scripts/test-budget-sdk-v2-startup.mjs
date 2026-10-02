@@ -320,6 +320,26 @@ stalled.ZOHO.CREATOR.UTIL.getInitParams=async () => {handshakeCalls++;return {lo
 assert.equal((await stalled.budgetInitParams()).loginUser,'retry-user','a new native handshake remains available after timeout');
 assert.equal(handshakeCalls,2);assert.equal(handshakeTimers.size,0,'successful retry clears its deadline');
 
+async function actorStartup(params,globalActor) {
+  let businessStarts=0,nativeCalls=0;
+  const dom={projList:{innerHTML:''},aqGroups:{innerHTML:''}};
+  const context=install({S:{liveSDK:false,useMock:false,currentUser:'',budgets:[],projects:[],approvals:[]},Promise,Error,setTimeout,clearTimeout,
+    location:{href:'https://example.test/prod/budget-manager/'},document:{referrer:'https://creatorapp.zoho.com/fixture/land-master/'},
+    ZOHO:{CREATOR:{DATA:{getRecords(){assert.fail('bootstrap must defer report reads to the verified business entrypoint');}},UTIL:{getInitParams:async()=>{nativeCalls++;return params;}}}},
+    boot(){businessStarts++;},auditLog(){},showView(){},setMsg(){},$:id=>dom[id],shortErr:error=>error?.message||String(error)},['budgetInitParams']);
+  context.window=context;
+  if(globalActor!==undefined)context.ZOHO.CREATOR.loginUser=globalActor;
+  vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/runtime-context.js','utf8'),context);
+  vm.runInContext(source.slice(initBranchStart,initBranchEnd),context);await turn();
+  return{context,dom,businessStarts,nativeCalls};
+}
+for(const params of [{},[],null,{envUrlFragment:''},{envUrlFragment:'',loginUser:{}},{envUrlFragment:'',loginUser:[]},{envUrlFragment:'',loginUser:0},{envUrlFragment:'',loginUser:false}]){
+  const h=await actorStartup(params);assert.equal(h.nativeCalls,1);assert.equal(h.businessStarts,0,'actual Budget bootstrap cannot start access/report work with missing or malformed actor');assert.equal(h.context.S.liveSDK,false);assert.equal(h.context.S.useMock,false);assert.equal(h.context.S.sdkInitFailed,true);assert.match(h.dom.projList.innerHTML,/Creator is unavailable/);
+}
+for(const actor of [{},[],7,false]){const h=await actorStartup({envUrlFragment:''},actor);assert.equal(h.businessStarts,0);assert.equal(h.context.S.liveSDK,false);}
+for(const [params,globalActor,expected] of [[{envUrlFragment:'',loginUser:'native-actor'},undefined,'native-actor'],[{envUrlFragment:''},'genuine-global-actor','genuine-global-actor']]){
+  const h=await actorStartup(params,globalActor);assert.equal(h.businessStarts,1);assert.equal(h.context.S.liveSDK,true);assert.equal(h.context.S.currentUser,expected);
+}
 
 function startupHarness() {
   const reports = Object.fromEntries(['budgets','subdivisions','projects','categories','approvals','proformas','modifications'].map(name => [name,name]));

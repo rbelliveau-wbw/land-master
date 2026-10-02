@@ -73,6 +73,7 @@ for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Lan
 }
 console.log('All New modals open after API failure; saved choices and clean search labels passed.');
 
-assert.match(source,/searchable-pickers\.js\?v=8\.13\.6/);
-assert.match(source,/searchable-pickers\.css\?v=8\.13\.6/);
+const currentVersion=JSON.parse(fs.readFileSync('widgets/land-master/widget.config.json','utf8')).version;
+assert.ok(source.includes(`searchable-pickers.js?v=${currentVersion}"`),'picker script uses the configured release version');
+assert.ok(source.includes(`searchable-pickers.css?v=${currentVersion}"`),'picker stylesheet uses the configured release version');
 assert.doesNotMatch(source, /(?:lookup-popup-close|project-popup-close)[^>]*>×/);

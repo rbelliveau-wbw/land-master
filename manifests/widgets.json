@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T22:54:27.935Z",
+  "generated_at": "2026-10-02T23:44:30.398Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.28.9",
+      "version": "122.28.10",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "9735d71be30c11f6146fe3e0a3813c1da5c5768b73577c23f47521aa3829ad47",
+      "source_sha256": "6fca9dcdad3a60a9f14ff0b2df3159333f0430e213d78daee8dfe2387e797b57",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.13.6",
+      "version": "8.13.7",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "4892e0788c5655ceb4e160301df0c0bc16948b1e034522bdf952d68d45a42929",
+      "source_sha256": "d51655a4fd19ec104976ad81f04551b225930c4f2d36c002d28e05388e840c29",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
@@ -164,13 +164,13 @@
       "slug": "milestone-gantt",
       "name": "Milestone Gantt",
       "module": "projects",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "description": "Subdivision milestone timeline and inline schedule editing.",
       "source_entry": "widgets/milestone-gantt/src/app/widget.html",
       "creator_package_manifest": "widgets/milestone-gantt/src/plugin-manifest.json",
       "baseline_zip": "widgets/milestone-gantt/baseline/gantt (1).zip",
       "html_title": "Subdivision Milestone Gantt",
-      "source_sha256": "56979ecde15b105edd34c3f19982197b3ffc6c862af1344cdfc6f1d5c5e6b83a",
+      "source_sha256": "60ce518adba5108fc0769307f734085d6c2d045f083cfcaf8ede0aabd23bf4b2",
       "baseline_zip_sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -248,13 +248,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.5.37",
+      "version": "1.5.38",
       "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "56fddca83f5876d8caae850cbdc7e57e20060cfc4c1c2b6b054996cc3ba3e180",
+      "source_sha256": "48490a50711f8e9db5fd95b71bc0dff6b9f197517df829cdd33dd57fc2f67618",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
@@ -269,8 +269,7 @@
       },
       "dependency_inventory": "manifests/widget-dependencies.json#lot-sales-explorer",
       "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Authored in-repo against existing Creator report contracts; synthetic fixtures excluded from releases.",
-      "baseline_zip_sha256": null
+      "trust": "Authored in-repo against existing Creator report contracts; synthetic fixtures excluded from releases."
     }
   ]
 }

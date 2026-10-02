@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source = fs.readFileSync(new URL('../shared/creator-data.js', import.meta.url), 'utf8');
-const widgets = ['budget-manager', 'land-master', 'lot-sales-explorer'];
+const widgets = ['budget-manager', 'land-master', 'lot-sales-explorer', 'milestone-gantt'];
 const canonicalOnly = process.argv.includes('--canonical-only');
 if (!canonicalOnly) for (const widget of widgets) assert.equal(fs.readFileSync(new URL(`../widgets/${widget}/src/app/creator-data.js`, import.meta.url), 'utf8'), source, `${widget} must use the exact shared adapter.`);
 const count = value => ({code: 3000, result: {records_count: value}});
