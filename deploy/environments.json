@@ -11,7 +11,7 @@
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.0",
       "settings-manager": "1.2.0",
-      "lot-sales-explorer": "1.5.34"
+      "lot-sales-explorer": "1.5.35"
     },
     "stage": {
       "proforma-manager": "1.80.13",
@@ -25,7 +25,7 @@
     },
     "production": {
       "proforma-manager": "1.80.61",
-      "budget-manager": "122.28.4",
+      "budget-manager": "122.27.25",
       "land-master": "8.13.3",
       "contract-management": "1.60.42",
       "tax-center": "19.17.4",
