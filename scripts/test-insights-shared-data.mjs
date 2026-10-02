@@ -104,4 +104,77 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
     assert.equal(elements.diagnostics.shown, true);
   }
 }
-console.log('PASS: Insights canonical reads preserve data/history/error contracts; diagnostics use the current runtime footer version.');
+{
+  const source = fs.readFileSync(app + 'sales-app.js', 'utf8');
+  const startup = source.slice(source.indexOf('  let starting = false;'), source.lastIndexOf('  start();'));
+  assert.ok(startup.includes('async function start()'), 'Execute the actual post-injection startup.');
+  const inline = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(inline?.includes('function initializeSalesCreator()'));
+  const refresh = source.split('\n').find(line => line.trim().startsWith("$('refresh').addEventListener('click'"));
+  const pending = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return {promise, resolve, reject}; };
+  const flush = async () => { for (let i = 0; i < 24; i++) await Promise.resolve(); };
+  function setup(getInitParams) {
+    const timers = new Map(), events = {native: 0, permissions: 0, connected: 0, reporter: 0, messages: []};
+    const elements = {connection: {}, summary: {}, refresh: {addEventListener(event, callback) { assert.equal(event, 'click'); this.callback = callback; }}};
+    let nextTimer = 0, isConnected = false;
+    const context = vm.createContext({
+      Promise, Error, Array,
+      location: {hostname: 'creator.zoho.com', href: 'https://example.test/prod/lot-sales-explorer/'}, document: {referrer: ''},
+      setTimeout(callback, ms) { const id = ++nextTimer; timers.set(id, {callback, ms}); return id; },
+      clearTimeout(id) { timers.delete(id); },
+      $: id => elements[id], log: message => events.messages.push(message), notice: message => events.messages.push(message),
+      InsightsShell: {connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { assert.equal(value, null); events.messages.push(message); }},
+      LMCriticalErrors: {configure() { events.reporter++; }, markReady() {}},
+      authorizeAndLoad: async () => { events.permissions++; },
+      ZOHO: {CREATOR: {
+        init() { assert.fail('SDK1 initialization cannot be used by the SDK2 startup.'); },
+        DATA: {getRecords() { assert.fail('Failed initialization cannot read or invent report rows.'); }, getRecordCount() { assert.fail('Failed initialization cannot obtain business counts.'); }},
+        UTIL: {getInitParams() { events.native++; return getInitParams(); }}
+      }}
+    });
+    context.window = context; context.parent = {};
+    vm.runInContext(fs.readFileSync(app + 'runtime-context.js', 'utf8'), context);
+    vm.runInContext(inline, context);
+    vm.runInContext(startup, context);
+    vm.runInContext(refresh, context);
+    return {context, timers, events, elements, timeout() {
+      assert.equal(timers.size, 1);
+      const [id, timer] = [...timers][0]; assert.equal(timer.ms, 5000);
+      timers.delete(id); timer.callback();
+    }};
+  }
+  const params = {envUrlFragment: 'environment/development', loginUser: 'fixture_viewer', appLinkName: 'fixture-app'};
+  {
+    const r = setup(() => Promise.resolve(params)); await r.context.start();
+    assert.equal(r.events.native, 1); assert.equal(r.events.permissions, 1); assert.equal(r.events.connected, 1); assert.equal(r.events.reporter, 1);
+    assert.equal(r.context.LMRuntime.current().environment, 'DEVELOPMENT');
+    assert.equal(r.context.LMRuntime.current().user, 'fixture_viewer');
+    assert.equal(r.elements.refresh.disabled, false); assert.equal(r.timers.size, 0);
+    await r.context.initializeSalesCreator(); assert.equal(r.events.native, 1, 'Settled successful native context is reusable.');
+  }
+  {
+    const late = pending(); let getter = () => late.promise;
+    const r = setup(() => getter()), starting = r.context.start(); await flush();
+    await r.context.start(); assert.equal(r.events.native, 1, 'Concurrent startup must not duplicate its handshake or business initialization.');
+    r.timeout(); await starting;
+    assert.equal(r.events.permissions, 0); assert.equal(r.events.connected, 0); assert.equal(r.events.reporter, 0);
+    assert.equal(r.elements.connection.textContent, 'Not connected'); assert.equal(r.elements.refresh.disabled, false);
+    assert(r.events.messages.some(message => /timed out/.test(message)));
+    assert.equal(r.context.LMRuntime.current().environment, 'UNKNOWN');
+    getter = () => Promise.resolve(params); r.elements.refresh.callback(); await flush();
+    assert.equal(r.events.native, 2, 'Refresh begins a fresh native handshake after failure.');
+    assert.equal(r.events.permissions, 1); assert.equal(r.events.connected, 1); assert.equal(r.timers.size, 0);
+    late.resolve({envUrlFragment: '', loginUser: 'late_production_actor', appLinkName: 'stale-app'}); await flush();
+    assert.equal(r.context.LMRuntime.current().environment, 'DEVELOPMENT', 'Late native context cannot overwrite the successful retry.');
+    assert.equal(r.context.LMRuntime.current().user, 'fixture_viewer');
+    assert.equal(r.events.permissions, 1, 'Late initialization must not restart business reads.');
+  }
+  for (const failed of [() => Promise.reject(new Error('native offline')), () => { throw new Error('native thrown'); }, () => Promise.resolve(null), () => Promise.resolve({envUrlFragment: 'unknown'})]) {
+    let getter = failed; const r = setup(() => getter()); await r.context.start();
+    assert.equal(r.events.permissions, 0); assert.equal(r.events.connected, 0); assert.equal(r.timers.size, 0);
+    assert.equal(r.elements.refresh.disabled, false); assert.equal(r.context.LMRuntime.current().environment, 'UNKNOWN');
+    getter = () => Promise.resolve(params); r.elements.refresh.callback(); await flush();
+    assert.equal(r.events.native, 2); assert.equal(r.events.permissions, 1); assert.equal(r.events.connected, 1);
+  }
+}
+console.log('PASS: Insights canonical data/history/error contracts, dynamic diagnostics, and bounded native startup with fail-closed late-context guards and fresh retry.');
