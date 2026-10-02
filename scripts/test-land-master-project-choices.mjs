@@ -29,6 +29,14 @@ await context.loadLocationChoices();
 assert.equal(context.S.choicesReady,true);
 assert.equal(context.OPTS.territory.length,10);
 context.applyLocationChoices(choices);
+let choiceGeneration=1,releaseOldChoice;
+context.LandData={generation:()=>choiceGeneration};context.LMLandData={cancelled:()=>Object.assign(new Error('Load superseded.'),{cancelled:true})};
+context.invokeErrorApi=()=>new Promise(resolve=>{releaseOldChoice=resolve;});
+const staleChoice=context.loadLocationChoices(1).catch(error=>error);choiceGeneration=2;
+context.applyLocationChoices({City:['Current City'],County:['Current County'],Territory:['Current Territory']});
+releaseOldChoice({code:3000,result:choices});assert.equal((await staleChoice).cancelled,true);
+assert.deepEqual(Array.from(context.OPTS.projectCity),['Current City'],'a stale location-choice response must not replace the new generation choices or apply the fallback');
+context.applyLocationChoices(choices);
 let data=context.subdivisionPayloadFromRow({name:'Phase A',phase:'2',territory:'WRONG',devCompany:'4410926000000000003'},'4410926000000000002');
 assert.equal(data.Territory,'South Austin','phase inherits current Project choice rather than an old row choice');
 assert.equal(data.City,'Houston');assert.equal(data.County,'Harris');
@@ -50,7 +58,8 @@ assert.match(source,/inheritSubdivisionTerritory\(data,rec,S.editorNew\)/);
 console.log('Land Master shared choices, API errors, Territory inheritance, and editor contracts passed.');
 
 const modalNode={classList:{add:()=>{}},setAttribute:()=>{}};
-Object.assign(context,{$:()=>modalNode,withDiscardConfirm:(message,accept)=>accept(),newDefaults:()=>({}),renderPanel:()=>{}});
+// Entry-point routing is tested here; the actual asynchronous editor controller is exercised by test-land-master-lazy-data.mjs.
+Object.assign(context,{$:()=>modalNode,withDiscardConfirm:(message,accept)=>accept(),startEditorRequest(type){context.S.editorType=type;context.S.modalOpen=true;}});
 const modalStart=source.indexOf('function openNewEditor('),modalEnd=source.indexOf('\n',modalStart);
 vm.runInContext(source.slice(modalStart,modalEnd),context);
 for(const type of ['property','project','subdivision','company','lot','builder','takedown','builderTakedown']){
@@ -64,6 +73,6 @@ for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Lan
 }
 console.log('All New modals open after API failure; saved choices and clean search labels passed.');
 
-assert.match(source,/searchable-pickers\.js\?v=8\.13\.3/);
-assert.match(source,/searchable-pickers\.css\?v=8\.13\.3/);
+assert.match(source,/searchable-pickers\.js\?v=8\.13\.4/);
+assert.match(source,/searchable-pickers\.css\?v=8\.13\.4/);
 assert.doesNotMatch(source, /(?:lookup-popup-close|project-popup-close)[^>]*>×/);

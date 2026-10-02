@@ -21,6 +21,9 @@ function deferred() {
 }
 const turn = () => new Promise(resolve => setImmediate(resolve));
 const clone = value => JSON.parse(JSON.stringify(value));
+const landingCategoryFields = JSON.parse(source.match(/landingCategoryFields:\s*(\[[^\]]+\])/)[1]);
+assert.deepEqual(landingCategoryFields,['ID','Budget','Deparment','Prelim_Budget_Total','Budget_Total']);
+assert.match(source,/getUserAccess:\s*"Get_User_Access_Lean"/,'the selected permission API is the registered lean endpoint');
 
 assert.match(source, /creator\/widgets\/version\/2\.0\/widgetsdk-min\.js/);
 assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(getAllRecords|updateRecord|addRecord|getRecordById|uploadFile|readFile|invokeCustomApi)\(/);
@@ -50,6 +53,8 @@ transport.window = transport;
 
 await transport.sdkGetAllRecords('All_Budget_Items', '(Budget_Category == 1)');
 assert.deepEqual(calls.pop(), {method:'readAll',config:{reportName:'All_Budget_Items',criteria:'(Budget_Category == 1)'}});
+await transport.sdkGetAllRecords('All_Budget_Categories','',{fields:landingCategoryFields});
+assert.deepEqual(calls.pop(),{method:'readAll',config:{reportName:'All_Budget_Categories',criteria:'',fields:landingCategoryFields}},'only explicitly projected reads request custom fields');
 await transport.sdkUpdateRecord('Budget_Item', '900000000000000001', {Prelim_Budget_Ttl:12.34});
 assert.deepEqual(calls.pop(), {method:'updateRecordById',config:{report_name:'All_Budget_Items',id:'900000000000000001',payload:{data:{Prelim_Budget_Ttl:12.34}}}});
 await transport.sdkAddRecord('Comment_Log', {Comment:'Saved'});
@@ -117,13 +122,13 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
         : {api_name:apiName + suffix,http_method:'GET',content_type:'application/json'};
       assert.deepEqual(clone(config),expected,'actual current-session caller uses server identity outside Development');
       const found = suffix === '_DEV' ? config.payload.user === 'rbelliveau' : !('query_params' in config) && !('payload' in config);
-      return {code:3000,result:JSON.stringify({found,hasRow:found,editAll:found,myId:found ? roster[0].id : '',users:roster})};
+      return {code:3000,result:JSON.stringify({found,hasRow:found,editAll:found,editOwned:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,budgetDeleteArchive:false,myId:found ? roster[0].id : '',users:roster})};
     }}}},
     $:() => null,applyHardcodedPerms:() => false,auditLog:() => {},
     sdkGetAllRecords:() => {throw new Error('Successful native access must not fall back to a report');},
     cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
     Promise,URLSearchParams,Error
-  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','parseAccessFnResponse','applyPermsFromFlags','loadUserAccess']);
+  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
   access.window = access;
   await access.loadUserAccess();
   assert.equal(nativeCalls.length,1,'actual startup permission caller uses one native access request');
@@ -132,6 +137,28 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
   assert.equal(access.S.myAccessId,roster[0].id,'ownership identity remains a string record ID');
   assert.deepEqual(clone(access.S.accessUsers),roster,'owner roster labels and identities are preserved');
   assert.equal(access.S.currentUser,'rbelliveau@wbdevelopment.com','server identity resolution does not rewrite the SDK login context');
+  if(apiName === 'Get_User_Access_Lean') {
+    const denied = {found:false,hasRow:false,editAll:false,editOwned:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,budgetDeleteArchive:false,myId:'',users:roster};
+    const failures = [
+      new Error('Environment lean API unavailable'),
+      {code:2898,message:'No permission'},
+      {code:3000,result:'{}'},
+      {code:3000,result:JSON.stringify({...denied,found:true,hasRow:true,editAll:true,myId:'unknown-owner'})},
+      {code:3000,result:JSON.stringify({...denied,found:true,hasRow:true,editAll:true,myId:roster[0].id,users:[{...roster[0],id:123}]})}
+    ];
+    for(const result of failures) {
+      access.S.perms={editAll:true,send:true,readOnly:false};access.S.myAccessId=roster[0].id;
+      access.ZOHO.CREATOR.DATA.invokeCustomApi = async () => {if(result instanceof Error)throw result;return result;};
+      await access.loadUserAccess();
+      assert.equal(access.S.perms.readOnly,true,'unavailable or malformed lean access preserves a readable, read-only landing');
+      assert.equal(access.S.myAccessId,'','failed access cannot retain a prior owner identity');
+      assert.equal(Object.entries(access.S.perms).filter(([key]) => key !== 'readOnly').every(([,value]) => value === false),true,'every action permission is denied after lean failure');
+    }
+    access.ZOHO.CREATOR.DATA.invokeCustomApi = async () => ({code:3000,result:JSON.stringify(denied)});
+    await access.loadUserAccess();
+    assert.equal(access.S.perms.readOnly,true,'a valid no-row response remains denied');
+    assert.deepEqual(clone(access.S.accessUsers),roster,'an authoritative no-row response retains its read-only display roster');
+  }
 }
 
 const successfulResponses = [
@@ -250,26 +277,28 @@ assert.equal(handshakeCalls,2);assert.equal(handshakeTimers.size,0,'successful r
 function startupHarness() {
   const reports = Object.fromEntries(['budgets','subdivisions','projects','categories','approvals','proformas','modifications'].map(name => [name,name]));
   const gates = Object.fromEntries(Object.values(reports).map(name => [name,deferred()]));
-  const access = deferred(), renders = [], requested = [];
+  const access = deferred(), renders = [], requested = [], readConfigs = [];
   const dom = {projList:{innerHTML:''},aqGroups:{innerHTML:''}};
   const context = install({
-    S:{liveSDK:true,useMock:false,budgets:[],projects:[],approvals:[],startupReady:false},CFG:{reports},Promise,
+    S:{liveSDK:true,useMock:false,budgets:[],projects:[],approvals:[],startupReady:false},CFG:{reports,landingCategoryFields},Promise,
     fetchCurrentUser:async () => 'reviewer',loadUserAccess:() => access.promise,
-    sdkGetAllRecords:name => {requested.push(name);return gates[name].promise;},
+    sdkGetAllRecords:(name,criteria,options) => {requested.push(name);readConfigs.push({name,criteria,options});return gates[name].promise;},
     lookupId:value => value?.ID,firstRaw:(row,keys) => keys.map(key => row[key]).find(value => value != null),cleanVal:value => String(value ?? ''),
     proformaName:row => row.Name || '',hydrateBudgetSubdivisions:() => {},buildProjects:rows => [{key:'project:1',name:'Project',phases:rows}],
     auditLog:() => {},setLoad:() => {},setMsg:() => {},showView:() => {},perms:() => ({readOnly:true}),updateImportsTabVisibility:() => {},
     renderProjList:() => renders.push({categories:clone(context.S.landingCategories),ready:context.S.startupReady}),renderApprQueue:() => {},
     loadBudgetCommentSummaries:() => {},loadBudgetAttachmentSummaries:() => {},applyDeepLink:() => {},
     $:id => dom[id],safeStringify:JSON.stringify,shortErr:error => error?.message || String(error)
-  },['budgetMeasured','loadAll','boot']);
+  },['budgetMeasured','validateLandingCategoryRows','loadAll','boot']);
   context.window = context;
-  return {context,gates,access,renders,requested,dom};
+  return {context,gates,access,renders,requested,readConfigs,dom};
 }
 const startup = startupHarness();
 const started = startup.context.boot();
 await turn();
 assert.equal(startup.requested.length,7,'independent startup reads are dispatched together through the shared bounded adapter');
+assert.deepEqual(clone(startup.readConfigs.find(read => read.name === 'categories')),{name:'categories',criteria:'',options:{fields:landingCategoryFields}},'startup alone projects the five complete landing fields');
+assert.equal(startup.readConfigs.filter(read => read.options?.fields).length,1,'other critical/editor datasets keep full fields');
 startup.gates.budgets.resolve([{ID:'1',Name:'Phase'}]);
 startup.gates.subdivisions.resolve([{ID:'2'}]);startup.gates.projects.resolve([{ID:'3'}]);
 startup.gates.approvals.resolve([{ID:'4',Status:'Pending'}]);startup.gates.proformas.resolve([{ID:'5',Name:'PF'}]);startup.gates.modifications.resolve([]);
@@ -291,6 +320,14 @@ failed.access.resolve();await failedStart;
 assert.equal(failed.renders.length,0,'a failed critical dataset never renders a numeric landing');
 assert.equal(failed.context.S.startupReady,false);
 assert.match(failed.dom.projList.innerHTML,/could not be loaded completely/);
+
+const incomplete = startupHarness(), incompleteStart = incomplete.context.boot();await turn();
+incomplete.gates.categories.resolve([{ID:'6',Budget:{ID:'1'},Deparment:'Construction',Prelim_Budget_Total:10}]);
+for(const name of ['budgets','subdivisions','projects','approvals','proformas','modifications'])incomplete.gates[name].resolve([]);
+incomplete.access.resolve();await incompleteStart;
+assert.equal(incomplete.renders.length,0,'an omitted projected amount cannot render partial numeric totals');
+assert.equal(incomplete.context.S.budgets.length,0,'a malformed category projection never publishes a startup snapshot');
+assert.equal(incomplete.context.S.startupReady,false);
 
 const detailGate = deferred(), detailCalls = [];
 const detail = install({
@@ -324,4 +361,5 @@ preReady.renderProjList();preReady.renderApprQueue();
 assert.match(preReadyDom.projList.innerHTML,/Loading budgets/);
 assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does not claim zero pending approvals');
 
-console.log('Budget SDK v2 envelopes, native mutation success/failure validation, safe retries, complete parallel startup and detail deduplication passed.');
+await import('./test-budget-landing-projection.mjs');
+console.log('Budget SDK v2 envelopes, native mutation success/failure validation, lean permission degradation, safe retries, complete parallel startup and detail deduplication passed.');

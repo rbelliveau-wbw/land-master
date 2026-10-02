@@ -4,7 +4,8 @@ import vm from 'node:vm';
 
 const source = fs.readFileSync(new URL('../shared/creator-data.js', import.meta.url), 'utf8');
 const widgets = ['budget-manager', 'land-master', 'lot-sales-explorer'];
-for (const widget of widgets) assert.equal(fs.readFileSync(new URL(`../widgets/${widget}/src/app/creator-data.js`, import.meta.url), 'utf8'), source, `${widget} must use the exact shared adapter.`);
+const canonicalOnly = process.argv.includes('--canonical-only');
+if (!canonicalOnly) for (const widget of widgets) assert.equal(fs.readFileSync(new URL(`../widgets/${widget}/src/app/creator-data.js`, import.meta.url), 'utf8'), source, `${widget} must use the exact shared adapter.`);
 const count = value => ({code: 3000, result: {records_count: value}});
 const page = (data, cursor) => ({code: 3000, data, ...(cursor ? {record_cursor: cursor} : {})});
 const row = (ID, extra = {}) => ({ID, ...extra});
@@ -228,4 +229,175 @@ for (const terminal of ['3100', '9280']) for (const thrown of [false, true]) {
   assert.equal((await data.readAll(options(api)))[0].ID, 'retry-success', 'Rejected reads must be removed from in-flight deduplication before retry.');
   assert.equal(attempts, 2);
 }
-console.log('PASS: Creator adapter exact IDs and pagination, count/permission failures, three-read concurrency, deduplication, identity/environment caches, mutation generation, cancellation, retry, private telemetry, and identical widget copies.');
+{
+  const {data, perf} = harness(), a = gate(), b = gate(), counts = {}, records = {};
+  const api = {
+    getRecordCount: async config => {counts[config.report_name] = (counts[config.report_name] || 0) + 1; return count(1);},
+    getRecords: async config => {
+      const report = config.report_name, attempt = records[report] = (records[report] || 0) + 1;
+      if (report === 'A' && attempt === 1) {await a.promise; return page([row('old-A')]);}
+      if (report === 'B') await b.promise;
+      return page([row(`${report}-${attempt}`)]);
+    }
+  };
+  const config = reportName => options(api, {reportName, ttlMs: 60000});
+  await data.readAll(config('Warm'));
+  const oldA = data.readAll(config('A')), pendingB = data.readAll(config('B'));
+  await until(() => records.A === 1 && records.B === 1, 'Both report reads must be in flight before scope invalidation.');
+  data.invalidate(read => read.reportName === 'A');
+  assert.equal(data.readAll(config('B')), pendingB, 'Invalidating A must preserve the exact unrelated B in-flight promise.');
+  assert.equal((await data.readAll(config('Warm')))[0].ID, 'Warm-1', 'Unrelated warm cache remains reusable during A invalidation.');
+  const newA = data.readAll(config('A'));
+  assert.notEqual(newA, oldA);
+  assert.equal((await newA)[0].ID, 'A-2');
+  a.resolve(); b.resolve();
+  assert.equal((await oldA)[0].ID, 'old-A', 'Invalidation preserves existing callers unless their controller cancels them.');
+  assert.equal((await pendingB)[0].ID, 'B-1');
+  assert.equal((await data.readAll(config('A')))[0].ID, 'A-2', 'Late old A cannot replace newer authoritative rows.');
+  assert.equal((await data.readAll(config('B')))[0].ID, 'B-1', 'B may still seed its cache after unrelated invalidation.');
+  assert.deepEqual(counts, {Warm: 1, A: 2, B: 1});
+  assert.equal(perf.snapshot().pendingReads, 0);
+}
+{
+  const {data, perf} = harness(), old = gate(); let records = 0, saved = 'before-write';
+  const api = {getRecordCount: async () => count(1), getRecords: async () => {records++; const captured = saved; if (records === 1) await old.promise; return page([row(captured)]);}};
+  const config = options(api, {ttlMs: 60000, criteria: '(Project == 4410926000004465004)'});
+  const before = data.readAll(config);
+  await until(() => records === 1, 'Pre-mutation scoped read must start.');
+  data.invalidate(read => read.reportName === 'Fixture_Report' && read.criteria === config.criteria);
+  saved = 'partially-applied-write';
+  await assert.rejects(Promise.reject(Object.assign(new Error('Second write failed'), {code: '2945'})), /Second write failed/);
+  old.resolve(); assert.equal((await before)[0].ID, 'before-write');
+  assert.equal(perf.snapshot().cachedReads, 0, 'Even after an ambiguous write failure, the already-invalidated pre-write token stays invalid.');
+  assert.equal((await data.readAll(config))[0].ID, 'partially-applied-write', 'A rejected/partial write must not resurrect the invalidated pre-write read cache.');
+  assert.equal(records, 2, 'Invalidation remains in force without a successful-write callback.');
+}
+{
+  const {data} = harness(), old = gate(); let records = 0, counts = 0;
+  const api = {getRecordCount: async () => {counts++; return count(1);}, getRecords: async () => {const attempt = ++records; if (attempt === 1) await old.promise; return page([row(`version-${attempt}`)]);}};
+  const config = options(api, {ttlMs: 60000});
+  const prior = data.readAll(config);
+  await until(() => records === 1, 'Old read did not start before fresh read.');
+  const fresh = data.readAll({...config, fresh: true});
+  assert.notEqual(fresh, prior, 'Fresh must bypass an existing in-flight promise.');
+  assert.equal((await fresh)[0].ID, 'version-2');
+  old.resolve(); assert.equal((await prior)[0].ID, 'version-1');
+  assert.equal((await data.readAll(config))[0].ID, 'version-2', 'Without explicit invalidation, a late older read still cannot overwrite fresh cached rows.');
+  assert.equal((await data.readAll({...config, fresh: true}))[0].ID, 'version-3', 'Fresh also bypasses already-cached rows.');
+  assert.equal(counts, 3);
+}
+{
+  const {data} = harness(), old = gate(), newer = gate(); let records = 0;
+  const api = {getRecordCount: async () => count(1), getRecords: async () => {const attempt = ++records; await (attempt === 1 ? old : newer).promise; return page([row(`version-${attempt}`)]);}};
+  const config = options(api, {ttlMs: 60000}), prior = data.readAll(config);
+  await until(() => records === 1, 'Old read did not start.');
+  const fresh = data.readAll({...config, fresh: true});
+  await until(() => records === 2, 'New fresh read did not start.');
+  old.resolve(); await prior;
+  assert.equal(data.readAll(config), fresh, 'Old settlement cannot detach the newer fresh in-flight entry or expose its stale result.');
+  newer.resolve(); assert.equal((await fresh)[0].ID, 'version-2');
+  assert.equal((await data.readAll(config))[0].ID, 'version-2');
+  assert.equal(records, 2);
+}
+{
+  const {data} = harness(), release = gate(); let records = 0;
+  const api = {getRecordCount: async () => count(1), getRecords: async () => {const attempt = ++records; if (attempt === 1) await release.promise; return page([row(`fresh-${attempt}`)]);}};
+  const config = options(api, {ttlMs: 60000}), pending = data.readAll({...config, fresh: true, isCancelled: () => false});
+  await until(() => records === 1, 'Fresh cancellable read must be tracked while pending.');
+  data.invalidate(read => read.reportName === 'Fixture_Report');
+  release.resolve(); assert.equal((await pending)[0].ID, 'fresh-1');
+  assert.equal((await data.readAll(config))[0].ID, 'fresh-2', 'Fresh/cancellable reads also cannot cache after matching invalidation.');
+}
+{
+  const {data} = harness(); let counts = 0;
+  const api = {getRecordCount: async () => {counts++; return count(1);}, getRecords: async config => page([row(`${config.criteria}:${config.fields || 'all'}`)])};
+  const config = extra => options(api, {reportName: 'Scoped', ttlMs: 60000, ...extra});
+  const alpha = config({criteria: 'alpha', fields: ['ID']}), alphaProjection = config({criteria: 'alpha', fields: ['ID', 'Name'], cacheKey: 'other-view'}), beta = config({criteria: 'beta', fields: ['ID']});
+  await Promise.all([data.readAll(alpha), data.readAll(alphaProjection), data.readAll(beta)]);
+  data.invalidate(read => read.reportName === 'Scoped' && read.criteria === 'alpha');
+  await data.readAll(beta); assert.equal(counts, 3, 'Criteria-scoped invalidation must preserve another query on the same report.');
+  await data.readAll(alpha); await data.readAll(alphaProjection); assert.equal(counts, 5, 'Both projections/custom-key variants of the affected criteria are invalidated.');
+  data.invalidate(read => read.reportName === 'Scoped');
+  await Promise.all([data.readAll(alpha), data.readAll(alphaProjection), data.readAll(beta)]);
+  assert.equal(counts, 8, 'Report-wide invalidation covers all criteria and projection variants.');
+}
+{
+  const {data} = harness(), release = gate(); let records = 0;
+  const api = {getRecordCount: async () => count(1), getRecords: async config => {records++; if (records === 1) await release.promise; return page([row(config.fields)]);}};
+  const original = {api, report_name: 'Alias_Report', criteria: 'original', fields: ['ID'], ttlMs: 60000};
+  const pending = data.readAll(original);
+  await until(() => records === 1, 'Snapshot options read did not start.');
+  original.criteria = 'changed'; original.fields.push('Name');
+  let matched = 0;
+  data.invalidate(read => {if (read.reportName !== 'Alias_Report' || read.criteria !== 'original') return false; assert.deepEqual(plain(read.fields), ['ID']); matched++; return true;});
+  assert.equal(matched, 1, 'Predicates receive normalized report names and stable per-read options, not later caller mutations.');
+  release.resolve(); await pending;
+  await data.readAll({api, report_name: 'Alias_Report', criteria: 'original', fields: ['ID'], ttlMs: 60000});
+  assert.equal(records, 2, 'The correctly matched snapshot cannot populate stale cache.');
+}
+{
+  const window = {location: {href: 'https://example.test/prod/land-master/', ancestorOrigins: []}}, context = vm.createContext({window, document: {referrer: ''}, Promise});
+  vm.runInContext(fs.readFileSync(new URL('../widgets/land-master/src/app/runtime-context.js', import.meta.url), 'utf8'), context);
+  vm.runInContext(source, context);
+  const old = gate(); let records = 0;
+  const apply = (user, envUrlFragment = '', appLinkName = 'first-app') => window.LMRuntime.apply({envUrlFragment, loginUser: user, appLinkName});
+  const api = {getRecordCount: async () => count(1), getRecords: async () => {const attempt = ++records, identity = window.LMRuntime.current(); const id = `${identity.environment}:${identity.user}:${identity.appLinkName}`; if (attempt === 1) await old.promise; return page([row(id)]);}};
+  const config = options(api, {ttlMs: 60000});
+  apply('fixture-A'); const prior = window.LMData.readAll(config);
+  await until(() => records === 1, 'Authenticated A read did not start.');
+  apply('fixture-B'); assert.equal((await window.LMData.readAll(config))[0].ID, 'PRODUCTION:fixture-B:first-app');
+  window.LMData.invalidate((read, key) => read.reportName === 'Fixture_Report' && JSON.parse(key)[0] === 'PRODUCTION|fixture-A|first-app');
+  await window.LMData.readAll(config); assert.equal(records, 2, 'Targeting the A query key must preserve B cache under the actual runtime.');
+  old.resolve(); assert.equal((await prior)[0].ID, 'PRODUCTION:fixture-A:first-app');
+  apply('fixture-A'); await window.LMData.readAll(config); assert.equal(records, 3, 'A stale completion cannot resurrect its isolated invalidated cache.');
+  apply('fixture-A', 'environment/development/'); await window.LMData.readAll(config); assert.equal(records, 4, 'Same actor/report in Development must not reuse Production data.');
+  apply('fixture-A', '', 'second-app'); await window.LMData.readAll(config); assert.equal(records, 5, 'Same actor/report in another authenticated app remains separate.');
+}
+{
+  const {data} = harness(), release = gate(); let counts = 0, records = 0;
+  const api = {getRecordCount: async () => {counts++; return count(1);}, getRecords: async config => {records++; if (config.report_name === 'Hold') await release.promise; return page([row(config.report_name)]);}};
+  const config = reportName => options(api, {reportName, ttlMs: 60000});
+  await data.readAll(config('Warm')); const pending = data.readAll(config('Hold'));
+  await until(() => records === 2, 'Throwing-predicate pending read did not start.');
+  assert.throws(() => data.invalidate(read => {if (read.reportName === 'Hold') throw new Error('Bad scope'); return true;}), /Bad scope/);
+  assert.equal(data.readAll(config('Hold')), pending, 'A failed predicate cannot partly detach active work.');
+  await data.readAll(config('Warm')); assert.equal(counts, 2, 'A failed predicate cannot partly remove a matched warm cache.');
+  data.invalidate(() => false); assert.equal(data.readAll(config('Hold')), pending, 'A no-match scope preserves active work.');
+  release.resolve(); await pending;
+  await data.readAll(config('Hold')); assert.equal(counts, 2, 'Failed/no-match invalidation cannot disable valid pending cache writes.');
+}
+{
+  const {data, perf} = harness(), a = gate(), b = gate(); let counts = 0;
+  const api = {getRecordCount: async () => {counts++; return count(1);}, getRecords: async config => {if (config.report_name === 'A') await a.promise; if (config.report_name === 'B') await b.promise; return page([row(config.report_name)]);}};
+  const config = reportName => options(api, {reportName, ttlMs: 60000});
+  await data.readAll(config('Warm')); const pendingA = data.readAll(config('A')), pendingB = data.readAll(config('B'));
+  await until(() => perf.snapshot().active === 2 && perf.snapshot().pendingReads === 2, 'Global-invalidation active reads did not start.');
+  data.invalidate(); a.resolve(); b.resolve(); await Promise.all([pendingA, pendingB]);
+  assert.equal(perf.snapshot().cachedReads, 0, 'Global invalidation removes every warm snapshot and blocks all pending cache writes.');
+  await Promise.all([data.readAll(config('Warm')), data.readAll(config('A')), data.readAll(config('B'))]);
+  assert.equal(counts, 6);
+}
+{
+  const {data, perf} = harness(); let counts = 0, records = 0;
+  const api = {getRecordCount: async () => {counts++; return count(2);}, getRecords: async () => {records++; return records === 1 ? page([row('partial')]) : page([row('complete-1'), row('complete-2')]);}};
+  const config = options(api, {ttlMs: 60000});
+  await assert.rejects(data.readAll(config), /loaded 1 of 2/);
+  assert.equal(perf.snapshot().cachedReads, 0, 'Incomplete reads never write a positive-TTL test cache.');
+  assert.equal(perf.snapshot().pendingReads, 0);
+  assert.deepEqual(plain(await data.readAll(config)).map(value => value.ID), ['complete-1', 'complete-2']);
+  assert.equal(counts, 2);
+}
+{
+  const {data, perf} = harness(); let counts = 0;
+  const api = {getRecordCount: async () => {counts++; return count(0);}, getRecords: async () => page([])};
+  for (let cycle = 0; cycle < 50; cycle++) {
+    await data.readAll(options(api, {criteria: `fixture-${cycle}`}));
+    data.invalidate(read => read.criteria === `fixture-${cycle}`);
+  }
+  await data.readAll(options(api)); await data.readAll(options(api));
+  assert.equal(counts, 52, 'Default TTL zero must continue fetching native data on every completed read.');
+  assert.equal(perf.snapshot().pendingReads, 0, 'Settled non-TTL reads must not retain per-query tokens.');
+  assert.equal(perf.snapshot().inFlightReads, 0);
+  assert.equal(perf.snapshot().cachedReads, 0);
+}
+console.log(`PASS: Creator adapter exact IDs/pagination/errors, bounded concurrency, scoped/global invalidation, unrelated dedup/cache preservation, fresh ordering, actual-runtime actor isolation, partial writes, cancellation/retry, token cleanup, private telemetry${canonicalOnly ? ' (canonical only; widget copy sync pending)' : ', and identical widget copies'}.`);

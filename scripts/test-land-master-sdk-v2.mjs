@@ -75,17 +75,5 @@ h=initHarness({getInitParams:async()=>{throw {code:5000};}});h.c.LMFrontendConte
 h=initHarness({framed:false,getInitParams:async()=>{throw new Error('outside Creator');}});await h.c.initializeCreatorV2();assert.equal(h.stats().demo,1);assert.equal(h.stats().loaded,0);
 let release;h=initHarness({getInitParams:()=>new Promise(resolve=>{release=resolve;})});const initialization=h.c.initializeCreatorV2();await Promise.resolve();h.timers.values().next().value();release({appLinkName:'land'});await initialization;assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.statuses.at(-1).text,'Creator connection failed');
 
-function loadHarness(){
-  const reports=[],statuses=[],events=[];let resolveHeld,rejectHeld,rendered=0;
-  const held=new Promise((resolve,reject)=>{resolveHeld=resolve;rejectHeld=reject;});
-  const old=[{ID:'old',Property_Name:'Previous complete snapshot'}];
-  const c=vm.createContext({S:{properties:old,errors:[]},CFG:{version:'test'},LMPerf:{start(){},end(name,meta){events.push({name,...meta});},mark(name,meta){events.push({name,...meta});}},
-    sdkGetAll(report){reports.push(report);return report==='All_Pro_Formas'?held:Promise.resolve([{ID:report}]);},loadLocationChoices:async()=>{},setStatus:(kind,text)=>statuses.push({kind,text}),beginLoadProgress(){},updateLoadProgress(){},diag(){},errMeta:err=>err.message,finishLoadProgress(){},setLoadRendering(){},renderAll(){rendered++;},requestAnimationFrame(fn){fn();},setTimeout(fn){fn();}});
-  vm.runInContext(section('function loadData','var lotImport='),c);
-  return {c,reports,statuses,events,old,rendered:()=>rendered,resolveHeld,rejectHeld};
-}
-let load=loadHarness(),loading=load.c.loadData();assert.equal(load.reports.length,14);await Promise.resolve();assert.equal(load.rendered(),0);assert.equal(load.c.S.properties,load.old);
-load.resolveHeld([{ID:'Proforma'}]);await loading;assert.equal(load.rendered(),1);assert.equal(load.c.S.properties[0].ID,'All_Property');assert.equal(load.c.S.proformas[0].ID,'Proforma');assert.equal(load.events.filter(e=>e.name==='first-usable-render').length,1);
-load=loadHarness();loading=load.c.loadData();load.rejectHeld(new Error('All_Pro_Formas: loaded 10000 of 10100 records. Refresh to retry a complete snapshot.'));await assert.rejects(loading,/complete snapshot/);assert.equal(load.rendered(),0);assert.equal(load.c.S.properties,load.old,'a failed barrier must retain the prior complete snapshot');assert.equal(load.statuses.at(-1).text,'Creator data load failed');assert.equal(load.events.some(e=>e.name==='first-usable-render'),false);
-
-console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, fresh native handshake with cached loader context, late-handshake guards, and complete fourteen-report render barrier passed.');
+console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, fresh native handshake with cached loader context, and late-handshake guards passed.');
+await import('./test-land-master-lazy-data.mjs');

@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import {stableWidgetLoader} from './stable-widget-loader.mjs';
+import {stableWidgetLoader, stampLocalAssets} from './stable-widget-loader.mjs';
 
-const documentHtml = '<html><head><script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script><script src="./creator-data.js"></script></head><body>Ready</body></html>';
-const response = () => ({ok: true, text: async () => documentHtml});
+const documentHtml = '<html><head><script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script><script src="./creator-data.js"></script><link rel="stylesheet" href="./widget.css"></head><body>Ready</body></html>';
+const response = (html = documentHtml) => ({ok: true, text: async () => html});
+const mappedVersions = {dev:'2.0-dev',stage:'3.0-stage',prod:'1.0-prod'};
 const deferred = () => {
   let resolve, reject;
   const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
@@ -11,11 +12,11 @@ const deferred = () => {
 };
 async function flush() { for (let i = 0; i < 24; i++) await Promise.resolve(); }
 
-function harness(params, {framed = true, routed = true, handshake, fetchImpl, abortable = true} = {}) {
+function harness(params, {framed = true, routed = true, handshake, fetchImpl, abortable = true, widget = 'budget-manager', version = 'url-version', versions = mappedVersions, canonicalWidget = widget} = {}) {
   const state = {fetchCalls: [], handshakeCalls: 0, writes: [], opens: 0, errors: [], aborts: 0};
   const timers = new Map();
   let nextTimer = 0;
-  const html = stableWidgetLoader('budget-manager', 'test', routed);
+  const html = stableWidgetLoader(widget, version, routed, versions, canonicalWidget);
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   const document = {
     createElement: () => ({}),
@@ -26,7 +27,7 @@ function harness(params, {framed = true, routed = true, handshake, fetchImpl, ab
   const window = {}; window.parent = framed ? {} : window;
   const context = {
     document, window,
-    location: {href: 'https://rbelliveau-wbw.github.io/land-master/prod/budget-manager/'},
+    location: {href: `https://rbelliveau-wbw.github.io/land-master/prod/${widget}/?creatorContext=preserved#embedded`},
     URL, Date, Promise,
     setTimeout(fn, ms) { const id = ++nextTimer; timers.set(id, {fn, ms}); return id; },
     clearTimeout(id) { timers.delete(id); },
@@ -46,7 +47,7 @@ function harness(params, {framed = true, routed = true, handshake, fetchImpl, ab
   };
   vm.runInNewContext(script, context);
   return {
-    state, timers, window, html,
+    state, timers, window, html, location:context.location, parent:window.parent,
     async sdkLoad() { assert(state.sdk); state.sdk.onload(); await flush(); },
     timeout() {
       assert.equal(timers.size, 1, 'each phase must have exactly one active deadline');
@@ -78,6 +79,11 @@ for (const [fragment, env] of [['', 'prod'], ['environment/development', 'dev'],
   assert.equal(r.state.writes.length, 1);
   assert(r.state.writes[0].includes(`<base href="https://rbelliveau-wbw.github.io/land-master/${env}/budget-manager/">`));
   assert(r.state.writes[0].includes('widgetsdk-min.js'), 'replacement must reinstall SDK listeners');
+  assert(r.state.writes[0].includes(`src="./creator-data.js?_lmv=${mappedVersions[env]}"`), 'helper cache key must follow native environment release, not the registered URL release');
+  assert(r.state.writes[0].includes(`href="./widget.css?_lmv=${mappedVersions[env]}"`));
+  assert(r.state.writes[0].includes('src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"'), 'external SDK URL stays exact');
+  assert.equal(r.location.href, 'https://rbelliveau-wbw.github.io/land-master/prod/budget-manager/?creatorContext=preserved#embedded');
+  assert.equal(r.window.parent, r.parent, 'versioning must retain the original Creator parent and query/fragment context');
   assert.equal(r.window.LMFrontendContext.params.envUrlFragment, fragment);
   assert.equal(r.timers.size, 0, 'success must release its timer');
   assert.equal(r.state.aborts, 0);
@@ -150,6 +156,7 @@ for (const options of [{framed: false}, {routed: false}]) {
   assert.equal(r.state.handshakeCalls, 0);
   assert.equal(r.state.fetchCalls[0].url.split('?')[0], './widget.html');
   assert(r.state.writes[0].includes('widgetsdk-min.js'));
+  assert(r.state.writes[0].includes('src="./creator-data.js?_lmv=url-version"'), 'standalone/nonrouted document uses its selected URL release');
   assert.equal(r.timers.size, 0);
   const pending = deferred();
   const stalled = harness(null, {...options, fetchImpl: () => pending.promise});
@@ -161,4 +168,62 @@ for (const options of [{framed: false}, {routed: false}]) {
   const r = harness({envUrlFragment: 'environment/development'}); await r.sdkLoad();
   assert.equal(r.state.writes.length, 1); assert.equal(r.state.error, undefined);
 }
-console.log('Stable frontend loader checks passed: authoritative routing, bounded script/handshake/fetch/body, abort, late-result guards, SDK reinstall, and fresh retry.');
+{
+  const r = harness({envUrlFragment:'environment/development'}, {widget:'insights',canonicalWidget:'lot-sales-explorer',versions:{dev:'1.5-dev',stage:'1.5-stage',prod:'1.5-prod'}});
+  await r.sdkLoad();
+  assert.equal(new URL(r.state.fetchCalls[0].url).pathname, '/land-master/dev/lot-sales-explorer/widget.html', 'alias resolves canonical widget directory');
+  assert(r.state.writes[0].includes('<base href="https://rbelliveau-wbw.github.io/land-master/dev/lot-sales-explorer/">'));
+  assert(r.state.writes[0].includes('src="./creator-data.js?_lmv=1.5-dev"'));
+  assert.equal(r.location.href, 'https://rbelliveau-wbw.github.io/land-master/prod/insights/?creatorContext=preserved#embedded');
+}
+{
+  const r = harness({envUrlFragment:'environment/development'}, {versions:{prod:'1.0-prod'}});
+  await r.sdkLoad(); assert.equal(r.state.fetchCalls.length, 0); assertFailed(r, /No widget release is mapped/);
+}
+{
+  const original = `<html><head data-hint="> preserved">
+<SCRIPT defer data-template="src='./fake.js'" SRC = './runtime-context.js?existing=1&amp;other=2#ready'></SCRIPT>
+<script src=../creator-data.js#boot></script>
+<link HREF="app.css?v=old#theme" media="screen" ReL='alternate StyleSheet'>
+<link rel=stylesheet href='theme.css?'>
+<script src="module.mjs&#35;encoded-fragment"></script>
+<script src="encoded.js&#63;key=1&amp;other=2"></script>
+</head></html>`;
+  const expected = `<html><head data-hint="> preserved">
+<SCRIPT defer data-template="src='./fake.js'" SRC = './runtime-context.js?existing=1&amp;other=2&_lmv=release-2#ready'></SCRIPT>
+<script src=../creator-data.js?_lmv=release-2#boot></script>
+<link HREF="app.css?v=old&_lmv=release-2#theme" media="screen" ReL='alternate StyleSheet'>
+<link rel=stylesheet href='theme.css?_lmv=release-2'>
+<script src="module.mjs?_lmv=release-2&#35;encoded-fragment"></script>
+<script src="encoded.js&#63;key=1&amp;other=2&_lmv=release-2"></script>
+</head></html>`;
+  assert.equal(stampLocalAssets(original, 'release-2'), expected, 'Only intended asset URL values change; quotes, attributes, queries, fragments and surrounding document bytes remain exact.');
+  const r = harness({envUrlFragment:'environment/stage'}, {fetchImpl:() => Promise.resolve(response(original)),versions:{dev:'release-1',stage:'release-2',prod:'release-3'}});
+  await r.sdkLoad();
+  assert.equal(r.state.writes[0], expected.replace('<head data-hint="> preserved">', '<head data-hint="> preserved"><base href="https://rbelliveau-wbw.github.io/land-master/stage/budget-manager/">'), 'Injected runtime executes the actual stamping function with the selected environment version.');
+}
+{
+  const unchanged = `<!doctype html><!-- <script src='./comment.js'></script><link rel=stylesheet href=comment.css> -->
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+<script src="//cdn.example.test/vendor.js?x=1#frag"></script>
+<script src="https&colon;//cdn.example.test/entity.js"></script>
+<script src="&#104;ttps://cdn.example.test/entity.js"></script>
+<script src="data:text/javascript,noop()"></script>
+<script src="blob:https://example.test/token"></script>
+<script src="/api/v2/owner/app/Report/1/Attachment/download?filepath=creator.js"></script>
+<script src="#existing-script"></script>
+<script>const snippet = "<script src='./inline.js'>"; const css = '<link rel="stylesheet" href="inline.css">';</script>
+<style>.sample::after {content:'<script src="style.js">'} @import url('inline.css');</style>
+<textarea><script src="text.js"></script></textarea>
+<noscript><link rel="stylesheet" href="fallback.css"></noscript>
+<iframe src="https://creator.zoho.com/file.js"><script src="frame.js"></script></iframe>
+<a href="local.js">Asset anchor</a><a href="https://creator.zoho.com/api/file/download">Creator file</a>
+<link rel="icon" href="icon.css"><img src="image.js"><base href="./original/">`;
+  assert.equal(stampLocalAssets(unchanged, 'release-2'), unchanged, 'External/vendor/Creator file URLs, inline text, comments, nonstylesheet links and ordinary element URLs must remain byte-identical.');
+}
+{
+  assert.equal(stampLocalAssets("<script src='local.js'></script>", `release '2' & "3"`), "<script src='local.js?_lmv=release%20%272%27%20%26%20%223%22'></script>", 'Release value is encoded without breaking attribute quotes.');
+  assert.equal(stampLocalAssets('<link rel="stylesheet" href="/assets/app.css"><script src="./app.js?v=original#load"></script>', 'next'), '<link rel="stylesheet" href="/assets/app.css?_lmv=next"><script src="./app.js?v=original&_lmv=next#load"></script>');
+  assert.equal(stampLocalAssets('<script>unclosed raw content <link rel="stylesheet" href="raw.css">', 'next'), '<script>unclosed raw content <link rel="stylesheet" href="raw.css">', 'An unclosed raw block must not be rewritten as markup.');
+}
+console.log('Stable frontend loader checks passed: authoritative environment asset versions, canonical aliases, exact tag-bound stamping, immutable document preservation, bounded script/handshake/fetch/body, abort, late-result guards, SDK reinstall, and fresh retry.');

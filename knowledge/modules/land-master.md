@@ -74,6 +74,10 @@ Report editors, modal pickers, lookup popovers, and filters share the report-fil
 
 Phase removal is reduced to a 23px border-box button with a centered 12px SVG and a lighter 1.5px stroke. Root AGENTS.md now requires actual-size visual verification of centered X buttons.
 
+## Four-core startup (8.13.4 candidate)
+
+After the SDK v2 transport gate verified all fourteen Production reports in `8.13.3`, candidate `8.13.4` loads Properties, Projects, Subdivisions and Companies plus location choices before the first table render. Milestones load before the Subdivisions table, preserving complete Next milestone search and sorting. Other related reports load before their dependent editor or lookup mounts. Collection states distinguish unloaded/error counts from a complete zero-row report; failed core reads retain the previous complete snapshot, and deferred failures leave the dependent UI unavailable and retryable. Data generations and navigation tokens reject stale completions without replacing dirty, saving, closed or newer panels. Existing search debounce, string IDs, full fields, staged mapping reconciliation and fresh counted import reads remain in place. See [the dependency and regression contract](../../docs/land-master-lazy-data.md). Rollback: restore the Land mapping to `8.13.3`, with no backend rollback.
+
 ## Centered checkmarks (8.12.4)
 
 Picker selections use a centered 11px SVG check instead of a font glyph. Lookup and Project inline save indicators also use geometric checkmarks; input-save and toast SVG paths are centered within their viewBox. Changed files: widget HTML/JS/CSS, config/manifests, regression URL expectations, AGENTS/style/module docs, release and Production mapping. No Creator fields, functions, APIs, or backend deployment change. Regression: selected single/multi pickers, clear/reselect, saved lookup/Project indicators, and actual-size icon/path geometry. Rollback: 8.12.3.

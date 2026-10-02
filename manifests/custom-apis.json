@@ -110,6 +110,38 @@
       "confidence": "inferred-name-match"
     },
     {
+      "name": "Get_User_Access_Lean",
+      "consumers": [],
+      "matching_creator_function": "getUserAccessLean",
+      "confidence": "verified-enabled-production-2026-10-02",
+      "method": "GET",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "parameters": [
+        {"name": "user", "type": "STRING", "location": "query"}
+      ],
+      "response": "Standard {code:3000,result:<JSON string>}",
+      "environment": "PRODUCTION",
+      "enabled": true,
+      "development_link_name": "Get_User_Access_Lean_DEV",
+      "notes": "Enabled details verified in Creator Microservices on 2026-10-02; Land Master PRODUCTION, Default.getUserAccessLean, backend 9.33. Same OAuth2 and All users scope as existing full access API. Signed-in Production GET parity remains pending; function-editor Execute used Development data. Authenticated widget access calls omit the user argument/query_params/parameters/payload so Deluge uses authoritative zoho.loginuser; neither native email nor its local part reliably identifies the Creator username. Additive only; no widget caller adopted at this verification snapshot. All full-response flags/roster retained, proformaOwners omitted."
+    },
+    {
+      "name": "Get_User_Access_Lean_DEV",
+      "consumers": [],
+      "matching_creator_function": "getUserAccessLeanDev",
+      "confidence": "verified-development-2026-10-02",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "parameters": [
+        {"name": "user", "type": "STRING", "location": "payload"}
+      ],
+      "response": "Standard {code:3000,result:<JSON string>}",
+      "environment": "DEVELOPMENT",
+      "notes": "Land Master DEVELOPMENT, Default.getUserAccessLeanDev; application/json Key and Value. Preserves the exact existing Development-only identity alias. Live full/lean comparison matched every 37 retained keys against full38 with only proformaOwners omitted; denied-response parity also passed. Existing full endpoints unchanged; no widget caller adopted yet."
+    },
+    {
       "name": "Handle_Approval_Action",
       "consumers": [
         "widgets/budget-manager/src/app/widget.html"

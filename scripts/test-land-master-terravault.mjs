@@ -8,7 +8,7 @@ const config = JSON.parse(fs.readFileSync(path.join(root, "widgets/land-master/w
 assert.match(widget, /lotStatus:\["Open","Contracted","Scheduled","Sold"\]/, "lot editor must offer the Scheduled status");
 
 for (const required of [
-  `version: "${config.version}-SDK2-CURSOR"`,
+  `version: "${config.version}-LAZY-CORE"`,
   'F("TerraVault_URL","TerraVault URL","url",rec.TerraVault_URL,{full:1})',
   '{label:"TerraVault URL",key:"TerraVault_URL",edit:"url"}',
   'function normalizeWebUrl(v)',

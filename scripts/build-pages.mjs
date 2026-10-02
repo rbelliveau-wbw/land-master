@@ -20,11 +20,13 @@ function copyDir(source, target) {
   }
 }
 
-function writeStableWidgetLoader(target, widget, version) {
+function writeStableWidgetLoader(target, publishedPath, widget, version) {
   const entry = path.join(target, 'index.html');
   const current = path.join(target, 'widget.html');
   fs.renameSync(entry, current);
-  fs.writeFileSync(entry, stableWidgetLoader(widget, version, (config.runtime_frontend_routing || []).includes(widget)));
+  const routing = config.runtime_frontend_routing || [];
+  const versions = {dev:config.environments.development?.[widget],stage:config.environments.stage?.[widget],prod:config.environments.production?.[widget]};
+  fs.writeFileSync(entry, stableWidgetLoader(publishedPath, version, routing.includes(widget) || routing.includes(publishedPath), versions, widget));
 }
 
 function verifyStableWidgetLoader(source, target, environment, widget, version) {
@@ -62,7 +64,7 @@ for (const [environment, widgets] of Object.entries(config.environments)) {
     for (const publishedPath of paths) {
       const target = path.join(out, shortName, publishedPath);
       copyDir(source, target);
-      writeStableWidgetLoader(target, publishedPath, version);
+      writeStableWidgetLoader(target, publishedPath, widget, version);
       verifyStableWidgetLoader(source, target, environment, publishedPath, version);
       rows.push({ environment, path: `${shortName}/${publishedPath}/`, widget, version });
     }

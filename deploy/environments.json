@@ -4,14 +4,14 @@
   "environments": {
     "development": {
       "proforma-manager": "1.80.51",
-      "budget-manager": "122.28.6",
-      "land-master": "8.13.3",
+      "budget-manager": "122.28.7",
+      "land-master": "8.13.4",
       "contract-management": "1.60.29",
       "tax-center": "19.17.1",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.0",
       "settings-manager": "1.2.0",
-      "lot-sales-explorer": "1.5.36"
+      "lot-sales-explorer": "1.5.37"
     },
     "stage": {
       "proforma-manager": "1.80.13",

@@ -13,7 +13,7 @@ Six current widget sources still load SDK 1.0 and call `ZOHO.CREATOR.init()`. Mi
 | 3 | Manage Lots | 0.9.14 | Exercises scoped counts, queued reads, and pre-submit eligibility checks. |
 | 4 | Tax Center | 19.17.4 | Multiple reader implementations and count/search sequencing make this a larger migration. |
 | 5 | Contract Management | 1.60.42 | Adds private deep links, attachment transport, Custom APIs, and permission-sensitive writes. |
-| 6 | Proforma Manager | 1.80.60 | Most extensive save, child-row, attachment, owner, approval, and deep-link contracts. |
+| 6 | Proforma Manager | 1.80.61 | Most extensive save, child-row, attachment, owner, approval, and deep-link contracts. |
 
 Versions are audit snapshots, not new release reservations. Check current source and mappings again before beginning each increment.
 
@@ -37,6 +37,16 @@ Primary references: [v2 overview](https://www.zoho.com/creator/help/js-api/v2/),
 The canonical adapter is `shared/creator-data.js`; `scripts/sync-shared-widget-data.mjs` currently copies it only to Budget, Land & Projects, and Insights. Extend that explicit list for each adopted widget, then verify byte identity with a regression check. Route any new count calls through `LMData.request` when they share the same SDK workload. Preserve narrower per-widget sequencing where it has resolved Creator SDK failures. Invalidate relevant caches before mutation or refresh; reads required for eligibility/save verification must be fresh. Do not narrow Settings fields because its generic editor deliberately exposes unknown fields.
 
 The current SDK2 runtime copies in Budget, Land & Projects, and Insights give explicit native environment fragments authority over URL/referrer hints, reject malformed explicit fragments, propagate failed handshakes, and expose the authenticated `appLinkName` cache key. Adopt that runtime when each remaining widget changes to SDK2. `scripts/test-runtime-context.mjs` inventories all nine widgets and applies the stricter checks automatically to sources whose SDK tag is v2. Keep the six v1 runtime copies unchanged until their individual migrations. Live Development returned code `1060` for an object in `query_params`; the downloaded SDK forwards it verbatim, so a CDN/version-shaped mock is insufficient evidence for the GET argument contract.
+
+## Shared runtime reuse after the current Production gate
+
+This is preparation only; no six-widget migration begins here. Reuse the existing identical SDK2 runtime from the three current migrated widgets and extend the explicit sync/test inventory one widget at a time. If a canonical runtime file is introduced later, add it as a reviewed shared artifact with byte-identity checks; do not replace all six runtime copies or enable their frontend environment routing before their individual SDK2 increment.
+
+The new document needs its own five-second native initialization deadline after the stable loader injects it. Await the native `UTIL.getInitParams()` first and call `LMRuntime.apply()` only while that attempt is still active. Merely racing an unguarded `LMRuntime.capture()` against a timer is insufficient: capture can apply stale native context after the timeout. Share an in-flight attempt, clear a rejected attempt for a fresh retry, and block late results from changing identity or starting business reads. Keep refresh available after connection failure and fail visibly inside Creator rather than substituting fixtures. Current Budget, Land and Insights implementations/tests provide the behavioral reference.
+
+The first Production Budget and Insights SDK2 gates exposed a separate identity-semantic failure: complete counts/totals matched while the access function returned `found:false` for explicit email or inferred email local part. The real Creator username differed from both. For Production/Stage current-session access, omit every user argument container and retain the saved function's authoritative `zoho.loginuser` fallback. Preserve the verified Development POST/alias/View-as contract and Pro Forma's full owner map. Execute the actual caller and saved function with an existing granted session username different from native email/local part; a shape-only query_params test misses this bug. Keep runtime identity unchanged for cache isolation. Other Custom API GET arguments retain their encoded-string contract.
+
+Use the current canonical counted/cursor reader and raw error normalization, with meaningful zero, denied, mismatch, repeated-cursor, duplicate-ID, cancellation and retry fixtures. Native mutations must verify all returned record codes and exact string IDs; remove v1 envelope probing as part of the transport migration while retaining confirmed-write/no-replay behavior and required persisted checks. Preserve Settings' generic field coverage, Manage Lots' fresh eligibility reads, Tax's narrower/serialized search policy and Pro Forma's child-delete continuation. See the [cross-widget propagation matrix](creator-transport-regression-matrix.md) for the observed legacy risks rather than inferring that the existing v1 API is invalid.
 
 ## Source inventory and individual tests
 

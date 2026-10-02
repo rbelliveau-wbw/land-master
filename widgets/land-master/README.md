@@ -3,7 +3,9 @@
 
 Projects, subdivisions, companies, properties, related records, filters, and editing.
 
-Current release: `8.11.7`.
+Current candidate: `8.13.4`. The verified SDK v2 transport baseline is `8.13.3`.
+
+The candidate loads Properties, Projects, Subdivisions, Companies and location choices before the first Properties render. Milestones load before opening the Subdivisions table; the other related reports load when an editor or lookup needs them. Editors wait for complete dependencies, retain failed drafts, and cannot be reopened by late reads after closing. See [the loading contract](../../docs/land-master-lazy-data.md) for dependencies, regression checks and rollback.
 
 ## Baseline
 
