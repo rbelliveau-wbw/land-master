@@ -21,7 +21,8 @@ for (const widget of widgets) {
     if (actual !== widget.source_sha256) warnings.push(`${widget.slug}: source changed since manifest generation; update widget.config.json and create a release.`);
     const text = fs.readFileSync(html, 'utf8');
     if (!text.includes('widgetsdk-min.js')) warnings.push(`${widget.slug}: no Creator widget SDK reference detected.`);
-    if (!text.toLowerCase().includes('zoho.creator.init')) warnings.push(`${widget.slug}: no ZOHO.CREATOR.init call detected.`);
+    const nativeHandshake = text.includes('/creator/widgets/version/2.0/') && /\.UTIL\.getInitParams\s*\(/.test(text);
+    if (!text.toLowerCase().includes('zoho.creator.init') && !nativeHandshake) warnings.push(`${widget.slug}: no Creator SDK initialization detected.`);
     // The critical-error reporter stamps its own version constant on every emailed
     // report. If it drifts from the released version, triage points at the wrong build.
     const reported = text.match(/LMCriticalErrors\.configure\(\{[\s\S]{0,400}?version\s*:\s*"([^"]+)"/);

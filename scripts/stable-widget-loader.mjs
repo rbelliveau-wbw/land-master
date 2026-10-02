@@ -4,12 +4,14 @@ export function stableWidgetLoader(widget, version, routeEnvironment = false) {
   const routing = routeEnvironment ? `
   var sdk = document.createElement('script');
   sdk.src = 'https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js';
+  var sdkLoaded = false;
   sdk.onload = function () {
-    var timer = setTimeout(function () { failed(new Error('Creator environment handshake timed out')); }, 15000);
-    Promise.resolve().then(function () { return ZOHO.CREATOR.UTIL.getInitParams(); })
+    if (finished || sdkLoaded) return;
+    sdkLoaded = true;
+    deadline('Creator environment handshake timed out');
+    Promise.resolve().then(function () { if (finished) return; return ZOHO.CREATOR.UTIL.getInitParams(); })
       .then(function (params) {
         if (finished) return;
-        clearTimeout(timer);
         var fragment = params && params.envUrlFragment;
         if (typeof fragment !== 'string') throw new Error('Creator did not identify its environment');
         var env = fragment === '' ? 'prod' : /(?:^|\\/)environment\\/development\\/?$/.test(fragment) ? 'dev' : /(?:^|\\/)environment\\/(?:stage|staging)\\/?$/.test(fragment) ? 'stage' : '';
@@ -23,7 +25,7 @@ export function stableWidgetLoader(widget, version, routeEnvironment = false) {
   sdk.onerror = function () { failed(new Error('Creator SDK could not load')); };
   // A standalone preview has no Creator message host; use its selected URL.
   if (window.parent === window) load('./widget.html', null, false);
-  else document.head.appendChild(sdk);` : `
+  else { deadline('Creator SDK load timed out'); document.head.appendChild(sdk); }` : `
   load('./widget.html', null, false);`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -34,21 +36,37 @@ export function stableWidgetLoader(widget, version, routeEnvironment = false) {
 <body style="margin:0;display:grid;place-items:center;min-height:100vh;font:13px system-ui;color:#5c7394;background:#f0f3f7">
 <div id="lm-loader">Loading ${widget}...</div><script>
 (function () {
-  var finished = false;
+  var finished = false, loading = false, timer = null, fetchAbort = null;
+  function clearDeadline() {
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+  }
+  function deadline(message) {
+    clearDeadline();
+    timer = setTimeout(function () { failed(new Error(message)); }, 15000);
+  }
   function failed(error) {
     if (finished) return;
     finished = true;
+    clearDeadline();
+    if (fetchAbort) fetchAbort.abort();
     var loader = document.getElementById('lm-loader');
     if (loader) loader.textContent = 'Could not load ${widget}. Refresh to retry.';
     console.error('Stable widget loader failed', error);
   }
   function load(url, base, reuseSDK) {
+    if (finished || loading) return;
+    loading = true;
+    deadline('Widget document fetch timed out');
     var target = url + '?_lmcb=' + Date.now().toString();
-    fetch(target, { cache: 'no-store', credentials: 'same-origin' })
-      .then(function (response) { if (!response.ok) throw new Error('HTTP ' + response.status); return response.text(); })
+    var options = { cache: 'no-store', credentials: 'same-origin' };
+    if (typeof AbortController === 'function') { fetchAbort = new AbortController(); options.signal = fetchAbort.signal; }
+    fetch(target, options)
+      .then(function (response) { if (finished) return; if (!response.ok) throw new Error('HTTP ' + response.status); return response.text(); })
       .then(function (html) {
         if (finished) return;
         finished = true;
+        clearDeadline();
         if (base) html = html.replace(/<head(?:\\s[^>]*)?>/i, function (head) { return head + '<base href="' + base + '">'; });
         // document.open clears SDK message listeners; reload SDK in the new document.
         document.open();

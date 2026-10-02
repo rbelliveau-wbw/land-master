@@ -29,7 +29,8 @@ function writeStableWidgetLoader(target, widget, version) {
 
 function verifyStableWidgetLoader(source, target, environment, widget, version) {
   const loader = fs.readFileSync(path.join(target, 'index.html'), 'utf8');
-  if (!loader.includes("fetch(target, { cache: 'no-store'") ||
+  if (!loader.includes("var options = { cache: 'no-store'") ||
+      !loader.includes('fetch(target, options)') ||
       !loader.includes('document.write(html)') ||
       loader.includes('window.location.replace')) {
     throw new Error(`Invalid permanent widget loader: ${environment}/${widget}`);

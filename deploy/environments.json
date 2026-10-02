@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-10-02T20:12:40.541Z",
+  "generated_at": "2026-10-02T20:30:08.214Z",
   "note": "Creator registrations retain stable Production URLs. Budget and Land Master loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
       "proforma-manager": "1.80.51",
-      "budget-manager": "122.28.3",
+      "budget-manager": "122.28.4",
       "land-master": "8.13.3",
       "contract-management": "1.60.29",
       "tax-center": "19.17.1",

@@ -129,7 +129,7 @@ attempts = 0;
 assert.equal((await transport.sdkGetAllRecords('All_Budget_Items')).length,0);
 assert.equal(attempts,2,'explicit missing report can use an existing candidate');
 
-const query = install({ZOHO:{CREATOR:{UTIL:{getQueryParams:async () => ({budgetId:'900000000000000001'}),getInitParams:async () => ({budgetId:'wrong'})}}},Promise},['budgetInitParams','readDeepLinkParam']);
+const query = install({ZOHO:{CREATOR:{UTIL:{getQueryParams:async () => ({budgetId:'900000000000000001'}),getInitParams:async () => ({budgetId:'wrong'})}}},Promise,setTimeout,clearTimeout},['budgetInitParams','readDeepLinkParam']);
 query.window = {...query,location:{href:'https://example.test/widget.html?budgetId=url'}};
 assert.equal(await query.readDeepLinkParam('budgetId',[]),'900000000000000001','SDK v2 query parameters are awaited');
 query.ZOHO.CREATOR.UTIL.getQueryParams = async () => {throw new Error('Query unavailable');};
@@ -140,7 +140,7 @@ assert.equal(await query.readDeepLinkParam('budgetId',[]),'routed-budget','loade
 let initRequests = 0;
 const frontendParams = {loginUser:'cached-user',envUrlFragment:'/environment/development'};
 const init = install({
-  S:{liveSDK:true,currentUser:''},Promise,
+  S:{liveSDK:true,currentUser:''},Promise,setTimeout,clearTimeout,
   LMFrontendContext:{params:frontendParams,environment:'dev'},
   ZOHO:{CREATOR:{UTIL:{getInitParams:async () => {initRequests++;return {loginUser:'direct-user'};}}}},
   creatorRuntimeEnvironment:() => {}
@@ -157,6 +157,41 @@ assert.equal(initRequests,2);
 init.LMFrontendContext = {params:frontendParams};
 init.ZOHO.CREATOR.UTIL.getInitParams = async () => {throw new Error('SDK bridge not attached');};
 await assert.rejects(init.budgetInitParams(),/bridge not attached/,'cached loader identity cannot bypass a failed native bridge');
+
+const initBranchStart=source.indexOf('if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREATOR.DATA.getRecords === "function") {');
+const initBranchEnd=source.indexOf('\n})();',initBranchStart);
+assert.ok(initBranchStart>=0 && initBranchEnd>initBranchStart,'the actual Creator bootstrap branch exists');
+const stalledContext=deferred(), handshakeTimers=new Map();let timerId=0, businessReads=0, appliedContexts=0, handshakeCalls=0;
+const stalledDom={projList:{innerHTML:''},aqGroups:{innerHTML:''}};
+const stalled=install({
+  S:{liveSDK:false,useMock:false,startupReady:false,budgets:[],projects:[],approvals:[],currentUser:''},Promise,Error,
+  ZOHO:{CREATOR:{DATA:{getRecords:() => {businessReads++;return Promise.resolve({code:3000,data:[]});}},UTIL:{getInitParams:() => {handshakeCalls++;return stalledContext.promise;}}}},
+  LMRuntime:{apply:params => {appliedContexts++;return {user:params.loginUser};},current:() => ({user:'(unknown)'}),apiName:value => value},
+  document:{referrer:'https://creatorapp.zoho.com/wbdevelopment/land-master/environment/development/'},
+  setTimeout:(callback,delay) => {const id=++timerId;handshakeTimers.set(id,{callback,delay});return id;},clearTimeout:id => handshakeTimers.delete(id),
+  fetchCurrentUser:async () => 'reviewer',loadAll:async () => {businessReads++;},loadUserAccess:async () => {businessReads++;},
+  auditLog:() => {},showView:() => {},setMsg:() => {},setLoad:() => {},$:id => stalledDom[id],shortErr:error => error?.message || String(error),safeStringify:JSON.stringify
+},['budgetInitParams','budgetMeasured','boot']);
+stalled.window=stalled;
+vm.runInContext(source.slice(initBranchStart,initBranchEnd),stalled);
+await turn();
+assert.equal(handshakeCalls,1);
+assert.equal(handshakeTimers.size,1);
+const deadline=[...handshakeTimers.values()][0];assert.equal(deadline.delay,5000,'native post-injection handshake has a bounded five-second deadline');
+deadline.callback();await turn();
+assert.equal(handshakeTimers.size,0);
+assert.equal(stalled.S.sdkInitFailed,true);
+assert.equal(stalled.S.liveSDK,false);
+assert.equal(stalled.S.useMock,false,'a timed-out Creator session cannot substitute mock business data');
+assert.equal(businessReads,0,'the actual startup branch begins no live business or access reads after handshake timeout');
+assert.match(stalledDom.projList.innerHTML,/Creator is unavailable/);
+stalledContext.resolve({loginUser:'late-user'});await turn();
+assert.equal(appliedContexts,0,'late SDK response cannot apply authenticated context after the deadline');
+assert.equal(stalled.S.currentUser,'');assert.equal(stalled.S.liveSDK,false);assert.equal(businessReads,0);
+stalled.ZOHO.CREATOR.UTIL.getInitParams=async () => {handshakeCalls++;return {loginUser:'retry-user'};};
+assert.equal((await stalled.budgetInitParams()).loginUser,'retry-user','a new native handshake remains available after timeout');
+assert.equal(handshakeCalls,2);assert.equal(handshakeTimers.size,0,'successful retry clears its deadline');
+
 
 function startupHarness() {
   const reports = Object.fromEntries(['budgets','subdivisions','projects','categories','approvals','proformas','modifications'].map(name => [name,name]));
