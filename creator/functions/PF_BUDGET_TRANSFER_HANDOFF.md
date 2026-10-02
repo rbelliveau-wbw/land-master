@@ -18,7 +18,7 @@ The Development field and both function edits are saved in Creator. The user pro
 
 ## Creator handoff
 
-Live inspection on 2026-10-02 found only the DEV Custom API registered. Production function promotion does not create `PF_Budget_Transfer`; its separate Production API registration is still required. A matching authenticated Production endpoint was prepared for review. See [connection diagnosis and current status](../../docs/proforma-budget-transfer-connection-1.80.60.md).
+Live inspection on 2026-10-02 found only the DEV Custom API registered. Production function promotion does not create `PF_Budget_Transfer`. After explicit user confirmation, the matching authenticated Production endpoint was enabled and edited previews verified. See [connection diagnosis and current status](../../docs/proforma-budget-transfer-connection-1.80.60.md).
 
 The following functions are saved and compiler-checked in Land Master Development. Publish them through the normal Creator environment promotion:
 

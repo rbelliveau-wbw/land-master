@@ -342,6 +342,15 @@
       "response": "Standard {code:3000,result:<JSON string containing City, County, Territory arrays>}",
       "development_link_name": "Get_Land_Master_Choices_DEV",
       "notes": "Development binding is enabled. Production binding must be created after the user promotes the function and variables; no Production endpoint was created in this chat."
+    },
+    {
+      "name": "PF_Budget_Transfer",
+      "consumers": [
+        "widgets/proforma-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "PF_Budget_Transfer",
+      "confidence": "verified-production-2026-10-02",
+      "notes": "Enabled Production API: POST, OAuth2, All users, application/json Key and Value; payload:string; Standard response. Land Master PRODUCTION, Default PF_Budget_Transfer. Capability 3 and edited quantity/note previews verified; function enforces existing authenticated transfer and Budget grants. No actual apply performed."
     }
   ]
 }
