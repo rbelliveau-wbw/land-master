@@ -89,6 +89,8 @@ query.window = {...query,location:{href:'https://example.test/widget.html?budget
 assert.equal(await query.readDeepLinkParam('budgetId',[]),'900000000000000001','SDK v2 query parameters are awaited');
 query.ZOHO.CREATOR.UTIL.getQueryParams = async () => {throw new Error('Query unavailable');};
 assert.equal(await query.readDeepLinkParam('budgetId',[]),'wrong','failed query task can still use initialization parameters');
+query.window.LMFrontendContext = {params:{budgetId:'routed-budget'}};
+assert.equal(await query.readDeepLinkParam('budgetId',[]),'routed-budget','loader parameters are retained for page routing');
 
 let initRequests = 0;
 const frontendParams = {loginUser:'cached-user',envUrlFragment:'/environment/development'};
@@ -99,12 +101,17 @@ const init = install({
   creatorRuntimeEnvironment:() => {}
 },['budgetInitParams','fetchCurrentUser']);
 init.window = init;
-assert.equal(await init.budgetInitParams(),frontendParams,'stable loader session context is reused');
-assert.equal(await init.fetchCurrentUser(),'cached-user');
-assert.equal(initRequests,0,'cached loader context requires no additional SDK handshake');
+const verifiedParams = await init.budgetInitParams();
+assert.equal(verifiedParams.loginUser,'direct-user','authentication context comes from the freshly attached SDK, not cached loader params');
+init.S.creatorInitParams = verifiedParams;init.S.currentUser = verifiedParams.loginUser;
+assert.equal(await init.fetchCurrentUser(),'direct-user');
+assert.equal(initRequests,1,'the user resolver reuses the one verified native handshake');
 delete init.LMFrontendContext;delete init.S.creatorInitParams;init.S.currentUser = '';
 assert.equal(await init.fetchCurrentUser(),'direct-user','standalone widget still resolves direct SDK context');
-assert.equal(initRequests,1);
+assert.equal(initRequests,2);
+init.LMFrontendContext = {params:frontendParams};
+init.ZOHO.CREATOR.UTIL.getInitParams = async () => {throw new Error('SDK bridge not attached');};
+await assert.rejects(init.budgetInitParams(),/bridge not attached/,'cached loader identity cannot bypass a failed native bridge');
 
 function startupHarness() {
   const reports = Object.fromEntries(['budgets','subdivisions','projects','categories','approvals','proformas','modifications'].map(name => [name,name]));

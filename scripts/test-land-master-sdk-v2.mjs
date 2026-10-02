@@ -46,18 +46,18 @@ assert.equal(progress.at(-1).report,'All_Lots_All_Fields');assert.equal(progress
 context.LMData.readAll=async()=>{throw {code:2898};};await assert.rejects(context.sdkGetAll('All_Companies'),e=>String(e.error.code)==='2898');
 
 function initHarness({framed=true,getInitParams=async()=>({appLinkName:'land',envUrlFragment:'/environment/development'})}={}){
-  const statuses=[],events=[],timers=new Map();let next=0,loaded=0,demo=0,applied=0;
+  const statuses=[],events=[],timers=new Map();let next=0,loaded=0,demo=0,applied=0,handshakes=0;
   const c=vm.createContext({S:{liveSDK:false,demo:false,errorQueue:[]},document:{referrer:framed?'https://creatorapp.zoho.com/example/land/':''},
     setTimeout(fn){timers.set(++next,fn);return next;},clearTimeout(id){timers.delete(id);},setStatus:(kind,text)=>statuses.push({kind,text}),loadDemo(){demo++;},loadData:async()=>{loaded++;},auditOnly(){},queueErrorEmail(){},scheduleErrorEmail(){},diag(){},
     LMPerf:{start(name){events.push(name+':start');},end(name,meta){events.push({name,...meta});}},LMRuntime:{apply(params){applied++;assert.equal(params.appLinkName,'land');return {environment:'DEVELOPMENT'};}},LMData:{},
-    ZOHO:{CREATOR:{UTIL:{getInitParams},DATA:{getRecords(){}}}},location:{href:'https://example.test/widget.html'}});
+    ZOHO:{CREATOR:{UTIL:{getInitParams(){handshakes++;return getInitParams();}},DATA:{getRecords(){}}}},location:{href:'https://example.test/widget.html'}});
   c.window=c;c.parent=framed?{}:c;
   vm.runInContext(section('function creatorFrameContext','S.tablePageSize=CFG.tablePageSize'),c);
-  return {c,statuses,events,timers,stats:()=>({loaded,demo,applied})};
+  return {c,statuses,events,timers,handshakes:()=>handshakes,stats:()=>({loaded,demo,applied})};
 }
-let h=initHarness();await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.c.S.liveSDK,true);assert.equal(h.timers.size,0);
-h=initHarness({getInitParams:async()=>{throw new Error('duplicate handshake');}});h.c.LMFrontendContext={params:{appLinkName:'land',envUrlFragment:'/environment/development'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});
-h=initHarness({getInitParams:async()=>{throw {code:5000};}});await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.c.S.liveSDK,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');
+let h=initHarness();await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.c.S.liveSDK,true);assert.equal(h.timers.size,0);assert.equal(h.handshakes(),1);
+h=initHarness();h.c.LMFrontendContext={params:{appLinkName:'cached-routing-only',envUrlFragment:'/environment/development'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.handshakes(),1,'cached loader parameters must not skip the fresh native handshake');
+h=initHarness({getInitParams:async()=>{throw {code:5000};}});h.c.LMFrontendContext={params:{appLinkName:'land'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.c.S.liveSDK,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');assert.equal(h.handshakes(),1);
 h=initHarness({framed:false,getInitParams:async()=>{throw new Error('outside Creator');}});await h.c.initializeCreatorV2();assert.equal(h.stats().demo,1);assert.equal(h.stats().loaded,0);
 let release;h=initHarness({getInitParams:()=>new Promise(resolve=>{release=resolve;})});const initialization=h.c.initializeCreatorV2();await Promise.resolve();h.timers.values().next().value();release({appLinkName:'land'});await initialization;assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.statuses.at(-1).text,'Creator connection failed');
 
@@ -74,4 +74,4 @@ let load=loadHarness(),loading=load.c.loadData();assert.equal(load.reports.lengt
 load.resolveHeld([{ID:'Proforma'}]);await loading;assert.equal(load.rendered(),1);assert.equal(load.c.S.properties[0].ID,'All_Property');assert.equal(load.c.S.proformas[0].ID,'Proforma');assert.equal(load.events.filter(e=>e.name==='first-usable-render').length,1);
 load=loadHarness();loading=load.c.loadData();load.rejectHeld(new Error('All_Pro_Formas: loaded 10000 of 10100 records. Refresh to retry a complete snapshot.'));await assert.rejects(loading,/complete snapshot/);assert.equal(load.rendered(),0);assert.equal(load.c.S.properties,load.old,'a failed barrier must retain the prior complete snapshot');assert.equal(load.statuses.at(-1).text,'Creator data load failed');assert.equal(load.events.some(e=>e.name==='first-usable-render'),false);
 
-console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, loader-context reuse, late-handshake guards, and complete fourteen-report render barrier passed.');
+console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, fresh native handshake with cached loader context, late-handshake guards, and complete fourteen-report render barrier passed.');

@@ -50,7 +50,7 @@ export function stableWidgetLoader(widget, version, routeEnvironment = false) {
         if (finished) return;
         finished = true;
         if (base) html = html.replace(/<head(?:\\s[^>]*)?>/i, function (head) { return head + '<base href="' + base + '">'; });
-        if (reuseSDK) html = html.replace(/<script\\b[^>]*src=["']https:\\/\\/static\\.zohocdn\\.com\\/creator\\/widgets\\/version\\/2\\.0\\/widgetsdk-min\\.js["'][^>]*>\\s*<\\/script>/i, '');
+        // document.open clears SDK message listeners; reload SDK in the new document.
         document.open();
         document.write(html);
         document.close();

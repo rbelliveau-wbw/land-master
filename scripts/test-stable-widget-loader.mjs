@@ -26,7 +26,7 @@ for(const [fragment,env] of [['','prod'],['environment/development','dev'],['env
   assert.equal(r.fetched.opts.cache,'no-store');
   assert.match(r.fetched.url,/\?_lmcb=\d+$/);
   assert.match(r.written,new RegExp(`<base href="https://rbelliveau-wbw.github.io/land-master/${env}/budget-manager/">`));
-  assert(!r.written.includes('widgetsdk-min.js'));
+  assert(r.written.includes('widgetsdk-min.js'),'replacement must reinstall SDK listeners');
   assert.equal(r.window.LMFrontendContext.params.envUrlFragment,fragment);
   assert(!r.html.includes('location.replace'));
   assert(!r.html.includes('<iframe'));

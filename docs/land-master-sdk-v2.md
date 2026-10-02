@@ -1,6 +1,6 @@
 # Land Master SDK v2 transport increment
 
-Land Master now uses the [Creator JavaScript SDK v2](https://www.zoho.com/creator/help/js-api/v2/). Initialization uses `UTIL.getInitParams()` and applies the returned environment before resolving Custom API names. A failed or timed-out connection in an embedded widget shows a connection error; direct previews can still show the demo. A late handshake cannot restart a timed-out session.
+Land Master now uses the [Creator JavaScript SDK v2](https://www.zoho.com/creator/help/js-api/v2/). Initialization always performs one fresh `UTIL.getInitParams()` handshake and applies the returned environment before resolving Custom API names. Cached loader parameters cannot bypass that handshake after the loader replaces the document and reloads the SDK. A failed or timed-out connection in an embedded widget shows a connection error; direct previews can still show the demo. A late handshake cannot restart a timed-out session.
 
 Report reads use the shared `LMData.readAll` adapter with full fields, count reconciliation, cursor pagination, and bounded SDK concurrency. This increment retains the existing fourteen-report plus location-choice barrier. A failed or incomplete report blocks that render and leaves the previous complete snapshot intact; it cannot silently supply empty counts. Full reads preserve the fields needed by existing editors, search, sorting, and counts. Location-choice API failures still recover from the committed snapshot.
 
