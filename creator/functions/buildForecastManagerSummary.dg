@@ -2,6 +2,8 @@ string buildForecastManagerSummary(int subdivisionId)
 {
 	html = "";
 	monthStart = zoho.currentdate.toStartOfMonth();
+	nextMonthStart = monthStart.addMonth(1);
+	monthForecastLabel = monthStart.toString("MMMM") + " Forecast";
 	// ---------- CSS ----------
 	html = html + "<style>";
 	html = html + ".fm-scroll{width:100%;overflow-x:auto;padding-bottom:8px;}";
@@ -43,6 +45,13 @@ string buildForecastManagerSummary(int subdivisionId)
 	html = html + ".fm-progress-meta{position:relative;height:28px;}";
 	html = html + ".fm-progress-sold{position:absolute;left:0;top:0;font-size:11px;color:#667089;font-weight:700;white-space:nowrap;}";
 	html = html + ".fm-progress-expected{position:absolute;top:14px;font-size:11px;color:#b42318;font-weight:700;white-space:nowrap;}";
+	html = html + ".fm-month{margin:4px 0 14px;border-top:1px solid #d9deea;padding-top:10px;}";
+	html = html + ".fm-month-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;}";
+	html = html + ".fm-month-label{font-size:11px;color:#667089;text-transform:uppercase;letter-spacing:.04em;}";
+	html = html + ".fm-month-status{font-size:12px;color:#1f2a44;font-weight:700;white-space:nowrap;}";
+	html = html + ".fm-month-status-over{color:#b42318;}";
+	html = html + ".fm-month-track{height:10px;border-radius:999px;overflow:hidden;background:#edf2fb;}";
+	html = html + ".fm-month-fill{height:100%;background:#14845a;}";
 	html = html + ".fm-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}";
 	html = html + ".fm-mini{border:1px solid #d9deea;border-radius:12px;padding:10px;background:#ffffff;}";
 	html = html + ".fm-mini-k{font-size:11px;color:#667089;text-transform:uppercase;letter-spacing:.05em;}";
@@ -83,6 +92,8 @@ string buildForecastManagerSummary(int subdivisionId)
 			phaseForecastBuilderIds = List();
 			phaseForecastedLots = 0;
 			phaseForecastByBuilder = Map();
+			monthForecastByBuilder = Map();
+			monthSoldByBuilder = Map();
 			for each  summarySchedule in Takedown_Schedule[Subdivisions == subdivisionId]
 			{
 				summaryKey = summarySchedule.ID.toString();
@@ -145,6 +156,11 @@ string buildForecastManagerSummary(int subdivisionId)
 						// This month's full forecast still covers the start-of-month pool.
 						builderForecastCoverage = ifnull(Forecast[(Subdivision1 == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Forecast_Start_Date >= monthStart)].sum(Forecasted_Lots),0);
 						phaseForecastByBuilder.put(summarySchedule.Builder1.toString(),builderForecastCoverage);
+						// Current-month closings consume only the monthly meter, not forecastable capacity.
+						monthForecast = ifnull(Forecast[(Subdivision1 == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Forecast_Start_Date >= monthStart) && (Forecast_Start_Date < nextMonthStart)].sum(Forecasted_Lots),0);
+						monthSold = Lots[(Subdivision == subdivisionId) && (Builder1 == summarySchedule.Builder1) && (Status == "Sold") && (Close_Date != null) && (Close_Date >= monthStart) && (Close_Date < nextMonthStart)].count();
+						monthForecastByBuilder.put(summarySchedule.Builder1.toString(),monthForecast);
+						monthSoldByBuilder.put(summarySchedule.Builder1.toString(),monthSold);
 						phaseForecastedLots = phaseForecastedLots + builderForecastCoverage;
 					}
 				}
@@ -214,6 +230,10 @@ string buildForecastManagerSummary(int subdivisionId)
 				builderUnforecastedClass = "fm-builder-stat";
 				builderLotsSold = 0;
 				builderLotsScheduled = 0;
+				builderMonthForecast = 0;
+				builderMonthSold = 0;
+				builderMonthPercent = 0.0;
+				builderMonthStatusClass = "fm-month-status";
 				scheduleLotsSold = 0;
 				scheduleLotsScheduled = 0;
 				initialCloseText = "";
@@ -247,6 +267,8 @@ string buildForecastManagerSummary(int subdivisionId)
 						builderName = ts.Builder1.toString();
 					}
 					builderForecastedLots = ifnull(phaseForecastByBuilder.get(ts.Builder1.toString()),0);
+					builderMonthForecast = ifnull(monthForecastByBuilder.get(ts.Builder1.toString()),0);
+					builderMonthSold = ifnull(monthSoldByBuilder.get(ts.Builder1.toString()),0);
 					builderLotsSold = Lots[(Subdivision == subdivisionId) && (Builder1 == ts.Builder1) && (Status == "Sold")].count();
 					builderLotsScheduled = Lots[(Subdivision == subdivisionId) && (Builder1 == ts.Builder1) && (Status == "Scheduled")].count();
 					if(ts.Subdivisions != null)
@@ -322,6 +344,18 @@ string buildForecastManagerSummary(int subdivisionId)
 					expectedPercent = 100;
 				}
 				progressDisplay = soldPercent.toLong().toString() + "%";
+				if(builderMonthForecast > 0)
+				{
+					builderMonthPercent = (builderMonthSold * 100.0) / builderMonthForecast;
+				}
+				if(builderMonthPercent > 100)
+				{
+					builderMonthPercent = 100;
+				}
+				if(builderMonthSold > builderMonthForecast)
+				{
+					builderMonthStatusClass = "fm-month-status fm-month-status-over";
+				}
 				if(scheduleLotsScheduled > 0 && scheduleObligation > 0)
 				{
 					progressDisplay = progressDisplay + " &rarr; " + projectedPercent.toLong().toString() + "%";
@@ -379,6 +413,9 @@ string buildForecastManagerSummary(int subdivisionId)
 				}
 				html = html + "</div>";
 				html = html + "</div>";
+				builderMonthSalesText = builderMonthSold.toString() + " of " + builderMonthForecast.toString() + " sold";
+				html = html + "<div class='fm-month'><div class='fm-month-head'><div class='fm-month-label'>" + monthForecastLabel + "</div><div class='" + builderMonthStatusClass + "'>" + builderMonthSalesText + "</div></div>";
+				html = html + "<div class='fm-month-track' role='progressbar' aria-label='" + monthForecastLabel + " sold' aria-valuemin='0' aria-valuemax='100' aria-valuenow='" + builderMonthPercent.toLong().toString() + "' aria-valuetext='" + builderMonthSalesText + "'><div class='fm-month-fill' style='width:" + builderMonthPercent.toString() + "%;'></div></div></div>";
 				html = html + "<table class='fm-table'>";
 				html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
 				html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";

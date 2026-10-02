@@ -23,6 +23,8 @@ function run(tables,now='2026-10-02',subdivisionId=1){
     Array.prototype.size=Array.prototype.count=function(){return this.length;};
     Array.prototype.sum=function(field){return this.reduce((sum,row)=>sum+(row[field]??0),0);};
     Number.prototype.toLong=function(){return Math.trunc(this);};
+    const numberToString=Number.prototype.toString;
+    Number.prototype.toString=function(format){return format==='MMMM'?new Date(Number(this)).toLocaleString('en-US',{month:'long',timeZone:'UTC'}):numberToString.call(this);};
     Number.prototype.addMonth=function(n){const d=new Date(Number(this));d.setUTCMonth(d.getUTCMonth()+n);return +d;};
     Object.defineProperty(Number.prototype,'Builder_Name',{get(){return names[Number(this)]??'';}});
     function query(form,predicate){
@@ -60,6 +62,19 @@ assert.match(card(html,'StyleCraft'),/Schedule Progress \(51% &rarr; 56%\)/);
 assert.match(card(html,'First Omega'),/Schedule Progress \(52% &rarr; 55%\)/);
 assert.match(card(html,'StyleCraft'),/#b8860b 51\.21\d+%,#b8860b 56\.09\d+%/);
 assert.doesNotMatch(card(html,'DR Horton'),/#b8860b|&rarr;/);
+function monthMeter(html,name='DR Horton'){return card(html,name).split("<div class='fm-month'>")[1].split("<table class='fm-table'>")[0];}
+assert.match(monthMeter(html),/October Forecast<\/div><div class='fm-month-status'>10 of 10 sold/);
+assert.match(monthMeter(html),/aria-valuenow='100'/);
+assert.match(monthMeter(html,'C.A. Doose'),/3 of 3 sold/);
+assert.match(monthMeter(html,'StyleCraft'),/0 of 4 sold/);
+assert.match(monthMeter(html,'First Omega'),/0 of 2 sold/);
+assert.doesNotMatch(html,/Sold this month|0 left|fm-month-caption/);
+const editedForecastTables=structuredClone(tables);
+editedForecastTables.Forecast[0].Forecasted_Lots=20;
+const editedForecastHtml=run(editedForecastTables);
+assert.deepEqual(values(editedForecastHtml),[0,0,0,0,0]);
+assert.match(monthMeter(editedForecastHtml),/10 of 20 sold/);
+assert.match(monthMeter(editedForecastHtml),/aria-valuenow='50'/);
 console.log('PASS: Wildwood totals, Doose double subtraction, obligation/assignment difference, conditional Scheduled labels and live progress');
 
 function scenario(current,actual,later,close='2026-10-02',now='2026-10-02'){
@@ -75,6 +90,17 @@ assert.deepEqual(values(scenario(3,5,5,'2026-11-01','2026-11-02')),[15,15]);
 assert.deepEqual(values(scenario(0,0,25)),[-5,-5]);
 assert.deepEqual(values(scenario(10,4,5,'2026-11-01')),[5,5]);
 assert.deepEqual(values(scenario(0,8,5)),[15,15]);
+assert.match(monthMeter(scenario(10,4,5)),/4 of 10 sold/);
+assert.match(monthMeter(scenario(10,4,5)),/aria-valuenow='40'.*width:40%;/);
+assert.match(monthMeter(scenario(3,5,5)),/fm-month-status-over'>5 of 3 sold/);
+assert.match(monthMeter(scenario(3,5,5)),/aria-valuenow='100'.*width:100%;/);
+assert.match(monthMeter(scenario(0,8,5)),/8 of 0 sold/);
+assert.match(monthMeter(scenario(0,8,5)),/aria-valuenow='0'.*width:0%;/);
+assert.match(monthMeter(scenario(0,0,5)),/0 of 0 sold/);
+assert.doesNotMatch(scenario(0,0,5),/NaN|Infinity/);
+assert.match(monthMeter(scenario(3,5,5,'2026-09-30')),/0 of 3 sold/);
+assert.match(monthMeter(scenario(3,5,5,'2026-11-01','2026-11-02')),/November Forecast.*5 of 5 sold/);
+console.log('PASS: monthly meter shows full/partial/excess sales, zero forecast and month rollover; Scheduled and prior-month sales do not consume it');
 console.log('PASS: start-of-month capacity survives partial, excess and unforecasted current-month sales; Close_Date basis, month rollover and real overforecast');
 
 const multi={Subdivision:[subdivision],Takedown_Schedule:[schedule(1,6,[1,2],77)],Contract:[{ID:77,Lots1:[1,2,3,4,5,6]}],Lots:[lot(1,1,'Sold','2026-10-02'),lot(2,1,'Scheduled'),lot(3,1,'Contracted'),lot(4,1,'Sold','2026-10-02',2),lot(5,1,'Sold','2026-10-02',2),lot(6,1,'Contracted',null,2)],Forecast:[forecast(1,'2026-10-01',2),forecast(1,'2026-11-01',1),forecast(1,'2026-10-01',9,2)]};
@@ -83,6 +109,8 @@ assert.deepEqual(values(multiHtml),[0,0]);
 assert.match(multiHtml,/3 Lots Contracted/);
 assert.match(multiHtml,/1 Lots Sold - 1 Lots Scheduled/);
 assert.match(multiHtml,/Schedule Progress \(50% &rarr; 66%\)/);
+assert.match(monthMeter(multiHtml),/1 of 2 sold/);
+assert.match(monthMeter(multiHtml),/aria-valuenow='50'/);
 assert.match(run({...multi,Takedown_Schedule:[]}),/No Takedown Schedule records/);
 assert.equal(values(run(multi,'2026-10-02',null)).length,0);
 console.log('PASS: phase-specific contract lots/forecast, schedule-wide live progress, empty schedules and null subdivision');
