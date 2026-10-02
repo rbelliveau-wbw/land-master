@@ -27,6 +27,19 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
     if(phaseLots.size() != count || totalLots != ifnull(pf.get("Lots"),0)) { errors.add("Saved Proforma Phase lot counts must match PF phases and total lots."); }
     applications = {"Across Phases","Engineering End","Construction Start","Construction End"};
     units = {"Lot","Acre","LF"};
+    // Visit each destination item once, then index each phase's items by cost code.
+    // Scanning every Budget Item for every transferred source exceeds Creator's statement limit.
+    budgetItemsByBudget = Map();
+    for each indexedItem in ctx.get("budgetItems")
+    {
+        if(indexedItem.get("Template_Item") != true)
+        {
+            indexedBudget = ifnull(indexedItem.get("Budget"),"").toString();
+            indexedRows = ifnull(budgetItemsByBudget.get(indexedBudget),List());
+            indexedRows.add(indexedItem);
+            budgetItemsByBudget.put(indexedBudget,indexedRows);
+        }
+    }
     seen = List();
     grandTotal = 0;
     headerOverrides = ifnull(ctx.get("headerOverrides"),Map());
@@ -116,7 +129,7 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                 {
                     if(ifnull(b.get(field),0) != 0) { notEmpty = true; }
                 }
-                its = List();
+                itemMatches = Map();
                 cs = Map();
                 for each c in ctx.get("categories")
                 {
@@ -130,16 +143,15 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                         }
                     }
                 }
-                for each i in ctx.get("budgetItems")
+                for each i in ifnull(budgetItemsByBudget.get(bid),List())
                 {
                     if(i.get("Budget") == bid && i.get("Template_Item") != true)
                     {
-                        its.add(i);
-                        for each field in {"Prelim_Budget_Ttl","Unapproved_Final_Budget_Ttl","Budget_Ttl","Add_l_Cost","PROJ_Actual","HCSS_Actuals","Cost_to_Complete","Per_Unit"}
-                        {
-                            if(ifnull(i.get(field),0) != 0) { notEmpty = true; }
-                        }
-                        if(ifnull(i.get("Unit"),"") != "") { notEmpty = true; }
+                        matchCode = ifnull(i.get("Cost_Code"),"").toString();
+                        matchRows = ifnull(itemMatches.get(matchCode),List());
+                        matchRows.add(i);
+                        itemMatches.put(matchCode,matchRows);
+                        if(ifnull(i.get("Prelim_Budget_Ttl"),0) != 0 || ifnull(i.get("Unapproved_Final_Budget_Ttl"),0) != 0 || ifnull(i.get("Budget_Ttl"),0) != 0 || ifnull(i.get("Add_l_Cost"),0) != 0 || ifnull(i.get("PROJ_Actual"),0) != 0 || ifnull(i.get("HCSS_Actuals"),0) != 0 || ifnull(i.get("Cost_to_Complete"),0) != 0 || ifnull(i.get("Per_Unit"),0) != 0 || ifnull(i.get("Unit"),"") != "") { notEmpty = true; }
                     }
                 }
                 if(notEmpty) { phaseErrors.add("Only empty Budgets can receive costs."); }
@@ -169,6 +181,9 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                         {
                             app = "Across Phases"; sp = 1; ep = count;
                         }
+                        // Normalize saved Number fields and Impact Fees endpoints before floor comparisons.
+                        sp = sp.toDecimal();
+                        ep = ep.toDecimal();
                         reason = "";
                         scope = false;
                         if(!applications.contains(app)) { reason = if(app == "Specific Months","Specific Months has no unambiguous phase allocation.","Cost Application has no unambiguous phase allocation."); scope = p == 1; }
@@ -200,7 +215,7 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                 {
                     reason = "";
                     found = List();
-                    for each i in its
+                    for each i in ifnull(itemMatches.get(ifnull(src.get("Cost_Code"),"").toString()),List())
                     {
                         if(i.get("Cost_Code") == src.get("Cost_Code") && i.get("Department") == src.get("Department")) { found.add(i); }
                     }

@@ -18,6 +18,8 @@ The Development field and both function edits are saved in Creator. The user pro
 
 ## Creator handoff
 
+2026-10-02 phase-range repair: only `PF_Budget_Transfer_Plan` changes. Decimal-normalize the saved and automatic Impact Fees endpoints before floor comparisons and index destination Budget Item matches to avoid Creator's statement limit. The planner was selectively published through Stage and Production as Land Master 9.32. Production Vista Real North → Belliveau Ranch verifies 20 Phase 1 items, $8,669,872.50, all four phases $28,664,490.00, no exclusions and an enabled Send button. Native Creator synthetic execution also verifies fixed and per-unit costs, credits, quantity/note drafts, and invalid-range exclusions. No new fields or API registration, and widget 1.80.60 remains unchanged. [Deployment evidence and rollback](../../docs/proforma-budget-transfer-phase-ranges.md).
+
 Live inspection on 2026-10-02 found only the DEV Custom API registered. Production function promotion does not create `PF_Budget_Transfer`. After explicit user confirmation, the matching authenticated Production endpoint was enabled and edited previews verified. See [connection diagnosis and current status](../../docs/proforma-budget-transfer-connection-1.80.60.md).
 
 The following functions are saved and compiler-checked in Land Master Development. Publish them through the normal Creator environment promotion:

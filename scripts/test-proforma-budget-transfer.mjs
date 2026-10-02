@@ -16,7 +16,10 @@ function List(){return [];}
 function Map(){return hydrate({});}
 function hydrate(o){if(Array.isArray(o))return o.map(hydrate);if(o&&typeof o==='object'){for(const k of Object.keys(o))o[k]=hydrate(o[k]);Object.defineProperties(o,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=v;}},size:{value:function(){return Object.keys(this).length;}},keys:{value:function(){return Object.keys(this);}}});}return o;}
 Array.prototype.add=function(v){this.push(v);};Array.prototype.get=function(i){return this[i]??null;};Array.prototype.size=function(){return this.length;};Array.prototype.contains=function(v){return this.includes(v);};
-String.prototype.contains=function(v){return this.includes(v);};String.prototype.toLong=String.prototype.toDecimal=function(){return Number(this);};Number.prototype.toLong=function(){return Math.trunc(this);};Number.prototype.toDecimal=function(){return Number(this);};Number.prototype.round=function(n){return Math.round((Number(this)+Number.EPSILON)*10**n)/10**n;};Number.prototype.abs=function(){return Math.abs(this);};Number.prototype.floor=function(){return Math.floor(this);};
+// Creator's floor comparison rejects unnormalized Number endpoints, even though JS
+// and the standalone Deluge playground accept them. Keep that boundary explicit.
+class Decimal extends Number {}
+String.prototype.contains=function(v){return this.includes(v);};String.prototype.toLong=function(){return Number(this);};String.prototype.toDecimal=function(){return new Decimal(Number(this));};Number.prototype.toLong=function(){return Math.trunc(this);};Number.prototype.toDecimal=function(){return new Decimal(Number(this));};Number.prototype.round=function(n){return Math.round((Number(this)+Number.EPSILON)*10**n)/10**n;};Number.prototype.abs=function(){return Math.abs(this);};Number.prototype.floor=function(){if(!(this instanceof Decimal))throw new Error('Creator floor comparison requires decimal normalization');return Math.floor(this);};
 String.prototype.isNumber=function(){return /^(?:-?\\d+(?:\\.\\d+)?|-?\\.\\d+)$/.test(this);};
 var thisapp={forLoop:(start,end)=>Array.from({length:Math.max(0,end-start+1)},()=> 'x')};
 ${deluge.js}
@@ -42,10 +45,22 @@ assert.equal(plan.phases[2].lines.find(l=>l.code==='3400').amount,400);assert.eq
 assert.equal(plan.phases[2].writes.find(w=>w.itemId==='i33400').notes,'Existing note\n\nAmenity agreement');
 assert.equal(plan.outliers[0].notes,'Keep outlier note');assert.match(plan.outliers[0].reason,/Specific Months/);
 assert.equal(plan.phases[0].lines.filter(l=>l.code.startsWith('8')).reduce((sum,l)=>sum+l.amount,0),-900);
+for(const range of [{Start_Phase:1,End_Phase:4},{Start_Phase:1,End_Phase:1},{Start_Phase:3,End_Phase:4}]){
+ const c=fixture();Object.assign(c.items[0],range);const r=run(c);
+ assert.ok(!r.outliers.some(o=>o.source==='Amenities'),'saved integer phase ranges remain eligible');
+ assert.equal(r.phases.reduce((sum,p)=>sum+p.writes.filter(w=>w.itemId.endsWith('3400')).reduce((s,w)=>s+w.amount,0),0),800);
+}
+for(const range of [{Start_Phase:0,End_Phase:4},{Start_Phase:1,End_Phase:5},{Start_Phase:3,End_Phase:2},{Start_Phase:1.5,End_Phase:4},{Start_Phase:1,End_Phase:3.5}]){
+ const c=fixture();Object.assign(c.items[0],range);assert.ok(run(c).outliers.some(o=>o.source==='Amenities'&&/Phase range/.test(o.reason)),'invalid ranges still stay excluded');
+}
 for(const mutate of [c=>c.pf.Phases=4.5,c=>c.phases[0].Phase=1.5,c=>c.subdivisions.pop(),c=>c.phases[0].Total_Lots=49,c=>c.budgets.pop(),c=>c.budgets[0]._canEdit=false,c=>c.budgets[0].Lock_Prelim_Budget=true,c=>c.budgets[0].Const_Budget_Approval_Status='Approved',c=>c.budgetItems[0].PROJ_Actual=1,c=>c.budgetItems[0].Prelim_Budget_Ttl=1,c=>c.budgetItems[0].Per_Unit=1,c=>c.categories[0].Lock_Category=true,c=>c.approvals.push({Budget:'b1',Status:'Pending'}),c=>c.modifications.push({Budget:'b1',Status:'Approved',Amount:0}),c=>c.budgetItems=c.budgetItems.filter(i=>i.Cost_Code!==2101)]){const c=fixture();mutate(c);assert.equal(run(c).canSend,false);}
 assert.equal(run(fixture(),{...mapping,2:'s1'}).canSend,false);
 const collision=fixture();collision.items.push({...collision.items[1],ID:'other',Description:'Second permit rate'});assert.ok(run(collision).outliers.some(o=>/share this Budget line/.test(o.reason)));
 const missing=fixture();missing.budgetItems=missing.budgetItems.filter(i=>i.Cost_Code!==3400);assert.ok(run(missing).outliers.some(o=>/missing/.test(o.reason)));
+const large=fixture();for(let p=1;p<=4;p++)for(let n=0;n<300;n++)large.budgetItems.push({ID:`extra-${p}-${n}`,Budget:'b'+p,Budget_Category:'c'+p+'4000',Cost_Code:90000+n,Department:'Development',Template_Item:false});assert.deepEqual(run(large),plan,'unrelated destination lines must not affect allocation or eligibility');
+const otherDepartment=fixture();otherDepartment.budgetItems.push({...otherDepartment.budgetItems.find(i=>i.ID==='i33400'),ID:'other-department',Department:'Development'});assert.deepEqual(run(otherDepartment),plan,'cost-code buckets still require an exact Department match');
+const duplicateTarget=fixture();duplicateTarget.budgetItems.push({...duplicateTarget.budgetItems.find(i=>i.ID==='i33400'),ID:'duplicate-target'});assert.ok(run(duplicateTarget).outliers.some(o=>/Multiple matching/.test(o.reason)),'indexing must preserve ambiguous destination detection');
+const templateTarget=fixture();templateTarget.budgetItems.push({...templateTarget.budgetItems.find(i=>i.ID==='i33400'),ID:'template-target',Template_Item:true});assert.deepEqual(run(templateTarget),plan,'templates remain excluded from destination matching');
 for(const unit of ['Acre','LF']){const c=fixture();c.items[1].Unit=unit;const r=run(c);assert.equal(r.phases[0].lines.find(l=>l.unit===unit).amount,Math.round(25.5*(unit==='Acre'?8.88:1468)*100)/100);}
 const edited=fixture();edited.headerOverrides={1:{Lot_Total_Residential:'60',Acres:'12.34',Equiv_LF_of_Street:'1600.25',Lot_Price:'65500.50',Land_Cost:'23000.75'},2:{Lot_Total_Residential:'40'}};
 const savedBefore=JSON.stringify(edited),editPlan=run(edited);
