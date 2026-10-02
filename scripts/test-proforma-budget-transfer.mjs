@@ -58,6 +58,19 @@ assert.equal(editPlan.phases[0].lines.find(l=>l.code==='2101').amount,46500,'all
 assert.equal(JSON.stringify(edited),savedBefore,'destination edits must not alter saved PF or source records');
 for(const unit of ['Acre','LF']){const c=fixture();c.items[1].Unit=unit;c.headerOverrides=edited.headerOverrides;const r=run(c);assert.equal(r.phases[0].lines.find(l=>l.unit===unit).amount,Math.round(25.5*(unit==='Acre'?12.34:1600.25)*100)/100);}
 for(const override of [{1:{Lot_Total_Residential:'50.5'}},{1:{Acres:'-1'}},{1:{Acres:''}},{1:{Land_Cost:'1.001'}},{1:{Lot_Price:'NaN'}},{1:{Budget_Grand_Total:'100'}},{5:{Acres:'10'}},{'1.0':{Acres:'10'}}]){const c=fixture();c.headerOverrides=override;assert.equal(run(c).canSend,false,'invalid/unknown destination overrides block writes');}
+const noted=fixture();noted.noteOverrides={1:{i14001:'Budget-only edited note\nsecond line'},3:{i33400:''}};const sourceNotesBefore=JSON.stringify(noted),notePlan=run(noted);
+assert.equal(notePlan.phases[0].writes.find(w=>w.itemId==='i14001').notes,'Budget-only edited note\nsecond line');
+assert.equal(notePlan.phases[1].writes.find(w=>w.itemId==='i24001').notes,'Permit note');
+assert.equal(notePlan.phases[2].writes.find(w=>w.itemId==='i33400').notes,'','blank override deliberately clears the final destination note');
+assert.equal(JSON.stringify(noted),sourceNotesBefore,'destination note edits must not alter PF or saved Budget records during preview');
+for(const overrides of [{1:{i24001:'wrong phase'}},{1:{missing:'not transferred'}},{5:{i14001:'unknown phase'}},{'1.0':{i14001:'invalid key'}}]){const c=fixture();c.noteOverrides=overrides;assert.equal(run(c).canSend,false);}
+const shared=fixture();shared.items.push({...shared.items[0],ID:'extra-fixed',Add_l_Cost:200,Description:'Second fixed cost'});const sharedPlan=run(shared);
+const groups=JSON.parse(JSON.stringify(jsContext.PFBudgetTransfer.review(shared,sharedPlan.phases[2]))),reviewItems=groups.flatMap(d=>d.categories.flatMap(c=>c.items));
+assert.equal(reviewItems.find(i=>i.id==='i33400').amount,500);assert.equal(reviewItems.filter(i=>i.id==='i33400').length,1,'one review row per actual Budget Item');
+assert.equal(groups.reduce((sum,d)=>sum+d.total,0),sharedPlan.phases[2].total);
+for(const d of groups){assert.equal(d.total,d.categories.reduce((sum,c)=>sum+c.total,0));for(const c of d.categories){assert.equal(c.total,c.items.reduce((sum,i)=>sum+i.amount,0));assert.deepEqual(c.items.map(i=>Number(i.code)),c.items.map(i=>Number(i.code)).sort((a,b)=>a-b));}}
+const reimbursement=groups.find(d=>d.name==='Development').categories.find(c=>c.name==='Reimbursements');assert.equal(reimbursement.total,-900);
+const renamed=fixture();renamed.budgetItems[0].Item_Name='Destination label';assert.equal(jsContext.PFBudgetTransfer.review(renamed,run(renamed).phases[0])[0].categories[0].items[0].name,'Destination label');
 const ui=fs.readFileSync(folder+'budget-transfer-ui.js','utf8');new vm.Script(ui);assert.match(ui,/data-phase-tab/);assert.match(ui,/plan.phases.filter/);assert.match(ui,/e.stopPropagation/);
 assert.match(ui,/!s\.api\.canSend\(\)/);assert.match(ui,/!api\.canSend\(\)/);
 const widget=fs.readFileSync(folder+'widget.html','utf8');assert.match(widget,/Send Costs to Budgets/);assert.match(widget,/function budgetTransferCall/);assert.ok(!widget.slice(widget.indexOf('function budgetTransferCall'),widget.indexOf('function openBudgetTransfer')).includes('invokeSaveApiOp'));
@@ -73,9 +86,10 @@ assert.match(widget,/pfSendCostsToBudgets != null \? flags\.pfSendCostsToBudgets
 assert.match(widget.slice(widget.indexOf('function budgetTransferCall'),widget.indexOf('function openBudgetTransfer')),/var name="PF_Budget_Transfer"/);
 const accessFn=fs.readFileSync('creator/functions/getUserAccess.dg','utf8');assert.match(accessFn,/pfSendCostsToBudgets = row\.Send_Costs_to_Budgets == true/);assert.match(accessFn,/result\.put\("pfSendCostsToBudgets",pfSendCostsToBudgets\)/);
 const transferFn=fs.readFileSync('creator/functions/PF_Budget_Transfer.dg','utf8');assert.match(transferFn,/actor\.count\(\) != 1 \|\| actor\.Send_Costs_to_Budgets != true/);assert.ok(transferFn.indexOf('actor.Send_Costs_to_Budgets')<transferFn.indexOf('pf = Add_Pro_Forma'));
-assert.match(transferFn,/budgetTransferVersion",if\(data\.get\("budgetTransferClientVersion"\) == 2,2,1\)/);
-assert.match(widget,/budgetTransferClientVersion:2/);
+assert.match(transferFn,/budgetTransferClientVersion"\) == 3,3,if\(data\.get\("budgetTransferClientVersion"\) == 2,2,1\)/);
+assert.match(widget,/budgetTransferClientVersion:3/);
 for(const asset of ['budget-transfer-model.js','budget-transfer-ui.js','budget-transfer.css'])assert.ok(widget.includes(asset+'?v='),'transfer assets must bust prior browser caches');
 assert.ok(transferFn.indexOf('ctx.put("headerOverrides"')<transferFn.indexOf('signature = zoho.encryption.sha256'),'preview token covers edited destination metrics');
+assert.ok(transferFn.indexOf('ctx.put("noteOverrides"')<transferFn.indexOf('signature = zoho.encryption.sha256'),'preview token covers exact edited destination notes');
 assert.ok(!fs.readFileSync('creator/functions/proforma_save.dg','utf8').includes('PF_Budget_Transfer'));
 console.log('Pro Forma Budget transfer: allocation, notes, phase lots, per-unit, credits, exclusions, locks, emptiness, and Creator/widget parity passed.');

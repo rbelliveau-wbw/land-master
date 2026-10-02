@@ -31,6 +31,12 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
     grandTotal = 0;
     headerOverrides = ifnull(ctx.get("headerOverrides"),Map());
     headerFields = {"Lot_Total_Residential","Acres","Equiv_LF_of_Street","Lot_Price","Land_Cost"};
+    noteOverrides = ifnull(ctx.get("noteOverrides"),Map());
+    for each notePhase in noteOverrides.keys()
+    {
+        if(!notePhase.toString().isNumber()) { errors.add("Unknown phase in Budget notes."); }
+        else if(notePhase.toDecimal() < 1 || notePhase.toDecimal() > count || notePhase.toDecimal() != notePhase.toDecimal().floor() || notePhase.toString() != notePhase.toLong().toString()) { errors.add("Unknown phase in Budget notes."); }
+    }
     for each editPhase in headerOverrides.keys()
     {
         if(!editPhase.toString().isNumber()) { errors.add("Unknown phase in Budget edits."); }
@@ -212,7 +218,7 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                     if(reason == "" && unit != "" && src.get("amount") <= 0) { reason = "Target Budget has no " + unit + " quantity."; }
                     if(reason != "")
                     {
-                        if(src.get("base") == true) { phaseErrors.add(src.get("Cost_Code") + " â€” " + reason); }
+                        if(src.get("base") == true) { phaseErrors.add(src.get("Cost_Code") + " — " + reason); }
                         else
                         {
                             o = Map(); o.put("source",src.get("Item_Name")); o.put("code",src.get("Cost_Code")); o.put("amount",src.get("Add_l_Cost")); o.put("notes",ifnull(src.get("Description"),"")); o.put("reason",reason); o.put("phase",p); outliers.add(o);
@@ -238,6 +244,16 @@ map PF_Budget_Transfer_Plan(map ctx, map mapping)
                 for each key in writeMap.keys() { w = writeMap.get(key); writes.add(w); phaseTotal = phaseTotal + w.get("amount"); }
             }
             else if(foundSub) { phaseErrors.add(if(matches.size() > 1,"More than one active Budget exists for this subdivision.","An existing Budget is required.")); }
+            noteEdits = ifnull(noteOverrides.get(p.toString()),Map());
+            for each noteItem in noteEdits.keys()
+            {
+                matchedNote = false;
+                for each noteWrite in writes
+                {
+                    if(noteWrite.get("itemId") == noteItem.toString()) { matchedNote = true; noteWrite.put("notes",ifnull(noteEdits.get(noteItem),"").toString()); }
+                }
+                if(!matchedNote) { phaseErrors.add("Budget note must belong to a transferred item in this phase."); }
+            }
             phase.put("lines",lines); phase.put("writes",writes); phase.put("errors",phaseErrors); phase.put("total",phaseTotal.round(2)); phases.add(phase);
             for each error in phaseErrors { errors.add("Phase " + p + ": " + error); }
             grandTotal = grandTotal + phaseTotal;

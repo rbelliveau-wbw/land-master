@@ -3,15 +3,15 @@ window.addEventListener('load',function(){
 const ctx=__FIXTURE_JSON__,params=new URLSearchParams(location.search);
 for(const [code,name,note] of [[4811,'Mailboxes',''],[4720,'Electric',''],[4390,'Other: See Details','FEMA LOMER/CLOMER'],[4340,'TIA',''],[4323,'Geotech',''],[4310,'Engineering','CPS'],[4190,'Other: See Details','Drainage fee'],[4170,'Tree Mitigation Fees',''],[4132,'Water Review',''],[4131,'Sewer Review','']]){
  ctx.items.push({ID:'extra'+code,Item_Name:name,Cost_Code:code,Department:'Development',Add_l_Cost:15000,Cost_Application:'Across Phases',Start_Phase:1,End_Phase:4,Description:note});
- for(let p=1;p<=4;p++){const cid='c'+p+code;ctx.categories.push({ID:cid,Budget:'b'+p});ctx.budgetItems.push({ID:'i'+p+code,Budget:'b'+p,Budget_Category:cid,Cost_Code:code,Department:'Development',Item_Name:name});}
+ for(let p=1;p<=4;p++){const cid='c'+p+'4000';ctx.budgetItems.push({ID:'i'+p+code,Budget:'b'+p,Budget_Category:cid,Category:'Full Development Roll-Up/Soft Costs',Cost_Code:code,Department:'Development',Item_Name:name});}
 }
 if(params.has('ambiguous'))ctx.subdivisions[0].Phase=2;
 let applied=0;
 PFBudgetTransferUI.open({id:ctx.pf.ID,name:'Vista Real North',canSend:()=>true,
-getProjects:async()=>[{ID:'project',Project_Name:'Vista Real North',Proforma:ctx.pf.ID}],capabilities:async()=>params.has('old-version')?1:2,
+getProjects:async()=>[{ID:'project',Project_Name:'Vista Real North',Proforma:ctx.pf.ID}],capabilities:async()=>params.has('old-version')?2:3,
 loadContext:async()=>structuredClone(ctx),
-preview:async(id,mapping,headerOverrides)=>{const plan=PFBudgetTransfer.build(structuredClone(ctx),mapping,headerOverrides);document.body.dataset.previewMetrics=JSON.stringify(plan.phases.map(p=>p.header));return {plan,token:JSON.stringify(headerOverrides||{})};},
-apply:async(id,mapping,token,headerOverrides)=>{applied++;const plan=PFBudgetTransfer.build(structuredClone(ctx),mapping,headerOverrides);document.body.dataset.appliedMetrics=JSON.stringify(plan.phases.map(p=>p.header));document.body.dataset.applyCalls=String(applied);if(token!==JSON.stringify(headerOverrides||{}))throw Error('Preview token does not match edits');return {completed:ctx.budgets.map(b=>b.ID),message:'Synthetic Budget values verified.'};}
+preview:async(id,mapping,headerOverrides,noteOverrides)=>{const plan=PFBudgetTransfer.build(structuredClone(ctx),mapping,headerOverrides,noteOverrides);document.body.dataset.previewMetrics=JSON.stringify(plan.phases.map(p=>p.header));return {plan,token:JSON.stringify([headerOverrides||{},noteOverrides||{}])};},
+apply:async(id,mapping,token,headerOverrides,noteOverrides)=>{applied++;const plan=PFBudgetTransfer.build(structuredClone(ctx),mapping,headerOverrides,noteOverrides);document.body.dataset.appliedMetrics=JSON.stringify(plan.phases.map(p=>p.header));document.body.dataset.appliedNotes=JSON.stringify(plan.phases.map(p=>p.writes.map(w=>({id:w.itemId,note:w.notes}))));document.body.dataset.sourceNotes=JSON.stringify(ctx.items.map(i=>i.Description));document.body.dataset.applyCalls=String(applied);if(token!==JSON.stringify([headerOverrides||{},noteOverrides||{}]))throw Error('Preview token does not match edits');return {completed:ctx.budgets.map(b=>b.ID),message:'Synthetic Budget values verified.'};}
 });
 });
 </script>

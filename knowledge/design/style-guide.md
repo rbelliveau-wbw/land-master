@@ -125,3 +125,5 @@ Center custom selection and success checkmarks with an explicit SVG, a path boun
 Import Lots Attach and spreadsheet-checking dialogs fit their contents with a compact centered width and automatic height. Keep the lot-review table in its larger workspace. Cap compact dialogs to the viewport and scroll their body when needed.
 
 Budget transfer review uses outlined editable fields inside pale-blue metric cards, destination identity above the matrix, and compact cost-code badges in ascending Budget Item order. Keep the modal footer visible and use one body scroller on desktop; unresolved phase mappings show a distinct assignment row.
+
+Budget transfer matrices follow Budget Manager's single Item column with destination name and Cost_Code pill, pale category bands with blue circular collapse chevrons and department pills, department/category subtotals, and round note pencils (amber when a note exists). Edit the destination note inline beneath its item; keep PF notes unchanged.

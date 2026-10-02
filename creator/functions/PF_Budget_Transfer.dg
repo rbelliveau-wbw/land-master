@@ -12,7 +12,7 @@ string PF_Budget_Transfer(string payload)
         {
             response.put("success",true);
             response.put("action",op);
-            response.put("budgetTransferVersion",if(data.get("budgetTransferClientVersion") == 2,2,1));
+            response.put("budgetTransferVersion",if(data.get("budgetTransferClientVersion") == 3,3,if(data.get("budgetTransferClientVersion") == 2,2,1)));
             return response.toString();
         }
         if(op != "budget_transfer_preview" && op != "budget_transfer_apply")
@@ -132,6 +132,9 @@ string PF_Budget_Transfer(string payload)
                 for each c in Budget_Category[Budget == b.ID] sort by ID
                 {
                     m = Map();
+                    m.put("Budget_Category_Name",ifnull(c.Budget_Category_Name,""));
+                    m.put("Category_Code",ifnull(c.Category_Code,0));
+                    m.put("Deparment",ifnull(c.Deparment,""));
                     m.put("Lock_Category",ifnull(c.Lock_Category,false));
                 m.put("Template_Item",ifnull(c.Template_Item,false));
                 m.put("Prelim_Budget_Total",ifnull(c.Prelim_Budget_Total,0));
@@ -174,6 +177,7 @@ string PF_Budget_Transfer(string payload)
         ctx.put("subdivisions",subs); ctx.put("budgets",budgets); ctx.put("categories",categories); ctx.put("budgetItems",items); ctx.put("approvals",approvals); ctx.put("modifications",modifications);
         mapping = ifnull(data.get("mapping"),Map());
         ctx.put("headerOverrides",ifnull(data.get("headerOverrides"),Map()));
+        ctx.put("noteOverrides",ifnull(data.get("noteOverrides"),Map()));
         // Hash the complete source and destination snapshot BEFORE the planner adds derived amounts.
         signature = zoho.encryption.sha256(ctx.toString() + mapping.toString());
         response.put("context",ctx);
@@ -194,7 +198,7 @@ string PF_Budget_Transfer(string payload)
             response.put("error","Source or target data changed. Refresh the preview before sending.");
             return response.toString();
         }
-        // Only the five validated destination metrics can be overridden. Cost amounts and item IDs are recomputed above.
+        // Destination metrics and notes are validated against the recomputed plan; amounts and item IDs come from saved records.
         for each phase in plan.get("phases")
         {
             b = Add_Budget[ID == phase.get("budgetId").toLong()];
