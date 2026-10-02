@@ -55,6 +55,8 @@ Preview returns a server-computed plan and a SHA-256 token of the saved source, 
 
 ## Regression and rollback
 
+Current UI follow-up: widget **1.80.57** uses a compact Save/Cancel note dialog and a pinned phase/all-phase total footer. This update changes no functions, API bindings or fields and requires no Creator promotion; Creator **9.26** remains current. [Verification and rollback](../../docs/proforma-budget-transfer-footer-1.80.57.md).
+
 Run `npm run validate` and `npm run build:pages`. The allocation test executes both the widget model and actual translated Creator planner on synthetic records, checking phase lots, uneven saved allocations, fixed ranges, per-unit Lot/Acre/LF math, notes, three Impact Fees credits, Specific Months exclusions, ambiguous/conflicting lines, missing/existing Budgets, count/label mismatches, costs, locks, approvals, modifications, and edit permissions. Browser checks cover phase tabs and search pickers, duplicate mapping rejection, success, and an uncertain send without a second apply.
 
 No real financial transfer is used for verification. After Creator publication, preview an intended PF/Project pair, review outliers and phase mapping, and use the explicit Send action when ready.

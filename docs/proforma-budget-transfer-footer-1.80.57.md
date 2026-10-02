@@ -1,0 +1,11 @@
+# Budget transfer notes and footer — 1.80.57
+
+Note pencils are centered vertically against the full Item cell, including multiline note previews. Clicking a pencil opens a compact Budget note dialog with the destination Item/code and phase. Save note updates that destination's transfer draft; Cancel, the centered SVG X, and Escape discard unsaved typing. The underlying review is inert while the note dialog is open, keyboard focus stays in that dialog, and closing it restores focus to the pencil. PF descriptions remain untouched.
+
+The selected phase total now lives in the pinned bottom bar, beside the total for all phases. Both totals show two decimal places, with separate Budget-item/Budget counts. A status pill shows checking, ready, changed preview, needs attention, verified, or uncertain results, plus the Not Migrated count where applicable. The summary updates when switching phases, editing destination quantities, or refreshing/sending. The redundant total strip beneath the matrix is removed.
+
+Changed files: widget `budget-transfer-ui.js`, `budget-transfer.css`, versioned asset references in `widget.html`, widget config/manifest, Production mapping, immutable release `releases/proforma-manager/1.80.57/`, and module/style/handoff documentation. The existing transfer model, payload, Creator functions and Custom APIs are unchanged. No forms or fields are added, and no Creator promotion is required; existing Creator 9.26 handles destination `Budget_Item.Description` overrides when the user ultimately sends.
+
+Verification: `npm run validate` and `npm run build:pages`; browser checks for Save/Cancel/Escape isolation, multiline notes, focus restoration and trap, phase totals, quantity recalculation, exact synthetic apply once with unchanged PF note, disabled send/verified state, and 390×844/800×400 layouts. Note pencil centers are within 0.5px of cell centers (the cell border); both SVG close icons are geometrically centered. No real Budget transfer is performed for testing. Production release assets and live Creator review are verified after deployment.
+
+Rollback: promote immutable **1.80.56** through the existing Production mapping and redeploy Pages. Creator remains at 9.26 and needs no rollback for this UI change.
