@@ -20,7 +20,7 @@ requireText("if(S.editorType==='subdivision'&&S.modalTab==='externalMappings')re
 requireText("createRecord('externalMapping'", 'Batch save must create staged mapping rows.');
 requireText("updateRecord(op.row.id,op.data,'All_External_System_Mappings')", 'Batch save must update staged mapping rows.');
 requireText("deleteRecord('externalMapping'", 'Batch save must delete staged mapping rows.');
-requireText("deleteRecord({reportName:report,criteria:'(ID == '+rid+')'})", 'Creator deletes must identify the mapping with a report criteria expression.');
+requireText("deleteRecords({report_name:report,payload:{criteria:'(ID == '+rid+')'}})", 'Creator v2 deletes must identify the mapping with a report criteria expression.');
 requireText("if(!/^\\d+$/.test(rid))", 'Creator deletes must validate record IDs before building criteria.');
 requireText('data-mapping-add>+ Add</button>', 'The mapping add action must use the compact + Add label.');
 requireText("r.removed?'Removed'", 'A staged deletion must display Removed.');

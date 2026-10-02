@@ -45,7 +45,28 @@ The recent slice supports either date basis, status, project, builder, territory
 
 ## Extensibility
 
-`sales-model.js` is a pure, independent normalization/filtering/aggregation module. Its metric registry and `report(lots, filters)` output support future views and embedding. `creator-adapter.js` owns SDK requests and completeness checks; `sales-app.js` owns the standalone UI. A `projectId` query parameter preselects a project using the same model. Unknown project IDs return no records rather than widening the filter.
+`sales-model.js` is a pure, independent normalization/filtering/aggregation module. Its metric registry and `report(lots, filters)` output support future views and embedding. `creator-adapter.js` defines report fields, recent-date criteria, and completeness-related field validation; it delegates SDK reads to `LMData` in `creator-data.js`. `sales-app.js` owns the standalone UI. A `projectId` query parameter preselects a project using the same model. Unknown project IDs return no records rather than widening the filter.
+
+The canonical SDK v2 reader is `shared/creator-data.js`; run
+`node scripts/sync-shared-widget-data.mjs` after changing it. The installed widget
+copy must be identical to Budget and Land Master's copies. It bounds SDK reads
+to three at a time, reconciles the report count against complete cursor pages,
+preserves string IDs and raw permission-error codes, and stops superseded queued
+requests. Insights retains the public `(report, count, total)` progress callback,
+its existing requested fields, both-date recent query, history gates and retries.
+Normal dashboard loads do not configure a data-cache TTL, so each refresh and
+history retry reads a new snapshot. Authorization refresh invalidates only the
+Insights report cache entries and increments the shared generation before access
+is rechecked. No new Creator endpoint or broader permission is introduced.
+
+`LMPerf.snapshot()` and the `lm-performance` JSON node provide request durations,
+response byte counts, queue depth, and access/recent/history/first-usable events.
+The first usable event is recorded when the selected report or its genuine empty
+result finishes rendering, after its history gate has passed. Telemetry does not
+include raw rows, roster values, filters, or record IDs. Run
+`node scripts/test-creator-data.mjs` and
+`node scripts/test-insights-shared-data.mjs` for shared-reader and integration
+coverage. Creator live timing and identity tests remain separate verification.
 
 Creator SDK v2 requests explicit fields using `field_config: custom`; Lot Size is absent from the existing report's quick-view columns. Cursor pagination and report-count reconciliation prevent silent truncation. Source: [Zoho Get Records](https://www.zoho.com/creator/help/js-api/v2/get-records.html), [SDK setup](https://help.zoho.com/portal/en/kb/creator/developer-guide/application-settings/widgets/articles/js-api-documentation).
 

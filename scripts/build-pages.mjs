@@ -1,6 +1,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import {stableWidgetLoader} from './stable-widget-loader.mjs';
 
 const root = process.cwd();
 const out = path.join(root, 'dist');
@@ -23,42 +24,7 @@ function writeStableWidgetLoader(target, widget, version) {
   const entry = path.join(target, 'index.html');
   const current = path.join(target, 'widget.html');
   fs.renameSync(entry, current);
-  fs.writeFileSync(entry, `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>Loading ${widget}</title>
-</head>
-<body style="margin:0;display:grid;place-items:center;min-height:100vh;font:13px system-ui;color:#5c7394;background:#f0f3f7">
-<div id="lm-loader">Loading ${widget}...</div>
-<script>
-(function () {
-  var target = './widget.html?_lmcb=' + Date.now().toString();
-  fetch(target, { cache: 'no-store', credentials: 'same-origin' })
-    .then(function (response) {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.text();
-    })
-    .then(function (html) {
-      document.open();
-      document.write(html);
-      document.close();
-    })
-    .catch(function (error) {
-      var loader = document.getElementById('lm-loader');
-      if (loader) loader.textContent = 'Could not load ${widget}. Refresh to retry.';
-      console.error('Stable widget loader failed', error);
-    });
-}());
-</script>
-<noscript><a href="./widget.html">Open ${widget} ${version}</a></noscript>
-</body>
-</html>
-`);
+  fs.writeFileSync(entry, stableWidgetLoader(widget, version, (config.runtime_frontend_routing || []).includes(widget)));
 }
 
 function verifyStableWidgetLoader(source, target, environment, widget, version) {

@@ -1,16 +1,17 @@
 {
-  "generated_at": "2026-10-02T18:32:20.168Z",
-  "note": "Creator registrations use the stable Production URLs. The widget runtime selects environment-specific Custom APIs from Creator initialization context.",
+  "generated_at": "2026-10-02T19:49:49.590Z",
+  "note": "Creator registrations retain stable Production URLs. Budget and Land Master loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
       "proforma-manager": "1.80.51",
-      "budget-manager": "122.27.25",
-      "land-master": "8.11.6",
+      "budget-manager": "122.28.0",
+      "land-master": "8.13.0",
       "contract-management": "1.60.29",
       "tax-center": "19.17.1",
       "milestone-gantt": "1.1.1",
       "manage-lots": "0.7.0",
-      "settings-manager": "1.2.0"
+      "settings-manager": "1.2.0",
+      "lot-sales-explorer": "1.5.31"
     },
     "stage": {
       "proforma-manager": "1.80.13",
@@ -19,7 +20,8 @@
       "contract-management": "1.0.0",
       "tax-center": "19.0.0",
       "milestone-gantt": "1.0.0",
-      "manage-lots": "0.1.0"
+      "manage-lots": "0.1.0",
+      "lot-sales-explorer": "1.5.30"
     },
     "production": {
       "proforma-manager": "1.80.60",
@@ -35,5 +37,11 @@
   },
   "path_aliases": {
     "insights": "lot-sales-explorer"
-  }
+  },
+  "runtime_frontend_routing": [
+    "budget-manager",
+    "land-master",
+    "lot-sales-explorer",
+    "insights"
+  ]
 }

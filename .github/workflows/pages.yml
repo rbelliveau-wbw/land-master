@@ -8,6 +8,7 @@ on:
       - 'releases/**'
       - 'deploy/environments.json'
       - 'scripts/build-pages.mjs'
+      - 'scripts/stable-widget-loader.mjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 

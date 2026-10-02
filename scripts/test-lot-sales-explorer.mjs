@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import { salesFixture } from './fixtures/lot-sales-data.mjs';
 const app = 'widgets/lot-sales-explorer/src/app/';
 await import('../' + app + 'sales-model.js');
+await import('../' + app + 'creator-data.js');
 await import('../' + app + 'creator-adapter.js');
 const M = globalThis.LotSalesModel, A = globalThis.LotSalesCreator;
 const version = JSON.parse(fs.readFileSync('widgets/lot-sales-explorer/widget.config.json','utf8')).version;

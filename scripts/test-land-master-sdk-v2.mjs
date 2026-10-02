@@ -1,0 +1,77 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+
+const source=fs.readFileSync('widgets/land-master/src/app/widget.html','utf8');
+function section(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
+assert.match(source,/widgets\/version\/2\.0\/widgetsdk-min\.js/);
+assert.match(source,/<script src="creator-data\.js"><\/script>/);
+assert.doesNotMatch(source,/CREATOR\.API|CREATOR\.init\(|buildEnvelopes|tryEnvelopes|buildAddEnvelopes|tryAddEnvelopes/);
+
+const calls=[],requests=[];
+let response={code:3000,result:[{code:3000,data:{ID:'90071992547409931'}}]};
+const context=vm.createContext({S:{liveSDK:true,demo:false},CFG:{reportCandidates:{All_Lots_All_Fields:['All_Lots_All_Fields','All_Active_Lots']}},diag(){},
+  LMData:{request:async(task,fn)=>{requests.push(task);return fn();}},
+  ZOHO:{CREATOR:{DATA:{addRecords:async args=>{calls.push({method:'add',args});return response;},updateRecordById:async args=>{calls.push({method:'update',args});return response;},deleteRecords:async args=>{calls.push({method:'delete',args});return response;},invokeCustomApi:async args=>{calls.push({method:'custom',args});return response;}}}},
+  reportForType:type=>type==='externalMapping'?'All_External_System_Mappings':undefined});
+context.window=context;
+vm.runInContext(section('function responseBad','/* record descriptors */'),context);
+vm.runInContext(section('function invokeErrorApi','function sendQueuedErrorEmail'),context);
+const id='90071992547409931',data={Facility_ID:'000073',Notes:'',Subdivision:'90071992547409932'};
+const created=await context.createRecord('lot',data);
+assert.equal(context.extractRecordId(created),id);
+assert.equal(calls[0].args.form_name,'Lots');assert.equal(calls[0].args.payload.data,data);
+assert.equal(calls[0].args.payload.data.Facility_ID,'000073');assert.equal(calls[0].args.skip_workflow,undefined,'default Creator workflows remain enabled');
+await context.updateRecord(id,data,'All_Lots_All_Fields');
+assert.equal(calls[1].args.id,id);assert.equal(calls[1].args.report_name,'All_Lots_All_Fields');assert.equal(calls[1].args.payload.data,data);
+await context.deleteRecord('externalMapping',id);
+assert.equal(calls[2].args.report_name,'All_External_System_Mappings');assert.equal(calls[2].args.payload.criteria,'(ID == '+id+')');
+let before=calls.length;
+await assert.rejects(context.deleteRecord('externalMapping','bad'),e=>e.message==='Invalid record ID');
+await assert.rejects(context.updateRecord('bad',data,'All_Lots_All_Fields'),e=>e.message==='Invalid record ID');assert.equal(calls.length,before);
+response={code:3000,result:[{code:2899,message:'Denied'}]};
+for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>String(e.code)==='2899');
+assert.equal(calls.length,before+3,'inner failures must not trigger guessed-envelope retries');
+response={code:'3000',result:[{code:'3000',data:{ID:id}}]};assert.equal(context.isSuccess(response),true);
+response={code:3000,result:[{code:3000,data:{ID:id}},{code:2945,message:'Invalid input'}]};assert.equal(context.isSuccess(response),false);
+context.S.liveSDK=false;await assert.rejects(context.createRecord('lot',data),e=>e.message==='Creator connection required.');context.S.liveSDK=true;
+const custom={api_name:'Get_Land_Master_Choices_DEV',http_method:'GET'};response={code:3000,result:{City:[]}};await context.invokeErrorApi(custom);assert.equal(calls.at(-1).args,custom);assert.equal(requests.at(-1),'custom:Get_Land_Master_Choices_DEV');
+
+const readCalls=[],progress=[];
+context.LMData.readAll=async options=>{readCalls.push(options);if(options.reportName==='All_Lots_All_Fields')throw {code:2898};options.onProgress({page:1,count:1,expected:1,done:true});return [{ID:id,Facility_ID:'000073',Notes:'full editor field'}];};
+const rows=await context.sdkGetAll('All_Lots_All_Fields','(Subdivision == 90071992547409932)',info=>progress.push(info));
+assert.equal(rows[0].Notes,'full editor field');assert.equal(readCalls.length,2);
+assert.ok(readCalls.every(c=>c.fresh===true&&c.fields===undefined&&c.criteria==='(Subdivision == 90071992547409932)'));
+assert.equal(progress.at(-1).report,'All_Lots_All_Fields');assert.equal(progress.at(-1).expected,1);
+context.LMData.readAll=async()=>{throw {code:2898};};await assert.rejects(context.sdkGetAll('All_Companies'),e=>String(e.error.code)==='2898');
+
+function initHarness({framed=true,getInitParams=async()=>({appLinkName:'land',envUrlFragment:'/environment/development'})}={}){
+  const statuses=[],events=[],timers=new Map();let next=0,loaded=0,demo=0,applied=0;
+  const c=vm.createContext({S:{liveSDK:false,demo:false,errorQueue:[]},document:{referrer:framed?'https://creatorapp.zoho.com/example/land/':''},
+    setTimeout(fn){timers.set(++next,fn);return next;},clearTimeout(id){timers.delete(id);},setStatus:(kind,text)=>statuses.push({kind,text}),loadDemo(){demo++;},loadData:async()=>{loaded++;},auditOnly(){},queueErrorEmail(){},scheduleErrorEmail(){},diag(){},
+    LMPerf:{start(name){events.push(name+':start');},end(name,meta){events.push({name,...meta});}},LMRuntime:{apply(params){applied++;assert.equal(params.appLinkName,'land');return {environment:'DEVELOPMENT'};}},LMData:{},
+    ZOHO:{CREATOR:{UTIL:{getInitParams},DATA:{getRecords(){}}}},location:{href:'https://example.test/widget.html'}});
+  c.window=c;c.parent=framed?{}:c;
+  vm.runInContext(section('function creatorFrameContext','S.tablePageSize=CFG.tablePageSize'),c);
+  return {c,statuses,events,timers,stats:()=>({loaded,demo,applied})};
+}
+let h=initHarness();await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});assert.equal(h.c.S.liveSDK,true);assert.equal(h.timers.size,0);
+h=initHarness({getInitParams:async()=>{throw new Error('duplicate handshake');}});h.c.LMFrontendContext={params:{appLinkName:'land',envUrlFragment:'/environment/development'}};await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:1,demo:0,applied:1});
+h=initHarness({getInitParams:async()=>{throw {code:5000};}});await h.c.initializeCreatorV2();assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.c.S.liveSDK,false);assert.equal(h.statuses.at(-1).text,'Creator connection failed');
+h=initHarness({framed:false,getInitParams:async()=>{throw new Error('outside Creator');}});await h.c.initializeCreatorV2();assert.equal(h.stats().demo,1);assert.equal(h.stats().loaded,0);
+let release;h=initHarness({getInitParams:()=>new Promise(resolve=>{release=resolve;})});const initialization=h.c.initializeCreatorV2();await Promise.resolve();h.timers.values().next().value();release({appLinkName:'land'});await initialization;assert.deepEqual(h.stats(),{loaded:0,demo:0,applied:0});assert.equal(h.statuses.at(-1).text,'Creator connection failed');
+
+function loadHarness(){
+  const reports=[],statuses=[],events=[];let resolveHeld,rejectHeld,rendered=0;
+  const held=new Promise((resolve,reject)=>{resolveHeld=resolve;rejectHeld=reject;});
+  const old=[{ID:'old',Property_Name:'Previous complete snapshot'}];
+  const c=vm.createContext({S:{properties:old,errors:[]},CFG:{version:'test'},LMPerf:{start(){},end(name,meta){events.push({name,...meta});},mark(name,meta){events.push({name,...meta});}},
+    sdkGetAll(report){reports.push(report);return report==='All_Pro_Formas'?held:Promise.resolve([{ID:report}]);},loadLocationChoices:async()=>{},setStatus:(kind,text)=>statuses.push({kind,text}),beginLoadProgress(){},updateLoadProgress(){},diag(){},errMeta:err=>err.message,finishLoadProgress(){},setLoadRendering(){},renderAll(){rendered++;},requestAnimationFrame(fn){fn();},setTimeout(fn){fn();}});
+  vm.runInContext(section('function loadData','var lotImport='),c);
+  return {c,reports,statuses,events,old,rendered:()=>rendered,resolveHeld,rejectHeld};
+}
+let load=loadHarness(),loading=load.c.loadData();assert.equal(load.reports.length,14);await Promise.resolve();assert.equal(load.rendered(),0);assert.equal(load.c.S.properties,load.old);
+load.resolveHeld([{ID:'Proforma'}]);await loading;assert.equal(load.rendered(),1);assert.equal(load.c.S.properties[0].ID,'All_Property');assert.equal(load.c.S.proformas[0].ID,'Proforma');assert.equal(load.events.filter(e=>e.name==='first-usable-render').length,1);
+load=loadHarness();loading=load.c.loadData();load.rejectHeld(new Error('All_Pro_Formas: loaded 10000 of 10100 records. Refresh to retry a complete snapshot.'));await assert.rejects(loading,/complete snapshot/);assert.equal(load.rendered(),0);assert.equal(load.c.S.properties,load.old,'a failed barrier must retain the prior complete snapshot');assert.equal(load.statuses.at(-1).text,'Creator data load failed');assert.equal(load.events.some(e=>e.name==='first-usable-render'),false);
+
+console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, loader-context reuse, late-handshake guards, and complete fourteen-report render barrier passed.');

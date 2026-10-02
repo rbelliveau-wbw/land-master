@@ -64,6 +64,6 @@ for(const [input,expected] of [['Edit Subtype','Subtype'],['Edit Land type','Lan
 }
 console.log('All New modals open after API failure; saved choices and clean search labels passed.');
 
-assert.match(source,/searchable-pickers\.js\?v=8\.12\.6/);
-assert.match(source,/searchable-pickers\.css\?v=8\.12\.6/);
+assert.match(source,/searchable-pickers\.js\?v=8\.13\.0/);
+assert.match(source,/searchable-pickers\.css\?v=8\.13\.0/);
 assert.doesNotMatch(source, /(?:lookup-popup-close|project-popup-close)[^>]*>×/);
