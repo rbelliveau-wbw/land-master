@@ -132,4 +132,6 @@ Budget transfer review uses outlined editable fields inside pale-blue metric car
 
 Keep Budget transfer destination metrics compact beside the Budget identity on wide screens. Center the small phase pill slider beneath that row, using the shared Pro Forma pill styling and omitting lot counts from the phase buttons.
 
+Budget transfer phase pills use the modal header's navy gradient for a shared sliding selection background, with a smooth 280 ms eased movement and immediate movement for reduced-motion users. Keep this chooser 10% larger than the original compact pills, preserving its centered placement and keyboard focus.
+
 Budget transfer matrices follow Budget Manager's single Item column with destination name and Cost_Code pill, pale category bands with blue circular collapse chevrons and department pills, department/category subtotals, and round note pencils (amber when a note exists). Center pencils against the full row including notes. Edit destination notes in a compact Save/Cancel dialog; keep PF notes unchanged. Put selected-phase and all-phase totals in the pinned footer with two-decimal currency, counts, and concise transfer status.
