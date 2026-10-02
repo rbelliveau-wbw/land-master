@@ -87,6 +87,12 @@ for(const d of groups){assert.equal(d.total,d.categories.reduce((sum,c)=>sum+c.t
 const reimbursement=groups.find(d=>d.name==='Development').categories.find(c=>c.name==='Reimbursements');assert.equal(reimbursement.total,-900);
 const renamed=fixture();renamed.budgetItems[0].Item_Name='Destination label';assert.equal(jsContext.PFBudgetTransfer.review(renamed,run(renamed).phases[0])[0].categories[0].items[0].name,'Destination label');
 const ui=fs.readFileSync(folder+'budget-transfer-ui.js','utf8');new vm.Script(ui);assert.match(ui,/data-phase-tab/);assert.match(ui,/plan.phases.filter/);assert.match(ui,/e.stopPropagation/);
+const verifyContext=vm.createContext({});vm.runInContext(ui.slice(ui.indexOf('function verifyTransferResult('),ui.indexOf('function startRun(')),verifyContext);
+const intended={total:100,phases:[{budgetId:'4410926000004320002'},{budgetId:'4410926000004320003'}]},confirmed={success:true,action:'budget_transfer_apply',completed:['4410926000004320003','4410926000004320002'],plan:{total:100}};
+assert.equal(verifyContext.verifyTransferResult(confirmed,intended).length,2);
+for(const change of [{completed:[]},{completed:['4410926000004320002']},{completed:['4410926000004320002','4410926000004320002']},{completed:['wrong','4410926000004320003']},{plan:{total:99}},{plan:null},{action:'budget_transfer_preview'},{success:false}])assert.throws(()=>verifyContext.verifyTransferResult({...confirmed,...change},intended),'incomplete or malformed results must not show successful completion');
+assert.throws(()=>verifyContext.verifyTransferResult(confirmed,{...intended,phases:[{budgetId:'4410926000004320002'},{budgetId:'4410926000004320002'}]}));
+assert.match(ui,/startRun\(s\);var submitted=false/);assert.match(ui,/bounded\(s\.api\.apply[\s\S]*?,90000\)/);assert.match(ui,/s\.uncertain=submitted/);assert.match(ui,/if\(!s\|\|!s\.run\|\|s\.run\.running\)return/);
 assert.match(ui,/!s\.api\.canSend\(\)/);assert.match(ui,/!api\.canSend\(\)/);
 const widget=fs.readFileSync(folder+'widget.html','utf8');assert.match(widget,/Send Costs to Budgets/);assert.match(widget,/function budgetTransferCall/);assert.ok(!widget.slice(widget.indexOf('function budgetTransferCall'),widget.indexOf('function openBudgetTransfer')).includes('invokeSaveApiOp'));
 const accessCode=widget.slice(widget.indexOf('function accessTruthy('),widget.indexOf('function perms(){'));

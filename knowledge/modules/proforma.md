@@ -559,3 +559,7 @@ like proforma_save. New rows carry no `Add_l_Cost`, so totals do not move. Idemp
 count emailed at the end, ~2,800 statements against the 5,000-per-run schedule cap. The widget save
 path deletes and re-inserts non-template rows from its payload, so a save from a stale session drops
 the new rows; re-run the schedule if that happens.
+
+## Budget transfer progress (1.80.61)
+
+The send action opens the persistent Contracts-style progress and per-Budget verification dialog. The review header names the source/destination and shows the amount and counts. See docs/proforma-budget-transfer-progress-1.80.61.md and knowledge/design/transfer-progress.md for exact confirmation, unknown-result handling, regression and rollback. No Creator deployment is required for this UI release.

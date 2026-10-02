@@ -78,6 +78,15 @@ Chat history and model memory are not authoritative.
 
 - Use custom searchable multi-select pickers for dropdown filters, matching Budget Manager. Do not introduce native browser select menus or month/date pickers in widget UI. For settings that require one value (such as sort order or a date basis), use the same searchable picker with single selection; clarify before changing their meaning to support multiple values.
 
+## Progress modals for multi-record writes
+
+- Use the Contracts **lot-completion progress modal** pattern whenever a user sends or applies data to multiple records. Read [`knowledge/design/transfer-progress.md`](knowledge/design/transfer-progress.md) before implementing it. Approval flows also follow [`knowledge/design/approval-progress.md`](knowledge/design/approval-progress.md).
+- Open progress immediately on the committing action. Show source → destination, amount/counts, short truthful stages, a progress bar, stage chips, and a verified per-destination result. Patch the mounted dialog instead of rebuilding it on every update.
+- Pace the display only (about 560 ms per stage); start requests immediately. Never invent per-record progress or mark work Done from elapsed time. Respect reduced motion.
+- Keep Close/Escape disabled while work is active, block duplicate writes, and keep the terminal result visible until dismissed. Use centered SVG X/check icons, a focus trap, inert background, and polite status announcements.
+- Success requires persisted verification for every intended destination. Partial/unknown results identify what was confirmed and what needs review. Never blindly replay a write after an ambiguous response; expose a safe recheck only when the backend supports it.
+- This progress/result dialog is the explicit exception to the routine banner rule below. A toast, tiny status line, or greyed-out action is insufficient feedback for a multi-record write.
+
 ## Drag-and-drop must animate
 
 - Any list a user can drag to reorder — subform rows, checklists, template
