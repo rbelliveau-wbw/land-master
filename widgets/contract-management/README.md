@@ -46,6 +46,10 @@ success while dropping a value it could not parse.
 
 The footer`s `Creator form` button is the escape hatch back to the native form.
 
+## Project and staged Lot entry (1.60.45 candidate)
+
+Project lookup and staged Lot entry are updated in candidate 1.60.45: Masters require Project; Amendments derive Project from Subdivision. Territory and the matching same-Project/same-Builder Master appear in the title card. See [the Contract module guide](../../knowledge/modules/contracts.md) for progressive entry, required report columns, verification and rollback.
+
 ## Action templates (1.13.0)
 
 `Manage Actions` (third tab beside Contracts and LOI Reviews) edits the checklist a

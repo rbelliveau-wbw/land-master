@@ -93,7 +93,7 @@ assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed contracts remain l
 ctx.S.myAccessId='42';
 assert.equal(ctx.mayChangeLotsPricing('123'),true,'completed Lot contracts allow owners to backfill');
 ownedLot.Status='New';
-for (const name of ['lotParentOptions','lotParentValid','lotValidateParent','lotTypeLabel','clpTermFields','clpTermChanges','clpScopeChanges','clpValidateType','clpSave']) vm.runInContext(fn(name), ctx);
+for (const name of ['ncSubRecord','ncProjectRecord','lotSubdivisionContext','lotContractProject','lotDraftProject','ncContextError','ncVerifyContext','lotParentOptions','lotParentValid','lotValidateParent','lotRefreshMasterMatch','lotTypeLabel','clpTermFields','clpTermChanges','clpScopeChanges','clpValidateType','clpSave']) vm.runInContext(fn(name), ctx);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'1.5'}), /whole numbers/);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'-1'}), /whole numbers/);
 const changes=ctx.clpTermChanges({Number_of_Lots:20,Initial_Takedown:10}, {Number_of_Lots:'30',Initial_Takedown:''});
@@ -142,7 +142,10 @@ assert.equal(ctx.lotCountWarning(contract.Number_of_Lots,contract.Lots1),'1 sele
 
 // Converting type without changing selected lots or pricing must only write type.
 contract.Subdivision1=[{ID:'20'}];
-ctx.S.nc={type:'Lot (Amendment)',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
+contract.Project={ID:'p1'};contract.Territory='Waco';
+ctx.S.projects=[{ID:'p1',Territory:'Waco'}];
+ctx.S.subdivisions=[{ID:'20',Project:{ID:'p1'},Territory:'Waco'}];
+ctx.S.nc={type:'Lot (Amendment)',project:'p1',territory:'Waco',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
 ctx.S.clp={cid:'123',lots0:['1'],ppf0:'{"50":1000}',terms:{Number_of_Lots:'50',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
 ctx.sdkGetAll=async()=>[contract];
 ctx.ncLotSizes=()=>{throw Error('Type-only conversion must not reconcile pricing');};

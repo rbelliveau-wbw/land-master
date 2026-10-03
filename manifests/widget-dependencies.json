@@ -401,13 +401,15 @@
         "Contract_Version",
         "Lots",
         "Property",
-        "Subdivision"
+        "Subdivision",
+        "Project"
       ],
       "reports_referenced": [
         "All_Contract_Actions",
         "All_Contract_Versions",
         "All_Contracts",
-        "All_Pro_Formas_All_Fields"
+        "All_Pro_Formas_All_Fields",
+        "All_Projects"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.API",
