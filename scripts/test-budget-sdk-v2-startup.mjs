@@ -657,7 +657,7 @@ function startupHarness() {
     proformaName:row => row.Name || '',hydrateBudgetSubdivisions:() => {},buildProjects:rows => [{key:'project:1',name:'Project',phases:rows}],
     auditLog:() => {},setLoad:() => {},setMsg:() => {},showView:() => {},perms:() => ({readOnly:true}),updateImportsTabVisibility:() => {},
     renderProjList:() => renders.push({categories:clone(context.S.landingCategories),ready:context.S.startupReady}),renderApprQueue:() => {},
-    loadBudgetCommentSummaries:() => {},loadBudgetAttachmentSummaries:() => {},applyDeepLink:() => {},
+    resetBudgetBadgeSummaries:() => {},scheduleBudgetBadgeSummaries:() => {},applyDeepLink:() => {},
     $:id => dom[id],safeStringify:JSON.stringify,shortErr:error => error?.message || String(error)
   },['budgetMeasured','validateLandingCategoryRows','groupLandingCategories','loadAll','boot']);
   context.window = context;
@@ -735,4 +735,5 @@ assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does 
 
 await import('./test-budget-landing-projection.mjs');
 await import('./test-budget-deferred-features.mjs');
+await import('./test-budget-background-badges.mjs');
 console.log('Budget exact native acknowledgements, FILE Recheck/delete locks, scoped mapping/comment uncertain-create and partial-completion guards, lean wrapper conflicts/degradation, startup and detail deduplication passed.');

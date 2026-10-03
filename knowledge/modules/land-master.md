@@ -1,6 +1,14 @@
 
 # Land Master Module
 
+## Native lookup labels (8.13.10 candidate)
+
+Production `8.13.7` grouped all 348 Subdivisions under Unlinked even though the native editor retained the exact Project ID and selected the correct loaded Project. SDK2 report lookups use `zc_display_value`; Land's legacy label helpers accepted only `display_value` or `name`. The full-field transport preserved the relationships, but the grouping renderer discarded their labels.
+
+Candidate `8.13.10` resolves Project labels from the exact string lookup ID against the already-loaded `All_Projects.Project_Name`, then falls back to native or legacy lookup display text. Other lookup and multi-lookup display consumers accept `zc_display_value` without modifying the stored objects. Empty Project associations remain Unlinked. Property Projects summaries/search, Subdivision groups and company display labels use the corrected helpers. No relationships, fields, permissions, workflows or Creator APIs change, and no backend deployment is required.
+
+The actual controller/renderer fixture performs counted SDK2 full-field reads of 348 synthetic Subdivisions, verifies nonempty Project groups and a genuine empty association, renders all 348 rows, and checks exact IDs, label fallback, property search, totals and unchanged deferred inventory. Existing SDK2, lazy-load, create/mixed-response, mapping and import regressions remain required. Native Development/Production group and row-ID gates are parent-owned and pending. Rollback: the prior Production mapping; immutable `8.13.9` is unchanged and still has the label defect.
+
 ## Project pickers (8.12.0 candidate)
 
 The Land & Projects widget uses custom searchable single-select controls for record dropdowns and a searchable multi-select for Properties. The backing selections keep the existing Creator save and staged-change behavior. Project Details includes the user-added `Project.Territory` field, omits the Proforma input and the `Record fields` heading, and hides Territory from phase rows and Subdivision widget editors. New phase payloads copy the current Project City, County, and Territory. New or reparented Subdivisions created in the widget inherit the selected Project Territory; unrelated edits preserve existing Subdivision Territory.

@@ -103,3 +103,5 @@ console.log('Land Master SDK v2: documented CRUD, per-record failures, custom AP
 await import('./test-land-master-lazy-data.mjs');
 
 await import('./test-land-master-create-safety.mjs');
+
+await import('./test-land-master-lookup-labels.mjs');
