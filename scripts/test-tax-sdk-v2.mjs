@@ -36,6 +36,17 @@ async function ready(options){const h=harness(options),result=await h.c.__taxBoo
 {
  const h=await ready({rows:Array.from({length:152},(_,i)=>parcel((90071992547600000n+BigInt(i)).toString(),i))});await h.c.runParcelSearch();assert.equal(h.widget.state.data.parcelYears.length,152);assert.equal(h.widget.state.rowsLoaded,true);assert.equal(h.widget.state.searchResultExpectedCount,152);assert.equal((h.nodes.get('tableBody').innerHTML.match(/class="lot-row /g)||[]).length,100);h.c.gotoPage(2);assert.equal((h.nodes.get('tableBody').innerHTML.match(/class="lot-row /g)||[]).length,52);assert.equal(h.handshakes(),1);assert.ok(h.maxActive()<=3);
 }
+// Actual Search publication and verified recovery retain the SDK1 enrichment step.
+// Native Dev caught a complete 228-ID load with blank displayName values; count
+// parity alone cannot verify the visible record labels or linked fallback data.
+{
+ const PROPERTY='90071992547420000',SUBDIVISION='90071992547430000',COMPANY='90071992547440000';
+ const row={...parcel(ID),Tax_Parcel_Year_Code:'',Property1:{ID:PROPERTY,zc_display_value:'000073'},Property_ID:'',Subdivision1:{ID:SUBDIVISION,zc_display_value:'Fixture subdivision'},Company1:'',County:'',Acres:'',Ag_Exempt:false};
+ const h=await ready({rows:[row],storage:{All_Property:[{...property(PROPERTY),Legal_Description:'Authoritative property label',County:'Fixture county',Company1:{ID:COMPANY,zc_display_value:'Fixture company'},Acres:'999',Ag_Exempt:true}],All_Companies:[{ID:COMPANY,Company_Name:'Fixture company'}],All_Subdivisions:[{ID:SUBDIVISION,Subdivision_Name:'Fixture subdivision',County:'Fixture county',Company1:{ID:COMPANY,zc_display_value:'Fixture company'}}]}});
+ await h.c.runParcelSearch();let model=h.widget.state.data.parcelYears[0];assert.equal(model.displayName,'000073');assert.equal(model.county,'Fixture county');assert.equal(model.companyId,COMPANY);assert.equal(model.acres,'');assert.equal(model.agExempt,false);assert.ok(h.nodes.get('tableBody').innerHTML.includes('000073'));
+ await h.widget.Tax.update(ID,{Tax_Parcel_Year_Code:'Fresh code'});model=h.widget.state.data.parcelYears[0];assert.equal(model.displayName,'000073');assert.equal(model.county,'Fixture county');assert.equal(model.code,'Fresh code');assert.equal(model.acres,'');assert.equal(model.agExempt,false);
+ assert.equal(h.writes.length,1);
+}
 for(const kind of ['missing','duplicate','numeric','cursor']){
  const rows=Array.from({length:152},(_,i)=>parcel((90071992547600000n+BigInt(i)).toString(),i));if(kind==='missing')rows.pop();if(kind==='duplicate')rows[151].ID=rows[0].ID;if(kind==='numeric')rows[0].ID=7;
  const h=await ready({rows,count:(cfg,data)=>cfg.report_name==='All_Tax_Parcel_Years'?152:data[cfg.report_name].length,read:cfg=>kind==='cursor'&&cfg.report_name==='All_Tax_Parcel_Years'?{code:3000,data:rows.slice(0,100),record_cursor:'same'}:undefined});

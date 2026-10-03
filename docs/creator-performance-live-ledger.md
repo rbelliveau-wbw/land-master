@@ -210,6 +210,41 @@ row's ID, selected/input values and cells were retained privately for the
 successor comparison. Headline components were active eight, untriaged 155,
 paid/closed 35 and AG two. No native data was edited.
 
+### Latest promotion and Tax native gate, 2026-10-03
+
+Commit `37d8a42` promoted only individually Dev-tested Budget 122.28.19,
+Land 8.13.11, Gantt 1.1.6 and Manage Lots 0.9.17. CI 37155876243 and Pages
+37155876255 both passed. The concurrent `19218e0` Project/Territory release
+subsequently promoted Land 8.14.1; its CI 37156034044 and Pages 37156034118
+passed. Its shared SDK2 read/strict acknowledgement helpers remain unchanged.
+
+Native Manage Lots Production 0.9.17 is Connected, with 348 subdivision choices,
+857 loaded takedowns and 186 AR05 lots: 79 available, 12 scheduled and 95 sold
+(107 unavailable). Its audit shows Production identity and zero errors. Existing
+takedown rows display original builder, lot codes/statuses and dates. No create,
+lot claim or write was performed. Budget Production 122.28.19 shows the SDK2
+script, 113 budget rows in 41 groups and resolved numeric file/comment badges.
+The original three-file Alta Vista scope was opened read-only.
+
+Tax Development 19.17.5's native Search loaded 228 distinct IDs in three pages
+(100/100/28); the complete ID set and every selected/input value match the
+immediately preceding SDK1 baseline. The actual gate FAILED visible label
+parity: all rows omitted their derived displayName because the new publication
+callback skipped the existing enrichment function. Its read-only editor still
+showed the property identity. No native Tax value was edited and Production
+remains 19.17.4. Candidate 19.17.6 restores that same enrichment function on
+complete search publication and persisted recovery. The whole-source regression
+checks linked labels/company/county fallbacks and preserves blank parcel acreage
+and its own AG flag. Both Tax suites, source/release validation, JavaScript and
+Pages build pass; this successor still requires its native Dev gate.
+
+All four existing native Development User Access details explicitly show
+Lot Sales Dashboard false. No available actor can complete Insights 1.5.41's
+authorized Dev graph read; current Production 1.5.40 is retained. Automatic
+approval review rejected the earlier attempted 1.5.41 promotion because this
+individual Dev gate was incomplete; the mapping was removed before the accepted
+commit. A user question is pending for Dev access. No grant was altered.
+
 | Field | Value to record |
 | --- | --- |
 | Increment and changed behavior | Concrete behavior plus source files; keep transport and further loading redesign distinguishable. |

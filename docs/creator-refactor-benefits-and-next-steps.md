@@ -6,7 +6,7 @@
   reads share bounded concurrency, counts and complete cursor reads.
 - Budget's list attachment/comment badges resolve in the background. Land Master
   retains project links and groups instead of putting all subdivisions in Unlinked.
-- Budget, Land Master, Insights and Gantt use Creator SDK 2.0. Their adapters keep
+- Budget, Land Master, Insights, Gantt and Manage Lots use Creator SDK 2.0. Their adapters keep
   string record IDs, native environment routing and permission failures distinct
   from verified empty results.
 - The lean access response preserves permissions and original uploader names
@@ -25,13 +25,22 @@ sets and releases; no controlled percentage speedup is claimed.
 
 ## In progress
 
-- Manage Lots SDK2 must complete its final Dev gate before Prod promotion. Its
-  regression checks retain drafts and block another create after an unknown
-  outcome; exact saved lot claims must be verified.
+- Manage Lots 0.9.17 passed exact Dev list/lot/takedown parity and is promoted in
+  Prod. The native Prod check loaded 348 subdivision choices, 186 AR05 lots
+  (79 available, 107 unavailable) and 857 takedowns with no audit errors.
+  Regression checks retain drafts, block repeat creates after an unknown outcome
+  and require exact saved lot claims.
 - Tax Center must require a complete unique-ID result before editing. Its SDK2
   candidate needs the individual native Dev gate before publication. The existing
   Prod SDK1 search returned 151 unique rows against an expected 152; this is a
   documented failure, not a complete baseline.
+- Tax 19.17.5's real Dev gate matched all 228 IDs and editable values but caught
+  blank grid labels from a skipped existing enrichment step. Candidate 19.17.6
+  restores enrichment on search publication and verified recovery; it remains
+  Dev-only until a new individual native check passes.
+- Insights 1.5.40 remains on SDK2 in Prod. The stricter 1.5.41 candidate is held:
+  all four existing Dev User Access records have Lot Sales Dashboard disabled,
+  preventing the required authorized Dev data read. No permission was changed.
 - Settings remains on SDK1 in Prod. The current Actions form has Template Action
   instead of the former Contract Template field; the picker rule requires the
   user's answer before changing its meaning.
