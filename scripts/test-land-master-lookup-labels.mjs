@@ -42,7 +42,7 @@ vm.runInContext(section('function setCoreRefreshing','function tableInlineSave')
 vm.runInContext(section('function closeProjectPopup','function updateProjectPopupCount'),c);
 vm.runInContext(section('function closeLookupPopup','function lookupChoiceRequired'),c);
 vm.runInContext(section('function ensureScopeData','$("scopeSeg")'),c);
-vm.runInContext(section('function loadData','var lotImport='),c);
+vm.runInContext(section('function loadData','var projectTerritoryMigration='),c);
 Object.assign(c,{setStatus(){},renderBanners(){},renderAll(){renders.push(c.S.scope);},renderPanel(){}});
 await c.loadData();
 assert.equal(c.S.subdivisions.length,348);assert.equal(c.LandData.coreReady(),true);
@@ -62,11 +62,11 @@ assert.equal(c.displayValue([],'project'),'');assert.equal(c.lookupId({ID:P1,zc_
 assert.equal(c.relHasId(c.S.properties[0].Projects,P2),true);assert.equal(c.S.properties[0].Facility_ID,'000073');
 
 await c.ensureScopeData('subs',c.LandData.generation());c.S.scope='subs';
-c.S.expandedGroups={'Fixture North':true,'Fixture South':true,Unlinked:true};
+c.S.expandedGroups={[P1]:true,[P2]:true,unlinked:true};
 vm.runInContext(actual('renderTable'),c);c.renderPager=()=>{};c.renderTable();
 const table=nodes.get('tableScroll').innerHTML;
 assert.equal((table.match(/class="ghead"/g)||[]).length,3);assert.equal((table.match(/class="rec/g)||[]).length,348);
-assert.match(table,/data-group="Fixture North"/);assert.match(table,/data-group="Fixture South"/);assert.match(table,/1 subdivisions · 7\/12 sold/);
+assert.ok(table.includes('data-group="'+P1+'"'));assert.ok(table.includes('data-group="'+P2+'"'));assert.match(table,/1 subdivisions · 7\/12 sold/);
 assert.equal(groups.reduce((count,group)=>count+group.items.length,0),348);
 assert.equal(c.LandData.status('lots'),'idle','group labels do not trigger inventory or other deferred reads');
 assert.equal(nativeCalls.length,9,'the fix preserves four counted core reads and the empty milestone count');

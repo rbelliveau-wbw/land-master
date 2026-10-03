@@ -1,6 +1,16 @@
 
 # Land Master Module
 
+## Project workspace and Territory migration (8.14.1)
+
+The former Subdivisions tab is Projects. Groups use exact Project lookup IDs, show Project Territory, and provide a pencil that opens the existing Project editor. Projects without subdivisions remain visible; equal names do not merge different Project records. Subdivision rows and their existing inline edits remain underneath. New Projects require Territory in the widget, populated through the existing global-variable Get_Land_Master_Choices API.
+
+Fill Project territories first reads complete current All_Projects/All_Subdivisions records and live global choices. It fills only blank Project.Territory when all nonblank linked Subdivision.Territory values agree and match a global choice. Existing values, conflicts, missing sources and missing report fields are preserved and listed. Each target's Project and linked subdivisions are refreshed immediately before writing only Territory; a persisted Project read-back is required for Verified. An ambiguous write is reconciled by read-back, never blindly replayed; an unverified target stops later writes. Creator's by-ID update has no compare-and-set guarantee, so avoid concurrent Territory editing during this operation.
+
+The migration review/result dialog follows the transfer progress guide, traps focus, blocks duplicate writes and dismissal while running, respects reduced motion, and exports a local JSON record of original values, sources and outcomes. Migration evidence must remain private rather than being committed to this public repository. After migration, a successor release makes existing Project Territory read-only; creation retains the required single choice. Native Creator Territory validation is separate from these widget rules.
+
+Changed files: Land widget HTML, project-territory.js/css, widget config/manifest, immutable release, focused migration tests and module documentation. Existing form is Project (native label Add Project); reports All_Projects/All_Subdivisions, Project.Territory and Subdivision.Project/Territory. No new forms, fields, functions or Custom APIs. Get_Land_Master_Choices and the live global Territory variable are reused. No Creator deployment is needed for the first widget release. Regression: parent editing, zero-subdivision Projects, duplicate names, required new Territory, conflicting/blank/out-of-choice/missing sources, changed preflight data, read-back, lost acknowledgement and unknown-result stop. Rollback UI: production 8.13.11; data rollback must review the private per-record results before clearing any migrated values.
+
 ## Native lookup labels (8.13.10 candidate)
 
 Production `8.13.7` grouped all 348 Subdivisions under Unlinked even though the native editor retained the exact Project ID and selected the correct loaded Project. SDK2 report lookups use `zc_display_value`; Land's legacy label helpers accepted only `display_value` or `name`. The full-field transport preserved the relationships, but the grouping renderer discarded their labels.
