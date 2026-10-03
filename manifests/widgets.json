@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T23:44:30.398Z",
+  "generated_at": "2026-10-03T03:05:47.667Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.28.10",
+      "version": "122.28.13",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "6fca9dcdad3a60a9f14ff0b2df3159333f0430e213d78daee8dfe2387e797b57",
+      "source_sha256": "0f3dbdb3c33bd6c2b106230b431f7a485906113a6edf399e8d53ea7fc6c7cfd6",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.13.7",
+      "version": "8.13.9",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "d51655a4fd19ec104976ad81f04551b225930c4f2d36c002d28e05388e840c29",
+      "source_sha256": "57dbd70846d83e602bde048d983681825187e64dd04e6ce9fc4d6086d0ef55ad",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
@@ -164,13 +164,13 @@
       "slug": "milestone-gantt",
       "name": "Milestone Gantt",
       "module": "projects",
-      "version": "1.1.2",
+      "version": "1.1.5",
       "description": "Subdivision milestone timeline and inline schedule editing.",
       "source_entry": "widgets/milestone-gantt/src/app/widget.html",
       "creator_package_manifest": "widgets/milestone-gantt/src/plugin-manifest.json",
       "baseline_zip": "widgets/milestone-gantt/baseline/gantt (1).zip",
       "html_title": "Subdivision Milestone Gantt",
-      "source_sha256": "60ce518adba5108fc0769307f734085d6c2d045f083cfcaf8ede0aabd23bf4b2",
+      "source_sha256": "361ddb7dbedd5f4ec8bd3262f2e6c84d4ee51c4274dd7f5b1b1e98474ee67d08",
       "baseline_zip_sha256": "72666e92521c54bd607f62412307a98e71288f7ac985d9cb22e629430bcbc336",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -220,14 +220,13 @@
       "slug": "settings-manager",
       "name": "Settings Manager",
       "module": "settings",
-      "version": "1.3.1",
+      "version": "1.3.3",
       "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
       "source_entry": "widgets/settings-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Settings",
-      "source_sha256": "67b5b3b554243d99ababaa2c7813e63cb87ca3586727e88278245531dd073b66",
-      "baseline_zip_sha256": null,
+      "source_sha256": "f6e2d61e2d07218e998e3c8463323af2475c9ab3e8754cba8fa0757948d70b90",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
@@ -248,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.5.38",
+      "version": "1.5.40",
       "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "48490a50711f8e9db5fd95b71bc0dff6b9f197517df829cdd33dd57fc2f67618",
+      "source_sha256": "8675d8bd1b239e97de7c9fbaec07455e9ce7dff04f5641a877244b3fccc9d775",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

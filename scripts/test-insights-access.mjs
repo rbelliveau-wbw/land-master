@@ -56,6 +56,32 @@ assert.equal(access.lotSalesDashboard, false);
 await assert.rejects(load(creator({ code: 9350 }), runtime('PRODUCTION')), /rejected/);
 await assert.rejects(load(creator({ code: 3000, result: 'not JSON' }), runtime('PRODUCTION')), /no readable permissions/);
 await assert.rejects(load(creator({ code: 3000 }), runtime('PRODUCTION', '')), /could not be identified/);
+const permissionFlags={found:true,hasRow:true,lotSalesDashboard:true,viewTotalLotRevenue:true};
+for(const failure of [{status:'failed'},{status:' ERROR '},{status:'failure'},{success:false},{error:'No permission'},{code:2898}]){
+  await assert.rejects(load(creator({code:3000,result:permissionFlags,...failure}),runtime('PRODUCTION')),/rejected/);
+  await assert.rejects(load(creator({code:3000,result:{...permissionFlags,...failure}}),runtime('PRODUCTION')),/no readable permissions/);
+  await assert.rejects(load(creator({code:3000,result:permissionFlags,details:{output:JSON.stringify(failure)}}),runtime('PRODUCTION')),/no readable permissions/,'A valid permission leaf cannot hide a failed sibling wrapper.');
+}
+await assert.rejects(load(creator(permissionFlags),runtime('PRODUCTION')),/rejected/,'Missing native success code cannot authorize graphs');
+for(const response of [
+  {code:3000,result:permissionFlags,details:[{code:2898,error:'Denied'}]},
+  {code:3000,result:permissionFlags,response:JSON.stringify([{code:3000,status:' FAILURE '}])},
+  {code:3000,result:permissionFlags,data:{hasRow:false,lotSalesDashboard:false,viewTotalLotRevenue:false}},
+  {code:3000,result:{...permissionFlags,hasRow:false}},
+  {code:3000,result:permissionFlags,data:{...permissionFlags,viewTotalLotRevenue:false}}
+])await assert.rejects(load(creator(response),runtime('PRODUCTION')),error=>error.response===response&&error.raw===response&&/no readable permissions/.test(error.message));
+const rejectedResponse={code:2898,error:'Denied'};
+await assert.rejects(load(creator(rejectedResponse),runtime('PRODUCTION')),error=>error.code==='2898'&&error.response===rejectedResponse&&error.raw===rejectedResponse,'Returned native failures preserve the primary code and raw response.');
+const nestedRejectedResponse={code:3000,result:permissionFlags,details:[{code:2898,error:'Denied'}]};
+await assert.rejects(load(creator(nestedRejectedResponse),runtime('PRODUCTION')),error=>error.code==='2898'&&error.response===nestedRejectedResponse);
+access=await load(creator({code:3000,result:permissionFlags,data:{...permissionFlags}}),runtime('PRODUCTION'));assert.equal(access.lotSalesDashboard,true,'Identical duplicate permission envelopes remain consistent.');
+for(const identity of [{environment:'UNKNOWN',user:'viewer'},{environment:'PRODUCTION',user:{}},{environment:'PRODUCTION',user:[]}]){
+  let calls=0;await assert.rejects(load({DATA:{invokeCustomApi:async()=>{calls++;return{code:3000,result:permissionFlags};}}},{current:()=>identity}));assert.equal(calls,0);
+}
+{
+  let identity={environment:'PRODUCTION',user:'before',appLinkName:'land-master'};
+  await assert.rejects(load({DATA:{invokeCustomApi:async()=>{identity={...identity,user:'after'};return{code:3000,result:permissionFlags};}}},{current:()=>identity,apiName:name=>name}),/session changed/);
+}
 let failedRequest;
 await assert.rejects(load({ DATA: { invokeCustomApi: async input => { failedRequest = input; throw { code: 9350, message: 'No API named' }; } } }, runtime('PRODUCTION')), error => error.code === 9350);
 assert.equal(Object.hasOwn(failedRequest, 'query_params'), false, 'A rejected access request preserves the current-session contract');

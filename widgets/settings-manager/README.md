@@ -18,7 +18,8 @@ record id baked into the page source.
 | Report | `All_Contract_Actions` | Options for `Builder_Contract_Action_Template` |
 | Report | `All_Pro_Formas` | Options for the curve row `Pro_Forma` lookup |
 
-No Custom APIs. Reads and writes go through `ZOHO.CREATOR.API` only.
+No business Custom APIs. Settings and curve data use native `ZOHO.CREATOR.DATA` SDK2 methods.
+The existing critical-error reporter retains its separately configured Custom API.
 
 ## Sections
 
@@ -46,16 +47,16 @@ No Custom APIs. Reads and writes go through `ZOHO.CREATOR.API` only.
 
 ## Behaviour worth knowing
 
-- **Batched autosave.** Every control writes into a pending map and schedules a flush 700 ms
-  later; one `updateRecord` carries every field touched in that window.
+- **Batched autosave.** Controls retain revisioned drafts and schedule a flush 700 ms later;
+  one `updateRecordById` carries every valid field touched in that window. Saved means a
+  fresh full-field readback matched the captured record and every submitted value.
 - **Singleton tripwire.** The widget reads `All_Settings` unfiltered. One record → green banner.
   More than one → red banner listing the extras, because a second record makes all six nightly
   schedules fire twice a day and makes the app's 24 `Settings[ID != 0]` reads ambiguous. See
   `creator/SETTINGS_SINGLETON_HANDOFF_2026-08-27.md`.
-- **Multi-select encoding is adaptive.** Creator's list-field write shape is a per-field
-  property (array / comma string / bare id) and it can answer `code 3000` while silently dropping
-  a value. After a write the widget reads the row back, compares list lengths, and retries with
-  the next encoding, memoizing whichever wins.
+- **Exact lookup verification.** SDK2 writes lookup ID arrays once. Fresh readback must
+  contain exactly the intended unique IDs; missing, extra or same-count wrong IDs retain
+  the draft. Unresolved selected IDs remain visible. No alternative-envelope retries occur.
 - **Curve rows are child records, not a nested subform array.** They are written to the
   `Construction_Curve` form with the `Settings` back-pointer set — matching how
   `proforma-manager` handles the same grid. A row written without that link gets reaped by
@@ -64,6 +65,14 @@ No Custom APIs. Reads and writes go through `ZOHO.CREATOR.API` only.
   `[Contract_Template + " - " + Contract_Template]`, so every option renders as `"Lot - Lot"`.
   The widget shows the `Action` text instead.
 - **No add path.** The widget can create `Construction_Curve` rows but never a `Settings` record.
+- **Safe reload.** Reload retains the selected singleton ID, publishes a staged snapshot,
+  and is blocked by drafts or active writes. Failed lookup/curve reads keep their last
+  complete data with unavailable controls. No browser navigation prompts are used.
+- **Uncertain writes.** A lost or malformed response retains the draft and pauses further
+  writes. Recheck saved values performs only fresh reads. Definitively rejected edits can
+  be discarded explicitly; unknown creates require record review when no ID was confirmed.
+
+See [SDK2 controller and validation gates](SDK2.md) for the 1.3.3 contract and test command.
 
 ## Local preview
 

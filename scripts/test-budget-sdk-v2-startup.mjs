@@ -40,7 +40,7 @@ const DATA = Object.fromEntries(methods.map(method => [method, async config => {
   return { code:3000, data:{ ID:'900000000000000001', Name:'Record' } };
 }]));
 const FILE = {
-  async uploadFile(config) { calls.push({method:'uploadFile', config:clone(config)}); return {code:3000}; },
+  async uploadFile(config) { calls.push({method:'uploadFile', config:clone(config)}); return {code:3000,data:{filename:'test.pdf',filepath:'stored_test.pdf'}}; },
   async readFile(config) { calls.push({method:'readFile', config:clone(config)}); return 'file content'; }
 };
 const transport = install({
@@ -51,7 +51,7 @@ const transport = install({
   LMData:{request:(_task, invoke) => Promise.resolve().then(() => {requestExecutions++;return invoke();}), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
   auditLog:(level,message) => {if(level === 'success')savedLogs.push(message);}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
   Promise, setTimeout, Date, Error, URLSearchParams
-}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
+}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
 transport.window = transport;
 
 await transport.sdkGetAllRecords('All_Budget_Items', '(Budget_Category == 1)');
@@ -131,7 +131,7 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
     sdkGetAllRecords:() => {throw new Error('Successful native access must not fall back to a report');},
     cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
     Promise,URLSearchParams,Error
-  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
+  },['responseLooksBad','budgetSdkCode','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','parseLeanBudgetAccessResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
   access.window = access;
   vm.runInContext(hardcodedSource,access);
   await access.loadUserAccess();
@@ -150,6 +150,17 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
       {code:3000,result:JSON.stringify({...denied,found:true,hasRow:true,editAll:true,myId:'unknown-owner'})},
       {code:3000,result:JSON.stringify({...denied,found:true,hasRow:true,editAll:true,myId:roster[0].id,users:[{...roster[0],id:123}]})}
     ];
+    const readableGrants={...denied,found:true,hasRow:true,editAll:true,myId:roster[0].id};
+    for(const failure of [{error:'Native access failure'},{success:false},...['error','failed','failure'].map(status => ({status}))]){
+      failures.push({code:3000,...failure,result:JSON.stringify(readableGrants)});
+      failures.push({code:3000,result:{code:3000,...failure,...readableGrants}});
+    }
+    failures.push(
+      {code:3000,result:readableGrants,details:[{code:2898,error:'Denied'}]},
+      {code:3000,result:JSON.stringify(readableGrants),response:'[{"status":"failure"}]'},
+      {code:3000,result:readableGrants,details:{output:{...readableGrants,editAll:false}}},
+      {code:3000,result:readableGrants,details:{output:JSON.stringify({...readableGrants,users:[{...roster[0],label:'Conflicting roster'}]})}}
+    );
     for(const result of failures) {
       access.S.perms={editAll:true,send:true,readOnly:false};access.S.myAccessId=roster[0].id;
       access.ZOHO.CREATOR.DATA.invokeCustomApi = async () => {if(result instanceof Error)throw result;return result;};
@@ -167,6 +178,12 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const apiName of ['Get_User_Acces
     await access.loadUserAccess();
     assert.equal(access.S.perms.readOnly,true,'a valid no-row response remains denied');
     assert.deepEqual(clone(access.S.accessUsers),roster,'an authoritative no-row response retains its read-only display roster');
+    const duplicated={code:3000,result:readableGrants,details:{output:JSON.stringify({...readableGrants,users:roster.map(row => ({...row,error:'business roster field'}))})}};
+    duplicated.result={...readableGrants,users:roster.map(row => ({...row,error:'business roster field'}))};
+    access.ZOHO.CREATOR.DATA.invokeCustomApi=async () => duplicated;
+    await access.loadUserAccess();assert.equal(access.S.perms.editAll,true,'identical leaf duplicates and business roster failure-named fields remain valid');
+    const nestedFailure={code:3000,result:readableGrants,details:{output:{code:2898,error:'Denied'}}};
+    assert.throws(() => access.parseLeanBudgetAccessResponse(nestedFailure),error => error.code === '2898' && error.raw === nestedFailure && error.response === nestedFailure,'known-wrapper native error code and raw response are retained');
   }
 }
 
@@ -185,7 +202,7 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const user of ['aarmbrust','aarmb
     }}}},
     $:() => null,auditLog:() => {},sdkGetAllRecords:() => {throw new Error('Lean access cannot grant through a report fallback');},
     cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),Promise,Error,URLSearchParams
-  },['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
+  },['responseLooksBad','budgetSdkCode','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','accessTruthy','hardcodedPermsForCurrentUser','applyHardcodedPerms','parseAccessFnResponse','parseLeanBudgetAccessResponse','applyPermsFromFlags','validLeanBudgetAccess','denyBudgetAccess','loadUserAccess']);
   portal.window = portal;vm.runInContext(hardcodedSource,portal);
   assert.deepEqual(Object.keys(portal.HARDCODED_PERMS).sort(),['aarmbrust','aarmburst'],'no new portal aliases are introduced');
   await portal.loadUserAccess();
@@ -211,8 +228,7 @@ for(const suffix of ['', '_STAGE', '_DEV'])for(const user of ['aarmbrust','aarmb
 const successfulResponses = [
   {code:3000,data:{ID:'900000000000000001'},message:'success'},
   {code:'3000',data:{ID:'900000000000000001'},message:'Data Updated Successfully!'},
-  {code:3000,result:[{code:3000,data:{ID:'900000000000000001'},message:'Data Added Successfully!'}]},
-  {code:3000,result:[{code:3000,data:{ID:'1'}},{code:3000,data:{ID:'2'}}]}
+  {code:3000,result:[{code:3000,data:{ID:'900000000000000001'},message:'Data Added Successfully!'}]}
 ];
 for(const response of successfulResponses)assert.equal(transport.isUpdateSuccess(response),true,'documented SDK2 direct and per-record successes are accepted');
 const mutationFailures = [
@@ -223,7 +239,22 @@ const mutationFailures = [
   ['add',{code:3000,result:[{code:3000,data:{ID:'1'}},{code:2945,message:'Invalid input'}]},'2945'],
   ['update',{code:3000,result:[{code:3000,data:{ID:'1'}},{code:2894,message:'No report named Budget_Item'}]},'2894']
 ];
+for(const method of ['update','add'])mutationFailures.push([method,{code:3000,result:[{code:3000,data:{ID:'1'},result:[{code:2899,message:'Nested denied confirmation'}]}]},'2899']);
 for(const method of ['update','add'])for(const response of [null,undefined,{},'success',{code:3000},{code:3000,data:{}},{code:3000,data:{ID:123}},{code:3000,result:[]},{code:3000,result:{}},{code:3000,result:[{code:3000,data:{}}]},{code:3000,result:[null]}])mutationFailures.push([method,response,'MALFORMED_MUTATION_RESPONSE']);
+for(const method of ['update','add'])for(const response of [
+  {code:3000,data:{ID:'not-a-Creator-ID'}},
+  {code:3000,result:[{code:3000,data:{ID:'1'}},{code:3000,data:{ID:'2'}}]},
+  {code:3000,result:[{code:3000,data:{ID:'1'}},{code:3000,data:{ID:'1'}}]},
+  {code:3000,data:{ID:'2'},result:[{code:3000,data:{ID:'1'}}]},
+  {code:3000,success:false,data:{ID:'1'}},
+  {code:3000,result:[{code:3000,success:false,data:{ID:'1'}}]},
+  {code:3000,data:{ID:'1',success:false}},
+  ...['error','failed','failure'].flatMap(status => [
+    {code:3000,status,data:{ID:'1'}},
+    {code:3000,result:[{code:3000,status,data:{ID:'1'}}]},
+    {code:3000,data:{ID:'1',status}}
+  ])
+])mutationFailures.push([method,response,'MALFORMED_MUTATION_RESPONSE']);
 for(const [method,response,code] of mutationFailures) {
   const priorInvalidations=invalidations.length, priorLogs=savedLogs.length;
   let writes=0;
@@ -239,6 +270,278 @@ for(const [method,response,code] of mutationFailures) {
 assert.equal(transport.responseLooksBad({code:3000,result:[{code:2899,message:'No permission'}]}),true,'generic response checks also inspect per-record failures');
 assert.equal(transport.budgetSdkCode({code:3000,result:[{code:2899,message:'No permission'}]}),'2899','nested failing codes take precedence over the request-level 3000');
 
+for(const response of [{code:3000,data:{ID:'2'}},{code:3000,result:[{code:3000,data:{ID:'2'}}]}]) {
+  let writes=0;DATA.updateRecordById=async () => {writes++;return response;};
+  const before=invalidations.length, logs=savedLogs.length;
+  await assert.rejects(transport.sdkUpdateRecord('Budget_Item','1',{Notes:'Latest'}),error => error.noReplay && error.code === 'MALFORMED_MUTATION_RESPONSE' && error.raw === response);
+  assert.equal(writes,1);assert.equal(invalidations.length,before);assert.equal(savedLogs.length,logs);
+  assert.equal(transport.isUpdateSuccess(response,'1'),false,'wrong acknowledgement ID cannot confirm the intended update');
+}
+for(const response of [{code:3000,data:{ID:'1'}},{code:3000,result:[{code:3000,data:{ID:'1'}}]}]) {
+  DATA.updateRecordById=async () => response;
+  assert.equal(await transport.sdkUpdateRecord('Budget_Item','1',{Notes:'Latest'}),response,'one exact native string ID confirms the update');
+}
+
+const fileAck={code:3000,data:{filename:'test.pdf',filepath:'stored_test.pdf'}};
+transport.CFG.reportCandidates.All_Contract_Versions=['All_Contract_Versions','Contract_Version_Report'];
+const fileFailures=[null,{}, {code:3000}, {code:3000,data:{ID:'1'}},
+  {code:3000,data:{filename:'',filepath:'stored_test.pdf'}}, {code:3000,data:{filename:'test.pdf',filepath:123}},
+  {code:3000,result:[{code:2894,message:'No report named All_Contract_Versions'}]},
+  {code:3000,result:[fileAck,{code:2899,message:'Denied'}]},
+  {...fileAck,success:false}, {...fileAck,data:{...fileAck.data,success:false}},
+  ...['error','failed','failure'].flatMap(status => [{...fileAck,status},{...fileAck,data:{...fileAck.data,status}}])];
+for(const response of fileFailures) {
+  let uploads=0;FILE.uploadFile=async () => {uploads++;return response;};
+  const before=invalidations.length;
+  await assert.rejects(transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),error => error.noReplay && error.raw === response && error.response === response);
+  assert.equal(uploads,1,'unknown/mixed/malformed file responses never replay through aliases');
+  assert.equal(invalidations.length,before,'unconfirmed file responses do not invalidate as success');
+}
+let fileAttempts=0;const lostFile=new Error('Upload response lost');
+FILE.uploadFile=async () => {fileAttempts++;throw lostFile;};
+await assert.rejects(transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),error => error.raw === lostFile && error.noReplay);
+assert.equal(fileAttempts,1);
+fileAttempts=0;FILE.uploadFile=async config => {fileAttempts++;return config.report_name === 'All_Contract_Versions' ? {code:2894,message:'No report named All_Contract_Versions'} : fileAck;};
+assert.equal(await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),fileAck);
+assert.equal(fileAttempts,2,'only a definite missing report rejection may select the documented alias');
+FILE.readFile=async () => new Uint8Array([1,2,3]);
+assert.deepEqual([...await transport.sdkReadFile('All_Contract_Versions','1','File_field1','stored_test.pdf')],[1,2,3],'readFile retains its independent raw binary contract');
+
+const attachmentId='900000000000000003', parentId='900000000000000004';
+const selectedFile={name:'test.pdf',size:10,type:'application/pdf'};
+function attachmentHarness(options={}) {
+  const counts={create:0,upload:0,read:0,delete:0,refresh:0,invalidate:0,toasts:0};
+  let row={ID:attachmentId,Budget:{ID:parentId},File_field1:''};
+  const context=install({
+    S:{liveSDK:true,useMock:false,edBudget:{ID:parentId},attachmentBusy:false,attachmentUploadReview:null},
+    CFG:{forms:{},reports:{attachments:'All_Contract_Versions'},reportCandidates:{All_Contract_Versions:['All_Contract_Versions','Contract_Version_Report']},attachmentFileField:'File_field1',attachmentBudgetField:'Budget',customApis:{createBudgetAttachmentRecord:'Create_Budget_Attachment_Record',deleteBudgetAttachment:'Delete_Budget_Attachment'}},
+    ZOHO:{CREATOR:{DATA:{
+      invokeCustomApi:async config => {
+        if(config.api_name === 'Create_Budget_Attachment_Record') {
+          counts.create++;assert.deepEqual(clone(config.payload),{budgetId:parentId});
+          if(options.createError)throw options.createError;
+          return options.createResponse ?? {code:3000,result:JSON.stringify({ok:true,attachmentId})};
+        }
+        assert.equal(config.api_name,'Delete_Budget_Attachment');counts.delete++;
+        assert.equal(config.payload.attachmentId,attachmentId);row=null;
+        return {code:3000,result:'Attachment deleted.'};
+      },
+      getRecordById:async config => {
+        counts.read++;assert.equal(config.id,attachmentId);assert.equal(config.field_config,'all');
+        if(options.readError)throw options.readError;
+        return {code:3000,data:options.readRow ? options.readRow(row) : clone(row)};
+      }
+    },FILE:{uploadFile:async config => {
+      counts.upload++;assert.equal(config.id,attachmentId);assert.equal(config.file,selectedFile);
+      if(options.persist !== false)row.File_field1={filename:'test.pdf',filepath:'stored_test.pdf'};
+      if(options.uploadPromise)return options.uploadPromise;
+      if(options.uploadError)throw options.uploadError;
+      return options.uploadResponse ?? fileAck;
+    }}}},
+    LMRuntime:{apiName:name => name},LMData:{request:(_task,invoke) => Promise.resolve().then(invoke),invalidate:() => counts.invalidate++},
+    renderAttachmentPane:() => {},canAddBudgetAttachment:() => true,setMsg:() => {},auditLog:() => {},
+    refreshBudgetAttachmentRecord:async () => {counts.refresh++;return row ? [clone(row)] : [];},
+    toastShow:() => counts.toasts++,cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
+    Promise,Error,URLSearchParams,setTimeout:() => 0
+  },['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','sdkUploadFile','sdkInvokeCustomApi','sdkRunBudgetFunction','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','cleanupEmptyAttachmentRecord','recheckBudgetAttachmentUpload','uploadBudgetAttachments']);
+  context.window=context;context.isObj=value => value && typeof value === 'object' && !Array.isArray(value);
+  return {context,counts,get row(){return row;}};
+}
+{
+  const {context:c,counts}=attachmentHarness();
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.read,1);
+  assert.equal(counts.delete,0);assert.equal(counts.toasts,1);assert.equal(c.S.attachmentUploadReview,null);
+  assert.match(c.S.attachmentStatus,/1 attachment added/,'success follows exact persisted file/parent verification');
+}
+for(const options of [
+  {uploadError:new Error('Upload applied but response lost')},
+  {uploadResponse:{code:3000}},
+  {uploadResponse:{code:3000,result:[fileAck,{code:2894,message:'No report named'}]}},
+  {uploadResponse:{...fileAck,status:'failed'}},
+  {uploadResponse:{...fileAck,data:{...fileAck.data,success:false}}}
+]) {
+  const {context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile,{name:'second.pdf',size:10}]);
+  assert.equal(counts.create,1,'uncertain outcome prevents the next child insert');
+  assert.equal(counts.upload,1);assert.equal(counts.delete,0,'a potentially persisted file is never cleaned up after unknown/mixed response');
+  assert.equal(counts.toasts,0);assert.equal(c.S.attachmentUploadReview.attachmentId,attachmentId);
+  assert.equal(c.S.attachmentBusy,false);assert.match(c.S.attachmentStatus,/unverified/);
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1,'attempting another upload while uncertain does not insert again');
+  assert.equal(await c.recheckBudgetAttachmentUpload(),true,'read-only exact stored-file recheck resolves an applied/lost response');
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
+  assert.equal(c.S.attachmentUploadReview,null);assert.match(c.S.attachmentStatus,/verified/);
+}
+for(const options of [
+  {uploadError:new Error('Unknown upload'),persist:false},
+  {uploadError:new Error('Unknown upload'),readError:{code:2898,message:'Denied'}},
+  {readRow:row => ({...row,File_field1:{filename:'different.pdf',filepath:'wrong_path'}})},
+  {readRow:row => ({...row,Budget:{ID:'99'}})},
+  {readRow:row => ({...row,ID:'99'})},
+  {readRow:row => {const next={...row};delete next.File_field1;return next;}}
+]) {
+  const {context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.ok(c.S.attachmentUploadReview,'denied/mismatched/unreadable persisted state keeps review pending');
+  assert.equal(await c.recheckBudgetAttachmentUpload(),false);assert.ok(c.S.attachmentUploadReview);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);assert.equal(counts.toasts,0);
+}
+{
+  const {context:c,counts}=attachmentHarness({persist:false,uploadResponse:{code:2899,message:'No permission'}});
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.read,1);assert.equal(counts.delete,1,'only definite rejection plus fresh exact empty child permits cleanup');
+  assert.equal(c.S.attachmentUploadReview,null);assert.equal(counts.toasts,0);assert.match(c.S.attachmentStatus,/Upload failed/);
+}
+for(const options of [{uploadResponse:{code:2899,message:'No permission'}},{persist:false,uploadResponse:{code:2899},readError:{code:2898}}]) {
+  const {context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.delete,0,'fresh nonempty/denied file state cannot permit cleanup even after a rejected upload');
+  assert.ok(c.S.attachmentUploadReview);
+}
+for(const options of [{createError:new Error('Child created but response lost')},{createResponse:{code:3000,result:JSON.stringify({ok:true,attachmentId:123})}}]) {
+  const {context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1);assert.equal(counts.upload,0);assert.equal(counts.delete,0);assert.ok(c.S.attachmentUploadReview);
+  assert.equal(await c.recheckBudgetAttachmentUpload(),false,'unknown child identity cannot be guessed from an attachment list');
+  assert.equal(counts.create,1);assert.equal(counts.upload,0);assert.equal(counts.delete,0);
+}
+{
+  const waiting=deferred(),{context:c,counts}=attachmentHarness({uploadPromise:waiting.promise});
+  const existing={recordId:'900000000000000005',name:'existing.pdf'};
+  c.budgetAttachments=() => [existing];c.removeLocalBudgetAttachment=() => {throw new Error('Blocked deletion must not patch local rows');};
+  let confirmations=0;const buttons={attachmentPreviewDelete:{disabled:false},attachmentDeleteGo:{disabled:false},attachmentDeleteOverlay:{classList:{add:() => confirmations++}}};
+  c.$=id => buttons[id] || {};c.S.globalMode='attachments';c.updateEditorSideVisibility=() => {};
+  for(const name of ['renderAttachmentPane','deleteBudgetAttachment','runDeleteBudgetAttachment'])vm.runInContext(block(name),c);
+  c.renderAttachmentPage=() => {};
+  const first=c.uploadBudgetAttachments([selectedFile]);await turn();
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(c.S.attachmentBusy,true);
+  assert.equal(buttons.attachmentPreviewDelete.disabled,true);assert.equal(buttons.attachmentDeleteGo.disabled,true);
+  assert.equal(c.deleteBudgetAttachment(0),false,'callable confirmation entrypoint cannot open while FILE is pending');
+  assert.equal(await c.runDeleteBudgetAttachment(0),false,'callable committing entrypoint cannot clear another operation\'s lock');
+  assert.equal(confirmations,0);assert.equal(counts.delete,0);assert.equal(c.S.attachmentBusy,true);
+  assert.equal(await c.uploadBudgetAttachments([selectedFile]),false);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1,'delete followed by a second upload cannot issue another FILE request');
+  waiting.reject(new Error('Upload response lost'));await first;
+  assert.ok(c.S.attachmentUploadReview);assert.equal(c.S.attachmentBusy,false);
+  assert.equal(buttons.attachmentPreviewDelete.disabled,true);assert.equal(buttons.attachmentDeleteGo.disabled,true);
+  assert.equal(c.deleteBudgetAttachment(0),false);assert.equal(await c.runDeleteBudgetAttachment(0),false);assert.equal(counts.delete,0);
+}
+{
+  const c=attachmentHarness({uploadError:new Error('Lost')}).context;
+  await c.uploadBudgetAttachments([selectedFile]);
+  const pane={innerHTML:''};c.$=() => pane;c.S.edPhaseIdx=0;
+  Object.assign(c,{budgetFeature:() => ({status:'loaded'}),budgetNavigationToken:() => 1,budgetAttachments:() => [{name:'existing.pdf',recordId:'900000000000000005'}],phaseName:() => 'Phase',attachmentIconSvg:() => '',attachmentExt:() => 'pdf',esc:value => String(value),escAttr:value => String(value)});
+  vm.runInContext(block('renderAttachmentPage'),c);c.renderAttachmentPage(c.S.edBudget);
+  assert.match(pane.innerHTML,/data-add-budget-attachment type='button' disabled/);
+  assert.match(pane.innerHTML,/data-recheck-budget-upload/,'uncertain outcome exposes a read-only Recheck action');
+  assert.match(pane.innerHTML,/data-delete-budget-attachment='0' title='Delete' disabled/,'mounted row Delete stays disabled during review');
+  c.S.attachmentUploadReview=null;c.S.attachmentBusy=true;c.renderAttachmentPage(c.S.edBudget);
+  assert.match(pane.innerHTML,/data-delete-budget-attachment='0' title='Delete' disabled/,'mounted row Delete stays disabled while a file request is pending');
+  c.S.attachmentUploadReview={attachmentId};c.S.attachmentBusy=false;
+  let handler,chooser=0,rechecks=0;c.document={addEventListener:(_event,callback) => {handler=callback;}};
+  c.$=() => ({click:() => chooser++});c.recheckBudgetAttachmentUpload=() => rechecks++;
+  const start=source.indexOf('document.addEventListener("click", function(e){',source.indexOf('/* Budget attachment controls */'));
+  vm.runInContext(source.slice(start,source.indexOf('\n});',start)+4),c);
+  handler({preventDefault:() => {},target:{closest:selector => selector === '[data-add-budget-attachment]' ? {} : null}});
+  assert.equal(chooser,0,'the actual delegated Add action cannot open another chooser while uncertain');
+  handler({preventDefault:() => {},target:{closest:selector => selector === '[data-recheck-budget-upload]' ? {} : null}});
+  assert.equal(rechecks,1,'the actual delegated Recheck action invokes only the safe recheck path');
+}
+
+
+function createFlowHarness(responses) {
+  const writes=[],reads=[],toasts=[],messages=[],runtime={environment:'DEVELOPMENT',user:'create-fixture',appLinkName:'land-master'};
+  const queue=responses.slice(),persisted=[];
+  const c=install({
+    S:{liveSDK:true,useMock:false,currentUser:runtime.user,externalMappings:[],accessUsers:[],budgets:[{ID:parentId}]},
+    CFG:{forms:{externalMapping:'External_System_Mapping',comment:'Comment_Log'},reports:{externalMappings:'All_External_System_Mappings',comments:'Comment_Log_Report'}},
+    ZOHO:{CREATOR:{DATA:{addRecords:async config => {
+      writes.push(clone(config));const next=queue.shift();
+      if(next instanceof Error)throw next;
+      if(next?.code === 3000)persisted.push(clone(config.payload.data));
+      return typeof next === 'function' ? next(config) : next;
+    }}}},
+    LMRuntime:{current:() => runtime,apiName:name => name},LMData:{request:(_task,invoke) => Promise.resolve().then(invoke),invalidate:() => {}},
+    auditLog:() => {},setMsg:text => messages.push(text),toastShow:text => toasts.push(text),renderExternalMappingModal:() => {},closeExternalMappingModal:() => {},renderHeroMappings:() => {},
+    perms:() => ({editAll:true}),budgetSubdivisionId:() => '900000000000000006',externalMappingsForSub:() => [],loadExternalMappings:async () => {reads.push('mapping');},
+    cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),Promise,Error,Object,JSON,Date,setTimeout:(fn) => setImmediate(fn)
+  },['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkAddRecord','addedRecordId','budgetCreateScope','budgetCreateRejected','saveExternalMappings','openExternalMappingEditor','budgetCommentCreateReview','syncBudgetCommentCreateReview','addBudgetComment','openBudgetComments']);
+  c.window=c;c.$=() => null;
+  return {c,writes,reads,toasts,messages,persisted,queue,runtime};
+}
+function mappingDraft(c,codes=['first']) {
+  return c.S.extMapDraft={subdivisionId:'900000000000000006',budgetId:parentId,saving:false,rows:codes.map(code => ({id:'',system:'GP',code,origSystem:'',origCode:'',isNew:true}))};
+}
+for(const response of [{code:3000},new Error('Mapping insert response lost'),{code:3000,result:[{code:3000,data:{ID:attachmentId}},{code:2899}]}]) {
+  const {c,writes,persisted,reads}=createFlowHarness([response]),draft=mappingDraft(c);
+  await c.saveExternalMappings();assert.equal(writes.length,1);assert.ok(draft.rows[0].createReview);assert.equal(draft.rows[0].code,'first');
+  assert.equal(await c.saveExternalMappings(),false);assert.equal(writes.length,1,'unknown/mixed create cannot be repeated by another Save click');
+  c.S.extMapDraft=null;await c.openExternalMappingEditor(parentId);
+  assert.equal(c.S.extMapDraft,draft,'closing/reopening retains the exact affected draft');assert.equal(reads.length,0);
+  await c.saveExternalMappings();assert.equal(writes.length,1,'reopening cannot bypass an uncertain create lock');
+  if(!(response instanceof Error))assert.equal(persisted.length,1,'an applied but unconfirmed create still represents one persisted destination');
+}
+{
+  const firstAck={code:3000,data:{ID:attachmentId}},secondAck={code:3000,data:{ID:'900000000000000007'}};
+  const {c,writes,queue,persisted}=createFlowHarness([firstAck,{code:2899,message:'Denied'}]),draft=mappingDraft(c,['first ','second']);
+  await c.saveExternalMappings();assert.equal(writes.length,2);assert.equal(draft.rows[0].id,attachmentId);assert.equal(draft.rows[0].isNew,false);
+  assert.equal(draft.rows[0].origCode,'first');assert.equal(draft.rows[1].isNew,true);assert.equal(draft.rows[1].createReview,undefined);
+  assert.equal(draft.rows[0].code,'first','unchanged acknowledged values normalize to the actual sent code and cannot schedule a duplicate update');
+  c.S.extMapDraft=null;await c.openExternalMappingEditor(parentId);assert.equal(c.S.extMapDraft,draft,'known partial acknowledgements survive reopening too');
+  queue.push(secondAck);await c.saveExternalMappings();
+  assert.equal(writes.length,3);assert.equal(writes[2].payload.data.External_Code,'second','retry sends only the definitely rejected row');
+  assert.equal(persisted.length,2);assert.equal(c.S.externalMappings.length,2);assert.equal(c.S.extMapDraft,null);
+  assert.equal(Object.keys(c.S.extMapRetainedDrafts).length,0,'completed retained draft key is released');
+}
+{
+  const {c,writes}=createFlowHarness([{code:3000,data:{ID:attachmentId}},{code:3000}]),draft=mappingDraft(c,['first','unknown']);
+  await c.saveExternalMappings();assert.equal(draft.rows[0].isNew,false);assert.equal(draft.rows[0].id,attachmentId);assert.ok(draft.rows[1].createReview);
+  await c.saveExternalMappings();assert.equal(writes.length,2,'neither acknowledged nor uncertain rows replay after partial unknown failure');
+}
+{
+  const {c,writes,queue,runtime}=createFlowHarness([{code:3000},{code:3000,data:{ID:attachmentId}}]);
+  c.budgetCommentThreadField='Budget';c.budgetCommentThreadParent=parentId;
+  const data={Comment:'Retained draft',Budget:parentId};
+  await assert.rejects(c.addBudgetComment(data),error => error.noReplay && error.code === 'MALFORMED_MUTATION_RESPONSE');
+  data.Comment='Changed draft';await assert.rejects(c.addBudgetComment(data));assert.equal(writes.length,1);
+  assert.equal(Object.values(c.S.commentCreateReviews)[0].data.Comment,'Retained draft','unknown attempt retains its immutable original comment');
+  runtime.user='another-actor';await c.addBudgetComment(data);assert.equal(writes.length,2,'unrelated actor scope does not inherit a prior create lock');
+  runtime.user='create-fixture';runtime.environment='PRODUCTION';queue.push({code:3000,data:{ID:attachmentId}});await c.addBudgetComment(data);
+  assert.equal(writes.length,3,'separate environment scope does not inherit the Development create lock');
+}
+function commentNodes() {
+  const listeners={},nodes={};
+  for(const key of ['.pc-input','[data-pc="send"]','.pc-status','.pc-compose-name','.pc-preview','.pc-messages','.pc-emoji'])nodes[key]={value:'',textContent:'',innerHTML:'',readOnly:false,disabled:false,hidden:false,classList:{toggle:() => {}},focus:() => {},matches:() => false};
+  const thread={innerHTML:'',querySelector:selector => nodes[selector] || null,addEventListener:(event,handler) => {listeners[event]=handler;},classList:{contains:() => true}};
+  return {thread,nodes,listeners};
+}
+for(const first of [{code:3000},new Error('Comment applied response lost'),{code:3000,result:[{code:3000,data:{ID:attachmentId}},{code:2899}]}]) {
+  const {c,writes}=createFlowHarness([first]),{thread,nodes,listeners}=commentNodes();
+  const dom={budgetCommentThread:thread,budgetCommentTitle:{},budgetCommentModal:{classList:{add:() => {}},hidden:true},budgetCommentClose:{focus:() => {}}};
+  Object.assign(c,{budgetCommentThread:null,budgetCommentThreadField:'',budgetCommentThreadParent:'',budgetCommentConfirm:null,
+    $:id => dom[id],document:{activeElement:{}},TextEncoder,Intl,setInterval:() => 1,clearInterval:() => {},
+    loadBudgetComments:async () => [],rememberBudgetComments:() => {},MutationObserver:function(callback){this.observe=() => {};c.reviewObserver=callback;}});
+  vm.runInContext(fs.readFileSync('widgets/proforma-manager/src/app/comments.js','utf8'),c);
+  await c.openBudgetComments('Budget',parentId,'Fixture');
+  const input=nodes['.pc-input'];input.value='Keep original comment draft';listeners.input({target:input});
+  const send={dataset:{pc:'send'},closest:() => send};listeners.click({target:send});await turn();await turn();
+  assert.equal(writes.length,1);assert.equal(input.value,'Keep original comment draft');assert.equal(input.readOnly,true);assert.equal(nodes['[data-pc="send"]'].disabled,true);
+  listeners.keydown({target:input,ctrlKey:true,key:'Enter',preventDefault:() => {}});await turn();await turn();
+  assert.equal(writes.length,1,'actual component keyboard path cannot repeat an uncertain native insert');
+  await c.openBudgetComments('Budget',parentId,'Fixture reopened');
+  assert.equal(input.value,'Keep original comment draft');assert.equal(input.readOnly,true);assert.equal(nodes['[data-pc="send"]'].disabled,true);
+  nodes['[data-pc="send"]'].disabled=false;c.reviewObserver();assert.equal(nodes['[data-pc="send"]'].disabled,true,'component rerender cannot reenable Post while review is pending');
+  listeners.click({target:send});await turn();assert.equal(writes.length,1,'close/reopen and another explicit Post never send twice');
+  assert.equal(nodes['.pc-compose-name'].textContent,'create-fixture','review state does not rewrite the authenticated actor');
+}
+{
+  const {c,writes,queue}=createFlowHarness([{code:2899,message:'Denied'}]);c.budgetCommentThreadField='Project';c.budgetCommentThreadParent=parentId;
+  await assert.rejects(c.addBudgetComment({Comment:'Retry only rejected',Project:parentId}),error => String(error.code)==='2899');
+  assert.equal(Object.keys(c.S.commentCreateReviews).length,0,'a definitely rejected create does not retain an uncertain lock');
+  queue.push({code:3000,data:{ID:attachmentId}});await c.addBudgetComment({Comment:'Retry only rejected',Project:parentId});assert.equal(writes.length,2);
+  assert.equal(Object.keys(c.S.commentCreateReviews).length,0,'confirmed comment completion releases its create token');
+}
 
 let attempts = 0;
 DATA.updateRecordById = async () => { attempts++; throw new Error('Response lost after write'); };
@@ -432,4 +735,4 @@ assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does 
 
 await import('./test-budget-landing-projection.mjs');
 await import('./test-budget-deferred-features.mjs');
-console.log('Budget SDK v2 envelopes, native mutation success/failure validation, lean permission degradation, safe retries, complete parallel startup and detail deduplication passed.');
+console.log('Budget exact native acknowledgements, FILE Recheck/delete locks, scoped mapping/comment uncertain-create and partial-completion guards, lean wrapper conflicts/degradation, startup and detail deduplication passed.');

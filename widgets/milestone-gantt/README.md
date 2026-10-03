@@ -1,6 +1,17 @@
 
 # Milestone Gantt
 
+## Native acknowledgement guards (1.1.5)
+
+Native writes remain private to the captured Save Changes flow. Contradictory top-level
+data/result, nested results, multiple results or an unexpected ID cannot acknowledge a date
+update. Failure flags beside an acknowledgement ID are also uncertain, without inspecting report
+business fields. The raw failure is retained; drafts remain until exact fresh persisted dates verify.
+Read-only recheck never repeats an uncertain update, and refresh blocks every public commit path.
+`node scripts/test-milestone-gantt-sdk-v2.mjs` exercises actual save/preflight/progress/readback,
+including stalled refresh and malformed acknowledgement recovery. These fixtures do not claim
+a native live date write; the live controller write gate remains separately documented by root.
+
 Subdivision milestone timeline and inline schedule editing.
 
 ## Baseline

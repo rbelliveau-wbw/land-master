@@ -149,6 +149,26 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
     }};
   }
   const params = {envUrlFragment: 'environment/development', loginUser: 'fixture_viewer', appLinkName: 'fixture-app'};
+  for (const failedResponse of [
+    {code:3000,status:'failure',result:{found:true,lotSalesDashboard:true}},
+    {code:3000,result:{code:3000,success:false,found:true,lotSalesDashboard:true}},
+    {code:3000,result:{output:JSON.stringify({found:true,lotSalesDashboard:true}),response:{code:2898,error:'Denied'}}},
+    {code:3000,result:{found:true,lotSalesDashboard:true},details:[{code:2898,error:'Denied'}]},
+    {code:3000,result:{found:true,lotSalesDashboard:true},response:JSON.stringify([{code:3000,status:' FAILURE '}])},
+    {code:3000,result:{found:true,lotSalesDashboard:true},data:{hasRow:false,lotSalesDashboard:false}},
+    {result:{found:true,lotSalesDashboard:true}}
+  ]) {
+    const r=setup(()=>Promise.resolve(params),true);let response=failedResponse;
+    r.context.ZOHO.CREATOR.DATA.invokeCustomApi=async()=>{r.events.nativeAccess++;return response;};
+    await r.context.start();
+    assert.equal(r.events.nativeAccess,1);assert.equal(r.events.permissions,0,'A grant-looking failed native envelope cannot start either report model.');
+    assert.equal(r.context.state.permissions,null);assert.equal(r.context.state.loaded,false);
+    assert.equal(r.elements.connection.textContent,'Access unavailable');assert.equal(r.elements.refresh.disabled,false);
+    response={code:3000,result:{found:true,lotSalesDashboard:true}};
+    r.elements.refresh.callback();await flush();
+    assert.equal(r.events.nativeAccess,2,'Refresh must verify permissions again.');assert.equal(r.events.native,1,'A successful actor handshake remains reusable.');
+    assert.equal(r.events.permissions,1,'Only a newly confirmed authorization can load the model.');assert.equal(r.context.state.permissions.lotSalesDashboard,true);
+  }
   {
     const r = setup(() => Promise.resolve(params)); await r.context.start();
     assert.equal(r.events.native, 1); assert.equal(r.events.permissions, 1); assert.equal(r.events.connected, 1); assert.equal(r.events.reporter, 1);

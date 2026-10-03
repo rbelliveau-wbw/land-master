@@ -30,7 +30,15 @@
   }
   function request(task,fn){return new Promise((resolve,reject)=>{queue.push({task:String(task),fn,resolve,reject,queuedAt:clock()});pump();});}
   function code(value){if(!value)return '';if(value.code!==undefined)return String(value.code);if(value.result&&value.result.code!==undefined)return String(value.result.code);if(value.cause)return code(value.cause);return '';}
-  function failure(report,value,message){const error=new Error(message||report+': '+(value&&(value.message||value.description)||'Creator did not return a readable response.'));error.code=code(value);error.permissionDenied=error.code==='2898'||!!(value&&value.permissionDenied);error.response=value;error.cause=value;return error;}
+  function responseFailed(value){
+    if(!value||typeof value!=='object'||Array.isArray(value))return true;
+    if(value.error||value.success===false||/^(error|failed|failure)$/i.test(String(value.status||'').trim())||(value.code!=null&&String(value.code)!=='3000'))return true;
+    const result=value.result;
+    if(Array.isArray(result))return result.some(responseFailed);
+    return !!(result&&typeof result==='object'&&responseFailed(result));
+  }
+  function failureCode(value){const native=code(value);if(native&&native!=='3000')return native;const result=value&&value.result,items=Array.isArray(result)?result:result&&typeof result==='object'?[result]:[];for(const item of items){const nested=failureCode(item);if(nested&&nested!=='3000')return nested;}return native;}
+  function failure(report,value,message){const error=new Error(message||report+': '+(value&&(value.message||value.description)||'Creator did not return a readable response.'));error.code=failureCode(value);error.permissionDenied=error.code==='2898'||!!(value&&value.permissionDenied);error.response=value;error.cause=value;return error;}
   function context(){const c=root.LMRuntime&&root.LMRuntime.current?root.LMRuntime.current():{};return String(c.environment||'UNKNOWN')+'|'+String(c.user||'')+'|'+String(c.appLinkName||'');}
   function invalidate(predicate){
     const match=predicate||(()=>true), cached=[], pending=[];
@@ -67,7 +75,7 @@
       try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();
       const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count;
       const expected=Number(rawCount);
-      if(code(countResponse)!=='3000'||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(expected)||expected<0)throw failure(report,countResponse);
+      if(code(countResponse)!=='3000'||responseFailed(countResponse)||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(expected)||expected<0)throw failure(report,countResponse);
       const rows=[],ids=new Set(),cursors=new Set();let cursor='';
       const finish=(response)=>{check();if(rows.length!==expected)throw failure(report,response,report+': loaded '+rows.length+' of '+expected+' records. Refresh to retry a complete snapshot.');if(options.onProgress)options.onProgress({report,page:pages,count:rows.length,expected,done:true});if(options.ttlMs>0&&!read.invalidated)cache.set(key,{options,rows,expires:Date.now()+options.ttlMs});return rows;};
       let pages=0;
@@ -76,7 +84,7 @@
         check();const config={report_name:report,max_records:1000,field_config:fields?'custom':'all',...query};if(fields)config.fields=fields;if(cursor)config.record_cursor=cursor;
         let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return finish(error);if(error&&error.cancelled)throw error;throw failure(report,error);}
         check();if(code(response)==='3100'||code(response)==='9280')return finish(response);
-        if(code(response)!=='3000'||!Array.isArray(response.data))throw failure(report,response);
+        if(code(response)!=='3000'||responseFailed(response)||!Array.isArray(response.data))throw failure(report,response);
         for(const row of response.data){const rawId=row&&row.ID,id=rawId==null?'':String(rawId);if(!id.trim()||(typeof rawId==='number'&&!Number.isSafeInteger(rawId))||ids.has(id))throw failure(report,response,report+': missing, unsafe, or duplicate record ID across pages. Refresh to retry.');ids.add(id);rows.push(row);}
         if(options.onProgress)options.onProgress({report,page:pages,count:rows.length,expected,done:false});
         const next=response.record_cursor||(response.headers&&response.headers.record_cursor)||'';

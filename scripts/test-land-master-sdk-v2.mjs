@@ -20,7 +20,7 @@ vm.runInContext(section('function invokeErrorApi','function sendQueuedErrorEmail
 const id='90071992547409931',data={Facility_ID:'000073',Notes:'',Subdivision:'90071992547409932'};
 const created=await context.createRecord('lot',data);
 assert.equal(context.extractRecordId(created),id);
-assert.equal(calls[0].args.form_name,'Lots');assert.equal(calls[0].args.payload.data,data);
+assert.equal(calls[0].args.form_name,'Lots');assert.equal(JSON.stringify(calls[0].args.payload.data),JSON.stringify(data));
 assert.equal(calls[0].args.payload.data.Facility_ID,'000073');assert.equal(calls[0].args.skip_workflow,undefined,'default Creator workflows remain enabled');
 await context.updateRecord(id,data,'All_Lots_All_Fields');
 assert.equal(calls[1].args.id,id);assert.equal(calls[1].args.report_name,'All_Lots_All_Fields');assert.equal(calls[1].args.payload.data,data);
@@ -33,15 +33,28 @@ response={code:3000,result:[{code:2899,message:'Denied'}]};
 for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>String(e.code)==='2899');
 assert.equal(calls.length,before+3,'inner failures must not trigger guessed-envelope retries');
 response={code:'3000',result:[{code:'3000',data:{ID:id}}]};assert.equal(context.isSuccess(response),true);
-response={code:3000,result:[{code:3000,data:{ID:id}},{code:2945,message:'Invalid input'}]};assert.equal(context.isSuccess(response),false);
-await assert.rejects(context.createRecord('lot',data),e=>String(e.code)==='2945','a success item cannot hide a later failed item');
-response={code:3000,data:{ID:id}};assert.equal(context.extractRecordId(await context.createRecord('lot',data)),id,'native single-record success must remain supported');
+context.S.createReviews={};response={code:3000,result:[{code:3000,data:{ID:id}},{code:2945,message:'Invalid input'}]};assert.equal(context.isSuccess(response),false);
+await assert.rejects(context.createRecord('lot',data),e=>String(e.code)==='2945'&&e.raw===response&&e.response===response&&e.noReplay===true&&e.uncertain===true,'a success item cannot hide a later failed item or lose its original envelope');
+assert.equal(context.S.createReviews.lot.id,'','a mixed acknowledgement cannot select its successful sibling as the created ID');
+before=calls.length;await assert.rejects(context.createRecord('lot',data),e=>e.noReplay===true);assert.equal(calls.length,before,'a later Create click cannot replay a mixed acknowledgement');
+context.S.createReviews={};response={code:3000,data:{ID:id}};assert.equal(context.extractRecordId(await context.createRecord('lot',data)),id,'native single-record success must remain supported');
+for(const anomaly of [{status:' ERROR '},{status:'failed'},{status:'failure'},{success:false}])for(const nested of [false,true]){
+  context.S.createReviews={};const record={code:3000,data:{ID:id},...anomaly};response=nested?{code:3000,result:[record]}:record;
+  assert.equal(context.isSuccess(response),false,'Native failure status cannot be reported as saved');const requestCount=calls.length;
+  for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action());
+  assert.equal(calls.length,requestCount+3,'Explicit failure anomalies must not trigger mutation replay');
+}
 for(const malformed of [{code:3000},{code:3000,result:[]},{code:3000,data:{}},{code:3000,data:{ID:123}},{data:{ID:id}},{code:3000,result:[{code:3000}]}]){
-  response=malformed;assert.equal(context.isSuccess(response),false);const requestCount=calls.length;
+  context.S.createReviews={};response=malformed;assert.equal(context.isSuccess(response),false);const requestCount=calls.length;
   for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>e.message==='Creator did not confirm the record change.'&&e.response===malformed);
   assert.equal(calls.length,requestCount+3,'unconfirmed record changes must fail without automatic replay');
 }
 context.S.liveSDK=false;await assert.rejects(context.createRecord('lot',data),e=>e.message==='Creator connection required.');context.S.liveSDK=true;
+for(const malformed of [{code:3000,data:{ID:'90071992547409932'}},{code:3000,result:[{code:3000,data:{ID:id}},{code:3000,data:{ID:id}}]},{code:3000,data:{ID:id},result:{code:3000,data:{ID:id}}}]){
+  response=malformed;const requestCount=calls.length;
+  for(const action of [()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),error=>error.noReplay===true&&error.response===malformed);
+  assert.equal(calls.length,requestCount+2,'Wrong/multiple record confirmations never replay or mark the intended row saved');
+}
 const custom={api_name:'Get_Land_Master_Choices_DEV',http_method:'GET'};response={code:3000,result:{City:[]}};await context.invokeErrorApi(custom);assert.equal(calls.at(-1).args,custom);assert.equal(requests.at(-1),'custom:Get_Land_Master_Choices_DEV');
 assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false,'no-argument GET calls must omit query_params');
 const audit={api_name:'Report_Proforma_Widget_Error_DEV',http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify({subject:'test',body:'example'})}};await context.invokeErrorApi(audit);assert.equal(calls.at(-1).args,audit);assert.equal(JSON.parse(calls.at(-1).args.payload.payload).subject,'test');assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false);
@@ -88,3 +101,5 @@ for(const actor of [{},[],7,false]){
 
 console.log('Land Master SDK v2: documented CRUD, per-record failures, custom APIs, full-field fallback reads, string IDs, real initialization failures, fresh native handshake with cached loader context, and late-handshake guards passed.');
 await import('./test-land-master-lazy-data.mjs');
+
+await import('./test-land-master-create-safety.mjs');

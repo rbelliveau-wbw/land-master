@@ -142,7 +142,7 @@ for(const kind of ['inline','project']){
 }
 
 // A failed refresh releases its edit lock; a superseded read cannot release the newer generation's lock.
-let failCore=false;h=harness({read:report=>failCore&&report==='All_Property'?Promise.reject(new Error('Denied')):fixture[report]});await h.c.loadData();failCore=true;await assert.rejects(h.c.loadData(),/Denied/);assert.equal(h.c.S.coreRefreshing,false);assert.equal(h.nodes.get('tableScroll').inert,false);
+let failCore=false;h=harness({read:report=>failCore&&report==='All_Property'?Promise.reject(new Error('Denied')):fixture[report]});await h.c.loadData();failCore=true;await assert.rejects(h.c.loadData(),/Denied/);assert.equal(h.c.S.coreRefreshing,false);assert.equal(h.nodes.get('tableScroll').inert,true);assert.equal(h.c.allowTableEdit(),false,'An incomplete refresh retains the old snapshot for viewing but blocks edits');failCore=false;await h.c.loadData();assert.equal(h.nodes.get('tableScroll').inert,false);assert.equal(h.c.allowTableEdit(),true,'A complete fresh snapshot restores editing');
 let choiceCalls=0,firstChoice=deferred(),secondChoice=deferred();h=harness({choices:()=>++choiceCalls===1?firstChoice.promise:secondChoice.promise});const stale=h.c.loadData().catch(error=>error);await settle();const newer=h.c.loadData();await settle();firstChoice.resolve();assert.equal((await stale).cancelled,true);assert.equal(h.c.S.coreRefreshing,true);assert.equal(h.nodes.get('tableScroll').inert,true);secondChoice.resolve();await newer;assert.equal(h.c.S.coreRefreshing,false);
 
 // Defensive generation verification refuses a Saved claim when a native response belongs to a replaced model.

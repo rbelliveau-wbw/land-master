@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source = fs.readFileSync(new URL('../shared/creator-data.js', import.meta.url), 'utf8');
-const widgets = ['budget-manager', 'land-master', 'lot-sales-explorer', 'milestone-gantt'];
+const widgets = ['budget-manager', 'land-master', 'lot-sales-explorer', 'milestone-gantt', 'settings-manager'];
 const canonicalOnly = process.argv.includes('--canonical-only');
 if (!canonicalOnly) for (const widget of widgets) assert.equal(fs.readFileSync(new URL(`../widgets/${widget}/src/app/creator-data.js`, import.meta.url), 'utf8'), source, `${widget} must use the exact shared adapter.`);
 const count = value => ({code: 3000, result: {records_count: value}});
@@ -87,6 +87,20 @@ for (const phase of ['count', 'records']) {
   const denied = {code: 2898, message: 'Permission denied', permissionDenied: true};
   const api = {getRecordCount: async () => phase === 'count' ? denied : count(1), getRecords: async () => denied};
   await assert.rejects(data.readAll(options(api)), error => error.code === '2898' && error.permissionDenied === true && error.response === denied);
+}
+for (const phase of ['count', 'records']) for (const anomaly of [
+  {error:'Denied'}, {status:' ERROR '}, {status:'failed'}, {status:'failure'}, {success:false},
+  {result:{records_count:'1',code:2898}}, {result:{records_count:'1',status:'error'}}, {result:{records_count:'1',success:false}}
+]) {
+  const {data}=harness(); let reads=0;
+  const malformed={...(phase==='count'?count(1):page([row('1')])),...anomaly};
+  const api={getRecordCount:async()=>phase==='count'?malformed:count(1),getRecords:async()=>{reads++;return malformed;}};
+  await assert.rejects(data.readAll(options(api)),error=>error.response===malformed&&(!anomaly.result?.code||(error.code==='2898'&&error.permissionDenied)),'Native success code cannot hide an explicit failure envelope or its denial code.');
+  assert.equal(reads,phase==='count'?0:1,'A failed count cannot start paging or become an empty snapshot.');
+}
+{
+  const {data}=harness(), api=scripted(1,[page([row('1',{status:'error',success:false,error:'Business fields remain data'})])]);
+  assert.equal((await data.readAll(options(api.api)))[0].ID,'1','Record business fields are not native response envelopes.');
 }
 for (const phase of ['count', 'records']) for (const raw of [{code: 2898}, {code: '500', description: 'Temporary SDK failure'}, Object.assign(new Error('Read refused'), {code: 'fixture-code', permissionDenied: true})]) {
   const {data} = harness();
