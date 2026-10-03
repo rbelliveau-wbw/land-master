@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T15:20:58.115Z",
+  "generated_at": "2026-10-03T17:12:01.556Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -192,13 +192,13 @@
       "slug": "manage-lots",
       "name": "Manage Lots",
       "module": "lots",
-      "version": "0.9.14",
+      "version": "0.9.15",
       "description": "Multi-subdivision Open/Contracted lot selection, Builder Takedowns, Legal status and hover details, and AI CSV/XLSX lot staging with review before import.",
       "source_entry": "widgets/manage-lots/src/app/widget.html",
       "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Manage Lots",
-      "source_sha256": "6c42042e34c28110adb49f23b5522c0f3dd388835124757975636ed82b6a904c",
+      "source_sha256": "5d6de7fdeb827ab103e51ea54374825cbd7648fa1f51a3390ab73092215b2713",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",

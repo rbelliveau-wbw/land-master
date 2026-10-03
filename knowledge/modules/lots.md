@@ -1,5 +1,11 @@
 # Lots status contract
 
+## Manage Lots SDK1 startup repair — 0.9.15 candidate
+
+Native Development and Production 0.9.14 failed during load with `spreadsheet is not defined`. The removed importer left two references: the completed startup called `spreadsheet.state()`/`renderPlat`, and Copy Audit Log called `spreadsheet.state()` for its old staged-row count. Candidate 0.9.15 removes only those obsolete expressions and updates its build marker; SDK1, existing report scopes, lot eligibility, Builder Takedown workflows and all other UI remain unchanged. Import Lots remains in Land & Projects.
+
+`node scripts/test-manage-lots-sdk1-repair.mjs` runs the actual complete widget IIFE with nonempty Creator SDK1 responses. It verifies startup without importer globals, complete scoped dual-report enrichment including Sold rows, exact string IDs/leading-zero lot labels, Refresh, native clipboard and selected raw-log fallback, optional Contracts denial, core denial and a subsequent successful reload, with zero native mutations. This is an offline source regression, not a native Creator gate. Root owns release metadata/routing; Development startup/loading/audit verification is pending before any SDK2 migration. No forms, fields, functions or Custom APIs change and no Creator backend deployment is required. Prior release 0.9.14 preserves the historical source but has the confirmed startup defect; keep the immutable 0.9.15 SDK1 repair as the migration rollback once its live gate passes.
+
 The `Lots.Status` choices are **Open**, **Contracted**, **Scheduled**, and **Sold**. Derive status in this order:
 
 1. `Close_Date` present: Sold.
