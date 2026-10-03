@@ -103,7 +103,11 @@ Settings Production was restored to 1.3.1 in `280ef6f`; CI 37140102020 and Pages
 
 Budget 122.28.18 and Pro Forma 1.80.64 add their main-list attachment modals; Pro Forma adds its paperclip/count beside Comments. Complete counted reads, original author metadata, selected-parent permissions, stale reply/count precedence, duplicate/busy controls, focus/inert/scroll return, retained list/editor state and unchanged file routes passed actual-source tests and independent review. Full validation and Pages build passed. Native presentation gates were waived by the user. These frontend-only releases require no additional Creator publication; rollback uses Budget 122.28.17 and Pro Forma 1.80.63. Deployment results are recorded separately after the push.
 
+That modal/design increment was pushed in `3dd4860`; CI 37145744030 and Deploy Widget Pages 37145744060 completed successfully. Development and Production select Budget 122.28.18 and Pro Forma 1.80.64. No SDK migration was included in that commit.
+
 Manage Lots 0.9.15's existing SDK1 startup repair was checked in native Development as the migration baseline: Connected, 37 subdivisions, 13 builders, 24 takedowns across six groups. The selected first subdivision displayed 155 exact lot IDs, 131 available and 24 unavailable. Its existing legend and complete row/table snapshots were retained privately for the SDK2 comparison. No Create or financial action was performed. This confirms the minimal repair in Development, not a passed SDK2 or Production gate.
+
+Settings 1.3.4 is prepared for a separate Development SDK gate. A fresh native 1.3.3 Development baseline also reproduced the unavailable Actions picker, while retaining its three saved IDs and 23 scalar controls. The successor removes the unsupported empty-string inequality from count/read criteria, reconciles the complete permitted report, then filters typed nonblank templates locally. Whole-IIFE fixtures cover native count rejection, 2,001 cursor rows, malformed/missing fields, duplicate/incomplete reads, saved-ID preservation and denial without false zero. Full validation and build pass. Production remains mapped to SDK1 1.3.1 pending the independent successor gates.
 
 Copy one row per actual environment/release and keep the result concise. Use counts and aggregate metrics rather than private rows.
 

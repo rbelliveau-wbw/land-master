@@ -57,6 +57,11 @@ The existing critical-error reporter retains its separately configured Custom AP
 - **Exact lookup verification.** SDK2 writes lookup ID arrays once. Fresh readback must
   contain exactly the intended unique IDs; missing, extra or same-count wrong IDs retain
   the draft. Unresolved selected IDs remain visible. No alternative-envelope retries occur.
+- **Complete Actions choices (1.3.4 candidate).** Count and read the same Actions report
+  completely without the failing empty-string inequality, then filter nonblank templates
+  locally. Failed or incomplete reads keep that picker unavailable and preserve saved IDs;
+  the existing report permissions and scalar editing grants remain unchanged. Native
+  successor verification is pending.
 - **Curve rows are child records, not a nested subform array.** They are written to the
   `Construction_Curve` form with the `Settings` back-pointer set — matching how
   `proforma-manager` handles the same grid. A row written without that link gets reaped by

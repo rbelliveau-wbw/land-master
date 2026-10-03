@@ -19,9 +19,39 @@ It never creates Settings records or changes the backend, approval routes or sch
   core and optional resource results before publication. Freeze edit/write/navigation actions
   during refresh and retain the old bindings until a safe commit.
 - Curve reads require the selected `Settings` parent on every returned row. Builder approval
-  and action criteria retain their previous meaning. Unavailable option resources retain their
+  criteria retain their previous meaning. Actions use the complete-read contract below.
+  Unavailable option resources retain their
   last complete collections while disabling the affected picker; other readable scalar fields
   remain available. Unavailable curves are labeled unavailable, never empty/zero.
+
+### Complete Actions choices — 1.3.4 candidate
+
+The native Production 1.3.3 Actions count failed without a response code for
+`Contract_Template != ""`, leaving the picker unavailable with its seven persisted
+selection IDs preserved. The successor reads the same `All_Contract_Actions`
+report without that additional criteria. Both count and cursor reads use the
+same unfiltered report; existing report filters and signed-in permissions still
+apply. There is no alternate report, permission grant, capped page loop, or
+fallback to an uncounted read.
+
+Only after the canonical reader verifies the full expected count and unique
+string ID set does the controller select rows with nonblank `Contract_Template`.
+It accepts strings, null/blank values, and genuine native lookup display objects
+(`zc_display_value` / `display_value`, or a valid string lookup ID). It never
+coerces malformed objects into an option. Missing template fields, malformed
+template values, duplicate/missing IDs, or incomplete pages make Actions
+unavailable while retaining the previous complete option rows and all saved
+selection IDs. The affected picker cannot queue a write until a fresh complete
+load succeeds; independent readable scalar fields retain their existing grants.
+Known and unresolved selected IDs retain the exact mutation/readback contract.
+
+The whole-IIFE suite replays the observed failure using the untouched immutable
+1.3.3 controller, then checks that the successor sends no Actions criteria,
+filters native blank/nonblank shapes only after a complete 2,001-row cursor
+read, preserves unknown selections, rejects failed/incomplete scopes, and
+recovers through a complete retry. These are local SDK-shaped fixtures. Native
+unfiltered-count availability and exact Production option parity are pending
+root-owned gates; this candidate does not claim a native successor test.
 
 ## Autosave contract
 
@@ -78,7 +108,8 @@ or approval/send flow is introduced.
 
 Run `node scripts/test-settings-sdk-v2.mjs`. The test evaluates the whole actual widget IIFE,
 actual controller, current canonical runtime/data helper and native SDK-shaped responses.
-It covers complete counted pages/bounded concurrency, partial/error/status read envelopes,
+It covers complete counted pages/bounded concurrency, the Actions successor and
+frozen 1.3.3 failed-count reproduction, partial/error/status read envelopes,
 singleton count/selected-ID failure, unknown fields/lookup IDs, duplicate event wiring, retained
 failed/newer drafts, immutable captures, exact scalar/multi-ID readback, no mutation replay,
 session changes, atomic refresh/edit guards, Curve CRUD/parent/absence checks, uncertain-create

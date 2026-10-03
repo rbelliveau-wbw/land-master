@@ -14,7 +14,7 @@ const ID='4410926000000769023', OTHER='4410926000000769024', A='4410926000000769
 const clone=value=>JSON.parse(JSON.stringify(value));
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 async function drain(){for(let index=0;index<90;index++)await Promise.resolve();}
-function harness({initialize=async()=>({envUrlFragment:'/environment/development',loginUser:'fixture',appLinkName:'land-master'}),count=1,embedded=true,creator=true}={}){
+function harness({initialize=async()=>({envUrlFragment:'/environment/development',loginUser:'fixture',appLinkName:'land-master'}),count=1,embedded=true,creator=true,controllerSource}={}){
   const calls=[],nodes=new Map(),timers=new Map(),listeners=new Map();let timerId=0,handshakes=0,active=0,maxActive=0;
   const document={referrer:'',activeElement:null,body:null,getElementById:id=>node(id),createElement:tag=>node(null,tag),addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);},querySelector:selector=>selector.startsWith('[data-frow=')?node('row:'+selector.match(/"([^"]+)"/)[1]):selector==='.hdr'?node('header'):null,querySelectorAll(selector){
     if(selector==='[data-f],[data-chipinput]')return ['Multi_Line','Future_Field','Builder_Approval_Template','COO_Approval_Threshold'].map(field=>{const el=node('input:'+field);el.attrs['data-f']=field;return el;});
@@ -51,7 +51,7 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
   };
   const context=vm.createContext({document,location:{href:'https://example.test/dev/settings-manager/'},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),console:{warn(){}},ZOHO:creator?{CREATOR:{DATA:api,UTIL:{getInitParams(){handshakes++;return initialize();},navigateParentURL:config=>{calls.push({method:'navigate',config});}}}}:undefined});
   context.window=context;context.parent=embedded?{}:context;context.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
-  for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(fs.readFileSync(app+file,'utf8'),context);
+  for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
   const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog};\n';
   vm.runInContext(inline.replace(/boot\(\);\s*\}\)\(\);\s*$/,expose+'boot();\n\n})();'),context);
   assert.ok(context.__settingsTest,'Whole source IIFE test exposure found');
@@ -59,6 +59,52 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
     tick(ms){const entry=[...timers].find(([,timer])=>timer.ms===ms);assert.ok(entry,'Timer '+ms+' exists');timers.delete(entry[0]);entry[1].fn();}};
 }
 async function ready(options){const h=harness(options);await drain();assert.equal(h.widget.state.ready,true);return h;}
+
+// Replay the observed 1.3.3 filtered-count failure through its immutable actual
+// controller and the whole widget IIFE. This fixture is not a new native test.
+{
+  const previous=fs.readFileSync('releases/settings-manager/1.3.3/settings-controller.js','utf8');
+  assert.match(previous,/\['actions',C\.actionsReport,'Contract_Template != ""'\]/);
+  const h=harness({controllerSource:previous}),native=h.api.getRecordCount,failed=[];
+  h.records[0].Builder_Contract_Action_Template=Array.from({length:7},(_,index)=>({ID:String(900000000000000100n+BigInt(index)),zc_display_value:'Persisted '+index}));
+  h.api.getRecordCount=config=>{
+    if(config.report_name==='All_Contract_Actions'&&config.criteria==='Contract_Template != ""'){failed.push(clone(config));return Promise.reject({message:'Native count failure without a code'});}
+    return native(config);
+  };
+  await drain();assert.equal(failed.length,1);assert.equal(h.widget.state.resources.actions,'error');assert.equal(h.widget.state.rec.Builder_Contract_Action_Template.length,7);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),false);assert.equal(h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Contract_Actions').length,0);
+}
+{
+  const h=harness(),native=h.api.getRecordCount,filtered=[];
+  const templates=['Builder',' Choice 3 ','',null,'   ',{zc_display_value:'Lot'},{display_value:'Builder'},{zc_display_value:''},{display_value:'   '},{ID:'900000000000000099'}];
+  h.reports.All_Contract_Actions=templates.map((Contract_Template,index)=>({ID:String(900000000000000010n+BigInt(index)),Contract_Template,Action:'Action '+index}));
+  const original=clone(h.reports.All_Contract_Actions),expected=[0,1,5,6,9].map(index=>original[index].ID);
+  const persisted=expected.concat(['900000000000000098','900000000000000097']).map(ID=>({ID,zc_display_value:'Persisted '+ID}));
+  h.records[0].Builder_Contract_Action_Template=clone(persisted);
+  h.api.getRecordCount=config=>{
+    if(config.report_name==='All_Contract_Actions'&&config.criteria){filtered.push(clone(config));return Promise.reject({message:'Native count failure without a code'});}
+    return native(config);
+  };
+  await drain();assert.equal(filtered.length,0);assert.equal(h.widget.state.resources.actions,'ready');assert.deepEqual(clone(h.widget.state.actions.map(row=>row.ID)),expected);assert.deepEqual(h.reports.All_Contract_Actions,original,'Filtering must not alter native rows or their lookup shapes');
+  const reads=h.calls.filter(call=>['count','records'].includes(call.method)&&call.config.report_name==='All_Contract_Actions');assert.equal(reads.length,2);assert.ok(reads.every(call=>!Object.hasOwn(call.config,'criteria')),'Count and records read the same complete report without the rejected predicate');
+  assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),persisted);assert.match(h.widget.multi({n:'Builder_Contract_Action_Template',src:'actions'},persisted),/900000000000000098/);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);
+  assert.equal(h.widget.queue('Builder_Contract_Action_Template',persisted.map(row=>row.ID)),true);await h.widget.flush();assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),persisted.map(row=>row.ID).sort());assert.equal(h.calls.filter(call=>call.method==='update').length,1,'Known and unresolved selected IDs retain exact native write/readback verification');
+}
+{
+  const h=await ready();h.reports.All_Contract_Actions=Array.from({length:2001},(_,index)=>({ID:String(900000000000010000n+BigInt(index)),Contract_Template:index%2?'Builder':'',Action:'Complete '+index}));await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.state.actions.length,1000);const reads=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Contract_Actions');assert.equal(reads.length,3,'Every complete unfiltered cursor page precedes local filtering; a counted empty report needs no page');assert.ok(h.maxActive()<=3);
+}
+for(const failure of ['count','duplicate','missing-id','incomplete','missing-template','malformed-template']){
+  const h=await ready();h.reports.All_Contract_Actions=[{ID:A,Contract_Template:'Builder',Action:'Retained action'}];h.records[0].Builder_Contract_Action_Template=[{ID:A,zc_display_value:'Selected action'},{ID:D,zc_display_value:'Unresolved selected'}];await h.widget.load();const old=h.widget.state.actions,selected=clone(h.widget.state.rec.Builder_Contract_Action_Template),nativeCount=h.api.getRecordCount,nativeRead=h.api.getRecords;
+  const replacement=[{ID:B,Contract_Template:'Builder',Action:'Incomplete replacement'},{ID:D,Contract_Template:'',Action:'Blank row'}];
+  h.reports.All_Contract_Actions=replacement;
+  if(failure==='count')h.api.getRecordCount=config=>config.report_name==='All_Contract_Actions'?Promise.reject({message:'Native count failure without a code'}):nativeCount(config);
+  else if(failure==='duplicate')replacement[1].ID=B;
+  else if(failure==='missing-id')delete replacement[1].ID;
+  else if(failure==='incomplete')h.api.getRecords=config=>config.report_name==='All_Contract_Actions'?Promise.resolve({code:3000,data:[clone(replacement[0])]}):nativeRead(config);
+  else if(failure==='missing-template')delete replacement[1].Contract_Template;
+  else replacement[1].Contract_Template={display_value:{name:'Unsupported'}};
+  const before=h.calls.filter(call=>['update','add','delete'].includes(call.method)).length;await h.widget.load();assert.equal(h.widget.state.resources.actions,'error',failure);assert.equal(h.widget.state.actions,old,'A failed complete lookup scope keeps the previous rows unavailable');assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),selected);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),false);assert.equal(h.widget.queue('Builder_Contract_Action_Template',[B]),false);assert.equal(h.widget.controller.canEdit('Multi_Line'),true,'The optional lookup failure does not change scalar grants');assert.equal(h.calls.filter(call=>['update','add','delete'].includes(call.method)).length,before);
+  h.api.getRecordCount=nativeCount;h.api.getRecords=nativeRead;h.reports.All_Contract_Actions=[{ID:B,Contract_Template:'Builder',Action:'Fresh complete action'}];await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),selected,'Successful complete retry retains unresolved persisted selection IDs');
+}
 
 for(const response of [{code:3000,status:'failure',result:{records_count:'1'}},{code:3000,success:false,result:{records_count:'1'}},{code:3000,error:['Denied'],result:{records_count:'1'}},{code:3000,result:{code:2898,records_count:'1'}}]){
   const h=harness();h.api.getRecordCount=async()=>response;await drain();assert.equal(h.widget.state.ready,false);assert.equal(h.widget.state.loadBlocked,true);assert.equal(h.widget.controller.canEdit(),false);assert.equal(h.calls.filter(call=>call.method==='records'||call.method==='add'||call.method==='update').length,0,'Malformed/denied count cannot claim an empty or complete singleton');
