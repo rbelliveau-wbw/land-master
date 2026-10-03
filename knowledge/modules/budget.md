@@ -1,6 +1,16 @@
 
 # Budget Module
 
+## Attachment presentation and recorded author (122.28.16 candidate)
+
+Budget's existing phase Attachments page follows Legal's attachment layout: a dashed upload area with Choose Files, clickable filenames, compact file-type cards, date/Added by details, and matching 34px Preview, Download and Delete icon buttons. The Email slider remains exclusive to Legal. Picker and drop both enter Budget's existing guarded upload flow; permission, busy and unverified-upload locks also apply to the drop area. PDF preview continues through `Get_Budget_Attachment_Preview`.
+
+Attachment detail reads remain counted and scoped to `Budget`, with the existing empty-scope lookup fallback. They explicitly request `ID,Budget,File_field1,Date_field1,Added_Time,Modified_Time,Added_User`; the automatic background badge projection stays `ID,Budget,File_field1`. `field_config:all` is the report layout union and may omit system fields. Requesting `Added_User` explicitly is necessary to read the saved creator when its report layout omits it. Missing authors display `—`; `Modified_User`, an ID-only object and the current session are never substituted.
+
+The existing access roster retains its additive `userName`, `approverEmail` and scalar `fullName` fields. A recorded `Added_User` identity matches these existing roster identities by exact case-insensitive whole string; a unique match prefers `fullName`. There is no email-local-part or username-suffix inference. Ambiguous or unmatched identities keep genuine native display data. The lean response conflict signature includes the additive roster fields, while existing permission flags and old three-field roster compatibility remain intact. The companion Creator function publication is managed separately; this widget does not alter permissions, report layouts, schema or write workflows.
+
+Actual source fixtures cover file/date/parent/string-ID preservation, native and roster author shapes, missing/ambiguous authors, escaping, read-only/busy/review controls, drop guards, projected native counted detail reads, and lean roster conflicts. Existing startup/FILE/no-replay, badges and financial regression suites remain required. Native Dev/Prod layout, author availability, preview and unchanged financial rows still require the release gate; no new upload/delete is claimed from the offline fixtures. Rollback: map Budget Manager to `122.28.15`; the additive backend roster keys are backward-compatible.
+
 ## Approval sidebar clipping fix (122.27.25)
 
 The phase View/Edit approval card now gives long approver emails room to wrap beside the status badge, and its desktop width increases from 285px to 315px. The approval status remains fully visible inside the card; the category summary tables continue to fit beside it. This is a frontend layout change only. No Creator form, field, function, Custom API, approval routing, or record data changes.

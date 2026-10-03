@@ -84,7 +84,7 @@ string getUserAccess(string user)
 		ctDeleteArchive = row.Delete_Archive_Contracts == true;
 		break;
 	}
-	// Roster: each user as {id, label, email}.
+	// Preserve legacy roster keys; add authoritative identity and display name.
 	userList = List();
 	allRows = User_Access[ID != null];
 	for each  r in allRows
@@ -93,6 +93,9 @@ string getUserAccess(string user)
 		m.put("id",r.ID.toString());
 		m.put("label",r.User.toString());
 		m.put("email",r.User.toString());
+		m.put("userName",r.User.toString());
+		m.put("approverEmail",ifnull(r.Approver_Email,"").toString().trim());
+		m.put("fullName",ifnull(r.Full_Name,"").toString().trim());
 		userList.add(m);
 	}
 	// Return authoritative Pro Forma Owner IDs server-side.

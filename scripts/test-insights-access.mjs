@@ -95,6 +95,7 @@ function fullAccess(user) {
   vm.runInContext(`
     const rows = [{ID:'900000000000000001',User:'fixture_session_actor',Lot_Sales_Dashboard:true,View_Total_Lot_Revenue:true}];
     function choose(condition, yes, no) { return condition ? yes : no; }
+    function ifnull(value, fallback) { return value == null ? fallback : value; }
     function List() { return []; }
     function Map() { return {put(key, value) { this[key] = value; }, toString() { return JSON.stringify(this); }}; }
     Array.prototype.add = function(value) { this.push(value); };

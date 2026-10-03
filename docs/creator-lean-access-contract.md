@@ -9,7 +9,7 @@ frontend promotion are separate steps.
 
 `getUserAccessLean(string user)` returns the existing `getUserAccess` permission
 flags, `found`, `hasRow`, `myId`, Assigned to Me preferences, and the complete
-`users` roster as `{id, label, email}`. It does not query `Add_Pro_Forma` or return
+`users` roster as `{id, label, email, userName, approverEmail, fullName}`. It does not query `Add_Pro_Forma` or return
 `proformaOwners`. Record IDs stay strings. Missing access rows retain the existing
 false flags and empty `myId`; the roster is still returned as before. Empty/null
 user preserves the existing `zoho.loginuser` fallback. The first matching
@@ -20,12 +20,81 @@ user preserves the existing `zoho.loginuser` fallback. The first matching
 call `getUserAccessLean`. Production calls the lean function directly and does
 not apply that alias.
 
-The existing `getUserAccess` and `getUserAccessDev` functions remain unchanged.
-The additive endpoints do not switch existing callers. Pro Forma continues requiring its authoritative
+The full and lean getters receive the same additive roster fields described below.
+Their Development wrappers and identity rules remain unchanged. The additive
+endpoints do not switch existing callers. Pro Forma continues requiring its authoritative
 ownership map. Budget needs flags, `myId`, and the roster for ownership, approval
 recipient matching, owner pickers, and comments; it does not consume the PF map.
 Contracts also needs the roster. Insights currently needs only its two dashboard
 flags and access-row status. Land Master has no caller of this access API.
+
+## Authoritative attachment author names — 2026-10-03 candidate
+
+The existing full and lean getters now add three keys to each roster entry:
+
+| Key | Authoritative source | Empty value |
+| --- | --- | --- |
+| `userName` | `User_Access.User.toString()` | Same existing username value |
+| `approverEmail` | `ifnull(User_Access.Approver_Email,"").toString().trim()` | `""` |
+| `fullName` | `ifnull(User_Access.Full_Name,"").toString().trim()` | `""` |
+
+The native Development User Access report was read on 2026-10-03 and verified
+`ID`, `User`, `Approver_Email`, and the scalar single-line `Full_Name` field. The
+August generated schema predates `Full_Name`; do not delete the live field or
+invent a composite-name structure from that snapshot. Existing Pro Forma PDF
+and approval functions also read `User_Access.Full_Name` as a scalar.
+
+The original `id`, `label`, and `email` values remain byte-for-byte unchanged.
+In particular, legacy `email` still contains `r.User.toString()`; substituting
+`Approver_Email` there would change existing approval-recipient behavior. All
+permission flags, first matching access-row selection, roster order and
+duplicates, the full getter's `proformaOwners` map, and the lean getter's
+absence of a Pro Forma scan are preserved. Neither API acquires a new argument
+or permission grant.
+
+For attachments, use the saved `Contract_Version.Added_User` identity and match
+it case-insensitively to explicit roster `userName` or `approverEmail`; show
+`fullName` only when that exact identity has one matching roster entry. Typed
+system-user objects may supply their explicit `user_name` or `email`. Do not
+derive a username from an email prefix, map the current session to a historical
+author, substitute `Modified_User`, or guess through a duplicate identity.
+Absent full names may retain the actual saved username as a truthful fallback.
+The attachment renderer and report-field availability are separate changes.
+
+Creator deployment is required. In Development Workflow → Functions, compare
+the live `getUserAccess` and `getUserAccessLean` bodies with the mirrors, then
+add only these lines after each existing `m.put("email",r.User.toString());`:
+
+```deluge
+m.put("userName",r.User.toString());
+m.put("approverEmail",ifnull(r.Approver_Email,"").toString().trim());
+m.put("fullName",ifnull(r.Full_Name,"").toString().trim());
+```
+
+Save and reopen both functions to verify persistence and compilation. Do not
+edit `getUserAccessDev` / `getUserAccessLeanDev` or their existing API bindings.
+Verify existing `Get_User_Access_DEV` → Development
+`Default.getUserAccessDev`, `Get_User_Access_Lean_DEV` → Development
+`Default.getUserAccessLeanDev`, and Production `Get_User_Access` /
+`Get_User_Access_Lean` → their respective shared getters. The full binding is
+documented in [environment routing](custom-api-environment-routing.md); the
+registry's older full entry remains inferred, so inspect the live binding
+before publication rather than treating the registry as deployment proof.
+
+Execute both getters for the same Development identity: shared flags and roster
+must match exactly, with only `proformaOwners` omitted by lean. Compare counts
+and equality without logging private roster rows. Publish only these two
+function components Development → Stage → Production; inspect any automatically
+selected dependencies and exclude unrelated changes. In authenticated
+Production calls, retain the argument-free GET contract and verify the same
+added roster fields plus existing flag parity. Publication/native verification
+of these new fields is pending; passing local fixtures is not a Creator save or
+SDK integration claim. See [publishing steps](creator-functions-and-publishing.md).
+
+Rollback removes only the three new `m.put` lines from both shared getter
+bodies and republishes those two function components. Client readers must
+accept their absence as an unavailable full name; permissions and owner maps
+continue using existing keys.
 
 ## Registered additive Custom APIs
 
@@ -69,7 +138,9 @@ measured latency improvement. No raw roster or ownership map is stored here.
 Run `node scripts/test-creator-lean-access.mjs`. The test executes all four saved
 function bodies with the existing Deluge translation adapter and explicit
 fixtures. It checks every individual grant, missing/null/duplicate identities,
-string IDs, empty and populated rosters, the exact Development alias, immutable
+string IDs, empty and populated rosters, preserved legacy keys, additive names
+including null/missing/blank/unicode values and duplicate identity order, the
+exact Development alias, immutable
 input records, and omission of the PF query even with a large PF inventory. This
 adapter is not a Creator compiler.
 

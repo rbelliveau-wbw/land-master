@@ -435,9 +435,9 @@ for(const options of [{createError:new Error('Child created but response lost')}
   vm.runInContext(block('renderAttachmentPage'),c);c.renderAttachmentPage(c.S.edBudget);
   assert.match(pane.innerHTML,/data-add-budget-attachment type='button' disabled/);
   assert.match(pane.innerHTML,/data-recheck-budget-upload/,'uncertain outcome exposes a read-only Recheck action');
-  assert.match(pane.innerHTML,/data-delete-budget-attachment='0' title='Delete' disabled/,'mounted row Delete stays disabled during review');
+  assert.match(pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/,'mounted row Delete stays disabled during review');
   c.S.attachmentUploadReview=null;c.S.attachmentBusy=true;c.renderAttachmentPage(c.S.edBudget);
-  assert.match(pane.innerHTML,/data-delete-budget-attachment='0' title='Delete' disabled/,'mounted row Delete stays disabled while a file request is pending');
+  assert.match(pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/,'mounted row Delete stays disabled while a file request is pending');
   c.S.attachmentUploadReview={attachmentId};c.S.attachmentBusy=false;
   let handler,chooser=0,rechecks=0;c.document={addEventListener:(_event,callback) => {handler=callback;}};
   c.$=() => ({click:() => chooser++});c.recheckBudgetAttachmentUpload=() => rechecks++;
@@ -736,4 +736,5 @@ assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does 
 await import('./test-budget-landing-projection.mjs');
 await import('./test-budget-deferred-features.mjs');
 await import('./test-budget-background-badges.mjs');
+await import('./test-budget-attachment-presentation.mjs');
 console.log('Budget exact native acknowledgements, FILE Recheck/delete locks, scoped mapping/comment uncertain-create and partial-completion guards, lean wrapper conflicts/degradation, startup and detail deduplication passed.');

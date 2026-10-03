@@ -2,6 +2,8 @@
 
 This guide captures reusable visual preferences established in production work.
 
+Attachment workspaces use Legal's treatment: a blue top rail, a compact uppercase file count above the record name, a dashed upload area with Choose Files, file-type badges, blue filenames, date and Added by metadata, and matching square preview/download/delete buttons. Resolve the original Added User through the User Access roster's full name. Keep the email switch exclusive to Legal and omit its small instructional footer. Preserve each module's existing navigation and permission guards.
+
 Forecast Manager schedule progress uses blue for Sold and dark yellow (`#b8860b`) for Scheduled. When there are scheduled lots, show current and projected completion together in parentheses (`51% → 56%`). Keep the Sold/Scheduled counts below the bar; show the Scheduled count only when positive.
 
 Below each Forecast Manager builder's overall progress, show a separate green monthly forecast meter (`#14845a`) with the current month and `10 of 10 sold` above it. Omit the secondary Sold this month / lots left caption. Keep monthly consumption separate from lifetime schedule progress and the beginning-of-month Unforecasted balance.
