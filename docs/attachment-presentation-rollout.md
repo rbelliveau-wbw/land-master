@@ -26,8 +26,10 @@ Budget SDK2 reads, but Quick View still listed only its prior six fields. The
 existing system Added User field has now been appended to Quick View as well;
 the saved/reloaded designer confirms seven fields. This shared report correction
 also supplies Legal's SDK1 reader. No new field, function, permission or current
-viewer fallback is introduced. The one-report Creator 9.35 release is publishing
-separately; completion and a fresh PF author check are recorded in the live ledger.
+viewer fallback is introduced. The one-report Creator 9.35 release completed
+through Stage and Production. A fresh Production PF read of the reported Ed Poe
+file shows Max Turner, its recorded original uploader. No file or financial
+write was performed. The live ledger records the deployment and focused check.
 
 PF 1.80.65 puts Comments and Attachments in an explicit 7px action pair, matching
 Budget. A late User Access roster reply patches only author text for exact saved

@@ -29,15 +29,30 @@
     }
   }
   function request(task,fn){return new Promise((resolve,reject)=>{queue.push({task:String(task),fn,resolve,reject,queuedAt:clock()});pump();});}
-  function code(value){if(!value)return '';if(value.code!==undefined)return String(value.code);if(value.result&&value.result.code!==undefined)return String(value.result.code);if(value.cause)return code(value.cause);return '';}
-  function responseFailed(value){
-    if(!value||typeof value!=='object'||Array.isArray(value))return true;
-    if(value.error||value.success===false||/^(error|failed|failure)$/i.test(String(value.status||'').trim())||(value.code!=null&&String(value.code)!=='3000'))return true;
-    const result=value.result;
-    if(Array.isArray(result))return result.some(responseFailed);
-    return !!(result&&typeof result==='object'&&responseFailed(result));
+  function code(value){const seen=new Set();for(let depth=0;value&&depth<=16;depth++){if(seen.has(value))return '';seen.add(value);if(value.code!==undefined)return String(value.code);if(value.result&&value.result.code!==undefined)return String(value.result.code);value=value.cause;}return '';}
+  // Native envelope containers only: report data and business fields stay opaque.
+  function scanEnvelope(value,includeCause){
+    const queue=[{value,depth:0,parents:[]}],seen=new Set();let failed=false,firstCode='',failedCode='';
+    function enqueue(value,entry,parents){if(queue.length>=128){failed=true;return;}queue.push({value,depth:entry.depth+1,parents});}
+    for(let index=0;index<queue.length;index++){
+      const entry=queue[index];let item=entry.value;
+      if(typeof item==='string'){
+        const text=item.trim();if(!/^[{[]/.test(text))continue;
+        try{item=JSON.parse(text);}catch(ignore){failed=true;continue;}
+      }
+      if(!item||typeof item!=='object')continue;
+      if(entry.parents.includes(item)||entry.depth>16){failed=true;continue;}
+      if(seen.has(item))continue;seen.add(item);
+      const parents=entry.parents.concat([item]);
+      if(Array.isArray(item)){for(const child of item){if(queue.length>=128){failed=true;break;}enqueue(child,entry,parents);}continue;}
+      if(item.code!=null){const native=String(item.code);if(!firstCode)firstCode=native;if(native!=='3000'){failed=true;if(!failedCode)failedCode=native;}}
+      if(item.error||item.success===false||/^(error|failed|failure)$/i.test(String(item.status||'').trim()))failed=true;
+      for(const key of includeCause?['result','details','response','output','cause']:['result','details','response','output'])if(Object.prototype.hasOwnProperty.call(item,key))enqueue(item[key],entry,parents);
+    }
+    return {failed,code:failedCode||firstCode};
   }
-  function failureCode(value){const native=code(value);if(native&&native!=='3000')return native;const result=value&&value.result,items=Array.isArray(result)?result:result&&typeof result==='object'?[result]:[];for(const item of items){const nested=failureCode(item);if(nested&&nested!=='3000')return nested;}return native;}
+  function responseFailed(value){return !value||typeof value!=='object'||Array.isArray(value)||scanEnvelope(value,false).failed;}
+  function failureCode(value){return scanEnvelope(value,true).code;}
   function failure(report,value,message){const error=new Error(message||report+': '+(value&&(value.message||value.description)||'Creator did not return a readable response.'));error.code=failureCode(value);error.permissionDenied=error.code==='2898'||!!(value&&value.permissionDenied);error.response=value;error.cause=value;return error;}
   function context(){const c=root.LMRuntime&&root.LMRuntime.current?root.LMRuntime.current():{};return String(c.environment||'UNKNOWN')+'|'+String(c.user||'')+'|'+String(c.appLinkName||'');}
   function invalidate(predicate){
@@ -98,6 +113,6 @@
     return promise;
   }
   root.LMPerf=Object.freeze({mark,start,end,timed,snapshot});
-  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;pump();}});
+  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,responseFailed,failureCode,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;pump();}});
   mark('adapter:ready');
 })(typeof window==='undefined'?globalThis:window);

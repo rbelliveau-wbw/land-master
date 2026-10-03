@@ -102,6 +102,31 @@ for (const phase of ['count', 'records']) for (const anomaly of [
   const {data}=harness(), api=scripted(1,[page([row('1',{status:'error',success:false,error:'Business fields remain data'})])]);
   assert.equal((await data.readAll(options(api.api)))[0].ID,'1','Record business fields are not native response envelopes.');
 }
+// Synthetic competing native containers: no captured native failure is claimed.
+for(const phase of ['count','records'])for(const extra of [
+  {details:{code:2898,error:'Denied'}},{response:'{"code":2898,"status":"failure"}'},{output:[{code:2898,success:false}]}
+]){
+  const {data}=harness();let reads=0;const raw={...(phase==='count'?count(0):page([row('1')])),...extra};
+  const api={getRecordCount:async()=>phase==='count'?raw:count(1),getRecords:async()=>{reads++;return raw;}};
+  await assert.rejects(data.readAll(options(api)),error=>error.code==='2898'&&error.permissionDenied&&error.response===raw&&error.cause===raw);
+  assert.equal(reads,phase==='count'?0:1,'failed sibling metadata cannot publish zero or partial data');
+}
+for(const phase of ['count','records']){
+  const {data}=harness(),info={details:{message:'Information',code:3000,status:'success'},response:'{"code":3000,"message":"Info"}',output:[{success:true}]};
+  const api={getRecordCount:async()=>({...count(phase==='count'?0:1),...info}),getRecords:async()=>({...page([row('1',{details:{code:2898},response:{error:'Business field'}})]),...info})};
+  assert.equal((await data.readAll(options(api))).length,phase==='count'?0:1,'successful informational metadata and record business fields remain readable');
+}
+{
+  const {data}=harness(),cycle=count(0);cycle.details=cycle;
+  assert.equal(data.responseFailed(cycle),true);assert.equal(data.failureCode(cycle),'3000');
+  await assert.rejects(data.readAll(options({getRecordCount:async()=>cycle,getRecords:async()=>assert.fail('No records after a malformed count')})),error=>error.response===cycle);
+  const repeated={code:3000,message:'Information'};assert.equal(data.responseFailed({...count(0),details:repeated,output:repeated}),false,'shared informational references are not cycles');
+  let deep={code:2898};for(let index=0;index<25;index++)deep={details:deep};assert.equal(data.responseFailed({...count(0),details:deep}),true);
+  assert.equal(data.responseFailed({...count(0),output:Array.from({length:200},()=>({code:3000}))}),true,'oversized envelope traversal is bounded');
+  assert.equal(data.responseFailed({...count(0),response:'{"code":'}),true,'malformed structured JSON cannot masquerade as success');
+  const cause={};cause.cause=cause;assert.equal(data.failureCode(cause),'','cyclic rejected-error causes are bounded');
+  assert.equal(data.code(cause),'');await assert.rejects(data.readAll(options({getRecordCount:async()=>{throw cause;},getRecords:async()=>assert.fail('No records after rejected malformed count')})),error=>error.response===cause&&error.cause===cause);
+}
 for (const phase of ['count', 'records']) for (const raw of [{code: 2898}, {code: '500', description: 'Temporary SDK failure'}, Object.assign(new Error('Read refused'), {code: 'fixture-code', permissionDenied: true})]) {
   const {data} = harness();
   let attempts = 0, records = 0;

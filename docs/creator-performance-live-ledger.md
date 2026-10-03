@@ -127,16 +127,54 @@ guards. The repaired SDK1 0.9.15 baseline remains an immutable regression fixtur
 and rollback. Full validation/build pass after stamping. Production remains on
 0.9.14 pending the actual Development gate; no real takedown was created.
 
-PF 1.80.65 is prepared for authorized Production publication: a 7px action pair,
+PF 1.80.65's authorized Production publication includes a 7px action pair,
 late roster author-text refresh without repaint, and the one-report Creator 9.35
-Quick View uploader follow-up. Creator Stage is at 9.35; Production publication
-is pending. These presentation corrections keep SDK1 and existing writers.
+Quick View uploader follow-up. Creator Stage and Production are at 9.35.
+The completed check is recorded below. These corrections keep SDK1 and existing writers.
 
 Settings 1.3.5 diagnostics identify the missing Contract_Template field. The
 current native Actions form builder also no longer lists that field and does
 list Template Action; it cannot be added as an existing report field. The user
 has been asked whether template pickers should use checked Template Action rows.
 No new schema field or changed template business rule has been invented.
+
+The PF 1.80.65 / Manage 0.9.16 candidate increment was pushed in `07c203b`.
+CI 37152571345 and Pages 37152571325 succeeded. Creator Stage and Production
+both reached 9.35 with no pending changes; only All_Contract_Versions Quick View
+was published. A fresh read-only Production PF modal for the reported Ed Poe
+file now displays Max Turner, its recorded original uploader. No file, email,
+approval or financial write was performed. Proof is retained privately.
+
+Manage 0.9.16's actual native Development read gate matched the repaired SDK1
+baseline: all 37 subdivision IDs/order, every label/class/readonly attribute of
+155 selected-scope lot tiles (131 enabled, 24 unavailable), and all 30 takedown
+table rows (24 records plus six groups). Connected and native Development build
+0.9.16 were shown in its audit. The form loaded 13 builders and its existing
+12 rate/24 date fields; it was canceled without creating a takedown. Independent
+review then identified a post-create reverse-claim edge: competing/duplicate
+relationship IDs could be accepted. Production remains held for the 0.9.17
+exact single-claim correction. Audit Copy reported success, but the browser's
+clipboard inspection still returned older content, as it did for the baseline;
+native clipboard content verification is not claimed.
+
+### Shared native-envelope and Manage Lots follow-up
+
+Budget 122.28.19, Land 8.13.11, Insights 1.5.41, Gantt 1.1.6, Settings 1.3.6
+and Manage Lots 0.9.17 are immutable Development candidates. The canonical helper
+and actual Budget/Land/Gantt/Settings validators reject explicit failures in
+recognized native response containers, including structured JSON, while leaving
+report business data opaque and successful informational metadata valid. Actual
+fixtures preserve native failure codes, unknown drafts and existing read-only
+reconciliation. These are synthetic regressions, not a captured live incident.
+Manage 0.9.17 additionally requires exactly one persisted reverse lot claim.
+
+Focused suites, full validation and Pages build passed before this Development
+increment. No Creator schema, report field, function, Custom API or permission
+change is required. Production mappings retain their prior releases pending
+individual native Development gates. Settings also retains the unresolved picker
+business-rule gate. Rollback candidates: Budget 122.28.18, Land 8.13.10,
+Insights 1.5.40, Gantt 1.1.5, Settings Production 1.3.1 and repaired Manage 0.9.15.
+Manage Production 0.9.14's existing startup failure is not a healthy rollback.
 
 | Field | Value to record |
 | --- | --- |

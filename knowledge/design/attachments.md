@@ -16,7 +16,8 @@ presentation increment; live upload/delete coverage is recorded separately.
   control: `#f4f8ff` surface, `#cbd9eb` border, `#285b97` icon, square rounded
   corners and a count badge at the lower-right edge. Compact row size is
   `28.75px` with a `16.1px` SVG. Keep hover changes to color, border and shadow,
-  using `180ms ease`; reserve room so badges remain visible.
+  using `180ms ease`; reserve room so badges remain visible. Keep a `7px` gap
+  between adjacent comment and attachment controls in the main-list action row.
 - Use Legal's blue modal top rail, compact uppercase file count above the
   record name, a `940px` maximum width, and a neutral `32px` centered SVG Close
   with a `9px` radius. Keep the name readable with truncation
@@ -45,8 +46,10 @@ roster match and display that row's `fullName`. The roster adds `userName`,
 `approverEmail` and `fullName` while preserving its older keys. Preserve a real
 saved username as fallback when a full name is unavailable; missing provenance
 stays unavailable. Do not use the current actor, last editor, an email prefix
-or an ID as an invented author. Ensure the report actually returns Added User;
-SDK1 by-ID reads still depend on report-field visibility. See the
+or an ID as an invented author. Ensure the report actually returns Added User
+in both Quick View and Detail View: SDK1 reads use Quick View, while SDK2
+`field_config:all` includes Detail View fields. A late roster reply updates
+saved-author text without replacing an open dialog, list or editor draft. See the
 [backend roster contract](../../docs/creator-lean-access-contract.md).
 
 ## File actions and accessibility

@@ -3,6 +3,7 @@ import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:asser
 // After adoption, run with --app-root=widgets/manage-lots/src/app.
 const app=(process.argv.find(arg=>arg.startsWith('--app-root='))?.slice('--app-root='.length)||'widgets/manage-lots/src/app').replace(/[\\/]+$/,'')+'/',html=fs.readFileSync(app+'widget.html','utf8');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).find(text=>text.includes('var CFG='));
+const widgetVersion=html.match(/version:"([^"]+)"/)[1];
 assert.match(html,/widgets\/version\/2\.0\/widgetsdk-min\.js/);assert.doesNotMatch(inline,/ZOHO\.CREATOR\.API\.|ZOHO\.CREATOR\.init\(|spreadsheet\.|renderPlat\(/);
 const SID='90071992547409931',LOT='90071992547409941',SOLD='90071992547409942',BUILDER='90071992547409961',TD='90071992547409951',CREATED='90071992547409981';
 const plain=value=>JSON.parse(JSON.stringify(value));const turn=()=>new Promise(resolve=>setImmediate(resolve));const drain=async()=>{for(let i=0;i<20;i++)await turn()};
@@ -53,7 +54,7 @@ function harness(options={}){
     matchMedia:()=>({matches:options.reduced!==false}),setTimeout(fn,ms){const id=++timerSeq;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),addEventListener(name,fn){events.set(name,fn)},
     ZOHO:{CREATOR:{UTIL:{getInitParams:async()=>{initCalls++;if(gate.init)return gate.init.promise;return plain(initParams)}},DATA:{getRecordCount:config=>invoke('count',config),getRecords:config=>invoke('read',config),addRecords:config=>invoke('add',config)}}}});context.window=context;
   for(const file of ['runtime-context.js','creator-data.js','subdivision-counts.js','manage-lots-controller.js'])vm.runInContext(fs.readFileSync(app+file,'utf8'),context,{filename:file});
-  vm.runInContext(inline,context,{filename:'whole-manage-lots-0.9.16.js'});
+  vm.runInContext(inline,context,{filename:'whole-manage-lots-sdk2.js'});
   async function timersAt(ms){for(const [key,timer]of[...timers])if(timer.ms===ms){timers.delete(key);timer.fn()}await drain()}
   async function flushProgress(){for(let i=0;i<6;i++)await timersAt(options.reduced===false?560:0)}
   async function choose(){context.__MLW_TEST__.setSubdivisionIds([SID]);await drain();context.__MLW_TEST__.applySelection(LOT,true);context.__MLW_TEST__.openModal();for(const [id,value]of Object.entries({fName:'Frozen fixture takedown',fBuilder:BUILDER,fStatus:'Active',fEntered:'2026-10-02',fPurchase:'2026-10-04',fTaxMethod:'Flat',fTaxStatus:'Taxes Paid',fTaxPerLot:'0',fPercent:'0',fFees:'0'}))nodes.get(id).value=value}
@@ -107,7 +108,7 @@ for(const extra of [{details:{code:2898,error:'Denied'}},{response:'{"status":"f
 {
   const h=harness();await drain();assert.equal(h.nodes.get('mode').textContent,'Connected');assert.equal(h.initCalls(),1);assert.equal(h.widget.controller.state.ready,true);
   h.widget.setSubdivisionIds([SID]);await drain();assert.deepEqual(Array.from(h.state.lots,row=>row.ID),[LOT,SOLD]);assert.equal(h.widget.eligible(h.state.lots[0]),true);assert.equal(h.widget.eligible(h.state.lots[1]),false);assert.match(h.nodes.get('blocks').innerHTML,/Block 001/);assert.match(h.nodes.get('blocks').innerHTML,/>01<\/button>/);assert.equal(h.widget.controller.state.core.claims.size,0);
-  await h.nodes.get('btnLogCopy').fire('click');assert.match(h.copies[0],/Manage Lots v0\.9\.16 \| env=PRODUCTION \| user=actual-native-actor \| lots=2/);
+  await h.nodes.get('btnLogCopy').fire('click');assert.ok(h.copies[0].includes('Manage Lots v'+widgetVersion+' | env=PRODUCTION | user=actual-native-actor | lots=2'));
   await h.widget.load();await drain();assert.equal(h.state.lots.length,2);assert.equal(writes(h).length,0);assert.ok(h.maximum()<=3);
 }
 {
@@ -152,6 +153,18 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
 {
   const h=harness();await drain();await h.choose();h.gate.reverseWrong=true;await h.widget.confirm();await h.flushProgress();assert.ok(h.widget.controller.state.review);assert.equal(h.widget.controller.state.review.createdId,CREATED);assert.equal(writes(h).length,1);
   h.rows.All_Lots_All_Fields[0].Add_Builder_Takedown_Name=[{ID:CREATED}];await h.widget.recheckCreate();await h.flushProgress();assert.equal(h.widget.controller.state.review,null);assert.equal(writes(h).length,1,'read-only recheck verifies original exact ID/claims without another create');
+}
+// Neither a competing ID nor a duplicate direct claim proves an exclusive relationship.
+for(const directIds of [[CREATED,TD],[CREATED,CREATED]]){
+  const h=harness();await drain();await h.choose();const add=h.context.ZOHO.CREATOR.DATA.addRecords;
+  h.context.ZOHO.CREATOR.DATA.addRecords=async config=>{const response=await add(config);h.rows.All_Lots_All_Fields.find(row=>row.ID===LOT).Add_Builder_Takedown_Name=directIds.map(ID=>({ID}));return response;};
+  await h.widget.confirm();await h.flushProgress();const review=h.widget.controller.state.review;
+  assert.ok(review);assert.equal(review.createdId,CREATED);assert.equal(review.error.noReplay,true);assert.equal(review.error.uncertain,true);assert.deepEqual(Array.from(review.confirmedLotIds),[]);assert.equal(h.state.verifiedCreate,undefined);
+  assert.equal(h.state.selected.has(LOT),true);assert.equal(h.nodes.get('fName').value,'Frozen fixture takedown');assert.notEqual(h.nodes.get('mlProgressStage2').textContent,'Done');
+  await h.widget.confirm();assert.equal(writes(h).length,1,'another explicit confirm cannot replay a conflicting fresh relationship');assert.equal(await h.widget.load(),false);
+  assert.equal(await h.widget.recheckCreate(),false,'read-only Recheck keeps an unresolved relationship in review');await h.flushProgress();assert.equal(writes(h).length,1);assert.equal(h.state.selected.has(LOT),true);
+  h.rows.All_Lots_All_Fields.find(row=>row.ID===LOT).Add_Builder_Takedown_Name=[{ID:CREATED}];await h.widget.recheckCreate();await h.flushProgress();
+  assert.equal(writes(h).length,1);assert.equal(h.widget.controller.state.review,null);assert.equal(h.state.verifiedCreate.createdId,CREATED);assert.equal(h.state.selected.size,0);assert.equal(h.nodes.get('mlProgressStage2').textContent,'Done','only an exact fresh singleton relationship verifies the captured destination');
 }
 for(const params of [{envUrlFragment:''},{loginUser:{name:'bad'},envUrlFragment:''},[],{loginUser:'known',envUrlFragment:'bad'}]){
   const h=harness({params});await drain();assert.equal(h.widget.controller.state.nativeReady,false);assert.equal(h.calls.length,0);assert.equal(h.state.live,false);
