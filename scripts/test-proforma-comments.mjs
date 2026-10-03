@@ -92,7 +92,7 @@ assert.match(budgetSource,/function budgetAttachmentActionIcon\(\).*21\.44 11\.0
 assert.match(budgetSource,/budgetAttachmentButton\(b, phaseName\(b\)\) \+\s*budgetCommentButton\("Budget"/,'Budget phase actions order attachments before comments');
 assert.match(budgetSource,/function loadBudgetAttachments\(budgetId, force\)/,'Budget attachment counts load only for the opened parent from Contract_Version records');
 assert.match(budgetSource,/function budgetAttachmentBadge\(id\).*status===\"loaded\"/,'Budget attachment badges preserve unknown/loading/error until a complete parent read');
-assert.match(budgetSource,/openPhaseEditor\(attachment\.dataset\.budgetAttachments, "attachments"\)/,'Budget attachment buttons open the existing attachment workspace');
+assert.match(budgetSource,/openBudgetAttachmentModal\(attachment\.dataset\.budgetAttachments,attachment\)/,'Budget main-list attachment buttons open the selected phase modal');
 assert.match(budgetSource,/\.ptable tbody td:first-child\{[^}]*overflow:visible/,'Budget action badges can render beyond the action cell');
 assert.match(budgetSource,/\.editor-action-controls #editorBudgetComments\{width:50px;height:50px/,'Budget editor comments control is twice the original 25px size');
 assert.match(budgetSource,/<col style='width:18%'><col style='width:22%'/,'Budget Actions column reserves room for View, Approvals, Attachments, and Comments');

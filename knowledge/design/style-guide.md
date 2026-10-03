@@ -1,8 +1,11 @@
 # Land Master style guide
 
 This guide captures reusable visual preferences established in production work.
-
-Attachment workspaces use Legal's treatment: a blue top rail, a compact uppercase file count above the record name, a dashed upload area with Choose Files, file-type badges, blue filenames, date and Added by metadata, and matching square preview/download/delete buttons. Resolve the original Added User through the User Access roster's full name. Keep the email switch exclusive to Legal and omit its small instructional footer. Preserve each module's existing navigation and permission guards.
+Use the short [design index](README.md) to find a focused component guide.
+[Attachments](attachments.md) defines Legal's shared file workspace and the
+required main-list modal target. [Comments](comments.md) defines conversation
+surfaces, composer, activity states and interaction guards. Read the relevant
+component guide for that work; this general guide supplies the remaining patterns.
 
 Forecast Manager schedule progress uses blue for Sold and dark yellow (`#b8860b`) for Scheduled. When there are scheduled lots, show current and projected completion together in parentheses (`51% → 56%`). Keep the Sold/Scheduled counts below the bar; show the Scheduled count only when positive.
 

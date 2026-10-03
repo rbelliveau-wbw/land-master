@@ -1,7 +1,17 @@
 
 # Budget Module
 
-## Attachment presentation and recorded author (122.28.16 candidate)
+## Main-list attachment modal (122.28.18)
+
+The phase paperclip now opens attachments over the main list, using the same file cards and upload area as the existing editor Attachments workspace. The main list, search, scroll, navigation generation and selected editor/drafts remain in place. Legal's blue top rail, compact file count, phase name and centered SVG Close are retained; Budget has no Email switch. The editor Attachments workspace remains available.
+
+Each modal captures the exact loaded phase ID and startup/navigation/environment/app/actor scope, then requests fresh counted detail through the existing parent-scoped attachment loader. Closing a loading modal is safe; late replies cannot replace or reopen another phase. Errors remain unavailable with Retry rather than becoming zero. Verified upload/delete refreshes that phase's detail and existing badge patch/invalidation path without rebuilding the list. Read-only users retain Preview and Download. Busy writes block Close, Escape, navigation and conflicting file mutations; unknown uploads keep the existing read-only Recheck/no-replay controls. The native picker belongs to the modal session, so a file selection arriving after dismissal cannot upload into the retained editor.
+
+The named dialog traps keyboard focus, makes the background inert, and restores the original paperclip focus and page scroll on close. Preview and Delete confirmation remain nested existing surfaces; Escape dismisses the active child first. Preview deletion resolves the exact retained child ID rather than relying on a stale file index. Existing `Contract_Version.Budget`/`File_field1` create, FILE verification, upload/delete failure guards and `Get_Budget_Attachment_Preview` PDF route are unchanged. No Creator schema, report, permission, function or API deployment is required.
+
+Actual-source fixtures exercise the mounted landing/control handlers, canonical counted detail transport, exact large string IDs, fresh/retry/denied reads, dismissed-phase replies, environment/app/actor/startup/navigation changes, readonly/busy/review controls, native picker session retention, upload/delete scope and badge refresh, nested keyboard/focus/inert behavior, preserved list/editor/search/scroll and original editor workspace. The existing startup/FILE/no-replay, automatic badge and financial suites also pass. The user waived native UI gates for this presentation change; these checks do not claim a new live upload/delete or rendered browser visual check. Rollback: map Budget Manager to `122.28.17`.
+
+## Attachment presentation and recorded author (122.28.17)
 
 Budget's existing phase Attachments page follows Legal's attachment layout: a dashed upload area with Choose Files, clickable filenames, compact file-type cards, date/Added by details, and matching 34px Preview, Download and Delete icon buttons. The Email slider remains exclusive to Legal. Picker and drop both enter Budget's existing guarded upload flow; permission, busy and unverified-upload locks also apply to the drop area. PDF preview continues through `Get_Budget_Attachment_Preview`.
 

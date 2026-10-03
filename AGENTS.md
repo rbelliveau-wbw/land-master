@@ -66,9 +66,22 @@ Chat history and model memory are not authoritative.
 
 ## Visual style context
 
-- Before adding or revising UI that follows an established visual pattern, read
-  `knowledge/design/style-guide.md` and apply the relevant guidance. Add a
-  concise rule there when the user establishes a reusable styling preference.
+- Before adding or revising an established UI component, read its focused design
+  guide: [attachments](knowledge/design/attachments.md) or
+  [comments](knowledge/design/comments.md) for those surfaces. Find other guides
+  in the short [design index](knowledge/design/README.md); consult relevant
+  [general style](knowledge/design/style-guide.md) guidance when needed. A small
+  component edit does not require reading every guide. Record new reusable
+  preferences in the appropriate component document, keeping one focused
+  Markdown file per component family rather than one per individual button.
+  A new standardized component requires a new guide in `knowledge/design/`
+  and an index entry. A change to an existing component requires updating its
+  guide and affected implementations. Run `node scripts/test-design-docs.mjs`
+  for discovery/link checks and verify the affected implementation with focused
+  checks; Markdown links do not enforce visual or behavioral consistency.
+  Native Creator UI testing is required for SDK migrations that can affect data
+  flow. Routine presentation changes use code checks unless the user requests
+  a live UI gate; this follows Robby's explicit testing preference.
 
 - Before designing or changing any approval initiation, routing, email, or
   finalization flow in any existing or new module, read

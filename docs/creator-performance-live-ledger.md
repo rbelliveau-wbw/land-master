@@ -93,6 +93,18 @@ The user also emphasized Tax Center's historical throughput, missing-record, inc
 
 ## Template for each subsequent independent increment
 
+### Attachment follow-up, 2026-10-03
+
+Budget 122.28.17, Legal 1.60.44 and Pro Forma 1.80.63 were released through main commit `3b94b58`. CI 37142879946 and Pages 37142879911 succeeded. Focused actual-renderer/action/provenance tests and full validation/build passed. The user explicitly waived native UI gates for attachment presentation; individual native Development testing remains required for SDK migrations.
+
+Creator's three uploader-data components (`getUserAccess`, `getUserAccessLean`, `All_Contract_Versions`) were selectively published through Stage to Production as version 9.34. No unrelated components were selected. A fresh native Production Budget read of the same Alta Vista phase returned three files and displayed the original uploader's correct full name on all three. This was a focused check of the reported missing author data, with no attachment or financial writes. Legal/Pro Forma live author visuals and full file workflows are not claimed by that one check.
+
+Settings Production was restored to 1.3.1 in `280ef6f`; CI 37140102020 and Pages 37140101968 succeeded. A fresh native Production reload showed 1.3.1, 22 existing inputs and no Actions-unavailable warning. Exact lookup-choice parity remains separate. The proposed 1.3.4 counted-read fix is preserved privately and is excluded from the attachment deployment pending its native SDK gate.
+
+Budget 122.28.18 and Pro Forma 1.80.64 add their main-list attachment modals; Pro Forma adds its paperclip/count beside Comments. Complete counted reads, original author metadata, selected-parent permissions, stale reply/count precedence, duplicate/busy controls, focus/inert/scroll return, retained list/editor state and unchanged file routes passed actual-source tests and independent review. Full validation and Pages build passed. Native presentation gates were waived by the user. These frontend-only releases require no additional Creator publication; rollback uses Budget 122.28.17 and Pro Forma 1.80.63. Deployment results are recorded separately after the push.
+
+Manage Lots 0.9.15's existing SDK1 startup repair was checked in native Development as the migration baseline: Connected, 37 subdivisions, 13 builders, 24 takedowns across six groups. The selected first subdivision displayed 155 exact lot IDs, 131 available and 24 unavailable. Its existing legend and complete row/table snapshots were retained privately for the SDK2 comparison. No Create or financial action was performed. This confirms the minimal repair in Development, not a passed SDK2 or Production gate.
+
 Copy one row per actual environment/release and keep the result concise. Use counts and aggregate metrics rather than private rows.
 
 | Field | Value to record |
