@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T18:38:24.905739+00:00",
+  "generated_at": "2026-10-03T21:30:04.421Z",
   "method": "inferred by scanning widget source and matching exact Creator form/report names",
   "widgets": {
     "proforma-manager": {
@@ -458,15 +458,14 @@
         "All_Taxing_Jurisdictions"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
-        "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.getRecordCount",
-        "ZOHO.CREATOR.API.updateRecord",
+        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.getRecords",
+        "ZOHO.CREATOR.DATA.updateRecordById",
         "ZOHO.CREATOR.UTIL",
-        "ZOHO.CREATOR.UTIL.setIframeHeight",
-        "ZOHO.CREATOR.appName",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.UTIL.setIframeHeight"
       ],
       "external_domains": [
         "static.zohocdn.com",

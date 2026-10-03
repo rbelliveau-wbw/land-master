@@ -1,6 +1,6 @@
 # Creator data helper
 
-`creator-data.js` is synchronized byte-for-byte into the six current SDK2 widgets by `node scripts/sync-shared-widget-data.mjs`. It provides complete counted/cursor reads, bounded requests, actor/environment/app isolation, scoped invalidation and telemetry. This change does not alter SDK payloads, schema, permissions, workflow defaults or the remaining SDK1 widgets.
+`creator-data.js` is synchronized byte-for-byte into the seven current SDK2 source widgets by `node scripts/sync-shared-widget-data.mjs`, including the Tax Development candidate. It provides complete counted/cursor reads, bounded requests, actor/environment/app isolation, scoped invalidation and telemetry. This change does not alter SDK payloads, schema, permissions, workflow defaults or the remaining SDK1 widgets. Source adoption does not imply Production promotion; see the environment mappings and live ledger.
 
 `LMData.responseFailed(response)` inspects explicit native failure fields and only known `result`, `details`, `response` and `output` containers, including object/array or structured JSON values. A native non-3000 code, truthy error, failed status or success:false cannot hide beside a valid count/ID. Successful informational metadata stays valid. Cycles, malformed structured JSON or exhausted 128-node/16-depth bounds are unverified. Repeated references without a cycle remain valid. Report `data` and business fields are opaque; each CRUD validator explicitly checks its native acknowledgement data separately.
 

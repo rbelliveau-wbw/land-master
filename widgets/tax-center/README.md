@@ -3,6 +3,25 @@
 
 Tax parcel, tax year, jurisdiction, protest, and appeal management.
 
+## SDK2 candidate
+
+The current source adopts the reviewed SDK2 controller and mounted multi-record progress adapter. Release version, immutable packaging, environment routing and native Development/Production gates remain owned by the release task. No live Tax gate or deployment is claimed here.
+
+Reads use native counted cursor snapshots with exact string record IDs. Incomplete, duplicated or changing scopes remain read-only; the existing 800-row parcel-search limit remains. All four bulk paths capture each destination and payload, preflight the complete fresh scope, and verify persisted fields by exact ID. Lost, mixed or unsettled writes retain their draft and ledger without automatic replay. Read-only Recheck can reconcile an authoritative record ID; an unknown create without one requires manual review.
+
+The existing business mapping, tax criteria, date conversion, per-record copy-from values, parcel identifiers and default Creator workflow behavior are preserved from immutable `19.17.4`. Property writes remain on `All_Property`, parcel-year writes on `All_Tax_Parcel_Years`; no schema, function or Custom API changes are required. See [SDK2 contract](SDK2.md) for fields, verification and rollback.
+
+Focused verification:
+
+```text
+node scripts/test-tax-sdk-v2.mjs
+node scripts/test-tax-sdk-v2-effective.mjs
+node scripts/test-creator-data.mjs
+node scripts/validate-widget-javascript.mjs
+```
+
+These actual-source fixtures use in-memory native-shaped responses and the immutable SDK1 release. They do not perform browser or Creator writes. The release task still runs full repository validation/build and native gates. Rollback: route Tax to immutable `19.17.4`; no data migration is involved. Its preexisting count mismatch can expose incomplete rows, so rollback does not preserve the candidate's new completeness protection.
+
 ## Baseline
 
 - Version: `19.0.0`

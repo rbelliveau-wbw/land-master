@@ -176,6 +176,40 @@ business-rule gate. Rollback candidates: Budget 122.28.18, Land 8.13.10,
 Insights 1.5.40, Gantt 1.1.5, Settings Production 1.3.1 and repaired Manage 0.9.15.
 Manage Production 0.9.14's existing startup failure is not a healthy rollback.
 
+Commit `4671d13` passed CI 37154688153 and Pages 37154688123. Its individual
+native Development reads then passed: Manage 0.9.17 matched every baseline
+subdivision ID/label, all 155 tile IDs/labels/classes/readonly attributes, and
+all 30 takedown table rows (24 records/six groups); Budget 122.28.19 loaded five
+budgets, two hydrated projects, 96 categories and 164 approvals, resolved access
+without fallback, and showed the correct author on its exact-parent one-file
+modal; Land 8.13.11 retained ten Properties, 37 subdivisions, 12 Companies and
+16 named groups with zero Unlinked; Gantt 1.1.6 read 37 subdivisions/56 milestones
+and rendered the existing 12-bar scope with Save disabled; Insights 1.5.41
+preserved this Dev actor's existing dashboard denial. The Insights graph read is
+therefore not a passed authorized Dev graph scenario. Insights remains on
+1.5.40 in Production until an existing authorized Dev actor passes its data gate.
+Settings 1.3.6 preserved all 23 exact scalar control values; its safe diagnostic
+still reports the missing action-template fields and its three saved IDs remain
+unresolved. Settings stays on 1.3.1 in Production. No native write or forced
+failure was performed in this helper increment.
+
+Tax 19.17.5 is a separate Development SDK2 candidate. Actual whole-app and
+effective-handler suites use the tracked native source and immutable SDK1
+19.17.4 baseline, with complete unique-ID scopes, count-before/after, captured
+per-ID payloads, persisted verification, bounded concurrency, mounted progress,
+retained unknown outcomes and no replay. Both suites, full validation and build
+passed before publication. Only Development selects this Tax candidate; the
+native gate and Production promotion remain pending. Adding Tax to native
+frontend routing retains its permanent Creator widget URL. Existing forms,
+reports, field builders, functions and permission rules remain unchanged; no
+Creator backend publication is required.
+
+A fresh native SDK1 Tax Development baseline immediately before this switch
+loaded 228 unique 2026 parcel-year IDs in pages of 100, 100 and 28. Each rendered
+row's ID, selected/input values and cells were retained privately for the
+successor comparison. Headline components were active eight, untriaged 155,
+paid/closed 35 and AG two. No native data was edited.
+
 | Field | Value to record |
 | --- | --- |
 | Increment and changed behavior | Concrete behavior plus source files; keep transport and further loading redesign distinguishable. |
