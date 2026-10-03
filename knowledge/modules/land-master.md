@@ -3,6 +3,14 @@
 
 ## Project workspace and Territory migration (8.14.1)
 
+Version 8.14.3 captures the runtime actor/environment and data generation before
+Territory preview. It rechecks that context around every asynchronous preflight,
+write and persisted read-back. A changed context stops later targets and stale
+publication. An open preview, running operation or retained result blocks refresh
+and record editing until dismissed. The existing fill-only and conflict rules
+are preserved. Regression: `scripts/test-project-territory-context.mjs` exercises
+the actual mounted handlers and widget guards; rollback UI is 8.14.2.
+
 The former Subdivisions tab is Projects. Groups use exact Project lookup IDs, show Project Territory, and provide a pencil that opens the existing Project editor. Projects without subdivisions remain visible; equal names do not merge different Project records. Subdivision rows and their existing inline edits remain underneath. New Projects require Territory in the widget, populated through the existing global-variable Get_Land_Master_Choices API.
 
 Fill Project territories first reads complete current All_Projects/All_Subdivisions records and live global choices. It fills only blank Project.Territory when all nonblank linked Subdivision.Territory values agree and match a global choice. Existing values, conflicts, missing sources and missing report fields are preserved and listed. Each target's Project and linked subdivisions are refreshed immediately before writing only Territory; a persisted Project read-back is required for Verified. An ambiguous write is reconciled by read-back, never blindly replayed; an unverified target stops later writes. Creator's by-ID update has no compare-and-set guarantee, so avoid concurrent Territory editing during this operation.

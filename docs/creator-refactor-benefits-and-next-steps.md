@@ -30,14 +30,15 @@ sets and releases; no controlled percentage speedup is claimed.
   (79 available, 107 unavailable) and 857 takedowns with no audit errors.
   Regression checks retain drafts, block repeat creates after an unknown outcome
   and require exact saved lot claims.
-- Tax Center must require a complete unique-ID result before editing. Its SDK2
-  candidate needs the individual native Dev gate before publication. The existing
+- Tax Center now requires a complete unique-ID result before editing. Its SDK2
+  19.17.6 candidate passed its individual native Dev gate. The existing
   Prod SDK1 search returned 151 unique rows against an expected 152; this is a
   documented failure, not a complete baseline.
 - Tax 19.17.5's real Dev gate matched all 228 IDs and editable values but caught
   blank grid labels from a skipped existing enrichment step. Candidate 19.17.6
-  restores enrichment on search publication and verified recovery; it remains
-  Dev-only until a new individual native check passes.
+  restores enrichment on search publication and verified recovery. Its fresh
+  Dev check matches all 228 IDs, editable values and rendered cells exactly;
+  native tied-row ordering differs. Production verification follows promotion.
 - Insights 1.5.40 remains on SDK2 in Prod. The stricter 1.5.41 candidate is held:
   all four existing Dev User Access records have Lot Sales Dashboard disabled,
   preventing the required authorized Dev data read. No permission was changed.

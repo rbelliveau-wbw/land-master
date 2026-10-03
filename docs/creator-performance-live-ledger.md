@@ -223,8 +223,9 @@ Native Manage Lots Production 0.9.17 is Connected, with 348 subdivision choices,
 (107 unavailable). Its audit shows Production identity and zero errors. Existing
 takedown rows display original builder, lot codes/statuses and dates. No create,
 lot claim or write was performed. Budget Production 122.28.19 shows the SDK2
-script, 113 budget rows in 41 groups and resolved numeric file/comment badges.
-The original three-file Alta Vista scope was opened read-only.
+script, 111 loaded budgets in 41 groups and resolved numeric file/comment badges.
+Its lean access call succeeds without fallback, and all three Alta Vista file
+authors resolve to the original uploader. The scope was opened read-only.
 
 Tax Development 19.17.5's native Search loaded 228 distinct IDs in three pages
 (100/100/28); the complete ID set and every selected/input value match the
@@ -236,7 +237,24 @@ remains 19.17.4. Candidate 19.17.6 restores that same enrichment function on
 complete search publication and persisted recovery. The whole-source regression
 checks linked labels/company/county fallbacks and preserves blank parcel acreage
 and its own AG flag. Both Tax suites, source/release validation, JavaScript and
-Pages build pass; this successor still requires its native Dev gate.
+Pages build pass. Its subsequent native Development gate passed: 228 distinct
+IDs in pages of 100/100/28, with the exact complete ID set, every editable field
+value and every rendered cell matching the fresh SDK1 baseline. Native tie
+ordering differs, so exact row-order parity is not claimed. No Tax write occurred.
+
+Native Production Gantt 1.1.6 reads 348 subdivisions and 2,677 milestones; the
+existing AR06 scope has 12 scheduled bars and Save disabled. Production Land
+8.14.1 reads 2,139 Properties, 204 Companies, 95 named Project groups and all
+348 linked subdivisions, with zero Unlinked groups. No native date, relationship
+or Territory write was performed.
+
+Land 8.14.3 adds a captured actor/environment/data-generation guard to the
+concurrent Project Territory workflow. An active preview/run/result blocks
+refresh and editing, and a changed context stops later writes and stale result
+publication. Actual mounted-handler fixtures cover the async boundaries,
+preserve the fill-only rules and recover lost acknowledgements only by exact
+read-back. This is a source-review finding, not an observed native failure.
+Only Development receives this successor until its individual native gate passes.
 
 All four existing native Development User Access details explicitly show
 Lot Sales Dashboard false. No available actor can complete Insights 1.5.41's
