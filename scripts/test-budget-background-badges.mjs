@@ -22,9 +22,9 @@ function harness(){
       {ID:'90071992547409972',Budget:{ID:BID},File_field1:''},
       {ID:'90071992547409973',Budget:{ID:OTHER},File_field1:'other.docx'},
       {ID:'90071992547409974',Budget:[],File_field1:'unrelated.pdf'}]};
-  const calls=[],timers=new Map(),buttons=[],events=[],nodes={projList:{innerHTML:''},aqGroups:{innerHTML:''},budgetProjectSearch:{value:'retain current search'},notePopVal:{value:'retain current draft'}};
+  const calls=[],timers=new Map(),buttons=[],events=[],audits=[],nodes={projList:{innerHTML:''},aqGroups:{innerHTML:''},budgetProjectSearch:{value:'retain current search'},notePopVal:{value:'retain current draft'}};
   let clock=0,renders=0,active=0,maximum=0;const runtime={environment:'PRODUCTION',user:'actual-native-actor',appLinkName:'land-master'};
-  const gate={counts:null,records:null,denied:false,incomplete:false,omitted:false};
+  const gate={counts:null,records:null,denied:false,incomplete:false,omitted:false,fullOmitted:false};
   function scoped(config){let result=rows[config.report_name];if(config.criteria){const match=config.criteria.match(/\((Budget|Project) == (\d+)\)/);if(match)result=result.filter(row=>row[match[1]]&&row[match[1]].ID===match[2]);}return result;}
   async function invoke(method,config){
     calls.push({method,config:clone(config)});active++;maximum=Math.max(maximum,active);
@@ -34,7 +34,8 @@ function harness(){
       if(badges&&gate[method==='count'?'counts':'records'])await gate[method==='count'?'counts':'records'].promise;
       if(badges&&gate.denied&&config.report_name==='comments')throw {code:2898,message:'Denied badge snapshot'};
       if(method==='count')return {code:3000,result:{records_count:data.length+(badges&&gate.incomplete?1:0)}};
-      const response=config.field_config==='custom'?data.map(row=>Object.fromEntries(config.fields.split(',').filter(field=>!(gate.omitted&&field==='Deleted')).map(field=>[field,clone(row[field])]))):clone(data);
+      const response=config.field_config==='custom'?data.map(row=>Object.fromEntries(config.fields.split(',').filter(field=>!((gate.omitted||gate.fullOmitted)&&field==='Deleted')).map(field=>[field,clone(row[field])]))):clone(data);
+      if(gate.fullOmitted&&config.report_name==='comments')response.forEach(row=>delete row.Deleted);
       return {code:3000,data:response};
     }finally{active--;}
   }
@@ -50,7 +51,7 @@ function harness(){
     document:{querySelector:()=>null,querySelectorAll:selector=>buttons.filter(btn=>selector.includes('data-comment-field')?!!btn.dataset.commentField:!!btn.dataset.budgetAttachments)},
     $:id=>nodes[id]||(nodes[id]={innerHTML:'',textContent:'',style:{}}),PFComments:{timestamp:Date.parse},esc:value=>String(value??''),escAttr:value=>String(value??''),
     fetchCurrentUser:async()=>runtime.user,loadUserAccess:async()=>{},hydrateBudgetSubdivisions(){},buildProjects:budgets=>[{key:'project:'+PROJECT,name:'Fixture',phases:budgets}],
-    auditLog(){},setLoad(){},setMsg(){},showView(){},perms:()=>({readOnly:false}),updateImportsTabVisibility(){},renderApprQueue(){},applyDeepLink(){},shortErr:error=>error?.message||String(error),safeStringify:JSON.stringify});
+    auditLog(level,message,data){audits.push({level,message,data:clone(data||{})});},setLoad(){},setMsg(){},showView(){},perms:()=>({readOnly:false}),updateImportsTabVisibility(){},renderApprQueue(){},applyDeepLink(){},shortErr:error=>error?.message||String(error),safeStringify:JSON.stringify});
   context.window=context;vm.runInContext(adapter,context);for(const name of functions)vm.runInContext(block(name),context);
   context.renderProjList=()=>{
     renders++;events.push('render');
@@ -58,7 +59,7 @@ function harness(){
     for(const budget of context.S.budgets){assert.match(context.budgetCommentButton('Budget',budget.ID,'Phase'),/comment-activity-count'>…/);button('comments',budget.ID,'Budget');assert.match(context.budgetAttachmentButton(budget,'Phase'),/comment-activity-count'>…/);button('attachments',budget.ID);}
   };
   function runTimers(){for(const [key,timer] of [...timers])if(timer.delay===0){timers.delete(key);timer.callback();}}
-  return {c:context,calls,rows,gate,runtime,nodes,buttons,button,events,runTimers,timers,renderCount:()=>renders,maximum:()=>maximum};
+  return {c:context,calls,rows,gate,runtime,nodes,buttons,button,events,audits,runTimers,timers,renderCount:()=>renders,maximum:()=>maximum};
 }
 
 // Actual boot returns a usable landing while both native badge dependencies remain stalled.
@@ -87,13 +88,47 @@ function harness(){
 }
 
 // A failed/incomplete/malformed summary never presents zero or damages the usable landing.
-for(const failure of ['denied','incomplete','omitted']){
+for(const failure of ['denied','incomplete','fullOmitted']){
   const h=harness();h.gate[failure]=true;await h.c.boot();h.runTimers();await settle();
   assert.equal(h.c.S.startupReady,true);assert.equal(h.renderCount(),1);assert.equal(h.c.budgetFeature('comment-badges').status,'error');
   assert.ok(h.buttons.filter(btn=>btn.dataset.commentField).every(btn=>btn.count.textContent==='…'));
   assert.match(h.buttons[0].title,/unavailable/);
   if(failure==='denied')assert.equal(h.c.budgetFeature('comment-badges').error.permissionDenied,true);
+  const reads=h.calls.filter(call=>call.method==='read'&&call.config.report_name==='comments');
+  assert.equal(reads.length,failure==='denied'?0:failure==='incomplete'?1:2,'full-field fallback happens once only for missing projection fields, never for denied or incomplete native reads');
+  if(failure==='fullOmitted'){
+    const diagnostic=h.audits.find(entry=>entry.message==='Comment badge counts unavailable');
+    assert.deepEqual(diagnostic.data.missingFields,['Deleted']);assert.equal(diagnostic.data.readMode,'all');assert.equal(diagnostic.data.recordCount,3);
+    assert.deepEqual(diagnostic.data.availableFields,['Added_Time','Budget','ID','Project']);
+    assert.ok(!JSON.stringify(diagnostic.data).includes(BID),'shape diagnostics contain field names/counts, never record IDs or rows');
+  }
   h.gate[failure]=false;await h.c.loadBudgetBadgeSummary('comments');assert.equal(h.buttons[0].count.textContent,'1','a failed background batch remains retryable');
+}
+
+// A projected omission retries one complete full-field snapshot, without inferring absent lookups as zero.
+{
+  const h=harness();h.gate.omitted=true;await h.c.boot();h.runTimers();await settle();
+  assert.deepEqual(h.buttons.map(btn=>btn.count.textContent),['1','2','1','0','1']);assert.equal(h.renderCount(),1);
+  const reads=h.calls.filter(call=>call.method==='read'&&call.config.report_name==='comments');
+  assert.equal(reads.length,2);assert.equal(reads[0].config.field_config,'custom');assert.equal(reads[1].config.field_config,'all');
+  const evidence=h.audits.find(entry=>entry.message==='Projected badge fields unavailable; reading full fields');
+  assert.deepEqual(evidence.data.missingFields,['Deleted']);assert.ok(!JSON.stringify(evidence.data).includes(BID));
+  const before=h.calls.length;await h.c.loadBudgetBadgeSummary('comments');assert.equal(h.calls.length,before,'completed fallback is shared across rows and later calls');
+}
+
+// Native exact empty lookup objects are empty parents; malformed nonempty objects remain unavailable.
+{
+  const h=harness();for(const collection of [h.rows.comments,h.rows.attachments])for(const row of collection)for(const field of ['Project','Budget'])if(Array.isArray(row[field])&&row[field].length===0)row[field]={};
+  await h.c.boot();h.runTimers();await settle();assert.deepEqual(h.buttons.map(btn=>btn.count.textContent),['1','2','1','0','1']);
+  assert.equal(h.c.budgetCommentParentId({Budget:{}},'Budget'),'');assert.equal(h.c.attachmentRecordBudgetId({Budget:{}}),'');
+  assert.equal(h.c.S.attachmentsByBudget[BID],undefined);await h.c.loadBudgetAttachments(BID,true);assert.equal(h.c.S.attachmentsByBudget[BID].length,1);
+}
+for(const kind of ['comments','attachments']){
+  const h=harness();h.rows[kind][0].Budget={zc_display_value:'Missing native ID'};
+  await h.c.boot();h.runTimers();await settle();
+  const feature=kind==='comments'?'comment-badges':'attachment-badges';assert.equal(h.c.budgetFeature(feature).status,'error');
+  assert.ok(h.buttons.filter(btn=>kind==='comments'?btn.dataset.commentField:btn.dataset.budgetAttachments).every(btn=>btn.count.textContent==='…'));
+  assert.equal(h.calls.filter(call=>call.method==='read'&&call.config.report_name===kind).length,1,'malformed nonempty lookup never triggers a guessed full-field fallback');
 }
 
 // Late results from an older startup or actor/environment cannot publish count evidence.
