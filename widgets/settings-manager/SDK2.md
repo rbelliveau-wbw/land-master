@@ -24,7 +24,7 @@ It never creates Settings records or changes the backend, approval routes or sch
   last complete collections while disabling the affected picker; other readable scalar fields
   remain available. Unavailable curves are labeled unavailable, never empty/zero.
 
-### Complete Actions choices — 1.3.4 candidate
+### Complete Actions choices — 1.3.4 candidate and 1.3.5 diagnostics
 
 The native Production 1.3.3 Actions count failed without a response code for
 `Contract_Template != ""`, leaving the picker unavailable with its seven persisted
@@ -52,6 +52,12 @@ read, preserves unknown selections, rejects failed/incomplete scopes, and
 recovers through a complete retry. These are local SDK-shaped fixtures. Native
 unfiltered-count availability and exact Production option parity are pending
 root-owned gates; this candidate does not claim a native successor test.
+
+The native Development 1.3.4 gate still reported Actions unavailable despite
+successful count and page requests. The filtered-count explanation is therefore
+not established. Version 1.3.5 adds a safe resource name, error message and code
+console diagnostic, without logging records or changing reads, permissions or
+writes. Production remains on 1.3.1 while the actual failure is diagnosed.
 
 ## Autosave contract
 

@@ -15,7 +15,7 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 async function drain(){for(let index=0;index<90;index++)await Promise.resolve();}
 function harness({initialize=async()=>({envUrlFragment:'/environment/development',loginUser:'fixture',appLinkName:'land-master'}),count=1,embedded=true,creator=true,controllerSource}={}){
-  const calls=[],nodes=new Map(),timers=new Map(),listeners=new Map();let timerId=0,handshakes=0,active=0,maxActive=0;
+  const calls=[],warnings=[],nodes=new Map(),timers=new Map(),listeners=new Map();let timerId=0,handshakes=0,active=0,maxActive=0;
   const document={referrer:'',activeElement:null,body:null,getElementById:id=>node(id),createElement:tag=>node(null,tag),addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);},querySelector:selector=>selector.startsWith('[data-frow=')?node('row:'+selector.match(/"([^"]+)"/)[1]):selector==='.hdr'?node('header'):null,querySelectorAll(selector){
     if(selector==='[data-f],[data-chipinput]')return ['Multi_Line','Future_Field','Builder_Approval_Template','COO_Approval_Threshold'].map(field=>{const el=node('input:'+field);el.attrs['data-f']=field;return el;});
     if(selector==='[data-msel]')return ['Builder_Approval_Template','Builder_Contract_Action_Template'].map(field=>{const el=node('ms:'+field);el.attrs['data-msel']=field;return el;});
@@ -49,13 +49,13 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
     addRecords:config=>counted('add',config,()=>{assert.equal(config.form_name,'Construction_Curve');const newId=D;curves.push({ID:newId,...clone(config.payload.data)});return{code:3000,result:[{code:3000,data:{ID:newId}}]};}),
     deleteRecords:config=>counted('delete',config,()=>{const target=config.payload.criteria.match(/ID == (\d+)/)[1];const at=curves.findIndex(row=>row.ID===target);if(at>=0)curves.splice(at,1);return{code:3000,result:[{code:3000,data:{ID:target}}]};})
   };
-  const context=vm.createContext({document,location:{href:'https://example.test/dev/settings-manager/'},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),console:{warn(){}},ZOHO:creator?{CREATOR:{DATA:api,UTIL:{getInitParams(){handshakes++;return initialize();},navigateParentURL:config=>{calls.push({method:'navigate',config});}}}}:undefined});
+  const context=vm.createContext({document,location:{href:'https://example.test/dev/settings-manager/'},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),console:{warn(message){warnings.push(String(message));}},ZOHO:creator?{CREATOR:{DATA:api,UTIL:{getInitParams(){handshakes++;return initialize();},navigateParentURL:config=>{calls.push({method:'navigate',config});}}}}:undefined});
   context.window=context;context.parent=embedded?{}:context;context.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
   for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
   const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog};\n';
   vm.runInContext(inline.replace(/boot\(\);\s*\}\)\(\);\s*$/,expose+'boot();\n\n})();'),context);
   assert.ok(context.__settingsTest,'Whole source IIFE test exposure found');
-  return{context,widget:context.__settingsTest,api,reports,records,curves,calls,nodes,node,timers,listeners,handshakes:()=>handshakes,maxActive:()=>maxActive,
+  return{context,widget:context.__settingsTest,api,reports,records,curves,calls,warnings,nodes,node,timers,listeners,handshakes:()=>handshakes,maxActive:()=>maxActive,
     tick(ms){const entry=[...timers].find(([,timer])=>timer.ms===ms);assert.ok(entry,'Timer '+ms+' exists');timers.delete(entry[0]);entry[1].fn();}};
 }
 async function ready(options){const h=harness(options);await drain();assert.equal(h.widget.state.ready,true);return h;}
@@ -202,6 +202,7 @@ for(const readback of ['missing','denied','wrong IDs','extra IDs','missing field
 }
 {
   const h=await ready();h.reports.All_Pro_Formas=Array.from({length:2001},(_,index)=>({ID:String(10000+index),Pro_Forma_Name:'PF '+index}));await h.widget.load();assert.equal(h.widget.state.proformas.length,2001);assert.ok(h.maxActive()<=3);const previous=h.widget.state.proformas;h.api.getRecords=async config=>({code:3000,data:clone(config.report_name==='All_Pro_Formas'?h.reports.All_Pro_Formas.slice(0,1000):h.reports[config.report_name]||[])});await h.widget.load();assert.equal(h.widget.state.resources.proformas,'error');assert.equal(h.widget.state.proformas,previous,'Incomplete options retain the complete snapshot but stay unavailable');
+  const diagnostic=h.warnings.find(message=>message.startsWith('Settings resource unavailable '));assert.ok(diagnostic);assert.deepEqual(Object.keys(JSON.parse(diagnostic.slice('Settings resource unavailable '.length))),['resource','message','code']);assert.doesNotMatch(diagnostic,/PF 100|Pro_Forma_Name/,'Diagnostics omit report rows');
 }
 {
   const h=await ready();await h.widget.controller.curveOperation('edit',B,{Percent_Cost:'99'});assert.equal(h.widget.state.curve[0].Percent_Cost,'99');const edit=h.calls.find(call=>call.method==='update');assert.equal(edit.config.report_name,'All_Construction_Curves');assert.equal(edit.config.id,B);

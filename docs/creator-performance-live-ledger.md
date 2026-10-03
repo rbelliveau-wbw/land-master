@@ -109,6 +109,14 @@ Manage Lots 0.9.15's existing SDK1 startup repair was checked in native Developm
 
 Settings 1.3.4 is prepared for a separate Development SDK gate. A fresh native 1.3.3 Development baseline also reproduced the unavailable Actions picker, while retaining its three saved IDs and 23 scalar controls. The successor removes the unsupported empty-string inequality from count/read criteria, reconciles the complete permitted report, then filters typed nonblank templates locally. Whole-IIFE fixtures cover native count rejection, 2,001 cursor rows, malformed/missing fields, duplicate/incomplete reads, saved-ID preservation and denial without false zero. Full validation and build pass. Production remains mapped to SDK1 1.3.1 pending the independent successor gates.
 
+Settings 1.3.4's actual Development gate failed: Actions remained unavailable,
+with three persisted selection IDs and 23 scalar inputs retained. Its count and
+records requests succeeded; removing the criteria did not resolve the failure.
+A fresh Production 1.3.1 baseline likewise had no Action choices and seven saved
+IDs displayed as unresolved, despite suppressing the warning. Version 1.3.5 adds
+safe resource-error diagnostics for the next Development check. No Settings
+successor has been promoted to Production.
+
 Copy one row per actual environment/release and keep the result concise. Use counts and aggregate metrics rather than private rows.
 
 | Field | Value to record |
