@@ -1,6 +1,6 @@
 # Remaining Creator SDK v2 migration
 
-Source audit and migration plan, 2026-10-02. The twelve performance increments passed their exercised normal Development and Production gates. Gantt's SDK2 source is under individual review; its native gate remains pending. Historical line references and versions below describe the original SDK1 audit, not a passed candidate. Current releases and native results are recorded in the [live validation ledger](creator-performance-live-ledger.md).
+Source audit and migration plan, 2026-10-02. The twelve performance increments passed their exercised normal Development and Production gates. Gantt `1.1.2` passed its individual normal native Development read/controls gate; native date writes remain unperformed because the available browser cannot drag timeline bars. Settings is now under implementation. Historical line references and versions below describe the original SDK1 audit, not a passed candidate. Current releases and native results are recorded in the [live validation ledger](creator-performance-live-ledger.md).
 
 ## Scope and order
 
