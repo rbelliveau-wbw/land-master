@@ -27,6 +27,12 @@ The three-dot menu opens a top-aligned modal with a Project picker, phase tabs, 
 Transfers use two dedicated Deluge functions and a separate PF_Budget_Transfer Custom API. Normal Pro Forma Save and form workflows are unchanged. Functions and the Development API are saved in Creator; the user publishes the functions and configures the Production API after publication. Production stays preview-only until the dedicated endpoint is ready. See [Creator handoff, fields, verification, and rollback](../../creator/functions/PF_BUDGET_TRANSFER_HANDOFF.md). Widget rollback: 1.80.48.
 # Proforma Module
 
+## Attachment author visibility and list spacing (1.80.65)
+
+The list groups Comment and Attachments with Budget's explicit 7px action gap, retaining their existing click routes and counts. The full User Access response keeps `userName`, `approverEmail` and `fullName`. When it arrives, mounted file rows update only their author text from the cached row's genuine `Added_User`; list/dialog markup, scroll and editor drafts are retained. Exact parent/child IDs and actor/environment scope guard those patches. A missing `Added_User` stays unavailable: the shared report must expose the saved creator in the SDK1 payload, including Quick View for this deployment. Root owns that Creator report change, which also serves Legal's SDK1 reader; Budget already requests the field explicitly through SDK2.
+
+The attachment presentation suite exercises the actual access caller/parser, native-shaped additive roster, cached raw creator, escaped full name, missing creator, stale actor and mismatched parent. Counts, file actions, permissions and financial/transfer behavior retain 1.80.64. No SDK migration or extra roster request is included. Rollback: Proforma Manager 1.80.64; assess the independent shared report visibility change before reverting Creator.
+
 ## List attachment dialog and creator full names (1.80.64)
 
 The main list pairs its comment action with a paperclip/count button. The button and View Attachments menu open Legal's attachment dialog in place; list filters, scroll, selection, Dashboard and editor drafts remain intact. The existing record attachment workspace is retained. The dialog captures a separate exact Pro Forma ID, token and actor/environment scope; its upload/delete permissions use that selected saved record. Shared file rows and actions retain raw parent IDs, file paths, dates, preview formats, named buttons and the 50 MB limit. Email remains Legal-only.

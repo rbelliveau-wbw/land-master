@@ -18,6 +18,25 @@ No live attachment creation/deletion, email send, approval or financial write is
 
 The first frontend release was pushed to main in `3b94b58`; CI and Widget Pages deployment both succeeded. The three Creator components were then selectively published through Stage to Production as version 9.34: `getUserAccess`, `getUserAccessLean`, and `All_Contract_Versions`. No unrelated form, page, function or permission changes were selected. The environment dashboard confirmed Stage and Production both at 9.34 with no changes available. Existing widget sessions need a reload to receive the new report field and roster values.
 
+### Pro Forma author and button follow-up — 1.80.65
+
+The reported PF modal still lacked the original uploader because the SDK1 read
+uses report Quick View. Version 9.34 exposed Added User in Detail View, which
+Budget SDK2 reads, but Quick View still listed only its prior six fields. The
+existing system Added User field has now been appended to Quick View as well;
+the saved/reloaded designer confirms seven fields. This shared report correction
+also supplies Legal's SDK1 reader. No new field, function, permission or current
+viewer fallback is introduced. The one-report Creator 9.35 release is publishing
+separately; completion and a fresh PF author check are recorded in the live ledger.
+
+PF 1.80.65 puts Comments and Attachments in an explicit 7px action pair, matching
+Budget. A late User Access roster reply patches only author text for exact saved
+parent/file rows, preserving open dialogs, list/editor state and drafts. Actual
+source author/parser, presentation and existing business regressions passed, as
+did full validation and Pages build. UI presentation testing remains waived;
+the reported missing author receives a focused read-only Production data check.
+Rollback uses PF 1.80.64; retain the additive report field for original provenance.
+
 ## Main-list modal follow-up
 
 Budget 122.28.18 changes the phase paperclip from editor navigation to an in-place attachment modal. Pro Forma 1.80.64 adds a paperclip/count beside Comments and routes both that button and View Attachments to its modal. Existing editor attachment workspaces remain available. Both dialogs use Legal's 940px maximum width, neutral centered SVG Close, file rows and upload/action styling; Email remains exclusive to Legal. Opening and closing preserve the underlying list, filters, scroll and editor drafts.

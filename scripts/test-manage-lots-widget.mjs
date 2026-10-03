@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 const root = process.cwd();
 const source = fs.readFileSync(path.join(root, "widgets/manage-lots/src/app/widget.html"), "utf8");
@@ -29,7 +30,10 @@ const scalar = (value) => {
 const natural = (a, b) => scalar(a).localeCompare(scalar(b), undefined, { numeric: true, sensitivity: "base" });
 const lotBlock = new Function("str", `return (${extractFunction("lotBlock")})`)(scalar);
 const lotDetailParts = new Function("str", `return (${extractFunction("lotDetailParts")})`)(scalar);
-const eligible = new Function("str", "truthy", "inTakedown", `return (${extractFunction("eligible")})`)(scalar, Boolean, () => false);
+const controllerContext={};vm.runInNewContext(fs.readFileSync('widgets/manage-lots/src/app/manage-lots-controller.js','utf8'),controllerContext);
+const LMManageLots=controllerContext.LMManageLots;
+const completeLot=row=>({ID:'1',Subdivision:{ID:'90071992547409931'},Archived:false,Add_Builder_Takedown_Name:{},...row});
+const eligible = new Function("str", "LMManageLots", "S", `return (${extractFunction("eligible")})`)(scalar, LMManageLots, {takedownLotIds:new Set()});
 
 assert.equal(lotBlock({ Block: "A" }), "A", "letter blocks must remain visible");
 assert.equal(lotBlock({ Block: { display_value: "B2" } }), "B2", "Creator display objects must remain visible");
@@ -41,9 +45,10 @@ assert.deepEqual(lotDetailParts([{ display_value: "AAA01-B01-L15 - Sold" }, { di
   { code: "AAA01-B01-L16", status: "Open" },
 ], "lot relationship details must split into readable code and status values");
 assert.deepEqual(lotDetailParts("AAA01-B01-L17 - Scheduled"), [{ code: "AAA01-B01-L17", status: "Scheduled" }]);
-assert.equal(eligible({ Status: "Open" }), true);
+assert.equal(eligible({ Status: "Open" }), false,"missing native availability fields remain unknown");
+assert.equal(eligible(completeLot({Status:"Open"})),true);
 assert.equal(eligible({ Status: "Scheduled" }), false, "scheduled lots cannot enter another takedown");
-assert.equal(eligible({ Status: "Contracted" }), true, "contracted lots are selectable at the user’s request");
+assert.equal(eligible(completeLot({ Status: "Contracted" })), true, "contracted lots are selectable at the user’s request");
 
 assert.match(source, /takedowns:\s*"All_Builder_Takedowns"/, "Builder Takedowns report must be loaded");
 assert.match(source, /View only/, "Builder Takedowns view must remain read-only");
@@ -59,11 +64,11 @@ assert.doesNotMatch(source, /ZOHO\.CREATOR\.API\.(updateRecord|deleteRecord)/, "
 
 /* Cached counts, refreshed data, string IDs and Legal status tints. */
 const fixture = { lots: [], subdivisions: [{ ID: "90071992547409931", Subdivision_Name: "Phase 1" }], takedowns: [], contracts: [], takedownLotIds: new Set() };
-const helpers = new Function("S", "str", "natural", `
+const helpers = new Function("S", "str", "natural", "LMManageLots", `
   var dataIndex=null,emptyStats={total:0,available:0,sold:0,scheduled:0};
   ${["truthy", "idOf", "relationEmpty", "relationIds", "lotSubdivisionId", "inTakedown", "eligible", "indexes", "subdivisionStats", "lotById", "lotState"].map(extractFunction).join("\n")}
   return {indexes,subdivisionStats,lotById,lotState,eligible};
-`)(fixture, scalar, natural);
+`)(fixture, scalar, natural, LMManageLots);
 const sid = "90071992547409931";
 const countLotStats=new Function('eligible','lotSubdivisionId','str',`return (${extractFunction('countLotStats')})`)(eligible,l=>String(l.Subdivision.ID),scalar);
 const beforeSelection=countLotStats([
@@ -71,7 +76,7 @@ const beforeSelection=countLotStats([
   {ID:'2',Subdivision:{ID:sid},Status:'Scheduled'},
   {ID:'3',Subdivision:{ID:sid},Status:' scheduled '},
   {ID:'4',Subdivision:{ID:sid},Status:'Sold'},
-]);
+].map(completeLot));
 assert.deepEqual(beforeSelection.get(sid),{total:4,available:1,sold:1,scheduled:2},'counts must include Scheduled lots before subdivision selection');
 const readyScopes=new Set(),freshCounts={total:3,available:1,sold:2,scheduled:0};
 const pickStats=new Function('S','subdivisionReady','subdivisionCounts','indexes','emptyStats',`return (${extractFunction('subdivisionStats')})`)({live:true},readyScopes,beforeSelection,()=>({stats:new Map([[sid,freshCounts]])}),{total:0,available:0,sold:0,scheduled:0});
@@ -84,7 +89,7 @@ fixture.lots = [
   { ID: "90071992547409944", Subdivision: { ID: sid }, Status: "Sold" },
   { ID: "90071992547409945", Subdivision: { ID: sid }, Status: "Open", Archived: "true" },
   { ID: "90071992547409946", Subdivision: { ID: sid }, Status: "Open", Add_Builder_Takedown_Name: { ID: "90071992547409951" } },
-];
+].map(completeLot);
 assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 3, sold: 1, scheduled: 0 });
 const cached = helpers.indexes();
 for (let i = 0; i < 500; i += 1) assert.equal(helpers.indexes(), cached, "filter clicks must reuse the existing index");
@@ -102,8 +107,10 @@ assert.equal(helpers.lotState(fixture.lots[0]), "open", "archived contracts rele
 fixture.lots = fixture.lots.map(l => ({ ...l, Status: "Sold" }));
 assert.notEqual(helpers.indexes(), cached, "refresh must invalidate cached counts");
 assert.deepEqual(helpers.subdivisionStats(sid), { total: 6, available: 0, sold: 6, scheduled: 0 });
-assert.match(extractFunction("latestSelected"), /readSubdivisionLots\(sid\)/, "submission must still reread lots");
-assert.match(extractFunction("latestSelected"), /!eligible\(map.get\(id\)\)/, "submission must reject stale eligibility");
+let captured;
+const selected=['90071992547409941'],sent={Subdivision1:sid,Lots:selected};
+const latest=new Function('manageController','selectedLotSubdivisionId','S','payload',`return (${extractFunction('latestSelected')})`)({capture(sub,ids,payload){captured={sub,ids,payload};return captured;},preflight:operation=>Promise.resolve(operation)},()=>sid,{selected:new Set(selected)},()=>sent);
+assert.equal(await latest(),captured);assert.deepEqual(captured,{sub:sid,ids:selected,payload:sent},'fresh controller preflight receives the exact captured destination and string lot IDs');
 assert.doesNotMatch(extractFunction("applySubdivisionFilter"), /renderSubdivisionOptions/, "selection must preserve picker nodes and focus");
 let detailCalls = 0;
 const detailReader = new Function("S", "CFG", "getAll", "auditLog", "lotById", `
@@ -123,26 +130,26 @@ assert.equal(detailReader.lotDetails.get(fixture.lots[0].ID).Lot_Size, 45);
 await detailReader.loadLotDetails("invalid-subdivision");
 assert.equal(detailCalls, 1, "unverified lookup IDs must never enter Creator criteria");
 // Sold records from the full list report supplement the all-fields report within the selected scope.
-const scopeCalls=[];
-const scopeReader=new Function('CFG','getAll','auditLog','subdivisionName','str',`return (${extractFunction('readSubdivisionLots')})`)({reports:{lots:'All_Lots_All_Fields',lotsList:'All_Active_Lots_List_View'}},async(report,criteria)=>{
-  scopeCalls.push({report,criteria});
-  if(report==='All_Lots_All_Fields')return [{ID:'501',Subdivision:{ID:sid},Status:'Open',Archived:true}];
-  return Array.from({length:42},(_,i)=>({ID:String(501+i),Subdivision:{ID:sid},Status:i?'Sold':'Open',Block:'7',Lot_Number:i+1}));
-},()=>{},()=> 'Fixture subdivision',scalar);
-const scoped=await scopeReader(sid);assert.equal(scoped.length,42);assert.equal(scoped.filter(l=>l.Status==='Sold').length,41);assert.equal(scoped[0].Archived,true,'list enrichment must preserve fields missing from that report');assert.ok(scopeCalls.every(c=>c.criteria===`(Subdivision == ${sid})`));
-await assert.rejects(()=>scopeReader('untrusted-id'),/invalid/);
-let pages=0;
-const paged=new Function('CFG','ZOHO','emptyResponse','responseBad','sdkResponseInfo','auditLog','safeStringify',`return (${extractFunction('getAll')})`)({pageSize:2,maxPages:2},{CREATOR:{API:{getAllRecords:async()=>{pages++;return {data:[{ID:'1'},{ID:'2'}]};}}}},()=>false,()=>false,()=>({}),()=>{},JSON.stringify);
-await assert.rejects(()=>paged('Lots',`(Subdivision == ${sid})`),/incomplete/);assert.equal(pages,2,'a full last page must fail, never silently truncate');
+const merge=new Function('str','LMManageLots',`return (${extractFunction('mergeLotReports')})`)(scalar,LMManageLots);
+const complete=[{ID:'501',Subdivision:{ID:sid},Status:'Open',Archived:true,Add_Builder_Takedown_Name:{},Block:'007',Lot_Number:'01'}];
+const list=Array.from({length:42},(_,i)=>({ID:String(501+i),Subdivision:{ID:sid},Status:i?'Sold':'Open',Block:'7',Lot_Number:i+1}));
+const scoped=merge([complete,list],sid);assert.equal(scoped.length,42);assert.equal(scoped.filter(row=>row.Status==='Sold').length,41);assert.equal(scoped[0].Archived,true);assert.equal(scoped[0].Block,'007');assert.equal(scoped[0].Lot_Number,'01');
+const stale=[complete[0]],fresh=[{...list[0],Status:'Sold'}];assert.equal(merge([stale,fresh],sid)[0].Status,'Sold','fresh Sold cannot be resurrected by stale all-fields Open');assert.equal(stale[0].Status,'Open','enrichment never mutates either source snapshot');
+assert.throws(()=>merge([complete],[...sid].reverse().join('')),/unexpected subdivision/);
+assert.throws(()=>merge([[{...complete[0],Archived:undefined}]],sid),/incomplete/);
+const scopeCalls=[],scopeReader=new Function('manageController',`return (${extractFunction('readSubdivisionLots')})`)({state:{generation:7},scope(id,generation){scopeCalls.push({id,generation});return Promise.resolve(scoped);}});
+assert.equal(await scopeReader(sid),scoped);assert.deepEqual(scopeCalls,[{id:sid,generation:7}]);
+function nativeReader(expected,responses){
+  let pages=0,counts=0;const api={getRecordCount:async()=>{counts++;if(expected instanceof Error||expected?.code)throw expected;return {code:3000,result:{records_count:expected}};},getRecords:async()=>{pages++;const response=responses.shift();if(response?.error||response?.code!==3000)throw response;return response;}};
+  const context=vm.createContext({LMRuntime:{current:()=>({environment:'DEVELOPMENT',appLinkName:'land-master',user:'fixture'})},ZOHO:{CREATOR:{DATA:api}}});vm.runInContext(fs.readFileSync('shared/creator-data.js','utf8'),context);
+  const read=new Function('LMData','manageController','auditLog','errText',`var loadGeneration=1;return (${extractFunction('getAll')});`)(context.LMData,{context:()=> 'fixture'},()=>{},error=>error.message||String(error));
+  return {read,pages:()=>pages,counts:()=>counts};
+}
+let native=nativeReader('0',[]);assert.deepEqual(Array.from(await native.read('Lots')),[]);assert.equal(native.pages(),0,'a verified zero needs no record read');
+native=nativeReader('3',[{code:3000,data:[{ID:'1'},{ID:'2'}]}]);await assert.rejects(native.read('Lots'),/loaded 2 of 3/);assert.equal(native.pages(),1,'a complete-count mismatch must never publish partial rows');
+native=nativeReader('3',[{code:3000,data:[{ID:'1'},{ID:'2'}],record_cursor:'next'},{code:3000,data:[{ID:'3'}]}]);assert.deepEqual(Array.from(await native.read('Lots'),row=>row.ID),['1','2','3']);assert.equal(native.pages(),2);
+native=nativeReader({code:2898,message:'Denied'},[]);await assert.rejects(native.read('Lots'),error=>error.code==='2898'&&error.permissionDenied);assert.equal(native.pages(),0);
 const sdkResponseInfo=new Function(`return (${extractFunction('sdkResponseInfo')})`)();
-const emptyResponse=new Function('sdkResponseInfo',`return (${extractFunction('emptyResponse')})`)(sdkResponseInfo);
-const reportAudit=[];
-const getAllFor=(request)=>new Function('CFG','ZOHO','emptyResponse','responseBad','sdkResponseInfo','auditLog','safeStringify',`return (${extractFunction('getAll')})`)({version:'test',pageSize:2,maxPages:5},{CREATOR:{API:{getAllRecords:request}}},emptyResponse,()=>false,sdkResponseInfo,(level,msg,meta)=>reportAudit.push({level,msg,meta}),JSON.stringify);
-assert.deepEqual(await getAllFor(async()=>{throw {code:3100,message:'No records found for the given criteria.'};})('Lots'),[],'Creator rejects its promise for an empty scope; this is not a loading error');
-for(const response of ['{"code":3100,"message":"No records found for the given criteria."}',{responseText:'{"code":3100}'},{result:'{"code":3100}'},{message:'{"code":3100}'}])assert.deepEqual(await getAllFor(async()=>{throw response;})('Lots','(Subdivision == 101)'),[],'wrapped/string Creator empty responses must be decoded');
-assert.ok(reportAudit.some(e=>e.meta.codePath==='root.json.code'&&e.meta.criteria==='(Subdivision == 101)'&&e.meta.report==='Lots'),'audit must identify exact report, criteria, and the code location in the response');
-assert.deepEqual(await getAllFor(async a=>{if(a.page===1)return {data:[{ID:'1'},{ID:'2'}]};throw {code:'3100'};})('Lots'),[{ID:'1'},{ID:'2'}],'an empty rejected last page must preserve already-loaded lots');
-await assert.rejects(()=>getAllFor(async()=>{throw {code:1030,message:'Permission denied'};})('Lots'),e=>e.code===1030,'permission errors must remain blocking');
 const takedownState={subdivisionIds:['lot-view-sub'],takedownSubdivisionIds:[],takedowns:[{ID:'10',Name:'Older',Subdivision1:{ID:'a'},Added_Time:'01-Jan-2025 10:00:00'},{ID:'11',Name:'Latest',Subdivision1:{ID:'b'},Added_Time:'30-Sep-2026 10:00:00'}]};
 const newest=new Function('str',`return (${extractFunction('takedownNewest')})`)(scalar);
 const visibleTakedowns=new Function('S','$','idOf','str','takedownNewest',`return (${extractFunction('visibleTakedowns')})`)(takedownState,()=>({value:''}),v=>v.ID,scalar,newest);
@@ -171,12 +178,7 @@ claims.takedownLotIds.add('untrusted-id');assert.throws(()=>criteriaFor(sid,'ava
 claims.takedownLotIds=new Set(Array.from({length:100},(_,i)=>String(100000+i)));
 assert.equal(criteriaFor(sid,'available'),null,'oversized exclusions must use scoped rows rather than omit claims');
 let aggregateReads=0,scopedReads=0;
-const largeScopeReader=new Function('ZOHO','subdivisionCountCriteria','fallbackSubdivisionCount','LMSubdivisionCounts','sdkResponseInfo','auditLog','errText','CFG',`
-  var loadGeneration=1,availableCountsUseRows=false;
-  return (${extractFunction('readSubdivisionCount')});
-`)({CREATOR:{API:{getRecordCount:async()=>{aggregateReads++;return {code:3000,result:{records_count:999}};}}}},criteriaFor,async(id,field)=>{
-  scopedReads++;assert.equal(id,sid);assert.equal(field,'available');return 4;
-},counts,sdkResponseInfo,()=>{},String,{reports:{lotsList:'All_Active_Lots_List_View'}});
+const largeScopeReader=new Function('manageController','subdivisionCountCriteria','fallbackSubdivisionCount','CFG',`var loadGeneration=1;return (${extractFunction('readSubdivisionCount')});`)({count:async()=>{aggregateReads++;return 999;}},criteriaFor,async(id,field)=>{scopedReads++;assert.equal(id,sid);assert.equal(field,'available');return 4;},{reports:{lotsList:'All_Active_Lots_List_View'}});
 assert.equal(await largeScopeReader(sid,'available'),4);
 assert.equal(aggregateReads,0,'large exclusion sets must never send a truncated aggregate criterion');
 assert.equal(scopedReads,1);
@@ -186,9 +188,9 @@ assert.equal(scopedReads,1);
 const fallbackCalls=[];
 fixture.takedownLotIds.add('90071992547409999');
 const fallbackStats=new Function('eligible','lotSubdivisionId','str',`return (${extractFunction('countLotStats')})`)(helpers.eligible,l=>String(l.Subdivision.ID),scalar);
-function makeFallback(read){return new Function('CFG','getAll','countLotStats','subdivisionCountCriteria','emptyStats',`
+function makeFallback(read){return new Function('CFG','getAll','countLotStats','subdivisionCountCriteria','emptyStats','S',`
   var subdivisionCountFallbacks=new Map();return (${extractFunction('fallbackSubdivisionCount')});
-`)({reports:{lotsList:'All_Active_Lots_List_View'}},read,fallbackStats,criteriaFor,{total:0,available:0,scheduled:0,sold:0});}
+`)({reports:{lotsList:'All_Active_Lots_List_View'}},read,fallbackStats,criteriaFor,{total:0,available:0,scheduled:0,sold:0},fixture);}
 const fallback=makeFallback(async(report,criteria)=>{
   fallbackCalls.push({report,criteria});
   assert.equal(report,'All_Active_Lots_List_View');assert.ok(criteria.includes(scope),'fallback must never download all subdivisions');

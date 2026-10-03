@@ -40,7 +40,7 @@ const c=vm.createContext({
     uploadFile:async config=>{native.push({kind:'upload',config});reportRows.push({...row,ID:config.id,Pro_Forma:{ID:JSON.parse(JSON.stringify(native.findLast(call=>call.kind==='create').config.payload)).proformaId},File_field1:{filename:config.file.name,filepath:'/private/new.pdf'}});return{code:3000};}
   }}},
 });
-for(const name of ['esc','lookupId','responseBad','dateToInputValue','dateToCreatorValue','pfAttachmentExt','pfAttachmentIcon','pfAttachmentDecode','pfAttachmentQuery','pfAttachmentName','pfAttachmentNormalizeFile','pfAttachmentRecordPfId','pfAttachmentAuthorLabel','pfAttachmentDateLabel','pfAttachmentActionIcon','normalizePfAttachment','pfAttachmentRec','pfAttachments','pfAttachmentScope','pfAttachmentParent','pfAttachmentStoredFile','pfAttachmentReadError','readPfAttachmentRows','resetPfAttachmentCounts','pfAttachmentBadge','pfListAttachmentAction','syncListAttachmentButtons','loadPfAttachmentSummaries','pfAttachmentStatusHtml','renderPfAttachments','pfAttachmentActionContext','pfAttachmentContextActive','renderPfAttachmentSurfaces','openPfAttachmentModal','closePfAttachmentModal','pfAttachmentModalKeydown','pfAttachmentModalFocus','handlePfAttachmentClick','handlePfAttachmentDrop','handlePfAttachmentPicker','parsePfAttachmentApi','invokePfAttachmentApi','createdRecordId','createPfAttachmentRecord','deletePfAttachmentRecord','pfSdkUploadFile','uploadPfAttachments','loadPfAttachments'])vm.runInContext(fn(name),c);
+for(const name of ['esc','lookupId','responseBad','dateToInputValue','dateToCreatorValue','pfAttachmentExt','pfAttachmentIcon','pfAttachmentDecode','pfAttachmentQuery','pfAttachmentName','pfAttachmentNormalizeFile','pfAttachmentRecordPfId','pfAttachmentAuthorLabel','syncPfAttachmentAuthorLabels','pfAttachmentDateLabel','pfAttachmentActionIcon','normalizePfAttachment','pfAttachmentRec','pfAttachments','pfAttachmentScope','pfAttachmentParent','pfAttachmentStoredFile','pfAttachmentReadError','readPfAttachmentRows','resetPfAttachmentCounts','pfAttachmentBadge','pfListAttachmentAction','syncListAttachmentButtons','loadPfAttachmentSummaries','pfAttachmentStatusHtml','renderPfAttachments','pfAttachmentActionContext','pfAttachmentContextActive','renderPfAttachmentSurfaces','openPfAttachmentModal','closePfAttachmentModal','pfAttachmentModalKeydown','pfAttachmentModalFocus','handlePfAttachmentClick','handlePfAttachmentDrop','handlePfAttachmentPicker','parsePfAttachmentApi','invokePfAttachmentApi','createdRecordId','createPfAttachmentRecord','deletePfAttachmentRecord','pfSdkUploadFile','uploadPfAttachments','loadPfAttachments'])vm.runInContext(fn(name),c);
 c.window=c;c.scrollX=7;c.scrollY=533;const restoredScroll=[];c.scrollTo=(x,y)=>restoredScroll.push([x,y]);
 c.S.attachmentCounts.scope=c.pfAttachmentScope();
 
@@ -69,16 +69,38 @@ c.S.users.push({id:'18',label:'other-user',email:'other-user',userName:'other-us
 assert.equal(c.pfAttachmentAuthorLabel({user_name:'other-user',display_name:'wbdevelopment'}),'Other Person','explicit identity wins over another person display alias');
 assert.equal(c.pfAttachmentAuthorLabel({user_name:'wbdevelopment',email:'other-user',display_name:'Genuine Display'}),'Genuine Display','conflicting recorded identities retain genuine display');c.S.users.pop();
 
+// The actual full-access caller/consumer retains the additive roster keys. A late roster reply
+// patches only author text from the saved creator, without repainting cached rows or a draft.
+{
+ const savedUsers=c.S.users,savedActor=c.S.currentUser,savedInvoke=c.sdkInvoke,savedQuery=c.document.querySelectorAll;
+ Object.assign(c,{HARDCODED_PF_PERMS:{},syncApprovalAccessVisibility(){},syncSubmitLegalButton(){},syncAiReviewRailBtn(){}});
+ for(const name of ['accessTruthy','parseAccessFnResponse','hardcodedPfPermsForCurrentUser','applyPermsFromFlags','loadUserAccess'])vm.runInContext(fn(name),c);
+ c.S.users=[];c.S.currentUser='different-viewer@example.test';c.resetPfAttachmentCounts();await c.loadPfAttachments(PF,true);c.renderPfAttachments();
+ const cached=c.S.attachmentsByPf[PF][0],authorNode=el('cachedAuthor');authorNode.attrs={'data-pf-attachment-author':RID,'data-pf-attachment-parent':PF};authorNode.textContent='Old native display';
+ const wrongParent=el('wrongParentAuthor');wrongParent.attrs={'data-pf-attachment-author':RID,'data-pf-attachment-parent':OTHER};wrongParent.textContent='Retained other parent';
+ c.document.querySelectorAll=selector=>selector==='[data-pf-attachment-author][data-pf-attachment-parent]'?[authorNode,wrongParent]:[];
+ const roster=[{id:'17',label:'wbdevelopment',email:'wbdevelopment',userName:'wbdevelopment',approverEmail:'creator@example.test',fullName:'Creator <Full> & Name'}];
+ let deliver;const accessReply=new Promise(resolve=>deliver=resolve),accessConfigs=[];c.sdkInvoke=config=>{accessConfigs.push(config);return accessReply;};
+ const panelHtml=el('proformaAttachmentPanel').innerHTML;c.S.ed={id:OTHER,model:{draft:'preserve this editor'}};const loading=c.loadUserAccess();assert.equal(authorNode.textContent,'Old native display');
+ deliver({code:3000,details:{output:JSON.stringify({found:true,hasRow:true,pfEditAll:false,pfEditOwned:false,myId:'18',users:roster})}});await loading;
+ assert.deepEqual(JSON.parse(JSON.stringify(c.S.users)),roster);assert.equal(cached.addedUser,'Old native display','cached normalization does not need to be rebuilt');assert.equal(authorNode.textContent,'Creator <Full> & Name');assert.equal(wrongParent.textContent,'Retained other parent');assert.equal(el('proformaAttachmentPanel').innerHTML,panelHtml);assert.equal(c.S.ed.model.draft,'preserve this editor');assert.equal(accessConfigs.length,1);assert.equal(accessConfigs[0].http_method,'GET');
+ c.renderPfAttachments();assert.match(el('proformaAttachmentPanel').innerHTML,/Added by <b[^>]*>Creator &lt;Full&gt; &amp; Name<\/b>/);
+ // Report-field visibility is required: a missing creator cannot be reconstructed from a roster or current viewer.
+ const noCreator={...row};delete noCreator.Added_User;c.S.attachmentsByPf[PF]=[c.normalizePfAttachment(noCreator,0)];c.syncPfAttachmentAuthorLabels();assert.equal(authorNode.textContent,'—');
+ c.S.attachmentsByPf[PF]=[cached];c.S.currentUser='changed-actor@example.test';authorNode.textContent='Before stale roster patch';c.syncPfAttachmentAuthorLabels();assert.equal(authorNode.textContent,'Before stale roster patch','old actor cache cannot update provenance');
+ c.S.currentUser=savedActor;c.S.users=savedUsers;c.sdkInvoke=savedInvoke;c.document.querySelectorAll=savedQuery;c.resetPfAttachmentCounts();c.S.ed=null;native.length=0;
+}
+
 // Actual mounted renderer keeps Legal treatment and named controls; only editable records get writes.
 c.S.attachmentsByPf[PF]=[file];c.renderPfAttachments();let html=el('proformaAttachmentPanel').innerHTML;
-assert.match(html,/data-pf-attachment-drop/);assert.match(html,/Choose Files/);assert.match(html,/50 MB max/);assert.match(html,/Added by <b>Creator Full Name<\/b>/);assert.match(html,/10\/03\/2026/);assert.match(html,/&lt;file&gt;\.pdf/);assert.match(html,/&lt;Legal PF&gt;/);
+assert.match(html,/data-pf-attachment-drop/);assert.match(html,/Choose Files/);assert.match(html,/50 MB max/);assert.match(html,/Added by <b[^>]*>Creator Full Name<\/b>/);assert.match(html,/10\/03\/2026/);assert.match(html,/&lt;file&gt;\.pdf/);assert.match(html,/&lt;Legal PF&gt;/);
 assert.doesNotMatch(html,/Other Editor|att-mail|toggleEmailAttach|digestValue|private\/exact|Click a file to preview|opens Creator/);
 for(const key of ['preview','download','delete'])assert.match(html,new RegExp(`aria-label='${key[0].toUpperCase()+key.slice(1)} &lt;file&gt;\\.pdf'`));
 allowed=false;c.renderPfAttachments();html=el('proformaAttachmentPanel').innerHTML;
 assert.doesNotMatch(html,/data-pf-attachment-drop|data-pf-attachment-delete/);assert.match(html,/data-pf-attachment-preview|data-pf-attachment-download/);
 allowed=true;c.S.attachmentBusy=true;c.renderPfAttachments();html=el('proformaAttachmentPanel').innerHTML;
 assert.match(html,/data-pf-attachment-add disabled/);assert.match(html,/data-pf-attachment-delete='0' disabled/);c.S.attachmentBusy=false;
-c.S.users[0].fullName='<img src=x onerror=boom()>';c.renderPfAttachments();assert.match(el('proformaAttachmentPanel').innerHTML,/Added by <b>&lt;img src=x onerror=boom\(\)&gt;<\/b>/);c.S.users[0].fullName='Creator Full Name';
+c.S.users[0].fullName='<img src=x onerror=boom()>';c.renderPfAttachments();assert.match(el('proformaAttachmentPanel').innerHTML,/Added by <b[^>]*>&lt;img src=x onerror=boom\(\)&gt;<\/b>/);c.S.users[0].fullName='Creator Full Name';
 
 // Execute the real click/drop/picker listeners from the widget, not duplicated handler logic.
 const start=source.indexOf('document.getElementById("proformaAttachmentPanel").addEventListener("click"'),end=source.indexOf('document.getElementById("proformaAttachmentPreviewClose")',start);
@@ -127,6 +149,8 @@ readHook=(config,snapshot)=>config.criteria?{code:3000,data:snapshot}:heldBackgr
 reportRows=[row,{...row,ID:NEWID},{...row,ID:'90071992547409994',Pro_Forma:{},File_field1:row.File_field1},{...row,ID:'90071992547409995',File_field1:{}}];
 c.resetPfAttachmentCounts();const beforeBackground=native.length;c.renderList();
 assert.match(el('listBody').innerHTML,/test-comment[\s\S]*pf-row-attachments/);assert.match(el('listBody').innerHTML,/rec-comment-count">…/);assert.equal(c.S.view,'vList');assert.equal(c.S.ed.model.draft,'preserved');
+assert.match(el('listBody').innerHTML,/<span class="pf-row-discussion-actions"><button class="test-comment">Comments<\/button>[\s\S]*pf-row-attachments[\s\S]*<\/button><\/span>/);
+assert.match(source,/\.pf-row-discussion-actions\{[^}]*gap:7px/);assert.match(source,/\.pf-row-discussion-actions>\.btn\.rowact\{margin:0\}/);assert.match(fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8'),/\.ptable \.acts\{gap:7px\}/,'the pair uses Budget’s final action gap');
 const listHTML=el('listBody').innerHTML,scroll=el('listBody').scrollTop,search=el('listSearch').value;
 await Promise.resolve();await Promise.resolve();c.loadPfAttachmentSummaries();assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1,'same-generation badge loading has one global page, no per-PF reads');
 releaseBackground();for(let i=0;i<30;i++)await Promise.resolve();readHook=null;
@@ -224,4 +248,4 @@ finishChangedCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:'9007
 assert.equal(native.filter(call=>call.kind==='upload').length,beforeChangedFile,'a native create acknowledgement under the old actor cannot issue FILE in a new session');assert.equal(c.S.attachmentBusy,false);assert.equal(c.S.attachmentModal,null);c.sdkInvoke=nativeInvoke;
 assert.match(source,/\.pf-attachment-modal-dialog\{[^}]*width:min\(940px,100%\)/);assert.match(source,/\.pf-attachment-modal-close\{[^}]*width:32px;height:32px[^}]*background:#f8fafc[^}]*border-radius:9px;color:#94a3b8/);assert.match(source,/\.pf-attachment-modal-close:hover\{background:#eef2f8/);
 assert.match(source,/role="dialog" aria-modal="true" aria-labelledby="proformaAttachmentModalTitle"/);assert.match(source,/\.pf-attachment-modal-close\{[^}]*padding:0;display:grid;place-items:center/);
-console.log('Pro Forma actual attachment presentation: native creator/roster labels, escaped named controls, preserved file/path/parent/date, read-only/busy routes and one-call drop/picker upload passed.');
+console.log('Pro Forma actual attachment presentation: native access roster/cached creator text patches, separated list controls, escaped named controls, preserved file/path/parent/date, read-only/busy routes and one-call drop/picker upload passed.');

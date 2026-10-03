@@ -119,6 +119,25 @@ successor has been promoted to Production.
 
 Copy one row per actual environment/release and keep the result concise. Use counts and aggregate metrics rather than private rows.
 
+Manage Lots 0.9.16 is sealed for its separate native Development SDK2 gate. The
+actual-source controller suite verifies full counted scopes, exact string IDs,
+dual-report status preservation, captured eligibility, all 12 rates/24 dates,
+one native create, persisted exact claims, unknown no-replay and draft/busy
+guards. The repaired SDK1 0.9.15 baseline remains an immutable regression fixture
+and rollback. Full validation/build pass after stamping. Production remains on
+0.9.14 pending the actual Development gate; no real takedown was created.
+
+PF 1.80.65 is prepared for authorized Production publication: a 7px action pair,
+late roster author-text refresh without repaint, and the one-report Creator 9.35
+Quick View uploader follow-up. Creator Stage is at 9.35; Production publication
+is pending. These presentation corrections keep SDK1 and existing writers.
+
+Settings 1.3.5 diagnostics identify the missing Contract_Template field. The
+current native Actions form builder also no longer lists that field and does
+list Template Action; it cannot be added as an existing report field. The user
+has been asked whether template pickers should use checked Template Action rows.
+No new schema field or changed template business rule has been invented.
+
 | Field | Value to record |
 | --- | --- |
 | Increment and changed behavior | Concrete behavior plus source files; keep transport and further loading redesign distinguishable. |

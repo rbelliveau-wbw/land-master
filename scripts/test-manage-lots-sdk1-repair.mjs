@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-const app='widgets/manage-lots/src/app/';
-const html=fs.readFileSync(app+'widget.html','utf8');
+const app='releases/manage-lots/0.9.15/';
+const html=fs.readFileSync(app+'index.html','utf8');
 const original=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).find(text=>text.includes('var CFG='));
 assert.ok(original);
 assert.match(html,/widgets\/version\/1\.0\/widgetsdk-min\.js/,'This rollback candidate remains SDK1.');

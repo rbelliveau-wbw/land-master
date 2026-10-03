@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-03T19:13:04.658Z",
+  "generated_at": "2026-10-03T20:41:41.613Z",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.64",
+      "version": "1.80.65",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "6417562bdebdeb17bb700c129b6e3c123623fdcb17b26d3f4c54c0d649a4d444",
+      "source_sha256": "ba45c0ef45c323fb3ad548b673dc595c98c239bf4e3a4b2c00fdb6eaa565360d",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -192,13 +192,13 @@
       "slug": "manage-lots",
       "name": "Manage Lots",
       "module": "lots",
-      "version": "0.9.15",
+      "version": "0.9.16",
       "description": "Multi-subdivision Open/Contracted lot selection, Builder Takedowns, Legal status and hover details, and AI CSV/XLSX lot staging with review before import.",
       "source_entry": "widgets/manage-lots/src/app/widget.html",
       "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Manage Lots",
-      "source_sha256": "5d6de7fdeb827ab103e51ea54374825cbd7648fa1f51a3390ab73092215b2713",
+      "source_sha256": "405062abd3fcd0e46931f65079d47a1dbfecfa4b5018d182f825bd82807f1068",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",
