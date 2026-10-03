@@ -26,7 +26,7 @@
     "production": {
       "proforma-manager": "1.80.65",
       "budget-manager": "122.28.19",
-      "land-master": "8.14.2",
+      "land-master": "8.14.4",
       "contract-management": "1.60.45",
       "tax-center": "19.17.6",
       "milestone-gantt": "1.1.6",

@@ -28,3 +28,10 @@ let mounted,readCalls=[];
 const wiringContext={LMProjectTerritory:{mount:api=>(mounted=api,{open(){}})},S:{choicesSource:'live'},OPTS:{territory:choices},LandData:{generation:()=>1},loadLocationChoices:async()=>{},sdkGetAll:async(report,criteria)=>{readCalls.push({report,criteria});return report==='All_Projects'?[p('1')]:[s('11','1','Waco')];},$:()=>({addEventListener(){}})};
 vm.runInNewContext(wiring,wiringContext);assert.equal((await mounted.snapshot()).projects.length,1);assert.equal((await mounted.project('1')).ID,'1');await mounted.subdivisions('1');assert.equal(readCalls[3].criteria,'(Project == 1)');
 console.log('Migration uses actual complete SDK2 read helper and exact Project criteria.');
+
+const territoryExpr=source.match(/F\("Territory","Territory",S.editorNew\?"select":"ro",rec.Territory,\{opts:OPTS.territory,req:S.editorNew\?1:0\}\)/)[0];
+for (const editorNew of [false,true]) {
+  const descriptor=vm.runInNewContext(territoryExpr,{S:{editorNew},rec:{Territory:'Waco'},OPTS:{territory:choices},F:(k,label,type,v,options)=>({k,type,v,...options})});
+  assert.equal(descriptor.type,editorNew?'select':'ro');assert.equal(descriptor.req,editorNew?1:0);
+}
+console.log('Existing Project Territory is read-only; new Projects require a global choice.');

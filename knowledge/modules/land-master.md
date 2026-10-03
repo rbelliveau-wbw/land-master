@@ -3,6 +3,8 @@
 
 ## Project workspace and Territory migration (8.14.1)
 
+Production 8.14.4 makes Territory read-only when editing an existing Project; new Project creation retains the required single Territory choice from live app variables. The October 3 migration populated and read back 94 blank Project Territories; one Project with conflicting subdivision Territories remains unresolved. Private original/source/result JSON evidence is retained outside the repository. Native Creator publishes 9.36 (All_Projects exposes Project.Territory) and 9.37 (Project accepts the ten global Territory values) support the migration. The Production GET Get_Land_Master_Choices API was enabled against the existing Production getLandMasterChoices function using OAuth2 and the existing API contract. Older notes below describing the missing Production API are historical. No profile audit was performed, following the user's instruction to skip it. Native form required/read-only validation is separate; this release enforces those rules in the widget. Regression: full validation/build plus actual Production migration read-back and Project editor inspection. UI rollback: 8.14.2; do not roll back data without reviewing the private results.
+
 Version 8.14.3 captures the runtime actor/environment and data generation before
 Territory preview. It rechecks that context around every asynchronous preflight,
 write and persisted read-back. A changed context stops later targets and stale

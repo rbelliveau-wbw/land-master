@@ -118,7 +118,11 @@
       "authentication": "OAuth2",
       "user_scope": "All users",
       "parameters": [
-        {"name": "user", "type": "STRING", "location": "query"}
+        {
+          "name": "user",
+          "type": "STRING",
+          "location": "query"
+        }
       ],
       "response": "Standard {code:3000,result:<JSON string>}",
       "environment": "PRODUCTION",
@@ -135,7 +139,11 @@
       "authentication": "OAuth2",
       "user_scope": "All users",
       "parameters": [
-        {"name": "user", "type": "STRING", "location": "payload"}
+        {
+          "name": "user",
+          "type": "STRING",
+          "location": "payload"
+        }
       ],
       "response": "Standard {code:3000,result:<JSON string>}",
       "environment": "DEVELOPMENT",
@@ -366,14 +374,14 @@
         "widgets/land-master/src/app/widget.html"
       ],
       "matching_creator_function": "getLandMasterChoices",
-      "confidence": "verified-development-2026-09-30",
+      "confidence": "verified-production-2026-10-03",
       "method": "GET",
       "authentication": "OAuth2",
       "user_scope": "All users",
       "parameters": [],
       "response": "Standard {code:3000,result:<JSON string containing City, County, Territory arrays>}",
       "development_link_name": "Get_Land_Master_Choices_DEV",
-      "notes": "Development binding is enabled. Production binding must be created after the user promotes the function and variables; no Production endpoint was created in this chat."
+      "notes": "Development binding is enabled. Production Get_Land_Master_Choices was enabled October 3 against the existing Production getLandMasterChoices function: GET, OAuth2, All users, no parameters, Standard response. The live widget consumed the ten global Territory values for the Project migration."
     },
     {
       "name": "PF_Budget_Transfer",

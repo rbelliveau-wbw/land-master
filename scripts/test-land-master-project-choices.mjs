@@ -50,7 +50,7 @@ data={Notes:'untouched'};
 assert.equal(context.inheritSubdivisionTerritory(data,{Project:{ID:'4410926000000000002'}},false),null,'unrelated edits preserve saved subdivision Territory');
 data={Project:''};context.inheritSubdivisionTerritory(data,{},false);assert.equal(data.Territory,'');
 const project=section('} else if(type==="project")', '} else if(type==="milestone")');
-assert.match(project,/F\("Territory","Territory","select"/);
+assert.match(project,/F\("Territory","Territory",S\.editorNew\?"select":"ro"/);
 assert.doesNotMatch(project,/F\("Proforma"/);
 assert.doesNotMatch(section('function subdivisionSubformInner','function subdivisionSubformHTML'),/data-sub-field="territory"|<th>Territory<\/th>/);
 assert.doesNotMatch(source,/Record fields|Ctrl\/Cmd-click/);
