@@ -318,6 +318,29 @@ Territory read-only. That release keeps 8.14.3's Territory controller byte-for-b
 and retains all refresh/editor/captured-context protections. Its Production
 mapping is preserved rather than replaced with the older 8.14.3 candidate.
 
+Commit `a6ea1a6` passed CI37174918258 and Pages37174918256. Budget20's native
+Dev gate matches all captured list cells/controls and the five budgets, two
+projects, 96 categories, 164 approvals, 18 Project references, 37 subdivisions,
+13 files and two comments, with normal lean access and readOnly false.
+
+PF68's native Dev main list matches all 23 IDs, cells and controls exactly.
+Its detail gate failed twice at the counted `All_Additional_Items` read and
+therefore did not authorize Production. Generated report metadata maps that
+name to `Additional_Items`; the original SDK1 serving report is
+`Proforma_Item_Report` for `Proforma_Item`. PF69 changes that finite route and
+its create/update readback field types. The actual unreadable count envelope was
+not captured, so its exact native payload shape is not claimed. Seven focused
+SDK/business suites pass, including 1,201 scoped costs and denial/unreadable
+count holds with no broad fallback. Its native detail retest remains pending.
+
+Legal47's native Dev gate matches all 15 visible Contract IDs/cells, its 21-row
+complete header snapshot, 106 actions, 13 files and 37 approvals. The expanded
+CCR action detail matches the original native text. The existing LOI attachment
+shows the original uploader and its DOCX preview renders in an iframe. Comment
+numbers resolve correctly but their accessible labels remain unavailable until
+another render; the label-only successor updates them with the same badge state.
+No native create, upload, deletion, approval/email or financial save occurred.
+
 All four existing native Development User Access details explicitly show
 Lot Sales Dashboard false. No available actor can complete Insights 1.5.41's
 authorized Dev graph read; current Production 1.5.40 is retained. Automatic

@@ -19,6 +19,25 @@ for(const kind of ['missing','duplicate','count-failure']){
 {
  const h=await ready();await h.widget.sdkUpdate(h.widget.CFG.reports.proformas,ID,{Name:'Persisted fixture'});assert.equal(h.writes.length,1);assert.equal(h.writes[0].report_name,'All_Pro_Formas_All_Fields');assert.equal(h.writes[0].id,ID);assert.deepEqual(h.writes[0].payload,{data:{Name:'Persisted fixture'}});assert.equal(h.widget.S.proformas[0].Name,'Persisted fixture');assert.equal(h.widget.PFTransport.snapshot().ledger[0].state,'verified');
 }
+// Generated/native SDK1 evidence: All_Additional_Items is a different form.
+// Use the verified Proforma_Item_Report for detail and mutation readback, without
+// falling through unreadable/denied counts to another form's report.
+{
+ const items=Array.from({length:1201},(_,i)=>({ID:(90071992600000000n+BigInt(i)).toString(),Pro_Forma_Const:{ID},Pro_Forma_Dev:{},Template_Item:false,Add_l_Cost:'1.00',Description:'Fixture child '+i}));
+ const h=await ready({storage:{Proforma_Item_Report:items},pageSize:200,count:cfg=>cfg.report_name==='All_Additional_Items'?{code:3000}:undefined});
+ assert.equal(h.widget.CFG.reports.items,'Proforma_Item_Report');const det=await h.widget.loadDetail(ID);assert.equal(det.items.length,1201);assert.equal(new Set(det.items.map(row=>row.ID)).size,1201);assert.equal(h.widget.S.detail[ID],det);
+ const scoped=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='Proforma_Item_Report'&&call.config.criteria);assert.equal(scoped.length,7);assert.ok(scoped.every(call=>call.config.criteria==='(Pro_Forma_Const == '+ID+' || Pro_Forma_Dev == '+ID+')'));assert.equal(h.calls.some(call=>call.config.report_name==='All_Additional_Items'),false);assert.ok(h.maxActive()<=3);
+}
+{
+ const row={ID:OTHER,Pro_Forma_Const:{ID},Pro_Forma_Dev:{},Template_Item:false,Add_l_Cost:'1',Start_Phase:'1',Description:'Fixture'};
+ const h=await ready({storage:{Proforma_Item_Report:[row]},create:(cfg,apply)=>({code:3000,data:{ID:apply('90071992547410022')}}),update:(cfg,apply)=>{apply();const stored=h.storage.Proforma_Item_Report.find(row=>row.ID===cfg.id);stored.Add_l_Cost='$1,444.450';stored.Start_Phase='1.00';stored.Pro_Forma_Const={ID,zc_display_value:'Fixture PF'};return {code:3000,data:{ID:cfg.id}};}});
+ await h.widget.sdkUpdate(h.widget.CFG.reports.items,OTHER,{Add_l_Cost:'1444.45',Start_Phase:'1',Pro_Forma_Const:ID});assert.equal(h.writes[0].report_name,'Proforma_Item_Report');assert.equal(h.widget.PFTransport.snapshot().reviews.length,0,'serving report retains numeric and lookup type verification');
+ const ack=await h.widget.sdkAdd(h.widget.CFG.forms.item,{Description:'Created fixture',Add_l_Cost:'5',Template_Item:false,Pro_Forma_Dev:ID});assert.equal(typeof ack.data.ID,'string');assert.ok(h.calls.some(call=>call.method==='records'&&call.config.report_name==='Proforma_Item_Report'&&call.config.criteria==='(ID == '+ack.data.ID+')'));assert.equal(h.calls.some(call=>call.config.report_name==='All_Additional_Items'),false);
+}
+for(const kind of ['denied','unreadable','incomplete']){
+ let activated=false;const h=await ready({count:cfg=>activated&&cfg.report_name==='Proforma_Item_Report'?(kind==='denied'?{code:2898,error:'Denied serving report'}:kind==='unreadable'?{code:3000}:1):undefined});activated=true;
+ await assert.rejects(h.widget.loadDetail(ID));assert.equal(h.widget.S.detail[ID],undefined,'failed serving snapshot is not published');assert.equal(h.calls.some(call=>call.config.report_name==='All_Additional_Items'),false,'count failures cannot select the unrelated report');assert.equal(h.writes.length,0);
+}
 // Native lookup clear returns an exact empty object. Nonempty malformed objects
 // remain uncertain, and the saved input still uses the original empty string.
 {

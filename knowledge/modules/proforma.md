@@ -1,6 +1,6 @@
 
 
-## Creator SDK2 candidate 1.80.68
+## Creator SDK2 candidate 1.80.69
 
 The complete widget uses native DATA/FILE/UTIL and a fresh authenticated runtime
 handshake. Full User Access and the owner map remain full, including original
@@ -8,6 +8,12 @@ uploader names; current-session Production access omits identity arguments.
 Counted cursor reads publish complete unique string-ID scopes before editing.
 The financial, phase, payload, duplicate, permission and author engines are
 preserved from 1.80.65.
+
+Cost rows use the verified `Proforma_Item_Report` for `Proforma_Item`, including
+create/update verification and numeric/lookup field types. The historical
+`All_Additional_Items` belongs to a different form. The original SDK1 serving
+report and current generated metadata establish this mapping; SDK2 count errors
+remain errors and do not trigger a broad fallback or permit an empty snapshot.
 
 Save, attachments and captured child deletion retain verified per-record results
 and drafts after partial or unknown outcomes. Unknown writes cannot replay;

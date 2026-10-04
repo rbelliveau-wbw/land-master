@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-04T03:42:42.023Z",
+  "generated_at": "2026-10-04T03:59:21.564Z",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.68",
+      "version": "1.80.69",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "70cb1c723b0673b46ccfbb9805bd6fc64c38ba482b4c442569ea2292908f2565",
+      "source_sha256": "3cf65c91c2c4049fbf032448e75da7110ea4365d3a390f71c25ddb654537b71c",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.60.47",
+      "version": "1.60.48",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "aef2a6b1f7390745a4b578ab6c67c00c9004607dbb25f7c6d2e04d338c9c0647",
+      "source_sha256": "f789e9306dd48bbcc75ed1c94907a21805bd9a54c68c4845a0a1acb0b746d890",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

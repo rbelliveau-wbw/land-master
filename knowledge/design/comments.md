@@ -33,6 +33,8 @@ complete read. Loading and unavailable are distinct from verified zero. Keep
 the recent activity window on its existing module rule. Refresh badges after
 verified changes. Older loads cannot publish into a different record or reopen
 a closed modal; background refresh cannot erase a new composer or edit draft.
+Patch the visible badge, title, accessible label and recent-activity state
+together on the mounted button, preserving the button and any open draft.
 
 Use the persisted comment author under the module's existing `User` /
 `Added_User` contract. Prefer an authoritative User Access full name from an

@@ -1,7 +1,7 @@
 
 # Contracts Module
 
-## Creator SDK2 candidate 1.60.47
+## Creator SDK2 candidate 1.60.48
 
 The whole widget uses native DATA/FILE/UTIL, a fresh authenticated handshake,
 counted complete cursor reads and exact string IDs. Its existing full access,
@@ -15,6 +15,9 @@ read-only reconciliation. File operations retain exact parent/child/path and
 byte checks. Approval Send/Check/Repair preserves its original recipients and
 meaning; no native email send is claimed. Refresh is atomic and preserves drafts.
 No Creator form, field, function, API or permission change is required.
+
+Deferred comment badge updates patch the mounted number, recent state, title and
+accessible label together, preserving button identity, focus and typed drafts.
 
 Regression: `scripts/test-contract-sdk-v2.mjs` runs eight actual whole-source
 suites for counted reads, labels, inline saves, setup/pricing/lot completion,
