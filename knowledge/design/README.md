@@ -9,6 +9,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Comments](comments.md) | Main-list comment actions, activity counts, conversation modals, composer and message actions |
 | [Approval progress](approval-progress.md) | Sending, approving, rejecting and reconciling approvals |
 | [Transfer progress](transfer-progress.md) | A committing action that writes to several records |
+| [Record details](record-details.md) | Read-only main-report details, identity/date pills, compact previews and complete detail modals |
 | [General style](style-guide.md) | Shared palette, controls, responsive layout and remaining established patterns |
 
 Keep one focused Markdown document per reusable component family. Put its

@@ -6,7 +6,10 @@ import {createTaxTestDOM} from './fixtures/tax-test-dom.mjs';
 import {source,baseline,extract,readTaxScript} from './fixtures/tax-source.mjs';
 const clone=value=>JSON.parse(JSON.stringify(value));
 // These business engines are deliberately preserved from the immutable SDK1 baseline.
-for(const name of ['normalizeArb','normalizeStatusName','mapParcelYears','mapRawLand','buildSearchCriteriaFragment','buildParcelCriteria','toZohoDate'])assert.equal(extract(source,name),extract(baseline,name),name+' baseline business engine');
+for(const name of ['normalizeArb','normalizeStatusName','mapParcelYears','mapRawLand','buildSearchCriteriaFragment','toZohoDate'])assert.equal(extract(source,name),extract(baseline,name),name+' baseline business engine');
+// Only the intentionally corrected null-aware Arbitrate block may differ.
+function withoutArbitrate(text){return text.replace(/  if\(state\.arbFilters[\s\S]*?(?=  if\(state\.agOnly)/,'');}
+assert.equal(withoutArbitrate(extract(source,'buildParcelCriteria')),withoutArbitrate(extract(baseline,'buildParcelCriteria')),'all other native search criteria remain unchanged');
 const ID='90071992547409941',OTHER='90071992547409942';
 function held(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 async function drain(){for(let i=0;i<18;i++)await new Promise(resolve=>setImmediate(resolve));}

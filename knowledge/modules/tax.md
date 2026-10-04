@@ -16,3 +16,10 @@ Properties, Companies, Subdivisions and Jurisdictions require complete reference
 Existing `Property`, `Tax_Parcel_Year`, their report fields, generated field types, parcel-year matching, currency/date semantics, copy-from values and default Creator workflows remain unchanged. No function, Custom API, schema or permission change is required. See [Tax SDK2 contract](../../widgets/tax-center/SDK2.md) for transport, field verification, regression scenarios and rollback19.17.4.
 
 Actual-source offline suites pass against native-shaped in-memory fixtures; native Development/Production gates and release promotion remain pending. The fixtures do not perform Creator writes or establish live field availability. Release metadata, routes and full repository validation/build are owned by the release task.
+
+
+## Startup/report refinement — 2026-10-04
+
+Tax 19.17.8 explicitly includes null Arbitrate1 values in Undecided. Server facets and row searches share that clause. Counts use the authoritative Creator count API and exact current base criteria, including after inline edits. Facet values from old criteria stay hidden, failed counts stay unknown, and all edit/bulk completeness guards remain. No Creator deployment; rollback 19.17.6.
+
+Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).

@@ -69,3 +69,8 @@ sets and releases; no controlled percentage speedup is claimed.
    views that need them, while keeping counts, permissions and editing preflight
    authoritative. Test reduced-permission roles independently of the current
    administrator session.
+
+
+## Incremental startup/report batch — 2026-10-04
+
+See [the focused batch writeup](startup-refinements-2026-10-04.md) for before/after request counts, atomic lazy Pro Forma options, lean Legal access, Tax null-aware Arbitrate counts, Territory-fill removal and the new Takedowns report/detail design. Insights' recent-year display fix is code-tested but its Production verification hold remains. No controlled live latency percentage or authorized Dev Insights graph pass is claimed.

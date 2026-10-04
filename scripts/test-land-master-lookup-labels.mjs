@@ -42,7 +42,7 @@ vm.runInContext(section('function setCoreRefreshing','function tableInlineSave')
 vm.runInContext(section('function closeProjectPopup','function updateProjectPopupCount'),c);
 vm.runInContext(section('function closeLookupPopup','function lookupChoiceRequired'),c);
 vm.runInContext(section('function ensureScopeData','$("scopeSeg")'),c);
-vm.runInContext(section('function loadData','var projectTerritoryMigration='),c);
+vm.runInContext(section('function loadData','var lotImport='),c);
 Object.assign(c,{setStatus(){},renderBanners(){},renderAll(){renders.push(c.S.scope);},renderPanel(){}});
 await c.loadData();
 assert.equal(c.S.subdivisions.length,348);assert.equal(c.LandData.coreReady(),true);

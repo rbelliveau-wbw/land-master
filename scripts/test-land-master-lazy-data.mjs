@@ -34,7 +34,7 @@ function harness({read,choices}={}){
   vm.runInContext(section('function closeProjectPopup','function updateProjectPopupCount'),c);
   vm.runInContext(section('function closeLookupPopup','function lookupChoiceRequired'),c);
   vm.runInContext(section('function ensureScopeData','$("scopeSeg")'),c);
-  vm.runInContext(section('function loadData','var projectTerritoryMigration='),c);
+  vm.runInContext(section('function loadData','var lotImport='),c);
   Object.assign(c,{setStatus:(kind,text)=>statuses.push({kind,text}),renderBanners(){},renderAll(){renders.push(c.S.scope);},renderPanel(){panels.push({type:c.S.editorType,id:c.S.editorId,builders:c.S.builders.length,proformas:c.S.proformas.length});}});
   return{c,reads,nodes,statuses,metrics,renders,panels,errors};
 }

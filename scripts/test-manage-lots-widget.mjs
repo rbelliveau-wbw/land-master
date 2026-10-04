@@ -54,7 +54,7 @@ assert.match(source, /takedowns:\s*"All_Builder_Takedowns"/, "Builder Takedowns 
 assert.match(source, /View only/, "Builder Takedowns view must remain read-only");
 assert.match(source, /aria-multiselectable="true"/, "subdivision filtering must expose an accessible multi-select");
 assert.match(source, /Search subdivisions/, "subdivision filtering must be searchable");
-assert.match(source, /class="subdivision-row"/, "Builder Takedowns must include subdivision grouping rows");
+assert.doesNotMatch(extractFunction("renderTakedowns"), /subdivision-row/, "Takedowns must remain a flat newest-first list");
 assert.match(source, /class="lot-detail-chip"/, "lot details must render as scannable chips");
 assert.match(source, /A takedown can include lots from one subdivision/, "cross-subdivision takedown selection must be prevented");
 assert.match(source, /pointerdown/, "drag selection must start with pointer input");
@@ -150,7 +150,7 @@ native=nativeReader('3',[{code:3000,data:[{ID:'1'},{ID:'2'}]}]);await assert.rej
 native=nativeReader('3',[{code:3000,data:[{ID:'1'},{ID:'2'}],record_cursor:'next'},{code:3000,data:[{ID:'3'}]}]);assert.deepEqual(Array.from(await native.read('Lots'),row=>row.ID),['1','2','3']);assert.equal(native.pages(),2);
 native=nativeReader({code:2898,message:'Denied'},[]);await assert.rejects(native.read('Lots'),error=>error.code==='2898'&&error.permissionDenied);assert.equal(native.pages(),0);
 const sdkResponseInfo=new Function(`return (${extractFunction('sdkResponseInfo')})`)();
-const takedownState={subdivisionIds:['lot-view-sub'],takedownSubdivisionIds:[],takedowns:[{ID:'10',Name:'Older',Subdivision1:{ID:'a'},Added_Time:'01-Jan-2025 10:00:00'},{ID:'11',Name:'Latest',Subdivision1:{ID:'b'},Added_Time:'30-Sep-2026 10:00:00'}]};
+const takedownState={subdivisionIds:['lot-view-sub'],takedownSubdivisionIds:[],takedownBuilderIds:[],takedowns:[{ID:'10',Name:'Older',Subdivision1:{ID:'a'},Added_Time:'01-Jan-2025 10:00:00'},{ID:'11',Name:'Latest',Subdivision1:{ID:'b'},Added_Time:'30-Sep-2026 10:00:00'}]};
 const newest=new Function('str',`return (${extractFunction('takedownNewest')})`)(scalar);
 const visibleTakedowns=new Function('S','$','idOf','str','takedownNewest',`return (${extractFunction('visibleTakedowns')})`)(takedownState,()=>({value:''}),v=>v.ID,scalar,newest);
 assert.deepEqual(visibleTakedowns().map(t=>t.Name),['Latest','Older'],'the takedown tab must show latest records without inheriting the Lots filter');

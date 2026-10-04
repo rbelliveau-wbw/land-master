@@ -46,10 +46,10 @@ function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@exa
 async function ready(options){const h=harness(options);await drain();assert.equal(h.c.S.coreReady,true);return h;}
 {
   const h=await ready({actionsCount:5001});assert.equal(h.handshakes(),1);assert.equal(h.c.S.actions.length,5001);assert.ok(h.maximum()<=3);assert.ok(h.calls.filter(call=>call.method==='records').every(call=>call.config.max_records===1000&&call.config.field_config==='all'));
-  const access=h.calls.find(call=>call.method==='custom').config;assert.equal(access.api_name,'Get_User_Access');assert.equal(access.http_method,'GET');assert.equal(access.query_params,undefined);assert.equal(access.payload,undefined);assert.equal(access.parameters,undefined);assert.equal(h.c.canEdit(),true);assert.ok([...h.nodes.values()].some(node=>node.innerHTML.includes('Fixture contract')),'actual legacy renderer built the contract list');
+  const access=h.calls.find(call=>call.method==='custom').config;assert.equal(access.api_name,'Get_User_Access_Lean');assert.equal(access.http_method,'GET');assert.equal(access.query_params,undefined);assert.equal(access.payload,undefined);assert.equal(access.parameters,undefined);assert.equal(h.c.canEdit(),true);assert.ok([...h.nodes.values()].some(node=>node.innerHTML.includes('Fixture contract')),'actual legacy renderer built the contract list');
 }
 {
-  const h=await ready({initialize:()=>({envUrlFragment:'/environment/development',loginUser:'ViewAs@example.test'})});const config=h.calls.find(call=>call.method==='custom').config;assert.equal(config.api_name,'Get_User_Access_DEV');assert.equal(config.http_method,'POST');assert.deepEqual(config.payload,{user:'viewas'});
+  const h=await ready({initialize:()=>({envUrlFragment:'/environment/development',loginUser:'ViewAs@example.test'})});const config=h.calls.find(call=>call.method==='custom').config;assert.equal(config.api_name,'Get_User_Access_Lean_DEV');assert.equal(config.http_method,'POST');assert.deepEqual(config.payload,{user:'viewas'});
 }
 {
   const h=await ready({accessFailure:true});assert.equal(h.c.S.acc.known,false);assert.equal(h.c.S.acc.degraded,true);assert.equal(h.c.canEdit(),true,'existing degraded business policy retained');

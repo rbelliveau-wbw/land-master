@@ -181,3 +181,10 @@ in-widget preview and download paths. The function must verify both the
 Sold and unavailable tiles use darker slate gray; Contracted and selected lots use deeper blue. Unavailable lots carry a diagonal texture and centered SVG lock, with aria-disabled metadata. Legend and hover colors match. Existing Legal eligibility, claims, drag/select-all and hover behavior remain unchanged: only unclaimed Open lots can be selected, including On Hold flags.
 
 Release QA: widget.html, widget.config.json, manifests/widgets.json, deploy/environments.json and module/style documentation, plus immutable release 1.60.32. No forms, fields, functions, Custom APIs, permissions or Creator backend deployment change. Browser checks covered unavailable click rejection, eligible selection/select-all, hue/texture/icons and hover details; full validation and Pages build required. Rollback: 1.60.31.
+
+
+## Startup/report refinement — 2026-10-04
+
+Legal 1.60.50 uses the existing Get_User_Access_Lean API and its Get_User_Access_Lean_DEV POST alias. Legal flags and the original-author/full-name roster match the full API; unused Pro Forma owner scanning is omitted. Whole-source permission/owner/attachment/approval regressions remain required. No Creator deployment; rollback 1.60.48.
+
+Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).

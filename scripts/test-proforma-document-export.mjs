@@ -4,7 +4,7 @@ import vm from 'node:vm';
 const widget=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 function fn(name){const a=widget.indexOf('function '+name+'(');assert.ok(a>=0,name);const b=widget.indexOf('\nfunction ',a+1);return widget.slice(a,b);}
 let reply,downloads=[],messages=[],requests=[];
-const ctx=vm.createContext({Uint8Array,Blob,atob,Date,console,
+const ctx=vm.createContext({Uint8Array,Blob,atob,Date,console,pfReferencesReady:()=>true,
   S:{ed:null,exportPfId:'123'},
   invokeApprovalPdfApi:async payload=>{requests.push(payload);return reply;},
   triggerBlobDownload:(blob,name)=>downloads.push({blob,name}),

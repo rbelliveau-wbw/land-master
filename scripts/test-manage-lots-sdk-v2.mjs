@@ -19,9 +19,9 @@ function harness(options={}){
       setAttribute(name,value){attrs[name]=String(value)},getAttribute:name=>attrs[name],getBoundingClientRect:()=>({top:0,left:0,bottom:20,right:20,width:20,height:20}),focus(){document.activeElement=out},select(){out.selected=true},appendChild(child){if(child.id)nodes.set(child.id,child)},removeChild(){},remove(){},before(){}};
     Object.defineProperty(out,'innerHTML',{get:()=>markup,set(value){markup=String(value);for(const match of markup.matchAll(/<([a-z]+)\b[^>]*\bid=(['"])(.*?)\2([^>]*)>/g)){const child=node(match[3],match[1]),valueAttr=match[4].match(/\bvalue=(['"])(.*?)\1/);if(valueAttr)child.value=valueAttr[2];nodes.set(child.id,child)}out.spans=[...markup.matchAll(/<span[^>]*>(.*?)<\/span>/g)].map(match=>({textContent:match[1]}))}});return out;
   }
-  for(const match of html.matchAll(/<([a-z]+)\b[^>]*\bid="([^"]+)"/g))nodes.set(match[2],node(match[2],match[1]));
+  for(const match of html.matchAll(/<([a-z][a-z0-9]*)\b[^>]*\bid="([^"]+)"/g))nodes.set(match[2],node(match[2],match[1]));
   const document={referrer:'https://creatorapp.zoho.com/fixture/land-master/',body:node('body'),activeElement:null,
-    getElementById:id=>nodes.get(id)||null,querySelector:selector=>selector==='.tabs'?tabs:null,
+    getElementById:id=>nodes.get(id)||null,querySelector:selector=>selector==='.tabs'?tabs:['.topbar','.toolbar','.main'].includes(selector)?node(selector):null,
     querySelectorAll:selector=>selector.startsWith('#form input')?[...nodes.values()].filter(n=>/^(INPUT|SELECT|TEXTAREA)$/.test(n.tagName)&&/^(f|ir|if|it)/.test(n.id)):selector==='header,.toolbar,.main,#selectionBar,#overlay'?[nodes.get('selectionBar'),nodes.get('overlay')]:[],
     createElement:tag=>node('',tag),addEventListener(name,fn){events.set(name,fn)},execCommand:()=>false};const tabs=node('tabs');
   const rows={All_Subdivisions:[{ID:SID,Subdivision_Name:'Fixture subdivision',Subdivision_Code:'FX01'}],All_Builders:[{ID:BUILDER,Builder_Name:'Fixture builder'}],
@@ -103,7 +103,7 @@ for(const extra of [{details:{code:2898,error:'Denied'}},{response:'{"status":"f
   const baseline=fs.readFileSync('releases/manage-lots/0.9.15/index.html','utf8'),payload=baseline.split(/\r?\n/).find(line=>line.includes('function payload()'));
   const ctx=vm.createContext({S:h.state,val:id=>h.nodes.get(id)?.value||'',selectedLotSubdivisionId:()=>SID,toZoho:v=>v?v.split('-').slice(1).concat(v.split('-')[0]).join('/'):'',Array,Number});vm.runInContext(payload,ctx);
   const expected=plain(ctx.payload());assert.deepEqual(plain(h.widget.payload()),expected);await h.widget.confirm();await h.flushProgress();const sent=writes(h)[0].config.payload.data;assert.deepEqual(sent,expected);assert.equal(Object.keys(sent).filter(key=>/^(Interest_Rate_|Date[0-9]+_[12])/.test(key)).length,36);assert.equal(sent.Interest_Rate_71,7.25);
-  h.state.takedowns[0].Builder1={ID:BUILDER,zc_display_value:'Native builder label'};h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/Native builder label/);assert.doesNotMatch(h.nodes.get('takedownsBody').innerHTML,/button|input|textarea/);
+  h.state.takedowns[0].Builder1={ID:BUILDER,zc_display_value:'Native builder label'};h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/Native builder label/);assert.doesNotMatch(h.nodes.get('takedownsBody').innerHTML,/input|textarea|data-act=|data-edit=/);
 }
 {
   const h=harness();await drain();assert.equal(h.nodes.get('mode').textContent,'Connected');assert.equal(h.initCalls(),1);assert.equal(h.widget.controller.state.ready,true);
@@ -214,4 +214,16 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
   const attempt=h.widget.confirm();await drain();h.context.LMRuntime.apply({loginUser:'changed-native-actor',envUrlFragment:''});waiting.resolve();await attempt;await h.flushProgress();
   assert.equal(writes(h).length,0);assert.equal(h.widget.controller.state.review,null,'a queued but never sent create is not an applied outcome');assert.equal(h.nodes.get('mlProgressStage1').textContent,'Not sent');
 }
+
+// The actual report remains a complete flat snapshot, with display-only details.
+{
+ const h=harness();await drain();const sub2='90071992547409932',b2='90071992547409962';
+ h.state.subdivisions.push({ID:sub2,Subdivision_Name:'Other subdivision'});h.state.builders.push({ID:b2,Builder_Name:'Other builder'});
+ h.state.takedowns=[{ID:'90071992547409990',Name:'Newest',Subdivision1:{ID:sub2},Builder1:{ID:b2},Added_Time:'04-Oct-2026 11:00:00',Entered_Date:'02-Oct-2026',Purchase_Date:'15-Oct-2026',Lot_Count:8,Status:'Active',Total:'12345.67',Lots:Array.from({length:8},(_,i)=>({ID:String(90071992547409000n+BigInt(i)),zc_display_value:'FX01-B01-L'+i+' - Scheduled'})),Notes:'<script>must be text</script>'}, {...h.state.takedowns[0],Name:'Older',Added_Time:'01-Oct-2026 11:00:00'}];
+ h.state.view='takedowns';h.widget.render();const html=h.nodes.get('takedownsBody').innerHTML;assert.ok(html.indexOf('Newest')<html.indexOf('Older'));assert.doesNotMatch(html,/subdivision-row/);assert.match(html,/Other subdivision/);assert.match(html,/Other builder/);assert.match(html,/View all 8 lots/);assert.match(html,/lot-state scheduled/);assert.match(html,/02-Oct-2026/);
+ h.state.takedownBuilderIds=[b2];assert.equal(h.widget.visibleTakedowns().length,1);h.state.takedownSubdivisionIds=[SID];assert.equal(h.widget.visibleTakedowns().length,0);h.state.takedownSubdivisionIds=[];h.state.takedownBuilderIds=[];
+ h.widget.renderBuilderOptions();assert.match(h.nodes.get('builderOptions').innerHTML,/Other builder/);const before=h.calls.length;
+ assert.equal(h.widget.openTakedownDetail('90071992547409990',h.nodes.get('builderToggle')),true);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/\$12,345.67/);assert.equal((h.nodes.get('takedownDetailBody').innerHTML.match(/lot-detail-chip/g)||[]).length,8);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/&lt;script&gt;/);assert.doesNotMatch(h.nodes.get('takedownDetailBody').innerHTML,/<script>/);assert.equal(h.calls.length,before);assert.equal(writes(h).length,0);h.widget.closeTakedownDetail();assert.equal(h.nodes.get('takedownDetail').classList.contains('open'),false);
+}
+
 console.log('Manage SDK2 actual whole-IIFE: native startup/timeout/fresh retry, full count/cursors/dual Sold merge/exact IDs/leading zeros, immutable draft/eligibility/actor preflight, one strict create/claims readback, unknown no-replay/read-only recheck, pending+paced UI locks and native clipboard passed.');

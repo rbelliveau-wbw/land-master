@@ -54,3 +54,10 @@ Below the phase metrics, `Contract Schedule — All N Phases` shows the full `Ta
 Single-phase rendered content is compared exactly against the pre-change function (excluding the two added multi-phase CSS rules). Regression coverage includes unpopulated phases, complete obligation preservation, phase membership differing from Builder assignment, outside-contract exclusion, rolling periods, latest closing ties, and separate phase/overall Scheduled segments. This remains a read-only HTML function with the same callers and signature; no fields or APIs change. Creator Development Save and reload verification are required, with production promotion left to the user. Rollback this scope/layout change using `creator/functions/baseline/buildForecastManagerSummary.monthly-meter.2026-10-02.dg` and Save; it preserves the monthly meter and prior start-of-month rule.
 
 Verified: Creator Development Save compiled successfully; the reloaded source matched after whitespace and criteria-parenthesis normalization. Cottonwood Creek Phase 01 rendered successfully with its existing single-phase labels and 17 Sold / 0 Scheduled. `npm run validate` passed. The Turnbo multi-phase layout was visually checked using a regression fixture because Development only contains Turnbo Phase 02; no Production function, schedule, contract, lot or forecast record was changed.
+
+
+## Startup/report refinement — 2026-10-04
+
+Manage Lots 0.9.18 replaces subdivision grouping in Builder Takedowns with a flat Added_Time newest-first list. Search sits left of Subdivision and the optional searchable Builder multi-select. Read-only record/lot-detail buttons open the complete existing snapshot with stored financial/tax values and escaped Notes. Main rows show six lot chips plus counted View all; Scheduled is amber. Entered_Date and Purchase_Date pills preserve their field meanings while the requested Close Date mapping awaits the user. No Creator deployment; rollback 0.9.17. See knowledge/design/record-details.md.
+
+Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).

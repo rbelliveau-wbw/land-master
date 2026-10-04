@@ -29,6 +29,7 @@ export function createPFTestDOM(source){
    addEventListener(type,fn){if(!handlers.has(type))handlers.set(type,[]);handlers.get(type).push(fn);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(v=>v!==fn));},handlers,
    async fire(type,event={}){event.target??=el;for(const fn of handlers.get(type)||[])await fn.call(el,event);},dispatchEvent(event){event.target=el;for(const fn of handlers.get(event.type)||[])fn.call(el,event);return true;},getContext:()=>({font:'',measureText:t=>({width:String(t).length*7})})};
   Object.defineProperties(el,{
+   childNodes:{get:()=>[{nodeType:3,nodeValue:text},...el.children]},
    id:{get:()=>nid,set:next=>{nid=String(next);if(nid)nodes.set(nid,el);}},className:{get:()=>[...classes].join(' '),set:next=>{classes.clear();String(next).split(/\s+/).filter(Boolean).forEach(v=>classes.add(v));}},
    checked:{get:()=>checked,set:next=>{checked=!!next;}},options:{get:()=>el.tagName==='SELECT'?select(el,'option'):[]},selectedIndex:{get:()=>el.options.findIndex(option=>option.selected),set:index=>{el.options.forEach((option,i)=>option.selected=i===Number(index));}},
    value:{get:()=>el.tagName==='SELECT'?(el.options.find(option=>option.selected)||el.options[0]||{}).value||'':el.tagName==='OPTION'&&!el.hasAttribute('value')?el.textContent.trim():value,set:next=>{value=String(next);if(el.tagName==='SELECT')el.options.forEach(option=>option.selected=option.value===value);}},

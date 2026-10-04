@@ -609,3 +609,10 @@ the new rows; re-run the schedule if that happens.
 ## Budget transfer progress (1.80.61)
 
 The send action opens the persistent Contracts-style progress and per-Budget verification dialog. The review header names the source/destination and shows the amount and counts. See docs/proforma-budget-transfer-progress-1.80.61.md and knowledge/design/transfer-progress.md for exact confirmation, unknown-result handling, regression and rollback. No Creator deployment is required for this UI release.
+
+
+## Startup/report refinement — 2026-10-04
+
+Pro Forma 1.80.71 shows the complete authorized header/approval list before loading company, seller, property and template options. A dependent action waits for all options to publish atomically for its actor/load. A failed or stale read cannot seed a draft or substitute an empty collection. The main-list approval readiness message stays explicitly unverified until options load; original checks then run. Same-fixture startup requests: 29 → 9, with all 2,139 properties retained after the deferred load. No Creator deployment; rollback 1.80.69.
+
+Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).

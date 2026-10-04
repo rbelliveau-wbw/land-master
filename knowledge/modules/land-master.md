@@ -119,3 +119,10 @@ The regression fixture executes the actual load and write functions in both acti
 ## Centered checkmarks (8.12.4)
 
 Picker selections use a centered 11px SVG check instead of a font glyph. Lookup and Project inline save indicators also use geometric checkmarks; input-save and toast SVG paths are centered within their viewBox. Changed files: widget HTML/JS/CSS, config/manifests, regression URL expectations, AGENTS/style/module docs, release and Production mapping. No Creator fields, functions, APIs, or backend deployment change. Regression: selected single/multi pickers, clear/reselect, saved lookup/Project indicators, and actual-size icon/path geometry. Rollback: 8.12.3.
+
+
+## Startup/report refinement — 2026-10-04
+
+Land 8.14.5 removes Fill Project territories: button, module assets, migration locks, bulk planner and write wiring. Normal Project/Territory editing and inheritance remain as in 8.14.4, including its current read-only field treatment. Full core and unsaved-draft/save guards remain. No Creator deployment; rollback 8.14.4.
+
+Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
