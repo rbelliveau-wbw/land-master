@@ -86,3 +86,10 @@ SDK v2 [`deleteRecords`](https://www.zoho.com/creator/help/js-api/v2/delete-reco
 | Proforma Manager | `Proforma_Management1` | Current source `PAGE_LINK_NAME` and module release notes use this link. Registry also contains `Proforma_Management`; its older parameters differ. |
 
 Native baseline placements and aggregate counts are recorded in the live ledger. Individual candidate gates and unperformed scenarios remain explicit there.
+
+## Final separately gated release set
+
+All nine sources now use the canonical SDK2 runtime/data boundary, with byte-identity inventory checks. Production maps eight widgets to SDK2: Budget 122.28.20, Land 8.14.4, Pro Forma 1.80.69, Legal 1.60.48, Tax 19.17.6, Gantt 1.1.6, Manage Lots 0.9.17 and Insights 1.5.40. Each newly migrated widget passed its own native Development data gate; the live ledger records Production checks and unperformed mutation scenarios. This release set supersedes the earlier four-widget inventory examples above.
+
+Settings Production remains 1.3.1 on SDK1 until the user resolves the removed Contract Template versus current Template Action picker rule. Insights 1.5.41 remains held because none of the four available Development access rows grants the dashboard read. No access grant or business rule was changed to satisfy a test. Rollbacks are Budget 122.28.19, Pro Forma 1.80.65 and Legal 1.60.45 through the stable environment mapping; no Creator backend deployment is required for these three frontend successors.
+

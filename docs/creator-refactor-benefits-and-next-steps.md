@@ -6,7 +6,7 @@
   reads share bounded concurrency, counts and complete cursor reads.
 - Budget's list attachment/comment badges resolve in the background. Land Master
   retains project links and groups instead of putting all subdivisions in Unlinked.
-- Budget, Land Master, Insights, Gantt, Manage Lots and Tax Center use Creator SDK 2.0. Their adapters keep
+- Budget, Land Master, Pro Forma, Legal, Insights, Gantt, Manage Lots and Tax Center use Creator SDK 2.0. Their adapters keep
   string record IDs, native environment routing and permission failures distinct
   from verified empty results.
 - The lean access response preserves permissions and original uploader names
@@ -24,6 +24,12 @@
 - Manage Lots passed Dev list/lot/takedown parity and reads 348 subdivision
   choices, 186 AR05 lots and 857 takedowns in Prod. Unknown create outcomes keep
   the draft and prevent another blind submission.
+- Pro Forma's separate native Dev gate preserves all 23 list records and all
+  132 editor fields across eight sections. Its additional costs use the verified
+  Proforma Item report for loading and persisted save verification.
+- Legal's native Dev gate preserves its complete 21-contract snapshot and
+  106 actions, exact visible rows, CCR details and original-author file preview.
+  Background comment counts update accessible labels without rebuilding drafts.
 
 The native evidence and boundaries are in the
 [live ledger](creator-performance-live-ledger.md). Timings use different data
@@ -37,8 +43,10 @@ sets and releases; no controlled percentage speedup is claimed.
 - Settings remains on SDK1 in Prod. The current Actions form has Template Action
   instead of the former Contract Template field; the picker rule requires the
   user's answer before changing its meaning.
-- Pro Forma and Legal remain SDK1 in Prod pending their separate migrations.
-  Legal also has concurrent work from another chat that must be retained.
+- Pro Forma 1.80.69 and Legal 1.60.48 passed their individual native Dev gates
+  and are promoted through the Production mapping. Final deployed Production
+  read checks are recorded in the live ledger. Concurrent Legal and Land work
+  from the other chat is preserved.
 
 ## Further improvements found during the work
 
