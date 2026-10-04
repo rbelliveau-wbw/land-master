@@ -61,3 +61,8 @@ Verified: Creator Development Save compiled successfully; the reloaded source ma
 Manage Lots 0.9.18 replaces subdivision grouping in Builder Takedowns with a flat Added_Time newest-first list. Search sits left of Subdivision and the optional searchable Builder multi-select. Read-only record/lot-detail buttons open the complete existing snapshot with stored financial/tax values and escaped Notes. Main rows show six lot chips plus counted View all; Scheduled is amber. Entered_Date and Purchase_Date pills preserve their field meanings while the requested Close Date mapping awaits the user. No Creator deployment; rollback 0.9.17. See knowledge/design/record-details.md.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+
+0.9.19 explicitly projects the verified takedown identity, claim, date and detail
+fields through the complete SDK2 reader. SDK2 `all` means report-layout fields,
+so 0.9.18's live check preserved 857 rows but omitted Entered_Date, Purchase_Date
+and stored financial/tax values. No report layout or permissions are changed.

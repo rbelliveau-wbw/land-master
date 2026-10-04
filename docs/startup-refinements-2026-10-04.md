@@ -10,7 +10,7 @@ All six widgets already use SDK2. It does not change their SDK version.
 | Pro Forma first screen | Waited for companies, sellers, properties and templates before showing the list | Complete headers, approvals and access show first. A controlled actual-source fixture with 2,139 properties and 204 companies makes 29 → 9 initial requests. The 20 deferred requests still load every record before a dependent action. |
 | Legal access | Full Get_User_Access included a Pro Forma owner scan unused by Legal | Get_User_Access_Lean supplies the same flags and full-name roster without that scan. Production GET and Development POST alias shapes pass the whole-source native-boundary fixtures. |
 | Insights recent years | A Hide Empty off guard hid the already loaded recent data until full history arrived | Current and previous calendar years display immediately. Selected-period totals match the completed-history fixture exactly. Historical First Lot Sale, complete inventory and exports stay gated; failed history retains recent results and Retry. Production promotion remains held pending verification authorization. |
-| Tax Arbitrate | Negative Yes/No comparisons excluded null picklists and could show Undecided 0 | Row filters and server facets share an explicit null-aware clause. Counts always come from Creator for the exact base criteria; no page or local row subset supplies a total. Old-scope cached counts stay hidden; failed counts remain unknown. |
+| Tax Arbitrate | Negative Yes/No comparisons excluded null picklists and showed Undecided 0 in live Production | Row filters and server facets share an explicit null-aware clause. Native Production now shows 2,176 Undecided + 544 No + 21 Yes = 2,741; Development shows 228 + 0 + 0 = 228. Counts come from Creator for the exact base criteria, with scope-aware caching and unknown failure states. |
 | Fill Project Territory | Bulk fill button, modal, planner and write path were present | All entry points and source assets are removed. Normal Project/Territory behavior, core completeness, dirty-draft and save guards remain tested. Existing immutable releases remain available for rollback. |
 | Builder Takedowns | Subdivision groups, dense lot chips, no report detail view, search after Subdivision | Flat newest-first report; search first; searchable Builder multi-select after Subdivision; amber Scheduled chips; six-chip preview and complete read-only detail modal with stored financial/tax values, dates and notes. Entered/Purchase pills retain their actual field meaning pending the user's Close Date decision. |
 
@@ -40,6 +40,15 @@ Regression fixtures retain 152/151 completeness, 12,017 reference rows and
 partitions, displayed row filtering, shared criteria, stale caches and denied
 counts. No live mass update was used as a test.
 
+Native Production 0.9.18 preserved all 857 takedown names exactly while removing
+all subdivision groups and ordering globally by Added_Time. That check exposed
+an SDK2 field-selection limitation: `all` returns the report's layout fields,
+which omitted the form's dates and financial/tax values. Candidate 0.9.19 requests
+the verified fields explicitly using `field_config: custom`, through the same
+count/cursor/string-ID reader. It changes no Creator report, schema or permission.
+The fixture now simulates layout omissions and verifies real loaded date/total
+rendering; hidden or unavailable fields remain unavailable.
+
 The Takedowns whole-widget fixture checks global ordering across subdivisions,
 combined filters, all eight fixture lots in the modal versus six in the preview,
 stored currency formatting, escaped Notes, focus return and zero requests/writes
@@ -62,7 +71,8 @@ on opening details. Existing create/claim/preflight tests remain in force.
 - Manage Lots reads the existing complete All_Builder_Takedowns snapshot;
   Subdivision1/Builder1 ID filters, Added_Time ordering, Entered_Date and
   Purchase_Date pills, stored financial/tax fields and Lots/Notes detail use that
-  snapshot. Missing fields are unavailable. Roll back to 0.9.17.
+  snapshot with an explicit verified field projection in 0.9.19. Missing fields
+  are unavailable. Roll back to 0.9.17.
 - Insights keeps its two-year Close_Date/Purchase_Date OR window and complete
   background All_Lots_All_Fields read. Roll back to Production 1.5.40.
 

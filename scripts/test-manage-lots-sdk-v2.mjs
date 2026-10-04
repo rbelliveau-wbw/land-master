@@ -25,7 +25,7 @@ function harness(options={}){
     querySelectorAll:selector=>selector.startsWith('#form input')?[...nodes.values()].filter(n=>/^(INPUT|SELECT|TEXTAREA)$/.test(n.tagName)&&/^(f|ir|if|it)/.test(n.id)):selector==='header,.toolbar,.main,#selectionBar,#overlay'?[nodes.get('selectionBar'),nodes.get('overlay')]:[],
     createElement:tag=>node('',tag),addEventListener(name,fn){events.set(name,fn)},execCommand:()=>false};const tabs=node('tabs');
   const rows={All_Subdivisions:[{ID:SID,Subdivision_Name:'Fixture subdivision',Subdivision_Code:'FX01'}],All_Builders:[{ID:BUILDER,Builder_Name:'Fixture builder'}],
-    All_Builder_Takedowns:[{ID:TD,Name:'Read-only takedown',Lots:[],Subdivision1:{ID:SID},Builder1:{ID:BUILDER},Lot_Count:0,Added_Time:'01-Oct-2026 10:00:00'}],All_Contracts1:[],
+    All_Builder_Takedowns:[{ID:TD,Name:'Read-only takedown',Lots:[],Subdivision1:{ID:SID},Builder1:{ID:BUILDER},Lot_Count:0,Added_Time:'01-Oct-2026 10:00:00',Entered_Date:'10/01/2026',Purchase_Date:'10/15/2026',Status:'Active',Total:'12345.67'}],All_Contracts1:[],
     All_Lots_All_Fields:[{ID:LOT,Subdivision:{ID:SID},Status:'Open',Archived:false,Add_Builder_Takedown_Name:{},Block:'001',Lot_Number:'01'}],
     All_Active_Lots_List_View:[{ID:LOT,Subdivision:{ID:SID},Status:'Open',Block:'001',Lot_Number:'01'},{ID:SOLD,Subdivision:{ID:SID},Status:'Sold',Block:'001',Lot_Number:'02'}],All_Active_Lots_Contracts_View:[]};
   const gate={init:options.init||null,read:null,write:null,response:undefined,denyCore:false,denyOptional:false,mismatch:false,reverseWrong:false};
@@ -46,6 +46,10 @@ function harness(options={}){
       }
       const captured=plain(scoped(config));if(method==='count')return {code:3000,result:{records_count:captured.length+(gate.mismatch&&config.report_name==='All_Lots_All_Fields'?1:0)}};
       if(gate.read)await gate.read.promise;
+      if(config.report_name==='All_Builder_Takedowns'){
+        const fields=config.field_config==='custom'?['ID',...config.fields.split(',')]:['ID','Name','Lots','Subdivision1','Builder1','Lot_Count','Added_Time'];
+        captured.forEach(row=>Object.keys(row).forEach(key=>{if(!fields.includes(key))delete row[key]}));
+      }
       const offset=config.record_cursor?Number(config.record_cursor):0,page=captured.slice(offset,offset+1000),more=offset+page.length<captured.length;
       return {code:3000,data:page,...(more?{record_cursor:String(offset+page.length)}:{})};
     }finally{active--}
@@ -215,6 +219,13 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
   assert.equal(writes(h).length,0);assert.equal(h.widget.controller.state.review,null,'a queued but never sent create is not an applied outcome');assert.equal(h.nodes.get('mlProgressStage1').textContent,'Not sent');
 }
 
+// A real report-layout response omits form dates/totals unless explicitly projected.
+{
+ const h=harness();await drain();const reads=h.calls.filter(call=>call.method==='read'&&call.config.report_name==='All_Builder_Takedowns');
+ assert.ok(reads.length);for(const call of reads){assert.equal(call.config.field_config,'custom');for(const field of ['Name','Lots','Subdivision1','Builder1','Lot_Count','Added_Time','Entered_Date','Purchase_Date','Status','Total'])assert.ok(call.config.fields.split(',').includes(field));}
+ h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/10\/01\/2026/);assert.match(h.nodes.get('takedownsBody').innerHTML,/10\/15\/2026/);
+ h.widget.openTakedownDetail(TD);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/\$12,345.67/);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/Active/);assert.equal(writes(h).length,0);
+}
 // The actual report remains a complete flat snapshot, with display-only details.
 {
  const h=harness();await drain();const sub2='90071992547409932',b2='90071992547409962';
