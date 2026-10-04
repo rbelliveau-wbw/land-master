@@ -356,6 +356,29 @@ approvals. The unchanged Legal47 CCR detail and original-author/DOCX preview
 checks remain applicable. Both individual Dev gates authorize PF69/Legal48
 Production promotion. No live financial or workflow write was performed.
 
+Commit `5e1bead` passed CI37176172562 and Pages37176172618. Deployed Budget20
+confirms native Production, normal lean access/readOnly false, 111 budgets in
+41 groups, 2,240 categories, 1,032 approvals, 348 subdivisions linked through
+95 Project references, 133 files and seven comments. Its list badges are numeric;
+the three Alta Vista Phase 01 files still show Robby Belliveau as original author.
+
+Deployed PF69 confirms its inline version, native SDK2 and full Production
+access/readOnly false. All 58 visible records (66 table rows including groups)
+match the previous SDK1 IDs, attributes, cells and controls exactly. The complete
+startup contains 73 headers, 1,032 approvals, 204 companies, nine sellers and
+2,139 properties. Ed Poe Duplexes loads its financial dashboard and schedule;
+its file shows Max Turner, preserving the original author. The audit has zero
+errors after that detail read.
+
+Deployed Legal48 confirms its inline version and native SDK2. All 36 visible
+records (43 table rows including groups) match the prior Production IDs,
+attributes, cells and controls exactly. Its complete snapshot contains 83
+contracts, 536 actions, 133 versions and 148 approvals. Normal controls and
+resolved comment labels are preserved. The stable loaders may retain an older
+`_lmv` cache-key label; candidate inline versions and SDK2 scripts, rather than
+that label alone, establish which code executed. No native business writes
+were made during these Production checks.
+
 All four existing native Development User Access details explicitly show
 Lot Sales Dashboard false. No available actor can complete Insights 1.5.41's
 authorized Dev graph read; current Production 1.5.40 is retained. Automatic
