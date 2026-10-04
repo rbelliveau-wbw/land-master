@@ -738,3 +738,42 @@ await import('./test-budget-deferred-features.mjs');
 await import('./test-budget-background-badges.mjs');
 await import('./test-budget-attachment-presentation.mjs');
 console.log('Budget exact native acknowledgements, FILE Recheck/delete locks, scoped mapping/comment uncertain-create and partial-completion guards, lean wrapper conflicts/degradation, startup and detail deduplication passed.');
+
+// The real native chain rejects object-shaped negative results before targeted validation.
+function nativeApprovalCheck(response, options={}) {
+  const calls=[],p={kind:options.kind||'reject',budgetId:'100',approvalId:'200',modificationId:'300',track:'Construction',note:'recorded note'};
+  const c={S:{liveSDK:true,currentUser:'check-fixture@example.test'},approvalProgress:p,Promise,URLSearchParams,Error,setTimeout,clearTimeout,
+    cleanVal:value=>String(value??'').trim(),auditLog:()=>{},ZOHO:{CREATOR:{DATA:{invokeCustomApi:async config=>{calls.push(clone(config));return options.reply?options.reply(response):response;}}}}};
+  c.window=c;vm.createContext(c);
+  for(const file of ['runtime-context.js','creator-data.js'])vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/'+file,'utf8'),c);
+  c.LMRuntime.apply({envUrlFragment:'',loginUser:'check-fixture@example.test'});
+  vm.runInContext(source.match(/var CFG = \{[\s\S]*?\n\};/)[0],c);
+  for(const name of ['responseLooksBad','budgetRequest','sdkInvokeCustomApi','sdkRunBudgetFunction','approvalProgressPayload','approvalProgressMissingCheck','approvalProgressApi'])vm.runInContext(block(name),c);
+  return {c,p,calls};
+}
+for(const kind of ['reject','start','modreject','modification'])for(const encoded of [true,false]) {
+  const body={success:false,status:'Rejected',message:'Approval is not Pending.'},raw={code:3000,result:encoded?JSON.stringify(body):body};
+  const h=nativeApprovalCheck(raw,{kind});let error;try{await h.c.approvalProgressApi(h.p,'Check');}catch(problem){error=problem;}
+  assert.ok(error,'negative Check continues rejecting');assert.equal(h.p.reconciliationUnavailable,true,'native JSON and object replies both identify missing targeted verification');assert.match(error.message,/targeted approval status/);assert.equal(h.calls.length,1,'Check classification cannot replay an API call');
+  if(!encoded){assert.equal(error.raw,raw);assert.equal(error.response,raw);assert.equal(error.cause,raw,'native failure provenance is retained');}
+  const payload=h.calls[0].payload;assert.equal(payload.budgetId,'100');
+  if(kind==='modreject'||kind==='modification')assert.equal(payload.modificationId,'300');else assert.equal(payload.approvalId,'200');
+}
+for(const [action,raw] of [['Repair',{code:3000,result:{success:false}}],['Rejected',{code:3000,result:{success:false}}],['Check',{code:2898,message:'Denied'}],['Check',{code:3000,result:{code:2898,message:'Denied'}}],['Check',{code:3000,result:{ok:false,success:false}}]]) {
+  const h=nativeApprovalCheck(raw);let error;try{await h.c.approvalProgressApi(h.p,action);}catch(problem){error=problem;}
+  assert.equal(error,raw,'existing failure remains the original rejection');assert.equal(h.p.reconciliationUnavailable,undefined,'mutations, Repair and authoritative/native denials are not mislabeled unavailable');assert.equal(h.calls.length,1);
+}
+{
+  const raw={code:3000,result:{success:false,message:'Check unavailable'}},original=Object.assign(new Error('Unknown outcome'),{raw,response:raw,noReplay:true,uncertain:true,code:'3000'}),h=nativeApprovalCheck(raw,{reply:()=>Promise.reject(original)});
+  let error;try{await h.c.approvalProgressApi(h.p,'Check');}catch(problem){error=problem;}
+  assert.equal(h.p.reconciliationUnavailable,true);assert.equal(error.raw,raw);assert.equal(error.response,raw);assert.equal(error.cause,original);assert.equal(error.noReplay,true);assert.equal(error.uncertain,true);assert.equal(error.code,'3000');assert.equal(h.calls.length,1);
+}
+for(const change of ['progress','target','actor','environment']) {
+  const gate=deferred(),raw={code:3000,result:{success:false,message:'Old check'}},h=nativeApprovalCheck(raw,{reply:()=>gate.promise});
+  const pending=h.c.approvalProgressApi(h.p,'Check');await turn();
+  if(change==='progress')h.c.approvalProgress={kind:'reject',budgetId:'999'};
+  if(change==='target')h.p.approvalId='999';
+  if(change==='actor'||change==='environment')h.c.LMRuntime.apply({envUrlFragment:change==='environment'?'/environment/development':'',loginUser:change==='actor'?'another-actor':'check-fixture@example.test'});
+  gate.resolve(raw);await assert.rejects(pending,error=>error===raw);assert.equal(h.p.reconciliationUnavailable,undefined,'late failed Check cannot modify a different progress, target or native context');assert.equal(h.calls.length,1);
+}
+console.log('Budget actual native approval Check object/JSON failures preserve targeted-unavailable classification, original failure/no replay and current-context guards.');

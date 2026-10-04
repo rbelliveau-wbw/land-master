@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import {installPFReadiness} from './fixtures/proforma-sdk-v2-readiness.mjs';
 
 const source = fs.readFileSync("widgets/proforma-manager/src/app/widget.html", "utf8");
 const start = source.indexOf("function addLotMixRow(){");
@@ -20,6 +21,7 @@ const context = vm.createContext({
   recalcLive: () => {recalcs += 1;},
   document: {querySelectorAll: () => [{querySelector: () => ({focus: () => {focuses += 1;}})}]}
 });
+await installPFReadiness(context);
 vm.runInContext(action, context);
 
 assert.equal(model.lotMix.length, 1, "opening the grid must keep the existing row count");

@@ -6,7 +6,7 @@
   reads share bounded concurrency, counts and complete cursor reads.
 - Budget's list attachment/comment badges resolve in the background. Land Master
   retains project links and groups instead of putting all subdivisions in Unlinked.
-- Budget, Land Master, Insights, Gantt and Manage Lots use Creator SDK 2.0. Their adapters keep
+- Budget, Land Master, Insights, Gantt, Manage Lots and Tax Center use Creator SDK 2.0. Their adapters keep
   string record IDs, native environment routing and permission failures distinct
   from verified empty results.
 - The lean access response preserves permissions and original uploader names
@@ -18,6 +18,12 @@
   exposes that system field to both Quick View and Detail View readers.
 - Focused component guides, an AGENTS.md lookup rule and an automatic documentation
   discovery/link check make future standardization easier to maintain.
+- Tax Center requires a complete unique-ID result before editing. Its SDK2
+  release passed native Dev parity for all 228 IDs, editable values and rendered
+  cells, then matched a fresh complete 152-row Bexar baseline in Prod.
+- Manage Lots passed Dev list/lot/takedown parity and reads 348 subdivision
+  choices, 186 AR05 lots and 857 takedowns in Prod. Unknown create outcomes keep
+  the draft and prevent another blind submission.
 
 The native evidence and boundaries are in the
 [live ledger](creator-performance-live-ledger.md). Timings use different data
@@ -25,20 +31,6 @@ sets and releases; no controlled percentage speedup is claimed.
 
 ## In progress
 
-- Manage Lots 0.9.17 passed exact Dev list/lot/takedown parity and is promoted in
-  Prod. The native Prod check loaded 348 subdivision choices, 186 AR05 lots
-  (79 available, 107 unavailable) and 857 takedowns with no audit errors.
-  Regression checks retain drafts, block repeat creates after an unknown outcome
-  and require exact saved lot claims.
-- Tax Center now requires a complete unique-ID result before editing. Its SDK2
-  19.17.6 candidate passed its individual native Dev gate. The existing
-  Prod SDK1 search returned 151 unique rows against an expected 152; this is a
-  documented failure, not a complete baseline.
-- Tax 19.17.5's real Dev gate matched all 228 IDs and editable values but caught
-  blank grid labels from a skipped existing enrichment step. Candidate 19.17.6
-  restores enrichment on search publication and verified recovery. Its fresh
-  Dev check matches all 228 IDs, editable values and rendered cells exactly;
-  native tied-row ordering differs. Production verification follows promotion.
 - Insights 1.5.40 remains on SDK2 in Prod. The stricter 1.5.41 candidate is held:
   all four existing Dev User Access records have Lot Sales Dashboard disabled,
   preventing the required authorized Dev data read. No permission was changed.

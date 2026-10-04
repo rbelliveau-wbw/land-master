@@ -1,6 +1,27 @@
 
 # Contracts Module
 
+## Creator SDK2 candidate 1.60.47
+
+The whole widget uses native DATA/FILE/UTIL, a fresh authenticated handshake,
+counted complete cursor reads and exact string IDs. Its existing full access,
+degraded permission policy, original uploader names and Legal45 Project/Territory
+and staged lot-entry rules are preserved. The removed Contract_Template field
+does not become Template_Action without the user's pending business-rule answer.
+
+Captured writes require exact persisted verification. Partial or unknown results
+retain drafts and confirmed stages, block replay and offer only supported
+read-only reconciliation. File operations retain exact parent/child/path and
+byte checks. Approval Send/Check/Repair preserves its original recipients and
+meaning; no native email send is claimed. Refresh is atomic and preserves drafts.
+No Creator form, field, function, API or permission change is required.
+
+Regression: `scripts/test-contract-sdk-v2.mjs` runs eight actual whole-source
+suites for counted reads, labels, inline saves, setup/pricing/lot completion,
+files, captured approval flows and uncertainty. Synthetic financial and email
+boundaries supplement the separate native Dev read/file/controls gate required
+before Production. Rollback: the immutable Legal45 release.
+
 ## Project lookup and staged Lot creation (1.60.45)
 
 Lot (Master) creation starts with Type and required Project, then reveals Builder and name. Optional subdivisions appear after the name and are scoped to the chosen Project. Lot terms appear after subdivision selection, lot selection after the stated total, and pricing after lots are selected. The next unfinished card and required input use yellow guidance inspired by Tax Parcel Year; completing an input moves the emphasis without replacing the name field while typing. Other contract types retain their existing flow.

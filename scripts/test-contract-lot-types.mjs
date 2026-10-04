@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {ready} from './test-contract-sdk-v2-foundation.mjs';
 const source=fs.readFileSync('widgets/contract-management/src/app/widget.html','utf8');
 function fn(name){const start=source.indexOf('function '+name+'(');assert.ok(start>=0,name);const end=source.indexOf('\n',start);return source.slice(start,source.slice(start,end).trim().endsWith('}')?end:source.indexOf('\n}',start)+2);}
 const master={ID:'1',Contract_Type:'Lot (Master)',Project:{ID:'p1'},Territory:'Waco',Builder:{ID:'10'},Contract_Name:'Master A'};
 const child={ID:'2',Contract_Type:'Lot (Amendment)',Project:{ID:'p1'},Territory:'Waco',Builder:{ID:'10'},Parent_Contract:{ID:'1'},Contract_Name:'Amendment A',Subdivision1:[{ID:'20'}]};
-const ctx={S:{projects:[{ID:'p1',Territory:'Waco'}],subdivisions:[{ID:'20',Project:{ID:'p1'},Territory:'Waco'}],contracts:[child,master,{ID:'3',Contract_Type:'Lot (Master)',Project:{ID:'p1'},Builder:{ID:'11'}},{ID:'4',Contract_Type:'Amendment',Builder:{ID:'10'}},{ID:'5',Contract_Type:'Lot',Project:{ID:'p1'},Builder:{ID:'10'},Contract_Name:'Legacy'}],lotCollapsed:{}},LOT_TAKEDOWN_FIELDS:[['Number_of_Lots','Lot Total']],CFG:{reports:{contracts:'contracts'}},esc:String,attr:String,findContract:id=>ctx.S.contracts.find(c=>c.ID===id),sdkGetAll:async()=>[master]};
-vm.createContext(ctx);
-for(const name of ['asList','lookupId','displayValue','lotTypeLabel','isLotType','isLotContract','isLotAmendment','ncSubRecord','ncProjectRecord','lotSubdivisionContext','lotContractProject','lotDraftProject','ncContextError','ncSyncContext','lotGroup','lotHasScope','lotParentOptions','lotParentValid','lotHierarchyLabel','lotHierarchyOrder','lotCompletionBlockers','lotValidateParent'])vm.runInContext(fn(name),ctx);
+const h=await ready({realDOM:true}),ctx=h.c;
+Object.assign(ctx.S,{projects:[{ID:'p1',Territory:'Waco'}],subdivisions:[{ID:'20',Project:{ID:'p1'},Territory:'Waco'}],contracts:[child,master,{ID:'3',Contract_Type:'Lot (Master)',Project:{ID:'p1'},Builder:{ID:'11'}},{ID:'4',Contract_Type:'Amendment',Builder:{ID:'10'}},{ID:'5',Contract_Type:'Lot',Project:{ID:'p1'},Builder:{ID:'10'},Contract_Name:'Legacy'}],lotCollapsed:{}});ctx.LOT_TAKEDOWN_FIELDS=[['Number_of_Lots','Lot Total']];h.reports[ctx.CFG.reports.contracts]=[master];
 const plain=v=>JSON.parse(JSON.stringify(v));
 assert.equal(ctx.lotTypeLabel('Lot'),'Lot (Master)');
 assert.equal(ctx.lotGroup(master),'Lot');assert.equal(ctx.lotGroup(child),'Lot');
@@ -18,7 +18,6 @@ assert.equal(ctx.lotParentValid({type:'Lot (Amendment)',sub:['20'],builder:'10',
 assert.deepEqual(plain(ctx.lotHierarchyOrder([child,master])).map(c=>c.ID),['1','2']);
 assert.deepEqual(plain(ctx.lotHierarchyOrder([child])).map(c=>c.ID),['2'],'filtered-out parent does not hide the child');
 assert.match(ctx.lotHierarchyLabel(child),/Amendment.*Master A/);
-for(const name of ['lotHierarchyRows','lotHierarchyControl','toggleLotFamily'])vm.runInContext(fn(name),ctx);
 const sibling={...child,ID:'6',Contract_Name:'Amendment B'};
 const unrelated={ID:'7',Contract_Type:'Lot (Amendment)',Contract_Name:'Unlinked Amendment'};
 const secondMaster={ID:'8',Contract_Type:'Lot (Master)',Contract_Name:'Master B'};
@@ -32,7 +31,7 @@ assert.equal(rows().find(row=>row.contract.ID==='7').kind,'','optional blank par
 assert.doesNotMatch(ctx.lotHierarchyLabel(child,{kind:'child'}),/Master A/,'nested children do not repeat the parent name');
 assert.match(ctx.lotHierarchyLabel(master,{kind:'master',count:2}),/2.*Amendments/);
 assert.match(ctx.lotHierarchyControl(master,{kind:'master',count:2}),/aria-expanded="true".*Collapse 2 Amendments/);
-let renderCount=0;ctx.renderAll=()=>{renderCount++;};ctx.document={querySelectorAll:()=>[]};
+let renderCount=0;ctx.renderAll=()=>{renderCount++;};
 ctx.toggleLotFamily('1');
 assert.equal(renderCount,1);
 assert.deepEqual(rows().map(row=>row.contract.ID),['7','8','9','1'],'collapse hides only that Master\'s matching children');
@@ -47,11 +46,10 @@ assert.deepEqual(plain(ctx.lotCompletionBlockers({...child,Subdivision1:[]})),['
 assert.deepEqual(plain(ctx.lotCompletionBlockers(child)),['Lot Total']);
 await ctx.lotValidateParent({builder:'10',parent:''},'2');
 await ctx.lotValidateParent({type:'Lot (Amendment)',sub:['20'],builder:'10',parent:'1'},'2');
-ctx.sdkGetAll=async()=>[{...master,Builder:{ID:'11'}}];
+h.reports[ctx.CFG.reports.contracts]=[{...master,Builder:{ID:'11'}}];
 await assert.rejects(ctx.lotValidateParent({type:'Lot (Amendment)',sub:['20'],builder:'10',parent:'1'},'2'),/same Project and builder/,'fresh read prevents a stale parent selection');
 assert.match(source,/Subdivision.*optional/);
 assert.match(source,/if\(isLotAmendment\(v.type\)&&!v.sub.length\)/);
-for(const name of ['clpLookupOne','clpScopeChanges','clpValidateType','clpTermFields','clpTermChanges','lotParentField','clpSetType'])vm.runInContext(fn(name),ctx);
 ctx.S.nc={type:'Lot (Master)',project:'p1',builder:'10',parent:'',sub:['20']};
 ctx.mselBtn=()=>'<button>Parent choice</button>';
 assert.equal(ctx.lotParentField(),'','Master has no parent field');
@@ -67,9 +65,9 @@ assert.throws(()=>ctx.clpScopeChanges(original,{...draft,parent:'3'}),/same Proj
 assert.throws(()=>ctx.clpScopeChanges(original,{...draft,type:'Deed'}),/Lot contract type/);
 assert.deepEqual(plain(ctx.clpScopeChanges(child,{type:'Lot (Master)',project:'p1',builder:'10',parent:'',sub:['20']})),{Contract_Type:'Lot (Master)',Parent_Contract:null});
 assert.deepEqual(plain(ctx.clpTermChanges(original,{})),{},'unchanged missing lot terms do not prevent type/parent edits');
-ctx.sdkGetAll=async()=>[original,child];
+h.reports[ctx.CFG.reports.contracts]=[original,child];
 await assert.rejects(ctx.clpValidateType(original,draft),/linked child/);
-ctx.sdkGetAll=async()=>[original];await ctx.clpValidateType(original,draft);
+h.reports[ctx.CFG.reports.contracts]=[original];await ctx.clpValidateType(original,draft);
 assert.ok(!source.includes('Open in Creator ↗'),'detail header does not expose Creator');
 assert.match(fn('kebabMenu'),/isRobby\(\).*Open in Creator/);
 console.log('Master / Amendment scope, optional parent, matching counterparty, hierarchy and completion checks passed.');

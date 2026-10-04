@@ -1,6 +1,16 @@
 
 # Budget Module
 
+## Targeted approval Check failures (122.28.20)
+
+A negative native object response without the existing targeted `ok` predicate
+now ends Check reconciliation as unavailable, matching the JSON response path.
+The original error, captured actor/environment/target and no-replay behavior
+remain. Repair, write modes, known `ok:false` outcomes and native code failures
+keep their prior handling. Actual native-boundary fixtures cover all four
+approval/modification paths and stale-context replies. No Creator deployment is
+required. Rollback: 122.28.19.
+
 ## Main-list attachment modal (122.28.18)
 
 The phase paperclip now opens attachments over the main list, using the same file cards and upload area as the existing editor Attachments workspace. The main list, search, scroll, navigation generation and selected editor/drafts remain in place. Legal's blue top rail, compact file count, phase name and centered SVG Close are retained; Budget has no Email switch. The editor Attachments workspace remains available.

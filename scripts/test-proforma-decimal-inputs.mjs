@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {installPFReadiness} from './fixtures/proforma-sdk-v2-readiness.mjs';
 const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 function fn(name){
   const start=source.indexOf('function '+name+'('),brace=source.indexOf('{',start);
@@ -21,6 +22,7 @@ const ctx=vm.createContext({
   document:{querySelector:()=>null},toast:()=>{},dealCloneWith:(m,k,v)=>({...m,[k]:v}),
   modelToCalc:()=>({}),renderDashboard:()=>{},dealCancelRecalc:()=>{}
 });
+await installPFReadiness(ctx);
 const helperStart=source.indexOf('var PF_WHOLE_HEADER='),helperEnd=source.indexOf('function validateModel(',helperStart);
 vm.runInContext(['num','intN','hasVal','round2','round0','stripMoney','stripNumberGroups','inFmtN','inFmt$','buildHeaderData','buildLoiHeaderData','childData','buildSavePayload','dealApplyDriver','validateModel'].map(fn).join('\n')+'\n'+source.slice(helperStart,helperEnd)+'\n'+source.match(/var DEAL_DRIVERS=\[[\s\S]*?\n\];/)[0],ctx);
 for(const raw of ['12345.6789','0.000001','-1234.5678','1500.0100']){

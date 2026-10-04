@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {drain} from './fixtures/proforma-sdk-v2-harness.mjs';
 
 const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8').replaceAll('\r','');
 function fn(name){
@@ -22,26 +23,33 @@ let allowed=true,resolveCreate,confirmDelete=false;
 const pending=new Promise(resolve=>{resolveCreate=resolve;});
 const row={ID:RID,Pro_Forma:{ID:PF},File_field1:{filename:'<file>.pdf',filepath:'/private/exact.pdf',url:'https://example.test/download?filepath=%2Fprivate%2Fexact.pdf&digestValue=private'},Date_field1:'2026-10-03 12:34:56',Added_User:{user_name:'WBDEVELOPMENT',display_name:'Old native display'},Modified_User:'Other Editor'};
 let reportRows=[row],readHook=null,countHook=null;
-const scopeRows=config=>config.criteria?reportRows.filter(row=>row.Pro_Forma?.ID===config.criteria.match(/\d+/)?.[0]):reportRows;
+const scopeRows=config=>{const criteria=String(config.criteria||''),record=criteria.match(/\bID == (\d+)/),parent=criteria.match(/\bPro_Forma == (\d+)/);return reportRows.filter(row=>(!record||row.ID===record[1])&&(!parent||row.Pro_Forma?.ID===parent[1]));};
 const c=vm.createContext({
-  S:{liveSDK:true,currentUser:'creator',env:{name:'PRODUCTION',fragment:''},attachmentPfId:PF,attachmentBusy:false,attachmentsByPf:{},attachmentsLoading:{},attachmentErrors:{},attachmentEpochs:{},attachmentVerifiedCounts:{},attachmentModal:null,attachmentModalToken:0,attachmentCounts:{status:'idle',counts:{},pending:{},promise:null,generation:0,scope:''},users:[{id:'17',label:'wbdevelopment',email:'wbdevelopment',userName:'wbdevelopment',approverEmail:'creator@example.test',fullName:'Creator Full Name'}],proformas:[{ID:PF,Name:'<Legal PF>'},{ID:OTHER,Name:'Other PF'}]},
+  S:{liveSDK:true,coreReady:true,coreFailed:false,useMock:false,currentUser:'creator',env:{name:'PRODUCTION',fragment:''},attachmentPfId:PF,attachmentBusy:false,attachmentsByPf:{},attachmentsLoading:{},attachmentErrors:{},attachmentEpochs:{},attachmentVerifiedCounts:{},attachmentModal:null,attachmentModalToken:0,attachmentCounts:{status:'idle',counts:{},pending:{},promise:null,generation:0,scope:''},users:[{id:'17',label:'wbdevelopment',email:'wbdevelopment',userName:'wbdevelopment',approverEmail:'creator@example.test',fullName:'Creator Full Name'}],proformas:[{ID:PF,Name:'<Legal PF>'},{ID:OTHER,Name:'Other PF'}]},
   CFG:{reports:{attachments:'All_Contract_Versions'},attachmentProformaField:'Pro_Forma',attachmentFileField:'File_field1',customApis:{createProformaAttachmentRecord:'Create_Proforma_Attachment_Record',deleteProformaAttachment:'Delete_Proforma_Attachment'}},
-  MONTHS_S:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],document:{getElementById:el,querySelectorAll:()=>[],addEventListener(type,callback){this[type]=callback;},body:{style:{overflow:'auto'},children:[el('listView'),el('proformaAttachmentModal'),el('confirmModal'),el('proformaAttachmentPreview')]}},
-  canEditPf:()=>allowed,candidates:name=>[name],toast(){},auditLog(){},errMeta:err=>({message:err.message}),
+  Blob,File,Uint8Array,atob,btoa,Promise,setTimeout,clearTimeout,
+  MONTHS_S:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],document:{referrer:'https://creator.example.test/',getElementById:el,querySelectorAll:()=>[],addEventListener(type,callback){this[type]=callback;},body:{style:{overflow:'auto'},children:[el('listView'),el('proformaAttachmentModal'),el('confirmModal'),el('proformaAttachmentPreview')]}},
+  REPORT_CAND_MEMO:{},canEditPf:()=>allowed,candidates:name=>[name],toast(){},auditLog(){},errMeta:err=>({message:err.message}),
   sdkAdd(){assert.fail('Normal upload must use its existing Custom API without direct add');},
   sdkDelete(){assert.fail('Normal delete must use its existing Custom API without direct delete');},
-  sdkInvoke(config){native.push({kind:config.api_name==='Create_Proforma_Attachment_Record'?'create':'delete',config});if(config.api_name==='Create_Proforma_Attachment_Record')return pending;reportRows=reportRows.filter(row=>row.ID!==config.payload.attachmentId);return Promise.resolve({code:3000,result:JSON.stringify({ok:true,attachmentId:config.payload.attachmentId})});},
-  sdkGetAll:async(report,criteria)=>{native.push({kind:'read',report,criteria});return [row];},
+  sdkInvoke(config){if(config.api_name==='getProformaAttachmentPreview')return Promise.resolve({code:3000,result:JSON.stringify({ok:true,base64:Buffer.from('fixture').toString('base64')})});native.push({kind:config.api_name==='Create_Proforma_Attachment_Record'?'create':'delete',config});if(config.api_name==='Create_Proforma_Attachment_Record')return pending;reportRows=reportRows.filter(row=>row.ID!==config.payload.attachmentId);return Promise.resolve({code:3000,result:JSON.stringify({ok:true,attachmentId:config.payload.attachmentId})});},
   previewPfAttachment:file=>routes.push({kind:'preview',file}),downloadPfAttachment:file=>routes.push({kind:'download',file}),uiConfirm:async()=>confirmDelete,
   closePfAttachmentPreview(){el('proformaAttachmentPreview').classList.remove('show');},
-  ZOHO:{CREATOR:{API:{
+  ZOHO:{CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'',loginUser:'creator'})},DATA:{
     getRecordCount:async config=>{native.push({kind:'count',config});return countHook?countHook(config):{code:3000,result:{records_count:String(scopeRows(config).length)}};},
-    getAllRecords:async config=>{native.push({kind:'read',criteria:config.criteria,config});const snapshot=scopeRows(config).slice((config.page-1)*200,config.page*200);return readHook?readHook(config,snapshot):{code:3000,data:snapshot};},
-    uploadFile:async config=>{native.push({kind:'upload',config});reportRows.push({...row,ID:config.id,Pro_Forma:{ID:JSON.parse(JSON.stringify(native.findLast(call=>call.kind==='create').config.payload)).proformaId},File_field1:{filename:config.file.name,filepath:'/private/new.pdf'}});return{code:3000};}
+    getRecords:async config=>{native.push({kind:'read',criteria:config.criteria,config});const rows=scopeRows(config),offset=Number(config.record_cursor||0),snapshot=rows.slice(offset,offset+200);return readHook?readHook(config,snapshot):{code:3000,data:snapshot,...(offset+200<rows.length?{record_cursor:String(offset+200)}:{})};},
+    invokeCustomApi:async config=>{const result=await c.sdkInvoke(config);if(config.api_name==='Create_Proforma_Attachment_Record'){const body=JSON.parse(result.result);reportRows.push({...row,ID:body.attachmentId,Pro_Forma:{ID:config.payload.proformaId},File_field1:''});}return result;}
+  },FILE:{
+    uploadFile:async config=>{native.push({kind:'upload',config});const current=reportRows.find(row=>row.ID===config.id);assert.ok(current,'Native FILE target must be the freshly confirmed child');current.File_field1={filename:config.file.name,filepath:'/private/new.pdf'};return {code:3000,data:{filename:config.file.name,filepath:'/private/new.pdf'}};},
+    readFile:async()=>new Blob(['fixture'])
   }}},
 });
-for(const name of ['esc','lookupId','responseBad','dateToInputValue','dateToCreatorValue','pfAttachmentExt','pfAttachmentIcon','pfAttachmentDecode','pfAttachmentQuery','pfAttachmentName','pfAttachmentNormalizeFile','pfAttachmentRecordPfId','pfAttachmentAuthorLabel','syncPfAttachmentAuthorLabels','pfAttachmentDateLabel','pfAttachmentActionIcon','normalizePfAttachment','pfAttachmentRec','pfAttachments','pfAttachmentScope','pfAttachmentParent','pfAttachmentStoredFile','pfAttachmentReadError','readPfAttachmentRows','resetPfAttachmentCounts','pfAttachmentBadge','pfListAttachmentAction','syncListAttachmentButtons','loadPfAttachmentSummaries','pfAttachmentStatusHtml','renderPfAttachments','pfAttachmentActionContext','pfAttachmentContextActive','renderPfAttachmentSurfaces','openPfAttachmentModal','closePfAttachmentModal','pfAttachmentModalKeydown','pfAttachmentModalFocus','handlePfAttachmentClick','handlePfAttachmentDrop','handlePfAttachmentPicker','parsePfAttachmentApi','invokePfAttachmentApi','createdRecordId','createPfAttachmentRecord','deletePfAttachmentRecord','pfSdkUploadFile','uploadPfAttachments','loadPfAttachments'])vm.runInContext(fn(name),c);
-c.window=c;c.scrollX=7;c.scrollY=533;const restoredScroll=[];c.scrollTo=(x,y)=>restoredScroll.push([x,y]);
+c.window=c;c.location={href:'https://example.test/prod/proforma-manager/',pathname:'/prod/proforma-manager/',search:''};
+for(const file of ['runtime-context.js','creator-data.js','pf-controller.js'])vm.runInContext(fs.readFileSync('widgets/proforma-manager/src/app/'+file,'utf8'),c,{filename:file});
+const controllerStart=source.indexOf('var PFTransport=LMPFPreparation.create('),controllerEnd=source.indexOf('\nif(window.PFTransportUI)',controllerStart);assert.ok(controllerStart>=0&&controllerEnd>controllerStart);vm.runInContext(source.slice(controllerStart,controllerEnd),c);await c.PFTransport.start();
+for(const name of ['pfPublicReady','pfUnknownCustom','rememberReportCandidate','sdkGetAll','esc','lookupId','responseBad','dateToInputValue','dateToCreatorValue','pfAttachmentExt','pfAttachmentMime','pfAttachmentIcon','pfAttachmentDecode','pfAttachmentQuery','pfAttachmentName','pfAttachmentNormalizeFile','pfAttachmentRecordPfId','pfAttachmentAuthorLabel','syncPfAttachmentAuthorLabels','pfAttachmentDateLabel','pfAttachmentActionIcon','normalizePfAttachment','pfAttachmentRec','pfAttachments','pfAttachmentScope','pfAttachmentParent','pfAttachmentStoredFile','pfAttachmentReadError','readPfAttachmentRows','resetPfAttachmentCounts','pfAttachmentBadge','pfListAttachmentAction','syncListAttachmentButtons','loadPfAttachmentSummaries','pfAttachmentStatusHtml','renderPfAttachments','pfAttachmentActionContext','pfAttachmentContextActive','renderPfAttachmentSurfaces','openPfAttachmentModal','closePfAttachmentModal','pfAttachmentModalKeydown','pfAttachmentModalFocus','handlePfAttachmentClick','handlePfAttachmentDrop','handlePfAttachmentPicker','parsePfAttachmentApi','invokePfAttachmentApi','createdRecordId','createPfAttachmentRecord','deletePfAttachmentRecord','pfSdkUploadFile','pfSdkReadFile','pfAttachmentBase64Blob','pfAttachmentResponseBlob','getPfAttachmentBlob','uploadPfAttachments','loadPfAttachments'])vm.runInContext(fn(name),c);
+assert.equal(c.pfPublicReady(),true);c.S.coreReady=false;assert.equal(c.pfPublicReady(),false);c.S.coreReady=true;
+c.scrollX=7;c.scrollY=533;const restoredScroll=[];c.scrollTo=(x,y)=>restoredScroll.push([x,y]);
 c.S.attachmentCounts.scope=c.pfAttachmentScope();
 
 // Actual normalizer preserves persisted parent/file/date metadata and record objects.
@@ -108,27 +116,28 @@ assert.ok(start>=0&&end>start);vm.runInContext(source.slice(start,end),c);
 const control=kind=>({getAttribute:()=> '0'}),event=kind=>({target:{closest:selector=>selector===`[data-pf-attachment-${kind}]`?control(kind):null}});
 for(const kind of ['preview','preview','download'])el('proformaAttachmentPanel').listeners.click(event(kind));
 assert.deepEqual(routes.map(route=>route.kind),['preview','preview','download']);assert.ok(routes.every(route=>route.file===file),'file name/eye/download each route the exact original file model');
-const drop=el('drop'),files=[{name:'one.pdf',size:123,type:'application/pdf'}];let prevented=0;
+const drop=el('drop'),files=[new File(['fixture'],'one.pdf',{type:'application/pdf'})];let prevented=0;
 const dropEvent={target:{closest:selector=>selector==='[data-pf-attachment-drop]'?drop:null},preventDefault(){prevented++;},dataTransfer:{files}};
 el('proformaAttachmentPanel').listeners.dragover(dropEvent);assert.ok(classes.has('dropdragover'));
 allowed=false;el('proformaAttachmentPanel').listeners.drop(dropEvent);await Promise.resolve();assert.equal(native.length,0);allowed=true;
 el('proformaAttachmentPanel').listeners.click(event('add'));assert.equal(el('proformaAttachmentInput').clicks,1,'Choose Files/hint opens the existing picker once');
-el('proformaAttachmentPanel').listeners.drop(dropEvent);await Promise.resolve();await Promise.resolve();assert.equal(native.filter(call=>call.kind==='create').length,1);
+el('proformaAttachmentPanel').listeners.drop(dropEvent);await drain();assert.equal(native.filter(call=>call.kind==='create').length,1);
 el('proformaAttachmentPanel').listeners.drop(dropEvent);
 el('proformaAttachmentInput').files=files;el('proformaAttachmentInput').value='selected';el('proformaAttachmentInput').listeners.change.call(el('proformaAttachmentInput'));
 el('proformaAttachmentPanel').listeners.click(event('add'));await Promise.resolve();
 assert.equal(el('proformaAttachmentInput').value,'');assert.equal(el('proformaAttachmentInput').clicks,1);assert.equal(native.filter(call=>call.kind==='create').length,1,'busy second drop/picker/click never duplicate native create');
-resolveCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:NEWID})});for(let i=0;i<60;i++)await Promise.resolve();
+resolveCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:NEWID})});await drain();
 assert.equal(native.filter(call=>call.kind==='create').length,1);assert.equal(native.filter(call=>call.kind==='upload').length,1);
 const create=native.find(call=>call.kind==='create'),upload=native.find(call=>call.kind==='upload');
-assert.equal(create.config.payload.proformaId,PF);assert.equal(upload.config.id,NEWID);assert.equal(upload.config.file,files[0]);assert.equal(upload.config.fieldName,'File_field1');assert.equal(c.S.attachmentBusy,false);
-assert.equal(native.find(call=>call.kind==='read').criteria,`(Pro_Forma == ${PF})`,'native reload keeps the exact existing parent criteria');
-assert.ok(prevented>=4);assert.equal(JSON.stringify(row),original);
+assert.equal(create.config.payload.proformaId,PF);assert.equal(upload.config.id,NEWID);assert.equal(upload.config.file,files[0]);assert.equal(upload.config.field_name,'File_field1');assert.equal(c.S.attachmentBusy,false);
+assert.equal(c.PFTransport.close(c.PFTransport.workflow()),true,'dismiss the actual retained terminal result before another file action');
+assert.ok(native.some(call=>call.kind==='read'&&call.criteria===`(Pro_Forma == ${PF})`),'native reload keeps the exact existing parent criteria alongside child-ID verification reads');
+assert.equal(prevented,3,'active dragover and drop handlers prevent navigation; duplicate actions stop at the actual readiness barrier');assert.equal(JSON.stringify(row),original);
 const writes=()=>native.filter(call=>['create','upload','delete'].includes(call.kind)).length;
 const beforeWrites=writes();allowed=false;c.uploadPfAttachments(files);assert.equal(writes(),beforeWrites);allowed=true;
 c.uploadPfAttachments([{name:'oversize.pdf',size:50*1024*1024+1}]);assert.equal(writes(),beforeWrites,'existing 50 MB rejection stays before writes');
-el('proformaAttachmentPanel').listeners.click(event('delete'));for(let i=0;i<5;i++)await Promise.resolve();assert.equal(writes(),beforeWrites,'cancel preserves the existing file');
-confirmDelete=true;el('proformaAttachmentPanel').listeners.click(event('delete'));for(let i=0;i<30;i++)await Promise.resolve();
+el('proformaAttachmentPanel').listeners.click(event('delete'));await drain();assert.equal(writes(),beforeWrites,'cancel preserves the existing file');
+confirmDelete=true;el('proformaAttachmentPanel').listeners.click(event('delete'));await drain();
 const deletion=native.filter(call=>call.kind==='delete');assert.equal(deletion.length,1);assert.equal(deletion[0].config.payload.proformaId,PF);assert.equal(deletion[0].config.payload.attachmentId,RID);
 assert.match(source,/\.pf-attachment-drop\{border:1\.5px dashed #b9c8dc/);assert.match(source,/\.pf-attachment-action\{width:34px;height:34px/);
 assert.match(source,/\.pf-attachment-name:focus-visible/);
@@ -152,8 +161,8 @@ assert.match(el('listBody').innerHTML,/test-comment[\s\S]*pf-row-attachments/);a
 assert.match(el('listBody').innerHTML,/<span class="pf-row-discussion-actions"><button class="test-comment">Comments<\/button>[\s\S]*pf-row-attachments[\s\S]*<\/button><\/span>/);
 assert.match(source,/\.pf-row-discussion-actions\{[^}]*gap:7px/);assert.match(source,/\.pf-row-discussion-actions>\.btn\.rowact\{margin:0\}/);assert.match(fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8'),/\.ptable \.acts\{gap:7px\}/,'the pair uses Budget’s final action gap');
 const listHTML=el('listBody').innerHTML,scroll=el('listBody').scrollTop,search=el('listSearch').value;
-await Promise.resolve();await Promise.resolve();c.loadPfAttachmentSummaries();assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1,'same-generation badge loading has one global page, no per-PF reads');
-releaseBackground();for(let i=0;i<30;i++)await Promise.resolve();readHook=null;
+await drain();c.loadPfAttachmentSummaries();assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1,'same-generation badge loading has one global page, no per-PF reads');
+releaseBackground();await drain();readHook=null;
 assert.equal(mountedBadge.textContent,'2');assert.equal(c.pfAttachmentBadge(OTHER).text,'0','zero is known only after complete count+read+count');
 assert.equal(el('listBody').innerHTML,listHTML,'background badges patch mounted elements without rebuilding rows');assert.equal(el('listBody').scrollTop,scroll);assert.equal(el('listSearch').value,search);assert.equal(c.S.ed.model.draft,'preserved');
 assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='count').length,2);assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1);
@@ -172,20 +181,21 @@ const readonlyWrites=writes();el('proformaAttachmentModalPanel').listeners.drop(
 // Late record loads, session changes and stale file-picker replies never paint or write a newer dialog.
 let releaseScoped;const heldScoped=new Promise(resolve=>releaseScoped=resolve);delete c.S.attachmentsByPf[PF];
 readHook=(config,snapshot)=>config.criteria?.includes(PF)?heldScoped.then(()=>({code:3000,data:snapshot})):{code:3000,data:snapshot};
-c.openPfAttachmentModal(PF,listButton);await Promise.resolve();await Promise.resolve();c.closePfAttachmentModal();c.openPfAttachmentModal(OTHER,listButton);const otherHTML=el('proformaAttachmentModalPanel').innerHTML;releaseScoped();for(let i=0;i<30;i++)await Promise.resolve();readHook=null;
+c.openPfAttachmentModal(PF,listButton);await drain();c.closePfAttachmentModal();c.openPfAttachmentModal(OTHER,listButton);const otherHTML=el('proformaAttachmentModalPanel').innerHTML;releaseScoped();await drain();readHook=null;
 assert.equal(c.S.attachmentModal.id,OTHER);assert.equal(el('proformaAttachmentModalPanel').innerHTML,otherHTML);c.closePfAttachmentModal();
 c.openPfAttachmentModal(PF,listButton);el('proformaAttachmentModalPanel').listeners.click(event('add'));c.closePfAttachmentModal();c.openPfAttachmentModal(OTHER,listButton);
 el('proformaAttachmentModalInput').files=files;const stalePickerWrites=writes();el('proformaAttachmentModalInput').listeners.change.call(el('proformaAttachmentModalInput'));assert.equal(writes(),stalePickerWrites,'old chooser cannot upload into replacement dialog');c.closePfAttachmentModal();
 
 // A modal upload holds all close/duplicate paths and uses its captured parent, not workspace/editor IDs.
 let finishModalCreate;const nativeInvoke=c.sdkInvoke;c.sdkInvoke=config=>{if(config.api_name!=='Create_Proforma_Attachment_Record')return nativeInvoke(config);native.push({kind:'create',config});return new Promise(resolve=>finishModalCreate=resolve);};
-c.S.attachmentPfId=OTHER;c.openPfAttachmentModal(PF,listButton);el('proformaAttachmentModalPanel').listeners.drop(dropEvent);await Promise.resolve();await Promise.resolve();
+c.S.attachmentPfId=OTHER;c.openPfAttachmentModal(PF,listButton);el('proformaAttachmentModalPanel').listeners.drop(dropEvent);await drain();
 const modalCreates=native.filter(call=>call.kind==='create').length;assert.equal(c.S.attachmentBusy,true);assert.equal(c.closePfAttachmentModal(),false);assert.equal(c.openPfAttachmentModal(OTHER,listButton),false);assert.equal(el('proformaAttachmentModalClose').disabled,true);
 el('proformaAttachmentModalPanel').listeners.drop(dropEvent);c.pfAttachmentModalKeydown({key:'Escape',preventDefault(){},stopImmediatePropagation(){}});assert.equal(c.S.attachmentModal.id,PF);assert.equal(native.filter(call=>call.kind==='create').length,modalCreates);
-finishModalCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:'90071992547409996'})});for(let i=0;i<70;i++)await Promise.resolve();c.sdkInvoke=nativeInvoke;
+finishModalCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:'90071992547409996'})});await drain();c.sdkInvoke=nativeInvoke;
 assert.equal(native.findLast(call=>call.kind==='create').config.payload.proformaId,PF);assert.equal(c.S.attachmentBusy,false);assert.equal(c.S.attachmentCounts.counts[PF],3);assert.equal(mountedBadge.textContent,'3');assert.equal(c.S.ed.model.draft,'preserved');assert.equal(c.S.attachmentPfId,OTHER);
+assert.equal(c.PFTransport.close(c.PFTransport.workflow()),true);
 el('proformaAttachmentModalPanel').listeners.click(event('preview'));assert.equal(routes.at(-1).file.proformaId,PF);assert.equal(routes.at(-1).file.filePath,'/private/exact.pdf');
-confirmDelete=true;await el('proformaAttachmentModalPanel').listeners.click(event('delete'));for(let i=0;i<35;i++)await Promise.resolve();assert.equal(native.findLast(call=>call.kind==='delete').config.payload.proformaId,PF);assert.equal(mountedBadge.textContent,'2');c.closePfAttachmentModal();
+confirmDelete=true;await el('proformaAttachmentModalPanel').listeners.click(event('delete'));await drain();assert.equal(native.findLast(call=>call.kind==='delete').config.payload.proformaId,PF);assert.equal(mountedBadge.textContent,'2');c.closePfAttachmentModal();
 
 // Native counted reads reject all incomplete/denied/schema failures; no capped or phantom-zero summary.
 for(const setup of [
@@ -221,21 +231,21 @@ for(const condition of ['denied','incomplete']){
 }
 countHook=null;reportRows=[row];c.resetPfAttachmentCounts();let releaseOldBatch,firstGlobal=true;
 readHook=(config,snapshot)=>{if(!config.criteria&&firstGlobal){firstGlobal=false;return new Promise(resolve=>releaseOldBatch=()=>resolve({code:3000,data:snapshot}));}return {code:3000,data:snapshot};};
-const oldBatch=c.loadPfAttachmentSummaries();await Promise.resolve();await Promise.resolve();reportRows=[{...row,Pro_Forma:{ID:OTHER}}];
+const oldBatch=c.loadPfAttachmentSummaries();await drain();reportRows=[{...row,Pro_Forma:{ID:OTHER}}];
 assert.equal((await c.loadPfAttachments(PF,true)).length,0,'fresh exact-parent fallback verifies no files');releaseOldBatch();await oldBatch;
 assert.equal(c.pfAttachments(PF).length,0);assert.equal(c.pfAttachmentBadge(PF).text,'0','a later global batch cannot overwrite a newer authoritative scoped result with its old count');readHook=null;
-reportRows=Array.from({length:5201},(_,i)=>({...row,ID:String(100000+i)}));c.resetPfAttachmentCounts();const beforeLarge=native.length;await c.loadPfAttachmentSummaries();assert.equal(c.pfAttachmentBadge(PF).text,'5201');assert.equal(native.slice(beforeLarge).filter(call=>call.kind==='read').length,27,'SDK1 background paging completes beyond the general reader 5000 cap');
+reportRows=Array.from({length:5201},(_,i)=>({...row,ID:String(100000+i)}));c.resetPfAttachmentCounts();const beforeLarge=native.length;await c.loadPfAttachmentSummaries();assert.equal(c.pfAttachmentBadge(PF).text,'5201');assert.equal(native.slice(beforeLarge).filter(call=>call.kind==='read').length,27,'counted cursor fixture completes all 5201 rows in 200-row native pages');
 
 // A second startup is independent; older responses cannot seed its cache or badge snapshot.
-reportRows=[row];let finishOld;readHook=(config,snapshot)=>new Promise(resolve=>finishOld=()=>resolve({code:3000,data:snapshot}));c.resetPfAttachmentCounts();const old=c.loadPfAttachmentSummaries();await Promise.resolve();await Promise.resolve();
+reportRows=[row];let finishOld;readHook=(config,snapshot)=>new Promise(resolve=>finishOld=()=>resolve({code:3000,data:snapshot}));c.resetPfAttachmentCounts();const old=c.loadPfAttachmentSummaries();await drain();
 reportRows=[row,{...row,ID:NEWID}];readHook=null;c.resetPfAttachmentCounts();await c.loadPfAttachmentSummaries();finishOld();await old;assert.equal(c.pfAttachmentBadge(PF).text,'2');
-let finishActor;readHook=(config,snapshot)=>new Promise(resolve=>finishActor=()=>resolve({code:3000,data:snapshot}));c.resetPfAttachmentCounts();const actorRead=c.loadPfAttachmentSummaries();await Promise.resolve();await Promise.resolve();c.S.currentUser='another-actor';finishActor();await actorRead;assert.notEqual(c.pfAttachmentBadge(PF).text,'0');assert.notEqual(c.S.attachmentCounts.status,'loaded');readHook=null;
+let finishActor;readHook=(config,snapshot)=>new Promise(resolve=>finishActor=()=>resolve({code:3000,data:snapshot}));c.resetPfAttachmentCounts();const actorRead=c.loadPfAttachmentSummaries();await drain();c.S.currentUser='another-actor';finishActor();await actorRead;assert.notEqual(c.pfAttachmentBadge(PF).text,'0');assert.notEqual(c.S.attachmentCounts.status,'loaded');readHook=null;
 
 // Cached file rows cannot cross a changed actor/environment, and actual tab routing safely closes.
 c.S.currentUser='creator';c.S.env={name:'PRODUCTION',fragment:''};c.resetPfAttachmentCounts();await c.loadPfAttachmentSummaries();assert.equal(c.S.attachmentsByPf[PF].length,2);
 let finishCacheRead;readHook=(config,snapshot)=>new Promise(resolve=>finishCacheRead=()=>resolve({code:3000,data:snapshot}));c.S.env={name:'DEVELOPMENT',fragment:'development'};
-c.openPfAttachmentModal(PF,listButton);assert.match(el('proformaAttachmentModalPanel').innerHTML,/Loading attachments/);assert.doesNotMatch(el('proformaAttachmentModalPanel').innerHTML,/Added by/,'old environment cache is invalidated before any file render');await Promise.resolve();await Promise.resolve();
-c.S.currentUser='new-actor';c.renderPfAttachments(c.pfAttachmentActionContext(true));assert.equal(c.S.attachmentModal,null);assert.equal(el('proformaAttachmentModal').hidden,true);finishCacheRead();for(let i=0;i<30;i++)await Promise.resolve();readHook=null;assert.equal(c.S.attachmentsByPf[PF],undefined);
+c.openPfAttachmentModal(PF,listButton);assert.match(el('proformaAttachmentModalPanel').innerHTML,/Loading attachments/);assert.doesNotMatch(el('proformaAttachmentModalPanel').innerHTML,/Added by/,'old environment cache is invalidated before any file render');await drain();
+c.S.currentUser='new-actor';c.renderPfAttachments(c.pfAttachmentActionContext(true));assert.equal(c.S.attachmentModal,null);assert.equal(el('proformaAttachmentModal').hidden,true);finishCacheRead();await drain();readHook=null;assert.equal(c.S.attachmentsByPf[PF],undefined);
 c.S.currentUser='creator';c.S.env={name:'PRODUCTION',fragment:''};c.resetPfAttachmentCounts();await c.loadPfAttachmentSummaries();
 Object.assign(c,{syncRecSwitch(){},syncAiReviewRailBtn(){}});vm.runInContext(fn('showView'),c);c.S.view='vList';c.openPfAttachmentModal(PF,listButton);
 c.S.attachmentBusy=true;c.showView('vEdit');assert.equal(c.S.view,'vList');assert.ok(c.S.attachmentModal,'busy file dialog blocks a conflicting tab change');c.S.attachmentBusy=false;c.showView('vDash');assert.equal(c.S.attachmentModal,null);assert.equal(c.S.view,'vDash');assert.equal(c.S.ed.model.draft,'preserved');assert.equal(el('listBody').scrollTop,scroll);
@@ -243,8 +253,8 @@ c.openPfAttachmentModal(PF,listButton);const savedRecord=c.S.proformas.shift(),b
 // A changed actor after the existing create returns cannot start FILE under that new session.
 let finishChangedCreate;c.sdkInvoke=config=>{native.push({kind:'create',config});return new Promise(resolve=>finishChangedCreate=resolve);};
 c.S.view='vList';c.openPfAttachmentModal(PF,listButton);const beforeChangedFile=native.filter(call=>call.kind==='upload').length;
-el('proformaAttachmentModalPanel').listeners.drop(dropEvent);await Promise.resolve();await Promise.resolve();c.S.currentUser='changed-during-create';
-finishChangedCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:'90071992547409997'})});for(let i=0;i<60;i++)await Promise.resolve();
+el('proformaAttachmentModalPanel').listeners.drop(dropEvent);await drain();c.S.currentUser='changed-during-create';
+finishChangedCreate({code:3000,result:JSON.stringify({ok:true,attachmentId:'90071992547409997'})});await drain();
 assert.equal(native.filter(call=>call.kind==='upload').length,beforeChangedFile,'a native create acknowledgement under the old actor cannot issue FILE in a new session');assert.equal(c.S.attachmentBusy,false);assert.equal(c.S.attachmentModal,null);c.sdkInvoke=nativeInvoke;
 assert.match(source,/\.pf-attachment-modal-dialog\{[^}]*width:min\(940px,100%\)/);assert.match(source,/\.pf-attachment-modal-close\{[^}]*width:32px;height:32px[^}]*background:#f8fafc[^}]*border-radius:9px;color:#94a3b8/);assert.match(source,/\.pf-attachment-modal-close:hover\{background:#eef2f8/);
 assert.match(source,/role="dialog" aria-modal="true" aria-labelledby="proformaAttachmentModalTitle"/);assert.match(source,/\.pf-attachment-modal-close\{[^}]*padding:0;display:grid;place-items:center/);

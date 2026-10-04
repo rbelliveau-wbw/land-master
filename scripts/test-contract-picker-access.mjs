@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {ready} from './test-contract-sdk-v2-foundation.mjs';
 
 const source = fs.readFileSync('widgets/contract-management/src/app/widget.html', 'utf8');
 assert.match(source, /\.dt-in\{[^}]*pointer-events:none/, 'native date carrier must not receive pointer input');
@@ -19,29 +20,24 @@ function fn(name) {
 const lotStateForStatus = new Function('lpIsOn','lpClaimedBy','truthy', `return (${fn('lotState')})`)(() => false, () => null, Boolean);
 assert.equal(lotStateForStatus({ID:'1',Status:'Scheduled'}), 'scheduled', 'scheduled lots must be visibly locked in the contract picker');
 const requests = [];
-const ctx = {
-  S: {nc: {sub: ['441092600000784111']}, lots: [{ID: '1', Subdivision: {ID: 'other'}}], acc: {}, homeSection: 'contracts'},
-  CFG: {reports: {lots: 'All_Active_Lots_Contracts_View', contracts: 'All_Contracts'}, pageSize: 200, maxPages: 25},
-  sdkGetAll: async (report, criteria) => { requests.push({report, criteria}); return [{ID: '999999999999999999', Subdivision: {ID: '441092600000784111'}}]; },
-  banner: () => {}, errText: e => e.message, canTemplates: () => false,
-  lockBlocks: () => false,
-  versionsFor: () => [{ID: 'attachment'}], esc: s => String(s), attr: s => String(s)
-};
-vm.createContext(ctx);
-for (const name of ['truthy','asList','lookupId','displayValue','lotSubId','lpAllowedSubs','ncLoadPickerLots','ncApplyAccess','canDeleteArchive','sdkDeleteById','updateRecord','num','clpLookupOne','lotCountWarning','contractAttachmentButton','isLotType','isLotAmendment','lotHierarchyLabel','contractTitleExtras','ownerIds','canEdit','contractLocked','lockedById','isLotContract','mayChangeLotsPricing']) vm.runInContext(fn(name), ctx);
+const h=await ready({realDOM:true}),ctx=h.c;
+Object.assign(ctx.S,{nc:{sub:['441092600000784111'],lotIds:[]},lots:[{ID:'1',Subdivision:{ID:'other'}}],homeSection:'contracts'});
+h.reports[ctx.CFG.reports.lots]=[{ID:'999999999999999999',Subdivision:{ID:'441092600000784111'}}];
+const nativeRecords=h.api.getRecords;h.api.getRecords=config=>{requests.push(config);return nativeRecords(config);};
 await ctx.ncLoadPickerLots();
 assert.equal(requests[0].criteria, '(Subdivision == 441092600000784111)');
 assert.equal(ctx.S.lots.length, 2, 'retain lots from other subdivisions');
 assert.equal(ctx.S.lots[1].ID, '999999999999999999', 'preserve string IDs');
-ctx.sdkGetAll = async () => { throw Error('permission denied'); };
+const nativeCount=h.api.getRecordCount;h.api.getRecordCount=async()=>{throw Error('permission denied');};
 await ctx.ncLoadPickerLots();
 assert.ok(ctx.S.lpLoadError, 'load failure must not appear as empty subdivision');
 assert.equal(ctx.S.lots.length, 2, 'failed read preserves existing data');
+h.api.getRecordCount=nativeCount;
 for (const flags of [null, {}, {found:true,ctEdit:true}, {found:false,ctDeleteArchive:true}]) {
   ctx.ncApplyAccess(flags);
   assert.equal(ctx.canDeleteArchive(), false);
-  await assert.rejects(ctx.sdkDeleteById('All_Contracts','123'), e => /permission/.test(e.message));
-  await assert.rejects(ctx.updateRecord('123',{Archive:true},'All_Contracts'), e => /permission/.test(e.message));
+  await assert.rejects(ctx.sdkDeleteById(ctx.CFG.reports.contracts,'123'), e => /permission/.test(e.message));
+  await assert.rejects(ctx.updateRecord('123',{Archive:true},ctx.CFG.reports.contracts), e => /permission/.test(e.message));
 }
 ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
 assert.equal(ctx.canDeleteArchive(), true);
@@ -52,18 +48,15 @@ assert.equal(ctx.S.loiMine, true, 'saved Legal preference accepts the Creator fi
 ctx.ncApplyAccess({found:true,legalAssignedToMe:'false',Legal_Assigned_to_Me:'true'});
 assert.equal(ctx.S.loiMine, false, 'normalized custom API key takes precedence over the field-name fallback');
 ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
-let deleteRequest;
-ctx.window = {ZOHO:{}};
-ctx.ZOHO = {CREATOR:{API:{deleteRecord:async args => { deleteRequest=args; return {code:3000}; }}}};
-ctx.isEmptyCode = () => false;
-ctx.responseBad = () => false;
-await ctx.sdkDeleteById('All_Contracts','999999999999999999');
-assert.equal(deleteRequest.criteria, '(ID == 999999999999999999)');
-assert.equal(deleteRequest.reportName, 'All_Contracts');
-ctx.needs = ok => ok;
+let deleteRequest;const nativeDelete=h.api.deleteRecords;
+h.reports[ctx.CFG.reports.contracts]=[{ID:'999999999999999999'}];
+h.api.deleteRecords=async args=>{deleteRequest=args;return nativeDelete(args);};
+await ctx.sdkDeleteById(ctx.CFG.reports.contracts,'999999999999999999');
+assert.equal(deleteRequest.payload.criteria, '(ID == 999999999999999999)');
+assert.equal(deleteRequest.report_name,ctx.CFG.reports.contracts);
+assert.equal(h.reports[ctx.CFG.reports.contracts].length,0,'native delete confirms the captured string ID then verifies absence');
 ctx.findContract = () => ({ID:'123',Contract_Name:'Test'});
 ctx.confirmDialog = () => { throw Error('Unauthorized confirmation must not open'); };
-vm.runInContext(fn('deleteContract'),ctx);
 ctx.ncApplyAccess({found:true,ctEdit:true});
 ctx.deleteContract('123');
 const row = ctx.contractTitleExtras({ID:'123',Contract_Name:'Test',Contract_Type:'Lot',Number_of_Lots:40,Initial_Takedown:10,Initial_Takedown_Days:30,Subsequent_Takedown_Lots:5,Subsequent_Takedown_Days:90});
@@ -93,48 +86,37 @@ assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed contracts remain l
 ctx.S.myAccessId='42';
 assert.equal(ctx.mayChangeLotsPricing('123'),true,'completed Lot contracts allow owners to backfill');
 ownedLot.Status='New';
-for (const name of ['ncSubRecord','ncProjectRecord','lotSubdivisionContext','lotContractProject','lotDraftProject','ncContextError','ncVerifyContext','lotParentOptions','lotParentValid','lotValidateParent','lotRefreshMasterMatch','lotTypeLabel','clpTermFields','clpTermChanges','clpScopeChanges','clpValidateType','clpSave']) vm.runInContext(fn(name), ctx);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'1.5'}), /whole numbers/);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'-1'}), /whole numbers/);
 const changes=ctx.clpTermChanges({Number_of_Lots:20,Initial_Takedown:10}, {Number_of_Lots:'30',Initial_Takedown:''});
 assert.equal(changes.Number_of_Lots,30);
 assert.equal(changes.Initial_Takedown,null,'blank cadence clears the persisted value');
 // A terms-only edit must work with zero selected lots and must not delete pricing.
-const contract={ID:'123',Contract_Type:'Lot (Master)',Number_of_Lots:40};
+const contract={ID:'123',Contract_Type:'Lot (Master)',Number_of_Lots:40,Lots1:[]};
 ctx.S.nc={type:'Lot (Master)',parent:'',sub:[],lotIds:[],ppf:{}};
 ctx.S.clp={cid:'123',lots0:[],ppf0:'{}',terms:{Number_of_Lots:'45',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
-ctx.S.pricing=[{ID:'existing-pricing'}];
+ctx.S.pricing=[{ID:'44',Contract1:{ID:'123'},Lot_Size:50,Price_per_Ft:1000,Base_Price:50000}];
 ctx.findContract=()=>contract;
-ctx.mayChangeLotsPricing=()=>true;
-ctx.setStatus=()=>{};
-ctx.auditLog=()=>{};
-ctx.renderAll=()=>{};
-ctx.clpEnd=()=>{};
-ctx.banner=(kind,message)=>{ if(kind==='err') throw Error(message); };
-let saved;
-ctx.updateRecord=async (id,payload)=>{ saved={id,payload}; };
-ctx.sdkDeleteById=()=>{ throw Error('Terms-only edit must not delete rows'); };
+h.reports[ctx.CFG.reports.contracts]=[contract];h.reports[ctx.CFG.reports.pricing]=structuredClone(ctx.S.pricing);
+let saved;const nativeUpdate=h.api.updateRecordById;
+h.api.updateRecordById=async config=>{saved={id:config.id,payload:config.payload.data};return nativeUpdate(config);};
+h.api.deleteRecords=()=>{throw Error('Terms-only edit must not delete rows');};
 ctx.ncLotSizes=()=>{ throw Error('Terms-only edit must not depend on loaded lots'); };
-const completed=new Promise(resolve=>{ctx.closeOverlays=resolve;});
-ctx.clpSave();
-await completed;
+const completed=await ctx.clpSave();assert.equal(completed.error,null);assert.equal(ctx.ContractSetupUI.close(),true);
 assert.equal(saved.payload.Number_of_Lots,45);
 assert.equal(saved.payload.Subsequent_Takedown_Days,90);
 assert.equal(saved.payload.Lots1,undefined);
 assert.equal(contract.Number_of_Lots,45);
-assert.equal(ctx.S.pricing[0].ID,'existing-pricing');
+assert.equal(ctx.S.pricing[0].ID,'44');
 // A combined edit persists the declared total independently of selected IDs.
-ctx.S.nc={type:'Lot (Master)',parent:'',sub:[],lotIds:['1'],ppf:{50:1000}};
+Object.assign(contract,{Subdivision1:[{ID:'20'}],Project:{ID:'4410926000001234567'},Territory:'Waco',Builder:{ID:'10'}});
+ctx.S.projects=[{ID:'4410926000001234567',Territory:'Waco'}];ctx.S.subdivisions=[{ID:'20',Project:{ID:'4410926000001234567'},Territory:'Waco'}];
+ctx.S.nc={type:'Lot (Master)',project:'4410926000001234567',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
 ctx.S.clp={cid:'123',lots0:[],ppf0:'{"50":1000}',terms:{Number_of_Lots:'50',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
 ctx.S.lpLoading=false; ctx.S.lpLoadError='';
-ctx.ncPricingDone=()=>true;
 ctx.ncLotSizes=()=>[{size:50,count:1}];
-ctx.clpValidateLots=async()=>{};
-ctx.pricingFor=()=>[{ID:'existing-pricing',Lot_Size:50,Price_per_Ft:1000,Base_Price:50000}];
-ctx.sdkGetAll=async ()=>ctx.pricingFor();
-const combined=new Promise(resolve=>{ctx.closeOverlays=resolve;});
-ctx.clpSave();
-await combined;
+h.reports[ctx.CFG.reports.lots]=[{ID:'1',Subdivision:{ID:'20'},Lot_Size:50,Status:'Open',Contract1:{}}];ctx.S.lots=structuredClone(h.reports[ctx.CFG.reports.lots]);
+const combined=await ctx.clpSave();assert.equal(combined.error,null);assert.equal(ctx.ContractSetupUI.close(),true);
 assert.equal(saved.payload.Number_of_Lots,50);
 assert.equal(saved.payload.Lots1[0],'1');
 assert.equal(contract.Number_of_Lots,50);
@@ -142,23 +124,18 @@ assert.equal(ctx.lotCountWarning(contract.Number_of_Lots,contract.Lots1),'1 sele
 
 // Converting type without changing selected lots or pricing must only write type.
 contract.Subdivision1=[{ID:'20'}];
-contract.Project={ID:'p1'};contract.Territory='Waco';
-ctx.S.projects=[{ID:'p1',Territory:'Waco'}];
-ctx.S.subdivisions=[{ID:'20',Project:{ID:'p1'},Territory:'Waco'}];
-ctx.S.nc={type:'Lot (Amendment)',project:'p1',territory:'Waco',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
+contract.Project={ID:'4410926000001234567'};contract.Territory='Waco';
+ctx.S.nc={type:'Lot (Amendment)',project:'4410926000001234567',territory:'Waco',builder:'10',parent:'',sub:['20'],lotIds:['1'],ppf:{50:1000}};
 ctx.S.clp={cid:'123',lots0:['1'],ppf0:'{"50":1000}',terms:{Number_of_Lots:'50',Initial_Takedown:'10',Initial_Takedown_Days:'30',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
-ctx.sdkGetAll=async()=>[contract];
 ctx.ncLotSizes=()=>{throw Error('Type-only conversion must not reconcile pricing');};
-const converted=new Promise(resolve=>{ctx.closeOverlays=resolve;});
-ctx.clpSave();await converted;
+const converted=await ctx.clpSave();assert.equal(converted.error,null);assert.equal(ctx.ContractSetupUI.close(),true);
 assert.deepEqual(JSON.parse(JSON.stringify(saved.payload)),{Contract_Type:'Lot (Amendment)'});
 assert.equal(contract.Contract_Type,'Lot (Amendment)');
-assert.equal(ctx.S.pricing[0].ID,'existing-pricing');
+assert.equal(ctx.S.pricing[0].ID,'44');
 
 // The Legal Review "Assigned to me" pill spans each existing assignment shape.
 ctx.ncLoginUser=()=>ctx.S.currentUser;
 ctx.daysSinceDate=()=>null;
-for (const name of ['reviewMe','reviewValueIsMine','reviewContractIsMine','reviewActionIsMine','reviewLOIIsMine','filteredLOIs','proposedContracts','proposedActions','actionStandsAlone','looseProposedActions','waitingApprovals','reviewCount']) vm.runInContext(fn(name),ctx);
 ctx.S.currentUser='rbelliveau@wbdevelopment.com';
 ctx.S.myAccessId='42';
 ctx.S.loiMine=true;

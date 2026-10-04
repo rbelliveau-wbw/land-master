@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {installPFReadiness} from './fixtures/proforma-sdk-v2-readiness.mjs';
 import '../widgets/proforma-manager/src/app/phase-sales-engine.js';
 
 const engine=globalThis.PhaseSalesEngine;
@@ -503,6 +504,7 @@ sharedContext.recalcLive=()=>{};
 sharedContext.formatNumericInputs=()=>{};
 sharedContext.canSavePf=()=>true;
 sharedContext.isInputLocked=()=>false;
+await installPFReadiness(sharedContext);
 vm.runInContext(widgetFunction('wireEditInputs'),sharedContext);
 sharedContext.wireEditInputs();
 const sharedToggle={checked:true,focused:false,

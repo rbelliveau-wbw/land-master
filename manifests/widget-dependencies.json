@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T21:30:04.421Z",
+  "generated_at": "2026-10-03T22:37:37.106Z",
   "method": "inferred by scanning widget source and matching exact Creator form/report names",
   "widgets": {
     "proforma-manager": {
@@ -150,20 +150,17 @@
         "Proforma_Item_Report"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
-        "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.deleteRecord",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.invokeCustomApi",
-        "ZOHO.CREATOR.API.readFile",
-        "ZOHO.CREATOR.API.updateRecord",
-        "ZOHO.CREATOR.API.uploadFile",
-        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.getRecords",
+        "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.updateRecordById",
+        "ZOHO.CREATOR.DATA.deleteRecords",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.FILE.uploadFile",
+        "ZOHO.CREATOR.FILE.readFile",
         "ZOHO.CREATOR.UTIL.getInitParams",
-        "ZOHO.CREATOR.getInitParams",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.UTIL.getQueryParams",
+        "ZOHO.CREATOR.UTIL.navigateParentURL"
       ],
       "external_domains": [
         "cdn.jsdelivr.net",
@@ -412,21 +409,17 @@
         "All_Projects"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
-        "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.deleteRecord",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.invokeCustomApi",
-        "ZOHO.CREATOR.API.readFile",
-        "ZOHO.CREATOR.API.updateRecord",
-        "ZOHO.CREATOR.API.uploadFile",
-        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.getRecords",
+        "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.updateRecordById",
+        "ZOHO.CREATOR.DATA.deleteRecords",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.UTIL",
+        "ZOHO.CREATOR.FILE.uploadFile",
+        "ZOHO.CREATOR.FILE.readFile",
+        "ZOHO.CREATOR.UTIL.getInitParams",
         "ZOHO.CREATOR.UTIL.getQueryParams",
-        "ZOHO.CREATOR.UTIL.navigateParentURL",
-        "ZOHO.CREATOR.appName",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.UTIL.navigateParentURL"
       ],
       "external_domains": [
         "static.zohocdn.com"

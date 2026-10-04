@@ -256,10 +256,24 @@ has(
   /function writeLotMixViaSDK\(pfId\)\{[\s\S]{0,600}?if\(!pfId\)\{[\s\S]{0,200}?return Promise\.resolve/,
   "the lot mix writer must refuse to run without a record ID, or its diff would delete other records' rows"
 );
-has(
-  /function deleteAllByCriteria[\s\S]{0,600}?Refused a delete with an incomplete criteria/,
-  "deleteAllByCriteria must refuse a criteria whose record ID is missing"
-);
+{
+  // Exercise the actual wrapper, SDK2 transport and native boundary. The guard
+  // moved into the transport; a source-text assertion cannot prove it runs.
+  const { ready, drain } = await import("./fixtures/proforma-sdk-v2-harness.mjs");
+  const h = await ready();
+  await drain(); // Finish startup's automatic badge reads before measuring this operation.
+  for (const criteria of [null, undefined, "", "   ", "Pro_Forma == ", "(Pro_Forma == )", "Pro_Forma < ", "Pro_Forma != "]) {
+    const calls = h.calls.length;
+    const writes = h.writes.length;
+    await assert.rejects(
+      h.widget.deleteAllByCriteria(h.widget.CFG.reports.phases, criteria),
+      /criteria|unsafe delete/i,
+      "missing parent operands must reject before capturing any Creator rows"
+    );
+    assert.equal(h.calls.length, calls, "an invalid parent criteria must make no native read or write");
+    assert.equal(h.writes.length, writes, "an invalid parent criteria must never delete a child record");
+  }
+}
 has(
   /if\(!pfId\) throw \{message:"The save did not return a record ID/,
   "the save pipeline must stop before any id-keyed write when the create returned no ID"
@@ -294,9 +308,28 @@ lacks(
   "duplicateProforma must not touch the record URL — navigateParentURL would reload the page and drop the copy"
 );
 has(
-  /if\(\(isNew\|\|phaseSalesAdopted\(m\)\) && !apiMissing\)\{/,
-  "a create or phase-sales save must not be blind-retried: the server may already have written the record"
+  /if\(!apiMissing\)\{/,
+  "an unconfirmed save must not be blind-retried: the server may already have written the record"
 );
+{
+  const { saveFixture } = await import("./fixtures/proforma-sdk-v2-save-fixture.mjs");
+  let sends = 0;
+  const h = await saveFixture({
+    model(model) { model.ID = null; },
+    invoke(config, storage, payload, apply) {
+      if (!payload.op && payload.header) { sends++; apply(); throw new Error("Applied create reply lost"); }
+    }
+  });
+  const draft = h.widget.S.ed.model;
+  await h.widget.saveProforma();
+  assert.equal(sends, 1, "a lost create reply must not use another API or SDK insert");
+  assert.equal(h.widget.S.ed.model, draft, "an uncertain create must retain the staged draft");
+  assert.equal(draft.ID, null, "a created ID cannot be inferred from matching names");
+  assert.equal(h.widget.PFTransportUI.close(), true);
+  assert.equal(h.widget.saveProforma(), false, "a second Save must remain blocked pending review");
+  assert.equal(sends, 1, "a second Save must not replay an uncertain create");
+  assert.equal(h.storage.All_Pro_Formas_All_Fields.length, 2, "only one new parent may exist beside the source");
+}
 has(/pfId=createdRecordId\(resp\);/, "the SDK-fallback create must read the new record ID the same way the rest of the widget does");
 
 /* A successful Save_PF1 create followed by a failed phase write must remain an

@@ -1,5 +1,29 @@
 
 
+## Creator SDK2 candidate 1.80.68
+
+The complete widget uses native DATA/FILE/UTIL and a fresh authenticated runtime
+handshake. Full User Access and the owner map remain full, including original
+uploader names; current-session Production access omits identity arguments.
+Counted cursor reads publish complete unique string-ID scopes before editing.
+The financial, phase, payload, duplicate, permission and author engines are
+preserved from 1.80.65.
+
+Save, attachments and captured child deletion retain verified per-record results
+and drafts after partial or unknown outcomes. Unknown writes cannot replay;
+read-only reconciliation uses captured IDs and persisted field/byte checks.
+Deletion uses exact ID batches of at most 200 and verifies absence before any
+rebuild. Mounted progress remains until dismissed. Native request deadlines retain
+queue slots until settlement, preventing late replies from authorizing another
+write. No Creator schema/function/API change is required.
+
+Regression: the five `scripts/test-proforma-sdk-v2*.mjs` suites exercise the
+whole source, original engines, saved child/phase/month parity, file bytes,
+501-child deletion, drafts, unknown recovery and native envelope compatibility.
+These are synthetic transport boundaries. Individual native Dev reads and
+controls must pass before Production promotion; no live financial save, upload,
+delete, approval email or budget transfer is claimed. Rollback: 1.80.65.
+
 ## Send Costs to Budgets (1.80.49, 2026-09-30)
 
 Picker fix in 1.80.52: expanded Project/Subdivision choices grow within the modal's scrolling body, and input filters visible choices ignoring case and surrounding whitespace. [Verification and rollback](../../docs/proforma-budget-picker-1.80.52.md).

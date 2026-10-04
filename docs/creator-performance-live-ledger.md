@@ -256,6 +256,68 @@ preserve the fill-only rules and recover lost acknowledgements only by exact
 read-back. This is a source-review finding, not an observed native failure.
 Only Development receives this successor until its individual native gate passes.
 
+Commit `f8ebfdf` passed CI 37157883045 and Pages 37157883065. Tax Production
+19.17.6 reads the same 2,741-row 2026 headline and complete 152-row Bexar scope
+in pages of 100/52. Every exact ID, editable value and rendered cell matches a
+fresh SDK1 native capture taken immediately before deployment. That new baseline
+also returned all 152 rows; the earlier 151/152 failure remains a recorded
+intermittent regression, not proof that SDK2 always eliminates native instability.
+The successor prevents any incomplete result from enabling editing. No native
+Tax write occurred.
+
+Land Development 8.14.3's individual read gate passed the four core counts
+(10 Properties, 18 Projects, 37 subdivisions, 12 Companies), all 18 named Project
+groups and a read-only Territory preview with nine ready and nine preserved or
+unresolved targets. An initial unfiltered All_Milestones count returned an
+unreadable native response; a fresh UI retry read all 56 milestones and opened
+Projects. Source review confirms that this unchanged request has no new criteria
+or guard cancellation. The preview was closed without Apply; no Territory write
+occurred. Its ready result is not a claim that native Apply has been exercised.
+
+Pro Forma 1.80.68 and Legal 1.60.47 are separate SDK2 Development candidates.
+Their original financial/phase/permission rules and full access response remain
+in place. Actual whole-source fixtures cover complete counted reads, captured
+payloads, strict native acknowledgements, persisted verification, files, retained
+drafts and unknown-result no-replay. PF additionally verifies all seven fork
+collections, phase/month parity and exact deletion batches above 200 children;
+Legal preserves the concurrent Legal45 Project/staged-lot flow and exercises
+captured approval Send/Check/Repair without any live email.
+
+An unpublished PF66 preparation lost the old deletion criterion trim/trailing
+comparison guard. Existing regression checks caught it before Dev publication.
+PF67 restores the guard before any native read/write, with eight actual invalid
+criterion cases and zero native calls. Legal deletion constructs its exact
+criterion only after validating a decimal string ID; six malformed-ID cases
+reject before any native call, so no equivalent guard omission was found.
+Existing extracted presentation/business fixtures now load
+the real SDK2 readiness and transport dependencies; their original assertions
+remain. No native PF/Legal financial save, deletion, upload, approval send or
+budget transfer is claimed. Production stays PF65 and Legal45 until their
+individual native Development checks pass.
+
+The final approval regression caught a rejected native Check response returning
+an old negative business body without targeted status fields. Legal47 preserves
+the error and stops reconciliation immediately instead of polling to timeout.
+The unpublished Legal46 release was archived locally. No native approval was sent.
+
+Cross-widget native-boundary probes found the same case in PF's negative JSON
+result and Budget's negative object result. Their narrow Check handlers retain
+rejection, captured context and no-replay while marking verification unavailable;
+failed outer codes and properly targeted negative outcomes keep their prior
+handling. PF68 retains its unknown-outcome quarantine. Unpublished PF67 was
+archived locally before publication. No shared response validator was loosened.
+
+The final candidate set is Budget122.28.20, PF1.80.68 and Legal1.60.47 in
+Development only. Full `npm run validate`, including original financial and
+presentation regressions plus all nine canonical runtime/data inventories,
+passes after the three Check fixes. Native candidate gates remain pending;
+Production keeps Budget19/PF65/Legal45 until each individual gate passes.
+
+Concurrent commit `862b20c` promotes Land 8.14.4 and makes existing Project
+Territory read-only. That release keeps 8.14.3's Territory controller byte-for-byte
+and retains all refresh/editor/captured-context protections. Its Production
+mapping is preserved rather than replaced with the older 8.14.3 candidate.
+
 All four existing native Development User Access details explicitly show
 Lot Sales Dashboard false. No available actor can complete Insights 1.5.41's
 authorized Dev graph read; current Production 1.5.40 is retained. Automatic

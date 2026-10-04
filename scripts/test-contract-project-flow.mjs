@@ -1,14 +1,15 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import {ready} from './test-contract-sdk-v2-foundation.mjs';
 
 const source=fs.readFileSync('widgets/contract-management/src/app/widget.html','utf8');
 function fn(name){const start=source.indexOf('function '+name+'(');assert.ok(start>=0,name);const end=source.indexOf('\n',start);return source.slice(start,source.slice(start,end).trim().endsWith('}')?end:source.indexOf('\n}',start)+2);}
 const project='4410926000001234567',other='4410926000001234568';
 const master={ID:'4410926000007654321',Contract_Type:'Lot (Master)',Project:{ID:project},Builder:{ID:'10'},Contract_Name:'Fox Creek Master'};
-const ctx={S:{projects:[{ID:project,Project_Name:'Fox Creek',Territory:'Waco',Company1:{ID:'co'},County:'Bell'},{ID:other,Project_Name:'Other',Territory:'Temple/Belton'}],subdivisions:[{ID:'s1',Subdivision_Name:'Fox Creek 1',Project:{ID:project},Territory:'Waco'},{ID:'s2',Project:{ID:project},Territory:'Waco'},{ID:'other',Project:{ID:other},Territory:'Temple/Belton'},{ID:'missing',Project:{ID:project}}],contracts:[master,{...master,ID:'wrong-project',Project:{ID:other}}],builders:[]},CFG:{reports:{contracts:'contracts',projects:'projects'}},TERRITORIES:[],COL_BARS:{},esc:String,attr:String,numMoney:Number,findContract:id=>ctx.S.contracts.find(c=>c.ID===id),$:()=>null,document:{querySelectorAll:()=>[],querySelector:()=>null},wireTplDrag:()=>{},lpPruneDisallowed:()=>{},ncRepaintForm:()=>{},mselBtn:key=>'<button id="'+key+'">'+key+'</button>',ncSel:id=>'<button id="'+id+'"></button>',ncNum:id=>'<input id="'+id+'">',ncActionsPreview:()=>'<div>Actions</div>',ncLotsBlock:()=>'<div>Lots and pricing</div>',ncTypeChoices:()=>[],ncPricingDone:()=>false,errText:e=>e.message,sdkGetAll:async()=>[]};
-vm.createContext(ctx);
-for(const name of ['asList','lookupId','displayValue','num','isLotType','isLotAmendment','lotTypeLabel','ncSubRecord','ncProjectRecord','ncProjectLabel','ncProjectOptions','lotSubdivisionContext','lotContractProject','lotDraftProject','lotParentOptions','lotParentValid','ncSyncContext','ncContextError','ncContextHead','lotParentField','ncReq','ncProjectField','ncBuilderField','ncLotFields','ncFields','ncNoun','ncPayload','ncSetProject','ncScopeChanged','ncClearSuggestedName','lotRefreshMasterMatch','lotValidateParent','ncVerifyContext','ncLoadProjects'])vm.runInContext(fn(name),ctx);
+const h=await ready({realDOM:true}),ctx=h.c;
+Object.assign(ctx.S,{projects:[{ID:project,Project_Name:'Fox Creek',Territory:'Waco',Company1:{ID:'co'},County:'Bell'},{ID:other,Project_Name:'Other',Territory:'Temple/Belton'}],subdivisions:[{ID:'s1',Subdivision_Name:'Fox Creek 1',Project:{ID:project},Territory:'Waco'},{ID:'s2',Project:{ID:project},Territory:'Waco'},{ID:'other',Project:{ID:other},Territory:'Temple/Belton'},{ID:'missing',Project:{ID:project}}],contracts:[master,{...master,ID:'4410926000007654322',Project:{ID:other}}],builders:[]});
+Object.assign(ctx,{wireTplDrag:()=>{},lpPruneDisallowed:()=>{},ncRepaintForm:()=>{},mselBtn:key=>'<button id="'+key+'">'+key+'</button>',ncSel:id=>'<button id="'+id+'"></button>',ncNum:id=>'<input id="'+id+'">',ncActionsPreview:()=>'<div>Actions</div>',ncLotsBlock:()=>'<div>Lots and pricing</div>',ncTypeChoices:()=>[],ncPricingDone:()=>false});
 const draft=()=>({type:'Lot (Master)',project:'',parent:'',sub:[],builder:'',name:'',territory:'',lotIds:[],ppf:{},wbw:[],owners:[],acts:[],status:'New'});
 ctx.S.nc=draft();
 let html=ctx.ncFields();assert.match(html,/nc_type/);assert.match(html,/ncproject/);assert.doesNotMatch(html,/ncbuilder|nc_name|nc_sub_wrap|nc_acts/,'Master initially asks only Type and Project');
@@ -23,19 +24,19 @@ assert.equal(ctx.S.nc.project,project);assert.equal(ctx.S.nc.parent,master.ID);a
 assert.deepEqual(Array.from(ctx.lotParentOptions('10','',project),o=>o.v),[master.ID],'same builder in another Project cannot match');
 assert.match(ctx.ncContextHead(),/Territory.*Waco.*Parent Master Contract.*Fox Creek Master/);
 assert.doesNotMatch(ctx.ncFields(),/Parent Master Contract|nc_territory/,'derived fields are in the title card');
-ctx.S.nc.sub=['other'];ctx.ncSyncContext();assert.equal(ctx.S.nc.parent,'wrong-project');assert.equal(ctx.S.nc.territory,'Temple/Belton','changing the subdivision replaces prior derived data');
+ctx.S.nc.sub=['other'];ctx.ncSyncContext();assert.equal(ctx.S.nc.parent,'4410926000007654322');assert.equal(ctx.S.nc.territory,'Temple/Belton','changing the subdivision replaces prior derived data');
 ctx.S.nc.sub=[];ctx.ncSyncContext();assert.equal(ctx.S.nc.parent,'');assert.equal(ctx.S.nc.project,'');assert.equal(ctx.S.nc.territory,'');
 ctx.S.nc.sub=['s1','other'];ctx.ncSyncContext();assert.match(ctx.ncContextError(ctx.S.nc),/one Project/);
 ctx.S.nc.sub=['missing'];ctx.ncSyncContext();assert.equal(ctx.S.nc.territory,'Waco','missing subdivision Territory uses its actual Project');
 ctx.S.nc.sub=['unknown'];ctx.ncSyncContext();assert.throws(()=>ctx.ncPayload(),/unavailable/,'unresolved source data cannot save');
 ctx.S.nc={...draft(),project:project,sub:['s1'],builder:'10',name:'Master'};ctx.ncSetProject(other);assert.equal(ctx.S.nc.sub.length,0,'switching Project drops phases outside the new Project');
 ctx.S.nc={...draft(),type:'Lot (Amendment)',sub:['s1'],builder:'10',name:'Amendment'};ctx.ncSyncContext();
-ctx.sdkGetAll=async()=>[{...master,Project:{ID:other}}];await assert.rejects(ctx.lotValidateParent(ctx.S.nc,''),/same Project/,'fresh read catches a Master moved to another Project');
-ctx.S.nc.parent='';ctx.sdkGetAll=async()=>[master];await ctx.lotRefreshMasterMatch(ctx.S.nc,'');assert.equal(ctx.S.nc.parent,master.ID,'a newly loaded unique Master auto-links');
-ctx.S.nc.parent='';ctx.sdkGetAll=async()=>[master,{...master,ID:'second'}];await assert.rejects(ctx.lotRefreshMasterMatch(ctx.S.nc,''),/Several Masters/,'multiple matches require a choice');
-ctx.S.nc.parent='second';await ctx.lotRefreshMasterMatch(ctx.S.nc,'');assert.equal(ctx.S.nc.parent,'second','valid explicit choice survives refresh');
-ctx.sdkGetAll=async()=>[{Project:{ID:project},Territory:'Waco',Parent_Contract:{ID:master.ID}}];await ctx.ncVerifyContext('new',{Project:project,Territory:'Waco',Parent_Contract:master.ID});
-ctx.sdkGetAll=async()=>[{Territory:'Waco'}];await assert.rejects(ctx.ncVerifyContext('new',{Project:project,Territory:'Waco'}),/could not be verified/,'omitted report columns are not a verified save');
-ctx.S.projectsLoaded=false;ctx.sdkGetAll=async()=>{throw Error('permission denied');};await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,false);assert.equal(ctx.S.projectsError,'permission denied');
-ctx.sdkGetAll=async()=>[{ID:project,Territory:'Waco'}];await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,true);assert.equal(ctx.S.projectsError,'','failed project loads can retry');
+h.reports[ctx.CFG.reports.contracts]=[{...master,Project:{ID:other}}];await assert.rejects(ctx.lotValidateParent(ctx.S.nc,''),/same Project/,'fresh read catches a Master moved to another Project');
+ctx.S.nc.parent='';h.reports[ctx.CFG.reports.contracts]=[master];await ctx.lotRefreshMasterMatch(ctx.S.nc,'');assert.equal(ctx.S.nc.parent,master.ID,'a newly loaded unique Master auto-links');
+ctx.S.nc.parent='';h.reports[ctx.CFG.reports.contracts]=[master,{...master,ID:'4410926000007654323'}];await assert.rejects(ctx.lotRefreshMasterMatch(ctx.S.nc,''),/Several Masters/,'multiple matches require a choice');
+ctx.S.nc.parent='4410926000007654323';await ctx.lotRefreshMasterMatch(ctx.S.nc,'');assert.equal(ctx.S.nc.parent,'4410926000007654323','valid explicit choice survives refresh');
+h.reports[ctx.CFG.reports.contracts]=[{ID:'999',Project:{ID:project},Territory:'Waco',Parent_Contract:{ID:master.ID}}];await ctx.ncVerifyContext('999',{Project:project,Territory:'Waco',Parent_Contract:master.ID});
+h.reports[ctx.CFG.reports.contracts]=[{ID:'999',Territory:'Waco'}];await assert.rejects(ctx.ncVerifyContext('999',{Project:project,Territory:'Waco'}),/could not be verified/,'omitted report columns are not a verified save');
+const nativeCount=h.api.getRecordCount;ctx.S.projectsLoaded=false;h.api.getRecordCount=async config=>{if(config.report_name===ctx.CFG.reports.projects)throw Error('permission denied');return nativeCount(config);};await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,false);assert.match(ctx.S.projectsError,/permission denied$/);
+h.api.getRecordCount=nativeCount;h.reports[ctx.CFG.reports.projects]=[{ID:project,Territory:'Waco'}];await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,true);assert.equal(ctx.S.projectsError,'','failed project loads can retry');
 console.log('Contract Project scope, derived Territory, parent matching, staged entry and persisted verification checks passed.');

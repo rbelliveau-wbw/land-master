@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {ready as readyContract} from './test-contract-sdk-v2-foundation.mjs';
 
 const budget = fs.readFileSync('widgets/budget-manager/src/app/widget.html', 'utf8');
 const proforma = fs.readFileSync('widgets/proforma-manager/src/app/widget.html', 'utf8');
@@ -110,7 +111,7 @@ assert.match(contractSend,/targetRow\.Last_Reminder_Date != null/);
 assert.match(contract,/p\.timer=setTimeout\(function\(\)\{contractProgressCheck\(p\);\},1000\)/);
 assert.match(contract,/p\.deadline=setTimeout\(function\(\)\{contractProgressDeadline\(p\);\},20000\)/);
 assert.match(contract,/LOI_REJECT_LABELS=\["Recording Legal rejection"/);
-assert.match(contract,/decision:mode==="Check"\?"CHECK_REJECT":"REJECT"/);
+assert.match(contract,/decision:mode===['"]Check['"]\?['"]CHECK_REJECT['"]:['"]REJECT['"]/);
 assert.match(loiReview,/"CHECK_REJECT"/);
 assert.match(modAdmin,/vAction == "check-reject" \|\| vAction == "repair-reject"/);
 // An older Creator function can accept the decision but return plain text for
@@ -132,18 +133,21 @@ oldPfContext.invokeProformaApprovalApi=()=>Promise.resolve({success:false,messag
 oldPf.reconciliationUnavailable=false;
 await assert.rejects(oldPfContext.pfProgressSnapshot(oldPf,'Check'),/targeted Pro Forma approval status/i);
 assert.equal(oldPf.reconciliationUnavailable,true);
-const oldContractContext={CFG:{customApis:{reviewLOI:'Review_LOI_Request',sendContractApprovals:'Send_Contract_Approvals'}},S:{currentUser:'user@example.com'},window:{},sdkInvoke(){return Promise.resolve({success:true,proformaId:'100',message:'Rejected.'});},unwrapApi(resp){return resp;}};
-vm.runInNewContext(contract.slice(contract.indexOf('function contractProgressMissingCheck('),contract.indexOf('function contractProgressRender(')),oldContractContext);
-const oldLoi={kind:'loireject',pfId:'100',token:'token',note:'test'};
+const legal=await readyContract({realDOM:true}),oldContractContext=legal.c,legalCalls=[];
+let oldLegalBody={success:true,proformaId:'100',message:'Rejected.'};
+legal.api.invokeCustomApi=config=>{legalCalls.push(JSON.parse(JSON.stringify(config)));return Promise.resolve({code:3000,result:JSON.stringify(oldLegalBody)});};
+const oldLoi={kind:'loireject',pfId:'100',token:'token',note:'test',target:0,step:0};oldContractContext.contractApprovalProgress=oldLoi;
 await assert.rejects(oldContractContext.contractProgressCall(oldLoi,'Check'),/targeted approval status/i);
 assert.equal(oldLoi.reconciliationUnavailable,true);
-oldContractContext.sdkInvoke=()=>Promise.resolve({success:false,status:'Rejected',message:'This LOI is no longer pending Legal approval.'});
+assert.equal(legalCalls.at(-1).payload.decision,'CHECK_REJECT');assert.equal(legalCalls.at(-1).payload.proformaId,'100');assert.equal(legalCalls.at(-1).payload.tokenId,'token');
+oldLegalBody={success:false,status:'Rejected',message:'This LOI is no longer pending Legal approval.'};
 oldLoi.reconciliationUnavailable=false;
 await assert.rejects(oldContractContext.contractProgressCall(oldLoi,'Check'),/targeted approval status/i);
 assert.equal(oldLoi.reconciliationUnavailable,true);
-const oldSend={kind:'send',cid:'500',ids:['10']};
+const oldSend={kind:'send',cid:'500',ids:['10'],target:0,step:0};oldContractContext.contractApprovalProgress=oldSend;oldLegalBody={success:true,message:'Approval sent.'};
 await assert.rejects(oldContractContext.contractProgressCall(oldSend,'Check'),/targeted approval status/i);
 assert.equal(oldSend.reconciliationUnavailable,true);
+assert.equal(legalCalls.at(-1).payload.mode,'Check');assert.deepEqual(legalCalls.at(-1).payload.targetIds,['10']);assert.equal(legalCalls.at(-1).payload.contractId,'500');
 assert.match(budget,/if \(p\.reconciliationUnavailable\) \{\s*finishApprovalProgress\(p, "error"/);
 assert.match(proforma,/if\(p\.reconciliationUnavailable\)\{pfApprovalFinish\(p,"error"/);
 assert.match(contract,/if\(p\.reconciliationUnavailable\)\{contractProgressFinish\(p,"error"/);

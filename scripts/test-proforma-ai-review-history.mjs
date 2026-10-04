@@ -145,6 +145,7 @@ has(
     "candidates",
     "REPORT_CAND_MEMO",
     "ZOHO",
+    "LMData",
     "responseBad",
     "lookupId",
     "auditLog",
@@ -158,17 +159,23 @@ has(
     {},
     {
       CREATOR: {
-        API: {
-          getAllRecords: (p) => {
-            calls.push({ report: p.reportName, criteria: p.criteria || "" });
-            const a = answers[p.reportName];
-            if (!a) return Promise.reject({ code: 2894, message: "No report named " + p.reportName });
+        DATA: {
+          getRecords: (p) => {
+            assert.equal(p.max_records, 200);
+            assert.equal(p.field_config, "all");
+            assert.equal(Object.hasOwn(p, "page"), false);
+            calls.push({ report: p.report_name, criteria: p.criteria || "" });
+            const a = answers[p.report_name];
+            if (!a) return Promise.reject({ code: 2894, message: "No report named " + p.report_name });
             if (p.criteria) return Promise.reject({ code: 3330, message: "invalid criteria" });
             return Promise.resolve(a);
           },
         },
       },
     },
+    // Scheduling is the canonical adapter's tested boundary; this fixture
+    // isolates the actual diagnostic's native arguments and error reporting.
+    { request(key, read) { assert.equal(key, "pf:ai-history-sample"); return read(); } },
     (r) => !r || (r.code && r.code !== 3000),
     (v) => (v && typeof v === "object" ? v.ID : v),
     (level, message, meta) => logs.push({ level, message, meta }),

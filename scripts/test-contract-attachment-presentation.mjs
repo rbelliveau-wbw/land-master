@@ -121,8 +121,8 @@ assert.equal(ctx.attachmentAuthorLabel(ctx.S.versions[0]),'—','missing creator
 ctx.showAttachmentsModal(CID);assert.match(mounted,/Added by <b>—<\/b>/);
 ctx.S.versions=[];ctx.showAttachmentsModal(CID);
 assert.match(mounted,/No attachments yet/);assert.doesNotMatch(mounted,/class="modal-foot"/);
-assert.match(source,/version\/1\.0\/widgetsdk-min\.js/,'Legal remains on SDK1 in this presentation release');
-assert.doesNotMatch(source,/version\/2\.0\/widgetsdk-min\.js/);
+assert.match(source,/version\/2\.0\/widgetsdk-min\.js/,'the retained Legal presentation now uses native SDK2');
+assert.doesNotMatch(source,/version\/1\.0\/widgetsdk-min\.js/);
 assert.match(source,/\.att-row\{display:flex;align-items:center;gap:14px;padding:13px 6px/);
 assert.match(source,/\.att-open\{display:block;font-size:13\.5px/);
 assert.match(source,/\.fbtn\{width:34px;height:34px/);

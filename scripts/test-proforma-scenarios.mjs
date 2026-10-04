@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {installPFReadiness} from './fixtures/proforma-sdk-v2-readiness.mjs';
 import '../widgets/proforma-manager/src/app/phase-sales-engine.js';
 const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
 function fn(name){
@@ -10,6 +11,7 @@ function fn(name){
  throw Error(name);
 }
 const ctx=vm.createContext({S:{dash:{}}, CFG:{irr:{}}, PhaseSalesEngine:globalThis.PhaseSalesEngine, document:{querySelector:()=>null}, toast(){}, renderDashboard(){}, dealCancelRecalc(){}, dealScheduleRecalc(){}});
+await installPFReadiness(ctx);
 const names=['num','intN','round2','hasVal','fmtN','fmt$','esc','ymAdd','ymToInput','parseMonthList','phaseSalesPersisted','phaseSalesActive','phaseSalesPlan','additionalCostUnitQuantity','syncPerUnitAdditionalCost','syncAllPerUnitAdditionalCosts','computeProforma','modelToCalc','dealCloneWith','dealApplyDriver','dealFmtDelta','dealSnapshot','dealKpis','dealMudRevenueEnabled','dealSetMudRevenue','dealPeakCash','curveLengthValue','lookupDisplayValue'];
 vm.runInContext(names.map(fn).join('\n')+'\n'+source.match(/var DEAL_DRIVERS=\[[\s\S]*?\n\];/)[0],ctx);
 const model={Total_Acres:'100',Land_Cost_Acre:'10000',Total_Street_LF:'5000',Lot_Size_Ft:'50',Lots:'100',Phases:'1',Sale_Price_FF:'1500',Const_Cost_FF:'300',Engineering_Cost_Lot:'500',Engineering_Length_Months:'2',Engineering_Delay_Months:'0',Construction_Length:'2',Construction_Delay_Months:'0',Initial_Takedown:'99',Lots_per_Month:'99',purchaseDate:{y:2027,m:1},phaseSales:[{Phase:1,Total_Lots:100,Initial_Take_Lots:10,Initial_Delay_Months:0,First_Recurring_Delay_Months:1,Lots_Per_Take:10,Take_Frequency:'Monthly',Escalator_Enabled:false,Annual_Escalator_Pct:0,Additional_Markup_Pct:0}],purchaseInstallments:[{Cost:'250000',Percent1:'25',Month1:'1'},{Cost:'750000',Percent1:'75',Month1:'2'}],curve:[{Month_Number:'1',Percent_Cost:'50'},{Month_Number:'2',Percent_Cost:'50'}],items:[{_perUnit:true,Unit:'Acre',Per_Unit:'100',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'LF',Per_Unit:'2',Add_l_Cost:'10000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:true,Unit:'Lot',Per_Unit:'10',Add_l_Cost:'1000',Department:'Construction',Start_Phase:'1',End_Phase:'1'},{_perUnit:false,Add_l_Cost:'777',Department:'Construction',Start_Phase:'1',End_Phase:'1'}]};

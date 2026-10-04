@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
+import {installPFReadiness} from './fixtures/proforma-sdk-v2-readiness.mjs';
 
 const source = fs.readFileSync("widgets/proforma-manager/src/app/widget.html", "utf8");
 const start = source.indexOf("function addPidRow(){");
@@ -19,6 +20,7 @@ const context = vm.createContext({
   rerenderPane: pane => {assert.equal(pane,"pid");renders++;},
   document: {querySelectorAll: () => [{querySelector: () => ({focus: () => {focused++;}})}]}
 });
+await installPFReadiness(context);
 vm.runInContext(source.slice(start,end),context);
 
 context.addPidRow();
