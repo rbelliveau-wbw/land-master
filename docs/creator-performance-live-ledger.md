@@ -483,3 +483,12 @@ gate retains every 19 table row/15 visible contract, the complete 21-contract /
 all six Lot seed titles exactly against 1.60.51. The form was cancelled without
 saving. No Creator publication is required for this frontend correction;
 rollback is Legal 1.60.51.
+
+Production promotion a5c25b7 passed CI 37339888130 and Pages 37339888225
+after preserving concurrent PF 1.80.75 and repeating full validation/build.
+Native Legal 1.60.52 preserves all 43 table rows /36 visible contracts, six
+Acquisition template titles and seven Lot seed titles exactly against 1.60.51.
+The fresh complete core contains 84 headers, 547 actions, 134 files and 150
+approvals. No template-unavailable warning occurs; no template or contract was
+saved. All agent-created test tabs were closed after evidence capture. Live
+write/approval and reduced-permission gaps remain separate.

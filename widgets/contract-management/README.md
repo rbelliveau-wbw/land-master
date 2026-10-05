@@ -85,9 +85,10 @@ Regression: `node scripts/test-contract-sdk-v2-scopes.mjs` verifies exact IDs
 through `templatesFor`, `ncSeedSource` and `maBaseline`, checked native values,
 false flagged orphans, saved contract actions, missing/malformed fields, legacy
 versus unknown capability, 2,001-row pagination, incomplete/denied scope recovery,
-retained drafts and no load mutations. Release 1.60.52 requires its native
-Dev check before Production promotion; rollback is Legal 1.60.51 through the
-stable environment mapping.
+retained drafts and no load mutations. Release 1.60.52 passed its native
+Dev and read-only Production list/template/seed checks; see the
+[final evidence](../../docs/final-refactor-decisions-2026-10-05.md).
+Rollback is Legal 1.60.51 through the stable environment mapping.
 
 The create modal asks for Type first and shows nothing else until it is set, then
 lists exactly the actions that will be created and names their source.

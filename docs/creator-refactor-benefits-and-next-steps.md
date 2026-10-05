@@ -60,7 +60,9 @@ sets and releases; no controlled percentage speedup is claimed.
   1.60.52 also fixes the obsolete action-template field and excludes unchecked
   orphan actions. Its native Dev read gate preserves the exact contract rows,
   seven Acquisition template titles and six Lot seeds; no template or contract
-  was saved. Missing/incomplete fields retain drafts and block dependent writes.
+  was saved. Production also preserves all 43 list rows, six Acquisition
+  templates and seven Lot seeds exactly. Missing/incomplete fields retain
+  drafts and block dependent writes.
 - Native read parity does not prove unperformed writes, uploads, approvals or
   bulk updates, or reduced-permission roles without an available test session.
   Creator promotions reserved for the user remain separate,
@@ -68,6 +70,8 @@ sets and releases; no controlled percentage speedup is claimed.
 
 All nine Production SDK2 releases passed their available native gates. CI
 37337304335 and Pages 37337304073 succeeded for published main commit `9c02d3a`.
+Final Legal promotion `a5c25b7` passed CI 37339888130 and Pages 37339888225;
+its native Production read/seed gate passed without writes.
 
 ## Further improvements found during the work
 

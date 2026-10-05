@@ -82,3 +82,21 @@ exactly against 1.60.51. The complete core remains 21 contracts, 106 actions,
 titles match exactly, with no template-unavailable warning. The new form was
 cancelled; no contract, template, file, financial or workflow write was made.
 Rollback for this frontend correction is Legal 1.60.51.
+
+Production promotion commit a5c25b7 passed CI 37339888130 and Pages
+37339888225, preserving the concurrent Pro Forma 1.80.75 hotfix. The combined
+source passed full validation and Pages build after rebase. Native Production
+Legal 1.60.52 matches all 43 list table rows (36 visible contracts) exactly
+against 1.60.51, along with all six Acquisition template titles and seven Lot
+seed titles. Its fresh complete core contains 84 contracts, 547 actions,
+134 files and 150 approvals. No unavailable-template warning occurred; the
+template Save remained disabled and the new form was cancelled without saving.
+These are read/seed gates, not live create/delete/approval or bulk-write claims.
+
+Final widget mappings are Budget 122.28.20, Land 8.14.5, Pro Forma 1.80.75,
+Legal 1.60.52, Tax 19.17.8, Gantt 1.1.6, Manage Lots 0.9.20, Settings 1.3.7
+and Insights 1.5.42. Remaining Creator backend promotion belongs to the user,
+including the separate Validate_Comment_Log Contract1 correction. The
+[benefits and next steps](creator-refactor-benefits-and-next-steps.md) writeup
+records further opportunities and the distinction between Markdown design
+guides, shared implementations and actual behavioral checks.

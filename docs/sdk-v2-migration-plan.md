@@ -124,6 +124,8 @@ The live ledger retains failed historical gates and unperformed mutation
 scenarios, including Gantt's native date writes, and reduced-permission gaps.
 All nine Production SDK2 releases passed their available native gates; CI
 37337304335 and Pages 37337304073 succeeded for `9c02d3a`.
+Final Legal 1.60.52 promotion `a5c25b7` passed CI 37339888130 and Pages
+37339888225, followed by exact native Production list/template/seed parity.
 No access grant was changed to satisfy a test. Widget mappings do not publish
 Creator backend fixes reserved for
 the user, including the other chat's Development Validate_Comment_Log Contract1
