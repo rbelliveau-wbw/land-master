@@ -31,6 +31,11 @@ for(const raw of ['12345.6789','0.000001','-1234.5678','1500.0100']){
   assert.equal(ctx.stripNumberGroups(ctx.inFmtN(raw)),raw);
 }
 assert.equal(ctx.inFmt$(''),'');assert.equal(ctx.inFmt$(null),'');
+for(const credit of ['-$12,345,678.123456','($12,345,678.123456)','\u2212$12,345,678.123456','$ \u221212,345,678.123456']){
+  assert.equal(ctx.stripMoney(credit),'-12345678.123456');assert.equal(ctx.stripMoney(ctx.inFmt$(credit)),'-12345678.123456');assert.equal(ctx.num(credit),-12345678.123456);assert.equal(ctx.hasVal(credit),true);
+}
+for(const invalid of ['(-$12.34)','-$-12.34','$12,34.56','($12.34','1e3'])assert.equal(ctx.stripMoney(invalid),invalid,'Malformed currency remains visible');
+assert.equal(ctx.stripMoney(0.0000001),'0.0000001','Computed finite numbers expand without rounding');
 const m={ID:'4410926000004947002',Name:'Precision QA',Land_Cost_Acre:'12345.6789',Total_Acres:'1234.5678',Total_Street_LF:'12345.6789',Lot_Size_Ft:'50.1256',Sale_Price_FF:'1500.1234',Overhead:'2.1234',Interest:'8.5678',Earnest_Money:'25000.6789',Amount_per_Extension:'1500.3456',Land_Sale:'1234.5678',Engineering_Cost_Lot:'123.4567',Const_Cost_FF:'987.6543',Phases:'1',purchaseInstallments:[{Installment:'1',Month1:'1',Cost:'123.4567',Percent1:'12.3456'}],saleInstallments:[],pidMud:[{Month1:'1',Cost:'123.4567'}],items:[{Item_Name:'Test',_perUnit:true,Per_Unit:'12.3456',Add_l_Cost:'123.4567',Start_Phase:'1',End_Phase:'1'}],curve:[{Month_Number:'1',Percent_Cost:'12.3456'}]};
 const before=JSON.stringify(m),calc={totals:{},schedule:{}};
 const payload=ctx.buildSavePayload(m,calc),header=payload.header;

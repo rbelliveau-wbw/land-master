@@ -52,7 +52,7 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
   const context=vm.createContext({document,location:{href:'https://example.test/dev/settings-manager/'},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),console:{warn(message){warnings.push(String(message));}},ZOHO:creator?{CREATOR:{DATA:api,UTIL:{getInitParams(){handshakes++;return initialize();},navigateParentURL:config=>{calls.push({method:'navigate',config});}}}}:undefined});
   context.window=context;context.parent=embedded?{}:context;context.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
   for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
-  const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog};\n';
+  const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog,money:fmtMoney,read:readControl};\n';
   vm.runInContext(inline.replace(/boot\(\);\s*\}\)\(\);\s*$/,expose+'boot();\n\n})();'),context);
   assert.ok(context.__settingsTest,'Whole source IIFE test exposure found');
   return{context,widget:context.__settingsTest,api,reports,records,curves,calls,warnings,nodes,node,timers,listeners,handshakes:()=>handshakes,maxActive:()=>maxActive,
@@ -249,4 +249,41 @@ for(const wrapped of [false,true]){
   assert.equal(h.widget.value('Multi_Line'),'retained diagnostic draft');assert.equal(writes,1);
   await h.widget.controller.recheck().catch(()=>{});assert.equal(writes,1,'Detailed native failures cannot replay a write');
 }
-console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID verification, strict Curve CRUD/parent verification, no mutation replay and guarded native handshake.');
+// Actual money control and autosave accept equivalent signed/accounting native
+// currency while preserving every fractional digit and the exact record ID.
+for(const saved of ['-$12,500,109.923456','$-12,500,109.923456','($12,500,109.923456)','−$12,500,109.923456','$ −12,500,109.923456']){
+ const h=await ready(),field='COO_Approval_Threshold';
+ const control={value:h.widget.money('($12,500,109.923456)'),getAttribute:key=>key==='data-f'?field:key==='data-t'?'money':''},captured=h.widget.read(control);assert.equal(captured.v,'-12500109.923456');
+ h.api.updateRecordById=async cfg=>{h.calls.push({method:'update',config:clone(cfg)});assert.equal(cfg.id,ID);assert.equal(cfg.payload.data[field],captured.v);h.records[0][field]=saved;return{code:3000,data:{ID}};};
+ assert.equal(h.widget.queue(field,captured.v),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],saved);assert.equal(h.widget.money(h.widget.state.rec[field]),'-12,500,109.923456');assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+}
+{
+ const h=await ready(),field='COO_Approval_Threshold';
+ for(const malformed of ['-$12,50,109.92','($-12.92)','(-$12.92)','($+12.92)','--$12.92','-$12.92.1','$12,3456.92','($12.92','-$1e3','1e-7','12$34.92']){
+  assert.equal(h.widget.queue(field,malformed),false);assert.equal(h.widget.state.drafts[field].value,malformed);assert.equal(h.widget.state.drafts[field].status,'failed');assert.equal(h.widget.controller.discardRejected(),true);
+ }
+ assert.equal(h.calls.filter(call=>call.method==='update').length,0,'Malformed money never dispatches a native write');
+}
+for(const [expected,saved]of [['-12500109.923456','-$12,500,109.923455'],['-12500109.923456','$12,500,109.923456'],['-12500109.923456','-$12,50,109.923456'],['9007199254740993.123456','9007199254740993.123455']]){
+ const h=await ready(),field='COO_Approval_Threshold';let writes=0;h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);h.records[0][field]=saved;return{code:3000,data:{ID}};};
+ assert.equal(h.widget.queue(field,expected),true);await assert.rejects(h.widget.flush());assert.ok(h.widget.state.uncertain);assert.equal(h.widget.value(field),expected);
+ await assert.rejects(h.widget.controller.recheck());assert.equal(writes,1);h.records[0][field]=expected;await h.widget.controller.recheck();assert.equal(h.widget.state.uncertain,null);assert.equal(writes,1,'Recovery only reads the exact saved currency');
+}
+// Percentage readback must retain adjacent fractional digits beyond Number's
+// precision. Only formatting is canonicalized; no rate or calculation changes.
+for(const [expected,saved]of [['12.123456789012345','12.123456789012345000%'],['-1234.123456789012345','−1,234.123456789012345%'],['0.000000000000001','0.000000000000001000%']]){
+ const h=await ready(),field='Engineering_Markup';h.records[0][field]='10';await h.widget.load();let writes=0;
+ h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);assert.equal(cfg.payload.data[field],expected);h.records[0][field]=saved;return{code:3000,data:{ID}};};
+ assert.equal(h.widget.queue(field,expected),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],saved);assert.equal(writes,1);
+}
+for(const saved of ['12.123456789012344%','-12.123456789012345%','12,34.123456789012345%','12.123456789012345%%','$12.123456789012345%']){
+ const h=await ready(),field='Engineering_Markup',expected='12.123456789012345';h.records[0][field]='10';await h.widget.load();let writes=0;
+ h.api.updateRecordById=async()=>{writes++;h.records[0][field]=saved;return{code:3000,data:{ID}};};assert.equal(h.widget.queue(field,expected),true);await assert.rejects(h.widget.flush());assert.ok(h.widget.state.uncertain);assert.equal(h.widget.value(field),expected);
+ await assert.rejects(h.widget.controller.recheck());assert.equal(writes,1);h.records[0][field]=expected+'%';await h.widget.controller.recheck();assert.equal(h.widget.state.uncertain,null);assert.equal(writes,1,'Unverified rates recover only through fresh reads');
+}
+for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
+ const h=await ready();h.records[0][field]='10';await h.widget.load();let writes=0;
+ h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);assert.equal(cfg.payload.data[field],field==='Engineering_Markup'?1e-7:'0.0000001');h.records[0][field]=1e-7;return{code:3000,data:{ID}};};
+ assert.equal(h.widget.queue(field,1e-7),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],1e-7);assert.equal(writes,1,'Finite Number exponent readback verifies without accepting exponent text input');
+}
+console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID/currency verification, strict Curve CRUD/parent verification, no mutation replay and guarded native handshake.');

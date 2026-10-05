@@ -302,3 +302,44 @@ Release QA: widget.html, widget.config.json, manifests/widgets.json, deploy/envi
 Legal 1.60.50 uses the existing Get_User_Access_Lean API and its Get_User_Access_Lean_DEV POST alias. Legal flags and the original-author/full-name roster match the full API; unused Pro Forma owner scanning is omitted. Whole-source permission/owner/attachment/approval regressions remain required. No Creator deployment; rollback 1.60.48.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+
+## Currency display and editable precision (2026-10-05)
+
+Legal currency summaries now show cents, including Contract pricing, lot base
+prices, LOI amounts and Earnest/Total values. Price-per-foot money inputs preserve
+all decimal digits through render, focus and blur; the formatter no longer rounds
+an input to two decimals or converts its raw text through floating-point parsing.
+Calculated base prices and count fields retain their existing numeric behavior.
+Native grouped USD values display their full dollar amount rather than stopping
+at a comma. No Creator function, field, workflow, permission or API changes.
+Accounting parentheses, dollar-before/after-minus credits and Unicode minus
+signs normalize to the same negative amount without altering decimal digits.
+Malformed grouping, conflicting signs and incomplete parentheses remain invalid;
+the currency formatter does not silently turn these into a positive value.
+
+`scripts/test-systemic-currency-display.mjs` checks currency summaries, repeated
+actual focus/blur formats, native grouped values, high-precision input text and
+unchanged count formatting. The prior Production widget is the UI rollback;
+these display checks do not establish native Production save correctness.
+
+Native Contract currency/decimal readback and read-only recovery now compare
+exact canonical decimal strings, including signed-dollar, accounting and Unicode
+minus credit formats. Group separators and insignificant trailing zeros may
+vary; lost cents, wrong signs, malformed grouping and neighboring values beyond
+JavaScript Number precision remain different or unverifiable. Text identifiers
+and lookup record IDs retain their existing exact-string comparisons.
+
+Entered Price_per_Ft and Earnest_Money_Per_Lot values retain their decimal text
+in actual native edit, add, Contract creation and pricing-seed payloads. The
+Change Lots & Pricing draft and reconciliation also preserve and compare those
+digits; calculated Base_Price, lot sizes and counts keep their numeric behavior.
+Malformed inline monetary input is retained without sending a replacement zero.
+Numeric calculation results written in exponent notation compare against their
+equivalent decimal readback; exponent notation in entered money text is invalid.
+
+The existing Contract SDK foundation, fields and workflow regressions exercise
+actual native SDK payloads, create/edit readback and ambiguous-response recovery
+without another write. They cover equivalent credits, missing cents, malformed
+signs/grouping, high-precision differences, exact entered payload digits and
+unchanged computed totals/counts. No Creator fields, workflows or API metadata
+are modified; these fixtures do not establish live Production correctness.

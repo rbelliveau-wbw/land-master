@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const source=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
+const context=vm.createContext({S:{ed:{model:{Land_Cost_Acre:'52868',Total_Acres:'236.44',Land_Sale:'5000000',purchaseInstallments:[{Cost:'12500109.90',Percent1:'100'}],saleInstallments:[{Cost:'5000000',Percent1:'100'}]}}},num:v=>Number(v)||0,hasVal:v=>v!=null&&v!=='',round2:v=>Math.round(v*100)/100,auditLog(){},fmtPct:v=>v+'%'});
+for(const [start,end]of [['function fmt$(','function fmtN('],['function healInstallmentDrift(','function itemsOfDept('],['function balanceChecks(','function renderBalanceChecks(']])vm.runInContext(source.slice(source.indexOf(start),source.indexOf(end)),context);
+const original=context.S.ed.model.purchaseInstallments[0].Cost;
+assert.equal(context.balanceChecks()[0].ok,false,'native .90 does not match calculated .92');
+context.healInstallmentDrift(context.S.ed.model);
+assert.equal(original,'12500109.90','original native value is distinct from draft repair');
+assert.equal(context.S.ed.model.purchaseInstallments[0].Cost,'12500109.92');
+const checks=context.balanceChecks();
+assert.equal(checks[0].ok,true);
+assert.match(checks[0].okMsg,/^Draft installments match land cost: \$12,500,109\.92/);
+assert.match(checks.find(row=>row.kind==='sale').okMsg,/^Draft installments match land sale:/);
+assert.ok(!source.includes(' Check the Creator record before saving again.", terminal:true, noReplay:true'));
+console.log('PASS Pro Forma balance labels identify draft reconciliation; native .90 and captured .92 remain distinct.');

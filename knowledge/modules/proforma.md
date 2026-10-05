@@ -1,3 +1,7 @@
+## Currency readback and draft balance 1.80.80
+
+The installment balance label now explicitly compares the editable draft. A small on-load draft remainder adjustment does not certify the native amount. Exact currency readback accepts equivalent accounting/signed-dollar/Unicode-minus credits while rejecting changed cents/signs, malformed grouping and conflicting signs. Save errors retain the draft and the no-replay guard. See the [cross-module release, native handoff and rollback](../../docs/systemic-currency-release-2026-10-05.md). Native Creator edits and promotion remain entirely user-owned.
+
 ## SDK2 comment/save repair 1.80.72
 
 Release 1.80.73 promotes these fixes to Production and replaces ordinary Save's

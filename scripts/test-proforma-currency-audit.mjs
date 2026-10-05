@@ -23,11 +23,13 @@ function model(m){
  {Item_Name:'Precise unit rate',Department:'Construction',Category:'Misc',Unit:'Lot',_perUnit:true,Per_Unit:'12.345678',Add_l_Cost:'1234.5678',Cost_Application:'Across Phases',Start_Phase:'1',End_Phase:'1'}];
  m.lotMix[0].Price_LF='1500.123456';
 }
-function formatted(value,currency){const text=String(value);const [whole,fraction='']=text.split('.');return (currency?'$ ':'')+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+'.'+fraction.padEnd(6,'0');}
+function formatted(value,currency,creditStyle){const text=String(value),negative=text.startsWith('-');const [whole,fraction='']=text.replace(/^-/,'').split('.'),amount=whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+'.'+fraction.padEnd(6,'0');if(!currency)return(negative?'-':'')+amount;if(negative&&creditStyle==='accounting')return'($ '+amount+')';if(negative&&creditStyle==='signed-dollar')return'-$ '+amount;return'$ '+(negative?'-':'')+amount;}
 for(const env of ['DEVELOPMENT','PRODUCTION']){
- const h=await saveFixture({env,model,read:(cfg,storage)=>{if(!reports.includes(cfg.report_name))return;let rows=clone(storage[cfg.report_name]||[]);if(cfg.criteria&&cfg.criteria.includes('ID =='))rows=rows.filter(row=>cfg.criteria.includes(row.ID));for(const row of rows)for(const [field,meta]of Object.entries(metadata[cfg.report_name]))if(row[field]!=null&&row[field]!==''&&/^(USD|decimal|percentage)$/.test(meta.type))row[field]=formatted(row[field],meta.type==='USD');return {code:3000,data:rows};}});
+ for(const creditStyle of ['dollar-sign','accounting','signed-dollar']){
+ const h=await saveFixture({env,model,read:(cfg,storage)=>{if(!reports.includes(cfg.report_name))return;let rows=clone(storage[cfg.report_name]||[]);if(cfg.criteria&&cfg.criteria.includes('ID =='))rows=rows.filter(row=>cfg.criteria.includes(row.ID));for(const row of rows)for(const [field,meta]of Object.entries(metadata[cfg.report_name]))if(row[field]!=null&&row[field]!==''&&/^(USD|decimal|percentage)$/.test(meta.type))row[field]=formatted(row[field],meta.type==='USD',creditStyle);return {code:3000,data:rows};}});
  assert.deepEqual(clone(h.widget.validateModel(h.model)),[]);await h.widget.saveProforma();
  assert.equal(h.widget.S.ed.dirty,false,JSON.stringify(h.widget.PFTransport.snapshot()));assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);assert.equal(h.storage.All_Land_Installments[0].Cost,'12500109.92');assert.equal(h.storage.All_Land_Installments[1].Cost,'13456789.876543');assert.equal(h.storage.All_Land_Installments[2].Cost,'15678901.123456');
+ }
 }
 let mismatches=0;
 for(const field of Object.keys(metadata.All_Pro_Formas_All_Fields).filter(field=>metadata.All_Pro_Formas_All_Fields[field].type==='USD')){
@@ -42,6 +44,11 @@ for(const [collection,field,index]of [['All_Land_Installments','Cost',0],['All_L
 const h=await saveFixture();for(const [field,meta]of Object.entries(metadata.All_Proforma_Months))if(meta.type==='USD'){
  const month={Month1:1,date:{y:2027,m:1},[field]:-12345678.125};assert.equal(h.widget.monthData(month,ID)[field],-12345678.12,field+' preserves computed cents');
 }
+for(const credit of ['-$12,500,109.923456','($12,500,109.923456)','\u2212$12,500,109.923456','$ -12,500,109.923456'])assert.equal(h.widget.PFTransport.matches({Land_Cost:credit},{Land_Cost:'-12500109.923456'},'All_Pro_Formas_All_Fields'),true,credit+' retains exact credit');
+for(const changed of ['-$12,500,109.923455','$12,500,109.923456'])assert.equal(h.widget.PFTransport.matches({Land_Cost:changed},{Land_Cost:'-12500109.923456'},'All_Pro_Formas_All_Fields'),false,changed+' is a real decimal/sign mismatch');
+for(const malformed of ['($-12,500,109.923456)','-$12,50,109.92','--$12,500,109.92'])assert.throws(()=>h.widget.PFTransport.matches({Land_Cost:malformed},{Land_Cost:'-12500109.923456'},'All_Pro_Formas_All_Fields'),/malformed|conflicting/);
+assert.equal(h.widget.PFTransport.matches({Land_Cost:-0.0000001},{Land_Cost:'-0.0000001'},'All_Pro_Formas_All_Fields'),true,'Finite numeric readback expands exactly');
+assert.throws(()=>h.widget.PFTransport.matches({Land_Cost:'-1e-7'},{Land_Cost:'-0.0000001'},'All_Pro_Formas_All_Fields'),/malformed/,'Entered exponent text is not a native decimal value');
 const formatContext=vm.createContext({});vm.runInContext(source.slice(source.indexOf('function fmt$('),source.indexOf('function fmtN(')),formatContext);
 assert.equal(formatContext.fmt$(12500109.92),'$12,500,109.92');
 assert.equal(formatContext.fmt$(-12500109.92),'($12,500,109.92)');

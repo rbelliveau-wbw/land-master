@@ -1,6 +1,16 @@
 
 # Tax Module
 
+## Currency editor precision repair (2026-10-05)
+
+Tax currency formatting now retains cents and additional supplied fractional digits. Previously `utilitiesconvertIntegerToCurrency` rounded values to whole dollars before displaying editable inputs. The parcel table's unconditional blur save could consequently replace an unchanged saved amount with the rounded display. Render, focus and blur now preserve the amount for `Tax_Parcel_Year.Market_Value`, `Assessed_Value`, `Settlement_Offer_Value`, `Assessed_Offer`, `Final_Value` and `Assessed_Final`, as well as the existing detail money input formatter. Ordinary currency displays include two decimal places; compact K/M displays retain their abbreviation.
+
+`scripts/test-currency-edit-preservation.mjs` exercises actual formatting and inline-save payload construction for all six fields, negative/zero values, cents, additional decimals and formatted decimal strings without a Number conversion. Parenthesized accounting values now remain negative through numeric reads, formatting, focus and payload construction. The whole Tax SDK2 suite also verifies all six rendered inputs against native-shaped writes/readback. Existing exact persisted-field verification, complete-scope preflight, parcel-year matching, identifiers and copy/workflow rules remain unchanged. No Creator schema, function or Custom API change is required for this frontend repair. The fixture does not establish current live field precision. Rollback: map Tax Center to `19.17.8` and rebuild Pages.
+
+The currency-only exact comparator also recognizes signed-dollar, accounting and Unicode-minus native representations. Finite typed Number values whose JavaScript representation uses an exponent expand exactly into decimal text; entered exponent strings remain invalid. It still compares canonical decimal strings without Number conversion, rounding or tolerance. Whole SDK2 regressions verify equivalent credit/numeric readbacks, reject conflicting signs/malformed grouping before dispatch, retain real sign/fractional differences and recover only through fresh reads without resending the write. Ordinary quantities, percentages and exact string identifiers retain their existing rules.
+
+Inline monetary saves use that same strict decimal parser for the native payload, retaining entered fractional text rather than converting it through Number first. Actual queued/native fixtures cover `0.0000001`, high-precision strings, typed finite Number exponents and malformed-input rejection without a stuck Saving state. Numeric conversion remains limited to the existing local calculations/display models.
+
 ## Scope
 
 Tax parcels, parcel years, jurisdictions, rates, tax tables, protest/appeal stages, and associated company/subdivision/property matching.

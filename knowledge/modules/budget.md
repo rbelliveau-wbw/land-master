@@ -1,6 +1,12 @@
 
 # Budget Module
 
+## Currency edit and financial precision repair (2026-10-05)
+
+Manual `Add_Budget.Lot_Price` / `Land_Cost` and `Budget_Item.Prelim_Budget_Ttl` edits now preserve cents and supported additional fractional digits through rendering, focus, parsing, blur and the captured SDK payload. The old `parseMoney` and editable header formatters rounded to whole dollars; focusing a manual item also stripped its cents. Ordinary currency displays now include two decimal places; editable money retains additional fractional digits. Compact K/M labels remain abbreviated. Existing per-unit calculations retain their explicit two-decimal rate and total rules, reimbursement credits remain negative, and approval locks are unchanged.
+
+The general financial reader `v()` no longer rounds native amounts before category/department sums, Budget/Pro Forma comparison projections, finalized amounts, GP/HCSS actuals and request balance checks. Parenthesized accounting amounts retain their negative sign in all financial parsers, header values and preliminary totals. Counts, native phase indices and approval sort indices keep explicit whole-number rounding at their callers. Regression coverage in `scripts/test-currency-edit-preservation.mjs` exercises the actual committing header/item handlers, unchanged focus/blur, additional decimals, credits, counts, aggregate/comparison totals and a one-cent request overage. No Creator form, field, workflow, function or Custom API change is required for this frontend repair. These offline checks do not establish current native field capacity. Rollback: map Budget Manager to `122.28.20` and rebuild Pages.
+
 ## Targeted approval Check failures (122.28.20)
 
 A negative native object response without the existing targeted `ok` predicate
