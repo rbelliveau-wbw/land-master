@@ -1,6 +1,56 @@
 
 # Land Master Module
 
+## Second Closing editor candidate — October 5, 2026
+
+The Takedown Schedule record editor source adds Second Closing lots/days between
+Initial Closing and Subsequent Closings. Opening a legacy record keeps blank
+second terms and does not mark the record dirty. New or edited cadence, total,
+or Initial Closing anchor requires positive whole second lots and nonnegative
+whole second days; unrelated legacy edits remain allowed. Recurring lots/days
+must be positive only while obligation remains after initial plus second.
+
+Copy Second Closing to Subsequent Closings is an explicit staged action. It
+changes the two draft inputs once, performs no write, and stays locked during
+save or save-outcome review. Typing either tier never updates the other.
+Existing SDK2 mutation guards and string record IDs are retained.
+
+Takedown saves now require a fresh, full-field `All_Takedown_Schedules` read of
+the exact returned string ID before showing Saved or Created. Every submitted
+cadence, total and anchor field must be present and match numerically or by
+date; zero is distinct from blank, and an explicitly cleared recurring pair
+must return blank. The cached record takes its expected lots, end date and
+status from that fresh server row. Takedown numeric inputs and their original
+values normalize Creator's comma/decimal display formatting on reopening,
+preserving blank versus zero without changing the authoritative cached row.
+Historical blank calculations may remain
+blank after unrelated legacy edits, but missing calculated fields prevent a
+success claim. An ambiguous write, failed read or mismatched readback retains
+the immutable attempted payload and locks another save and the copy action.
+Recheck saved record performs only a read; it never repeats the write or guesses
+a new record ID. Context changes stop verification, and recovery requires the
+captured Creator actor/environment. Only canonical native `data.ID` identifies
+a new record; conflicting or nested ID/success evidence retains the review,
+including JSON-encoded response evidence. A late recheck may cache its verified
+record but cannot replace a later draft or repaint a different editor.
+Other object editors retain their existing
+save flows. Focused regression covers these predicates, native numeric/date
+formatting, new-record recovery and stale context; this is fixture verification,
+with an actual saved-record check in Creator still pending.
+
+See [the behavior contract](takedown-schedule.md) and
+[backend activation instructions](../../creator/workflows/takedown-second-closing.md).
+Development's Contract and schedule fields are Save/reload-verified, and the
+shared cadence helper compiled/reopened and passed native read-only Execute.
+All dependent backend functions/actions compiled, were saved and reopened in
+Development. Both schedule report quick layouts are Save/reload-verified and
+Forecast bindings need no page change. Live saved-record verification and Creator
+promotion remain user-owned.
+Rollback: Development mapping `8.14.5`; prior Production mapping `8.14.8`. Preserve second fields and entered data.
+Local immutable candidate `8.15.4` passed full repository validation and the
+Pages build, including total/initial-term validation before native DATA writes.
+The user authorized Production mapping to `8.15.4` through Git and retained responsibility for Creator promotion. Frozen `8.15.0`, `8.15.1`, `8.15.2` and `8.15.3` remain unchanged.
+
 ## AI lot import leaves Notes alone (8.14.7)
 
 AI lot import omits `Notes` entirely from every `Lots` create payload. Filename, sheet and source row provenance, plus AI review warnings, remain available in the import review UI. Imported lot codes, subdivision, phase, block, lot number, width, city/county and default flags retain their existing behavior. Existing lot codes are still skipped; this release does not alter previously saved Notes.

@@ -1,0 +1,71 @@
+// Replacement on-start action body for the existing native daily workflow.
+// This body incorporates all three exported actions. Capture their originals;
+// install this in action 1 and neutralize the trailing action bodies so their
+// old arithmetic cannot overwrite new results. Requires both fields/helper first.
+
+// Legacy records preserve the exported arithmetic, including abs and strict >.
+for each takedown in Takedown_Schedule[(Second_Closing_Lots == null && Second_Closing_Days == null) && (Status != "Completed" && Takedown_Start_Date != NULL && Total_Lot_Obligation != NULL && Initial_Takedown != null && Continued_Takedown_Delay_Days != 0)]
+{
+    dayDifference = abs(daysBetween(takedown.Takedown_Start_Date,today));
+    contdMultiple = floor((dayDifference - takedown.Initial_Delay_Days) / takedown.Continued_Takedown_Delay_Days);
+    if(dayDifference <= takedown.Initial_Delay_Days)
+    {
+        takedown.Lots_Expected=0;
+    }
+    if(dayDifference > takedown.Initial_Delay_Days && addDay(takedown.Takedown_Start_Date,dayDifference) < takedown.Takedown_End_Date)
+    {
+        takedown.Lots_Expected=takedown.Initial_Takedown + contdMultiple * takedown.Continued_Takedown;
+    }
+    if(takedown.Takedown_End_Date <= today)
+    {
+        takedown.Lots_Expected=takedown.Total_Lot_Obligation;
+    }
+}
+
+// New records calculate expected lots and the end date together so correctness
+// does not depend on the daily date workflow's execution order.
+for each takedown in Takedown_Schedule[(Status != "Completed" && Second_Closing_Lots != null) || (Status != "Completed" && Second_Closing_Days != null)]
+{
+    cadenceStart = ifnull(takedown.Initial_Closing_Date,takedown.Takedown_Start_Date);
+    cadenceTerms = Map();
+    cadenceTerms.put("Total_Lot_Obligation",takedown.Total_Lot_Obligation);
+    cadenceTerms.put("Initial_Takedown",takedown.Initial_Takedown);
+    cadenceTerms.put("Initial_Due_Offset_Days",takedown.Initial_Delay_Days);
+    cadenceTerms.put("Second_Closing_Lots",takedown.Second_Closing_Lots);
+    cadenceTerms.put("Second_Closing_Days",takedown.Second_Closing_Days);
+    cadenceTerms.put("Continued_Takedown",takedown.Continued_Takedown);
+    cadenceTerms.put("Continued_Takedown_Delay_Days",takedown.Continued_Takedown_Delay_Days);
+    cadenceTerms.put("Elapsed_Days",0);
+    if(cadenceStart != null)
+    {
+        cadenceTerms.put("Elapsed_Days",daysBetween(cadenceStart,today));
+    }
+    cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+    if(cadence.get("ok") == true)
+    {
+        if(cadenceStart != null)
+        {
+            takedown.Takedown_Start_Date=cadenceStart;
+            takedown.Takedown_End_Date=cadenceStart.addDay(cadence.get("endOffsetDays"));
+            takedown.Lots_Expected=cadence.get("lotsExpected");
+        }
+        else
+        {
+            takedown.Takedown_End_Date=null;
+            takedown.Lots_Expected=0;
+        }
+    }
+}
+
+// Preserve the exported no-sales initialization for legacy terms. Valid new
+// terms initialize above; partial new terms must not receive fallback writes.
+for each td in Takedown_Schedule[(Second_Closing_Lots == null && Second_Closing_Days == null) && (Takedown_Start_Date == null && Lots_Expected == null && Total_Lot_Obligation != null)]
+{
+    td.Lots_Expected=0;
+}
+
+// Preserve the exported upfront-only special case exclusively for legacy terms.
+for each td in Takedown_Schedule[(Second_Closing_Lots == null && Second_Closing_Days == null) && (Status == "Active" && Takedown_Start_Date != null && Total_Lot_Obligation != null && Initial_Takedown != null && Initial_Delay_Days == 0 && Continued_Takedown == 0)]
+{
+    td.Lots_Expected=td.Initial_Takedown;
+}

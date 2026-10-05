@@ -13,6 +13,14 @@ Below each Forecast Manager builder's overall progress, show a separate green mo
 
 For multi-phase Forecast Manager schedules, label the primary bar Phase Progress and keep its counts, monthly actuals and recent sales scoped to that phase. Put whole-schedule progress and shared terms below a divider labeled Contract Schedule — All N Phases. Preserve the full obligation when future phases have not yet been populated. Single-phase cards keep their existing layout.
 
+Closing-term editors and Forecast Manager use Initial Closing, Second Closing,
+and Subsequent Closings in that order, with separate lots/day inputs for each.
+Second Closing is one event. Keep its legacy blanks visible, and use a short
+explicit copy action to stage its current pair into Subsequent Closings; typing
+must never link the values automatically. Required indicators for legacy second
+fields apply when closing terms change, while unrelated edits remain available.
+See [the timing and compatibility contract](../modules/takedown-schedule.md).
+
 Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
 
 In Pro Forma Additional Costs, show the enabled Cost per Unit input with a persistent blue border, pale-blue surface and soft blue glow. Strengthen the glow on keyboard focus. Disabled rates stay muted, and the calculated total keeps its read-only treatment.

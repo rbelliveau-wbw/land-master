@@ -1,0 +1,44 @@
+// Replacement daily on-start action body for the existing native workflow.
+// Requires the PROPOSED Second_Closing_Lots / Second_Closing_Days fields and
+// Calculate_Takedown_Cadence function to be installed first.
+
+// Legacy records: preserve the exported end-date formula and missing-end gate.
+for each takedown in Takedown_Schedule[(Second_Closing_Lots == null && Second_Closing_Days == null) && (Takedown_Start_Date != null && Takedown_End_Date == null && Continued_Takedown != 0)]
+{
+    takedownLength = ceil((takedown.Total_Lot_Obligation - takedown.Initial_Takedown) / takedown.Continued_Takedown) * takedown.Continued_Takedown_Delay_Days + takedown.Initial_Delay_Days;
+    tdStart = takedown.Takedown_Start_Date;
+    takedown.Takedown_End_Date=tdStart.addDay(takedownLength);
+}
+
+// A populated Second Closing enters the new calculation. Partial or invalid
+// terms never fall back to legacy arithmetic or overwrite calculated fields.
+for each takedown in Takedown_Schedule[(Second_Closing_Lots != null || Second_Closing_Days != null)]
+{
+    cadenceStart = ifnull(takedown.Initial_Closing_Date,takedown.Takedown_Start_Date);
+    cadenceTerms = Map();
+    cadenceTerms.put("Total_Lot_Obligation",takedown.Total_Lot_Obligation);
+    cadenceTerms.put("Initial_Takedown",takedown.Initial_Takedown);
+    cadenceTerms.put("Initial_Due_Offset_Days",takedown.Initial_Delay_Days);
+    cadenceTerms.put("Second_Closing_Lots",takedown.Second_Closing_Lots);
+    cadenceTerms.put("Second_Closing_Days",takedown.Second_Closing_Days);
+    cadenceTerms.put("Continued_Takedown",takedown.Continued_Takedown);
+    cadenceTerms.put("Continued_Takedown_Delay_Days",takedown.Continued_Takedown_Delay_Days);
+    cadenceTerms.put("Elapsed_Days",0);
+    if(cadenceStart != null)
+    {
+        cadenceTerms.put("Elapsed_Days",daysBetween(cadenceStart,today));
+    }
+    cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+    if(cadence.get("ok") == true)
+    {
+        if(cadenceStart != null)
+        {
+            takedown.Takedown_Start_Date=cadenceStart;
+            takedown.Takedown_End_Date=cadenceStart.addDay(cadence.get("endOffsetDays"));
+        }
+        else
+        {
+            takedown.Takedown_End_Date=null;
+        }
+    }
+}

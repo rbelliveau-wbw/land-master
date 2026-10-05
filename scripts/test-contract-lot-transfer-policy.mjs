@@ -90,13 +90,21 @@ for(const mode of ['Complete','LinkOnly']){
  let changed=false;const h=fixture({beforeUpdate({db}){if(!changed){changed=true;db.Contract.push({ID:OTHER,Lots1:list([LOT])});}}}),out=h.run(mode);assert.equal(h.events.filter(event=>event.form==='Lots').length,1,'a claim inserted after its read exposes the documented cross-record race; subsequent fills stop');assert.equal(out.outcomes[0].verified,false,'a raced cross-record claim cannot be acknowledged as verified');
 }
 {
- const h=fixture();h.db.Takedown_Schedule=[];const out=h.run();assert.equal(out.outcomes[0].verified,true);for(const field of ['Initial_Takedown','Initial_Delay_Days','Continued_Takedown','Continued_Takedown_Delay_Days'])assert.equal(h.db.Takedown_Schedule[0][field],1,'Production closing terms are carried unchanged');assert.equal(Object.hasOwn(h.db.Takedown_Schedule[0],'Second_Closing_Lots'),false,'unrelated pending Development terms are not promoted');
+ const h=fixture();h.db.Takedown_Schedule=[];const out=h.run();assert.equal(out.outcomes[0].verified,true);for(const field of ['Initial_Takedown','Initial_Delay_Days','Continued_Takedown','Continued_Takedown_Delay_Days'])assert.equal(h.db.Takedown_Schedule[0][field],1,'Legacy closing terms are carried unchanged');assert.equal(h.db.Takedown_Schedule[0].Second_Closing_Lots,null,'Historical blank second terms are not inferred');assert.equal(h.db.Takedown_Schedule[0].Second_Closing_Days,null);
+}
+{
+ const h=fixture();h.db.Takedown_Schedule=[];Object.assign(h.db.Contract[0],{Number_of_Lots:30,Initial_Takedown:10,Initial_Takedown_Days:30,Second_Closing_Lots:10,Second_Closing_Days:45,Subsequent_Takedown_Lots:5,Subsequent_Takedown_Days:30});const out=h.run();assert.equal(out.outcomes[0].verified,true);assert.equal(out.lotTransferPolicy,'open-blank-placeholder-v1');const saved=h.db.Takedown_Schedule[0];for(const [field,value]of Object.entries({Total_Lot_Obligation:30,Initial_Takedown:10,Initial_Delay_Days:30,Second_Closing_Lots:10,Second_Closing_Days:45,Continued_Takedown:5,Continued_Takedown_Delay_Days:30}))assert.equal(saved[field],value,'Authorized closing terms copied on missing schedule creation: '+field);
+}
+{
+ const h=fixture();Object.assign(h.db.Contract[0],{Second_Closing_Lots:3,Second_Closing_Days:45});Object.assign(h.db.Takedown_Schedule[0],{Total_Lot_Obligation:50,Initial_Takedown:2,Initial_Delay_Days:15,Second_Closing_Lots:4,Second_Closing_Days:20,Continued_Takedown:6,Continued_Takedown_Delay_Days:30});const terms=JSON.stringify(h.db.Takedown_Schedule[0]);const out=h.run();assert.equal(out.outcomes[0].verified,true);assert.equal(JSON.stringify(h.db.Takedown_Schedule[0]),terms,'Existing schedule terms never synchronize to Contract changes');
+}
+for(const terms of [{Second_Closing_Lots:3,Second_Closing_Days:null},{Second_Closing_Lots:3,Second_Closing_Days:-1},{Second_Closing_Lots:3.5,Second_Closing_Days:45}]){
+ const h=fixture();Object.assign(h.db.Contract[0],terms);const out=h.run();assert.ok(out.error,'Invalid second pair is rejected before schedule or lot writes');assert.equal(h.events.length,0);
 }
 for(const field of ['Number_of_Lots','Initial_Takedown','Initial_Takedown_Days','Subsequent_Takedown_Lots','Subsequent_Takedown_Days']){
  const h=fixture();h.db.Contract[0][field]=null;const out=h.run();assert.ok(out.error,'existing Production required terms remain enforced');assert.equal(h.events.length,0);
 }
 const productionBaseline=fs.readFileSync(new URL('../creator/functions/baseline/Complete_Lot_Contract.production-V9.43.2026-10-05.dg',import.meta.url),'utf8');
-const productionTerms=body=>body.slice(body.indexOf('/* ---- step: takedown details'),body.indexOf('/* ---- step: takedown schedule')).replace(/\s+/g,' ').trim();
-assert.equal(productionTerms(source),productionTerms(productionBaseline),'all Production takedown validation and detail copy are preserved exactly');
+assert.doesNotMatch(productionBaseline,/Second_Closing/,'Captured Production rollback baseline remains unchanged');
 assert.doesNotMatch(source,/\bLot_Size\s*=(?!=)/m,'candidate never writes Lot Size');
 console.log('PASS actual Lot transfer candidate: read-only policy handshake, exact captured IDs, Open/blank and Placeholder gates, whole-Lot lifecycle protection, zero/size preservation, conditional fills, status last, unique pricing, shared schedules, LinkOnly and raced/dropped-write readback. Native compilation/deployment and isolation remain unverified.');

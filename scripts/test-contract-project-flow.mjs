@@ -10,7 +10,7 @@ const master={ID:'4410926000007654321',Contract_Type:'Lot (Master)',Project:{ID:
 const h=await ready({realDOM:true}),ctx=h.c;
 Object.assign(ctx.S,{projects:[{ID:project,Project_Name:'Fox Creek',Territory:'Waco',Company1:{ID:'co'},County:'Bell'},{ID:other,Project_Name:'Other',Territory:'Temple/Belton'}],subdivisions:[{ID:'s1',Subdivision_Name:'Fox Creek 1',Project:{ID:project},Territory:'Waco'},{ID:'s2',Project:{ID:project},Territory:'Waco'},{ID:'other',Project:{ID:other},Territory:'Temple/Belton'},{ID:'missing',Project:{ID:project}}],contracts:[master,{...master,ID:'4410926000007654322',Project:{ID:other}}],builders:[]});
 Object.assign(ctx,{wireTplDrag:()=>{},lpPruneDisallowed:()=>{},ncRepaintForm:()=>{},mselBtn:key=>'<button id="'+key+'">'+key+'</button>',ncSel:id=>'<button id="'+id+'"></button>',ncNum:id=>'<input id="'+id+'">',ncActionsPreview:()=>'<div>Actions</div>',ncLotsBlock:()=>'<div>Lots and pricing</div>',ncTypeChoices:()=>[],ncPricingDone:()=>false});
-const draft=()=>({type:'Lot (Master)',project:'',parent:'',sub:[],builder:'',name:'',territory:'',lotIds:[],ppf:{},wbw:[],owners:[],acts:[],status:'New'});
+const draft=()=>({type:'Lot (Master)',project:'',parent:'',sub:[],builder:'',name:'',territory:'',lotIds:[],ppf:{},wbw:[],owners:[],acts:[],status:'New',totalLots:'20',initLots:'5',initDays:'30',secondLots:'5',secondDays:'45',contLots:'3',contDays:'30'});
 ctx.S.nc=draft();
 let html=ctx.ncFields();assert.match(html,/nc_type/);assert.match(html,/ncproject/);assert.doesNotMatch(html,/ncbuilder|nc_name|nc_sub_wrap|nc_acts/,'Master initially asks only Type and Project');
 assert.throws(()=>ctx.ncPayload(),/Choose a Project/);

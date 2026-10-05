@@ -24,13 +24,16 @@ existing Contract on-success workflow
 [`Set_Lot_Base_Price_Builde.dg`](../creator/workflows/Set_Lot_Base_Price_Builde.dg).
 Production DS line **43625** has an unparenthesized type/status predicate that
 calls completion on every Lot (Master) save. The workflow replacement groups all
-Lot types before requiring Status Complete. The function retains the original
-Production closing-term validation, schedule naming/insertion, shared schedule
-reuse and Completion_Date behavior. Unpublished Development second-closing
-changes are excluded.
+Lot types before requiring Status Complete. The function retains legacy closing
+behavior when second terms are blank, schedule naming/insertion, shared schedule
+reuse and Completion_Date behavior. The later authorized Second Closing release
+incorporates its validation and creation-only term copying into this safety
+function. Existing schedule terms never synchronize from Contract edits.
 
-The candidate function and completion-only workflow compiled and saved in Creator
-Development. Their selective Stage/Production publication was not completed;
+The earlier safety-only candidate function and completion-only workflow compiled
+and saved in Creator Development. The combined Second Closing function requires
+fresh native compilation and publication by the user. Their selective
+Stage/Production publication was not completed;
 the user requested GitHub publication first and supplied a schema for the next
 review. Production V9.45 still contains the legacy transfer function and trigger,
 as confirmed by `Land_Master-production (4).ds`, modified

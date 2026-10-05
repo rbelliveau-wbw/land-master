@@ -1,5 +1,25 @@
 # Lots status contract
 
+## Second Closing candidate — October 5, 2026
+
+The [three-tier schedule contract](takedown-schedule.md) adds a one-time Second
+Closing to the candidate Forecast Manager terms display and the native
+expected-lot/end-date calculation. Single-phase cards show all six pace fields;
+multi-phase cards keep them in Contract Schedule — All N Phases. Blank legacy
+second values stay blank, and shared takes are not assigned implicitly to phases.
+
+Monthly entered forecasts, green meter, start-of-month Unforecasted balance,
+Sold/Scheduled progress, contract lot membership, and full schedule obligations
+retain their existing behavior. Builder Takedown receipts and lot-date/status
+workflows do not change. The new source requires the additive schema and reviewed
+[native activation](../../creator/workflows/takedown-second-closing.md); dependent
+feature publication outside Development remains unverified; widget deployment
+is pending. Both forms' fields, dependent backend bodies and all four report
+quick layouts are verified in Development. The live Forecast binding audit
+required no Page change. Forecast-summary baseline
+comparison now excludes only the renamed closing labels and added blank second
+rows from its exact legacy-content check.
+
 The Production 0.10.1 Builder Takedown screen adds grouped editing, a live receipt,
 scoped template defaults/items and sequential related-list-style interest
 periods mapped to the existing twelve flat slots. It verifies fresh financial

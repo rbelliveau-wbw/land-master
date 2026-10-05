@@ -1,0 +1,31 @@
+// Native Takedown_Schedule Created or Edited validation action.
+// Development link_name: Validate_Takedown_Cadence.
+// Existing records with both Second Closing fields blank may retain their legacy
+// cadence only when every cadence, total, and anchor value remains unchanged.
+legacyUnchanged = false;
+if(input.ID != null && input.Second_Closing_Lots == null && input.Second_Closing_Days == null)
+{
+    existingSchedule = Takedown_Schedule[ID == input.ID];
+    if(existingSchedule.count() > 0 && existingSchedule.Second_Closing_Lots == null && existingSchedule.Second_Closing_Days == null)
+    {
+        legacyUnchanged = existingSchedule.Total_Lot_Obligation == input.Total_Lot_Obligation && existingSchedule.Initial_Takedown == input.Initial_Takedown && existingSchedule.Initial_Delay_Days == input.Initial_Delay_Days && existingSchedule.Continued_Takedown == input.Continued_Takedown && existingSchedule.Continued_Takedown_Delay_Days == input.Continued_Takedown_Delay_Days && existingSchedule.Initial_Closing_Date == input.Initial_Closing_Date && existingSchedule.Takedown_Start_Date == input.Takedown_Start_Date;
+    }
+}
+if(!legacyUnchanged)
+{
+    cadenceTerms = Map();
+    cadenceTerms.put("Total_Lot_Obligation",input.Total_Lot_Obligation);
+    cadenceTerms.put("Initial_Takedown",input.Initial_Takedown);
+    cadenceTerms.put("Initial_Due_Offset_Days",input.Initial_Delay_Days);
+    cadenceTerms.put("Second_Closing_Lots",input.Second_Closing_Lots);
+    cadenceTerms.put("Second_Closing_Days",input.Second_Closing_Days);
+    cadenceTerms.put("Continued_Takedown",input.Continued_Takedown);
+    cadenceTerms.put("Continued_Takedown_Delay_Days",input.Continued_Takedown_Delay_Days);
+    cadenceTerms.put("Elapsed_Days",0);
+    cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+    if(cadence.get("ok") != true)
+    {
+        alert cadence.get("message");
+        cancel submit;
+    }
+}

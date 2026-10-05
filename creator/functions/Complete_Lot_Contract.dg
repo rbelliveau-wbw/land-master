@@ -200,19 +200,85 @@ string Complete_Lot_Contract(string contractId)
 	}
 	if(ifnull(c.Initial_Takedown,"").toString().trim() == "")
 	{
-		missing.add("Initial Take (Lots)");
+		missing.add("Initial Closing (Lots)");
 	}
 	if(ifnull(c.Initial_Takedown_Days,"").toString().trim() == "")
 	{
-		missing.add("Initial Take (Days)");
+		missing.add("Initial Closing (Days)");
 	}
-	if(ifnull(c.Subsequent_Takedown_Lots,"").toString().trim() == "")
+	// Both blank preserves untouched legacy terms; new/edited terms require this pair.
+	if(c.Second_Closing_Lots != null || c.Second_Closing_Days != null)
 	{
-		missing.add("Cont'd Take (Lots)");
+		if(c.Number_of_Lots == null || c.Number_of_Lots <= 0)
+		{
+			missing.add("Total lots: positive whole number");
+		}
+		else if(c.Number_of_Lots.toDecimal() != c.Number_of_Lots.toDecimal().floor())
+		{
+			missing.add("Total lots: positive whole number");
+		}
+		if(c.Initial_Takedown == null || c.Initial_Takedown < 0)
+		{
+			missing.add("Initial Closing (Lots): whole number of zero or more");
+		}
+		else if(c.Initial_Takedown.toDecimal() != c.Initial_Takedown.toDecimal().floor())
+		{
+			missing.add("Initial Closing (Lots): whole number of zero or more");
+		}
+		if(c.Initial_Takedown_Days == null || c.Initial_Takedown_Days < 0)
+		{
+			missing.add("Initial Closing (Days): whole number of zero or more");
+		}
+		else if(c.Initial_Takedown_Days.toDecimal() != c.Initial_Takedown_Days.toDecimal().floor())
+		{
+			missing.add("Initial Closing (Days): whole number of zero or more");
+		}
+		if(c.Second_Closing_Lots == null || c.Second_Closing_Lots <= 0)
+		{
+			missing.add("Second Closing (Lots): positive whole number");
+		}
+		else if(c.Second_Closing_Lots.toDecimal() != c.Second_Closing_Lots.toDecimal().floor())
+		{
+			missing.add("Second Closing (Lots): positive whole number");
+		}
+		if(c.Second_Closing_Days == null || c.Second_Closing_Days < 0)
+		{
+			missing.add("Second Closing (Days): zero or more");
+		}
+		else if(c.Second_Closing_Days.toDecimal() != c.Second_Closing_Days.toDecimal().floor())
+		{
+			missing.add("Second Closing (Days): whole number of zero or more");
+		}
+		if(ifnull(c.Number_of_Lots,0) > ifnull(c.Initial_Takedown,0) + ifnull(c.Second_Closing_Lots,0))
+		{
+			if(ifnull(c.Subsequent_Takedown_Lots,0) <= 0 || ifnull(c.Subsequent_Takedown_Days,0) <= 0)
+			{
+				missing.add("Subsequent Closing lots and days must be positive while lots remain");
+			}
+		}
+		if(c.Subsequent_Takedown_Lots != null)
+		{
+			if(c.Subsequent_Takedown_Lots < 0 || c.Subsequent_Takedown_Lots.toDecimal() != c.Subsequent_Takedown_Lots.toDecimal().floor())
+			{
+				missing.add("Subsequent Closing (Lots): whole number of zero or more");
+			}
+		}
+		if(c.Subsequent_Takedown_Days != null)
+		{
+			if(c.Subsequent_Takedown_Days < 0 || c.Subsequent_Takedown_Days.toDecimal() != c.Subsequent_Takedown_Days.toDecimal().floor())
+			{
+				missing.add("Subsequent Closing (Days): whole number of zero or more");
+			}
+		}
 	}
-	if(ifnull(c.Subsequent_Takedown_Days,"").toString().trim() == "")
+	recurringRequired = c.Second_Closing_Lots == null || c.Second_Closing_Days == null || ifnull(c.Number_of_Lots,0) > ifnull(c.Initial_Takedown,0) + ifnull(c.Second_Closing_Lots,0);
+	if(recurringRequired && ifnull(c.Subsequent_Takedown_Lots,"").toString().trim() == "")
 	{
-		missing.add("Cont'd Take (Days)");
+		missing.add("Subsequent Closings (Lots)");
+	}
+	if(recurringRequired && ifnull(c.Subsequent_Takedown_Days,"").toString().trim() == "")
+	{
+		missing.add("Subsequent Closings (Days)");
 	}
 	sVal = Map();
 	sVal.put("key","validate");
@@ -228,7 +294,16 @@ string Complete_Lot_Contract(string contractId)
 		return resp.toString();
 	}
 	sVal.put("state","done");
-	sVal.put("detail",c.Number_of_Lots.toString() + " lots · " + c.Initial_Takedown.toString() + " initial / " + c.Initial_Takedown_Days.toString() + " days · " + c.Subsequent_Takedown_Lots.toString() + " continued / " + c.Subsequent_Takedown_Days.toString() + " days");
+	closingDetail = c.Number_of_Lots.toString() + " lots · " + c.Initial_Takedown.toString() + " initial / " + c.Initial_Takedown_Days.toString() + " days";
+	if(c.Second_Closing_Lots != null && c.Second_Closing_Days != null)
+	{
+		closingDetail = closingDetail + " · " + c.Second_Closing_Lots.toString() + " second / " + c.Second_Closing_Days.toString() + " days after initial due";
+	}
+	if(c.Subsequent_Takedown_Lots != null && c.Subsequent_Takedown_Days != null)
+	{
+		closingDetail = closingDetail + " · " + c.Subsequent_Takedown_Lots.toString() + " subsequent / " + c.Subsequent_Takedown_Days.toString() + " days";
+	}
+	sVal.put("detail",closingDetail);
 	steps.add(sVal);
 	/* ---- step: takedown schedule ---------------------------------------- */
 	sTd = Map();
@@ -269,6 +344,8 @@ string Complete_Lot_Contract(string contractId)
 			Total_Lot_Obligation=c.Number_of_Lots
 			Initial_Takedown=c.Initial_Takedown
 			Initial_Delay_Days=c.Initial_Takedown_Days
+			Second_Closing_Lots=c.Second_Closing_Lots
+			Second_Closing_Days=c.Second_Closing_Days
 			Continued_Takedown=c.Subsequent_Takedown_Lots
 			Continued_Takedown_Delay_Days=c.Subsequent_Takedown_Days
 			Add_Contract_Contract_Name=cid

@@ -310,6 +310,8 @@ string buildForecastManagerSummary(int subdivisionId)
 				initialCloseText = "";
 				initialTakedown = 0;
 				initialDelayDays = 0;
+				secondClosingLotsText = "";
+				secondClosingDaysText = "";
 				continuedTakedown = 0;
 				continuedDays = 0;
 				takedownEndText = "";
@@ -365,6 +367,15 @@ string buildForecastManagerSummary(int subdivisionId)
 				}
 				initialTakedown = ifnull(ts.Initial_Takedown,0);
 				initialDelayDays = ifnull(ts.Initial_Delay_Days,0);
+				// Blank legacy terms stay blank until an explicit schedule edit.
+				if(ts.Second_Closing_Lots != null)
+				{
+					secondClosingLotsText = ts.Second_Closing_Lots.toString();
+				}
+				if(ts.Second_Closing_Days != null)
+				{
+					secondClosingDaysText = ts.Second_Closing_Days.toString();
+				}
 				continuedTakedown = ifnull(ts.Continued_Takedown,0);
 				continuedDays = ifnull(ts.Continued_Takedown_Delay_Days,0);
 				lastTakedownAmount = ifnull(ts.Last_Takedown_Amount,0);
@@ -563,10 +574,12 @@ string buildForecastManagerSummary(int subdivisionId)
 				else
 				{
 				html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
-				html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
-				html = html + "<tr><td>Initial Take (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
-				html = html + "<tr><td>Cont'd Take (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
-				html = html + "<tr><td>Cont'd Take (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
+				html = html + "<tr><td>Initial Closing (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
+				html = html + "<tr><td>Initial Closing (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
+				html = html + "<tr><td>Second Closing (Lots)</td><td>" + secondClosingLotsText + "</td></tr>";
+				html = html + "<tr><td>Second Closing (Days)</td><td>" + secondClosingDaysText + "</td></tr>";
+				html = html + "<tr><td>Subsequent Closings (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
+				html = html + "<tr><td>Subsequent Closings (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
 				html = html + "<tr><td>Takedown End Date</td><td>" + takedownEndText + "</td></tr>";
 				html = html + "<tr><td>Last Takedown Date</td><td>" + lastTakedownText + "</td></tr>";
 				html = html + "<tr><td>Last Take (Lots)</td><td>" + lastTakedownAmount.toString() + "</td></tr>";
@@ -587,10 +600,12 @@ string buildForecastManagerSummary(int subdivisionId)
 					html = html + "<div class='fm-progress-label'>Overall Progress (" + contractProgressDisplay + ")</div><div class='fm-progress-wrap'><div class='fm-progress' style='" + contractProgressBarStyle + "'></div><div class='fm-progress-meta'><div class='fm-progress-sold'>" + contractSalesText + "</div></div></div>";
 					html = html + "<table class='fm-table'>";
 					html = html + "<tr><td>Initial Closing Date</td><td>" + initialCloseText + "</td></tr>";
-					html = html + "<tr><td>Initial Take (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
-					html = html + "<tr><td>Initial Take (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
-					html = html + "<tr><td>Cont'd Take (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
-					html = html + "<tr><td>Cont'd Take (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
+					html = html + "<tr><td>Initial Closing (Lots)</td><td>" + initialTakedown.toString() + "</td></tr>";
+					html = html + "<tr><td>Initial Closing (Days)</td><td>" + initialDelayDays.toString() + "</td></tr>";
+					html = html + "<tr><td>Second Closing (Lots)</td><td>" + secondClosingLotsText + "</td></tr>";
+					html = html + "<tr><td>Second Closing (Days)</td><td>" + secondClosingDaysText + "</td></tr>";
+					html = html + "<tr><td>Subsequent Closings (Lots)</td><td>" + continuedTakedown.toString() + "</td></tr>";
+					html = html + "<tr><td>Subsequent Closings (Days)</td><td>" + continuedDays.toString() + "</td></tr>";
 					html = html + "<tr><td>Takedown End Date</td><td>" + takedownEndText + "</td></tr>";
 					html = html + "<tr><td>Lots Expected</td><td>" + lotsExpected.toString() + "</td></tr>";
 					html = html + "<tr><td>Last 30 Day Sales</td><td>" + ifnull(ts.Last_30_Day_Sales,0).toString() + "</td></tr>";

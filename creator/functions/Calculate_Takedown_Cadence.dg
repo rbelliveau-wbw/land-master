@@ -1,0 +1,95 @@
+map Calculate_Takedown_Cadence(map terms)
+{
+    // PROPOSED new function. This is the three-tier engine only; legacy records
+    // with neither Second Closing field populated keep their native calculation.
+    // Initial_Due_Offset_Days is supplied by the calling workflow's date policy.
+    // Elapsed_Days must be signed; a future start must never be made positive.
+    result = Map();
+    result.put("ok",false);
+    result.put("message","The closing cadence is incomplete or invalid.");
+    try
+    {
+        requiredFields = {"Total_Lot_Obligation","Initial_Takedown","Initial_Due_Offset_Days","Second_Closing_Lots","Second_Closing_Days","Elapsed_Days"};
+        complete = true;
+        for each fieldName in requiredFields
+        {
+            if(terms.get(fieldName) == null || terms.get(fieldName).toString().trim() == "")
+            {
+                complete = false;
+            }
+        }
+        if(complete)
+        {
+            totalLots = terms.get("Total_Lot_Obligation").toDecimal();
+            initialLots = terms.get("Initial_Takedown").toDecimal();
+            initialOffset = terms.get("Initial_Due_Offset_Days").toDecimal();
+            secondLots = terms.get("Second_Closing_Lots").toDecimal();
+            secondDays = terms.get("Second_Closing_Days").toDecimal();
+            // Recurrence may remain blank only when the one-time closings cover
+            // the obligation. Positive remaining lots require both quantities.
+            continuedLots = 0;
+            continuedDays = 0;
+            if(terms.get("Continued_Takedown") != null && terms.get("Continued_Takedown").toString().trim() != "")
+            {
+                continuedLots = terms.get("Continued_Takedown").toDecimal();
+            }
+            if(terms.get("Continued_Takedown_Delay_Days") != null && terms.get("Continued_Takedown_Delay_Days").toString().trim() != "")
+            {
+                continuedDays = terms.get("Continued_Takedown_Delay_Days").toDecimal();
+            }
+            elapsedDays = terms.get("Elapsed_Days").toDecimal();
+            wholeValues = totalLots == totalLots.floor() && initialLots == initialLots.floor() && initialOffset == initialOffset.floor() && secondLots == secondLots.floor() && secondDays == secondDays.floor() && continuedLots == continuedLots.floor() && continuedDays == continuedDays.floor() && elapsedDays == elapsedDays.floor();
+            validValues = totalLots > 0 && initialLots >= 0 && initialOffset >= 0 && secondLots > 0 && secondDays >= 0 && continuedLots >= 0 && continuedDays >= 0;
+            remainingAfterSecond = totalLots - initialLots - secondLots;
+            recurringValid = remainingAfterSecond <= 0 || (continuedLots > 0 && continuedDays > 0);
+            if(wholeValues && validValues && recurringValid)
+            {
+                secondOffset = initialOffset + secondDays;
+                endOffset = initialOffset;
+                if(totalLots > initialLots)
+                {
+                    endOffset = secondOffset;
+                }
+                if(remainingAfterSecond > 0)
+                {
+                    recurringCount = (remainingAfterSecond / continuedLots).ceil().toLong();
+                    endOffset = secondOffset + recurringCount * continuedDays;
+                }
+                expectedLots = 0;
+                if(elapsedDays >= initialOffset)
+                {
+                    expectedLots = initialLots;
+                }
+                if(elapsedDays >= secondOffset)
+                {
+                    expectedLots = initialLots + secondLots;
+                    if(remainingAfterSecond > 0)
+                    {
+                        dueRecurringCount = ((elapsedDays - secondOffset) / continuedDays).floor().toLong();
+                        expectedLots = expectedLots + dueRecurringCount * continuedLots;
+                    }
+                }
+                if(expectedLots > totalLots)
+                {
+                    expectedLots = totalLots;
+                }
+                result.put("ok",true);
+                result.put("message","");
+                result.put("lotsExpected",expectedLots.toLong());
+                result.put("initialDueOffsetDays",initialOffset.toLong());
+                result.put("secondDueOffsetDays",secondOffset.toLong());
+                result.put("endOffsetDays",endOffset.toLong());
+            }
+            else if(!recurringValid)
+            {
+                result.put("message","Subsequent Closing lots and days must be positive when lots remain after Second Closing.");
+            }
+        }
+    }
+    catch (calculationError)
+    {
+        result.put("ok",false);
+        result.put("message","The closing cadence contains an invalid number.");
+    }
+    return result;
+}

@@ -1,0 +1,120 @@
+// Replacement on-click action body for the existing native report action.
+// This body incorporates all four exported actions. Capture their originals;
+// install this in action 1 and neutralize the trailing action bodies so their
+// old arithmetic cannot overwrite new results. Requires both fields/helper first.
+
+// Preserve the existing sales count and earliest Purchase_Date refresh.
+status = "Sold";
+lotCount = 0;
+for each subdiv in input.Subdivisions
+{
+    lots = Lots[ID != 0 && Builder1 == input.Builder1 && Status == status && Purchase_Date != null && Subdivision == subdiv] sort by Purchase_Date;
+    lotCount = lotCount + lots.count(ID);
+    startDate = lots.minimum(Purchase_Date);
+    if(startDate < input.Takedown_Start_Date || input.Takedown_Start_Date == NULL)
+    {
+        input.Takedown_Start_Date = startDate;
+    }
+    input.Lots_Sold = lotCount;
+}
+
+cadenceCanRefresh = true;
+if(input.Second_Closing_Lots == null && input.Second_Closing_Days == null)
+{
+    // Legacy expected-lots calculation remains before its end-date calculation,
+    // as in the export. Editing cadence requires Second Closing on form save.
+    if(input.Takedown_Start_Date != null)
+    {
+        if(input.Status != "Completed" && input.Takedown_Start_Date != NULL && input.Total_Lot_Obligation != NULL && input.Initial_Takedown != null && input.Continued_Takedown_Delay_Days != 0)
+        {
+            dayDifference = abs(daysBetween(input.Takedown_Start_Date,today));
+            info dayDifference;
+            contdMultiple = floor((dayDifference - input.Initial_Delay_Days) / input.Continued_Takedown_Delay_Days);
+            if(dayDifference <= input.Initial_Delay_Days)
+            {
+                input.Lots_Expected = 0;
+            }
+            if(dayDifference > input.Initial_Delay_Days && addDay(input.Takedown_Start_Date,dayDifference) < input.Takedown_End_Date)
+            {
+                input.Lots_Expected = input.Initial_Takedown + contdMultiple * input.Continued_Takedown;
+            }
+            if(input.Takedown_End_Date <= today)
+            {
+                input.Lots_Expected = input.Total_Lot_Obligation;
+            }
+        }
+    }
+    if(input.Takedown_Start_Date != null)
+    {
+        takedownLength = ceil((input.Total_Lot_Obligation - input.Initial_Takedown) / input.Continued_Takedown) * input.Continued_Takedown_Delay_Days + input.Initial_Delay_Days;
+        input.Takedown_End_Date = input.Takedown_Start_Date.addDay(takedownLength);
+    }
+}
+else
+{
+    cadenceCanRefresh = false;
+    cadenceStart = ifnull(input.Initial_Closing_Date,input.Takedown_Start_Date);
+    cadenceTerms = Map();
+    cadenceTerms.put("Total_Lot_Obligation",input.Total_Lot_Obligation);
+    cadenceTerms.put("Initial_Takedown",input.Initial_Takedown);
+    cadenceTerms.put("Initial_Due_Offset_Days",input.Initial_Delay_Days);
+    cadenceTerms.put("Second_Closing_Lots",input.Second_Closing_Lots);
+    cadenceTerms.put("Second_Closing_Days",input.Second_Closing_Days);
+    cadenceTerms.put("Continued_Takedown",input.Continued_Takedown);
+    cadenceTerms.put("Continued_Takedown_Delay_Days",input.Continued_Takedown_Delay_Days);
+    cadenceTerms.put("Elapsed_Days",0);
+    if(cadenceStart != null)
+    {
+        cadenceTerms.put("Elapsed_Days",daysBetween(cadenceStart,today));
+    }
+    cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+    if(cadence.get("ok") == true)
+    {
+        cadenceCanRefresh = true;
+        if(cadenceStart != null)
+        {
+            input.Takedown_Start_Date = cadenceStart;
+            input.Takedown_End_Date = cadenceStart.addDay(cadence.get("endOffsetDays"));
+            if(input.Status != "Completed")
+            {
+                input.Lots_Expected = cadence.get("lotsExpected");
+            }
+        }
+        else
+        {
+            input.Takedown_End_Date = null;
+            if(input.Status != "Completed")
+            {
+                input.Lots_Expected = 0;
+            }
+        }
+    }
+    else
+    {
+        info cadence.get("message");
+    }
+}
+
+// Preserve the native sales/status decisions, guarded against invalid new terms.
+if(cadenceCanRefresh)
+{
+    if(input.Status == "Active" || input.Status == "Behind")
+    {
+        lotsSold = input.Lots_Sold;
+        lotsExpected = input.Lots_Expected;
+        input.Takedown_Schedule_Code = input.Subdivisions.Subdivision_Code + ' - ' + input.Builder1.Builder_Name;
+        if(lotsSold < lotsExpected)
+        {
+            input.Status = "Behind";
+        }
+        if(lotsSold >= input.Total_Lot_Obligation)
+        {
+            input.Status = "Completed";
+            input.Completion_Percent = 100;
+        }
+        if(lotsSold < input.Total_Lot_Obligation)
+        {
+            input.Completion_Percent = lotsSold / input.Total_Lot_Obligation * 100;
+        }
+    }
+}
