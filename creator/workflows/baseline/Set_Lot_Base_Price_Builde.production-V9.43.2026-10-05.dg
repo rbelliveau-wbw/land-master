@@ -1,0 +1,13 @@
+// Snapshot from the fresh Production V9.43 DS export, 2026-10-05.
+// The original condition is intentionally retained here as rollback evidence.
+// Export SHA-256: 9c0e529be609ef73fcf771598b547b5d69d595bde78d59d347009ed9fe05f55b
+// Completion fills blank Lot fields only; preserve existing values.
+if(input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)" && input.Status == "Complete")
+{
+    completionResult = thisapp.Complete_Lot_Contract(input.ID.toString());
+    completionMap = completionResult.toMap();
+    if(completionMap.get("error") != null)
+    {
+        info completionMap.get("error");
+    }
+}

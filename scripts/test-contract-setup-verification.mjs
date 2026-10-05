@@ -27,7 +27,7 @@ const plain=value=>JSON.parse(JSON.stringify(value));
   assert.equal(result.error,null);
   assert.equal(result.rows.filter(row=>row.state==='verified').length,5);
   assert.equal(h.reports.All_Contract_Approvals.length,2);
-  assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'New');
+  assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'Proposed','verified creation enters Review even when the captured draft still says New');
   assert.equal(writes(h).length,5,'every intended destination is written once and verified');
 }
 

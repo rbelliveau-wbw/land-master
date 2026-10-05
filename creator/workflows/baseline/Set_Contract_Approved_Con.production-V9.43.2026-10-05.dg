@@ -1,0 +1,7 @@
+											//IF NO APPROVALS IN STATUS OF APPROVED OR NOT SENT THEN SET CONTRACT STATUS TO APPROVED
+										contract = Contract[ID = input.Contract1];
+										approvals = Contract_Approvals[Contract1 = input.Contract1 && Status != "Approved" && Status != "Not Sent"];
+										if(approvals.count() == 0)
+										{
+											contract.Status="Approved";
+										}

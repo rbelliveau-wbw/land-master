@@ -1,34 +1,45 @@
 string Complete_Lot_Contract(string contractId)
 {
-	/*  Server-side half of "complete a Lot contract". The widget owns the rest:
-	    it validates first, closes the open actions, flips Contract.Status AFTER
-	    those writes land (a completed contract is locked), and then runs a heal
-	    pass over the lots. So this function deliberately does NOT touch
-	    Contract.Status and does NOT close actions.
+	/*  Server-side half of "complete a Lot contract". Widget 1.60.55 verifies
+	    the captured Lot outcomes before closing actions and setting the parent
+	    Contract.Status to Complete. Its final Lot check is read-only. This
+	    function deliberately does NOT touch Contract.Status or close actions.
 
 	    Writes performed here:
 	      Takedown_Schedule created (once per Subdivision_Code - Builder_Name)
-	      each priced lot: Base_Price, Escalator, Builder1, Status, Contract1,
-	                       Contract_Schedule
+	      each eligible priced lot: absent Base_Price, Escalator, Contract1,
+	      Contract_Schedule; unassigned/Placeholder Builder1; Status LAST
 	      Contract.Completion_Date when it is still blank
 
-	    Response contract - every key below is consumed by widget 1.42.0:
+	    Response contract - consumed by widget 1.60.55:
 	      error        hard stop; the widget throws on it and writes nothing else
 	      updated      lot codes written            (audit log)
-	      skipped      lot codes with no price row  (audit log)
+	      skipped      lot codes with incomplete transfer outcomes (audit log)
 	      scheduleCode the takedown code
-	      scheduleId   used by healLotWrites() to repair Contract_Schedule
+	      scheduleId   used to verify the saved Contract_Schedule
+	      outcomes     exact before/after snapshots, intended fields and verification
+	      lotTransferPolicy required by the read-only capability check and write ack
 	    "steps" is additive, for the completion progress modal. It reports only
 	    the steps THIS function performs; the widget contributes its own.        */
 	resp = Map();
 	updatedList = List();
 	skippedList = List();
 	steps = List();
+	requestedIds = List();
+	updatedIds = List();
+	linkedIds = List();
+	preserved = List();
+	skippedLots = List();
+	outcomes = List();
+	lotSnapshots = List();
+	placeholderBuilderIds = List();
+	policy = "open-blank-placeholder-v1";
 	/* arrives either as a bare id (thisapp call) or as the Entire JSON body
 	   of the Custom API ({"contractId":"..."}) - accept both */
 	raw = contractId.trim();
 	cid = 0;
 	mode = "Complete";
+	pm = Map();
 	if(raw.startsWith("{"))
 	{
 		pm = raw.toMap();
@@ -61,12 +72,72 @@ string Complete_Lot_Contract(string contractId)
 		resp.put("error","Not a Lot contract");
 		return resp.toString();
 	}
+	if(mode != "Check" && mode != "Complete" && mode != "LinkOnly")
+	{
+		resp.put("error","Unsupported Lot transfer mode.");
+		return resp.toString();
+	}
+	for each placeholder in Builder[Builder_Name == "Placeholder"]
+	{
+		placeholderBuilderIds.add(placeholder.ID.toString());
+	}
+	contractLotIds = List();
+	for each selectedLotId in c.Lots1
+	{
+		contractLotIds.add(selectedLotId.toString());
+	}
+	resp.put("contractId",cid.toString());
+	resp.put("mode",mode);
+	resp.put("lotTransferPolicy",policy);
+	resp.put("placeholderBuilderIds",placeholderBuilderIds);
+	builderId = null;
+	if(c.Builder != null)
+	{
+		builderId = c.Builder.toString();
+	}
+	resp.put("builderId",builderId);
 	resp.put("preserveExisting",true);
 	if(mode == "Check")
 	{
-		resp.put("contractId",cid.toString());
+		resp.put("lotIds",contractLotIds);
 		return resp.toString();
 	}
+	if(pm.get("lotIds") != null)
+	{
+		for each suppliedLotId in pm.get("lotIds")
+		{
+			requestedId = suppliedLotId.toString();
+			if(!contractLotIds.contains(requestedId) || requestedIds.contains(requestedId))
+			{
+				resp.put("error","The captured Lot IDs do not match this contract.");
+				return resp.toString();
+			}
+			requestedIds.add(requestedId);
+		}
+	}
+	else if(mode == "LinkOnly")
+	{
+		resp.put("error","LinkOnly requires captured Lot IDs.");
+		return resp.toString();
+	}
+	else
+	{
+		requestedIds.addAll(contractLotIds);
+	}
+	if(mode == "Complete" && requestedIds.size() != contractLotIds.size())
+	{
+		resp.put("error","The contract Lot selection changed. Refresh before completing.");
+		return resp.toString();
+	}
+	if(mode == "Complete" && (c.Builder == null || c.Builder.Builder_Name == "Placeholder") && (c.Subdivision1.size() > 0 || c.Lots1.size() > 0))
+	{
+		resp.put("error","Choose a real contract buyer before completing.");
+		return resp.toString();
+	}
+	resp.put("requestedIds",requestedIds);
+	// LinkOnly performs no schedule, takedown-term or completion-date writes.
+	if(mode == "Complete")
+	{
 	if(c.Contract_Type == "Lot (Amendment)" && c.Subdivision1.size() == 0)
 	{
 		resp.put("error","Choose a subdivision before completing a Lot (Amendment).");
@@ -99,6 +170,12 @@ string Complete_Lot_Contract(string contractId)
 		resp.put("steps",steps);
 		resp.put("updated",updatedList);
 		resp.put("skipped",skippedList);
+		resp.put("updatedIds",updatedIds);
+		resp.put("linkedIds",linkedIds);
+		resp.put("preserved",preserved);
+		resp.put("skippedLots",skippedLots);
+		resp.put("outcomes",outcomes);
+		resp.put("lots",lotSnapshots);
 		return resp.toString();
 	}
 	// Refuse a conflicting association before creating schedules or writing lots.
@@ -221,72 +298,319 @@ string Complete_Lot_Contract(string contractId)
 		sTd.put("detail",tdCode + " · " + c.Number_of_Lots.toString() + " lot obligation");
 	}
 	steps.add(sTd);
-	/* ---- step: price the lots and mark them Contracted -------------------- */
+	}
+	/* ---- guarded per-Lot transfer ---------------------------------------
+	   Every native update repeats the captured lifecycle and null-field guard.
+	   This is conditional protection, not a claim of transaction isolation. */
 	unmatchedSizes = List();
 	lotTotal = 0;
-	for each  lotId in c.Lots1
+	for each requestedId in requestedIds
 	{
+		lotId = requestedId.toLong();
 		lotRow = Lots[ID == lotId];
-		if(lotRow.count() > 0)
+		outcome = Map();
+		outcome.put("id",requestedId);
+		fields = List();
+		before = Map();
+		after = Map();
+		expected = Map();
+		reason = "";
+		state = "preserved";
+		if(lotRow.count() == 1)
 		{
 			lotTotal = lotTotal + 1;
-			matched = false;
-			if(lotRow.Lot_Size != null)
+			before.put("ID",lotRow.ID.toString());
+			before.put("Lot_Size",lotRow.Lot_Size);
+			before.put("Base_Price",lotRow.Base_Price);
+			before.put("Escalator",lotRow.Escalator);
+			before.put("Status",lotRow.Status);
+			before.put("Close_Date",lotRow.Close_Date);
+			before.put("Purchase_Date",lotRow.Purchase_Date);
+			before.put("Builder1",null);
+			before.put("Builder_Name",null);
+			before.put("Contract1",null);
+			before.put("Contract_Schedule",null);
+			if(lotRow.Builder1 != null)
 			{
-				pr = Contract_Pricing[Contract1 == cid && Lot_Size == lotRow.Lot_Size];
-				if(pr.count() > 0)
+				before.put("Builder1",lotRow.Builder1.toString());
+				before.put("Builder_Name",lotRow.Builder1.Builder_Name);
+			}
+			if(lotRow.Contract1 != null)
+			{
+				before.put("Contract1",lotRow.Contract1.toString());
+			}
+			if(lotRow.Contract_Schedule != null)
+			{
+				before.put("Contract_Schedule",lotRow.Contract_Schedule.toString());
+			}
+			for each snapshotField in {"ID","Lot_Size","Base_Price","Escalator","Status","Close_Date","Purchase_Date","Builder1","Builder_Name","Contract1","Contract_Schedule"}
+			{
+				expected.put(snapshotField,before.get(snapshotField));
+			}
+			statusBefore = lotRow.Status;
+			buyerBefore = lotRow.Builder1;
+			sizeBefore = lotRow.Lot_Size;
+			lotStatus = ifnull(statusBefore,"").trim();
+			otherContracts = Contract[(Lots1 == lotId) && (ID != cid)];
+			if(lotStatus != "" && lotStatus != "Open")
+			{
+				reason = "The Lot is not Open or blank.";
+			}
+			else if(lotRow.Close_Date != null || lotRow.Purchase_Date != null)
+			{
+				reason = "The Lot already has a purchase or close date.";
+			}
+			else if(lotRow.Contract1 != null && lotRow.Contract1 != cid)
+			{
+				reason = "The Lot already links another contract.";
+			}
+			else if(otherContracts.count() > 0)
+			{
+				reason = "Another contract claims the Lot.";
+			}
+			else if(buyerBefore != null && lotRow.Builder1.Builder_Name != "Placeholder" && (mode != "LinkOnly" || buyerBefore != c.Builder))
+			{
+				reason = "The Lot already has a real buyer.";
+			}
+			else if(mode == "Complete" && lotRow.Contract_Schedule != null && lotRow.Contract_Schedule != tdsched.ID)
+			{
+				reason = "The Lot already links another schedule.";
+			}
+			if(reason == "" && mode == "LinkOnly")
+			{
+				if(lotRow.Contract1 == null)
 				{
-					if(lotRow.Base_Price == null && pr.Base_Price != null)
-					{
-						lotRow.Base_Price=pr.Base_Price;
+					fields.add("Contract1");
+					expected.put("Contract1",cid.toString());
+					writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+					writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+					if(writeClaims.count() == 0 && writeParent.count() == 1)
+				{
+						update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder") || (Builder1 == c.Builder)) && (Contract1 == null)]
+						[
+							Contract1=cid
+						];
 					}
-					if(lotRow.Escalator == null && pr.Escalator != null)
-					{
-						lotRow.Escalator=pr.Escalator;
-					}
-					if(lotRow.Builder1 == null && c.Builder != null)
-					{
-						lotRow.Builder1=c.Builder;
-					}
-					if(ifnull(lotRow.Status,"").trim() == "")
-					{
-						if(lotRow.Close_Date != null)
-						{
-							lotRow.Status="Sold";
-						}
-						else if(lotRow.Purchase_Date != null)
-						{
-							lotRow.Status="Scheduled";
-						}
-						else
-						{
-							lotRow.Status="Contracted";
-						}
-					}
-					if(lotRow.Contract1 == null)
-					{
-						lotRow.Contract1=cid;
-					}
-					if(lotRow.Contract_Schedule == null && tdsched.count() > 0)
-					{
-						lotRow.Contract_Schedule=tdsched.ID;
-					}
-					updatedList.add(lotRow.Lot_Code);
-					matched = true;
+				}
+				else
+				{
+					reason = "The Lot already links this contract.";
 				}
 			}
-			if(!matched)
+			else if(reason == "" && mode == "Complete")
 			{
-				skippedList.add(lotRow.Lot_Code);
-				if(lotRow.Lot_Size != null)
+				if(sizeBefore == null)
 				{
-					if(!unmatchedSizes.contains(lotRow.Lot_Size))
+					reason = "The Lot has no size to match pricing.";
+					state = "skipped";
+				}
+				else
+				{
+					pr = Contract_Pricing[(Contract1 == cid) && (Lot_Size == sizeBefore)];
+					if(pr.count() != 1)
 					{
-						unmatchedSizes.add(lotRow.Lot_Size);
+						reason = "Exactly one pricing row is required for this Lot size.";
+						state = "skipped";
+						if(!unmatchedSizes.contains(sizeBefore))
+						{
+							unmatchedSizes.add(sizeBefore);
+						}
 					}
+					else
+					{
+						// Conditional updates preserve populated financial and link fields.
+						// The captured size must still match the unique pricing row.
+						if(lotRow.Base_Price == null && pr.Base_Price != null)
+						{
+							fields.add("Base_Price");
+							expected.put("Base_Price",pr.Base_Price);
+							writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+							writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+							if(writeClaims.count() == 0 && writeParent.count() == 1)
+							{
+								update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder")) && ((Contract1 == null) || (Contract1 == cid)) && ((Contract_Schedule == null) || (Contract_Schedule == tdsched.ID)) && (Lot_Size == sizeBefore) && (Base_Price == null)]
+								[
+									Base_Price=pr.Base_Price
+								];
+							}
+						}
+						if(lotRow.Escalator == null && pr.Escalator != null)
+						{
+							fields.add("Escalator");
+							expected.put("Escalator",pr.Escalator);
+							writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+							writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+							if(writeClaims.count() == 0 && writeParent.count() == 1)
+							{
+								update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder")) && ((Contract1 == null) || (Contract1 == cid)) && ((Contract_Schedule == null) || (Contract_Schedule == tdsched.ID)) && (Lot_Size == sizeBefore) && (Escalator == null)]
+								[
+									Escalator=pr.Escalator
+								];
+							}
+						}
+						if(lotRow.Contract1 == null)
+						{
+							fields.add("Contract1");
+							expected.put("Contract1",cid.toString());
+							writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+							writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+							if(writeClaims.count() == 0 && writeParent.count() == 1)
+							{
+								update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder")) && ((Contract1 == null) || (Contract1 == cid)) && ((Contract_Schedule == null) || (Contract_Schedule == tdsched.ID)) && (Lot_Size == sizeBefore) && (Contract1 == null)]
+								[
+									Contract1=cid
+								];
+							}
+						}
+						if(lotRow.Contract_Schedule == null && tdsched.count() > 0)
+						{
+							fields.add("Contract_Schedule");
+							expected.put("Contract_Schedule",tdsched.ID.toString());
+							writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+							writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+							if(writeClaims.count() == 0 && writeParent.count() == 1)
+							{
+								update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder")) && ((Contract1 == null) || (Contract1 == cid)) && ((Contract_Schedule == null) || (Contract_Schedule == tdsched.ID)) && (Lot_Size == sizeBefore) && (Contract_Schedule == null)]
+								[
+									Contract_Schedule=tdsched.ID
+								];
+							}
+						}
+						if((buyerBefore == null || lotRow.Builder1.Builder_Name == "Placeholder") && c.Builder != null)
+						{
+							fields.add("Builder1");
+							expected.put("Builder1",c.Builder.toString());
+							writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+							writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+							if(writeClaims.count() == 0 && writeParent.count() == 1)
+							{
+								update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == buyerBefore) && ((Builder1 == null) || (Builder1.Builder_Name == "Placeholder")) && ((Contract1 == null) || (Contract1 == cid)) && ((Contract_Schedule == null) || (Contract_Schedule == tdsched.ID)) && (Lot_Size == sizeBefore) && (Builder1 == buyerBefore)]
+								[
+									Builder1=c.Builder
+								];
+							}
+						}
+						expected.put("Builder_Name",c.Builder.Builder_Name);
+						// Status is last and requires every intended fill to be present.
+						fields.add("Status");
+						expected.put("Status","Contracted");
+						writeClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+						writeParent = Contract[(ID == cid) && (Lots1 == lotId)];
+						expectedBase = expected.get("Base_Price");
+						expectedEscalator = expected.get("Escalator");
+						if(writeClaims.count() == 0 && writeParent.count() == 1 && c.Builder != null && tdsched.count() > 0)
+						{
+							update Lots[(ID == lotId) && (Status == statusBefore) && (Close_Date == null) && (Purchase_Date == null) && (Builder1 == c.Builder) && (Contract1 == cid) && (Contract_Schedule == tdsched.ID) && (Lot_Size == sizeBefore) && (Base_Price == expectedBase) && (Escalator == expectedEscalator)]
+							[
+								Status="Contracted"
+							];
+						}
+					}
+				}
+			}
+			lotRow = Lots[ID == lotId];
+			if(lotRow.count() == 1)
+			{
+				after.put("ID",lotRow.ID.toString());
+				after.put("Lot_Size",lotRow.Lot_Size);
+				after.put("Base_Price",lotRow.Base_Price);
+				after.put("Escalator",lotRow.Escalator);
+				after.put("Status",lotRow.Status);
+				after.put("Close_Date",lotRow.Close_Date);
+				after.put("Purchase_Date",lotRow.Purchase_Date);
+				after.put("Builder1",null);
+				after.put("Builder_Name",null);
+				after.put("Contract1",null);
+				after.put("Contract_Schedule",null);
+				if(lotRow.Builder1 != null)
+				{
+					after.put("Builder1",lotRow.Builder1.toString());
+					after.put("Builder_Name",lotRow.Builder1.Builder_Name);
+				}
+				if(lotRow.Contract1 != null)
+				{
+					after.put("Contract1",lotRow.Contract1.toString());
+				}
+				if(lotRow.Contract_Schedule != null)
+				{
+					after.put("Contract_Schedule",lotRow.Contract_Schedule.toString());
 				}
 			}
 		}
+		else
+		{
+			reason = "The exact Lot could not be read.";
+			state = "skipped";
+		}
+		verified = before.size() > 0 && after.size() > 0;
+		verificationClaims = Contract[(Lots1 == lotId) && (ID != cid)];
+		verificationParent = Contract[(ID == cid) && (Lots1 == lotId)];
+		if(verificationClaims.count() > 0 || verificationParent.count() != 1)
+		{
+			verified = false;
+		}
+		for each snapshotField in {"ID","Lot_Size","Base_Price","Escalator","Status","Close_Date","Purchase_Date","Builder1","Builder_Name","Contract1","Contract_Schedule"}
+		{
+			if(expected.get(snapshotField) != after.get(snapshotField))
+			{
+				verified = false;
+			}
+		}
+		if(fields.size() > 0)
+		{
+			if(verified)
+			{
+				state = "updated";
+				updatedIds.add(requestedId);
+				if(mode == "Complete")
+				{
+					updatedList.add(lotRow.Lot_Code);
+				}
+			}
+			else
+			{
+				state = "partial";
+				reason = "The Lot changed or an intended fill did not verify.";
+			}
+		}
+		if(verified && after.get("Contract1") == cid.toString())
+		{
+			linkedIds.add(requestedId);
+		}
+		outcome.put("state",state);
+		outcome.put("reason",reason);
+		outcome.put("fields",fields);
+		outcome.put("before",before);
+		outcome.put("after",after);
+		outcome.put("verified",verified);
+		outcomes.add(outcome);
+		if(after.size() > 0)
+		{
+			lotSnapshots.add(after);
+		}
+		if(state == "preserved")
+		{
+			preserved.add(outcome);
+		}
+		else if(state == "skipped" || state == "partial")
+		{
+			skippedLots.add(outcome);
+			if(mode == "Complete" && lotRow.count() > 0)
+			{
+				skippedList.add(lotRow.Lot_Code);
+			}
+		}
+	}
+	resp.put("updatedIds",updatedIds);
+	resp.put("linkedIds",linkedIds);
+	resp.put("preserved",preserved);
+	resp.put("skippedLots",skippedLots);
+	resp.put("outcomes",outcomes);
+	resp.put("lots",lotSnapshots);
+	if(mode == "LinkOnly")
+	{
+		resp.put("skipped",skippedLots);
+		return resp.toString();
 	}
 	sLots = Map();
 	sLots.put("key","lots");
@@ -303,12 +627,12 @@ string Complete_Lot_Contract(string contractId)
 	else if(skippedList.size() == 0)
 	{
 		sLots.put("state","done");
-		sLots.put("detail",updatedList.size().toString() + " lots checked; only blank fields filled");
+		sLots.put("detail",lotTotal.toString() + " lots checked; eligible fields filled and existing Lots preserved");
 	}
 	else
 	{
 		sLots.put("state","partial");
-		sLots.put("detail",updatedList.size().toString() + " of " + lotTotal.toString() + " lots updated - no pricing row for lot size(s) " + unmatchedSizes.toString(", "));
+		sLots.put("detail",skippedLots.size().toString() + " Lots need review; see each Lot result");
 	}
 	steps.add(sLots);
 	if(c.Completion_Date == null)

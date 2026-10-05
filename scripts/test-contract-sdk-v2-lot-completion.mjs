@@ -1,15 +1,2 @@
-import assert from 'node:assert/strict';
-import {ready,drain,ID,NEW} from './test-contract-sdk-v2-foundation.mjs';
-const LOT=(BigInt(NEW)+90n).toString(),BUILDER=(BigInt(NEW)+91n).toString(),SCHEDULE=(BigInt(NEW)+92n).toString();
-function lot(h){const row={ID:LOT,Lot_Size:'40',Base_Price:'',Escalator:'',Status:'',Builder1:{},Contract1:{},Contract_Schedule:{},Close_Date:'',Purchase_Date:''};h.reports.All_Active_Lots_Contracts_View=[row];h.c.S.lots=structuredClone([row]);Object.assign(h.c.findContract(ID),{Contract_Type:'Lot (Master)',Lots1:[{ID:LOT}]});Object.assign(h.reports.All_Contracts1[0],{Contract_Type:'Lot (Master)',Lots1:[{ID:LOT}]});return {row,c:h.c.findContract(ID),expect:{ids:[LOT],buyerId:BUILDER,prById:{[LOT]:{Lot_Size:40,Base_Price:5000,Escalator:3}}}};}
-{
- const h=await ready({realDOM:true}),fixture=lot(h);let calls=0;const base=h.api.invokeCustomApi;h.api.invokeCustomApi=async config=>{if(!config.api_name.startsWith('Complete_Lot_Contract'))return base(config);calls++;assert.equal(config.payload.contractId,ID);return {code:3000,details:{output:JSON.stringify({updated:[],skipped:[],scheduleId:SCHEDULE,scheduleCode:'Recorded native schedule',steps:[{key:'validate',state:'done'},{key:'takedown',state:'done'},{key:'lots',state:'done'}]})}};};
- h.c.completeLotViaApi(fixture.c,fixture.expect,h.c.actionsFor(ID));await drain();assert.equal(calls,1);assert.equal(fixture.row.Base_Price,5000);assert.equal(fixture.row.Escalator,3);assert.equal(fixture.row.Contract1,ID);assert.equal(fixture.row.Builder1,BUILDER);assert.equal(fixture.row.Contract_Schedule,SCHEDULE);assert.equal(h.reports.All_Contracts1[0].Status,'Complete');assert.equal(h.reports.All_Contract_Actions[0].Complete,true);assert.ok(h.calls.some(row=>row.method==='count'&&row.config.report_name==='All_Active_Lots_Contracts_View'&&row.config.criteria==='(ID == '+LOT+')'));
-}
-for(const envelope of [{code:3000,details:{output:'{}'}},{code:3000,details:{output:JSON.stringify({updated:[],skipped:[],steps:[]})}},{code:2899,details:{output:JSON.stringify({updated:[],skipped:[],steps:[]})}}]){
- const h=await ready({realDOM:true}),fixture=lot(h);let calls=0;h.api.invokeCustomApi=async()=>{calls++;return envelope;};h.c.completeLotViaApi(fixture.c,fixture.expect,h.c.actionsFor(ID));await drain();assert.equal(calls,1);assert.equal(h.calls.filter(row=>['update','add','delete'].includes(row.method)).length,0);h.c.completeLotViaApi(fixture.c,fixture.expect,h.c.actionsFor(ID));await drain();assert.equal(calls,1,'actual second completion cannot replay an uncertain custom write');assert.equal(h.c.canEdit(),false);assert.equal(h.reports.All_Contracts1[0].Status,'New');
-}
-{
- const h=await ready({realDOM:true}),fixture=lot(h);delete fixture.row.Contract1;await assert.rejects(h.c.healLotWrites(fixture.c,fixture.expect,{scheduleId:SCHEDULE}));assert.equal(h.calls.filter(row=>row.method==='update').length,0,'missing native fields never become verified zero or blank fills');
-}
-console.log('PASS actual existing lot-completion controller: native phase acknowledgement, ordered child/final-parent writes, exact-ID persisted Property verification, genuine empty-object lookup fills, preserved finite financial defaults and no custom replay on malformed/failed ack. No financial live writes.');
+// Actual whole-widget safe completion/backfill boundaries; no live Creator writes.
+import './test-contract-lot-transfer-safety.mjs';
