@@ -115,6 +115,8 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 Lot contract creation reveals location, Builder, and name in small numbered cards. Start a Master with Type and the required Project; start an Amendment with Type and required Subdivision. Use a pale-yellow surface and amber outline for the next unfinished card and its missing required input, following Tax Parcel Year's active-step treatment. Completed cards lose the highlight. Keep optional subdivision and lot choices behind the contract identity, and pricing behind lot selection. Respect reduced motion and retain a visible keyboard focus ring.
 
+Show the editable Actions panel as soon as a Lot type is selected. Its template checklist stays visible while Project, Subdivision, Builder, and name are incomplete or cleared.
+
 Put Lot Territory, Status, and the Amendment's Project and Parent Master in the title card. Derive Territory from the Master's Project or the Amendment's Subdivision, using its actual Project when subdivision Territory is blank. Auto-link a unique Master matching both Project and Builder; show the searchable title-card picker when several match. Missing lookup data must remain visibly unresolved, with Retry on failed Project loading.
 
 - In Pro Forma input tables, use the Additional Costs treatment to identify the next missing editable value: a pale-blue field with a blue border and restrained pulse for the first value, followed by a steady blue outline for dependent values. Prefilled generated rows may keep a steady outline on every editable cell so users can distinguish them from calculated values. Do not highlight read-only, calculated, locked, complete conditional, or untouched optional fields.

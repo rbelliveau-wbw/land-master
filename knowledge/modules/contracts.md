@@ -1,6 +1,14 @@
 
 # Contracts Module
 
+## Lot action checklist visibility (1.60.53)
+
+New Lot (Master) and Lot (Amendment) forms show the editable Actions panel immediately after Type selection. The prior staged form hid the already seeded checklist until a contract name was entered. Rendering and subsequent stage updates now keep actions visible independently of location, Builder and name. Checked-template membership, type selection, sort order, draft edits and progressive scope/terms/pricing behavior are retained.
+
+Changed files: Contract widget source/config, widget manifest, immutable release 1.60.53, production environment mapping, Project flow regression script, widget README, and Contract/style documentation. Existing Contract_Actions.Template_Action, Type_field, Contract1, Contract_Action and Sort_Order are read as before. No forms, fields, functions, Custom APIs or Creator deployment change. Regression covers both types with distinct seven-action templates, initial/incomplete/named forms, name clearing, retained draft edits and unchanged scope/terms gates. Rollback: restore Contract Management 1.60.52 through the production environment mapping. The user authorized main and production promotion on October 5, 2026.
+
+Full `npm run validate` and `npm run build:pages` pass against the latest main checkout. The regression exercises actual whole-widget initialization, checked template seeding and the mounted form; stage updates retain the edited action input. Earlier local work was based on an older checkout, so the production change is reapplied to 1.60.52 as 1.60.53. No live Creator write or email test is performed for this presentation fix.
+
 Legal 1.60.51 displays native comment validation alerts as readable text.
 `Validate_Comment_Log` in Creator Development now accepts and preserves
 `Contract1`; Production promotion remains with the user. See

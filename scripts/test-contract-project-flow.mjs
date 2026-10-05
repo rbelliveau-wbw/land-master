@@ -40,3 +40,34 @@ h.reports[ctx.CFG.reports.contracts]=[{ID:'999',Territory:'Waco'}];await assert.
 const nativeCount=h.api.getRecordCount;ctx.S.projectsLoaded=false;h.api.getRecordCount=async config=>{if(config.report_name===ctx.CFG.reports.projects)throw Error('permission denied');return nativeCount(config);};await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,false);assert.match(ctx.S.projectsError,/permission denied$/);
 h.api.getRecordCount=nativeCount;h.reports[ctx.CFG.reports.projects]=[{ID:project,Territory:'Waco'}];await ctx.ncLoadProjects();assert.equal(ctx.S.projectsLoaded,true);assert.equal(ctx.S.projectsError,'','failed project loads can retry');
 console.log('Contract Project scope, derived Territory, parent matching, staged entry and persisted verification checks passed.');
+
+// Exercise the actual seeded checklist and mounted form independently of identity steps.
+{
+  const {c}=await ready({realDOM:true});
+  c.ncTintModal=()=>{}; // The deterministic DOM does not implement CSSStyleDeclaration.
+  c.S.actions=['Lot (Master)','Lot (Amendment)'].flatMap((type,index)=>[
+    ...Array.from({length:7},(_,i)=>({ID:String(90071992547411000n+BigInt(index*10+i)),Template_Action:true,Type_field:type,Contract1:'',Contract_Action:type+' action '+(i+1),Sort_Order:i+1})),
+    {ID:String(90071992547412000n+BigInt(index)),Template_Action:false,Type_field:type,Contract1:'',Contract_Action:'Ordinary orphan',Sort_Order:0}
+  ]);
+  Object.assign(c.S,{actionTemplateSnapshot:null,actionTemplateRead:null,contractTemplatesStatus:'loaded',projects:[{ID:project,Project_Name:'Fox Creek',Territory:'Waco'}],projectsLoaded:true,subdivisions:[{ID:'s1',Subdivision_Name:'Fox Creek 1',Project:{ID:project},Territory:'Waco'}],builders:[{ID:'10',Builder_Name:'Fixture builder'}]});
+  for(const type of ['Lot (Master)','Lot (Amendment)']){
+    c.S.nc={...draft(),type:''};c.ncTypeChange(type);c.ncOpen();
+    assert.equal(c.S.nc.seedSource,'template');
+    assert.deepEqual(Array.from(c.S.nc.acts,row=>row.title),Array.from({length:7},(_,i)=>type+' action '+(i+1)),'checked templates seed their own type in order');
+    for(const fields of [{},{project,sub:['s1'],builder:'10'},{name:'Named contract'}]){
+      Object.assign(c.S.nc,fields);c.ncRepaintForm();
+      const panel=c.document.getElementById('nc_actions_stage');
+      assert.ok(panel);assert.equal(panel.hasAttribute('hidden'),false,'actions show before and after identity fields');assert.equal(panel.hidden,false);
+      assert.equal(panel.querySelectorAll('.ma-act input').length,7);assert.ok(panel.textContent.includes(type+' template'));
+    }
+    c.S.nc.acts[0].title='Custom action';c.ncRepaintForm();
+    const editedInput=c.document.querySelector('#nc_acts .ma-act input');
+    c.S.nc.name='';c.ncSyncSteps();
+    assert.equal(c.document.getElementById('nc_actions_stage').hidden,false,'name clearing never hides actions');
+    assert.equal(c.document.querySelector('#nc_acts .ma-act input').value,'Custom action','stage updates preserve checklist edits');
+    assert.equal(c.document.querySelector('#nc_acts .ma-act input'),editedInput,'stage updates keep the mounted action input');
+    assert.equal(c.document.getElementById('nc_scope_stage')?.hidden??true,true,'scope still follows the name');
+    assert.equal(c.document.getElementById('nc_terms_stage').hidden,true);assert.equal(c.document.getElementById('nc_lots_stage').hidden,true);
+  }
+  console.log('Both Lot types retain seven template actions throughout staged entry and name clearing.');
+}

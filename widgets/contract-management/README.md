@@ -52,6 +52,8 @@ Project lookup and staged Lot entry are updated in candidate 1.60.45: Masters re
 
 ## Action templates (1.13.0)
 
+Release 1.60.53 keeps the Actions panel visible immediately after choosing Lot (Master) or Lot (Amendment), including before location, Builder and name are complete. Checked-template membership, seeding and the staged lot fields retain their existing behavior.
+
 `Manage Actions` (third tab beside Contracts and LOI Reviews) edits the checklist a
 new contract of each type is seeded with. A template is a `Contract_Actions` row
 with `Type_field` set, `Template_Action` true, and no `Contract1`.
