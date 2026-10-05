@@ -1,6 +1,11 @@
 
 # Contracts Module
 
+Legal 1.60.51 displays native comment validation alerts as readable text.
+`Validate_Comment_Log` in Creator Development now accepts and preserves
+`Contract1`; Production promotion remains with the user. See
+[verification and rollback](../../docs/comment-save-sdk2-hotfix-2026-10-05.md).
+
 ## Creator SDK2 candidate 1.60.48
 
 The whole widget uses native DATA/FILE/UTIL, a fresh authenticated handshake,

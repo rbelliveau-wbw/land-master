@@ -52,6 +52,11 @@ safe supported link schemes. Do not replace user text with a success label.
 
 ## Permissions and write feedback
 
+Persisted parent lookups use the exact string ID inside Creator lookup objects;
+Legal uses `Contract1`, and Pro Forma uses `Pro_Forma`. Explicit native validation
+alerts display their text rather than a raw JSON envelope. Missing text or a
+different parent still fails verification and retains the draft.
+
 Keep each module's posting rules and the component's existing author-only
 24-hour edit/delete window. The host and callable action must enforce them;
 hidden controls alone do not establish authorization. Reply inserts a quote

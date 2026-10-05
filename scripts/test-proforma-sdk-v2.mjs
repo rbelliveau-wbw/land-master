@@ -1,6 +1,7 @@
 // Whole current PF SDK2 IIFE; only native transport/layout boundaries mocked.
 import assert from 'node:assert/strict';
 import {harness,ready,held,drain,header,ID,OTHER,ACCESS,source,clone} from './fixtures/proforma-sdk-v2-harness.mjs';
+import './test-proforma-sdk-v2-comments-save.mjs';
 {
  const h=await ready();assert.equal(h.handshakes(),1);assert.equal(h.widget.S.proformas.length,1);assert.equal(h.widget.S.users[0].fullName,'Fixture Owner');assert.equal(h.widget.S.proformaOwners[ID][0],ACCESS);assert.ok(h.maxActive()<=3);assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);assert.equal(h.widget.S.view,'vList');
 }

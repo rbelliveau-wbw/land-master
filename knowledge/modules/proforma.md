@@ -1,3 +1,9 @@
+## SDK2 comment/save repair 1.80.72
+
+Comment parent lookup objects and fixed-cost `Per_Unit` blank-to-zero conversion
+now use explicit field types during persisted verification. Nested save responses
+unwrap to the function result; actual mismatches retain drafts and name fields.
+See [deployment, tests and rollback](../../docs/comment-save-sdk2-hotfix-2026-10-05.md).
 
 
 ## Creator SDK2 candidate 1.80.69

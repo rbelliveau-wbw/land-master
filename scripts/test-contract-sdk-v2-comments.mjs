@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {ready,ID} from './test-contract-sdk-v2-foundation.mjs';
+const h=await ready();
+const raw={code:3001,error:[{task:'alert',alert_message:['Link the comment to a Project, Budget, Pro Forma, or Contract.']},{task:'cancel_submit',message:'Failed to add data.'}]};
+for(const error of [raw,JSON.stringify(raw),{response:raw},{message:JSON.stringify(raw)},{cause:{responseText:JSON.stringify(raw)}}])assert.equal(h.c.contractCommentError(error),'Link the comment to a Project, Budget, Pro Forma, or Contract.');
+assert.equal(h.c.contractCommentError(new Error('Fresh read failed.')),'Fresh read failed.');
+const nativeAdd=h.api.addRecords;
+h.api.addRecords=async config=>{const result=await nativeAdd(config),id=result.result[0].data.ID;h.reports.Comment_Log_Report.find(row=>row.ID===id).Contract1={ID,zc_display_value:'Fixture contract'};return result;};
+const ack=await h.c.createRecord('Comment_Log',{Contract1:ID,Comment:'Native Contract comment',Deleted:false});
+assert.equal(h.reports.Comment_Log_Report[0].ID,ack.data.ID);
+assert.equal(Object.keys(h.c.S.sdkMutationReviews).length,0);
+console.log('PASS Legal comment exact Contract1 lookup and readable native validation errors.');
