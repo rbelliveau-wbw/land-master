@@ -1,0 +1,45 @@
+{
+  "verified_date": "2026-10-04",
+  "form": "Builder_Takedown",
+  "report": "All_Builder_Takedowns",
+  "scope": "Add existing form fields to the report quick-view layout for SDK2 read visibility; preserve existing columns, grouping, sorting, actions and permissions.",
+  "added_fields": [
+    "Entered_Date",
+    "Purchase_Date",
+    "Status",
+    "Base_Price_Subtotal",
+    "Interest_Subtotal",
+    "Total",
+    "Total_w_Additional",
+    "Tax_Method",
+    "Tax_Per_Lot",
+    "Tax_Proration_Date",
+    "Additional_Fees_Per_Lot",
+    "Notes"
+  ],
+  "development_evidence": {
+    "widget": "manage-lots",
+    "version": "0.9.19",
+    "complete_takedown_count": 24,
+    "first_record_entered_date": "04/13/2026",
+    "first_record_purchase_date": "04/24/2026",
+    "first_record_total": "271792.41",
+    "first_record_linked_lots": 11
+  },
+  "publication": {
+    "date": "2026-10-05",
+    "stage_version": "9.38",
+    "production_version": "9.38",
+    "selected_component_count": 1,
+    "unrelated_profile_changes_excluded": true
+  },
+  "production_evidence": {
+    "complete_takedown_count": 857,
+    "stored_date_financial_tax_fields_rendered": true,
+    "first_record_linked_lots": 25,
+    "one_builder_filtered_count": 295,
+    "two_builders_filtered_count": 612,
+    "business_writes_during_verification": 0
+  },
+  "rollback": "Remove only these twelve report-layout additions; preserve the pre-existing report and its business data. Widget rollback is 0.9.17. This partial live configuration record does not replace a complete Creator export."
+}

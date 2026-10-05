@@ -1,7 +1,8 @@
 # Startup and report refinements — 2026-10-04
 
-This batch changes widget JavaScript and presentation only. It uses existing
-Creator reports and the already deployed lean access API; no Creator schema,
+This batch changes widget JavaScript and presentation, plus twelve visible field
+selections in the existing All_Builder_Takedowns Creator report. It uses existing
+forms and the already deployed lean access API; no Creator schema,
 Deluge publication, permission grants, financial writes or emails are required.
 All six widgets already use SDK2. It does not change their SDK version.
 
@@ -38,16 +39,36 @@ per-record updates, unknown-outcome quarantine and no blind write replay.
 Regression fixtures retain 152/151 completeness, 12,017 reference rows and
 800-destination batch scenarios. The new Arbitrate test checks null/empty/Yes/No
 partitions, displayed row filtering, shared criteria, stale caches and denied
-counts. No live mass update was used as a test.
+counts. Native Production's Yes filter loaded all 21 rows as Yes; Development's
+Undecided filter loaded the 228-record scope. No live mass update was used as a test.
 
 Native Production 0.9.18 preserved all 857 takedown names exactly while removing
 all subdivision groups and ordering globally by Added_Time. That check exposed
 an SDK2 field-selection limitation: `all` returns the report's layout fields,
-which omitted the form's dates and financial/tax values. Candidate 0.9.19 requests
+which omitted the form's dates and financial/tax values. Release 0.9.19 requests
 the verified fields explicitly using `field_config: custom`, through the same
-count/cursor/string-ID reader. It changes no Creator report, schema or permission.
+count/cursor/string-ID reader. The native Dev check still omitted fields until
+they were included in the existing Creator report's quick layout. The twelve
+additions are Entered_Date, Purchase_Date, Status, Base_Price_Subtotal,
+Interest_Subtotal, Total, Total_w_Additional, Tax_Method, Tax_Per_Lot,
+Tax_Proration_Date, Additional_Fees_Per_Lot and Notes. No form or permission
+changes are involved. Dev now renders all 24 records, with first-record dates
+04/13/2026 and 04/24/2026, stored Total $271,792.41 and all eleven linked lots.
 The fixture now simulates layout omissions and verifies real loaded date/total
 rendering; hidden or unavailable fields remain unavailable.
+
+On October 5, the twelve layout additions were selectively published as Creator
+9.38 to Stage and Production. Only All_Builder_Takedowns was selected (one
+component); the three unrelated pending profile changes were excluded. Native
+Production retained 857 takedowns and rendered the first record's stored date,
+financial and tax fields, with all 25 linked lots in its read-only modal. The
+Builder filter returned 295 rows for one builder and 612 for two, with no other
+builders included. The overnight baseline had one record-name date change;
+the count remained 857 and this check issued no business writes. A fresh
+post-publication baseline is used for the final frontend promotion check.
+
+The final production mapping changes Manage Lots 0.9.18 to 0.9.19. Full
+`npm run validate` and `npm run build:pages` passed again for that mapping.
 
 The Takedowns whole-widget fixture checks global ordering across subdivisions,
 combined filters, all eight fixture lots in the modal versus six in the preview,
@@ -72,7 +93,9 @@ on opening details. Existing create/claim/preflight tests remain in force.
   Subdivision1/Builder1 ID filters, Added_Time ordering, Entered_Date and
   Purchase_Date pills, stored financial/tax fields and Lots/Notes detail use that
   snapshot with an explicit verified field projection in 0.9.19. Missing fields
-  are unavailable. Roll back to 0.9.17.
+  are unavailable. Report layout dependency: Creator 9.38, published selectively
+  on October 5. Roll back the widget to 0.9.17; remove only the twelve added
+  layout fields if rolling back the backend exposure too.
 - Insights keeps its two-year Close_Date/Purchase_Date OR window and complete
   background All_Lots_All_Fields read. Roll back to Production 1.5.40.
 
