@@ -642,3 +642,7 @@ Ordinary Save keeps the actual failure visible and names expected/saved Land Cos
 Construction base saves cents on both sides of the custom save contract. This
 candidate needs the paired Creator function change and a native currency-capacity
 gate before production. See [incident, deployment and rollback notes](../../docs/proforma-currency-save-1.80.78.md).
+
+## Complete currency audit — 1.80.79
+
+Currency displays and monthly payloads retain cents; only actual counts use integer rounding. The legacy whole-dollar monthly rewrite is removed. Numeric persisted mismatches retain expected/saved amounts in the dialog. Header and child contracts stay exact. [Creator promotion checklist](../../creator/handoffs/proforma-currency-promotion-1.80.79.md) covers 71 precision-sensitive fields across all seven ordinary-save forms and the paired backend assignment. User owns Creator promotion; widget Production promotion is authorized.

@@ -99,12 +99,12 @@ for (const key of ["base", "increase", "escalator"])
 assert.ok(body.indexOf("Finished Lot Sales") < body.indexOf("Base Price") &&
   body.indexOf("Base Price") < body.indexOf("Phase Increase") &&
   body.indexOf("Phase Increase") < body.indexOf("Escalator"), "breakdown should sit below its parent");
-assert.match(body, /Base Price<\/td><td class="tot mono">\$140<\/td>/,
+assert.match(body, /Base Price<\/td><td class="tot mono">\$140\.00<\/td>/,
   "base price should sum both rows in the same month and the whole schedule");
-assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\)<\/td>/,
+assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\.00\)<\/td>/,
   "phase increases and decreases should retain their net dollar value and sign");
-assert.match(body, /Escalator<\/td><td class="tot mono">\$5<\/td>/);
-assert.match(body, /Total Income<\/td><td class="tot mono">\$139<\/td>/,
+assert.match(body, /Escalator<\/td><td class="tot mono">\$5\.00<\/td>/);
+assert.match(body, /Total Income<\/td><td class="tot mono">\$139\.00<\/td>/,
   "breakdown must not be added again to total income");
 context.S.dash.expanded.finishedLotSales = true;
 context.renderFlowTable();
@@ -130,7 +130,7 @@ assert.ok(elements.get("flowBody").innerHTML.includes("Phase Increase"),
   "saved month components are displayed even without a version marker or with deprecated pace fields");
 
 /* The dashboard assumption must show the persisted frontage price to cents;
-   the neighboring financial totals retain their usual whole-dollar display. */
+   the neighboring financial totals also retain cents. */
 elements.set("kpis", {innerHTML: ""});
 elements.set("assump", {innerHTML: ""});
 elements.set("vDash", {classList: {toggle() {}}});
@@ -150,8 +150,8 @@ context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,
   /<label>Sale Price \/ FF<\/label><b>\$1,444\.45<\/b>/,
   "the saved Sale Price / FF must show both decimal places on the dashboard");
-assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,630<\/div>/,
-  "Net Profit retains its whole-dollar presentation");
+assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,630\.00<\/div>/,
+  "Net Profit retains its cents presentation");
 context.S.dash.model.Sale_Price_FF = "1500";
 context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,

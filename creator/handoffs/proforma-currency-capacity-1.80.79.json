@@ -1,0 +1,646 @@
+{
+  "status": "prepared-user-promotion-required",
+  "widget_version": "1.80.79",
+  "authority": "Widget save/verification field contracts; header properties observed read-only in Development on 2026-10-05. Other native properties require user verification.",
+  "fields": [
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Total_Acres",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Land_Cost_Acre",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Sale_Price_FF",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Engineering_Cost_Lot",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Const_Cost_FF",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Lot_Size_Ft",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Land_Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Land_Sale",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "ROI1",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "IRR",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "XIRR",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Est_Lots_per_Acre",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Ft_St_per_Lot",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Earnest_Money",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Amount_per_Extension",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Gross_Sales",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "MUD_Revenue",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Reimbursements",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Reimbursed_Fees",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Total_Income",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Entitlement_Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Entitlement_Engineering_Addl",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Construction_Cost_Base",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Construction_Cost_Addl",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Total_Expenses",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Net_Profit",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Overhead",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Engineering_Overhead",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Construction_Overhead",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Interest",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Profit_Share",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Overhead_Total",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Engineering_Overhead_Total",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Construction_Overhead_Total",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Interest_Total",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Add_Pro_Forma",
+      "report": "All_Pro_Formas_All_Fields",
+      "field": "Profit_Share_Total",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 2,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Land_Installments",
+      "report": "All_Land_Installments",
+      "field": "Percent1",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Land_Installments",
+      "report": "All_Land_Installments",
+      "field": "Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Item",
+      "report": "Proforma_Item_Report",
+      "field": "Add_l_Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Item",
+      "report": "Proforma_Item_Report",
+      "field": "Per_Unit",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Construction_Curve",
+      "report": "All_Construction_Cost_Curves",
+      "field": "Percent_Cost",
+      "type": "percentage",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Lot_Mix_Row",
+      "report": "All_Lot_Mix_Rows",
+      "field": "Lot_Size_Ft",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Lot_Mix_Row",
+      "report": "All_Lot_Mix_Rows",
+      "field": "Price_LF",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Land_Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Land_Sale",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Finished_Lot_Sales",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Construction_Cost_Base",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Construction_Cost_Addl",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Entitlement_Engineering",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Entitlement_Engineering_Addl",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "PID_MUD_Revenue",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Reimbursements",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Reimbursed_Fees",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Cash_Flow",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Cash_Flow_with_Overhead",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Cash_Flow_with_Interest",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Running_Cash_Flow",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Running_Cash_Flow_with_Interest",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Engineering_Overhead",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Construction_Overhead",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Overhead_Cost",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Interest",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Profit_Share",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Phase",
+      "report": "All_Proforma_Phases",
+      "field": "Acres",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Phase",
+      "report": "All_Proforma_Phases",
+      "field": "Annual_Escalator_Pct",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Phase",
+      "report": "All_Proforma_Phases",
+      "field": "Additional_Markup_Pct",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Increase only; retain any existing higher decimal precision."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Base_Lot_Sales",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Existing phase-sales v2 field; increase only."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Additional_Markup_Income",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Existing phase-sales v2 field; increase only."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Escalator_Interest_Accrued",
+      "type": "USD",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Existing phase-sales v2 field; increase only."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Escalator_Percentage",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Existing phase-sales v2 field; increase only."
+    },
+    {
+      "form": "Proforma_Months",
+      "report": "All_Proforma_Months",
+      "field": "Escalator_Applied_Pct",
+      "type": "decimal",
+      "minimum_max_digits": 16,
+      "minimum_decimal_points": 6,
+      "rule": "Existing phase-sales v2 field; increase only."
+    }
+  ]
+}
