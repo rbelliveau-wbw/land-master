@@ -49,7 +49,7 @@ deployment remain pending.
 Rollback: Development mapping `8.14.5`; current main Production mapping `8.14.7`. Preserve second fields and entered data.
 Local immutable candidate `8.15.3` passed full repository validation and the
 Pages build, including total/initial-term validation before native DATA writes.
-It is not mapped or uploaded. Frozen `8.15.0`, `8.15.1` and `8.15.2` remain unchanged.
+The user authorized Production mapping to `8.15.3` through Git and retained responsibility for Creator promotion. Frozen `8.15.0`, `8.15.1` and `8.15.2` remain unchanged.
 
 ## AI lot import leaves Notes alone (8.14.7)
 

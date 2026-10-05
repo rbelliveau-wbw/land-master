@@ -1,8 +1,8 @@
 {
   "change": "second-closing",
-  "status": "development-backend-reports-and-page-audit-verified-readback-and-widget-promotion-pending",
+  "status": "development-backend-verified-production-widgets-mapped-user-owns-Creator-promotion",
   "generated_metadata_refreshed": false,
-  "production_changed_by_this_task": false,
+  "production_changed_by_this_task": true,
   "environment_publication_observation": {
     "snapshot_stage_version": "9.43",
     "snapshot_production_version": "9.42",
@@ -276,13 +276,13 @@
       "widget": "contract-management",
       "version": "1.61.2",
       "path": "releases/contract-management/1.61.2",
-      "status": "local-immutable-not-promoted"
+      "status": "production-mapped-Creator-activation-unverified"
     },
     {
       "widget": "land-master",
       "version": "8.15.3",
       "path": "releases/land-master/8.15.3",
-      "status": "local-immutable-not-promoted"
+      "status": "production-mapped-Creator-activation-unverified"
     }
   ],
   "local_release_checks": {
@@ -290,9 +290,17 @@
     "build_pages": "passed-29-current-environment-paths",
     "candidate_asset_parity": "verified",
     "frozen_initial_candidates_preserved": true,
-    "environment_mappings_changed": false,
-    "latest_main_preserved": "99759fbb84290f41012e078f43c440f50dd19a1c"
+    "environment_mappings_changed": true,
+    "latest_main_preserved": "99759fbb84290f41012e078f43c440f50dd19a1c",
+    "changed_environments": [
+      "production"
+    ],
+    "production_mapping_validate": "passed",
+    "production_mapping_build_pages": "passed-29-paths"
   },
   "record_backfill": "none",
-  "note": "This file records the additive schema change separately from the historical generated export. Live numeric field type and identifiers are verified in the Development form designer; this is not a full current application export."
+  "note": "This file records the additive schema change separately from the historical generated export. Live numeric field type and identifiers are verified in the Development form designer; this is not a full current application export.",
+  "creator_production_publish_performed_by_this_task": false,
+  "production_widget_mapping_changed_by_this_task": true,
+  "production_authorization": "User: push to main and prod; then Creator promotion owned by user, Git only."
 }

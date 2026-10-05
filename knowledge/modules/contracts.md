@@ -129,7 +129,7 @@ page change. Fresh saved-record readback and widget deployment remain pending. T
 editable-term notes below describe historical two-tier releases.
 Rollback: Development mapping `1.60.52`; current main Production mapping `1.60.54`. Retain entered second values.
 Local immutable candidate `1.61.2` passed full repository validation and the
-Pages build; it is not mapped or uploaded. Frozen `1.61.0` and `1.61.1` remain unchanged.
+Pages build; the user authorized Production mapping to `1.61.2` through Git and retained responsibility for Creator promotion. Frozen `1.61.0` and `1.61.1` remain unchanged.
 
 Legal 1.60.51 displays native comment validation alerts as readable text.
 `Validate_Comment_Log` in Creator Development now accepts and preserves
