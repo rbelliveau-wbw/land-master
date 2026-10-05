@@ -238,4 +238,15 @@ for(const params of [{envUrlFragment:'',loginUser:{}},{envUrlFragment:'',loginUs
   const h=harness({initialize:async()=>({envUrlFragment:''})});h.context.ZOHO.CREATOR.loginUser='genuine-global-actor';await drain();assert.equal(h.widget.state.live,true);assert.equal(h.context.LMRuntime.current().user,'genuine-global-actor');h.context.LMRuntime.apply({envUrlFragment:'',loginUser:'different'});assert.equal(h.widget.queue('Multi_Line','unsafe'),false);assert.equal(h.widget.controller.canEdit(),false);
   const noSdk=harness({creator:false});await drain();assert.equal(noSdk.widget.state.demo,false);assert.equal(noSdk.widget.state.live,false);assert.equal(noSdk.calls.length,0);const preview=harness({creator:false,embedded:false});await drain();assert.equal(preview.widget.state.demo,true);assert.equal(preview.widget.queue('Multi_Line','unsafe'),false);
 }
+for(const wrapped of [false,true]){
+  const h=await ready();let writes=0;
+  const native={code:4590,error:[{task:'alert',alert_message:['Next Workflow Run is invalid.']} ]};
+  h.api.updateRecordById=async()=>{writes++;if(wrapped)throw {responseText:JSON.stringify(native)};return native;};
+  h.widget.queue('Multi_Line','retained diagnostic draft');let failure;
+  await assert.rejects(h.widget.flush(),error=>{failure=error;return true;});
+  assert.match(failure.message,/Next Workflow Run is invalid/);assert.equal(failure.code,'4590');
+  assert.equal(failure.recordId,ID);assert.deepEqual(Array.from(failure.fields),['Multi_Line']);
+  assert.equal(h.widget.value('Multi_Line'),'retained diagnostic draft');assert.equal(writes,1);
+  await h.widget.controller.recheck().catch(()=>{});assert.equal(writes,1,'Detailed native failures cannot replay a write');
+}
 console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID verification, strict Curve CRUD/parent verification, no mutation replay and guarded native handshake.');
