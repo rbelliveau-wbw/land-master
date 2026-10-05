@@ -127,7 +127,7 @@ functions/actions compiled, were saved and reopened. Both Contract report quick
 layouts are Save/reload-verified, and Forecast bindings were audited without a
 page change. Fresh saved-record readback and widget deployment remain pending. The older
 editable-term notes below describe historical two-tier releases.
-Rollback: Development mapping `1.60.52`; current main Production mapping `1.60.54`. Retain entered second values.
+Rollback: Development mapping `1.60.52`; prior Production mapping `1.60.54`. Retain entered second values.
 Local immutable candidate `1.61.2` passed full repository validation and the
 Pages build; the user authorized Production mapping to `1.61.2` through Git and retained responsibility for Creator promotion. Frozen `1.61.0` and `1.61.1` remain unchanged.
 

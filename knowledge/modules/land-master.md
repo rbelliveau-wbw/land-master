@@ -44,9 +44,9 @@ Development's Contract and schedule fields are Save/reload-verified, and the
 shared cadence helper compiled/reopened and passed native read-only Execute.
 All dependent backend functions/actions compiled, were saved and reopened in
 Development. Both schedule report quick layouts are Save/reload-verified and
-Forecast bindings need no page change. Live saved-record verification and widget
-deployment remain pending.
-Rollback: Development mapping `8.14.5`; current main Production mapping `8.14.7`. Preserve second fields and entered data.
+Forecast bindings need no page change. Live saved-record verification and Creator
+promotion remain user-owned.
+Rollback: Development mapping `8.14.5`; prior Production mapping `8.14.7`. Preserve second fields and entered data.
 Local immutable candidate `8.15.3` passed full repository validation and the
 Pages build, including total/initial-term validation before native DATA writes.
 The user authorized Production mapping to `8.15.3` through Git and retained responsibility for Creator promotion. Frozen `8.15.0`, `8.15.1` and `8.15.2` remain unchanged.

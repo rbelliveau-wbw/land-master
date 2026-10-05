@@ -24,11 +24,11 @@ matches its reviewed live-preserving patch and passes the seven focused summary
 regression groups. All dependent backend functions/actions have now compiled,
 been saved and reopened in Development. Both new columns were saved/reloaded in
 all four report quick layouts. The Forecast binding audit confirmed no separate
-page column edit is needed. Fresh saved-record readback and widget promotion
-remain pending. An environment snapshot showed Stage `9.43` and Production
+page column edit is needed. Fresh native saved-record verification remains
+pending; the user owns Creator promotion and authorized Git-only Production
+widget mappings to Legal `1.61.2` and Land `8.15.3`. An environment snapshot showed Stage `9.43` and Production
 `9.42` after an external user-initiated Publish; it does not verify that Publish's
-outcome or this feature's presence there. This task has not published Creator or
-promoted widget mappings.
+outcome or this feature's presence there. This task has not published Creator.
 
 The [field migration registry](../../creator/schema-changes/second-closing.json)
 records the schema work. The August generated export is an older snapshot;
@@ -143,7 +143,7 @@ require a Creator deployment; the additive schema and report changes must reach
 the target environment before either widget is promoted.
 
 Development UI rollback mappings are Contract Management `1.60.52` and Land Master
-`8.14.5`; current main Production baselines are `1.60.54` and `8.14.7`.
+`8.14.5`; prior Production baselines are `1.60.54` and `8.14.7`.
 Preserve both second fields and entered values. A widget rollback alone
 does not restore three-tier calculations, and older widgets may omit the second
 inputs. Use captured native pre-change bodies to roll back backend actions only
