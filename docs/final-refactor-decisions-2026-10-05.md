@@ -64,3 +64,21 @@ shows Entered 10/01/2026 and Close Date 10/15/2026 in both the report and
 detail modal; the modal retains all 25 linked lots and stored financial values.
 Only the date label changes in this successor; the Creator closing schedule
 remains unchanged.
+
+The cross-widget caller audit found the same obsolete Actions Contract_Template
+assumption in Legal. Release 1.60.52 requires checked Template_Action, nonblank
+Type_field and no Contract1 parent. Complete counted reads validate current
+fields before selecting templates; unknown/incomplete results remain visibly
+unavailable and block new-contract/template writes while retaining drafts.
+Fresh seed snapshots do not overwrite ordinary actions. The separate Builder
+approval predicate, recipients and Lot type fallback remain unchanged. Affected
+read fields are Contract_Actions.Template_Action, Type_field, Contract1 and
+Contract_Action; no form, function, Custom API or native Creator change is needed.
+
+Candidate commit 2e4ee27 passed CI 37338981877 and Pages 37338981866. Native
+Development Legal 1.60.52 matches all 19 list table rows (15 visible contracts)
+exactly against 1.60.51. The complete core remains 21 contracts, 106 actions,
+13 files and 37 approvals. Seven Acquisition template titles and six Lot seed
+titles match exactly, with no template-unavailable warning. The new form was
+cancelled; no contract, template, file, financial or workflow write was made.
+Rollback for this frontend correction is Legal 1.60.51.

@@ -472,3 +472,14 @@ explicit; green checks do not imply those scenarios were performed.
 Further Creator backend promotions remain with the user, including the
 separate Development Validate_Comment_Log Contract1 correction described
 in `docs/comment-save-sdk2-hotfix-2026-10-05.md`.
+
+The cross-widget audit also repaired Legal's removed Actions Contract_Template
+assumption and unchecked-orphan template inference. Candidate 1.60.52 requires
+checked Template_Action, nonblank Type_field and no Contract1 parent. Unknown
+fields/failed complete reads preserve drafts and block dependent writes.
+Commit 2e4ee27 passed CI 37338981877 and Pages 37338981866. Its native Dev
+gate retains every 19 table row/15 visible contract, the complete 21-contract /
+106-action /13-file /37-approval snapshot, all seven Acquisition templates and
+all six Lot seed titles exactly against 1.60.51. The form was cancelled without
+saving. No Creator publication is required for this frontend correction;
+rollback is Legal 1.60.51.

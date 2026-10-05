@@ -97,13 +97,14 @@ Native baseline placements and aggregate counts are recorded in the live ledger.
 
 ## Final separately gated release set
 
-As of published main commit `9c02d3a`, all nine sources use the canonical SDK2
-runtime/data boundary, with byte-identity inventory checks. Production maps
-Budget 122.28.20, Land 8.14.5, Pro Forma 1.80.73, Legal 1.60.51, Tax 19.17.8,
+All nine sources use the canonical SDK2 runtime/data boundary, with byte-identity
+inventory checks. The final Production mappings are
+Budget 122.28.20, Land 8.14.5, Pro Forma 1.80.75, Legal 1.60.52, Tax 19.17.8,
 Gantt 1.1.6, Manage Lots 0.9.20, Settings 1.3.7 and Insights 1.5.42. Concurrent
-Pro Forma and Legal work is retained; the further Legal stale-template repair is
-not yet a released successor. This set supersedes the earlier four-widget
-inventory examples above.
+Pro Forma and Legal work is retained. Legal 1.60.52 passed its native Dev
+read gate with exact list, Acquisition-template and Lot-seed parity; it corrects
+the obsolete action-template field and excludes unchecked ordinary actions.
+This set supersedes the earlier four-widget inventory examples above.
 
 The user resolved Settings' picker meaning to Template Action. Its native Dev
 gate preserved 23 scalar fields and both selected-ID sets with 16 Action choices;

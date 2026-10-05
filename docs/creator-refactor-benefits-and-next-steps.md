@@ -56,9 +56,11 @@ sets and releases; no controlled percentage speedup is claimed.
 - Insights' Dev actors lack dashboard access. The user authorized read-only
   Production verification instead, and that gate passed without permission
   changes. Historical failed gates remain recorded in the live ledger.
-- Concurrent Pro Forma 1.80.73 and Legal 1.60.51 releases are retained. The
-  further Legal stale-template/orphan-option repair is in progress; it is not a
-  released successor yet.
+- Concurrent Pro Forma 1.80.75 and Legal 1.60.51 repairs are retained. Legal
+  1.60.52 also fixes the obsolete action-template field and excludes unchecked
+  orphan actions. Its native Dev read gate preserves the exact contract rows,
+  seven Acquisition template titles and six Lot seeds; no template or contract
+  was saved. Missing/incomplete fields retain drafts and block dependent writes.
 - Native read parity does not prove unperformed writes, uploads, approvals or
   bulk updates, or reduced-permission roles without an available test session.
   Creator promotions reserved for the user remain separate,
