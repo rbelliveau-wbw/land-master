@@ -1,6 +1,14 @@
 
 # Land Master Module
 
+## AI lot import leaves Notes alone (8.14.7)
+
+AI lot import omits `Notes` entirely from every `Lots` create payload. Filename, sheet and source row provenance, plus AI review warnings, remain available in the import review UI. Imported lot codes, subdivision, phase, block, lot number, width, city/county and default flags retain their existing behavior. Existing lot codes are still skipped; this release does not alter previously saved Notes.
+
+Changed files: spreadsheet import JS, mounted creation/close regression, widget HTML version markers/config, widget manifest, import instructions/handoff, this module guide, immutable Land Master 8.14.7 release and Production Land mapping. Affected form/field: `Lots.Notes` is no longer supplied by import. Frontend function: spreadsheet `create()`. No Creator fields, backend functions or Custom APIs change, and no Creator publication is required. `Plat_AI_Ingest` / `Ingest_Plat` continue staging source mappings only.
+
+Regression: actual selected-lot create payloads omit Notes while preserving other imported fields, optional width, duplicate checks, source provenance, excluded rows, partial failures and close safeguards. Focused spreadsheet/host checks, full `npm run validate` (including prevalidation), and `npm run build:pages` pass. No live lots were inserted for verification. Rollback: restore Production Land mapping to 8.14.6. Main and Production promotion was authorized October 5, 2026.
+
 ## Lot Import Soft rows and clear discard scope (8.14.6)
 
 Populate Subdivision uses the selected Soft rows treatment: rounded white lot rows, blue source disclosure pills, restrained state edges, and mint Created badges. Its source provenance, validation, editable columns, pinned summary, and creation flow remain intact.

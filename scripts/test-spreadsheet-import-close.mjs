@@ -80,6 +80,16 @@ function harness(count = 3, options = {}) {
   h.state.rows[133].on = false;
   await h.importer.create();
   assert.equal(h.calls.add.length, 133);
+  h.calls.add.forEach((data, index) => {
+    assert.equal(Object.hasOwn(data, 'Notes'), false, 'AI import must omit Notes entirely, including blank or null values');
+    assert.deepEqual(JSON.parse(JSON.stringify(data)), {
+      Lot_Code: 'SC01-B01-L' + String(index + 1).padStart(2, '0'),
+      Status: 'Open', Subdivision: subdivision.ID, Subdivision_Code: 'SC01',
+      Phase: 1, Block: '1', Lot_Number: index + 1,
+      City: 'Seguin', County: 'Guadalupe', Archived: false, On_Hold: false,
+      Lot_Size: 50
+    }, 'omitting Notes must preserve the remaining imported fields and the exact subdivision ID');
+  });
   assert.equal(h.calls.reload, 1);
   assert.equal(h.state.run.total, 133);
   assert.equal(h.state.run.created, 133);
@@ -94,6 +104,22 @@ function harness(count = 3, options = {}) {
   assert.equal(h.document.body.style.overflow, '');
   assert.equal(h.document.activeElement, h.node('importTrigger'));
   assert.equal(h.state.rows, rows, 'closing must preserve saved and excluded row state');
+}
+
+// An absent source width omits Lot_Size as well as Notes, without blocking creation.
+{
+  const h = harness(1);
+  h.state.rows[0].width = '';
+  await h.importer.create();
+  assert.equal(h.calls.add.length, 1);
+  assert.equal(Object.hasOwn(h.calls.add[0], 'Notes'), false);
+  assert.equal(Object.hasOwn(h.calls.add[0], 'Lot_Size'), false);
+  assert.deepEqual(JSON.parse(JSON.stringify(h.calls.add[0])), {
+    Lot_Code: 'SC01-B01-L01', Status: 'Open', Subdivision: subdivision.ID,
+    Subdivision_Code: 'SC01', Phase: 1, Block: '1', Lot_Number: 1,
+    City: 'Seguin', County: 'Guadalupe', Archived: false, On_Hold: false
+  });
+  assert.equal(h.state.run.created, 1);
 }
 
 // A failed selected lot still represents unfinished work. Cancel retains it;
@@ -235,4 +261,4 @@ for (const step of [1, 2]) {
   assert.equal(h.state.open, false);
 }
 
-console.log('Spreadsheet import close: excluded lots after creation, saved/unsaved counts and grammar, failed/unprocessed selections, draft warnings, Cancel, active work, forced close, and Escape passed.');
+console.log('Spreadsheet import creation/close: Notes omitted, exact imported fields and optional width, excluded lots after creation, saved/unsaved counts and grammar, failed/unprocessed selections, draft warnings, Cancel, active work, forced close, and Escape passed.');

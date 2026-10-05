@@ -1,5 +1,7 @@
 # Spreadsheet lot import — Creator publication handoff
 
+Current import belongs to Land & Projects. As of Land Master **8.14.7**, every import create payload omits `Lots.Notes`; filename, sheet, row references and AI review warnings remain in the review UI. The publication steps below describe the original spreadsheet backend rollout.
+
 The selectable-lot and complete subdivision loading fixes are already deployed as manage-lots **0.8.6**. Spreadsheet import is packaged as manage-lots **0.9.4** awaiting Creator publication. Settings Manager **1.3.1** wording is deployed independently.
 
 ## Publish in Creator
@@ -24,7 +26,7 @@ CSV/XLSX files are limited to 10 MB, 5,000 nonempty rows, and 100,000 cells. AI 
 ## Release checklist
 
 - Changed files: Manage Lots HTML, spreadsheet JS/CSS, vendored XLSX parser/license, widget configuration/dependency manifests, Settings HTML/configuration, Deluge function, regression scripts, immutable releases, and documentation.
-- Affected forms/fields: Lots (`Lot_Code`, `Subdivision`, `Subdivision_Code`, `Phase`, `Block`, `Lot_Number`, `Lot_Size`, `City`, `County`, `Status`, `Archived`, `On_Hold`, `Notes`); Builder_Takedown keeps its existing creation workflow; Settings reuses `Plat_Review_Criteria`, `PF_Review_Provider`, `PF_Review_Model`.
+- Affected forms/fields: Lots (`Lot_Code`, `Subdivision`, `Subdivision_Code`, `Phase`, `Block`, `Lot_Number`, `Lot_Size`, `City`, `County`, `Status`, `Archived`, `On_Hold`); Builder_Takedown keeps its existing creation workflow; Settings reuses `Plat_Review_Criteria`, `PF_Review_Provider`, `PF_Review_Model`.
 - Affected function/APIs: `Plat_AI_Ingest`, `Ingest_Plat`, `Ingest_Plat_DEV`; no names/signatures change. New mode `spreadsheet` returns provenance column mappings; ping advertises schema 2. Legacy tile mode remains for rollback.
 - Frontend deployment: 0.8.1 is live. 0.9.4 needs promotion after backend publication; Settings 1.3.1 wording is already promoted.
 - Backend deployment: user publishes the provided function in Creator. GitHub deployment does not publish Deluge.
