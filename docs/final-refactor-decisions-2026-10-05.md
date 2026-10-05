@@ -48,3 +48,19 @@ All 218 body rows, selected totals and summary matched the captured 1.5.40
 baseline exactly for both the two-year view and all-history view (249 months).
 Historical data and recent results therefore remain complete for those scopes.
 No data, permission, financial, schedule or approval write was used as a test.
+
+Settings Production promotion commit 9c02d3a passed CI 37337304335 and Pages
+37337304073. Native Production 1.3.7 preserves all 22 previously displayed
+scalar controls by field, type, value and checkbox state, and both saved lookup
+ID sets exactly. Its complete read also exposes Current_Batch, making 23
+controls. The approval picker retains two choices and zero selected IDs; the
+action picker retains seven selected IDs and now offers 15 checked template
+choices. This gate was read-only. All nine Production widget mappings now use
+SDK2. The separate earlier mutation and reduced-permission gaps remain in the
+live ledger.
+
+Native Production Manage Lots 0.9.20 retains 857 takedowns. Its first record
+shows Entered 10/01/2026 and Close Date 10/15/2026 in both the report and
+detail modal; the modal retains all 25 linked lots and stored financial values.
+Only the date label changes in this successor; the Creator closing schedule
+remains unchanged.

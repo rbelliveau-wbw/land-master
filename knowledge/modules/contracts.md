@@ -11,8 +11,13 @@ Legal 1.60.51 displays native comment validation alerts as readable text.
 The whole widget uses native DATA/FILE/UTIL, a fresh authenticated handshake,
 counted complete cursor reads and exact string IDs. Its existing full access,
 degraded permission policy, original uploader names and Legal45 Project/Territory
-and staged lot-entry rules are preserved. The removed Contract_Template field
-does not become Template_Action without the user's pending business-rule answer.
+and staged lot-entry rules are preserved. The user confirmed Template_Action
+as the current checked-template flag on October 5. Legal 1.60.52 applies that
+flag with Type_field and an empty Contract1 parent, replacing the removed
+Actions Contract_Template assumption. Unchecked ordinary/orphan actions are
+excluded from templates; incomplete or malformed fields remain unavailable
+with retained drafts and blocked template-dependent writes. The separate
+Builder approval predicate and legacy Lot type fallback remain unchanged.
 
 Captured writes require exact persisted verification. Partial or unknown results
 retain drafts and confirmed stages, block replay and offer only supported

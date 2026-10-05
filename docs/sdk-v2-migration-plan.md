@@ -1,6 +1,14 @@
 # Remaining Creator SDK v2 migration
 
-Source audit and migration plan, 2026-10-02. The twelve performance increments passed their exercised normal Development and Production gates. Gantt `1.1.2` passed its individual normal native Development read/controls gate; native date writes remain unperformed because the available browser cannot drag timeline bars. Settings is now under implementation. Historical line references and versions below describe the original SDK1 audit, not a passed candidate. Current releases and native results are recorded in the [live validation ledger](creator-performance-live-ledger.md).
+Original source audit and migration plan, 2026-10-02; current status updated
+2026-10-05. All nine sources and the published Production mappings now use SDK2.
+Settings 1.3.7 passed its native Development and Production read gates. Insights
+1.5.42 passed the user-authorized read-only Production gate in place of the
+unavailable Dev dashboard gate. Native writes and other
+unperformed scenarios remain separate from read parity. Historical line
+references, versions and migration instructions below describe the original
+SDK1 audit. Current releases and evidence are recorded in the
+[live validation ledger](creator-performance-live-ledger.md).
 
 ## Scope and order
 
@@ -89,6 +97,34 @@ Native baseline placements and aggregate counts are recorded in the live ledger.
 
 ## Final separately gated release set
 
-All nine sources now use the canonical SDK2 runtime/data boundary, with byte-identity inventory checks. Production maps eight widgets to SDK2: Budget 122.28.20, Land 8.14.4, Pro Forma 1.80.69, Legal 1.60.48, Tax 19.17.6, Gantt 1.1.6, Manage Lots 0.9.17 and Insights 1.5.40. Each newly migrated widget passed its own native Development data gate; the live ledger records Production checks and unperformed mutation scenarios. This release set supersedes the earlier four-widget inventory examples above.
+As of published main commit `9c02d3a`, all nine sources use the canonical SDK2
+runtime/data boundary, with byte-identity inventory checks. Production maps
+Budget 122.28.20, Land 8.14.5, Pro Forma 1.80.73, Legal 1.60.51, Tax 19.17.8,
+Gantt 1.1.6, Manage Lots 0.9.20, Settings 1.3.7 and Insights 1.5.42. Concurrent
+Pro Forma and Legal work is retained; the further Legal stale-template repair is
+not yet a released successor. This set supersedes the earlier four-widget
+inventory examples above.
 
-Settings Production remains 1.3.1 on SDK1 until the user resolves the removed Contract Template versus current Template Action picker rule. Insights 1.5.41 remains held because none of the four available Development access rows grants the dashboard read. No access grant or business rule was changed to satisfy a test. Rollbacks are Budget 122.28.19, Pro Forma 1.80.65 and Legal 1.60.45 through the stable environment mapping; no Creator backend deployment is required for these three frontend successors.
+The user resolved Settings' picker meaning to Template Action. Its native Dev
+gate preserved 23 scalar fields and both selected-ID sets with 16 Action choices;
+Production preserved all 22 prior scalar values/types and both saved-ID sets,
+with only Current_Batch added to the controls. It retained seven selected Actions
+among 15 checked-template choices and showed no Actions-unavailable warning.
+No native Settings write was performed. The user authorized read-only
+Insights Production verification because no available Dev actor has dashboard
+access. It passed exact two-year/all-history parity against 1.5.40: 218 rows,
+249 months and all 25,527 lots, with 38 successful requests. One run reached
+first usable results at 3,289 ms and complete history at 7,903 ms; no controlled
+speedup percentage is claimed. Manage Lots 0.9.20 retained 857 takedowns and the
+first record's 25 lots; its Close Date label uses Purchase_Date by explicit user
+decision.
+
+The live ledger retains failed historical gates and unperformed mutation
+scenarios, including Gantt's native date writes, and reduced-permission gaps.
+All nine Production SDK2 releases passed their available native gates; CI
+37337304335 and Pages 37337304073 succeeded for `9c02d3a`.
+No access grant was changed to satisfy a test. Widget mappings do not publish
+Creator backend fixes reserved for
+the user, including the other chat's Development Validate_Comment_Log Contract1
+fix. Historical rollback references remain in each release's evidence; use the
+stable environment mapping to restore an individually verified release.

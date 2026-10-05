@@ -6,7 +6,8 @@
   reads share bounded concurrency, counts and complete cursor reads.
 - Budget's list attachment/comment badges resolve in the background. Land Master
   retains project links and groups instead of putting all subdivisions in Unlinked.
-- Budget, Land Master, Pro Forma, Legal, Insights, Gantt, Manage Lots and Tax Center use Creator SDK 2.0. Their adapters keep
+- All nine widget sources and the published Production mappings use Creator
+  SDK 2.0, including Settings 1.3.7. Their adapters keep
   string record IDs, native environment routing and permission failures distinct
   from verified empty results.
 - The lean access response preserves permissions and original uploader names
@@ -24,6 +25,15 @@
 - Manage Lots passed Dev list/lot/takedown parity and reads 348 subdivision
   choices, 186 AR05 lots and 857 takedowns in Prod. Unknown create outcomes keep
   the draft and prevent another blind submission.
+- Manage Lots 0.9.20 adds flat newest-first takedowns, Builder filtering, amber
+  Scheduled tags and complete read-only details. Entered Date and Close Date
+  pills use Entered_Date and, by the user's explicit decision, Purchase_Date.
+  Native Production retained all 857 takedowns and the first record's 25 lots.
+- Insights 1.5.42 displays the first two years while loading complete history in
+  the background. Its authorized read-only Production gate matched the two-year
+  and all-history baseline exactly: 218 rows, 249 months and all 25,527 lots.
+  One run reached usable results at 3,289 ms and complete history at 7,903 ms,
+  with 38 successful requests; this is not a controlled speedup measurement.
 - Pro Forma's separate native Dev gate preserves all 23 list records and all
   132 editor fields across eight sections. Its additional costs use the verified
   Proforma Item report for loading and persisted save verification.
@@ -35,18 +45,27 @@ The native evidence and boundaries are in the
 [live ledger](creator-performance-live-ledger.md). Timings use different data
 sets and releases; no controlled percentage speedup is claimed.
 
-## In progress
+## Current validation boundaries — 2026-10-05
 
-- Insights 1.5.40 remains on SDK2 in Prod. The stricter 1.5.41 candidate is held:
-  all four existing Dev User Access records have Lot Sales Dashboard disabled,
-  preventing the required authorized Dev data read. No permission was changed.
-- Settings remains on SDK1 in Prod. The current Actions form has Template Action
-  instead of the former Contract Template field; the picker rule requires the
-  user's answer before changing its meaning.
-- Pro Forma 1.80.69 and Legal 1.60.48 passed their individual native Dev gates
-  and are promoted through the Production mapping. Final deployed Production
-  read checks are recorded in the live ledger. Concurrent Legal and Land work
-  from the other chat is preserved.
+- Settings 1.3.7 uses the confirmed Template Action rule. Native Development
+  preserved all 23 scalar fields and both selected-ID sets, with 16 Action
+  choices. Native Production preserved all 22 prior scalar values/types and
+  both selected-ID sets; the extra control is Current_Batch. It showed 15
+  checked-template Action choices, retained seven selected Actions and showed no
+  Actions-unavailable warning. No native write was performed.
+- Insights' Dev actors lack dashboard access. The user authorized read-only
+  Production verification instead, and that gate passed without permission
+  changes. Historical failed gates remain recorded in the live ledger.
+- Concurrent Pro Forma 1.80.73 and Legal 1.60.51 releases are retained. The
+  further Legal stale-template/orphan-option repair is in progress; it is not a
+  released successor yet.
+- Native read parity does not prove unperformed writes, uploads, approvals or
+  bulk updates, or reduced-permission roles without an available test session.
+  Creator promotions reserved for the user remain separate,
+  including the other chat's Development Validate_Comment_Log Contract1 fix.
+
+All nine Production SDK2 releases passed their available native gates. CI
+37337304335 and Pages 37337304073 succeeded for published main commit `9c02d3a`.
 
 ## Further improvements found during the work
 
@@ -73,4 +92,4 @@ sets and releases; no controlled percentage speedup is claimed.
 
 ## Incremental startup/report batch — 2026-10-04
 
-See [the focused batch writeup](startup-refinements-2026-10-04.md) for before/after request counts, atomic lazy Pro Forma options, lean Legal access, Tax null-aware Arbitrate counts, Territory-fill removal and the new Takedowns report/detail design. Insights' recent-year display fix is code-tested but its Production verification hold remains. No controlled live latency percentage or authorized Dev Insights graph pass is claimed.
+See [the focused batch writeup](startup-refinements-2026-10-04.md) for before/after request counts, atomic lazy Pro Forma options, lean Legal access, Tax null-aware Arbitrate counts, Territory-fill removal and the Takedowns report/detail design. Insights' recent-year display passed the user-authorized Production check; no controlled latency percentage or native Dev Insights graph pass is claimed.

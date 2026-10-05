@@ -435,3 +435,40 @@ Further Creator promotions are reserved for the user, per their October 5
 instruction received after 9.38 completed. No additional Creator changes were
 made after that instruction. Before/after details, regression scope, rollback
 and further opportunities are in `docs/startup-refinements-2026-10-04.md`.
+
+## Final decisions and native gates — October 5, 2026
+
+The user approved checked Template_Action records for Settings, read-only
+Production testing for Insights instead of unavailable Development dashboard
+access, and Close Date as the report label for advance Purchase_Date. No
+permission, schedule, financial or other native business write was used.
+
+Commit 9fa1f73 passed CI 37335015067 and Pages 37335015276. Settings 1.3.7
+passed its individual native Dev read gate: all 23 scalar controls and both
+saved lookup ID sets match 1.3.6 exactly; Actions now offers 16 checked template
+choices. The earlier 1.3.3 native Dev scalar save/read/restore remains separate
+evidence, not a new mutation claim.
+
+Insights 1.5.42 passed the user-authorized native Prod gate against captured
+1.5.40: all 218 body rows, selected totals and summary match exactly for the
+two-year and all-history views (249 months). Recent-ready is 3,242 ms for
+3,327 lots; first-usable is 3,289 ms with history still pending; complete
+history is 7,903 ms for all 25,527 lots. All 38 tracked requests succeed,
+with none pending. This is one run, not a controlled speedup percentage.
+
+Manage Lots 0.9.20 retains 857 native Prod takedowns and all 25 first-record
+lots with the stored dates and financial/tax fields. Both report and modal
+label advance Purchase_Date as Close Date; closing-date workflow behavior
+is unchanged.
+
+Commit 9c02d3a passed CI 37337304335 and Pages 37337304073. Its Settings
+Production read gate preserves every one of the 22 prior scalar controls
+and both saved ID sets exactly. Current_Batch is additionally visible;
+Actions has 15 verified choices with seven saved IDs, and Approvals retains
+two choices and zero selected IDs. All nine Production mappings now use
+SDK2. Native mutation and reduced-permission gaps recorded earlier remain
+explicit; green checks do not imply those scenarios were performed.
+
+Further Creator backend promotions remain with the user, including the
+separate Development Validate_Comment_Log Contract1 correction described
+in `docs/comment-save-sdk2-hotfix-2026-10-05.md`.

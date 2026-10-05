@@ -31,8 +31,11 @@ reads for a denied dashboard. Existing adapter tests cover full native-shaped
 counts/cursors and error propagation. This is code evidence, not an authorized
 native Dev graph pass: all existing Dev actors have dashboard access disabled.
 The prior automatic approval review rejected the stricter shared-adapter
-promotion for that missing individual gate. Production remains on 1.5.40 until
-the user authorizes an alternate check or supplies an authorized Dev actor.
+promotion for that missing individual gate. On October 5 the user explicitly
+authorized read-only Production testing instead. Production 1.5.42 passed
+exact two-year and all-history parity against 1.5.40, with all 25,527 lots
+loaded. Recent results appeared at 3,289 ms and complete history at 7,903 ms
+in that single run; this is not a controlled percentage speedup.
 
 Tax retains its 800-row editing limit, fresh complete-ID preflight, verified
 per-record updates, unknown-outcome quarantine and no blind write replay.

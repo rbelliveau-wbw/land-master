@@ -56,14 +56,38 @@ Project lookup and staged Lot entry are updated in candidate 1.60.45: Masters re
 new contract of each type is seeded with. A template is a `Contract_Actions` row
 with `Type_field` set, `Template_Action` true, and no `Contract1`.
 
-Reads key off "has a Type, has no Contract" rather than `Template_Action`, because
-`Template_Action` is not in the `All_Contract_Actions` quick view and the v2 API
-returns only quick-view columns. The flag is still written.
+On 2026-10-05, Robby confirmed checked Template Action records are eligible
+templates. Current native Development metadata confirms the `Template_Action`
+checkbox and `Contract_Action` text field. The widget now requires the checked
+flag, a nonblank `Type_field` and no `Contract1` in every template membership
+path. A typed ordinary action orphaned from its contract is not a template.
+The removed `Contract_Template` field no longer determines action eligibility.
+The separate Builder approval predicate is unchanged.
 
-`Type_field` and `Template_Action` exist in the Creator **Development** app only.
-Production still has the old `Contract_Template`, so until the app is published
-`templatesSupported()` is false there and the section says so instead of rendering a
-broken editor. New contracts fall back to `DEFAULT_ACTIONS`.
+Reads use complete counted cursor scopes and validate every returned checkbox,
+type and parent field before selecting templates. Missing or malformed current
+fields show **Action templates unavailable**, retain existing checklist/template
+drafts and block template saves or new-contract creation. An empty template for
+a type is reported only from a verified current scope. The existing Master/old
+Lot fallback remains. Generic defaults remain only when complete returned rows
+prove the genuine old schema (`Contract_Template`, with neither current field);
+partial/mixed schema and an empty report never imply that legacy policy.
+
+The optional new-contract template read keeps a separate verified snapshot with
+actor/environment and load-generation guards. It does not replace ordinary
+action records or active drafts. Failed, incomplete or denied reads retain the
+last snapshot as unavailable; a successful complete retry can restore the seed
+without deleting an existing custom checklist. No automatic business write is
+performed by loading or retrying templates. Creator schema/report publishing
+remains with Robby; this frontend does not publish backend changes.
+
+Regression: `node scripts/test-contract-sdk-v2-scopes.mjs` verifies exact IDs
+through `templatesFor`, `ncSeedSource` and `maBaseline`, checked native values,
+false flagged orphans, saved contract actions, missing/malformed fields, legacy
+versus unknown capability, 2,001-row pagination, incomplete/denied scope recovery,
+retained drafts and no load mutations. Root owns immutable release, native
+Dev/Prod verification and promotion; rollback is the preceding Legal widget
+release through the stable environment mapping.
 
 The create modal asks for Type first and shows nothing else until it is set, then
 lists exactly the actions that will be created and names their source.
