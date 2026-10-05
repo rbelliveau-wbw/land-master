@@ -6,11 +6,12 @@
   let active = 0, concurrency = 3, maxRequestsPerMinute = 0, readRetryOnThrottle = false, rateTimer;
   const dispatches = new Map(), cooldowns = new Map(), rateWindow = 61000;
   const queue = [], inFlight = new Map(), cache = new Map(), reads = new Set(), running = new Map();
-  let requestSequence = 0;
+  let requestSequence = 0, logTimer, lastQueuePause = '';
+  const sessionStartedAt = new Date().toISOString();
   function bytes(value) { try { const text = JSON.stringify(value); return typeof TextEncoder === 'function' ? new TextEncoder().encode(text).length : text.length; } catch { return 0; } }
   function snapshot() {
     const now=Date.now(),recent=(dispatches.get(context())||[]).filter(at=>now-at<rateWindow),cooldown=Math.max(0,(cooldowns.get(context())||0)-now),budgetWait=maxRequestsPerMinute&&recent.length>=maxRequestsPerMinute?Math.max(0,recent[0]+rateWindow-now):0;
-    return {schema:1,elapsedMs:Math.round(clock()-loadedAt),concurrency,active,queued:queue.length,pendingReads:reads.size,inFlightReads:inFlight.size,cachedReads:cache.size,requestCount:requests.length,requestSequence,rate:{limit:maxRequestsPerMinute,windowMs:rateWindow,dispatched:recent.length,waitMs:queue.length?Math.max(cooldown,budgetWait):0,reason:queue.length&&Math.max(cooldown,budgetWait)>0?(cooldown>=budgetWait?'creator-throttle':'request-budget'):''},activeRequests:Array.from(running.values(),job=>({id:job.id,task:job.task,startedAtMs:Math.round(job.began-loadedAt),queuedMs:Math.round(job.began-job.queuedAt),elapsedMs:Math.round(clock()-job.began)})),queuedRequests:queue.map(job=>({id:job.id,task:job.task,elapsedMs:Math.round(clock()-job.queuedAt)})),responseBytes:requests.reduce((sum,r)=>sum+(r.responseBytes||0),0),events:events.slice(),requests:requests.slice()};
+    return {schema:1,sessionStartedAt,observedAt:new Date().toISOString(),elapsedMs:Math.round(clock()-loadedAt),concurrency,active,queued:queue.length,pendingReads:reads.size,inFlightReads:inFlight.size,cachedReads:cache.size,requestCount:requests.length,requestSequence,rate:{limit:maxRequestsPerMinute,windowMs:rateWindow,dispatched:recent.length,waitMs:queue.length?Math.max(cooldown,budgetWait):0,reason:queue.length&&Math.max(cooldown,budgetWait)>0?(cooldown>=budgetWait?'creator-throttle':'request-budget'):''},activeRequests:Array.from(running.values(),job=>({id:job.id,task:job.task,kind:job.kind,startedAtMs:Math.round(job.began-loadedAt),queuedMs:Math.round(job.began-job.queuedAt),elapsedMs:Math.round(clock()-job.began)})),queuedRequests:queue.map(job=>({id:job.id,task:job.task,kind:job.kind,elapsedMs:Math.round(clock()-job.queuedAt)})),responseBytes:requests.reduce((sum,r)=>sum+(r.responseBytes||0),0),events:events.slice(),requests:requests.slice()};
   }
   function publish() {
     if (!root.document) return;
@@ -18,7 +19,12 @@
     if (!parent) return;
     let node = root.document.getElementById('lm-performance');
     if (!node) { node = root.document.createElement('script'); node.id = 'lm-performance'; node.type = 'application/json'; parent.appendChild(node); }
-    node.textContent = JSON.stringify(snapshot());
+    const state=snapshot(),pause=state.rate.reason;
+    if(pause!==lastQueuePause){events.push({name:pause?'queue:paused':'queue:resumed',atMs:state.elapsedMs,reason:pause,waitMs:state.rate.waitMs});if(events.length>250)events.shift();lastQueuePause=pause;state.events=events.slice();}
+    node.textContent = JSON.stringify(state);
+    // Local sampling only: the log stays current beneath any active modal.
+    if((active||queue.length||starts.size)&&!logTimer&&typeof root.setInterval==='function')logTimer=root.setInterval(publish,500);
+    else if(!active&&!queue.length&&!starts.size&&logTimer){root.clearInterval(logTimer);logTimer=null;}
   }
   function mark(name,meta) { events.push({name,atMs:Math.round(clock()-loadedAt),...(meta||{})}); if(events.length>250)events.shift();publish(); }
   function start(name,meta) { starts.set(name,clock());mark(name+':start',meta); }
@@ -33,12 +39,12 @@
       if(wait){rateTimer=root.setTimeout(pump,wait);publish();return;}
       recent.push(now);
       const job=queue.shift(),began=clock();job.began=began;running.set(job.id,job);active++;publish();
-      const timing=()=>({id:job.id,task:job.task,queuedAtMs:Math.round(job.queuedAt-loadedAt),startedAtMs:Math.round(began-loadedAt),finishedAtMs:Math.round(clock()-loadedAt),queuedMs:Math.round(began-job.queuedAt),durationMs:Math.round(clock()-began)});
-      Promise.resolve().then(job.fn).then(value=>{requests.push({...timing(),ok:true,responseBytes:bytes(value)});job.resolve(value);},error=>{requests.push({...timing(),ok:false,code:code(error)});job.reject(error);}).finally(()=>{running.delete(job.id);active--;if(requests.length>500)requests.shift();publish();pump();});
+      const timing=()=>({id:job.id,task:job.task,kind:job.kind,queuedAtMs:Math.round(job.queuedAt-loadedAt),startedAtMs:Math.round(began-loadedAt),finishedAtMs:Math.round(clock()-loadedAt),queuedMs:Math.round(began-job.queuedAt),durationMs:Math.round(clock()-began)});
+      Promise.resolve().then(job.fn).then(value=>{requests.push({...timing(),ok:true,responseBytes:bytes(value)});job.resolve(value);},error=>{requests.push({...timing(),ok:false,code:failureCode(error)});job.reject(error);}).finally(()=>{running.delete(job.id);active--;if(requests.length>500)requests.shift();publish();pump();});
     }
   }
   function request(task,fn,options){
-    const enqueue=()=>new Promise((resolve,reject)=>{queue.push({id:++requestSequence,task:String(task),fn:readRetryOnThrottle&&options&&options.readOnly?()=>Promise.resolve().then(fn).then(value=>{if(failureCode(value)==='2955')throw failure(task,value);return value;}):fn,resolve,reject,queuedAt:clock()});pump();publish();});
+    const enqueue=()=>new Promise((resolve,reject)=>{queue.push({id:++requestSequence,task:String(task),kind:options&&options.readOnly===true?'read':options&&options.readOnly===false?'write':'request',fn:readRetryOnThrottle&&options&&options.readOnly?()=>Promise.resolve().then(fn).then(value=>{if(failureCode(value)==='2955')throw failure(task,value);return value;}):fn,resolve,reject,queuedAt:clock()});pump();publish();});
     if(!readRetryOnThrottle)return enqueue();
     return enqueue().catch(error=>{
       // Only an explicitly read-only request may retry. A write is never replayed.
@@ -52,24 +58,25 @@
   function code(value){const seen=new Set();for(let depth=0;value&&depth<=16;depth++){if(seen.has(value))return '';seen.add(value);if(value.code!==undefined)return String(value.code);if(value.result&&value.result.code!==undefined)return String(value.result.code);value=value.cause;}return '';}
   // Native envelope containers only: report data and business fields stay opaque.
   function scanEnvelope(value,includeCause){
-    const queue=[{value,depth:0,parents:[]}],seen=new Set();let failed=false,firstCode='',failedCode='';
-    function enqueue(value,entry,parents){if(queue.length>=128){failed=true;return;}queue.push({value,depth:entry.depth+1,parents});}
+    const queue=[{value,depth:0,parents:[]}],seen=new Set();let failed=false,firstCode='',failedCode='',recordEnd=false,blockedEnd=false;
+    function enqueue(value,entry,parents){if(queue.length>=128){failed=true;blockedEnd=true;return;}queue.push({value,depth:entry.depth+1,parents});}
     for(let index=0;index<queue.length;index++){
       const entry=queue[index];let item=entry.value;
       if(typeof item==='string'){
         const text=item.trim();if(!/^[{[]/.test(text))continue;
-        try{item=JSON.parse(text);}catch(ignore){failed=true;continue;}
+        try{item=JSON.parse(text);}catch(ignore){failed=true;blockedEnd=true;continue;}
       }
       if(!item||typeof item!=='object')continue;
-      if(entry.parents.includes(item)||entry.depth>16){failed=true;continue;}
+      if(entry.parents.includes(item)||entry.depth>16){failed=true;blockedEnd=true;continue;}
       if(seen.has(item))continue;seen.add(item);
       const parents=entry.parents.concat([item]);
-      if(Array.isArray(item)){for(const child of item){if(queue.length>=128){failed=true;break;}enqueue(child,entry,parents);}continue;}
-      if(item.code!=null){const native=String(item.code);if(!firstCode)firstCode=native;if(native!=='3000'){failed=true;if(!failedCode)failedCode=native;}}
+      if(Array.isArray(item)){for(const child of item){if(queue.length>=128){failed=true;blockedEnd=true;break;}enqueue(child,entry,parents);}continue;}
+      if(item.code!=null){const native=String(item.code);if(!firstCode)firstCode=native;if(native!=='3000'){failed=true;if(!failedCode)failedCode=native;if(native==='3100'||native==='9280')recordEnd=true;else blockedEnd=true;}}
+      if(item.permissionDenied)blockedEnd=true;
       if(item.error||item.success===false||/^(error|failed|failure)$/i.test(String(item.status||'').trim()))failed=true;
       for(const key of includeCause?['result','details','response','output','responseText','cause']:['result','details','response','output','responseText'])if(Object.prototype.hasOwnProperty.call(item,key))enqueue(item[key],entry,parents);
     }
-    return {failed,code:failedCode||firstCode};
+    return {failed,code:failedCode||firstCode,recordEnd:recordEnd&&!blockedEnd};
   }
   function responseFailed(value){return !value||typeof value!=='object'||Array.isArray(value)||scanEnvelope(value,false).failed;}
   function failureCode(value){return scanEnvelope(value,true).code;}
@@ -122,8 +129,8 @@
       if(expected===0)return finish();
       for(pages=1;pages<=(options.countAtEnd?10000:Math.ceil(expected/200)+1);pages++){
         check();const config={report_name:report,max_records:1000,field_config:fields?'custom':'all',...query};if(fields)config.fields=fields;if(cursor)config.record_cursor=cursor;
-        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);},{readOnly:true});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return complete(error);if(error&&error.cancelled)throw error;throw failure(report,error);}
-        check();if(code(response)==='3100'||code(response)==='9280')return complete(response);
+        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);},{readOnly:true});}catch(error){check();if(error&&error.cancelled)throw error;if(scanEnvelope(error,true).recordEnd)return complete(error);throw failure(report,error);}
+        check();if(scanEnvelope(response,true).recordEnd)return complete(response);
         if(code(response)!=='3000'||responseFailed(response)||!Array.isArray(response.data))throw failure(report,response);
         for(const row of response.data){const rawId=row&&row.ID,id=rawId==null?'':String(rawId);if(!id.trim()||(typeof rawId==='number'&&!Number.isSafeInteger(rawId))||ids.has(id))throw failure(report,response,report+': missing, unsafe, or duplicate record ID across pages. Refresh to retry.');ids.add(id);rows.push(row);}
         if(options.onProgress)options.onProgress({report,page:pages,count:rows.length,expected,done:false});

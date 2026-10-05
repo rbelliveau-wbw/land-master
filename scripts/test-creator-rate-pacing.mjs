@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync('shared/creator-data.js','utf8'),drain=async()=>{for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));};
-function harness(){let now=0,seq=0;const timers=new Map();const c=vm.createContext({Date:{now:()=>now},LMRuntime:{current:()=>({user:'fixture',environment:'PRODUCTION'})},setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:id=>timers.delete(id)});vm.runInContext(source,c);return {data:c.LMData,perf:c.LMPerf,timers,advance(ms){now+=ms;for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}}};}
+function harness(){let now=0,seq=0;class FakeDate extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}const timers=new Map();const c=vm.createContext({Date:FakeDate,LMRuntime:{current:()=>({user:'fixture',environment:'PRODUCTION'})},setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:id=>timers.delete(id)});vm.runInContext(source,c);return {data:c.LMData,perf:c.LMPerf,timers,advance(ms){now+=ms;for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}}};}
 {
  const h=harness();let calls=0;await Promise.all(Array.from({length:70},()=>h.data.request('default',()=>++calls)));assert.equal(calls,70,'other widgets retain their existing default scheduling');assert.equal(h.timers.size,0);
 }

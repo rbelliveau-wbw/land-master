@@ -1,3 +1,12 @@
+## Empty conversations and shared live logs 1.80.82
+
+Creator no-records envelopes now yield verified empty conversations. Failed
+background badge reads stop until explicit reopening rather than repeatedly
+consuming the save request allowance. All nine Production widgets receive
+continuous local request/queue timing, including decoded native codes and bounded
+completed history. See [diagnostics, regression and rollback](../../docs/shared-request-diagnostics-2026-10-05.md).
+No Creator deployment is required. Persisted save checks remain unchanged.
+
 ## Save timing diagnostics 1.80.81
 
 The collapsed Save log remains available inside the pending modal and is included

@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+let now=0,sequence=0;class FakeDate extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}
+const nodes=new Map(),intervals=new Map(),timeouts=new Map();
+const document={body:{appendChild(node){nodes.set(node.id,node);}},getElementById:id=>nodes.get(id),createElement:()=>({})};
+const c=vm.createContext({document,Date:FakeDate,setInterval(fn,ms){const id=++sequence;intervals.set(id,{fn,ms});return id;},clearInterval:id=>intervals.delete(id),setTimeout(fn,ms){const id=++sequence;timeouts.set(id,{fn,ms});return id;},clearTimeout:id=>timeouts.delete(id)});
+vm.runInContext(fs.readFileSync('shared/creator-data.js','utf8'),c);
+const log=()=>JSON.parse(nodes.get('lm-performance').textContent),drain=async()=>{for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));};
+assert.equal(intervals.size,0);
+let finish;const p=c.LMData.request('fixture:write',()=>new Promise(resolve=>finish=resolve),{readOnly:false});await drain();
+assert.equal(intervals.size,1);assert.equal(log().activeRequests[0].kind,'write');
+now=9000;for(const {fn}of intervals.values())fn();assert.equal(log().activeRequests[0].elapsedMs,9000,'The DOM log updates while a slow request and modal stay open.');
+finish({code:3000,data:{ID:'private-id'}});await p;await drain();
+assert.equal(intervals.size,0,'Sampling stops after settlement.');assert.equal(log().requests[0].durationMs,9000);assert.equal(JSON.stringify(log()).includes('private-id'),false);
+c.LMData.configure({maxRequestsPerMinute:1});const queued=c.LMData.request('fixture:read',()=>true,{readOnly:true});await drain();
+assert.equal(log().rate.reason,'request-budget');assert.equal(log().queuedRequests[0].kind,'read');assert.ok(log().events.some(e=>e.name==='queue:paused'));
+now+=61000;for(const [id,t]of [...timeouts]){timeouts.delete(id);t.fn();}await queued;await drain();
+assert.ok(log().events.some(e=>e.name==='queue:resumed'));assert.equal(log().requests.at(-1).queuedMs,61000);assert.equal(intervals.size,0);
+c.LMData.configure({maxRequestsPerMinute:0});await assert.rejects(c.LMData.request('fixture:error',()=>{throw {responseText:'{"code":2898,"message":"Private message"}'};}));await drain();
+assert.equal(log().requests.at(-1).code,'2898');assert.equal(log().requests.at(-1).ok,false);assert.equal(JSON.stringify(log()).includes('Private message'),false);
+c.LMData.configure({maxRequestsPerMinute:0});await Promise.all(Array.from({length:510},()=>c.LMData.request('fixture:bounded',()=>true)));await drain();assert.equal(log().requests.length,500);assert.equal(log().requestSequence,513);assert.equal(intervals.size,0);
+console.log('PASS live DOM diagnostics retain bounded request history, native codes and queue pauses, update beneath modals, stop sampling at idle and omit response contents.');

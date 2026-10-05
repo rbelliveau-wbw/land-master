@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.5.43",
+  "version": "1.5.44",
   "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "28fe59a3f9cb73a7cbcffbd22c3ddb92f0b263e815d51384eae73ffaf3950af8",
+  "source_sha256": "365e4dfc57d746cd838faa8edb521b54321ebd094e7327023c330abc9a72fe92",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

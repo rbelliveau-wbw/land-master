@@ -36,6 +36,14 @@ a closed modal; background refresh cannot erase a new composer or edit draft.
 Patch the visible badge, title, accessible label and recent-activity state
 together on the mounted button, preserving the button and any open draft.
 
+Creator's native no-records codes (`3100` / `9280`), including SDK rejection
+wrappers, finish an empty read after the exact scoped count confirms zero.
+Cache that verified empty thread. Do not use error-message matching to conceal
+permission, malformed-envelope or incomplete-read failures. A failed badge load
+must retain an unavailable state and stop automatic retries; explicit reopening
+of the conversation may retry. Rendering a badge cannot recursively load again
+after failure or compete with saves for the request allowance.
+
 Use the persisted comment author under the module's existing `User` /
 `Added_User` contract. Prefer an authoritative User Access full name from an
 exact unique username/email match; preserve actual stored identity when a full
