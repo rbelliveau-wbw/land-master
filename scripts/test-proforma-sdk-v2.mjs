@@ -27,7 +27,7 @@ for(const kind of ['missing','duplicate','count-failure']){
  const items=Array.from({length:1201},(_,i)=>({ID:(90071992600000000n+BigInt(i)).toString(),Pro_Forma_Const:{ID},Pro_Forma_Dev:{},Template_Item:false,Add_l_Cost:'1.00',Description:'Fixture child '+i}));
  const h=await ready({storage:{Proforma_Item_Report:items},pageSize:200,count:cfg=>cfg.report_name==='All_Additional_Items'?{code:3000}:undefined});
  assert.equal(h.widget.CFG.reports.items,'Proforma_Item_Report');const det=await h.widget.loadDetail(ID);assert.equal(det.items.length,1201);assert.equal(new Set(det.items.map(row=>row.ID)).size,1201);assert.equal(h.widget.S.detail[ID],det);
- const scoped=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='Proforma_Item_Report'&&call.config.criteria);assert.equal(scoped.length,7);assert.ok(scoped.every(call=>call.config.criteria==='(Pro_Forma_Const == '+ID+' || Pro_Forma_Dev == '+ID+')'));assert.equal(h.calls.some(call=>call.config.report_name==='All_Additional_Items'),false);assert.ok(h.maxActive()<=3);
+ const scoped=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='Proforma_Item_Report'&&call.config.criteria&&call.config.criteria!=='Template_Item == true');assert.equal(scoped.length,7);assert.ok(scoped.every(call=>call.config.criteria==='(Pro_Forma_Const == '+ID+' || Pro_Forma_Dev == '+ID+')'));assert.equal(h.calls.some(call=>call.config.report_name==='All_Additional_Items'),false);assert.ok(h.maxActive()<=3);
 }
 {
  const row={ID:OTHER,Pro_Forma_Const:{ID},Pro_Forma_Dev:{},Template_Item:false,Add_l_Cost:'1',Start_Phase:'1',Description:'Fixture'};

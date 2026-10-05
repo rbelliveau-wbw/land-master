@@ -221,9 +221,11 @@ countHook=null;readHook=null;reportRows=[];c.resetPfAttachmentCounts();await c.l
 for(const condition of ['unsupported','empty']){
   reportRows=[row];c.resetPfAttachmentCounts();const beforeFallback=native.length;
   countHook=config=>config.criteria?condition==='unsupported'?{code:3330,message:'Unsupported criteria'}:{code:3000,result:{records_count:'0'}}:{code:3000,result:{records_count:'1'}};
+  readHook=config=>config.criteria?{code:3000,data:[]}:{code:3000,data:reportRows};
   const files=await c.loadPfAttachments(PF,true);assert.equal(files.length,1);assert.equal(files[0].recordId,RID);assert.equal(files[0].proformaId,PF);
   assert.equal(native.slice(beforeFallback).filter(call=>call.kind==='read'&&!call.config.criteria).length,1,'fallback is one complete native report read with exact parent filter');
 }
+readHook=null;
 for(const condition of ['denied','incomplete']){
   reportRows=[row];c.resetPfAttachmentCounts();const beforeDenied=native.length;
   countHook=config=>config.criteria?condition==='denied'?{code:2898,message:'Denied'}:{code:3000,result:{records_count:'2'}}:{code:3000,result:{records_count:'1'}};

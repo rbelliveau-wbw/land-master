@@ -93,7 +93,7 @@
     options.reportName=report;
     if(Array.isArray(options.fields))options.fields=Object.freeze(options.fields.slice());
     Object.freeze(options);
-    const key=JSON.stringify([context(),report,options.criteria||'',fields||'',options.cacheKey||'']);
+    const key=JSON.stringify([context(),report,options.criteria||'',fields||'',options.cacheKey||'',...(options.countAtEnd?['count-at-end']:[])]);
     const existing=cache.get(key);
     if(!options.fresh&&existing&&existing.expires>Date.now())return Promise.resolve(existing.rows);
     if(!options.fresh&&inFlight.has(key)&&!options.isCancelled)return inFlight.get(key).promise;
@@ -104,24 +104,29 @@
     const query=options.criteria?{criteria:options.criteria}:{};
     const promise=(async()=>{
       check();
-      let countResponse;
-      try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});},{readOnly:true});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();
-      const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count;
-      const expected=Number(rawCount);
-      if(code(countResponse)!=='3000'||responseFailed(countResponse)||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(expected)||expected<0)throw failure(report,countResponse);
+      async function counted(){let countResponse;try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});},{readOnly:true});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count,number=Number(rawCount);if(code(countResponse)!=='3000'||responseFailed(countResponse)||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(number)||number<0)throw failure(report,countResponse);return number;}
+      let expected;
+      if(!options.countAtEnd){
+        let countResponse;
+        try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});},{readOnly:true});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();
+        const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count;
+        expected=Number(rawCount);
+        if(code(countResponse)!=='3000'||responseFailed(countResponse)||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(expected)||expected<0)throw failure(report,countResponse);
+      }
       const rows=[],ids=new Set(),cursors=new Set();let cursor='';
       const finish=(response)=>{check();if(rows.length!==expected)throw failure(report,response,report+': loaded '+rows.length+' of '+expected+' records. Refresh to retry a complete snapshot.');if(options.onProgress)options.onProgress({report,page:pages,count:rows.length,expected,done:true});if(options.ttlMs>0&&!read.invalidated)cache.set(key,{options,rows,expires:Date.now()+options.ttlMs});return rows;};
+      const complete=options.countAtEnd?async response=>{expected=await counted();return finish(response);}:finish;
       let pages=0;
       if(expected===0)return finish();
-      for(pages=1;pages<=Math.ceil(expected/200)+1;pages++){
+      for(pages=1;pages<=(options.countAtEnd?10000:Math.ceil(expected/200)+1);pages++){
         check();const config={report_name:report,max_records:1000,field_config:fields?'custom':'all',...query};if(fields)config.fields=fields;if(cursor)config.record_cursor=cursor;
-        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);},{readOnly:true});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return finish(error);if(error&&error.cancelled)throw error;throw failure(report,error);}
-        check();if(code(response)==='3100'||code(response)==='9280')return finish(response);
+        let response;try{response=await request(report+':records',()=>{check();return api.getRecords(config);},{readOnly:true});}catch(error){check();if(code(error)==='3100'||code(error)==='9280')return complete(error);if(error&&error.cancelled)throw error;throw failure(report,error);}
+        check();if(code(response)==='3100'||code(response)==='9280')return complete(response);
         if(code(response)!=='3000'||responseFailed(response)||!Array.isArray(response.data))throw failure(report,response);
         for(const row of response.data){const rawId=row&&row.ID,id=rawId==null?'':String(rawId);if(!id.trim()||(typeof rawId==='number'&&!Number.isSafeInteger(rawId))||ids.has(id))throw failure(report,response,report+': missing, unsafe, or duplicate record ID across pages. Refresh to retry.');ids.add(id);rows.push(row);}
         if(options.onProgress)options.onProgress({report,page:pages,count:rows.length,expected,done:false});
         const next=response.record_cursor||(response.headers&&response.headers.record_cursor)||'';
-        if(!next)return finish(response);if(cursors.has(String(next)))throw failure(report,response,report+': repeated pagination cursor.');cursors.add(String(next));cursor=String(next);
+        if(!next)return complete(response);if(cursors.has(String(next)))throw failure(report,response,report+': repeated pagination cursor.');cursors.add(String(next));cursor=String(next);
       }
       throw failure(report,null,report+': pagination did not complete.');
     })();
