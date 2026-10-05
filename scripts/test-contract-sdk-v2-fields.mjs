@@ -33,3 +33,28 @@ console.log('PASS whole Contracts inline controller: immutable revision queue, e
  h.api.updateRecordById=async config=>{writes++;Object.assign(row,structuredClone(config.payload.data));return {code:3000,data:{ID:PRICE},details:{code:2899}};};assert.equal(await h.c.prSave(PRICE,el.value,el),false);assert.equal(el.value,'125');assert.equal(el.classList.contains('dirty'),true);assert.equal(el.classList.contains('saved-ok'),false);assert.equal(await h.c.loadData(),false);assert.equal(await h.c.prSave(PRICE,'150',el),false);assert.equal(writes,1);assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),true);assert.equal(writes,1);assert.equal(h.c.findPricing(PRICE).Base_Price,5000);assert.equal(el.classList.contains('dirty'),false);
 }
 console.log('PASS actual pricing inline failed/unknown draft retention, no Saved/no second send, refresh gate and exact-ID/financial-payload read-only recovery.');
+for(const entered of ['-$9,007,199,254,740,993.123456','($9,007,199,254,740,993.123456)','−$9,007,199,254,740,993.123456']){
+ const h=await ready(),PRICE=(BigInt(NEW)+111n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'},el=h.node('exact-price');h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);el.value=entered;el.isConnected=true;
+ const native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const response=await native(config);row.Price_per_Ft='−$9,007,199,254,740,993.12345600';return response;};
+ assert.equal(await h.c.prSave(PRICE,el.value,el),true);const sent=h.calls.find(call=>call.method==='update').config.payload.data;
+ assert.equal(sent.Price_per_Ft,'-9007199254740993.123456','Actual pricing payload keeps all entered monetary digits');assert.equal(sent.Base_Price,40*Number('-9007199254740993.123456'),'Calculated base price keeps its numeric calculation');assert.equal(el.classList.contains('saved-ok'),true);assert.equal(h.c.contractHasReviews(),false);
+}
+{
+ const h=await ready(),PRICE=(BigInt(NEW)+112n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'},el=h.node('lost-price-digit');h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);el.value='9007199254740993.123456';el.isConnected=true;
+ const native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const response=await native(config);row.Price_per_Ft='9007199254740993.123455';return response;};
+ assert.equal(await h.c.prSave(PRICE,el.value,el),false);assert.equal(h.calls.find(call=>call.method==='update').config.payload.data.Price_per_Ft,el.value);assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),false);assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.equal(el.classList.contains('saved-ok'),false);
+ row.Price_per_Ft='$9,007,199,254,740,993.12345600';assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),true);assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+}
+{
+ const h=await ready();h.node('prNewSize').value='40';h.node('prNewPpf').value='$ 12,345,678.123456';h.node('prNewEsc').value='';h.c.prAdd(ID);await drain();
+ const sent=h.calls.find(call=>call.method==='add'&&call.config.form_name==='Contract_Pricing').config.payload.data;
+ assert.equal(sent.Price_per_Ft,'12345678.123456');assert.equal(sent.Base_Price,40*Number('12345678.123456'));assert.equal(sent.Lot_Size,40);assert.equal(sent.Contract1,ID);assert.equal(h.c.contractHasReviews(),false);
+}
+{
+ const h=await ready(),PRICE=(BigInt(NEW)+113n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'};h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);
+ const native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const response=await native(config);row.Price_per_Ft='$0.000000010000';row.Base_Price='$0.0000004000';return response;};assert.equal(await h.c.prSave(PRICE,'0.00000001',h.node('tiny-price')),true);assert.equal(h.calls.find(call=>call.method==='update').config.payload.data.Price_per_Ft,'0.00000001');
+}
+for(const malformed of ['-$-12.34','(-$12.34)','$12,34.56','($12.34','1e3']){
+ const h=await ready(),PRICE=(BigInt(NEW)+114n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'};h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);assert.equal(await h.c.prSave(PRICE,malformed,h.node('invalid-price')),false);assert.equal(h.calls.filter(call=>call.method==='update').length,0,'Malformed money cannot be rewritten as zero');
+}
+console.log('PASS actual pricing edit/add payload preserves exact entered money, equivalent native credit formats, high-precision mismatch quarantine/recheck, numeric computed totals, small decimal calculations and malformed-input write exclusion.');

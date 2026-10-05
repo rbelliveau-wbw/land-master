@@ -26,7 +26,7 @@ function harness({create,read}={}){
   vm.runInContext(fs.readFileSync(app+'runtime-context.js','utf8'),c);c.LMRuntime.apply({envUrlFragment:'/environment/development',loginUser:'fixture'});
   vm.runInContext(fs.readFileSync(app+'creator-data.js','utf8'),c);
   vm.runInContext(fs.readFileSync(app+'land-data.js','utf8'),c);
-  for(const name of ['errMeta','errorResponseCode','responseBad','isEmptyCode','candidates','sdkGetAll','isSuccess','requireMutationSuccess','updateRecord','formForType','extractRecordId','landCreateFreeze','landCreateScope','landCreateGeneration','landCreateKey','landCreateStore','landCreateReviewForEditor','landCreateCandidateId','landCreateFailure','landCreatedRow','landCreateComparable','landCreatePayloadMatches','showLandCreateReview','recheckLandCreate','createRecord','reportForType','listForType','inputRaw','normalizedRaw','panelHasChanges','updatePanelActionState','payloadValue','applyLocalField','externalMappingDraftHasChanges','performExternalMappingOperation','finishExternalMappingSave','saveExternalMappings','projectFieldValue','subdivisionDraftHasRows','subdivisionPayloadFromRow','createStagedSubdivisions','allowTableEdit','savePanel','addExternalMappingRow','syncExternalMappingInput','addSubdivisionRow','syncSubdivisionInput'])vm.runInContext(actual(name),c);
+  for(const name of ['errMeta','errorResponseCode','responseBad','isEmptyCode','candidates','sdkGetAll','isSuccess','requireMutationSuccess','updateRecord','formForType','extractRecordId','landCreateFreeze','landCreateScope','landCreateGeneration','landCreateKey','landCreateStore','landCreateReviewForEditor','landCreateCandidateId','landCreateFailure','landCreatedRow','landCreateFieldType','landCreateDecimal','landCreateDate','landCreateLookup','landCreateComparable','landCreatePayloadMatches','showLandCreateReview','recheckLandCreate','createRecord','reportForType','listForType','inputRaw','normalizedRaw','panelHasChanges','updatePanelActionState','payloadValue','applyLocalField','externalMappingDraftHasChanges','performExternalMappingOperation','finishExternalMappingSave','saveExternalMappings','projectFieldValue','subdivisionDraftHasRows','subdivisionPayloadFromRow','createStagedSubdivisions','allowTableEdit','savePanel','addExternalMappingRow','syncExternalMappingInput','addSubdivisionRow','syncSubdivisionInput'])vm.runInContext(actual(name),c);
   c.esc=value=>String(value).replace(/[<>&"]/g,'');
   return{c,nodes,node,input,inputs,writes,reads,statuses,toasts,server,advance:()=>generation++,renders:()=>renders};
 }
@@ -121,5 +121,66 @@ for(const code of [2899,2945])for(const response of [
 {
   const h=harness({create:()=>({code:3000})}),c=h.c;await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));assert.equal(h.writes.length,1);await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L002'}));assert.equal(h.writes.length,2);assert.equal(h.writes[0].payload.data.Lot_Code,'AA-B01-L001');
 }
+// A committed ambiguous insert can be recovered from equivalent native formatting.
+// The same captured record stays quarantined for an actual lost cent, malformed date,
+// changed identifier, duplicate lookup, or a missing requested field.
+{
+  const payload={Common_Name:'Typed recovery',Facility_ID:'000073',Purchase_Price:'12500109.92',cost_per_acre_FT:'52868.000000',Acres:'236.440000',Purchase_Date:'2026-10-05',Insured:'true',Company1:PARENT,Projects:[ID,ID2]},
+    saved={ID,Common_Name:'Typed recovery',Facility_ID:'000073',Purchase_Price:'$ 12,500,109.920000',cost_per_acre_FT:'$52,868.00',Acres:'236.44',Purchase_Date:'05-Oct-2026',Insured:true,Company1:{ID:PARENT,zc_display_value:'Company'},Projects:[{ID:ID2},{ID}]};
+  const h=harness({create:(config,n,server)=>{server.All_Property=[clone(saved)];return{code:3000,data:{ID,success:false}};}}),c=h.c;
+  await assert.rejects(c.createRecord('property',payload));
+  const cases=[
+    {Purchase_Price:'$12,500,109.90'}, {Facility_ID:'73'}, {Purchase_Date:'2026-02-30'},
+    {Purchase_Date:'2026-10-06'}, {Purchase_Price:'$12,50,109.92'}, {Projects:[{ID},{ID}]},
+    {Company1:Number(PARENT)}, {Acres:'236.440001'}, {Insured:'false'}, {Purchase_Price:undefined}
+  ];
+  for(const change of cases){h.server.All_Property=[{...clone(saved),...change}];assert.equal(await c.recheckLandCreate('property'),false,JSON.stringify(change));assert.ok(c.S.createReviews.property);assert.equal(c.S.properties.length,0);await assert.rejects(c.createRecord('property',payload));assert.equal(h.writes.length,1,'An unverified committed create is never replayed');}
+  h.server.All_Property=[clone(saved)];assert.equal(await c.recheckLandCreate('property'),true);assert.equal(c.S.createReviews.property,undefined);assert.equal(c.S.properties[0].Purchase_Price,saved.Purchase_Price);assert.equal(h.writes.length,1);assert.ok(h.reads.filter(call=>call.kind==='records').every(call=>call.field_config==='all'&&call.criteria==='(ID == '+ID+')'));
+}
+// These are form-specific native field types, not inference from numeric-looking text.
+for(const credit of ['-$12,500,109.920000','$-12,500,109.920000','($ 12,500,109.920000)','−$12,500,109.920000','$ −12,500,109.920000']){
+  const payload={Common_Name:'Credit recovery',Purchase_Price:'-12500109.92'},h=harness({create:(config,n,server)=>{server.All_Property=[{ID,...payload,Purchase_Price:credit}];return{code:3000,data:{ID,success:false}};}}),c=h.c;
+  await assert.rejects(c.createRecord('property',payload));assert.equal(await c.recheckLandCreate('property'),true,credit);assert.equal(h.writes.length,1);assert.equal(c.S.properties[0].Purchase_Price,credit);assert.equal(c.S.createReviews.property,undefined);
+}
+for(const credit of ['-$12,500,109.90','$12,500,109.92','-$-12,500,109.92','(-$12,500,109.92)','$12,50,109.92','($12,500,109.92']){
+  const payload={Common_Name:'Unverified credit',Purchase_Price:'-12500109.92'},h=harness({create:(config,n,server)=>{server.All_Property=[{ID,...payload,Purchase_Price:credit}];return{code:3000,data:{ID,success:false}};}}),c=h.c;
+  await assert.rejects(c.createRecord('property',payload));assert.equal(await c.recheckLandCreate('property'),false,credit);assert.ok(c.S.createReviews.property);await assert.rejects(c.createRecord('property',payload));assert.equal(h.writes.length,1);
+}
+{
+  const c=harness().c;
+  for(const [type,payload,saved]of [
+    ['subdivision',{Phase:'02.000',Engineering_Markup:'12.345678',Project:PARENT},{Phase:'2',Engineering_Markup:'12.345678%',Project:{ID:PARENT}}],
+    ['lot',{Base_Price:'-12345678.125000',Lot_Number:'001',Close_Date:'2026-10-05'},{Base_Price:'($ 12,345,678.125)',Lot_Number:1,Close_Date:'10/05/2026'}],
+    ['forecastYear',{Forecast_Year:'2027',Full_Year_Forecast:'40'},{Forecast_Year:'2027.0',Full_Year_Forecast:'40.000000'}],
+    ['builderTakedown',{Interest_Rate_7:'1.250000',Date7_1:'2026-10-05'},{Interest_Rate_7:'1.25%',Date7_1:'05-Oct-2026'}],
+    ['additionalItem',{Amount:'12.34',Quantity:'2.0'},{Amount:'$12.340000',Quantity:2}],
+    ['company',{Facility_ID:'000073',Account_Number:'000049'},{Facility_ID:'000073',Account_Number:'000049'}],
+    ['externalMapping',{External_Code:'000073',Subdivision1:PARENT},{External_Code:'000073',Subdivision1:{ID:PARENT}}]
+  ])assert.equal(c.landCreatePayloadMatches(saved,payload,type),true,type);
+  for(const [type,payload,saved]of [
+    ['company',{Facility_ID:'000073'},{Facility_ID:'73'}],
+    ['company',{Account_Number:'000049'},{Account_Number:'49'}],
+    ['externalMapping',{External_Code:'000073'},{External_Code:'73'}],
+    ['property',{Property_ID:'000073'},{Property_ID:'73'}],
+    ['forecast',{Forecast_Year:'02027'},{Forecast_Year:'2027'}],
+    ['property',{Purchase_Price:'12500109.92'},{Purchase_Price:'12500109.90'}],
+    ['property',{Acres:'9007199254740993.123456'},{Acres:'9007199254740993.123455'}],
+    ['property',{ID},{ID:ID2}]
+  ])assert.equal(c.landCreatePayloadMatches(saved,payload,type),false,type);
+  const forms={property:'Property',project:'Project',subdivision:'Subdivision',company:'Company',milestone:'Milestones',forecast:'Forecast',forecastYear:'Forecast_Year',takedown:'Takedown_Schedule',builderTakedown:'Builder_Takedown',builder:'Builder',lot:'Lots',additionalItem:'Additional_Items',externalMapping:'External_System_Mapping'},aliases={USD:'currency',decimal:'number',checkbox:'bool'};
+  for(const [type,form]of Object.entries(forms))for(const field of JSON.parse(fs.readFileSync('creator/generated/fields/'+form+'.json','utf8')).fields){
+    if(type==='company'&&['Facility_ID','Account_Number'].includes(field.link_name))continue;
+    const expected=field.values&&/\.ID$/.test(field.values)?(field.type==='list'?'multilookup':'lookup'):(aliases[field.type]||field.type);
+    if(['currency','number','percentage','date','bool','lookup','multilookup'].includes(expected))assert.equal(c.landCreateFieldType(type,field.link_name),expected,type+'.'+field.link_name+' matches generated schema');
+  }
+  const descriptor=actual('descriptor'),branches=[...descriptor.matchAll(/(?:if|else if)\(type==="([^"]+)"\)/g)],nativeKinds=['currency','number','percentage','date','bool','lookup','multilookup'];
+  for(let i=0;i<branches.length;i++){
+    const type=branches[i][1],branch=descriptor.slice(branches[i].index,branches[i+1]?.index||descriptor.length);
+    for(const field of branch.matchAll(/F\("([^"]+)","[^"]*","([^"]+)"/g)){
+      if(field[2]==='ro')continue;
+      assert.equal(c.landCreateFieldType(type,field[1]),nativeKinds.includes(field[2])?field[2]:'text',type+'.'+field[1]+' matches current editor type');
+    }
+  }
+}
 assert.ok(source.includes("createCheck.getAttribute('data-recheck-land-create')"),'Mounted panel action invokes the same read-only controller');
-console.log('PASS: Land actual panel/mapping/staged native create flows retain unknown drafts, block manual replay, preserve confirmed partial IDs, require exact read-only recovery, and reject native data failures.');
+console.log('PASS: Land actual panel/mapping/staged native create flows retain unknown drafts, block replay, recover exact typed native formatting, preserve identifier zeroes/lookup IDs, and reject real currency/date/value differences.');

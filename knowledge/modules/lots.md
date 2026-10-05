@@ -119,3 +119,24 @@ filters, sorting, counts, and date values are unchanged. This is a frontend labe
 change and requires no Creator deployment. The existing whole-widget SDK2 check
 verifies the label and exact date in both surfaces with no mutations. Roll back
 the label with Manage Lots 0.9.19.
+
+## Currency preservation and verification — 2026-10-05
+
+Manage Lots canonicalizes persisted money and rates as decimal text for the
+financial preflight and saved takedown/additional-item checks. Grouped USD,
+signed-dollar, accounting-credit and Unicode-minus representations are equivalent;
+changed cents, malformed grouping and decimal values that alias through JavaScript
+Number remain distinct and cannot verify. Financial input payloads keep exact
+decimal strings when Number serialization would change them. Exactly serializable
+values retain the existing numeric payload representation. Lot IDs remain strings
+and item quantities/lot counts retain their existing whole-number rules.
+
+Receipt settlement formulas still round computed taxes, fees, additional-item
+totals and per-lot totals to cents as the existing Creator workflows do. Native
+field capacity remains a separate user-owned promotion; a truncated native amount
+is rejected by readback rather than accepted through a tolerance. No Creator form,
+function, report or business-rule change is included. The focused
+`scripts/test-manage-insights-currency.mjs` executes actual captured payloads,
+financial preflight, receipt calculations and saved child verification. Existing
+takedown/SDK2 regressions remain required. Rollback the frontend to 0.10.1 while
+retaining any expanded native capacity.

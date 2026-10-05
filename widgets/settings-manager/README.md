@@ -94,3 +94,30 @@ AI Spreadsheet Import reuses Settings.Plat_Review_Criteria for CSV/XLSX column m
 ## Spreadsheet wording (1.3.1)
 
 The section is Spreadsheet Lot Import and the field is AI Import Instructions. Help text describes CSV/XLSX column mapping, selected subdivision matching, and uncertain rows. Existing Plat_Review_Criteria values and autosave behavior are preserved. This wording update can deploy independently of the importer backend.
+
+## Money input precision (2026-10-05)
+
+The COO Approval Threshold money control displays at least two decimal places
+and preserves every entered fractional digit on render, verified reload and
+blur. Grouping formats the decimal text without converting it through Number or
+rounding it. Money controls and the autosave controller share the same strict
+currency parser, including signed-dollar, accounting and Unicode-minus credits.
+`readControl` sends the cleaned decimal text; exact persisted verification uses
+canonical decimal strings without Number conversion or tolerance. Blank and
+invalid input retain their text, and malformed currency is rejected before a
+native write. Count/percentage fields, lookup IDs and Creator field precision
+retain their existing rules.
+
+`scripts/test-systemic-currency-display.mjs` verifies repeated formatting and the
+actual money control's autosave value, including high-precision amounts and
+credits. The whole Settings SDK2 fixture verifies equivalent credit readbacks,
+rejects changed signs/fractional digits and malformed grouping, preserves exact
+record IDs and proves recovery performs only fresh reads. No Creator deployment
+is required. Rollback uses the prior Production widget.
+
+Percentage readback also compares exact decimal strings after validating grouped
+numbers and an optional trailing percent sign. Neighboring high-precision rates
+and malformed grouping remain unverified. Percentage controls, rate values,
+calculations and integer-count validation retain their existing behavior.
+Finite typed Number exponent representations expand exactly into decimal text
+for currency and percentage verification; entered exponent strings remain invalid.

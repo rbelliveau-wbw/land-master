@@ -235,6 +235,37 @@ for(const key of ['details','response','output'])for(const direction of ['succes
 for(const ambiguous of [false,true]){
  const NEW='90071992548700001',h=await ready({create:(cfg,apply)=>{apply(NEW);return ambiguous?{code:3000,data:{ID:NEW},details:{code:2899,data:{ID:OTHER},error:'Denied'}}:{code:2899,details:{code:3000,data:{ID:NEW}}};}});h.c.openAddProperty();h.node('apName').value='Captured compound creation';h.node('apCounty').value=h.node('apCounty').options[1].value;await h.c.submitAddProperty();assert.equal(h.writes.length,1);assert.equal(h.c.submitAddProperty(),false);assert.equal(h.widget.Tax.snapshot().reviews[0].id,ambiguous?'':NEW);assert.equal(await h.c.taxRecheckReviews(),!ambiguous);assert.equal(h.writes.length,1);if(!ambiguous){assert.equal(h.node('atProperty').value,NEW);assert.equal(h.widget.state.data.rawLand.filter(row=>row.id===NEW).length,1);}else{assert.equal(h.node('apName').value,'Captured compound creation');assert.equal(h.c.closeAddProperty(),false);assert.equal(h.c.submitAddProperty(),false);}
 }
+// Rendering editable values must not turn an unchanged focus/blur into a rounded write.
+{
+ const fields=['Market_Value','Assessed_Value','Settlement_Offer_Value','Assessed_Offer','Final_Value','Assessed_Final'];
+ const h=await ready({rows:[{...parcel(ID),...Object.fromEntries(fields.map(field=>[field,'12500109.92']))}]});await h.c.runParcelSearch();
+ assert.equal((h.nodes.get('tableBody').innerHTML.match(/value="\$12,500,109\.92"/g)||[]).length,6,'all six native editable currency values render cents');
+ for(const field of fields){const input={value:h.c.utilitiesconvertIntegerToCurrency('12500109.92')};h.c.unformatCurrencyInput(input);await h.c.inlineSave(ID,{[field]:input.value});assert.equal(h.writes.at(-1).id,ID);assert.equal(h.writes.at(-1).payload.data[field],'12500109.92');assert.equal(h.storage.All_Tax_Parcel_Years[0][field],'12500109.92');}
+ await h.c.inlineSave(ID,{Market_Value:'($12,500,109.923456)'});assert.equal(h.writes.at(-1).payload.data.Market_Value,'-12500109.923456');assert.equal(h.widget.Tax.snapshot().reviews.length,0,'accounting credit payload also passes exact persisted readback');
+ for(const value of ['0.0000001','12.123456789012345','123456789.123456789']){await h.c.inlineSave(ID,{Market_Value:value});assert.equal(h.writes.at(-1).payload.data.Market_Value,value);assert.equal(h.storage.All_Tax_Parcel_Years[0].Market_Value,value);assert.equal(h.widget.Tax.snapshot().reviews.length,0,'Actual inline save retains tiny and high-precision decimal text through native write/readback');}
+ await h.c.inlineSave(ID,{Market_Value:1e-7});assert.equal(h.writes.at(-1).payload.data.Market_Value,'0.0000001');assert.equal(h.widget.Tax.snapshot().reviews.length,0);
+ const writes=h.writes.length;for(const invalid of ['1e-7','$12,34.56','($-12.34)'])await assert.rejects(h.c.inlineSave(ID,{Market_Value:invalid}));assert.equal(h.writes.length,writes);assert.equal(Object.keys(h.widget.state.savingIds).length,0,'Malformed inline input neither writes nor leaves Saving stuck');
+}
+// Exact currency readback recognizes signed-dollar, accounting and Unicode minus
+// representations without accepting malformed grouping or changing cents/signs.
+for(const saved of ['-$12,500,109.923456','$-12,500,109.923456','($12,500,109.923456)','−$12,500,109.923456','$−12,500,109.923456']){
+ const h=await ready({read:(cfg,data)=>cfg.report_name==='All_Tax_Parcel_Years'&&cfg.criteria==='(ID == '+ID+')'?{code:3000,data:[{...data.All_Tax_Parcel_Years[0],Market_Value:saved}]}:undefined});await h.c.runParcelSearch();
+ await h.widget.Tax.update(ID,{Market_Value:'-12500109.923456'});assert.equal(h.writes[0].id,ID);assert.equal(h.widget.Tax.snapshot().reviews.length,0,saved+' verifies the exact credit');assert.equal(h.widget.state.data.parcelYears[0].marketValue,-12500109.923456);
+}
+{
+ const h=await ready();await h.c.runParcelSearch();
+ for(const malformed of ['-$12,50,109.92','($-12.92)','(-$12.92)','($+12.92)','--$12.92','-$12.92.1','$12,3456.92','($12.92','-$1e3','1e-7','12$34.92'])await assert.rejects(h.widget.Tax.update(ID,{Market_Value:malformed}),/malformed|conflicting sign/);
+ await assert.rejects(h.widget.Tax.update(ID,{Acres:'-$12.92'}),/malformed/);assert.equal(h.writes.length,0,'malformed currency and currency symbols in ordinary quantities never dispatch');
+}
+for(const saved of ['-$12,500,109.923455','$12,500,109.923456','-$12,50,109.923456']){
+ let invalid=true;const h=await ready({read:(cfg,data)=>invalid&&cfg.report_name==='All_Tax_Parcel_Years'&&cfg.criteria==='(ID == '+ID+')'?{code:3000,data:[{...data.All_Tax_Parcel_Years[0],Market_Value:saved}]}:undefined});await h.c.runParcelSearch();
+ await assert.rejects(h.widget.Tax.update(ID,{Market_Value:'-12500109.923456'}));assert.equal(h.widget.Tax.snapshot().reviews.length,1,saved+' remains unverified');assert.equal(await h.widget.Tax.recheck('update:All_Tax_Parcel_Years:'+ID),false);assert.equal(h.writes.length,1);
+ invalid=false;assert.equal(await h.widget.Tax.recheck('update:All_Tax_Parcel_Years:'+ID),true);assert.equal(h.writes.length,1,'read-only recovery does not resend an applied credit');
+}
+for(const [value,saved]of [[1e-7,'0.0000001'],[-1.23e-7,'-0.000000123']]){
+ const h=await ready({read:(cfg,data)=>cfg.report_name==='All_Tax_Parcel_Years'&&cfg.criteria==='(ID == '+ID+')'?{code:3000,data:[{...data.All_Tax_Parcel_Years[0],Market_Value:saved}]}:undefined});await h.c.runParcelSearch();
+ await h.widget.Tax.update(ID,{Market_Value:value});assert.equal(h.writes[0].id,ID);assert.equal(h.writes[0].payload.data.Market_Value,value);assert.equal(h.widget.Tax.snapshot().reviews.length,0,'Finite Number exponent representation verifies its exact expanded decimal');
+}
 const names=[...source.matchAll(/^function ([\w$]+)\(/gm)].map(match=>match[1]);assert.equal(new Set(names).size,names.length,'No earlier overridden function remains');
 {
  const h=await ready({count:(cfg,data)=>cfg.report_name==='All_Projects'?1:data[cfg.report_name].length,read:cfg=>cfg.report_name==='All_Projects'?Promise.reject(new Error('Denied')):undefined});assert.equal(h.widget.state.projectsAvailable,false);assert.equal(h.c.openAddProperty(),false);assert.equal(h.writes.length,0);

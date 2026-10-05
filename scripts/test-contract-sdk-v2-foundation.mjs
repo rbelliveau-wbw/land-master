@@ -79,6 +79,31 @@ for(const metadata of [{code:2899,message:'Denied'},JSON.stringify({output:{code
 for(const conflicting of [ID,Number(ID)]){
  const h=await ready();let writes=0;h.api.addRecords=async()=>{writes++;return {code:3000,data:{ID:NEW},details:{data:{ID:conflicting}}};};await assert.rejects(h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Unknown child'}));await assert.rejects(h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Unknown child'}));assert.equal(writes,1);assert.equal(Object.values(h.c.S.sdkMutationReviews)[0].id,'','conflicting or malformed create acknowledgement IDs cannot choose a recovery record');
 }
+// Exact native monetary readback accepts Creator's equivalent credit formatting;
+// canonicalization never aliases distinct decimals through JavaScript Number.
+for(const saved of ['-$12,500,109.920000','$-12,500,109.920000','($ 12,500,109.920000)','−$12,500,109.920000','$ −12,500,109.920000']){
+  const h=await ready(),payload={Contract_Name:'Credit record',Status:'New',Earnest_Money:'-12500109.92',Builder:SUB},native=h.api.addRecords;
+  h.api.addRecords=async config=>{const response=await native(config),id=response.result[0].data.ID;Object.assign(h.reports.All_Contracts1.find(row=>row.ID===id),{Earnest_Money:saved,Builder:{ID:SUB,zc_display_value:'Builder'}});return response;};
+  const result=await h.c.createRecord(h.c.CFG.forms.contract,payload);assert.equal(result.verifiedRow.Earnest_Money,saved);assert.equal(result.verifiedRow.Builder.ID,SUB);assert.equal(typeof result.data.ID,'string');assert.equal(h.c.contractHasReviews(),false);assert.equal(h.calls.filter(call=>call.method==='add').length,1);
+}
+for(const saved of ['-$12,500,109.90','$12,500,109.92','-$-12,500,109.92','(-$12,500,109.92)','$12,50,109.92','($12,500,109.92']){
+  const h=await ready(),native=h.api.updateRecordById,payload={Earnest_Money:'-12500109.92'};
+  h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Earnest_Money=saved;return response;};
+  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(retained.id,ID);assert.equal(retained.payload.Earnest_Money,payload.Earnest_Money);assert.equal(await h.c.recheckContractMutation(retained.key),false);await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+  h.reports.All_Contracts1[0].Earnest_Money='($12,500,109.920000)';assert.equal(await h.c.recheckContractMutation(retained.key),true,'Read-only exact credit recovery');assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.equal(h.c.contractHasReviews(),false);
+}
+{
+  const h=await ready(),native=h.api.updateRecordById,payload={Total_Contract_Price:'9007199254740993.123456'};
+  h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Total_Contract_Price='9007199254740993.123455';return response;};
+  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(await h.c.recheckContractMutation(retained.key),false,'Neighboring high-precision decimals cannot compare through Number');assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+  h.reports.All_Contracts1[0].Total_Contract_Price='$9,007,199,254,740,993.12345600';assert.equal(await h.c.recheckContractMutation(retained.key),true);assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+  assert.equal(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),'000073');assert.notEqual(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),h.c.contractFieldComparable('73','Contract_Code',h.c.CFG.reports.contracts,'000073'),'Text identifier zeroes stay significant');
+}
+{
+  const h=await ready(),PRICE=(BigInt(NEW)+99n).toString(),row={ID:PRICE,Contract1:{ID},Base_Price:'0'};h.reports.Contract_Pricing_Report.push(row);
+  let writes=0;h.api.updateRecordById=async config=>{writes++;Object.assign(row,clone(config.payload.data),{Base_Price:'−$1,234.567800'});return{code:3000,data:{ID:PRICE},details:{code:2899}};};
+  await assert.rejects(h.c.updateRecord(PRICE,{Base_Price:'-1234.5678'},h.c.CFG.reports.pricing));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(await h.c.recheckContractMutation(retained.key),true,'An ambiguously acknowledged monetary update recovers through exact fresh credit readback');assert.equal(writes,1);assert.equal(h.c.contractHasReviews(),false);
+}
 {
   const h=await ready();h.c.auditLog('warn','Private link https://example.test/path?tokenId=CAPABILITY-1&contractId=123',{url:'https://example.test/path?token=CAPABILITY-2',tokenId:'CAPABILITY-3',response:{base64:'PRIVATE-BYTES'},error:new Error('https://example.test/file?privateLink=CAPABILITY-4')});assert.ok(!JSON.stringify(h.c.S.audit).includes('CAPABILITY'));assert.ok(!JSON.stringify(h.logs).includes('CAPABILITY'));assert.ok(!JSON.stringify(h.c.S.audit).includes('PRIVATE-BYTES'));
 }

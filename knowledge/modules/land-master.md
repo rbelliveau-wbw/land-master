@@ -46,10 +46,10 @@ All dependent backend functions/actions compiled, were saved and reopened in
 Development. Both schedule report quick layouts are Save/reload-verified and
 Forecast bindings need no page change. Live saved-record verification and Creator
 promotion remain user-owned.
-Rollback: Development mapping `8.14.5`; prior Production mapping `8.14.7`. Preserve second fields and entered data.
-Local immutable candidate `8.15.3` passed full repository validation and the
+Rollback: Development mapping `8.14.5`; prior Production mapping `8.14.8`. Preserve second fields and entered data.
+Local immutable candidate `8.15.4` passed full repository validation and the
 Pages build, including total/initial-term validation before native DATA writes.
-The user authorized Production mapping to `8.15.3` through Git and retained responsibility for Creator promotion. Frozen `8.15.0`, `8.15.1` and `8.15.2` remain unchanged.
+The user authorized Production mapping to `8.15.4` through Git and retained responsibility for Creator promotion. Frozen `8.15.0`, `8.15.1`, `8.15.2` and `8.15.3` remain unchanged.
 
 ## AI lot import leaves Notes alone (8.14.7)
 
@@ -193,3 +193,48 @@ Picker selections use a centered 11px SVG check instead of a font glyph. Lookup 
 Land 8.14.5 removes Fill Project territories: button, module assets, migration locks, bulk planner and write wiring. Normal Project/Territory editing and inheritance remain as in 8.14.4, including its current read-only field treatment. Full core and unsaved-draft/save guards remain. No Creator deployment; rollback 8.14.4.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+## Exact typed create recovery (2026-10-05)
+
+Read-only recovery of an ambiguously acknowledged create now compares native
+fields by their existing Creator/editor types. Currency, decimal, number and
+percentage values use exact decimal strings: currency symbols, comma grouping
+and trailing zeroes may differ, but no amount is rounded and a two-cent loss
+still fails. ISO, Creator slash dates and day-month-name dates compare as the
+same validated calendar date. Checkbox representations and unordered lookup ID
+sets compare by their native meaning. Record/lookup IDs remain decimal strings;
+duplicate, blank or numeric lookup IDs do not authorize recovery. Missing fields,
+malformed values and real persisted differences keep the create quarantined.
+
+The shared create recovery applies to Property, Project, Subdivision, Company,
+Milestones, Forecast, Forecast_Year, Takedown_Schedule, Builder_Takedown, Builder,
+Lots, Additional_Items and External_System_Mapping. The type contract combines
+the committed generated field metadata with the widget's existing descriptors
+for fields absent from that export. Facility IDs, Account Numbers, external codes
+and other identifier text stay exact, preserving significant leading zeroes.
+Forecast.Forecast_Year stays text; Forecast_Year.Forecast_Year uses its existing
+numeric editor type. Field types are scoped by form rather than guessed from a
+numeric-looking value.
+
+No payload, calculation, native workflow, function, form, field or Custom API is
+changed. Recovery reads the captured record ID and never repeats its insert.
+`scripts/test-land-master-create-safety.mjs` covers an actual ambiguous create
+with native formatted amounts/dates, retained quarantine for lost cents and
+changed identifiers, exact lookup/string IDs, schema type coverage, and the
+existing panel, staged-phase, mapping and import no-replay behavior. Native
+Production end-to-end validation is separate from these synthetic SDK checks.
+Widget rollback is the prior Production Land Master release; no Creator
+deployment or data migration is required for this comparison repair.
+
+## Currency summaries (2026-10-05)
+
+Related Builder Takedown totals, Additional Items Amount/Total, and Lot Base Price
+now display two decimal places. `moneyText` handles Creator's dollar signs and
+comma grouping, avoiding the former `parseFloat` display of only the leading
+digits. The generic `fmt` count formatter, money inputs, numeric payloads and
+Creator behavior are unchanged. `scripts/test-systemic-currency-display.mjs`
+covers native grouped amounts, negative values, cents and unchanged counts.
+Credit amounts accept `-$`, `$-`, accounting parentheses and Unicode minus in
+both summaries and exact create recovery. The same strict currency parser
+rejects malformed grouping, conflicting signs and genuine lost cents; recovery
+never turns these rejected values into permission to repeat an insert.
+Rollback is the prior Production widget; no Creator promotion is required.

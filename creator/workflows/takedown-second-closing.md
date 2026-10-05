@@ -32,7 +32,7 @@ compiled, been saved and reopened in Development. All four report quick layouts
 were saved/reloaded with both second columns, and the live Forecast binding
 audit confirmed no independent page column edit is needed. Fresh saved-record
 readback remains pending; the user owns Creator promotion and authorized
-Git-only Production widget mappings to Legal `1.61.2` and Land `8.15.3`. An environment snapshot showed
+Git-only Production widget mappings to Legal `1.61.3` and Land `8.15.4`. An environment snapshot showed
 Stage `9.43` and Production `9.42` with an October 5 version-history entry at
 13:31 after an external user-initiated Publish. It does not verify that Publish's
 outcome or feature activation there. Builder
@@ -170,7 +170,7 @@ updates.
 
 Retain the additive schema and all entered Second Closing values during rollback.
 Prior Development widget mappings are Contract Management `1.60.52` and Land Master
-`8.14.5`; prior Production baselines are `1.60.54` and `8.14.7`.
+`8.14.5`; prior Production baselines are `1.60.55` and `8.14.8`.
 Backend rollback uses captured native pre-change bodies, with a review
 of records containing second terms before restoring two-tier writers. Do not
 delete new fields, clear new data, or reinterpret second closings as recurring

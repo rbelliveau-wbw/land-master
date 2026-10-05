@@ -274,14 +274,14 @@
   "widget_candidates": [
     {
       "widget": "contract-management",
-      "version": "1.61.2",
-      "path": "releases/contract-management/1.61.2",
+      "version": "1.61.3",
+      "path": "releases/contract-management/1.61.3",
       "status": "production-mapped-Creator-activation-unverified"
     },
     {
       "widget": "land-master",
-      "version": "8.15.3",
-      "path": "releases/land-master/8.15.3",
+      "version": "8.15.4",
+      "path": "releases/land-master/8.15.4",
       "status": "production-mapped-Creator-activation-unverified"
     }
   ],
@@ -291,7 +291,7 @@
     "candidate_asset_parity": "verified",
     "frozen_initial_candidates_preserved": true,
     "environment_mappings_changed": true,
-    "latest_main_preserved": "99759fbb84290f41012e078f43c440f50dd19a1c",
+    "latest_main_preserved": "5dce55c44248e28de11aedadcb7827eda583b063",
     "changed_environments": [
       "production"
     ],

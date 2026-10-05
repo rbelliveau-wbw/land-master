@@ -3,6 +3,36 @@
 Widget promotion is authorized. Creator promotion is intentionally left to the user.
 No native schema or function edits were performed for this release.
 
+## Read-only native inspection on October 5
+
+Production inspection of the Taylor Farms installment through its native
+report, detail view and edit form confirmed Amount is `12500109.9`, while the
+widget draft contains `12500109.92`. No record was updated. The Development form
+builder currently shows `Land_Installments.Cost` (Amount) as USD with **Max
+Digits 10 / Decimal Points 2**. Production field properties were not independently
+read from a Production schema snapshot.
+
+The native Development `proforma_save` function was read without saving or
+executing it. All three installment insertions use `.toDecimal()` without
+whole-dollar rounding. Its `Construction_Cost_Base` assignment still contains
+`.round(0)`, so the repository correction below has not been applied there yet.
+
+[Zoho's Deluge insertion contract](https://www.zoho.com/deluge/help/data-access/add-record.html)
+states that Currency and Decimal insertions trim excess digits from the right
+when Max Digits or Decimal Points is exceeded.
+[Max Digits includes the separator and negative sign](https://help.zoho.com/portal/en/kb/creator/developer-guide/forms/add-and-manage-fields/articles/fields-currency-understand).
+`12500109.92` needs 11 characters; trimming it to 10 yields `12500109.9`, exactly
+the observed saved value. This is a verified capacity defect in Development and
+a mechanism consistent with the Production loss. A native save/read test after
+the capacity change is still required before claiming repair.
+
+The green balance label compares the editable draft, which reconciles a
+sub-dollar remainder on load; it cannot certify native persistence. The next
+widget release labels that result "Draft installments match" explicitly.
+Never reduce the draft to `.90` or widen verification to accept the lost cents.
+See the [all-module native inventory](../../docs/systemic-currency-native-handoff-2026-10-05.md)
+for the remaining financial destinations.
+
 ## Required Creator changes
 
 1. In the existing proforma_save function, replace only this assignment:
@@ -142,8 +172,10 @@ properties before promotion; historical exports omit defaults and newer fields.
 The first screenshot names header Land_Cost. The second names Land_Installments.Cost.
 A successful API write can be followed by exact readback failure if a destination
 field loses precision. Expanding only the parent leaves installments, items or
-monthly fields exposed. Capacity is the suspected native cause, not a verified
-live repair in this release. The widget retains drafts and prevents blind replay.
+monthly fields exposed. Read-only native inspection now verifies insufficient
+capacity for this amount in Development, and the documented Deluge trimming
+mechanism matches the observed Production loss. Production properties and a
+live repair remain unverified. The widget retains drafts and prevents blind replay.
 
 ## Verification after promotion
 

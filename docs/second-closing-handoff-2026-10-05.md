@@ -50,11 +50,16 @@
   cadence dependency; its formulas and workflow remain unchanged.
 - Also incorporated main commit `99759fb`: reviewed lot-import creation continues
   to omit `Lots.Notes`. That import implementation and its creation regression
-  remain byte-for-byte equal to main; Land `8.15.3` packages the preserved fix.
-- Immutable widget releases are [Legal 1.61.2](../releases/contract-management/1.61.2/release.json)
-  and [Land 8.15.3](../releases/land-master/8.15.3/release.json). Full repository
+  remain byte-for-byte equal to main; Land `8.15.4` packages the preserved fix.
+- Integrated main commit `5dce55c` before merging the authorized promotion.
+  Financial currency precision fixes and their regressions remain intact;
+  Second Closing's Number fields are included in the new native field-kind map.
+  All unrelated Production release selections from that update are retained.
+- Immutable widget releases are [Legal 1.61.3](../releases/contract-management/1.61.3/release.json)
+  and [Land 8.15.4](../releases/land-master/8.15.4/release.json). Full repository
   validation passed; Pages built 29 current mapped paths. Candidate assets and
-  source/config/manifest hashes match exactly. Earlier frozen `.0`, `.1` and `.2`
+  source/config/manifest hashes match exactly. Earlier frozen Legal `.0`–`.2`
+  and Land `.0`–`.3`
   candidates are retained. Production mappings now select these two releases;
   Development, Stage and unrelated widget mappings are unchanged.
 
@@ -107,13 +112,14 @@ and `.tmp/second-closing-evidence/contract-labels-development.jpg`.
 Complete validation logs include `.tmp/second-closing-final-validation.log`
 and `.tmp/second-closing-final-build.log`. Reopened cadence bodies passed
 all six focused groups together; the reopened summary passed all seven groups.
-Production mapping checks are `.tmp/second-closing-production-validation.log`
-and `.tmp/second-closing-production-build.log`.
+Final Production mapping checks after the currency integration are
+`.tmp/second-closing-production-final-validation.log`
+and `.tmp/second-closing-production-final-build.log`.
 
 ## Rollback
 
 Prior Development widget mappings are Legal `1.60.52` and Land `8.14.5`;
-prior Production baselines are Legal `1.60.54` and Land `8.14.7`.
+prior Production baselines are Legal `1.60.55` and Land `8.14.8`.
 Restore the applicable environment's prior mapping if needed. Preserve
 both new fields and entered values. Review records with second terms before
 restoring captured older backend writers; do not silently apply two-tier math

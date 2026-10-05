@@ -3,7 +3,7 @@
 
 Contract management and token-based LOI legal review.
 
-Second Closing candidate: `1.61.2`. Initial, Second and Subsequent Closing terms
+Second Closing candidate: `1.61.3`. Initial, Second and Subsequent Closing terms
 are edited together, with an explicit copy from Second to Subsequent. Existing
 schedules remain independent of later Contract edits. See the
 [implementation and activation handoff](../../docs/second-closing-handoff-2026-10-05.md).

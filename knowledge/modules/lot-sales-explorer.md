@@ -64,3 +64,16 @@ Adds a compact dashboard sidebar, a green Lot Sales heading, and the Budget dash
 Insights 1.5.42 displays the complete current-and-previous-year window while full lot history loads, including with Hide Empty off. Recent subdivision inventory is labeled as recent; historical first-sale/inventory/export details remain unavailable until the complete read finishes. Selected-year totals match after completion; failure keeps recent results and Retry. On October 5 the user authorized read-only Production testing instead of the unavailable authorized Dev graph gate. Production 1.5.42 passed: first usable at 3,289 ms with history incomplete, then all 25,527 lots complete at 7,903 ms; both the two-year and all-history rows/totals matched the 1.5.40 baseline exactly. No user permission was changed. Rollback remains 1.5.40. See [final decisions](../../docs/final-refactor-decisions-2026-10-05.md).
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+
+## Currency display and native representations — 2026-10-05
+
+Sales and Budget Insights display currency totals with cents. The shared report
+numeric model recognizes grouped USD, signed-dollar/accounting credits and
+Unicode minus, preserving credit signs in downstream Budget aggregates. Malformed
+grouping stays unavailable. This changes formatting/representation handling only;
+date bases, financial metric definitions, negative-price exclusions, permission
+checks and read-only access remain unchanged. Insights has no monetary write or
+save-readback comparator. No Creator promotion is required for these frontend
+changes. `scripts/test-manage-insights-currency.mjs` covers actual currency helpers
+and Budget normalization; the existing Sales/Budget model regressions remain
+required. Rollback to 1.5.42.
