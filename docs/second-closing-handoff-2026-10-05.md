@@ -55,10 +55,18 @@
   Financial currency precision fixes and their regressions remain intact;
   Second Closing's Number fields are included in the new native field-kind map.
   All unrelated Production release selections from that update are retained.
-- Immutable widget releases are [Legal 1.61.3](../releases/contract-management/1.61.3/release.json)
+- Integrated main commit `14dbc06` as well: all-role Review Queue creation and
+  guarded Lot transfer behavior remain intact. The combined
+  `Complete_Lot_Contract.dg` now includes both Second Closing and the newer
+  transfer policy. Its fresh native compilation/publication is user-owned;
+  the earlier saved Development function hash proves the preceding Second
+  Closing revision only. Execution fixtures verify blank historical terms,
+  second-term copying to missing schedules, no existing-schedule sync, invalid
+  pair rejection before writes, and unchanged transfer protections together.
+- Immutable widget releases are [Legal 1.61.4](../releases/contract-management/1.61.4/release.json)
   and [Land 8.15.4](../releases/land-master/8.15.4/release.json). Full repository
   validation passed; Pages built 29 current mapped paths. Candidate assets and
-  source/config/manifest hashes match exactly. Earlier frozen Legal `.0`–`.2`
+  source/config/manifest hashes match exactly. Earlier frozen Legal `.0`–`.3`
   and Land `.0`–`.3`
   candidates are retained. Production mappings now select these two releases;
   Development, Stage and unrelated widget mappings are unchanged.
@@ -119,7 +127,7 @@ and `.tmp/second-closing-production-final-build.log`.
 ## Rollback
 
 Prior Development widget mappings are Legal `1.60.52` and Land `8.14.5`;
-prior Production baselines are Legal `1.60.55` and Land `8.14.8`.
+prior Production baselines are Legal `1.60.56` and Land `8.14.8`.
 Restore the applicable environment's prior mapping if needed. Preserve
 both new fields and entered values. Review records with second terms before
 restoring captured older backend writers; do not silently apply two-tier math

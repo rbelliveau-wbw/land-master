@@ -164,7 +164,9 @@
       "reopened_sha256": "eaef2d193c2839ec25ee87dfdc9b05444e6906bd99e6dcc269cd0cea2467e1c8",
       "reviewed_patch_token_parity": true,
       "native_execution": "not-executed",
-      "reopened_source_local_regressions": "passed-pre-write-closing-validation-and-insert-only-copy-checks"
+      "reopened_source_local_regressions": "passed-pre-write-closing-validation-and-insert-only-copy-checks",
+      "current_git_source_status": "combined-with-newer-main-lot-transfer-safety-function-native-compile-and-publication-user-owned",
+      "reopened_hash_applies_to": "earlier-saved-Second-Closing-body-before-newer-transfer-policy-integration"
     },
     {
       "name": "Send_Contract_Approval_Email",
@@ -274,8 +276,8 @@
   "widget_candidates": [
     {
       "widget": "contract-management",
-      "version": "1.61.3",
-      "path": "releases/contract-management/1.61.3",
+      "version": "1.61.4",
+      "path": "releases/contract-management/1.61.4",
       "status": "production-mapped-Creator-activation-unverified"
     },
     {
@@ -291,7 +293,7 @@
     "candidate_asset_parity": "verified",
     "frozen_initial_candidates_preserved": true,
     "environment_mappings_changed": true,
-    "latest_main_preserved": "5dce55c44248e28de11aedadcb7827eda583b063",
+    "latest_main_preserved": "14dbc06cab4aaff2b6f70a4c76672e38aa9a8f0c",
     "changed_environments": [
       "production"
     ],

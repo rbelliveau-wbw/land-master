@@ -127,9 +127,9 @@ functions/actions compiled, were saved and reopened. Both Contract report quick
 layouts are Save/reload-verified, and Forecast bindings were audited without a
 page change. Fresh saved-record readback and widget deployment remain pending. The older
 editable-term notes below describe historical two-tier releases.
-Rollback: Development mapping `1.60.52`; prior Production mapping `1.60.55`. Retain entered second values.
-Local immutable candidate `1.61.3` passed full repository validation and the
-Pages build; the user authorized Production mapping to `1.61.3` through Git and retained responsibility for Creator promotion. Frozen `1.61.0`, `1.61.1` and `1.61.2` remain unchanged.
+Rollback: Development mapping `1.60.52`; prior Production mapping `1.60.56`. Retain entered second values.
+Local immutable candidate `1.61.4` passed full repository validation and the
+Pages build; the user authorized Production mapping to `1.61.4` through Git and retained responsibility for Creator promotion. Frozen `1.61.0`, `1.61.1` and `1.61.2` remain unchanged.
 
 Legal 1.60.51 displays native comment validation alerts as readable text.
 `Validate_Comment_Log` in Creator Development now accepts and preserves
