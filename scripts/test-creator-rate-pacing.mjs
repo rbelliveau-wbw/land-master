@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync('shared/creator-data.js','utf8'),drain=async()=>{for(let i=0;i<20;i++)await new Promise(r=>setImmediate(r));};
-function harness(){let now=0,seq=0;const timers=new Map();const c=vm.createContext({Date:{now:()=>now},LMRuntime:{current:()=>({user:'fixture',environment:'PRODUCTION'})},setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:id=>timers.delete(id)});vm.runInContext(source,c);return {data:c.LMData,timers,advance(ms){now+=ms;for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}}};}
+function harness(){let now=0,seq=0;const timers=new Map();const c=vm.createContext({Date:{now:()=>now},LMRuntime:{current:()=>({user:'fixture',environment:'PRODUCTION'})},setTimeout(fn,ms){const id=++seq;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:id=>timers.delete(id)});vm.runInContext(source,c);return {data:c.LMData,perf:c.LMPerf,timers,advance(ms){now+=ms;for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}}};}
 {
  const h=harness();let calls=0;await Promise.all(Array.from({length:70},()=>h.data.request('default',()=>++calls)));assert.equal(calls,70,'other widgets retain their existing default scheduling');assert.equal(h.timers.size,0);
 }
 {
- const h=harness();h.data.configure({maxRequestsPerMinute:45});let calls=0;const p=Promise.all(Array.from({length:50},()=>h.data.request('paced',()=>++calls)));await drain();assert.equal(calls,45);h.advance(60000);await drain();assert.equal(calls,45);h.advance(1000);await p;assert.equal(calls,50);
+ const h=harness();h.data.configure({maxRequestsPerMinute:45});let calls=0;const p=Promise.all(Array.from({length:50},()=>h.data.request('paced',()=>++calls)));await drain();assert.equal(calls,45);assert.equal(h.perf.snapshot().rate.waitMs,61000);assert.equal(h.perf.snapshot().rate.reason,'request-budget');assert.equal(h.perf.snapshot().queuedRequests.length,5);h.advance(60000);await drain();assert.equal(calls,45);h.advance(1000);await p;assert.equal(calls,50);assert.equal(h.perf.snapshot().requests.at(-1).queuedMs,61000);assert.equal(h.perf.snapshot().requests.at(-1).durationMs,0);
+}
+{
+ const h=harness();let finish;const pending=h.data.request('native-held',()=>new Promise(resolve=>finish=resolve));await drain();h.advance(7000);assert.equal(h.perf.snapshot().activeRequests[0].elapsedMs,7000);assert.equal(h.perf.snapshot().activeRequests[0].task,'native-held');finish('done');await pending;await drain();assert.equal(h.perf.snapshot().requests[0].durationMs,7000);assert.equal(h.perf.snapshot().requests[0].queuedMs,0);assert.equal(h.perf.snapshot().activeRequests.length,0);
 }
 for(const raw of [{status:429,responseText:JSON.stringify({code:2955,description:'Minute API limit reached'})},{code:2955,message:'Minute API limit reached'}]){
  const h=harness();h.data.configure({maxRequestsPerMinute:45,readRetryOnThrottle:true});let calls=0;const p=h.data.request('read',()=>{if(++calls===1)throw raw;return 'fresh';},{readOnly:true});await drain();assert.equal(calls,1);h.advance(61000);assert.equal(await p,'fresh');assert.equal(calls,2);assert.equal(h.data.failureCode(raw),'2955');

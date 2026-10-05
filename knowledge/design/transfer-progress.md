@@ -23,6 +23,12 @@ including expected and saved Land Cost amounts when those differ. A disappearing
 toast must never be the only explanation. Clear that alert when another dialog
 run starts. Exact persisted verification and duplicate-send protection remain.
 
+Ordinary Pro Forma Save includes a collapsed **Save log** within the mounted dialog.
+It remains keyboard-accessible while the save is pending and displays actual elapsed
+time, running requests and request-budget waits. Logging sends no additional requests,
+does not unlock Close or replay writes, and retains the last three runs for Copy log
+after the dialog closes. Keep diagnostics collapsed by default.
+
 Open an in-widget dialog immediately when the user presses the final action. Use the shared navy gradient header, source → destination identity, amount and record counts, a slim progress bar, numbered stage rows, Running / Up next / Done / Needs review chips, and a pinned status/action footer. On completion show a prominent outcome and a per-destination list with names, counts, amounts where applicable, and verification states.
 
 Ordinary Contract creation uses the compact exception requested October 5, 2026:

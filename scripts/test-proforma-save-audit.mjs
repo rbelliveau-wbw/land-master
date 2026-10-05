@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {saveFixture} from './fixtures/proforma-sdk-v2-save-fixture.mjs';
+import {held,drain} from './fixtures/proforma-sdk-v2-harness.mjs';
+const gate=held();let delay=false;
+const h=await saveFixture({directRecord:true,record:async config=>{if(delay&&config.report_name==='All_Pro_Formas_All_Fields'){delay=false;await gate.promise;}return undefined;}});delay=true;
+const save=h.widget.saveProforma();await drain();
+assert.equal(h.document.getElementById('pfNativeProgress').hidden,false);
+const first=JSON.parse(h.document.getElementById('pf-save-audit').textContent).runs[0];
+assert.equal(first.status,'running');assert.ok(first.entries.length);assert.equal(h.document.getElementById('pfSaveAuditSummary').textContent,'Save log');
+h.c.PFSaveAudit.stage('Monitor held verification');
+assert.ok(JSON.parse(h.document.getElementById('pf-save-audit').textContent).runs[0].latest.activeRequests.length);
+gate.resolve();await save;await drain();
+const completed=JSON.parse(h.document.getElementById('pf-save-audit').textContent).runs[0];assert.equal(completed.status,'verified');assert.ok(completed.requests.length);assert.ok(completed.requests.every(r=>typeof r.queuedMs==='number'&&typeof r.durationMs==='number'));
+assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);assert.equal(h.timers.size,[...h.timers.values()].filter(timer=>timer.ms!==500).length,'save logging stops its sampling timer after settlement');
+assert.equal(JSON.stringify(completed).includes(h.storage.All_Pro_Formas_All_Fields[0].ID),false,'diagnostics never publish business record IDs or payloads');
+console.log('PASS save timing log remains available during pending verification and after success, with private data excluded.');

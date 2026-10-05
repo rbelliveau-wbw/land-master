@@ -5,10 +5,12 @@
   const loadedAt = root.performance && typeof root.performance.now === 'function' ? 0 : clock();
   let active = 0, concurrency = 3, maxRequestsPerMinute = 0, readRetryOnThrottle = false, rateTimer;
   const dispatches = new Map(), cooldowns = new Map(), rateWindow = 61000;
-  const queue = [], inFlight = new Map(), cache = new Map(), reads = new Set();
+  const queue = [], inFlight = new Map(), cache = new Map(), reads = new Set(), running = new Map();
+  let requestSequence = 0;
   function bytes(value) { try { const text = JSON.stringify(value); return typeof TextEncoder === 'function' ? new TextEncoder().encode(text).length : text.length; } catch { return 0; } }
   function snapshot() {
-    return {schema:1,elapsedMs:Math.round(clock()-loadedAt),concurrency,active,queued:queue.length,pendingReads:reads.size,inFlightReads:inFlight.size,cachedReads:cache.size,requestCount:requests.length,responseBytes:requests.reduce((sum,r)=>sum+(r.responseBytes||0),0),events:events.slice(),requests:requests.slice()};
+    const now=Date.now(),recent=(dispatches.get(context())||[]).filter(at=>now-at<rateWindow),cooldown=Math.max(0,(cooldowns.get(context())||0)-now),budgetWait=maxRequestsPerMinute&&recent.length>=maxRequestsPerMinute?Math.max(0,recent[0]+rateWindow-now):0;
+    return {schema:1,elapsedMs:Math.round(clock()-loadedAt),concurrency,active,queued:queue.length,pendingReads:reads.size,inFlightReads:inFlight.size,cachedReads:cache.size,requestCount:requests.length,requestSequence,rate:{limit:maxRequestsPerMinute,windowMs:rateWindow,dispatched:recent.length,waitMs:queue.length?Math.max(cooldown,budgetWait):0,reason:queue.length&&Math.max(cooldown,budgetWait)>0?(cooldown>=budgetWait?'creator-throttle':'request-budget'):''},activeRequests:Array.from(running.values(),job=>({id:job.id,task:job.task,startedAtMs:Math.round(job.began-loadedAt),queuedMs:Math.round(job.began-job.queuedAt),elapsedMs:Math.round(clock()-job.began)})),queuedRequests:queue.map(job=>({id:job.id,task:job.task,elapsedMs:Math.round(clock()-job.queuedAt)})),responseBytes:requests.reduce((sum,r)=>sum+(r.responseBytes||0),0),events:events.slice(),requests:requests.slice()};
   }
   function publish() {
     if (!root.document) return;
@@ -28,15 +30,15 @@
       const now=Date.now(),key=context(),recent=(dispatches.get(key)||[]).filter(at=>now-at<rateWindow);
       dispatches.set(key,recent);
       const wait=Math.max(0,(cooldowns.get(key)||0)-now,maxRequestsPerMinute&&recent.length>=maxRequestsPerMinute?recent[0]+rateWindow-now:0);
-      if(wait){rateTimer=root.setTimeout(pump,wait);return;}
+      if(wait){rateTimer=root.setTimeout(pump,wait);publish();return;}
       recent.push(now);
-      const job=queue.shift();active++;publish();
-      const began=clock();
-      Promise.resolve().then(job.fn).then(value=>{requests.push({task:job.task,queuedMs:Math.round(began-job.queuedAt),durationMs:Math.round(clock()-began),ok:true,responseBytes:bytes(value)});job.resolve(value);},error=>{requests.push({task:job.task,queuedMs:Math.round(began-job.queuedAt),durationMs:Math.round(clock()-began),ok:false,code:code(error)});job.reject(error);}).finally(()=>{active--;if(requests.length>500)requests.shift();publish();pump();});
+      const job=queue.shift(),began=clock();job.began=began;running.set(job.id,job);active++;publish();
+      const timing=()=>({id:job.id,task:job.task,queuedAtMs:Math.round(job.queuedAt-loadedAt),startedAtMs:Math.round(began-loadedAt),finishedAtMs:Math.round(clock()-loadedAt),queuedMs:Math.round(began-job.queuedAt),durationMs:Math.round(clock()-began)});
+      Promise.resolve().then(job.fn).then(value=>{requests.push({...timing(),ok:true,responseBytes:bytes(value)});job.resolve(value);},error=>{requests.push({...timing(),ok:false,code:code(error)});job.reject(error);}).finally(()=>{running.delete(job.id);active--;if(requests.length>500)requests.shift();publish();pump();});
     }
   }
   function request(task,fn,options){
-    const enqueue=()=>new Promise((resolve,reject)=>{queue.push({task:String(task),fn:readRetryOnThrottle&&options&&options.readOnly?()=>Promise.resolve().then(fn).then(value=>{if(failureCode(value)==='2955')throw failure(task,value);return value;}):fn,resolve,reject,queuedAt:clock()});pump();});
+    const enqueue=()=>new Promise((resolve,reject)=>{queue.push({id:++requestSequence,task:String(task),fn:readRetryOnThrottle&&options&&options.readOnly?()=>Promise.resolve().then(fn).then(value=>{if(failureCode(value)==='2955')throw failure(task,value);return value;}):fn,resolve,reject,queuedAt:clock()});pump();publish();});
     if(!readRetryOnThrottle)return enqueue();
     return enqueue().catch(error=>{
       // Only an explicitly read-only request may retry. A write is never replayed.

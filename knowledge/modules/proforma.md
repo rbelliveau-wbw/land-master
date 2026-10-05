@@ -1,3 +1,16 @@
+## Save timing diagnostics 1.80.81
+
+The collapsed Save log remains available inside the pending modal and is included
+in Copy log afterwards. It retains three runs, stage timestamps, active/queued
+requests, actual Creator-call time, queue time and the remaining rolling-budget
+wait. Diagnostic sampling is local only and stops after settlement; it includes
+no business payloads, private record IDs or credentials. The shared adapter adds
+timing metadata without changing scheduling, retry, deadlines or verification.
+Only PF is promoted. No Creator field/function/API deployment is required.
+Regression: pending and completed log retention, clock-controlled queue/native
+time separation, full verified Save, unknown outcome and existing SDK2 suites.
+Rollback: PF 1.80.80. Live measurements are recorded separately after testing.
+
 ## Currency readback and draft balance 1.80.80
 
 The installment balance label now explicitly compares the editable draft. A small on-load draft remainder adjustment does not certify the native amount. Exact currency readback accepts equivalent accounting/signed-dollar/Unicode-minus credits while rejecting changed cents/signs, malformed grouping and conflicting signs. Save errors retain the draft and the no-replay guard. See the [cross-module release, native handoff and rollback](../../docs/systemic-currency-release-2026-10-05.md). Native Creator edits and promotion remain entirely user-owned.
