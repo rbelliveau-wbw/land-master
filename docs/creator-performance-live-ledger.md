@@ -401,3 +401,37 @@ commit. A user question is pending for Dev access. No grant was altered.
 | Rollback | Last individually verified immutable mapping and matching asset set. |
 
 The initial approximately one-second Development and four/eight-second Production observations used different environment data/releases and second-level timing. They remain useful context, but cannot establish a controlled speedup percentage against the later millisecond Development observation.
+
+## Follow-up startup and report batch — October 5, 2026
+
+Commit `339b738` passed CI 37331284007 and Pages 37331284176. Production now uses
+PF 1.80.71, Legal 1.60.50, Tax 19.17.8, Land 8.14.5 and Manage Lots 0.9.19.
+Insights remains Dev 1.5.42 / Prod 1.5.40 pending its authorized native Dev gate.
+Settings remains at its earlier held mapping; this batch makes no SDK change.
+
+Native Production PF retains the same 58 visible records; initial requests defer
+the full 204-company / 2,139-property options until a dependent action. A read-only
+View then loaded those complete options and the financial dashboard. Legal's lean
+access succeeds with the same 83 contracts / 536 actions and normal access.
+Its single first-usable observation was 1,450 ms, without a controlled latency
+comparison. Tax's 2026 Arbitrate facets now partition 2,176 Undecided + 544 No +
+21 Yes = 2,741, and the Yes search returned all 21 rows. Development partitions
+228 + 0 + 0 = 228. No live batch write was performed.
+
+Manage Lots initially retained all 857 takedowns through the 0.9.18 layout change.
+Creator's existing report omitted twelve date/detail fields; the verified 0.9.19
+projection also required their report-layout exposure. Only All_Builder_Takedowns
+was selected for Creator 9.38 (one component), excluding three pending profiles.
+Stage and Production both completed on October 5. Native Dev showed 24 complete
+records with stored dates and totals; native Prod showed 857. The final inline
+0.9.19 reload matched every name in the fresh post-report baseline and displayed
+the stored date/financial/tax values and all 25 first-record lots. Builder filters
+returned only the selected builder(s), with 295 single / 612 combined rows.
+The earlier overnight baseline had one record-name date change; no business
+records were written by these checks. Entered/Purchase labels retain their field
+meanings while the user's requested Close Date definition remains pending.
+
+Further Creator promotions are reserved for the user, per their October 5
+instruction received after 9.38 completed. No additional Creator changes were
+made after that instruction. Before/after details, regression scope, rollback
+and further opportunities are in `docs/startup-refinements-2026-10-04.md`.

@@ -69,6 +69,15 @@ post-publication baseline is used for the final frontend promotion check.
 
 The final production mapping changes Manage Lots 0.9.18 to 0.9.19. Full
 `npm run validate` and `npm run build:pages` passed again for that mapping.
+Commit `339b738` passed CI 37331284007 and Pages 37331284176. The final native
+Production reload confirmed inline version 0.9.19 and all 857 takedown names
+equal to the fresh post-report baseline, with stored dates/totals and the complete
+25-lot modal still present.
+
+The user reserved further Creator backend promotions for themselves on October
+5, after report version 9.38 had already completed Stage and Production. Further
+Creator changes in this refactor must remain for the user's promotion; GitHub
+widget frontend releases continue under the existing main/Prod authorization.
 
 The Takedowns whole-widget fixture checks global ordering across subdivisions,
 combined filters, all eight fixture lots in the modal versus six in the preview,

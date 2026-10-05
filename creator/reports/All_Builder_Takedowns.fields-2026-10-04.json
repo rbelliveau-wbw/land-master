@@ -34,12 +34,15 @@
     "unrelated_profile_changes_excluded": true
   },
   "production_evidence": {
+    "widget_version": "0.9.19",
     "complete_takedown_count": 857,
+    "names_match_fresh_pre_frontend_promotion_baseline": true,
     "stored_date_financial_tax_fields_rendered": true,
     "first_record_linked_lots": 25,
     "one_builder_filtered_count": 295,
     "two_builders_filtered_count": 612,
     "business_writes_during_verification": 0
   },
+  "promotion_handoff": "The user reserved any further Creator promotions for themselves on 2026-10-05, after report-only 9.38 had already completed Stage and Production.",
   "rollback": "Remove only these twelve report-layout additions; preserve the pre-existing report and its business data. Widget rollback is 0.9.17. This partial live configuration record does not replace a complete Creator export."
 }
