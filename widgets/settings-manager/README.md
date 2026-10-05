@@ -57,18 +57,21 @@ The existing critical-error reporter retains its separately configured Custom AP
 - **Exact lookup verification.** SDK2 writes lookup ID arrays once. Fresh readback must
   contain exactly the intended unique IDs; missing, extra or same-count wrong IDs retain
   the draft. Unresolved selected IDs remain visible. No alternative-envelope retries occur.
-- **Complete Actions choices (1.3.4 candidate).** Count and read the same Actions report
-  completely without the failing empty-string inequality, then filter nonblank templates
-  locally. Failed or incomplete reads keep that picker unavailable and preserve saved IDs;
-  the existing report permissions and scalar editing grants remain unchanged. Native
-  successor verification is pending.
+- **Complete Actions choices (authorized 2026-10-05).** Count and read the same Actions
+  report completely, then offer only rows whose `Template_Action` checkbox is checked.
+  The current native form confirms this checkbox and the `Contract_Action` text field;
+  the removed `Contract_Template` field does not determine Actions eligibility. Failed,
+  incomplete, missing-checkbox or malformed-checkbox reads keep the picker unavailable
+  and preserve every saved ID, including unchecked or unavailable selections. Existing
+  report permissions, scalar editing grants and the separate Builder approval rule remain
+  unchanged. Native successor verification is a release gate.
 - **Curve rows are child records, not a nested subform array.** They are written to the
   `Construction_Curve` form with the `Settings` back-pointer set — matching how
   `proforma-manager` handles the same grid. A row written without that link gets reaped by
   `Delete_Orphaned_Objects`.
-- **`Builder_Contract_Action_Template` display.** Creator's own display format on that field is
-  `[Contract_Template + " - " + Contract_Template]`, so every option renders as `"Lot - Lot"`.
-  The widget shows the `Action` text instead.
+- **`Builder_Contract_Action_Template` display.** The widget shows `Contract_Action` text
+  with the existing type and sort order. It does not use the obsolete lookup display format
+  `[Contract_Template + " - " + Contract_Template]`.
 - **No add path.** The widget can create `Construction_Curve` rows but never a `Settings` record.
 - **Safe reload.** Reload retains the selected singleton ID, publishes a staged snapshot,
   and is blocked by drafts or active writes. Failed lookup/curve reads keep their last

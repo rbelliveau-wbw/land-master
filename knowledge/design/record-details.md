@@ -11,6 +11,10 @@ The first implementation is Manage Lots' Builder Takedowns report.
 - Put dated milestones in small labeled pills beneath the report identity.
   Distinguish entered, planned purchase and actual closing dates. Never relabel
   one as another without an explicit module decision.
+  For Builder Takedowns, the approved Close Date pill uses the takedown's stored
+  `Purchase_Date`: it is entered in advance and copied to the lots' `Close_Date`
+  when that date arrives. The report and detail modal share the same pill.
+  This display label does not change lot status or the scheduled closing workflow.
 - Show up to six lot chips in the report and a counted View all action. The modal
   shows every loaded lot; shortening the preview never changes totals or filters.
 - Use amber/yellow for Scheduled, with the visible status label. Sold retains its

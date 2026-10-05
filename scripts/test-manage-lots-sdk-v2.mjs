@@ -223,8 +223,9 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
 {
  const h=harness();await drain();const reads=h.calls.filter(call=>call.method==='read'&&call.config.report_name==='All_Builder_Takedowns');
  assert.ok(reads.length);for(const call of reads){assert.equal(call.config.field_config,'custom');for(const field of ['Name','Lots','Subdivision1','Builder1','Lot_Count','Added_Time','Entered_Date','Purchase_Date','Status','Total'])assert.ok(call.config.fields.split(',').includes(field));}
- h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/10\/01\/2026/);assert.match(h.nodes.get('takedownsBody').innerHTML,/10\/15\/2026/);
- h.widget.openTakedownDetail(TD);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/\$12,345.67/);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/Active/);assert.equal(writes(h).length,0);
+ h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/10\/01\/2026/);assert.match(h.nodes.get('takedownsBody').innerHTML,/Close Date <b>10\/15\/2026<\/b>/,'the report uses the confirmed closing date already stored as Purchase_Date');
+ h.widget.openTakedownDetail(TD);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/Close Date <b>10\/15\/2026<\/b>/,'the detail modal uses the same closing date pill');assert.match(h.nodes.get('takedownDetailBody').innerHTML,/\$12,345.67/);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/Active/);assert.equal(writes(h).length,0);
+ const missing=h.widget.takedownDatesHTML({Entered_Date:'10/01/2026',Close_Date:'must not substitute a lot date'});assert.match(missing,/Close Date <b>—<\/b>/,'an omitted takedown purchase date stays unknown, without falling back to a lot date');
 }
 // The actual report remains a complete flat snapshot, with display-only details.
 {

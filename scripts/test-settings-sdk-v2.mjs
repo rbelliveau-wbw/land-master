@@ -75,35 +75,38 @@ async function ready(options){const h=harness(options);await drain();assert.equa
 }
 {
   const h=harness(),native=h.api.getRecordCount,filtered=[];
-  const templates=['Builder',' Choice 3 ','',null,'   ',{zc_display_value:'Lot'},{display_value:'Builder'},{zc_display_value:''},{display_value:'   '},{ID:'900000000000000099'}];
-  h.reports.All_Contract_Actions=templates.map((Contract_Template,index)=>({ID:String(900000000000000010n+BigInt(index)),Contract_Template,Action:'Action '+index}));
-  const original=clone(h.reports.All_Contract_Actions),expected=[0,1,5,6,9].map(index=>original[index].ID);
-  const persisted=expected.concat(['900000000000000098','900000000000000097']).map(ID=>({ID,zc_display_value:'Persisted '+ID}));
+  const templates=[true,false,'true',' FALSE ','Yes','No','1','0',1,0,'',null,'   ',' TrUe '];
+  h.reports.All_Contract_Actions=templates.map((Template_Action,index)=>({ID:String(900000000000000010n+BigInt(index)),Template_Action,Contract_Action:'Action '+index,Type_field:'Builder',Sort_Order:String(index+1),Contract_Template:index%2?'Former template':''}));
+  const original=clone(h.reports.All_Contract_Actions),expected=[0,2,4,6,8,13].map(index=>original[index].ID);
+  const persisted=expected.concat([original[1].ID,'900000000000000098','900000000000000097']).map(ID=>({ID,zc_display_value:'Persisted '+ID}));
   h.records[0].Builder_Contract_Action_Template=clone(persisted);
   h.api.getRecordCount=config=>{
     if(config.report_name==='All_Contract_Actions'&&config.criteria){filtered.push(clone(config));return Promise.reject({message:'Native count failure without a code'});}
     return native(config);
   };
-  await drain();assert.equal(filtered.length,0);assert.equal(h.widget.state.resources.actions,'ready');assert.deepEqual(clone(h.widget.state.actions.map(row=>row.ID)),expected);assert.deepEqual(h.reports.All_Contract_Actions,original,'Filtering must not alter native rows or their lookup shapes');
+  await drain();assert.equal(filtered.length,0);assert.equal(h.widget.state.resources.actions,'ready');assert.deepEqual(clone(h.widget.state.actions.map(row=>row.ID)),expected,'Only checked Template Action rows qualify; the removed Contract_Template never changes eligibility');assert.deepEqual(h.reports.All_Contract_Actions,original,'Filtering must not alter native rows or their lookup shapes');
   const reads=h.calls.filter(call=>['count','records'].includes(call.method)&&call.config.report_name==='All_Contract_Actions');assert.equal(reads.length,2);assert.ok(reads.every(call=>!Object.hasOwn(call.config,'criteria')),'Count and records read the same complete report without the rejected predicate');
-  assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),persisted);assert.match(h.widget.multi({n:'Builder_Contract_Action_Template',src:'actions'},persisted),/900000000000000098/);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);
+  assert.match(h.widget.multi({n:'Builder_Contract_Action_Template',src:'actions'},persisted),/Action 0/,'Picker labels use the current Contract_Action field');assert.doesNotMatch(h.widget.multi({n:'Builder_Contract_Action_Template',src:'actions'},persisted),/Former template/,'Removed template text does not supply labels or metadata');
+  assert.ok(h.calls.filter(call=>['count','records'].includes(call.method)&&call.config.report_name==='All_Contract_Approvals').every(call=>call.config.criteria==='Contract_Template == "Builder"'),'The user-authorized Actions rule does not change Builder approval eligibility');
+  assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),persisted,'Unchecked and unresolved saved IDs remain selected');assert.match(h.widget.multi({n:'Builder_Contract_Action_Template',src:'actions'},persisted),/900000000000000098/);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);assert.equal(h.calls.filter(call=>['update','add','delete'].includes(call.method)).length,0,'Loading the eligible choices never prunes saved selections with a write');
   assert.equal(h.widget.queue('Builder_Contract_Action_Template',persisted.map(row=>row.ID)),true);await h.widget.flush();assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),persisted.map(row=>row.ID).sort());assert.equal(h.calls.filter(call=>call.method==='update').length,1,'Known and unresolved selected IDs retain exact native write/readback verification');
 }
 {
-  const h=await ready();h.reports.All_Contract_Actions=Array.from({length:2001},(_,index)=>({ID:String(900000000000010000n+BigInt(index)),Contract_Template:index%2?'Builder':'',Action:'Complete '+index}));await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.state.actions.length,1000);const reads=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Contract_Actions');assert.equal(reads.length,3,'Every complete unfiltered cursor page precedes local filtering; a counted empty report needs no page');assert.ok(h.maxActive()<=3);
+  const h=await ready();h.reports.All_Contract_Actions=Array.from({length:2001},(_,index)=>({ID:String(900000000000010000n+BigInt(index)),Template_Action:index%2===1,Contract_Action:'Complete '+index}));await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.state.actions.length,1000);const reads=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Contract_Actions');assert.equal(reads.length,3,'Every complete unfiltered cursor page precedes local checkbox filtering; a counted empty report needs no page');assert.ok(h.maxActive()<=3);
 }
-for(const failure of ['count','duplicate','missing-id','incomplete','missing-template','malformed-template']){
-  const h=await ready();h.reports.All_Contract_Actions=[{ID:A,Contract_Template:'Builder',Action:'Retained action'}];h.records[0].Builder_Contract_Action_Template=[{ID:A,zc_display_value:'Selected action'},{ID:D,zc_display_value:'Unresolved selected'}];await h.widget.load();const old=h.widget.state.actions,selected=clone(h.widget.state.rec.Builder_Contract_Action_Template),nativeCount=h.api.getRecordCount,nativeRead=h.api.getRecords;
-  const replacement=[{ID:B,Contract_Template:'Builder',Action:'Incomplete replacement'},{ID:D,Contract_Template:'',Action:'Blank row'}];
+for(const failure of ['count','duplicate','missing-id','incomplete','missing-template','malformed-template','unknown-template']){
+  const h=await ready();h.reports.All_Contract_Actions=[{ID:A,Template_Action:true,Contract_Action:'Retained action'}];h.records[0].Builder_Contract_Action_Template=[{ID:A,zc_display_value:'Selected action'},{ID:D,zc_display_value:'Unresolved selected'}];await h.widget.load();const old=h.widget.state.actions,selected=clone(h.widget.state.rec.Builder_Contract_Action_Template),nativeCount=h.api.getRecordCount,nativeRead=h.api.getRecords;
+  const replacement=[{ID:B,Template_Action:true,Contract_Action:'Incomplete replacement'},{ID:D,Template_Action:false,Contract_Action:'Unchecked row'}];
   h.reports.All_Contract_Actions=replacement;
   if(failure==='count')h.api.getRecordCount=config=>config.report_name==='All_Contract_Actions'?Promise.reject({message:'Native count failure without a code'}):nativeCount(config);
   else if(failure==='duplicate')replacement[1].ID=B;
   else if(failure==='missing-id')delete replacement[1].ID;
   else if(failure==='incomplete')h.api.getRecords=config=>config.report_name==='All_Contract_Actions'?Promise.resolve({code:3000,data:[clone(replacement[0])]}):nativeRead(config);
-  else if(failure==='missing-template')delete replacement[1].Contract_Template;
-  else replacement[1].Contract_Template={display_value:{name:'Unsupported'}};
+  else if(failure==='missing-template')delete replacement[1].Template_Action;
+  else if(failure==='malformed-template')replacement[1].Template_Action={display_value:{name:'Unsupported'}};
+  else replacement[1].Template_Action='Maybe';
   const before=h.calls.filter(call=>['update','add','delete'].includes(call.method)).length;await h.widget.load();assert.equal(h.widget.state.resources.actions,'error',failure);assert.equal(h.widget.state.actions,old,'A failed complete lookup scope keeps the previous rows unavailable');assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),selected);assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),false);assert.equal(h.widget.queue('Builder_Contract_Action_Template',[B]),false);assert.equal(h.widget.controller.canEdit('Multi_Line'),true,'The optional lookup failure does not change scalar grants');assert.equal(h.calls.filter(call=>['update','add','delete'].includes(call.method)).length,before);
-  h.api.getRecordCount=nativeCount;h.api.getRecords=nativeRead;h.reports.All_Contract_Actions=[{ID:B,Contract_Template:'Builder',Action:'Fresh complete action'}];await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),selected,'Successful complete retry retains unresolved persisted selection IDs');
+  h.api.getRecordCount=nativeCount;h.api.getRecords=nativeRead;h.reports.All_Contract_Actions=[{ID:B,Template_Action:true,Contract_Action:'Fresh complete action'}];await h.widget.load();assert.equal(h.widget.state.resources.actions,'ready');assert.equal(h.widget.controller.canEdit('Builder_Contract_Action_Template'),true);assert.deepEqual(clone(h.widget.state.rec.Builder_Contract_Action_Template),selected,'Successful complete retry retains unresolved persisted selection IDs');
 }
 
 for(const response of [{code:3000,status:'failure',result:{records_count:'1'}},{code:3000,success:false,result:{records_count:'1'}},{code:3000,error:['Denied'],result:{records_count:'1'}},{code:3000,result:{code:2898,records_count:'1'}}]){

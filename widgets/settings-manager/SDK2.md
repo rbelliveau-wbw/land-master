@@ -24,7 +24,7 @@ It never creates Settings records or changes the backend, approval routes or sch
   last complete collections while disabling the affected picker; other readable scalar fields
   remain available. Unavailable curves are labeled unavailable, never empty/zero.
 
-### Complete Actions choices — 1.3.4 candidate and 1.3.5 diagnostics
+### Complete Actions choices — authorized 2026-10-05
 
 The native Production 1.3.3 Actions count failed without a response code for
 `Contract_Template != ""`, leaving the picker unavailable with its seven persisted
@@ -34,30 +34,46 @@ same unfiltered report; existing report filters and signed-in permissions still
 apply. There is no alternate report, permission grant, capped page loop, or
 fallback to an uncounted read.
 
+The current native Development `Contract_Actions` form confirms the Template
+Action checkbox link name `Template_Action` and the Action textbox link name
+`Contract_Action`. On 2026-10-05, Robby authorized checked Template Action rows
+as the Settings action picker's eligibility rule. This decision applies only
+to Actions; the separate Builder approvals criterion remains
+`Contract_Template == "Builder"`.
+
 Only after the canonical reader verifies the full expected count and unique
-string ID set does the controller select rows with nonblank `Contract_Template`.
-It accepts strings, null/blank values, and genuine native lookup display objects
-(`zc_display_value` / `display_value`, or a valid string lookup ID). It never
-coerces malformed objects into an option. Missing template fields, malformed
-template values, duplicate/missing IDs, or incomplete pages make Actions
+string ID set does the controller select rows whose `Template_Action` checkbox
+is checked. It accepts native boolean values and explicit true/false, yes/no,
+1/0 strings or numbers; null and blank returned values are unchecked. Arbitrary
+objects and unrecognized strings cannot become truthy options. Missing checkbox
+fields, malformed checkbox values, duplicate/missing IDs, or incomplete pages make Actions
 unavailable while retaining the previous complete option rows and all saved
 selection IDs. The affected picker cannot queue a write until a fresh complete
 load succeeds; independent readable scalar fields retain their existing grants.
-Known and unresolved selected IDs retain the exact mutation/readback contract.
+Known, unchecked and unresolved selected IDs retain the exact mutation/readback
+contract. Eligibility never automatically removes a saved selection. Options
+show the current `Contract_Action` text, type and sort order; the removed
+`Contract_Template` field does not determine an action option or its label.
 
 The whole-IIFE suite replays the observed failure using the untouched immutable
 1.3.3 controller, then checks that the successor sends no Actions criteria,
-filters native blank/nonblank shapes only after a complete 2,001-row cursor
+filters native checked/unchecked shapes only after a complete 2,001-row cursor
 read, preserves unknown selections, rejects failed/incomplete scopes, and
-recovers through a complete retry. These are local SDK-shaped fixtures. Native
-unfiltered-count availability and exact Production option parity are pending
+recovers through a complete retry. It also verifies that Actions eligibility
+does not alter the Builder approval rule or submit any automatic mutation.
+These are local SDK-shaped fixtures. Native
+unfiltered-count availability and exact Production checkbox eligibility are pending
 root-owned gates; this candidate does not claim a native successor test.
 
 The native Development 1.3.4 gate still reported Actions unavailable despite
 successful count and page requests. The filtered-count explanation is therefore
 not established. Version 1.3.5 adds a safe resource name, error message and code
 console diagnostic, without logging records or changing reads, permissions or
-writes. Production remains on 1.3.1 while the actual failure is diagnosed.
+writes. The diagnostic and native form inspection established that the removed
+`Contract_Template` field was missing. The authorized checkbox rule resolves
+that mismatch without adding a backend field. No Creator backend change is
+part of this frontend fix; a missing checkbox in the environment's report must
+still fail closed and be identified for Robby to promote separately.
 
 ## Autosave contract
 
