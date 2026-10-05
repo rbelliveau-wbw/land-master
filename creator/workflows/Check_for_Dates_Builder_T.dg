@@ -1,0 +1,322 @@
+// Replacement custom script for existing Check_for_Dates_Builder_T workflow.
+// Builder_Takedown: on add or edit, on validate. No schema changes.
+// Prepared only; not published to Creator.
+
+if(input.Interest_Rate_1 != null || input.Date1_1 != null || input.Date1_2 != null)
+{
+	if(input.Interest_Rate_1 == null || input.Date1_1 == null || input.Date1_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 1.";
+		cancel submit;
+	}
+	if(input.Date1_1 != null && input.Date1_2 != null)
+	{
+		if(input.Date1_2 < input.Date1_1)
+		{
+			alert "Interest period 1 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date1_2 > input.Purchase_Date)
+		{
+			alert "Interest period 1 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+}
+
+if(input.Interest_Rate_2 != null || input.Date2_1 != null || input.Date2_2 != null)
+{
+	if(input.Interest_Rate_2 == null || input.Date2_1 == null || input.Date2_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 2.";
+		cancel submit;
+	}
+	if(input.Date2_1 != null && input.Date2_2 != null)
+	{
+		if(input.Date2_2 <= input.Date2_1)
+		{
+			alert "Interest period 2 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date2_2 > input.Purchase_Date)
+		{
+			alert "Interest period 2 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_1 == null || input.Date1_2 == null || input.Date2_1 != input.Date1_2)
+	{
+		alert "Interest period 2 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_3 != null || input.Date3_1 != null || input.Date3_2 != null)
+{
+	if(input.Interest_Rate_3 == null || input.Date3_1 == null || input.Date3_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 3.";
+		cancel submit;
+	}
+	if(input.Date3_1 != null && input.Date3_2 != null)
+	{
+		if(input.Date3_2 <= input.Date3_1)
+		{
+			alert "Interest period 3 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date3_2 > input.Purchase_Date)
+		{
+			alert "Interest period 3 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_2 == null || input.Date2_2 == null || input.Date3_1 != input.Date2_2)
+	{
+		alert "Interest period 3 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_4 != null || input.Date4_1 != null || input.Date4_2 != null)
+{
+	if(input.Interest_Rate_4 == null || input.Date4_1 == null || input.Date4_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 4.";
+		cancel submit;
+	}
+	if(input.Date4_1 != null && input.Date4_2 != null)
+	{
+		if(input.Date4_2 <= input.Date4_1)
+		{
+			alert "Interest period 4 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date4_2 > input.Purchase_Date)
+		{
+			alert "Interest period 4 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_3 == null || input.Date3_2 == null || input.Date4_1 != input.Date3_2)
+	{
+		alert "Interest period 4 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_5 != null || input.Date5_1 != null || input.Date5_2 != null)
+{
+	if(input.Interest_Rate_5 == null || input.Date5_1 == null || input.Date5_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 5.";
+		cancel submit;
+	}
+	if(input.Date5_1 != null && input.Date5_2 != null)
+	{
+		if(input.Date5_2 <= input.Date5_1)
+		{
+			alert "Interest period 5 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date5_2 > input.Purchase_Date)
+		{
+			alert "Interest period 5 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_4 == null || input.Date4_2 == null || input.Date5_1 != input.Date4_2)
+	{
+		alert "Interest period 5 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_6 != null || input.Date6_1 != null || input.Date6_2 != null)
+{
+	if(input.Interest_Rate_6 == null || input.Date6_1 == null || input.Date6_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 6.";
+		cancel submit;
+	}
+	if(input.Date6_1 != null && input.Date6_2 != null)
+	{
+		if(input.Date6_2 <= input.Date6_1)
+		{
+			alert "Interest period 6 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date6_2 > input.Purchase_Date)
+		{
+			alert "Interest period 6 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_5 == null || input.Date5_2 == null || input.Date6_1 != input.Date5_2)
+	{
+		alert "Interest period 6 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_71 != null || input.Date7_1 != null || input.Date7_2 != null)
+{
+	if(input.Interest_Rate_71 == null || input.Date7_1 == null || input.Date7_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 7.";
+		cancel submit;
+	}
+	if(input.Date7_1 != null && input.Date7_2 != null)
+	{
+		if(input.Date7_2 <= input.Date7_1)
+		{
+			alert "Interest period 7 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date7_2 > input.Purchase_Date)
+		{
+			alert "Interest period 7 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_6 == null || input.Date6_2 == null || input.Date7_1 != input.Date6_2)
+	{
+		alert "Interest period 7 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_8 != null || input.Date8_1 != null || input.Date8_2 != null)
+{
+	if(input.Interest_Rate_8 == null || input.Date8_1 == null || input.Date8_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 8.";
+		cancel submit;
+	}
+	if(input.Date8_1 != null && input.Date8_2 != null)
+	{
+		if(input.Date8_2 <= input.Date8_1)
+		{
+			alert "Interest period 8 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date8_2 > input.Purchase_Date)
+		{
+			alert "Interest period 8 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_71 == null || input.Date7_2 == null || input.Date8_1 != input.Date7_2)
+	{
+		alert "Interest period 8 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_9 != null || input.Date9_1 != null || input.Date9_2 != null)
+{
+	if(input.Interest_Rate_9 == null || input.Date9_1 == null || input.Date9_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 9.";
+		cancel submit;
+	}
+	if(input.Date9_1 != null && input.Date9_2 != null)
+	{
+		if(input.Date9_2 <= input.Date9_1)
+		{
+			alert "Interest period 9 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date9_2 > input.Purchase_Date)
+		{
+			alert "Interest period 9 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_8 == null || input.Date8_2 == null || input.Date9_1 != input.Date8_2)
+	{
+		alert "Interest period 9 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_10 != null || input.Date10_1 != null || input.Date10_2 != null)
+{
+	if(input.Interest_Rate_10 == null || input.Date10_1 == null || input.Date10_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 10.";
+		cancel submit;
+	}
+	if(input.Date10_1 != null && input.Date10_2 != null)
+	{
+		if(input.Date10_2 <= input.Date10_1)
+		{
+			alert "Interest period 10 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date10_2 > input.Purchase_Date)
+		{
+			alert "Interest period 10 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_9 == null || input.Date9_2 == null || input.Date10_1 != input.Date9_2)
+	{
+		alert "Interest period 10 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_11 != null || input.Date11_1 != null || input.Date11_2 != null)
+{
+	if(input.Interest_Rate_11 == null || input.Date11_1 == null || input.Date11_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 11.";
+		cancel submit;
+	}
+	if(input.Date11_1 != null && input.Date11_2 != null)
+	{
+		if(input.Date11_2 <= input.Date11_1)
+		{
+			alert "Interest period 11 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date11_2 > input.Purchase_Date)
+		{
+			alert "Interest period 11 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_10 == null || input.Date10_2 == null || input.Date11_1 != input.Date10_2)
+	{
+		alert "Interest period 11 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}
+
+if(input.Interest_Rate_12 != null || input.Date12_1 != null || input.Date12_2 != null)
+{
+	if(input.Interest_Rate_12 == null || input.Date12_1 == null || input.Date12_2 == null)
+	{
+		alert "Complete the rate and both dates for interest period 12.";
+		cancel submit;
+	}
+	if(input.Date12_1 != null && input.Date12_2 != null)
+	{
+		if(input.Date12_2 <= input.Date12_1)
+		{
+			alert "Interest period 12 must end after it begins.";
+			cancel submit;
+		}
+		if(input.Purchase_Date != null && input.Date12_2 > input.Purchase_Date)
+		{
+			alert "Interest period 12 ends after the purchase date.";
+			cancel submit;
+		}
+	}
+	if(input.Interest_Rate_11 == null || input.Date11_2 == null || input.Date12_1 != input.Date11_2)
+	{
+		alert "Interest period 12 must begin on the preceding period end date.";
+		cancel submit;
+	}
+}

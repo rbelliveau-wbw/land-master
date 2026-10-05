@@ -2,6 +2,31 @@
 
 Select Open and Contracted subdivision lots, create Builder Takedowns, and review existing takedowns without editing them. Archived lots and lots already linked to a takedown remain unavailable. Sold and Scheduled lots remain visible and read-only. Eligibility is re-read immediately before takedown submission. Takedowns cannot mix subdivisions. Import Lots belongs entirely to Land & Projects.
 
+## Live receipt — production 0.10.1
+
+The creation dialog groups details, taxes/fees, interest periods and additional
+items beside a sticky live receipt. Custom dropdowns/date calendars replace
+native controls. Active templates match subdivision and builder; additions and
+deductions are cloned without source child IDs. Future and unused interest
+periods stay hidden, later starts match prior ends, and Add/Remove retain the
+existing twelve fixed Creator field slots. No object-model changes.
+
+The receipt includes all closing components and per-lot/wire detail. Fresh
+preflight rejects changed prices or tax inputs. Saved financial inputs, rates,
+dates, day settings, additional items and exclusive lot claims must verify
+before completion; ambiguous saves cannot replay. See the
+[workflow audit](../../knowledge/modules/takedown-logic-audit.md) for preserved
+formulas and the prepared existing date-validator correction. That Creator
+publication and native Development verification are pending. Frontend 0.10.1
+is promoted to production by explicit user authorization. Mixed blank/nonzero additional tax blocks the preview because of
+the documented backend carry-forward issue.
+
+Checks: `node scripts/test-takedown-model.mjs`, the existing SDK2/widget tests,
+and `node scripts/test-manage-lots-editor-browser.mjs` with Playwright plus
+Chrome (or LM_BROWSER_CHANNEL). Browser calls are inert fixtures, not live
+writes. Full repository validation and Pages build are required. Rollback:
+prior production 0.9.20; repaired SDK1 fallback 0.9.15.
+
 ## SDK2 migration candidate (0.9.17)
 
 The current source uses Creator SDK2 and the shared counted reader. Startup requires a recognized native environment and actor; a five-second handshake deadline rejects without demo data, and Refresh can perform a fresh handshake. Core subdivisions/builders/takedowns publish together only after complete counted reads. Subdivision lot scopes still read both existing lot reports, preserve string IDs and leading-zero labels, and retain Sold whenever either report identifies a lot as Sold. Conflicting availability stays unavailable.

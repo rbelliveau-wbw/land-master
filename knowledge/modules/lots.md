@@ -1,5 +1,14 @@
 # Lots status contract
 
+The Production 0.10.1 Builder Takedown screen adds grouped editing, a live receipt,
+scoped template defaults/items and sequential related-list-style interest
+periods mapped to the existing twelve flat slots. It verifies fresh financial
+inputs before creating and saved details/items afterward. See the
+[complete logic audit](takedown-logic-audit.md) for formula coverage, backend
+findings, required date-workflow publication, verification and rollback. The
+object model is unchanged. Only the Production manage-lots mapping changes;
+Development remains on 0.9.20.
+
 ## Manage Lots SDK1 startup repair — 0.9.15 candidate
 
 Native Development and Production 0.9.14 failed during load with `spreadsheet is not defined`. The removed importer left two references: the completed startup called `spreadsheet.state()`/`renderPlat`, and Copy Audit Log called `spreadsheet.state()` for its old staged-row count. Candidate 0.9.15 removes only those obsolete expressions and updates its build marker; SDK1, existing report scopes, lot eligibility, Builder Takedown workflows and all other UI remain unchanged. Import Lots remains in Land & Projects.

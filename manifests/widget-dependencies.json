@@ -472,7 +472,10 @@
         "Builder_Takedown",
         "Contract",
         "Lots",
-        "Subdivision"
+        "Settings",
+        "Subdivision",
+        "Takedown_Template",
+        "Additional_Items"
       ],
       "reports_referenced": [
         "All_Active_Lots_Contracts_View",
@@ -481,14 +484,15 @@
         "All_Contracts1",
         "All_Lots_All_Fields",
         "All_Subdivisions",
-        "All_Active_Lots_List_View"
+        "All_Active_Lots_List_View",
+        "All_Takedown_Templates",
+        "All_Additional_Items"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.getRecordCount",
-        "ZOHO.CREATOR.appName",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.DATA.getRecords",
+        "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.addRecords"
       ],
       "external_domains": [
         "js.zohostatic.com"

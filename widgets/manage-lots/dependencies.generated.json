@@ -1,18 +1,14 @@
 {
-  "custom_apis": [
-    {
-      "name": "Ingest_Plat",
-      "config_key": "platIngest",
-      "source": "customApis object"
-    }
-  ],
+  "custom_apis": [],
   "forms_referenced": [
     "Builder",
     "Builder_Takedown",
     "Contract",
     "Lots",
     "Settings",
-    "Subdivision"
+    "Subdivision",
+    "Takedown_Template",
+    "Additional_Items"
   ],
   "reports_referenced": [
     "All_Active_Lots_Contracts_View",
@@ -21,13 +17,15 @@
     "All_Contracts1",
     "All_Lots_All_Fields",
     "All_Subdivisions",
-    "All_Active_Lots_List_View"
+    "All_Active_Lots_List_View",
+    "All_Takedown_Templates",
+    "All_Additional_Items"
   ],
   "sdk_calls": [
-    "ZOHO.CREATOR.API.addRecord",
-    "ZOHO.CREATOR.API.getAllRecords",
-    "ZOHO.CREATOR.appName",
-    "ZOHO.CREATOR.init"
+    "ZOHO.CREATOR.UTIL.getInitParams",
+    "ZOHO.CREATOR.DATA.getRecords",
+    "ZOHO.CREATOR.DATA.getRecordCount",
+    "ZOHO.CREATOR.DATA.addRecords"
   ],
   "external_domains": [
     "js.zohostatic.com"

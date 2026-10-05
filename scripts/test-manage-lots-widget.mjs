@@ -142,7 +142,7 @@ assert.equal(await scopeReader(sid),scoped);assert.deepEqual(scopeCalls,[{id:sid
 function nativeReader(expected,responses){
   let pages=0,counts=0;const api={getRecordCount:async()=>{counts++;if(expected instanceof Error||expected?.code)throw expected;return {code:3000,result:{records_count:expected}};},getRecords:async()=>{pages++;const response=responses.shift();if(response?.error||response?.code!==3000)throw response;return response;}};
   const context=vm.createContext({LMRuntime:{current:()=>({environment:'DEVELOPMENT',appLinkName:'land-master',user:'fixture'})},ZOHO:{CREATOR:{DATA:api}}});vm.runInContext(fs.readFileSync('shared/creator-data.js','utf8'),context);
-  const read=new Function('LMData','manageController','auditLog','errText',`var loadGeneration=1;return (${extractFunction('getAll')});`)(context.LMData,{context:()=> 'fixture'},()=>{},error=>error.message||String(error));
+  const read=new Function('LMData','manageController','auditLog','errText',`var loadGeneration=1;${source.match(/var takedownDefaultFields=.*?;/)[0]}return (${extractFunction('getAll')});`)(context.LMData,{context:()=> 'fixture'},()=>{},error=>error.message||String(error));
   return {read,pages:()=>pages,counts:()=>counts};
 }
 let native=nativeReader('0',[]);assert.deepEqual(Array.from(await native.read('Lots')),[]);assert.equal(native.pages(),0,'a verified zero needs no record read');

@@ -1,5 +1,18 @@
 # Manage Lots SDK2 contract
 
+0.10.1 extends this contract with the live receipt and retains the 0.9.20
+no-replay/claim-verification safeguards, report filters and read-only detail. Scoped All_Takedown_Templates
+and All_Additional_Items reads provide existing defaults. Selected lots also
+require Base_Price, Earnest_Money and Additional_Tax; appraisal tax additionally
+requires Appraised_Value. Preflight compares those captured financial inputs.
+Readback checks saved financial/rate/date/day fields and exact additional-item
+values through All_Additional_Items scoped by Builder_Takedown1. The frontend
+clones new subform rows without source IDs and submits their calculated Total.
+No new form, field, function or Custom API. See the
+[logic audit](../../knowledge/modules/takedown-logic-audit.md) for the existing
+native date-validator replacement awaiting publication and the pending
+additional-tax interpretation. Native verification remains pending.
+
 Version 0.9.17 is a source candidate correcting the immutable Development 0.9.16 release. The native SDK1 repair baseline is 0.9.15: 37 subdivisions, 13 builders, 24 takedowns/six groups, and 155 exact tiles in the exercised subdivision (131 available/24 unavailable). SDK2 0.9.16 Development retained 37 choices, all 155 exact tiles and 30 takedown-table rows against that baseline; its form loaded 13 builders and 36 rate/date controls without committing Create. Independent actual-app fixtures exposed its permissive reverse-claim verification. Production 0.9.14's removed-importer startup failure predates this migration. Native 0.9.17 gates and Production promotion remain pending; no new live records were created by these fixtures.
 
 ## Reads and identity

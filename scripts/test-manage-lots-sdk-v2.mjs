@@ -1,7 +1,7 @@
 // Inert native SDK2 simulation. Evaluates the real app scripts and complete IIFE.
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 // After adoption, run with --app-root=widgets/manage-lots/src/app.
-const app=(process.argv.find(arg=>arg.startsWith('--app-root='))?.slice('--app-root='.length)||'widgets/manage-lots/src/app').replace(/[\\/]+$/,'')+'/',html=fs.readFileSync(app+'widget.html','utf8');
+const app=(process.argv.find(arg=>arg.startsWith('--app-root='))?.slice('--app-root='.length)||'widgets/manage-lots/src/app').replace(/[\\/]+$/,'')+'/',html=fs.readFileSync(app+(fs.existsSync(app+'widget.html')?'widget.html':'index.html'),'utf8');
 const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]).find(text=>text.includes('var CFG='));
 const widgetVersion=html.match(/version:"([^"]+)"/)[1];
 assert.match(html,/widgets\/version\/2\.0\/widgetsdk-min\.js/);assert.doesNotMatch(inline,/ZOHO\.CREATOR\.API\.|ZOHO\.CREATOR\.init\(|spreadsheet\.|renderPlat\(/);
@@ -17,7 +17,7 @@ function harness(options={}){
       addEventListener(name,fn){if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn)},async fire(name,event={}){for(const fn of listeners.get(name)||[])await fn.call(out,event)},
       querySelectorAll(selector){if(selector==='span')return out.spans;if(selector==='button')return [...nodes.values()].filter(n=>n.id.startsWith('mlProgress')&&n.tagName==='BUTTON');return[]},querySelector(){return null},closest(){return null},
       setAttribute(name,value){attrs[name]=String(value)},getAttribute:name=>attrs[name],getBoundingClientRect:()=>({top:0,left:0,bottom:20,right:20,width:20,height:20}),focus(){document.activeElement=out},select(){out.selected=true},appendChild(child){if(child.id)nodes.set(child.id,child)},removeChild(){},remove(){},before(){}};
-    Object.defineProperty(out,'innerHTML',{get:()=>markup,set(value){markup=String(value);for(const match of markup.matchAll(/<([a-z]+)\b[^>]*\bid=(['"])(.*?)\2([^>]*)>/g)){const child=node(match[3],match[1]),valueAttr=match[4].match(/\bvalue=(['"])(.*?)\1/);if(valueAttr)child.value=valueAttr[2];nodes.set(child.id,child)}out.spans=[...markup.matchAll(/<span[^>]*>(.*?)<\/span>/g)].map(match=>({textContent:match[1]}))}});return out;
+    Object.defineProperty(out,'innerHTML',{get:()=>markup,set(value){markup=String(value);for(const match of markup.matchAll(/<([a-z][a-z0-9]*)\b[^>]*\bid=(['"])(.*?)\2([^>]*)>/g)){const child=node(match[3],match[1]),valueAttr=match[4].match(/\bvalue=(['"])(.*?)\1/);if(valueAttr)child.value=valueAttr[2];nodes.set(child.id,child)}out.spans=[...markup.matchAll(/<span[^>]*>(.*?)<\/span>/g)].map(match=>({textContent:match[1]}))}});return out;
   }
   for(const match of html.matchAll(/<([a-z][a-z0-9]*)\b[^>]*\bid="([^"]+)"/g))nodes.set(match[2],node(match[2],match[1]));
   const document={referrer:'https://creatorapp.zoho.com/fixture/land-master/',body:node('body'),activeElement:null,
@@ -26,7 +26,7 @@ function harness(options={}){
     createElement:tag=>node('',tag),addEventListener(name,fn){events.set(name,fn)},execCommand:()=>false};const tabs=node('tabs');
   const rows={All_Subdivisions:[{ID:SID,Subdivision_Name:'Fixture subdivision',Subdivision_Code:'FX01'}],All_Builders:[{ID:BUILDER,Builder_Name:'Fixture builder'}],
     All_Builder_Takedowns:[{ID:TD,Name:'Read-only takedown',Lots:[],Subdivision1:{ID:SID},Builder1:{ID:BUILDER},Lot_Count:0,Added_Time:'01-Oct-2026 10:00:00',Entered_Date:'10/01/2026',Purchase_Date:'10/15/2026',Status:'Active',Total:'12345.67'}],All_Contracts1:[],
-    All_Lots_All_Fields:[{ID:LOT,Subdivision:{ID:SID},Status:'Open',Archived:false,Add_Builder_Takedown_Name:{},Block:'001',Lot_Number:'01'}],
+    All_Lots_All_Fields:[{ID:LOT,Subdivision:{ID:SID},Status:'Open',Archived:false,Add_Builder_Takedown_Name:{},Base_Price:80000,Earnest_Money:8000,Additional_Tax:0,Additional_Fees:0,Escalator:null,Escalator_Start_Date:null,Block:'001',Lot_Number:'01'}],
     All_Active_Lots_List_View:[{ID:LOT,Subdivision:{ID:SID},Status:'Open',Block:'001',Lot_Number:'01'},{ID:SOLD,Subdivision:{ID:SID},Status:'Sold',Block:'001',Lot_Number:'02'}],All_Active_Lots_Contracts_View:[]};
   const gate={init:options.init||null,read:null,write:null,response:undefined,denyCore:false,denyOptional:false,mismatch:false,reverseWrong:false};
   const initParams=options.params||{loginUser:'actual-native-actor',appLinkName:'land-master',envUrlFragment:''};
@@ -57,11 +57,11 @@ function harness(options={}){
   const context=vm.createContext({document,location:{pathname:'/prod/manage-lots/',href:'https://example.test/prod/manage-lots/'},navigator:{clipboard:{writeText:async text=>{copies.push(text)}}},console:{log(){},info(){},warn(){},error(){}},CSS:{escape:String},innerWidth:1200,innerHeight:800,URL,URLSearchParams,Promise,Date,Error,Set,Map,
     matchMedia:()=>({matches:options.reduced!==false}),setTimeout(fn,ms){const id=++timerSeq;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),addEventListener(name,fn){events.set(name,fn)},
     ZOHO:{CREATOR:{UTIL:{getInitParams:async()=>{initCalls++;if(gate.init)return gate.init.promise;return plain(initParams)}},DATA:{getRecordCount:config=>invoke('count',config),getRecords:config=>invoke('read',config),addRecords:config=>invoke('add',config)}}}});context.window=context;
-  for(const file of ['runtime-context.js','creator-data.js','subdivision-counts.js','manage-lots-controller.js'])vm.runInContext(fs.readFileSync(app+file,'utf8'),context,{filename:file});
+  for(const file of ['runtime-context.js','creator-data.js','subdivision-counts.js','manage-lots-controller.js','takedown-model.js','takedown-editor.js'])vm.runInContext(fs.readFileSync(app+file,'utf8'),context,{filename:file});
   vm.runInContext(inline,context,{filename:'whole-manage-lots-sdk2.js'});
   async function timersAt(ms){for(const [key,timer]of[...timers])if(timer.ms===ms){timers.delete(key);timer.fn()}await drain()}
   async function flushProgress(){for(let i=0;i<6;i++)await timersAt(options.reduced===false?560:0)}
-  async function choose(){context.__MLW_TEST__.setSubdivisionIds([SID]);await drain();context.__MLW_TEST__.applySelection(LOT,true);context.__MLW_TEST__.openModal();for(const [id,value]of Object.entries({fName:'Frozen fixture takedown',fBuilder:BUILDER,fStatus:'Active',fEntered:'2026-10-02',fPurchase:'2026-10-04',fTaxMethod:'Flat',fTaxStatus:'Taxes Paid',fTaxPerLot:'0',fPercent:'0',fFees:'0'}))nodes.get(id).value=value}
+  async function choose(){context.__MLW_TEST__.setSubdivisionIds([SID]);await drain();context.__MLW_TEST__.applySelection(LOT,true);context.__MLW_TEST__.openModal();for(const [id,value]of Object.entries({fName:'Frozen fixture takedown',fBuilder:BUILDER,fStatus:'Active',fEntered:'2026-10-02',fPurchase:'2026-10-04',fTaxMethod:'Flat',fTaxStatus:'Taxes Paid',fTaxPerLot:'0',fPercent:'0',fFees:'0'}))nodes.get(id).value=value;await context.LMTakedownEditor.loadDefaults();nodes.get('fName').value='Frozen fixture takedown'}
   return {context,nodes,rows,gate,calls,copies,events,timers,timersAt,flushProgress,choose,widget:context.__MLW_TEST__,state:context.__MLW_TEST__.S,initCalls:()=>initCalls,maximum:()=>maximum};
 }
 const writes=h=>h.calls.filter(call=>call.method==='add');
@@ -103,10 +103,10 @@ for(const extra of [{details:{code:2898,error:'Denied'}},{response:'{"status":"f
 // Every legacy interest period and date field is captured unchanged in the real
 // SDK2 create, including the declared Interest_Rate_71 field for period seven.
 {
-  const h=harness();await drain();await h.choose();for(let i=1;i<=12;i++){h.nodes.get('ir'+i).value=String(i+0.25);h.nodes.get('if'+i).value='2026-10-01';h.nodes.get('it'+i).value='2026-10-31';}
+  const h=harness();await drain();await h.choose();for(let i=1;i<=12;i++){h.nodes.get('ir'+i).value=String(i+0.25);h.nodes.get('if'+i).value='2026-09-'+String(i).padStart(2,'0');h.nodes.get('it'+i).value='2026-09-'+String(i+1).padStart(2,'0');}
   const baseline=fs.readFileSync('releases/manage-lots/0.9.15/index.html','utf8'),payload=baseline.split(/\r?\n/).find(line=>line.includes('function payload()'));
   const ctx=vm.createContext({S:h.state,val:id=>h.nodes.get(id)?.value||'',selectedLotSubdivisionId:()=>SID,toZoho:v=>v?v.split('-').slice(1).concat(v.split('-')[0]).join('/'):'',Array,Number});vm.runInContext(payload,ctx);
-  const expected=plain(ctx.payload());assert.deepEqual(plain(h.widget.payload()),expected);await h.widget.confirm();await h.flushProgress();const sent=writes(h)[0].config.payload.data;assert.deepEqual(sent,expected);assert.equal(Object.keys(sent).filter(key=>/^(Interest_Rate_|Date[0-9]+_[12])/.test(key)).length,36);assert.equal(sent.Interest_Rate_71,7.25);
+  const expected={...plain(ctx.payload()),Base_Price_Subtotal:80000,DRH_Subtract_Day:false,Subtract_Day_From:[],Additional_Items:[]};assert.deepEqual(plain(h.widget.payload()),expected);await h.widget.confirm();await h.flushProgress();const sent=writes(h)[0].config.payload.data;assert.deepEqual(sent,expected);assert.equal(Object.keys(sent).filter(key=>/^(Interest_Rate_|Date[0-9]+_[12])/.test(key)).length,36);assert.equal(sent.Interest_Rate_71,7.25);
   h.state.takedowns[0].Builder1={ID:BUILDER,zc_display_value:'Native builder label'};h.state.view='takedowns';h.widget.render();assert.match(h.nodes.get('takedownsBody').innerHTML,/Native builder label/);assert.doesNotMatch(h.nodes.get('takedownsBody').innerHTML,/input|textarea|data-act=|data-edit=/);
 }
 {
@@ -218,6 +218,17 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
   const attempt=h.widget.confirm();await drain();h.context.LMRuntime.apply({loginUser:'changed-native-actor',envUrlFragment:''});waiting.resolve();await attempt;await h.flushProgress();
   assert.equal(writes(h).length,0);assert.equal(h.widget.controller.state.review,null,'a queued but never sent create is not an applied outcome');assert.equal(h.nodes.get('mlProgressStage1').textContent,'Not sent');
 }
+// A changed financial input must stop the whole create, even when eligibility is unchanged.
+for(const field of ['Base_Price','Earnest_Money','Additional_Tax']){
+  const h=harness();await drain();await h.choose();h.rows.All_Lots_All_Fields[0][field]+=100;
+  await h.widget.confirm();await h.flushProgress();assert.equal(writes(h).length,0);assert.equal(h.state.selected.has(LOT),true);assert.match(h.nodes.get('formError').textContent,/pricing or taxes changed/);
+}
+// Saved financial fields/day settings are verified separately from otherwise correct claims.
+for(const field of ['Tax_Per_Lot','Purchase_Date','Subtract_Day_From']){
+  const h=harness();await drain();await h.choose();const add=h.context.ZOHO.CREATOR.DATA.addRecords;
+  h.context.ZOHO.CREATOR.DATA.addRecords=async config=>{const response=await add(config),saved=h.rows.All_Builder_Takedowns.find(row=>row.ID===CREATED);saved[field]=field==='Purchase_Date'?'10/03/2026':field==='Subtract_Day_From'?['Tax']:100;return response;};
+  await h.widget.confirm();await h.flushProgress();assert.ok(h.widget.controller.state.review);assert.equal(writes(h).length,1);await h.widget.confirm();assert.equal(writes(h).length,1,'a financial mismatch cannot replay a saved takedown');
+}
 
 // A real report-layout response omits form dates/totals unless explicitly projected.
 {
@@ -238,4 +249,4 @@ for(const field of ['Status','Archived','Add_Builder_Takedown_Name']){
  assert.equal(h.widget.openTakedownDetail('90071992547409990',h.nodes.get('builderToggle')),true);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/\$12,345.67/);assert.equal((h.nodes.get('takedownDetailBody').innerHTML.match(/lot-detail-chip/g)||[]).length,8);assert.match(h.nodes.get('takedownDetailBody').innerHTML,/&lt;script&gt;/);assert.doesNotMatch(h.nodes.get('takedownDetailBody').innerHTML,/<script>/);assert.equal(h.calls.length,before);assert.equal(writes(h).length,0);h.widget.closeTakedownDetail();assert.equal(h.nodes.get('takedownDetail').classList.contains('open'),false);
 }
 
-console.log('Manage SDK2 actual whole-IIFE: native startup/timeout/fresh retry, full count/cursors/dual Sold merge/exact IDs/leading zeros, immutable draft/eligibility/actor preflight, one strict create/claims readback, unknown no-replay/read-only recheck, pending+paced UI locks and native clipboard passed.');
+console.log('Manage SDK2 actual whole-IIFE: native startup/timeout/fresh retry, full count/cursors/dual Sold merge/exact IDs/leading zeros, immutable draft/eligibility/financial/actor preflight, one strict create/claims and financial readback, unknown no-replay/read-only recheck, pending+paced UI locks and native clipboard passed.');
