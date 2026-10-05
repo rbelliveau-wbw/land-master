@@ -61,6 +61,6 @@ Adds a compact dashboard sidebar, a green Lot Sales heading, and the Budget dash
 
 ## Startup/report refinement — 2026-10-04
 
-Insights 1.5.42 displays the complete current-and-previous-year window while full lot history loads, including with Hide Empty off. Recent subdivision inventory is labeled as recent; historical first-sale/inventory/export details remain unavailable until the complete read finishes. Selected-year totals match after completion; failure keeps recent results and Retry. The Production promotion remains held for the missing authorized Dev graph gate; no user permission was changed. Current Production/rollback remains 1.5.40.
+Insights 1.5.42 displays the complete current-and-previous-year window while full lot history loads, including with Hide Empty off. Recent subdivision inventory is labeled as recent; historical first-sale/inventory/export details remain unavailable until the complete read finishes. Selected-year totals match after completion; failure keeps recent results and Retry. On October 5 the user authorized read-only Production testing instead of the unavailable authorized Dev graph gate. Production 1.5.42 passed: first usable at 3,289 ms with history incomplete, then all 25,527 lots complete at 7,903 ms; both the two-year and all-history rows/totals matched the 1.5.40 baseline exactly. No user permission was changed. Rollback remains 1.5.40. See [final decisions](../../docs/final-refactor-decisions-2026-10-05.md).
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).

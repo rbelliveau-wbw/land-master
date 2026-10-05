@@ -30,3 +30,21 @@ no native Creator configuration, workflow, permission or business-record changes
 
 Rollback mappings: Settings 1.3.1, Insights 1.5.40 and Manage Lots 0.9.19. Stable
 Creator widget registrations do not change.
+
+## Native results
+
+Commit 9fa1f73 passed CI 37335015067 and Pages 37335015276. Native Development
+Settings 1.3.7 retained every one of the 23 scalar controls and both selected-ID
+sets exactly against 1.3.6. Actions became available with 16 checked template
+choices; the three saved action IDs and two approval IDs were retained. This
+was a read-only gate, with no Settings, curve or schedule writes.
+
+Under the user's approved alternate gate, native Production Insights 1.5.42
+marked recent-ready at 3,242 ms (3,327 recent lots), first-usable at 3,289 ms with
+historyReady false, and history-ready at 7,903 ms (25,527 complete lots). All 38
+tracked requests completed without failure; no reads remained queued or pending.
+These are one-run observations, not a controlled latency percentage comparison.
+All 218 body rows, selected totals and summary matched the captured 1.5.40
+baseline exactly for both the two-year view and all-history view (249 months).
+Historical data and recent results therefore remain complete for those scopes.
+No data, permission, financial, schedule or approval write was used as a test.
