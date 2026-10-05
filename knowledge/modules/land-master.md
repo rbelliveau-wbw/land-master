@@ -1,6 +1,15 @@
 
 # Land Master Module
 
+## Lot Import Soft rows and clear discard scope (8.14.6)
+
+Populate Subdivision uses the selected Soft rows treatment: rounded white lot rows, blue source disclosure pills, restrained state edges, and mint Created badges. Its source provenance, validation, editable columns, pinned summary, and creation flow remain intact.
+
+After a creation attempt, Close warns only when a selected lot remains unsaved. Creating 133 selected lots from 134 found rows with one intentionally unchecked lot closes without a false discard warning. Selected failed or unprocessed rows still warn, and staged drafts retain their confirmation before creation. The warning names every unsaved lot affected by closing: "Discard 1 unsaved lot?" / "Your 133 saved lots are safe." Its action says "Discard lot" or "Discard N lots"; before any saved lots, it says "This lot hasn't been saved yet." or "These lots haven't been saved yet." Discarding only dismisses local drafts and never deletes saved Lots.
+
+Changed: spreadsheet import JS/CSS, focused mounted close regression, widget version/config/manifest, validation wiring, style/module notes, immutable release, and Production Land mapping. No Creator forms, fields, functions, Custom APIs, permissions, or backend deployment change. Regression: actual 133/134 creation with an exclusion, selected failed/unprocessed lots, singular/plural saved/unsaved counts, Cancel, precreation unchecked drafts, active scan/write blocking, forced close, Escape, source disclosure, sticky scrolling, and centered Created checks. Rollback: Production Land mapping to 8.14.5.
+
+
 ## Project workspace and Territory migration (8.14.1)
 
 Production 8.14.4 makes Territory read-only when editing an existing Project; new Project creation retains the required single Territory choice from live app variables. The October 3 migration populated and read back 94 blank Project Territories; one Project with conflicting subdivision Territories remains unresolved. Private original/source/result JSON evidence is retained outside the repository. Native Creator publishes 9.36 (All_Projects exposes Project.Territory) and 9.37 (Project accepts the ten global Territory values) support the migration. The Production GET Get_Land_Master_Choices API was enabled against the existing Production getLandMasterChoices function using OAuth2 and the existing API contract. Older notes below describing the missing Production API are historical. No profile audit was performed, following the user's instruction to skip it. Native form required/read-only validation is separate; this release enforces those rules in the widget. Regression: full validation/build plus actual Production migration read-back and Project editor inspection. UI rollback: 8.14.2; do not roll back data without reviewing the private results.
