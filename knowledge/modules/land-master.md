@@ -46,10 +46,10 @@ All dependent backend functions/actions compiled, were saved and reopened in
 Development. Both schedule report quick layouts are Save/reload-verified and
 Forecast bindings need no page change. Live saved-record verification and widget
 deployment remain pending.
-Rollback mapping: Land Master `8.14.5`, preserving second fields and entered data.
-Local immutable candidate `8.15.1` passed full repository validation and the
+Rollback: Development mapping `8.14.5`; current main Production mapping `8.14.7`. Preserve second fields and entered data.
+Local immutable candidate `8.15.3` passed full repository validation and the
 Pages build, including total/initial-term validation before native DATA writes.
-It is not mapped or uploaded. Frozen `8.15.0` remains unchanged.
+It is not mapped or uploaded. Frozen `8.15.0`, `8.15.1` and `8.15.2` remain unchanged.
 
 ## AI lot import leaves Notes alone (8.14.7)
 

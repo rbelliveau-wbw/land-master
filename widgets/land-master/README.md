@@ -3,7 +3,7 @@
 
 Projects, subdivisions, companies, properties, related records, filters, and editing.
 
-Current Second Closing candidate: `8.15.2`. See the
+Current Second Closing candidate: `8.15.3`. See the
 [implementation and activation handoff](../../docs/second-closing-handoff-2026-10-05.md).
 
 Prior candidate: `8.13.5`. The verified SDK v2 transport baseline is `8.13.3`; four-core loading in `8.13.4` passed the normal Development UI gate.

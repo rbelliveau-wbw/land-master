@@ -142,8 +142,9 @@ Run `npm run validate` and `npm run build:pages` before release. Backend changes
 require a Creator deployment; the additive schema and report changes must reach
 the target environment before either widget is promoted.
 
-UI rollback mappings are Contract Management `1.60.52` and Land Master
-`8.14.5`. Preserve both second fields and entered values. A widget rollback alone
+Development UI rollback mappings are Contract Management `1.60.52` and Land Master
+`8.14.5`; current main Production baselines are `1.60.54` and `8.14.7`.
+Preserve both second fields and entered values. A widget rollback alone
 does not restore three-tier calculations, and older widgets may omit the second
 inputs. Use captured native pre-change bodies to roll back backend actions only
 after reviewing schedules that now contain second terms. Do not clear those

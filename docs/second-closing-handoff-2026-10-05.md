@@ -33,11 +33,12 @@
   updated summary; applicable Search schedule embeds inherit report columns.
 - Final completion error wording was saved/reopened and matched its reviewed
   patch; the Contract suite passed against all seven reopened Legal bodies.
-- Development Takedown Schedule field labels were saved and fully reloaded as
+- Development Contract and Takedown Schedule field labels were saved and fully reloaded as
   Initial Closing, Second Closing and Subsequent Closings, each with Lots/Days.
-  Existing field link names remain unchanged. Contract's existing Initial/Cont'd
-  label alignment awaits the publishing lock; its new Second Closing labels are
-  already verified.
+  Existing field link names remain unchanged. The Contract label verification
+  completed after the user-initiated publishing lock cleared.
+  All four report previews inherit the renamed labels; their closing headers
+  were checked after both forms were saved.
 - The schedule editor verifies fresh persisted terms and server-calculated fields
   before confirming a save. Unknown or mismatched results retain the draft and
   block repeat writes; identified records offer a read-only recheck. Focused
@@ -47,16 +48,19 @@
   permission and delete verification fixes, Land import fixes, and independent
   Builder Takedown receipt features. The added receipt editor has no closing
   cadence dependency; its formulas and workflow remain unchanged.
+- Also incorporated main commit `99759fb`: reviewed lot-import creation continues
+  to omit `Lots.Notes`. That import implementation and its creation regression
+  remain byte-for-byte equal to main; Land `8.15.3` packages the preserved fix.
 - Local immutable candidates are [Legal 1.61.2](../releases/contract-management/1.61.2/release.json)
-  and [Land 8.15.2](../releases/land-master/8.15.2/release.json). Full repository
+  and [Land 8.15.3](../releases/land-master/8.15.3/release.json). Full repository
   validation passed; Pages built 29 current mapped paths. Candidate assets and
-  source/config/manifest hashes match exactly. Earlier frozen `.0` and `.1`
+  source/config/manifest hashes match exactly. Earlier frozen `.0`, `.1` and `.2`
   candidates are retained. Environment mappings remain unchanged.
 
 ## Remaining activation and evidence
 
 The user initiated Creator Publish outside this task. Builder maintenance cleared
-earlier and returned during final label verification; a snapshot showed Stage `9.43` and Production `9.42`, with an
+after interrupting final label verification; a snapshot showed Stage `9.43` and Production `9.42`, with an
 October 5 version-history entry at 13:31. That snapshot does not verify the
 outcome of the external Publish, which may still be progressing. This feature's schema and bodies in
 those environments are **unverified**. Development compilation/reopen proof
@@ -75,7 +79,7 @@ Remaining gates:
    covered by focused execution fixtures; they do not establish a live business
    record's saved behavior.
 3. When authorized, promote only the Development mappings to Legal `1.61.2`
-   and Land `8.15.2` in [environments.json](../deploy/environments.json), then
+   and Land `8.15.3` in [environments.json](../deploy/environments.json), then
    run `npm run validate` and `npm run build:pages`. The existing Pages workflow
    publishes immutable assets after the authorized main update; permanent
    Creator widget URLs stay unchanged. Promote other environments only after
@@ -92,14 +96,16 @@ The legacy Page's captured lower binding is
 Native helper screenshots are `.tmp/second-closing-evidence/calculator-development.jpg`
 and `.tmp/second-closing-evidence/day75-native.jpg`; those evidence files are
 ignored locally too.
-Complete validation logs include `.tmp/second-closing-rebased-validation.log`
-and `.tmp/second-closing-rebased-build.log`. Reopened cadence bodies passed
+Reloaded form label evidence is `.tmp/second-closing-evidence/schedule-labels-development.jpg`
+and `.tmp/second-closing-evidence/contract-labels-development.jpg`.
+Complete validation logs include `.tmp/second-closing-final-validation.log`
+and `.tmp/second-closing-final-build.log`. Reopened cadence bodies passed
 all six focused groups together; the reopened summary passed all seven groups.
 
 ## Rollback
 
 Prior Development widget mappings are Legal `1.60.52` and Land `8.14.5`;
-current main's Production baselines are Legal `1.60.54` and Land `8.14.6`.
+current main's Production baselines are Legal `1.60.54` and Land `8.14.7`.
 Restore the applicable environment's prior mapping if needed. Preserve
 both new fields and entered values. Review records with second terms before
 restoring captured older backend writers; do not silently apply two-tier math

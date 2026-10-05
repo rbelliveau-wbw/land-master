@@ -168,8 +168,9 @@ pairs, legacy parity, no automatic copying, and no Contract-to-existing-schedule
 updates.
 
 Retain the additive schema and all entered Second Closing values during rollback.
-Prior widget mappings are Contract Management `1.60.52` and Land Master
-`8.14.5`. Backend rollback uses captured native pre-change bodies, with a review
+Prior Development widget mappings are Contract Management `1.60.52` and Land Master
+`8.14.5`; current main Production baselines are `1.60.54` and `8.14.7`.
+Backend rollback uses captured native pre-change bodies, with a review
 of records containing second terms before restoring two-tier writers. Do not
 delete new fields, clear new data, or reinterpret second closings as recurring
 takes to make an older release appear compatible. Report exposure may remain;

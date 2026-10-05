@@ -3,47 +3,296 @@
   "status": "development-backend-reports-and-page-audit-verified-readback-and-widget-promotion-pending",
   "generated_metadata_refreshed": false,
   "production_changed_by_this_task": false,
-  "environment_publication_observation": {"snapshot_stage_version": "9.43", "snapshot_production_version": "9.42", "snapshot_only": true, "version_history_time": "2026-10-05 13:31", "publish_initiated_by": "user-outside-task", "task_publish_performed": false, "publication_outcome": "not-verified", "feature_activation_in_stage_and_production": "unverified", "builder_maintenance": "returned-during-final-label-verification"},
-  "existing_field_labels": {"Takedown_Schedule": {"status": "development-saved-and-reloaded", "labels": {"Initial_Takedown": "Initial Closing (Lots)", "Initial_Delay_Days": "Initial Closing (Days)", "Continued_Takedown": "Subsequent Closings (Lots)", "Continued_Takedown_Delay_Days": "Subsequent Closings (Days)"}, "link_names_unchanged": true}, "Contract": {"status": "pending-publishing-lock", "labels": {"Initial_Takedown": "Initial Closing (Lots)", "Initial_Takedown_Days": "Initial Closing (Days)", "Subsequent_Takedown_Lots": "Subsequent Closings (Lots)", "Subsequent_Takedown_Days": "Subsequent Closings (Days)"}, "link_names_unchanged": true}},
+  "environment_publication_observation": {
+    "snapshot_stage_version": "9.43",
+    "snapshot_production_version": "9.42",
+    "snapshot_only": true,
+    "version_history_time": "2026-10-05 13:31",
+    "publish_initiated_by": "user-outside-task",
+    "task_publish_performed": false,
+    "publication_outcome": "not-verified",
+    "feature_activation_in_stage_and_production": "unverified",
+    "builder_maintenance": "cleared-after-user-publish"
+  },
+  "existing_field_labels": {
+    "Takedown_Schedule": {
+      "status": "development-saved-and-reloaded",
+      "labels": {
+        "Initial_Takedown": "Initial Closing (Lots)",
+        "Initial_Delay_Days": "Initial Closing (Days)",
+        "Continued_Takedown": "Subsequent Closings (Lots)",
+        "Continued_Takedown_Delay_Days": "Subsequent Closings (Days)"
+      },
+      "link_names_unchanged": true
+    },
+    "Contract": {
+      "status": "development-saved-and-reloaded",
+      "labels": {
+        "Initial_Takedown": "Initial Closing (Lots)",
+        "Initial_Takedown_Days": "Initial Closing (Days)",
+        "Subsequent_Takedown_Lots": "Subsequent Closings (Lots)",
+        "Subsequent_Takedown_Days": "Subsequent Closings (Days)"
+      },
+      "link_names_unchanged": true
+    }
+  },
   "fields": [
-    {"form": "Contract", "link_name": "Second_Closing_Lots", "display_name": "Second Closing (Lots)", "type": "number", "default": null, "native_mandatory": false, "status": "development-saved-and-reloaded"},
-    {"form": "Contract", "link_name": "Second_Closing_Days", "display_name": "Second Closing (Days)", "type": "number", "default": null, "native_mandatory": false, "status": "development-saved-and-reloaded"},
-    {"form": "Takedown_Schedule", "link_name": "Second_Closing_Lots", "display_name": "Second Closing (Lots)", "type": "number", "default": null, "native_mandatory": false, "status": "development-saved-and-reloaded", "verified_preview_id": "zc-Second_Closing_Lots"},
-    {"form": "Takedown_Schedule", "link_name": "Second_Closing_Days", "display_name": "Second Closing (Days)", "type": "number", "default": null, "native_mandatory": false, "status": "development-saved-and-reloaded", "verified_preview_id": "zc-Second_Closing_Days"}
+    {
+      "form": "Contract",
+      "link_name": "Second_Closing_Lots",
+      "display_name": "Second Closing (Lots)",
+      "type": "number",
+      "default": null,
+      "native_mandatory": false,
+      "status": "development-saved-and-reloaded"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Second_Closing_Days",
+      "display_name": "Second Closing (Days)",
+      "type": "number",
+      "default": null,
+      "native_mandatory": false,
+      "status": "development-saved-and-reloaded"
+    },
+    {
+      "form": "Takedown_Schedule",
+      "link_name": "Second_Closing_Lots",
+      "display_name": "Second Closing (Lots)",
+      "type": "number",
+      "default": null,
+      "native_mandatory": false,
+      "status": "development-saved-and-reloaded",
+      "verified_preview_id": "zc-Second_Closing_Lots"
+    },
+    {
+      "form": "Takedown_Schedule",
+      "link_name": "Second_Closing_Days",
+      "display_name": "Second Closing (Days)",
+      "type": "number",
+      "default": null,
+      "native_mandatory": false,
+      "status": "development-saved-and-reloaded",
+      "verified_preview_id": "zc-Second_Closing_Days"
+    }
   ],
   "required_policy": "Require the second pair for new or edited closing terms using validation workflows; retain unchanged historical blank pairs. Do not mark the columns globally mandatory or backfill them.",
   "copy_policy": "An explicit editor action copies Second Closing lots/days to Subsequent Closings draft values once. No automatic or persistent linkage.",
   "contract_schedule_policy": "Contract completion creates missing schedules only. Later Contract edits never synchronize terms to existing schedules.",
-  "timing": {"start": "actual Initial Closing / existing explicit Initial_Closing_Date override", "initial_due": "start + Initial_Delay_Days", "second_due": "initial_due + Second_Closing_Days", "first_subsequent_due": "second_due + Continued_Takedown_Delay_Days", "deadline_inclusive": true},
-  "reports_requiring_field_visibility": ["All_Contracts", "All_Contracts1", "All_Takedown_Schedules", "Behind_Takedown_Schedules"],
-  "verified_native_reports": [
-    {"name": "All_Takedown_Schedules", "status": "development-quick-columns-saved-and-reloaded", "second_columns_order": "initial-second-subsequent"},
-    {"name": "Behind_Takedown_Schedules", "status": "development-quick-columns-saved-and-reloaded", "second_columns_order": "initial-second-subsequent"},
-    {"name": "All_Contracts1", "status": "development-quick-columns-saved-and-reloaded", "second_columns_order": "initial-second-subsequent"},
-    {"name": "All_Contracts", "status": "development-quick-columns-saved-and-reloaded", "second_columns_order": "second-before-existing-subsequent", "scope_preserved": "initial columns were not previously present and were not added"}
+  "timing": {
+    "start": "actual Initial Closing / existing explicit Initial_Closing_Date override",
+    "initial_due": "start + Initial_Delay_Days",
+    "second_due": "initial_due + Second_Closing_Days",
+    "first_subsequent_due": "second_due + Continued_Takedown_Delay_Days",
+    "deadline_inclusive": true
+  },
+  "reports_requiring_field_visibility": [
+    "All_Contracts",
+    "All_Contracts1",
+    "All_Takedown_Schedules",
+    "Behind_Takedown_Schedules"
   ],
-  "forecast_bindings_audit": {"status": "development-native-bindings-verified-no-page-change-required", "legacy_page": {"name": "Forecast_Management", "upper_component": "html_snippet5", "upper_report": "All_Subdivisions", "lower_component": "html_snippet6", "lower_report": "All_Forecast_Years", "lower_frame": "frame14", "independent_takedown_column_list": false, "captured_lower_source": ".tmp/second-closing-native-originals/Forecast_Management.html_snippet6.dg"}, "modern_form": {"name": "Forecast_Manager", "summary_function": "buildForecastManagerSummary", "summary_status": "development-saved-and-reopened", "applicable_search_schedule_embed": "inherits All_Takedown_Schedules columns"}},
+  "verified_native_reports": [
+    {
+      "name": "All_Takedown_Schedules",
+      "status": "development-quick-columns-saved-and-reloaded",
+      "second_columns_order": "initial-second-subsequent",
+      "closing_labels": "development-renamed-field-label-inheritance-verified"
+    },
+    {
+      "name": "Behind_Takedown_Schedules",
+      "status": "development-quick-columns-saved-and-reloaded",
+      "second_columns_order": "initial-second-subsequent",
+      "closing_labels": "development-renamed-field-label-inheritance-verified"
+    },
+    {
+      "name": "All_Contracts1",
+      "status": "development-quick-columns-saved-and-reloaded",
+      "second_columns_order": "initial-second-subsequent",
+      "closing_labels": "development-renamed-field-label-inheritance-verified"
+    },
+    {
+      "name": "All_Contracts",
+      "status": "development-quick-columns-saved-and-reloaded",
+      "second_columns_order": "second-before-existing-subsequent",
+      "scope_preserved": "initial columns were not previously present and were not added",
+      "closing_labels": "development-renamed-field-label-inheritance-verified"
+    }
+  ],
+  "forecast_bindings_audit": {
+    "status": "development-native-bindings-verified-no-page-change-required",
+    "legacy_page": {
+      "name": "Forecast_Management",
+      "upper_component": "html_snippet5",
+      "upper_report": "All_Subdivisions",
+      "lower_component": "html_snippet6",
+      "lower_report": "All_Forecast_Years",
+      "lower_frame": "frame14",
+      "independent_takedown_column_list": false,
+      "captured_lower_source": ".tmp/second-closing-native-originals/Forecast_Management.html_snippet6.dg"
+    },
+    "modern_form": {
+      "name": "Forecast_Manager",
+      "summary_function": "buildForecastManagerSummary",
+      "summary_status": "development-saved-and-reopened",
+      "applicable_search_schedule_embed": "inherits All_Takedown_Schedules columns"
+    }
+  },
   "native_activation": "development-backend-compiled-saved-and-reopened",
-  "helper": {"name": "Calculate_Takedown_Cadence", "status": "development-compiled-reopened-and-executed", "execution": "native-read-only", "verified_result": {"elapsed_days": 75, "lots_expected": 20, "second_due_offset_days": 75, "end_offset_days": 165}},
+  "helper": {
+    "name": "Calculate_Takedown_Cadence",
+    "status": "development-compiled-reopened-and-executed",
+    "execution": "native-read-only",
+    "verified_result": {
+      "elapsed_days": 75,
+      "lots_expected": 20,
+      "second_due_offset_days": 75,
+      "end_offset_days": 165
+    }
+  },
   "verified_native_functions": [
-    {"name": "buildForecastManagerSummary", "status": "development-saved-and-reopened", "reopened_sha256": "ef0e253a280876f217a6c512a90270e2514982397e608f58f5b3ac4b7f6bf086", "reviewed_patch_byte_parity": true, "reopened_source_regressions": "passed-all-seven-summary-groups"},
-    {"name": "Complete_Lot_Contract", "status": "development-saved-and-reopened", "reopened_sha256": "eaef2d193c2839ec25ee87dfdc9b05444e6906bd99e6dcc269cd0cea2467e1c8", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-pre-write-closing-validation-and-insert-only-copy-checks"},
-    {"name": "Send_Contract_Approval_Email", "status": "development-saved-and-reopened", "reopened_sha256": "829b4528f94b7b8810b52d3d4a287854ce6b0e76cf0101f4d0c4a3e5c4b14268", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-second-closing-summary-and-both-live-sender-checks"}
+    {
+      "name": "buildForecastManagerSummary",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "ef0e253a280876f217a6c512a90270e2514982397e608f58f5b3ac4b7f6bf086",
+      "reviewed_patch_byte_parity": true,
+      "reopened_source_regressions": "passed-all-seven-summary-groups"
+    },
+    {
+      "name": "Complete_Lot_Contract",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "eaef2d193c2839ec25ee87dfdc9b05444e6906bd99e6dcc269cd0cea2467e1c8",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-pre-write-closing-validation-and-insert-only-copy-checks"
+    },
+    {
+      "name": "Send_Contract_Approval_Email",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "829b4528f94b7b8810b52d3d4a287854ce6b0e76cf0101f4d0c4a3e5c4b14268",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-second-closing-summary-and-both-live-sender-checks"
+    }
   ],
   "verified_native_workflows": [
-    {"name": "Update_Takedown_Dates_Tak", "status": "development-saved-and-reopened", "reviewed_patch_token_parity": true, "captured_original_body_count": 1, "legacy_originals_reconciled": true, "schedule_settings_unchanged": true},
-    {"name": "Update_Expected_Sold_Coun", "status": "development-saved-and-reopened", "reopened_sha256": "5e2846d3c9be8a77b9f2a5b60018b21f53c4c377c0e7317d38a289000c12b37e", "captured_original_body_count": 3, "legacy_originals_reconciled": true, "trailing_actions_neutralized": 2, "schedule_settings_unchanged": true, "reopened_source_local_regressions": "passed-all-six-cadence-groups"},
-    {"name": "Refresh_Calc_Fields_Taked", "status": "development-saved-and-reopened", "reopened_sha256": "032f38f55a22b7bd5abd3d28790c39d4885fd52b8c4997c75d0055a6a17b376d", "reviewed_patch_token_parity": true, "captured_original_body_count": 4, "legacy_originals_reconciled": true, "trailing_actions_neutralized": 3, "native_action_conditions_preserved": true, "reopened_source_local_regressions": "passed-all-six-cadence-groups"},
-    {"name": "Validate_Takedown_Cadence", "label": "Validate Takedown Cadence", "form": "Takedown_Schedule", "form_event": "Created or Edited", "trigger": "Validations on form submission", "source_path": "creator/workflows/Validate_Takedown_Cadence.dg", "status": "development-saved-and-reopened", "reopened_sha256": "6e5ad1948d1d4b15f1ad2734eb08569dbe86ea2c23f52678a4b2448ae36bcdbb", "reviewed_patch_token_parity": true, "reopened_source_local_regressions": "passed-all-six-cadence-groups"},
-    {"name": "Recalculate_Takedown_Cade", "label": "Recalculate Takedown Cadence On Save", "form": "Takedown_Schedule", "form_event": "Created or Edited", "trigger": "Successful form submission", "source_path": "creator/workflows/Recalculate_Takedown_Cadence_On_Save.dg", "status": "development-saved-and-reopened", "reopened_sha256": "bf1f65ade3a7fe4acd1ea456eb2f4fe0df7addc100e723468bebdfd34db7d393", "reviewed_patch_token_parity": true, "reopened_source_local_regressions": "passed-all-six-cadence-groups", "native_record_writing_execution": "not-performed"},
-    {"name": "Hide_Lockdown_Fields_Cont", "status": "development-saved-and-reopened", "reopened_sha256": "e698f6d2e978e6489677811844397f589d9f2662d796f729f92025234cb20491", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-lot-subdivision-visibility-and-preserved-pricing-lock"},
-    {"name": "Set_Subdivision_Fields_Co", "status": "development-saved-and-reopened", "reopened_sha256": "f8180355856c9cba69ab56bda7e00fa5568c264667b988bc6d139095b209cb6e", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-lot-subdivision-visibility-scope"},
-    {"name": "Show_Type_Specific_Fields", "status": "development-saved-and-reopened", "reopened_sha256": "01db7f6a252306cbc40db74294f8b0629d136a399852113d2e1a1ce1d018f118", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-lot-subdivision-visibility-scope"},
-    {"name": "Lot_Contract_Required_Fie", "status": "development-saved-and-reopened", "reopened_sha256": "0dfcddc9f87f37d17d204c5c7b4b7f44d08be9ae8695b4a9823f60cfcb155268", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-new-edited-legacy-closing-validation-and-shell-scope"},
-    {"name": "Create_Takedown_Schedule_1", "status": "development-saved-and-reopened", "reopened_sha256": "9fb0a8867216cf2af4997ee49e030baf13ab4483f5245da9a1f6a0615a5b780a", "reviewed_patch_token_parity": true, "native_execution": "not-executed", "reopened_source_local_regressions": "passed-complete-lot-subdivision-creation-scope-and-insert-only-copy-checks"}
+    {
+      "name": "Update_Takedown_Dates_Tak",
+      "status": "development-saved-and-reopened",
+      "reviewed_patch_token_parity": true,
+      "captured_original_body_count": 1,
+      "legacy_originals_reconciled": true,
+      "schedule_settings_unchanged": true
+    },
+    {
+      "name": "Update_Expected_Sold_Coun",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "5e2846d3c9be8a77b9f2a5b60018b21f53c4c377c0e7317d38a289000c12b37e",
+      "captured_original_body_count": 3,
+      "legacy_originals_reconciled": true,
+      "trailing_actions_neutralized": 2,
+      "schedule_settings_unchanged": true,
+      "reopened_source_local_regressions": "passed-all-six-cadence-groups"
+    },
+    {
+      "name": "Refresh_Calc_Fields_Taked",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "032f38f55a22b7bd5abd3d28790c39d4885fd52b8c4997c75d0055a6a17b376d",
+      "reviewed_patch_token_parity": true,
+      "captured_original_body_count": 4,
+      "legacy_originals_reconciled": true,
+      "trailing_actions_neutralized": 3,
+      "native_action_conditions_preserved": true,
+      "reopened_source_local_regressions": "passed-all-six-cadence-groups"
+    },
+    {
+      "name": "Validate_Takedown_Cadence",
+      "label": "Validate Takedown Cadence",
+      "form": "Takedown_Schedule",
+      "form_event": "Created or Edited",
+      "trigger": "Validations on form submission",
+      "source_path": "creator/workflows/Validate_Takedown_Cadence.dg",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "6e5ad1948d1d4b15f1ad2734eb08569dbe86ea2c23f52678a4b2448ae36bcdbb",
+      "reviewed_patch_token_parity": true,
+      "reopened_source_local_regressions": "passed-all-six-cadence-groups"
+    },
+    {
+      "name": "Recalculate_Takedown_Cade",
+      "label": "Recalculate Takedown Cadence On Save",
+      "form": "Takedown_Schedule",
+      "form_event": "Created or Edited",
+      "trigger": "Successful form submission",
+      "source_path": "creator/workflows/Recalculate_Takedown_Cadence_On_Save.dg",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "bf1f65ade3a7fe4acd1ea456eb2f4fe0df7addc100e723468bebdfd34db7d393",
+      "reviewed_patch_token_parity": true,
+      "reopened_source_local_regressions": "passed-all-six-cadence-groups",
+      "native_record_writing_execution": "not-performed"
+    },
+    {
+      "name": "Hide_Lockdown_Fields_Cont",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "e698f6d2e978e6489677811844397f589d9f2662d796f729f92025234cb20491",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-lot-subdivision-visibility-and-preserved-pricing-lock"
+    },
+    {
+      "name": "Set_Subdivision_Fields_Co",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "f8180355856c9cba69ab56bda7e00fa5568c264667b988bc6d139095b209cb6e",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-lot-subdivision-visibility-scope"
+    },
+    {
+      "name": "Show_Type_Specific_Fields",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "01db7f6a252306cbc40db74294f8b0629d136a399852113d2e1a1ce1d018f118",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-lot-subdivision-visibility-scope"
+    },
+    {
+      "name": "Lot_Contract_Required_Fie",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "0dfcddc9f87f37d17d204c5c7b4b7f44d08be9ae8695b4a9823f60cfcb155268",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-new-edited-legacy-closing-validation-and-shell-scope"
+    },
+    {
+      "name": "Create_Takedown_Schedule_1",
+      "status": "development-saved-and-reopened",
+      "reopened_sha256": "9fb0a8867216cf2af4997ee49e030baf13ab4483f5245da9a1f6a0615a5b780a",
+      "reviewed_patch_token_parity": true,
+      "native_execution": "not-executed",
+      "reopened_source_local_regressions": "passed-complete-lot-subdivision-creation-scope-and-insert-only-copy-checks"
+    }
   ],
-  "widget_candidates": [{"widget": "contract-management", "version": "1.61.2", "path": "releases/contract-management/1.61.2", "status": "local-immutable-not-promoted"}, {"widget": "land-master", "version": "8.15.2", "path": "releases/land-master/8.15.2", "status": "local-immutable-not-promoted"}],
-  "local_release_checks": {"npm_validate": "passed", "build_pages": "passed-29-current-environment-paths", "candidate_asset_parity": "verified", "frozen_initial_candidates_preserved": true, "environment_mappings_changed": false},
+  "widget_candidates": [
+    {
+      "widget": "contract-management",
+      "version": "1.61.2",
+      "path": "releases/contract-management/1.61.2",
+      "status": "local-immutable-not-promoted"
+    },
+    {
+      "widget": "land-master",
+      "version": "8.15.3",
+      "path": "releases/land-master/8.15.3",
+      "status": "local-immutable-not-promoted"
+    }
+  ],
+  "local_release_checks": {
+    "npm_validate": "passed",
+    "build_pages": "passed-29-current-environment-paths",
+    "candidate_asset_parity": "verified",
+    "frozen_initial_candidates_preserved": true,
+    "environment_mappings_changed": false,
+    "latest_main_preserved": "99759fbb84290f41012e078f43c440f50dd19a1c"
+  },
   "record_backfill": "none",
   "note": "This file records the additive schema change separately from the historical generated export. Live numeric field type and identifiers are verified in the Development form designer; this is not a full current application export."
 }
