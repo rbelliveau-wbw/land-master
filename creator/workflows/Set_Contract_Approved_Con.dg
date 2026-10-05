@@ -1,0 +1,9 @@
+// Contract_Approvals / on add or edit / on success.
+// Candidate replacement for "Set Contract Approved - Contract Approval".
+// Keep a Proposed parent in Legal Review while its approval rows are created.
+contract = Contract[ID == input.Contract1];
+approvals = Contract_Approvals[(Contract1 == input.Contract1) && (Status != "Approved") && (Status != "Not Sent")];
+if((contract.ID != null) && (ifnull(contract.Status,"") != "Proposed") && (approvals.count() == 0))
+{
+    contract.Status="Approved";
+}

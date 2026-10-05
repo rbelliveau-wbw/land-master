@@ -1,6 +1,102 @@
 
 # Contracts Module
 
+## Compact Contract creation and setup diagnostics (1.60.54)
+
+Contracts/Legal startup no longer reads `All_Pro_Formas_All_Fields`. That report
+supplies pending LOI reviews from `Add_Pro_Forma`; ordinary Contract records,
+actions, pricing and setup do not require it. The Review tab or an LOI token deep
+link loads only the pending-LOI criterion on demand. Denied/unavailable LOIs show
+one local **LOI reviews unavailable** cue while the complete Contract snapshot
+stays usable. Unknown LOI counts remain explicitly incomplete, and stale/denied
+LOI rows cannot support decisions. The former full-report fallback is removed.
+Post-decision Contract refresh remains usable even when the separate LOI refresh
+fails. Existing LOI report permissions and `Review_LOI_Request` decision API remain;
+no profile grant or backend/schema change is made. Users who need to review LOIs
+still need the existing report permission until a narrower authorized backend
+reader is provided. `scripts/test-contract-loi-permissions.mjs` checks ordinary
+startup, denied Review, token deep links, allowed pending reviews, stale scope,
+read-only retries.
+
+The release also verifies settled delete results against the exact requested
+record. A complete fresh preflight must return that record before one delete is
+sent. If Creator returns a validation error or loses the acknowledgement after
+deleting, a complete targeted fresh read proving absence completes the UI delete.
+A pending native request, conflicting returned ID, changed session, denied or
+incomplete verification cannot count as success. A failed deletion that leaves
+the target present remains an error. Existing delete permissions, completed
+locks and backend workflows are unchanged. `contractDeletePreflight`,
+`contractDeleteResponseConflict`, `contractNativeMutation` and the delete
+readback branch implement this; `scripts/test-contract-delete-verification.mjs`
+includes the actual Delete confirmation/UI with a post-delete validation error.
+
+Review Queue membership requires Proposed. Current creation routes proposal-only
+users there and users with edit access directly to New; changing that default is
+awaiting the user's routing decision. Separately, the exported parent approval
+workflow can remove a Proposed parent from Review during child creation. The
+prepared [workflow replacement and handoff](../../docs/contract-create-review-queue-2026-10-05.md)
+preserves Proposed parents. This separate backend candidate requires comparison
+with the live workflow, native Creator compilation and authorized publication.
+It is not part of the frontend release and has not been deployed.
+
+Contract creation shows one short status and a progress bar, without field names,
+internal destination keys, operation counts or numbered stages. When the parent
+was verified but follow-up setup stopped, the terminal title says **Contract
+created** and the status says **Setup needs review.** Complete verified setup
+says **Saved and ready.** An uncertain parent still warns that the contract may
+have saved. The existing terminal acknowledgement, retained drafts, duplicate
+protection, pending Close/Escape lock, focus trap and background isolation remain.
+Pricing, file batches and approval-send dialogs keep their established presentation.
+
+The October 5 error in 1.60.52 stopped at `ncSeed`'s first approval through
+`contractWorkflowStep` and `contractReadback`; the parent, pricing and action were
+already verified. The user subsequently confirmed the created record. The old
+generic error did not identify which saved field was absent or different. The
+replacement readback names missing, different or unreadable fields and distinct
+record-count/identity failures, without logging captured or saved values. Exact
+string IDs and the existing comparison/payload semantics are retained. This is a
+diagnostic improvement, not a claimed repair of the unknown production mismatch.
+
+The committed Creator export includes all seven approval payload fields in
+`All_Contract_Approvals`; `Approval_Sequence` is private. Current report/profile
+omissions or workflow-altered values remain possible. Exported approval workflows
+can set approval Status to Approved when Approval_Action is Approve, and the
+parent auto-approval workflow can set Contract.Status to Approved while no child
+has a status other than Approved/Not Sent. The widget does not skip or modify
+those workflows. A targeted live read of the failed approval is needed to establish
+the actual field/cause. The screenshot alone does not prove it.
+
+**Check status** only re-reads retained unknown destinations. It never creates
+another contract, resumes unsent approval rows or sends the final parent update.
+Resolving one unknown row does not mean complete setup succeeded.
+
+Changed files: Contract widget HTML/progress component/config, widget manifest,
+immutable release 1.60.54, SDK2 test entry, focused regression scripts,
+widget README, transfer-progress/module guides and production environment mapping.
+No forms, fields, backend functions or Custom APIs change in the frontend. The separate proposed
+parent workflow candidate requires Creator deployment. Existing approval
+fields checked: Contract1, Approver, Approval_Sequence, Type1, Status,
+Reminder_Interval_Days and Approval_Email. Frontend functions changed:
+contractWorkflowSnapshot/ncSubmit presentation stage, contractReadback and its
+diagnostic helpers; LMContractUIPreparation renders the compact create variant.
+
+Regression covers typed exact success, omitted private sequence, persisted
+Approved status, unreadable checkbox, different approver, row identity/count,
+privacy, partial-save retention, one-send protection, read-only recheck, concise
+terminal copy, pending/recheck close locks, focus/accessibility and unchanged
+pricing/file presentation. Rollback: restore the production mapping to 1.60.53.
+No data rollback is part of this frontend release. The user authorized main and
+production promotion on October 5, 2026.
+
+Full `npm run validate` (including prevalidation) and `npm run build:pages` pass.
+The full Contract SDK2 suite includes the five new create-progress, setup,
+delete, LOI-permission and workflow-candidate checks. Browser preview checks pass
+for desktop and 390px layouts, centered X, pending Escape lock, partial created
+outcome and complete verified success. No live Creator writes, emails, permission
+grants were performed. Production is mapped to 1.60.54 through the stable URL.
+Native profile/LOI availability,
+the original approval mismatch and backend compilation remain unverified.
+
 ## Lot action checklist visibility (1.60.53)
 
 New Lot (Master) and Lot (Amendment) forms show the editable Actions panel immediately after Type selection. The prior staged form hid the already seeded checklist until a contract name was entered. Rendering and subsequent stage updates now keep actions visible independently of location, Builder and name. Checked-template membership, type selection, sort order, draft edits and progressive scope/terms/pricing behavior are retained.

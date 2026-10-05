@@ -25,6 +25,23 @@ run starts. Exact persisted verification and duplicate-send protection remain.
 
 Open an in-widget dialog immediately when the user presses the final action. Use the shared navy gradient header, source → destination identity, amount and record counts, a slim progress bar, numbered stage rows, Running / Up next / Done / Needs review chips, and a pinned status/action footer. On completion show a prominent outcome and a per-destination list with names, counts, amounts where applicable, and verification states.
 
+Ordinary Contract creation uses the compact exception requested October 5, 2026:
+show only a short title, one plain-language status and the progress bar. Hide
+captured-selection labels, numbered stages, record counts, internal destination
+keys and Creator field names. Keep the detailed ledger and actual error for
+diagnostics. Hide the pending footer and X, while retaining the focus trap,
+inert background, duplicate-write guard and Close/Escape lock. Patch the mounted
+nodes, respect reduced motion and retain the terminal result until dismissed.
+Show 100% only after every intended write and the final fresh read are verified.
+
+Distinguish parent creation from complete setup: a verified parent with incomplete
+or unconfirmed setup says **Contract created** and **Setup needs review.** A
+fully verified run says **Contract created** and **Saved and ready.** An unknown
+parent says it may have been saved. **Check status** performs the existing
+read-only reconciliation; it never completes unsent setup or replays a create.
+Keep the terminal setup-review outcome when the remaining work is unfinished.
+Other multi-record Contract operations retain their detailed destination results.
+
 Build the dialog once and patch its nodes. Pace only display changes at about 560 ms so fast replies remain readable; never delay requests for animation. Skip display pacing under reduced motion. Keep the result visible until Done/Close. Review transfer can return to the original review with its explicit completion banner and disabled, relabeled action.
 
 Use `role=dialog`, `aria-modal=true`, named title/context, polite live status, a progressbar with a truthful accessible value, trapped focus, and an inert background. Disable Close and Escape until a safe terminal state. Block duplicate writes throughout requests and display settlement. Center every X and check with explicit SVG geometry. Preserve focus on dismissal. Cap the dialog to the viewport and scroll its body on small screens.

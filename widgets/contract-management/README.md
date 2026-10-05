@@ -3,6 +3,11 @@
 
 Contract management and token-based LOI legal review.
 
+Release 1.60.54 uses compact Contract creation progress and distinguishes a
+verified created contract from unfinished setup. Verification failures name only
+the affected fields in diagnostics; writes and backend workflows are unchanged.
+See [diagnosis, regression and rollback](../../knowledge/modules/contracts.md#compact-contract-creation-and-setup-diagnostics-16054).
+
 ## Baseline
 
 - Version: `1.0.0`

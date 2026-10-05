@@ -140,6 +140,7 @@ ctx.S.currentUser='rbelliveau@wbdevelopment.com';
 ctx.S.myAccessId='42';
 ctx.S.loiMine=true;
 ctx.S.loiSearch='';
+Object.assign(ctx.S,{loiDataStatus:'ready',loiDataGeneration:ctx.S.contractDataGeneration,loiDataScope:ctx.contractMutationScope()});
 ctx.S.loiReviews=[
   {ID:'loi-mine',LOI_Legal_Status:'Pending Approval',Acquisition_Email:'rbelliveau@wbdevelopment.com'},
   {ID:'loi-other',LOI_Legal_Status:'Pending Approval',Acquisition_Email:'tparks@wbdevelopment.com'}
