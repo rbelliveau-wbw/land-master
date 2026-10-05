@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T17:02:41.078Z",
+  "generated_at": "2026-10-05T20:46:43.482Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -72,7 +72,7 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.14.7",
+      "version": "8.15.2",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
@@ -104,7 +104,7 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.60.54",
+      "version": "1.61.2",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",

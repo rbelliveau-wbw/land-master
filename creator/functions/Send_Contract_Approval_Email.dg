@@ -128,9 +128,17 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 					lotsText = lotsText + " within " + contract.Initial_Takedown_Days.toString() + " days";
 				}
 			}
+			if(contract.Second_Closing_Lots != null && contract.Second_Closing_Lots.toString() != "")
+			{
+				lotsText = lotsText + " &nbsp;&middot;&nbsp; " + contract.Second_Closing_Lots.toString() + " second";
+				if(contract.Second_Closing_Days != null && contract.Second_Closing_Days.toString() != "")
+				{
+					lotsText = lotsText + " " + contract.Second_Closing_Days.toString() + " days after initial due";
+				}
+			}
 			if(contract.Subsequent_Takedown_Lots != null && contract.Subsequent_Takedown_Lots.toString() != "")
 			{
-				lotsText = lotsText + " &nbsp;&middot;&nbsp; then " + contract.Subsequent_Takedown_Lots.toString();
+				lotsText = lotsText + " &nbsp;&middot;&nbsp; " + contract.Subsequent_Takedown_Lots.toString() + " subsequent";
 				if(contract.Subsequent_Takedown_Days != null && contract.Subsequent_Takedown_Days.toString() != "")
 				{
 					lotsText = lotsText + " every " + contract.Subsequent_Takedown_Days.toString() + " days";
@@ -246,7 +254,7 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 		{
 			sendmail
 			[
-				from :"Contracts@wbdevelopment.com"
+				from :"Notifications@wbdevelopment.com"
 				to :toAddress
 				subject :subjectText
 				message :messageHtml
@@ -257,7 +265,7 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 		{
 			sendmail
 			[
-				from :"Contracts@wbdevelopment.com"
+				from :"Notifications@wbdevelopment.com"
 				to :toAddress
 				subject :subjectText
 				message :messageHtml

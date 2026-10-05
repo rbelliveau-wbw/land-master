@@ -1,6 +1,33 @@
 
 # Land Master Module
 
+## Second Closing editor candidate — October 5, 2026
+
+The Takedown Schedule record editor source adds Second Closing lots/days between
+Initial Closing and Subsequent Closings. Opening a legacy record keeps blank
+second terms and does not mark the record dirty. New or edited cadence, total,
+or Initial Closing anchor requires positive whole second lots and nonnegative
+whole second days; unrelated legacy edits remain allowed. Recurring lots/days
+must be positive only while obligation remains after initial plus second.
+
+Copy Second Closing to Subsequent Closings is an explicit staged action. It
+changes the two draft inputs once, performs no write, and stays locked during
+save or create-outcome review. Typing either tier never updates the other.
+Existing SDK2 mutation guards and string record IDs are retained.
+
+See [the behavior contract](takedown-schedule.md) and
+[backend activation instructions](../../creator/workflows/takedown-second-closing.md).
+Development's Contract and schedule fields are Save/reload-verified, and the
+shared cadence helper compiled/reopened and passed native read-only Execute.
+All dependent backend functions/actions compiled, were saved and reopened in
+Development. Both schedule report quick layouts are Save/reload-verified and
+Forecast bindings need no page change. Fresh API-visible saved-record readback
+and widget deployment remain pending.
+Rollback mapping: Land Master `8.14.5`, preserving second fields and entered data.
+Local immutable candidate `8.15.1` passed full repository validation and the
+Pages build, including total/initial-term validation before native DATA writes.
+It is not mapped or uploaded. Frozen `8.15.0` remains unchanged.
+
 ## AI lot import leaves Notes alone (8.14.7)
 
 AI lot import omits `Notes` entirely from every `Lots` create payload. Filename, sheet and source row provenance, plus AI review warnings, remain available in the import review UI. Imported lot codes, subdivision, phase, block, lot number, width, city/county and default flags retain their existing behavior. Existing lot codes are still skipped; this release does not alter previously saved Notes.

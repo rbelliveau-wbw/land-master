@@ -1,0 +1,64 @@
+// Native Takedown_Schedule Created or Edited successful-submission action.
+// Development assigned link_name: Recalculate_Takedown_Cade.
+// Recalculate populated Second Closing schedules from their own saved terms.
+// Contract edits never invoke this action or synchronize an existing schedule.
+// Legacy schedules with neither Second Closing field set receive no writes.
+savedSchedule = Takedown_Schedule[ID == input.ID];
+if(savedSchedule.count() > 0)
+{
+if(savedSchedule.Second_Closing_Lots != null || savedSchedule.Second_Closing_Days != null)
+{
+    cadenceStart = ifnull(savedSchedule.Initial_Closing_Date,savedSchedule.Takedown_Start_Date);
+    cadenceTerms = Map();
+    cadenceTerms.put("Total_Lot_Obligation",savedSchedule.Total_Lot_Obligation);
+    cadenceTerms.put("Initial_Takedown",savedSchedule.Initial_Takedown);
+    cadenceTerms.put("Initial_Due_Offset_Days",savedSchedule.Initial_Delay_Days);
+    cadenceTerms.put("Second_Closing_Lots",savedSchedule.Second_Closing_Lots);
+    cadenceTerms.put("Second_Closing_Days",savedSchedule.Second_Closing_Days);
+    cadenceTerms.put("Continued_Takedown",savedSchedule.Continued_Takedown);
+    cadenceTerms.put("Continued_Takedown_Delay_Days",savedSchedule.Continued_Takedown_Delay_Days);
+    cadenceTerms.put("Elapsed_Days",0);
+    if(cadenceStart != null)
+    {
+        cadenceTerms.put("Elapsed_Days",daysBetween(cadenceStart,today));
+    }
+    cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+    if(cadence.get("ok") == true)
+    {
+        if(cadenceStart != null)
+        {
+            savedSchedule.Takedown_Start_Date=cadenceStart;
+            savedSchedule.Takedown_End_Date=cadenceStart.addDay(cadence.get("endOffsetDays"));
+            if(savedSchedule.Status != "Completed")
+            {
+                savedSchedule.Lots_Expected=cadence.get("lotsExpected");
+            }
+        }
+        else
+        {
+            savedSchedule.Takedown_End_Date=null;
+            if(savedSchedule.Status != "Completed")
+            {
+                savedSchedule.Lots_Expected=0;
+            }
+        }
+        if(savedSchedule.Status == "Active" || savedSchedule.Status == "Behind")
+        {
+            lotsSold = ifnull(savedSchedule.Lots_Sold,0);
+            if(lotsSold < ifnull(savedSchedule.Lots_Expected,0))
+            {
+                savedSchedule.Status="Behind";
+            }
+            if(lotsSold >= savedSchedule.Total_Lot_Obligation)
+            {
+                savedSchedule.Status="Completed";
+                savedSchedule.Completion_Percent=100;
+            }
+            if(lotsSold < savedSchedule.Total_Lot_Obligation)
+            {
+                savedSchedule.Completion_Percent=lotsSold / savedSchedule.Total_Lot_Obligation * 100;
+            }
+        }
+    }
+}
+}

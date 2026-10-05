@@ -2,7 +2,7 @@
   "slug": "land-master",
   "name": "Land Master",
   "module": "land-master",
-  "version": "8.14.7",
+  "version": "8.15.2",
   "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
   "source_entry": "widgets/land-master/src/app/widget.html",
   "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",

@@ -105,6 +105,32 @@ Changed files: Contract widget source/config, widget manifest, immutable release
 
 Full `npm run validate` and `npm run build:pages` pass against the latest main checkout. The regression exercises actual whole-widget initialization, checked template seeding and the mounted form; stage updates retain the edited action input. Earlier local work was based on an older checkout, so the production change is reapplied to 1.60.52 as 1.60.53. No live Creator write or email test is performed for this presentation fix.
 
+## Second Closing candidate — October 5, 2026
+
+Lot closing terms now have Initial Closing, one-time Second Closing, and
+Subsequent Closings in the candidate source. New or edited applicable closing
+terms require positive whole second lots and whole second days of zero or more;
+untouched legacy terms survive unrelated edits. Existing no-scope Master shells
+retain their creation behavior. The explicit Copy to Subsequent action stages
+the current second pair once; it does not save or keep the tiers linked.
+
+Completion copies terms only when creating a missing Takedown Schedule.
+Contract edits never synchronize an existing schedule. Existing Lot fill-only
+claims/pricing, completed-owner scope, and approval recipients remain in place.
+Details, exports, completion progress and existing approval-email content display
+the stored second terms without inventing values for legacy records.
+
+See [the behavior and regression contract](takedown-schedule.md) and
+[native activation instructions](../../creator/workflows/takedown-second-closing.md).
+Both forms' additive fields are verified in Development; all dependent backend
+functions/actions compiled, were saved and reopened. Both Contract report quick
+layouts are Save/reload-verified, and Forecast bindings were audited without a
+page change. Fresh saved-record readback and widget deployment remain pending. The older
+editable-term notes below describe historical two-tier releases.
+Rollback mapping: Contract Management `1.60.54`, retaining entered second values.
+Local immutable candidate `1.61.1` passed full repository validation and the
+Pages build; it is not mapped or uploaded. Frozen `1.61.0` remains unchanged.
+
 Legal 1.60.51 displays native comment validation alerts as readable text.
 `Validate_Comment_Log` in Creator Development now accepts and preserves
 `Contract1`; Production promotion remains with the user. See

@@ -168,9 +168,29 @@ assert.match(run(sameDay),/<tr><td>Last Closing \(Lots\)<\/td><td>2<\/td>/);
 
 const previous=executable(fs.readFileSync(new URL('../creator/functions/baseline/buildForecastManagerSummary.monthly-meter.2026-10-02.dg',import.meta.url),'utf8'));
 const withoutCss=s=>s.replace(/<style>[\s\S]*?<\/style>/,'');
-assert.equal(withoutCss(run(tables)),withoutCss(run(tables,'2026-10-02',1,previous)));
-assert.equal(withoutCss(run(editedForecastTables)),withoutCss(run(editedForecastTables,'2026-10-02',1,previous)));
-console.log('PASS: unpopulated future phases preserve full obligation; contract membership scopes phase actuals, recent sales and latest closing; single-phase HTML equals the previous function');
+const legacyClosingLabels=s=>withoutCss(s).replace(/<tr><td>Second Closing \((?:Lots|Days)\)<\/td><td><\/td><\/tr>/g,'')
+  .replace(/Initial Closing \(Lots\)/g,'Initial Take (Lots)').replace(/Initial Closing \(Days\)/g,'Initial Take (Days)')
+  .replace(/Subsequent Closings \(Lots\)/g,"Cont'd Take (Lots)").replace(/Subsequent Closings \(Days\)/g,"Cont'd Take (Days)");
+assert.equal(legacyClosingLabels(run(tables)),withoutCss(run(tables,'2026-10-02',1,previous)));
+assert.equal(legacyClosingLabels(run(editedForecastTables)),withoutCss(run(editedForecastTables,'2026-10-02',1,previous)));
+console.log('PASS: unpopulated future phases preserve full obligation; contract membership scopes phase actuals, recent sales and latest closing; single-phase content retains the previous function outside closing terms');
+
+const threeTierSchedule={...schedule(1,80),Initial_Takedown:10,Initial_Delay_Days:30,Second_Closing_Lots:7,Second_Closing_Days:45,Continued_Takedown:3,Continued_Takedown_Delay_Days:90};
+const threeTierTables={...tables,Takedown_Schedule:[threeTierSchedule]};
+const threeTierHtml=run(threeTierTables);
+assert.match(threeTierHtml,/<tr><td>Initial Closing \(Lots\)<\/td><td>10<\/td><\/tr><tr><td>Initial Closing \(Days\)<\/td><td>30<\/td><\/tr><tr><td>Second Closing \(Lots\)<\/td><td>7<\/td><\/tr><tr><td>Second Closing \(Days\)<\/td><td>45<\/td><\/tr><tr><td>Subsequent Closings \(Lots\)<\/td><td>3<\/td><\/tr><tr><td>Subsequent Closings \(Days\)<\/td><td>90<\/td>/);
+assert.equal(monthMeter(threeTierHtml),monthMeter(run({...threeTierTables,Takedown_Schedule:[{...threeTierSchedule,Second_Closing_Lots:null,Second_Closing_Days:null}]})),'Contract cadence must not replace manually entered monthly forecasts');
+assert.match(run(tables),/<tr><td>Second Closing \(Lots\)<\/td><td><\/td><\/tr><tr><td>Second Closing \(Days\)<\/td><td><\/td>/,'Legacy Second Closing terms must stay blank instead of inheriting recurring terms');
+assert.match(run({...threeTierTables,Takedown_Schedule:[{...threeTierSchedule,Second_Closing_Days:0}]}),/<tr><td>Second Closing \(Days\)<\/td><td>0<\/td>/,'An explicit same-day Second Closing is distinct from a missing value');
+const threeTierMulti=run({...multi,Takedown_Schedule:[{...threeTierSchedule,Subdivisions:[1,2],Add_Contract_Contract_Name:77}]});
+const contractTerms=threeTierMulti.split("<div class='fm-contract-scope'>")[1];
+assert.ok(contractTerms,'Multi-phase terms remain in the whole-contract section');
+assert.match(contractTerms,/<tr><td>Second Closing \(Lots\)<\/td><td>7<\/td>/);
+assert.match(contractTerms,/<tr><td>Second Closing \(Days\)<\/td><td>45<\/td>/);
+assert.match(contractTerms,/<tr><td>Subsequent Closings \(Lots\)<\/td><td>3<\/td>/);
+assert.equal((threeTierMulti.match(/Second Closing \(Lots\)/g)||[]).length,1,'Do not repeat the shared Second Closing as a separate phase obligation');
+assert.deepEqual(values(threeTierMulti),values(run({...multi,Takedown_Schedule:[{...threeTierSchedule,Subdivisions:[1,2],Add_Contract_Contract_Name:77,Second_Closing_Lots:null,Second_Closing_Days:null}]})),'Second Closing display does not change unforecasted balances');
+console.log('PASS: distinct Initial/Second/Subsequent Closing terms, honest legacy blanks, zero-day display, multi-phase placement and unchanged monthly forecast/unforecasted calculations');
 
 const progressTables={Subdivision:[subdivision],Takedown_Schedule:[{...schedule(1,10),Lots_Expected:9}],Lots:[...Array.from({length:5},(_,i)=>lot(i+1,1,'Sold','2026-09-01')),...Array.from({length:2},(_,i)=>lot(i+10,1,'Scheduled'))],Forecast:[]};
 assert.match(run(progressTables),/#b8860b 50%,#b8860b 70%,#f6a6a6 70%,#f6a6a6 90%/);
