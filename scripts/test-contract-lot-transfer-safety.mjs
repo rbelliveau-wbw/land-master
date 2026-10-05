@@ -91,4 +91,40 @@ function completedEditor(h,checkOverride={}){
 {
  const h=await ready({realDOM:true}),f=completedEditor(h),native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const result=await native(config);if(config.report_name==='Contract_Pricing_Report')h.reports.All_Contracts1[0].Lots1=[{ID:OTHER}];return result;};const result=await h.c.clpSave();assert.ok(result.error);assert.match(result.error,/selection changed/);assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name==='All_Contracts1').length,0);assert.deepEqual(h.reports.All_Contracts1[0].Lots1,[{ID:OTHER}]);assert.equal(f.rows[1].Base_Price,'');assert.equal(nativeLotWrites(h).length,0);
 }
-console.log('PASS actual Lot transfer safety: capability gate, exact captures, Open/blank/Placeholder eligibility, protected states/builders/links/dates, zero/size preservation, stale size rejection, missing-write and concurrent-fill readback failures, truthful protected/confirmed counts, guarded LinkOnly, pending/unknown quarantine, read-only recheck, verified pricing before completed parent save and zero native Lot updates.');
+for(const wrap of [body=>({code:3000,message:'success',details:{output:JSON.stringify(body)}}),body=>({code:3000,result:JSON.stringify(body)}),body=>({code:3000,result:{body:JSON.stringify(body)}}),body=>({code:3000,details:{response:JSON.stringify({body})}}),body=>({code:3000,response:{data:{output:JSON.stringify(body)}}})]){
+ const h=await ready({realDOM:true}),row=lot(),f=install(h,[row],(p,rows)=>{const before=beforeRows(rows);row.Contract1=ID;return response(p,before,rows,{[LOT]:['Contract1']});}),native=h.api.invokeCustomApi;
+ h.api.invokeCustomApi=async config=>{const raw=await native(config);return config.api_name.startsWith('Complete_Lot_Contract')?wrap(JSON.parse(raw.details.output)):raw;};
+ await h.c.clpBackfillLinks(ID,[LOT]);assert.deepEqual(f.calls.map(row=>row.mode),['Check','LinkOnly']);assert.equal(row.Contract1,ID);assert.equal(h.c.contractHasReviews(),false);assert.equal(nativeLotWrites(h).length,0,'nested envelope support keeps all Lot writes on the guarded API');
+}
+for(const fail of [body=>({code:2899,...body}),body=>({...body,success:false})]){
+ const h=await ready({realDOM:true}),row=lot(),f=install(h,[row],()=>{throw Error('failed nested Check must never reach a transfer');}),native=h.api.invokeCustomApi;
+ h.api.invokeCustomApi=async config=>{const raw=await native(config);return config.api_name.startsWith('Complete_Lot_Contract')?{code:3000,message:'success',result:{body:JSON.stringify(fail(JSON.parse(raw.details.output)))}}:raw;};
+ await assert.rejects(h.c.clpBackfillLinks(ID,[LOT]),/Lot verification is unavailable/);assert.deepEqual(f.calls.map(row=>row.mode),['Check']);assert.equal(h.c.contractHasReviews(),false,'a rejected read-only Check never quarantines an unsent transfer');assert.equal(lookup(row.Contract1),null);
+}
+{
+ const h=await ready({realDOM:true,actionsCount:0}),rows=Array.from({length:74},(_,i)=>lot((BigInt(NEW)+1000n+BigInt(i)).toString())),f=install(h,rows,(p,rows)=>{
+  const before=beforeRows(rows),changes={};for(const row of rows){const update={Base_Price:5000,Escalator:3,Status:'Contracted',Builder1:BUILDER,Contract1:ID,Contract_Schedule:SCHEDULE};Object.assign(row,update);changes[row.ID]=Object.keys(update);}return response(p,before,rows,changes);
+ });
+ let lotRequests=0;for(const method of ['getRecordCount','getRecords']){const native=h.api[method];h.api[method]=config=>{if(config.report_name==='All_Active_Lots_Contracts_View'&&++lotRequests>25)return Promise.reject({code:2955,message:'Fixture minute call limit'});return native(config);};}
+ h.calls.length=0;await complete(h,f);while(h.c.S.lotRun.q.length)h.tick(560);
+ assert.equal(h.reports.All_Contracts1[0].Status,'Complete');assert.equal(h.c.S.lotRun.failed,false);assert.equal(h.c.S.lotRun.steps.verify.state,'done');assert.equal(lotRequests,18,'74 lots use three batches, two SDK calls per batch, across all three fresh checks');assert.equal(f.calls.filter(row=>row.mode==='Complete').length,1);assert(rows.every(row=>row.Status==='Contracted'&&row.Builder1===BUILDER));assert.equal(nativeLotWrites(h).length,0);
+ const reads=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Active_Lots_Contracts_View');assert.equal(reads.length,9);for(const call of reads){const exact=[...call.config.criteria.matchAll(/ID == (\d+)/g)].map(match=>match[1]);assert(exact.length>0&&exact.length<=25);assert(exact.every(id=>rows.some(row=>row.ID===id)));assert.equal(call.config.field_config,'all');}
+}
+for(const failure of ['missing','duplicate','foreign','numeric','field']){
+ const h=await ready({realDOM:true}),rows=Array.from({length:26},(_,i)=>lot((BigInt(NEW)+2000n+BigInt(i)).toString())),f=install(h,rows,()=>{throw Error('incomplete Lot batch must never be transferred');}),native=h.api.getRecords;
+ h.api.getRecords=async config=>{const result=await native(config);if(config.report_name==='All_Active_Lots_Contracts_View'){
+  if(failure==='missing')result.data.pop();if(failure==='duplicate')result.data[1]=clone(result.data[0]);if(failure==='foreign')result.data[0].ID=OTHER;if(failure==='numeric')result.data[0].ID=Number(result.data[0].ID);if(failure==='field')delete result.data[0].Base_Price;
+ }return result;};
+ await assert.rejects(h.c.checkLotTransfer(f.parent,rows.map(row=>row.ID),'Complete',f.expect.prById));assert.deepEqual(f.calls.map(row=>row.mode),['Check']);assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0);assert.equal(h.c.contractHasReviews(),false);
+}
+for(const changed of ['generation','actor']){
+ const h=await ready({realDOM:true}),rows=Array.from({length:26},(_,i)=>lot((BigInt(NEW)+3000n+BigInt(i)).toString())),f=install(h,rows),native=h.api.getRecords;let read=0;
+ h.api.getRecords=async config=>{const result=await native(config);if(config.report_name==='All_Active_Lots_Contracts_View'&&++read===1){if(changed==='generation')h.c.S.contractDataGeneration++;else h.c.LMRuntime.apply({envUrlFragment:'',loginUser:'changed@example.test'});}return result;};
+ await assert.rejects(h.c.checkLotTransfer(f.parent,rows.map(row=>row.ID),'Complete',f.expect.prById));assert.equal(read,1,'superseded batch stops before requesting remaining IDs');assert.deepEqual(f.calls.map(row=>row.mode),['Check']);assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0);
+}
+{
+ const h=await ready({realDOM:true}),rows=[lot(),lot(OTHER)],f=install(h,rows),native=h.api.getRecords;
+ h.api.getRecords=async config=>{const result=await native(config);if(config.report_name==='All_Active_Lots_Contracts_View')result.data.reverse();return result;};
+ const capture=await h.c.checkLotTransfer(f.parent,rows.map(row=>row.ID),'Complete',f.expect.prById);assert.equal(capture.before[LOT].ID,LOT);assert.equal(capture.before[OTHER].ID,OTHER,'batched Creator order does not choose a different target');
+}
+console.log('PASS actual Lot transfer safety: exact fresh batches and 74-lot completion with 18 SDK reads under a simulated minute budget; missing/duplicate/foreign/numeric/incomplete batches and stale actor/generation fail closed; unchanged policy, eligibility, zero/size preservation, concurrent-fill readback, guarded LinkOnly, no replay or native Lot repairs.');

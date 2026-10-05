@@ -1,6 +1,55 @@
 
 # Contracts Module
 
+## Save feedback and completion readiness (1.61.5)
+
+Ordinary Contract creation and Lots & Pricing saves use the existing action
+button for **Saving…**, followed by a short result banner. They do not open the
+Captured Mutation progress/result overlay. Verified success returns to the
+record. An uncertain write retains the captured draft and ledger, blocks another
+send, and changes the same button to **Check status**. That action only verifies
+retained unknown destinations; it cannot send unsaved setup or replay a write.
+Verified parent creation with unfinished setup remains **Contract created.
+Setup needs review.** Subdivision repair is part of that same captured ledger.
+Actual multi-record Lot transfer, file and approval dialogs retain their controls.
+
+Routine failures retain the actual diagnostic error and verified/unverified
+destinations in the audit and queue the existing critical-error email report.
+Each run reports its failure once; the reporter uses one configured API request
+and does not retry an alternate endpoint after an uncertain acknowledgement.
+Native response wrappers are parsed before claiming report success. Email
+delivery is not established by the local tests.
+
+The completion confirmation opens immediately with **Checking…** disabled while
+fresh Contract, pricing, action and selected-Lot reads finish. Readiness patches
+the mounted confirmation. Cancel, a changed actor/selection/data generation,
+failed reads or a missing backend capability cannot enable completion or reopen
+the cancelled confirmation. Selected Lots are read in bounded exact-ID batches;
+every returned set must match its captured IDs without omissions, duplicates or
+unrelated rows. This reduces verification requests without weakening preserved
+price, size, builder, lifecycle or foreign-link checks. Contract reads use the
+existing rolling request budget and throttle recovery for read-only requests;
+writes are never retried. Verification allows time for scheduler budget waits
+without extending the deadline for a hung native request. With 74 selected Lots,
+25-ID batches use six count/read requests per pass: 18 for the three existing
+verification passes, or 24 including the completion preview, versus 444 in the
+former three passes of individual Lot reads.
+
+The Lot count & closings section uses compact equal cards with visible Lots/Days
+captions and full timing tooltips/accessibility labels. Copy to Subsequent sits
+beside the heading and remains a one-time draft copy. Desktop, 800px and 390px
+previews confirm aligned inputs, 4/2/1 columns and no horizontal overflow.
+
+This release changes frontend source, its immutable assets, tests and guides.
+No Creator forms, fields, report permissions, functions, workflows or Custom API
+registrations change. The existing safe native transfer capability is still
+required; a frontend promotion does not publish it. Regression covers ordinary
+save/create success, known partial and unknown writes, delayed/duplicate clicks,
+read-only status checks including subdivision repair, one-request email handling,
+immediate/cancelled/stale confirmation and exact Lot batches. Required release
+checks are full repository validation and the Pages build. Rollback: map Contract
+Management Development and Production to `1.61.4`; retain Stage and saved data.
+
 ## Compact Contract creation and setup diagnostics (1.60.54)
 
 Contracts/Legal startup no longer reads `All_Pro_Formas_All_Fields`. That report

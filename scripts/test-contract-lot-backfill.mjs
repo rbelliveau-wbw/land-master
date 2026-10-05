@@ -45,6 +45,6 @@ assert.throws(()=>ctx.lotMissingWrites({...blank,Lot_Size:50},c,pr,'9','7'),/siz
 assert.throws(()=>ctx.lotMissingWrites({ID:'1'},c,pr,'9','7'),/complete exact Lot/);
 await assert.rejects(ctx.updateRecord('1',{Base_Price:100000},ctx.CFG.reports.lots),/guarded server/);
 await assert.rejects(ctx.healLotWrites(c,{ids:['1'],prById:{'1':pr},buyerId:'9'},{scheduleId:'7'}),/safe Lot transfer/,'old unguarded repair cannot write');
-await assert.rejects(ctx.clpBackfillLinks('123',['1']),/Safe Lot transfer verification is unavailable/,'dormant backfill fails closed against an older backend');
+await assert.rejects(ctx.clpBackfillLinks('123',['1']),/Lot verification is unavailable/,'dormant backfill fails closed against an older backend');
 assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name===ctx.CFG.reports.lots).length,0);
 console.log('Contract owner backfill and all-status selection remain; Open/blank-only transfer planning, protected status/dates/builder, zero/size preservation, changed-size rejection and no direct Lot updates pass.');

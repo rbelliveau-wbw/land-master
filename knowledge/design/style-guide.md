@@ -21,6 +21,12 @@ must never link the values automatically. Required indicators for legacy second
 fields apply when closing terms change, while unrelated edits remain available.
 See [the timing and compatibility contract](../modules/takedown-schedule.md).
 
+The Contract lot editor keeps its four closing cards compact and equally sized,
+with two columns on medium screens and one on narrow screens. Use Lots and Days
+above the inputs, retaining the full timing meaning in tooltips and accessible
+labels. Place Copy to Subsequent beside the section heading so the action does
+not add empty space to every card.
+
 Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
 
 In Pro Forma Additional Costs, show the enabled Cost per Unit input with a persistent blue border, pale-blue surface and soft blue glow. Strengthen the glow on keyboard focus. Disabled rates stay muted, and the calculated total keeps its read-only treatment.

@@ -3,7 +3,16 @@
 
 Contract management and token-based LOI legal review.
 
-Second Closing candidate: `1.61.4`. Initial, Second and Subsequent Closing terms
+Release `1.61.5` uses action-button feedback for routine create/save, keeps
+read-only Check status and the captured verification ledger for unknown writes,
+and retains one diagnostic email attempt on failure. Completion opens immediately
+with a disabled Checking action while fresh details are verified. Exact selected
+Lot reads are batched, and closing cards are compact with Copy to Subsequent in
+the section heading. No backend change is included. See
+[regression and rollback](../../knowledge/modules/contracts.md#save-feedback-and-completion-readiness-1615).
+Rollback both Contract Development/Production mappings to `1.61.4`.
+
+Second Closing baseline: `1.61.4`. Initial, Second and Subsequent Closing terms
 are edited together, with an explicit copy from Second to Subsequent. Existing
 schedules remain independent of later Contract edits. See the
 [implementation and activation handoff](../../docs/second-closing-handoff-2026-10-05.md).
@@ -50,9 +59,10 @@ rows when checked in production on 2026-08-22, so the constants are the live pat
 If Legal edits the templates in Creator, update those constants.
 
 `Subdivision1` is a multi-select lookup that had never been written from a widget.
-`ncFixSubdivision()` writes an ID array, reads the record back, and retries with a
-comma-joined string and then a single ID before giving up - Creator can report
-success while dropping a value it could not parse.
+`ncFixSubdivision()` verifies the exact saved ID array and, when necessary,
+captures one repair in the creation ledger before reading it back. An uncertain
+repair supports read-only status checking; it never tries another encoding or
+replays the write automatically.
 
 The footer`s `Creator form` button is the escape hatch back to the native form.
 

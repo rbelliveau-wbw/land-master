@@ -12,5 +12,7 @@ import './test-contract-loi-permissions.mjs';
 import './test-contract-sdk-v2-approvals.mjs';
 import './test-contract-sdk-v2-files.mjs';
 import './test-contract-sdk-v2-lot-completion.mjs';
+import './test-contract-completion-preview.mjs';
+import './test-contract-verification-pacing.mjs';
 import './test-contract-lot-transfer-policy.mjs';
 import './test-contract-sdk-v2-comments.mjs';

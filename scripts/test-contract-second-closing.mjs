@@ -47,7 +47,7 @@ c.S.nc.contLots='7';assert.equal(c.S.nc.secondLots,'20','subsequent edits do not
 c.S.clp={cid:ID,terms:terms(modern)};let repaints=0;c.clpRepaint=()=>{repaints++;};
 assert.equal(c.clpCopySecondClosing(),true);assert.equal(repaints,1);assert.equal(c.S.clp.terms.Subsequent_Takedown_Lots,'15');assert.equal(c.S.clp.terms.Subsequent_Takedown_Days,'45');
 c.S.clp.terms.Second_Closing_Lots='18';assert.equal(c.S.clp.terms.Subsequent_Takedown_Lots,'15');assert.deepEqual(plain(c.clpTermChanges(modern,c.S.clp.terms)),{Second_Closing_Lots:18,Subsequent_Takedown_Lots:15,Subsequent_Takedown_Days:45},'copied values are ordinary pending field changes');
-assert.match(c.clpTermsPanel(),/Initial Closing.*Second Closing.*Copy to Subsequent.*Subsequent Closings/);
+const clpHTML=c.clpTermsPanel();assert.match(clpHTML,/Initial Closing.*Second Closing.*Subsequent Closings/);assert.match(clpHTML,/onclick="clpCopySecondClosing\(\)"[^>]*>Copy to Subsequent/);assert.match(clpHTML,/aria-label="Second Closing — After initial due \(days\)" value="45"/);
 assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'typing and copying do not persist or update a schedule');
 
 Object.assign(c.S,{myAccessId:ACCESS,acc:{known:true,edit:true},contracts:[{...modern,Status:'Complete',Owner:[{ID:ACCESS}]}],clp:{cid:ID},nc:{sub:[SUB],lotIds:[]}});
