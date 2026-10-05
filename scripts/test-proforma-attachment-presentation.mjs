@@ -163,9 +163,9 @@ assert.match(source,/\.pf-row-discussion-actions\{[^}]*gap:7px/);assert.match(so
 const listHTML=el('listBody').innerHTML,scroll=el('listBody').scrollTop,search=el('listSearch').value;
 await drain();c.loadPfAttachmentSummaries();assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1,'same-generation badge loading has one global page, no per-PF reads');
 releaseBackground();await drain();readHook=null;
-assert.equal(mountedBadge.textContent,'2');assert.equal(c.pfAttachmentBadge(OTHER).text,'0','zero is known only after complete count+read+count');
+assert.equal(mountedBadge.textContent,'2');assert.equal(c.pfAttachmentBadge(OTHER).text,'0','zero is known only after the complete counted reference snapshot');
 assert.equal(el('listBody').innerHTML,listHTML,'background badges patch mounted elements without rebuilding rows');assert.equal(el('listBody').scrollTop,scroll);assert.equal(el('listSearch').value,search);assert.equal(c.S.ed.model.draft,'preserved');
-assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='count').length,2);assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1);
+assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='count').length,1,'global reference badges do not repeat the count; scoped mutation verification still does');assert.equal(native.slice(beforeBackground).filter(call=>call.kind==='read').length,1);
 
 // Real list click opens in place, with exact selected-record permissions and focus/inert restoration.
 c.S.proformas[0].Owner='creator';c.S.proformas[1].Owner='another';c.perms=()=>({editOwned:true});vm.runInContext(fn('canEditPf'),c);

@@ -629,3 +629,9 @@ The send action opens the persistent Contracts-style progress and per-Budget ver
 Pro Forma 1.80.71 shows the complete authorized header/approval list before loading company, seller, property and template options. A dependent action waits for all options to publish atomically for its actor/load. A failed or stale read cannot seed a draft or substitute an empty collection. The main-list approval readiness message stays explicitly unverified until options load; original checks then run. Same-fixture startup requests: 29 → 9, with all 2,139 properties retained after the deferred load. No Creator deployment; rollback 1.80.69.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+# SDK2 lot-mix save hotfix — 2026-10-05
+
+Proforma Manager 1.80.75 adds missing native lot-mix lookup, numeric and currency
+verification metadata, plus opt-in API pacing for the documented per-user minute
+limit. Scoped persisted verification and no-replay guards remain enforced. See
+[the incident and regression notes](../../docs/proforma-lotmix-sdk2-hotfix-2026-10-05.md).

@@ -386,9 +386,9 @@ has(/pfId=createdRecordId\(resp\);/, "the SDK-fallback create must read the new 
     () => outcome)("4410926000004872014");
   assert.deepEqual(await run(Promise.resolve({ errors: [] })), { errors: [] });
   await assert.rejects(run(Promise.resolve(undefined)),
-    (err) => err.terminal === true && /no result/.test(err.message));
+    (err) => err.terminal === true && /could not be confirmed/.test(err.message) && /draft has been kept/.test(err.message));
   await assert.rejects(run(Promise.resolve({ errors: [{ err: Error("one row rejected") }] })),
-    (err) => err.terminal === true && /1 failed/.test(err.message));
+    (err) => err.terminal === true && /1 affected/.test(err.message) && /draft has been kept/.test(err.message));
   await assert.rejects(run(Promise.reject(Error("read denied"))),
     (err) => err.terminal === true && /could not be confirmed/.test(err.message));
 
