@@ -635,3 +635,10 @@ Proforma Manager 1.80.75 adds missing native lot-mix lookup, numeric and currenc
 verification metadata, plus opt-in API pacing for the documented per-user minute
 limit. Scoped persisted verification and no-replay guards remain enforced. See
 [the incident and regression notes](../../docs/proforma-lotmix-sdk2-hotfix-2026-10-05.md).
+
+## Currency save review — 1.80.78
+
+Ordinary Save keeps the actual failure visible and names expected/saved Land Cost.
+Construction base saves cents on both sides of the custom save contract. This
+candidate needs the paired Creator function change and a native currency-capacity
+gate before production. See [incident, deployment and rollback notes](../../docs/proforma-currency-save-1.80.78.md).

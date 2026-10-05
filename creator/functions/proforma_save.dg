@@ -1531,7 +1531,7 @@
                  		}
                  		if(header.get("Construction_Cost_Base") != null && header.get("Construction_Cost_Base").toString() != "")
                  		{
-                 			pf.Construction_Cost_Base=header.get("Construction_Cost_Base").toDecimal().round(0);
+			pf.Construction_Cost_Base=header.get("Construction_Cost_Base").toDecimal();
                  		}
                  		if(header.get("Construction_Cost_Addl") != null && header.get("Construction_Cost_Addl").toString() != "")
                  		{

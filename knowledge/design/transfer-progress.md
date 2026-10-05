@@ -18,6 +18,11 @@ to the saved record. Failed or unknown saves stop the spinner and keep a Close
 action and retained draft; they never auto-dismiss or replay a write. Respect
 reduced motion. This exception does not change other batch transfer dialogs.
 
+Ordinary Save failures also retain the actual error in an alert inside the dialog,
+including expected and saved Land Cost amounts when those differ. A disappearing
+toast must never be the only explanation. Clear that alert when another dialog
+run starts. Exact persisted verification and duplicate-send protection remain.
+
 Open an in-widget dialog immediately when the user presses the final action. Use the shared navy gradient header, source → destination identity, amount and record counts, a slim progress bar, numbered stage rows, Running / Up next / Done / Needs review chips, and a pinned status/action footer. On completion show a prominent outcome and a per-destination list with names, counts, amounts where applicable, and verification states.
 
 Build the dialog once and patch its nodes. Pace only display changes at about 560 ms so fast replies remain readable; never delay requests for animation. Skip display pacing under reduced motion. Keep the result visible until Done/Close. Review transfer can return to the original review with its explicit completion banner and disabled, relabeled action.
