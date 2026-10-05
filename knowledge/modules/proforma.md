@@ -1,5 +1,12 @@
 ## SDK2 comment/save repair 1.80.72
 
+Release 1.80.73 promotes these fixes to Production and replaces ordinary Save's
+technical ledger with a progress bar and one plain-language status. The floating
+Retry Creator connection button is removed; fresh page startup still performs
+the same authenticated handshake. No changes to save payloads, calculations,
+verification or unknown-write recovery. Rollback: 1.80.72; it retains the save
+and comment verification repairs but restores the previous presentation.
+
 Comment parent lookup objects and fixed-cost `Per_Unit` blank-to-zero conversion
 now use explicit field types during persisted verification. Nested save responses
 unwrap to the function result; actual mismatches retain drafts and name fields.
