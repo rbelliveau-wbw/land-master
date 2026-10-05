@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T20:46:43.482Z",
+  "generated_at": "2026-10-05T21:11:15.888Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -78,7 +78,7 @@
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "35a50879768f333780a9eda920ede6ea4165dd6ed2e1c645fe9bd6bb7c3ac555",
+      "source_sha256": "fe002695dd92ea9fc3a8a78b9ae446591fed3b5094743419e70d8c510133a5ed",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
@@ -110,7 +110,7 @@
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "1e2b46d29a6a346c7afd0ef334b32667667d54c28865b6564300709d1fa8dc54",
+      "source_sha256": "55eb88bb78923ccaddcc8f44f9968b564db9fcba9d09af8921b5a324cdd7da37",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

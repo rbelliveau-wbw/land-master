@@ -3,6 +3,11 @@
 
 Contract management and token-based LOI legal review.
 
+Second Closing candidate: `1.61.2`. Initial, Second and Subsequent Closing terms
+are edited together, with an explicit copy from Second to Subsequent. Existing
+schedules remain independent of later Contract edits. See the
+[implementation and activation handoff](../../docs/second-closing-handoff-2026-10-05.md).
+
 Release 1.60.54 uses compact Contract creation progress and distinguishes a
 verified created contract from unfinished setup. Verification failures name only
 the affected fields in diagnostics; writes and backend workflows are unchanged.
