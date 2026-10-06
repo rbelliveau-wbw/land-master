@@ -3,6 +3,14 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.14` replaces the lot-completion text list with the Clear summary
+confirmation and removes the sentence below the heading. It separates contract
+pricing, completion outcomes, preserved values and expandable eligibility rules,
+while retaining fresh preflight checks and the existing completion/progress path.
+Frontend only; no Creator deployment. See
+[regression and rollback](../../knowledge/modules/contracts.md#clear-lot-completion-confirmation-16114).
+Rollback Production to `1.61.12`.
+
 Release `1.61.12` restores normal request timing by removing the artificial
 per-minute budget. Exact saved-data checks, max-three concurrency, actual
 Creator throttle handling, live audit and five-second confirmation remain.

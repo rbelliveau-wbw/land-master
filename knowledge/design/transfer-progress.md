@@ -77,6 +77,18 @@ Contract completion opens its existing confirmation immediately with a disabled
 confirmation when ready. Cancelled or stale checks cannot reopen it or enable a
 write, and failed capability/data checks leave completion disabled.
 
+Lot completion uses the Clear summary confirmation requested October 6, 2026.
+Omit the explanatory sentence below its heading. Show the contract identity,
+selected group count and contract pricing, then the changes on completion and
+preserved values. The count describes selected lots, not guaranteed writes;
+show all pricing groups when sizes differ. Keep eligibility in an expandable
+**Which lots receive terms?** section: Open/blank status, unassigned/Placeholder
+Builder, no purchase/close dates, compatible links and matching pricing. Retain
+no-lots/no-pricing/no-match warnings and actual open-action counts. Use
+**Apply terms & complete** only when lot pricing matches; keep **Complete contract**
+for completion without lot writes. Preserve the mounted preflight, existing
+write/progress path, viewport-capped scrolling body and centered SVG close icon.
+
 Build the dialog once and patch its nodes. Pace only display changes at about 560 ms so fast replies remain readable; never delay requests for animation. Skip display pacing under reduced motion. Keep the result visible until Done/Close. Review transfer can return to the original review with its explicit completion banner and disabled, relabeled action.
 
 Use `role=dialog`, `aria-modal=true`, named title/context, polite live status, a progressbar with a truthful accessible value, trapped focus, and an inert background. Disable Close and Escape until a safe terminal state. Block duplicate writes throughout requests and display settlement. Center every X and check with explicit SVG geometry. Preserve focus on dismissal. Cap the dialog to the viewport and scroll its body on small screens.

@@ -1,6 +1,32 @@
 
 # Contracts Module
 
+## Clear lot-completion confirmation (1.61.14)
+
+Lot completion uses the selected Clear summary design with no explanatory lead
+below the heading. Contract identity, the selected lot count and contract pricing
+sit above the changes on completion. Eligible lots become Contracted; schedule
+creation/reuse and the actual open actions closing today are separate outcomes.
+Existing prices and lot sizes remain preserved, and eligibility rules expand
+below the protected-lot notice. Multiple size/price groups, missing pricing,
+unmatched sizes and no attached lots retain their distinct summaries. The group
+count is not a promise that every selected lot will change.
+
+Changed files: widget HTML/config, widget manifest, Production mapping,
+immutable release `1.61.14`, transfer-progress guide, this module and widget README.
+Affected frontend functions: `lotCompletionPreview`, `lotCompletionSummaryHtml`,
+`lotCompletionPreviewPaint` and `lotCompletionDialog`. Existing Contract, Lots,
+Contract_Pricing and Contract_Actions fields are read for presentation; no field,
+backend function, Custom API, payload, permission or completion rule changes.
+No Creator deployment is required.
+
+Regression covers immediate disabled Checking, fresh readiness, failed checks,
+Cancel, stale context/selection, duplicate clicks, no writes before confirmation,
+safe Lot transfer verification, no/multiple pricing groups, zero actions, long
+names, narrow layout and the centered close icon. Full validation and Pages
+build are required before production promotion. Rollback: restore Contract
+Management Production to `1.61.12`.
+
 ## Normal request timing (1.61.12)
 
 At the user's request, Contracts removes its artificial 40-request-per-61s
