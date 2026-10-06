@@ -202,3 +202,7 @@ Approvals. The daily `sendApprovalReminders` job re-sends the same email when a 
 `Next_Reminder_Date` arrives. The button is enabled only when at least one approver is
 pending (Email on, Not Sent) and at least one file is attached; the function enforces the
 same rules server-side plus `User_Access.Edit_Contracts` for the caller.
+
+## Routine success feedback (1.61.19)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

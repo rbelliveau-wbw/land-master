@@ -38,3 +38,7 @@ npm run package:creator -- milestone-gantt
 npm run release -- milestone-gantt <new-version>
 npm run build:pages
 ```
+
+## Routine success feedback (1.1.8)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

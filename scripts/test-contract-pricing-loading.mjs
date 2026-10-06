@@ -66,7 +66,7 @@ for(const screen of [
  assert.deepEqual(screenState(h),state,'pricing save preserves the originating view, filters and expansions');assert.deepEqual(clone(h.c.captureScroll()),clone(scroll),'pricing refresh preserves current scroll');
  assert.equal(h.reports.Contract_Pricing_Report[0].Price_per_Ft,'1400');assert.equal(h.reports.Contract_Pricing_Report[0].Base_Price,70000);assert.equal(writes(h).length,1,'one verified pricing write');
  assert.equal(h.c.S.clp,null);assert.equal(h.c.S.nc,null);assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.document.querySelector('#clp_body'),null);
- const banner=h.c.document.querySelector('#banners .contract-pricing-banner');assert(banner,'actual verified pricing save uses its scoped larger success banner');assert.equal(banner.getAttribute('role'),'status');assert.equal(banner.textContent,'Contract saved.');assert.equal(banner.querySelector('svg').getAttribute('viewBox'),'0 0 24 24');
+ const banner=h.c.document.querySelector('#banners .contract-pricing-banner');assert(banner,'actual verified pricing save uses its scoped larger success banner');assert.equal(banner.getAttribute('role'),'status');assert.equal(banner.textContent,'Lots and pricing saved.');assert.equal(banner.querySelector('svg').getAttribute('viewBox'),'0 0 24 24');
  assert.equal(h.c.document.querySelector('#contractSaveOverlay'),null,'no acknowledgement dialog after routine pricing save');assert.equal(h.c.document.querySelector('#banners button'),null,'success is nonblocking');
  h.tick(3500);assert.equal(h.node('banners').innerHTML,'','same auto-dismiss duration');
 }
@@ -75,7 +75,7 @@ for(const screen of [
  h.api.updateRecordById=async config=>{await native(config);return {code:3000,data:{ID:config.id},details:{code:2899}};};h.c.ncSetPpf('50','1400');
  const result=await h.c.clpSave();assert(result.error);assert.equal(result.rows[0].state,'unknown');assert.equal(h.c.S.nc,draft);assert.deepEqual(screenState(h),state);assert.doesNotMatch(h.node('banners').innerHTML,/contract-pricing-banner/,'unverified save cannot show success styling');assert.equal(writes(h).length,1);
  assert.equal(await h.c.clpSave(),true,'Check status uses read-only recovery from the same button');
- assert.equal(writes(h).length,1,'status check is read only');assert.deepEqual(screenState(h),state,'verified recheck also stays on the same screen');assert.equal(h.c.S.clp,null);assert.match(h.node('banners').innerHTML,/contract-pricing-banner.*Contract saved/);
+ assert.equal(writes(h).length,1,'status check is read only');assert.deepEqual(screenState(h),state,'verified recheck also stays on the same screen');assert.equal(h.c.S.clp,null);assert.match(h.node('banners').innerHTML,/contract-pricing-banner.*Lots and pricing saved/);
  h.c.banner('ok','Other success');assert.doesNotMatch(h.node('banners').innerHTML,/contract-pricing-banner/,'other success implementations retain their current presentation');
  h.c.banner('err','Needs review',{pricingSaved:true});assert.doesNotMatch(h.node('banners').innerHTML,/contract-pricing-banner/,'errors cannot receive pricing success style');
  h.c.contractCreatedBanner(ID);assert.match(h.node('banners').innerHTML,/contract-created-banner/);assert.doesNotMatch(h.node('banners').innerHTML,/contract-pricing-banner/,'creation retains its existing scoped style');
@@ -83,3 +83,5 @@ for(const screen of [
 console.log('PASS actual pricing save/recheck: stays on list, board or current detail with filters/scroll preserved; one verified write; scoped black success, normal dismissal, retained unknown draft and read-only recovery; other success/error styling unchanged.');
 
 export {fixture,section};
+
+

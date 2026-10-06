@@ -29,3 +29,7 @@ npm run package:creator -- budget-manager
 npm run release -- budget-manager <new-version>
 npm run build:pages
 ```
+
+## Routine success feedback (122.28.24)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

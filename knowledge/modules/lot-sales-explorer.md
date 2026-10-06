@@ -77,3 +77,7 @@ save-readback comparator. No Creator promotion is required for these frontend
 changes. `scripts/test-manage-insights-currency.mjs` covers actual currency helpers
 and Budget normalization; the existing Sales/Budget model regressions remain
 required. Rollback to 1.5.42.
+
+## Routine success feedback — October 6, 2026
+
+CSV export preparation and successful manual report refreshes add contextual black confirmations. Lot-sales refresh confirmation waits for complete history; automatic startup, filtering, partial data and errors never claim a successful full refresh. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

@@ -209,3 +209,7 @@ When Refresh checks access again, the widget removes previously rendered matrix,
 ## 1.5.18 Weighted per-foot removal
 
 The Measure picker no longer offers Weighted Base $/FF. The pure report model no longer calculates or exposes `weightedPriceFF`; the data-quality note continues to apply to the two remaining per-foot measures. All other measures, drilldowns, and exports keep their existing definitions. This is a widget-only change; no Creator form, field, function, Custom API, or Creator deployment changes. Regression: verify both remaining per-foot measures, Base Price measures, Lot Count, the Measure picker, and report CSV. Rollback: map production `lot-sales-explorer` to `1.5.17` and rebuild Pages.
+
+## Routine success feedback (1.5.45)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

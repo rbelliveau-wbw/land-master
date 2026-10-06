@@ -684,3 +684,7 @@ gate before production. See [incident, deployment and rollback notes](../../docs
 ## Complete currency audit — 1.80.79
 
 Currency displays and monthly payloads retain cents; only actual counts use integer rounding. The legacy whole-dollar monthly rewrite is removed. Numeric persisted mismatches retain expected/saved amounts in the dialog. Header and child contracts stay exact. [Creator promotion checklist](../../creator/handoffs/proforma-currency-promotion-1.80.79.md) covers 71 precision-sensitive fields across all seven ordinary-save forms and the paired backend assignment. User owns Creator promotion; widget Production promotion is authorized.
+
+## Routine success feedback — October 6, 2026
+
+Existing success pills use the shared style for saves, owners/status/input-lock/approver edits, attachments and lifecycle actions. PDF preparation and an unsaved duplicate remain informational; unavailable email stays a warning. Export wording says the file is ready. Shared comment post/edit/delete success follows the host verified callback. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

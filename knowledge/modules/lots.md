@@ -140,3 +140,7 @@ function, report or business-rule change is included. The focused
 financial preflight, receipt calculations and saved child verification. Existing
 takedown/SDK2 regressions remain required. Rollback the frontend to 0.10.1 while
 retaining any expanded native capacity.
+
+## Routine success feedback — October 6, 2026
+
+Manage Lots retains the verified takedown creation dialog and per-lot outcomes. Dismissing its Verified result adds a black confirmation with the captured lot count. Verified audit-log copy uses the shared style; validation remains unchanged. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

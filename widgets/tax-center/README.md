@@ -58,3 +58,7 @@ The parcel-year Acres column shows only `Tax_Parcel_Year.Acres`. A blank TPY acr
 ## Navarro County (19.17.2)
 
 Property and parcel-year County editors always offer Navarro, including before the first Navarro record exists. Existing record-derived choices and data-filter counts are retained. No functions or Custom APIs change. Regression: Navarro selection, existing choices, and County save payloads. Rollback: restore the production mapping to `19.17.1`.
+
+## Routine success feedback (19.17.11)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

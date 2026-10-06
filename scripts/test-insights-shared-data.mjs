@@ -118,12 +118,12 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
     const elements = {connection: {}, summary: {}, refresh: {addEventListener(event, callback) { assert.equal(event, 'click'); this.callback = callback; }}};
     let nextTimer = 0, isConnected = false;
     const context = vm.createContext({
-      Promise, Error, Array,
+      Promise, Error, Array, state:{generation:0},
       location: {hostname: 'creator.zoho.com', href: 'https://example.test/prod/lot-sales-explorer/'}, document: {referrer: ''},
       setTimeout(callback, ms) { const id = ++nextTimer; timers.set(id, {callback, ms}); return id; },
       clearTimeout(id) { timers.delete(id); },
       $: id => elements[id]||(actualAccess?elements[id]={innerHTML:'',open:false}:undefined), log: message => events.messages.push(message), notice: message => events.messages.push(message),
-      InsightsShell: {connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { if(!actualAccess)assert.equal(value, null); events.messages.push(message); }},
+      InsightsShell: {current:()=> 'sales',connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { if(!actualAccess)assert.equal(value, null); events.messages.push(message); }},
       LMCriticalErrors: {configure() { events.reporter++; }, markReady() {},breadcrumb(){}},
       authorizeAndLoad: async () => { events.permissions++; },
       ZOHO: {CREATOR: {
@@ -210,3 +210,6 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
   const inherited=setup(()=>Promise.resolve({envUrlFragment:''}),true);inherited.context.ZOHO.CREATOR.loginUser='genuine-global-actor';await inherited.context.start();assert.equal(inherited.events.nativeAccess,1);assert.equal(inherited.events.permissions,1);assert.equal(inherited.events.connected,1);assert.equal(inherited.context.LMRuntime.current().user,'genuine-global-actor');
 }
 console.log('PASS: Insights canonical data/history/error contracts, dynamic diagnostics, and bounded native startup with fail-closed late-context guards and fresh retry.');
+
+
+

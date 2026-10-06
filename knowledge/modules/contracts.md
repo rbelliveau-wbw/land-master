@@ -681,3 +681,7 @@ without another write. They cover equivalent credits, missing cents, malformed
 signs/grouping, high-precision differences, exact entered payload digits and
 unchanged computed totals/counts. No Creator fields, workflows or API metadata
 are modified; these fixtures do not establish live Production correctness.
+
+## Routine success feedback — October 6, 2026
+
+Routine contract/action/owner/status/template/file confirmations use the shared style. Pricing and action autosaves keep green field checks and add grouped success feedback under the existing revision and navigation guards. Lots and pricing saves and read-only recovery retain the originating screen. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

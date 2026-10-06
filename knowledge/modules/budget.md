@@ -413,3 +413,7 @@ Center the search clear icon with the same flex alignment and line height as the
 ### 122.26.3 — SVG clear icons
 
 Replace font-based multiplication characters in search, project, territory and status clear buttons with symmetric SVG paths. Explicit icon dimensions override search-icon styling. Browser verification with all selections active and a dropdown open confirms zero horizontal/vertical icon-center offset for all four buttons; screenshot reviewed. Frontend-only widget.html and budget-layout.css changes; filter behavior, permissions, fields, functions and APIs unchanged. Validate repository and Pages build; no Creator publication needed. Rollback production mapping to 122.26.2.
+
+## Routine success feedback — October 6, 2026
+
+Budget header metrics, line-item fields, per-unit pricing and notes keep inline saved indicators and add grouped confirmations. Existing successful owner, mapping, attachment, request and approval pills use the approved black style. Note confirmation now waits for the existing verified save callback. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

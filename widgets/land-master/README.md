@@ -54,3 +54,7 @@ npm run build:pages
 ## Navarro County (8.11.7)
 
 Added `Navarro` to Property, Project, Subdivision, and Lot County choices. Existing choices and persistence behavior are retained. Creator County picklists are audited separately. Regression: select Navarro, retain existing counties, and validate the production Pages artifact. Rollback: restore the production mapping to `8.11.6`.
+
+## Routine success feedback (8.15.6)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

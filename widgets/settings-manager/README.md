@@ -121,3 +121,7 @@ and malformed grouping remain unverified. Percentage controls, rate values,
 calculations and integer-count validation retain their existing behavior.
 Finite typed Number exponent representations expand exactly into decimal text
 for currency and percentage verification; entered exponent strings remain invalid.
+
+## Routine success feedback (1.3.11)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

@@ -171,3 +171,7 @@ Every Pro Forma row now shows Edit. Records the viewer can edit retain the blue 
 Loading stays in the export dialog. Excel export never hides, refreshes or
 re-renders the main report, and retains search, scroll and drafts. No Creator changes.
 [Verification and rollback](../../docs/proforma-export-loading-1.80.84.md).
+
+## Routine success feedback (1.80.86)
+
+Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.

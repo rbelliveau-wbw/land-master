@@ -33,3 +33,7 @@ Actual-source offline suites pass against native-shaped in-memory fixtures; nati
 Tax 19.17.8 explicitly includes null Arbitrate1 values in Undecided. Server facets and row searches share that clause. Counts use the authoritative Creator count API and exact current base criteria, including after inline edits. Facet values from old criteria stay hidden, failed counts stay unknown, and all edit/bulk completeness guards remain. No Creator deployment; rollback 19.17.6.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
+
+## Routine success feedback — October 6, 2026
+
+Parcel-year and Property inline editing keep saved field checks and persistent message bars, adding grouped success popups. Modal saves, property/parcel-year creation and verified audit-log copy add contextual confirmations. Failed/unknown and bulk result surfaces remain intact. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.

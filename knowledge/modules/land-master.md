@@ -238,3 +238,7 @@ both summaries and exact create recovery. The same strict currency parser
 rejects malformed grouping, conflicting signs and genuine lost cents; recovery
 never turns these rejected values into permission to repeat an insert.
 Rollback is the prior Production widget; no Creator promotion is required.
+
+## Routine success feedback — October 6, 2026
+
+Record editor success pills use object-specific text. Table fields, searchable lookup changes and Property project inline saves retain green verification and add grouped confirmations. Takedown schedule recovery uses schedule-specific wording. Persistent statuses and batch surfaces remain. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
