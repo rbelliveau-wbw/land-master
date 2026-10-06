@@ -1,6 +1,39 @@
 
 # Budget Module
 
+## Eligible items and compact request header (122.28.27)
+
+The shared line-item picker for Bud Mod, Check Request, Wire Request and
+Purchase Order omits items that fail its existing category/finalization rule.
+Global and phase entry use the same picker. Finalized zero-value items remain
+selectable; code ordering, name/code search, modification counts and string
+record IDs are preserved. Empty lists distinguish no eligible items from no
+eligible search matches.
+
+Selected vendor and Change move into the title bar for Check, Wire and Purchase
+Order details and draft preview. The body starts with the line item; tighter
+rail/footer spacing removes the separate vendor row. Long names wrap, and
+the header vendor occupies a second row below 460px. Change returns to vendor
+selection without losing draft fields; earlier steps and Bud Mod hide this
+header context.
+
+Changed files: Budget Manager `src/app/widget.html` and `budget-layout.css`, version/hash manifests,
+immutable release 122.28.27, production mapping and style/module documentation.
+No Creator forms, fields, functions or Custom APIs change; this frontend release
+does not require Creator backend publication. Financial math and request/vendor
+behavior are unchanged. The proposed vendor-picker designs remain mockups.
+
+Regression: existing category eligibility across all four types, search,
+zero-value finalized items, code ordering, full validation and Pages build.
+Also check header vendor, Change/back draft retention, preview, and narrow fit.
+Verification completed: full validation and Pages build passed. An actual-source
+fixture verified category exclusions, missing categories, finalized zero values,
+string IDs, sorting and search for all four types. The offline request UI verified
+header vendor, Change preserving dates/amount, and draft preview. No native
+financial request or vendor record was created during verification.
+Rollback: restore production budget-manager mapping to 122.28.26 and rebuild
+Pages. Development and Stage mappings remain as configured.
+
 ## Budget rail request details (122.28.26)
 
 The approved Budget rail design applies to global and phase Purchase Order,

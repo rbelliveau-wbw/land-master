@@ -132,9 +132,15 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 Check, Wire and Purchase Order creation uses Budget → finalized line item →
 searchable Vendor → request details. Global entry chooses Budget first; phase
-entry starts at line item. Keep Add Vendor beside the Vendor heading and retain
-the draft through native form entry and list refresh. Use the approved Budget
-rail layout: dates, a prominent amount input with its available maximum, and GP
+entry starts at line item. Only show eligible finalized items in the shared
+Bud Mod, Check, Wire and Purchase Order picker. Hide unavailable rows instead of
+showing disabled choices. Preserve finalized zero-value items and search by
+name or code. Keep Add Vendor beside the Vendor heading and retain the draft
+through native form entry and list refresh. Use the approved Budget
+rail's title bar for the selected vendor and Change action; hide this context
+in earlier steps and Bud Mod, and wrap long vendor names at narrow widths.
+Use compact body spacing. The Budget rail places dates, a prominent amount
+input with its available maximum, and GP
 Actuals reference on the left; the compact budget receipt on the right. Stack
 the rail beneath inputs on narrow screens. Emphasize the remaining balance in
 green when nonnegative and red when overspent. Keep Back, a quiet Refresh
