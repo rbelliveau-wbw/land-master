@@ -1,4 +1,4 @@
-# Pro Forma multirow save repair — 1.80.87 candidate
+# Pro Forma multirow save repair — 1.80.87
 
 ## Failure and correction
 
@@ -71,6 +71,6 @@ both checkbox states, numeric/boolean response representations, missing and
 wrong flags, retained draft and recovery without write replay. Required checks:
 `npm run validate` and `npm run build:pages` both passed.
 
-Production remains on 1.80.86 until explicitly authorized. Widget rollback:
+Production promotion to 1.80.87 is authorized. Widget rollback:
 promote 1.80.86 through `deploy/environments.json`; persisted recovered records
 need no rollback or migration.

@@ -1,4 +1,4 @@
-## Multirow duplicate save (1.80.87 candidate)
+## Multirow duplicate save (1.80.87)
 
 Captured lot-pricing rows use distinct workflow-scoped create intents so the
 duplicate-operation guard permits multiple intended rows in the same form while
