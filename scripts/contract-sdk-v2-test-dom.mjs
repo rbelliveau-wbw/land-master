@@ -22,7 +22,7 @@ export function createContractTestDOM(source){
  function disconnect(el){el.isConnected=false;el.children.forEach(disconnect);if(el.id&&nodes.get(el.id)===el)nodes.delete(el.id);}
  function create(tag='div',id=''){
   const classes=new Set(),handlers=new Map();let markup='',text='',value='',nid='',checked=false;
-  const el={tagName:tag.toUpperCase(),style:{},dataset:{},attrs:{},children:[],disabled:false,hidden:false,inert:false,isConnected:true,parentNode:null,htmlWrites:0,offsetHeight:160,
+  const el={tagName:tag.toUpperCase(),style:{setProperty(name,value){this[name]=String(value);}},dataset:{},attrs:{},children:[],disabled:false,hidden:false,inert:false,isConnected:true,parentNode:null,htmlWrites:0,offsetHeight:160,
    classList:{add(...s){s.forEach(v=>classes.add(v));},remove(...s){s.forEach(v=>classes.delete(v));},contains:v=>classes.has(v),toggle(v,on){if(on===undefined)on=!classes.has(v);on?classes.add(v):classes.delete(v);return on;}},
    getAttribute:key=>el.attrs[key]||'',hasAttribute:key=>Object.hasOwn(el.attrs,key),setAttribute(key,next){el.attrs[key]=String(next);if(key==='id')el.id=next;if(key==='class')el.className=next;if(key==='value')el.value=decode(next);if(key==='checked')el.checked=true;if(key==='selected')el.selected=true;if(key==='disabled')el.disabled=true;if(key.startsWith('data-'))el.dataset[key.slice(5).replace(/-([a-z])/g,(_,v)=>v.toUpperCase())]=decode(next);},removeAttribute(key){delete el.attrs[key];},
    appendChild(child){child.parentNode=el;child.isConnected=true;el.children.push(child);return child;},insertBefore(child,before){child.parentNode=el;child.isConnected=true;const index=el.children.indexOf(before);index<0?el.children.push(child):el.children.splice(index,0,child);return child;},removeChild(child){el.children.splice(el.children.indexOf(child),1);disconnect(child);},remove(){if(el.parentNode)el.parentNode.removeChild(el);},insertAdjacentHTML(position,html){parse(String(html),el);},
@@ -57,4 +57,3 @@ export function createContractTestDOM(source){
  const node=(id,tag='div')=>nodes.get(id)||create(tag,id);
  return {document,nodes,node,selectors,listeners,dispatch};
 }
-

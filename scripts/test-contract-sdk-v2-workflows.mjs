@@ -11,7 +11,7 @@ function draft(h){
  const result=await h.c.ncSubmit([{title:'First actual setup action',sort:1},{title:'Second setup action',sort:2}],[{email:'fixture@example.test',seq:1,type:'Legal',days:7}]);
  assert.equal(result.error,null);assert.equal(result.rows.filter(row=>row.state==='verified').length,5);
  assert.equal(writes(h).filter(row=>row.method==='add'&&row.config.form_name==='Contract').length,1);
- const parent=h.reports.All_Contracts1.find(row=>row.ID===NEW);assert.equal(parent.Status,'Proposed');assert.equal(parent.Current_Action,'First actual setup action');
+ const parent=h.reports.All_Contracts1.find(row=>row.ID===NEW);assert.equal(parent.Status,'Proposed');assert.equal(parent.Current_Action,undefined,'creation leaves the native workflow-derived summary to Creator');assert.equal(h.c.currentActionText(NEW),'First actual setup action','verified children provide the displayed current action');
  const actions=h.reports.All_Contract_Actions.filter(row=>row.Contract1===NEW);assert.deepEqual(actions.map(row=>row.Contract_Action),['First actual setup action','Second setup action']);assert.deepEqual(actions.map(row=>row.Current_Action),[true,false]);
  const approvals=h.reports.All_Contract_Approvals.filter(row=>row.Contract1===NEW);assert.equal(approvals[0].Status,'Not Sent');assert.equal(approvals[0].Reminder_Interval_Days,7);assert.equal(approvals[0].Approval_Email,false);
  assert.equal(h.c.document.getElementById('contractSaveOverlay'),null);assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.S.contractWorkflowHistory[0].entries.filter(row=>row.state==='verified').length,5);assert.equal(await h.c.ncSubmit([],[]),false);

@@ -60,6 +60,10 @@ requests and actual Creator budget/throttle waits without making extra requests.
 Copy log retains the last three runs' timings and destination states; omit
 business payloads and approval recipients/tokens. Stop sampling at settlement.
 Wrap the save footer on narrow screens so the log and save controls remain visible.
+When a confirmation replaces the editor, remount the captured draft before
+starting the workflow so its Saving, live audit and Check status controls stay
+connected. Verify writable fields and the authoritative child records; do not
+write a parent summary which a native on-success workflow derives differently.
 Creation finishes from its exact verified destination ledger and merged rows;
 an unrelated full-report reload must not delay its success confirmation.
 Bound additional setup reads to 30 seconds of active/unexplained waiting,

@@ -3,11 +3,14 @@
 
 Contract management and token-based LOI legal review.
 
-Release `1.61.10` finishes creation from the exact verified setup ledger, removes
+Release `1.61.11` fixes the native creation failure caused by verifying a parent
+Current Action value that Creator's on-success workflow clears. Creation keeps
+the captured editor and live audit visible after confirmation. It also finishes
+creation from the exact verified setup ledger, removes
 the unbounded whole-report refresh, bounds extra setup reads, and adds an
 accessible live audit with elapsed time, verified counts and Creator queue waits.
-The save footer wraps on narrow screens. See [diagnosis, regression and rollback](../../knowledge/modules/contracts.md#creation-settlement-and-live-audit-16110).
-Rollback Production to `1.61.8`. Native incident reproduction remains pending.
+The save footer wraps on narrow screens. See [diagnosis, regression and rollback](../../knowledge/modules/contracts.md#creation-settlement-and-live-audit-16111).
+Rollback Production to `1.61.8`.
 
 Release `1.61.8` uses stacked Initial / Second / Cont'd closing summaries, matches
 subdivision preview fonts, confirms verified creation with a prominent five-second

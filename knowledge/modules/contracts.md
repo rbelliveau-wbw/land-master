@@ -1,7 +1,27 @@
 
 # Contracts Module
 
-## Creation settlement and live audit (1.61.10)
+## Creation settlement and live audit (1.61.11)
+
+Native Production reproduction found the specific failure: the final setup
+update wrote the first action title into the parent `Contract.Current_Action`,
+but Creator returned that summary blank. The exported
+`Write_Latest_Action_Appro` on-success workflow derives it from started or
+completed children; new undated, incomplete actions therefore clear it. Exact
+verification reported `different Current_Action` despite all seven action
+rows and both approval rows saving. The retained unknown mutation then blocked
+the UI and correctly withheld the green success banner.
+
+Creation now verifies final `Contract.Status` routing without writing the
+workflow-derived summary. Each child's title, sort, status, complete flag and
+current flag still require exact verification; the widget already displays
+the current child's title. The real confirmation path remounts the captured
+creation editor before submitting, so Saving, Live audit log and read-only
+Check status remain visible rather than referring to a detached button.
+Native reproduction also recorded 21s and 32s request-budget queue waits;
+these waits remain paced and are now visible, not mistaken for failed writes.
+The matching replacement/acceptance verification is being completed after
+publishing this release.
 
 Creation no longer reloads four whole-app reports after all intended writes have
 already passed exact fresh persisted verification. Each verified row is merged
@@ -9,8 +29,8 @@ into the model by `contractWorkflowStep`; the captured ledger must be completely
 verified before the five-second green Legal confirmation and normal UI return.
 The prior extra reload had no deadline and could hold Saving and the global
 interaction lock indefinitely after the parent appeared in Review on refresh.
-This lock path is reproduced in a local SDK fixture. The user's native incident
-has not yet been inspected; the fixture does not prove that incident's cause.
+This additional lock path is reproduced in a local SDK fixture; the native
+failure above was observed before that unrelated full-report reload.
 
 Creation's extra subdivision and parent/lot preflight reads now use the existing
 30-second verification deadline, respecting the shared 40-per-61s request budget.
@@ -24,15 +44,18 @@ are locked. The live JSON diagnostic and Copy log retain three runs without raw
 business values, recipients or approval tokens. Sampling adds no SDK requests.
 
 Changed files: widget HTML/config, widget manifest, production mapping, immutable
-releases `1.61.9` and `1.61.10`, create-progress regression, transfer-progress guide and README.
+releases `1.61.9` through `1.61.11`, create-progress regression and DOM fixture,
+transfer-progress guide and README.
 The final release wraps the save footer on narrow screens.
 Affected frontend functions: `ncSubmit`, `ncFixSubdivision`,
 `lotRefreshMasterMatch`, `contractWorkflowStep`, `contractWorkflowRead`,
 `contractWorkflowBegin/Finish/Paint/RoutineRecheck`, `contractControls`,
 `renderAudit`, `auditToText`, and the `contractWorkflowAudit*` helpers.
-Existing forms/fields and native create/update/readback payloads are unchanged;
+Existing forms/fields are unchanged. The final parent update omits the
+workflow-derived `Current_Action`; child payloads and exact comparisons remain.
 no backend function, Custom API or Creator deployment changes.
 Regression covers seven actions/two approvals under the real request budget,
+the actual confirmation-to-submit path and the derived parent-summary reset,
 visible/accessible queue diagnostics, one-send guards, no whole-report refresh,
 five-second confirmation, hung subdivision read and no writes after late
 settlement, plus existing unknown/partial reconciliation and approval/LOI flows.

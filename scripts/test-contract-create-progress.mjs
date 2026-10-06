@@ -9,6 +9,30 @@ const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.met
 const noPopup=h=>{assert.equal(h.c.document.getElementById('contractSaveOverlay'),null,'routine saves never mount a progress or result overlay');assert.ok(h.c.document.body.children.every(node=>!node.inert),'routine saves do not make the background inert');};
 
 {
+ const h=await ready({realDOM:true}),send=deferred(),nativeAdd=h.api.addRecords,nativeUpdate=h.api.updateRecordById;draft(h);
+ Object.assign(h.c.S.actions[0],{Contract_Template:'Builder'});
+ h.c.S.nc.acts=[{title:'First captured action',sort:1},{title:'Second captured action',sort:2}];
+ h.api.addRecords=config=>send.promise.then(()=>nativeAdd(config));
+ // Reproduce Creator's Contract on-success workflow: undated/incomplete actions
+ // leave the derived parent summary blank, even if an update tries to set it.
+ h.api.updateRecordById=async config=>{const out=await nativeUpdate(config);if(config.report_name==='All_Contracts1')h.reports.All_Contracts1.find(row=>row.ID===config.id).Current_Action='';return out;};
+ let pending,submissions=0;const submit=h.c.ncSubmit;
+ h.c.ncSubmit=(...args)=>{submissions++;return pending=submit(...args);};
+ h.c.ncOpen();h.c.ncConfirm();assert.ok(h.c.document.getElementById('cfOk'),'real confirmation replaced the editor');
+ h.c.confirmProceed();await drain();
+ const button=h.c.document.getElementById('nc_submit');assert.ok(button?.isConnected,'confirming recreates the editor before starting the write');
+ assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true);
+ assert.ok(h.c.document.getElementById('contractWorkflowLive')?.isConnected,'live progress and audit survive the confirmation path');
+ h.c.toggleAudit();assert.equal(h.node('auditToggle').disabled,false);assert.equal(h.c.closeOverlays(),false);
+ send.resolve();const result=await pending;
+ assert.equal(submissions,1);assert.equal(result.error,null,'the workflow-derived blank summary is not a failed creation');
+ assert.ok(writes(h).filter(call=>call.method==='update').every(call=>!Object.hasOwn(call.config.payload.data,'Current_Action')),'routing never writes the backend-derived summary');
+ assert.equal(h.c.currentActionText(NEW),'First captured action','the verified current child drives the displayed action');
+ assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.S.nc,null);
+ assert.match(h.node('banners').innerHTML,/contract-created-banner.*sent to Legal for review/);noPopup(h);
+}
+
+{
  const h=await ready({realDOM:true,ratePacing:true,fakeTime:true});
  while(h.c.LMPerf.snapshot().rate.dispatched<39)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
  const button=draft(h),pending=h.c.ncSubmit(Array.from({length:7},(_,i)=>({title:'Private business title '+i,sort:i+1})),[{email:'private-approver@example.test',seq:1},{email:'second-private@example.test',seq:2}]);
