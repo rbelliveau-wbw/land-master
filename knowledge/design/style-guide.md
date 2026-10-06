@@ -44,6 +44,12 @@ Lot contract reports use compact branch rows: pale blue on a Master with visible
 
 ## Record dropdowns
 
+Pro Forma budget-transfer menus float over the modal content without changing
+the source/destination card height. Keep them aligned with their picker during
+scroll and resize, fit the result scroller inside the viewport, and open above
+the picker when the space below is limited.
+
+
 Alphabetize record picker options by display name. Keep a visible gap between the search field and results, allowing room for focus outlines so adjacent controls never overlap.
 
 Use the same custom searchable picker for widget record dropdowns as for filters. Single-value fields stay single-select; collections such as Project Properties use multi-select with a selection count, Clear, Select visible, and Done. Keep the selection staged until the record Save action. Put Territory on the Project widget editor and inherit it into new phases; omit the separate phase Territory input. Avoid redundant `Record fields` headings above editor labels. These preferences apply to the widgets, not native Creator form workflows.

@@ -1,3 +1,7 @@
+## Budget transfer dropdown overlay (1.80.85)
+
+Project and Subdivision choice panels use fixed overlays, preserving the source/destination section height when opened. Placement follows modal scrolling and viewport resizing, flips upward near the viewport bottom, and bounds the internally scrolling result list. Search, alphabetical order, selection, Escape and transfer behavior remain unchanged. UI only: no forms, fields, functions or Custom APIs changed; no Creator deployment required. Regression: open/close Project and Subdivision, filter/select choices, scroll/resize, and transfer preview. Production rollback: 1.80.84 via deploy/environments.json.
+
 ## Excel export keeps the report mounted 1.80.84
 
 Excel loads deferred record options inside the export dialog. It leaves the list,
