@@ -3,6 +3,11 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.17` reduces the black pricing-save confirmation by 30% after user
+review. Scope, colors, behavior and dismissal remain unchanged. Frontend only;
+no Creator deployment. [Changes and rollback](../../knowledge/modules/contracts.md#pricing-success-banner-reduced-by-30-16117).
+Rollback Production to `1.61.16`.
+
 Release `1.61.16` removes the initial yellow pricing flash while selected Lot
 sizes load, preserves the originating screen after pricing saves and uses a
 larger black success banner for that pricing-save confirmation only. Other

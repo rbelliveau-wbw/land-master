@@ -55,9 +55,10 @@ Cancel the previous banner's dismissal timer when replacing it, so an older
 success cannot prematurely clear a new confirmation or error.
 
 The October 6, 2026 pricing-save trial uses a black top-center success banner
-with white 22px text, a centered 32px mint SVG check, 16px vertical/26px horizontal
-padding and a strong shadow: approximately twice the ordinary banner's width
-and height. Keep its existing nonblocking status announcement and 3.5-second
+with white text and a centered mint SVG check. After user review, reduce the
+trial by 30% (release 1.61.17): 15.4px text, 22.4px icon, 11.2px vertical/18.2px
+horizontal padding, 9.8px gap and proportionately smaller radius/shadow. Keep
+its existing nonblocking status announcement and 3.5-second
 auto-dismiss. Apply this treatment only to verified Lots & Pricing save and
 read-only recovery success pending the user's verification; other success and
 error implementations retain their existing presentation and duration.

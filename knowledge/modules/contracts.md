@@ -1,6 +1,21 @@
 
 # Contracts Module
 
+## Pricing success banner reduced by 30% (1.61.17)
+
+The user reviewed the black pricing-save confirmation and requested it 30%
+smaller. Scale its text, icon, padding, gap, radius and shadow to 70% of the
+1.61.16 sizes. Black/white styling, position, 3.5-second dismissal and scope
+remain unchanged. Other success banners await approval before wider adoption.
+
+Changed files: widget HTML/config, manifest, immutable release 1.61.17,
+Production mapping, transfer-progress guide, module notes and widget README.
+CSS only: no frontend function, Creator form/field, backend function, Custom
+API or payload changes; no Creator deployment required. Verify rendered width
+and height are about 70% of 1.61.16 at desktop/320px, plus the existing pricing
+save/recovery and loading tests. Required repository validation and Pages build
+pass before promotion. Rollback Production to Contract Management 1.61.16.
+
 ## Pricing loading, retained screen and scoped success banner (1.61.16)
 
 Change Lots & Pricing paints unresolved selected Lot metadata as a neutral
