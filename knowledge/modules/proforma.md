@@ -1,3 +1,11 @@
+## Excel export keeps the report mounted 1.80.84
+
+Excel loads deferred record options inside the export dialog. It leaves the list,
+dashboard or editor mounted and performs no main-report refresh or re-render.
+Search, scroll, status and unsaved editor drafts remain intact. Failed exports
+retain the dialog with retry enabled. No Creator deployment is required.
+See [verification, scope and rollback](../../docs/proforma-export-loading-1.80.84.md).
+
 ## Empty conversations and shared live logs 1.80.82
 
 Creator no-records envelopes now yield verified empty conversations. Failed

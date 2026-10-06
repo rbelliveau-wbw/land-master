@@ -166,3 +166,8 @@ Numeric Pro Forma inputs show thousands separators when focus leaves the field a
 ## Persistent Edit action and active approval notes (1.80.1)
 
 Every Pro Forma row now shows Edit. Records the viewer can edit retain the blue action; records outside an owned-only user's scope show a gray disabled action with an ownership-specific reason. Closed records and completed approval flows also show the disabled action with the applicable explanation. An assigned approval owner can now type and save the active approval note even when the surrounding Pro Forma is read-only because they do not own it. Existing `canEditPf`, approval ownership, and direct-route guards remain authoritative. No forms, fields, functions, Custom APIs, or Creator deployment change. Regression: all-access, owned-only owned/unowned, no-edit-access, closed and completed-approval rows, and an active approver on an unowned Pro Forma. Rollback: restore the production mapping to `1.80.0`.
+## Excel export keeps the report mounted 1.80.84
+
+Loading stays in the export dialog. Excel export never hides, refreshes or
+re-renders the main report, and retains search, scroll and drafts. No Creator changes.
+[Verification and rollback](../../docs/proforma-export-loading-1.80.84.md).
