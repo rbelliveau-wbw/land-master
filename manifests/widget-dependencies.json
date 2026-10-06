@@ -254,14 +254,15 @@
         "Budget_Item",
         "Budget_Modification",
         "Budget_Months",
-        "Check_Wire_Request",
         "Comment_Log",
         "Contract_Version",
         "Lots",
+        "Payment_Request",
         "Proforma_Item",
         "Project",
         "Subdivision",
-        "User_Access"
+        "User_Access",
+        "Vendors"
       ],
       "reports_referenced": [
         "All_Budget_Approvals",
@@ -269,7 +270,6 @@
         "All_Budget_Item_Imports",
         "All_Budget_Items",
         "All_Budget_Modifications",
-        "All_Wire_Requests",
         "All_Budgets",
         "All_Contract_Versions",
         "All_Pro_Formas",
@@ -277,6 +277,8 @@
         "All_Proforma_Phases",
         "All_Projects",
         "All_Subdivisions",
+        "All_Vendors",
+        "All_Wire_Requests",
         "Proforma_Item_Report",
         "User_Access_Report"
       ],
@@ -303,7 +305,8 @@
         "creatorexport.zoho.com",
         "static.zohocdn.com",
         "www.w3.org"
-      ]
+      ],
+      "live_payment_request_metadata": "creator/workflows/PAYMENT_REQUEST_LIVE_SCHEMA.md"
     },
     "land-master": {
       "custom_apis": [

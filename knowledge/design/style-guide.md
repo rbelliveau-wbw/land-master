@@ -130,6 +130,17 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 ## Filter and month pickers
 
+Check, Wire and Purchase Order creation uses Budget → finalized line item →
+searchable Vendor → request details. Global entry chooses Budget first; phase
+entry starts at line item. Keep Add Vendor beside the Vendor heading and retain
+the draft through native form entry and list refresh. Receipt rows align labels
+left and amounts right: Final Budget, Bud Mods, Revised Final, subtract same-item
+POs Issued, Available Budget, subtract this request, then remaining balance.
+Keep GP Actuals below the receipt as reference only; paid status does not release
+the issued-PO commitment. Show negative
+remaining in red and block continuation. Loading/unavailable balances stay
+explicit and never show a fabricated zero.
+
 Budget Manager's main-list Add menu sits at the far right of the filter row. Put Budget first, then a horizontal separator before Bud Mod, Check Request, Wire Request and Purchase Order. Global requests select a budget before opening the same phase request composer; Budget uses a searchable subdivision chooser that excludes subdivisions with an existing budget, including archived budgets. Keep parent selection compact, keyboard accessible, and independent of landing filters. Multi-record budget creation follows [transfer progress](transfer-progress.md), with a persistent verified result and read-only recheck after an unknown response.
 
 - Dropdown filters that allow multiple values use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that require one value use custom single-select popovers without checkboxes, search, selection counts, or Done. In Insights this includes Date Basis, Period, Measure, Group By, and Sort; selecting an option applies it and closes the menu.

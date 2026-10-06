@@ -32,7 +32,7 @@ const context=vm.createContext({S,Intl,Number,Date,Promise,
   budgetPerUnitEnabled:()=>false,budgetPerUnitStatus:()=>({}),budgetUnitRate:()=>0,
   canEditBudget:()=>true,canSubmitMod:()=>false,NOTE_PENCIL_SVG:'',esc:value=>String(value),modCellHtml:()=>''
 });
-const names=['fmt','fmtK','parseMoney','v','numFromPaths','budgetLots','budgetUnitNumber','metricRaw','metricDisp','renderBudgetMetrics','reimbursementMoneyField','normalizeReimbursementValue','catTotal','computeDeptTotals','compareNormalizeDetailAmount','compareAddDetailValue','comparePhaseDetailValue','fmtRequestMoney','fmtRequestMod','renderRequestBalance','phaseItemRow'];
+const names=['fmt','fmtK','parseMoney','v','numFromPaths','budgetLots','budgetUnitNumber','metricRaw','metricDisp','renderBudgetMetrics','reimbursementMoneyField','normalizeReimbursementValue','catTotal','computeDeptTotals','compareNormalizeDetailAmount','compareAddDetailValue','comparePhaseDetailValue','requestFinancialValue','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance','phaseItemRow'];
 vm.runInContext(names.map(name=>extract(budget,name)).join('\n'),context);
 const metrics=budget.slice(budget.indexOf('var BUDGET_METRICS ='),budget.indexOf('function budgetMetricEditable('));
 vm.runInContext(metrics,context);
@@ -75,7 +75,7 @@ const totals=context.computeDeptTotals(S.edBudget);assert.equal(totals.dev.final
 assert.equal(context.compareNormalizeDetailAmount('reimbursements','12.25'),-12.25);
 const projection={values:{}};context.compareAddDetailValue(projection,'phase','10.25');context.compareAddDetailValue(projection,'phase','20.50');assert.equal(projection.values.phase,30.75);
 assert.equal(context.comparePhaseDetailValue({selected:'auto'},{Budget_Ttl:'10.25',Prelim_Budget_Ttl:'20.50'}),10.25);
-S.modModal={requestFlow:true,requestAmount:100.26};context.renderRequestBalance({ID:ITEM,Budget_Ttl:'200.25',PROJ_Actual:'100.25'});
+S.modModal={requestFlow:true,requestType:'Purchase Order',requestAmount:200.51,poState:'loaded',poItemId:ITEM,poIssued:0};context.renderRequestBalance({ID:ITEM,Budget_Ttl:'200.25',PROJ_Actual:'100.25'});
 assert.match(nodes.requestBalance.innerHTML,/Remaining After Current Request[\s\S]*-\$0\.01/,'request overage retains the one-cent difference');
 
 const taxWrites=[],taxRow={id:ID},taxContext=vm.createContext({Intl,Number,Date,Promise,

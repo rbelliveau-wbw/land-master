@@ -1,6 +1,55 @@
 
 # Budget Module
 
+## Payment request vendor and issued-PO receipt (122.28.25)
+
+Global and phase Check/Wire/Purchase Order composers now select a finalized
+budget item, then a searchable Vendor, then dates/amount and a live receipt.
+Global entry first selects the Budget. Add Vendor opens the existing native
+Vendors form in the authenticated environment; Refresh Vendors retains the
+draft and reloads the fresh full counted `All_Vendors` projection `ID,Vendor_Name`.
+The composers remain preview-only: no Payment Request writes or approval sends
+were added, and the live Payment Request form has no Vendor field.
+
+Receipt: Final Budget plus approved signed Bud Mods equals Revised Final.
+Available Budget is Revised Final minus every issued Purchase Order on the same
+exact Budget and Budget Item, regardless of paid status. The new request is
+then deducted from Available Budget. GP Actuals remain reference-only and are
+not deducted again from the full issued-PO commitment. No inferred unpaid
+balance or invoice linkage is introduced. A negative result, including a
+one-cent excess, blocks Preview Draft. Preview refreshes the PO read first.
+Unknown amounts, denied/incomplete reads and stale scopes cannot become zero.
+Modal identity, budget/item, navigation, authenticated actor/app/environment and
+startup readiness guard late replies. Exact Creator IDs remain strings.
+
+The live `All_Wire_Requests` report is available in Production, so its former
+Development-only UI restriction was removed. The source is `Payment_Request`
+with `Request_Type` exactly `Purchase Order`. [Live metadata](../../creator/workflows/PAYMENT_REQUEST_LIVE_SCHEMA.md)
+records the verified field names. The owner approved the full issued-PO rule
+and publication to main/Production on 2026-10-06. Each fresh counted read filters
+`Budget`, `Budget_Item`, `Request_Type == "Purchase Order"`, validates every
+string ID/parent/type/amount and sums `Request_Amount`. Empty verified results
+are zero; failed or incomplete reads remain unavailable. No Creator
+schema/function/API deployment is required for this preview functionality.
+
+Changed files: Budget source/CSS/config/dependencies, widget/dependency
+manifests, package validation, payment-request/currency/deferred-read tests and
+this metadata/design documentation. Regression covers scoped fresh Vendor/PO
+reads, exact IDs, stale/dismissed replies, malformed/foreign/duplicate records,
+approved modification math, unknown values, exact balance and one-cent overage.
+The editable sample mock shows the full flow and overage blocking. No saved
+financial request or vendor test record was created. Rollback: 122.28.24.
+
+Verification: full `npm run validate` and `npm run build:pages` passed. An offline
+copy of the actual composer verified global Budget selection, finalized item,
+Vendor selection, approved modification math, a one-cent overage with disabled
+Preview, and a valid refreshed Draft Preview. The copy omits the SDK script for
+sample data. All issued PO fixtures now load successfully; the owner example
+100 + 5 - 75 = 30 passes, and changing GP invoiced amounts does not change that
+availability. Full validation and the Pages build passed after integration with
+current main and immutable 122.28.25 creation. Production mapping is 122.28.25;
+Development/Stage mappings are preserved. [Receipt overage proof](../../creator/workflows/payment-request-candidate-overage.png).
+
 ## Global Add menu (122.28.23)
 
 The main budget list has an Add menu at the right of the filter toolbar: Budget, a separator, Bud Mod, Check Request, Wire Request and Purchase Order. Budget opens a searchable subdivision picker using fresh full subdivision and budget reads. Subdivisions with an existing parent or matching subdivision code are excluded, including archived budgets. Either Edit All Budgets or Edit Owned Budgets permits creation; the creator is added to `Add_Budget.Budget_Owner`. Both existing permission field descriptions now state this behavior in Creator Development, Stage and Production.
