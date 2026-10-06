@@ -1,6 +1,21 @@
 
 # Contracts Module
 
+## Pricing confirmation reduced another 10% (1.61.18)
+
+Following user review, scale the pricing-only black success banner to 90% of
+1.61.17: text, checkmark, padding, gap, radius and shadow shrink together.
+Keep the existing colors, top-center position, nonblocking status and 3.5-second
+dismissal. Wider adoption is still a proposal awaiting the user's selection.
+
+Changed files: widget HTML/config, manifest, immutable release 1.61.18,
+Production mapping, transfer-progress guide, module notes and widget README.
+CSS only: no frontend function, Creator form/field, backend function, Custom
+API or payload changes; no Creator deployment required. Verify desktop/320px
+dimensions are about 90% of 1.61.17, plus existing pricing loading/save/recovery
+regressions. Required repository validation and Pages build pass before
+promotion. Rollback Contract Management Production to 1.61.17.
+
 ## Pricing success banner reduced by 30% (1.61.17)
 
 The user reviewed the black pricing-save confirmation and requested it 30%

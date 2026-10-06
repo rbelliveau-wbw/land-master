@@ -3,6 +3,11 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.18` reduces the pricing-only black success confirmation another
+10%. Colors, scope and behavior remain unchanged. No Creator deployment.
+[Changes and rollback](../../knowledge/modules/contracts.md#pricing-confirmation-reduced-another-10-16118).
+Rollback Production to `1.61.17`.
+
 Release `1.61.17` reduces the black pricing-save confirmation by 30% after user
 review. Scope, colors, behavior and dismissal remain unchanged. Frontend only;
 no Creator deployment. [Changes and rollback](../../knowledge/modules/contracts.md#pricing-success-banner-reduced-by-30-16117).

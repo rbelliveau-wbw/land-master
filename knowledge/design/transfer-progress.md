@@ -56,8 +56,9 @@ success cannot prematurely clear a new confirmation or error.
 
 The October 6, 2026 pricing-save trial uses a black top-center success banner
 with white text and a centered mint SVG check. After user review, reduce the
-trial by 30% (release 1.61.17): 15.4px text, 22.4px icon, 11.2px vertical/18.2px
-horizontal padding, 9.8px gap and proportionately smaller radius/shadow. Keep
+trial by 30% (release 1.61.17), then another 10% (release 1.61.18): 13.86px text,
+20.16px icon, 10.08px vertical/16.38px horizontal padding, 8.82px gap and
+proportionately smaller radius/shadow. Keep
 its existing nonblocking status announcement and 3.5-second
 auto-dismiss. Apply this treatment only to verified Lots & Pricing save and
 read-only recovery success pending the user's verification; other success and
