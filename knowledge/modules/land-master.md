@@ -1,6 +1,14 @@
 
 # Land Master Module
 
+## Filter reset and project headers — 8.15.7, October 6, 2026
+
+Reproduced in native Production 8.15.6: after applying a Company filter, Clear showed 0 selected while the filter pill and table stayed filtered; the red X dismissed the draft without resetting the filter. Clear now resets both applied and draft values immediately, updates the pill/table, and returns pagination to page 1. The red X clears and closes the active filter. Apply retains selections hidden by popup search; Escape/outside dismissal preserves applied values. Other filters and the main search remain intact.
+
+Project headers now use a flex wrapper for the caret, name, edit button, territory pill, and subdivision/sold totals. This removes the production three-line stacking while preserving exact project IDs, grouping, expansion, and the separate Project editor action.
+
+Changed files: widget HTML, widget config/manifest, filter regression and validation command, style/module documentation, immutable release 8.15.7, and Production mapping. No Creator forms, fields, functions, Custom APIs, or backend deployment change. Regression: Clear/X with hidden selections, independent filters, paging, Apply/dismissal, group totals, expansion and Project editor. Rollback: Production Land Master 8.15.6.
+
 ## Second Closing editor candidate — October 5, 2026
 
 The Takedown Schedule record editor source adds Second Closing lots/days between

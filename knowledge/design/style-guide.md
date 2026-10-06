@@ -203,6 +203,8 @@ Searchable dropdown placeholders use Search plus the field name in title case, s
 
 Land Master searchable dropdowns in reports, filters, and modals share the report filter palette, compact bold option text, header search, border, shadow, and footer. Their close buttons use a centered SVG X on a pale red surface with a soft red outline. Keep single/multi-selection behavior intact.
 
+Land Master report filters reset their applied values immediately when Clear is clicked; the red X clears that filter and closes the popup. Escape and outside clicks discard staged checkbox changes. Clearing one filter preserves the other filters and the main search. Project group headers align the caret, project name, compact edit button, territory pill, and subdivision/sold totals in one flex row; allow wrapping on narrow screens and keep the edit action independent of group expansion.
+
 Center custom selection and success checkmarks with an explicit SVG, a path bounding box centered in its viewBox, and grid/flex alignment. Avoid font glyphs for checkmarks.
 
 Import Lots Attach and spreadsheet-checking dialogs fit their contents with a compact centered width and automatic height. Keep the lot-review table in its larger workspace. Cap compact dialogs to the viewport and scroll their body when needed.
