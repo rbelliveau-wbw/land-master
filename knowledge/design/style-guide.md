@@ -127,6 +127,14 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 ## Editable input guidance
 
+Lot Pricing rows include an optional **Escalator %** input between Price / ft
+and Base price, in both creation and Change Lots & Pricing. Entering `5` means
+5%, and values may have up to two fractional digits. Keep the percent unit
+visible in the column heading and reject invalid or over-precision input
+without silently rounding.
+Blank remains unset; an explicit zero remains 0%. Preserve the per-size draft
+through picker changes and apply it through the existing guarded pricing save.
+
 Lot contract creation reveals location, Builder, and name in small numbered cards. Start a Master with Type and the required Project; start an Amendment with Type and required Subdivision. Use a pale-yellow surface and amber outline for the next unfinished card and its missing required input, following Tax Parcel Year's active-step treatment. Completed cards lose the highlight. Keep optional subdivision and lot choices behind the contract identity, and pricing behind lot selection. Respect reduced motion and retain a visible keyboard focus ring.
 
 Show the editable Actions panel as soon as a Lot type is selected. Its template checklist stays visible while Project, Subdivision, Builder, and name are incomplete or cleared.

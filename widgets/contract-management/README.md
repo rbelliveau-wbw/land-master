@@ -3,6 +3,13 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.15` adds the optional Escalator % input to creation and Change
+Lots & Pricing rows. Enter `5` for 5%, with up to two decimal places. Existing
+Contract Pricing and null-only Lot propagation are retained; populated Lot
+escalators, including zero, stay unchanged. Frontend only; no Creator deployment.
+See [regression and rollback](../../knowledge/modules/contracts.md#escalator-in-shared-lot-pricing-rows-16115).
+Rollback Production to `1.61.14`.
+
 Release `1.61.14` replaces the lot-completion text list with the Clear summary
 confirmation and removes the sentence below the heading. It separates contract
 pricing, completion outcomes, preserved values and expandable eligibility rules,

@@ -1,6 +1,33 @@
 
 # Contracts Module
 
+## Escalator in shared Lot Pricing rows (1.61.15)
+
+The creation and Change Lots & Pricing tables include **Escalator %** between
+Price / ft and Base price. Enter percent points directly: `5` is 5% and `5.25`
+is 5.25%. The optional per-size value accepts up to two fractional digits,
+retains explicit zero and blank, and rejects invalid values without rounding.
+Existing pricing values load into the draft; the captured creation and pricing
+reconciliation payloads save the existing `Contract_Pricing.Escalator` field.
+Changing only the Escalator still saves the pricing row, and an untouched value
+is preserved. Percent-formatted native readback is verified numerically.
+
+`Complete_Lot_Contract` already copies `Contract_Pricing.Escalator` directly to
+eligible `Lots.Escalator` only when the Lot value is null. Existing zero and
+populated values remain unchanged, together with existing prices and lot size.
+The frontend continues using that guarded transfer and persisted verification;
+no backend function, workflow, form, field or Custom API is added or changed.
+No Creator deployment is required.
+
+Changed files: widget HTML/config, widget manifest, Production mapping,
+immutable release `1.61.15`, focused pricing-escalator regression, validation
+chain, style guide, this module and widget README. Regression covers create
+and existing-contract saves, per-size draft/reopen behavior, Escalator-only
+changes, percent-point and formatted readback, blank/zero preservation,
+two-decimal validation, null-only Lot propagation and narrow table layout.
+Full repository validation and Pages build are required before promotion.
+Rollback: restore Contract Management Production to `1.61.14`.
+
 ## Clear lot-completion confirmation (1.61.14)
 
 Lot completion uses the selected Clear summary design with no explanatory lead
