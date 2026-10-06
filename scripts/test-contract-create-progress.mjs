@@ -9,6 +9,21 @@ const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.met
 const noPopup=h=>{assert.equal(h.c.document.getElementById('contractSaveOverlay'),null,'routine saves never mount a progress or result overlay');assert.ok(h.c.document.body.children.every(node=>!node.inert),'routine saves do not make the background inert');};
 
 {
+ const h=await ready({realDOM:true,fakeTime:true});
+ while(h.c.LMPerf.snapshot().rate.dispatched<39)await h.c.LMData.request('recent-request-fixture',()=>({code:3000}));
+ draft(h);
+ const pending=h.c.ncSubmit(Array.from({length:7},(_,i)=>({title:'Captured action '+i,sort:i+1})),[{email:'first@example.test',seq:1},{email:'second@example.test',seq:2}]);
+ await drain();
+ assert.equal(h.c.S.contractWorkflow,null,'a full create settles without advancing the clock despite more than 40 recent requests');
+ const result=await pending,trace=JSON.parse(h.node('contract-workflow-audit').textContent)[0];
+ assert.equal(result.error,null);assert.equal(trace.status,'verified');assert.equal(trace.verified,11);assert.equal(trace.total,11);
+ assert.equal(trace.latest.rate.limit,0);assert.ok(trace.requests.length>30);assert.ok(trace.requests.every(row=>row.queuedMs===0),'no artificial request-budget waits');
+ assert.equal(writes(h).length,11,'every destination still requires its one captured write and exact read-back');
+ assert.ok(h.maximum()<=3);assert.match(h.node('banners').innerHTML,/sent to Legal for review/);
+ assert.ok([...h.timers.values()].some(timer=>timer.ms===5000),'the visible confirmation still lasts five seconds');
+}
+
+{
  const h=await ready({realDOM:true}),send=deferred(),nativeAdd=h.api.addRecords,nativeUpdate=h.api.updateRecordById;draft(h);
  Object.assign(h.c.S.actions[0],{Contract_Template:'Builder'});
  h.c.S.nc.acts=[{title:'First captured action',sort:1},{title:'Second captured action',sort:2}];

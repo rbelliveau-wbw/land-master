@@ -44,8 +44,8 @@ function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@exa
   for(const file of ['runtime-context.js','creator-data.js','contract-progress.js','pinned-comments.js'])vm.runInContext(fs.readFileSync(file==='pinned-comments.js'?new URL('../releases/proforma-manager/1.79.9/comments.js',import.meta.url):new URL(file,app),'utf8'),ctx,{filename:file});
   if(criticalReporter)vm.runInContext(fs.readFileSync(new URL('critical-error-reporter.js',app),'utf8'),ctx,{filename:'critical-error-reporter.js'});
   vm.runInContext(inline,ctx,{filename:'private-contracts-whole-ui.html'});
-  assert.equal(ctx.LMPerf.snapshot().rate.limit,40,'production Contracts retain the 40-request pacing budget');
-  if(!ratePacing)ctx.LMData.configure({maxRequestsPerMinute:0});
+  assert.equal(ctx.LMPerf.snapshot().rate.limit,0,'production Contracts use normal request timing without an artificial per-minute delay');
+  if(ratePacing)ctx.LMData.configure({maxRequestsPerMinute:40}); // Explicit synthetic budget for wait/recovery regressions only.
   return {c:ctx,reports,flags,api,calls,nodes,node,timers,logs,listeners,handshakes:()=>handshakes,maximum:()=>maximum,tick(ms){const entry=[...timers].find(([,timer])=>timer.ms===ms);assert.ok(entry,'timer '+ms);timers.delete(entry[0]);entry[1].fn();},async advance(ms){assert(fakeTime,'advance requires a fake clock');await drain();const target=testNow+ms;for(let n=0;n<10000;n++){const entry=[...timers].filter(([,timer])=>timer.due<=target).sort((a,b)=>a[1].due-b[1].due)[0];if(!entry){testNow=target;await drain();return;}testNow=entry[1].due;timers.delete(entry[0]);entry[1].fn();await drain();}throw Error('Fake clock did not settle');}};
 }
 async function ready(options){const h=harness(options);await drain();assert.equal(h.c.S.coreReady,true);return h;}

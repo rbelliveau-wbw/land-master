@@ -1,6 +1,31 @@
 
 # Contracts Module
 
+## Normal request timing (1.61.12)
+
+At the user's request, Contracts removes its artificial 40-request-per-61s
+budget. The live 1.61.11 audit measured 61.286s total, including about 55s of
+budget waiting and about 6s of native work. Contracts now explicitly selects
+the shared scheduler's normal timing (`maxRequestsPerMinute: 0`). Max-three
+concurrency and recovery from actual Creator throttle responses remain; writes
+are never automatically retried. Exact persisted verification, the creation
+fixes, live audit and five-second green confirmation remain unchanged.
+
+Changed files: widget HTML/config, widget manifest, Production mapping,
+immutable release `1.61.12`, SDK fixture/create regression, this guide and
+widget README. No forms, fields, native CRUD methods, backend functions or
+Custom APIs change; no Creator deployment is required. Only the widget's
+`LMData.configure` request-budget setting changes.
+Regression runs a complete seven-action/two-approval creation with 39 recent
+requests and confirms zero artificial waits, all 11 destinations verified,
+one write each, max-three concurrency and the five-second banner. Existing
+synthetic-budget tests still cover truthful queue timing and recovery.
+Full `npm run validate`, `npm run build:pages`, focused creation regression,
+design-doc discovery and exact source/release byte checks passed.
+The accepted live test contract is retained for the user to test; no further
+contract creation/deletion/acceptance is performed for this timing-only release.
+Rollback: restore Contract Management Production to `1.61.11`.
+
 ## Creation settlement and live audit (1.61.11)
 
 Native Production reproduction found the specific failure: the final setup

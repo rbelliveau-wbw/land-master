@@ -59,6 +59,9 @@ The audit panel samples existing request timings every 500ms, showing active
 requests and actual Creator budget/throttle waits without making extra requests.
 Copy log retains the last three runs' timings and destination states; omit
 business payloads and approval recipients/tokens. Stop sampling at settlement.
+Contracts uses normal request timing with no artificial per-minute budget
+(requested October 5, 2026). Keep the shared max-three concurrency and respect
+actual Creator throttle responses; do not add fixed delays to ordinary saves.
 Wrap the save footer on narrow screens so the log and save controls remain visible.
 When a confirmation replaces the editor, remount the captured draft before
 starting the workflow so its Saving, live audit and Check status controls stay

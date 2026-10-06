@@ -3,6 +3,13 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.12` restores normal request timing by removing the artificial
+per-minute budget. Exact saved-data checks, max-three concurrency, actual
+Creator throttle handling, live audit and five-second confirmation remain.
+The accepted test contract is left for the user to test. See
+[regression and rollback](../../knowledge/modules/contracts.md#normal-request-timing-16112).
+Rollback Production to `1.61.11`.
+
 Release `1.61.11` fixes the native creation failure caused by verifying a parent
 Current Action value that Creator's on-success workflow clears. Creation keeps
 the captured editor and live audit visible after confirmation. It also finishes
