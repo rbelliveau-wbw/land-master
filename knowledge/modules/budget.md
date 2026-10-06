@@ -1,7 +1,7 @@
 
 # Budget Module
 
-## Eligible items and compact request header (122.28.27)
+## Eligible items and compact request header (122.28.28)
 
 The shared line-item picker for Bud Mod, Check Request, Wire Request and
 Purchase Order omits items that fail its existing category/finalization rule.
@@ -16,9 +16,11 @@ rail/footer spacing removes the separate vendor row. Long names wrap, and
 the header vendor occupies a second row below 460px. Change returns to vendor
 selection without losing draft fields; earlier steps and Bud Mod hide this
 header context.
+Release 122.28.27 introduced this change; 122.28.28 keeps the Vendor label
+on one line at narrow widths while the vendor name wraps.
 
 Changed files: Budget Manager `src/app/widget.html` and `budget-layout.css`, version/hash manifests,
-immutable release 122.28.27, production mapping and style/module documentation.
+immutable releases 122.28.27–122.28.28, production mapping and style/module documentation.
 No Creator forms, fields, functions or Custom APIs change; this frontend release
 does not require Creator backend publication. Financial math and request/vendor
 behavior are unchanged. The proposed vendor-picker designs remain mockups.
@@ -29,7 +31,10 @@ Also check header vendor, Change/back draft retention, preview, and narrow fit.
 Verification completed: full validation and Pages build passed. An actual-source
 fixture verified category exclusions, missing categories, finalized zero values,
 string IDs, sorting and search for all four types. The offline request UI verified
-header vendor, Change preserving dates/amount, and draft preview. No native
+header vendor, Change preserving dates/amount, and draft preview. Check and
+Wire also use the header; the corrected label and wrapped name fit a 320px
+viewport without horizontal clipping. Production's live picker confirmed no
+disabled/unfinalized rows and retained eligible zero-value items. No native
 financial request or vendor record was created during verification.
 Rollback: restore production budget-manager mapping to 122.28.26 and rebuild
 Pages. Development and Stage mappings remain as configured.
