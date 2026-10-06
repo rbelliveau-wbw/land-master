@@ -9,11 +9,40 @@ const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.met
 const noPopup=h=>{assert.equal(h.c.document.getElementById('contractSaveOverlay'),null,'routine saves never mount a progress or result overlay');assert.ok(h.c.document.body.children.every(node=>!node.inert),'routine saves do not make the background inert');};
 
 {
- const h=await ready({realDOM:true}),send=deferred(),refresh=deferred(),nativeAdd=h.api.addRecords,nativeRefresh=h.c.ncRefresh,button=draft(h);
- h.api.addRecords=config=>send.promise.then(()=>nativeAdd(config));h.c.ncRefresh=run=>refresh.promise.then(()=>nativeRefresh(run));
+ const h=await ready({realDOM:true,ratePacing:true,fakeTime:true});
+ while(h.c.LMPerf.snapshot().rate.dispatched<39)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
+ const button=draft(h),pending=h.c.ncSubmit(Array.from({length:7},(_,i)=>({title:'Private business title '+i,sort:i+1})),[{email:'private-approver@example.test',seq:1},{email:'second-private@example.test',seq:2}]);
+ await drain();h.c.toggleAudit();await h.advance(500);
+ assert.equal(h.node('auditToggle').disabled,false,'audit remains accessible during the write lock');
+ for(const node of h.node('auditdock').querySelectorAll('button'))assert.equal(node.disabled,false,'copy and close remain usable');
+ assert.match(h.node('contractWorkflowLiveText').textContent,/Waiting for Creator/);
+ assert.match(h.node('contractAuditLive').textContent,/Waiting for Creator/);
+ assert.ok(h.c.S.audit.some(entry=>entry.message==='Creator request queue waiting'));
+ assert.equal(button.disabled,true);assert.equal(await h.c.ncSubmit([],[]),false,'diagnostics never unlock a second creation');
+ await h.advance(60500);await pending;
+ const trace=JSON.parse(h.node('contract-workflow-audit').textContent)[0];
+ assert.equal(trace.status,'verified');assert.equal(trace.verified,11);assert.equal(trace.total,11);assert.ok(trace.requests.some(row=>row.queuedMs>=61000));
+ assert.equal(writes(h).length,11);assert.equal(h.c.S.contractWorkflow,null);assert.match(h.node('banners').innerHTML,/sent to Legal for review/);
+ assert.doesNotMatch(h.c.auditToText(),/Private business title|private-approver|second-private/,'live diagnostics omit captured business values');
+ assert.ok(![...h.timers.values()].some(timer=>timer.ms===500),'audit sampling stops after verification');
+}
+
+{
+ const h=await ready({realDOM:true,fakeTime:true}),held=deferred(),native=h.api.getRecords;draft(h);let reads=0;
+ h.api.getRecords=config=>config.report_name==='All_Contracts1'&&config.criteria==='(ID == '+NEW+')'&&++reads===2?held.promise.then(()=>native(config)):native(config);
+ const pending=h.c.ncSubmit([{title:'Must remain unsent',sort:1}],[]);await drain();await h.advance(30000);const result=await pending;
+ assert.ok(result.error);assert.equal(writes(h).length,1);assert.equal(h.c.S.contractWorkflow,null,'a hung extra subdivision check reaches a review result');
+ assert.match(h.node('banners').innerHTML,/Contract created. Setup needs review/);assert.doesNotMatch(h.node('banners').innerHTML,/contract-created-banner/);
+ held.resolve();await drain();assert.equal(writes(h).length,1,'late preflight/read settlement cannot send unfinished setup');
+}
+
+{
+ const h=await ready({realDOM:true}),send=deferred(),finalWrite=deferred(),nativeAdd=h.api.addRecords,nativeUpdate=h.api.updateRecordById,button=draft(h);
+ h.api.addRecords=config=>send.promise.then(()=>nativeAdd(config));h.api.updateRecordById=config=>finalWrite.promise.then(()=>nativeUpdate(config));
+ h.c.ncRefresh=()=>{throw Error('A redundant whole-app refresh would lock creation after verified writes');};
  const pending=h.c.ncSubmit([],[]);noPopup(h);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true);assert.equal(h.c.ContractSetupUI.close(),false);assert.equal(await h.c.ncSubmit([],[]),false);assert.doesNotMatch(h.node('banners').innerHTML,/contract-created-banner/,'pending writes never announce success');
- await drain();send.resolve();await drain();assert.equal(h.c.S.contractWorkflow.entries.filter(row=>row.state==='verified').length,2);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true,'saving remains locked until the final fresh snapshot');assert.equal(h.c.clpCancel(),false);
- refresh.resolve();const result=await pending;assert.equal(result.error,null);assert.equal(result.rows.length,2);assert.equal(writes(h).length,2);assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.S.nc,null);assert.equal(button.textContent,'Create Contract');assert.equal(h.c.S.contractWorkflowHistory[0].entries.length,2,'full captured verification ledger remains available in the widget');assert.ok(h.c.S.audit.some(entry=>entry.message==='Contract created'));noPopup(h);
+ await drain();send.resolve();await drain();assert.equal(h.c.S.contractWorkflow.entries.filter(row=>row.state==='verified').length,1);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true,'saving remains locked until the final exact write verification');assert.equal(h.c.clpCancel(),false);
+ finalWrite.resolve();const result=await pending;assert.equal(result.error,null);assert.equal(result.rows.length,2);assert.equal(writes(h).length,2);assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.S.nc,null);assert.equal(button.textContent,'Create Contract');assert.equal(h.c.S.contractWorkflowHistory[0].entries.length,2,'full captured verification ledger remains available in the widget');assert.ok(h.c.S.audit.some(entry=>entry.message==='Contract created'));noPopup(h);
  assert.match(h.node('banners').innerHTML,/contract-created-banner.*role="status"/);
  assert.match(h.node('banners').innerHTML,/Contract created and sent to Legal for review/);
  assert.ok([...h.timers.values()].some(timer=>timer.ms===5000),'verified creation stays visible for five seconds');

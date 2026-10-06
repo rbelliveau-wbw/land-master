@@ -1,6 +1,42 @@
 
 # Contracts Module
 
+## Creation settlement and live audit (1.61.9)
+
+Creation no longer reloads four whole-app reports after all intended writes have
+already passed exact fresh persisted verification. Each verified row is merged
+into the model by `contractWorkflowStep`; the captured ledger must be completely
+verified before the five-second green Legal confirmation and normal UI return.
+The prior extra reload had no deadline and could hold Saving and the global
+interaction lock indefinitely after the parent appeared in Review on refresh.
+This lock path is reproduced in a local SDK fixture. The user's native incident
+has not yet been inspected; the fixture does not prove that incident's cause.
+
+Creation's extra subdivision and parent/lot preflight reads now use the existing
+30-second verification deadline, respecting the shared 40-per-61s request budget.
+A late result cannot send further setup after the run has ended. A confirmed
+parent with incomplete setup keeps the persistent Setup needs review warning;
+unknown native mutations still retain Check status and never replay writes.
+
+The save footer and existing audit panel show real elapsed time, verified counts,
+active requests and queue waits. Audit/Copy/Clear/Close remain usable while writes
+are locked. The live JSON diagnostic and Copy log retain three runs without raw
+business values, recipients or approval tokens. Sampling adds no SDK requests.
+
+Changed files: widget HTML/config, widget manifest, production mapping, immutable
+release `1.61.9`, create-progress regression, transfer-progress guide and README.
+Affected frontend functions: `ncSubmit`, `ncFixSubdivision`,
+`lotRefreshMasterMatch`, `contractWorkflowStep`, `contractWorkflowRead`,
+`contractWorkflowBegin/Finish/Paint/RoutineRecheck`, `contractControls`,
+`renderAudit`, `auditToText`, and the `contractWorkflowAudit*` helpers.
+Existing forms/fields and native create/update/readback payloads are unchanged;
+no backend function, Custom API or Creator deployment changes.
+Regression covers seven actions/two approvals under the real request budget,
+visible/accessible queue diagnostics, one-send guards, no whole-report refresh,
+five-second confirmation, hung subdivision read and no writes after late
+settlement, plus existing unknown/partial reconciliation and approval/LOI flows.
+Rollback: restore Contract Management Production to `1.61.8`.
+
 ## Closing summaries, creation confirmation and delete feedback (1.61.8)
 
 Legal/Contracts uses stacked `Initial: N lots / D days`, `Second: N lots / D days`,

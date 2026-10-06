@@ -3,6 +3,12 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.9` finishes creation from the exact verified setup ledger, removes
+the unbounded whole-report refresh, bounds extra setup reads, and adds an
+accessible live audit with elapsed time, verified counts and Creator queue waits.
+See [diagnosis, regression and rollback](../../knowledge/modules/contracts.md#creation-settlement-and-live-audit-1619).
+Rollback Production to `1.61.8`. Native incident reproduction remains pending.
+
 Release `1.61.8` uses stacked Initial / Second / Cont'd closing summaries, matches
 subdivision preview fonts, confirms verified creation with a prominent five-second
 green banner, and accepts verified deletion despite inconsistent reply IDs.

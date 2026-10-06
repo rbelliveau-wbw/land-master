@@ -52,6 +52,18 @@ Cancel the previous banner's dismissal timer when replacing it, so an older
 success cannot prematurely clear a new confirmation or error. Other routine
 save banners keep their existing presentation and duration.
 
+Ordinary Contract saves show elapsed time and the number of verified destinations
+beside the Saving button, with a **Live audit log** action. Keep the existing
+audit toggle and its Copy/Clear/Close controls usable during the write lock.
+The audit panel samples existing request timings every 500ms, showing active
+requests and actual Creator budget/throttle waits without making extra requests.
+Copy log retains the last three runs' timings and destination states; omit
+business payloads and approval recipients/tokens. Stop sampling at settlement.
+Creation finishes from its exact verified destination ledger and merged rows;
+an unrelated full-report reload must not delay its success confirmation.
+Bound additional setup reads to 30 seconds of active/unexplained waiting,
+allowing known request-budget idle time. Late reads cannot resume ended writes.
+
 Contract completion opens its existing confirmation immediately with a disabled
 **Checking…** action while fresh scoped details are read. Patch the mounted
 confirmation when ready. Cancelled or stale checks cannot reopen it or enable a
