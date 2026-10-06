@@ -1,3 +1,16 @@
+## Save request budget (1.80.88)
+
+Skip no-op lot-pricing updates only after this Save's fresh complete native read
+matches every captured field. Reuse those persisted rows for the same workflow's
+Dashboard; changed rows retain write/readback verification. The two-row regression
+completes in 20 requests with 23 prior requests, staying within the unchanged
+45-request allowance. No live timing claim or Creator deployment requirement.
+See [scope, verification, limits and rollback](../../docs/proforma-save-request-budget-1.80.88.md).
+
+Dev/Land Acq and CFO Development profiles now show every Pro Forma field with
+no configurable field read-only restrictions. Module/report access is unchanged;
+the user reports publishing the profiles separately.
+
 ## Multirow duplicate save (1.80.87)
 
 Captured lot-pricing rows use distinct workflow-scoped create intents so the
