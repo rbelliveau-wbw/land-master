@@ -17,3 +17,5 @@ import './test-contract-completion-preview.mjs';
 import './test-contract-verification-pacing.mjs';
 import './test-contract-lot-transfer-policy.mjs';
 import './test-contract-sdk-v2-comments.mjs';
+import './test-contract-parent-assignment.mjs';
+import './test-owner-full-names.mjs';

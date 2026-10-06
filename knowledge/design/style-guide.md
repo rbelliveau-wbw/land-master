@@ -44,6 +44,16 @@ Lot contract reports use compact branch rows: pale blue on a Master with visible
 
 ## Record dropdowns
 
+Contract parent relationships use a compact blue bordered Parent Contract
+control in the expanded left summary, an optional searchable single picker in
+the new modal, and a compact relationship editor from the three-dot menu.
+Show a counted blue Master badge whenever children exist; retain the underlying
+type. Keep Master assignment read-only, with a short tooltip for the lock.
+Parent options are keyboard-focusable buttons with centered SVG selection marks.
+Use the existing navy modal title, blue identity card, SVG close, and pinned
+Save/Cancel footer. Detailed behavior is in
+[Parent Contract assignment](../../docs/contract-parent-assignment.md).
+
 Pro Forma budget-transfer menus float over the modal content without changing
 the source/destination card height. Keep them aligned with their picker during
 scroll and resize, fit the result scroller inside the viewport, and open above
@@ -227,3 +237,8 @@ Budget transfer matrices follow Budget Manager's single Item column with destina
 Budget transfer headers show a clear source-to-destination route, transfer total, destination/item counts and an explicit state. Sending uses the Contracts-style persistent progress/result modal described in [`transfer-progress.md`](transfer-progress.md); a tiny completion line or disabled button is insufficient.
 
 Populate Subdivision lot tables use Soft rows: separate white rows with rounded outer corners, quiet column headings, outlined editable values, and blue source disclosure pills. Use a green left edge and compact mint Created badge for saved rows, amber for review flags, and a neutral edge for unchecked rows. Retain the pinned summary, sticky headings, source details, and one scrolling lot list.
+
+Owner pickers, pills, headers and exports display the full name recorded in
+User Access. Do not shorten an actual full name at underscores or @ signs; use
+the existing login fallback only when Full_Name is blank. Sort owner choices by
+the visible name and preserve ID/login/email identity separately.

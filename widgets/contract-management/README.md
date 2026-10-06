@@ -206,3 +206,10 @@ same rules server-side plus `User_Access.Edit_Contracts` for the caller.
 ## Routine success feedback (1.61.19)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+# Parent Contract — 1.61.22
+
+Parent assignment is available for every type from the expanded left panel,
+detail header, three-dot menu, and new flow. Contracts with children display a
+counted Master badge and cannot be assigned parents. Lot Amendment matching
+remains same-Project/same-Builder Lot Masters. Native deployment and rollback:
+[Parent Contract assignment](../../docs/contract-parent-assignment.md).

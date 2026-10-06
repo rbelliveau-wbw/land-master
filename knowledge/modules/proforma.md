@@ -1,3 +1,9 @@
+
+## Full User Access owner names
+
+Owner pickers and displays prefer User_Access.Full_Name, preserving original
+record IDs and login/email permission identities. Blank names keep the existing
+fallback. See [scope, verification and rollback](../../docs/owner-full-names.md).
 ## Save request budget (1.80.88)
 
 Skip no-op lot-pricing updates only after this Save's fresh complete native read

@@ -1,4 +1,10 @@
 
+## Full User Access owner names
+
+Owner pickers and displays prefer User_Access.Full_Name, preserving original
+record IDs and login/email permission identities. Blank names keep the existing
+fallback. See [scope, verification and rollback](../../docs/owner-full-names.md).
+
 # Contracts Module
 
 ## Pricing confirmation reduced another 10% (1.61.18)
@@ -685,3 +691,21 @@ are modified; these fixtures do not establish live Production correctness.
 ## Routine success feedback — October 6, 2026
 
 Routine contract/action/owner/status/template/file confirmations use the shared style. Pricing and action autosaves keep green field checks and add grouped success feedback under the existing revision and navigation guards. Lots and pricing saves and read-only recovery retain the originating screen. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+# Parent Contract assignment (1.61.22)
+
+All types now expose optional Parent Contract in the new flow and existing
+contract left panel, menu and detail header. Any contract with children shows
+a counted Master role badge and cannot be nested; existing type labels remain.
+Only top-level contracts are eligible parents. The user's explicit exception
+retains same-Project/same-Builder Lot Master matching for Lot Amendments.
+Fresh checks and exact persisted verification protect set/clear and reject
+self-links, stale child/parent/status changes, and missing report fields.
+
+Changed files: Contract widget source/config/manifest and immutable release,
+four native Contract workflow mirrors, Complete_Lot_Contract, focused tests,
+SDK2 suite registration, and module/style/release documentation. Existing
+Contract.Parent_Contract, ID, Contract_Type, Project, Builder, Subdivision1 and
+Status are read; only Parent_Contract is written by the relationship editor.
+No new Custom API or schema field. Creator deployment is required for lookup
+criteria, native validation/visibility and Lot completion. Regression and
+rollback details: [Parent Contract assignment](../../docs/contract-parent-assignment.md).

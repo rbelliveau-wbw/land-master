@@ -48,13 +48,14 @@ else
  hide Pricing;
  hide Lot_Block_Description;
 }
-if(input.Contract_Type == "Lot (Amendment)")
+show Parent_Contract;
+if(input.ID != null)
 {
- show Parent_Contract;
-}
-else
-{
- hide Parent_Contract;
+ parentChildren = Contract[Parent_Contract == input.ID];
+ if(parentChildren.count() > 0)
+ {
+  disable Parent_Contract;
+ }
 }
 hide Approvals1.Approval_Sequence;
 hide Total_Contract_Price;

@@ -10,10 +10,24 @@ if(input.Contract_Type == "Lot (Amendment)" && input.Subdivision1.size() == 0)
 }
 if(input.Parent_Contract != null)
 {
- parentMaster = Contract[ID == input.Parent_Contract];
- if(input.Contract_Type != "Lot (Amendment)" || parentMaster.Contract_Type != "Lot (Master)" || parentMaster.Builder != input.Builder || parentMaster.ID == input.ID)
+ parentContract = Contract[ID == input.Parent_Contract];
+ if(parentContract.count() == 0 || parentContract.ID == input.ID || parentContract.Parent_Contract != null)
  {
-  alert "The optional parent must be a Lot (Master) with the same Builder / Counterparty.";
+  alert "Choose a top-level Parent Contract. A contract cannot be its own parent.";
+  cancel submit;
+ }
+ if(input.ID != null)
+ {
+  childContracts = Contract[Parent_Contract == input.ID];
+  if(childContracts.count() > 0)
+  {
+   alert "A Master with child contracts cannot be assigned a parent.";
+   cancel submit;
+  }
+ }
+ if(input.Contract_Type == "Lot (Amendment)" && ((parentContract.Contract_Type != "Lot (Master)" && parentContract.Contract_Type != "Lot") || parentContract.Builder != input.Builder || parentContract.Project != input.Project))
+ {
+  alert "The optional parent must be a Lot (Master) with the same Project and Builder / Counterparty.";
   cancel submit;
  }
 }

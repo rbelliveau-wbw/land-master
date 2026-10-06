@@ -145,10 +145,16 @@ string Complete_Lot_Contract(string contractId)
 	}
 	if(c.Parent_Contract != null)
 	{
-		parent = Contract[ID == c.Parent_Contract];
-		if(c.Contract_Type != "Lot (Amendment)" || parent.count() == 0 || parent.ID == cid || (parent.Contract_Type != "Lot (Master)" && parent.Contract_Type != "Lot") || c.Builder == null || parent.Builder != c.Builder)
+		parentChildren = Contract[Parent_Contract == cid];
+		if(parentChildren.count() > 0)
 		{
-			resp.put("error","The optional parent must be a Lot (Master) with the same builder / counterparty.");
+			resp.put("error","A Master with child contracts cannot be assigned a parent.");
+			return resp.toString();
+		}
+		parent = Contract[ID == c.Parent_Contract];
+		if(parent.count() == 0 || parent.ID == cid || parent.Parent_Contract != null || (c.Contract_Type == "Lot (Amendment)" && ((parent.Contract_Type != "Lot (Master)" && parent.Contract_Type != "Lot") || c.Builder == null || parent.Builder != c.Builder || parent.Project != c.Project)))
+		{
+			resp.put("error","Choose a top-level parent; Lot Amendments require a Lot Master with the same Project and builder / counterparty.");
 			return resp.toString();
 		}
 	}
