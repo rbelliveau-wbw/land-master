@@ -20,8 +20,14 @@ creation editor before submitting, so Saving, Live audit log and read-only
 Check status remain visible rather than referring to a detached button.
 Native reproduction also recorded 21s and 32s request-budget queue waits;
 these waits remain paced and are now visible, not mistaken for failed writes.
-The matching replacement/acceptance verification is being completed after
-publishing this release.
+The final native Production run verified all 12 destinations in 61.286s and
+showed the green **Contract created and sent to Legal for review** confirmation.
+The matching replacement was accepted from Review; a fresh page reload confirmed
+one matching contract with Status New, 97 selected lots, the saved pricing and
+closing terms, seven actions and two Not Sent approval rows. The contract is left
+open for the user's review. Acceptance only moved it into the pipeline; no
+approval-email or signing action was performed. The captured audit and screenshots
+remain local test evidence, outside published release assets.
 
 Creation no longer reloads four whole-app reports after all intended writes have
 already passed exact fresh persisted verification. Each verified row is merged
@@ -47,18 +53,21 @@ Changed files: widget HTML/config, widget manifest, production mapping, immutabl
 releases `1.61.9` through `1.61.11`, create-progress regression and DOM fixture,
 transfer-progress guide and README.
 The final release wraps the save footer on narrow screens.
-Affected frontend functions: `ncSubmit`, `ncFixSubdivision`,
+Affected frontend functions: `ncConfirm`, `ncSeed`, `ncSubmit`, `ncFixSubdivision`,
 `lotRefreshMasterMatch`, `contractWorkflowStep`, `contractWorkflowRead`,
 `contractWorkflowBegin/Finish/Paint/RoutineRecheck`, `contractControls`,
 `renderAudit`, `auditToText`, and the `contractWorkflowAudit*` helpers.
 Existing forms/fields are unchanged. The final parent update omits the
 workflow-derived `Current_Action`; child payloads and exact comparisons remain.
-no backend function, Custom API or Creator deployment changes.
+No backend function, Custom API or Creator deployment changes.
 Regression covers seven actions/two approvals under the real request budget,
 the actual confirmation-to-submit path and the derived parent-summary reset,
 visible/accessible queue diagnostics, one-send guards, no whole-report refresh,
 five-second confirmation, hung subdivision read and no writes after late
 settlement, plus existing unknown/partial reconciliation and approval/LOI flows.
+Full `npm run validate`, `npm run build:pages`, CI and Pages deployment passed.
+The native test additionally covers the confirmed creation banner, return from
+Saving, Review acceptance and persisted state after reload.
 Rollback: restore Contract Management Production to `1.61.8`.
 
 ## Closing summaries, creation confirmation and delete feedback (1.61.8)
