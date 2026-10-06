@@ -11,9 +11,35 @@ const noPopup=h=>{assert.equal(h.c.document.getElementById('contractSaveOverlay'
 {
  const h=await ready({realDOM:true}),send=deferred(),refresh=deferred(),nativeAdd=h.api.addRecords,nativeRefresh=h.c.ncRefresh,button=draft(h);
  h.api.addRecords=config=>send.promise.then(()=>nativeAdd(config));h.c.ncRefresh=run=>refresh.promise.then(()=>nativeRefresh(run));
- const pending=h.c.ncSubmit([],[]);noPopup(h);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true);assert.equal(h.c.ContractSetupUI.close(),false);assert.equal(await h.c.ncSubmit([],[]),false);
+ const pending=h.c.ncSubmit([],[]);noPopup(h);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true);assert.equal(h.c.ContractSetupUI.close(),false);assert.equal(await h.c.ncSubmit([],[]),false);assert.doesNotMatch(h.node('banners').innerHTML,/contract-created-banner/,'pending writes never announce success');
  await drain();send.resolve();await drain();assert.equal(h.c.S.contractWorkflow.entries.filter(row=>row.state==='verified').length,2);assert.equal(button.textContent,'Saving…');assert.equal(button.disabled,true,'saving remains locked until the final fresh snapshot');assert.equal(h.c.clpCancel(),false);
  refresh.resolve();const result=await pending;assert.equal(result.error,null);assert.equal(result.rows.length,2);assert.equal(writes(h).length,2);assert.equal(h.c.S.contractWorkflow,null);assert.equal(h.c.S.nc,null);assert.equal(button.textContent,'Create Contract');assert.equal(h.c.S.contractWorkflowHistory[0].entries.length,2,'full captured verification ledger remains available in the widget');assert.ok(h.c.S.audit.some(entry=>entry.message==='Contract created'));noPopup(h);
+ assert.match(h.node('banners').innerHTML,/contract-created-banner.*role="status"/);
+ assert.match(h.node('banners').innerHTML,/Contract created and sent to Legal for review/);
+ assert.ok([...h.timers.values()].some(timer=>timer.ms===5000),'verified creation stays visible for five seconds');
+ h.tick(5000);assert.equal(h.node('banners').innerHTML,'');
+}
+
+{
+ const h=await ready({realDOM:true,fakeTime:true});
+ h.c.banner('ok','Earlier success');await h.advance(3000);
+ h.c.S.contracts.push({ID:NEW,Contract_Name:'Created fixture',Status:'Proposed'});
+ h.c.contractCreatedBanner(NEW);await h.advance(4999);
+ assert.match(h.node('banners').innerHTML,/sent to Legal for review/,'an older toast timer cannot dismiss the new creation confirmation');
+ await h.advance(1);assert.equal(h.node('banners').innerHTML,'');
+ h.c.findContract(NEW).Status='New';h.c.contractCreatedBanner(NEW);
+ assert.match(h.node('banners').innerHTML,/Contract created successfully/);assert.doesNotMatch(h.node('banners').innerHTML,/Legal/,'routing copy requires a verified Proposed record');
+ h.c.banner('ok','Earlier success');await h.advance(3000);h.c.banner('err','Needs review');await h.advance(1000);
+ assert.match(h.node('banners').innerHTML,/Needs review/,'an older success timer cannot clear a newer failure');
+}
+
+{
+ const h=await ready({realDOM:true}),native=h.api.updateRecordById;draft(h);
+ h.api.updateRecordById=async config=>{await native(config);return {code:3000,data:{ID:config.id},details:{code:2899}};};
+ const result=await h.c.ncSubmit([],[]);assert.ok(result.error);assert.doesNotMatch(h.node('banners').innerHTML,/contract-created-banner|sent to Legal/,'uncertain setup never announces routing success');
+ const count=writes(h).length;assert.equal(await h.c.ncConfirm(),true,'exact read-only reconciliation may verify the complete setup');
+ assert.equal(writes(h).length,count);assert.match(h.node('banners').innerHTML,/Contract created and sent to Legal for review/);
+ assert.ok([...h.timers.values()].some(timer=>timer.ms===5000));noPopup(h);
 }
 
 {

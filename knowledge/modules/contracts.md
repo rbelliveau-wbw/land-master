@@ -1,6 +1,54 @@
 
 # Contracts Module
 
+## Closing summaries, creation confirmation and delete feedback (1.61.8)
+
+Legal/Contracts uses stacked `Initial: N lots / D days`, `Second: N lots / D days`,
+and `Cont'd: N lots / D days` summaries in contract rows, expanded previews, and
+the detail header. The shared formatter preserves saved values, explicit zeroes,
+legacy records without a Second Closing, and the existing missing-cadence cue.
+The total lot count and mismatch warning remain separate from the schedule.
+
+Contract creation shows a larger green success banner for five seconds after
+complete persisted verification. It says the contract was sent to Legal for
+review only when the saved parent is Proposed. Other saved statuses get a
+generic creation confirmation. Pending, partial and uncertain creation never
+announces success; complete read-only reconciliation can show the same banner.
+Old success timers are cancelled before any replacement banner.
+
+Deletion checks fresh counted absence of the exact preflighted string ID even
+when Creator's settled reply contains a conflicting, numeric or lowercase ID.
+Verified absence completes the UI delete without an error or a retained write
+lock, and never changes the target ID or replays deletion. A conflicting reply
+is retained as an audit warning. Still-present, denied, incomplete, pending or
+changed-session verification remains an error/unknown outcome. This addresses
+the reported successful deletion followed by a conflicting-response UI error;
+the original response shape was not supplied. Subdivision values in the expanded
+preview inherit the other detail values' font; label styling targets direct
+children only.
+
+Changed files: widget HTML/config, widget manifest, closing-summary, delete and
+create regression checks, record-detail and transfer-progress guides, widget
+README, immutable release `1.61.8`, and the production environment mapping. The display reads existing
+Contract fields `Initial_Takedown`, `Initial_Takedown_Days`, `Second_Closing_Lots`,
+`Second_Closing_Days`, `Subsequent_Takedown_Lots`, and `Subsequent_Takedown_Days`.
+No Creator forms, fields, backend functions, Custom APIs, or workflows change;
+no Creator deployment is required. Frontend functions: `lotClosingSummary`,
+`lotClosingSummaryHTML`, `contractTitleExtras`, `drillRow`, `renderDetail`,
+`banner`, `contractCreatedBanner`, `contractWorkflowFinish`,
+`contractWorkflowRoutineRecheck`, `ncDemoCreate`, and `contractNativeMutation`.
+Regression covers all three displays, legacy blanks, zero days, absent cadence,
+and existing closing-term validation/copy/save behavior, conflicting delete
+replies with persisted absence versus retained/unknown targets, one-send guards,
+pending/unknown create outcomes, timer replacement and five-second confirmation.
+Rollback: restore the
+Contract Management Production mapping to `1.61.6`.
+
+Verification: full `npm run validate` (including prevalidation), `npm run
+build:pages`, focused delete/create regressions, and exact immutable-release /
+production-output byte checks pass. Routine presentation checks use the local
+whole-widget harness; no live Creator records or approval emails were sent.
+
 ## Save feedback and completion readiness (1.61.5)
 
 Ordinary Contract creation and Lots & Pricing saves use the existing action

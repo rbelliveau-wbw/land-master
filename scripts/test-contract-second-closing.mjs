@@ -33,8 +33,8 @@ assert.deepEqual(plain(c.clpTermChanges({...modern,Number_of_Lots:25},terms({...
 assert.deepEqual(plain(c.lotCompletionBlockers(legacy)),[],'untouched legacy completion remains available');
 assert.ok(c.lotCompletionBlockers({...legacy,Second_Closing_Lots:15}).some(value=>/Second Closing days/.test(value)),'partial second pair blocks completion');
 assert.deepEqual(plain(c.lotCompletionBlockers({...modern,Number_of_Lots:25,Subsequent_Takedown_Lots:null,Subsequent_Takedown_Days:null})),[]);
-assert.doesNotMatch(c.lotClosingSummary(legacy),/second/,'legacy summaries never infer a Second Closing');
-assert.match(c.lotClosingSummary(modern),/15 second 45 days after initial due.*5 subsequent every 30 days/);
+assert.doesNotMatch(c.lotClosingSummary(legacy),/Second:/,'legacy summaries never infer a Second Closing');
+assert.equal(c.lotClosingSummary(modern),"Initial: 10 lots / 30 days\nSecond: 15 lots / 45 days\nCont'd: 5 lots / 30 days");
 
 c.S.nc={type:'Lot (Master)',project:'p1',parent:'',sub:[SUB],builder:'b1',name:'Three closings',territory:'Waco',wbw:[],owners:[],lotIds:[],ppf:{},totalLots:'50',initLots:'10',initDays:'30',secondLots:'15',secondDays:'0',contLots:'5',contDays:'30'};
 c.S.projects=[{ID:'p1',Territory:'Waco'}];c.S.subdivisions=[{ID:SUB,Project:{ID:'p1'},Territory:'Waco'}];

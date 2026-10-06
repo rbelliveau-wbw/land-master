@@ -28,11 +28,11 @@ for(const reply of [
   assert.equal(reads.filter(call=>call.method==='records').length,1,'confirmed zero count needs no empty-page inference');
 }
 
-{
+for(const reply of [validations,{code:3000,result:[{code:3000,data:{ID:Number(ID)}}]},{code:3000,result:[{code:3000,data:{id:ID}}]}]){
   const h=await ready({realDOM:true}),native=h.api.deleteRecords;
   h.c.ncApplyAccess({found:true,ctEdit:true,ctDeleteArchive:true});
   h.c.S.selId=ID;h.c.S.view='detail';
-  h.api.deleteRecords=async config=>{await native(config);return validations;};
+  h.api.deleteRecords=async config=>{await native(config);return reply;};
   h.c.deleteContract(ID);h.c.confirmProceed();await drain();
   assert.equal(h.reports.All_Contracts1.length,0);
   assert.equal(h.c.findContract(ID),null,'the actual Delete contract button drops the verified absent parent');
@@ -59,11 +59,21 @@ for(const response of [validations,{code:3000},{code:3000,result:[{code:3000,dat
 for(const conflict of [ID,Number(ACTION)]){
   const h=await ready(),native=h.api.deleteRecords;
   h.api.deleteRecords=async config=>{await native(config);return {code:3000,result:[{code:3000,data:{ID:conflict}}]};};
+  const result=await h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION);
+  assert.equal(result.data.ID,ACTION,'the captured exact string ID is retained despite an inconsistent acknowledgement');
+  assert.equal(result.verifiedRow,true,'fresh counted absence confirms the requested delete');
+  assert.equal(h.c.contractHasReviews(),false,'a verified successful delete does not quarantine later UI writes');
+  assert.equal(deletes(h).length,1);
+}
+
+for(const conflict of [ID,Number(ACTION)]){
+  const h=await ready();let sends=0;
+  h.api.deleteRecords=async()=>{sends++;return {code:3000,result:[{code:3000,data:{ID:conflict}}]};};
   await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION),/conflicting deletion record/);
   assert.equal(h.c.S.sdkMutationReviews[key(h)].id,ACTION,'conflicting acknowledgements cannot replace the captured exact string target');
   assert.equal(h.c.S.sdkMutationReviews[key(h)].status,'unknown');
   await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION));
-  assert.equal(deletes(h).length,1);
+  assert.equal(sends,1,'a conflicting acknowledgement cannot replay a delete when persisted absence is unverified');
 }
 
 {
@@ -128,4 +138,4 @@ for(const phase of ['before','after']){
   assert.equal(deletes(h).length,1);
 }
 
-console.log('PASS Contracts delete: fresh exact target existence and counted absence; actual Delete button succeeds after applied validation/lost replies; one dispatch; still-present rejection; conflicting/unsafe IDs held for review; denied/malformed/incomplete reads cannot prove absence; pending timeout and changed actor remain unknown; explicit read-only recheck.');
+console.log('PASS Contracts delete: fresh exact target existence and counted absence; actual Delete button succeeds after applied validation/lost or conflicting replies; captured string ID never changes; one dispatch; still-present/conflicting rejection; denied/malformed/incomplete reads cannot prove absence; pending timeout and changed actor remain unknown; explicit read-only recheck.');

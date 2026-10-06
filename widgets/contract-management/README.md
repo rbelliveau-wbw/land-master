@@ -3,6 +3,12 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.8` uses stacked Initial / Second / Cont'd closing summaries, matches
+subdivision preview fonts, confirms verified creation with a prominent five-second
+green banner, and accepts verified deletion despite inconsistent reply IDs.
+See [regression and rollback](../../knowledge/modules/contracts.md#closing-summaries-creation-confirmation-and-delete-feedback-1618).
+Rollback Production to `1.61.6`.
+
 Release `1.61.5` uses action-button feedback for routine create/save, keeps
 read-only Check status and the captured verification ledger for unknown writes,
 and retains one diagnostic email attempt on failure. Completion opens immediately

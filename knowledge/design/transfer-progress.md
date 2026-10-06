@@ -43,6 +43,15 @@ created. Setup needs review.** Record the failure through the existing audit and
 critical-error reporter once per run without alternate-endpoint email retries.
 Actual Lot transfers, file batches and approval operations retain their dialogs.
 
+After complete verified Contract creation, show a prominent green success banner
+with 16px text, a centered SVG check, and comfortable padding for five seconds.
+Say **Contract created and sent to Legal for review** only when the verified
+saved parent is Proposed; otherwise say **Contract created successfully**.
+Unknown or incomplete setup retains its existing persistent review warning.
+Cancel the previous banner's dismissal timer when replacing it, so an older
+success cannot prematurely clear a new confirmation or error. Other routine
+save banners keep their existing presentation and duration.
+
 Contract completion opens its existing confirmation immediately with a disabled
 **Checking…** action while fresh scoped details are read. Patch the mounted
 confirmation when ready. Cancelled or stale checks cannot reopen it or enable a

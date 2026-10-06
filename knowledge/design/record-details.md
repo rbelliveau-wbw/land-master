@@ -3,6 +3,17 @@
 Use this guide for read-only record detail dialogs opened from a main report.
 The first implementation is Manage Lots' Builder Takedowns report.
 
+Legal/Contracts closing summaries use one line per saved tier: `Initial: 20 lots / 30 days`,
+`Second: 9 lots / 180 days`, and `Cont'd: 9 lots / 90 days`. Apply the same compact
+format in main-report rows, expanded previews, and the Contract detail header.
+Keep the contract's total lot count separate. Preserve explicit zeroes and omit
+unset tiers; a display change never changes the stored timing or invents a
+Second Closing for legacy records.
+
+Contract preview labels and values use separate direct-child style rules. Nested
+value spans, including subdivision codes, inherit the same font, weight, size,
+and spacing as other values; label uppercase/letter spacing never applies to them.
+
 - Keep the report flat and sortable; put subdivision identity beneath the record
   name instead of grouping records when newest-first ordering matters.
 - Use a navy record title, muted secondary identity, pale blue surfaces, fine
