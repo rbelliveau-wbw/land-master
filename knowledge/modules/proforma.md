@@ -1,3 +1,12 @@
+## Multirow duplicate save (1.80.87)
+
+Captured lot-pricing rows use distinct workflow-scoped create intents so the
+duplicate-operation guard permits multiple intended rows in the same form while
+blocking the same pending row. Phase flag verification distinguishes missing
+fields from false and names expected/saved values. No Creator deployment is
+required. The separate Travis Moltz phase-flags incident still requires his
+readback to establish the cause. See [verification, limitations and rollback](../../docs/proforma-multirow-save-1.80.87.md).
+
 ## Budget transfer dropdown overlay (1.80.85)
 
 Project and Subdivision choice panels use fixed overlays, preserving the source/destination section height when opened. Placement follows modal scrolling and viewport resizing, flips upward near the viewport bottom, and bounds the internally scrolling result list. Search, alphabetical order, selection, Escape and transfer behavior remain unchanged. UI only: no forms, fields, functions or Custom APIs changed; no Creator deployment required. Regression: open/close Project and Subdivision, filter/select choices, scroll/resize, and transfer preview. Production rollback: 1.80.84 via deploy/environments.json.

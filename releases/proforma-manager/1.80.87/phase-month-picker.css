@@ -1,0 +1,24 @@
+.pfm-month-trigger svg{display:block;flex:none;width:16px;height:16px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pfm-month-popover{position:fixed;z-index:260;display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box;background:#fff;border:1px solid #c7d8ea;border-radius:11px;box-shadow:0 14px 38px rgba(15,39,68,.22),0 2px 8px rgba(15,39,68,.08);color:#284d71;font-family:inherit;font-size:12px;animation:pfm-month-in .14s ease}
+.pfm-month-popover *{box-sizing:border-box}
+.pfm-month-popover button{display:grid;place-items:center;margin:0;font-family:inherit;cursor:pointer;transition:background .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease}
+.pfm-month-popover button:focus-visible{outline:2px solid #2879bf;outline-offset:2px;position:relative;z-index:1}
+.pfm-month-popover button:disabled{opacity:.4;cursor:default}
+.pfm-month-head{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;gap:7px;flex:none;padding:10px;border-bottom:1px solid #e2eaf4;background:#f8fbff}
+.pfm-month-nav{width:32px;height:32px;border:1px solid #d8e4f1;border-radius:7px;background:#eef4fb;color:#315f8b}
+.pfm-month-nav:not(:disabled):hover{border-color:#aac5e2;background:#e3effc;box-shadow:none;transform:none}
+.pfm-month-nav svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pfm-month-nav-next svg{transform:rotate(180deg)}
+.pfm-month-year{height:32px;min-width:0;padding:0 8px;border:1px solid transparent;border-radius:7px;background:transparent;color:#244a72;font-size:13px;font-weight:800}
+.pfm-month-year:hover{border-color:#d4e2f1;background:#edf4fc;transform:none}
+.pfm-month-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:auto;min-height:0;padding:10px}
+.pfm-month-cell{height:37px;min-width:0;padding:0 4px;border:1px solid transparent;border-radius:7px;background:#f4f8fd;color:#416485;font-size:12px;font-weight:650}
+.pfm-month-cell:hover{border-color:#a9c4e0;background:#e8f2fd;transform:none}
+.pfm-month-cell.is-selected,.pfm-month-cell.is-selected:hover{border-color:#225683;background:#285f93;color:#fff}
+.pfm-month-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:8px 10px;border-top:1px solid #e2eaf4;background:#f8fbff}
+.pfm-month-actions button{min-height:28px;padding:0 10px;border:1px solid #d4e1ef;border-radius:7px;background:#fff;color:#426a91;font-size:11px;font-weight:750}
+.pfm-month-actions button:hover{border-color:#abc6e1;background:#edf4fc;transform:none}
+.pfm-month-actions .pfm-month-done{border-color:#244f7b;background:#244f7b;color:#fff}
+.pfm-month-actions .pfm-month-done:hover{border-color:#1d446b;background:#1d446b;color:#fff}
+@keyframes pfm-month-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){.pfm-month-popover{animation:none}.pfm-month-popover button{transition:none}}
