@@ -2,6 +2,29 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {saveFixture} from './fixtures/proforma-sdk-v2-save-fixture.mjs';
 import {ID,OTHER,clone,held,drain,ready,source} from './fixtures/proforma-sdk-v2-harness.mjs';
+// Phase flag verification must distinguish a hidden/missing checkbox from false.
+for(const same of [false,true])for(const kind of ['native','formatted','missing-version','missing-checkbox','wrong-version','wrong-checkbox','invalid-checkbox']){
+ let recovered=false;
+ const h=await saveFixture({model:m=>{m.Same_Lot_Sales_All_Phases=same;},read:(cfg,storage)=>{
+  if(cfg.report_name!=='All_Pro_Formas_All_Fields'||!storage.All_Proforma_Phases.length||recovered)return;
+  const rows=clone(storage.All_Pro_Formas_All_Fields.filter(row=>row.ID===ID)),row=rows[0];
+  if(kind==='formatted'){row.Lot_Sales_Schedule_Version='2.00';row.Same_Lot_Sales_All_Phases=same?'True':'False';}
+  if(kind==='missing-version')delete row.Lot_Sales_Schedule_Version;
+  if(kind==='missing-checkbox')delete row.Same_Lot_Sales_All_Phases;
+  if(kind==='wrong-version')row.Lot_Sales_Schedule_Version='1';
+  if(kind==='wrong-checkbox')row.Same_Lot_Sales_All_Phases=!same;
+  if(kind==='invalid-checkbox')row.Same_Lot_Sales_All_Phases='unknown';
+  return {code:3000,data:rows};
+ }});
+ await h.widget.saveProforma();
+ if(['native','formatted'].includes(kind)){assert.equal(h.widget.S.ed.dirty,false,JSON.stringify(h.widget.PFTransport.snapshot()));continue;}
+ const t=h.widget.PFTransport,review=t.snapshot().reviews[0];assert.equal(h.widget.S.ed.dirty,true);assert.ok(review);
+ assert.match(review.error,kind.startsWith('missing-')?/could not be read.*(?:Lot_Sales_Schedule_Version|Same_Lot_Sales_All_Phases)/:/expected 2, saved.*expected (?:true|false), saved/);
+ h.widget.PFTransportUI.close();const sends=h.calls.filter(call=>call.method==='custom').length;
+ assert.equal(h.widget.saveProforma(),false);assert.equal(await t.recheck(review.key),false);
+ recovered=true;assert.equal(await t.recheck(review.key),true);
+ assert.equal(h.calls.filter(call=>call.method==='custom').length,sends,'flag recheck never resends the financial or phase write');
+}
 {
  const h=await saveFixture();assert.deepEqual(clone(h.widget.validateModel(h.model)),[]);const promise=h.widget.saveProforma();assert.equal(h.document.getElementById('pfNativeProgress').hidden,false);assert.equal(h.widget.PFTransportUI.close(),false);await promise;
  assert.equal(h.document.getElementById('pfNativeResults').hidden,true);assert.equal(h.document.getElementById('pfNativeResults').children.length,0);assert.equal(h.document.getElementById('pfNativeSummary').hidden,true);for(const index of [1,2,3])assert.equal(h.document.getElementById('pfNativeStage'+index).parentNode.hidden,true);assert.equal(h.document.getElementById('pfNativeAnnounce').textContent,'Pro Forma saved.');assert.equal(h.document.getElementById('pfNativeFill').style.width,'100%');
