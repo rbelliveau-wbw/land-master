@@ -37,7 +37,10 @@ banner, with no progress/result overlay. Retain the detailed captured ledger,
 actual error diagnostics, pending interaction lock and duplicate-write guard.
 Unknown writes retain the draft and turn the same button into **Check status**;
 read-only reconciliation never completes unsent setup or replays a write.
-Verified success returns to the record. Preserve the distinction between a
+Verified creation opens the created record. Verified Lots & Pricing saves
+close the editor and refresh the originating screen, preserving its view,
+filters, expanded rows and scroll. Read-only recovery uses the same success
+behavior. Preserve the distinction between a
 verified created parent and complete setup: unfinished setup says **Contract
 created. Setup needs review.** Record the failure through the existing audit and
 critical-error reporter once per run without alternate-endpoint email retries.
@@ -49,8 +52,15 @@ Say **Contract created and sent to Legal for review** only when the verified
 saved parent is Proposed; otherwise say **Contract created successfully**.
 Unknown or incomplete setup retains its existing persistent review warning.
 Cancel the previous banner's dismissal timer when replacing it, so an older
-success cannot prematurely clear a new confirmation or error. Other routine
-save banners keep their existing presentation and duration.
+success cannot prematurely clear a new confirmation or error.
+
+The October 6, 2026 pricing-save trial uses a black top-center success banner
+with white 22px text, a centered 32px mint SVG check, 16px vertical/26px horizontal
+padding and a strong shadow: approximately twice the ordinary banner's width
+and height. Keep its existing nonblocking status announcement and 3.5-second
+auto-dismiss. Apply this treatment only to verified Lots & Pricing save and
+read-only recovery success pending the user's verification; other success and
+error implementations retain their existing presentation and duration.
 
 Ordinary Contract saves show elapsed time and the number of verified destinations
 beside the Saving button, with a **Live audit log** action. Keep the existing

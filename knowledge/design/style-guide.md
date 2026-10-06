@@ -140,6 +140,12 @@ without silently rounding.
 Blank remains unset; an explicit zero remains 0%. Preserve the per-size draft
 through picker changes and apply it through the existing guarded pricing save.
 
+Change Lots & Pricing keeps its pricing card neutral while selected Lot sizes
+are unresolved, with **Loading lot pricing…** or the actual unavailable state.
+Show complete cached prices immediately during refresh and preserve edits.
+Loading data must not briefly appear as a yellow missing-input step; arm that
+highlight only after selected Lot sizes are known and required prices are absent.
+
 Lot contract creation reveals location, Builder, and name in small numbered cards. Start a Master with Type and the required Project; start an Amendment with Type and required Subdivision. Use a pale-yellow surface and amber outline for the next unfinished card and its missing required input, following Tax Parcel Year's active-step treatment. Completed cards lose the highlight. Keep optional subdivision and lot choices behind the contract identity, and pricing behind lot selection. Respect reduced motion and retain a visible keyboard focus ring.
 
 Show the editable Actions panel as soon as a Lot type is selected. Its template checklist stays visible while Project, Subdivision, Builder, and name are incomplete or cleared.

@@ -1,6 +1,44 @@
 
 # Contracts Module
 
+## Pricing loading, retained screen and scoped success banner (1.61.16)
+
+Change Lots & Pricing paints unresolved selected Lot metadata as a neutral
+**Loading lot pricing…** state. Start that state before the first modal paint,
+then begin the scoped read after mounting the editor. Full cached values remain
+visible during refresh, and edits survive that refresh. Highlight a genuinely
+missing price only once its selected Lot sizes are known. A failed read stays
+neutral with an unavailable message; late reads cannot replace the picker,
+reopen a cancelled editor or repaint another editor.
+
+Verified pricing saves close the editor and refresh the originating list, board
+or detail screen with its filters, expanded rows and scroll preserved. Verified
+read-only Check status recovery behaves the same way. Contract creation still
+opens the newly created record. Pricing-save success alone uses a black banner
+with white 22px text, a centered 32px mint SVG check and doubled padding; it
+remains at the top center and dismisses after the existing 3.5 seconds. This
+is the user's one-implementation trial, pending verification before any wider
+success-banner rollout. Errors and other success banners retain their styles.
+Unknown saves retain their captured draft and one-send/read-only recovery rules.
+
+Changed files: widget HTML/config, widget manifest, Production mapping,
+immutable release `1.61.16`, `test-contract-pricing-loading.mjs` and its SDK
+suite import, transfer-progress/style guides, this module and widget README.
+Affected frontend functions: `ncPricingUnresolved`, `ncSyncSeq`, `ncSyncSteps`,
+`ncLotsBlock`, `ncLoadPickerLots`, `clpOpen`, `contractWorkflowClose`,
+`contractWorkflowFinish`, `contractWorkflowRoutineRecheck` and `banner`.
+Existing Contract, Lots and Contract_Pricing forms/fields and native pricing
+payloads are unchanged; no backend function or Custom API changes, and no
+Creator deployment is required.
+
+Regression covers cold/partial/full cache, delayed and failed reads, genuine
+missing prices, preserved entered values, picker/cancel isolation, verified
+save from list/board/detail, filter/scroll retention, native one-write pricing
+readback, unknown-write retention and read-only recovery, scoped success/error
+styles, desktop/320px layout and the existing auto-dismiss duration. Full
+repository validation and Pages build are required before promotion. Rollback:
+restore Contract Management Production to `1.61.15` and redeploy Pages.
+
 ## Escalator in shared Lot Pricing rows (1.61.15)
 
 The creation and Change Lots & Pricing tables include **Escalator %** between

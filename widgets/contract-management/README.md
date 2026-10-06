@@ -3,6 +3,13 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.16` removes the initial yellow pricing flash while selected Lot
+sizes load, preserves the originating screen after pricing saves and uses a
+larger black success banner for that pricing-save confirmation only. Other
+success banners await user verification before adopting this style. Frontend
+only; no Creator deployment. See [regression and rollback](../../knowledge/modules/contracts.md#pricing-loading-retained-screen-and-scoped-success-banner-16116).
+Rollback Production to `1.61.15`.
+
 Release `1.61.15` adds the optional Escalator % input to creation and Change
 Lots & Pricing rows. Enter `5` for 5%, with up to two decimal places. Existing
 Contract Pricing and null-only Lot propagation are retained; populated Lot

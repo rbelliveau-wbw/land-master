@@ -3,6 +3,7 @@ import './test-contract-sdk-v2-fields.mjs';
 import './test-contract-sdk-v2-scopes.mjs';
 import './test-contract-sdk-v2-derived.mjs';
 import './test-contract-sdk-v2-workflows.mjs';
+import './test-contract-pricing-loading.mjs';
 import './test-contract-setup-verification.mjs';
 import './test-contract-delete-verification.mjs';
 import './test-contract-proposed-workflow.mjs';
