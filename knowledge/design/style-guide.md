@@ -133,10 +133,16 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 Check, Wire and Purchase Order creation uses Budget → finalized line item →
 searchable Vendor → request details. Global entry chooses Budget first; phase
 entry starts at line item. Keep Add Vendor beside the Vendor heading and retain
-the draft through native form entry and list refresh. Receipt rows align labels
+the draft through native form entry and list refresh. Use the approved Budget
+rail layout: dates, a prominent amount input with its available maximum, and GP
+Actuals reference on the left; the compact budget receipt on the right. Stack
+the rail beneath inputs on narrow screens. Emphasize the remaining balance in
+green when nonnegative and red when overspent. Keep Back, a quiet Refresh
+Balance, and Preview Draft in the footer; the centered header X closes the modal.
+Receipt rows align labels
 left and amounts right: Final Budget, Bud Mods, Revised Final, subtract same-item
 POs Issued, Available Budget, subtract this request, then remaining balance.
-Keep GP Actuals below the receipt as reference only; paid status does not release
+Keep GP Actuals below the amount input as reference only; paid status does not release
 the issued-PO commitment. Show negative
 remaining in red and block continuation. Loading/unavailable balances stay
 explicit and never show a fabricated zero.

@@ -1,6 +1,38 @@
 
 # Budget Module
 
+## Budget rail request details (122.28.26)
+
+The approved Budget rail design applies to global and phase Purchase Order,
+Check and Wire details and draft previews. Dates and a larger currency input
+occupy the left column, with the fresh Available Budget shown as its maximum
+and GP Actuals below as reference. A compact right receipt shows Final, approved
+Bud Mods, Revised Final, all same-line issued POs, Available Budget, the current
+request and remaining balance. Nonnegative remaining values are green; negative
+values remain red and block preview. Both columns stack below 580px.
+Back, quiet Refresh Balance and Preview Draft share the footer; the existing
+centered header X closes the dialog. Draft entry, native date picker, vendor
+selection, fresh counted PO checks and financial precision are preserved.
+
+Changed implementation: `widgets/budget-manager/src/app/widget.html` and
+`budget-layout.css`, version/source hash manifests and immutable 122.28.26,
+production mapping and this style/module documentation. Presentation only:
+no Creator forms, fields, functions or Custom APIs change, and no Creator
+backend deployment is required. Requests remain preview-only.
+
+Regression: full repository validation and Pages build; actual-source request
+balance, exact limit and one-cent overage checks; desktop side-by-side layout,
+320px stacked fit, date picker, refresh preserving edits and draft preview.
+Rollback: restore production budget-manager mapping to 122.28.25 and rebuild
+Pages. Development/Stage mappings stay as configured.
+
+Verification completed: `npm run validate` and `npm run build:pages` passed
+with the immutable release and production mapping. The actual-source offline
+composer verified global PO and Check flow, phase Wire flow, approved Bud Mod
+math, one-cent overage blocking, exact-limit preview, custom date selection,
+refresh retaining the draft, and no clipped details at 320px. No native
+financial request or vendor record was created during verification.
+
 ## Payment request vendor and issued-PO receipt (122.28.25)
 
 Global and phase Check/Wire/Purchase Order composers now select a finalized
