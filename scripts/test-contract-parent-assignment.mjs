@@ -5,15 +5,15 @@ const root='90071992547418881',other='90071992547418882',child='9007199254741888
 const draft=type=>({type,name:'New contract',territory:'Waco',parent:root,builder:'10',project:'p',sub:[],lotIds:[],wbw:[],owners:[],acts:[],ppf:{},esc:{},status:'Proposed'});
 const records=()=>[
  {ID,Contract_Type:'Issue',Contract_Name:'Fixture child',Status:'New',Parent_Contract:null},
- {ID:root,Contract_Type:'Service Agreement',Contract_Name:'A & B <Master>',Status:'New',Parent_Contract:null},
+ {ID:root,Contract_Type:'Service Agreement',Contract_Name:'A & B <Master>',Territory:'Waco',Builder:{ID:'10'},Status:'New',Parent_Contract:null},
  {ID:other,Contract_Type:'DA',Contract_Name:'Other',Status:'New',Parent_Contract:null},
  {ID:child,Contract_Type:'CCR',Contract_Name:'Child',Status:'New',Parent_Contract:{ID:root}}
 ];
 const setup=async()=>{const h=await ready({realDOM:true});h.reports[h.c.CFG.reports.contracts]=records();h.c.S.contracts=records();return h;};
 {
  const {c}=await setup();
- for(const type of c.TYPES.filter(t=>!c.isLotType(t))){c.S.nc=draft(type);assert.match(c.ncFields(),/Parent Contract.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,type+' persists parent');}
- c.S.projects=[{ID:'p',Territory:'Waco'}];c.S.nc=draft('Lot (Master)');assert.match(c.ncFields(),/Parent Contract.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,'unlinked Lot Master can have a parent');
+ for(const type of c.TYPES.filter(t=>!c.isLotType(t))){c.S.nc=draft(type);assert.match(c.ncFields(),/Parent .*Optional.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,type+' persists parent');}
+ c.S.projects=[{ID:'p',Territory:'Waco'}];c.S.nc=draft('Lot (Master)');assert.match(c.ncFields(),/Parent .*Optional.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,'unlinked Lot Master can have a parent');
  assert.match(c.contractMasterBadge(c.findContract(root)),/Master.*<b>1<\/b>/);
  assert.match(c.lotHierarchyLabel(c.findContract(root)),/Master/,'all types display Master role');
  assert.match(c.drillRow(c.findContract(ID)),/Parent Contract.*Assign parent/);
@@ -79,6 +79,21 @@ const setup=async()=>{const h=await ready({realDOM:true});h.reports[h.c.CFG.repo
  assert.equal(c.S.contractWorkflow.finished,true);assert.ok(c.contractHasReviews(),'uncertain write stays reviewable');
  await c.contractParentSave();assert.equal(c.findContract(ID).Parent_Contract,null,'Check status does not replay');
 }
+
+{
+ const h=await setup(),c=h.c;c.S.nc={...draft('Issue'),parent:'',territory:'Austin',builder:'before'};
+ c.ncSetParent(root);assert.equal(c.S.nc.territory,'Waco');assert.equal(c.S.nc.builder,'10');
+ const html=c.ncFields();assert.ok(html.indexOf('nc_parent_wrap')<html.indexOf('Territory'),'Parent precedes inherited Territory');assert.ok(html.indexOf('nc_parent_wrap')<html.indexOf('Builder / Counterparty'));
+ assert.doesNotMatch(html,/id="nc_territory"|id="mselb_ncbuilder"|id="nc_status"/,'inherited values are read-only and Status leaves the body');
+ assert.match(c.ncStatusPill(),/Proposed/);assert.doesNotMatch(c.ncGeneralParentField(),/nc-f wide/);
+ c.ncSetParent('');assert.equal(c.S.nc.territory,'Austin');assert.equal(c.S.nc.builder,'before');
+ c.ncSetParent(root);c.S.nc.builder='tampered';assert.throws(()=>c.ncPayload(),/Select the parent again/);
+ c.ncSetParent(root);h.reports[c.CFG.reports.contracts].find(row=>row.ID===root).Territory='Houston';
+ const result=await c.ncSubmit([],[]);assert.ok(result.error);assert.equal(h.calls.filter(x=>x.method==='add').length,0,'a changed inherited Territory prevents creation');
+ c.S.nc={...draft('Lot (Master)'),territory:'Waco'};c.S.projects=[{ID:'p',Territory:'Austin'}];assert.match(c.ncContextError(c.S.nc),/parent's Territory/);
+ c.S.nc={...draft('Lot (Amendment)'),parent:'',territory:'Austin',builder:'before'};c.ncSetParent(root);assert.equal(c.S.nc.territory,'Austin');assert.equal(c.S.nc.builder,'before','Amendment matching context is retained');
+}
+
 const html=fs.readFileSync('widgets/contract-management/src/app/widget.html','utf8');
 assert.match(html,/Assign Parent Contract/);assert.match(html,/parentKind\?'button type="button" aria-pressed=/);assert.match(html,/rows\[.*\]\.focus\(\)/);
 const backend=fs.readFileSync('creator/workflows/Field_Validations_Contrac.dg','utf8');assert.match(backend,/childContracts.count\(\) > 0/);assert.match(backend,/parentContract.Parent_Contract != null/);assert.match(backend,/input.Contract_Type == "Lot \(Amendment\)"/);

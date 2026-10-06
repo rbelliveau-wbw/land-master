@@ -213,3 +213,7 @@ detail header, three-dot menu, and new flow. Contracts with children display a
 counted Master badge and cannot be assigned parents. Lot Amendment matching
 remains same-Project/same-Builder Lot Masters. Native deployment and rollback:
 [Parent Contract assignment](../../docs/contract-parent-assignment.md).
+
+## Parent-led creation — 1.61.23
+
+Compact Parent (Optional) follows Type, inherits Territory/Counterparty read-only, and restores prior draft values when cleared. Status is a title-row pill. Lot Amendment matching and existing relationship-only edits remain intact. Regression, affected fields and rollback: [Parent flow](../../docs/contract-parent-assignment.md#earlier-parent-flow--16123).

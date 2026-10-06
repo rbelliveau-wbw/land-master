@@ -48,13 +48,13 @@ await ctx.lotValidateParent({builder:'10',parent:''},'2');
 await ctx.lotValidateParent({type:'Lot (Amendment)',sub:['20'],builder:'10',parent:'1'},'2');
 h.reports[ctx.CFG.reports.contracts]=[{...master,Builder:{ID:'11'}}];
 await assert.rejects(ctx.lotValidateParent({type:'Lot (Amendment)',sub:['20'],builder:'10',parent:'1'},'2'),/same Project and builder/,'fresh read prevents a stale parent selection');
-assert.match(source,/Subdivision.*optional/);
+assert.match(source,/Subdivision.*Optional/);
 assert.match(source,/if\(isLotAmendment\(v.type\)&&!v.sub.length\)/);
 ctx.S.nc={type:'Lot (Master)',project:'p1',builder:'10',parent:'',sub:['20']};
 ctx.mselBtn=()=>'<button>Parent choice</button>';
 assert.equal(ctx.lotParentField(),'','Master has no parent field');
 ctx.S.clp={cid:'1'};ctx.clpRepaint=()=>{};
-ctx.clpSetType('Lot (Amendment)');assert.match(ctx.lotParentField(),/Parent Master Contract.*optional/);
+ctx.clpSetType('Lot (Amendment)');assert.match(ctx.lotParentField(),/Parent Master Contract.*Optional/);
 ctx.S.nc.parent='5';ctx.clpSetType('Lot (Master)');assert.equal(ctx.S.nc.parent,'','switching to Master clears the draft parent');
 ctx.S.contracts=ctx.S.contracts.filter(c=>c.ID!=='2'); // Isolate type conversion from the separate linked-child guard.
 const original={...master,Subdivision1:[{ID:'20'}]};

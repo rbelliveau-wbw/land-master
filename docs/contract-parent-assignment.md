@@ -10,8 +10,8 @@ child removes the relationship Master badge. No existing records are migrated.
 The user explicitly retained Lot Amendment matching: only a top-level Lot Master
 with the same Project and Builder is eligible. Existing automatic matching and
 staged entry are preserved. Other types, including Lot Masters without children,
-can select any top-level Contract. Relationships do not change lots, terms,
-pricing, ownership, approval routing, status, or other fields.
+can select any top-level Contract. Editing an existing relationship changes only Parent_Contract; it does not alter
+lots, terms, pricing, ownership, approval routing or status.
 
 The three-dot menu opens a compact relationship editor; the left-hand expanded
 panel and detail header also expose Parent Contract. The new-contract flow adds
@@ -62,3 +62,28 @@ those records invalid in native forms. Do not clear existing links as a rollback
 
 Native deployment: all six scoped components compiled and were published as
 Creator 9.54 through Stage to Production on 2026-10-06.
+
+## Earlier Parent flow — 1.61.23
+
+New non-Amendment contracts show compact `Parent (Optional)` immediately after
+Type, before Territory and Counterparty. Selecting Parent copies its existing
+Territory and exact Builder lookup ID and displays both read-only. Clearing the
+parent restores the pre-selection draft values. Manual names survive; only an
+automatically suggested name is cleared when context changes. Status stays
+read-only in the title row. Optional field captions retain a visible space
+before `(Optional)`, including flex labels.
+
+Lot Amendments retain matching by Project and Builder. New Lot Masters retain
+their chosen Project; a Project inconsistent with the inherited Territory is
+reported rather than silently changing Project or Territory. Existing Parent
+assignment and Lots & Pricing editors do not inherit or rewrite other fields.
+Fresh create preflight rejects changed parent Territory/Builder before any write.
+
+Changed files: Contract widget HTML/config, manifests, Production mapping,
+immutable 1.61.23 release, parent/lot regressions, module/style/README docs.
+Existing Contract.Territory and Contract.Builder are populated during creation
+with Parent_Contract. No functions, Custom APIs or native Creator deployment
+change. Full validation/build and browser checks cover field order, compact
+layout, inherited/cleared values, stale-parent rejection, Status placement,
+optional spacing and retained Lot matching. Rollback widget mapping to 1.61.22;
+keep Creator 9.54.

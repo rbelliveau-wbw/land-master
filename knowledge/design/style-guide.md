@@ -242,3 +242,5 @@ Owner pickers, pills, headers and exports display the full name recorded in
 User Access. Do not shorten an actual full name at underscores or @ signs; use
 the existing login fallback only when Full_Name is blank. Sort owner choices by
 the visible name and preserve ID/login/email identity separately.
+
+Contract creation starts with Type, then compact Parent (Optional), then Territory. Selected parents dictate the new draft Territory and Counterparty, rendered as read-only field values. Keep Status in the title row alongside owners. Optional field labels use a visible space before (Optional); flex labels need explicit margin because HTML whitespace alone collapses.
