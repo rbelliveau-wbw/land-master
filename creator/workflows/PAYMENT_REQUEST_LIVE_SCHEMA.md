@@ -17,6 +17,12 @@ export's missing Payment Request/Vendor names for this frontend flow.
 - Form `Vendors`, report `All_Vendors` are available in Production.
 - `Vendor_Name` is required; `Contact_Name` and `Primary_Phone` are optional.
   Other existing native vendor fields remain owned by the Vendors form.
+- The live Vendors form inputs verified on 2026-10-06 expose `Vendor_ID`,
+  `Alternate_Phone`, `Address_Line_1`, `Address_Line_2`, `Address_Line_3`, `City`,
+  `State`, `ZIP_Postal_Code`, `Country` and `Payment_Terms`. The request picker
+  reads these existing fields with ID, name, contact and primary phone for its
+  detail panel and header hover. The form has no Email input; no email field
+  is inferred from the mockup. Missing optional details show Not provided.
 
 The request mock remains preview-only. Selecting a vendor does not create or
 submit a Payment Request. Add Vendor opens the existing native Vendors form in

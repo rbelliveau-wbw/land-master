@@ -14,7 +14,7 @@ const c=vm.createContext({S:{startupReady:true,liveSDK:true,edBudget:{ID:budgetI
   sdkGetAllRecords:(...args)=>{calls.push(args);return typeof response==='function'?response():Promise.resolve(response);},
   itemModAgg:()=>({approved:25.25})
 });c.window=c;
-for(const name of ['requestModalScope','requestModalCurrent','requestVendorUrl','loadRequestVendors','requestVendorRows','requestFinancialValue','requestAmountNumber','requestPurchaseOrderTotal','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance','loadRequestPurchaseOrders','previewPaymentRequest'])vm.runInContext(block(name),c);
+for(const name of ['requestModalScope','requestModalCurrent','requestVendorUrl','loadRequestVendors','requestVendorLocation','requestVendorDetails','requestVendorRows','requestFinancialValue','requestAmountNumber','requestPurchaseOrderTotal','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance','loadRequestPurchaseOrders','previewPaymentRequest'])vm.runInContext(block(name),c);
 function modal(){const m=c.S.modModal={requestFlow:true,budgetId,itemId,requestType:'Purchase Order',vendorId,requestAmount:'20.01',vendorState:'loaded',vendors:[],poState:'loaded',poItemId:itemId,poIssued:15.25};m.scope=c.requestModalScope(m);return m;}
 const item={ID:itemId,Budget_Ttl:'500.25',PROJ_Actual:'100.25'};
 let m=modal();assert.equal(c.requestBalanceSnapshot(m,item).after,490.24);
@@ -39,7 +39,11 @@ assert.equal(c.requestPurchaseOrderTotal([po,{...po,ID:'900000000000000005',Requ
 assert.equal(c.requestPurchaseOrderTotal([],budgetId,itemId),0);
 for(const bad of [{ID:900000000000000004},{Budget:{ID:'elsewhere'}},{Budget_Item:{ID:'elsewhere'}},{Request_Type:'Check'},{Request_Amount:undefined},{Request_Amount:''},{Request_Amount:'-1'},{Request_Amount:'invalid'}])assert.throws(()=>c.requestPurchaseOrderTotal([{...po,...bad}],budgetId,itemId));
 assert.throws(()=>c.requestPurchaseOrderTotal([po,po],budgetId,itemId),/do not match/);
-response=[{ID:vendorId,Vendor_Name:'Existing Vendor'}];m=modal();await c.loadRequestVendors(m);assert.equal(m.vendors[0].ID,vendorId);assert.equal(calls.at(-1)[2].fresh,true);assert.deepEqual(Array.from(calls.at(-1)[2].fields),['ID','Vendor_Name']);
+response=[{ID:vendorId,Vendor_Name:'Existing Vendor',City:'Georgetown',State:'TX',Contact_Name:'Vendor Contact'}];m=modal();await c.loadRequestVendors(m);assert.equal(m.vendors[0].ID,vendorId);assert.equal(calls.at(-1)[2].fresh,true);assert.deepEqual(Array.from(calls.at(-1)[2].fields),['ID','Vendor_Name','Vendor_ID','Contact_Name','Primary_Phone','Alternate_Phone','Address_Line_1','Address_Line_2','Address_Line_3','City','State','ZIP_Postal_Code','Country','Payment_Terms']);
+m.vendorSearch='Georgetown';assert.match(c.requestVendorRows(m),/Existing Vendor/);
+m.vendorSearch='Vendor Contact';assert.match(c.requestVendorRows(m),/Existing Vendor/);
+assert.match(c.requestVendorDetails(response[0]),/Vendor Contact/);assert.match(c.requestVendorDetails(response[0]),/Not provided/);assert.doesNotMatch(c.requestVendorDetails(response[0]),/Email/);
+m.vendorPreviewId=vendorId;response=[];await c.loadRequestVendors(m);assert.equal(m.vendorPreviewId,'','refresh removes a candidate that no longer exists');
 response=[{ID:900000000000000003,Vendor_Name:'Rounded'}];await c.loadRequestVendors(m);assert.equal(m.vendorState,'unavailable');
 let resolve;response=()=>new Promise(r=>resolve=r);m=modal();const dismissed=c.loadRequestVendors(m);c.S.modModal=null;resolve([{ID:vendorId,Vendor_Name:'Late'}]);await dismissed;assert.equal(c.S.modModal,null);
 for(const change of [()=>nav++,()=>environment='DEVELOPMENT',()=>c.S.edBudget={ID:'different'},()=>c.S.startupReady=false]){

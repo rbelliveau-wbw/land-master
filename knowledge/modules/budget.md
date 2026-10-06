@@ -1,6 +1,44 @@
 
 # Budget Module
 
+## Vendor detail panel and centered header (122.28.29)
+
+Check, Wire and Purchase Order share the approved Detail panel vendor picker.
+The picker title bar contains the actual line-item name and code, with phase
+and request type below. Rows show vendor name plus available location/contact;
+name, vendor number, city/state and contact are searchable. Selecting a row
+previews contact, phone, address and payment terms; Use Vendor commits the
+candidate to the draft. Back, quiet Refresh Vendors and Use Vendor occupy a
+separate footer. The list scrolls without shrinking rows, and the panel stacks
+below it on narrow screens. Add Vendor still opens the native environment form.
+
+Request details and preview center the vendor/Change section geometrically
+in the title bar. Hovering or focusing the name shows its facts; click/tap also
+opens them, while Escape, blur or leaving the popup dismisses them. Long names
+wrap. Change returns to the picker with the current vendor selected and retains
+request dates/amount. Missing optional facts show Not provided; no email field
+is invented. Fresh counted vendor reads and scoped stale-response protection
+are preserved, with projections expanded to live-verified existing Vendors
+fields recorded in `creator/workflows/PAYMENT_REQUEST_LIVE_SCHEMA.md`.
+
+Changed files: widget HTML/CSS, vendor projection regression checks, live schema
+note, style/module documentation, version/hash manifests, immutable 122.28.29
+and production mapping. No Creator form/field/function/Custom API changes or
+backend publication. Financial math, eligibility and permissions are unchanged;
+requests remain editable previews.
+
+Regression: vendor search/selection, blank details, refreshed missing candidates,
+retained drafts, title/header/hover keyboard behavior, desktop/narrow layout,
+existing financial/stale-scope checks, repository validation and Pages build.
+Actual-source UI verification confirmed two-step selection, city search, the
+line-item/code title, a 320px stacked picker without horizontal overflow,
+centered header and keyboard facts popup, Escape dismissing only the popup,
+and retained dates/amount when changing vendors. No vendor or financial request
+was created during verification.
+Full repository validation and Pages build passed for this immutable release
+and production mapping.
+Rollback: production budget-manager mapping to 122.28.28 and rebuild Pages.
+
 ## Eligible items and compact request header (122.28.28)
 
 The shared line-item picker for Bud Mod, Check Request, Wire Request and

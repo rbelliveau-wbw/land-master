@@ -135,10 +135,17 @@ searchable Vendor → request details. Global entry chooses Budget first; phase
 entry starts at line item. Only show eligible finalized items in the shared
 Bud Mod, Check, Wire and Purchase Order picker. Hide unavailable rows instead of
 showing disabled choices. Preserve finalized zero-value items and search by
-name or code. Keep Add Vendor beside the Vendor heading and retain the draft
-through native form entry and list refresh. Use the approved Budget
-rail's title bar for the selected vendor and Change action; hide this context
-in earlier steps and Bud Mod, and wrap long vendor names at narrow widths.
+name or code. Use the Detail panel vendor picker: put the line-item name and
+code in its title bar; searchable rows show location/contact when present and
+select a candidate for the adjacent contact/phone/address/payment terms panel.
+Use Vendor applies the selection. Keep Add Vendor beside the Vendor heading,
+Back and quiet Refresh Vendors in the footer, and reserve spacing above actions.
+Stack the panel beneath the bounded list on narrow screens. Retain the draft
+through native form entry and list refresh. Center selected vendor and Change
+in the request details/preview title bar; hover or keyboard focus on the name
+shows the same vendor facts, and tapping shows them on touch screens. Escape
+or leaving the name/popup dismisses it. Hide this context in earlier steps and
+Bud Mod, and wrap long vendor names at narrow widths.
 Use compact body spacing. The Budget rail places dates, a prominent amount
 input with its available maximum, and GP
 Actuals reference on the left; the compact budget receipt on the right. Stack
