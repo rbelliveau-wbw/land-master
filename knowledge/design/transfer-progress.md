@@ -59,6 +59,7 @@ The audit panel samples existing request timings every 500ms, showing active
 requests and actual Creator budget/throttle waits without making extra requests.
 Copy log retains the last three runs' timings and destination states; omit
 business payloads and approval recipients/tokens. Stop sampling at settlement.
+Wrap the save footer on narrow screens so the log and save controls remain visible.
 Creation finishes from its exact verified destination ledger and merged rows;
 an unrelated full-report reload must not delay its success confirmation.
 Bound additional setup reads to 30 seconds of active/unexplained waiting,

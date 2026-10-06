@@ -1,7 +1,7 @@
 
 # Contracts Module
 
-## Creation settlement and live audit (1.61.9)
+## Creation settlement and live audit (1.61.10)
 
 Creation no longer reloads four whole-app reports after all intended writes have
 already passed exact fresh persisted verification. Each verified row is merged
@@ -24,7 +24,8 @@ are locked. The live JSON diagnostic and Copy log retain three runs without raw
 business values, recipients or approval tokens. Sampling adds no SDK requests.
 
 Changed files: widget HTML/config, widget manifest, production mapping, immutable
-release `1.61.9`, create-progress regression, transfer-progress guide and README.
+releases `1.61.9` and `1.61.10`, create-progress regression, transfer-progress guide and README.
+The final release wraps the save footer on narrow screens.
 Affected frontend functions: `ncSubmit`, `ncFixSubdivision`,
 `lotRefreshMasterMatch`, `contractWorkflowStep`, `contractWorkflowRead`,
 `contractWorkflowBegin/Finish/Paint/RoutineRecheck`, `contractControls`,
