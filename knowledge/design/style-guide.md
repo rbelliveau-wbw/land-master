@@ -124,6 +124,8 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 ## Filter and month pickers
 
+Budget Manager's main-list Add menu sits at the far right of the filter row. Put Budget first, then a horizontal separator before Bud Mod, Check Request, Wire Request and Purchase Order. Global requests select a budget before opening the same phase request composer; Budget uses a searchable subdivision chooser that excludes subdivisions with an existing budget, including archived budgets. Keep parent selection compact, keyboard accessible, and independent of landing filters. Multi-record budget creation follows [transfer progress](transfer-progress.md), with a persistent verified result and read-only recheck after an unknown response.
+
 - Dropdown filters that allow multiple values use searchable multi-select popovers with selected states, Clear, Select visible, and Done. Settings that require one value use custom single-select popovers without checkboxes, search, selection counts, or Done. In Insights this includes Date Basis, Period, Measure, Group By, and Sort; selecting an option applies it and closes the menu.
 - Group Insights Measure choices under Per FF, Base Price, and Lot Count headings. Show every choice without an inner scrollbar, and keep the full menu inside the viewport.
 - Use a custom month/year popover instead of the browser's native month picker. Support keyboard navigation and Escape, and keep popovers within the widget viewport.

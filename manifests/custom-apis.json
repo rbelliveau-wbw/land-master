@@ -391,6 +391,25 @@
       "matching_creator_function": "PF_Budget_Transfer",
       "confidence": "verified-production-2026-10-02",
       "notes": "Enabled Production API: POST, OAuth2, All users, application/json Key and Value; payload:string; Standard response. Land Master PRODUCTION, Default PF_Budget_Transfer. Capability 3 and edited quantity/note previews verified; function enforces existing authenticated transfer and Budget grants. No actual apply performed."
+    },
+    {
+      "name": "Create_Budget_From_Subdivision",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "createBudgetFromSubdivision",
+      "confidence": "verified-production-2026-10-06",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "parameters": [
+        "subdivisionId:string",
+        "action:string"
+      ],
+      "development_link_name": "Create_Budget_From_Subdivision_DEV",
+      "response": "Standard {code:3000,result:<JSON string with verification and record counts>}",
+      "notes": "Enabled Development and Production bindings to Land Master, Default createBudgetFromSubdivision. Four components published through Creator 9.51 with user approval: function, report wrapper and two permission descriptions. Server enforces authenticated Edit All/Owned Budgets. Stage widget/API not promoted. No actual budget creation test performed.",
+      "production_link_name": "Create_Budget_From_Subdivision"
     }
   ]
 }

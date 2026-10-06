@@ -1,0 +1,228 @@
+// New shared function; register its Custom API before promoting the widget.
+string createBudgetFromSubdivision(string subdivisionId, string action)
+{
+	result = Map();
+	result.put("success",false);
+	result.put("verified",false);
+	result.put("writeStarted",false);
+	result.put("subdivisionId",ifnull(subdivisionId,"").trim());
+	newBudget = 0;
+	try
+	{
+		accessRow = User_Access[User == zoho.loginuser];
+		if(accessRow.count() != 1 || (accessRow.Edit_All_Budgets != true && accessRow.Edit_Owned_Budgets != true))
+		{
+			result.put("error","Budget edit access is required.");
+			return result.toString();
+		}
+		subdivisionKey = ifnull(subdivisionId,"").trim().toLong();
+		subdivisionRow = Subdivision[ID == subdivisionKey];
+		if(subdivisionRow.count() != 1 || ifnull(subdivisionRow.Subdivision_Code,"").trim() == "")
+		{
+			result.put("error","Select a subdivision with a subdivision code.");
+			return result.toString();
+		}
+		actionText = ifnull(action,"").trim().toLowerCase();
+		if(actionText != "create" && actionText != "check")
+		{
+			result.put("error","Action must be create or check.");
+			return result.toString();
+		}
+		existingBudgets = Add_Budget[(Subdivision1 == subdivisionKey) || (Subdivision_Code == subdivisionRow.Subdivision_Code)];
+		if(actionText == "create" && existingBudgets.count() > 0)
+		{
+			result.put("error","This subdivision already has a budget, including archived budgets.");
+			return result.toString();
+		}
+		templateCategories = Budget_Category[Template_Item == true];
+		expectedItems = 0;
+		for each templateCategory in templateCategories
+		{
+			expectedItems = expectedItems + Budget_Item[(Template_Item == true) && (Category == templateCategory.Budget_Category_Name)].count();
+		}
+		if(templateCategories.count() == 0 || expectedItems == 0)
+		{
+			result.put("error","Budget templates are unavailable.");
+			return result.toString();
+		}
+		if(actionText == "create")
+		{
+			// Preserve the report action's HeavyJob mapping prerequisite.
+			mappings = External_System_Mapping[(Subdivision1 == subdivisionKey) && (External_System == "HeavyJob") && (External_Code != null)];
+			if(mappings.count() == 0)
+			{
+				result.put("error","A HeavyJob mapping is required for this subdivision.");
+				return result.toString();
+			}
+			result.put("writeStarted",true);
+			// Create the Budget
+			newBudget = insert into Add_Budget
+			[
+			Subdivision1=subdivisionKey
+			Added_User=zoho.loginuser
+			Budget_Type="Development"
+			Budget_Name=subdivisionRow.Subdivision_Code + " - " + zoho.currentdate
+			Subdivision_Code=subdivisionRow.Subdivision_Code
+			];
+			// Add 6 approval rows to the new Budget
+			newBudgetRec = Add_Budget[ID == newBudget];
+			owners = List();
+			owners.add(accessRow.ID);
+			newBudgetRec.Budget_Owner=owners;
+			// Construction - VP
+			row1 = Add_Budget.Approvals();
+			row1.Approver="VP@wbdevelopment.com";
+			row1.Title="VP";
+			row1.Status="Not Sent";
+			row1.Type1="Construction";
+			row1.Sort_Order=1;
+			// Construction - CFO
+			row2 = Add_Budget.Approvals();
+			row2.Approver="jking@wbdevelopment.com";
+			row2.Title="CFO";
+			row2.Status="Not Sent";
+			row2.Type1="Construction";
+			row2.Sort_Order=2;
+			// Construction - COO
+			row3 = Add_Budget.Approvals();
+			row3.Approver="dreinke@wbdevelopment.com";
+			row3.Title="COO";
+			row3.Status="Not Sent";
+			row3.Type1="Construction";
+			row3.Sort_Order=3;
+			// Development - VP
+			row5 = Add_Budget.Approvals();
+			row5.Approver="VP@wbdevelopment.com";
+			row5.Title="VP";
+			row5.Status="Not Sent";
+			row5.Type1="Development";
+			row5.Sort_Order=1;
+			// Development - CFO
+			row6 = Add_Budget.Approvals();
+			row6.Approver="jking@wbdevelopment.com";
+			row6.Title="CFO";
+			row6.Status="Not Sent";
+			row6.Type1="Development";
+			row6.Sort_Order=2;
+			// Development - COO
+			row7 = Add_Budget.Approvals();
+			row7.Approver="dreinke@wbdevelopment.com";
+			row7.Title="COO";
+			row7.Status="Not Sent";
+			row7.Type1="Development";
+			row7.Sort_Order=3;
+			approvalRows = Collection();
+			approvalRows.insert(row1);
+			approvalRows.insert(row2);
+			approvalRows.insert(row3);
+			approvalRows.insert(row5);
+			approvalRows.insert(row6);
+			approvalRows.insert(row7);
+			newBudgetRec.Approvals.insert(approvalRows);
+			// Fetch all Budget Categories where Template_Item = TRUE
+			budgetCategories = Budget_Category[Template_Item == true];
+			for each  category in budgetCategories
+			{
+			// Create a new Budget Category linked to the new Budget
+			newBudgetCategory = insert into Budget_Category
+			[
+			Budget_Category_Name=category.Budget_Category_Name
+			Budget=newBudget
+			Category_Code=category.Category_Code
+			Template_Item=false
+			Added_User=zoho.loginuser
+			Deparment=category.Deparment
+			Reimbursements=category.Reimbursements
+			];
+			// Fetch all Budget Items where Template_Item=TRUE and Category = Budget_Category.Name
+			budgetItems = Budget_Item[(Template_Item == true) && (Category == category.Budget_Category_Name)];
+			for each  item in budgetItems
+			{
+			// Create a new Budget Item linked to the new Budget Category
+			newBudgetItem = insert into Budget_Item
+			[
+			Item_Name=item.Item_Name
+			Department=item.Department
+			Category=item.Category
+			Dept_Code=item.Dept_Code
+			Cost_Code=item.Cost_Code
+			Budget=newBudget
+			Budget_Category=newBudgetCategory
+			Template_Item=false
+			Added_User=zoho.loginuser
+			Budget_Code=subdivisionRow.Subdivision_Code + "-" + item.Cost_Code
+			];
+			}
+			}
+			
+		}
+		else
+		{
+			if(existingBudgets.count() != 1)
+			{
+				result.put("error","No unique saved budget was found. Review the subdivision before creating again.");
+				return result.toString();
+			}
+			newBudget = existingBudgets.ID;
+		}
+		result.put("budgetId",newBudget.toString());
+		saved = Add_Budget[ID == newBudget];
+		categoryCount = Budget_Category[Budget == newBudget].count();
+		itemCount = Budget_Item[Budget == newBudget].count();
+		approvalCount = Budget_Approvals[Budget == newBudget].count();
+		result.put("categoryCount",categoryCount);
+		result.put("itemCount",itemCount);
+		result.put("approvalCount",approvalCount);
+		verified = saved.count() == 1 && saved.Subdivision1 == subdivisionKey && categoryCount == templateCategories.count() && itemCount == expectedItems && approvalCount == 6;
+		for each categoryTemplate in templateCategories
+		{
+			savedCategory = Budget_Category[(Budget == newBudget) && (Category_Code == categoryTemplate.Category_Code) && (Budget_Category_Name == categoryTemplate.Budget_Category_Name) && (Template_Item == false)];
+			if(savedCategory.count() != 1)
+			{
+				verified = false;
+			}
+			else
+			{
+				for each itemTemplate in Budget_Item[(Template_Item == true) && (Category == categoryTemplate.Budget_Category_Name)]
+				{
+					savedItems = Budget_Item[(Budget == newBudget) && (Budget_Category == savedCategory.ID) && (Cost_Code == itemTemplate.Cost_Code) && (Budget_Code == subdivisionRow.Subdivision_Code + "-" + itemTemplate.Cost_Code) && (Template_Item == false)];
+					if(savedItems.count() != 1)
+					{
+						verified = false;
+					}
+				}
+			}
+		}
+		tracks = {"Development","Construction"};
+		roles = {"VP","CFO","COO"};
+		for each track in tracks
+		{
+			order = 0;
+			for each role in roles
+			{
+				order = order + 1;
+				if(Budget_Approvals[(Budget == newBudget) && (Type1 == track) && (Title == role) && (Sort_Order == order) && (Status == "Not Sent")].count() != 1)
+				{
+					verified = false;
+				}
+			}
+		}
+		result.put("verified",verified);
+		result.put("success",verified);
+		if(!verified)
+		{
+			result.put("error","Budget exists but its template records need review. Do not create another budget.");
+		}
+		return result.toString();
+	}
+	catch(creationError)
+	{
+		if(newBudget != 0)
+		{
+			result.put("budgetId",newBudget.toString());
+		}
+		result.put("error",creationError.toString());
+		return result.toString();
+	}
+	return result.toString();
+}

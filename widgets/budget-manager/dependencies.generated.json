@@ -64,6 +64,11 @@
       "name": "syncBudgetApprovalStatus",
       "config_key": "syncBudgetApprovalStatus",
       "source": "customApis object"
+    },
+    {
+      "name": "Create_Budget_From_Subdivision",
+      "config_key": "createBudgetFromSubdivision",
+      "source": "customApis object; Development setup tracked in GLOBAL_BUDGET_ADD_HANDOFF.md"
     }
   ],
   "forms_referenced": [

@@ -1,0 +1,12 @@
+// Replacement on-click action for the existing All_Subdivisions Create Budget action.
+// Install createBudgetFromSubdivision before replacing the original action.
+creationResponse = thisapp.createBudgetFromSubdivision(input.ID.toString(),"create");
+creationResult = creationResponse.toMap();
+if(creationResult.get("success") == true && creationResult.get("verified") == true)
+{
+	success message "Budget successfully created for " + input.Subdivision_Name;
+}
+else
+{
+	info ifnull(creationResult.get("error"),"Budget creation needs review. Check the subdivision before creating again.");
+}
