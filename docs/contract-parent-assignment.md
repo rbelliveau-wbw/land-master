@@ -63,7 +63,7 @@ those records invalid in native forms. Do not clear existing links as a rollback
 Native deployment: all six scoped components compiled and were published as
 Creator 9.54 through Stage to Production on 2026-10-06.
 
-## Earlier Parent flow — 1.61.23
+## Earlier Parent flow — 1.61.25
 
 New non-Amendment contracts show compact `Parent (Optional)` immediately after
 Type, before Territory and Counterparty. Selecting Parent copies its existing
@@ -80,7 +80,7 @@ assignment and Lots & Pricing editors do not inherit or rewrite other fields.
 Fresh create preflight rejects changed parent Territory/Builder before any write.
 
 Changed files: Contract widget HTML/config, manifests, Production mapping,
-immutable 1.61.23 release, parent/lot regressions, module/style/README docs.
+immutable 1.61.25 release, parent/lot regressions, module/style/README docs.
 Existing Contract.Territory and Contract.Builder are populated during creation
 with Parent_Contract. No functions, Custom APIs or native Creator deployment
 change. Full validation/build and browser checks cover field order, compact

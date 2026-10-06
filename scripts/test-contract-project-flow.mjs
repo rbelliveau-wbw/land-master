@@ -22,8 +22,8 @@ ctx.S.nc.territory='invented';assert.equal(ctx.ncPayload().Territory,'Waco','onl
 ctx.S.nc={...draft(),type:'Lot (Amendment)',sub:['s1','s2'],builder:'10',name:'Amendment'};ctx.ncSyncContext();
 assert.equal(ctx.S.nc.project,project);assert.equal(ctx.S.nc.parent,master.ID);assert.equal(ctx.ncPayload().Parent_Contract,master.ID);
 assert.deepEqual(Array.from(ctx.lotParentOptions('10','',project),o=>o.v),[master.ID],'same builder in another Project cannot match');
-assert.match(ctx.ncContextHead(),/Territory.*Waco.*Parent Master Contract.*Fox Creek Master/);
-assert.doesNotMatch(ctx.ncFields(),/Parent Master Contract|nc_territory/,'derived fields are in the title card');
+assert.match(ctx.ncContextHead(),/Territory.*Waco.*Parent.*Fox Creek Master/);
+assert.doesNotMatch(ctx.ncFields(),/Parent|nc_territory/,'derived fields are in the title card');
 ctx.S.nc.sub=['other'];ctx.ncSyncContext();assert.equal(ctx.S.nc.parent,'4410926000007654322');assert.equal(ctx.S.nc.territory,'Temple/Belton','changing the subdivision replaces prior derived data');
 ctx.S.nc.sub=[];ctx.ncSyncContext();assert.equal(ctx.S.nc.parent,'');assert.equal(ctx.S.nc.project,'');assert.equal(ctx.S.nc.territory,'');
 ctx.S.nc.sub=['s1','other'];ctx.ncSyncContext();assert.match(ctx.ncContextError(ctx.S.nc),/one Project/);

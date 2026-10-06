@@ -710,6 +710,6 @@ No new Custom API or schema field. Creator deployment is required for lookup
 criteria, native validation/visibility and Lot completion. Regression and
 rollback details: [Parent Contract assignment](../../docs/contract-parent-assignment.md).
 
-## Earlier Parent flow (1.61.23)
+## Earlier Parent flow (1.61.25)
 
-New contract Parent selection precedes Territory and Counterparty and inherits both. Read-only inherited values return to the prior draft when Parent clears. Status moves into the title row; optional label spacing is explicit. Existing-contract assignment and Lot Amendment matching remain unchanged. Fresh create preflight prevents writing changed inherited parent context. Frontend only; existing Contract.Territory, Builder and Parent_Contract fields, no new API or Creator publication. Regression and rollback: [Parent flow](../../docs/contract-parent-assignment.md#earlier-parent-flow--16123).
+New contract Parent selection precedes Territory and Counterparty and inherits both. Read-only inherited values return to the prior draft when Parent clears. Status moves into the title row; optional label spacing is explicit. Existing-contract assignment and Lot Amendment matching remain unchanged. Fresh create preflight prevents writing changed inherited parent context. Frontend only; existing Contract.Territory, Builder and Parent_Contract fields, no new API or Creator publication. Regression and rollback: [Parent flow](../../docs/contract-parent-assignment.md#earlier-parent-flow--16125).
