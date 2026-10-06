@@ -22,8 +22,19 @@ Travis Moltz and believed same-for-all was off. The live user administration
 screen assigns Travis the `Dev/Land Acq - Proforma & Budgets` profile. Both flag
 visibility checkboxes are off in that profile's Development configuration.
 This is a plausible cause, but does not establish the values returned in
-Travis's failed Production request. The user subsequently directed us to stop
-checking permissions. No permissions were changed.
+Travis's failed Production request. The user subsequently authorized the two
+phase flag permission changes in both Dev/Land Acq and CFO. They were saved in
+Development and verified by reopening each profile: both flags have Visibility
+and Read Only enabled. CFO already had Visibility enabled. The user will publish
+the Creator changes; Production retesting is still outstanding.
+
+The additional read-only audit found Dev/Land Acq hides `Status`,
+`Acquisition_Email`, and the five AI review result fields. Status is used by the
+widget's lifecycle display and native status-update readback; Acquisition Email
+is used by its LOI inputs. Both profiles lack Proforma AI Review report access,
+which prevents native review-history reads. These are separate functional gaps,
+not proven causes of the phase-flags failure, and were left unchanged. Core
+phase/month, item, installment, curve and pricing reports have View/Edit access.
 
 Phase verification now accepts equivalent numeric version `2.00` and explicit
 boolean strings regardless of case. Missing, null, blank and invalid checkbox
@@ -49,9 +60,10 @@ was reproduced and verified separately through the actual widget's SDK fixture.
 Frontend only. Forms read/written: `Add_Pro_Forma` and `Lot_Mix_Row`, with their
 existing reports. Lot fields: `Pro_Forma`, `Lot_Count`, `Lot_Size_Ft`, `Price_LF`.
 Phase header reads: `Lot_Sales_Schedule_Version`, `Same_Lot_Sales_All_Phases`.
-No Creator functions, fields, permissions or Custom API contracts change; no
-Creator deployment is required for this candidate. Existing Save_PF and phase
-save operations are unchanged.
+No Creator functions, fields or Custom API contracts change; no Creator
+deployment is required for this frontend candidate. The separately authorized
+native permission edits require Creator publishing before live users receive
+them. Existing Save_PF and phase save operations are unchanged.
 
 Regression: Dev/Prod duplicate creates with distinct and identical pricing rows,
 same-intent duplicate guard, double Save, exact parent/price/field verification,
