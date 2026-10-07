@@ -8,7 +8,7 @@ The 1.1.0 candidate redesign follows the actual Legal and Pro Forma widgets: sha
 
 The user selected Compact cards from the three summary mockups. Release 1.2.0 implements a visible complete native snapshot above the matrix, using the unchanged Deluge summary as the calculation authority. `forecast-summary.js` passively extracts native text and allowlisted bar widths/colors, builds trusted DOM, retains every schedule and all-phase contract section, and falls back to the sandboxed native iframe if structure is unsupported. It does not join by Builder name or recalculate business values. The shared structured-model helper proposed in [the audit](forecast-summary-data.md) remains a future backend refactor, not an installed dependency. Standard report pickers add keyboard navigation, selection counts, centered SVG markers and immediate filter clearing. Inline field-change saves and creation guards remain unchanged.
 
-The user explicitly authorized publishing the frontend to obtain the permanent Widget Manager URL for implementation/testing. Development and production Pages mappings now select 1.2.0; the loader uses the authenticated Creator environment even through the permanent production registration URL. Stage remains unmapped. Creator compilation, new API installation/audience and live designated-record verification remain pending because the browser runtime cannot connect. Missing API/session information fails closed with disabled controls. This frontend publication does not enable or replace the native manager automatically.
+The user explicitly authorized publishing the frontend to obtain the permanent Widget Manager URL for implementation/testing. Development and production Pages mappings now select 1.2.1; the loader uses the authenticated Creator environment even through the permanent production registration URL. Stage remains unmapped. Creator compilation, new API installation/audience and live designated-record verification remain pending because the browser runtime cannot connect. Missing API/session information fails closed with disabled controls. This frontend publication does not enable or replace the native manager automatically.
 
 ## Read and write contract
 
@@ -52,6 +52,41 @@ Success requires a persisted parent and exactly one linked, correctly scoped chi
 - Existing form Forecast_Manager, workflows, scheduled tasks, summary function and other widgets remain unchanged.
 
 ## Deployment and regression gates
+
+### Missing Development Custom API
+
+Creator error 9350 means the requested API linkname is missing or incorrect. The
+permanent production registration URL still calls `Forecast_Manager_Widget_DEV`
+when the authenticated Creator environment is Development. Publishing Pages does
+not create this binding. Release 1.2.1 accepts the native SDK response
+`{code:3000,details:{output:<function JSON string>}}` as well as existing legacy
+wrappers and identifies the exact missing binding with controls disabled.
+
+1. In Land Master Development, Workflows → Functions, create `forecastManagerWidget`
+   in the Default namespace, returning String, with one String argument `payload`.
+   Use [the saved function](../../creator/functions/forecastManagerWidget.dg),
+   Save/compile, then reopen it to verify persisted code. Retain the existing
+   `buildForecastManagerSummary` function it calls.
+2. In Microservices → Custom API, create/enable the exact API linkname
+   `Forecast_Manager_Widget_DEV`. Request: POST, OAuth2, `application/json`,
+   Argument Type **Key and Value**. Scope access to the existing Forecast Manager
+   permitted audience; verify those users before enabling. Response: Standard.
+3. Actions: Land Master → DEVELOPMENT → Default → `forecastManagerWidget`.
+   Confirm the request argument `payload:string`. The function receives the
+   inner action JSON; **Entire JSON** would pass the wrong outer wrapper.
+4. First execute only the read-only function argument `{"action":"catalog"}`.
+   Confirm the choices, server date and window flag, then reload the widget.
+   Continue the live gates below before any save/create test.
+
+Production requires the published function and a separate unsuffixed
+`Forecast_Manager_Widget` binding pointed at Production. Do not point the DEV
+binding at Production. Stage uses `Forecast_Manager_Widget_STAGE` when requested.
+
+References: [Zoho SDK2 custom API](https://www.zoho.com/creator/help/js-api/v2/custom-api.html),
+[Creator API configuration](https://help.zoho.com/portal/en/kb/creator/developer-guide/microservices/custom-api/articles/create-and-manage-custom-apis),
+[Creator status codes](https://help.zoho.com/portal/en/kb/creator/developer-guide/microservices/custom-api/articles/custom-api-status-codes).
+
+### Live verification
 
 1. Reconnect the development editor and inspect current FEB–JAN input logic, filter/load logic, mass creation, validation/success workflows, parent/child schema and permissions against this audit. Reconcile any differences first.
 2. Save/compile the new function in Creator development. Verify native subform collection insertion, criteria/null handling and date formatting in Creator itself. Configure the OAuth2 POST development binding to this function with payload:string and the existing permitted audience.

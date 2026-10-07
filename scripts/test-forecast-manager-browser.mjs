@@ -23,11 +23,13 @@ await page.addInitScript(({summaryHtml})=>{
   function addYear(builderId,year){const id='900719925474'+year+builderId.slice(-2);window.__snapshot.years.push({id,builderId,year,name:'Fixture year'});['February','March','April','May','June','July','August','September','October','November','December','January'].forEach((month,index)=>window.__snapshot.months.push({id:id+String(index).padStart(2,'0'),parentId:id,builderId,subdivisionId:sub,year,month,start:(Number(year)+(index===11?1:0))+'-'+String(index===11?1:index+2).padStart(2,'0')+'-01',forecast:index<8?3:index===8?2:5,actual:index<8?2:0,scheduled:index===8?1:0}));return id;}
   addYear(a,'2026');addYear(a,'2027');addYear(b,'2026');
   window.__calls=[];window.__sends=[];window.__delay=0;window.__lost=false;window.__window=true;
+  window.__missing=new URL(location.href).searchParams.get('missing')==='1';
   window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>{window.__init=true;return {loginUser:'inert-forecast-fixture',appLinkName:'land-master',envUrlFragment:'environment/development'};}},DATA:{invokeCustomApi:async config=>{
     if(config.api_name.startsWith('Report_'))return {result:{ok:true}};
     const body=JSON.parse(config.payload.payload);window.__calls.push({api:config.api_name,...body});
+    if(window.__missing)return {code:9350,message:"Custom API doesn't exist. Please check the custom API linkname."};
     const meta={ok:true,action:body.action,today:'2026-10-07',windowOpen:window.__window};
-    if(body.action==='catalog')return {result:JSON.stringify({...meta,...window.__catalog})};
+    if(body.action==='catalog')return {code:3000,details:{output:JSON.stringify({...meta,...window.__catalog})}};
     if(body.action==='save'||body.action==='ensure')window.__sends.push(body);
     if(window.__delay)await new Promise(resolve=>setTimeout(resolve,window.__delay));
     if(body.action==='save'){
@@ -36,7 +38,7 @@ await page.addInitScript(({summaryHtml})=>{
       if(month.forecast!==body.expected)return {result:JSON.stringify({...meta,ok:false,unknown:false,conflict:true,message:'Forecast changed. Refresh before editing.'})};
       month.forecast=body.value;
       if(window.__lost){window.__lost=false;throw new Error('Fixture lost response after write');}
-      return {result:JSON.stringify({...meta,...window.__snapshot,verifiedForecastId:month.id,verifiedValue:month.forecast})};
+      return {code:3000,details:{output:JSON.stringify({...meta,...window.__snapshot,verifiedForecastId:month.id,verifiedValue:month.forecast})}};
     }
     if(body.action==='ensure'){const existing=window.__snapshot.years.find(year=>year.builderId===body.builderId&&year.year===body.year),id=existing?existing.id:addYear(body.builderId,body.year);return {result:JSON.stringify({...meta,...window.__snapshot,ensuredParentId:id,createdParent:!existing,createdMonths:existing?0:12})};}
     return {result:JSON.stringify({...meta,...window.__snapshot})};
@@ -68,7 +70,8 @@ try {
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(output,'mobile.png'),fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'the matrix scrolls inside the page on mobile');
   await page.locator('#yearPicker').click();assert.ok(await page.locator('.popover').evaluate(node=>node.getBoundingClientRect().right<=innerWidth&&node.getBoundingClientRect().left>=0));await page.keyboard.press('Escape');
   await page.setViewportSize({width:320,height:320});await page.locator('#yearPicker').click();assert.ok(await page.locator('.popover').evaluate(node=>{const r=node.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),'picker stays inside a short viewport');await page.keyboard.press('Escape');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'compact cards fit narrow viewports');
-  assert.deepEqual(errors,[]);console.log('PASS: inert browser fixtures verify builder rows, custom filters, native locks, server-closed-window rejection, retained drafts, lost-response reconciliation without replay, verified 12-child creation, close lock, read-only Sold, DEV API routing and mobile layout. Screenshots: '+output);
+  await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html?missing=1');await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='API setup required');assert.match(await page.locator('#notice').textContent(),/Missing Creator API: Forecast_Manager_Widget_DEV/);assert.equal(await page.locator('#subPicker').isDisabled(),true);assert.equal(await page.evaluate(()=>__sends.length),0,'missing API never attempts a write');
+  assert.deepEqual(errors,[]);console.log('PASS: inert browser fixtures verify native details.output and legacy responses, explicit missing-DEV-API setup state, builder rows, custom filters, native locks, server-closed-window rejection, retained drafts, lost-response reconciliation without replay, verified 12-child creation, close lock, read-only Sold, DEV API routing and mobile layout. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));
   await page.screenshot({path:path.join(output,'failure.png'),fullPage:true});throw error;
