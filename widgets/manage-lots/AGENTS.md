@@ -5,6 +5,7 @@
 - Re-read lot records immediately before creating a takedown and reject the entire submission if any selected lot is no longer eligible.
 - Create takedowns through the `Builder_Takedown` form so existing Creator form workflows remain authoritative.
 - Treat all Creator record IDs as strings.
+- List starts read-only; enable field updates only in Edit mode. Entered_Date, Purchase_Date and Close_Date are always displayed read-only and must stay outside the edit allowlist. Use Budget's note popover and the shared success-feedback guide for verified single inline saves; retain the multi-record progress dialog for mass updates.
 - Use only field and report link names verified in `creator/generated/` or the committed Creator export.
 
 ## Spreadsheet Import
