@@ -144,3 +144,13 @@ retaining any expanded native capacity.
 ## Routine success feedback — October 6, 2026
 
 Manage Lots retains the verified takedown creation dialog and per-lot outcomes. Dismissing its Verified result adds a black confirmation with the captured lot count. Verified audit-log copy uses the shared style; validation remains unchanged. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+
+## Editable block list — October 7, 2026 (0.11.2)
+
+Lots defaults to a compact List with optional Grid, natural-sorted subdivision/block grouping, cell editors, editable column choice and Shift-click selection. Selection updates existing DOM without requests or rebuilding rows. Takedown detail now groups its read-only lots by block.
+
+Mass update uses the approved Lots fields: Lot_Size (width in feet), Base_Price, Earnest_Money, Appraised_Value, Additional_Tax, Address, Notes and On_Hold. It never changes Status, Builder1 or Add_Builder_Takedown_Name. Every intended field is captured with a string lot ID; preflight rejects the entire batch on stale fields, inaccessible lots, archival or changed subdivision. Updates use the existing All_Lots_All_Fields report and native SDK2 updateRecordById, with three concurrent workers and exact persisted readback. No functions, Custom APIs, form/report schema or Creator deployment changes.
+
+An editing selection may contain Sold/Scheduled/assigned lots; Create Takedown separately checks every lot and its single-subdivision destination. A single verified save closes back to the list with its inline check and shared success popup. Multi-lot saves retain the progress/result dialog and confirmed/rejected/unknown/not-sent ledger. Unknown writes lock new edits and retain a read-only Check status action even after result dismissal. Unsent/known failed drafts are retained for the same selection; no write replay follows a timeout or recheck.
+
+Regression: filtered range/block selection, existing takedown creation/removal, large exact decimals, missing fields, stale preflight, partial denial, wrong-ID response, queued/native timeout, recovery after closing, keyboard locks, mobile containment and list/grid switching. Controller and real-browser inert fixtures cover these; npm run validate and npm run build:pages remain release gates. Changed source: widget.html, lots-list.js/css and lot-edit-controller.js; config/manifest/package, focused tests and design/module/readme documentation accompany the immutable release. Rollback production manage-lots to 0.10.4; persisted user edits remain in Creator.

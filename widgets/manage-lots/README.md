@@ -191,3 +191,13 @@ Release QA: changed widget.html, new subdivision-counts.js, scripts/test-manage-
 ## Routine success feedback (0.10.4)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+## Block list and mass updates (0.11.2)
+
+Lots now defaults to List, grouped once by subdivision and block; Grid remains available. Click outlined values for a single-field editor or the row pencil for all editable fields. Columns exposes additional fields. Checkbox/lot-number Shift-click selects a visible range, with block and Select visible controls respecting search. The editing selection is independent of takedown eligibility.
+
+Mass update supports Lot_Size, Base_Price, Earnest_Money, Appraised_Value, Additional_Tax, Address, Notes and On_Hold. Checked fields apply to the captured selection; unchecked fields stay unchanged. The editor previews current/mixed values and replacements. Save checks fresh captured values before sending, then verifies every destination. Unknown results expose read-only Check status, including after closing the result. No automatic replay. Archived or incomplete lots cannot be edited.
+
+Existing Builder Takedowns remain read-only. Their complete lot detail is grouped by block, with full codes in tooltips rather than repeated on every row. Existing takedown creation retains all eligibility and financial verification.
+
+Frontend only: existing Lots fields and All_Lots_All_Fields report updates through Creator SDK2 updateRecordById; no Creator deployment, new functions or Custom APIs. Tests: controller stale/partial/timeout/recovery cases, real-browser inert list and existing takedown creation, npm run validate and npm run build:pages. Rollback: production manage-lots mapping 0.10.4.
