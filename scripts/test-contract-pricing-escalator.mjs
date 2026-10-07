@@ -50,7 +50,7 @@ for(const raw of ['5','5.25','0','']){
  const sent=pricingWrites(h);assert.equal(sent.length,1);const data=sent[0].config.payload.data;
  assert.equal(data.Price_per_Ft,'100');assert.equal(data.Base_Price,5000);
  if(raw==='')assert.equal(Object.hasOwn(data,'Escalator'),false,'blank creation omits optional percentage');else assert.equal(data.Escalator,raw,'native create stores percentage points without division by 100');
- h.c.clpOpen(NEW);await drain();assert(h.c.S.clp,'new parent can reopen actual pricing editor');
+ assert.equal(h.c.ContractSetupUI.close(),true,'dismiss verified creation result before opening pricing');h.c.clpOpen(NEW);await drain();assert(h.c.S.clp,'new parent can reopen actual pricing editor');
  const reopened=h.c.document.querySelector('.nc-escalator').value;
  assert.equal(h.c.contractPercentComparable(reopened),h.c.contractPercentComparable(raw),'verified native percentage string reopens as entered points');
  assert.equal(reopened.includes('%'),false,'input contains percentage points without the report suffix');

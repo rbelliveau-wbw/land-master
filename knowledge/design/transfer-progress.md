@@ -31,13 +31,13 @@ after the dialog closes. Keep diagnostics collapsed by default.
 
 Open an in-widget dialog immediately when the user presses the final action. Use the shared navy gradient header, source → destination identity, amount and record counts, a slim progress bar, numbered stage rows, Running / Up next / Done / Needs review chips, and a pinned status/action footer. On completion show a prominent outcome and a per-destination list with names, counts, amounts where applicable, and verification states.
 
-Ordinary Contract creation and Lots & Pricing Save use the action-button exception
+Lots & Pricing Save uses the action-button exception
 requested October 5, 2026: show Saving on the existing button and a short result
 banner, with no progress/result overlay. Retain the detailed captured ledger,
 actual error diagnostics, pending interaction lock and duplicate-write guard.
 Unknown writes retain the draft and turn the same button into **Check status**;
 read-only reconciliation never completes unsent setup or replays a write.
-Verified creation opens the created record. Verified Lots & Pricing saves
+Verified Lots & Pricing saves
 close the editor and refresh the originating screen, preserving its view,
 filters, expanded rows and scroll. Read-only recovery uses the same success
 behavior. Preserve the distinction between a
@@ -75,7 +75,7 @@ Contracts uses normal request timing with no artificial per-minute budget
 (requested October 5, 2026). Keep the shared max-three concurrency and respect
 actual Creator throttle responses; do not add fixed delays to ordinary saves.
 Wrap the save footer on narrow screens so the log and save controls remain visible.
-When a confirmation replaces the editor, remount the captured draft before
+For routine Lots & Pricing confirmations, remount the captured draft before
 starting the workflow so its Saving, live audit and Check status controls stay
 connected. Verify writable fields and the authoritative child records; do not
 write a parent summary which a native on-success workflow derives differently.
@@ -116,3 +116,14 @@ For Budget transfer the stages are Verify destination Budgets → Send costs to 
 ## Regression checklist
 
 Verify immediate open, readable fast success, delayed response, double clicks, close/Escape while running, partial completion, lost response, malformed success/missing or duplicate destinations, preflight rejection without a write, stable DOM updates, keyboard/focus, narrow viewport, reduced motion, and a terminal result that stays open. Use a local fixture or an explicitly disposable workflow for screenshots; never replay a real transfer merely to demonstrate the modal.
+
+## Contract creation — October 6, 2026
+
+The latest explicit request supersedes inline creation progress. Close the form
+on committing Create and mount a separate navy progress/result dialog, following
+Pro Forma Submit to Legal: three numbered stages, actual verified-item progress,
+wrapped footer and collapsed saved-item results. Keep the terminal outcome until
+dismissed; Open contract opens the created record. Errors stay visible and exact
+Check status never replays or resumes unsent setup. Pending close locks, focus
+trap, inert background, reduced motion, private audit and captured draft protections
+remain. Routine Lots & Pricing retains its button/banner exception.

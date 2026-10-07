@@ -88,3 +88,12 @@ The modal can show a failure on phase 1, 2, or 3 according to what is known. A n
 - [Focused regression checks](../../scripts/test-send-approval-progress.mjs) and module-specific rules in [Budget](../modules/budget.md) and [Pro Forma](../modules/proforma.md).
 
 For each new approval flow, verify immediate open, fast success with readable phases, delayed routing, email failure and Retry email, stale/conflicting rows, ambiguous write response, timeout, safe Try again, duplicate clicks, final-step reconciliation if applicable, keyboard focus/Tab/Escape, narrow viewport, and reduced motion. Document the object-specific predicates, Creator function/API contract, permissions, and rollback in that module's knowledge page.
+
+## Contracts Review Accept — October 6, 2026
+
+The explicit request makes contract/action Accept a direct action with no
+confirmation or progress modal. Show Accepting on the row, disable duplicate
+commits, verify proposed actions before releasing their parent, and retain
+unknown writes for read-only checking. Decline retains its confirmation. Require
+a confirmed Approval Queue grant; Proposed is read-only outside Review. This
+exception does not change token-based LOI review or other approval progress dialogs.

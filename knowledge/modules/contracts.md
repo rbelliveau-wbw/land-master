@@ -713,3 +713,14 @@ rollback details: [Parent Contract assignment](../../docs/contract-parent-assign
 ## Earlier Parent flow (1.61.25)
 
 New contract Parent selection precedes Territory and Counterparty and inherits both. Read-only inherited values return to the prior draft when Parent clears. Status moves into the title row; optional label spacing is explicit. Existing-contract assignment and Lot Amendment matching remain unchanged. Fresh create preflight prevents writing changed inherited parent context. Frontend only; existing Contract.Territory, Builder and Parent_Contract fields, no new API or Creator publication. Regression and rollback: [Parent flow](../../docs/contract-parent-assignment.md#earlier-parent-flow--16125).
+
+## Review and family report (1.61.26)
+
+Accept acts directly in Review with confirmed Approval Queue access; Proposed
+status is read-only in the editor and fresh ordinary status writes cannot release
+it. Creation uses a separate persistent progress/result dialog. Completion has
+one heading; locked status pills match dropdown dimensions. All-type children
+stay under their parent, including context parents outside filters. Child-type
+count badges share the report palette, and Parent pickers group types and show
+counterparty pills in wrapped rows. No Creator backend deployment. Scope,
+verification, limitations and rollback: [release notes](../../docs/contracts-review-and-insights-2026-10-06.md).

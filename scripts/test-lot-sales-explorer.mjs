@@ -28,7 +28,7 @@ assert.match(theme, /\.builder-matrix\{width:100%;min-width:0;/,'builder matrix 
 assert.match(html, /<input id="hideEmpty" type="checkbox" role="switch">/);
 assert.match(html, /<select id="projectStatus" multiple data-picker="multi">/);
 assert.doesNotMatch(html, /SUBDIVISION SNAPSHOT/);
-assert.doesNotMatch(salesApp, /!f\.hideEmpty && !state\.historyReady/, "Recent data must display before complete history even when Hide Empty is off");
+assert.doesNotMatch(salesApp, /!f\.hideEmpty && !state\.historyReady/, "Hide Empty must not change the complete-history gate");
 assert.match(salesApp, /View All Lots/);
 assert.match(theme, /\.subdivision-progress-breakdown\{display:block/);
 assert.match(redesign, /\.sales-empty-toggle\{/);

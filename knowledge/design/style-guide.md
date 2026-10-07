@@ -244,3 +244,13 @@ the existing login fallback only when Full_Name is blank. Sort owner choices by
 the visible name and preserve ID/login/email identity separately.
 
 Contract creation starts with Type, then compact Parent (Optional), then Territory. Selected parents dictate the new draft Territory and Counterparty, rendered as read-only field values. Keep Status in the title row alongside owners. Optional field labels use a visible space before (Optional); flex labels need explicit margin because HTML whitespace alone collapses.
+
+Contract main reports keep every child type immediately below its parent, with
+a context parent when only a child matches filters. Counted child-type badges
+use the report type palette. Parent pickers group those types and use wrapped
+contract names plus counterparty pills and Territory in a wider dropdown. Locked
+status pills match the 31px dropdown height and full column width. Lot completion
+confirmations use one heading, without a repeated kicker.
+
+Insights waits for complete report data before populating any period; loading or
+failed history never leaves partial results visible.

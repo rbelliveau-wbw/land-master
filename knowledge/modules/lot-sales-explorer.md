@@ -81,3 +81,10 @@ required. Rollback to 1.5.42.
 ## Routine success feedback — October 6, 2026
 
 CSV export preparation and successful manual report refreshes add contextual black confirmations. Lot-sales refresh confirmation waits for complete history; automatic startup, filtering, partial data and errors never claim a successful full refresh. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+## Complete report first paint (1.5.46)
+
+The October 6 request supersedes recent-year first paint: every selected period
+waits for complete counted history and references before publishing a report.
+Loading or failed history leaves the report empty and exports disabled. Retry and
+stale-generation behavior remain safe; financial metrics and date bases are unchanged.
+No Creator deployment. Regression and rollback: [release notes](../../docs/contracts-review-and-insights-2026-10-06.md).

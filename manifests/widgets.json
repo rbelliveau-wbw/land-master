@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.61.25",
+      "version": "1.61.26",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "7f37f7adf33c25224f3b87a881db3385862e3d7df44fb80a140371fed82823ed",
+      "source_sha256": "86da39ae762bc68efcf05d144b18bff4a3a3faa39eb244fff0817950c06389d1",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [
@@ -247,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.5.45",
+      "version": "1.5.46",
       "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "5066184a57561eb22e555a25dd72d049e0768c1d3379f985989b4e0c7d7b31aa",
+      "source_sha256": "ba72c023d8d65f08c8838e20b1dcc093084c4d34814c262266ca47ced6312109",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

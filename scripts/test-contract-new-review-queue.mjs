@@ -24,8 +24,8 @@ for(const role of roles){
  assert.equal(h.reports.All_Contract_Actions.find(row=>row.Contract1===NEW).Status,role.action,role.label+' retains its action default');
  const approval=h.reports.All_Contract_Approvals.find(row=>row.Contract1===NEW);assert.equal(approval.Status,'Not Sent');assert.equal(approval.Approval_Email,false);assert.equal(approval.Reminder_Interval_Days,7);
  assert.ok(h.c.proposedContracts().some(row=>row.ID===NEW));assert.ok(!h.c.filteredContracts().some(row=>row.ID===NEW),'new parents do not enter the main pipeline before Legal accepts');
- assert.equal(h.c.reviewCount(),1,'nested proposed actions count with their parent once');assert.equal(h.c.S.contractWorkflow,null,'verified create completes without a result modal');
- h.c.pcRun(NEW,true);await drain();assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'New','existing Review acceptance still enters New');
+ assert.equal(h.c.reviewCount(),1,'nested proposed actions count with their parent once');assert.equal(h.node('contractSaveOverlay').hidden,false,'verified result remains until dismissed');assert.equal(h.c.ContractSetupUI.close(),true);assert.equal(h.c.S.contractWorkflow,null);
+ h.c.S.acc.known=true;h.c.S.acc.approve=true;await h.c.pcRun(NEW,true);await drain();assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'New','existing Review acceptance still enters New');
  assert.ok(h.c.filteredContracts().some(row=>row.ID===NEW));assert.equal(h.c.proposedContracts().length,0);assert.equal(h.c.reviewCount(),0);
  assert.equal(h.reports.All_Contract_Actions.find(row=>row.Contract1===NEW).Status,'New','acceptance retains its existing proposed-action transition');
  assert.equal(h.reports.All_Contracts1.find(row=>row.ID===ID).Status,'New','existing unrelated parent is unchanged');
