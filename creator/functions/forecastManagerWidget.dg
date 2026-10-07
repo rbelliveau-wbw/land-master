@@ -170,9 +170,10 @@ string forecastManagerWidget(string payload)
 				response.put("message","Choose a builder and fiscal year.");
 				return response.toString();
 			}
-			if(year.toLong() < 2019 || year.toLong() > 2050)
+			// Both required picklists must support creation: parent 2019..2050, child 2018..2046.
+			if(year.toLong() < 2019 || year.toLong() > 2046)
 			{
-				response.put("message","Choose a supported Forecast Year from 2019 to 2050.");
+				response.put("message","Choose a supported Forecast Year from 2019 to 2046.");
 				return response.toString();
 			}
 			parents = Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == builderId) && (Forecast_Year == year)];

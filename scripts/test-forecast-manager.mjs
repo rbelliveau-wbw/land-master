@@ -12,6 +12,9 @@ const base={Settings:[{ID:1,Open_Forecasting_Window:true}],Subdivision:[{ID:10,S
 
 // Compare the archived FEB...JAN input workflows, rather than assuming a month-end rule.
 const ds=fs.readFileSync(new URL('../creator/exports/Land_Master_2026-08-06.ds',import.meta.url),'utf8');
+function exportedYears(form){const begin=ds.indexOf('\t\tform '+form+'\n'),end=ds.indexOf('\n\t\tform ',begin+1),block=ds.slice(begin,end),options=block.match(/must have Forecast_Year\s*\([\s\S]*?values = \{([^}]+)\}/);assert.ok(options,form+' required year picklist is present');return JSON.parse('['+options[1]+']');}
+const parentYears=exportedYears('Forecast_Year'),childYears=exportedYears('Forecast'),supported=parentYears.filter(year=>childYears.includes(year));
+assert.equal(Math.min(...supported.map(Number)),2019);assert.equal(Math.max(...supported.map(Number)),2046,'creation cannot assume the parent range alone');
 const native=monthNames.map(month=>{
   const code=month.slice(0,3).toUpperCase(),start=ds.indexOf('\t\t\t'+code+'_Edit_Forecast_Manager as '),next=ds.slice(start+1).search(/\n\t\t\t\w+ as "/)+start+1,segment=ds.slice(start,next);
   assert.ok(start>=0,code+' workflow is present');
@@ -61,6 +64,8 @@ engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderI
 assert.equal(response.ok,true);assert.equal(response.createdParent,true);assert.equal(response.createdMonths,12);assert.equal(M.verifyEnsure(response,'21','2027'),true);assert.equal(engine.tables.Forecast_Year.length,2);assert.equal(engine.tables.Forecast.length,24);
 const created=engine.tables.Forecast.filter(month=>month.Builder1===21);assert.equal(created.find(month=>month.Forecast_Month==='January').Forecast_Start_Date,date('2028-01-01'));assert.ok(created.every(month=>month.Forecasted_Lots==null));
 const wrote=engine.writes.length;response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'});assert.equal(response.ok,true);assert.equal(response.createdParent,false);assert.equal(response.createdMonths,0);assert.equal(engine.writes.length,wrote,'an existing complete year is idempotent');
+for(const unsupported of ['2018','2047','2050']){engine=run();assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:unsupported}).ok,false,'both required picklists must support '+unsupported);assert.equal(engine.writes.length,0);}
+engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2046'});assert.equal(response.ok,true);assert.equal(M.verifyEnsure(response,'21','2046'),true);
 const incomplete=clone(base);incomplete.Forecast.pop();engine=run(incomplete);assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'20',year:'2026'}).ok,false);assert.equal(engine.writes.length,0,'an incomplete existing year is not silently rewritten');
 const orphan=clone(base);orphan.Forecast.push({...orphan.Forecast[0],ID:999,Builder1:21,Forecast_Year2:null});engine=run(orphan);assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2026'}).ok,false);assert.equal(engine.writes.length,0);
 engine=run({...base,Settings:[]});assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'}).ok,true,'empty-year creation mirrors native mass creation without unlocking month inputs');
