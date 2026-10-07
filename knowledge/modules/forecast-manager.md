@@ -4,6 +4,8 @@
 
 The implementation was audited against `creator/exports/Land_Master_2026-08-06.ds`, all 12 `FEB_Edit_Forecast_Manager` through `JAN_Edit_Forecast_Manager` input workflows, native manager search/loading, `Create_Forecasts_Mass_Cre`, the parent/child forms and existing refresh schedules. The current committed `buildForecastManagerSummary.dg` is reused without changes. The export predates the requested October 7, 2026 live audit; current development workflows remain unverified because the Codex browser runtime fails before connecting to Zoho. Offline execution is not Creator compilation.
 
+The 1.1.0 candidate redesign follows the actual Legal and Pro Forma widgets: shared navy/blue palette, compact white topbar, custom searchable filters, one subdivision/metrics strip, navy pill views, dense builder rows and a mounted creation dialog. It moves the existing schedule summary below the grid and keeps the missing-year action visible on mobile. Presentation changes touch widget.html, forecast.css and forecast-app.js; the February mapping, field-change save behavior, native window/date guards, server function and API contracts remain unchanged from 1.0.1. The inert browser runner captures desktop, mobile, empty, picker and creation progress/result renders for visual review.
+
 ## Read and write contract
 
 The deliberately new function `forecastManagerWidget(string payload)` handles four actions:
@@ -56,4 +58,4 @@ Success requires a persisted parent and exactly one linked, correctly scoped chi
 
 ## Rollback
 
-This is the first candidate; no previous forecast-manager widget release exists. Keep the native Forecast_Manager registration available. Roll back by removing the new Page/widget entry and disabling the new API bindings; restore prior environment mappings if promoted. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+No forecast-manager release has been promoted. The prior 1.0.1 immutable candidate can restore the previous frontend if the 1.1.0 redesign needs reverting; it has the same backend contract and is also unverified in Creator. Keep the native Forecast_Manager registration available as the operational fallback. Roll back a future deployment by removing the new Page/widget entry and disabling the new API bindings; restore prior environment mappings if promoted. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.

@@ -2,6 +2,8 @@
 
 One row per selected builder, with fiscal years extending to the right. WFY 2026 means February 2026 through January 2027. Months save on field change; Sold and Scheduled are read-only views. Searchable filters, per-year totals, the existing subdivision/takedown summary, CSV export and missing-year creation retain the native manager's purpose.
 
+The 1.1.0 redesign follows Legal and Pro Forma: compact white topbar, navy titles/pill controls, blue primary action, one subdivision/metrics strip and a denser white forecast report. This release changes presentation only; backend edit guards and write contracts remain unchanged.
+
 **Candidate only.** Current live development workflows, Creator compilation, API audience and native SDK behavior have not been verified. No Creator records were changed during development. Do not promote this candidate until the development checklist in [the module contract](../../knowledge/modules/forecast-manager.md) is complete.
 
 ## Files
