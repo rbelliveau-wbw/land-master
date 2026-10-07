@@ -9,7 +9,7 @@ function fixture(extra={}){
   const context={setTimeout,clearTimeout,console,ZOHO:{CREATOR:{DATA:{updateRecordById:async config=>{writes++;if(extra.send)return extra.send(config,rows);const row=rows.find(row=>row.ID===config.id);Object.assign(row,config.payload.data);return {code:3000,data:{ID:config.id}};}}}},LMData:{request:(_task,fn)=>extra.queue?extra.queue(fn):Promise.resolve().then(fn)}};
   vm.createContext(context);for(const file of ['takedown-model.js','manage-lots-controller.js','lot-edit-controller.js'])vm.runInContext(fs.readFileSync('widgets/manage-lots/src/app/'+file,'utf8'),context);
   const published=[];
-  const editor=context.LMLotEdit.create({report:'All_Lots_All_Fields',context:()=>actor,generation:()=>generation,ready:()=>true,timeoutMs:extra.timeoutMs||50,read:async selected=>{reads++;if(extra.read)return extra.read(selected,rows,reads);return JSON.parse(JSON.stringify(rows.filter(row=>selected.includes(row.ID))));},publish:row=>published.push(row)});
+  const editor=context.LMLotEdit.create({report:'All_Lots_All_Fields',allowedBuilder:id=>id==='90071992547409961',validateBuilder:extra.validateBuilder||async function(){},context:()=>actor,generation:()=>generation,ready:()=>true,timeoutMs:extra.timeoutMs||50,read:async selected=>{reads++;if(extra.read)return extra.read(selected,rows,reads);return JSON.parse(JSON.stringify(rows.filter(row=>selected.includes(row.ID))));},publish:row=>published.push(row)});
   return {editor,rows,api:context.LMLotEdit,published,writes:()=>writes,reads:()=>reads,setActor:value=>actor=value,setGeneration:value=>generation=value};
 }
 {
@@ -64,3 +64,11 @@ function fixture(extra={}){
   const run=await f.editor.commit(f.editor.capture([f.rows[0]],{Notes:'new'}));assert.equal(run.rows[0].state,'unknown');assert.equal(f.editor.pending(),true);assert.equal(await f.editor.recheck(),false);settle();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(f.editor.pending(),false);assert.equal(f.writes(),1);
 }
 console.log('PASS: exact decimals/string IDs, field allowlist, all-or-none stale preflight, no-op, scoped readback, partial denial, unknown/wrong-ID response, read-only recovery, session guard and queued/native timeout safety.');
+{
+  const f=fixture();f.rows[0].Builder1={};const op=f.editor.capture([f.rows[0]],{Builder1:'90071992547409961'});assert.equal((await f.editor.commit(op)).stage,'verified');assert.equal(f.rows[0].Builder1,'90071992547409961');
+  assert.equal(f.api.matches({Builder1:{ID:'90071992547409961',display_value:'Builder'}},{Builder1:'90071992547409961'}),true);
+  assert.throws(()=>f.editor.capture([f.rows[0]],{Builder1:'90071992547409962'}),/Type Builder/);assert.throws(()=>f.api.payload({Builder1:90071992547409961}),/unreadable/);
+  assert.equal((await f.editor.commit(f.editor.capture([f.rows[0]],{Builder1:''}))).stage,'verified');assert.equal(f.rows[0].Builder1,null);
+  const stale=fixture({validateBuilder:async()=>{throw Error('No longer Type Builder');}});stale.rows[0].Builder1={};assert.equal((await stale.editor.commit(stale.editor.capture([stale.rows[0]],{Builder1:'90071992547409961'}))).stage,'review');assert.equal(stale.writes(),0);
+  console.log('PASS: single Builder lookup, exact string IDs, lookup readback, clear, Builder-only choices and fresh Type preflight.');
+}

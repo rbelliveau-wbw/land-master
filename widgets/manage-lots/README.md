@@ -201,3 +201,11 @@ Mass update supports Lot_Size, Base_Price, Earnest_Money, Appraised_Value, Addit
 Existing Builder Takedowns remain read-only. Their complete lot detail is grouped by block, with full codes in tooltips rather than repeated on every row. Existing takedown creation retains all eligibility and financial verification.
 
 Frontend only: existing Lots fields and All_Lots_All_Fields report updates through Creator SDK2 updateRecordById; no Creator deployment, new functions or Custom APIs. Tests: controller stale/partial/timeout/recovery cases, real-browser inert list and existing takedown creation, npm run validate and npm run build:pages. Rollback: production manage-lots mapping 0.10.4.
+
+## Pinned inventory controls and Builder editing (0.12.0)
+
+The lot report scrolls independently below the toolbar and a compact subdivision/status summary. Block pills jump to and expand the matching block; report positions survive edits. Builder follows Status and opens the shared searchable single picker, restricted to existing Builder records with Type1 == "Builder", alphabetized by name. Historical assignments remain readable. Chosen builders are read fresh before writes; Lots.Builder1 is verified by exact string lookup ID afterward. Builder is also available as an explicitly checked mass-update field.
+
+On Hold is a one-click boolean checkbox using the existing guarded save flow. Its adjacent notes icon is yellow when notes exist and opens the Notes editor to add, edit or clear. Existing selection, exact decimal updates, unknown-result recovery and takedown creation remain intact.
+
+Affected existing fields: Lots.Builder1, On_Hold and Notes; Builder.Type1 and Builder_Name are read through All_Builders. Source changes include widget.html, lots-list.js/css, lot-edit-controller.js, manage-lots-controller.js and the local searchable-pickers.js. No Creator forms, reports, workflows, functions, Custom APIs or permissions change; no backend deployment is required. QA covers an inert 186-lot report, independent scrolling and block jumps, mobile containment, searchable Builder-only options, boolean toggles, note colors/clearing, captured type checks and existing verified single/bulk/takedown saves. Required validation and Pages build remain release gates. Rollback: production manage-lots mapping 0.11.2; persisted edits remain in Creator.

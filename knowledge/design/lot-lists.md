@@ -6,6 +6,20 @@ its header once; full codes belong in tooltips and the selected-lot disclosure.
 Keep status visible alongside outlined editable values. Extra editable columns
 are chosen through Columns. Collapsing a block preserves its selection.
 
+Keep the toolbar, subdivision summary, status totals, selection controls and
+block navigation above an independently scrolling lot report. Use compact pills
+for every displayed block; clicking one expands that block and scrolls the report
+to it. Preserve vertical and horizontal report positions through cell saves.
+The summary combines subdivision identity and total with small status counts;
+omit the duplicate legend and availability totals in List mode.
+
+Builder appears immediately after Status, using the existing Lots.Builder1
+lookup and a searchable single picker. Alphabetize only Type1 == "Builder"
+choices; keep historical values readable and check the chosen record's type
+fresh before saving. On hold is a direct boolean checkbox. Place the notes
+icon immediately to its right; use yellow when nonempty notes exist. Clicking
+the icon opens the same verified Notes editor for adding, editing or clearing.
+
 Use checkboxes and Shift-click on a checkbox or lot number for ranges in the
 current visible order. Select visible respects search; a block checkbox affects
 only that visible block. Editing selection is separate from takedown selection.
