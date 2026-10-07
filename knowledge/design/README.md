@@ -14,6 +14,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Takedown receipts](takedown-receipts.md) | Builder Takedown editor, sequential interest periods and live receipt |
 | [Lot lists](lot-lists.md) | Block-grouped lot tables, cell editing, shift selection and mass updates |
 | [Success feedback](success-feedback.md) | Black routine success popups, contextual wording and inline save accompaniment; preserve inline green checks |
+| [Forecast matrices](forecast-matrices.md) | One row per builder, February fiscal-year month groups, field-change saves and missing-year creation |
 | [General style](style-guide.md) | Shared palette, controls, responsive layout and remaining established patterns |
 
 Keep one focused Markdown document per reusable component family. Put its

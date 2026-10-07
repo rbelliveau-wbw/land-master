@@ -20,6 +20,7 @@ on:
           - tax-center
           - milestone-gantt
           - settings-manager
+          - forecast-manager
       version:
         description: Existing immutable release version
         required: true

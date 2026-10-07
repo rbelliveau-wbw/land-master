@@ -11,7 +11,8 @@
       "milestone-gantt": "1.1.6",
       "manage-lots": "0.9.20",
       "settings-manager": "1.3.8",
-      "lot-sales-explorer": "1.5.42"
+      "lot-sales-explorer": "1.5.42",
+      "forecast-manager": "1.2.0"
     },
     "stage": {
       "proforma-manager": "1.80.88",
@@ -32,7 +33,8 @@
       "milestone-gantt": "1.1.8",
       "manage-lots": "0.13.0",
       "settings-manager": "1.3.11",
-      "lot-sales-explorer": "1.5.46"
+      "lot-sales-explorer": "1.5.46",
+      "forecast-manager": "1.2.0"
     }
   },
   "path_aliases": {
@@ -48,6 +50,7 @@
     "manage-lots",
     "contract-management",
     "proforma-manager",
-    "tax-center"
+    "tax-center",
+    "forecast-manager"
   ]
 }

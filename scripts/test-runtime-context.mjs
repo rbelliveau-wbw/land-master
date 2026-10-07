@@ -4,7 +4,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 
 const root = process.cwd();
-const widgets = ['budget-manager','contract-management','land-master','manage-lots','milestone-gantt','proforma-manager','tax-center','lot-sales-explorer','settings-manager'];
+const widgets = ['budget-manager','contract-management','land-master','manage-lots','milestone-gantt','proforma-manager','tax-center','lot-sales-explorer','settings-manager','forecast-manager'];
 const failures = [];
 
 for (const widget of widgets) {

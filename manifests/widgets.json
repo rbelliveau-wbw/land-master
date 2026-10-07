@@ -269,6 +269,34 @@
       "dependency_inventory": "manifests/widget-dependencies.json#lot-sales-explorer",
       "hosting_entry": "index.html (generated from app/widget.html)",
       "trust": "Authored in-repo against existing Creator report contracts; synthetic fixtures excluded from releases."
+    },
+    {
+      "slug": "forecast-manager",
+      "name": "Forecast Manager",
+      "module": "forecasting",
+      "version": "1.2.0",
+      "description": "Compact native schedule cards, one builder row across February fiscal years, inline saves and verified missing-year creation.",
+      "source_entry": "widgets/forecast-manager/src/app/widget.html",
+      "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
+      "baseline_zip": null,
+      "html_title": "Forecast Manager",
+      "source_sha256": "4285990ab3bd5bb34b3e30ac4df61637c9b1bbcefd6e79041b34ea33a2086068",
+      "baseline_zip_sha256": null,
+      "plugin_manifest": {
+        "service": "CREATOR",
+        "locale": [
+          "en"
+        ],
+        "defaultLocale": "en",
+        "storage": false,
+        "cspDomains": {
+          "connect-src": []
+        },
+        "config": []
+      },
+      "dependency_inventory": "manifests/widget-dependencies.json#forecast-manager",
+      "hosting_entry": "index.html (generated from app/widget.html)",
+      "trust": "Frontend published for user implementation/testing. Native summary/math preserved from committed Deluge; current live development audit, Creator compilation and new API audience/setup remain pending. Unknown context/missing API fails closed."
     }
   ]
 }
