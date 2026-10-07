@@ -6,6 +6,8 @@ The implementation was audited against `creator/exports/Land_Master_2026-08-06.d
 
 The 1.1.0 candidate redesign follows the actual Legal and Pro Forma widgets: shared navy/blue palette, compact white topbar, custom searchable filters, one subdivision/metrics strip, navy pill views, dense builder rows and a mounted creation dialog. It moves the existing schedule summary below the grid and keeps the missing-year action visible on mobile. Presentation changes touch widget.html, forecast.css and forecast-app.js; the February mapping, field-change save behavior, native window/date guards, server function and API contracts remain unchanged from 1.0.1. The inert browser runner captures desktop, mobile, empty, picker and creation progress/result renders for visual review.
 
+The later request to keep the familiar native snapshot visible is captured in [the complete summary data/integration audit](forecast-summary-data.md). Three layout mockups compare a shared-label schedule/closing table, compressed builder cards and a selected-schedule context rail. No layout is selected or deployed by that audit; all native values and distinct schedule/phase/contract scopes remain requirements for the next implementation.
+
 ## Read and write contract
 
 The deliberately new function `forecastManagerWidget(string payload)` handles four actions:
