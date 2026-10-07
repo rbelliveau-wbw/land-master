@@ -578,6 +578,34 @@
       "external_domains": [
         "static.zohocdn.com"
       ]
+    },
+    "forecast-manager": {
+      "forms_referenced": [
+        "Settings",
+        "Subdivision",
+        "Builder",
+        "Forecast_Year",
+        "Forecast",
+        "Lots"
+      ],
+      "reports_referenced": [],
+      "custom_apis": [
+        {
+          "name": "Forecast_Manager_Widget",
+          "source": "New proposed OAuth2 custom API; not deployed"
+        },
+        {
+          "name": "Report_Proforma_Widget_Error",
+          "source": "Existing diagnostic reporter"
+        }
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.UTIL.getInitParams"
+      ],
+      "external_domains": [
+        "static.zohocdn.com"
+      ]
     }
   }
 }

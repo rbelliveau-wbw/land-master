@@ -1,0 +1,347 @@
+string forecastManagerWidget(string payload)
+{
+	response = Map();
+	response.put("ok",false);
+	writeStarted = false;
+	try
+	{
+		// Configure the Custom API for OAuth2 and the existing Forecast Manager audience.
+		// Never accept an actor or an environment supplied inside the request payload.
+		if(zoho.loginuser == null || zoho.loginuser == "" || zoho.loginuser == "public")
+		{
+			response.put("message","An authenticated Creator session is required.");
+			return response.toString();
+		}
+		request = payload.toMap();
+		action = ifnull(request.get("action"),"").toString();
+		response.put("action",action);
+		response.put("today",zoho.currentdate.toString("yyyy-MM-dd"));
+		forecastWindowOpen = false;
+		settingsList = Settings[ID != 0].Open_Forecasting_Window.getAll();
+		if(settingsList != null && !settingsList.isEmpty())
+		{
+			forecastWindowOpen = settingsList.get(0);
+		}
+		response.put("windowOpen",forecastWindowOpen == true);
+		if(action == "catalog")
+		{
+			subdivisionChoices = List();
+			for each subChoice in Subdivision[ID != 0] sort by Subdivision_Name
+			{
+				choice = Map();
+				choice.put("id",subChoice.ID.toString());
+				choice.put("name",ifnull(subChoice.Subdivision_Name,""));
+				choice.put("code",ifnull(subChoice.Subdivision_Code,""));
+				subdivisionChoices.add(choice);
+			}
+			builderChoices = List();
+			for each builderChoice in Builder[ID != 0] sort by Builder_Name
+			{
+				choice = Map();
+				choice.put("id",builderChoice.ID.toString());
+				choice.put("name",ifnull(builderChoice.Builder_Name,""));
+				builderChoices.add(choice);
+			}
+			response.put("subdivisions",subdivisionChoices);
+			response.put("builders",builderChoices);
+			response.put("ok",true);
+			return response.toString();
+		}
+		if(action != "snapshot" && action != "save" && action != "ensure")
+		{
+			response.put("message","Unknown forecast action.");
+			return response.toString();
+		}
+		subdivisionId = ifnull(request.get("subdivisionId"),"").toString().toLong();
+		subdiv = Subdivision[ID == subdivisionId];
+		if(subdiv.count() != 1)
+		{
+			response.put("message","The subdivision is unavailable.");
+			return response.toString();
+		}
+		monthNames = {"February","March","April","May","June","July","August","September","October","November","December","January"};
+		if(action == "save")
+		{
+			forecastId = ifnull(request.get("forecastId"),"").toString().toLong();
+			fc = Forecast[(ID == forecastId) && (Subdivision1 == subdivisionId) && (Delete_me != true)];
+			if(fc.count() != 1 || fc.Forecast_Year2 == null)
+			{
+				response.put("message","The forecast month is unavailable. Refresh forecasts.");
+				return response.toString();
+			}
+			parent = Forecast_Year[(ID == fc.Forecast_Year2) && (Subdivision1 == subdivisionId) && (Status == "Builder")];
+			if(parent.count() != 1 || parent.Builder1 != fc.Builder1 || parent.Forecast_Year != fc.Forecast_Year)
+			{
+				response.put("message","The forecast relationships need review.");
+				return response.toString();
+			}
+			parentMatches = Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == parent.Builder1) && (Forecast_Year == parent.Forecast_Year)];
+			if(parentMatches.count() != 1)
+			{
+				response.put("message","Duplicate forecast years need review.");
+				return response.toString();
+			}
+			// Exact Forecast_Manager FEB...JAN on-user-input guards, in their original order.
+			if(forecastWindowOpen != true)
+			{
+				response.put("message","Forecasting window closed for the month.");
+				return response.toString();
+			}
+			if(fc.Forecast_Start_Date == null)
+			{
+				response.put("message","Forecast dates need review.");
+				return response.toString();
+			}
+			if(fc.Forecast_Start_Date.addDay(28) < zoho.currentdate)
+			{
+				response.put("message","Past forecasts cannot be edited.");
+				return response.toString();
+			}
+			monthRecognized = false;
+			for each index monthIndex in monthNames
+			{
+				monthName = monthNames.get(monthIndex);
+				if(ifnull(fc.Forecast_Month,"").toUpperCase() == monthName.toUpperCase() || ifnull(fc.Forecast_Month,"").toUpperCase() == monthName.subString(0,3).toUpperCase())
+				{
+					monthRecognized = true;
+					expectedDate = ("02/01/" + parent.Forecast_Year).toDate("MM/dd/yyyy").addMonth(monthIndex);
+					monthDuplicates = 0;
+					for each sibling in Forecast[(Forecast_Year2 == parent.ID) && (Delete_me != true)]
+					{
+						if(ifnull(sibling.Forecast_Month,"").toUpperCase() == monthName.toUpperCase() || ifnull(sibling.Forecast_Month,"").toUpperCase() == monthName.subString(0,3).toUpperCase())
+						{
+							monthDuplicates = monthDuplicates + 1;
+						}
+					}
+					if(fc.Forecast_Start_Date != expectedDate || monthDuplicates != 1)
+					{
+						response.put("message","Forecast dates or duplicate months need review.");
+						return response.toString();
+					}
+				}
+			}
+			if(monthRecognized != true)
+			{
+				response.put("message","The forecast month needs review.");
+				return response.toString();
+			}
+			newValue = request.get("value");
+			if(newValue != null)
+			{
+				if(!newValue.toString().matches("[0-9]{1,5}"))
+				{
+					response.put("message","Enter a whole lot count from 0 to 99,999, or leave blank.");
+					return response.toString();
+				}
+				newValue = newValue.toString().toLong();
+			}
+			// Detect a changed value before writing; an unknown result is never automatically replayed.
+			if(ifnull(fc.Forecasted_Lots,"__blank__").toString() != ifnull(request.get("expected"),"__blank__").toString())
+			{
+				response.put("conflict",true);
+				response.put("current",fc.Forecasted_Lots);
+				response.put("message","This forecast changed since it was loaded. Refresh before editing.");
+				return response.toString();
+			}
+			writeStarted = true;
+			fc.Forecasted_Lots=newValue;
+			// Preserve the native phase/model/purchased-lot calculation exactly.
+			futureForecasted = ifnull(Forecast[(Subdivision1 == subdiv.ID) && (Forecast_Start_Date >= zoho.currentdate.toStartOfMonth())].sum(Forecasted_Lots),0);
+			lotsPurchased = Lots[(ID != 0) && (Phase == subdiv.Phase) && (Purchase_Date != null) && (Subdivision == subdiv.ID) && (Model == FALSE)];
+			lotTotal = Lots[(ID != 0) && (Phase == subdiv.Phase) && (Subdivision == subdiv.ID) && (Model == FALSE)];
+			subdiv.Unforecasted_Lots=lotTotal.count(ID) - lotsPurchased.count(ID) - futureForecasted;
+			savedForecast = Forecast[ID == forecastId];
+			if(ifnull(savedForecast.Forecasted_Lots,"__blank__").toString() != ifnull(newValue,"__blank__").toString())
+			{
+				response.put("unknown",true);
+				response.put("message","The saved value could not be verified. Check status before editing again.");
+				return response.toString();
+			}
+			response.put("verifiedForecastId",savedForecast.ID.toString());
+			response.put("verifiedValue",savedForecast.Forecasted_Lots);
+		}
+		if(action == "ensure")
+		{
+			builderId = ifnull(request.get("builderId"),"").toString().toLong();
+			builder = Builder[ID == builderId];
+			year = ifnull(request.get("year"),"").toString();
+			if(builder.count() != 1 || !year.matches("[0-9]{4}"))
+			{
+				response.put("message","Choose a builder and fiscal year.");
+				return response.toString();
+			}
+			if(year.toLong() < 2019 || year.toLong() > 2050)
+			{
+				response.put("message","Choose a supported Forecast Year from 2019 to 2050.");
+				return response.toString();
+			}
+			parents = Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == builderId) && (Forecast_Year == year)];
+			if(parents.count() > 1)
+			{
+				response.put("message","Duplicate forecast years need review. No records were changed.");
+				return response.toString();
+			}
+			parentId = null;
+			if(parents.count() == 1)
+			{
+				if(parents.Status != "Builder")
+				{
+					response.put("message","A non-builder forecast already exists for this combination.");
+					return response.toString();
+				}
+				parentId = parents.ID;
+			}
+			// Validate existing children before creating anything. Do not adopt or replace orphan records.
+			existingMonths = Map();
+			for each existing in Forecast[(Subdivision1 == subdivisionId) && (Builder1 == builderId) && (Forecast_Year == year) && (Delete_me != true)]
+			{
+				if(parentId == null || existing.Forecast_Year2 != parentId)
+				{
+					response.put("message","Unlinked forecast months need review. No records were changed.");
+					return response.toString();
+				}
+			}
+			if(parentId != null)
+			{
+				for each existing in Forecast[(Forecast_Year2 == parentId) && (Delete_me != true)]
+				{
+					if(existing.Subdivision1 != subdivisionId || existing.Builder1 != builderId || existing.Forecast_Year != year)
+					{
+						response.put("message","Forecast relationships need review. No records were changed.");
+						return response.toString();
+					}
+					recognized = false;
+					for each index monthIndex in monthNames
+					{
+						monthName = monthNames.get(monthIndex);
+						if(ifnull(existing.Forecast_Month,"").toUpperCase() == monthName.toUpperCase() || ifnull(existing.Forecast_Month,"").toUpperCase() == monthName.subString(0,3).toUpperCase())
+						{
+							recognized = true;
+							expectedDate = ("02/01/" + year).toDate("MM/dd/yyyy").addMonth(monthIndex);
+							if(existingMonths.get(monthName) != null || existing.Forecast_Start_Date != expectedDate)
+							{
+								response.put("message","Duplicate months or forecast dates need review. No records were changed.");
+								return response.toString();
+							}
+							existingMonths.put(monthName,existing.ID);
+						}
+					}
+					if(recognized != true)
+					{
+						response.put("message","An unrecognized forecast month needs review. No records were changed.");
+						return response.toString();
+					}
+				}
+			}
+			createdMonths = 0;
+			createdParent = false;
+			if(parentId != null && existingMonths.size() != 12)
+			{
+				response.put("message","This existing forecast year has missing months and needs review. No records were changed.");
+				return response.toString();
+			}
+			if(parentId == null)
+			{
+				// Same collection creation as Create_Forecasts_Mass_Cre; the parent name is unique.
+				months = Collection();
+				for each index monthIndex in monthNames
+				{
+					monthRow = Forecast_Year.Forecast_Months();
+					monthRow.Forecast_Month=monthNames.get(monthIndex);
+					monthRow.Forecast_Year=year;
+					monthRow.Forecast_Start_Date=("02/01/" + year).toDate("MM/dd/yyyy").addMonth(monthIndex);
+					monthRow.Builder1=builderId;
+					monthRow.Subdivision1=subdivisionId;
+					months.insert(monthRow);
+				}
+				fyStart = ("02/01/" + year).toDate("MM/dd/yyyy");
+				fyEnd = fyStart.addMonth(12);
+				lotsSold = Lots[(Subdivision == subdivisionId) && (Builder1 == builderId) && (Status == "Sold") && (Close_Date >= fyStart) && (Close_Date < fyEnd)].count();
+				lotsContracted = Lots[(Subdivision == subdivisionId) && (Builder1 == builderId) && (Status == "Contracted")].count();
+				writeStarted = true;
+				parentId = insert into Forecast_Year
+				[
+					Status="Builder"
+					Subdivision1=subdivisionId
+					Builder1=builderId
+					Forecast_Year=year
+					Forecast_Name=subdiv.Subdivision_Code + " - " + builder.Builder_Name + " - FC" + year
+					Subdivision_Code=subdiv.Subdivision_Code
+					Forecast_Months=months
+					Full_Year_Forecast=0
+					Total_Sold_Lots=lotsSold
+					Total_Contracted_Lots=lotsContracted
+					Added_User=zoho.loginuser
+				];
+				createdParent = true;
+				createdMonths = 12;
+			}
+			response.put("ensuredParentId",parentId.toString());
+			response.put("createdParent",createdParent);
+			response.put("createdMonths",createdMonths);
+			// Verification is returned with the complete snapshot; the widget checks all twelve destinations.
+		}
+		subdivision = Map();
+		subdivision.put("id",subdiv.ID.toString());
+		subdivision.put("name",ifnull(subdiv.Subdivision_Name,""));
+		subdivision.put("code",ifnull(subdiv.Subdivision_Code,""));
+		subdivision.put("unforecasted",subdiv.Unforecasted_Lots);
+		// Read-only reconciliation can distinguish a saved month from unfinished totals.
+		expectedFuture = ifnull(Forecast[(Subdivision1 == subdiv.ID) && (Forecast_Start_Date >= zoho.currentdate.toStartOfMonth())].sum(Forecasted_Lots),0);
+		expectedPurchased = Lots[(ID != 0) && (Phase == subdiv.Phase) && (Purchase_Date != null) && (Subdivision == subdiv.ID) && (Model == FALSE)].count(ID);
+		expectedTotal = Lots[(ID != 0) && (Phase == subdiv.Phase) && (Subdivision == subdiv.ID) && (Model == FALSE)].count(ID);
+		subdivision.put("expectedUnforecasted",expectedTotal - expectedPurchased - expectedFuture);
+		assignedBuilders = List();
+		for each assigned in subdiv.Builders
+		{
+			assignedBuilders.add(assigned.toString());
+		}
+		subdivision.put("builderIds",assignedBuilders);
+		response.put("subdivision",subdivision);
+		years = List();
+		monthRecords = List();
+		for each fy in Forecast_Year[(Subdivision1 == subdivisionId) && (Status == "Builder")] sort by Forecast_Year
+		{
+			yearRecord = Map();
+			yearRecord.put("id",fy.ID.toString());
+			yearRecord.put("builderId",ifnull(fy.Builder1,"").toString());
+			yearRecord.put("year",fy.Forecast_Year);
+			yearRecord.put("name",fy.Forecast_Name);
+			years.add(yearRecord);
+			for each child in Forecast[(Forecast_Year2 == fy.ID) && (Delete_me != true)] sort by Forecast_Start_Date
+			{
+				monthRecord = Map();
+				monthRecord.put("id",child.ID.toString());
+				monthRecord.put("parentId",fy.ID.toString());
+				monthRecord.put("builderId",ifnull(child.Builder1,"").toString());
+				monthRecord.put("subdivisionId",ifnull(child.Subdivision1,"").toString());
+				monthRecord.put("year",child.Forecast_Year);
+				monthRecord.put("month",child.Forecast_Month);
+				monthStart = "";
+				if(child.Forecast_Start_Date != null)
+				{
+					monthStart = child.Forecast_Start_Date.toString("yyyy-MM-dd");
+				}
+				monthRecord.put("start",monthStart);
+				monthRecord.put("forecast",child.Forecasted_Lots);
+				monthRecord.put("actual",child.Actual_Lots);
+				monthRecord.put("scheduled",child.Scheduled_Lots);
+				monthRecords.add(monthRecord);
+			}
+		}
+		response.put("years",years);
+		response.put("months",monthRecords);
+		response.put("summaryHtml",thisapp.buildForecastManagerSummary(subdivisionId));
+		response.put("ok",true);
+		return response.toString();
+	}
+	catch(functionError)
+	{
+		response.put("ok",false);
+		response.put("unknown",writeStarted);
+		response.put("message",functionError.toString());
+		return response.toString();
+	}
+	response.put("message","The forecast function ended without a response.");
+	return response.toString();
+}

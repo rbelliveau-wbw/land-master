@@ -410,6 +410,54 @@
       "response": "Standard {code:3000,result:<JSON string with verification and record counts>}",
       "notes": "Enabled Development and Production bindings to Land Master, Default createBudgetFromSubdivision. Four components published through Creator 9.51 with user approval: function, report wrapper and two permission descriptions. Server enforces authenticated Edit All/Owned Budgets. Stage widget/API not promoted. No actual budget creation test performed.",
       "production_link_name": "Create_Budget_From_Subdivision"
+    },
+    {
+      "name": "Forecast_Manager_Widget_DEV",
+      "consumers": [
+        "widgets/forecast-manager/src/app/forecast-app.js"
+      ],
+      "matching_creator_function": "forecastManagerWidget",
+      "confidence": "proposed-new-contract-not-deployed",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Existing Forecast Manager permitted audience; verify live before enabling",
+      "parameters": [
+        "payload:string"
+      ],
+      "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
+      "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
+    },
+    {
+      "name": "Forecast_Manager_Widget_STAGE",
+      "consumers": [
+        "widgets/forecast-manager/src/app/forecast-app.js"
+      ],
+      "matching_creator_function": "forecastManagerWidget",
+      "confidence": "proposed-new-contract-not-deployed",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Existing Forecast Manager permitted audience; verify live before enabling",
+      "parameters": [
+        "payload:string"
+      ],
+      "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
+      "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
+    },
+    {
+      "name": "Forecast_Manager_Widget",
+      "consumers": [
+        "widgets/forecast-manager/src/app/forecast-app.js"
+      ],
+      "matching_creator_function": "forecastManagerWidget",
+      "confidence": "proposed-new-contract-not-deployed",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Existing Forecast Manager permitted audience; verify live before enabling",
+      "parameters": [
+        "payload:string"
+      ],
+      "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
+      "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
     }
   ]
 }

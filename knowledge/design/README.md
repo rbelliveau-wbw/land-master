@@ -12,6 +12,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Record details](record-details.md) | Read-only main-report details, identity/date pills, compact previews and complete detail modals |
 | [Takedown receipts](takedown-receipts.md) | Builder Takedown editor, sequential interest periods and live receipt |
 | [Success feedback](success-feedback.md) | Black routine success popups, contextual wording and inline save accompaniment; preserve inline green checks |
+| [Forecast matrices](forecast-matrices.md) | One row per builder, February fiscal-year month groups, field-change saves and missing-year creation |
 | [General style](style-guide.md) | Shared palette, controls, responsive layout and remaining established patterns |
 
 Keep one focused Markdown document per reusable component family. Put its
