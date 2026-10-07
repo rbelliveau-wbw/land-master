@@ -191,3 +191,21 @@ Release QA: changed widget.html, new subdivision-counts.js, scripts/test-manage-
 ## Routine success feedback (0.10.4)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+## Block list and mass updates (0.11.2)
+
+Lots now defaults to List, grouped once by subdivision and block; Grid remains available. Click outlined values for a single-field editor or the row pencil for all editable fields. Columns exposes additional fields. Checkbox/lot-number Shift-click selects a visible range, with block and Select visible controls respecting search. The editing selection is independent of takedown eligibility.
+
+Mass update supports Lot_Size, Base_Price, Earnest_Money, Appraised_Value, Additional_Tax, Address, Notes and On_Hold. Checked fields apply to the captured selection; unchecked fields stay unchanged. The editor previews current/mixed values and replacements. Save checks fresh captured values before sending, then verifies every destination. Unknown results expose read-only Check status, including after closing the result. No automatic replay. Archived or incomplete lots cannot be edited.
+
+Existing Builder Takedowns remain read-only. Their complete lot detail is grouped by block, with full codes in tooltips rather than repeated on every row. Existing takedown creation retains all eligibility and financial verification.
+
+Frontend only: existing Lots fields and All_Lots_All_Fields report updates through Creator SDK2 updateRecordById; no Creator deployment, new functions or Custom APIs. Tests: controller stale/partial/timeout/recovery cases, real-browser inert list and existing takedown creation, npm run validate and npm run build:pages. Rollback: production manage-lots mapping 0.10.4.
+
+## Pinned inventory controls and Builder editing (0.12.0)
+
+The lot report scrolls independently below the toolbar and a compact subdivision/status summary. Block pills jump to and expand the matching block; report positions survive edits. Builder follows Status and opens the shared searchable single picker, restricted to existing Builder records with Type1 == "Builder", alphabetized by name. Historical assignments remain readable. Chosen builders are read fresh before writes; Lots.Builder1 is verified by exact string lookup ID afterward. Builder is also available as an explicitly checked mass-update field.
+
+On Hold is a one-click boolean checkbox using the existing guarded save flow. Its adjacent notes icon is yellow when notes exist and opens the Notes editor to add, edit or clear. Existing selection, exact decimal updates, unknown-result recovery and takedown creation remain intact.
+
+Affected existing fields: Lots.Builder1, On_Hold and Notes; Builder.Type1 and Builder_Name are read through All_Builders. Source changes include widget.html, lots-list.js/css, lot-edit-controller.js, manage-lots-controller.js and the local searchable-pickers.js. No Creator forms, reports, workflows, functions, Custom APIs or permissions change; no backend deployment is required. QA covers an inert 186-lot report, independent scrolling and block jumps, mobile containment, searchable Builder-only options, boolean toggles, note colors/clearing, captured type checks and existing verified single/bulk/takedown saves. Required validation and Pages build remain release gates. Rollback: production manage-lots mapping 0.11.2; persisted edits remain in Creator.

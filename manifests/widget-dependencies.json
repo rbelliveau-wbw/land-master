@@ -500,7 +500,8 @@
         "ZOHO.CREATOR.UTIL.getInitParams",
         "ZOHO.CREATOR.DATA.getRecords",
         "ZOHO.CREATOR.DATA.getRecordCount",
-        "ZOHO.CREATOR.DATA.addRecords"
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.updateRecordById"
       ],
       "external_domains": [
         "js.zohostatic.com"

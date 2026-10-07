@@ -93,7 +93,6 @@
   function open(select) {
     if (select.disabled) return;
     initMenu(); if (active === select) return close(true); close(false); active = select;
-    (select.closest('[role="dialog"]') || document.body).append(menu);
     search.value = ''; search.placeholder = 'Search ' + label(select) + '…';
     list.setAttribute('aria-label', label(select)); list.setAttribute('aria-multiselectable', String(select.multiple));
     footer.querySelector('[data-visible]').hidden = !select.multiple;

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T17:40:26.520Z",
+  "generated_at": "2026-10-07T15:11:59.336Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -192,13 +192,13 @@
       "slug": "manage-lots",
       "name": "Manage Lots",
       "module": "lots",
-      "version": "0.10.4",
+      "version": "0.12.0",
       "description": "Subdivision lot selection and Builder Takedowns with scoped template defaults, sequential interest periods, additional items, a live closing receipt and verified saves.",
       "source_entry": "widgets/manage-lots/src/app/widget.html",
       "creator_package_manifest": "widgets/manage-lots/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Manage Lots",
-      "source_sha256": "a515d92a471c1a4b931aa9944ecf3e0fab18cb7c4d11a5a22217311a1d354ef1",
+      "source_sha256": "3876555596443be4e6774518bc473d9fcb39c2af28fd36b8b57cfb1e3d763f89",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",
