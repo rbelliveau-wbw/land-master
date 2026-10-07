@@ -163,6 +163,23 @@ values, not repeat lot queries or recalculate business rules in JavaScript.
 
 ## HTML adaptation tradeoffs
 
+The selected 1.2.0 Compact cards implementation uses a frontend-only passive
+adapter in `widgets/forecast-manager/src/app/forecast-summary.js`. The current
+Deluge function and its callers stay unchanged. The adapter renders only trusted
+DOM built from native text and strictly allowlisted native gradients/meter widths.
+It checks that every non-style text node was mapped; unknown sections or unsafe
+tags return to the existing sandboxed native-summary view. It keeps repeated
+schedules separate and preserves the selected-phase/all-contract split. It does
+not use names as record joins, parse displayed counts for arithmetic, or issue
+queries. Blank values use an em dash while their original empty value remains
+explicit in accessible/native-field metadata. All-phase recent sales occupy the
+same four-period row as the phase counts, with distinct scope labels.
+
+The matrix's saved inventory total is labeled Inventory balance; the familiar
+native summary capacity retains Unforecasted Lots. Neither is substituted for
+the other. This publication is for user implementation/testing; current Creator
+function/API setup and live development checks remain pending.
+
 Restyling the isolated native HTML is the safest short-term frontend-only way to
 keep every value. Its limits are the nested scroll surface, fixed iframe height,
 and difficulty sharing context with the matrix. A parser that rebuilds compact

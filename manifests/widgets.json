@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.1.0",
-      "description": "One builder row across February fiscal years, native edit guards and verified missing-year creation.",
+      "version": "1.2.0",
+      "description": "Compact native schedule cards, one builder row across February fiscal years, inline saves and verified missing-year creation.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "6eed91d2aecc4757707223243df0d3f26d44b54370d1216d76003d44573de065",
+      "source_sha256": "4285990ab3bd5bb34b3e30ac4df61637c9b1bbcefd6e79041b34ea33a2086068",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",
@@ -296,7 +296,7 @@
       },
       "dependency_inventory": "manifests/widget-dependencies.json#forecast-manager",
       "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Candidate audited against August 6 export and current committed summary source. Live October development audit, Creator compilation and API audience are pending; no environments promoted."
+      "trust": "Frontend published for user implementation/testing. Native summary/math preserved from committed Deluge; current live development audit, Creator compilation and new API audience/setup remain pending. Unknown context/missing API fails closed."
     }
   ]
 }
