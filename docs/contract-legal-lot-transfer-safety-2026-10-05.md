@@ -1,7 +1,7 @@
 # Legal to Lots transfer safety
 
-The candidate transfers information only to the exact Lots selected on the
-Contract. Eligible Open or blank-status Lots with no purchase/close date and an
+The existing guarded source transfers information only to the exact Lots selected
+on the Contract. Eligible Open or blank-status Lots with no purchase/close date and an
 unassigned or native **Placeholder** builder receive missing information. Complete
 sets their Status to **Contracted last**, after verifying the expected price,
 builder and Contract/schedule links. Populated prices, including numeric zero,
@@ -9,16 +9,29 @@ remain unchanged. The function never writes `Lot_Size`.
 
 ## Authoritative source and deployment scope
 
-The fresh Production **V9.43** export is the baseline, not the historical August
-export or newer unpublished Development function. Its provenance is retained in
+**Current scope, October 7:** frontend release **1.61.28** strengthens fresh Lot
+selection and save checks in both association directions; it does not change
+this native transfer policy. No Creator deployment is needed. The user accepted
+the independent daily fill of a blank Sold `Contract_Schedule`, and accepted
+another parent Contract's `Lots1` membership as the minimum selection blocker.
+See [the current audit, verification and rollback](contract-lot-selection-safety-2026-10-07.md).
+The [Parent Contract deployment record](contract-parent-assignment.md) states
+that the guarded `Complete_Lot_Contract` was included in Creator **9.54** published
+through Stage to Production on October 6. That later record supersedes the
+V9.45 unpublished status recorded below. Current live native source was not
+inspected in the October 7 source/fixture audit.
+
+The October 5 fresh Production **V9.43** export was the baseline, rather than the
+historical August export or newer unpublished Development function. Its provenance is retained in
 [`Complete_Lot_Contract.production-V9.43.2026-10-05.json`](../creator/functions/baseline/Complete_Lot_Contract.production-V9.43.2026-10-05.json),
 beside the [original function](../creator/functions/baseline/Complete_Lot_Contract.production-V9.43.2026-10-05.dg).
 Export: `Land_Master-production (3).ds`, modified
 `2026-10-05T20:55:16.747Z`, SHA-256
 `9c0e529be609ef73fcf771598b547b5d69d595bde78d59d347009ed9fe05f55b`.
-Production Check is read-only before any writes.
+The guarded function's Check mode is read-only before any writes; the retained
+V9.43 body lacks that capability.
 
-Native candidates are
+Retained native source bodies are
 [`Complete_Lot_Contract.dg`](../creator/functions/Complete_Lot_Contract.dg) and the
 existing Contract on-success workflow
 [`Set_Lot_Base_Price_Builde.dg`](../creator/workflows/Set_Lot_Base_Price_Builde.dg).
@@ -33,22 +46,21 @@ reuse and Completion_Date behavior. The later authorized Second Closing release
 incorporates its validation and creation-only term copying into this safety
 function. Existing schedule terms never synchronize from Contract edits.
 
-The earlier safety-only candidate function and explicitly grouped workflow compiled
-and saved during Creator Development preparation. The function was then restored
-to its captured prior Development body to preserve unrelated pending Second
-Closing work. The combined Second Closing function requires fresh native
-compilation and publication by the user. Their selective Stage/Production
-publication was not completed;
+At the time of the October 5 preparation, the safety-only function and explicitly
+grouped workflow compiled and saved during Creator Development preparation. The
+function was then restored to its captured prior Development body to preserve unrelated pending Second
+Closing work. Selective Stage/Production publication had not yet completed;
 the user requested GitHub publication first and supplied a schema for the next
-review. Production V9.45 still contains the legacy transfer function and trigger,
+review. Production V9.45 contained the legacy transfer function and trigger,
 as confirmed by `Land_Master-production (4).ds`, modified
 `2026-10-05T21:25:14Z`, SHA-256
 `8339d8f49f6e1b7cf7832e79bab107113c8757b4b2d5ed7fc0bfea4ca0d52cf9`.
-The widget therefore blocks lot transfers until the native capability is live.
-Do not treat a widget promotion or passing fixture tests as native deployment
-evidence. Rollback uses the retained Production
-function/workflow bodies and prior widget release; those native bodies restore
-their prior safety limitations. No Lot migration or bulk repair is included.
+That V9.45 snapshot describes the historical preparation, not the later Creator
+9.54 deployment. The widget continues requiring the native capability before
+Lot transfers. A widget promotion or passing fixture tests is not evidence of
+current native deployment. Frontend 1.61.28 rollback restores 1.61.26 through the
+Production mapping and leaves native components intact. No Lot migration or
+bulk repair is included.
 
 ## Write policy
 
@@ -56,9 +68,9 @@ The additive capability is `lotTransferPolicy: "open-blank-placeholder-v1"`.
 Read-only Check returns the exact Contract/builder/selected Lot IDs and the native
 Builder IDs whose `Builder_Name` is exactly Placeholder. The widget requires this
 policy, a matching captured session/selection and fresh complete Lot snapshots
-before dispatch. Production V9.43 lacks this capability, so the candidate widget
-blocks transfer and completed-parent edits until the safe native function is
-published. It never attempts a browser repair against the older backend.
+before dispatch. An older backend without this capability cannot authorize
+transfer or completed-parent edits. The widget never attempts a browser repair
+against it. The October 7 frontend release retains these existing checks.
 
 | Operation | Allowed Lot changes |
 | --- | --- |
@@ -105,10 +117,21 @@ nor tests establish atomic isolation across the Contract/Lot records.
 [Zoho's conditional-update syntax](https://www.zoho.com/deluge/help/data-access/update-multiple-fields.html)
 supports the write-time predicates but does not promise that isolation.
 
-## Regression evidence and native gate
+## Independent schedule assignment and evidence limits
+
+Complete and LinkOnly skip every Lot write for Sold/date-protected rows in the
+inspected source. Separately, the historical daily `Update_Contract_Schedule_`
+fills a blank Sold schedule link by subdivision/builder. The user accepted that
+schedule-link exception; frontend 1.61.28 retains it and does not change the job.
+That link assignment does not authorize changing Sold financial or lifecycle
+values. The current live daily action bodies were not inspected. Existing
+schedule recalculation writes schedule fields, and [Zoho's insert documentation](https://www.zoho.com/deluge/help/data-access/add-record.html)
+states that `insert into` does not run target On Validate/On Success scripts.
+
+## Regression evidence
 
 `node scripts/test-contract-lot-transfer-policy.mjs` executes the entire saved
-Deluge candidate through a narrow query/update/insert adapter. It covers read-only
+Deluge source through a narrow query/update/insert adapter. It covers read-only
 Check; selected-ID validation; Open/blank/Placeholder transfer with Status last;
 zero preservation; real builders, dates, statuses and foreign links; duplicate or
 missing pricing; LinkOnly's single-field writes; target Placeholder rejection;
@@ -124,8 +147,9 @@ unknown-outcome quarantine/no replay, read-only late response checks, and verifi
 pricing-before-completed-parent ordering. Existing backfill/completion regressions
 also run in the SDK2 aggregate.
 
-After native compilation/publication, use disposable selected Lots to confirm
-eligible Open plus Placeholder becomes Contracted, populated zero remains zero,
-all protected values remain unchanged, and LinkOnly writes only an absent
-Contract1. Verify the published Contract workflow fires only for completed Lot
-types. No live financial transfer is claimed by the fixture runs.
+The 1.61.28 selection regression additionally covers fresh ownership in both
+directions, missing/malformed fields, direct selection and fresh save guards,
+and exclusion of older same-draft refresh successes/failures. Full repository
+validation, the Pages build and exact immutable release checks are frontend
+release gates. No live financial transfer or new native deployment is claimed
+by these fixture runs.

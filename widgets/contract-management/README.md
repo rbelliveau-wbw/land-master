@@ -217,3 +217,23 @@ remains same-Project/same-Builder Lot Masters. Native deployment and rollback:
 ## Parent-led creation — 1.61.25
 
 Compact Parent (Optional) follows Type, inherits Territory/Counterparty read-only, and restores prior draft values when cleared. Status is a title-row pill. Lot Amendment matching and existing relationship-only edits remain intact. Regression, affected fields and rollback: [Parent flow](../../docs/contract-parent-assignment.md#earlier-parent-flow--16125).
+
+## Lot availability checks — 1.61.29
+
+Picker opening refreshes scoped Lots and all Contract claims. Both Contract.Lots1
+and foreign Lots.Contract1 associations block selection and save; exact own links
+remain valid. Missing association fields fail closed, direct and block selection
+recheck eligibility, and overlapping reads can only publish the latest refresh.
+Existing sold-lot completion protection and daily schedule assignment remain unchanged.
+Frontend release only; no Creator deployment is required. Verification, affected
+fields and rollback to 1.61.26: [lot safety audit](../../docs/contract-lot-selection-safety-2026-10-07.md).
+
+## Attachment uploads in the existing workspace (1.61.29)
+
+Contract attachments accept either documented root or data file receipts and
+keep exact saved child/parent/path verification. Uploads now show a spinner and
+inline errors/Check status in the original mounted attachment modal; the extra
+Contract-fields dialog is removed for file batches. Native failure causes remain
+visible, and read-only create recovery repeats the email-flag predicate. Pending
+requests, duplicate guards and unknown/no-replay behavior remain. No Creator
+deployment is needed. See [diagnosis, regressions and rollback](../../docs/contract-attachment-upload-response-2026-10-07.md).

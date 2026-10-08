@@ -23,7 +23,27 @@ const ctx={
   addVersionFiles:(cid,files)=>uploads.push({cid,files}),APR_ICON_CLIP:'',
 };
 vm.createContext(ctx);
-for(const name of ['esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','attachmentsPanel','wireAttachmentsPanel','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
+for(const name of ['esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','contractFilePaths','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','attachmentsPanel','wireAttachmentsPanel','attachmentModalRows','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
+
+for(const [file,label] of [
+ [{filename:'Legal.pdf',filepath:'native_Legal.pdf'},'Legal.pdf'],
+ [{filepath:'folder/Legal.pdf'},'Legal.pdf'],
+ [{file_path:'folder/Legal.pdf'},'Legal.pdf'],
+ [{url:'/download?filepath=Legal.pdf'},'Legal.pdf'],
+ [{value:'/download?filepath=Legal.pdf'},'Legal.pdf'],
+ [[{filename:'Legal.pdf',filepath:'native_Legal.pdf'}],'Legal.pdf'],
+ [{filename:'Legal.pdf'},'Legal.pdf'],
+ [{filename:{value:'Legal.pdf'},filepath:'folder/Legal.pdf'},'Legal.pdf'],
+ [{filepath:'Legal.pdf',file_path:'Other.pdf'},'Contract file'],
+ [[{filepath:'Legal.pdf'},{filepath:'Other.pdf'}],'Contract file'],
+ [{filename:{value:'Legal.pdf'}},'Contract file'],
+ [{unknown:'Legal.pdf'},'Contract file'],
+]){
+ const row={ID:VID,Contract1:{ID:CID},File_field1:file,Email_Attachment:true,Added_User:'Alice'},before=JSON.stringify(row);ctx.S.versions=[row];ctx.showAttachmentsModal(CID);
+ assert.equal(ctx.fileDisplayName(row),label);
+ for(const markup of [mounted,ctx.attachmentsPanel(CID),ctx.aprAttachmentsTab(CID,[row],1),ctx.attachCard(CID)]){assert.ok(markup.includes(ctx.esc(label)));assert.doesNotMatch(markup,/\[object Object\]/);}
+ assert.equal(JSON.stringify(row),before,'supported and ambiguous native metadata render without rewriting the cached file field');
+}
 
 const cases=[
   ['alice@example.com','alice@example.com'],

@@ -4,6 +4,10 @@
 Owner pickers and displays prefer User_Access.Full_Name, preserving original
 record IDs and login/email permission identities. Blank names keep the existing
 fallback. See [scope, verification and rollback](../../docs/owner-full-names.md).
+
+## Attachments stay in the original dialog (1.80.90)
+
+File uploads show a mounted spinner and per-file results in Attachments without opening an extra Save Pro Forma dialog. Native FILE receipts accept one strict documented root or nested data filename/path representation; fresh exact child/Pro_Forma/filepath and captured-byte verification remains required. Scalar persisted file paths/download URLs are verified too. Uncertain uploads keep another send blocked and expose read-only Check saved attachments, terminal Close and reopening the same captured parent. Delayed binary responses cannot verify under a changed Creator actor/environment. Ordinary Save, LOI, approval and financial behavior remain unchanged. No Creator component deployment is required; live upload has not been retested by this patch. Regression details and Production rollback to 1.80.89: [attachment upload audit](../../docs/proforma-attachment-upload-1.80.90.md).
 ## Save request budget (1.80.88)
 
 Skip no-op lot-pricing updates only after this Save's fresh complete native read

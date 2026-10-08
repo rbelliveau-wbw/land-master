@@ -51,7 +51,7 @@ const transport = install({
   LMData:{request:(_task, invoke) => Promise.resolve().then(() => {requestExecutions++;return invoke();}), invalidate:() => invalidations.push(true), readAll:async config => {calls.push({method:'readAll', config:clone(config)});return [{ID:'900000000000000001'}];}},
   auditLog:(level,message) => {if(level === 'success')savedLogs.push(message);}, cleanVal:value => String(value ?? '').trim(), shortErr:error => error?.message || String(error),
   Promise, setTimeout, Date, Error, URLSearchParams
-}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
+}, ['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetAllRecords','getUpdateReportCandidates','sdkUpdateRecord','sdkAddRecord','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','budgetUploadReceipt','sdkUploadFile','sdkReadFile','sdkInvokeCustomApi']);
 transport.window = transport;
 
 await transport.sdkGetAllRecords('All_Budget_Items', '(Budget_Category == 1)');
@@ -283,12 +283,28 @@ for(const response of [{code:3000,data:{ID:'1'}},{code:3000,result:[{code:3000,d
 }
 
 const fileAck={code:3000,data:{filename:'test.pdf',filepath:'stored_test.pdf'}};
+const rootFileAck={code:3000,filename:'test.pdf',filepath:'stored_test.pdf',message:'File uploaded successfully !'};
 transport.CFG.reportCandidates.All_Contract_Versions=['All_Contract_Versions','Contract_Version_Report'];
+for(const response of [fileAck,rootFileAck,{...rootFileAck,data:{}},{...rootFileAck,details:{message:'Completed',limits:{remaining:10}}}]){
+  let uploads=0;FILE.uploadFile=async()=>{uploads++;return response;};const original=JSON.stringify(response);
+  assert.equal(transport.budgetUploadSuccess(response),true);
+  const out=await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'});
+  assert.equal(out.data.filename,'test.pdf');assert.equal(out.data.filepath,'stored_test.pdf');assert.equal(uploads,1,'each documented metadata shape sends exactly one native upload');
+  assert.equal(JSON.stringify(response),original,'normalization never modifies the native acknowledgement');
+  if(response===fileAck)assert.equal(out,response,'existing SDK data envelope identity remains unchanged');
+}
 const fileFailures=[null,{}, {code:3000}, {code:3000,data:{ID:'1'}},
   {code:3000,data:{filename:'',filepath:'stored_test.pdf'}}, {code:3000,data:{filename:'test.pdf',filepath:123}},
   {code:3000,result:[{code:2894,message:'No report named All_Contract_Versions'}]},
   {code:3000,result:[fileAck,{code:2899,message:'Denied'}]},
   {...fileAck,success:false}, {...fileAck,data:{...fileAck.data,success:false}},
+  {...rootFileAck,success:false},{...rootFileAck,filepath:''},{...rootFileAck,filename:42},
+  {...rootFileAck,data:{...fileAck.data}},{...rootFileAck,data:{filename:'different.pdf',filepath:'different_path'}},
+  {...rootFileAck,data:{filename:'test.pdf'}},{...rootFileAck,data:[fileAck.data]},
+  {...rootFileAck,details:{code:2898,message:'Denied'}},{...rootFileAck,details:{output:JSON.stringify({code:2899})}},
+  {...rootFileAck,details:[{code:3000,data:{status:'failure'}}]},
+  {...fileAck,details:{success:false}},{...rootFileAck,result:[]},
+  {...rootFileAck,code:2894,message:'No report named All_Contract_Versions'},
   ...['error','failed','failure'].flatMap(status => [{...fileAck,status},{...fileAck,data:{...fileAck.data,status}}])];
 for(const response of fileFailures) {
   let uploads=0;FILE.uploadFile=async () => {uploads++;return response;};
@@ -343,7 +359,7 @@ function attachmentHarness(options={}) {
     refreshBudgetAttachmentRecord:async () => {counts.refresh++;return row ? [clone(row)] : [];},
     toastShow:() => counts.toasts++,cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
     Promise,Error,URLSearchParams,setTimeout:() => 0
-  },['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','sdkUploadFile','sdkInvokeCustomApi','sdkRunBudgetFunction','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','cleanupEmptyAttachmentRecord','recheckBudgetAttachmentUpload','uploadBudgetAttachments']);
+  },['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','budgetUploadReceipt','sdkUploadFile','sdkInvokeCustomApi','sdkRunBudgetFunction','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','cleanupEmptyAttachmentRecord','recheckBudgetAttachmentUpload','uploadBudgetAttachments']);
   context.window=context;context.isObj=value => value && typeof value === 'object' && !Array.isArray(value);
   return {context,counts,get row(){return row;}};
 }
@@ -353,6 +369,21 @@ function attachmentHarness(options={}) {
   assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.read,1);
   assert.equal(counts.delete,0);assert.equal(counts.toasts,1);assert.equal(c.S.attachmentUploadReview,null);
   assert.match(c.S.attachmentStatus,/1 attachment added/,'success follows exact persisted file/parent verification');
+}
+for(const uploadResponse of [rootFileAck,{...rootFileAck,data:{}},{...rootFileAck,details:{message:'Completed'}}]){
+  const {context:c,counts}=attachmentHarness({uploadResponse});await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.read,1,'root metadata still requires fresh persisted exact parent/path verification');
+  assert.equal(counts.delete,0);assert.equal(counts.toasts,1);assert.equal(c.S.attachmentUploadReview,null);assert.match(c.S.attachmentStatus,/1 attachment added/);
+}
+{
+  const options={uploadResponse:rootFileAck,readError:{code:2898,message:'Report temporarily unavailable'}},{context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile]);assert.ok(c.S.attachmentUploadReview);assert.equal(c.S.attachmentUploadReview.filepath,'stored_test.pdf','root receipt preserves the exact acknowledged path for read-only recovery');
+  assert.equal(c.S.attachmentUploadReview.serverFilename,'test.pdf');assert.equal(counts.toasts,0);assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
+  delete options.readError;assert.equal(await c.recheckBudgetAttachmentUpload(),true);assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0,'recovering a root receipt never deletes or replays the write');
+}
+for(const uploadResponse of [{...rootFileAck,filepath:'another_path'},{...rootFileAck,filename:'another.pdf'}]){
+  const {context:c,counts}=attachmentHarness({uploadResponse});await c.uploadBudgetAttachments([selectedFile]);
+  assert.ok(c.S.attachmentUploadReview,'a root success receipt cannot excuse a persisted filename/path mismatch');assert.equal(await c.recheckBudgetAttachmentUpload(),false);assert.equal(counts.toasts,0);assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
 }
 for(const options of [
   {uploadError:new Error('Upload applied but response lost')},

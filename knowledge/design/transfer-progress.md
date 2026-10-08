@@ -44,7 +44,11 @@ behavior. Preserve the distinction between a
 verified created parent and complete setup: unfinished setup says **Contract
 created. Setup needs review.** Record the failure through the existing audit and
 critical-error reporter once per run without alternate-endpoint email retries.
-Actual Lot transfers, file batches and approval operations retain their dialogs.
+Actual Lot transfers and approval operations retain their dialogs. Attachment
+uploads in Contract Management and Pro Forma use the October 7 exception in
+[attachments](attachments.md): a spinner and inline result/recheck in the
+existing attachment workspace, retaining the mounted modal and internal verified
+destination ledger. No second transfer/save dialog is shown for file uploads.
 
 After complete verified Contract creation, show a prominent green success banner
 with 16px text, a centered SVG check, and comfortable padding for five seconds.

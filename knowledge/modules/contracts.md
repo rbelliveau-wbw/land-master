@@ -7,6 +7,62 @@ fallback. See [scope, verification and rollback](../../docs/owner-full-names.md)
 
 # Contracts Module
 
+## Attachment uploads in the existing workspace (1.61.29)
+
+Contract attachments accept either documented root or data file receipts and
+keep exact saved child/parent/path verification. Uploads now show a spinner and
+inline errors/Check status in the original mounted attachment modal; the extra
+Contract-fields dialog is removed for file batches. Native failure causes remain
+visible, and read-only create recovery repeats the email-flag predicate. Pending
+requests, duplicate guards and unknown/no-replay behavior remain. No Creator
+deployment is needed. See [diagnosis, regressions and rollback](../../docs/contract-attachment-upload-response-2026-10-07.md).
+
+## Fresh Lot ownership checks (1.61.29)
+
+The picker refreshes complete scoped Lots and the complete authorized Contract
+snapshot together. Another Contract's `Lots1` membership blocks selection across
+all statuses, archived/rejected records and Master/Amendment relationships; a
+foreign `Lots.Contract1` now also blocks it. The exact edited Contract may retain
+its own selection/link. Missing or malformed association fields leave availability
+unavailable. Direct toggle/block selection recheck ownership and subdivision scope,
+and fresh create/edit save verification stops newly claimed Lots before any write.
+
+Each picker refresh captures a new generation alongside its actor, navigation,
+draft/editor and subdivision scope. Only the latest refresh may publish results
+or change loading/error state. Older same-draft successes cannot replace newer
+claims, and older failures cannot unlock a pending newer read or replace its
+successful result. Existing immutable captures, persisted verification and
+unknown-response/no-replay handling remain.
+
+The temporary all-status unassociated backfill selection remains. Selecting a
+Sold Lot does not authorize transfer changes: the existing native completion
+source preserves the whole Sold/date-protected Lot. The user accepted the separate
+daily fill of a blank `Contract_Schedule` by subdivision/builder; that exception
+and native workflows remain unchanged. The accepted minimum blocker is another
+parent Contract's `Lots1`, now supplemented by the reverse-link check. Source,
+fixtures and deployment records were audited; current live native source was not
+inspected. Global uniqueness under simultaneous submissions is not claimed.
+
+Affected frontend functions: `contractLotScopeCurrent`, `ncLoadPickerLots`,
+`lpVerifyClaimRows`, `lpClaimedBy`, `lotPickable`, `lpPruneDisallowed`,
+`lpSelectBlock`, `lpToggle` and `clpValidateLots`; state adds `S.lpLoadGeneration`.
+Existing `Contract.Lots1`, `Lots.Contract1`, exact IDs and subdivision scope are
+read/validated; parent save and native transfer payloads are unchanged. No form,
+field, backend function, Custom API or native workflow changes; no Creator
+deployment is needed.
+
+The actual-widget selection regression covers both association directions,
+own-owner editing/new scope, all-status and family claims, malformed/missing
+columns, direct/block guards, changed actor/draft, overlapping refreshes and
+zero-write rejected create/edit. Existing backfill, picker, pricing, SDK2 scope
+and transfer tests remain. Release gates include the complete Contract SDK2
+aggregate, `npm run validate`, `npm run build:pages`, diff checks and exact
+source/immutable-release/Production-output checks. User-authorized main and
+Production promotion maps Contract Management to **1.61.29**; permanent Creator
+URLs and Development/Stage mappings are retained. Rollback Production to
+**1.61.26**, without native or data changes. See the [complete audit and release
+scope](../../docs/contract-lot-selection-safety-2026-10-07.md).
+
 ## Pricing confirmation reduced another 10% (1.61.18)
 
 Following user review, scale the pricing-only black success banner to 90% of
@@ -526,6 +582,11 @@ The native Lot choice is renamed Lot (Master), with no bulk record migration. Lo
 Creator deployment includes Contract.Parent_Contract, All_Contracts1 quick/detail fields, choice updates, Complete_Lot_Contract and seven Contract workflows. A Master without subdivisions/lots completes without schedules or Lot writes. All existing parent-claim backfill and fill-only Lot protections remain. Regression and rollback details: `docs/contract-lot-master-amendment.md`; widget rollback 1.60.35, prior Creator V9.21 bodies, retaining new schema when used.
 
 ## Temporary all-status backfill (1.60.35)
+
+Historical behavior below: 1.61.29 retains all-status unassociated selection,
+but both foreign association directions now block selection. The earlier
+parent-only exception for a foreign Lot lookup is superseded by the current
+[ownership checks](#fresh-lot-ownership-checks-16128).
 
 All Lots in the selected contract subdivisions are selectable regardless of Status or the Lot record Contract1 lookup. Only another Contract.Lots1 selection blocks assignment, including archived/rejected contracts. The edited contract does not block its own lots. Status colors remain descriptive; locks and hover messages identify parent contract claims. Both new-contract creation and Lots & Pricing save refresh parent claims before writing. Completion uses the same parent-only conflict rule. Populated Lot fields and links are still preserved; an orphaned existing Lot.Contract1 is never replaced. Robbys private banner describes the temporary rule.
 

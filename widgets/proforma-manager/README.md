@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.44`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.90`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+## Verified attachment uploads and inline progress (1.80.90)
+
+Attachments retain the original dialog or panel with an accessible spinner and per-file results; uploading no longer opens a second Save Pro Forma dialog. The native FILE validator accepts exactly one documented root/data filename/path receipt and verifies fresh exact child ID, Pro_Forma parent, persisted path and captured bytes, including scalar download-URL fields. Conflicts and uncertain responses keep another send blocked; Check saved attachments performs read-only recovery. Pending close locks, same-parent reopen, focus/context retention and actor/environment checks remain enforced. Ordinary Pro Forma Save retains its existing compact progress and verified-success dismissal. No Creator forms, fields, functions or Custom APIs changed. Actual-source receipt, upload/deletion, modal presentation and ordinary Save regressions pass; live Production upload is not claimed. [Audit and rollback to 1.80.89](../../docs/proforma-attachment-upload-1.80.90.md).
 
 ## User-entered phase sales only (1.80.44)
 

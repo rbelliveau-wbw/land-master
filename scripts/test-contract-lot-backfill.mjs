@@ -21,16 +21,17 @@ assert.equal(ctx.lockBlocks(ctx.CFG.reports.pricing,'5',{Base_Price:250}),false)
 ctx.S.clp=null; assert.equal(ctx.lockBlocks(ctx.CFG.reports.pricing,'5',{Base_Price:250}),true); ctx.S.clp={cid:'123',lots0:[]};
 assert.match(ctx.contractBackfillBanner(),/All lot statuses are selectable/); ctx.S.currentUser='rbelliveau@another.com'; assert.equal(ctx.contractBackfillBanner(),''); ctx.S.currentUser='another'; assert.equal(ctx.contractBackfillBanner(),'');
 for(const status of ['Open','Sold','Scheduled','Contracted','On Hold','',null,'Legacy']) {
-  assert.equal(ctx.lotPickable({ID:'1',Status:status},{}),true,'all unclaimed statuses can be selected');
-  assert.equal(ctx.lotPickable({ID:'1',Status:status},{'1':{id:'other'}}),false,'parent contract claims always block');
+  assert.equal(ctx.lotPickable({ID:'1',Status:status,Contract1:''},{}),true,'all unclaimed statuses can be selected');
+  assert.equal(ctx.lotPickable({ID:'1',Status:status,Contract1:''},{'1':{id:'other'}}),false,'parent contract claims always block');
 }
-assert.equal(ctx.lotPickable({ID:'1',Status:'Sold',Contract1:{ID:'other'}},{}),true,'Lot lookup alone does not establish a parent contract claim');
+assert.equal(ctx.lotPickable({ID:'1',Status:'Sold',Contract1:{ID:'124'}},{}),false,'a foreign Lot lookup blocks even without a matching parent selection');
 assert.equal(ctx.lotPickable({ID:'1',Status:'Sold'}, {'1':{id:'other'}}),false);
 ctx.S.contracts.push({ID:'other',Archive:true,Status:'Approval Rejected',Lots1:[{ID:'1'}]}); assert.ok(ctx.lpClaimIndex()['1'],'even an archived association blocks reassignment'); ctx.S.contracts=[c];
 ctx.S.nc.lotIds=['1']; ctx.S.clp.lots0=['1']; assert.equal(ctx.lotPickable({ID:'1',Status:'Sold',Contract1:{ID:'123'}},{}),true);
 ctx.S.clp.lots0=[]; assert.equal(ctx.lotPickable({ID:'1',Status:'Scheduled',Contract1:''},{}),true);
 ctx.S.lots=[{ID:'1',Subdivision:{ID:'20'},Status:'Contracted',Contract1:{ID:'9'}}];
-h.reports[ctx.CFG.reports.lots]=structuredClone(ctx.S.lots);await ctx.clpValidateLots('123',['1']);
+h.reports[ctx.CFG.reports.lots]=structuredClone(ctx.S.lots);await assert.rejects(ctx.clpValidateLots('123',['1']),/another contract/,'fresh reverse-only associations block saving');
+h.reports[ctx.CFG.reports.lots][0].Contract1={ID:'123'};await ctx.clpValidateLots('123',['1']);
 h.reports[ctx.CFG.reports.contracts]=[c,{ID:'124',Lots1:[{ID:'1'}]}];
 await assert.rejects(ctx.clpValidateLots('123',['1']),/another contract/,'save rechecks current parent associations');
 const nativeCount=h.api.getRecordCount;h.api.getRecordCount=async()=>{throw Error('read failed');};await assert.rejects(ctx.clpValidateLots('123',['1']),/read failed/);h.api.getRecordCount=nativeCount;h.reports[ctx.CFG.reports.contracts]=[c];
@@ -47,4 +48,4 @@ await assert.rejects(ctx.updateRecord('1',{Base_Price:100000},ctx.CFG.reports.lo
 await assert.rejects(ctx.healLotWrites(c,{ids:['1'],prById:{'1':pr},buyerId:'9'},{scheduleId:'7'}),/safe Lot transfer/,'old unguarded repair cannot write');
 await assert.rejects(ctx.clpBackfillLinks('123',['1']),/Lot verification is unavailable/,'dormant backfill fails closed against an older backend');
 assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name===ctx.CFG.reports.lots).length,0);
-console.log('Contract owner backfill and all-status selection remain; Open/blank-only transfer planning, protected status/dates/builder, zero/size preservation, changed-size rejection and no direct Lot updates pass.');
+console.log('Contract owner backfill and unclaimed all-status selection remain; both contract association directions block, Open/blank-only transfers protect status/dates/buyer, zero/size preservation and no direct Lot updates pass.');

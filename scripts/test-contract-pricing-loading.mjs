@@ -44,7 +44,7 @@ for(const cached of [0,1]){
 }
 {
  const {h,gate}=await fixture();await drain();gate.reject(new Error('Fixture lot read failed'));await drain();
- assert.equal(section(h).classList.contains('seq-arm'),false,'failed metadata read is not missing user input');assert.equal(section(h).hasAttribute('aria-busy'),false);assert.match(section(h).textContent,/Could not load complete lots/);assert.doesNotMatch(section(h).textContent,/Loading lot pricing|carry no Lot Size/);assert.equal(writes(h).length,0);
+ assert.equal(section(h).classList.contains('seq-arm'),false,'failed metadata read is not missing user input');assert.equal(section(h).hasAttribute('aria-busy'),false);assert.match(section(h).textContent,/Could not verify lot availability/);assert.doesNotMatch(section(h).textContent,/Loading lot pricing|carry no Lot Size/);assert.equal(writes(h).length,0);
 }
 {
  const {h,gate}=await fixture();await drain();h.c.lpOpen();await drain();assert(h.c.document.getElementById('lp_body'));gate.resolve();await drain();assert(h.c.document.getElementById('lp_body'),'late editor load cannot replace the opened picker');assert.equal(h.c.document.getElementById('clp_body'),null);
@@ -83,5 +83,4 @@ for(const screen of [
 console.log('PASS actual pricing save/recheck: stays on list, board or current detail with filters/scroll preserved; one verified write; scoped black success, normal dismissal, retained unknown draft and read-only recovery; other success/error styling unchanged.');
 
 export {fixture,section};
-
 

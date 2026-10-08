@@ -22,7 +22,8 @@ assert.equal(lotStateForStatus({ID:'1',Status:'Scheduled'}), 'scheduled', 'sched
 const requests = [];
 const h=await ready({realDOM:true}),ctx=h.c;
 Object.assign(ctx.S,{nc:{sub:['441092600000784111'],lotIds:[]},lots:[{ID:'1',Subdivision:{ID:'other'}}],homeSection:'contracts'});
-h.reports[ctx.CFG.reports.lots]=[{ID:'999999999999999999',Subdivision:{ID:'441092600000784111'}}];
+h.reports[ctx.CFG.reports.lots]=[{ID:'999999999999999999',Subdivision:{ID:'441092600000784111'},Contract1:''}];
+h.reports[ctx.CFG.reports.contracts][0].Lots1=[];
 const nativeRecords=h.api.getRecords;h.api.getRecords=config=>{requests.push(config);return nativeRecords(config);};
 await ctx.ncLoadPickerLots();
 assert.equal(requests[0].criteria, '(Subdivision == 441092600000784111)');

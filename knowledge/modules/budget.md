@@ -7,6 +7,17 @@ fallback. See [scope, verification and rollback](../../docs/owner-full-names.md)
 
 # Budget Module
 
+## Native attachment upload receipts (122.28.31)
+
+Budget FILE uploads accept one documented metadata container: root or `data`
+filename/path. The existing wrapper shape is preserved for downstream saved-file
+verification. Malformed, conflicting and failed receipts remain unknown; file
+receipt evidence cannot authorize alias replay or cleanup. Fresh exact child,
+Budget parent and acknowledged path checks, inline spinner and read-only recovery
+remain. No native Creator change is included. Source regressions passed; live
+upload behavior remains unverified. See the [October 7 upload audit](../../docs/budget-attachment-upload-response-2026-10-07.md).
+Rollback frontend mapping: 122.28.30.
+
 ## Vendor detail panel and centered header (122.28.29)
 
 Check, Wire and Purchase Order share the approved Detail panel vendor picker.

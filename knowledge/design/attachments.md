@@ -74,8 +74,19 @@ results. A created child ID does not prove file upload succeeded: verify the
 file acknowledgement and persisted file under that same child and parent.
 Unknown outcomes retain their inputs and require read-only recovery; they
 cannot trigger another insert, upload, alias retry or cleanup without proof.
-Multi-file writes follow [transfer progress](transfer-progress.md), including
-per-file verified results and partial/unknown states.
+Contract and Pro Forma attachment uploads use the existing attachment workspace
+for feedback (requested October 7, 2026). Keep that modal mounted and show a
+compact spinner with a polite upload/checking status; do not open a second
+Contract-fields or Save Pro Forma dialog. Stop the spinner when the operation
+settles, retain a readable inline failure, and keep read-only Check status
+available for an unknown outcome. Pending native requests and reconciliation
+hold Close/Escape and conflicting file actions. A terminal review may be
+dismissed without clearing its captured review or replaying a write. Successful
+verification patches the file list/count in place. Respect reduced motion.
+Budget retains its existing inline upload/recheck flow. Preserve the internal
+per-file destination ledger and partial/unknown states from
+[transfer progress](transfer-progress.md) in every module; the simpler feedback
+does not change persisted success predicates or permissions.
 
 ## Source references
 

@@ -1,6 +1,16 @@
 
 # Budget Manager
 
+## Native attachment upload receipts (122.28.31)
+
+Accepts the documented SDK `data.filename/filepath` and REST root
+`filename/filepath` acknowledgements, then verifies the exact saved child,
+Budget parent and file path. Duplicate/malformed/failed receipts remain
+unverified and cannot replay uploads. Existing inline spinner and read-only
+Recheck stay in the attachment workspace. Frontend only; no Creator deployment.
+See the [upload audit](../../docs/budget-attachment-upload-response-2026-10-07.md)
+for regression evidence and rollback to 122.28.30.
+
 Budget management, approvals, attachments, and pro forma comparison.
 
 Current release: `122.26.3`. Compact project cards with every phase always visible and Pro Forma styling; searchable multi-select project, territory, and lifecycle filters with external clear controls; direct owner/mapping editing. Category and item sizing remains at the original dimensions. See `../../knowledge/modules/budget.md` for regression and rollback notes. The release includes `src/app/budget-layout.css` alongside the existing widget files.

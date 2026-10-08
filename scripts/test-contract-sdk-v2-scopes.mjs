@@ -3,7 +3,7 @@ import {ready,drain,deferred,ID,ACTION,SUB,NEW} from './test-contract-sdk-v2-fou
 const SUB2='90071992547419931',OTHER='90071992547419932';
 const lotId=index=>(90071992547430000n+BigInt(index)).toString();
 function scope(h,subs=[SUB]){h.c.S.nc={sub:subs,lotIds:[],ppf:{}};h.c.S.clp={cid:ID};return h.c.S.nc;}
-function lots(h,count=1,sub=SUB){h.reports.All_Active_Lots_Contracts_View=Array.from({length:count},(_,index)=>({ID:lotId(index),Subdivision:{ID:sub,zc_display_value:'Native phase'},Status:'Open',Lot_Code:'F-'+index,Lot_Size:'50'}));return h.reports.All_Active_Lots_Contracts_View;}
+function lots(h,count=1,sub=SUB){h.reports.All_Active_Lots_Contracts_View=Array.from({length:count},(_,index)=>({ID:lotId(index),Subdivision:{ID:sub,zc_display_value:'Native phase'},Status:'Open',Lot_Code:'F-'+index,Lot_Size:'50',Contract1:''}));return h.reports.All_Active_Lots_Contracts_View;}
 function parents(h,extra=[]){h.reports.All_Contracts1[0].Lots1=[];h.reports.All_Contracts1.push(...extra);}
 {
  const h=await ready();scope(h);lots(h,5201);parents(h);const before=h.calls.length;
