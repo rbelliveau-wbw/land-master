@@ -458,6 +458,52 @@
       ],
       "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
       "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
+    },
+    {
+      "name": "Manage_Purchase_Order_DEV",
+      "consumers": [
+        "widgets/budget-manager/src/app/po-controller.js"
+      ],
+      "matching_creator_function": "managePurchaseOrder",
+      "confidence": "verified-native-2026-10-08",
+      "environment": "Development",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "Registered and configuration verified in Creator Microservices; function execution verified separately. Widget API invocation has not yet been verified."
+    },
+    {
+      "name": "Manage_Approval_Policies_DEV",
+      "consumers": [
+        "widgets/settings-manager/src/app/approval-admin.js"
+      ],
+      "matching_creator_function": "manageApprovalPolicies",
+      "confidence": "verified-native-2026-10-08",
+      "environment": "Development",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "Registered and configuration verified in Creator Microservices; function execution verified separately. Widget API invocation has not yet been verified."
     }
   ]
 }

@@ -14,6 +14,7 @@ map resolveApprovalRoute(map context)
 		submitterText = ifnull(context.get("submitterId"),"").toString();
 		amountText = thisapp.poCurrencyString(ifnull(context.get("amount"),"").toString());
 		typedAmount = Map(); typedAmount.put("value",context.get("amount"));
+		if(context.get("workflow") == "Pro Forma" || context.get("workflow") == "Contract") { amountText = "0.00"; typedAmount.put("value","0.00"); }
 		if(amountText == "" || !typedAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Company, submitter identity and an exact amount are required."); return result; }
 		territory = ifnull(context.get("territory"),"").toString();
 		department = ifnull(context.get("department"),"").toString();
@@ -37,6 +38,7 @@ map resolveApprovalRoute(map context)
 		if(policy.Version == null || policy.Version < 1) { result.put("error","Published policy version is invalid."); return result; }
 		if(policy.Enabled != true) { result.put("error","The applicable published policy is disabled. No company fallback was used."); return result; }
 		if((policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") || (policy.Duplicate_Person != "Separate steps" && policy.Duplicate_Person != "Reject")) { result.put("error","Self-approval and multiple-role rules must be explicitly configured."); return result; }
+		if(policy.Workflow == "Purchase Order" && (policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject")) { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); return result; }
 		steps = policy.Steps_JSON.toJSONList();
 		if(steps.size() == 0 || steps.size() > 30) { result.put("error","Published policy requires 1–30 ordered steps."); return result; }
 		route = List(); excluded = List(); people = List(); stepKeys = List(); expectedOrder = 0;
@@ -48,6 +50,7 @@ map resolveApprovalRoute(map context)
 			if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Step role ID must be a string."); return result; }
 			stepKeys.add(step.get("key"));
 			condition = step.get("condition");
+			if((policy.Workflow == "Pro Forma" || policy.Workflow == "Contract") && condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); return result; }
 			applies = step.get("enabled") == true;
 			reason = "Required step";
 			if(step.get("enabled") != true && step.get("enabled") != false) { result.put("error","Step enabled state is not explicit."); return result; }
@@ -61,10 +64,18 @@ map resolveApprovalRoute(map context)
 				if(condition == "At or above" && amount < threshold) { applies = false; }
 				reason = amountText+" is "+condition.toLowerCase()+" "+thresholdText;
 			}
+			else if(condition == "Budget modification attached")
+			{
+				if(policy.Workflow != "Purchase Order") { result.put("error","Linked budget modification conditions belong to Purchase Orders."); return result; }
+				if(context.get("hasBudgetModification") != true && context.get("hasBudgetModification") != false) { result.put("error","Linked PO budget modification context is required."); return result; }
+				if(context.get("hasBudgetModification") != true) { applies = false; }
+				reason = "A budget modification is linked to this PO";
+			}
 			else if(condition != "Always") { result.put("error","Unsupported step condition."); return result; }
 			if(applies != true)
 			{
 				excludedReason = condition+" threshold is not met";
+				if(condition == "Budget modification attached") { excludedReason = "No budget modification is linked to this PO"; }
 				if(step.get("enabled") == false) { excludedReason = "Disabled"; }
 				excluded.add({"key":step.get("key"),"reason":excludedReason});
 			}

@@ -4,73 +4,232 @@
   "application": "wbdevelopment/land-master",
   "baseCommit": "9b51f0aa0ad6c0dd985d630c1703d25557d72879",
   "branch": "feature/multi-item-purchase-orders",
-  "overall": "blocked before PO persistence activation; review candidate, incomplete native deployment",
+  "overall": "Core native PO save/reload/submit/check verified; shared configuration functions installed; workflow adapters and final release validation in progress",
   "currencyGate": {
-    "required": {"maxDigits": 19, "decimalPlaces": 2},
-    "observedPropertyLimit": 16,
-    "schema19Accepted": false,
-    "probes": [
-      {"rowId": "4410926000005117247", "input": "exact.toDecimal()", "expected": "9999999999999999.99", "actual": "10000000000000000.00", "success": false},
-      {"rowId": "4410926000005117249", "input": "exact string", "converted": "9999999999999999.99", "expected": "9999999999999999.99", "actual": "10000000000000000.00", "success": false}
+    "required": {
+      "maxDigits": 16,
+      "decimalPlaces": 2
+    },
+    "ownerAlternateContractApproved": true,
+    "maximum": "9999999999999.99",
+    "nativeVerified": true,
+    "probeRowId": "4410926000005117756",
+    "evidence": [
+      "evidence/po-currency-16-native.jpg"
     ],
-    "writeGateSource": "creator/functions/managePurchaseOrder.dg: nativeCurrency19Verified = false",
-    "ownerAlternateContractApproved": false,
-    "evidence": ["evidence/po-currency-development-limit.jpg", "evidence/po-currency-storage-failure.jpg"]
+    "historicalRejected19DigitProbes": [
+      {
+        "rowId": "4410926000005117247",
+        "input": "exact.toDecimal()",
+        "expected": "9999999999999999.99",
+        "actual": "10000000000000000.00",
+        "success": false
+      },
+      {
+        "rowId": "4410926000005117249",
+        "input": "exact string",
+        "converted": "9999999999999999.99",
+        "expected": "9999999999999999.99",
+        "actual": "10000000000000000.00",
+        "success": false
+      }
+    ]
   },
   "installedDevelopment": {
     "forms": {
-      "PO_Item": {"fieldCountVerified": 15, "report": "PO_Item_Report", "unitPriceCurrency": "16/2", "finalAmountCurrency": "16/2", "purpose": "diagnostic scaffolding; fails required 19/2 contract"},
-      "PO_Currency_Probe": {"fields": ["Expected", "Amount"], "report": "All_Po_Currency_Probes", "amountCurrency": "16/2"},
-      "Approval_Role": {"fieldCountVerified": 2, "report": "All_Approval_Roles", "recordsSeeded": false},
-      "Approval_Role_Assignment": {"fieldCountVerified": 8, "report": "All_Approval_Role_Assignments", "recordsSeeded": false},
-      "Approval_Policy": {"fieldCountVerified": 13, "report": "All_Approval_Policies", "recordsSeeded": false, "adapterEnabledDefault": false},
-      "Approval_Route_Snapshot": {"fieldCountVerified": 9, "report": "All_Route_Snapshots", "recordsSeeded": false},
-      "Approval_Config_Audit": {"fieldCountVerified": 8, "report": "Approval_Config_Audit_Report", "recordsSeeded": false},
-      "Approval_Config_Lock": {"fieldCountVerified": 2, "uniqueRequiredFieldVerified": "Lock_Key", "recordsSeeded": false}
+      "PO_Item": {
+        "fieldCountVerified": 15,
+        "report": "PO_Item_Report",
+        "quantity": "16/6",
+        "unitPriceCurrency": "16/2",
+        "finalAmountCurrency": "16/2"
+      },
+      "PO_Currency_Probe": {
+        "fields": [
+          "Expected",
+          "Amount"
+        ],
+        "report": "All_Po_Currency_Probes",
+        "amountCurrency": "16/2"
+      },
+      "Approval_Role": {
+        "fieldCountVerified": 2,
+        "report": "All_Approval_Roles",
+        "recordsSeeded": false
+      },
+      "Approval_Role_Assignment": {
+        "fieldCountVerified": 8,
+        "report": "All_Approval_Role_Assignments",
+        "recordsSeeded": false
+      },
+      "Approval_Policy": {
+        "fieldCountVerified": 13,
+        "report": "All_Approval_Policies",
+        "recordsSeeded": false,
+        "adapterEnabledDefault": false
+      },
+      "Approval_Route_Snapshot": {
+        "fieldCountVerified": 9,
+        "report": "All_Route_Snapshots",
+        "recordsSeeded": false
+      },
+      "Approval_Config_Audit": {
+        "fieldCountVerified": 8,
+        "report": "Approval_Config_Audit_Report",
+        "recordsSeeded": false
+      },
+      "Approval_Config_Lock": {
+        "fieldCountVerified": 2,
+        "uniqueRequiredFieldVerified": "Lock_Key",
+        "recordsSeeded": false
+      },
+      "Payment_Request": {
+        "currency": "16/2",
+        "newPOFieldsVerified": true,
+        "linkedModificationField": "PO_Budget_Modification",
+        "conditionalCheckWireValidationInstalled": true
+      },
+      "PO_Operation": {
+        "report": "All_Operations",
+        "uniqueRequiredField": "Token"
+      },
+      "PO_Phase_Lock": {
+        "report": "All_Po_Phase_Locks",
+        "uniqueRequiredField": "Phase_Key"
+      },
+      "User_Access": {
+        "newField": "Approval_Routing_Enabled",
+        "default": false,
+        "descriptiveHelpText": true
+      }
     },
-    "compiledFunctions": ["poCurrencyString", "poMultiplyExact", "poValidatePayload", "poNativeCurrencyProbe"],
-    "notes": "Final poValidatePayload compiled and ran: repeated-item 201 cents accepted; numeric ID with nested string spoof rejected; missing manual null rejected; one-cent mismatch rejected. IDE generic save errors are not proof of rollback; fresh builder verifies native field presence."
+    "compiledFunctions": [
+      "poCurrencyString",
+      "poMultiplyExact",
+      "poValidatePayload",
+      "poSnapshot",
+      "poBudgetBalances",
+      "managePurchaseOrder",
+      "poNativeCurrencyProbe",
+      "manageBudget",
+      "resolveApprovalRoute",
+      "approvalConfigurationSnapshot",
+      "manageApprovalPolicies",
+      "snapshotApprovalRoute"
+    ],
+    "workflows": [
+      "Validate Payment Request Type",
+      "Validate PO Item",
+      "Validate PO Operation",
+      "Validate PO Phase Lock"
+    ],
+    "customApis": [
+      "Manage_Purchase_Order_DEV",
+      "Manage_Approval_Policies_DEV"
+    ],
+    "navigation": "Internal PO and approval scaffolding removed from application menu"
   },
-  "notInstalledOrNotNativeCompiled": [
-    "Payment_Request new PO fields and conditional validation",
-    "PO_Operation", "PO_Phase_Lock",
-    "poSnapshot", "poBudgetBalances", "managePurchaseOrder", "manageBudget deletion guard",
-    "User_Access.Approval_Routing_Enabled",
-    "resolveApprovalRoute", "approvalConfigurationSnapshot", "snapshotApprovalRoute", "manageApprovalPolicies",
-    "Custom API registration", "native read-only configuration/report guards",
-    "Budget, Budget Modification, Pro Forma and Contract execution adapters"
+  "nativePOCases": [
+    {
+      "case": "Complete unbalanced Draft",
+      "passed": true,
+      "evidence": "evidence/native-draft-result.json"
+    },
+    {
+      "case": "Full persisted reload with calculated and manual true-null fields",
+      "passed": true,
+      "evidence": "evidence/native-reload-result.json"
+    },
+    {
+      "case": "Draft reserves zero",
+      "passed": true,
+      "evidence": "evidence/native-draft-balances.json"
+    },
+    {
+      "case": "Mismatched Submit rejects without writing",
+      "passed": true,
+      "evidence": "evidence/native-mismatch-result.json"
+    },
+    {
+      "case": "Balanced three-line Submit groups repeated items and reserves 3.01",
+      "passed": true,
+      "evidence": "evidence/native-submit-result.json"
+    },
+    {
+      "case": "Actual balance readback shows grouped reservations 2.01 and 1.00",
+      "passed": true,
+      "evidence": "evidence/native-submitted-balances.json"
+    },
+    {
+      "case": "Read-only Check without replay",
+      "passed": true,
+      "evidence": "evidence/native-check-result.json"
+    },
+    {
+      "case": "Optional modification field preserves old receipt compatibility",
+      "passed": true,
+      "evidence": "evidence/native-check-mod-link-compatible.json"
+    }
   ],
-  "nativeHelperCases": [
-    {"case": "currency conversion 1", "expected": "1.00", "passed": true},
-    {"case": "currency conversion boundary", "expected": "9999999999999999.99", "passed": true},
-    {"case": "multiplication 1.005 * 1.00", "expected": "1.01", "passed": true},
-    {"case": "multiplication boundary * 1", "expected": "9999999999999999.99", "passed": true},
-    {"case": "Submit repeated-item calculated+manual 2.01", "expectedGroupedCents": "201", "passed": true},
-    {"case": "Submit one-cent mismatch 2.00", "expected": "reject without write", "passed": true},
-    {"case": "Draft complete unbalanced 2.00", "expected": "accept validation", "passed": true},
-    {"case": "numeric Budget Item ID", "expected": "reject", "passed": true},
-    {"case": "Manual quantity string zero", "expected": "reject", "passed": true},
-    {"case": "numeric phase ID plus nested string spoof", "expected": "reject", "passed": true},
-    {"case": "missing Manual quantity key", "expected": "reject", "passed": true}
+  "nativeSharedCases": [
+    {
+      "case": "Configuration List reads actual User Access records",
+      "passed": true,
+      "evidence": "evidence/native-approval-list-result.json"
+    },
+    {
+      "case": "SaveRole persisted readback verified",
+      "passed": true,
+      "recordId": "4410926000005121096",
+      "evidence": "evidence/native-approval-save-role-result.json"
+    }
   ],
-  "localValidation": {"npmRunValidate": "passed", "npmRunBuildPages": "passed", "browserService": "in-memory fixture, not Creator persistence"},
-  "browserCases": [
-    "one-cent Submit mismatch sends zero writes", "Draft complete unbalanced save/reload",
-    "repeated items with calculated/manual true nulls", "balanced Submit readonly review",
-    "immediate progress and blocked Escape/close", "lost response Check verifies with writes still 1",
-    "Preview whole-dollar canonicalization and conditional reason",
-    "published policy clone/new Draft and expanded before/after audit"
+  "confirmedOwnerRules": {
+    "defaultPOChain": "TBD",
+    "coo": "Specific modification linked to this PO",
+    "submitterApproval": "Never",
+    "samePersonMultipleSteps": "Forbidden",
+    "rejectionReservation": "Retain",
+    "resubmit": "Reset decisions; preserve notes",
+    "overrideAuthority": "Tentative super administrators/CFO; no new grant",
+    "testRecipient": "rbellivea@wbdevelopment.com"
+  },
+  "remaining": [
+    "Native PO draft edit and non-null modification-link test",
+    "Native configuration report guards",
+    "Budget, Budget Modification, Pro Forma and Contract execution adapters and regressions",
+    "PO execution connection after owner defines default chain",
+    "Approved test notification checks",
+    "Fresh immutable releases and final full validation"
   ],
   "notProven": [
-    "native PO header/child persistence", "phase-lock concurrency and overdraw prevention",
-    "interruption between separate native writes", "different-user authentication/permissions",
-    "native Check/Wire regression", "native preview/resolver parity",
-    "existing approval execution/finalization/rejection migrations", "notification recipient behavior"
+    "Native different-user permission failures",
+    "Native interrupted multi-record writes",
+    "Native Check/Wire regression",
+    "Existing workflow rejection/finalization after adapter migration",
+    "Native widget invocation of new APIs"
   ],
-  "pendingOwnerRules": ["currency persistence contract", "PO chain/COO threshold and operator", "self-approval", "same person multiple steps", "rejection reservation", "edit/resubmit", "reassign/cancel/override authority", "approved notification test recipient"],
+  "concurrencyScope": "Owner explicitly removed multi-person same-PO testing; no cross-record atomic transaction claim",
+  "localValidation": {
+    "focusedPO": "passed",
+    "focusedPOController": "passed",
+    "focusedPolicy": "passed",
+    "focusedAdmin": "passed",
+    "npmRunValidate": "Prior candidate passed; rerun after remaining changes",
+    "npmRunBuildPages": "Prior candidate passed; rerun after remaining changes"
+  },
   "promoted": false,
   "stageOrProductionChanged": false,
   "emailsSent": false,
-  "financialPORecordsWritten": false,
-  "candidates": {"budget-manager": "122.29.2", "settings-manager": "1.4.0"}
+  "financialPORecordsWritten": true,
+  "testFixture": {
+    "budgetId": "4410926000005121010",
+    "purchaseOrderId": "4410926000005121026",
+    "ownerUserAccessId": "4410926000003608006",
+    "vendorId": "4410926000005121008"
+  },
+  "candidates": {
+    "budget-manager": "122.29.2",
+    "settings-manager": "1.4.0"
+  }
 }

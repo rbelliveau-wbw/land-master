@@ -13,6 +13,14 @@ map poSnapshot(string purchaseOrderId)
 		p.put("id",po.ID.toString());
 		p.put("budgetId",po.Budget.toString());
 		p.put("vendorId",po.Vendor.toString());
+		modificationId = null;
+		if(po.PO_Budget_Modification != null)
+		{
+			linkedModification = Budget_Modification[ID == po.PO_Budget_Modification];
+			if(linkedModification.ID == null || linkedModification.Budget != po.Budget) { result.put("error","Linked budget modification does not belong to this PO phase."); return result; }
+			modificationId = linkedModification.ID.toString();
+		}
+		p.put("budgetModificationId",modificationId);
 		p.put("requestDate",po.Request_Date.toString("yyyy-MM-dd"));
 		p.put("dateNeeded",po.Date_Needed.toString("yyyy-MM-dd"));
 		p.put("amount",po.PO_Amount_Exact);

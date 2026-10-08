@@ -1,11 +1,19 @@
 form PO_Phase_Lock
 {
 	displayname = "PO Phase Lock"
-	unique Phase_Key
+	success message = "PO record saved"
+	Section
+	(
+		type = section
+		row = 1
+		column = 0
+		width = medium
+	)
+	must have unique Phase_Key
 	(
 		type = text
 		maxchar = 30
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -13,7 +21,7 @@ form PO_Phase_Lock
 	(
 		type = text
 		maxchar = 80
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -22,7 +30,7 @@ form PO_Phase_Lock
 		type = picklist
 		values = User_Access.ID
 		displayformat = [User]
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -34,6 +42,19 @@ form PO_Phase_Lock
 			(
 				type = submit
 				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
 			)
 		}
 	}

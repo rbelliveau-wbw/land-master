@@ -1,0 +1,114 @@
+map applySharedApprovalPolicy(map context)
+{
+	// Private initiation adapter. Existing entry points must authorize first.
+	// Existing execution rows remain the only decision history.
+	result = Map(); result.put("success",false); result.put("shared",false); result.put("contract","approval-policy-v1");
+	try
+	{
+		workflow = context.get("workflow");
+		if(workflow != "Budget" && workflow != "Budget Modification" && workflow != "Pro Forma") { result.put("error","This execution adapter supports Budget, Budget Modification and Pro Forma."); return result; }
+		recordId = context.get("recordId").toString().toLong(); track = ifnull(context.get("department"),"");
+		ids = List();
+		if(workflow == "Budget")
+		{
+			for each budgetExecution in Budget_Approvals[Budget == recordId && Type1 == track] sort by Sort_Order { ids.add(budgetExecution.ID.toString()); }
+		}
+		else if(workflow == "Budget Modification")
+		{
+			for each modificationExecution in Budget_Approvals[Budget_Modification == recordId && Type1 == "Modification"] sort by Sort_Order { ids.add(modificationExecution.ID.toString()); }
+		}
+		else
+		{
+			for each proformaExecution in Budget_Approvals[Proforma == recordId] sort by Sort_Order { ids.add(proformaExecution.ID.toString()); }
+		}
+		for each existingId in ids
+		{
+			existingExecution = Budget_Approvals[ID == existingId.toLong()];
+			// Templates initialize an untouched chain. Existing decisions and notes
+			// continue through the original workflow with their original recipients.
+			if(existingExecution.Status != "Not Sent" || existingExecution.Sent_Date != null || existingExecution.Responded_Date != null || ifnull(existingExecution.Approval_Notes,"").trim() != "") { result.put("shared",false); result.put("success",true); result.put("retainedExistingRoute",true); return result; }
+		}
+		companyText = ifnull(context.get("companyId"),"").toString();
+		if(!companyText.matches("[0-9]+")) { result.put("success",true); return result; }
+		territory = ifnull(context.get("territory"),""); department = ifnull(context.get("department"),""); day = context.get("effectiveDate").toDate("yyyy-MM-dd");
+		bestRank = -1; matches = 0; selectedId = 0;
+		for each candidatePolicy in Approval_Policy[Workflow == workflow && Company == companyText.toLong() && Status == "Published"]
+		{
+			pTerritory = ifnull(candidatePolicy.Territory_Key,""); pDepartment = ifnull(candidatePolicy.Department_Key,"");
+			effectiveValid = true; scopeValid = true;
+			if(candidatePolicy.Effective_From != null && candidatePolicy.Effective_From > day) { effectiveValid = false; }
+			if(candidatePolicy.Effective_To != null && day >= candidatePolicy.Effective_To) { effectiveValid = false; }
+			if(pTerritory != "" && pTerritory != territory) { scopeValid = false; }
+			if(pDepartment != "" && pDepartment != department) { scopeValid = false; }
+			if(effectiveValid && scopeValid)
+			{
+				rank = 0; if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
+				if(rank > bestRank) { bestRank = rank; matches = 1; selectedId = candidatePolicy.ID; }
+				else if(rank == bestRank) { matches = matches+1; }
+			}
+		}
+		if(matches == 0) { result.put("success",true); return result; }
+		if(matches != 1) { result.put("error","Published policy is ambiguous at the highest applicable scope."); return result; }
+		selected = Approval_Policy[ID == selectedId];
+		// Until one workflow passes its migration gate, retain its existing execution.
+		if(selected.Adapter_Enabled != true) { result.put("success",true); return result; }
+		result.put("shared",true);
+		if(workflow == "Budget" && context.get("amountBasisConfirmed") != true)
+		{
+			for each budgetTemplateStep in selected.Steps_JSON.toJSONList()
+			{
+				if(budgetTemplateStep.get("enabled") == true && (budgetTemplateStep.get("condition") == "Above" || budgetTemplateStep.get("condition") == "At or above")) { result.put("error","The Budget threshold amount basis must be confirmed before this template can start an approval chain."); return result; }
+			}
+		}
+		resolved = thisapp.resolveApprovalRoute(context);
+		if(resolved.get("success") != true) { result.put("error",resolved.get("error")); return result; }
+		resolvedRoute = resolved.get("snapshot").get("route");
+		if(workflow == "Pro Forma" && resolvedRoute.size() > 8) { result.put("error","Pro Forma execution supports up to 8 approval steps."); return result; }
+		context.put("executionRows",ids);
+		context.put("submissionRevision",zoho.currenttime.toString("yyyyMMddHHmmssSSS"));
+		captured = thisapp.snapshotApprovalRoute(context);
+		if(captured.get("success") != true) { result.put("error",captured.get("error")); return result; }
+		route = captured.get("snapshot").get("route"); boundIds = List(); position = 0;
+		for each step in route
+		{
+			if(position < ids.size()) { executionId = ids.get(position).toLong(); }
+			else
+			{
+				parentBudget = null; parentProforma = null; parentModification = null; executionType = track;
+				if(workflow == "Budget") { parentBudget = recordId; }
+				else if(workflow == "Budget Modification") { parentBudget = context.get("budgetId").toString().toLong(); parentModification = recordId; executionType = "Modification"; }
+				else { parentProforma = recordId; executionType = "Pro Forma"; }
+				executionId = insert into Budget_Approvals
+				[
+					Added_User=zoho.loginuser
+					Budget=parentBudget
+					Proforma=parentProforma
+					Budget_Modification=parentModification
+					Type1=executionType
+					Status="Not Sent"
+					Sort_Order=step.get("order")
+					Title=step.get("role")
+					Approver=step.get("email")
+				];
+			}
+			execution = Budget_Approvals[ID == executionId];
+			execution.Title=step.get("role"); execution.Approver=step.get("email"); execution.Sort_Order=step.get("order"); execution.Status="Not Sent"; execution.Sent_Date=null; execution.Responded_Date=null;
+			if(execution.ID == null || execution.Title != step.get("role") || execution.Approver != step.get("email") || execution.Sort_Order != step.get("order") || execution.Status != "Not Sent" || execution.Sent_Date != null || execution.Responded_Date != null) { result.put("error","Execution row readback differs. Do not send approval emails."); return result; }
+			boundIds.add(execution.ID.toString()); position = position+1;
+		}
+		// Unused, untouched default rows have no approval history. Retain their
+		// records and IDs in the snapshot, but detach them from this new chain.
+		// The existing approval handlers therefore need no new status or branch.
+		for each unusedId in ids
+		{
+			if(!boundIds.contains(unusedId))
+			{
+				unusedExecution = Budget_Approvals[ID == unusedId.toLong()]; unusedExecution.Budget=null; unusedExecution.Proforma=null; unusedExecution.Budget_Modification=null;
+				if(unusedExecution.Budget != null || unusedExecution.Proforma != null || unusedExecution.Budget_Modification != null) { result.put("error","Unused default row could not be detached. Do not send approval emails."); return result; }
+			}
+		}
+		result.put("snapshotId",captured.get("snapshotId")); result.put("executionRows",boundIds); result.put("success",true);
+	}
+	catch(adapterError) { result.put("error","Policy execution could not be verified. Recheck the existing chain before sending emails."); }
+	return result;
+}

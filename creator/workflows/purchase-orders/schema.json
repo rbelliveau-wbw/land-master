@@ -2,16 +2,94 @@
   "status": "planned; live differences are recorded in native-results.json",
   "parent": "Payment_Request",
   "parent_schema": "planned/Payment_Request.ds",
-  "new_forms": ["PO_Item", "PO_Operation", "PO_Phase_Lock"],
-  "currency": {"max_digits": 19, "decimal_points": 2, "transport": "exact decimal strings", "required_native_proof": "exact persisted readback at boundary; no truncation"},
-  "quantity": {"max_digits": 16, "decimal_points": 6, "nullable": true},
-  "cost_elements": ["1", "2", "3", "4", "5"],
-  "unique_fields": ["Payment_Request.PO_Client_Key", "PO_Item.Revision_Line_Key", "PO_Operation.Token", "PO_Phase_Lock.Phase_Key"],
-  "conditional_required": {"Check": ["Budget_Item", "Accounting_Project_Code"], "Wire": ["Budget_Item", "Accounting_Project_Code"]},
-  "api": {"method": "POST", "authentication": "OAuth2", "initialScope": "Admin only until authenticated caller and phase-read permission tests pass", "argumentMode": "Key and Value", "parameter": {"name": "payload", "type": "string"}, "function": "managePurchaseOrder", "development": "Manage_Purchase_Order_DEV", "stage": "Manage_Purchase_Order_STAGE", "production": "Manage_Purchase_Order"},
-  "dependency_order": ["poCurrencyString", "poMultiplyExact", "poValidatePayload", "poSnapshot", "poBudgetBalances", "managePurchaseOrder", "manageBudget"],
-  "reports": {"All_Wire_Requests": "Add Vendor, PO_Status, PO_Revision, PO_Line_Count, PO_Amount_Exact, PO_Approval_State, PO_Commitment_State; preserve existing fields/permissions", "PO_Item_Report": "All PO_Item fields; read only", "PO_Operation_Report": "Owner-only diagnostic access; no direct edits/deletes", "PO_Phase_Lock_Report": "Owner-only diagnostic access; no automated expiry"},
+  "new_forms": [
+    "PO_Item",
+    "PO_Operation",
+    "PO_Phase_Lock"
+  ],
+  "currency": {
+    "max_digits": 16,
+    "decimal_points": 2,
+    "maximum": "9999999999999.99",
+    "owner_approved": "2026-10-08",
+    "transport": "exact decimal strings",
+    "required_native_proof": "exact persisted readback at boundary; no truncation"
+  },
+  "quantity": {
+    "max_digits": 16,
+    "decimal_points": 6,
+    "nullable": true
+  },
+  "cost_elements": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "unique_fields": [
+    "Payment_Request.PO_Client_Key",
+    "PO_Item.Revision_Line_Key",
+    "PO_Operation.Token",
+    "PO_Phase_Lock.Phase_Key"
+  ],
+  "conditional_required": {
+    "Check": [
+      "Budget_Item",
+      "Accounting_Project_Code"
+    ],
+    "Wire": [
+      "Budget_Item",
+      "Accounting_Project_Code"
+    ]
+  },
+  "api": {
+    "method": "POST",
+    "authentication": "OAuth2",
+    "initialScope": "Admin only until authenticated caller and phase-read permission tests pass",
+    "argumentMode": "Key and Value",
+    "parameter": {
+      "name": "payload",
+      "type": "string"
+    },
+    "function": "managePurchaseOrder",
+    "development": "Manage_Purchase_Order_DEV",
+    "stage": "Manage_Purchase_Order_STAGE",
+    "production": "Manage_Purchase_Order"
+  },
+  "dependency_order": [
+    "poCurrencyString",
+    "poMultiplyExact",
+    "poValidatePayload",
+    "poSnapshot",
+    "poBudgetBalances",
+    "managePurchaseOrder",
+    "manageBudget"
+  ],
+  "managed_validation_workflows": {
+    "PO_Item": "Validate PO Item",
+    "PO_Operation": "Validate PO Operation",
+    "PO_Phase_Lock": "Validate PO Phase Lock"
+  },
+  "reports": {
+    "All_Wire_Requests": "Add Vendor, PO_Status, PO_Revision, PO_Line_Count, PO_Amount_Exact, PO_Approval_State, PO_Commitment_State; preserve existing fields/permissions",
+    "PO_Item_Report": "All PO_Item fields; read only",
+    "All_Operations": "Owner-only diagnostic access; no direct edits/deletes",
+    "All_Po_Phase_Locks": "Owner-only diagnostic access; no automated expiry"
+  },
   "accounting_project_code": "TBD; parent accounting fields stay true null for managed multi-item PO",
   "atomicity": "No cross-record transaction claim. Parent and children are separately persisted and verified. Unresolved operations retain unique phase locks and require review.",
-  "approval_state": "Not Configured; no policy-driven financial transitions until owner rules are confirmed"
+  "approval_state": "Not Configured; no policy-driven financial transitions until owner rules are confirmed",
+  "poBudgetModificationLink": "Payment_Request.PO_Budget_Modification -> Budget_Modification.ID; optional, restricted by server to the same phase budget",
+  "confirmedOwnerRules": {
+    "confirmedAt": "2026-10-08",
+    "defaultChain": "TBD",
+    "cooCondition": "A specific budget modification linked to this PO; no amount threshold",
+    "selfApproval": "Deny",
+    "duplicatePerson": "Reject",
+    "rejectionReservation": "Keep reserved",
+    "resubmission": "Reset prior decisions; retain notes",
+    "overrideAuthority": "Tentative: super admins and CFO after submission/approval; awaiting explicit authority",
+    "testNotificationRecipient": "rbellivea@wbdevelopment.com"
+  }
 }

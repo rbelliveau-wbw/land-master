@@ -1,0 +1,142 @@
+form Budget_Approvals
+{
+	displayname = "Budget Approvals"
+	success message = "Budget Approval Added Successfully"
+	Section
+	(
+		type = section
+			row = 1
+			column = 0
+		width = medium
+	)
+	Approver
+	(
+					type = email
+		maxchar = 80
+			row = 1
+			column = 1
+		width = medium
+		personal data = true
+	)
+	Title
+	(
+		type = picklist
+		maxchar = 100
+		values = {"VP","Legal","CFO","COO","CEO"}
+			row = 1
+			column = 1
+		width = medium
+	)
+	Status
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Not Sent","Pending","Approved","Rejected","Skipped"}
+		initial value = "Not Sent"
+			row = 1
+			column = 1
+		width = medium
+	)
+	Approval_Notes
+	(
+					type = textarea
+		displayname = "Approval Notes"
+		height = 100px
+			row = 1
+			column = 1
+		width = medium
+	)
+	Budget
+	(
+		type = picklist
+		values  = Add_Budget.ID
+					bidirectional = Approvals
+					displayformat = [Budget_Name]
+		sortorder = ascending
+			row = 1
+			column = 2
+		width = medium
+	)
+	Proforma
+	(
+		type = picklist
+		values  = Add_Pro_Forma.ID
+					displayformat = [Name]
+		sortorder = ascending
+			row = 1
+			column = 2
+		width = medium
+	)
+	Budget_Modification
+	(
+		type = picklist
+		displayname = "Budget Modification"
+		values  = Budget_Modification.ID
+					displayformat = [Amount]
+		sortorder = ascending
+			row = 1
+			column = 2
+		width = medium
+	)
+	Type1
+	(
+		type = picklist
+		displayname = "Type"
+		maxchar = 100
+		values = {"Construction","Development","Pro Forma","Modification"}
+			row = 1
+			column = 2
+		width = medium
+	)
+	Sort_Order
+	(
+		type = number
+		displayname = "Sort Order"
+			row = 1
+			column = 2
+		width = medium
+	)
+	Sent_Date
+	(
+					type = date
+		displayname = "Sent Date"
+		alloweddays = 0,1,2,3,4,5,6
+			row = 1
+			column = 2
+		width = medium
+	)
+	Responded_Date
+	(
+					type = date
+		displayname = "Responded Date"
+		alloweddays = 0,1,2,3,4,5,6
+			row = 1
+			column = 2
+		width = medium
+	)
+
+	actions
+	{
+		on add
+		{
+			submit
+			(
+							type = submit
+							displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+							type = submit
+							displayname = "Update"
+			)
+			cancel
+			(
+							type = cancel
+							displayname = "Cancel"
+			)
+		}
+	}
+}

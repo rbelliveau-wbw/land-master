@@ -1,5 +1,5 @@
 {
-  "status": "partially installed Development scaffolding; functions uncompiled; see ../purchase-orders/native-results.json",
+  "status": "Development forms and all shared configuration/resolver/snapshot functions installed and compiled; native List and SaveRole verified; existing workflow adapters remain in progress",
   "forms": [
     "Approval_Role",
     "Approval_Role_Assignment",
@@ -20,9 +20,21 @@
   "userAccessAddition": {
     "field": "Approval_Routing_Enabled",
     "type": "checkbox",
-    "initial": false
+    "initial": false,
+    "helpText": "Allows shared approval policies to assign this person to a step. Off blocks routing even when their role assignment is active. Notifications use Approver Email. This does not grant budget editing or approval override permissions.",
+    "nativeVerified": true
   },
   "steps": "Ordered steps JSON belongs to one policy version; no separate decision history",
+  "confirmedPurchaseOrderRules": {
+    "defaultChain": "TBD; do not activate a guessed chain",
+    "cooCondition": "Budget modification attached means a specific Budget_Modification linked by Payment_Request.PO_Budget_Modification",
+    "selfApproval": "Deny",
+    "duplicatePerson": "Reject",
+    "rejectionReservation": "Retain",
+    "resubmit": "Reset prior decisions; retain notes",
+    "overrideAuthority": "Tentative super administrators/CFO; no new override grant",
+    "testNotificationRecipient": "rbellivea@wbdevelopment.com"
+  },
   "precedence": [
     "Territory+Department",
     "Territory",
@@ -49,6 +61,14 @@
     "manageApprovalPolicies",
     "snapshotApprovalRoute"
   ],
+  "managedValidationWorkflows": {
+    "Approval_Role": "Validate Approval Role",
+    "Approval_Role_Assignment": "Validate Approval Role Assignment",
+    "Approval_Policy": "Validate Approval Policy",
+    "Approval_Route_Snapshot": "Validate Approval Route Snapshot",
+    "Approval_Config_Audit": "Validate Approval Config Audit",
+    "Approval_Config_Lock": "Validate Approval Config Lock"
+  },
   "activation": "Adapter_Enabled defaults false and is not writable through this administration API until native workflow regressions and recipient tests pass",
   "reassign": "Blocked pending explicit authority and native execution adapter; no silent route edits"
 }

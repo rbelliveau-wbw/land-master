@@ -1,0 +1,4 @@
+// Apply to the six internal shared approval configuration/snapshot/audit forms.
+// Native function writes use the audited administration path instead.
+alert "Use Settings Manager > Approvals to change approval configuration. Submission snapshots and audit receipts are read-only.";
+cancel submit;

@@ -521,6 +521,11 @@ form User_Access
 		type = checkbox
 		displayname = "Approval Routing Enabled"
 		initial value = false
+		description
+		[
+			type = tooltip
+			message = "Allows shared approval policies to assign this person to a step. Off blocks routing even when their role assignment is active. Notifications use Approver Email. This does not grant budget editing or approval override permissions."
+		]
 		row = 6
 		column = 1
 		width = medium

@@ -133,18 +133,41 @@ form Payment_Request
 		displayname = "Request Amount"
 		type = USD
 		format = commadotwestern
-		maxchar = 19
+		maxchar = 16
 		decimalplace = 2
 		row = 3
 		column = 1
 		width = medium
 	)
 
+	Managed_PO
+	(
+		type = section
+		displayname = "Purchase Order"
+		row = 4
+		column = 0
+		width = medium
+	)
 	Vendor
 	(
 		type = picklist
 		values = Vendors.ID
 		displayformat = [Vendor_Name]
+		row = 4
+		column = 1
+		width = medium
+	)
+	PO_Budget_Modification
+	(
+		type = picklist
+		displayname = "Linked Budget Modification"
+		values = Budget_Modification.ID
+		displayformat = [Amount]
+		description
+		[
+			type = tooltip
+			message = "The specific budget modification linked to this Purchase Order. It must belong to this phase budget. A linked modification requires a COO step when PO approvals are configured. Leave blank when this PO has no linked modification."
+		]
 		row = 4
 		column = 1
 		width = medium
@@ -192,7 +215,7 @@ form Payment_Request
 	PO_Amount_Exact
 	(
 		type = text
-		maxchar = 19
+		maxchar = 16
 		row = 4
 		column = 1
 		width = medium

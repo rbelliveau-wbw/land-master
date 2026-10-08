@@ -8,11 +8,14 @@ const line={key:'line-one',budgetItemId:'9007199254740993',description:'Roadwork
 const payload={budgetId:'9007199254740994',vendorId:'9007199254740995',amount:'2.02',lines:[line,{...line,key:'line-two'}]};
 assert.equal(PO.multiply('1.005','1.00'),'1.01');
 assert.equal(PO.multiply('3','0.10'),'0.30');
-assert.equal(PO.currency(PO.money('9999999999999999.99')),'9999999999999999.99');
-assert.throws(()=>PO.money('10000000000000000.00'),/19/);
+assert.equal(PO.currency(PO.money('9999999999999.99')),'9999999999999.99');
+assert.throws(()=>PO.money('10000000000000.00'),/16/);
 assert.throws(()=>PO.money('0.001'),/two/);
 assert.throws(()=>PO.money(0.1),/string/);
 assert.equal(PO.validate(payload,true).grouped[line.budgetItemId],202n);
+assert.equal(PO.validate(payload,true).budgetModificationId,null);
+assert.equal(PO.validate({...payload,budgetModificationId:'9007199254740996'},true).budgetModificationId,'9007199254740996');
+assert.throws(()=>PO.validate({...payload,budgetModificationId:9007199254740996},true),/modification/i);
 assert.throws(()=>PO.validate({...payload,amount:'2.01'},true),/exactly/);
 assert.equal(PO.validate({...payload,amount:'2.01'},false).total,'2.02');
 assert.throws(()=>PO.validate({...payload,budgetId:9007199254740994},false),/Phase/);

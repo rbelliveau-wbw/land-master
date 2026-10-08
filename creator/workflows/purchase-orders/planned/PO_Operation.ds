@@ -1,11 +1,19 @@
 form PO_Operation
 {
 	displayname = "PO Operation"
-	unique Token
+	success message = "PO record saved"
+	Section
+	(
+		type = section
+		row = 1
+		column = 0
+		width = medium
+	)
+	must have unique Token
 	(
 		type = text
 		maxchar = 80
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -14,7 +22,7 @@ form PO_Operation
 		type = picklist
 		values = Add_Budget.ID
 		displayformat = [Budget_Name]
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -23,7 +31,7 @@ form PO_Operation
 		type = picklist
 		values = User_Access.ID
 		displayformat = [User]
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -32,7 +40,7 @@ form PO_Operation
 		type = picklist
 		values = Payment_Request.ID
 		displayformat = [ID]
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -40,7 +48,7 @@ form PO_Operation
 	(
 		type = picklist
 		values = {"Started","Complete","Unknown","Rejected"}
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -48,7 +56,7 @@ form PO_Operation
 	(
 		type = textarea
 
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -56,7 +64,7 @@ form PO_Operation
 	(
 		type = textarea
 
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -64,7 +72,7 @@ form PO_Operation
 	(
 		type = textarea
 
-		row = 4
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -76,6 +84,19 @@ form PO_Operation
 			(
 				type = submit
 				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
 			)
 		}
 	}

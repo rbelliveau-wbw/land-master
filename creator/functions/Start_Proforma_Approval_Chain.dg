@@ -262,12 +262,7 @@
 						return response;
 					}
 					rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
-		if(rows.count() == 0)
-		{
-			response.put("success",false);
-			response.put("message","Add at least one approval step before submitting this Pro Forma.");
-			return response;
-		}
+
 		// A lost API response must not restart an already delivered chain.
 		firstExisting = null;
 		existingPending = 0;
@@ -296,6 +291,13 @@
 			response.put("pendingApprovalId",firstExisting.ID.toString());
 			return response;
 		}
+		policyCompany = ""; if(pf.Purchasing_Company != null) { policyCompany = pf.Purchasing_Company.ID.toString(); }
+		policyContext = {"workflow":"Pro Forma","recordId":proformaIdText,"companyId":policyCompany,"territory":ifnull(pf.Territory,""),"department":"","submitterId":accessRow.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd")};
+		policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+		if(policyExecution.get("success") != true) { response.put("success",false); response.put("message",policyExecution.get("error")); return response; }
+		if(policyExecution.get("shared") == true) { response.put("policySnapshotId",policyExecution.get("snapshotId")); }
+		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
+		if(rows.count() == 0) { response.put("success",false); response.put("message","Add at least one approval step before submitting this Pro Forma."); return response; }
 		missingRecipients = List();
 		missingTitles = List();
 		expectedOrder = 1;

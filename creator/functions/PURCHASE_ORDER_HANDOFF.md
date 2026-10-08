@@ -1,5 +1,53 @@
 # Multi-item purchase orders and shared approval administration
 
+## Current status — 2026-10-08, supersedes the earlier notes below
+
+Creator Development now has working native PO persistence. Complete unbalanced
+draft save/reload, zero draft reservation, mismatched submission rejection,
+balanced submission with repeated budget items, full reservation, and read-only
+Check all passed. Evidence and actual fixture IDs are in
+`creator/workflows/purchase-orders/native-results.json`. The isolated Development
+PO is `4410926000005121026`; it reserves $3.01. Production was not changed.
+
+The owner approved Creator's supported maximum: Currency Max Digits **16**, two
+decimal places, maximum **9999999999999.99**. That boundary persisted exactly in
+native probe `4410926000005117756`. The earlier 19-digit failure is historical,
+and no longer blocks persistence.
+
+All shared configuration, resolver, and submission snapshot functions compile in
+Development. Native List and audited SaveRole readback passed. User Access has
+`Approval_Routing_Enabled`, initially off, with descriptive help text explaining
+routing, notification email, and the permissions it does not grant.
+
+Confirmed PO rules: no submitter self-approval; different people for each step;
+COO applies only when a specific modification is linked to the PO; rejection
+retains reservation; resubmit resets decisions and keeps notes. The new
+`Payment_Request.PO_Budget_Modification` lookup and dependent functions compile,
+and old receipt Check remains compatible. The default PO chain remains TBD.
+Super administrator/CFO override authority was tentative; no new grant was made.
+The approved test address is exactly `rbellivea@wbdevelopment.com`.
+
+Native draft edit, a specific linked modification, full reload, balanced submit,
+reservation and read-only recovery also passed for PO `4410926000005121122`.
+The Vendors action returns only vendor IDs and names through the PO API.
+The four Budget/Modification/Pro Forma initiation hooks compile in Development;
+existing decision and email handlers retain their prior execution behavior.
+
+Budget Manager **122.29.4** and Settings Manager **1.4.1** are validated immutable
+candidates. Full repository validation passed. The owner now requests the PO
+screen in the existing Budget widget, without any Creator widget registration
+change. The existing stable loader already routes the Development release using
+Creator initialization. Publish only the Budget Development mapping; preserve
+current Stage/Production and all other widget mappings from latest main.
+
+Still outstanding: actual native widget save/submit proof, PO default approval
+chain (TBD), Contract sequential execution, positive shared-route native tests,
+and notifications. Profile testing and permission changes are deferred at the
+owner's direction. No main push, Stage/Production Creator publication or email
+has occurred. Do not describe the whole task as done.
+
+## Earlier implementation notes (historical; deployment status below is superseded)
+
 ## Delivery status — 2026-10-08
 
 Rebuilt on `feature/multi-item-purchase-orders` from remote main

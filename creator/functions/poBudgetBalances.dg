@@ -18,7 +18,7 @@ map poBudgetBalances(string budgetId)
 				itemKey = po.Budget_Item.toString();
 				legacyItem = Budget_Item[ID == po.Budget_Item && Budget == budgetKey];
 				if(legacyItem.ID == null) { result.put("error","A legacy PO references another phase."); return result; }
-				if(ifnull(committed.get(itemKey),0) > 999999999999999999-legacyAmount.replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
+				if(ifnull(committed.get(itemKey),0) > 999999999999999-legacyAmount.replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
 				committed.put(itemKey,ifnull(committed.get(itemKey),0)+legacyAmount.replaceAll("[.]","").toLong());
 			}
 			else
@@ -27,10 +27,12 @@ map poBudgetBalances(string budgetId)
 				if(snapshot.get("success") != true) { result.put("error",snapshot.get("error")); return result; }
 				if(po.PO_Status == "Submitted")
 				{
-					for each line in snapshot.get("snapshot").get("lines")
+					savedPO = snapshot.get("snapshot");
+					savedLines = savedPO.get("lines");
+					for each line in savedLines
 					{
 						itemKey = line.get("budgetItemId");
-						if(ifnull(committed.get(itemKey),0) > 999999999999999999-line.get("finalAmount").replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
+						if(ifnull(committed.get(itemKey),0) > 999999999999999-line.get("finalAmount").replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
 						committed.put(itemKey,ifnull(committed.get(itemKey),0)+line.get("finalAmount").replaceAll("[.]","").toLong());
 					}
 				}
@@ -51,12 +53,13 @@ map poBudgetBalances(string budgetId)
 				modText = thisapp.poCurrencyString(modification.Amount.toString());
 				if(modText == "" || !modificationTypes.contains(modification.Modification_Type)) { result.put("error","An approved modification cannot be read exactly."); return result; }
 				modAmount = modText.replaceAll("[.]","").toLong();
-				if(modification.Modification_Type == "Decrease") { modAmount = -modAmount; }
-				if(modCents+modAmount > 999999999999999999 || modCents+modAmount < -999999999999999999) { result.put("error","Approved modifications exceed supported exact capacity."); return result; }
+				if(modification.Modification_Type == "Decrease") { modAmount = 0 - modAmount; }
+				if(modCents+modAmount > 999999999999999 || modCents+modAmount < -999999999999999) { result.put("error","Approved modifications exceed supported exact capacity."); return result; }
 				modCents = modCents+modAmount;
 			}
 			issued = ifnull(committed.get(item.ID.toString()),0);
-			balances.add({"budgetItemId":item.ID.toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":(finalCents+modCents-issued).toString()});
+			availableCents = finalCents+modCents-issued;
+			balances.add({"budgetItemId":item.ID.toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":availableCents.toString()});
 		}
 		result.put("balances",balances);
 		result.put("success",true);

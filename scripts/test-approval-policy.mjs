@@ -17,11 +17,25 @@ c=clone(config);c.assignments.push({...c.assignments[0],id:'24'});assert.throws(
 c=clone(config);c.assignments=[];assert.throws(()=>api.resolve(c,context),/Missing assignment/);
 c=clone(config);c.users[0].routingEnabled=false;assert.throws(()=>api.resolve(c,context),/inactive/);
 c=clone(config);c.users[0].approverEmail='login-first';assert.throws(()=>api.resolve(c,context),/unroutable/);
-c=clone(config);c.assignments[1].userAccessId='11';assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/overlap/);c.policies[0].duplicatePerson='Separate steps';assert.equal(api.resolve(c,{...context,amount:'100.01'}).route.length,2);
+c=clone(config);c.assignments[1].userAccessId='11';assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/overlap/);c.policies[0].duplicatePerson='Separate steps';assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/distinct approvers/);c.policies[0].workflow='Budget';assert.equal(api.resolve(c,{...context,workflow:'Budget',amount:'100.01'}).route.length,2);
 assert.throws(()=>api.resolve(config,{...context,submitterId:'11'}),/self-approval/);
+c=clone(config);c.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(c,context),/forbid submitter/);
+c=clone(config);c.policies[0].steps[1].condition='Budget modification attached';delete c.policies[0].steps[1].threshold;
+assert.equal(api.resolve(c,{...context,amount:'0.01',hasBudgetModification:true}).route.length,2);
+assert.equal(api.resolve(c,{...context,amount:'9999999999999.99',hasBudgetModification:false}).route.length,1);
+assert.throws(()=>api.resolve(c,context),/modification context/);
+assert.match(api.resolve(c,{...context,hasBudgetModification:true}).route[1].reason,/linked to this PO/);
 c=clone(config);const snapshot=api.resolve(c,context);c.policies[0].version=2;c.users[0].approverEmail='new@example.com';assert.equal(snapshot.policyVersion,1);assert.equal(snapshot.route[0].email,'first@example.com');
 c=clone(config);c.policies.push({...c.policies[0],id:'42'});assert.throws(()=>api.resolve(c,context),/Ambiguous/);assert.throws(()=>api.assertPublish({...c.policies[0],id:'43'},c.policies),/overlap/);
 c=clone(config);c.policies[0].effectiveTo='2026-10-08';assert.throws(()=>api.resolve(c,context),/Missing published/);
 assert.throws(()=>api.resolve(config,{...context,amount:100}),/decimal|currency/);
 assert.throws(()=>api.resolve(config,{...context,companyId:31}),/ID string/);
+for(const workflow of ['Pro Forma','Contract']){
+  c=clone(config);c.policies[0].workflow=workflow;
+  assert.throws(()=>api.resolve(c,{...context,workflow}),/straight approval chains/);
+  c.policies[0].steps.forEach(step=>{step.condition='Always';delete step.threshold;});
+  const straight={...context,workflow};delete straight.amount;
+  assert.equal(api.resolve(c,straight).route.length,2);
+  assert.equal(api.resolve(c,{...straight,amount:'9999999999999.99'}).route.length,2);
+}
 console.log('Policy threshold boundaries, explicit overrides, missing/inactive/ambiguous identities, overlap rules and detached snapshots passed.');

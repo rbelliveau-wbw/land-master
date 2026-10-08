@@ -16,6 +16,12 @@ map poValidatePayload(string payload)
 		typedValue = Map(); typedValue.put("value",p.get("amount"));
 		if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Amount must be an exact decimal string."); return result; }
 		amount = thisapp.poCurrencyString(ifnull(p.get("amount"),"").toString());
+		if(p.get("budgetModificationId") != null)
+		{
+			typedValue = Map(); typedValue.put("value",p.get("budgetModificationId"));
+			if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Linked budget modification must be an exact ID string or null."); return result; }
+		}
+		p.put("budgetModificationId",p.get("budgetModificationId"));
 		if(amount == "" || amount.replaceAll("[.]","").toLong() <= 0) { result.put("error","Enter a positive PO amount, with at most two decimal places."); return result; }
 		token = ifnull(p.get("token"),"").toString();
 		if(!token.matches("[A-Za-z0-9-]{20,80}")) { result.put("error","A unique operation token is required."); return result; }
@@ -59,7 +65,7 @@ map poValidatePayload(string payload)
 			}
 			else { result.put("error","Unknown pricing mode."); return result; }
 			cents = finalAmount.replaceAll("[.]","").toLong();
-			if(totalCents > 999999999999999999-cents) { result.put("error","Line total exceeds currency capacity."); return result; }
+			if(totalCents > 999999999999999-cents) { result.put("error","Line total exceeds currency capacity."); return result; }
 			totalCents = totalCents+cents;
 			grouped.put(itemId,ifnull(grouped.get(itemId),0)+cents);
 			line.put("finalAmount",finalAmount);

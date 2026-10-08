@@ -4,24 +4,24 @@ map approvalConfigurationSnapshot()
 	try
 	{
 		roles = List(); assignments = List(); policies = List(); users = List(); companies = List(); territories = List();
-		for each row in Approval_Role[ID != 0] { roles.add({"id":row.ID.toString(),"name":row.Role_Name,"active":row.Active}); }
-		for each row in Approval_Role_Assignment[ID != 0]
+		for each roleRow in Approval_Role[ID != 0] { roles.add({"id":roleRow.ID.toString(),"name":roleRow.Role_Name,"active":roleRow.Active}); }
+		for each assignmentRow in Approval_Role_Assignment[ID != 0]
 		{
 			fromText = ""; toText = "";
-			if(row.Effective_From != null) { fromText = row.Effective_From.toString("yyyy-MM-dd"); }
-			if(row.Effective_To != null) { toText = row.Effective_To.toString("yyyy-MM-dd"); }
-			assignments.add({"id":row.ID.toString(),"roleId":row.Role.toString(),"companyId":row.Company.toString(),"territory":ifnull(row.Territory_Key,""),"department":ifnull(row.Department_Key,""),"userAccessId":row.Person.toString(),"active":row.Active,"effectiveFrom":fromText,"effectiveTo":toText});
+			if(assignmentRow.Effective_From != null) { fromText = assignmentRow.Effective_From.toString("yyyy-MM-dd"); }
+			if(assignmentRow.Effective_To != null) { toText = assignmentRow.Effective_To.toString("yyyy-MM-dd"); }
+			assignments.add({"id":assignmentRow.ID.toString(),"roleId":assignmentRow.Role.toString(),"companyId":assignmentRow.Company.toString(),"territory":ifnull(assignmentRow.Territory_Key,""),"department":ifnull(assignmentRow.Department_Key,""),"userAccessId":assignmentRow.Person.toString(),"active":assignmentRow.Active,"effectiveFrom":fromText,"effectiveTo":toText});
 		}
-		for each row in Approval_Policy[ID != 0]
+		for each policyRow in Approval_Policy[ID != 0]
 		{
 			fromText = ""; toText = "";
-			if(row.Effective_From != null) { fromText = row.Effective_From.toString("yyyy-MM-dd"); }
-			if(row.Effective_To != null) { toText = row.Effective_To.toString("yyyy-MM-dd"); }
-			policies.add({"id":row.ID.toString(),"companyId":row.Company.toString(),"workflow":row.Workflow,"territory":ifnull(row.Territory_Key,""),"department":ifnull(row.Department_Key,""),"version":row.Version,"status":row.Status,"enabled":row.Enabled,"selfApproval":row.Self_Approval,"duplicatePerson":row.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":row.Steps_JSON.toJSONList(),"adapterEnabled":row.Adapter_Enabled});
+			if(policyRow.Effective_From != null) { fromText = policyRow.Effective_From.toString("yyyy-MM-dd"); }
+			if(policyRow.Effective_To != null) { toText = policyRow.Effective_To.toString("yyyy-MM-dd"); }
+			policies.add({"id":policyRow.ID.toString(),"companyId":policyRow.Company.toString(),"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"version":policyRow.Version,"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"duplicatePerson":policyRow.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":policyRow.Steps_JSON.toJSONList(),"adapterEnabled":policyRow.Adapter_Enabled});
 		}
-		for each row in User_Access[ID != 0] { users.add({"id":row.ID.toString(),"user":ifnull(row.User,"").toString(),"name":ifnull(row.Full_Name,""),"approverEmail":ifnull(row.Approver_Email,""),"routingEnabled":row.Approval_Routing_Enabled == true}); }
-		for each row in Company[ID != 0] { companies.add({"id":row.ID.toString(),"label":row.Company_Name}); }
-		for each row in Territory[ID != 0] { territories.add({"id":row.Territory_Name,"label":row.Territory_Name}); }
+		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
+		for each companyRow in Company[ID != 0] { companies.add({"id":companyRow.ID.toString(),"label":companyRow.Company_Name}); }
+		for each territoryRow in Territory[ID != 0] { territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name}); }
 		auditRows = List();
 		for each event in Approval_Config_Audit[ID != 0]
 		{

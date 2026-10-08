@@ -9,7 +9,7 @@ string poCurrencyString(string value)
 	parts = valueText.toList(".");
 	whole = parts.get(0).replaceAll("^0+","");
 	if(whole == "") { whole = "0"; }
-	if(whole.length() > 16) { return ""; }
+	if(whole.length() > 13) { return ""; }
 	fraction = "00";
 	if(parts.size() == 2)
 	{

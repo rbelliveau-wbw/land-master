@@ -21,7 +21,7 @@ try {
   if (error && error.code === 'ENOENT' && process.platform === 'win32') {
     // Git for Windows does not always install zip.exe. Windows' bundled bsdtar
     // creates a standard ZIP when the output extension is .zip.
-    execFileSync('tar.exe', ['-a', '-c', '-f', output, '.'], { cwd: source, stdio: 'inherit' });
+    execFileSync('tar.exe', ['-a', '-c', '-f', output, ...fs.readdirSync(source)], { cwd: source, stdio: 'inherit' });
   } else {
     throw error;
   }

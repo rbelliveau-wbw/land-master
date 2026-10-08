@@ -52,10 +52,10 @@ string poMultiplyExact(string quantity, string unitPrice)
 	}
 	cut = product.length()-scale;
 	centsText = product.subString(0,cut);
-	if(centsText.length() > 18) { return ""; }
+	if(centsText.length() > 15) { return ""; }
 	cents = centsText.toLong();
 	if(scale > 0 && product.subString(cut,cut+1).toLong() >= 5) { cents = cents+1; }
-	if(cents.toString().length() > 18) { return ""; }
+	if(cents.toString().length() > 15) { return ""; }
 	centsText = cents.toString();
 	if(centsText.length() == 1) { centsText = "00"+centsText; }
 	if(centsText.length() == 2) { centsText = "0"+centsText; }

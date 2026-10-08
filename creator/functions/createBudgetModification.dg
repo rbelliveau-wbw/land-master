@@ -82,6 +82,18 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 			modRec.Effective_Date=vDate.toDate();
 		}
 	}
+	policyCompany = ""; policyTerritory = "";
+	if(vBudgetId != 0)
+	{
+		policyBudget = Add_Budget[ID == vBudgetId];
+		if(policyBudget.Subdivision1 != null) { policyTerritory = ifnull(policyBudget.Subdivision1.Territory,""); if(policyBudget.Subdivision1.Company1 != null) { policyCompany = policyBudget.Subdivision1.Company1.ID.toString(); } }
+	}
+	policySubmitter = User_Access[User == zoho.loginuser];
+	policyContext = {"workflow":"Budget Modification","recordId":newModId.toString(),"budgetId":vBudgetId.toString(),"companyId":policyCompany,"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+	if(policyExecution.get("success") != true) { return "OK: Modification " + newModId + " recorded. Approval template failed: " + policyExecution.get("error"); }
+	if(policyExecution.get("shared") != true)
+	{
 	// ---- Approval chain ----
 	// VP defaults to the territory's VP (Territory.VP -> User_Access.Approver_Email);
 	// everything else falls back to the standing placeholder recipient.
@@ -161,6 +173,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		{
 			a3Rec.Budget_Modification=newModId;
 		}
+	}
 	}
 	// First approval email (marks the first row Pending + stamps Sent_Date).
 	emailMsg = "";
