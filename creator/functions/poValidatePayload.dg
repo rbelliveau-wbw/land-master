@@ -1,10 +1,11 @@
 map poValidatePayload(string payload)
 {
 	result = {"success":false,"writeState":"not-started"};
+	uoms = {"CY","EA","LB","LF","LOTS","LS","S","SET","SF","SY","TN","VF","WK"};
 	costElements = {"1","2","3","4","5"};
 	try
 	{
-		if(payload.length() > 60000) { result.put("error","PO exceeds the supported request size."); return result; }
+		if(payload.length() > 300000) { result.put("error","PO exceeds the supported request size."); return result; }
 		p = payload.toMap();
 		action = ifnull(p.get("action"),"");
 		if(action != "Save" && action != "Submit") { result.put("error","Action must be Save or Submit."); return result; }
@@ -31,7 +32,7 @@ map poValidatePayload(string payload)
 			if(!dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || dateText.toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateText) { result.put("error","Both valid request dates are required."); return result; }
 		}
 		lines = p.get("lines");
-		if(lines == null || lines.size() == 0 || lines.size() > 100) { result.put("error","At least one complete line is required."); return result; }
+		if(lines == null || lines.size() == 0 || lines.size() > 100) { result.put("error","Enter 1–100 complete PO lines."); return result; }
 		keys = List();
 		grouped = Map();
 		totalCents = 0;
@@ -45,11 +46,12 @@ map poValidatePayload(string payload)
 			if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Budget Item IDs must be strings."); return result; }
 			description = ifnull(line.get("description"),"").toString();
 			if(description.trim() == "" || description.length() > 1000) { result.put("error","Each line requires a Description (maximum 1000 characters)."); return result; }
+			if(!uoms.contains(line.get("uom"))) { result.put("error","Each line requires a valid UOM."); return result; }
 			if(!costElements.contains(line.get("costElement"))) { result.put("error","Cost Element must be 1–5."); return result; }
 			typedValue = Map(); typedValue.put("value",line.get("finalAmount"));
 			if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Final Amount must be an exact decimal string."); return result; }
 			finalAmount = thisapp.poCurrencyString(ifnull(line.get("finalAmount"),"").toString());
-			if(finalAmount == "" || finalAmount.replaceAll("[.]","").toLong() <= 0) { result.put("error","Each Final Amount must be positive currency."); return result; }
+			if(finalAmount == "" || finalAmount.replaceAll("[.]","").toLong() < 0) { result.put("error","Each Final Amount must be valid nonnegative currency."); return result; }
 			if(line.get("pricingMode") == "Manual")
 			{
 				if(!line.keys().contains("quantity") || !line.keys().contains("unitPrice") || line.get("quantity") != null || line.get("unitPrice") != null) { result.put("error","Manual lines require explicit null Quantity and Unit Price."); return result; }

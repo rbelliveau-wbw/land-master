@@ -603,6 +603,7 @@ string approvalWatchdog()
 	chainlessMods = Budget_Modification[Status == "Submitted"];
 	for each  cm in chainlessMods
 	{
+		if(ifnull(cm.Reference_Number,"").startsWith("PO:")) { continue; }
 		cmRows = Budget_Approvals[Budget_Modification == cm.ID];
 		if(cmRows.count() > 0)
 		{

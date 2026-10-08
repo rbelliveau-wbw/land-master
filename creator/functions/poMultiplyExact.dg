@@ -16,14 +16,25 @@ string poMultiplyExact(string quantity, string unitPrice)
 	if(left == "") { return ""; }
 	if(right == "") { return "0.00"; }
 	positions = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36};
+	// Products below 10^15 stay exact and use a short integer calculation.
+	// Larger operands retain the digit calculation below.
+	product = "";
+	if(left.length()+right.length() <= 15)
+	{
+		product = (left.toLong()*right.toLong()).toString();
+	}
+	else
+	{
 	columns = Map();
 	for each i in positions
 	{
+		if(i >= left.length()) { break; }
 		if(i < left.length())
 		{
 			ld = left.subString(left.length()-i-1,left.length()-i).toLong();
 			for each j in positions
 			{
+				if(j >= right.length()) { break; }
 				if(j < right.length())
 				{
 					rd = right.subString(right.length()-j-1,right.length()-j).toLong();
@@ -37,9 +48,11 @@ string poMultiplyExact(string quantity, string unitPrice)
 	carry = 0;
 	for each i in positions
 	{
+		if(i >= left.length()+right.length() && carry == 0) { break; }
 		columnValue = ifnull(columns.get(i.toString()),0)+carry;
 		product = (columnValue % 10).toString()+product;
 		carry = (columnValue/10).toLong();
+	}
 	}
 	product = product.replaceAll("^0+","");
 	if(product == "") { product = "0"; }
@@ -47,6 +60,7 @@ string poMultiplyExact(string quantity, string unitPrice)
 	{
 		for each i in positions
 		{
+			if(product.length() > scale) { break; }
 			if(product.length() <= scale) { product = "0"+product; }
 		}
 	}

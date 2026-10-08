@@ -15,6 +15,8 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
 	// (repair is also invoked automatically on inconsistency detection).
 	vAction = ifnull(action,"").trim().toLowerCase();
+	combinedMod = Budget_Modification[ID == modificationId.toLong()];
+	if(ifnull(combinedMod.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification belongs to a combined Purchase Order approval. Open the PO to edit or resubmit."; }
 	if(vAction == "check-reject" || vAction == "repair-reject")
 	{
 		vModId = modificationId.toLong();
@@ -96,7 +98,15 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			}
 		}
 		repairError = "";
-		if(vAction == "repair-send" && ifnull(modRec.Status,"").trim() == "Submitted" && firstRow != null && approvedCount == 0 && (pendingCount == 0 || (pendingCount == 1 && ifnull(firstRow.Status,"").trim() == "Pending")) && firstRow.Sent_Date == null && (ifnull(firstRow.Status,"").trim() == "Not Sent" || ifnull(firstRow.Status,"").trim() == "Pending"))
+		repairChainReady = false; repairStatusReady = false;
+		if(firstRow != null)
+		{
+			firstRepairStatus = ifnull(firstRow.Status,"").trim();
+			repairStatusReady = firstRepairStatus == "Not Sent" || firstRepairStatus == "Pending";
+			if(pendingCount == 0) { repairChainReady = true; }
+			if(pendingCount == 1 && firstRepairStatus == "Pending") { repairChainReady = true; }
+		}
+		if(vAction == "repair-send" && ifnull(modRec.Status,"").trim() == "Submitted" && firstRow != null && approvedCount == 0 && repairChainReady && firstRow.Sent_Date == null && repairStatusReady)
 		{
 			try
 			{
@@ -312,6 +322,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		mods = Budget_Modification[Budget == vBudgetId];
 		for each  modRec in mods
 		{
+			if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { continue; }
 			linked = Budget_Approvals[Budget_Modification == modRec.ID && Type1 == "Modification"];
 			if(linked.count() == 0)
 			{

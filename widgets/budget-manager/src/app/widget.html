@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.6"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.8"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
@@ -1771,8 +1771,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.6">
-<script src="success-feedback.js?v=122.29.6"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.8">
+<script src="success-feedback.js?v=122.29.8"></script>
 </head>
 <body>
 
@@ -2654,7 +2654,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.6", code:"BMW",
+  widget:"Budget Manager", version:"122.29.8", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -4019,6 +4019,7 @@ function userOwnsApproval(a){
   return userPart(owner) === userPart(me);
 }
 function canEditApprovalRow(a){
+  if (cleanVal(firstRaw(a, ["Type1", "Type", "Track"])).toLowerCase() === "purchase order") return false;
   var p = perms();
   if (p.apprAll || (p.apprOwned && userOwnsApproval(a))) return true;
   // Modification admins control Modification-type approval rows regardless of ownership.
@@ -6728,8 +6729,8 @@ function totalHint(text) {
 function approvalRowsForBudget(b) {
   var bid = String(b && b.ID || "");
   return (S.approvals || []).filter(function (a) {
-    // Modification-type rows belong to per-modification chains, not the budget tracks.
-    if (cleanVal(firstRaw(a, ["Type1", "Type", "Track"])).toLowerCase() === "modification") return false;
+    // Modification and PO rows are decided through their own captured chains.
+    if (["modification","purchase order"].includes(cleanVal(firstRaw(a, ["Type1", "Type", "Track"])).toLowerCase())) return false;
     var bv = firstRaw(a, ["Budget", "Budget1", "Add_Budget", "Budget_ID"]);
     return lookupMatchesId ? lookupMatchesId(bv, bid) : String(lookupId(bv) || bv) === bid;
   }).sort(function (a,b) {
@@ -10743,6 +10744,18 @@ function openApprDetail(id) {
   var live = (S.approvals || []).find(function (x) { return String(x.ID) === String(id); });
   var a = live || (MOCK.approvals || []).find(function (x) { return String(x.ID) === String(id); });
   if (!a) { setMsg("Approval record not found: " + id, "err"); return; }
+  if(cleanVal(firstRaw(a,["Type1","Type","Track"])).toLowerCase()==="purchase order"){
+    var poBudgetId=lookupId(firstRaw(a,["Budget","Budget1"])),poTrigger=document.activeElement;
+    if(!poBudgetId||!poDevelopment()){setMsg("This PO approval is unavailable in this environment.","err");return;}
+    Promise.resolve(openPhaseEditor(poBudgetId,"view")).then(function(){
+      if(!S.edBudget||String(S.edBudget.ID)!==poBudgetId)return;
+      var poNavigation=budgetNavigationToken();
+      return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"ApprovalPO",approvalId:String(id),budgetId:poBudgetId,userAccessId:String(S.myAccessId||"")})}).then(unwrapBudgetManageResponse).then(function(resp){
+        if(!resp||resp.success!==true||resp.contract!=="po-v1"||!resp.snapshot||resp.snapshot.budgetId!==poBudgetId)throw new Error(resp&&resp.error||"The linked PO could not be resolved.");
+        if(budgetNavigationCurrent(poNavigation,"vEditor",poBudgetId))return getPurchaseOrderUI().open(S.edBudget,poTrigger,resp.snapshot.id);
+      });
+    }).catch(function(error){setMsg(shortErr(error),"err");});return;
+  }
   // Modification approvals follow their OWN path: never the budget approval flow.
   // Route to the modification's detail (Modifications tab) instead of vApprDetail,
   // where the Approve buttons would fire the budget-track workflow.
@@ -11830,14 +11843,14 @@ function openModModal(itemId, mode) {
   $("modOverlay").classList.add("show");
 }
 function poDevelopment(){
-  return String(LMRuntime.current().environment||"").toUpperCase()==="DEVELOPMENT";
+  return ["DEVELOPMENT","PRODUCTION"].indexOf(String(LMRuntime.current().environment||"").toUpperCase())>=0;
 }
 var purchaseOrderUI = null;
 function getPurchaseOrderUI(){
   if(!window.LMPOUI)throw new Error("Purchase Order editor could not be loaded. Reload Budget Manager.");
   if(!purchaseOrderUI)purchaseOrderUI = LMPOUI.create({
   scope:function(){return budgetCreateScope("po",S.edBudget&&S.edBudget.ID);}, userAccessId:function(){return String(S.myAccessId||"");},
-  canEdit:canEditBudget, phaseName:phaseName,
+  canEdit:canEditBudget, phaseName:phaseName, noteIcon:NOTE_PENCIL_SVG,
   items:function(){return (S.items[S.edBudget.ID]||[]).filter(function(it){var cat=modItemCategory(it);return cat&&budgetCategoryIsLocked(S.edBudget,catDept(cat))&&!accessTruthy(it.Template_Item);});},
   vendors:function(){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"Vendors",budgetId:String(S.edBudget.ID),userAccessId:String(S.myAccessId||"")})}).then(unwrapBudgetManageResponse).then(function(response){if(!response||response.contract!=="po-v1"||response.success!==true||!Array.isArray(response.vendors))throw new Error(response&&response.error||"PO vendors unavailable.");return response.vendors;});},
   modifications:function(){return (S.modifications||[]).filter(function(row){return lookupMatchesId(row.Budget,S.edBudget.ID);});},
@@ -11870,6 +11883,11 @@ function modBadge(st) {
 function openModDetail(modId) {
   if(!requireBudgetRequestDetail())return;
   if (!S.edBudget) return;
+  var linkedMod=(S.modifications||[]).find(function(row){return String(row.ID)===String(modId);});
+  var linkedPO=linkedMod&&cleanVal(linkedMod.Reference_Number).match(/^PO:([0-9]+):/);
+  if(linkedPO&&poDevelopment()){
+    getPurchaseOrderUI().open(S.edBudget,document.activeElement,linkedPO[1]).catch(function(error){setMsg(shortErr(error),"err");});return;
+  }
   S.modModal = { detailId: String(modId), rejectFor: null, deleteFor: null };
   renderModModal();
   $("modOverlay").classList.add("show");
@@ -11880,6 +11898,7 @@ function openModEdit(modId) {
   if (!S.edBudget) return;
   var mod = (S.modifications || []).find(function (x) { return String(x.ID) === String(modId); });
   if (!mod) return;
+	if(cleanVal(mod.Reference_Number).indexOf("PO:")===0){setMsg("Edit this modification through its Purchase Order.","err");return;}
   var itId = lookupId(firstRaw(mod, ["Budget_Item", "Item"]));
   S.modModal = {
     itemId: itId ? String(itId) : "", picker: false, mode: "edit", editId: String(modId),
@@ -11894,6 +11913,8 @@ function openModEdit(modId) {
 function updateModification() {
   if(!requireBudgetModsReady())return;
   var m = S.modModal, b = S.edBudget; if (!m || !b || m.busy || !m.editId) return;
+	var existingMod=(S.modifications||[]).find(function(row){return String(row.ID)===String(m.editId);});
+	if(existingMod&&cleanVal(existingMod.Reference_Number).indexOf("PO:")===0){setMsg("Edit this modification through its Purchase Order.","err");return;}
   var amt = parseFloat(cleanVal($("modAmt").value).replace(/[^0-9.]/g, "")) || 0;
   var reason = cleanVal($("modReason").value);
   if (amt <= 0) { toastShow("Enter a modification amount"); return; }
@@ -13195,12 +13216,16 @@ function readDeepLinkPage() {
 function readDeepLinkModificationId() {
   return readDeepLinkParam("modificationId", ["modificationID", "modificationid", "ModificationId", "modId"]);
 }
+function readDeepLinkPurchaseOrderId() {
+  return readDeepLinkParam("purchaseOrderId",["purchaseorderid","poId"]);
+}
 
 function applyDeepLink() {
   var token=budgetNavigationToken();
-  return Promise.all([readDeepLinkBudgetId(),readDeepLinkPage(),readDeepLinkModificationId()]).then(function(res){
+  return Promise.all([readDeepLinkBudgetId(),readDeepLinkPage(),readDeepLinkModificationId(),readDeepLinkPurchaseOrderId()]).then(function(res){
     if(token!==budgetNavigationToken())return;
-    var bid=res[0],page=cleanVal(res[1]).toLowerCase(),modId=cleanVal(res[2]);
+    var bid=res[0],page=cleanVal(res[1]).toLowerCase(),modId=cleanVal(res[2]),poId=cleanVal(res[3]);
+    if(bid&&poId&&poDevelopment()){var poOpen=Promise.resolve(openPhaseEditor(bid,"view")),poNavigation=budgetNavigationToken();return poOpen.then(function(){if(budgetNavigationCurrent(poNavigation,"vEditor",bid))return getPurchaseOrderUI().open(S.edBudget,$("requestMenuBtn"),poId);});}
     if(modId)return ensureBudgetModifications().then(function(){
       if(token!==budgetNavigationToken())return;
       var modBid=bid||modificationBudgetId(modId);
@@ -13280,7 +13305,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.6",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.8",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

@@ -4,13 +4,13 @@
   "environments": {
     "development": {
       "proforma-manager": "1.80.88",
-      "budget-manager": "122.29.6",
+      "budget-manager": "122.29.8",
       "land-master": "8.14.5",
       "contract-management": "1.61.5",
       "tax-center": "19.17.8",
       "milestone-gantt": "1.1.6",
       "manage-lots": "0.9.20",
-      "settings-manager": "1.3.8",
+      "settings-manager": "1.4.1",
       "lot-sales-explorer": "1.5.42",
       "forecast-manager": "1.5.3"
     },
@@ -26,13 +26,13 @@
     },
     "production": {
       "proforma-manager": "1.80.94",
-      "budget-manager": "122.29.6",
+      "budget-manager": "122.29.8",
       "land-master": "8.15.7",
       "contract-management": "1.61.31",
       "tax-center": "19.17.13",
       "milestone-gantt": "1.1.8",
       "manage-lots": "0.13.0",
-      "settings-manager": "1.3.11",
+      "settings-manager": "1.4.1",
       "lot-sales-explorer": "1.5.47",
       "forecast-manager": "1.5.3"
     }

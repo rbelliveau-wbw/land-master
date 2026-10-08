@@ -11,6 +11,7 @@ string submitBudgetModification(int modificationId)
 		return "ERROR: No modification provided.";
 	}
 	modRec = Budget_Modification[ID == vModId];
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit."; }
 	if(modRec == null)
 	{
 		return "ERROR: Modification not found.";

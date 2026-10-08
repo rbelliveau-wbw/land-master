@@ -2,6 +2,7 @@
 (function (root) {
   "use strict";
   // Creator counts the decimal point in Max Digits: 13 integral digits + '.' + 2.
+  var UOMS = [ "CY", "EA", "LB", "LF",  "LOTS", "LS", "S", "SET", "SF", "SY", "TN",   "VF", "WK"];
   var MAX_CENTS = 999999999999999n;
   function decimal(raw, label) {
     if (typeof raw !== "string" || !/^\d+(?:\.\d+)?$/.test(raw)) throw new Error((label || "Amount") + " must be an exact decimal string.");
@@ -46,9 +47,10 @@
       if (typeof line.budgetItemId !== "string" || !/^\d+$/.test(line.budgetItemId)) throw new Error("Budget Item is required.");
       if (typeof line.description !== "string" || !line.description.trim() || line.description.length>1000) throw new Error("Line Description is required (maximum 1000 characters).");
       if (!/^[1-5]$/.test(line.costElement) || typeof line.costElement!=="string") throw new Error("Cost Element must be 1–5.");
+      if (typeof line.uom!=="string" || UOMS.indexOf(line.uom)<0) throw new Error("Select a valid UOM.");
       if (line.pricingMode!=="Manual" && line.pricingMode!=="Calculated") throw new Error("Unknown pricing mode.");
       var amount = currency(money(line.finalAmount));
-      if (money(amount)<=0n) throw new Error("Final Amount must be positive.");
+
       if (line.pricingMode==="Manual") {
         if (line.quantity!==null || line.unitPrice!==null) throw new Error("Manual lines require true null Quantity and Unit Price.");
       } else if (multiply(line.quantity,line.unitPrice)!==amount) throw new Error("Calculated Final Amount does not match Quantity × Unit Price.");
@@ -79,7 +81,7 @@
         if(typeof line.budgetItemId!=="string" || !/^\d+$/.test(line.budgetItemId)) throw new Error("Committed Budget Item identity is invalid.");
         if(typeof line.key!=="string" || !/^[A-Za-z0-9-]{1,80}$/.test(line.key) || rowKeys.has(line.key)) throw new Error("Duplicate or invalid committed PO line.");
         rowKeys.add(line.key);
-        var amount=money(line.finalAmount); if(amount<=0n) throw new Error("Committed amount must be positive."); total+=amount;
+        var amount=money(line.finalAmount);  total+=amount;
         if(total>MAX_CENTS) throw new Error("Committed total exceeds currency capacity.");
         grouped[line.budgetItemId]=(grouped[line.budgetItemId]||0n)+amount;
       });
@@ -87,5 +89,21 @@
     });
     return grouped;
   }
-  root.LMPO={money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments};
+  // Balances already include every reserved PO. Add only this saved PO's
+  // immutable allocation back when displaying its own before/after formula.
+  function allocations(lines, balances, reservedLines, reservedModifications) {
+    var grouped=Object.create(null), own=Object.create(null), ownCredits=Object.create(null);
+    (reservedModifications||[]).forEach(function(mod){if(mod.status!=='Approved')ownCredits[mod.budgetItemId]=(ownCredits[mod.budgetItemId]||0n)+money(mod.amount);});
+    (reservedLines||[]).forEach(function(line){own[line.budgetItemId]=(own[line.budgetItemId]||0n)+money(line.finalAmount);});
+    lines.forEach(function(line){if(!line.budgetItemId)return;var amount=0n;try{amount=money(line.finalAmount);}catch(ignore){}grouped[line.budgetItemId]=(grouped[line.budgetItemId]||0n)+amount;});
+    return Object.keys(grouped).map(function(id){
+      var balance=balances.find(function(row){return row.budgetItemId===id;});
+      if(!balance)return {budgetItemId:id,verified:false};
+      var available=BigInt(balance.availableCents)+(own[id]||0n), remaining=available-grouped[id], pending=BigInt(balance.pendingModificationCents||'0')-(ownCredits[id]||0n);
+      if(pending<0n)throw new Error('Pending PO modification balance does not reconcile.');
+      var shortfall=grouped[id]-available-pending;
+      return {budgetItemId:id,verified:true,available:available,allocated:grouped[id],remaining:remaining,pending:pending,shortfall:shortfall>0n?shortfall:0n};
+    });
+  }
+  root.LMPO={uoms:UOMS,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations};
 })(typeof globalThis!=="undefined"?globalThis:this);

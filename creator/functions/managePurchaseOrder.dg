@@ -3,7 +3,7 @@ string managePurchaseOrder(string payload)
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
 	operationId = 0;
 	lockId = 0;
-	writeStarted = false;
+	writeStarted = false; wasReserved = false; priorBundle = Map(); modificationPlan = List();
 	try
 	{
 		p = payload.toMap();
@@ -28,6 +28,20 @@ string managePurchaseOrder(string payload)
 		for each owner in budget.Budget_Owner
 		{
 			if(owner.ID == access.ID && access.Edit_Owned_Budgets == true) { canEdit = true; }
+		}
+		if(action == "Approve" || action == "Reject" || action == "CheckDecision" || action == "RetryEmail")
+		{
+			return thisapp.handlePurchaseOrderApproval(p).toString();
+		}
+		if(action == "ApprovalPO")
+		{
+			rowId = p.get("approvalId").toString(); matchId = "";
+			for each captured in Approval_Route_Snapshot[Workflow == "Purchase Order"]
+			{
+				if(ifnull(captured.Execution_JSON,"") != "" && captured.Execution_JSON.toJSONList().contains(rowId) && captured.Context_JSON.toMap().get("budgetId") == budgetId) { matchId = captured.Record_ID; }
+			}
+			if(matchId == "") { result.put("error","This PO approval could not be resolved."); return result.toString(); }
+			result = thisapp.poSnapshot(matchId); result.put("contract","po-v1"); return result.toString();
 		}
 		if(action == "Vendors")
 		{
@@ -65,11 +79,22 @@ string managePurchaseOrder(string payload)
 			if(actual.get("success") == true && op.Status == "Complete")
 			{
 				currentSnapshot = actual.get("snapshot"); recordedSnapshot = op.Snapshot_JSON.toMap(); sameSnapshot = true;
+				if(recordedSnapshot.get("format") == "sha256-v1")
+				{
+					sameSnapshot = recordedSnapshot.get("digest") == zoho.encryption.sha256(currentSnapshot.toString());
+				}
+				else
+				{
 				for each headerField in {"id","budgetId","vendorId","budgetModificationId","amount","requestDate","dateNeeded","revision","status","commitmentState","approvalState"}
 				{
 					if(currentSnapshot.get(headerField) != recordedSnapshot.get(headerField)) { sameSnapshot = false; }
 				}
 				if(currentSnapshot.get("lines").toString() != recordedSnapshot.get("lines").toString()) { sameSnapshot = false; }
+				if(currentSnapshot.get("approvalBundle") != null)
+				{
+					if(currentSnapshot.get("approvalBundle").get("rows").toString() != recordedSnapshot.get("approvalBundle").get("rows").toString() || currentSnapshot.get("approvalBundle").get("modifications").toString() != recordedSnapshot.get("approvalBundle").get("modifications").toString()) { sameSnapshot = false; }
+				}
+				}
 			}
 			if(actual.get("success") == true && actual.get("snapshot").get("revision") == op.Token && sameSnapshot == true)
 			{
@@ -85,7 +110,7 @@ string managePurchaseOrder(string payload)
 		}
 		if(action != "Save" && action != "Submit") { result.put("error","Unsupported PO action."); return result.toString(); }
 		// Owner approved Creator's Max Digits 16 / Places 2 on 2026-10-08.
-		// Boundary 9999999999999.99 persisted exactly in native probe row 4410926000005117756.
+		// Currency boundary persisted exactly in the native Development test.
 		if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
 		validated = thisapp.poValidatePayload(payload);
 		if(validated.get("success") != true) { validated.put("contract","po-v1"); return validated.toString(); }
@@ -106,9 +131,16 @@ string managePurchaseOrder(string payload)
 		if(idText != "")
 		{
 			po = Payment_Request[ID == idText.toLong() && Budget == budget.ID];
-			if(po.ID == null || po.Request_Type != "Purchase Order" || po.PO_Status != "Draft" || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != expected) { result.put("error","Only the current multi-item Draft revision can be edited or submitted."); return result.toString(); }
+			if(po.ID == null || po.Request_Type != "Purchase Order" || (po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected")) || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != expected) { result.put("error","Only the current Draft or Rejected PO can be edited or submitted."); return result.toString(); }
 		}
-		else if(expected != "") { result.put("error","New POs cannot have an expected revision."); return result.toString(); }
+		if(idText != "" && po.PO_Commitment_State == "Reserved")
+		{
+			wasReserved = true; beforePO = thisapp.poSnapshot(idText);
+			if(beforePO.get("success") != true) { result.put("error",beforePO.get("error")); return result.toString(); }
+			priorBundle = beforePO.get("snapshot").get("approvalBundle");
+			if(validated.get("totalCents") != p.get("amount").replaceAll("[.]","") ) { result.put("error","An edited reserved PO must keep its header and line total balanced."); return result.toString(); }
+		}
+		else if(expected != "" && idText == "") { result.put("error","New POs cannot have an expected revision."); return result.toString(); }
 		// Unique fields arbitrate competing operations. No expiry or automatic lock takeover.
 		lockId = insert into PO_Phase_Lock
 		[
@@ -117,13 +149,14 @@ string managePurchaseOrder(string payload)
 			Operation_Token=token
 			Actor=access.ID
 		];
+		requestProof = {"action":action,"token":token,"budgetId":budgetId,"lineCount":p.get("lines").size(),"digest":zoho.encryption.sha256(p.toString())};
 		operationId = insert into PO_Operation
 		[
 			Added_User=zoho.loginuser
 			Token=token
 			Budget=budget.ID
 			Actor=access.ID
-			Request_JSON=p.toString()
+			Request_JSON=requestProof.toString()
 			Status="Started"
 		];
 		// Recheck identity, permission and compare-and-set revision after acquiring the phase lock.
@@ -138,7 +171,7 @@ string managePurchaseOrder(string payload)
 		if(idText != "")
 		{
 			po = Payment_Request[ID == idText.toLong() && Budget == budget.ID];
-			if(po.PO_Status != "Draft" || po.PO_Revision != expected) { result.put("error","The PO changed while this request was waiting."); }
+			if((po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected")) || po.PO_Revision != expected) { result.put("error","The PO changed while this request was waiting."); }
 		}
 		for each line in p.get("lines")
 		{
@@ -154,6 +187,9 @@ string managePurchaseOrder(string payload)
 			{
 				if(approval.Status == "Pending" || approval.Status == "Approved") { locked = true; }
 			}
+			subdivisionCode = ifnull(budget.Subdivision1.Subdivision_Code,""); minorCode = ifnull(item.Cost_Code,0).toString();
+			generatedCode = "C_"+subdivisionCode+"-"+minorCode+"-"+line.get("costElement");
+			if(subdivisionCode == "" || minorCode == "0" || line.get("costCode") != generatedCode) { result.put("error","Generated cost code changed or is unavailable. Refresh the item balance."); }
 			if(item.ID == null || category.ID == null || track == "" || locked != true) { result.put("error","A selected Budget Item is no longer eligible in this phase."); }
 		}
 		if(action == "Submit" && result.get("error") == null)
@@ -162,14 +198,44 @@ string managePurchaseOrder(string payload)
 			if(balances.get("success") != true) { result.put("error",balances.get("error")); }
 			else
 			{
-				available = Map();
-				for each balance in balances.get("balances") { available.put(balance.get("budgetItemId"),balance.get("availableCents").toLong()); }
-				groupedCents = validated.get("groupedCents");
-				groupedKeys = groupedCents.keys();
-				for each itemKey in groupedKeys
+				available = Map(); pendingCredits = Map(); ownAllocation = Map(); ownCredits = Map();
+				for each balance in balances.get("balances") { available.put(balance.get("budgetItemId"),balance.get("availableCents").toLong()); pendingCredits.put(balance.get("budgetItemId"),ifnull(balance.get("pendingModificationCents"),"0").toLong()); }
+				if(wasReserved)
 				{
-					if(available.get(itemKey) == null || groupedCents.get(itemKey) > available.get(itemKey)) { result.put("error","Grouped line allocations exceed verified available budget."); }
+					priorSnapshot = beforePO.get("snapshot"); priorLines = priorSnapshot.get("lines");
+					for each oldLine in priorLines { itemKey = oldLine.get("budgetItemId"); ownAllocation.put(itemKey,ifnull(ownAllocation.get(itemKey),0)+oldLine.get("finalAmount").replaceAll("[.]","").toLong()); }
+					for each oldMod in priorBundle.get("modifications") { ownCredits.put(oldMod.get("budgetItemId"),oldMod.get("amount").replaceAll("[.]","").toLong()); }
 				}
+				groupedCents = validated.get("groupedCents");
+				for each itemKey in groupedCents.keys()
+				{
+					if(available.get(itemKey) == null) { result.put("error","A selected item has no verified balance."); }
+					else
+					{
+						beforeAvailable = available.get(itemKey)+ifnull(ownAllocation.get(itemKey),0); otherPending = ifnull(pendingCredits.get(itemKey),0)-ifnull(ownCredits.get(itemKey),0);
+						if(p.get("expectedBalances") == null || p.get("expectedBalances").get(itemKey) != beforeAvailable.toString() || p.get("expectedPendingModifications") == null || p.get("expectedPendingModifications").get(itemKey) != otherPending.toString()) { result.put("error","Item balances changed. Refresh and review before submitting."); }
+						shortfall = groupedCents.get(itemKey)-beforeAvailable-otherPending;
+						if(shortfall > 0)
+						{
+							if(shortfall > 999999999999999) { result.put("error","Automatic modification exceeds supported currency capacity."); }
+							centsText = shortfall.toString(); if(centsText.length() == 1) { centsText = "00"+centsText; } if(centsText.length() == 2) { centsText = "0"+centsText; }
+							amountText = centsText.subString(0,centsText.length()-2)+"."+centsText.subString(centsText.length()-2,centsText.length());
+							modificationPlan.add({"budgetItemId":itemKey,"amount":amountText});
+						}
+					}
+				}
+			}
+			companyText = ""; territory = "";
+			if(budget.Subdivision1 != null) { territory = ifnull(budget.Subdivision1.Territory,""); if(budget.Subdivision1.Company1 != null) { companyText = budget.Subdivision1.Company1.ID.toString(); } }
+			context = {"workflow":"Purchase Order","budgetId":budgetId,"companyId":companyText,"territory":territory,"department":"","submitterId":access.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":p.get("amount"),"hasBudgetModification":modificationPlan.size() > 0};
+			resolved = thisapp.resolveApprovalRoute(context);
+			if(resolved.get("success") != true) { result.put("error",resolved.get("error")); }
+			else
+			{
+				cooFound = false;
+				resolvedSnapshot = resolved.get("snapshot"); resolvedSteps = resolvedSnapshot.get("route"); approvalTitles = {"VP","Legal","CFO","COO","CEO"};
+				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role").toUpperCase() == "COO") { cooFound = true; } }
+				if(modificationPlan.size() > 0 && cooFound != true) { result.put("error","The PO template must include COO when a budget modification is required."); }
 			}
 		}
 		operation = PO_Operation[ID == operationId];
@@ -221,6 +287,8 @@ string managePurchaseOrder(string payload)
 			Line_Order=order
 			Description=line.get("description")
 			Cost_Element=line.get("costElement")
+			UOM=line.get("uom")
+			Cost_Code=line.get("costCode")
 			Pricing_Mode=line.get("pricingMode")
 			Quantity=q
 			Unit_Price=price
@@ -236,31 +304,93 @@ string managePurchaseOrder(string payload)
 		po.Request_Amount=p.get("amount").toDecimal(); po.PO_Amount_Exact=p.get("amount");
 		po.Budget_Item=null; po.Accounting_Project_Code=null; po.Element=null; po.Final_Accounting_Code=null;
 		po.PO_Line_Count=order; po.PO_Status="Draft"; po.PO_Commitment_State="None"; po.PO_Approval_State="Not Configured";
+		if(wasReserved) { po.PO_Status="Submitted"; po.PO_Commitment_State="Reserved"; po.PO_Approval_State="Rejected"; }
 		if(action == "Submit") { po.PO_Status="Submitted"; po.PO_Commitment_State="Reserved"; }
 		// The pointer is last. Old revisions remain immutable evidence; writes are NOT transactional.
 		po.PO_Revision=token;
+		if(action == "Submit")
+		{
+			linkedModificationId = null; modifications = List();
+			for each plan in modificationPlan
+			{
+				item = Budget_Item[ID == plan.get("budgetItemId").toLong()]; category = Budget_Category[ID == item.Budget_Category]; track = "Development"; if(category.Deparment == "Construction") { track = "Construction"; }
+				modId = 0;
+				if(wasReserved) { for each priorMod in priorBundle.get("modifications") { if(priorMod.get("budgetItemId") == plan.get("budgetItemId")) { modId = priorMod.get("id").toLong(); } } }
+				reference = "PO:"+idText+":"+token;
+				if(modId == 0) { modId = insert into Budget_Modification
+				[
+					Added_User=zoho.loginuser
+					Budget=budget.ID
+					Budget_Item=item.ID
+					Budget_Category=item.Budget_Category
+					Modification_Type="Increase"
+					Amount=plan.get("amount").toDecimal()
+					Reason="Purchase Order "+idText+" exceeds available item budget."
+					Reference_Number=reference
+					Effective_Date=zoho.currentdate
+					Approval_Track=track
+					Status="Submitted"
+				]; }
+				mod = Budget_Modification[ID == modId]; mod.Amount=plan.get("amount").toDecimal(); mod.Status="Submitted"; mod.Reference_Number=reference;
+				if(mod.Budget != budget.ID || mod.Budget_Item != item.ID || thisapp.poCurrencyString(mod.Amount.toString()) != plan.get("amount") || mod.Reference_Number != reference) { operation.Status="Unknown"; result.put("writeState","unknown"); result.put("error","An automatic budget modification could not be verified. Do not resubmit."); return result.toString(); }
+				if(linkedModificationId == null) { linkedModificationId = mod.ID; }
+				modifications.add({"id":mod.ID.toString(),"budgetItemId":item.ID.toString(),"amount":plan.get("amount"),"reference":reference});
+			}
+			po.PO_Budget_Modification=linkedModificationId;
+			context.put("recordId",idText); context.put("submissionRevision",token); context.put("modifications",modifications);
+			captured = thisapp.snapshotApprovalRoute(context);
+			if(captured.get("success") != true) { operation.Status="Unknown"; result.put("writeState","unknown"); result.put("error",captured.get("error")); return result.toString(); }
+			route = captured.get("snapshot").get("route"); executionIds = List(); position = 0;
+			for each step in route
+			{
+				position = position+1; executionId = 0;
+				if(wasReserved)
+				{
+					for each previousRow in priorBundle.get("rows") { if(previousRow.get("userAccessId") == step.get("userAccessId") && previousRow.get("role") == step.get("role")) { executionId = previousRow.get("id").toLong(); } }
+				}
+				if(executionId == 0) { executionId = insert into Budget_Approvals
+				[
+					Added_User=zoho.loginuser
+					Budget=budget.ID
+					Type1="Purchase Order"
+					Sort_Order=position
+					Title=step.get("role")
+					Approver=step.get("email")
+					Status="Not Sent"
+				]; }
+				execution = Budget_Approvals[ID == executionId]; execution.Status="Not Sent"; execution.Sent_Date=null; execution.Responded_Date=null; execution.Approver=step.get("email"); execution.Title=step.get("role"); execution.Sort_Order=position;
+				executionIds.add(executionId.toString());
+			}
+			storedRoute = Approval_Route_Snapshot[ID == captured.get("snapshotId").toLong()]; storedRoute.Execution_JSON=executionIds.toString();
+			first = Budget_Approvals[ID == executionIds.get(0).toLong()]; first.Status="Pending"; po.PO_Approval_State="Pending";
+			mail = thisapp.sendPurchaseOrderEmail(idText);
+		}
 		actual = thisapp.poSnapshot(idText);
 		if(actual.get("success") != true) { result.put("error",actual.get("error")); }
 		else
 		{
 			saved = actual.get("snapshot");
-			wantedStatus = "Draft"; wantedCommitment = "None";
-			if(action == "Submit") { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; }
-			if(saved.get("status") != wantedStatus || saved.get("commitmentState") != wantedCommitment || saved.get("approvalState") != "Not Configured") { result.put("error","Submission, commitment or approval state differs from the intended write."); }
+			wantedStatus = "Draft"; wantedCommitment = "None"; wantedApproval = "Not Configured";
+			if(wasReserved) { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Rejected"; }
+			if(action == "Submit") { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Pending"; }
+			if(saved.get("status") != wantedStatus || saved.get("commitmentState") != wantedCommitment || saved.get("approvalState") != wantedApproval) { result.put("error","Submission, commitment or approval state differs from the intended write."); }
 			if(saved.get("budgetId") != budgetId || saved.get("vendorId") != p.get("vendorId") || saved.get("amount") != p.get("amount") || saved.get("requestDate") != p.get("requestDate") || saved.get("dateNeeded") != p.get("dateNeeded") || saved.get("revision") != token || saved.get("lines").size() != p.get("lines").size()) { result.put("error","Header readback differs from the intended write."); }
-			if(saved.get("budgetModificationId") != p.get("budgetModificationId")) { result.put("error","Linked budget modification readback differs from the intended write."); }
+			if(saved.get("budgetModificationId") != if(linkedModificationId == null,null,linkedModificationId.toString())) { result.put("error","Linked budget modification readback differs from the intended write."); }
 			index = 0;
 			for each line in p.get("lines")
 			{
 				written = saved.get("lines").get(index); index = index+1;
-				for each field in {"key","budgetItemId","description","costElement","pricingMode","quantity","unitPrice","finalAmount"}
+				for each field in {"key","budgetItemId","description","costElement","uom","costCode","pricingMode","quantity","unitPrice","finalAmount"}
 				{
 					if(written.get(field) != line.get(field)) { result.put("error","Line readback differs from the intended write: "+field); }
 				}
 			}
 			if(result.get("error") == null)
 			{
-				operation.Snapshot_JSON=saved.toString(); operation.Status="Complete";
+				proof = {"format":"sha256-v1","digest":zoho.encryption.sha256(saved.toString())};
+				operation.Snapshot_JSON=proof.toString();
+				if(operation.Snapshot_JSON != proof.toString()) { result.put("writeState","unknown"); result.put("error","PO verification receipt could not be persisted."); return result.toString(); }
+				operation.Status="Complete";
 				delete from PO_Phase_Lock[ID == lockId];
 				result.put("success",true); result.put("writeState","verified"); result.put("snapshot",saved); return result.toString();
 			}

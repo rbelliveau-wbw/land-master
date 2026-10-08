@@ -32,7 +32,11 @@ map poSnapshot(string purchaseOrderId)
 		{
 			result.put("error","PO header readback differs from its exact contract."); return result;
 		}
-		if((po.PO_Status == "Draft" && po.PO_Commitment_State != "None") || (po.PO_Status == "Submitted" && po.PO_Commitment_State != "Reserved") || !statuses.contains(po.PO_Status) || po.PO_Approval_State != "Not Configured")
+		approvalStates = {"Not Configured","Pending","Approved","Rejected"};
+		stateValid = statuses.contains(po.PO_Status) && approvalStates.contains(po.PO_Approval_State);
+		if(po.PO_Status == "Draft") { stateValid = po.PO_Commitment_State == "None" && po.PO_Approval_State == "Not Configured"; }
+		if(po.PO_Status == "Submitted") { stateValid = po.PO_Commitment_State == "Reserved" && approvalStates.contains(po.PO_Approval_State); }
+		if(stateValid != true)
 		{
 			result.put("error","PO submission, commitment or approval state needs review."); return result;
 		}
@@ -54,6 +58,8 @@ map poSnapshot(string purchaseOrderId)
 			line.put("budgetItemId",row.Budget_Item.toString());
 			line.put("description",row.Description);
 			line.put("costElement",row.Cost_Element);
+			line.put("uom",row.UOM);
+			line.put("costCode",row.Cost_Code);
 			line.put("pricingMode",row.Pricing_Mode);
 			line.put("quantity",row.Quantity_Exact);
 			line.put("unitPrice",row.Unit_Price_Exact);
@@ -77,6 +83,12 @@ map poSnapshot(string purchaseOrderId)
 		}
 		if(order == 0 || order != po.PO_Line_Count || (po.PO_Status == "Submitted" && total != po.PO_Amount_Exact.replaceAll("[.]","").toLong())) { result.put("error","PO line count or submitted total does not match."); return result; }
 		p.put("lines",lines);
+		if(po.PO_Approval_State != "Not Configured")
+		{
+			bundle = thisapp.poApprovalBundle(purchaseOrderId);
+			if(bundle.get("success") != true) { result.put("error",bundle.get("error")); return result; }
+			p.put("approvalBundle",bundle.get("bundle"));
+		}
 		result.put("snapshot",p);
 		result.put("success",true);
 	}

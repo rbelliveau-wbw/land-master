@@ -249,7 +249,7 @@ function harness(){
 {
   const {context:c}=harness(),gate=deferred(),opens=[];
   install(c,['modificationBudgetId','applyDeepLink']);c.S.budgets=[{ID:'1'}];c.approvalBudgetLookup=()=>null;
-  c.readDeepLinkBudgetId=async()=>'';c.readDeepLinkPage=async()=>'';c.readDeepLinkModificationId=async()=> '3';c.setMsg=()=>{};
+  c.readDeepLinkBudgetId=async()=>'';c.readDeepLinkPage=async()=>'';c.readDeepLinkModificationId=async()=> '3';c.readDeepLinkPurchaseOrderId=async()=>'';c.setMsg=()=>{};
   c.sdkGetAllRecords=()=>gate.promise;c.openPhaseEditor=(id,mode)=>opens.push({id,mode});
   const pending=c.applyDeepLink();await turn();assert.deepEqual(opens,[]);
   gate.resolve([{ID:'3',Budget:{ID:'1'}}]);await pending;assert.deepEqual(opens,[{id:'1',mode:'modifications'}]);

@@ -1,14 +1,15 @@
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
 const c=vm.createContext({setTimeout,clearTimeout});for(const file of ['po-domain.js','po-controller.js'])vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/'+file,'utf8'),c);
 const payload={action:'Submit',token:'test-operation-123456789',budgetId:'1',vendorId:'2',amount:'2.01',requestDate:'2026-10-08',dateNeeded:'2026-10-09',userAccessId:'3',lines:[{key:'first',budgetItemId:'4',description:'One',costElement:'1',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'second',budgetItemId:'4',description:'Two',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'1.00'}]};
-const snapshot={...payload,id:'5',revision:payload.token,status:'Submitted',commitmentState:'Reserved',approvalState:'Not Configured',lines:payload.lines.map((line,i)=>({...line,ID:String(i+6)}))};
+payload.lines.forEach(line=>{line.uom='EA';line.costCode='C_SH01-3225-'+line.costElement;});
+const snapshot={...payload,id:'5',revision:payload.token,status:'Submitted',commitmentState:'Reserved',approvalState:'Pending',lines:payload.lines.map((line,i)=>({...line,ID:String(i+6)}))};
 const receipt={success:true,contract:'po-v1',writeState:'verified',snapshot};
 let calls=[],resolve;const events=[];const ctrl=c.LMPOController.create({timeoutMs:15,call:p=>{calls.push(p);return new Promise(r=>resolve=r);},onState:(r,stage)=>events.push(stage)});
 const pending=ctrl.begin(payload);assert.equal(events[0],'prepared');assert.equal(events[1],'saving');await assert.rejects(()=>ctrl.begin(payload),/active/);
 await pending;assert.equal(ctrl.state().unknown,true);assert.equal(calls.length,1);await assert.rejects(()=>ctrl.begin(payload),/unresolved/);
 const check=ctrl.check();await new Promise(r=>setImmediate(r));assert.equal(calls[1].action,'Check');assert.equal(calls[1].lines,undefined,'recovery sends no business write payload');resolve(receipt);await check;assert.equal(ctrl.state().unknown,false);assert.equal(ctrl.state().snapshot.id,'5');
 for(const [field,value] of [['vendorId','9'],['amount','2.00'],['requestDate','2026-10-07'],['status','Draft'],['commitmentState','None'],['revision','old'],['id',5]])assert.throws(()=>c.LMPOController.verify({...snapshot,[field]:value},payload),/verified|returned/);
-for(const field of ['key','budgetItemId','description','costElement','pricingMode','quantity','unitPrice','finalAmount']){const s=structuredClone(snapshot);s.lines[0][field]='wrong';assert.throws(()=>c.LMPOController.verify(s,payload),/verified/);}
+for(const field of ['key','budgetItemId','description','costElement','uom','costCode','pricingMode','quantity','unitPrice','finalAmount']){const s=structuredClone(snapshot);s.lines[0][field]='wrong';assert.throws(()=>c.LMPOController.verify(s,payload),/verified/);}
 const dupe=structuredClone(snapshot);dupe.lines[1].ID=dupe.lines[0].ID;assert.throws(()=>c.LMPOController.verify(dupe,payload),/Unique/);
 const rejected=c.LMPOController.create({call:async()=>({contract:'po-v1',success:false,writeState:'not-started',error:'Insufficient budget'}),onState(){}});await rejected.begin(payload);assert.equal(rejected.state().unknown,false);assert.equal(rejected.state().rejected,true);
 console.log('PO duplicate guards, lost-response read-only recovery, persisted header/line verification and exact state checks passed.');

@@ -191,7 +191,7 @@ form Payment_Request
 	PO_Approval_State
 	(
 		type = picklist
-		values = {"Not Configured"}
+		values = {"Not Configured","Pending","Approved","Rejected"}
 		row = 4
 		column = 1
 		width = medium

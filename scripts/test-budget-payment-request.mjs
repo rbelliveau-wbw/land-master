@@ -50,17 +50,17 @@ for(const change of [()=>nav++,()=>environment='DEVELOPMENT',()=>c.S.edBudget={I
   environment='PRODUCTION';c.S.edBudget={ID:budgetId};c.S.startupReady=true;m=modal();const pending=c.loadRequestVendors(m);change();resolve([{ID:vendorId,Vendor_Name:'Late'}]);await pending;assert.equal(m.vendorState,'loading','stale scope cannot publish');
 }
 c.S.startupReady=true;environment='PRODUCTION';assert.equal(c.requestVendorUrl(),'https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Vendors');environment='DEVELOPMENT';assert.match(c.requestVendorUrl(),/\/environment\/development\/land-master\/#Form:Vendors/);
-c.S.edBudget={ID:budgetId};c.CFG.reports.checkWireRequests='All_Wire_Requests';environment='PRODUCTION';m=modal();response=[];
+c.S.edBudget={ID:budgetId};c.CFG.reports.checkWireRequests='All_Wire_Requests';environment='STAGE';m=modal();response=[];
 await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,0);
 assert.equal(calls.at(-1)[0],'All_Wire_Requests');assert.match(calls.at(-1)[1],new RegExp('Budget == '+budgetId));assert.match(calls.at(-1)[1],new RegExp('Budget_Item == '+itemId));assert.match(calls.at(-1)[1],/Request_Type == "Purchase Order"/);assert.equal(calls.at(-1)[2].fresh,true);
 response=[po];await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,12.25,'every issued PO reserves its full amount');
 response=()=>new Promise(r=>resolve=r);m=modal();const latePO=c.loadRequestPurchaseOrders(m);m.itemId='900000000000000099';resolve([]);await latePO;assert.equal(m.poState,'loading','old line item replies cannot publish');
 response=()=>Promise.reject(new Error('Incomplete count'));m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'unavailable');assert.equal(c.requestBalanceSnapshot(m,item),null);
-// Development consumes verified allocations, never parent header amounts a second time.
+// Development and Production consume verified allocations, never parent headers twice.
 environment='DEVELOPMENT';c.S.myAccessId='900000000000000007';
 c.unwrapBudgetManageResponse=v=>v;
 let native={contract:'po-v1',success:true,balances:[{budgetItemId:itemId,issuedCents:'725'}]};
 c.sdkRunBudgetFunction=async(name,args)=>{assert.equal(name,'managePurchaseOrder');const request=JSON.parse(args.payload);assert.equal(request.action,'Balances');assert.equal(request.budgetId,budgetId);assert.equal(request.userAccessId,c.S.myAccessId);return native;};
-m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,7.25);
+for(const env of ['DEVELOPMENT','PRODUCTION']){environment=env;m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,7.25);}
 for(const invalid of [{...native,success:false},{...native,balances:[]},{...native,balances:[native.balances[0],native.balances[0]]},{...native,balances:[{budgetItemId:itemId,issuedCents:'9007199254740992'}]},{...native,balances:[{budgetItemId:itemId,issuedCents:725}]}]){native=invalid;m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'unavailable');}
 console.log('Payment request vendor reads, string IDs, stale scope, receipt math, one-cent overspending and unavailable balances passed.');

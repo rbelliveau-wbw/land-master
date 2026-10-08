@@ -1,0 +1,46 @@
+string sendPurchaseOrderEmail(string purchaseOrderId)
+{
+	try
+	{
+		checked = thisapp.poApprovalBundle(purchaseOrderId);
+		if(checked.get("success") != true) { return "ERROR: "+checked.get("error"); }
+		bundle = checked.get("bundle"); active = bundle.get("active");
+		if(active.get("id") == null) { return "ERROR: No active Purchase Order approver."; }
+		approval = Budget_Approvals[ID == active.get("id").toLong()];
+		if(approval.Sent_Date != null) { return "OK: Approval email already recorded."; }
+		po = Payment_Request[ID == purchaseOrderId.toLong()];
+		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { return "ERROR: PO approval state changed before notification."; }
+		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		body = "<div style='font-family:Arial,sans-serif;color:#0b2345;line-height:1.5'><h2>Purchase Order Approval</h2><p><b>"+phase+"</b><br>Vendor: "+vendor+"<br>PO: "+purchaseOrderId+"<br>Amount: $"+po.PO_Amount_Exact+"<br>Request date: "+po.Request_Date.toString("yyyy-MM-dd")+"<br>Date needed: "+po.Date_Needed.toString("yyyy-MM-dd")+"</p><table style='border-collapse:collapse;width:100%;font-size:12px'><tr style='background:#edf4ff'><th align='left'>Cost code / budget item</th><th align='left'>Description</th><th>Quantity</th><th>UOM</th><th>Unit price</th><th>Total</th></tr>";
+		for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
+		{
+			itemName = ifnull(line.Budget_Item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			note = ifnull(line.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>");
+			body = body+"<tr><td style='padding:9px;border-bottom:1px solid #d5e1ee'><b>"+ifnull(line.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")+"</b><br>"+itemName+"</td><td>"+note+"</td><td align='right'>"+ifnull(line.Quantity_Exact,"—")+"</td><td align='center'>"+ifnull(line.UOM,"—")+"</td><td align='right'>"+ifnull(line.Unit_Price_Exact,"—")+"</td><td align='right'>$"+line.Final_Amount_Exact+"</td></tr>";
+		}
+		body = body+"</table><h3>Budget Modifications</h3>";
+		if(bundle.get("modifications").size() == 0) { body = body+"<p>No budget modifications required.</p>"; }
+		for each modification in bundle.get("modifications")
+		{
+			item = Budget_Item[ID == modification.get("budgetItemId").toLong()]; name = ifnull(item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			body = body+"<p>"+name+" · +$"+modification.get("amount")+" · Modification "+modification.get("id")+"</p>";
+		}
+		body = body+"<h3>Approval chain</h3><ol>";
+		for each step in bundle.get("rows") { safeRole = step.get("role").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); safeNotes = step.get("notes").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); body = body+"<li>"+safeRole+" · "+step.get("status")+if(safeNotes == "","","<br>"+safeNotes)+"</li>"; }
+		url = zoho.appuri+"#Page:Budget_Management1?budgetId="+po.Budget.toString()+"&purchaseOrderId="+purchaseOrderId;
+		body = body+"</ol><p><a href='"+url+"'>Review and approve PO and all modifications</a></p></div>";
+		sendmail
+		[
+			from :"jking@wbdevelopment.com"
+			to :approval.Approver
+			subject :"Purchase Order Approval · "+ifnull(po.Budget.Budget_Name,"")+" · $"+po.PO_Amount_Exact
+			message :body
+		]
+		approval.Sent_Date=zoho.currentdate;
+		if(approval.Sent_Date == null) { return "ERROR: Email delivery stamp could not be verified."; }
+		return "OK: Combined PO approval email recorded.";
+	}
+	catch(emailError) { return "ERROR: Combined approval email delivery could not be verified."; }
+	return "ERROR: Combined approval email did not finish.";
+}

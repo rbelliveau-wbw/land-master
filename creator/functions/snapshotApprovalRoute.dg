@@ -19,7 +19,7 @@ map snapshotApprovalRoute(map context)
 		if(resolved.get("success") != true) { return resolved; }
 		snapshot = resolved.get("snapshot");
 		policy = Approval_Policy[ID == snapshot.get("policyId").toLong()];
-		if(policy.Adapter_Enabled != true) { result.put("error","This workflow has not completed its native adapter migration gate."); return result; }
+		if(policy.Adapter_Enabled != true && context.get("workflow") != "Purchase Order") { result.put("error","This workflow has not completed its native adapter migration gate."); return result; }
 		rowId = insert into Approval_Route_Snapshot
 			[
 				Added_User=zoho.loginuser
