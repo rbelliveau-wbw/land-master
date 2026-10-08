@@ -1,3 +1,13 @@
+## Empty budget detail reporting (122.29.6)
+
+Successful category and item reads with zero matches are informational, including
+full-report fallback checks. A criteria failure recovered by the full report is
+a warning; a failed fallback rejects without publishing an empty financial
+snapshot or replaying the failed read. This prevents false critical-error emails.
+No forms, fields, functions, Custom APIs, or Creator publication are required.
+Regression coverage executes the actual detail loader for empty, populated,
+recovered, and failed reads. Rollback frontend mapping: 122.29.5.
+
 
 ## Main-page currency (122.28.36)
 
