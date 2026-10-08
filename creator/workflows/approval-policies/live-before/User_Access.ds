@@ -1,0 +1,543 @@
+form User_Access
+{
+	displayname = "User Access"
+	success message = "Data Added Successfully!"
+	Section
+	(
+		type = section
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have Full_Name
+	(
+    	type = text
+		displayname = "Full Name"
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Approver_Email
+	(
+    	type = email
+		displayname = "Approver Email"
+		maxchar = 80
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Email used when this person appears in an approval chain. Budget and Pro Forma approval rows send notifications here, and Territory VP defaults resolve through it. Leave blank only if the user is never an approver."
+    	]
+	 	row = 1
+	 	column = 1   
+		width = medium
+		personal data = true
+	)
+	must have User
+	(
+    	type = picklist
+		module = users
+		displayformat = [username]
+    	description
+    	[
+    		type = tooltip
+    	 	message = "The Creator user this row grants access to - one row per person. Its record ID is what Budget Owner and Pro Forma Owner lookups store. A user with NO row here gets nothing in any widget: that is the closed default."
+    	]
+	 	row = 1
+	 	column = 1   
+		width = medium
+		personal data = true
+	)
+	Budgets
+	(
+		type = section
+		visibility = true
+	 	row = 2
+	 	column = 0   
+		width = medium
+	)
+	Edit_All_Budgets
+	(
+    	type = checkbox
+		displayname = "Edit All Budgets"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Full edit on every budget regardless of ownership; supersedes Edit Owned Budgets. Also creates budgets from Add for subdivisions without a budget. New budgets are assigned to their creator."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Edit_Owned_Budgets
+	(
+    	type = checkbox
+		displayname = "Edit Owned Budgets"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edits budgets owned by this user; adds no edit access when Edit All Budgets is on. Also creates budgets from Add for subdivisions without a budget. New budgets are assigned to their creator."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Edit_All_Approvals
+	(
+    	type = checkbox
+		displayname = "Edit All Approvals"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit any budget approval row - approver, status and sequence - on any budget, not just owned ones."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Edit_Owned_Approvals
+	(
+    	type = checkbox
+		displayname = "Edit Owned Approvals"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit the budget approval rows only on budgets this user owns. Has no additional effect when Edit All Approvals is on."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Send_for_Approvals
+	(
+    	type = checkbox
+		displayname = "Send for Approvals"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Send a budget into its approval chain, which locks the budget and notifies the first approver. Without this the user can prepare a budget but not start approvals."
+    	]
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	Edit_Budget_Owners
+	(
+    	type = checkbox
+		displayname = "Edit Budget Owners"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Change who owns a budget. Ownership is what every Owned permission keys off, so this effectively grants and revokes other people's edit rights."
+    	]
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	View_Budget_Import_Items
+	(
+    	type = checkbox
+		displayname = "View Budget Import Items"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "See the Budget Import Items tab and the imported line items in it. Read-only on its own - pair with Edit Budget Import Items to let the user change anything."
+    	]
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	Edit_Budget_Import_Items
+	(
+    	type = checkbox
+		displayname = "Edit Budget Import Items"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit and assign imported budget line items - mapping them to budget categories and to a budget. Implies the ability to act on what View Budget Import Items shows."
+    	]
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	Edit_Delete_All_Modifications
+	(
+    	type = checkbox
+		displayname = "Edit/Delete All Modifications"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Modification admin. Full control of every budget modification and its approval rows, including ones the user did not raise: edit, delete, and act on approvals regardless of owner."
+    	]
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	Delete_Archive_Budgets
+	(
+    	type = checkbox
+		displayname = "Delete & Archive Budgets"
+		initial value = false
+	 	row = 2
+	 	column = 2   
+		width = medium
+	)
+	Proformas
+	(
+		type = section
+		visibility = true
+	 	row = 3
+	 	column = 0   
+		width = medium
+	)
+	Edit_All_Proformas
+	(
+    	type = checkbox
+		displayname = "Edit All Proformas"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Full edit on every pro forma regardless of owner. Supersedes Edit Owned Proformas."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Edit_Owned_Proformas
+	(
+    	type = checkbox
+		displayname = "Edit Owned Proformas"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit only the pro formas this user owns. Has no additional effect when Edit All Proformas is on."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Edit_Construction_Curve
+	(
+    	type = checkbox
+		displayname = "Edit Construction Curve"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit the construction cost curve rows that spread a pro forma's costs across time. Off means the curve is visible but locked."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Delete_Archive_Pro_Formas
+	(
+    	type = checkbox
+		displayname = "Delete & Archive Pro Formas"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Delete a pro forma outright, or archive it out of the active list. Destructive - keep this narrow."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Edit_All_Pro_Forma_Approvals
+	(
+    	type = checkbox
+		displayname = "Edit All Pro Forma Approvals"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit any pro forma approval row - approver, status, sequence - on any pro forma, not just owned ones."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Edit_Owned_Pro_Forma_Approvals
+	(
+    	type = checkbox
+		displayname = "Edit Owned Pro Forma Approvals"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit the pro forma approval rows only on pro formas this user owns. Has no additional effect when Edit All Pro Forma Approvals is on."
+    	]
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Send_Costs_to_Budgets
+	(
+    	type = checkbox
+		displayname = "Send Costs to Budgets"
+		initial value = false
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Send_Pro_Formas_for_Approvals
+	(
+    	type = checkbox
+		displayname = "Send Pro Formas for Approvals"
+		initial value = false
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	AI_Review
+	(
+    	type = checkbox
+		displayname = "AI Review"
+		initial value = false
+    	description
+    	[
+    		type = none
+    	 	message = "Run the AI check on a Pro Forma and view its review history (Pro Forma Manager AI Review button)."
+    	]
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	Edit_Proforma_Owner
+	(
+    	type = checkbox
+		displayname = "Edit Proforma Owner"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Change who owns a pro forma. Ownership drives every Owned permission, so this indirectly grants and revokes other people's edit rights."
+    	]
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	VP_Compensation_Tab
+	(
+    	type = checkbox
+		displayname = "VP Compensation Tab"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Show the VP Compensation tab on a pro forma. Off hides the tab entirely - use it to keep compensation figures away from users who do not need them."
+    	]
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	Edit_Probability
+	(
+    	type = checkbox
+		displayname = "Edit Probability"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit a pro forma's probability percentage, which weights it in forecasting and pipeline roll-ups."
+    	]
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	Submit_to_Legal_Module
+	(
+    	type = checkbox
+		displayname = "Submit to Legal Module"
+		initial value = false
+	 	row = 3
+	 	column = 2   
+		width = medium
+	)
+	Legal
+	(
+		type = section
+		visibility = true
+	 	row = 4
+	 	column = 0   
+		width = medium
+	)
+	Edit_Contracts
+	(
+    	type = checkbox
+		displayname = "Edit Contracts"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Full edit of contracts and their actions: status, fields, actions, approvals, attachments, lots and pricing. Also grants everything Propose Contract Changes gives. Completed contracts stay locked for everyone."
+    	]
+	 	row = 4
+	 	column = 1   
+		width = medium
+	)
+	Approve_Contracts
+	(
+    	type = checkbox
+		displayname = "Approve Contracts"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Legal. Accept or decline what appears in the Review queue - proposed contracts and the actions proposed with them. Without this the user sees the queue but only as 'With Legal'."
+    	]
+	 	row = 4
+	 	column = 1   
+		width = medium
+	)
+	Delete_Archive_Contracts
+	(
+    	type = checkbox
+		displayname = "Delete & Archive Contracts"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Delete and archive contracts access"
+    	]
+	 	row = 4
+	 	column = 1   
+		width = medium
+	)
+	Propose_Contract_Changes
+	(
+    	type = checkbox
+		displayname = "Propose Contract Changes"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Dev Managers. Propose new contracts and propose, edit and reorder actions, all landing in Review for Legal rather than going live. Granted automatically by Edit Contracts."
+    	]
+	 	row = 4
+	 	column = 2   
+		width = medium
+	)
+	Manage_Action_Templates
+	(
+    	type = checkbox
+		displayname = "Manage Action Templates"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Edit the per-contract-type action checklists that seed every new contract of that type. Changing a template changes what every future contract starts with, so this stays off unless explicitly granted."
+    	]
+	 	row = 4
+	 	column = 2   
+		width = medium
+	)
+	Data_Insights
+	(
+		type = section
+		displayname = "Data Insights"
+		visibility = true
+	 	row = 5
+	 	column = 0   
+		width = medium
+	)
+	Lot_Sales_Dashboard
+	(
+    	type = checkbox
+		displayname = "Lot Sales Dashboard"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Grants access to the Lot Sales dashboard within the Data Insights widget"
+    	]
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	View_Total_Lot_Revenue
+	(
+    	type = checkbox
+		displayname = "View Total Lot Revenue"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Grants access to Lot Revenue related measures within the Lot Sales dashboard."
+    	]
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Defaults
+	(
+		type = section
+		visibility = true
+	 	row = 6
+	 	column = 0   
+		width = medium
+	)
+	Legal_Assigned_to_Me
+	(
+    	type = checkbox
+		displayname = "Legal Assigned to Me"
+		initial value = false
+	 	row = 6
+	 	column = 1   
+		width = medium
+	)
+	Budgets_Assigned_to_Me
+	(
+    	type = checkbox
+		displayname = "Budgets Assigned to Me"
+		initial value = false
+	 	row = 6
+	 	column = 1   
+		width = medium
+	)
+	Pro_Forma_Assigned_to_Me
+	(
+    	type = checkbox
+		displayname = "Pro Forma Assigned to Me"
+		initial value = false
+	 	row = 6
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

@@ -1,0 +1,24 @@
+map poNativeCurrencyProbe()
+{
+ result = {"success":false};
+ try
+ {
+  if(zoho.loginuser != zoho.adminuser) { result.put("error","Application owner only."); return result; }
+  exact = "9999999999999999.99";
+  converted = exact.toDecimal();
+  result.put("converted",converted.toString());
+  rowId = insert into PO_Currency_Probe
+  [
+   Added_User=zoho.loginuser
+   Expected=exact
+   Amount=exact
+  ];
+  row = PO_Currency_Probe[ID == rowId];
+  result.put("rowId",rowId.toString());
+  result.put("expected",exact);
+  result.put("actual",row.Amount.toString());
+  result.put("success",row.Amount.toString() == exact);
+ }
+ catch(e) { result.put("error",e.toString()); }
+ return result;
+}

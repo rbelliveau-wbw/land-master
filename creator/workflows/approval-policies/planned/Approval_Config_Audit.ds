@@ -1,0 +1,94 @@
+form Approval_Config_Audit
+{
+	displayname = "Approval Config Audit"
+	success message = "Configuration saved"
+	must have unique Token
+	(
+		type = text
+		maxchar = 80
+		row = 1
+		column = 1
+		width = medium
+	)
+	Actor
+	(
+		type = picklist
+		values = User_Access.ID
+		displayformat = [Full_Name]
+		row = 2
+		column = 1
+		width = medium
+	)
+	Action
+	(
+		type = text
+		maxchar = 80
+		row = 3
+		column = 1
+		width = medium
+	)
+	Status
+	(
+		type = picklist
+		values = {"Started","Complete","Unknown","Rejected"}
+		row = 4
+		column = 1
+		width = medium
+	)
+	Before_JSON
+	(
+		type = textarea
+
+		row = 5
+		column = 1
+		width = medium
+	)
+	Intended_JSON
+	(
+		type = textarea
+
+		row = 6
+		column = 1
+		width = medium
+	)
+	After_JSON
+	(
+		type = textarea
+
+		row = 7
+		column = 1
+		width = medium
+	)
+	Error_Text
+	(
+		type = textarea
+
+		row = 8
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

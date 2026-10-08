@@ -9,6 +9,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Comments](comments.md) | Main-list comment actions, activity counts, conversation modals, composer and message actions |
 | [Line notes](notes.md) | Budget's circular pencil, yellow note state, anchored textarea popover and single-field note saves |
 | [Approval progress](approval-progress.md) | Sending, approving, rejecting and reconciling approvals |
+| [Approval administration](approval-administration.md) | Roles, assignments, versioned policies, audit details and route preview |
 | [Transfer progress](transfer-progress.md) | A committing action that writes to several records |
 | [Record details](record-details.md) | Read-only main-report details, identity/date pills, compact previews and complete detail modals |
 | [Takedown receipts](takedown-receipts.md) | Builder Takedown editor, sequential interest periods and live receipt |

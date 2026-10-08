@@ -1,0 +1,45 @@
+form Approval_Role
+{
+	displayname = "Approval Role"
+	success message = "Configuration saved"
+	must have unique Role_Name
+	(
+		type = text
+		maxchar = 80
+		row = 1
+		column = 1
+		width = medium
+	)
+	Active
+	(
+		type = checkbox
+		initial value = false
+		row = 2
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

@@ -1,0 +1,77 @@
+map poSnapshot(string purchaseOrderId)
+{
+	result = {"success":false};
+	costElements = {"1","2","3","4","5"};
+	statuses = {"Draft","Submitted"};
+	modificationTypes = {"Increase","Decrease"};
+	try
+	{
+		if(!purchaseOrderId.matches("[0-9]+")) { result.put("error","PO ID is required."); return result; }
+		po = Payment_Request[ID == purchaseOrderId.toLong()];
+		if(po.ID == null || po.Request_Type != "Purchase Order" || ifnull(po.PO_Revision,"") == "") { result.put("error","Multi-item PO not found."); return result; }
+		p = Map();
+		p.put("id",po.ID.toString());
+		p.put("budgetId",po.Budget.toString());
+		p.put("vendorId",po.Vendor.toString());
+		p.put("requestDate",po.Request_Date.toString("yyyy-MM-dd"));
+		p.put("dateNeeded",po.Date_Needed.toString("yyyy-MM-dd"));
+		p.put("amount",po.PO_Amount_Exact);
+		p.put("revision",po.PO_Revision);
+		p.put("status",po.PO_Status);
+		p.put("commitmentState",po.PO_Commitment_State);
+		p.put("approvalState",po.PO_Approval_State);
+		if(thisapp.poCurrencyString(po.Request_Amount.toString()) != po.PO_Amount_Exact || po.Budget_Item != null || po.Accounting_Project_Code != null || po.Element != null || po.Final_Accounting_Code != null)
+		{
+			result.put("error","PO header readback differs from its exact contract."); return result;
+		}
+		if((po.PO_Status == "Draft" && po.PO_Commitment_State != "None") || (po.PO_Status == "Submitted" && po.PO_Commitment_State != "Reserved") || !statuses.contains(po.PO_Status) || po.PO_Approval_State != "Not Configured")
+		{
+			result.put("error","PO submission, commitment or approval state needs review."); return result;
+		}
+		lines = List();
+		keys = List();
+		order = 0;
+		total = 0;
+		for each row in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
+		{
+			order = order+1;
+			if(row.Line_Order != order || keys.contains(row.Line_Key) || row.Revision_Line_Key != po.PO_Revision+"-"+row.Line_Key || thisapp.poCurrencyString(row.Final_Amount.toString()) != row.Final_Amount_Exact)
+			{
+				result.put("error","PO line readback differs from its exact contract."); return result;
+			}
+			keys.add(row.Line_Key);
+			line = Map();
+			line.put("ID",row.ID.toString());
+			line.put("key",row.Line_Key);
+			line.put("budgetItemId",row.Budget_Item.toString());
+			line.put("description",row.Description);
+			line.put("costElement",row.Cost_Element);
+			line.put("pricingMode",row.Pricing_Mode);
+			line.put("quantity",row.Quantity_Exact);
+			line.put("unitPrice",row.Unit_Price_Exact);
+			line.put("finalAmount",row.Final_Amount_Exact);
+			if(row.Pricing_Mode == "Manual")
+			{
+				if(row.Quantity != null || row.Unit_Price != null || row.Quantity_Exact != null || row.Unit_Price_Exact != null) { result.put("error","Manual pricing nulls were not preserved."); return result; }
+			}
+			else if(row.Pricing_Mode == "Calculated")
+			{
+				if(row.Quantity == null || row.Unit_Price == null || thisapp.poCurrencyString(row.Unit_Price.toString()) != row.Unit_Price_Exact || row.Quantity != row.Quantity_Exact.toDecimal() || thisapp.poMultiplyExact(row.Quantity_Exact,row.Unit_Price_Exact) != row.Final_Amount_Exact)
+				{
+					result.put("error","Calculated pricing readback differs from its exact contract."); return result;
+				}
+			}
+			else { result.put("error","Unknown pricing mode."); return result; }
+			item = Budget_Item[ID == row.Budget_Item];
+			if(item.ID == null || item.Budget != po.Budget || !costElements.contains(row.Cost_Element)) { result.put("error","PO line has an invalid budget item or Cost Element."); return result; }
+			total = total+row.Final_Amount_Exact.replaceAll("[.]","").toLong();
+			lines.add(line);
+		}
+		if(order == 0 || order != po.PO_Line_Count || (po.PO_Status == "Submitted" && total != po.PO_Amount_Exact.replaceAll("[.]","").toLong())) { result.put("error","PO line count or submitted total does not match."); return result; }
+		p.put("lines",lines);
+		result.put("snapshot",p);
+		result.put("success",true);
+	}
+	catch(e) { result.put("error","PO readback is incomplete. Review the operation before another write."); }
+	return result;
+}

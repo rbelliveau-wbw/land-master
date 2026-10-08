@@ -1,0 +1,45 @@
+form Approval_Config_Lock
+{
+	displayname = "Approval Config Lock"
+	success message = "Configuration saved"
+	must have unique Lock_Key
+	(
+		type = text
+		maxchar = 80
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have Operation_Token
+	(
+		type = text
+		maxchar = 80
+		row = 2
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

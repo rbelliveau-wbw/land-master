@@ -1,0 +1,82 @@
+form PO_Operation
+{
+	displayname = "PO Operation"
+	unique Token
+	(
+		type = text
+		maxchar = 80
+		row = 4
+		column = 1
+		width = medium
+	)
+	Budget
+	(
+		type = picklist
+		values = Add_Budget.ID
+		displayformat = [Budget_Name]
+		row = 4
+		column = 1
+		width = medium
+	)
+	Actor
+	(
+		type = picklist
+		values = User_Access.ID
+		displayformat = [User]
+		row = 4
+		column = 1
+		width = medium
+	)
+	Purchase_Order
+	(
+		type = picklist
+		values = Payment_Request.ID
+		displayformat = [ID]
+		row = 4
+		column = 1
+		width = medium
+	)
+	Status
+	(
+		type = picklist
+		values = {"Started","Complete","Unknown","Rejected"}
+		row = 4
+		column = 1
+		width = medium
+	)
+	Request_JSON
+	(
+		type = textarea
+
+		row = 4
+		column = 1
+		width = medium
+	)
+	Snapshot_JSON
+	(
+		type = textarea
+
+		row = 4
+		column = 1
+		width = medium
+	)
+	Error_Text
+	(
+		type = textarea
+
+		row = 4
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+	}
+}

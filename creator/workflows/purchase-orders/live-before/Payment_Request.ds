@@ -1,0 +1,166 @@
+form Payment_Request
+{
+	displayname = "Payment Request"
+	success message = "Request saved successfully"
+	Request_Details
+	(
+		type = section
+		displayname = "Check / Wire Request"
+		visibility = true
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have Request_Type
+	(
+		type = picklist
+		displayname = "Request Type"
+		values = {"Check","Wire","Purchase Order"}
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Request_Date
+	(
+    	type = date
+		displayname = "Request Date"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Date_Needed
+	(
+    	type = date
+		displayname = "Date Needed"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Budget_Reference
+	(
+		type = section
+		displayname = "Budget and Accounting Code"
+		visibility = true
+	 	row = 2
+	 	column = 0   
+		width = medium
+	)
+	must have Budget
+	(
+		type = picklist	
+		displayname = "Budget / Phase"
+		values  = Add_Budget.ID
+    	displayformat = [Budget_Name]
+		sortorder = ascending
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	must have Budget_Item
+	(
+		type = picklist	
+		displayname = "Cost Code / Budget Item"
+		values  = Budget_Item[Budget == input.Budget].ID
+    	displayformat = [Budget_Code + " - " + Description]
+		sortorder = ascending
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Department
+	(
+		type = picklist
+		values = {"Development","Construction"}
+    	description
+    	[
+    		type = help_text
+    	 	message = "Derived from the selected budget cost code."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	must have Accounting_Project_Code
+	(
+		type = picklist	
+		displayname = "Accounting Project Code"
+		values  = External_System_Mapping[External_System == "Great Plains" && External_Code.startsWith("D_")].ID
+    	displayformat = [External_Code]
+		sortorder = ascending
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Element
+	(
+    	type = text
+		initial value = "5"
+    	description
+    	[
+    		type = help_text
+    	 	message = "Development uses element 5."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Final_Accounting_Code
+	(
+    	type = text
+		displayname = "Final Code for Accounting"
+    	description
+    	[
+    		type = help_text
+    	 	message = "Accounting project code + underscore + cost code + underscore + element."
+    	]
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Budget_Summary
+	(
+		type = section
+		displayname = "Request Amount and Budget"
+		visibility = true
+	 	row = 3
+	 	column = 0   
+		width = medium
+	)
+	must have Request_Amount
+	(
+		displayname = "Request Amount"
+		type = USD
+		format = commadotwestern
+		maxchar = 12
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Save Request"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

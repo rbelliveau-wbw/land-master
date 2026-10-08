@@ -8,3 +8,7 @@
 *.pdf binary
 *.ds linguist-language=Deluge
 *.dg linguist-language=Deluge
+
+# Native Creator exports retain the editor's original indentation and spaces.
+creator/workflows/purchase-orders/live-before/*.ds -whitespace
+creator/workflows/approval-policies/live-before/*.ds -whitespace

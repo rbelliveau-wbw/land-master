@@ -1,0 +1,136 @@
+form PO_Item
+{
+displayname = "PO Item"
+success message = "PO line saved"
+must have unique Revision_Line_Key
+(
+type = text
+maxchar = 180
+row = 1
+column = 1
+width = medium
+)
+must have Purchase_Order
+(
+type = picklist
+values = Payment_Request.ID
+displayformat = [ID]
+row = 1
+column = 1
+width = medium
+)
+must have Budget_Item
+(
+type = picklist
+values = Budget_Item.ID
+displayformat = [Budget_Code + " - " + Description]
+row = 1
+column = 1
+width = medium
+)
+must have Line_Key
+(
+type = text
+maxchar = 80
+row = 1
+column = 1
+width = medium
+)
+must have Revision
+(
+type = text
+maxchar = 80
+row = 1
+column = 1
+width = medium
+)
+must have Line_Order
+(
+type = number
+maxchar = 4
+row = 1
+column = 1
+width = medium
+)
+must have Description
+(
+type = textarea
+row = 1
+column = 1
+width = medium
+)
+must have Cost_Element
+(
+type = picklist
+values = {"1","2","3","4","5"}
+row = 1
+column = 1
+width = medium
+)
+must have Pricing_Mode
+(
+type = picklist
+values = {"Calculated","Manual"}
+row = 1
+column = 1
+width = medium
+)
+Quantity
+(
+type = decimal
+maxchar = 16
+decimalplace = 6
+row = 1
+column = 1
+width = medium
+)
+Unit_Price
+(
+type = USD
+format = commadotwestern
+maxchar = 19
+decimalplace = 2
+row = 1
+column = 1
+width = medium
+)
+must have Final_Amount
+(
+type = USD
+format = commadotwestern
+maxchar = 19
+decimalplace = 2
+row = 1
+column = 1
+width = medium
+)
+Quantity_Exact
+(
+type = text
+maxchar = 30
+row = 1
+column = 1
+width = medium
+)
+Unit_Price_Exact
+(
+type = text
+maxchar = 19
+row = 1
+column = 1
+width = medium
+)
+must have Final_Amount_Exact
+(
+type = text
+maxchar = 19
+row = 1
+column = 1
+width = medium
+)
+actions
+{
+on add { submit ( type = submit displayname = "Save" ) }
+on edit { update ( type = submit displayname = "Update" ) cancel ( type = cancel displayname = "Cancel" ) }
+}
+}

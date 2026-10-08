@@ -1,0 +1,150 @@
+form Budget_Modification
+{
+	displayname = "Budget Modification"
+	success message = "Budget Modification Added Successfully"
+	Section
+	(
+		type = section
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have Budget_Item
+	(
+		type = picklist	
+		displayname = "Budget Item"
+		values  = Budget_Item.ID
+    	displayformat = [Item_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Budget_Category
+	(
+		type = picklist	
+		displayname = "Budget Category"
+		values  = Budget_Category.ID
+    	displayformat = [Budget_Category_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Budget
+	(
+		type = picklist	
+		values  = Add_Budget.ID
+    	displayformat = [Budget_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Approved_On
+	(
+    	type = datetime
+		displayname = "Approved On"
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Approved_By
+	(
+    	type = text
+		displayname = "Approved By"
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Approval_Track
+	(
+		type = picklist
+		displayname = "Approval Track"
+		maxchar = 100
+		values = {"Development","Construction"}
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Status
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Draft","Submitted","Approved","Rejected"}
+		initial value = "Draft"
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Effective_Date
+	(
+    	type = date
+		displayname = "Effective Date"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Reference_Number
+	(
+    	type = text
+		displayname = "Reference Number"
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Reason
+	(
+    	type = textarea
+		height = 100px
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Modification_Type
+	(
+		type = picklist
+		displayname = "Modification Type"
+		maxchar = 100
+		values = {"Increase","Decrease"}
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Amount
+	(
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

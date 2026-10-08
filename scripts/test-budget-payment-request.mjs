@@ -14,7 +14,7 @@ const c=vm.createContext({S:{startupReady:true,liveSDK:true,edBudget:{ID:budgetI
   sdkGetAllRecords:(...args)=>{calls.push(args);return typeof response==='function'?response():Promise.resolve(response);},
   itemModAgg:()=>({approved:25.25})
 });c.window=c;
-for(const name of ['requestModalScope','requestModalCurrent','requestVendorUrl','loadRequestVendors','requestVendorLocation','requestVendorDetails','requestVendorRows','requestFinancialValue','requestAmountNumber','requestPurchaseOrderTotal','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance','loadRequestPurchaseOrders','previewPaymentRequest'])vm.runInContext(block(name),c);
+for(const name of ['poDevelopment','requestModalScope','requestModalCurrent','requestVendorUrl','loadRequestVendors','requestVendorLocation','requestVendorDetails','requestVendorRows','requestFinancialValue','requestAmountNumber','requestPurchaseOrderTotal','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance','loadRequestPurchaseOrders','previewPaymentRequest'])vm.runInContext(block(name),c);
 function modal(){const m=c.S.modModal={requestFlow:true,budgetId,itemId,requestType:'Purchase Order',vendorId,requestAmount:'20.01',vendorState:'loaded',vendors:[],poState:'loaded',poItemId:itemId,poIssued:15.25};m.scope=c.requestModalScope(m);return m;}
 const item={ID:itemId,Budget_Ttl:'500.25',PROJ_Actual:'100.25'};
 let m=modal();assert.equal(c.requestBalanceSnapshot(m,item).after,490.24);
@@ -56,4 +56,11 @@ assert.equal(calls.at(-1)[0],'All_Wire_Requests');assert.match(calls.at(-1)[1],n
 response=[po];await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,12.25,'every issued PO reserves its full amount');
 response=()=>new Promise(r=>resolve=r);m=modal();const latePO=c.loadRequestPurchaseOrders(m);m.itemId='900000000000000099';resolve([]);await latePO;assert.equal(m.poState,'loading','old line item replies cannot publish');
 response=()=>Promise.reject(new Error('Incomplete count'));m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'unavailable');assert.equal(c.requestBalanceSnapshot(m,item),null);
+// Development consumes verified allocations, never parent header amounts a second time.
+environment='DEVELOPMENT';c.S.myAccessId='900000000000000007';
+c.unwrapBudgetManageResponse=v=>v;
+let native={contract:'po-v1',success:true,balances:[{budgetItemId:itemId,issuedCents:'725'}]};
+c.sdkRunBudgetFunction=async(name,args)=>{assert.equal(name,'managePurchaseOrder');const request=JSON.parse(args.payload);assert.equal(request.action,'Balances');assert.equal(request.budgetId,budgetId);assert.equal(request.userAccessId,c.S.myAccessId);return native;};
+m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'loaded');assert.equal(m.poIssued,7.25);
+for(const invalid of [{...native,success:false},{...native,balances:[]},{...native,balances:[native.balances[0],native.balances[0]]},{...native,balances:[{budgetItemId:itemId,issuedCents:'9007199254740992'}]},{...native,balances:[{budgetItemId:itemId,issuedCents:725}]}]){native=invalid;m=modal();await c.loadRequestPurchaseOrders(m);assert.equal(m.poState,'unavailable');}
 console.log('Payment request vendor reads, string IDs, stale scope, receipt math, one-cent overspending and unavailable balances passed.');

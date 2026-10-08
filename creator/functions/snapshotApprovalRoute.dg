@@ -1,0 +1,30 @@
+map snapshotApprovalRoute(map context)
+{
+	result = {"success":false,"contract":"approval-policy-v1"};
+	try
+	{
+		// Private dependency for initiation adapters, called only after their existing auth checks.
+		// Unique submission key is bound to workflow, record and immutable submission revision.
+		typedRecord = Map(); typedRecord.put("value",context.get("recordId"));
+		typedRevision = Map(); typedRevision.put("value",context.get("submissionRevision"));
+		if(!typedRecord.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]{1,30}\"[ ]*[}][ ]*") || !typedRevision.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[A-Za-z0-9-]{1,80}\"[ ]*[}][ ]*")) { result.put("error","Record ID and immutable submission revision must be exact strings."); return result; }
+		submissionKey = context.get("workflow")+":"+context.get("recordId")+":"+context.get("submissionRevision");
+		existing = Approval_Route_Snapshot[Submission_Key == submissionKey];
+		if(existing.count() > 0)
+		{
+			if(existing.count() != 1 || existing.Context_JSON != context.toString()) { result.put("error","Snapshot identity conflicts with this submission."); return result; }
+			result.put("snapshot",existing.Route_JSON.toMap()); result.put("snapshotId",existing.ID.toString()); result.put("success",true); return result;
+		}
+		resolved = thisapp.resolveApprovalRoute(context);
+		if(resolved.get("success") != true) { return resolved; }
+		snapshot = resolved.get("snapshot");
+		policy = Approval_Policy[ID == snapshot.get("policyId").toLong()];
+		if(policy.Adapter_Enabled != true) { result.put("error","This workflow has not completed its native adapter migration gate."); return result; }
+		rowId = insert into Approval_Route_Snapshot [Added_User=zoho.loginuser Submission_Key=submissionKey Workflow=context.get("workflow") Record_ID=context.get("recordId") Submission_Revision=context.get("submissionRevision") Policy=policy.ID Policy_Version=policy.Version Context_JSON=context.toString() Route_JSON=snapshot.toString()];
+		row = Approval_Route_Snapshot[ID == rowId];
+		if(row.Submission_Key != submissionKey || row.Workflow != context.get("workflow") || row.Record_ID != context.get("recordId") || row.Submission_Revision != context.get("submissionRevision") || row.Policy != policy.ID || row.Context_JSON != context.toString() || row.Route_JSON != snapshot.toString() || row.Policy_Version != policy.Version) { result.put("error","Submission route snapshot could not be verified. Do not create another."); return result; }
+		result.put("snapshotId",rowId.toString()); result.put("snapshot",snapshot); result.put("success",true);
+	}
+	catch(e) { result.put("error","Submission snapshot is unknown. Check its unique submission key before continuing."); }
+	return result;
+}

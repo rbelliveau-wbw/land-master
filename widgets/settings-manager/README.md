@@ -1,5 +1,12 @@
 # Settings Manager
 
+## Shared approval administration candidate (1.4.0)
+
+Development-only Roles, Assignments, versioned Policies, Preview and audit UI.
+No adapter is enabled and existing approval workflows remain unchanged. Native
+helper compilation, access guards and execution migrations remain required;
+see the [implementation and native handoff](../../creator/functions/PURCHASE_ORDER_HANDOFF.md).
+
 A grouped, autosaving editor for the **single** Land Master `Settings` record.
 
 Before this widget, `page Settings1` was a bare iframe hardcoded to
@@ -18,7 +25,9 @@ record id baked into the page source.
 | Report | `All_Contract_Actions` | Options for `Builder_Contract_Action_Template` |
 | Report | `All_Pro_Formas` | Options for the curve row `Pro_Forma` lookup |
 
-No business Custom APIs. Settings and curve data use native `ZOHO.CREATOR.DATA` SDK2 methods.
+Existing Settings and curve data use native `ZOHO.CREATOR.DATA` SDK2 methods.
+The unpromoted approval administration candidate proposes the owner-only
+`Manage_Approval_Policies_DEV` Custom API; it is not yet registered.
 The existing critical-error reporter retains its separately configured Custom API.
 
 ## Sections

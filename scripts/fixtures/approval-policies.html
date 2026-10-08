@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Approval browser fixture</title>
+<link rel="stylesheet" href="/approval-admin.css">
+<style>body{font:14px system-ui;background:#f3f6fa;color:#0b2345;padding:24px}.btn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}button{cursor:pointer}.muted{color:#67758a}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<h1>Approval policy fixture</h1><p>Local simulation — no Creator writes or notifications.</p><button id="open">Open Approvals</button>
+<script src="/approval-policy-domain.js"></script><script src="/approval-admin.js"></script>
+<script>
+const config={roles:[{id:'11',name:'Example role',active:true}],companies:[{id:'21',label:'Example company'}],territories:[{id:'North',label:'North'}],users:[{id:'31',user:'example.user',name:'Example person',approverEmail:'test@example.invalid',routingEnabled:true},{id:'32',user:'example.submitter',name:'Example submitter',approverEmail:'submitter@example.invalid',routingEnabled:true}],assignments:[{id:'41',roleId:'11',companyId:'21',userAccessId:'31',active:true,territory:'',department:'',effectiveFrom:'',effectiveTo:''}],policies:[{id:'51',workflow:'Purchase Order',companyId:'21',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',effectiveFrom:'',effectiveTo:'',territory:'',department:'',adapterEnabled:false,steps:[{key:'step-one',roleId:'11',order:1,condition:'At or above',threshold:'100.00',enabled:true}]}],audit:[]};
+const receipts=new Map();let count=60;
+const ui=LMApprovalAdmin.create({scope:()=> 'development-fixture',call:async p=>{
+ if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,configuration:structuredClone(config)};
+ if(p.action==='Preview'){try{return {contract:'approval-policy-v1',success:true,snapshot:LMApprovalPolicy.resolve(config,p.context)};}catch(e){return {contract:'approval-policy-v1',success:false,error:e.message};}}
+ if(p.action==='Check')return receipts.get(p.token);
+ const collection=p.action==='SaveRole'?'roles':p.action==='SaveAssignment'?'assignments':'policies';
+ let before=config[collection].find(r=>r.id===p.data.id),after={...structuredClone(p.data),id:p.data.id||String(++count)};
+ if(p.action==='Publish')after={...before,status:'Published'};
+ if(p.action==='SavePolicy')Object.assign(after,{status:'Draft',adapterEnabled:false});
+ const index=config[collection].findIndex(r=>r.id===after.id);if(index<0)config[collection].push(after);else config[collection][index]=after;
+ config.audit.push({id:String(++count),action:p.action,status:'Complete',actorId:'32',before:structuredClone(before||{}),after:structuredClone(after)});
+ const receipt={contract:'approval-policy-v1',success:true,writeState:'verified',token:p.token,after};receipts.set(p.token,receipt);await new Promise(r=>setTimeout(r,300));return receipt;
+}});
+document.querySelector('#open').onclick=()=>ui.open();
+</script>

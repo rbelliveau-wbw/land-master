@@ -1,0 +1,134 @@
+form Approval_Policy
+{
+	displayname = "Approval Policy"
+	success message = "Configuration saved"
+	Company
+	(
+		type = picklist
+		values = Company.ID
+		displayformat = [Company_Name]
+		row = 1
+		column = 1
+		width = medium
+	)
+	Workflow
+	(
+		type = picklist
+		values = {"Budget","Budget Modification","Pro Forma","Contract","Purchase Order"}
+		row = 2
+		column = 1
+		width = medium
+	)
+	Territory_Key
+	(
+		type = text
+		maxchar = 80
+		row = 3
+		column = 1
+		width = medium
+	)
+	Department_Key
+	(
+		type = text
+		maxchar = 80
+		row = 4
+		column = 1
+		width = medium
+	)
+	Version
+	(
+		type = number
+		maxchar = 6
+		row = 5
+		column = 1
+		width = medium
+	)
+	Status
+	(
+		type = picklist
+		values = {"Draft","Published"}
+		row = 6
+		column = 1
+		width = medium
+	)
+	Enabled
+	(
+		type = checkbox
+		initial value = false
+		row = 7
+		column = 1
+		width = medium
+	)
+	Effective_From
+	(
+		type = date
+		alloweddays = 0,1,2,3,4,5,6
+		row = 8
+		column = 1
+		width = medium
+	)
+	Effective_To
+	(
+		type = date
+		alloweddays = 0,1,2,3,4,5,6
+		row = 9
+		column = 1
+		width = medium
+	)
+	Self_Approval
+	(
+		type = picklist
+		values = {"Unspecified","Allow","Deny"}
+		row = 10
+		column = 1
+		width = medium
+	)
+	Duplicate_Person
+	(
+		type = picklist
+		values = {"Unspecified","Separate steps","Reject"}
+		row = 11
+		column = 1
+		width = medium
+	)
+	Steps_JSON
+	(
+		type = textarea
+
+		row = 12
+		column = 1
+		width = medium
+	)
+	Adapter_Enabled
+	(
+		type = checkbox
+		initial value = false
+		row = 13
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

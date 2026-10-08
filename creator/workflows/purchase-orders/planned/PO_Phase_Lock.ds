@@ -1,0 +1,40 @@
+form PO_Phase_Lock
+{
+	displayname = "PO Phase Lock"
+	unique Phase_Key
+	(
+		type = text
+		maxchar = 30
+		row = 4
+		column = 1
+		width = medium
+	)
+	Operation_Token
+	(
+		type = text
+		maxchar = 80
+		row = 4
+		column = 1
+		width = medium
+	)
+	Actor
+	(
+		type = picklist
+		values = User_Access.ID
+		displayformat = [User]
+		row = 4
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+	}
+}

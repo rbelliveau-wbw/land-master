@@ -43,6 +43,11 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		result.put("archived",archiveValue);
 		return result.toString();
 	}
+	if(Payment_Request[Budget == budgetKey && Request_Type == "Purchase Order"].count() > 0 || PO_Operation[Budget == budgetKey].count() > 0 || PO_Phase_Lock[Phase_Key == budgetIdText].count() > 0)
+	{
+		result.put("error","This budget has Purchase Orders or PO operation history. Archive it; deletion would destroy financial references.");
+		return result.toString();
+	}
 	deleted = Map();
 	deleteIds = List();
 	for each approvalRow in Budget_Approvals[Budget == budgetKey]

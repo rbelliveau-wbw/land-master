@@ -1,0 +1,102 @@
+form Approval_Route_Snapshot
+{
+	displayname = "Approval Route Snapshot"
+	success message = "Configuration saved"
+	must have unique Submission_Key
+	(
+		type = text
+		maxchar = 240
+		row = 1
+		column = 1
+		width = medium
+	)
+	Workflow
+	(
+		type = text
+		maxchar = 80
+		row = 2
+		column = 1
+		width = medium
+	)
+	Record_ID
+	(
+		type = text
+		maxchar = 30
+		row = 3
+		column = 1
+		width = medium
+	)
+	Submission_Revision
+	(
+		type = text
+		maxchar = 80
+		row = 4
+		column = 1
+		width = medium
+	)
+	Policy
+	(
+		type = picklist
+		values = Approval_Policy.ID
+		displayformat = [Workflow]
+		row = 5
+		column = 1
+		width = medium
+	)
+	Policy_Version
+	(
+		type = number
+		maxchar = 6
+		row = 6
+		column = 1
+		width = medium
+	)
+	Context_JSON
+	(
+		type = textarea
+
+		row = 7
+		column = 1
+		width = medium
+	)
+	Route_JSON
+	(
+		type = textarea
+
+		row = 8
+		column = 1
+		width = medium
+	)
+	Execution_JSON
+	(
+		type = textarea
+
+		row = 9
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

@@ -1,0 +1,54 @@
+{
+  "status": "partially installed Development scaffolding; functions uncompiled; see ../purchase-orders/native-results.json",
+  "forms": [
+    "Approval_Role",
+    "Approval_Role_Assignment",
+    "Approval_Policy",
+    "Approval_Route_Snapshot",
+    "Approval_Config_Audit",
+    "Approval_Config_Lock"
+  ],
+  "reuse": [
+    "User_Access.ID",
+    "User_Access.Approver_Email",
+    "User_Access.Full_Name",
+    "Company.ID",
+    "Territory.Territory_Name",
+    "Budget_Approvals",
+    "Contract_Approvals"
+  ],
+  "userAccessAddition": {
+    "field": "Approval_Routing_Enabled",
+    "type": "checkbox",
+    "initial": false
+  },
+  "steps": "Ordered steps JSON belongs to one policy version; no separate decision history",
+  "precedence": [
+    "Territory+Department",
+    "Territory",
+    "Company+Department",
+    "Company"
+  ],
+  "windows": "Start inclusive, end exclusive; overlapping published windows at same scope rejected",
+  "api": {
+    "name": "Manage_Approval_Policies_DEV",
+    "function": "manageApprovalPolicies",
+    "authentication": "OAuth2",
+    "userScope": "Admin only",
+    "method": "POST",
+    "argumentMode": "Key and Value",
+    "parameter": {
+      "name": "payload",
+      "type": "string"
+    }
+  },
+  "dependencies": [
+    "poCurrencyString",
+    "resolveApprovalRoute",
+    "approvalConfigurationSnapshot",
+    "manageApprovalPolicies",
+    "snapshotApprovalRoute"
+  ],
+  "activation": "Adapter_Enabled defaults false and is not writable through this administration API until native workflow regressions and recipient tests pass",
+  "reassign": "Blocked pending explicit authority and native execution adapter; no silent route edits"
+}

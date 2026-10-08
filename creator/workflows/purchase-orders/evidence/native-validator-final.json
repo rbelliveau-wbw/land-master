@@ -1,0 +1,14 @@
+[
+  {
+    "case": "numeric-id-with-nested-string",
+    "result": "- generic: \"{\\\"success\\\":false,\\\"writeState\\\":\\\"not-started\\\",\\\"error\\\":\\\"Phase and vendor IDs must be strings.\\\"}\""
+  },
+  {
+    "case": "missing-manual-null",
+    "result": "- generic: \"{\\\"success\\\":false,\\\"writeState\\\":\\\"not-started\\\",\\\"error\\\":\\\"Manual lines require explicit null Quantity and Unit Price.\\\"}\""
+  },
+  {
+    "case": "one-cent-mismatch",
+    "result": "- generic: \"{\\\"success\\\":false,\\\"writeState\\\":\\\"not-started\\\",\\\"error\\\":\\\"Line totals must equal the full PO amount exactly.\\\"}\""
+  }
+]

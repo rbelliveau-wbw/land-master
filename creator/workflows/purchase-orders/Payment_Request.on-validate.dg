@@ -1,0 +1,15 @@
+// Install before removing static Required from Budget_Item and Accounting_Project_Code.
+// This is interactive form validation; managed Deluge inserts must enforce the same contract.
+if(input.Request_Type == "Check" || input.Request_Type == "Wire")
+{
+	if(input.Budget_Item == null || input.Accounting_Project_Code == null)
+	{
+		alert "Budget Item and Accounting Project Code are required for Check and Wire.";
+		cancel submit;
+	}
+}
+else if(input.Request_Type == "Purchase Order")
+{
+	alert "Create and edit Purchase Orders in Budget Manager.";
+	cancel submit;
+}

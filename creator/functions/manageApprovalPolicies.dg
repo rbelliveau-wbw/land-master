@@ -1,0 +1,166 @@
+string manageApprovalPolicies(string payload)
+{
+	result = {"success":false,"contract":"approval-policy-v1","writeState":"not-started"};
+	auditId = 0; lockId = 0;
+	try
+	{
+		if(payload.length() > 60000) { result.put("error","Configuration request is too large."); return result.toString(); }
+		p = payload.toMap(); action = ifnull(p.get("action"),"");
+		typedIdentity = Map(); typedIdentity.put("value",p.get("userAccessId"));
+		if(!typedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","User Access identity must be a string."); return result.toString(); }
+		// Register this administration API with OAuth2, ADMIN ONLY scope.
+		// Wider scopes require a separate authenticated-caller proof and explicit admin grant.
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1 || access.ID.toString() != p.get("userAccessId") || zoho.loginuser != zoho.adminuser) { result.put("error","Application-owner configuration access is required."); return result.toString(); }
+		if(action == "List") { return thisapp.approvalConfigurationSnapshot().toString(); }
+		if(action == "Preview") { return thisapp.resolveApprovalRoute(p.get("context")).toString(); }
+		if(action == "Reassign" || action == "EnableAdapter") { result.put("error","Reassignment authority and native workflow migration must be approved and verified first."); return result.toString(); }
+		token = ifnull(p.get("token"),"").toString();
+		if(action == "Check")
+		{
+			audit = Approval_Config_Audit[Token == token && Actor == access.ID];
+			if(audit.count() == 1 && audit.Status == "Complete") { result.put("success",true); result.put("writeState","verified"); result.put("after",audit.After_JSON.toMap()); result.put("token",token); }
+			else { result.put("writeState","unknown"); result.put("error","Configuration write is incomplete or unknown. Review its retained lock and audit receipt."); }
+			return result.toString();
+		}
+		if(action != "SaveRole" && action != "SaveAssignment" && action != "SavePolicy" && action != "Publish" && action != "Retire") { result.put("error","Unsupported configuration action."); return result.toString(); }
+		if(!token.matches("[A-Za-z0-9-]{20,80}")) { result.put("error","Unique operation token is required."); return result.toString(); }
+		if(Approval_Config_Audit[Token == token].count() > 0) { result.put("writeState","unknown"); result.put("error","Operation already exists. Use read-only Check."); return result.toString(); }
+		before = thisapp.approvalConfigurationSnapshot();
+		if(before.get("success") != true) { return before.toString(); }
+		data = p.get("data"); idText = ifnull(data.get("id"),"").toString();
+		identityFields = {"id"};
+		if(action == "SaveAssignment") { identityFields={"id","roleId","userAccessId","companyId"}; }
+		if(action == "SavePolicy") { identityFields={"id","companyId"}; }
+		for each identityField in identityFields
+		{
+			identityValue = data.get(identityField);
+			if(identityField != "id" || (identityValue != null && identityValue != ""))
+			{
+				typedIdentity=Map(); typedIdentity.put("value",identityValue);
+				if(!typedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Configuration identities must be exact ID strings."); return result.toString(); }
+			}
+		}
+		for each dateField in {"effectiveFrom","effectiveTo"}
+		{
+			dateValue=ifnull(data.get(dateField),"");
+			if(dateValue != "" && (!dateValue.toString().matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || dateValue.toString().toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateValue)) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
+		}
+		if(action == "SavePolicy")
+		{
+			workflows={"Budget","Budget Modification","Pro Forma","Contract","Purchase Order"};
+			typedVersion=Map(); typedVersion.put("value",data.get("version"));
+			if(!workflows.contains(data.get("workflow")) || !typedVersion.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*[1-9][0-9]{0,5}[ ]*[}][ ]*") || (data.get("enabled") != true && data.get("enabled") != false)) { result.put("error","Workflow, positive integer version and explicit enabled setting are required."); return result.toString(); }
+		}
+		lockId = insert into Approval_Config_Lock [Added_User=zoho.loginuser Lock_Key="shared-approval-policy" Operation_Token=token];
+		beforeEntity = Map();
+		beforeCollection = "policies"; if(action == "SaveRole") { beforeCollection = "roles"; } if(action == "SaveAssignment") { beforeCollection = "assignments"; }
+		before = thisapp.approvalConfigurationSnapshot();
+		if(before.get("success") != true) { result.put("writeState","unknown"); result.put("error","Configuration could not be read under its write lock."); return result.toString(); }
+		if(action == "SavePolicy")
+		{
+			for each otherPolicy in before.get("configuration").get("policies")
+			{
+				if(otherPolicy.get("id") != idText && otherPolicy.get("companyId") == data.get("companyId") && otherPolicy.get("workflow") == data.get("workflow") && otherPolicy.get("territory") == ifnull(data.get("territory"),"") && otherPolicy.get("department") == ifnull(data.get("department"),"") && otherPolicy.get("version") == data.get("version")) { delete from Approval_Config_Lock[ID == lockId]; lockId=0; result.put("error","This scope already has that policy version. Choose a new version."); return result.toString(); }
+			}
+		}
+		for each previous in before.get("configuration").get(beforeCollection) { if(previous.get("id") == idText) { beforeEntity = previous; } }
+		auditId = insert into Approval_Config_Audit [Added_User=zoho.loginuser Token=token Actor=access.ID Action=action Status="Started" Before_JSON=beforeEntity.toString() Intended_JSON=data.toString()];
+		if(action == "SaveRole")
+		{
+			name = ifnull(data.get("name"),"").toString().trim();
+			if(name == "" || name.length() > 80 || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role name and explicit active setting are required."); }
+			else if(idText == "") { newId = insert into Approval_Role [Added_User=zoho.loginuser Role_Name=name Active=data.get("active")]; idText = newId.toString(); }
+			else { role = Approval_Role[ID == idText.toLong()]; if(role.ID == null) { result.put("error","Role was not found."); } else { role.Role_Name=name; role.Active=data.get("active"); } }
+		}
+		if(action == "SaveAssignment")
+		{
+			role = Approval_Role[ID == data.get("roleId").toString().toLong()]; person = User_Access[ID == data.get("userAccessId").toString().toLong()]; company = Company[ID == data.get("companyId").toString().toLong()];
+			if(role.ID == null || person.ID == null || company.ID == null || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role, User Access, company and explicit active setting are required."); }
+			else
+			{
+				fromDate = null; toDate = null;
+				if(ifnull(data.get("effectiveFrom"),"") != "") { fromDate = data.get("effectiveFrom").toDate("yyyy-MM-dd"); }
+				if(ifnull(data.get("effectiveTo"),"") != "") { toDate = data.get("effectiveTo").toDate("yyyy-MM-dd"); }
+				if(fromDate != null && toDate != null && toDate <= fromDate) { result.put("error","Assignment end must follow start."); }
+				else
+				{
+					if(idText == "") { newId = insert into Approval_Role_Assignment [Added_User=zoho.loginuser Role=role.ID Person=person.ID Company=company.ID]; idText = newId.toString(); }
+					assignment = Approval_Role_Assignment[ID == idText.toLong()];
+					assignment.Role=role.ID; assignment.Person=person.ID; assignment.Company=company.ID; assignment.Territory_Key=ifnull(data.get("territory"),""); assignment.Department_Key=ifnull(data.get("department"),""); assignment.Active=data.get("active"); assignment.Effective_From=fromDate; assignment.Effective_To=toDate;
+				}
+			}
+		}
+		if(action == "SavePolicy")
+		{
+			company = Company[ID == data.get("companyId").toString().toLong()];
+			if(company.ID == null || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Company and 1–30 ordered steps are required."); }
+			else
+			{
+				if(idText == "") { newId = insert into Approval_Policy [Added_User=zoho.loginuser Company=company.ID Status="Draft" Version=data.get("version") Adapter_Enabled=false]; idText = newId.toString(); }
+				policy = Approval_Policy[ID == idText.toLong()];
+				if(policy.Status != "Draft") { result.put("error","Published policies are immutable. Create a new Draft version."); }
+				else
+				{
+					policy.Company=company.ID; policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Version=data.get("version"); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Duplicate_Person=data.get("duplicatePerson"); policy.Steps_JSON=data.get("steps").toString();
+					policy.Effective_From=null; policy.Effective_To=null;
+					if(ifnull(data.get("effectiveFrom"),"") != "") { policy.Effective_From=data.get("effectiveFrom").toDate("yyyy-MM-dd"); }
+					if(ifnull(data.get("effectiveTo"),"") != "") { policy.Effective_To=data.get("effectiveTo").toDate("yyyy-MM-dd"); }
+				}
+			}
+		}
+		if(action == "Publish")
+		{
+			policy = Approval_Policy[ID == idText.toLong()];
+			if(policy.ID == null || policy.Status != "Draft" || policy.Version == null || policy.Version < 1 || (policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") || (policy.Duplicate_Person != "Separate steps" && policy.Duplicate_Person != "Reject")) { result.put("error","A valid Draft and explicit self/multiple-role rules are required."); }
+			else
+			{
+				for each other in Approval_Policy[Company == policy.Company && Workflow == policy.Workflow && Status == "Published" && ID != policy.ID]
+				{
+					overlaps = (policy.Effective_From == null || other.Effective_To == null || policy.Effective_From < other.Effective_To) && (other.Effective_From == null || policy.Effective_To == null || other.Effective_From < policy.Effective_To);
+					if(ifnull(other.Territory_Key,"") == ifnull(policy.Territory_Key,"") && ifnull(other.Department_Key,"") == ifnull(policy.Department_Key,"") && overlaps) { result.put("error","Published effective windows overlap at the same scope. Retire the previous window explicitly."); }
+				}
+				order = 0; keys = List();
+				for each step in policy.Steps_JSON.toJSONList()
+				{
+					order = order+1; role = Approval_Role[ID == step.get("roleId").toString().toLong()];
+					typedRole=Map(); typedRole.put("value",step.get("roleId"));
+					if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*") || !ifnull(step.get("key"),"").toString().matches("[A-Za-z0-9-]{1,80}") || role.ID == null || role.Active != true || step.get("order") != order || keys.contains(step.get("key")) || (step.get("enabled") != true && step.get("enabled") != false)) { result.put("error","Policy steps have invalid roles, order, keys or enabled flags."); }
+					keys.add(step.get("key")); condition = step.get("condition");
+					if(condition != "Always" && condition != "Above" && condition != "At or above") { result.put("error","Unsupported threshold operator."); }
+					typedThreshold=Map(); typedThreshold.put("value",step.get("threshold"));
+					if(condition != "Always" && !typedThreshold.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Threshold must be a decimal string."); }
+					if(condition != "Always" && thisapp.poCurrencyString(ifnull(step.get("threshold"),"").toString()) == "") { result.put("error","Threshold must be exact currency."); }
+				}
+				if(order == 0 || order > 30 || (policy.Effective_From != null && policy.Effective_To != null && policy.Effective_To <= policy.Effective_From)) { result.put("error","Invalid steps or effective window."); }
+				if(result.get("error") == null) { policy.Status="Published"; }
+			}
+		}
+		if(action == "Retire")
+		{
+			policy = Approval_Policy[ID == idText.toLong()]; end = data.get("effectiveTo").toDate("yyyy-MM-dd");
+			if(policy.ID == null || policy.Status != "Published" || end < zoho.currentdate || (policy.Effective_From != null && end <= policy.Effective_From)) { result.put("error","Retirement must be a valid current/future exclusive end date."); }
+			else { policy.Effective_To=end; }
+		}
+		after = thisapp.approvalConfigurationSnapshot(); audit = Approval_Config_Audit[ID == auditId];
+		if(result.get("error") != null)
+		{
+			audit.Status="Rejected"; audit.Error_Text=result.get("error"); delete from Approval_Config_Lock[ID == lockId]; return result.toString();
+		}
+		if(after.get("success") != true) { result.put("writeState","unknown"); result.put("error","Configuration write could not be read back. Lock retained."); return result.toString(); }
+		// Compare every intended field in the readback, including ordered steps and exact thresholds.
+		collection = "policies"; if(action == "SaveRole") { collection = "roles"; } if(action == "SaveAssignment") { collection = "assignments"; }
+		found = Map(); matches = 0;
+		for each row in after.get("configuration").get(collection) { if(row.get("id") == idText) { found = row; matches = matches+1; } }
+		if(matches != 1) { result.put("writeState","unknown"); result.put("error","Unique changed configuration record was not verified."); return result.toString(); }
+		for each field in data.keys()
+		{
+			if(field != "id" && field != "status" && field != "adapterEnabled" && ifnull(found.get(field),"").toString() != ifnull(data.get(field),"").toString()) { result.put("writeState","unknown"); result.put("error","Configuration readback differs: "+field); return result.toString(); }
+		}
+		if(action == "Publish" && found.get("status") != "Published") { result.put("writeState","unknown"); result.put("error","Publication state was not verified."); return result.toString(); }
+		audit.After_JSON=found.toString(); audit.Status="Complete"; delete from Approval_Config_Lock[ID == lockId];
+		result.put("success",true); result.put("writeState","verified"); result.put("token",token); result.put("after",found);
+	}
+	catch(e) { result.put("writeState",if(lockId == 0,"not-started","unknown")); result.put("error","Configuration operation could not be verified. Check its audit receipt before another write."); }
+	return result.toString();
+}

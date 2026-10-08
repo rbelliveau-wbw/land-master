@@ -1,6 +1,15 @@
 
 # Budget Manager
 
+## Multi-item purchase-order candidate (122.29.2)
+
+Development-only multi-item PO editor with exact cents, calculated/manual lines,
+grouped reservations and read-only unknown-write recovery. This candidate is
+not promoted. Creator's required 19/2 Currency storage failed native boundary
+readback; server Save/Submit source remains explicitly gated off. See the
+[implementation and native handoff](../../creator/functions/PURCHASE_ORDER_HANDOFF.md)
+for installed scaffolding, unresolved rules, native test gates and rollback.
+
 ## Native attachment upload receipts (122.28.31)
 
 Accepts the documented SDK `data.filename/filepath` and REST root

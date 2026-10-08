@@ -1,0 +1,66 @@
+map poBudgetBalances(string budgetId)
+{
+	result = {"success":false};
+	costElements = {"1","2","3","4","5"};
+	statuses = {"Draft","Submitted"};
+	modificationTypes = {"Increase","Decrease"};
+	try
+	{
+		budgetKey = budgetId.toLong();
+		committed = Map();
+		for each po in Payment_Request[Budget == budgetKey && Request_Type == "Purchase Order"]
+		{
+			if(ifnull(po.PO_Revision,"") == "")
+			{
+				// Historical single-item POs count the parent exactly once.
+				legacyAmount = thisapp.poCurrencyString(po.Request_Amount.toString());
+				if(po.Budget_Item == null || legacyAmount == "") { result.put("error","A legacy PO needs budget-item or amount review."); return result; }
+				itemKey = po.Budget_Item.toString();
+				legacyItem = Budget_Item[ID == po.Budget_Item && Budget == budgetKey];
+				if(legacyItem.ID == null) { result.put("error","A legacy PO references another phase."); return result; }
+				if(ifnull(committed.get(itemKey),0) > 999999999999999999-legacyAmount.replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
+				committed.put(itemKey,ifnull(committed.get(itemKey),0)+legacyAmount.replaceAll("[.]","").toLong());
+			}
+			else
+			{
+				snapshot = thisapp.poSnapshot(po.ID.toString());
+				if(snapshot.get("success") != true) { result.put("error",snapshot.get("error")); return result; }
+				if(po.PO_Status == "Submitted")
+				{
+					for each line in snapshot.get("snapshot").get("lines")
+					{
+						itemKey = line.get("budgetItemId");
+						if(ifnull(committed.get(itemKey),0) > 999999999999999999-line.get("finalAmount").replaceAll("[.]","").toLong()) { result.put("error","Committed amounts exceed supported exact capacity."); return result; }
+						committed.put(itemKey,ifnull(committed.get(itemKey),0)+line.get("finalAmount").replaceAll("[.]","").toLong());
+					}
+				}
+			}
+		}
+		balances = List();
+		for each item in Budget_Item[Budget == budgetKey && Template_Item != true]
+		{
+			nativeFinal = ifnull(item.Budget_Ttl,0).toString();
+			finalSign = 1;
+			if(nativeFinal.startsWith("-")) { finalSign = -1; nativeFinal = nativeFinal.subString(1,nativeFinal.length()); }
+			finalText = thisapp.poCurrencyString(nativeFinal);
+			if(finalText == "") { result.put("error","A Final Budget amount cannot be read exactly."); return result; }
+			finalCents = finalSign*finalText.replaceAll("[.]","").toLong();
+			modCents = 0;
+			for each modification in Budget_Modification[Budget == budgetKey && Budget_Item == item.ID && Status == "Approved"]
+			{
+				modText = thisapp.poCurrencyString(modification.Amount.toString());
+				if(modText == "" || !modificationTypes.contains(modification.Modification_Type)) { result.put("error","An approved modification cannot be read exactly."); return result; }
+				modAmount = modText.replaceAll("[.]","").toLong();
+				if(modification.Modification_Type == "Decrease") { modAmount = -modAmount; }
+				if(modCents+modAmount > 999999999999999999 || modCents+modAmount < -999999999999999999) { result.put("error","Approved modifications exceed supported exact capacity."); return result; }
+				modCents = modCents+modAmount;
+			}
+			issued = ifnull(committed.get(item.ID.toString()),0);
+			balances.add({"budgetItemId":item.ID.toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":(finalCents+modCents-issued).toString()});
+		}
+		result.put("balances",balances);
+		result.put("success",true);
+	}
+	catch(e) { result.put("error","Budget availability cannot be verified. No submission is allowed."); }
+	return result;
+}

@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>PO browser fixture</title>
+<link rel="stylesheet" href="/purchase-orders.css">
+<style>body{font:14px system-ui;background:#f3f6fa;color:#0b2345;padding:24px}.mbtn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}.primary{background:#0b2345;color:white}button{cursor:pointer}</style>
+<h1>Purchase Order fixture</h1><p>Local simulation — no Creator writes or notifications.</p>
+<button id="open">Open PO</button><button id="lose">Lose next response</button><output id="writes">Writes: 0</output>
+<script src="/po-domain.js"></script><script src="/po-controller.js"></script><script src="/po-ui.js"></script>
+<script>
+const orders=new Map(),receipts=new Map();let writes=0,lost=false;
+const items=[{ID:'1003',Item_Name:'Roadwork',Budget_Code:'100'},{ID:'1004',Item_Name:'Utilities',Budget_Code:'200'}];
+const ui=LMPOUI.create({scope:()=> 'development-fixture',userAccessId:()=> '1005',canEdit:()=>true,phaseName:()=> 'Example phase',items:()=>items,vendors:async()=>[{ID:'1002',Vendor_Name:'Example vendor'}],saved(){},call:async p=>{
+ if(p.action==='Balances')return {success:true,contract:'po-v1',balances:items.map(i=>({budgetItemId:i.ID,finalCents:'100000',modCents:'0',issuedCents:'0',availableCents:'100000'}))};
+ if(p.action==='List')return {success:true,contract:'po-v1',rows:[...orders.values()].map(x=>({id:x.id,amount:x.amount,status:x.status}))};
+ if(p.action==='Get')return {success:true,contract:'po-v1',snapshot:structuredClone(orders.get(p.id))};
+ if(p.action==='Check')return receipts.get(p.token);
+ writes++;document.querySelector('#writes').textContent='Writes: '+writes;
+ const snapshot={...structuredClone(p),id:p.id||'2001',revision:p.token,status:p.action==='Submit'?'Submitted':'Draft',commitmentState:p.action==='Submit'?'Reserved':'None',approvalState:'Not Configured',lines:p.lines.map((l,i)=>({...l,ID:String(3001+i)}))};
+ const receipt={success:true,contract:'po-v1',writeState:'verified',snapshot};orders.set(snapshot.id,snapshot);receipts.set(p.token,receipt);
+ await new Promise(r=>setTimeout(r,300));if(lost){lost=false;throw Error('Simulated lost response');}return receipt;
+}});
+document.querySelector('#open').onclick=e=>ui.open({ID:'1001'},e.target);
+document.querySelector('#lose').onclick=()=>lost=true;
+</script>

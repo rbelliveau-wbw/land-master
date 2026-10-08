@@ -1,0 +1,96 @@
+form Approval_Role_Assignment
+{
+	displayname = "Approval Role Assignment"
+	success message = "Configuration saved"
+	Role
+	(
+		type = picklist
+		values = Approval_Role.ID
+		displayformat = [Role_Name]
+		row = 1
+		column = 1
+		width = medium
+	)
+	Company
+	(
+		type = picklist
+		values = Company.ID
+		displayformat = [Company_Name]
+		row = 2
+		column = 1
+		width = medium
+	)
+	Person
+	(
+		type = picklist
+		values = User_Access.ID
+		displayformat = [Full_Name]
+		row = 3
+		column = 1
+		width = medium
+	)
+	Territory_Key
+	(
+		type = text
+		maxchar = 80
+		row = 4
+		column = 1
+		width = medium
+	)
+	Department_Key
+	(
+		type = text
+		maxchar = 80
+		row = 5
+		column = 1
+		width = medium
+	)
+	Active
+	(
+		type = checkbox
+		initial value = false
+		row = 6
+		column = 1
+		width = medium
+	)
+	Effective_From
+	(
+		type = date
+		alloweddays = 0,1,2,3,4,5,6
+		row = 7
+		column = 1
+		width = medium
+	)
+	Effective_To
+	(
+		type = date
+		alloweddays = 0,1,2,3,4,5,6
+		row = 8
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

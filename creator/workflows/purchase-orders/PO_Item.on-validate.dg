@@ -1,0 +1,3 @@
+// Immutable revisions are written only by managePurchaseOrder.
+alert "Purchase Order lines are managed in Budget Manager.";
+cancel submit;

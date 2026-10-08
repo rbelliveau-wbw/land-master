@@ -1,0 +1,3 @@
+// Apply to PO_Operation and PO_Phase_Lock. Restrict reports from direct edits/deletes too.
+alert "This record is managed by the Purchase Order workflow.";
+cancel submit;

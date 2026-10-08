@@ -1,0 +1,297 @@
+form Budget_Item
+{
+	displayname = "Budget Item"
+	success message = "Budget Item Added Successfully"
+	Section1
+	(
+		type = section
+		displayname = " "
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have Item_Name
+	(
+    	type = text
+		displayname = "Item"
+		maxchar = 50
+	 	row = 1
+	 	column = 1   
+		width = 250px
+	)
+	must have Category
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Revenue","Districts","Full Construction Roll-Up/Clearing","Non-Standard","Add'l Infrastructure","Dry Utilities-CONST","Dry Utilities-DEV","Land Cost","Misc","MUD","Reimbursements","Full Development Roll-Up/Soft Costs","Subconsultant","Taxes","Amenities-CONST","Amenities-DEV","Excavation","General Conditions","Lift Station","Sewer","Stormdrain","Streets","Water","Engineering"}
+		sortorder = ascending
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Category name here in the dropdown must match the Budget Category name used as the template."
+    	]
+	 	row = 1
+	 	column = 1   
+		width = 200px
+	)
+	unique Budget_Code
+	(
+    	type = text
+		displayname = "Code"
+		maxchar = 50
+	 	row = 1
+	 	column = 1   
+		width = 100px
+	)
+	must have Dept_Code
+	(
+		type = number
+		displayname = "Dept Code"
+		maxchar = 8
+	 	row = 1
+	 	column = 1   
+		width = 100px
+	)
+	must have Cost_Code
+	(
+		type = number
+		displayname = "Cost Code"
+	 	row = 1
+	 	column = 1   
+		width = 100px
+	)
+	Per_Unit
+	(
+		displayname = "Per Unit"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Unit
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Acre","LF","Lot"}
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Add_l_Cost
+	(
+		displayname = "Add'l Cost"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = 130px
+	)
+	Prelim_Budget_Ttl
+	(
+		displayname = "Prelim Budget Ttl"
+		type = USD
+		format = commadotwestern
+		maxchar = 16
+	 	row = 1
+	 	column = 1   
+		width = 130px
+	)
+	Unapproved_Final_Budget_Ttl
+	(
+		displayname = "Unapproved Final Budget Ttl"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Budget_Ttl
+	(
+		displayname = "Final Budget Ttl"
+		type = USD
+		format = commadotwestern
+		maxchar = 16
+	 	row = 1
+	 	column = 1   
+		width = 130px
+	)
+	HCSS_Actuals
+	(
+		displayname = "HCSS Actuals"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	PROJ_Actual
+	(
+		displayname = "GP Actuals"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = 130px
+	)
+	Percent_Complete
+	(
+    	type = percentage
+		displayname = "% Complete"
+		initial value = 0%
+		decimalplace = 0
+	 	row = 1
+	 	column = 1   
+		width = 80px
+	)
+	Cost_to_Complete
+	(
+		displayname = "Cost to Complete"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Sort_Order
+	(
+		type = number
+		displayname = "Sort Order"
+		maxchar = 4
+	 	row = 1
+	 	column = 1   
+		width = 200px
+	)
+	must have Department
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Development","Construction","Engineering","Surveying"}
+	 	row = 1
+	 	column = 1   
+		width = 200px
+	)
+	Revised_Final
+	(
+		displayname = "Revised Final"
+		type = USD
+		format = commadotwestern
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Start_Phase
+	(
+		type = number
+		displayname = "Start Phase"
+		maxchar = 3
+	 	row = 1
+	 	column = 2   
+		width = 100px
+	)
+	End_Phase
+	(
+		type = number
+		displayname = "End Phase"
+	 	row = 1
+	 	column = 2   
+		width = 100px
+	)
+	Start_Month
+	(
+		type = number
+		displayname = "Start Month"
+	 	row = 1
+	 	column = 2   
+		width = 100px
+	)
+	End_Month
+	(
+		type = number
+		displayname = "End Month"
+	 	row = 1
+	 	column = 2   
+		width = 100px
+	)
+	Budget_Category
+	(
+		type = picklist	
+		displayname = "Budget Category"
+		values  = Budget_Category[Budget.ID == input.Budget].ID
+    	bidirectional = Budget_Items
+    	displayformat = [Budget_Category_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 3   
+		width = 200px
+	)
+	Budget
+	(
+		type = picklist	
+		values  = Add_Budget.ID
+    	displayformat = [Budget_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 3   
+		width = 200px
+	)
+	Pro_Forma
+	(
+		type = picklist	
+		displayname = "Pro Forma"
+		values  = Add_Pro_Forma.ID
+    	displayformat = [Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 3   
+		width = medium
+	)
+	Template_Item
+	(
+    	type = checkbox
+		displayname = "Template Item"
+		initial value = false
+		private = true
+	 	row = 1
+	 	column = 3   
+		width = medium
+	)
+	Description
+	(
+    	type = text
+		displayname = "Description/Details"
+	 	row = 1
+	 	column = 3   
+		width = 300px
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+			reset
+			(
+   				type = reset
+   				displayname = "Reset"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}
