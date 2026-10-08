@@ -40,8 +40,36 @@ Key/Value payload and Standard response with the existing selective audience.
 Creator 9.59 contains only the forecastManagerWidget change; unrelated pending
 forms, approval components, functions and App Menu were excluded. Both Stage and Production visibly showed 9.59 before frontend promotion.
 
-Frontend deployment required: immutable 1.4.0, mapped to Development/Production.
+Frontend deployed: immutable 1.4.0, mapped to Development/Production.
 Permanent URL: https://rbelliveau-wbw.github.io/land-master/prod/forecast-manager/
+
+Feature commit: c3e863a44f909e238bdeafe5134de1ddf29ea2a9 on main.
+[CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/37801379422)
+and [Pages](https://github.com/rbelliveau-wbw/land-master/actions/runs/37801379289)
+completed successfully. Pages finished October 8 at 15:40 UTC.
+
+## Live verification after deployment
+
+- Both embedded Creator environments loaded v1.4.0 and completed catalog/snapshot
+  loading. Changing subdivision loaded its forecasts automatically.
+- Development Cottonwood Creek Phase 01 retained all 66 native label/value pairs,
+  exactly matching the captured v1.3.0 baseline.
+- Production Arroyo Ranch Phase 05 rendered the 780px title, navy gradient identity
+  header, Company/County context and light three-column statistics grid.
+- Clicking the live Adams Homes WFY2027 November input left that same mounted
+  input focused. No value was typed or saved in Production. Actual typing and
+  single-save behavior were verified in the inert source fixture described below.
+- Production Sold and Scheduled had zero visible numeric-zero cells across the
+  matrix body/footer. Positive values remained visible, including Scheduled 4.
+  Forecast retained its original numeric totals and February–January year order.
+- Missing rows displayed the exact requested message/button. The live top Add
+  Forecast chooser measured 430px and populated its Builder picker from the typed
+  catalog; it was cancelled without creating records. Direct creation and uncertain
+  response recovery were exercised in the inert fixture, with earlier native
+  Development creation verification retained in the backend release record.
+- No Production forecast, Forecast_Year, Subdivision or Settings data was changed
+  during these checks. Production screenshot: local task artifact
+  tmp/forecast-manager-v1.4.0-production.png.
 
 ## Regression evidence
 
