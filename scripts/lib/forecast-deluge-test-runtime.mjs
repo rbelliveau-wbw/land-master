@@ -43,6 +43,7 @@ export function forecastRuntime(source,tables,today='2026-10-07') {
     var originalString=Number.prototype.toString;
     Number.prototype.toString=function(format){if(format==='yyyy-MM-dd')return new Date(Number(this)).toISOString().slice(0,10);return originalString.call(this);};
     var zoho={loginuser:'forecast-fixture',currentdate:today};
+    Object.defineProperty(Number.prototype,'Builder_Name',{get(){return tables.Builder.find(row=>row.ID===Number(this))?.Builder_Name??null;}});
     var thisapp={buildForecastManagerSummary(){return '<div>Inert summary fixture</div>';}};
     function record(row){return new Proxy(row,{get(o,k){return k in o?o[k]:null;},set(o,k,v){writes.push({form:'update',id:o.ID,field:k,value:v});o[k]=v;return true;}});}
     function query(form,predicate,sort){

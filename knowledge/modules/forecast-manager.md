@@ -100,3 +100,25 @@ Completed live results, retained Development test IDs, the selective audience, P
 ## Rollback
 
 The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend remains 1.2.1; Creator backend 9.57 is published. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+
+## Version 1.3.0 presentation and inventory
+
+The navy title card contains the native subdivision facts. The separate page
+heading and Forecast scope KPI strip are removed. Subdivision changes load
+automatically; failed/unknown entries block filter changes, and clearing the
+subdivision hides the workspace. Native 320px schedule cards sit to the right of
+the copied Data Insights all-date lot-status card, stacking on mobile.
+
+`forecastManagerWidget` adds `inventory` to snapshots/save/ensure responses:
+counts (Total, Sold, Scheduled, Contracted, Open), territory and the native Data
+Insights builder matrix. Close Date means Sold; otherwise Purchase Date means
+Scheduled; otherwise stored Sold/Scheduled/Contracted is used, with other values
+counted Open. Archived/model lots are included, no matrix builder/year filtering
+is applied, and builder rows exclude Open and group by trimmed display name to
+match Data Insights. This is a read-only addition; summary HTML and existing
+forecast guards/writes are unchanged. Missing inventory shows Unavailable, never
+fabricated zeroes. Backend deployment must precede frontend promotion.
+
+Rollback frontend mapping to immutable 1.2.1; the additive backend is backward
+compatible with that release. No data rollback is needed for this presentation
+and read-only response change.

@@ -301,6 +301,69 @@ string forecastManagerWidget(string payload)
 		}
 		subdivision.put("builderIds",assignedBuilders);
 		response.put("subdivision",subdivision);
+		// Same all-date lot card as Data Insights: dates take precedence over stored Status.
+		// This read-only breakdown includes every subdivision lot, independently of matrix filters.
+		lotCounts = Map();
+		for each statusName in {"Total","Sold","Scheduled","Contracted","Open"}
+		{
+			lotCounts.put(statusName,0);
+		}
+		lotBuilderNames = List();
+		lotBuilderCounts = Map();
+		for each inventoryLot in Lots[Subdivision == subdivisionId]
+		{
+			lotStatus = ifnull(inventoryLot.Status,"");
+			if(inventoryLot.Close_Date != null)
+			{
+				lotStatus = "Sold";
+			}
+			else if(inventoryLot.Purchase_Date != null)
+			{
+				lotStatus = "Scheduled";
+			}
+			if(lotStatus != "Sold" && lotStatus != "Scheduled" && lotStatus != "Contracted")
+			{
+				lotStatus = "Open";
+			}
+			lotCounts.put("Total",lotCounts.get("Total") + 1);
+			lotCounts.put(lotStatus,lotCounts.get(lotStatus) + 1);
+			if(lotStatus != "Open")
+			{
+				lotBuilderName = "Unassigned";
+				if(inventoryLot.Builder1 != null)
+				{
+					lotBuilderName = ifnull(inventoryLot.Builder1.Builder_Name,"").trim();
+					if(lotBuilderName == "")
+					{
+						lotBuilderName = "Unassigned";
+					}
+				}
+				lotBuilderRow = lotBuilderCounts.get(lotBuilderName);
+				if(lotBuilderRow == null)
+				{
+					lotBuilderRow = Map();
+					lotBuilderRow.put("builder",lotBuilderName);
+					lotBuilderRow.put("total",0);
+					lotBuilderRow.put("Sold",0);
+					lotBuilderRow.put("Scheduled",0);
+					lotBuilderRow.put("Contracted",0);
+					lotBuilderNames.add(lotBuilderName);
+				}
+				lotBuilderRow.put("total",lotBuilderRow.get("total") + 1);
+				lotBuilderRow.put(lotStatus,lotBuilderRow.get(lotStatus) + 1);
+				lotBuilderCounts.put(lotBuilderName,lotBuilderRow);
+			}
+		}
+		lotBuilders = List();
+		for each lotBuilderName in lotBuilderNames
+		{
+			lotBuilders.add(lotBuilderCounts.get(lotBuilderName));
+		}
+		inventory = Map();
+		inventory.put("counts",lotCounts);
+		inventory.put("builders",lotBuilders);
+		inventory.put("territory",ifnull(subdiv.Territory,"Unassigned"));
+		response.put("inventory",inventory);
 		years = List();
 		monthRecords = List();
 		for each fy in Forecast_Year[(Subdivision1 == subdivisionId) && (Status == "Builder")] sort by Forecast_Year

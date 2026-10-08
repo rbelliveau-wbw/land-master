@@ -39,6 +39,27 @@ assert.equal(M.lock({start:'2026-10-01'},{today:'2026-10-07',windowOpen:false}),
 function run(tables=base,today){return forecastRuntime(source,tables,today);}
 let engine=run(),response=engine.invoke({action:'snapshot',subdivisionId:'10'});
 assert.equal(response.ok,true,JSON.stringify(response));assert.equal(response.subdivision.expectedUnforecasted,5);assert.equal(engine.writes.length,0);
+const inventoryTables=clone(base);
+inventoryTables.Subdivision[0].Territory='Fort Hood';
+inventoryTables.Builder.push({ID:22,Builder_Name:'Fixture Builder A'});
+inventoryTables.Lots=[
+  {ID:801,Subdivision:10,Builder1:20,Status:'Contracted',Close_Date:date('2027-03-01'),Purchase_Date:date('2027-02-01')},
+  {ID:802,Subdivision:10,Builder1:20,Status:'Sold',Purchase_Date:date('2027-02-01')},
+  {ID:803,Subdivision:10,Builder1:22,Status:'Contracted',Model:true,Archived:true},
+  {ID:804,Subdivision:10,Builder1:21,Status:'Open'},
+  {ID:805,Subdivision:10,Builder1:null,Status:'Scheduled'},
+  {ID:806,Subdivision:10,Builder1:null,Status:'On Hold'},
+  {ID:807,Subdivision:999,Builder1:20,Status:'Sold'}
+];
+const inventoryRead=run(inventoryTables),inventoryResult=inventoryRead.invoke({action:'snapshot',subdivisionId:'10'});
+assert.equal(inventoryResult.ok,true);assert.equal(inventoryRead.writes.length,0,'inventory breakdown never writes');
+const insightsContext=vm.createContext({});vm.runInContext(fs.readFileSync(new URL('../widgets/lot-sales-explorer/src/app/sales-model.js',import.meta.url),'utf8'),insightsContext);
+const insights=insightsContext.LotSalesModel,rawLots=inventoryTables.Lots.map(row=>({...row,Close_Date:row.Close_Date?new Date(row.Close_Date).toISOString():null,Purchase_Date:row.Purchase_Date?new Date(row.Purchase_Date).toISOString():null}));
+const normalized=insights.normalize({lots:rawLots,builders:inventoryTables.Builder,subdivisions:inventoryTables.Subdivision});
+const counts=insights.subdivisionCounts(normalized).get('10');
+assert.deepEqual(JSON.parse(JSON.stringify(inventoryResult.inventory.counts)),{Total:counts.total,Sold:counts.sold,Scheduled:counts.scheduled,Contracted:counts.contracted,Open:counts.open},'same all-date status rules as Data Insights, including archived/model lots');
+assert.deepEqual(JSON.parse(JSON.stringify(inventoryResult.inventory.builders)).sort((a,b)=>a.builder.localeCompare(b.builder)),JSON.parse(JSON.stringify(insights.builderStatusMatrix(insights.subdivisionBuilderBreakdown(normalized,'10')))),'Data Insights builder matrix excludes Open, merges matching display names and retains Unassigned');
+assert.equal(inventoryResult.inventory.territory,'Fort Hood');
 let matrix=M.matrix(response,['20','20','21'],['2026','2027','2026']);assert.equal(matrix.length,2);assert.equal(matrix[0].years.length,2);assert.equal(matrix[0].years[0].months[11].start,'2027-01-01');assert.equal(matrix[1].years[0].parent,null);
 assert.equal(M.verifyEnsure(response,'20','2026'),true);assert.equal(M.verifyEnsure(response,'21','2026'),false);
 const repeatedIds=clone(response);repeatedIds.months[1].id=repeatedIds.months[0].id;assert.equal(M.verifyEnsure(repeatedIds,'20','2026'),false,'creation verification requires 12 distinct persisted child IDs');

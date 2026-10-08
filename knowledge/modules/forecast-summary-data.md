@@ -237,3 +237,12 @@ before removing an unused helper, then restores the prior immutable frontend
 release through environment mappings. No rollback data repair is needed for a
 read-only summary integration. The existing native Forecast Manager remains the
 operational fallback for the installed widget integration.
+
+## v1.3.0 presentation and inventory addition (October 8, 2026)
+
+Native summary calculation/output remains unchanged. The widget moves its parsed
+subdivision facts into the navy title card and caps native builder schedules at
+320px. A separate read-only, all-date Data Insights lot-status card appears to the
+left of schedules, using the additive snapshot inventory object. Its status/date
+precedence and builder grouping retain Data Insights semantics and do not replace
+native forecast or obligation math. See [deployment and rollback](../releases/forecast-manager-layout-v1.3.0-2026-10-08.md).

@@ -21,3 +21,23 @@ Creation writes one parent and 12 children, so use [transfer progress](transfer-
 ## Verification
 
 Check one row per builder across multiple years, February/January headings, exact server-defined edit boundaries, retained failed entries, unknown-result reconciliation, centered SVG geometry at actual size, creation close locks, Sold/Scheduled read-only state and mobile page width. Use inert fixtures for automated UI tests. Confirm the live development workflow and custom API separately before release.
+
+## October 8 layout update
+
+Forecast Manager 1.3 removes the standalone page heading and Forecast scope strip.
+Put every native subdivision fact in the navy subdivision title card. Keep the
+forecast-window state beside the filters. Choosing a different subdivision loads
+its snapshot automatically; clearing selection hides the workspace. Do not clear
+failed or unknown edits during a filter change.
+
+Use the Data Insights all-date lot-status card at the left of the schedule row:
+five Total/Sold/Scheduled/Contracted/Open counters, stacked status bar and its
+Builder/Total/Sold/Scheduled/Contracted table. Follow the same Close Date, then
+Purchase Date, then stored Status precedence; include all subdivision lots. The
+builder table excludes Open just like Data Insights. Its count is distinct from
+native stored lot totals and forecast inventory balance.
+
+Schedule cards retain the native HTML width and maximum width of 320px; the
+schedule row scrolls horizontally within the summary. The lot card is at most
+420px wide and stacks above schedules on narrow screens. Keep all native schedule
+terms, recent sales and multi-phase contract disclosures.
