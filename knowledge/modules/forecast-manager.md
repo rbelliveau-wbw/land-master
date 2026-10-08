@@ -99,7 +99,7 @@ Completed live results, retained Development test IDs, the selective audience, P
 
 ## Rollback
 
-The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.2; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.1. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.3; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.2. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
 
 ## Version 1.3.0 presentation and inventory
 
@@ -152,3 +152,14 @@ calendar-range sentence; retain searchable Type1 Builder and WFY 2019–2046 pic
 Add Forecast sits immediately after the fiscal-year filter; window status is 14px
 (40% larger). Inline creation and read-only unknown-result reconciliation are
 unchanged. Rollback frontend mapping to 1.5.1.
+
+## Version 1.5.3 visible builder rows
+
+The forecast matrix and CSV use only builder rows with a Forecast_Year parent or
+duplicate-parent issue in at least one selected year. Subdivision assignment alone
+does not create a row. Keep missing-year cells for the other selected years of a
+visible builder; keep incomplete/duplicate existing parents visible for review.
+With no matching rows show No forecast available. Top Add Forecast still offers
+all catalog Type1 Builder choices, so their first year can be created without an
+empty matrix row. Native summary/inventory scope, records and write guards are
+unchanged. Rollback frontend mapping to 1.5.2.

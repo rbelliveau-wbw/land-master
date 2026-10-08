@@ -101,3 +101,9 @@ Keep commit disabled while the check is pending or unavailable, and ignore late
 results after closing. Place subdivision name/code in the compact navy dialog
 header; remove the separate route card and fiscal calendar-range caption. Keep
 Add Forecast directly after the year filter and set window status to 14px.
+
+Version 1.5.3: subdivision assignment alone must not create a forecast matrix row.
+Show a builder only when at least one selected year has a parent or duplicate
+parent issue. Preserve missing cells for its other selected years and keep
+incomplete/duplicate existing parents visible for review. Add Forecast creates a
+builder's first year; an empty matrix says No forecast available.

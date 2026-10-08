@@ -73,6 +73,11 @@ const duplicateConflict=clone(response);duplicateConflict.years.push({...duplica
 assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409961','2024'),true,'exact large string builder IDs and years outside visible filters remain checked');
 assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409962','2024'),false);
 assert.equal(M.hasYear(response,'','2026'),false);assert.equal(M.hasYear(response,'20',''),false);
+const visible=M.visibleMatrix(response,['20','21'],['2026','2027']);assert.equal(visible.length,1,'assigned builder with no forecast parent is omitted');assert.equal(visible[0].builderId,'20');assert.equal(visible[0].years[1].parent,null,'a missing year for an existing visible builder retains its Create Forecast cell');
+assert.equal(M.visibleMatrix(response,['20','21'],['2027']).length,0,'parents outside the selected fiscal years do not create empty rows');
+assert.equal(M.visibleMatrix(response,['21'],['2026','2027']).length,0,'explicitly choosing an empty builder cannot add a row');
+assert.equal(M.visibleMatrix(incompleteConflict,['20'],['2026']).length,1,'an incomplete existing parent remains visible for review');assert.equal(M.visibleMatrix(duplicateConflict,['20'],['2026']).length,1,'duplicate parent issues remain visible for review');
+assert.equal(M.visibleMatrix({...response,years:[],months:[]},['20','21'],['2026']).length,0,'a subdivision with no forecast parents has no phantom builder rows');
 const repeatedIds=clone(response);repeatedIds.months[1].id=repeatedIds.months[0].id;assert.equal(M.verifyEnsure(repeatedIds,'20','2026'),false,'creation verification requires 12 distinct persisted child IDs');
 
 const save={action:'save',subdivisionId:'10',forecastId:'108',value:6,expected:2};
