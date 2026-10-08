@@ -41,7 +41,7 @@ WFY is the starting year: February YYYY through January YYYY+1. The raw export's
 
 Existing complete combinations are read-only no-ops. Do not adopt Planning parents or repair an incomplete existing year automatically. The unique Forecast_Name and combination check protect normal duplicate attempts; concurrent creation and Creator transaction behavior must be verified in development. Creation follows the native mass-create path, which can create blank records while forecasting is closed; that does not allow locked counts to be edited.
 
-Success requires a persisted parent and exactly one linked, correctly scoped child for each of February–January with the correct start date and unique record ID. The modal only confirms 13 records after that predicate passes. After an ambiguous response, Check status fetches a snapshot and never resends ensure/save. A saved month also requires subdivision unforecasted to match the independently computed native result before recovery is marked verified.
+Success requires a persisted parent and exactly one linked, correctly scoped child for each of February–January with the correct start date and unique record ID. Release 1.5 removes the creation progress/result modal at the user's explicit request: show an inline pending status and reveal the matrix row only after that predicate passes. Top Add Forecast retains its Builder/WFY selection modal, which closes on commit. After an ambiguous response, Check status fetches a snapshot and never resends ensure/save; creation, edits and filters stay blocked until verified. A saved month also requires subdivision unforecasted to match the independently computed native result before recovery is marked verified.
 
 ## Affected objects
 

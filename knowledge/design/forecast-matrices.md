@@ -16,11 +16,11 @@ Follow [the summary data audit](../modules/forecast-summary-data.md) for exact m
 
 Save on field change. Tab and Enter advance through editable months. Show a centered SVG green check only after persisted verification, alongside shared [success feedback](success-feedback.md). Retain rejected/unknown entries so users can review them. Check status is read-only and must never replay a write. Subdivision metrics and selected matrix metrics need separate scope labels.
 
-Creation writes one parent and 12 children, so use [transfer progress](transfer-progress.md): mounted dialog, inert background, focus trap, Close/Escape locked while active, truthful confirmed counts and all 12 verified destinations. Known rejection must not show Complete. Unknown results expose only a read-only recheck and remain visible until dismissed.
+Forecast creation is the user's explicit October 8 exception to [transfer progress](transfer-progress.md): no progress or terminal result modal. Close the top selection chooser on commit; show Creating on the clicked row and a concise inline status. Reveal the forecast only after one parent and exactly twelve correctly linked months are verified. Block duplicate writes while pending. Unknown results remain inline, lock edits/creation/filter changes and offer the existing read-only Check status action; never resend ensure automatically. Known rejection remains visible and never shows Complete.
 
 ## Verification
 
-Check one row per builder across multiple years, February/January headings, exact server-defined edit boundaries, retained failed entries, unknown-result reconciliation, centered SVG geometry at actual size, creation close locks, Sold/Scheduled read-only state and mobile page width. Use inert fixtures for automated UI tests. Confirm the live development workflow and custom API separately before release.
+Check one row per builder across multiple years, February/January headings, exact server-defined edit boundaries, retained failed entries, unknown-result reconciliation, centered SVG geometry at actual size, inline creation duplicate locks, Sold/Scheduled read-only state and mobile page width. Use inert fixtures for automated UI tests. Confirm the live development workflow and custom API separately before release.
 
 ## October 8 layout update
 
@@ -59,3 +59,23 @@ The selected title treatment uses the light-statistics structure with a navy
 identity header, Company/County below the name and six light statistic cells in
 three columns. Cap it at 780px, matching the compact-width preview, while schedule
 and forecast panels retain their full available width. Preserve all native values.
+
+## Combined overview and reduced glare — v1.5
+
+The user superseded the v1.4 title arrangement: combine its native facts and the
+all-date lot-status breakdown in **one 380px maximum left card**, with builder
+schedules starting alongside it. Use one subdivision heading, native metadata,
+Company/County and territory, followed by the remaining native facts and lot
+status counters/bar/builder table. Remove the separate full-width title row.
+
+Display equal native Total/Sold/Scheduled and inventory counters once; if their
+values differ, keep the native labels and the explicitly all-date lot-status
+section. Equal Residential and LM totals need one visible number. Retain native
+label/value metadata for parity and accessibility; a later difference must become
+visible automatically. Never change scope, calculation, or group schedules by name.
+
+Use soft slate-blue page/surfaces, slightly deeper card headers and pale blue
+matrix rows with navy identity accents. Reduce card/section padding without
+shrinking established readable terms or removing contract disclosures. Schedule
+cards stay 320px, scrolling internally; mobile stacks the combined card above
+schedules. Preserve inline editing, picker and blank-zero behavior.

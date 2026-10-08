@@ -95,7 +95,7 @@ async function browserChecks() {
       const values = node => [...node.querySelectorAll('[data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
       const nativeCards = [...source.querySelectorAll('.fm-builder-card')];
       const ok = ForecastSummary.render(html, host), cards = [...host.querySelectorAll('.fs-card')];
-      const facts = [...host.querySelectorAll('.fs-heading [data-native-label], .fs-facts [data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
+      const facts = [...host.querySelectorAll('.fs-lot-card [data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
       const results = cards.map((card, index) => {
         const native = nativeCards[index], nativeTable = [...native.children].find(child => child.tagName === 'TABLE'), nativeContract = native.querySelector('.fm-contract-scope'), contract = card.querySelector('.fs-contract');
         const nativeProgress = [...native.children].find(child => child.classList.contains('fm-progress-wrap')).querySelector('.fm-progress');
