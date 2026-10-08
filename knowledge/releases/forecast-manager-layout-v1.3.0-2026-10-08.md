@@ -62,14 +62,29 @@ idempotent twelve-child creation remain unchanged.
 - Lost-response fixture: an inline change persisted once, filter changes were
   blocked, and Check status reconciled through a read-only snapshot. Visible
   evidence: Writes: 1; Actions: catalog,snapshot,save,snapshot. No write replay.
-- Required npm run validate and npm run build:pages are release gates. The CLI
+- Required npm run validate and npm run build:pages passed locally and in CI. The CLI
   browser suite was not run; browser interactions used the supported connection.
 - Production verification is read-only. No Production forecast, lot or Settings
   values were changed. Individual permission-role sessions and concurrent live
   transport failures were not forced.
 
-Live Pages deployment and native widget observations are recorded below after
-publication. The earlier [backend verification](forecast-manager-backend-2026-10-08.md)
+Frontend commit 95935dd was pushed to main. [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/37795605044)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/37795605024)
+both completed successfully. Native Creator loaded v1.3.0 in Development and
+Production through the permanent registration.
+
+Development Cottonwood Creek Phase 01 retained all **66 native label/value pairs**
+and four schedule cards, each **320px**. Its all-date inventory returned Total32,
+Sold21, Scheduled0, Contracted11, Open0, matching the compiled snapshot.
+
+Production Eastern Wells Phase 03 matched the user screenshot: all eight native
+subdivision facts are inside the navy title, lot card left at 420px, and all three
+schedules exactly 320px. The page client/scroll width both measured 998px, with
+internal schedule/matrix scrolling. The removed top row, load control and scope
+strip were absent. Inventory showed 137 total/sold and builder totals 37/60/40.
+Changing the picker to Phase 02 automatically loaded its 240 total/sold, then
+returning to Phase 03 automatically restored the selected example. Production
+forecast inputs stayed disabled under the closed window. The earlier [backend verification](forecast-manager-backend-2026-10-08.md)
 contains actual Development save/create/repeat-create evidence; those write tests
 were not repeated for this presentation-only change.
 
