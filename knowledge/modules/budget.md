@@ -1,4 +1,12 @@
 
+## Main-page currency (122.28.36)
+
+The project list rounds project totals, Avg $/Lot, phase Grand Total and $/Lot,
+and preliminary/final summaries to the nearest dollar. Aggregation uses raw
+amounts; detail/edit screens retain fractional precision. No Creator deployment
+is required. Regression and rollback to 122.28.35:
+[main-page dollar display](../../docs/main-page-dollar-display-2026-10-08.md).
+
 ## Currency presentation (122.28.33)
 
 Dollar displays omit trailing `.00`, including project/phase totals, metric cards,

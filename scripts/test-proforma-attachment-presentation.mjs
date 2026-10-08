@@ -152,11 +152,18 @@ Object.assign(c,{boolValue:Boolean,hasVal:v=>v!=null&&v!=='',num:v=>Number(v)||0
   pfListCommentAction:()=>'<button class="test-comment">Comments</button>',proformaCreatedLabel:()=>'',proformaApprovalLockReason:()=>'',ownerPillsHtml:()=>'',probChipClass:()=>'',proformaLifecycleStatusMarkup:()=>'',fmtN:String,fmtPct:String,ymShort:()=>'',
   loadPfCommentSummaries(){},updateListSortHeaders(){},closeProFormaMenus(){},userOwnsPf:rec=>rec.Owner==='creator'});
 c.S.fTerritories=[];c.S.fProbs=[];c.S.listSort={};c.S.loiSubmitted={};c.S.loiSubmitting={};c.S.view='vList';c.S.ed={id:OTHER,dirty:true,model:{draft:'preserved'}};
-vm.runInContext(fn('renderList'),c);
+vm.runInContext(['fmt$','fmtWhole$','renderList'].map(fn).join('\n'),c);
+c.S.proformas[0].Land_Cost='8669872.50';c.S.proformas[0].Net_Profit='66927705.02';
+c.S.proformas[1].Land_Cost='0';c.S.proformas[1].Net_Profit='-1234.50';
+const listAmountsBefore=JSON.stringify(c.S.proformas);
 let releaseBackground;const heldBackground=new Promise(resolve=>releaseBackground=resolve);
 readHook=(config,snapshot)=>config.criteria?{code:3000,data:snapshot}:heldBackground.then(()=>({code:3000,data:snapshot}));
 reportRows=[row,{...row,ID:NEWID},{...row,ID:'90071992547409994',Pro_Forma:{},File_field1:row.File_field1},{...row,ID:'90071992547409995',File_field1:{}}];
 c.resetPfAttachmentCounts();const beforeBackground=native.length;c.renderList();
+assert.match(el('listBody').innerHTML,/<td class="num mono">\$8,669,873<\/td>/);
+assert.match(el('listBody').innerHTML,/<b>\$66,927,705<\/b>/);
+assert.match(el('listBody').innerHTML,/<td class="num mono neg"><b>\(\$1,235\)<\/b>/);
+assert.equal(JSON.stringify(c.S.proformas),listAmountsBefore,'main-page rounding does not change saved record amounts');
 assert.match(el('listBody').innerHTML,/test-comment[\s\S]*pf-row-attachments/);assert.match(el('listBody').innerHTML,/rec-comment-count">…/);assert.equal(c.S.view,'vList');assert.equal(c.S.ed.model.draft,'preserved');
 assert.match(el('listBody').innerHTML,/<span class="pf-row-discussion-actions"><button class="test-comment">Comments<\/button>[\s\S]*pf-row-attachments[\s\S]*<\/button><\/span>/);
 assert.match(source,/\.pf-row-discussion-actions\{[^}]*gap:7px/);assert.match(source,/\.pf-row-discussion-actions>\.btn\.rowact\{margin:0\}/);assert.match(fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8'),/\.ptable \.acts\{gap:7px\}/,'the pair uses Budget’s final action gap');

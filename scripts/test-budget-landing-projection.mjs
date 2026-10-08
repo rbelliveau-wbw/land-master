@@ -85,4 +85,26 @@ for(const field of fields) {
   assert.throws(() => context.validateLandingCategoryRows([malformed]),new RegExp(field),'an omitted projected field cannot silently become a zero/fallback total');
 }
 assert.deepEqual(plain(context.validateLandingCategoryRows([])),[],'a confirmed empty category report remains valid');
+
+// The actual landing renderer formats calculated totals only after aggregation.
+const displayPhases=plain(budgets.slice(0,2));
+displayPhases.forEach((b,index)=>{b.Lot_Total_Residential=1;b.Prelim_Budget_Grand_Total=index?35.49:20.49;});
+displayPhases.forEach(b=>{context.S.landingCategories[b.ID]=[{Deparment:'Construction',Prelim_Budget_Total:b.Prelim_Budget_Grand_Total,Budget_Total:100}];});
+Object.assign(context.S,{startupReady:true,statusFilter:[],projectFilter:[],projects:[{key:'project',name:'Project',phases:displayPhases}]});
+const landingNode={innerHTML:''};
+Object.assign(context,{$:()=>landingNode,esc:String,escAttr:String,
+  renderLandingFilterControls(){},projectMatchesTerritories:()=>true,budgetCommentButton:()=>'',projectProformaId:()=>'',
+  projectStatusChips:()=>'',renderProjectProformaPicker:()=>'',renderProjectOwnersPanel:()=>'',totalHint:()=>'',
+  stCls:()=>'',budgetArchived:()=>false,perms:()=>({}),budgetCommentRecordId:b=>b.ID,phaseName:b=>b.ID,
+  budgetAttachmentButton:()=>'',budgetIsLocked:()=>false,stLabel:()=>'',statusStyleAttr:()=>'',modifiedCell:()=>'',layoutBudgetProjects(){}});
+for(const name of ['fmtWhole','numFromPaths','budgetLots','budgetTier','renderProjList'])vm.runInContext(block(name),context);
+const landingBefore=JSON.stringify({projects:context.S.projects,categories:context.S.landingCategories});
+context.renderProjList();
+assert.match(landingNode.innerHTML,/Project Total<\/div><div class='v'>\$56<\/div>/,'55.98 rounds after summing raw phases');
+assert.match(landingNode.innerHTML,/Avg \$\/Lot<\/div><div class='v'>\$28<\/div>/,'average uses raw 55.98, not rounded phase values');
+assert.match(landingNode.innerHTML,/<td class='mc r'>\$20<\/td><td class='dc r'>\$20<\/td>/);
+assert.match(landingNode.innerHTML,/<td class='mc r'>\$35<\/td><td class='dc r'>\$35<\/td>/);
+assert.doesNotMatch(landingNode.innerHTML,/\$[\d,]+\.\d/);
+assert.equal(JSON.stringify({projects:context.S.projects,categories:context.S.landingCategories}),landingBefore,'rendering retains raw phase/category amounts');
+assert.equal(context.fmtWhole(-8669872.50),'-$8,669,873');
 console.log('Budget native five-field landing projection, mixed-track totals, exact IDs, full detail and disjoint field scopes passed.');

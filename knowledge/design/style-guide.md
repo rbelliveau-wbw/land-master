@@ -51,7 +51,9 @@ Numeric entry controls preserve entered decimal digits on blur and save, includi
 Pro Forma and Budget currency displays omit trailing `.00`, including zero amounts,
 per-unit prices, modifications and transfer previews. The Pro Forma dashboard
 (cards, assumptions, scenarios, monthly tables and timeline details) and all Data
-Insights monetary values display the nearest whole dollar. Keep decimal precision
+Insights monetary values display the nearest whole dollar. Budget's main project
+list also rounds project/phase totals, preliminary/final summaries and per-lot
+amounts; Pro Forma's main list rounds Land Cost and Net Profit. Keep decimal precision
 in editable controls and round only the final displayed aggregate; never change
 stored values, calculations or numeric exports to match the display.
 

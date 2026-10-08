@@ -1,4 +1,11 @@
 
+## Main-page currency (1.80.94)
+
+The main list rounds Land Cost and Net Profit to the nearest dollar, preserving
+negative signs, missing values, source records and numeric sorting. No Creator
+deployment is required. Regression and rollback to 1.80.93:
+[main-page dollar display](../../docs/main-page-dollar-display-2026-10-08.md).
+
 ## Currency presentation (1.80.93)
 
 Dollar displays omit trailing `.00`. Dashboard cards, assumptions, cash flow,
