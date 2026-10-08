@@ -99,7 +99,7 @@ Completed live results, retained Development test IDs, the selective audience, P
 
 ## Rollback
 
-The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend remains 1.2.1; Creator backend 9.57 is published. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.4.0; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.3.0. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
 
 ## Version 1.3.0 presentation and inventory
 
@@ -122,3 +122,17 @@ fabricated zeroes. Backend deployment must precede frontend promotion.
 Rollback frontend mapping to immutable 1.2.1; the additive backend is backward
 compatible with that release. No data rollback is needed for this presentation
 and read-only response change.
+
+## Version 1.4 interaction correction
+
+Only button[data-view] triggers a view change. Month clicks retain the mounted
+input and typing focus. Sold/Scheduled numeric zeroes display blank in the matrix
+and totals; source values, forecast zeroes and exports remain unchanged.
+
+Row-level Create Forecast bypasses builder/year selection and captures the row's
+exact destination. Top-level Add Forecast opens the compact selector, restricted
+to native Builder.Type1 == Builder and supported WFY 2019–2046. The catalog
+adds type while retaining all legacy identities. Both routes call the existing
+one-parent/twelve-child ensure action with unchanged verification and recovery.
+The selected title is the compact light-statistics structure with navy coloring.
+Rollback to frontend 1.3.0; the additive catalog type remains backward-compatible.

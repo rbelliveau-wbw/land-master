@@ -40,6 +40,7 @@ string forecastManagerWidget(string payload)
 				choice = Map();
 				choice.put("id",builderChoice.ID.toString());
 				choice.put("name",ifnull(builderChoice.Builder_Name,""));
+				choice.put("type",ifnull(builderChoice.Type1,""));
 				builderChoices.add(choice);
 			}
 			response.put("subdivisions",subdivisionChoices);

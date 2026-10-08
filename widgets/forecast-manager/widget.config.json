@@ -2,13 +2,13 @@
   "slug": "forecast-manager",
   "name": "Forecast Manager",
   "module": "forecasting",
-  "version": "1.3.0",
-  "description": "Automatic subdivision loading, native-width builder schedules and Data Insights lot status beside the forecast matrix.",
+  "version": "1.4.0",
+  "description": "Stable inline input focus, blank Sold/Scheduled zeroes, direct row creation, compact Add Forecast chooser and navy compact statistics title.",
   "source_entry": "widgets/forecast-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Forecast Manager",
-  "source_sha256": "32baab3816af1f0cd872c65273f95cb9f47a17616de8a780cd53261ea9e1ea64",
+  "source_sha256": "982a03aad2eb5a3f6ff4903c29c78d69622bdee872c07abce1b23ca48efcd6a4",
   "baseline_zip_sha256": null,
   "plugin_manifest": {
     "service": "CREATOR",
@@ -24,5 +24,5 @@
   },
   "dependency_inventory": "manifests/widget-dependencies.json#forecast-manager",
   "hosting_entry": "index.html (generated from app/widget.html)",
-  "trust": "Native backend compiled and deployed through Creator 9.58; selective Development/Production APIs verified. Version 1.3 adds a read-only Data Insights inventory breakdown; window/date/save/create guards remain unchanged."
+  "trust": "Native backend compiled and deployed through Creator 9.59; selective Development/Production APIs verified. Version 1.3 adds a read-only Data Insights inventory breakdown; window/date/save/create guards remain unchanged. Version 1.4 exposes native Builder.Type1 in the read-only catalog and preserves verified save/create behavior."
 }

@@ -10,6 +10,11 @@ const monthNames=['February','March','April','May','June','July','August','Septe
 const clone=value=>JSON.parse(JSON.stringify(value));
 const base={Settings:[{ID:1,Open_Forecasting_Window:true}],Subdivision:[{ID:10,Subdivision_Name:'Fixture phase',Subdivision_Code:'FX01',Phase:'1',Builders:[20,21],Unforecasted_Lots:5}],Builder:[{ID:20,Builder_Name:'Fixture Builder A'},{ID:21,Builder_Name:'Fixture Builder B'}],Forecast_Year:[{ID:30,Subdivision1:10,Builder1:20,Forecast_Year:'2026',Status:'Builder',Forecast_Name:'FX01 - Fixture Builder A - FC2026'}],Forecast:monthNames.map((month,index)=>({ID:100+index,Subdivision1:10,Builder1:20,Forecast_Year2:30,Forecast_Year:'2026',Forecast_Month:month,Forecast_Start_Date:date(M.start('2026',index)),Forecasted_Lots:index===8?2:null,Actual_Lots:index===0?4:null,Scheduled_Lots:index===8?1:null,Delete_me:false})),Lots:Array.from({length:10},(_,index)=>({ID:200+index,Subdivision:10,Builder1:20,Phase:'1',Model:false,Status:index<3?'Sold':'Contracted',Purchase_Date:index<3?date('2026-09-01'):null,Close_Date:index<3?date('2026-09-15'):null}))};
 
+// Catalog keeps legacy matrix identities while exposing native Builder.Type1 for creation pickers.
+const typedCatalog=clone(base);typedCatalog.Builder[0].Type1='Builder';typedCatalog.Builder[1].Type1='Placeholder';
+const catalogRead=forecastRuntime(source,typedCatalog),catalogResult=catalogRead.invoke({action:'catalog'});
+assert.equal(catalogResult.ok,true);assert.equal(catalogResult.builders.find(row=>row.id==='20').type,'Builder');assert.equal(catalogResult.builders.find(row=>row.id==='21').type,'Placeholder');assert.equal(catalogRead.writes.length,0);
+
 // Compare the archived FEB...JAN input workflows, rather than assuming a month-end rule.
 const ds=fs.readFileSync(new URL('../creator/exports/Land_Master_2026-08-06.ds',import.meta.url),'utf8');
 function exportedYears(form){const begin=ds.indexOf('\t\tform '+form+'\n'),end=ds.indexOf('\n\t\tform ',begin+1),block=ds.slice(begin,end),options=block.match(/must have Forecast_Year\s*\([\s\S]*?values = \{([^}]+)\}/);assert.ok(options,form+' required year picklist is present');return JSON.parse('['+options[1]+']');}

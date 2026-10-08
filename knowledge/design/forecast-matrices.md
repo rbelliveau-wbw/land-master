@@ -41,3 +41,21 @@ Schedule cards retain the native HTML width and maximum width of 320px; the
 schedule row scrolls horizontally within the summary. The lot card is at most
 420px wide and stacks above schedules on narrow screens. Keep all native schedule
 terms, recent sales and multi-phase contract disclosures.
+
+## Input and creation controls — v1.4
+
+Matrix clicks never rebuild its inputs; only explicit view buttons switch views.
+In Sold and Scheduled views render numeric zero as a blank cell, including totals;
+keep the actual counts, forecast zeroes and CSV values intact.
+
+Missing cells say **No forecast available.** with **Create Forecast**. Clicking
+creates that exact builder/WFY directly, bypassing the selection dialog. The top
+**Add Forecast** button opens a compact searchable Builder and WFY chooser. Only
+Builder.Type1 == Builder records appear in that creation picker; preserve other
+identities in existing matrix/filter data. Both paths retain verified parent plus
+12-month progress, duplicate guards and read-only uncertain-result reconciliation.
+
+The selected title treatment uses the light-statistics structure with a navy
+identity header, Company/County below the name and six light statistic cells in
+three columns. Cap it at 780px, matching the compact-width preview, while schedule
+and forecast panels retain their full available width. Preserve all native values.
