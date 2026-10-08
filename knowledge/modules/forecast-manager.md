@@ -99,7 +99,7 @@ Completed live results, retained Development test IDs, the selective audience, P
 
 ## Rollback
 
-The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.0; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.4.0. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.1; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.0. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
 
 ## Version 1.3.0 presentation and inventory
 

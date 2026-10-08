@@ -79,3 +79,17 @@ matrix rows with navy identity accents. Reduce card/section padding without
 shrinking established readable terms or removing contract disclosures. Schedule
 cards stay 320px, scrolling internally; mobile stacks the combined card above
 schedules. Preserve inline editing, picker and blank-zero behavior.
+
+Version 1.5.1 removes the visible Builder schedules/count heading; retain the
+section's accessible name. Schedule and monthly progress tracks must show their
+full outlined length and contrasting empty portion, including at 0% fill. Preserve
+every native stop position, segment and meter width. Highlight the complete current
+calendar-month column in green (header, builder cells, missing-year background and
+footer), matching the Creator server date and year. Refresh the highlight in place
+on new snapshots. Use one uninterrupted 2px separator below all month headings and
+the pinned Builder heading.
+
+- Remove the visible matrix autosave/Editable/Locked/Missing year footer row. Keep
+  inline cell feedback and keyboard movement without the extra height.
+- Add Forecast and Create Forecast actions use the other modules' shared navy
+  (#0b2345) with white text, including the small selection-modal commit action.
