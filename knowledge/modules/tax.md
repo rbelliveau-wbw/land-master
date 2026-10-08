@@ -37,3 +37,12 @@ Evidence and further improvements: [startup refinements](../../docs/startup-refi
 ## Routine success feedback — October 6, 2026
 
 Parcel-year and Property inline editing keep saved field checks and persistent message bars, adding grouped success popups. Modal saves, property/parcel-year creation and verified audit-log copy add contextual confirmations. Failed/unknown and bulk result surfaces remain intact. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+
+## Attachment verification and recovery UI (19.17.13)
+
+Global recovery notices no longer lock navigation after settled failures. Contract
+and PF attachment uploads verify saved child/parent/file metadata using the
+working Budget approach, without a download/byte-comparison gate. PF deletion
+verifies absence using a counted collection rather than reading a deleted ID.
+Pending requests and duplicate uncertain writes remain protected. No Creator
+deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).

@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-08T00:51:48.024Z",
+  "generated_at": "2026-10-08T02:12:13.917Z",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.91",
+      "version": "1.80.92",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "4628699c6d948c50f834da9a382c8888c34f93112f4c0c7b01d4dfdef59c017a",
+      "source_sha256": "2fab795ce0a60913654fa12fe93c78f503c034fb24452a92e9a75d65b0bc41ac",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.61.30",
+      "version": "1.61.31",
       "description": "Contract management and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "5e326ab157cb54dc4c004ff7e56b95b9137f129826028be01fe08823a985a813",
+      "source_sha256": "4834e3be310b8c9c907dc5ad4e66a96ca4618ac015389eee47bcc4f4ff41f7d1",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [
@@ -136,13 +136,13 @@
       "slug": "tax-center",
       "name": "Tax Center",
       "module": "tax",
-      "version": "19.17.11",
+      "version": "19.17.13",
       "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
       "source_entry": "widgets/tax-center/src/app/widget.html",
       "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",
       "baseline_zip": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
       "html_title": "Tax Center",
-      "source_sha256": "ec1e2c0c40ed1ae4093ad2d704e28a160f3efb71eaeb9d6abedece029a2fc771",
+      "source_sha256": "b0d85db931821926d8300b409339bb5e1dc5ff4c729d86503171b8c44e8fa82f",
       "baseline_zip_sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1",
       "plugin_manifest": {
         "service": "CREATOR",

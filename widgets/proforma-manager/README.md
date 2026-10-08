@@ -188,3 +188,12 @@ check. Contract uploads preserve the Email switch without requiring it to be on;
 Budget phase rows omit the direct Approvals shortcut and reserve space for their
 remaining controls. No Creator backend deployment is required. See
 [regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).
+
+## Attachment verification and recovery UI (1.80.92)
+
+Global recovery notices no longer lock navigation after settled failures. Contract
+and PF attachment uploads verify saved child/parent/file metadata using the
+working Budget approach, without a download/byte-comparison gate. PF deletion
+verifies absence using a counted collection rather than reading a deleted ID.
+Pending requests and duplicate uncertain writes remain protected. No Creator
+deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).

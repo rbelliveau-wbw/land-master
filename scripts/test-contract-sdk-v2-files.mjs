@@ -95,11 +95,11 @@ console.log('PASS actual attachment batch controller: captured files/parent, exp
 {
  const h=await ready({realDOM:true}),f=files(h),other=(BigInt(ID)+600n).toString();h.c.S.contracts.push({...h.c.findContract(ID),ID:other,Contract_Name:'Another contract'});
  h.c.showAttachmentsModal(ID);h.c.ZOHO.CREATOR.FILE.uploadFile=async()=>({code:3000});
- const result=await h.c.addVersionFiles(ID,[{name:'retained-review.pdf',size:25}]);assert.ok(result.error);const run=h.c.S.contractWorkflow;
- assert.notEqual(h.c.closeOverlays(),false,'a settled unresolved result may be dismissed without clearing its review ledger');assert.equal(h.c.document.getElementById('attStatus'),null);assert.equal(h.c.S.contractWorkflow,run);
+ const result=await h.c.addVersionFiles(ID,[{name:'retained-review.pdf',size:25}]);assert.ok(result.error);const run=h.c.S.contractWorkflowHistory[0];
+ assert.notEqual(h.c.closeOverlays(),false,'a settled unresolved result may be dismissed without clearing its review ledger');assert.equal(h.c.document.getElementById('attStatus'),null);assert.equal(h.c.S.contractWorkflow,null);
  h.c.showAttachmentsModal(ID);const status=h.c.document.getElementById('attStatus');assert.ok(status,'the same contract can reopen its unresolved attachment result');assert.match(status.textContent,/review|check|verify/i);assert.ok(status.querySelector('button'));
- const modal=h.node('overlays').querySelector('.modal'),mounts=h.node('overlays').htmlWrites;h.c.showAttachmentsModal(other);assert.equal(h.node('overlays').querySelector('.modal'),modal);assert.equal(h.node('overlays').htmlWrites,mounts,'review reopening cannot switch to another Contract');
- assert.equal(h.c.S.contractWorkflow,run);assert.equal(await h.c.addVersionFiles(ID,[{name:'cannot-repeat.pdf',size:25}]),false);assert.equal(f.calls.filter(call=>call.method==='createAttachment').length,1);assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,0);noExtraAttachmentProgress(h);
+ const modal=h.node('overlays').querySelector('.modal'),mounts=h.node('overlays').htmlWrites;h.c.showAttachmentsModal(other);assert.notEqual(h.node('overlays').querySelector('.modal'),modal,'terminal review permits navigation to another Contract');
+ assert.equal(h.c.S.contractWorkflow,null);assert.equal(await h.c.addVersionFiles(ID,[{name:'cannot-repeat.pdf',size:25}]),false);assert.equal(f.calls.filter(call=>call.method==='createAttachment').length,1);assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,0);noExtraAttachmentProgress(h);
 }
 
 console.log('PASS attachment upload feedback in the existing modal: mounted shell/status/input, pending spinner and polite status, hidden extra progress dialog, duplicate/close guards, inline unresolved result and read-only Check status without write replay.');

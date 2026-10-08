@@ -33,7 +33,7 @@ for(const raw of [
  const h=await ready({invoke:preview,upload:(config,apply)=>{apply();return raw;}});h.storage.All_Contract_Versions=[blank()];
  await h.widget.pfSdkUploadFile(OTHER,file,ID);
  assert.equal(h.calls.filter(call=>call.method==='upload').length,1,'read-only reconciliation never replays FILE');
- assert.equal(h.widget.PFTransport.snapshot().reviews.length,0,'fresh exact parent/path/name/bytes resolve an unrecognized reply automatically');
+ assert.equal(h.widget.PFTransport.snapshot().reviews.length,0,'fresh exact parent/path/name resolve an unrecognized reply automatically');
  assert.equal(h.widget.PFTransport.snapshot().ledger.at(-1).state,'verified');
 }
 for(const badField of [
@@ -48,13 +48,13 @@ for(const badField of [
  await assert.rejects(h.widget.pfSdkUploadFile(OTHER,file,ID),error=>error.noReplay);
  assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);
 }
-for(const acknowledged of [false,true])for(const change of ['parent','bytes']){
- const h=await ready({invoke:config=>{const response=preview(config);if(response&&change==='bytes')response.result=JSON.stringify({success:true,base64:Buffer.from([0,255,32,66,10]).toString('base64'),fileName:file.name});return response;},upload:(config,apply)=>{apply();if(change==='parent')h.storage.All_Contract_Versions[0].Pro_Forma=OTHER;return acknowledged?{code:3000,...receipt}:{code:3000};}});h.storage.All_Contract_Versions=[blank()];
+for(const acknowledged of [false,true])for(const change of ['parent','name']){
+ const h=await ready({upload:(config,apply)=>{apply();if(change==='parent')h.storage.All_Contract_Versions[0].Pro_Forma=OTHER;else h.storage.All_Contract_Versions[0].File_field1={filename:'wrong.bin',filepath:path};return acknowledged?{code:3000,...receipt}:{code:3000};}});h.storage.All_Contract_Versions=[blank()];
  await assert.rejects(h.widget.pfSdkUploadFile(OTHER,file,ID),error=>error.noReplay);
  assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'persisted '+change+' remains unverified');
 }
 {
- const gate=held(),h=await ready({invoke:config=>/^Get_Proforma_Attachment_Preview/.test(config.api_name)?gate.promise:undefined});h.storage.All_Contract_Versions=[blank()];const pending=h.widget.pfSdkUploadFile(OTHER,file,ID);await drain();h.c.LMRuntime.apply({envUrlFragment:'/environment/stage',loginUser:'another@example.test'});gate.resolve(preview({api_name:'Get_Proforma_Attachment_Preview'}));await assert.rejects(pending,error=>error.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'late byte response cannot verify under another actor/environment');assert.equal(h.calls.filter(call=>call.method==='upload').length,1);
+ const gate=held(),h=await ready({upload:(config,apply)=>{apply();return gate.promise;}});h.storage.All_Contract_Versions=[blank()];const pending=h.widget.pfSdkUploadFile(OTHER,file,ID);await drain();h.c.LMRuntime.apply({envUrlFragment:'/environment/stage',loginUser:'another@example.test'});gate.resolve({code:3000,...receipt});await assert.rejects(pending,error=>error.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'changed actor cannot verify a saved attachment');
 }
 
 function creator(config,storage,next){const content=preview(config);if(content)return content;if(/^Create_Proforma_Attachment_Record/.test(config.api_name)){const id=String(next());storage.All_Contract_Versions.push({ID:id,Pro_Forma:ID,File_field1:''});return {code:3000,result:JSON.stringify({success:true,attachmentId:id})};}}
@@ -76,12 +76,12 @@ function creator(config,storage,next){const content=preview(config);if(content)r
 }
 {
  let next=90071992548350000n,uploads=0,denyReadback=true;const files=[file,makeFile('second.bin'),makeFile('not-sent.bin')];
- const h=await ready({fileRead:()=>{if(uploads===2&&denyReadback)throw Error('File read temporarily unavailable');return new Blob([bytes]);},invoke:(config,storage)=>{if(/^Get_Proforma_Attachment_Preview/.test(config.api_name)&&uploads===2&&denyReadback)throw Error('Preview temporarily unavailable');return creator(config,storage,()=>next++);},upload:(config,apply)=>{apply();uploads++;const ack={filename:config.file.name,filepath:'native/'+config.file.name};return uploads===2?{code:3000,...ack,data:{...ack}}:{code:3000,...ack};}});
+ const h=await ready({read:config=>{if(uploads===2&&denyReadback&&config.report_name==='All_Contract_Versions'&&/ID ==/.test(config.criteria||''))throw Error('Record read temporarily unavailable');},invoke:(config,storage)=>{if(/^Get_Proforma_Attachment_Preview/.test(config.api_name)&&uploads===2&&denyReadback)throw Error('Preview temporarily unavailable');return creator(config,storage,()=>next++);},upload:(config,apply)=>{apply();uploads++;const ack={filename:config.file.name,filepath:'native/'+config.file.name};return uploads===2?{code:3000,...ack,data:{...ack}}:{code:3000,...ack};}});
  h.widget.S.attachmentsByPf[ID]=[];assert.equal(h.widget.openPfAttachmentModal(ID),true);await h.widget.uploadPfAttachments(files,h.widget.pfAttachmentActionContext(true));await drain();
  assert.deepEqual(Array.from(h.widget.S.attachmentUploadResults,row=>row.state),['Added','Needs review','Not sent']);assert.equal(uploads,2);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);assert.equal(h.document.getElementById('pfAttachmentModalRecheck').hidden,false);assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);
  const terminalClose=await h.dispatch('click',h.document.getElementById('proformaAttachmentModalClose'),{type:'click'});assert.notEqual(terminalClose.prevented,true,'capture gate allows terminal inline Close');await h.document.getElementById('proformaAttachmentModalClose').fire('click');
- const paperclip=h.document.createElement('button');paperclip.className='pf-row-attachments';paperclip.setAttribute('data-actid',ID);h.document.body.appendChild(paperclip);assert.notEqual((await h.dispatch('click',paperclip,{type:'click'})).prevented,true,'capture gate permits reopening only captured parent');paperclip.setAttribute('data-actid',OTHER);assert.equal((await h.dispatch('click',paperclip,{type:'click'})).prevented,true,'capture gate blocks another parent');assert.equal(h.widget.openPfAttachmentModal(ID),true,'same parent review can be reopened without unlocking sends');
+ const paperclip=h.document.createElement('button');paperclip.className='pf-row-attachments';paperclip.setAttribute('data-actid',ID);h.document.body.appendChild(paperclip);assert.notEqual((await h.dispatch('click',paperclip,{type:'click'})).prevented,true,'capture gate permits reopening only captured parent');paperclip.setAttribute('data-actid',OTHER);assert.notEqual((await h.dispatch('click',paperclip,{type:'click'})).prevented,true,'a settled review does not lock navigation to another parent');assert.equal(h.widget.openPfAttachmentModal(ID),true,'same parent review can be reopened without unlocking sends');
  denyReadback=false;
- const check=h.document.getElementById('pfAttachmentModalRecheck'),panel=h.document.getElementById('proformaAttachmentModalPanel');const checkEvent=await h.dispatch('click',check,{type:'click'});assert.notEqual(checkEvent.prevented,true,'capture gate permits read-only status recovery');await panel.fire('click',checkEvent);assert.equal(uploads,2,'recovery only reads saved parent/path/bytes');assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);assert.equal(h.widget.S.attachmentUploadResults[1].state,'Verified');assert.equal(h.widget.S.attachmentUploadResults[2].state,'Not sent');
+ const check=h.document.getElementById('pfAttachmentModalRecheck'),panel=h.document.getElementById('proformaAttachmentModalPanel');const checkEvent=await h.dispatch('click',check,{type:'click'});assert.notEqual(checkEvent.prevented,true,'capture gate permits read-only status recovery');await panel.fire('click',checkEvent);assert.equal(uploads,2,'recovery only reads saved parent/path');assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);assert.equal(h.widget.S.attachmentUploadResults[1].state,'Verified');assert.equal(h.widget.S.attachmentUploadResults[2].state,'Not sent');
 }
-console.log('PASS PF actual root/data upload receipts, exact scalar/object persisted path + parent + bytes, fail-closed/no replay, mounted inline attachment progress/recovery, and unchanged ordinary Save dialog.');
+console.log('PASS PF actual root/data upload receipts, exact scalar/object persisted path + parent, fail-closed/no replay, mounted inline attachment progress/recovery, and unchanged ordinary Save dialog.');

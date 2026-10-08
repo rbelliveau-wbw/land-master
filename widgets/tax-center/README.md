@@ -62,3 +62,12 @@ Property and parcel-year County editors always offer Navarro, including before t
 ## Routine success feedback (19.17.11)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+## Attachment verification and recovery UI (19.17.13)
+
+Global recovery notices no longer lock navigation after settled failures. Contract
+and PF attachment uploads verify saved child/parent/file metadata using the
+working Budget approach, without a download/byte-comparison gate. PF deletion
+verifies absence using a counted collection rather than reading a deleted ID.
+Pending requests and duplicate uncertain writes remain protected. No Creator
+deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).
