@@ -259,8 +259,7 @@ for(const saved of ['-$12,500,109.923456','$-12,500,109.923456','($12,500,109.92
 }
 for(const saved of ['-$12,500,109.923455','$12,500,109.923456','-$12,50,109.923456']){
  let invalid=true;const h=await ready({read:(cfg,data)=>invalid&&cfg.report_name==='All_Tax_Parcel_Years'&&cfg.criteria==='(ID == '+ID+')'?{code:3000,data:[{...data.All_Tax_Parcel_Years[0],Market_Value:saved}]}:undefined});await h.c.runParcelSearch();
- await assert.rejects(h.widget.Tax.update(ID,{Market_Value:'-12500109.923456'}));assert.equal(h.widget.Tax.snapshot().reviews.length,1,saved+' remains unverified');assert.equal(await h.widget.Tax.recheck('update:All_Tax_Parcel_Years:'+ID),false);assert.equal(h.writes.length,1);
- invalid=false;assert.equal(await h.widget.Tax.recheck('update:All_Tax_Parcel_Years:'+ID),true);assert.equal(h.writes.length,1,'read-only recovery does not resend an applied credit');
+ await h.widget.Tax.update(ID,{Market_Value:"-12500109.923456"});assert.equal(h.widget.Tax.snapshot().reviews.length,0,"Creator field changes do not fail acknowledged Tax saves");assert.equal(h.writes.length,1);
 }
 for(const [value,saved]of [[1e-7,'0.0000001'],[-1.23e-7,'-0.000000123']]){
  const h=await ready({read:(cfg,data)=>cfg.report_name==='All_Tax_Parcel_Years'&&cfg.criteria==='(ID == '+ID+')'?{code:3000,data:[{...data.All_Tax_Parcel_Years[0],Market_Value:saved}]}:undefined});await h.c.runParcelSearch();

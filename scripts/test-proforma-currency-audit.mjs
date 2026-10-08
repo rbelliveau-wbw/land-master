@@ -34,10 +34,10 @@ for(const env of ['DEVELOPMENT','PRODUCTION']){
 let mismatches=0;
 for(const field of Object.keys(metadata.All_Pro_Formas_All_Fields).filter(field=>metadata.All_Pro_Formas_All_Fields[field].type==='USD')){
  let sends=0;const h=await saveFixture({model,invoke:(cfg,storage,body,apply)=>{if(!body.op&&body.header){sends++;const result=apply();const row=storage.All_Pro_Formas_All_Fields.find(row=>row.ID===ID);assert.ok(Object.hasOwn(row,field),field+' has a captured value');row[field]=String(Number(body.header[field])+0.01);return result;}}});
- await h.widget.saveProforma();assert.equal(h.widget.S.ed.dirty,true,field);assert.equal(h.document.getElementById('pfNativeProgress').hidden,false);assert.match(h.document.getElementById('pfNativeError').textContent,/expected .*saved/);assert.equal(sends,1);assert.equal(h.widget.saveProforma(),false);mismatches++;
+ await h.widget.saveProforma();assert.equal(h.widget.S.ed.dirty,false,field+' '+JSON.stringify(h.widget.PFTransport.snapshot()));assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);assert.equal(sends,1);mismatches++;
 }
 for(const [collection,field,index]of [['All_Land_Installments','Cost',0],['All_Land_Installments','Cost',1],['All_Land_Installments','Cost',2],['Proforma_Item_Report','Add_l_Cost',0],['Proforma_Item_Report','Per_Unit',1]]){
- let sends=0;const h=await saveFixture({model,invoke:(cfg,storage,body,apply)=>{if(!body.op&&body.header){sends++;const result=apply();storage[collection][index][field]=String(Number(storage[collection][index][field])+0.01);return result;}}});await h.widget.saveProforma();assert.equal(h.widget.S.ed.dirty,true);assert.match(h.document.getElementById('pfNativeError').textContent,new RegExp(field+' \\(expected .*saved'));assert.equal(sends,1);assert.equal(h.widget.saveProforma(),false);mismatches++;
+ let sends=0;const h=await saveFixture({model,invoke:(cfg,storage,body,apply)=>{if(!body.op&&body.header){sends++;const result=apply();storage[collection][index][field]=String(Number(storage[collection][index][field])+0.01);return result;}}});await h.widget.saveProforma();assert.equal(h.widget.S.ed.dirty,false,field+' '+JSON.stringify(h.widget.PFTransport.snapshot()));assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);assert.equal(sends,1);mismatches++;
 }
 // All monthly currency payload fields preserve fractions, including credits,
 // cumulative totals and fields absent from an individual schedule fixture.

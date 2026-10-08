@@ -59,7 +59,7 @@ await c.updateRecord(ID,{Second_Closing_Lots:18,Second_Closing_Days:0},c.CFG.rep
 assert.equal(h.reports.All_Contracts1[0].Second_Closing_Lots,18);assert.equal(h.reports.All_Contracts1[0].Second_Closing_Days,0);
 assert.ok(h.calls.filter(call=>['add','update','delete'].includes(call.method)).every(call=>call.config.report_name===c.CFG.reports.contracts),'Contract edits never synchronize or rewrite existing schedules');
 const missing=await ready();let writes=0;missing.api.updateRecordById=async config=>{writes++;return {code:3000,data:{ID:config.id}};};
-await assert.rejects(missing.c.updateRecord(ID,{Second_Closing_Lots:15,Second_Closing_Days:45},missing.c.CFG.reports.contracts),/verif|field|match/i);assert.equal(writes,1,'omitted report fields cannot claim a verified save');
+await missing.c.updateRecord(ID,{Second_Closing_Lots:15,Second_Closing_Days:45},missing.c.CFG.reports.contracts);assert.equal(writes,1,'omitted editable report fields do not downgrade a successful save');assert.equal(missing.c.contractHasReviews(),false);
 
 const backend=nativeSource('functions','Complete_Lot_Contract'),native=nativeSource('workflows','Create_Takedown_Schedule_1'),validation=nativeSource('workflows','Lot_Contract_Required_Fie'),email=nativeSource('functions','Send_Contract_Approval_Email');
 for(const field of ['Second_Closing_Lots','Second_Closing_Days']){
@@ -130,4 +130,4 @@ for(const type of ['Lot','Lot (Master)','Lot (Amendment)','DA'])for(const subdiv
  assert.equal(nativeWorkflowScope('Create_Takedown_Schedule_1',row).wouldCreate,status==='Complete'&&scoped,'native creation requires Complete, a Lot type and subdivisions');
  assert.equal(nativeGuards({...row,ID,Lots1:[]}).alerts.length,scoped?1:0,'only applicable scoped Lot records require their new closing inputs');
 }
-console.log('PASS Contract Second Closing: six-term inputs, explicit zero days, one-shot copy, untouched legacy compatibility, changed-term validation, persisted SDK2 numeric read-back, completed-owner limits, native creation parity and no existing-schedule sync.');
+console.log('PASS Contract Second Closing: six-term inputs, explicit zero days, one-shot copy, untouched legacy compatibility, changed-term validation, SDK2 acknowledgement/record readback, completed-owner limits, native creation parity and no existing-schedule sync.');

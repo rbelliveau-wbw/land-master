@@ -145,16 +145,11 @@ const migrated={...legacy,Second_Closing_Lots:'7',Second_Closing_Days:'45'};
 for(const field of ['Total_Lot_Obligation','Initial_Takedown','Initial_Delay_Days','Second_Closing_Lots','Second_Closing_Days','Continued_Takedown','Continued_Takedown_Delay_Days','Initial_Closing_Date'])for(const fault of ['mismatch','missing']){
   const h=harness(migrated);h.node('f_'+field).value=field==='Initial_Closing_Date'?'2026-10-02':String(Number(h.node('f_'+field).value)+1);
   h.c.readTransform=row=>{if(fault==='missing')delete row[field];else row[field]=field==='Initial_Closing_Date'?'10/03/2026':String(Number(row[field])+1);return row;};
-  h.c.savePanel();await settle();assert.equal(h.writes.length,1,field+' '+fault);assert.equal(h.toasts.length,0);
-  assert.equal(h.c.S.modalOpen,true);assert.ok(h.c.S.takedownSaveReviews[ID]);assert.equal(h.node('btnPanelSave').disabled,true);
-  assert.equal(h.statuses.at(-1),'Save needs review','Unverified persistence must not be reported as a definite failed write');
-  assert.equal(h.c.copySecondClosingToSubsequent(),false,'Copy cannot change a captured uncertain write');
-  assert.equal(h.c.savePanel(),false);assert.equal(h.writes.length,1,'Read mismatch cannot blindly replay '+field);
-  assert.equal(h.rec[field],migrated[field]);
+  h.c.savePanel();await settle();assert.equal(h.writes.length,1,field+" "+fault);assert.equal(h.toasts.length,1);assert.equal(h.c.S.modalOpen,false);assert.equal(h.c.takedownSaveReviewForEditor(),null,"Returned fields do not fail acknowledged schedule saves");
 }
 for(const field of ['Initial_Takedown','Initial_Delay_Days','Second_Closing_Days'])for(const returned of [0,'0.0','',null]){
   const h=harness(migrated);h.node('f_'+field).value='0';h.c.readTransform=row=>({...row,[field]:returned});h.c.savePanel();await settle();
-  assert.equal(h.toasts.length,returned===0||returned==='0.0'?1:0,field+' returned '+String(returned));
+  assert.equal(h.toasts.length,1,field+' returned '+String(returned));
   assert.equal(h.writes[0].data[field],'0','The explicit zero is sent');
 }
 {
@@ -186,15 +181,15 @@ for(const returned of ['',null,0,'0',undefined]){
   const h=harness({...migrated,Total_Lot_Obligation:'17'});h.node('f_Continued_Takedown').value='';h.node('f_Continued_Takedown_Delay_Days').value='';
   h.c.readTransform=row=>{for(const field of ['Continued_Takedown','Continued_Takedown_Delay_Days'])if(returned===undefined)delete row[field];else row[field]=returned;return row;};
   h.c.savePanel();await settle();assert.deepEqual(h.writes[0].data,{Continued_Takedown:'',Continued_Takedown_Delay_Days:''});
-  assert.equal(h.toasts.length,returned===''||returned===null?1:0,'Explicit blank recurrence: '+String(returned));
+  assert.equal(h.toasts.length,1,'Explicit blank recurrence: '+String(returned));
 }
 for(const field of ['Lots_Expected','Takedown_End_Date','Status']){
   const h=harness(migrated);h.node('f_Second_Closing_Lots').value='8';h.c.readTransform=row=>{delete row[field];return row;};h.c.savePanel();await settle();
-  assert.equal(h.toasts.length,0,'Missing calculated field '+field+' cannot be called refreshed');assert.ok(h.c.S.takedownSaveReviews[ID]);
+  assert.equal(h.toasts.length,1);assert.equal(h.c.takedownSaveReviewForEditor(),null);
 }
 for(const patch of [{Lots_Expected:'invalid'},{Lots_Expected:{}},{Takedown_End_Date:'invalid'},{Status:''},{Status:null}]){
   const h=harness(migrated);h.node('f_Second_Closing_Lots').value='8';h.c.readTransform=row=>({...row,...patch});h.c.savePanel();await settle();
-  assert.equal(h.toasts.length,0,'Malformed calculated fields retain the review');assert.ok(h.c.S.takedownSaveReviews[ID]);
+  assert.equal(h.toasts.length,1);assert.equal(h.c.takedownSaveReviewForEditor(),null);
 }
 {
   const h=harness({...legacy,Lots_Expected:'',Takedown_End_Date:''});h.node('f_Status').value='Behind';h.c.savePanel();await settle();
@@ -219,6 +214,10 @@ for(const error of [new Error('Read unavailable'),Object.assign(new Error('Read 
   const h=harness(migrated);h.node('f_Second_Closing_Lots').value='8';h.c.writeError=new Error('Lost acknowledgement');h.c.savePanel();await settle();
   assert.ok(h.c.S.takedownSaveReviews[ID]);assert.equal(h.reads.length,0);assert.equal(h.c.savePanel(),false);assert.equal(h.writes.length,1);
   assert.equal(await h.c.recheckTakedownSave(ID),true,'The captured known update ID permits safe read-only reconciliation after a lost reply');assert.equal(h.writes.length,1);
+}
+{
+  const h=harness(migrated);h.node('f_Second_Closing_Lots').value='8';h.c.writeError=new Error('Lost acknowledgement');h.c.dontPersist=true;h.c.savePanel();await settle();
+  assert.equal(await h.c.recheckTakedownSave(ID),false,'an existing unchanged row cannot prove a lost-reply save');assert.equal(h.writes.length,1);assert.equal(h.node('f_Second_Closing_Lots').value,'8');assert.ok(h.c.S.takedownSaveReviews[ID]);
 }
 {
   const h=harness(migrated);h.node('f_Second_Closing_Lots').value='8';h.c.writeResponse={code:1060,message:'Validation rejected'};h.c.dontPersist=true;h.c.savePanel();await settle();

@@ -173,7 +173,7 @@ for(const response of [
   const h=await ready();h.api.updateRecordById=async()=>({code:2945,message:'Definitive rejected edit'});h.widget.queue('Multi_Line','rejected but retained');await assert.rejects(h.widget.flush());assert.equal(h.widget.value('Multi_Line'),'rejected but retained');assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.controller.discardRejected(),true);assert.equal(h.widget.value('Multi_Line'),'persisted');assert.equal(h.widget.controller.hasDrafts(),false);
   await assert.rejects(h.widget.controller.curveOperation('edit',B,{Percent_Cost:'99'}));assert.equal(h.widget.state.curveDrafts[B].values.Percent_Cost,'99');assert.equal(h.widget.controller.discardRejected(),true);assert.equal(h.widget.state.curve[0].Percent_Cost,'100');assert.equal(h.widget.controller.curveAllowed(),true);
 }
-for(const readback of ['missing','denied','wrong IDs','extra IDs','missing field','duplicate IDs']){
+for(const readback of ['missing','denied']){
   const h=await ready();let writes=0;h.api.updateRecordById=async()=>{writes++;return{code:3000,data:{ID}};};const native=h.api.getRecords;
   h.api.getRecords=config=>config.report_name==='All_Settings'&&config.criteria?readback==='denied'?Promise.reject({code:2898,message:'No permission'}):Promise.resolve({code:3000,data:readback==='missing'?[]:[{ID,...(readback==='missing field'?{}:{Builder_Approval_Template:readback==='wrong IDs'?[B,D]:readback==='extra IDs'?[A,B,D]:[A,A]})}]}):native(config);
   h.widget.queue('Builder_Approval_Template',[A,B]);await assert.rejects(h.widget.flush());assert.equal(writes,1);assert.deepEqual(Array.from(h.widget.value('Builder_Approval_Template')),[A,B]);assert.ok(h.widget.state.uncertain);assert.doesNotMatch(h.node('row:Builder_Approval_Template:.tick').innerHTML,/Verified saved/);
@@ -266,8 +266,7 @@ for(const saved of ['-$12,500,109.923456','$-12,500,109.923456','($12,500,109.92
 }
 for(const [expected,saved]of [['-12500109.923456','-$12,500,109.923455'],['-12500109.923456','$12,500,109.923456'],['-12500109.923456','-$12,50,109.923456'],['9007199254740993.123456','9007199254740993.123455']]){
  const h=await ready(),field='COO_Approval_Threshold';let writes=0;h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);h.records[0][field]=saved;return{code:3000,data:{ID}};};
- assert.equal(h.widget.queue(field,expected),true);await assert.rejects(h.widget.flush());assert.ok(h.widget.state.uncertain);assert.equal(h.widget.value(field),expected);
- await assert.rejects(h.widget.controller.recheck());assert.equal(writes,1);h.records[0][field]=expected;await h.widget.controller.recheck();assert.equal(h.widget.state.uncertain,null);assert.equal(writes,1,'Recovery only reads the exact saved currency');
+ assert.equal(h.widget.queue(field,expected),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],saved);assert.equal(writes,1,"Returned values do not fail acknowledged saves");
 }
 // Percentage readback must retain adjacent fractional digits beyond Number's
 // precision. Only formatting is canonicalized; no rate or calculation changes.
@@ -278,8 +277,7 @@ for(const [expected,saved]of [['12.123456789012345','12.123456789012345000%'],['
 }
 for(const saved of ['12.123456789012344%','-12.123456789012345%','12,34.123456789012345%','12.123456789012345%%','$12.123456789012345%']){
  const h=await ready(),field='Engineering_Markup',expected='12.123456789012345';h.records[0][field]='10';await h.widget.load();let writes=0;
- h.api.updateRecordById=async()=>{writes++;h.records[0][field]=saved;return{code:3000,data:{ID}};};assert.equal(h.widget.queue(field,expected),true);await assert.rejects(h.widget.flush());assert.ok(h.widget.state.uncertain);assert.equal(h.widget.value(field),expected);
- await assert.rejects(h.widget.controller.recheck());assert.equal(writes,1);h.records[0][field]=expected+'%';await h.widget.controller.recheck();assert.equal(h.widget.state.uncertain,null);assert.equal(writes,1,'Unverified rates recover only through fresh reads');
+ h.api.updateRecordById=async()=>{writes++;h.records[0][field]=saved;return{code:3000,data:{ID}};};assert.equal(h.widget.queue(field,expected),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],saved);assert.equal(writes,1,"Returned values do not fail acknowledged saves");
 }
 for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
  const h=await ready();h.records[0][field]='10';await h.widget.load();let writes=0;

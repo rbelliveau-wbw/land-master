@@ -8,7 +8,7 @@ const inline=[...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m
 const ID='90071992547409931',ACTION='90071992547409932',SUB='90071992547409933',ACCESS='90071992547409934',NEW='90071992547409935';
 const clone=value=>JSON.parse(JSON.stringify(value)),drain=async()=>{for(let i=0;i<30;i++)await new Promise(resolve=>setImmediate(resolve));};
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
-function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@example.test'}),denied=false,actionsCount=1,accessFailure=false,realDOM=false,criticalReporter=false,ratePacing=false,fakeTime=false}={}){
+function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@example.test'}),denied=false,actionsCount=1,accessFailure=false,accessFlags={},realDOM=false,criticalReporter=false,ratePacing=false,fakeTime=false}={}){
   const parsed=realDOM?createContractTestDOM(source):null;
   const nodes=parsed?parsed.nodes:new Map(),listeners=new Map(),timers=new Map(),calls=[],logs=[];let timerId=0,active=0,maximum=0,handshakes=0,createdSequence=BigInt(NEW);
   function node(key=''){
@@ -25,7 +25,7 @@ function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@exa
   const reports={All_Contracts1:[{ID,Contract_Name:'Fixture contract',Contract_Type:'DA',Status:'New',Subdivision1:[{ID:SUB,zc_display_value:'Fixture phase'}],Owner:[{ID:ACCESS}],Archive:false}],
     All_Contract_Actions:Array.from({length:actionsCount},(_,index)=>({ID:index?(90071992547410000n+BigInt(index)).toString():ACTION,Contract1:{ID,zc_display_value:'Fixture contract'},Contract_Action:'Fixture action '+index,Sort_Order:String(index+1),Status:'New',Complete:false,Current_Action:index===0,Dev_Notes:'server note'})),
     All_Contract_Versions:[],All_Pro_Formas_All_Fields:[],All_Contract_Approvals:[],Contract_Pricing_Report:[],All_Subdivisions:[{ID:SUB,Subdivision_Name:'Fixture phase',Subdivision_Code:'F01',Project:{},Status:'Active'}],All_Builders:[],All_Active_Lots_Contracts_View:[],Comment_Log_Report:[],All_Takedown_Schedules:[]};
-  const flags={found:true,hasRow:true,myId:ACCESS,ctEdit:true,ctPropose:false,ctApprove:false,ctTemplates:false,ctDeleteArchive:false,users:[{id:ACCESS,label:'Actual actor',email:'actual-actor'}]};
+  const flags={found:true,hasRow:true,myId:ACCESS,ctEdit:true,ctPropose:false,ctApprove:false,ctTemplates:false,ctDeleteArchive:false,users:[{id:ACCESS,label:'Actual actor',email:'actual-actor'}],...accessFlags};
   function selected(config){let rows=reports[config.report_name]||[];const criteria=String(config.criteria||''),matches=[...criteria.matchAll(/(?:^|\()ID == (\d+)/g)],sub=criteria.match(/Subdivision == (\d+)/),parent=criteria.match(/Contract1 == (\d+)/);if(matches.length)rows=rows.filter(row=>matches.some(match=>row.ID===match[1]));if(sub)rows=rows.filter(row=>(typeof row.Subdivision==='string'?row.Subdivision:row.Subdivision&&row.Subdivision.ID)===sub[1]);if(parent)rows=rows.filter(row=>(typeof row.Contract1==='string'?row.Contract1:row.Contract1&&row.Contract1.ID)===parent[1]);if(criteria==='Contract_Template == "Builder"')rows=rows.filter(row=>row.Contract_Template==='Builder');return rows;}
   const counted=(method,config,fn)=>{calls.push({method,config:clone(config)});active++;maximum=Math.max(maximum,active);return Promise.resolve().then(fn).finally(()=>active--);};
   const api={
@@ -51,10 +51,10 @@ function harness({initialize=()=>({envUrlFragment:'',loginUser:'actual-actor@exa
 async function ready(options){const h=harness(options);await drain();assert.equal(h.c.S.coreReady,true);return h;}
 {
   const h=await ready({actionsCount:5001});assert.equal(h.handshakes(),1);assert.equal(h.c.S.actions.length,5001);assert.ok(h.maximum()<=3);assert.ok(h.calls.filter(call=>call.method==='records').every(call=>call.config.max_records===1000&&call.config.field_config==='all'));
-  const access=h.calls.find(call=>call.method==='custom').config;assert.equal(access.api_name,'Get_User_Access_Lean');assert.equal(access.http_method,'GET');assert.equal(access.query_params,undefined);assert.equal(access.payload,undefined);assert.equal(access.parameters,undefined);assert.equal(h.c.canEdit(),true);assert.ok([...h.nodes.values()].some(node=>node.innerHTML.includes('Fixture contract')),'actual legacy renderer built the contract list');
+  const access=h.calls.find(call=>call.method==='custom').config;assert.equal(access.api_name,'Get_User_Access');assert.equal(access.http_method,'GET');assert.equal(access.query_params,undefined);assert.equal(access.payload,undefined);assert.equal(access.parameters,undefined);assert.equal(h.c.canEdit(),true);assert.ok([...h.nodes.values()].some(node=>node.innerHTML.includes('Fixture contract')),'actual legacy renderer built the contract list');
 }
 {
-  const h=await ready({initialize:()=>({envUrlFragment:'/environment/development',loginUser:'ViewAs@example.test'})});const config=h.calls.find(call=>call.method==='custom').config;assert.equal(config.api_name,'Get_User_Access_Lean_DEV');assert.equal(config.http_method,'POST');assert.deepEqual(config.payload,{user:'viewas'});
+  const h=await ready({initialize:()=>({envUrlFragment:'/environment/development',loginUser:'ViewAs@example.test'})});const config=h.calls.find(call=>call.method==='custom').config;assert.equal(config.api_name,'Get_User_Access_DEV');assert.equal(config.http_method,'POST');assert.deepEqual(config.payload,{user:'viewas'});
 }
 {
   const h=await ready({accessFailure:true});assert.equal(h.c.S.acc.known,false);assert.equal(h.c.S.acc.degraded,true);assert.equal(h.c.canEdit(),true,'existing degraded business policy retained');
@@ -94,14 +94,12 @@ for(const saved of ['-$12,500,109.920000','$-12,500,109.920000','($ 12,500,109.9
 for(const saved of ['-$12,500,109.90','$12,500,109.92','-$-12,500,109.92','(-$12,500,109.92)','$12,50,109.92','($12,500,109.92']){
   const h=await ready(),native=h.api.updateRecordById,payload={Earnest_Money:'-12500109.92'};
   h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Earnest_Money=saved;return response;};
-  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(retained.id,ID);assert.equal(retained.payload.Earnest_Money,payload.Earnest_Money);assert.equal(await h.c.recheckContractMutation(retained.key),false);await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));assert.equal(h.calls.filter(call=>call.method==='update').length,1);
-  h.reports.All_Contracts1[0].Earnest_Money='($12,500,109.920000)';assert.equal(await h.c.recheckContractMutation(retained.key),true,'Read-only exact credit recovery');assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.equal(h.c.contractHasReviews(),false);
+  const result=await h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts);assert.equal(result.verifiedRow.Earnest_Money,saved);assert.equal(h.c.contractHasReviews(),false);assert.equal(h.calls.filter(call=>call.method==="update").length,1,"A returned field difference cannot quarantine an acknowledged save");
 }
 {
   const h=await ready(),native=h.api.updateRecordById,payload={Total_Contract_Price:'9007199254740993.123456'};
   h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Total_Contract_Price='9007199254740993.123455';return response;};
-  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(await h.c.recheckContractMutation(retained.key),false,'Neighboring high-precision decimals cannot compare through Number');assert.equal(h.calls.filter(call=>call.method==='update').length,1);
-  h.reports.All_Contracts1[0].Total_Contract_Price='$9,007,199,254,740,993.12345600';assert.equal(await h.c.recheckContractMutation(retained.key),true);assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+  await h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts);assert.equal(h.c.contractHasReviews(),false);assert.equal(h.calls.filter(call=>call.method==="update").length,1);
   assert.equal(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),'000073');assert.notEqual(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),h.c.contractFieldComparable('73','Contract_Code',h.c.CFG.reports.contracts,'000073'),'Text identifier zeroes stay significant');
 }
 {

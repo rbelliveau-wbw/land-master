@@ -1,5 +1,13 @@
 ## Empty budget detail reporting (122.29.6)
 
+## Save policy — October 8, 2026
+
+Acknowledged successful saves no longer compare refreshed editable/calculated
+fields with the submitted payload. Record identity/count, real API errors,
+preflight and duplicate-send guards remain; explicit unknown-reply recovery is
+read-only. This supersedes earlier automatic field-equality requirements. See
+[implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 Successful category and item reads with zero matches are informational, including
 full-report fallback checks. A criteria failure recovered by the full report is
 a warning; a failed fallback rejects without publishing an empty financial
@@ -686,8 +694,9 @@ Verification covers exact cent rounding, duplicate item allocations, other PO
 reservations, automatic shortfalls, saved-line readback, unknown-write rechecks,
 and existing payment-request paths. Native testing saved and independently read
 back 100 calculated rows with UOM and cost code. Rollback the widget mapping to
-122.29.6; retain saved PO data and use a compatible Creator version for backend
+122.29.7; retain saved PO data and use a compatible Creator version for backend
 rollback. Do not replay an unverified write.
+
 ### PO email links
 
 The existing `Budget_Management1` page accepts the Text page variable

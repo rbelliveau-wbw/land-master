@@ -1,4 +1,12 @@
 
+
+## Save policy — October 8, 2026
+
+Acknowledged successful saves no longer compare refreshed editable/calculated
+fields with the submitted payload. Record identity/count, real API errors,
+preflight and duplicate-send guards remain; explicit unknown-reply recovery is
+read-only. This supersedes earlier automatic field-equality requirements. See
+[implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 ## Full User Access owner names
 
 Owner pickers and displays prefer User_Access.Full_Name, preserving original
@@ -6,6 +14,20 @@ record IDs and login/email permission identities. Blank names keep the existing
 fallback. See [scope, verification and rollback](../../docs/owner-full-names.md).
 
 # Contracts Module
+
+## Proposal access and manual Acquisition (1.61.34)
+
+`Propose_Contract_Changes` permits ordinary action edits, completion/reopening,
+reordering and proposed Contract/action creation without `Edit_Contracts`.
+Inline saves now share that permission; new grid actions from proposal-only
+users are Proposed. Contracts returns to the established full access API while
+the lean endpoint's affected-user Production parity remains unverified.
+Approve/Delete/Archive/Templates and completed-contract locks remain separate.
+Acquisition is available for manual creation without Project or Subdivision;
+stale scope is cleared and excluded from save/setup. New parents remain Proposed
+for Legal review. Frontend only; no Creator publication. See
+[diagnosis, regression scope and rollback](../../docs/contract-proposal-access-2026-10-08.md).
+Rollback Production to 1.61.32.
 
 ## Attachment uploads in the existing workspace (1.61.29)
 

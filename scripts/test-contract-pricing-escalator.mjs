@@ -95,7 +95,7 @@ for(const raw of ['5.000','5%','$5']){
 for(const missing of [false,true]){
  const h=await fixture({escalator:3});setEsc(h,'5');const native=h.api.updateRecordById;
  h.api.updateRecordById=async config=>{const out=await native(config);if(config.report_name==='Contract_Pricing_Report'){if(missing)delete h.reports.Contract_Pricing_Report[0].Escalator;else h.reports.Contract_Pricing_Report[0].Escalator='0.05%';}return out;};
- const result=await h.c.clpSave();assert(result.error,'wrong/missing fresh percentage cannot be verified');assert.equal(h.c.contractHasReviews(),true);assert.equal(pricingWrites(h).length,1);await h.c.clpSave();assert.equal(pricingWrites(h).length,1,'uncertain percentage update is never replayed');
+ const result=await h.c.clpSave();assert.equal(result.error,null,'returned percentage differences do not reject an acknowledged save');assert.equal(h.c.contractHasReviews(),false);assert.equal(pricingWrites(h).length,1);assert.equal(pricingWrites(h)[0].config.payload.data.Escalator,'5','the exact entered percentage is still sent');
 }
 
 {
@@ -108,6 +108,6 @@ for(const missing of [false,true]){
  assert.match(backend,/if\(lotRow\.Escalator == null && pr\.Escalator != null\)/,'existing backend requires a null Lot percentage');
  assert.match(backend,/update Lots\[[^\r\n]*\(Escalator == null\)\]\s*\[\s*Escalator=pr\.Escalator/,'backend writes only a null rate and copies native points without scaling');
 }
-console.log('PASS actual Contract Pricing Escalator: shared optional UI, native create/update/reopen, 5 means 5%, 2decimal validation before writes, blank/zero distinction, Escalator-only saves, untouched legacy/fresh preservation, formatted percentage verification, missing/wrong readback quarantine/no replay, completion preview and existing null-only Lot transfer.');
+console.log('PASS Contract Pricing Escalator: exact entered percentage, prewrite validation, blank/zero and untouched values, acknowledged saves tolerate returned differences, completion preview and null-only Lot transfer.');
 
 export {fixture,setEsc,LOT,PRICE,PROJECT,BUILDER};

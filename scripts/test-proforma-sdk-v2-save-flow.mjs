@@ -17,13 +17,9 @@ for(const same of [false,true])for(const kind of ['native','formatted','missing-
   return {code:3000,data:rows};
  }});
  await h.widget.saveProforma();
- if(['native','formatted'].includes(kind)){assert.equal(h.widget.S.ed.dirty,false,JSON.stringify(h.widget.PFTransport.snapshot()));continue;}
- const t=h.widget.PFTransport,review=t.snapshot().reviews[0];assert.equal(h.widget.S.ed.dirty,true);assert.ok(review);
- assert.match(review.error,kind.startsWith('missing-')?/could not be read.*(?:Lot_Sales_Schedule_Version|Same_Lot_Sales_All_Phases)/:/expected 2, saved.*expected (?:true|false), saved/);
- h.widget.PFTransportUI.close();const sends=h.calls.filter(call=>call.method==='custom').length;
- assert.equal(h.widget.saveProforma(),false);assert.equal(await t.recheck(review.key),false);
- recovered=true;assert.equal(await t.recheck(review.key),true);
- assert.equal(h.calls.filter(call=>call.method==='custom').length,sends,'flag recheck never resends the financial or phase write');
+ assert.equal(h.widget.S.ed.dirty,false,kind+' cannot fail an acknowledged save');
+ assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);
+ assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);
 }
 {
  const h=await saveFixture();assert.deepEqual(clone(h.widget.validateModel(h.model)),[]);const promise=h.widget.saveProforma();assert.equal(h.document.getElementById('pfNativeProgress').hidden,false);assert.equal(h.widget.PFTransportUI.close(),false);await promise;

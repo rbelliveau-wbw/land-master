@@ -80,3 +80,13 @@ for (let index = 0; index < 100; index++) excessive = {details: {output: excessi
 assert.throws(() => decode(excessive), error => /unrecognized forecast response/i.test(error.message),
   'Excessive envelope depth must be rejected within the decoder bound');
 console.log('PASS: malformed, cyclic and excessive envelopes fail in bounded decoding');
+// Exercise the actual inline save handler with acknowledged field differences.
+const saveSource=source.slice(source.indexOf('  function save(input) {'),source.indexOf('  async function checkStatus() {'));
+for(const kind of ['different-value','wrong-id','api-failure']){
+  const state={snapshot:{months:[{id,forecast:2,month:'October',year:'2026',builderId:'42'}]},sub:'10',entries:new Map(),pending:0,queue:Promise.resolve()};let sends=0;
+  const ui=vm.createContext({S:state,M:{value:Number,lock:()=>''},creationReview:()=>false,notice:()=>{},patch:()=>{},window:{},request:async()=>{sends++;if(kind==='api-failure')throw Error('Creator rejected the save');return {verifiedForecastId:kind==='wrong-id'?'99':id,verifiedValue:7};},applySnapshot:data=>{state.snapshot=data;}});
+  vm.runInContext(saveSource,ui);ui.save({dataset:{forecast:id},value:'4',disabled:false});await state.queue;
+  assert.equal(sends,1);assert.equal(state.pending,0);assert.equal(state.entries.get(id).attempted,4);
+  assert.equal(state.entries.get(id).phase,kind==='different-value'?'saved':'unknown');
+}
+console.log('PASS actual forecast inline save accepts returned value differences and retains wrong-ID/API failures without replay.');

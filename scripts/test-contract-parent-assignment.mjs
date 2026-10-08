@@ -74,10 +74,9 @@ const setup=async()=>{const h=await ready({realDOM:true});h.reports[h.c.CFG.repo
 }
 {
  const h=await setup(),c=h.c;await c.contractParentOpen(ID);c.S.parentEdit.parent=root;
- h.api.updateRecordById=async()=>({code:3000,data:{ID}});await c.contractParentSave();
+ let sends=0;h.api.updateRecordById=async()=>{sends++;return {code:3000,data:{ID}};};await c.contractParentSave();
  assert.equal(c.findContract(ID).Parent_Contract,null,'unpersisted acknowledgement never becomes success');
- assert.equal(c.S.contractWorkflow.finished,true);assert.ok(c.contractHasReviews(),'uncertain write stays reviewable');
- await c.contractParentSave();assert.equal(c.findContract(ID).Parent_Contract,null,'Check status does not replay');
+ assert.equal(c.S.contractWorkflow,null);assert.equal(c.contractHasReviews(),false,'Acknowledged parent save skips submitted-field comparison');assert.equal(sends,1);
 }
 
 {

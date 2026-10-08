@@ -1,5 +1,13 @@
 # Lots status contract
 
+## Save policy — October 8, 2026
+
+Acknowledged successful saves no longer compare refreshed editable/calculated
+fields with the submitted payload. Record identity/count, real API errors,
+preflight and duplicate-send guards remain; explicit unknown-reply recovery is
+read-only. This supersedes earlier automatic field-equality requirements. See
+[implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 ## Second Closing candidate — October 5, 2026
 
 The [three-tier schedule contract](takedown-schedule.md) adds a one-time Second

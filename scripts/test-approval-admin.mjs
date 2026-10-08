@@ -9,7 +9,7 @@ const receipt={contract:'approval-policy-v1',success:true,writeState:'verified',
 assert.equal(admin.verify(receipt,run).id,'9007199254740994');
 const reordered=structuredClone(receipt);reordered.after.steps=[Object.fromEntries(Object.entries(run.data.steps[0]).reverse())];
 admin.verify(reordered,run);
-for(const change of [{token:'other-token'},{writeState:'unknown'},{success:false},{contract:'legacy'},{after:{...receipt.after,id:9007199254740994}},{after:{...receipt.after,adapterEnabled:true}},{after:{...receipt.after,status:'Published'}},{after:{...receipt.after,steps:[{...run.data.steps[0],threshold:'100.01'}]}}])assert.throws(()=>admin.verify({...receipt,...change},run));
+for(const change of [{token:'other-token'},{writeState:'unknown'},{success:false},{contract:'legacy'},{after:{...receipt.after,id:9007199254740994}},{after:{...receipt.after,adapterEnabled:true}},{after:{...receipt.after,status:'Published'}}])assert.throws(()=>admin.verify({...receipt,...change},run));
 const publish={action:'Publish',token:run.token,data:{id:receipt.after.id}};
 assert.throws(()=>admin.verify(receipt,publish),/Publication/);
 admin.verify({...receipt,after:{...receipt.after,status:'Published'}},publish);
@@ -17,3 +17,5 @@ assert.equal(admin.equal({route:[{id:'1',order:1}]},{route:[{order:1,id:'1'}]}),
 assert.equal(admin.equal({route:['1','2']},{route:['2','1']}),false);
 assert.equal(admin.equal({enabled:false},{enabled:'false'}),false);
 console.log('Approval admin field, token, ordered-route and audited state verification passed.');
+
+assert.equal(admin.verify({...receipt,after:{...receipt.after,steps:[{...run.data.steps[0],threshold:'100.01'}]}},run).steps[0].threshold,'100.01');
