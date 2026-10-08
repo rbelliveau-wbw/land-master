@@ -785,3 +785,12 @@ stay under their parent, including context parents outside filters. Child-type
 count badges share the report palette, and Parent pickers group types and show
 counterparty pills in wrapped rows. No Creator backend deployment. Scope,
 verification, limitations and rollback: [release notes](../../docs/contracts-review-and-insights-2026-10-06.md).
+
+## Saved attachment reconciliation (1.61.30)
+
+After a settled unrecognized/lost FILE reply, automatically verify the exact saved
+child and parent/file before reporting failure. Never replay an upload from that
+check. Contract uploads preserve the Email switch without requiring it to be on;
+Budget phase rows omit the direct Approvals shortcut and reserve space for their
+remaining controls. No Creator backend deployment is required. See
+[regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).

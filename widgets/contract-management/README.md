@@ -237,3 +237,12 @@ Contract-fields dialog is removed for file batches. Native failure causes remain
 visible, and read-only create recovery repeats the email-flag predicate. Pending
 requests, duplicate guards and unknown/no-replay behavior remain. No Creator
 deployment is needed. See [diagnosis, regressions and rollback](../../docs/contract-attachment-upload-response-2026-10-07.md).
+
+## Saved attachment reconciliation (1.61.30)
+
+After a settled unrecognized/lost FILE reply, automatically verify the exact saved
+child and parent/file before reporting failure. Never replay an upload from that
+check. Contract uploads preserve the Email switch without requiring it to be on;
+Budget phase rows omit the direct Approvals shortcut and reserve space for their
+remaining controls. No Creator backend deployment is required. See
+[regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).

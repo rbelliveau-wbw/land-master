@@ -1,0 +1,8 @@
+{
+  "widget": "budget-manager",
+  "version": "122.28.32",
+  "created_at": "2026-10-08T00:52:21.571Z",
+  "source": "widgets/budget-manager/src/app/widget.html",
+  "source_sha256": "431afc564b5a1a139723141eadab3c0fd14f92861b7f92d231b14942b64a95c0",
+  "status": "candidate"
+}

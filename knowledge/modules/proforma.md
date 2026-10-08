@@ -720,3 +720,12 @@ Currency displays and monthly payloads retain cents; only actual counts use inte
 ## Routine success feedback — October 6, 2026
 
 Existing success pills use the shared style for saves, owners/status/input-lock/approver edits, attachments and lifecycle actions. PDF preparation and an unsaved duplicate remain informational; unavailable email stays a warning. Export wording says the file is ready. Shared comment post/edit/delete success follows the host verified callback. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+
+## Saved attachment reconciliation (1.80.91)
+
+After a settled unrecognized/lost FILE reply, automatically verify the exact saved
+child and parent/file before reporting failure. Never replay an upload from that
+check. Contract uploads preserve the Email switch without requiring it to be on;
+Budget phase rows omit the direct Approvals shortcut and reserve space for their
+remaining controls. No Creator backend deployment is required. See
+[regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).

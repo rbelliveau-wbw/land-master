@@ -74,6 +74,13 @@ results. A created child ID does not prove file upload succeeded: verify the
 file acknowledgement and persisted file under that same child and parent.
 Unknown outcomes retain their inputs and require read-only recovery; they
 cannot trigger another insert, upload, alias retry or cleanup without proof.
+An unrecognized upload acknowledgement is not the final outcome: after its
+native call settles, perform the module's existing exact saved-file verification
+once automatically. If that fresh evidence confirms the captured child, parent
+and file, finish successfully without making the user press Recheck. If it does
+not, retain the inline review and read-only recovery. Contract's Email switch
+controls inclusion in approval emails; it is not a prerequisite for creating
+or uploading a file, and uploading preserves its persisted value.
 Contract and Pro Forma attachment uploads use the existing attachment workspace
 for feedback (requested October 7, 2026). Keep that modal mounted and show a
 compact spinner with a polite upload/checking status; do not open a second

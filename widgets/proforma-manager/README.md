@@ -179,3 +179,12 @@ re-renders the main report, and retains search, scroll and drafts. No Creator ch
 ## Routine success feedback (1.80.86)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+## Saved attachment reconciliation (1.80.91)
+
+After a settled unrecognized/lost FILE reply, automatically verify the exact saved
+child and parent/file before reporting failure. Never replay an upload from that
+check. Contract uploads preserve the Email switch without requiring it to be on;
+Budget phase rows omit the direct Approvals shortcut and reserve space for their
+remaining controls. No Creator backend deployment is required. See
+[regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).

@@ -359,7 +359,7 @@ function attachmentHarness(options={}) {
     refreshBudgetAttachmentRecord:async () => {counts.refresh++;return row ? [clone(row)] : [];},
     toastShow:() => counts.toasts++,cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),
     Promise,Error,URLSearchParams,setTimeout:() => 0
-  },['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','budgetUploadReceipt','sdkUploadFile','sdkInvokeCustomApi','sdkRunBudgetFunction','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','cleanupEmptyAttachmentRecord','recheckBudgetAttachmentUpload','uploadBudgetAttachments']);
+  },['responseLooksBad','getReportCandidates','budgetSdkCode','budgetMissingReport','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkGetRecordById','budgetUploadError','budgetUploadSuccess','budgetUploadReceipt','sdkUploadFile','sdkInvokeCustomApi','sdkRunBudgetFunction','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','parseAttachmentCreateResponse','budgetCreateScope','inspectBudgetAttachment','budgetAttachmentMatches','cleanupEmptyAttachmentRecord','recheckBudgetAttachmentUpload','uploadBudgetAttachments']);
   context.window=context;context.isObj=value => value && typeof value === 'object' && !Array.isArray(value);
   return {context,counts,get row(){return row;}};
 }
@@ -392,6 +392,7 @@ for(const options of [
   {uploadResponse:{...fileAck,status:'failed'}},
   {uploadResponse:{...fileAck,data:{...fileAck.data,success:false}}}
 ]) {
+  options.readError={code:2898,message:'Readback temporarily unavailable'};
   const {context:c,counts}=attachmentHarness(options);
   await c.uploadBudgetAttachments([selectedFile,{name:'second.pdf',size:10}]);
   assert.equal(counts.create,1,'uncertain outcome prevents the next child insert');
@@ -400,10 +401,24 @@ for(const options of [
   assert.equal(c.S.attachmentBusy,false);assert.match(c.S.attachmentStatus,/unverified/);
   await c.uploadBudgetAttachments([selectedFile]);
   assert.equal(counts.create,1,'attempting another upload while uncertain does not insert again');
+  delete options.readError;
   assert.equal(await c.recheckBudgetAttachmentUpload(),true,'read-only exact stored-file recheck resolves an applied/lost response');
   assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
   assert.equal(c.S.attachmentUploadReview,null);assert.match(c.S.attachmentStatus,/verified/);
 }
+for(const options of [
+  {uploadResponse:{code:3000}},
+  {uploadResponse:{code:3000,data:{message:'File saved'}}},
+  {uploadResponse:{...rootFileAck,data:{...rootFileAck}}},
+  {uploadError:new Error('Applied reply lost')}
+]){
+  const {context:c,counts}=attachmentHarness(options);
+  await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
+  assert.equal(counts.toasts,1);assert.equal(c.S.attachmentUploadReview,null);
+  assert.match(c.S.attachmentStatus,/1 attachment added/,'fresh exact child/parent/path/name resolves a saved upload automatically');
+}
+
 for(const options of [
   {uploadError:new Error('Unknown upload'),persist:false},
   {uploadError:new Error('Unknown upload'),readError:{code:2898,message:'Denied'}},
@@ -438,7 +453,7 @@ for(const options of [{createError:new Error('Child created but response lost')}
   assert.equal(counts.create,1);assert.equal(counts.upload,0);assert.equal(counts.delete,0);
 }
 {
-  const waiting=deferred(),{context:c,counts}=attachmentHarness({uploadPromise:waiting.promise});
+  const waiting=deferred(),{context:c,counts}=attachmentHarness({uploadPromise:waiting.promise,readError:{code:2898,message:'Readback temporarily unavailable'}});
   const existing={recordId:'900000000000000005',name:'existing.pdf'};
   c.budgetAttachments=() => [existing];c.removeLocalBudgetAttachment=() => {throw new Error('Blocked deletion must not patch local rows');};
   let confirmations=0;const buttons={attachmentPreviewDelete:{disabled:false},attachmentDeleteGo:{disabled:false},attachmentDeleteOverlay:{classList:{add:() => confirmations++}}};
@@ -459,7 +474,7 @@ for(const options of [{createError:new Error('Child created but response lost')}
   assert.equal(c.deleteBudgetAttachment(0),false);assert.equal(await c.runDeleteBudgetAttachment(0),false);assert.equal(counts.delete,0);
 }
 {
-  const c=attachmentHarness({uploadError:new Error('Lost')}).context;
+  const c=attachmentHarness({uploadError:new Error('Lost'),readError:{code:2898,message:'Readback unavailable'}}).context;
   await c.uploadBudgetAttachments([selectedFile]);
   const pane={innerHTML:''};c.$=() => pane;c.S.edPhaseIdx=0;
   Object.assign(c,{budgetFeature:() => ({status:'loaded'}),budgetNavigationToken:() => 1,budgetAttachments:() => [{name:'existing.pdf',recordId:'900000000000000005'}],phaseName:() => 'Phase',attachmentIconSvg:() => '',attachmentExt:() => 'pdf',esc:value => String(value),escAttr:value => String(value)});

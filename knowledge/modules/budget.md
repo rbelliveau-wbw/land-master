@@ -591,3 +591,12 @@ Replace font-based multiplication characters in search, project, territory and s
 ## Routine success feedback — October 6, 2026
 
 Budget header metrics, line-item fields, per-unit pricing and notes keep inline saved indicators and add grouped confirmations. Existing successful owner, mapping, attachment, request and approval pills use the approved black style. Note confirmation now waits for the existing verified save callback. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+
+## Saved attachment reconciliation (122.28.32)
+
+After a settled unrecognized/lost FILE reply, automatically verify the exact saved
+child and parent/file before reporting failure. Never replay an upload from that
+check. Contract uploads preserve the Email switch without requiring it to be on;
+Budget phase rows omit the direct Approvals shortcut and reserve space for their
+remaining controls. No Creator backend deployment is required. See
+[regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).

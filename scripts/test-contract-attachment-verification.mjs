@@ -61,21 +61,29 @@ for(const change of [row=>{row.Contract1={ID:OTHER};},row=>{row.File_field1='/do
  assert.equal(await h.c.recheckContractAttachment(key,'upload'),true);assert.equal(calls.upload,1,'recheck is read-only');
 }
 
+for(const receipt of [{code:3000},{code:3000,result:{message:'File saved'}},{code:3000,filename:'fixture.pdf',filepath:PATH,data:{filename:'fixture.pdf',filepath:PATH}}]){
+ for(const wrongBytes of [false,true]){
+  const h=await ready(),calls=install(h,{uploadEnvelope:receipt}),id=await h.c.createContractAttachmentRecord(ID),bytes=Uint8Array.from([37,80,68,70,45,128,255]);
+  h.c.ZOHO.CREATOR.FILE.readFile=async()=>wrongBytes?Uint8Array.from([37,80,68,70,45,127,255]):bytes;
+  const file={name:'fixture.pdf',size:bytes.length,arrayBuffer:async()=>bytes.buffer};
+  if(wrongBytes){await assert.rejects(h.c.sdkUploadVersionFile(id,file),error=>error.noReplay);assert.equal(h.c.contractHasReviews(),true);}
+  else{await h.c.sdkUploadVersionFile(id,file);assert.equal(h.c.contractHasReviews(),false,'exact saved filename/parent/path/bytes resolve an unrecognized reply automatically');}
+  assert.equal(calls.upload,1,'verification never repeats the FILE write');assert.equal(calls.create,1);
+ }
+}
+
 for(const email of [undefined,false,'false']){
  const h=await ready(),calls=install(h,{email}),key=h.c.contractAttachmentKey('create',ID);
  if(email===undefined){
   const native=h.api.invokeCustomApi;
   h.api.invokeCustomApi=async config=>{const response=await native(config);if(config.api_name===h.c.CFG.customApis.createAttachment)delete h.reports.All_Contract_Versions[0].Email_Attachment;return response;};
  }
- await assert.rejects(h.c.createContractAttachmentRecord(ID),error=>error.noReplay===true&&/verification.*email flag/.test(error.message));
- await assert.rejects(h.c.createContractAttachmentRecord(ID));
- assert.equal(calls.create,1);assert.equal(calls.upload,0);
- assert.equal(await h.c.recheckContractAttachment(key,'create'),false,'read-only create recovery applies the original Email_Attachment predicate');
- assert.equal(h.c.contractHasReviews(),true);assert.equal(h.c.S.contractAttachmentParents&&h.c.S.contractAttachmentParents[NEW],undefined);
- h.reports.All_Contract_Versions[0].Email_Attachment='true';
- assert.equal(await h.c.recheckContractAttachment(key,'create'),true);
+ assert.equal(await h.c.createContractAttachmentRecord(ID),NEW,'an off or omitted Email switch does not prevent attachment creation');
+ assert.equal(h.c.contractHasReviews(),false);
  assert.equal(h.c.S.contractAttachmentParents[NEW].cid,ID);assert.equal(h.c.S.contractAttachmentParents[NEW].scope,h.c.contractMutationScope());
- assert.equal(calls.create,1);assert.equal(calls.upload,0,'recovery does not continue or replay the upload');
+ await h.c.sdkUploadVersionFile(NEW,{name:'fixture.pdf',size:20});
+ assert.equal(calls.create,1);assert.equal(calls.upload,1,'FILE upload proceeds after exact child and Contract parent verification');
+ assert.equal(h.reports.All_Contract_Versions[0].Email_Attachment,email===undefined?undefined:email,'upload preserves the persisted email setting');
 }
 
 {
@@ -99,4 +107,4 @@ for(const email of [undefined,false,'false']){
  assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'a native create failure never falls back to CRUD or cleanup');
 }
 
-console.log('PASS Contract attachment verification: documented root/data upload replies, strict ambiguous/failure rejection, exact parent/path readback, create email-flag recovery parity, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup.');
+console.log('PASS Contract attachment verification: documented root/data upload replies, strict ambiguous/failure rejection, exact parent/path readback, Email-off creation/upload, automatic exact-byte saved-file recovery, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup.');
