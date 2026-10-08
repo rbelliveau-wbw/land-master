@@ -57,6 +57,14 @@ Chat history and model memory are not authoritative.
     overwrites the original Pro Forma's rows. `scripts/test-proforma-duplicate.mjs` enforces
     this — do not silence it.
 
+## Automatic save comparisons — user direction October 8, 2026
+
+Do not reintroduce automatic editable/calculated-field equality checks after a
+successful native save acknowledgement. Keep exact destination IDs, record/child
+counts, actual API failures, prewrite validation, operation-specific protections
+and duplicate-send guards. Exact comparisons are allowed for explicit read-only
+recovery of lost/ambiguous replies. See [the system save policy](docs/automatic-save-check-removal-2026-10-08.md).
+
 ## UI copy style
 
 - Robby does not like verbose explanatory text blocks in widget UI (2026-08-13).
@@ -97,7 +105,7 @@ Chat history and model memory are not authoritative.
 - Open progress immediately on the committing action. Show source → destination, amount/counts, short truthful stages, a progress bar, stage chips, and a verified per-destination result. Patch the mounted dialog instead of rebuilding it on every update.
 - Pace the display only (about 560 ms per stage); start requests immediately. Never invent per-record progress or mark work Done from elapsed time. Respect reduced motion.
 - Keep Close/Escape disabled while work is active, block duplicate writes, and keep the terminal result visible until dismissed. Use centered SVG X/check icons, a focus trap, inert background, and polite status announcements.
-- Success requires persisted verification for every intended destination. Partial/unknown results identify what was confirmed and what needs review. Never blindly replay a write after an ambiguous response; expose a safe recheck only when the backend supports it.
+- Success requires successful native acknowledgement and confirmation of every intended destination identity/count; do not compare editable field values automatically. Partial/unknown results identify what was confirmed and what needs review. Never blindly replay a write after an ambiguous response; expose a safe recheck only when the backend supports it.
 - This progress/result dialog is the explicit exception to the routine banner rule below. A toast, tiny status line, or greyed-out action is insufficient feedback for a multi-record write.
 
 ## Drag-and-drop must animate

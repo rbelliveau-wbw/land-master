@@ -134,7 +134,7 @@ for(const invalid of [{Property1:7},{Taxing_Jurisdiction1:[ID2,ID2]},{Notice_Rec
   const h=await ready({rows:[{...raw(ID),Notice_Received:'',Taxing_Jurisdiction1:[]}]});await h.c.runParcelSearch();await assert.rejects(h.c.updateRecord(ID,invalid));assert.equal(h.writes.length,0);
 }
 {
-  const h=await ready({updateHook:(config,apply)=>{apply();h.storage.All_Tax_Parcel_Years[0].Property_ID='73';return{code:3000,data:{ID:config.id}};}});await h.c.runParcelSearch();await assert.rejects(h.c.updateRecord(ID,{Property_ID:'000073'}));assert.equal(h.c.Tax.snapshot().reviews.length,1);assert.equal(h.writes.length,1);await assert.rejects(h.c.updateRecord(ID,{Property_ID:'000073'}));assert.equal(h.writes.length,1);
+  const h=await ready({updateHook:(config,apply)=>{apply();h.storage.All_Tax_Parcel_Years[0].Property_ID='73';return{code:3000,data:{ID:config.id}};}});await h.c.runParcelSearch();await h.c.updateRecord(ID,{Property_ID:'000073'});assert.equal(h.c.Tax.snapshot().reviews.length,0);assert.equal(h.writes.length,1);assert.equal(h.writes[0].payload.data.Property_ID,'000073','entered identifiers retain their leading zeroes in the payload');
 }
 // Actual Add Property -> actual TPY opener uses the verified new exact ID, despite a same-name old row.
 {
@@ -162,4 +162,4 @@ for(const acknowledgement of [{code:3000},{code:3000,result:[{code:3000,data:{ID
 {
   const h=await ready({ui:true}),c=h.c;await c.runParcelSearch();h.storage.All_Tax_Parcel_Years[0].Status='Externally changed';const ledger=await c.Tax.batch(c.CONFIG.reports.parcelYears,[{id:ID,payload:{Status:'No Protest'}}]);assert.equal(h.writes.length,0);assert.equal(ledger.rows[0].state,'not-sent');assert.equal(c.document.getElementById('taxSaveStageChip0').textContent,'Needs review');assert.equal(c.document.getElementById('taxSaveStageChip1').textContent,'Not sent');assert.equal(c.document.getElementById('taxSaveStageChip2').textContent,'Not sent');assert.equal(c.document.getElementById('taxSaveBar').getAttribute('aria-valuenow'),'0');assert.equal(h.TaxUI.close(),true);
 }
-console.log('PASS actual Tax SDK2 effective source: renderer/modal/Property batch/create and facet/status ownership; complete152/151,12017 references,800 bounded verified destinations, exact ID-set preflight, retained uncertainty, metadata/date/blank/lookup/text, exact created parent, mounted progress/input locks. No native browser/write claims.');
+console.log('PASS actual Tax SDK2 effective source: renderer/modal/Property batch/create and facet/status ownership; complete152/151,12017 references,800 bounded verified destinations, exact ID-set preflight, retained uncertainty, input metadata/date/blank/lookup/text and acknowledged field differences, exact created parent, mounted progress/input locks. No native browser/write claims.');

@@ -13,8 +13,7 @@ async function runSdk(nativeUpdate, payload = { Name: "QA", Sale_Price_FF: "1444
   catch (error) { return { h, error }; }
 }
 
-// The real SDK2 wrapper must preserve fractional input and verify the exact
-// same record's persisted fields before accepting a successful acknowledgement.
+// The real SDK2 wrapper preserves fractional input and confirms the exact record.
 const accepted = await runSdk((config, apply) => { apply(); return { code: 3000, data: { ID: config.id } }; });
 assert.equal(accepted.result.code, 3000);
 assert.equal(accepted.h.writes.length, 1);
@@ -38,10 +37,11 @@ const serverError = await runSdk(() => { throw Object.assign(new Error("Native H
 assert.equal(serverError.error.noReplay, true);
 assert.equal(serverError.h.writes.length, 1);
 
-// A valid ID with stale fields still cannot claim a successful precision write.
+// A successful acknowledgement is not downgraded by returned field differences.
 const stale = await runSdk(config => ({ code: 3000, data: { ID: config.id } }));
-assert.equal(stale.error.noReplay, true);
-assert.equal(stale.h.widget.PFTransport.snapshot().ledger[0].state, "unknown");
+assert.equal(stale.result.code, 3000);
+assert.equal(stale.h.widget.PFTransport.snapshot().ledger[0].state, "verified");
+assert.equal(stale.h.writes[0].payload.data.Sale_Price_FF, "1444.45");
 
 const touchStart = source.indexOf("var headerTouch={Name:m.Name,Lock_Inputs:savedInputLock(m)};");
 const touchEnd = source.indexOf("return engineTouch.then(function(){", touchStart);

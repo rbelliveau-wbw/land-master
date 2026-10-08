@@ -2,6 +2,15 @@
 
 Use this pattern when a committing action writes to several records. The reference is Contract Management's `lotRunStart`, `lotRunSet`, `lotRunMergeServer`, `renderLotRun`, and `lotRunEnd` in `widgets/contract-management/src/app/widget.html`. Pro Forma's Budget transfer implements the equivalent in `budget-transfer-ui.js` (`startRun`, `runUpdate`, `pumpRun`, `renderRun`). Approval flows retain the additional reconciliation rules in `approval-progress.md`.
 
+## Save policy — October 8, 2026
+
+For acknowledged successful saves, confirm destination identity/counts and
+refresh records without comparing editable/calculated fields to the payload.
+Keep actual API errors, partial/unknown results and duplicate-send protection.
+Explicit unknown-reply recovery and approval routing/delivery predicates retain
+their object-specific checks. This supersedes earlier exact saved-value rules;
+see [the system policy](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 ## Appearance and interaction
 
 Pro Forma's ordinary Save uses a compact exception requested October 5, 2026:
@@ -19,9 +28,9 @@ action and retained draft; they never auto-dismiss or replay a write. Respect
 reduced motion. This exception does not change other batch transfer dialogs.
 
 Ordinary Save failures also retain the actual error in an alert inside the dialog,
-including expected and saved Land Cost amounts when those differ. A disappearing
+with the actual API or incomplete-destination error. A disappearing
 toast must never be the only explanation. Clear that alert when another dialog
-run starts. Exact persisted verification and duplicate-send protection remain.
+run starts. Destination confirmation and duplicate-send protection remain.
 
 Ordinary Pro Forma Save includes a collapsed **Save log** within the mounted dialog.
 It remains keyboard-accessible while the save is pending and displays actual elapsed
@@ -81,7 +90,7 @@ actual Creator throttle responses; do not add fixed delays to ordinary saves.
 Wrap the save footer on narrow screens so the log and save controls remain visible.
 For routine Lots & Pricing confirmations, remount the captured draft before
 starting the workflow so its Saving, live audit and Check status controls stay
-connected. Verify writable fields and the authoritative child records; do not
+connected. Confirm destination identities and authoritative child counts; do not
 write a parent summary which a native on-success workflow derives differently.
 Creation finishes from its exact verified destination ledger and merged rows;
 an unrelated full-report reload must not delay its success confirmation.
@@ -111,11 +120,11 @@ Use `role=dialog`, `aria-modal=true`, named title/context, polite live status, a
 
 ## Evidence and recovery
 
-Define object-specific verification before implementing the stages. An API acknowledgement alone is insufficient: require server read-back or a targeted reconciliation response proving all intended destinations and fields. Count progress only from confirmed work. When the server processes one batch and returns at the end, show a running batch stage until that response; do not pretend to stream individual destinations or advance percentages on a timer.
+Define object-specific verification before implementing the stages. Require successful native acknowledgement plus server read-back or a targeted response confirming all intended destination identities/counts. Do not compare editable field values after acknowledged success. Count progress only from confirmed work. When the server processes one batch and returns at the end, show a running batch stage until that response; do not pretend to stream individual destinations or advance percentages on a timer.
 
 A partial response must retain confirmed destination IDs and distinguish them from unconfirmed destinations. A timeout/lost response may have saved data: say so, stop automatic sends, and offer review. Do not blindly replay a financial or multi-record write. A retry must first recheck persisted state and be idempotent. If the backend cannot support a safe recheck/repair, require manual destination review rather than adding a misleading retry button.
 
-For Budget transfer the stages are Verify destination Budgets → Send costs to Budgets → Verify saved values. Preflight uses the existing read-only preview. The existing `PF_Budget_Transfer` apply function verifies destination header metrics, item amounts/rates/notes, parent totals and Project.Proforma before returning success and `completed` IDs. The widget requires the exact intended unique Budget IDs, expected total, and apply action. Completed IDs on an error are retained; unknown results never enable another send in that session. Preflight is bounded to 30 seconds; an apply response is bounded to 90 seconds, after which the result is explicitly unknown and review is required. This UI adds no transfer or repair endpoint.
+For Budget transfer the stages are Verify destination Budgets → Send costs to Budgets → Confirm saved Budgets. Preflight uses the existing read-only preview. The existing `PF_Budget_Transfer` apply function verifies destination header metrics, item amounts/rates/notes, parent totals and Project.Proforma before returning success and `completed` IDs. The widget requires the exact intended unique Budget IDs, and apply action. Completed IDs on an error are retained; unknown results never enable another send in that session. Preflight is bounded to 30 seconds; an apply response is bounded to 90 seconds, after which the result is explicitly unknown and review is required. This UI adds no transfer or repair endpoint.
 
 ## Regression checklist
 

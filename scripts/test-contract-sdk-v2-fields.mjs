@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import {ready,drain,deferred,ID,ACTION,NEW} from './test-contract-sdk-v2-foundation.mjs';
 function input(h,value,grid=false){const el=h.node('inline-field');el.value=value;el.isConnected=true;el.setAttribute(grid?'data-id':'data-aid',ACTION);el.setAttribute(grid?'data-f':'data-af','Dev_Notes');return el;}
+// Regression for the production "Captured action batch stopped / different Dev_Notes" report.
+{
+ const h=await ready({actionsCount:2,criticalReporter:true}),second=h.reports.All_Contract_Actions[1].ID,native=h.api.updateRecordById;
+ h.api.updateRecordById=async config=>{const reply=await native(config);h.reports.All_Contract_Actions.find(row=>row.ID===config.id).Dev_Notes='<p>'+config.payload.data.Dev_Notes+'</p>';return reply;};
+ assert.equal(await h.c.contractActionBatch([[ACTION,{Dev_Notes:'First note'}],[second,{Dev_Notes:'Second note'}]],false),true);
+ assert.equal(h.calls.filter(call=>call.method==='update').length,2,'a changed readback must not stop the next action');
+ assert.equal(h.c.contractHasReviews(),false);
+ assert.equal(h.c.S.audit.some(row=>row.type==='error'),false,'no critical-error breadcrumb from returned note formatting');
+ assert.equal(h.calls.some(call=>call.method==='custom'&&/Report_Proforma_Widget_Error|reportProformaWidgetError/.test(call.config.api_name)),false,'no critical report dispatched');
+}
 {
  const h=await ready(),el=input(h,'typed first'),waits=[],configs=[],nativeUpdate=h.api.updateRecordById;
  h.api.updateRecordById=config=>{configs.push(structuredClone(config));const gate=deferred();waits.push(gate);return gate.promise.then(()=>nativeUpdate(config));};
@@ -27,7 +37,7 @@ for(const envelope of [{code:3000},{code:3000,data:{ID:ACTION,status:'failure'}}
  const binding=h.c.findAction(ACTION),refresh=h.c.loadData();await drain();assert.equal(h.c.S.coreRefreshing,true);assert.equal(h.c.findAction(ACTION),binding,'atomic refresh retains current bindings until complete');assert.equal(el.disabled,true);
  const before=h.calls.filter(call=>call.method==='update').length;assert.equal(await h.c.afSave(el),false);assert.equal(h.calls.filter(call=>call.method==='update').length,before);gate.resolve();assert.equal(await refresh,true);assert.equal(h.c.S.coreReady,true);
 }
-console.log('PASS whole Contracts inline controller: immutable revision queue, exact native readback before Saved, failed/newer draft retention, uncertain one-call/manual recheck, late navigation and atomic refresh edit/write gate.');
+console.log('PASS whole Contracts inline controller: immutable revision queue, exact record confirmation before Saved, failed/newer draft retention, uncertain one-call/manual recheck, late navigation and atomic refresh edit/write gate.');
 {
  const h=await ready({realDOM:true}),PRICE=(BigInt(NEW)+110n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000',Escalator:''};h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);const el=h.c.document.createElement('input');el.value='125';h.c.document.body.appendChild(el);let writes=0;
  h.api.updateRecordById=async config=>{writes++;Object.assign(row,structuredClone(config.payload.data));return {code:3000,data:{ID:PRICE},details:{code:2899}};};assert.equal(await h.c.prSave(PRICE,el.value,el),false);assert.equal(el.value,'125');assert.equal(el.classList.contains('dirty'),true);assert.equal(el.classList.contains('saved-ok'),false);assert.equal(await h.c.loadData(),false);assert.equal(await h.c.prSave(PRICE,'150',el),false);assert.equal(writes,1);assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),true);assert.equal(writes,1);assert.equal(h.c.findPricing(PRICE).Base_Price,5000);assert.equal(el.classList.contains('dirty'),false);
@@ -42,8 +52,7 @@ for(const entered of ['-$9,007,199,254,740,993.123456','($9,007,199,254,740,993.
 {
  const h=await ready(),PRICE=(BigInt(NEW)+112n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'},el=h.node('lost-price-digit');h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);el.value='9007199254740993.123456';el.isConnected=true;
  const native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const response=await native(config);row.Price_per_Ft='9007199254740993.123455';return response;};
- assert.equal(await h.c.prSave(PRICE,el.value,el),false);assert.equal(h.calls.find(call=>call.method==='update').config.payload.data.Price_per_Ft,el.value);assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),false);assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.equal(el.classList.contains('saved-ok'),false);
- row.Price_per_Ft='$9,007,199,254,740,993.12345600';assert.equal(await h.c.contractRecheckPricing(PRICE+':Price_per_Ft'),true);assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+ assert.equal(await h.c.prSave(PRICE,el.value,el),true);assert.equal(h.calls.find(call=>call.method==="update").config.payload.data.Price_per_Ft,el.value);assert.equal(h.c.contractHasReviews(),false);assert.equal(el.classList.contains("saved-ok"),true);assert.equal(h.calls.filter(call=>call.method==="update").length,1);
 }
 {
  const h=await ready();h.node('prNewSize').value='40';h.node('prNewPpf').value='$ 12,345,678.123456';h.node('prNewEsc').value='';h.c.prAdd(ID);await drain();
@@ -57,4 +66,4 @@ for(const entered of ['-$9,007,199,254,740,993.123456','($9,007,199,254,740,993.
 for(const malformed of ['-$-12.34','(-$12.34)','$12,34.56','($12.34','1e3']){
  const h=await ready(),PRICE=(BigInt(NEW)+114n).toString(),row={ID:PRICE,Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'};h.reports.Contract_Pricing_Report=[row];h.c.S.pricing=structuredClone([row]);assert.equal(await h.c.prSave(PRICE,malformed,h.node('invalid-price')),false);assert.equal(h.calls.filter(call=>call.method==='update').length,0,'Malformed money cannot be rewritten as zero');
 }
-console.log('PASS actual pricing edit/add payload preserves exact entered money, equivalent native credit formats, high-precision mismatch quarantine/recheck, numeric computed totals, small decimal calculations and malformed-input write exclusion.');
+console.log('PASS actual pricing edit/add payload preserves exact entered money, equivalent native credit formats, acknowledged high-precision differences, numeric computed totals, small decimal calculations and malformed-input write exclusion.');

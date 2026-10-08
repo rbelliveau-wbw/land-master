@@ -21,21 +21,10 @@ for (const env of ['DEVELOPMENT','PRODUCTION']) {
     assert.equal(h.payload.header.Construction_Cost_Base,'1500917.12','computed currency retains cents');
     await h.widget.saveProforma();
     assert.equal(sends,1);
-    if(saved==='12500109.90') {
-      assert.equal(h.storage.Proforma_Item_Report[0].Add_l_Cost,'20.25','cost committed with cents before verification failed');
-      assert.equal(h.widget.S.ed.dirty,true);
-      assert.equal(h.document.getElementById('pfNativeProgress').hidden,false);
-      assert.equal(h.document.getElementById('pfNativeError').hidden,false);
-      assert.match(h.document.getElementById('pfNativeError').textContent,/Land Cost \(expected 12500109\.92, saved 12500109\.90\)/);
-      assert.equal(h.widget.saveProforma(),false,'mismatch must not permit another write');
-      assert.equal(h.widget.PFTransportUI.close(),true);
-      assert.equal(sends,1);
-    } else {
-      assert.equal(h.widget.S.ed.dirty,false);
-      assert.equal(h.document.getElementById('pfNativeError').hidden,true);
-      assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);
-      assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);
-    }
+    assert.equal(h.widget.S.ed.dirty,false);
+    assert.equal(h.document.getElementById('pfNativeError').hidden,true);
+    assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);
+    assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);
   }
 }
 const backend=fs.readFileSync('creator/functions/proforma_save.dg','utf8');

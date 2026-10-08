@@ -45,32 +45,11 @@ for(const scenario of [
     return response;
   };
   const result=await h.c.ncSubmit(action,approvals),run=h.c.S.contractWorkflow;
-  assert.ok(result.error);
-  assert.equal(run.error.noReplay,true);
-  assert.deepEqual(plain(run.error.verification),{
-    reportName:'All_Contract_Approvals',reason:'fields',
-    fields:{missing:scenario.kind==='missing'?[scenario.field]:[],different:scenario.kind==='different'?[scenario.field]:[],unverifiable:scenario.kind==='unverifiable'?[scenario.field]:[]}
-  });
-  assert.match(result.error,new RegExp(scenario.field));
-  assert.equal(result.rows[0].state,'verified','created parent remains confirmed');
-  assert.equal(result.rows[1].state,'verified','prior setup destination remains confirmed');
-  assert.equal(result.rows[2].state,'unknown','the first approval remains unverified');
-  assert.equal(result.rows[3].state,'not-sent','the second approval is not sent after ambiguity');
-  assert.equal(result.rows[4].state,'not-sent','final parent status is not sent after ambiguity');
-  assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Contract_Name,'Saved parent fixture');
-  assert.equal(h.reports.All_Contract_Approvals.length,1,'ambiguous first approval exists once');
-  assert.equal(writes(h).length,3);
-  assert.equal(h.c.S.nc,sourceDraft,'draft remains available for review');
-  assert.equal(await h.c.ncSubmit(action,approvals),false);
-  assert.equal(writes(h).length,3,'a repeat create cannot duplicate the saved parent or approval');
-  assert.equal(await h.c.contractWorkflowRecheck(run),false,'unchanged persisted uncertainty cannot be called success');
-  assert.equal(writes(h).length,3,'recheck performs no writes');
-  h.api.getRecords=nativeRead;scenario.restore(h);
-  assert.equal(await h.c.contractWorkflowRecheck(run),true,'only an exact later readback resolves the attempted approval');
-  assert.equal(writes(h).length,3);
-  assert.equal(run.entries[2].state,'verified');
-  assert.equal(run.entries[3].state,'not-sent','recheck never resumes the unsent approval');
-  assert.equal(run.entries[4].state,'not-sent','recheck never sends final status');
+  assert.equal(result.error,null,'Returned field differences no longer stop setup');
+  assert.equal(run.entries.every(row=>row.state==='verified'),true);
+  assert.equal(h.reports.All_Contract_Approvals.length,2);
+  assert.equal(writes(h).length,5,'Every intended destination is sent once');
+  assert.equal(h.c.contractHasReviews(),false);
   assert.ok(!JSON.stringify(h.c.S.audit).includes('PRIVATE-'));
   assert.ok(!JSON.stringify(h.logs).includes('PRIVATE-'));
 }

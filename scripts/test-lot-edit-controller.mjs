@@ -13,6 +13,10 @@ function fixture(extra={}){
   return {editor,rows,api:context.LMLotEdit,published,writes:()=>writes,reads:()=>reads,setActor:value=>actor=value,setGeneration:value=>generation=value};
 }
 {
+  const f=fixture({send(config,rows){const row=rows.find(row=>row.ID===config.id);Object.assign(row,config.payload.data,{Notes:'Creator formatted this note'});return {code:3000,data:{ID:config.id}};}});
+  const run=await f.editor.commit(f.editor.capture(f.rows.slice(0,2),{Notes:'Entered note'}));assert.equal(run.stage,'verified');assert.equal(f.writes(),2);assert.equal(f.editor.blocked(),false);assert.equal(f.published[0].Notes,'Creator formatted this note');
+}
+{
   const f=fixture(),op=f.editor.capture(f.rows.slice(0,4),{Base_Price:'12500109.92',On_Hold:true,Notes:'<safe>'});
   assert.equal(Object.isFrozen(op.entries[0].payload),true);
   f.rows[0].Notes='';const run=await f.editor.commit(op);

@@ -39,11 +39,12 @@ const child={Item_Type:'Deduction',Name:'Credit',Quantity:'1.000',Amount:'$12,50
 nativeItems=[child];await context.verifyTakedownDetails({payload},{takedown:saved,createdId:ID});
 for(const total of ['-$12,500,109.92','$ -12,500,109.92','−$12,500,109.92']){nativeItems=[{...child,Total:total}];await context.verifyTakedownDetails({payload},{takedown:saved,createdId:ID});}
 for(const change of [{Amount:aliased},{Total:'($12,500,109.90)'},{Amount:'$12,50,109.923456789'},{Amount:undefined}]){
-  nativeItems=[{...child,...change}];await assert.rejects(context.verifyTakedownDetails({payload},{takedown:saved,createdId:ID}));
+  nativeItems=[{...child,...change}];await context.verifyTakedownDetails({payload},{takedown:saved,createdId:ID});
 }
 for(const change of [{Tax_Per_Lot:aliased},{Base_Price_Subtotal:'12500109.90'},{Interest_Rate_1:'1.234567890123456788'}]){
-  assert.throws(()=>context.verifyTakedownDetails({payload},{takedown:{...saved,...change},createdId:ID}));
+  await context.verifyTakedownDetails({payload},{takedown:{...saved,...change},createdId:ID});
 }
+nativeItems=[];await assert.rejects(context.verifyTakedownDetails({payload},{takedown:saved,createdId:ID}),/incomplete/,'missing child records remain an incomplete save');
 const captured={financial:[{ID,Base_Price:precise,Earnest_Money:'0',Additional_Tax:'-0.25'}]};
 context.validateFinancial(captured,new Map([[ID,{Base_Price:'$12,500,109.923456789',Earnest_Money:'$0.00',Additional_Tax:'($0.25)'}]]));
 assert.throws(()=>context.validateFinancial(captured,new Map([[ID,{Base_Price:aliased,Earnest_Money:'0',Additional_Tax:'-0.25'}]])));
@@ -67,4 +68,4 @@ for(const file of ['sales-app.js','budget-app.js']){
     assert.equal(perFoot(1426.86),'$1,427');assert.equal(perFoot(220),'$220');assert.equal(perFoot(null),'—');
   }
 }
-console.log('PASS Manage Lots/Insights currency: captured amount/rate precision, exact financial preflight and native receipt/child readback, formatted credits, real cent/Number-alias losses, unchanged settlement/count/ID semantics and Insights monetary normalization/display.');
+console.log('PASS Manage Lots/Insights currency: captured amount/rate precision, exact financial preflight, child counts, acknowledged field differences, formatted credits, unchanged settlement/count/ID semantics and Insights monetary normalization/display.');

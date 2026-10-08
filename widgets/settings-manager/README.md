@@ -134,3 +134,10 @@ for currency and percentage verification; entered exponent strings remain invali
 ## Routine success feedback (1.3.11)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+## Save policy — October 8, 2026
+
+Acknowledged successful Settings/template/curve saves and Development-only
+configuration receipts do not require field equality with the submitted payload.
+Exact record identity, native API failures, duplicate-send guards and explicit
+unknown-reply recovery remain. See [system policy and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).

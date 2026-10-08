@@ -227,7 +227,7 @@ for(const field of ['Base_Price','Earnest_Money','Additional_Tax']){
 for(const field of ['Tax_Per_Lot','Purchase_Date','Subtract_Day_From']){
   const h=harness();await drain();await h.choose();const add=h.context.ZOHO.CREATOR.DATA.addRecords;
   h.context.ZOHO.CREATOR.DATA.addRecords=async config=>{const response=await add(config),saved=h.rows.All_Builder_Takedowns.find(row=>row.ID===CREATED);saved[field]=field==='Purchase_Date'?'10/03/2026':field==='Subtract_Day_From'?['Tax']:100;return response;};
-  await h.widget.confirm();await h.flushProgress();assert.ok(h.widget.controller.state.review);assert.equal(writes(h).length,1);await h.widget.confirm();assert.equal(writes(h).length,1,'a financial mismatch cannot replay a saved takedown');
+  await h.widget.confirm();await h.flushProgress();assert.equal(h.widget.controller.state.review,null);assert.equal(writes(h).length,1,'Returned receipt fields no longer fail a saved takedown');
 }
 
 // A real report-layout response omits form dates/totals unless explicitly projected.

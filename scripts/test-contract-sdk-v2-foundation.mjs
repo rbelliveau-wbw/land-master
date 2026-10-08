@@ -94,14 +94,12 @@ for(const saved of ['-$12,500,109.920000','$-12,500,109.920000','($ 12,500,109.9
 for(const saved of ['-$12,500,109.90','$12,500,109.92','-$-12,500,109.92','(-$12,500,109.92)','$12,50,109.92','($12,500,109.92']){
   const h=await ready(),native=h.api.updateRecordById,payload={Earnest_Money:'-12500109.92'};
   h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Earnest_Money=saved;return response;};
-  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(retained.id,ID);assert.equal(retained.payload.Earnest_Money,payload.Earnest_Money);assert.equal(await h.c.recheckContractMutation(retained.key),false);await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));assert.equal(h.calls.filter(call=>call.method==='update').length,1);
-  h.reports.All_Contracts1[0].Earnest_Money='($12,500,109.920000)';assert.equal(await h.c.recheckContractMutation(retained.key),true,'Read-only exact credit recovery');assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.equal(h.c.contractHasReviews(),false);
+  const result=await h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts);assert.equal(result.verifiedRow.Earnest_Money,saved);assert.equal(h.c.contractHasReviews(),false);assert.equal(h.calls.filter(call=>call.method==="update").length,1,"A returned field difference cannot quarantine an acknowledged save");
 }
 {
   const h=await ready(),native=h.api.updateRecordById,payload={Total_Contract_Price:'9007199254740993.123456'};
   h.api.updateRecordById=async config=>{const response=await native(config);h.reports.All_Contracts1[0].Total_Contract_Price='9007199254740993.123455';return response;};
-  await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts));const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(await h.c.recheckContractMutation(retained.key),false,'Neighboring high-precision decimals cannot compare through Number');assert.equal(h.calls.filter(call=>call.method==='update').length,1);
-  h.reports.All_Contracts1[0].Total_Contract_Price='$9,007,199,254,740,993.12345600';assert.equal(await h.c.recheckContractMutation(retained.key),true);assert.equal(h.calls.filter(call=>call.method==='update').length,1);
+  await h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts);assert.equal(h.c.contractHasReviews(),false);assert.equal(h.calls.filter(call=>call.method==="update").length,1);
   assert.equal(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),'000073');assert.notEqual(h.c.contractFieldComparable('000073','Contract_Code',h.c.CFG.reports.contracts,'000073'),h.c.contractFieldComparable('73','Contract_Code',h.c.CFG.reports.contracts,'000073'),'Text identifier zeroes stay significant');
 }
 {

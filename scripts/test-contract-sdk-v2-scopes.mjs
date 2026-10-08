@@ -88,7 +88,7 @@ for(const change of ['actor','generation','later-request']){
  const before=writes.length;assert.equal(await h.c.ncFixSubdivision(ID,[SUB]),true);assert.equal(h.calls.filter(call=>call.method==='update').length,before,'already exact verification never writes');
 }
 {
- const h=await ready();h.reports.All_Contracts1[0].Subdivision1=[{ID:SUB2}];let calls=0;h.api.updateRecordById=async config=>{calls++;return {code:3000,data:{ID:config.id}};};await assert.rejects(h.c.ncFixSubdivision(ID,[SUB]));assert.equal(calls,1);await assert.rejects(h.c.ncFixSubdivision(ID,[SUB]));assert.equal(calls,1,'failed exact readback never tries CSV/single/second envelopes');
+ const h=await ready();h.reports.All_Contracts1[0].Subdivision1=[{ID:SUB2}];let calls=0;h.api.updateRecordById=async config=>{calls++;return {code:3000,data:{ID:config.id}};};assert.equal(await h.c.ncFixSubdivision(ID,[SUB]),true);assert.equal(calls,1,'a successful corrective save does not require another field comparison or send');
 }
 for(const value of [undefined,[{ID:SUB},{ID:SUB}],[{ID:42}]]){
  const h=await ready();h.reports.All_Contracts1[0].Subdivision1=value;await assert.rejects(h.c.ncFixSubdivision(ID,[SUB]));assert.equal(h.calls.filter(call=>call.method==='update').length,0,'unavailable native selection cannot be treated as a landed set');
