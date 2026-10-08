@@ -38,7 +38,7 @@ has(/'<td class="tot mono">'/, "the total cell must carry the row's own styling,
 assert.ok(!/class="tot[^"]*neg/.test(flow), "the total cell must never take the red negative class");
 
 /* Every row builder must emit exactly one total cell, or the columns shear. */
-has(/function row\(label, fn, cls, mode\)\{[\s\S]{0,200}?totCell\(fn,fmt\$,mode\)\+cells\(fn\)/, "row() must emit a total cell before its months");
+has(/function row\(label, fn, cls, mode\)\{[\s\S]{0,200}?totCell\(fn,fmtWhole\$,mode\)\+cells\(fn\)/, "row() must emit a total cell before its months");
 has(/data-xbucket[\s\S]{0,300}?totCell\(fn\)\+cells\(fn\)/, "an expandable parent row must have a total");
 has(/data-xof[\s\S]{0,300}?totCell\(itemOf\)\+cells\(itemOf\)/, "an expanded child row must have a total");
 has(/totCell\(lots,fmtN\)\+cellsN\(lots\)/, "the lot-closing phase rows must total as a count, not currency");
@@ -73,7 +73,7 @@ const context = vm.createContext({
   ymAdd: (date, n) => { const month = date.y * 12 + date.m - 1 + n; return {y: Math.floor(month / 12), m: month % 12 + 1}; },
   monthsBetween: (a, b) => (b.y - a.y) * 12 + b.m - a.m
 });
-vm.runInContext(["fmt$", "phaseSalesPersisted", "phaseSalesActive", "phaseSalesAdopted",
+vm.runInContext(['fmt$', 'fmtWhole$', "phaseSalesPersisted", "phaseSalesActive", "phaseSalesAdopted",
   "dashboardSalesBreakdown"].map(extractFunction).join("\n") + "\n" + flow, context);
 const agg = [1, 2].map(month => ({m: month, date: {y: 2027, m: month}, fls: month === 1 ? 109 : 30,
   landSale: 0, pid: 0, reimb: 0, reimbFees: 0, totalIncome: month === 1 ? 109 : 30,
@@ -99,12 +99,12 @@ for (const key of ["base", "increase", "escalator"])
 assert.ok(body.indexOf("Finished Lot Sales") < body.indexOf("Base Price") &&
   body.indexOf("Base Price") < body.indexOf("Phase Increase") &&
   body.indexOf("Phase Increase") < body.indexOf("Escalator"), "breakdown should sit below its parent");
-assert.match(body, /Base Price<\/td><td class="tot mono">\$140\.00<\/td>/,
+assert.match(body, /Base Price<\/td><td class="tot mono">\$140<\/td>/,
   "base price should sum both rows in the same month and the whole schedule");
-assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\.00\)<\/td>/,
+assert.match(body, /Phase Increase<\/td><td class="tot mono">\(\$6\)<\/td>/,
   "phase increases and decreases should retain their net dollar value and sign");
-assert.match(body, /Escalator<\/td><td class="tot mono">\$5\.00<\/td>/);
-assert.match(body, /Total Income<\/td><td class="tot mono">\$139\.00<\/td>/,
+assert.match(body, /Escalator<\/td><td class="tot mono">\$5<\/td>/);
+assert.match(body, /Total Income<\/td><td class="tot mono">\$139<\/td>/,
   "breakdown must not be added again to total income");
 context.S.dash.expanded.finishedLotSales = true;
 context.renderFlowTable();
@@ -129,14 +129,25 @@ context.renderFlowTable();
 assert.ok(elements.get("flowBody").innerHTML.includes("Phase Increase"),
   "saved month components are displayed even without a version marker or with deprecated pace fields");
 
-/* The dashboard assumption must show the persisted frontage price to cents;
-   the neighboring financial totals also retain cents. */
+// Round each displayed aggregate, never the source rows before summing.
+context.S.dash.calc.agg[0].totalIncome = 109.49;
+context.S.dash.calc.agg[1].totalIncome = 30.49;
+const flowBefore = JSON.stringify(context.S.dash.calc);
+context.renderFlowTable();
+assert.match(elements.get("flowBody").innerHTML,
+  /Total Income<\/td><td class="tot mono">\$140<\/td>/,
+  "the raw 139.98 total rounds after aggregation");
+assert.equal(JSON.stringify(context.S.dash.calc), flowBefore,
+  "rendering whole dollars does not rewrite calculated month rows");
+
+/* The dashboard assumption rounds the saved frontage price for display only;
+   the model retains its fractional value. */
 elements.set("kpis", {innerHTML: ""});
 elements.set("assump", {innerHTML: ""});
 elements.set("vDash", {classList: {toggle() {}}});
 context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Lot_Size_Ft: "56"};
-context.S.dash.calc = {totals: {Gross_Sales: 8088630, Total_Income: 8088630,
-  Total_Expenses: 1430000, Net_Profit: 6658630}, schedule: {}, cashPosition: [],
+context.S.dash.calc = {totals: {Gross_Sales: 8088630.52, Total_Income: 8088630.52,
+  Total_Expenses: 1430000.01, Net_Profit: 6658630.51}, schedule: {}, cashPosition: [{date: {}, value: -957671.68}],
   phases: [], warnings: []};
 context.syncPersistentRecordHeader = () => {};
 context.renderDashboardOwners = () => {};
@@ -146,16 +157,26 @@ context.phaseSalesDisplaySummary = () => null;
 context.ymLabel = () => "Jan 2030";
 context.landPurchaseLabel = () => "—";
 vm.runInContext(extractFunction("renderDashboard"), context);
+const dashboardBefore = JSON.stringify(context.S.dash);
 context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,
-  /<label>Sale Price \/ FF<\/label><b>\$1,444\.45<\/b>/,
-  "the saved Sale Price / FF must show both decimal places on the dashboard");
-assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,630\.00<\/div>/,
-  "Net Profit retains its cents presentation");
+  /<label>Sale Price \/ FF<\/label><b>\$1,444<\/b>/,
+  "the saved Sale Price / FF rounds to whole dollars on the dashboard");
+assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,631<\/div>/,
+  "Net Profit displays whole dollars");
+assert.match(elements.get("kpis").innerHTML, /\(\$957,672\)/,
+  "negative cash snapshots retain their accounting sign and round for display");
+assert.doesNotMatch(elements.get("kpis").innerHTML, /\$[\d,]+\.\d/);
+assert.equal(JSON.stringify(context.S.dash), dashboardBefore,
+  "display rounding leaves both persisted inputs and calculated amounts intact");
+context.S.dash.model.Sale_Price_FF = "1444.50";
+context.renderDashboard();
+assert.match(elements.get("assump").innerHTML,
+  /<label>Sale Price \/ FF<\/label><b>\$1,445<\/b>/);
 context.S.dash.model.Sale_Price_FF = "1500";
 context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,
-  /<label>Sale Price \/ FF<\/label><b>\$1,500\.00<\/b>/,
-  "whole-number Sale Price / FF values still show two decimal places");
+  /<label>Sale Price \/ FF<\/label><b>\$1,500<\/b>/,
+  "whole-number Sale Price / FF values omit decimal places");
 
 console.log("Pro Forma dashboard Total column placement, scope, and sign checks passed.");

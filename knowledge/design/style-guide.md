@@ -40,6 +40,13 @@ not add empty space to every card.
 
 Numeric entry controls preserve entered decimal digits on blur and save, including dollar amounts. Counts and month/day numbers reject fractions with a clear field error; never silently round them. Pro Forma Street LF remains whole for the 1.80.51 release.
 
+Pro Forma and Budget currency displays omit trailing `.00`, including zero amounts,
+per-unit prices, modifications and transfer previews. The Pro Forma dashboard
+(cards, assumptions, scenarios, monthly tables and timeline details) and all Data
+Insights monetary values display the nearest whole dollar. Keep decimal precision
+in editable controls and round only the final displayed aggregate; never change
+stored values, calculations or numeric exports to match the display.
+
 In Pro Forma Additional Costs, show the enabled Cost per Unit input with a persistent blue border, pale-blue surface and soft blue glow. Strengthen the glow on keyboard focus. Disabled rates stay muted, and the calculated total keeps its read-only treatment.
 
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.

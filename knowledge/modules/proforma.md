@@ -1,4 +1,12 @@
 
+## Currency presentation (1.80.93)
+
+Dollar displays omit trailing `.00`. Dashboard cards, assumptions, cash flow,
+scenario comparisons and timeline details show nearest-dollar amounts; editable
+controls, source values, calculations and save/readback precision remain intact.
+No Creator deployment is required. Regression and rollback to 1.80.92:
+[currency display release](../../docs/currency-display-2026-10-08.md).
+
 ## Full User Access owner names
 
 Owner pickers and displays prefer User_Access.Full_Name, preserving original

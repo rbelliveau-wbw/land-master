@@ -293,14 +293,12 @@ const phaseRenderContext=vm.createContext({
   phaseSalesField:(label)=>`<span data-test-field="${label}"></span>`,
   num:Number,
   fmtN:(value,digits)=>Number(value).toFixed(digits),
-  fmt$:(value,opts={})=>value==null?'—':'$'+Number(value).toLocaleString('en-US',{
-    minimumFractionDigits:opts.cents?2:0,maximumFractionDigits:opts.cents?2:0}),
   fmtPct:(value,digits)=>value==null?'—':value.toFixed(digits)+'%',
   esc:String,
   intN:Number,
   dateToCreatorValue:String,
 });
-vm.runInContext(['ymAdd','ymShort','phaseSalesSharedLocked','phaseLotPriceValues',
+vm.runInContext(['fmt$','ymAdd','ymShort','phaseSalesSharedLocked','phaseLotPriceValues',
   'phaseSaleUnitPriceParts','finishedPricePerFF','phaseMonthText','refreshPhaseLotPricePill','panePhaseSales']
   .map(widgetFunction).join('\n'),phaseRenderContext);
 const phaseHtml=phaseRenderContext.panePhaseSales();
@@ -311,8 +309,8 @@ assert.match(phaseHtml,/id="psLotPricePill"[^>]*>[\s\S]*?With phase increase <b 
   'show the phase-adjusted price and the original base price with clear labels');
 assert.match(phaseHtml,/data-test-field="Phase increase"/,'phase increase remains visible with escalator off');
 assert.match(phaseHtml,/Final lot sale · price per lot/);
-assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b>/);
-assert.match(phaseHtml,/Finished price<\/span><b>\$50,000\.00<\/b><\/div><div class="ps-final-price-row"><span>Finished Price \/ FF<\/span><b>\$1,000<\/b>/);
+assert.match(phaseHtml,/Finished price<\/span><b>\$50,000<\/b>/);
+assert.match(phaseHtml,/Finished price<\/span><b>\$50,000<\/b><\/div><div class="ps-final-price-row"><span>Finished Price \/ FF<\/span><b>\$1,000<\/b>/);
 assert.match(phaseHtml,/Final <b>0\.00%<\/b>/);
 assert.match(phaseHtml,/Next phase increase to match final <b>0\.00%<\/b>/);
 assert.doesNotMatch(phaseHtml,/data-test-field="Annual escalator"|data-test-field="Esc start date"/,
@@ -432,11 +430,11 @@ phaseRenderContext.phaseSalesPlan=()=>pricedPlan;
 Object.assign(phaseRenderContext.S.ed.model.phaseSales[0],{
   Escalator_Enabled:true,Annual_Escalator_Pct:3,Esc_Start_Date:'2030-02-01',Additional_Markup_Pct:10});
 const pricedHtml=phaseRenderContext.panePhaseSales();
-assert.match(pricedHtml,/Base<\/span><b>\$50,000\.00<\/b>/);
-assert.match(pricedHtml,/Phase increase<\/span><b>\$5,000\.00<\/b>/);
-assert.match(pricedHtml,/Escalator<\/span><b>\$1,125\.00<\/b>/);
-assert.match(pricedHtml,/Finished price<\/span><b>\$56,125\.00<\/b>/);
-assert.match(pricedHtml,/First sale \$55,000\.00 · Final <b>\+2\.05%<\/b>/,
+assert.match(pricedHtml,/Base<\/span><b>\$50,000<\/b>/);
+assert.match(pricedHtml,/Phase increase<\/span><b>\$5,000<\/b>/);
+assert.match(pricedHtml,/Escalator<\/span><b>\$1,125<\/b>/);
+assert.match(pricedHtml,/Finished price<\/span><b>\$56,125<\/b>/);
+assert.match(pricedHtml,/First sale \$55,000 · Final <b>\+2\.05%<\/b>/,
   'compare finished price per lot, so smaller final takes do not distort the increase');
 assert.match(pricedHtml,/Next phase increase to match final <b>12\.25%<\/b>/,
   'the next phase setting must compare final finished price to the shared project base');
@@ -459,10 +457,9 @@ const sharedContext=vm.createContext({
   phaseSalesBalance:()=>({allocated:10,expected:10,delta:0}),
   phaseSalesPlan:()=>({phases:[],events:[]}),
   num:Number,intN:Number,fmtN:(value,digits)=>Number(value).toFixed(digits),
-  fmt$:(value)=>value==null?'—':'$'+Math.round(value).toLocaleString('en-US'),
   esc:String,dateToCreatorValue:String,
 });
-vm.runInContext(['phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
+vm.runInContext(['fmt$','phaseSalesCopyShared','phaseSalesSharedLocked','phaseSalesSetShared',
   'phaseMonthTrigger','phaseSalesField','phaseLotPriceValues','phaseSaleUnitPriceParts','finishedPricePerFF','panePhaseSales']
   .map(widgetFunction).join('\n'),sharedContext);
 assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),false);

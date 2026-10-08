@@ -26,7 +26,7 @@ const context=vm.createContext({
 });
 vm.runInContext(['num','intN','hasVal','round2','ymAdd','ymKey','ymLabel','ymShort','monthsBetween',
   'parseMonthList','phaseSalesPersisted','phaseSalesActive','computeProforma',
-  'esc','fmt$','fmtN','flowTimelineHtml'].map(widgetFunction).join('\n'),context);
+  'esc','fmt$', 'fmtWhole$','fmtN','flowTimelineHtml'].map(widgetFunction).join('\n'),context);
 
 const base={Lots:48,Phases:2,Total_Acres:48,
   Engineering_Delay_Months:0,Engineering_Length_Months:12,
@@ -186,13 +186,13 @@ const firstSpend=render(spending,withoutMarker,1),secondSpend=render(spending,wi
 assert.doesNotMatch(firstSpend,/pt-outflow-head|pt-cost-row|pt-spend/,
   'the timeline has no added outflow section or bars');
 const engCards=segmentTags(firstSpend,'eng');
-assert.match(engCards[0],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$10\.00"/,
+assert.match(engCards[0],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$10"/,
   'Phase 1 engineering shows only its own additional cost');
-assert.match(engCards[1],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$20\.00"/,
+assert.match(engCards[1],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$20"/,
   'Phase 2 engineering excludes Phase 1 cost during overlap');
-assert.match(segmentTags(firstSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$40\.00"/,
+assert.match(segmentTags(firstSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$40"/,
   'Phase 1 construction shows its additional cost');
-assert.match(segmentTags(secondSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$50\.00"/,
+assert.match(segmentTags(secondSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$50"/,
   'Phase 2 construction shows its additional cost after paging');
 assert.match(segmentTags(secondSpend,'sales')[0],/data-pt-addl-label=""/,
   'sales has no unrelated additional cost');

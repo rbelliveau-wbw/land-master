@@ -1,5 +1,13 @@
 # Land Master Insights
 
+## Whole-dollar presentation (1.5.47)
+
+All monetary displays round to the nearest dollar, including per-front-foot
+measures, matrix totals, subdivision cards and lot/category details. Raw report
+values, aggregates, numeric exports and permissions remain unchanged. No Creator
+deployment is required. Regression and rollback to 1.5.46:
+[currency display release](../../docs/currency-display-2026-10-08.md).
+
 Read-only standalone module for monthly lot sales grouped by Project, Territory, or Builder, then subdivision, with project and builder filtering, financial metrics, lot counts, underlying lot drilldown, and CSV export.
 
 Source: `widgets/lot-sales-explorer/src/app/`. Detailed contract, installation, testing, and rollback: `widgets/lot-sales-explorer/README.md`.

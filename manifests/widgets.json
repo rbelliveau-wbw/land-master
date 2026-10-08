@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-08T02:12:13.917Z",
+  "generated_at": "2026-10-08T13:53:06.950Z",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.92",
+      "version": "1.80.93",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "2fab795ce0a60913654fa12fe93c78f503c034fb24452a92e9a75d65b0bc41ac",
+      "source_sha256": "40f4fd1131a77c7f0d748228b6d397508a7f567793b7c0c2f94bc802e044c918",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.28.32",
+      "version": "122.28.33",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "431afc564b5a1a139723141eadab3c0fd14f92861b7f92d231b14942b64a95c0",
+      "source_sha256": "0574c110c34e6ad11b2501fea29aae2973340b172c8466d493539a3994925e42",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -247,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.5.46",
+      "version": "1.5.47",
       "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "ba72c023d8d65f08c8838e20b1dcc093084c4d34814c262266ca47ced6312109",
+      "source_sha256": "62eacfdfeffe645a68f3388ff59090e8cd612c82d132a20d3e656676910e69a5",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

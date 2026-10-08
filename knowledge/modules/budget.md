@@ -1,4 +1,12 @@
 
+## Currency presentation (122.28.33)
+
+Dollar displays omit trailing `.00`, including project/phase totals, metric cards,
+category/item/per-unit amounts, zero labels and request/modification balances.
+Nonzero cents and editable precision remain intact; data and approvals are
+unchanged. No Creator deployment is required. Regression and rollback to
+122.28.32: [currency display release](../../docs/currency-display-2026-10-08.md).
+
 ## Full User Access owner names
 
 Owner pickers and displays prefer User_Access.Full_Name, preserving original

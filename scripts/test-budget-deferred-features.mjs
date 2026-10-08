@@ -50,8 +50,8 @@ function harness(){
   assert.equal(500+c.itemModAgg('2').approved,525,'pending100 never enters Revised Final');
   install(c,['requestAmountNumber','requestFinancialValue','requestBalanceSnapshot','fmtRequestMoney','fmtRequestMod','renderRequestBalance']);c.S.modModal={requestFlow:true,requestType:'Purchase Order',requestAmount:'20',poState:'loaded',poItemId:'2',poIssued:0};c.$('requestBudgetGuard').classList={toggle(){}};
   c.renderRequestBalance({ID:'2',Budget_Ttl:'500',PROJ_Actual:'100'});
-  assert.match(c.$('requestBalance').innerHTML,/Revised Final<\/span><span class='rv'>\$525\.00/,'the actual request balance renders 525');
-  assert.match(c.$('requestBalance').innerHTML,/Remaining After Current Request<\/span><span class='rv '>\$505\.00/);
+  assert.match(c.$('requestBalance').innerHTML,/Revised Final<\/span><span class='rv'>\$525/,'the actual request balance renders 525');
+  assert.match(c.$('requestBalance').innerHTML,/Remaining After Current Request<\/span><span class='rv '>\$505/);
   c.S.modModal=null;
   c.invalidateBudgetFeature('modifications');
   c.ZOHO.CREATOR.DATA.getRecords=async()=>({code:2898,message:'No permission'});
