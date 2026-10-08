@@ -67,6 +67,12 @@ assert.deepEqual(JSON.parse(JSON.stringify(inventoryResult.inventory.builders)).
 assert.equal(inventoryResult.inventory.territory,'Fort Hood');
 let matrix=M.matrix(response,['20','20','21'],['2026','2027','2026']);assert.equal(matrix.length,2);assert.equal(matrix[0].years.length,2);assert.equal(matrix[0].years[0].months[11].start,'2027-01-01');assert.equal(matrix[1].years[0].parent,null);
 assert.equal(M.verifyEnsure(response,'20','2026'),true);assert.equal(M.verifyEnsure(response,'21','2026'),false);
+assert.equal(M.hasYear(response,'20','2026'),true);assert.equal(M.hasYear(response,'21','2026'),false);
+const incompleteConflict=clone(response);incompleteConflict.months=[];assert.equal(M.verifyEnsure(incompleteConflict,'20','2026'),false);assert.equal(M.hasYear(incompleteConflict,'20','2026'),true,'an existing parent blocks creation even without all children');
+const duplicateConflict=clone(response);duplicateConflict.years.push({...duplicateConflict.years[0],id:'duplicate'});assert.equal(M.hasYear(duplicateConflict,'20','2026'),true,'duplicate parents also block creation');
+assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409961','2024'),true,'exact large string builder IDs and years outside visible filters remain checked');
+assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409962','2024'),false);
+assert.equal(M.hasYear(response,'','2026'),false);assert.equal(M.hasYear(response,'20',''),false);
 const repeatedIds=clone(response);repeatedIds.months[1].id=repeatedIds.months[0].id;assert.equal(M.verifyEnsure(repeatedIds,'20','2026'),false,'creation verification requires 12 distinct persisted child IDs');
 
 const save={action:'save',subdivisionId:'10',forecastId:'108',value:6,expected:2};

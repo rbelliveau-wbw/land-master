@@ -99,7 +99,7 @@ Completed live results, retained Development test IDs, the selective audience, P
 
 ## Rollback
 
-The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.1; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.0. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.2; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.1. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
 
 ## Version 1.3.0 presentation and inventory
 
@@ -136,3 +136,19 @@ adds type while retaining all legacy identities. Both routes call the existing
 one-parent/twelve-child ensure action with unchanged verification and recovery.
 The selected title is the compact light-statistics structure with navy coloring.
 Rollback to frontend 1.3.0; the additive catalog type remains backward-compatible.
+
+## Version 1.5.2 creation chooser
+
+Top Add Forecast starts with no builder or WFY selected and Create disabled. A
+read-only, full-subdivision snapshot refreshes existing Builder forecast parents
+on each opening, independent of the matrix filters. Any matching parent blocks
+Create (including incomplete or duplicate parents) and shows a subtle red message.
+Pending or failed conflict checks also keep Create disabled; closing ignores late
+responses. The native ensure preflight remains authoritative for concurrent writes
+and non-Builder status conflicts. No backend change or new API is needed.
+
+Put subdivision name/code in the navy modal header. Remove the route card and
+calendar-range sentence; retain searchable Type1 Builder and WFY 2019–2046 pickers.
+Add Forecast sits immediately after the fiscal-year filter; window status is 14px
+(40% larger). Inline creation and read-only unknown-result reconciliation are
+unchanged. Rollback frontend mapping to 1.5.1.

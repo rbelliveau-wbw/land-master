@@ -36,3 +36,9 @@ Final local validation: `npm run validate` passed (exit 0), including forecast
 model/API/summary/compact-summary and repository JavaScript checks. Supported
 browser fixture verified no bottom legend and all three forecast actions at
 navy rgb(11,35,69) / white rgb(255,255,255); no writes were made.
+
+Build: `npm run build:pages` passed (31 paths). Main commit f33a2d5.
+[CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/37809785727)
+and [Pages](https://github.com/rbelliveau-wbw/land-master/actions/runs/37809785664)
+completed successfully. Live read-only combined verification is recorded with the
+succeeding 1.5.2 chooser release.

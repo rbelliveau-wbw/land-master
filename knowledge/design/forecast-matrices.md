@@ -93,3 +93,11 @@ the pinned Builder heading.
   inline cell feedback and keyboard movement without the extra height.
 - Add Forecast and Create Forecast actions use the other modules' shared navy
   (#0b2345) with white text, including the small selection-modal commit action.
+
+Top-level Add Forecast always opens with blank Builder/WFY choices and a disabled
+commit. Refresh the full subdivision's existing Builder parents read-only; block
+any matching builder/year, including incomplete parents, with a subtle red warning.
+Keep commit disabled while the check is pending or unavailable, and ignore late
+results after closing. Place subdivision name/code in the compact navy dialog
+header; remove the separate route card and fiscal calendar-range caption. Keep
+Add Forecast directly after the year filter and set window status to 14px.
