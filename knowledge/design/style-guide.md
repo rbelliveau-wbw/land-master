@@ -9,6 +9,14 @@ width for those controls and their count badges; allow the action group to wrap
 within its own cell rather than overlap the independently wrapping phase name.
 Keep the attachment/comment pair separated by the shared 7px gap.
 
+Budget's single-phase financial table uses the Compact table layout. Wrap item
+names and long category titles within their column; put item codes below names
+and category/lock/code metadata below category titles. Keep note pencils in the
+item cell. Label Per Unit once in the column heading and use compact switches
+with full accessible names in its rows. Stack Preliminary status badges below
+the heading. Retain all financial columns, readable right-aligned amounts and
+the existing searchable unit picker; smaller screens scroll within the matrix.
+
 Exports keep the originating report or record screen mounted. Load deferred
 options inside the export dialog; do not replace the screen, re-render the main
 report, or refresh its records. Preserve search, scroll, and editor drafts through
