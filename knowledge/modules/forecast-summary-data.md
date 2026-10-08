@@ -2,30 +2,31 @@
 
 ## Status and evidence
 
-This October 7, 2026 audit records the committed summary's data contract and a
-proposed integration for the new Forecast Manager widget. It changes documentation
-only. No helper, response field, Creator deployment or record write is implemented
-by this document. Current live development source remains a separate verification
-gate; the browser runtime failed before connecting during the new widget work.
+This audit records the unchanged native summary's data contract and the Forecast
+Manager integration. On October 8, 2026, the live Development summary was checked
+against the committed source and matched apart from Creator formatting. The
+widget backend and APIs were installed and verified in Development, then published
+through Creator environments. All 66 table/recent-sales fields in the live
+Cottonwood Creek Phase 01 summary matched the compact cards exactly. The structured
+helper proposed below remains future work; it has not been installed. See the
+[deployment record](../releases/forecast-manager-backend-2026-10-08.md).
 
 Primary source is
 [buildForecastManagerSummary.dg](../../creator/functions/buildForecastManagerSummary.dg),
 with native calculation context in [Lots](lots.md), closing terms in
-[Takedown Schedule](takedown-schedule.md), and candidate endpoint details in
-[Forecast Manager](forecast-manager.md). The current source includes the candidate
-Second Closing fields; confirm their environment publication before installing a
-dependent function outside Development.
+[Takedown Schedule](takedown-schedule.md), and installed endpoint details in
+[Forecast Manager](forecast-manager.md). The live summary includes the Second
+Closing fields. The integration reuses the existing summary without modifying its
+calculations.
 
 ## Current presentation
 
 [forecastManagerWidget.dg](../../creator/functions/forecastManagerWidget.dg)
 returns the existing summary as `summaryHtml` after snapshot/save/ensure. The
-widget places it in a collapsed **Subdivision & takedown schedules** panel below
-the forecast matrix. The iframe is 540px tall, has an empty sandbox attribute,
-and uses a restrictive content security policy with inline styles enabled.
-The full native summary remains available, but none of its schedule metrics is
-visible while the panel is closed. The returned HTML has no schedule or builder
-record IDs.
+widget displays its complete native information in compact cards above the matrix.
+The presentation adapter preserves native values and does not recalculate business
+math. Unsupported layouts fall back to the sandboxed native summary iframe below
+the matrix. The returned HTML has no schedule or builder record IDs.
 
 The selected builder/year matrix and the native summary have different scopes:
 the summary displays all Takedown Schedule records containing the selected
@@ -177,8 +178,8 @@ same four-period row as the phase counts, with distinct scope labels.
 
 The matrix's saved inventory total is labeled Inventory balance; the familiar
 native summary capacity retains Unforecasted Lots. Neither is substituted for
-the other. This publication is for user implementation/testing; current Creator
-function/API setup and live development checks remain pending.
+the other. The current Creator function/API setup and live Development checks are recorded
+in [the completed deployment record](../releases/forecast-manager-backend-2026-10-08.md).
 
 Restyling the isolated native HTML is the safest short-term frontend-only way to
 keep every value. Its limits are the nested scroll surface, fixed iframe height,
@@ -235,4 +236,4 @@ baseline. Rollback restores the prior summary renderer and endpoint consumers
 before removing an unused helper, then restores the prior immutable frontend
 release through environment mappings. No rollback data repair is needed for a
 read-only summary integration. The existing native Forecast Manager remains the
-fallback while the candidate widget's live verification is pending.
+operational fallback for the installed widget integration.

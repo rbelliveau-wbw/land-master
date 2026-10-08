@@ -259,6 +259,8 @@ string forecastManagerWidget(string payload)
 				fyEnd = fyStart.addMonth(12);
 				lotsSold = Lots[(Subdivision == subdivisionId) && (Builder1 == builderId) && (Status == "Sold") && (Close_Date >= fyStart) && (Close_Date < fyEnd)].count();
 				lotsContracted = Lots[(Subdivision == subdivisionId) && (Builder1 == builderId) && (Status == "Contracted")].count();
+				lotsScheduled = Lots[(Subdivision == subdivisionId) && (Builder1 == builderId) && (Status == "Scheduled")].count();
+				lotsContracted = lotsContracted + lotsScheduled;
 				writeStarted = true;
 				parentId = insert into Forecast_Year
 				[

@@ -64,6 +64,12 @@ engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderI
 assert.equal(response.ok,true);assert.equal(response.createdParent,true);assert.equal(response.createdMonths,12);assert.equal(M.verifyEnsure(response,'21','2027'),true);assert.equal(engine.tables.Forecast_Year.length,2);assert.equal(engine.tables.Forecast.length,24);
 const created=engine.tables.Forecast.filter(month=>month.Builder1===21);assert.equal(created.find(month=>month.Forecast_Month==='January').Forecast_Start_Date,date('2028-01-01'));assert.ok(created.every(month=>month.Forecasted_Lots==null));
 const wrote=engine.writes.length;response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'});assert.equal(response.ok,true);assert.equal(response.createdParent,false);assert.equal(response.createdMonths,0);assert.equal(engine.writes.length,wrote,'an existing complete year is idempotent');
+const creationTotals=clone(base);
+creationTotals.Lots.push(...['Contracted','Scheduled','Scheduled','Sold'].map((Status,index)=>({ID:950+index,Subdivision:10,Builder1:21,Status,Close_Date:date('2027-03-01')})),{ID:960,Subdivision:999,Builder1:21,Status:'Scheduled'},{ID:961,Subdivision:10,Builder1:20,Status:'Scheduled'},{ID:962,Subdivision:10,Builder1:21,Status:'Sold',Close_Date:date('2028-02-01')});
+engine=run(creationTotals);response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'});assert.equal(response.ok,true);
+const totalsParent=engine.tables.Forecast_Year.find(row=>String(row.ID)===response.ensuredParentId);
+assert.equal(totalsParent.Total_Contracted_Lots,3,'native creation includes both Contracted and Scheduled lots within the selected subdivision/builder');
+assert.equal(totalsParent.Total_Sold_Lots,1,'native sold count is limited to February through January');
 for(const unsupported of ['2018','2047','2050']){engine=run();assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:unsupported}).ok,false,'both required picklists must support '+unsupported);assert.equal(engine.writes.length,0);}
 engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2046'});assert.equal(response.ok,true);assert.equal(M.verifyEnsure(response,'21','2046'),true);
 const incomplete=clone(base);incomplete.Forecast.pop();engine=run(incomplete);assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'20',year:'2026'}).ok,false);assert.equal(engine.writes.length,0,'an incomplete existing year is not silently rewritten');
