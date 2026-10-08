@@ -1,24 +1,30 @@
-# Candidate validation — 2026-10-08
+# PO Development candidate validation — 2026-10-08
 
-Host: Windows, Node.js 24.14.1. Branch: feature/multi-item-purchase-orders.
+Budget Manager 122.29.5; Settings Manager 1.4.1. Latest main merged into
+feature/multi-item-purchase-orders; unrelated current releases retained.
 
 | Check | Result |
 |---|---|
-| `npm run validate` (full prevalidate and validate) | PASS, exit 0 |
-| `npm run build:pages` | PASS, exit 0; 31 environment paths |
-| `git diff --check` | PASS |
-| PO domain/controller and policy/admin focused tests | PASS, included in standard validate |
-| Real candidate UI with in-memory browser fixture | PASS for documented cases; screenshots preserved |
-| Final native poValidatePayload compile and execution | PASS for exact repeated-item total and three rejection cases |
-| Required Creator native Currency 19/2 storage | FAIL; write gate remains false |
-| Native full PO save/reload/edit/submit and concurrency | NOT RUN; currency gate blocks persistence |
-| Native shared approval resolver/admin and workflow adapters | NOT COMPILED/NOT MIGRATED |
+| Full `npm run validate` after merge | PASS, exit 0 |
+| `npm run build:pages` | PASS, 31 environment paths |
+| PO exact-decimal/domain/controller tests | PASS |
+| Shared configuration/admin and thin adapter tests | PASS |
+| Creator Currency maximum 16 digits / 2 places | PASS, exact maximum 9999999999999.99 |
+| Native Draft save/reload/edit, calculated/manual/null fields | PASS |
+| Native mismatch Submit rejects without writes | PASS |
+| Native balanced Submit, repeated item reservation, Check | PASS |
+| Native specific budget modification linkage | PASS |
+| Native Vendors API | PASS, ID and name only |
+| Four existing Budget/Modification/Pro Forma hooks | Compile PASS; positive native shared routing still pending |
+| Native widget PO save/submit | Pending Development publication |
+| Dev/Land Acq and CFO end-to-end profile tests | Deferred by owner |
+| Contract sequential implementation | Pending |
+| PO approval decisions | Inactive; default chain TBD |
 
-The frontend candidates were generated before this final validation. Source
-entry hashes and asset inventory passed repository validation; environment
-promotion mappings were unchanged. Browser fixtures have been closed and their
-loopback-only server stopped. Screenshots do not imply native financial writes.
+The original 19-digit requirement was superseded by the owner's approval of
+Creator's supported maximum. Its failure evidence is historical.
 
-See [native results](../native-results.json) for exact installed components and
-probe row IDs, and [handoff](../../../functions/PURCHASE_ORDER_HANDOFF.md) for
-remaining gates and recovery/publication limits.
+The existing Creator widget registration remains unchanged. The prepared
+Pages build changes only Development Budget from 122.28.20 to 122.29.5;
+Stage/Production and all other mappings match latest main. Public GitHub push
+requires the owner's explicit authorization. No email was sent.

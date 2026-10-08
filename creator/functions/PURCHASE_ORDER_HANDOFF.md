@@ -1,6 +1,6 @@
 # Multi-item purchase orders and shared approval administration
 
-## Current status — 2026-10-08, supersedes the earlier notes below
+## Current status â€” 2026-10-08, supersedes the earlier notes below
 
 Creator Development now has working native PO persistence. Complete unbalanced
 draft save/reload, zero draft reservation, mismatched submission rejection,
@@ -33,7 +33,7 @@ The Vendors action returns only vendor IDs and names through the PO API.
 The four Budget/Modification/Pro Forma initiation hooks compile in Development;
 existing decision and email handlers retain their prior execution behavior.
 
-Budget Manager **122.29.4** and Settings Manager **1.4.1** are validated immutable
+Budget Manager **122.29.5** and Settings Manager **1.4.1** are validated immutable
 candidates. Full repository validation passed. The owner now requests the PO
 screen in the existing Budget widget, without any Creator widget registration
 change. The existing stable loader already routes the Development release using
@@ -48,7 +48,7 @@ has occurred. Do not describe the whole task as done.
 
 ## Earlier implementation notes (historical; deployment status below is superseded)
 
-## Delivery status — 2026-10-08
+## Delivery status â€” 2026-10-08
 
 Rebuilt on `feature/multi-item-purchase-orders` from remote main
 `9b51f0aa0ad6c0dd985d630c1703d25557d72879`. The referenced original commit and
@@ -91,8 +91,8 @@ downgrading the requested design. The installed PO_Item currency fields are
 
 ## Frontend behavior implemented and tested
 
-- Purchase orders use a header plus 1–100 complete lines, repeated Budget Items,
-  Cost Element strings 1–5, searchable pickers and a custom date picker.
+- Purchase orders use a header plus 1â€“100 complete lines, repeated Budget Items,
+  Cost Element strings 1â€“5, searchable pickers and a custom date picker.
 - Exact decimal strings and BigInt cents cover the required boundary. Calculated
   lines multiply positive Quantity (up to six fractional places) by Unit Price,
   rounding once to cents. Manual mode clears both values to true null and makes

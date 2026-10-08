@@ -4,7 +4,7 @@
   "application": "wbdevelopment/land-master",
   "baseCommit": "9b51f0aa0ad6c0dd985d630c1703d25557d72879",
   "branch": "feature/multi-item-purchase-orders",
-  "overall": "Core native PO save/reload/submit/check verified; shared configuration functions installed; workflow adapters and final release validation in progress",
+  "overall": "Native PO persistence verified; Budget Development 122.29.5 prepared and validated; publication awaiting explicit public GitHub authorization",
   "currencyGate": {
     "required": {
       "maxDigits": 16,
@@ -115,7 +115,8 @@
       "resolveApprovalRoute",
       "approvalConfigurationSnapshot",
       "manageApprovalPolicies",
-      "snapshotApprovalRoute"
+      "snapshotApprovalRoute",
+      "applySharedApprovalPolicy"
     ],
     "workflows": [
       "Validate Payment Request Type",
@@ -169,6 +170,31 @@
       "case": "Optional modification field preserves old receipt compatibility",
       "passed": true,
       "evidence": "evidence/native-check-mod-link-compatible.json"
+    },
+    {
+      "case": "Draft with a specific linked budget modification",
+      "passed": true,
+      "evidence": "evidence/native-linked-draft-result.json"
+    },
+    {
+      "case": "Edit and reload calculated/manual lines with true nulls and linked modification",
+      "passed": true,
+      "evidence": "evidence/native-linked-edit-result.json"
+    },
+    {
+      "case": "Submit linked two-line PO and retain full reserved budget",
+      "passed": true,
+      "evidence": "evidence/native-linked-submit-result.json"
+    },
+    {
+      "case": "Read-only Check for linked submitted PO",
+      "passed": true,
+      "evidence": "evidence/native-linked-check-result.json"
+    },
+    {
+      "case": "Vendor choices through PO API return IDs and names",
+      "passed": true,
+      "evidence": "evidence/native-vendors-result.json"
     }
   ],
   "nativeSharedCases": [
@@ -195,12 +221,12 @@
     "testRecipient": "rbellivea@wbdevelopment.com"
   },
   "remaining": [
-    "Native PO draft edit and non-null modification-link test",
-    "Native configuration report guards",
-    "Budget, Budget Modification, Pro Forma and Contract execution adapters and regressions",
+    "Native widget API/save/edit/submit verification after Development publication",
     "PO execution connection after owner defines default chain",
+    "Contract sequential execution and regressions",
+    "Positive shared-route native verification",
     "Approved test notification checks",
-    "Fresh immutable releases and final full validation"
+    "Dev/Land Acq and CFO profile checks deferred by owner"
   ],
   "notProven": [
     "Native different-user permission failures",
@@ -215,8 +241,9 @@
     "focusedPOController": "passed",
     "focusedPolicy": "passed",
     "focusedAdmin": "passed",
-    "npmRunValidate": "Prior candidate passed; rerun after remaining changes",
-    "npmRunBuildPages": "Prior candidate passed; rerun after remaining changes"
+    "npmRunValidate": "Passed after merging latest main for Budget 122.29.5",
+    "npmRunBuildPages": "Passed; 31 paths; only Development Budget mapping changed",
+    "sharedAdapterHarness": "Passed; included in standard validation"
   },
   "promoted": false,
   "stageOrProductionChanged": false,
@@ -229,7 +256,18 @@
     "vendorId": "4410926000005121008"
   },
   "candidates": {
-    "budget-manager": "122.29.2",
-    "settings-manager": "1.4.0"
+    "budget-manager": "122.29.5",
+    "settings-manager": "1.4.1"
+  },
+  "linkedFixture": {
+    "purchaseOrderId": "4410926000005121122",
+    "modificationId": "4410926000005121116",
+    "reservedAmount": "3.01"
+  },
+  "publication": {
+    "state": "Awaiting explicit public feature-branch push authorization",
+    "mainPushed": false,
+    "creatorWidgetSettingsChanged": false,
+    "stageOrProductionMappingChanged": false
   }
 }
