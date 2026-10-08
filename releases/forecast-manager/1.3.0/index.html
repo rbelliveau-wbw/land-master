@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Forecast Manager</title>
+  <link rel="stylesheet" href="forecast.css?v=1.3.0">
+  <style>.segments{background:linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%)}.segments button:hover{transform:translateY(-1px)}</style>
+  <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <script src="runtime-context.js?v=1.3.0"></script>
+  <script src="critical-error-reporter.js?v=1.3.0"></script>
+  <script src="success-feedback.js?v=1.3.0"></script>
+  <script src="forecast-model.js?v=1.3.0"></script>
+  <script src="forecast-summary.js?v=1.3.0"></script>
+</head>
+<body>
+<main id="app">
+  <header class="topbar">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10 12 3l9 7v10H3zM9 20v-7h6v7M3 10h18"/></svg><span>Land Master</span></div>
+    <span class="brand-divider" aria-hidden="true"></span><span class="module-name">Forecasts</span>
+    <div class="head-actions"><span id="saveStatus" class="save-status" data-state="connecting" role="status" aria-live="polite">Connecting…</span><span id="environment" class="badge">Connecting</span><button id="refresh" class="icon-btn" aria-label="Refresh forecasts" title="Refresh forecasts" disabled><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M19 12a7 7 0 0 0-12-5L4 10m1 2a7 7 0 0 0 12 5l3-3"/></svg></button></div>
+  </header>
+  <div class="main">
+    <section class="toolbar" aria-label="Forecast filters">
+      <div class="filter wide"><label id="subLabel">Subdivision</label><button id="subPicker" class="picker" data-picker="sub" aria-labelledby="subLabel subText" aria-haspopup="dialog" aria-expanded="false" disabled><span id="subText">Choose subdivision</span><svg viewBox="0 0 20 20"><path d="m5 7 5 5 5-5"/></svg></button></div>
+      <div class="filter"><label id="builderLabel">Builders</label><button id="builderPicker" class="picker" data-picker="builders" aria-labelledby="builderLabel builderText" aria-haspopup="dialog" aria-expanded="false" disabled><span id="builderText">All for subdivision</span><svg viewBox="0 0 20 20"><path d="m5 7 5 5 5-5"/></svg></button></div>
+      <div class="filter"><label id="yearLabel">Fiscal years</label><button id="yearPicker" class="picker" data-picker="years" aria-labelledby="yearLabel yearText" aria-haspopup="dialog" aria-expanded="false" disabled><span id="yearText">Choose years</span><svg viewBox="0 0 20 20"><path d="m5 7 5 5 5-5"/></svg></button></div>
+      <span id="window" class="window-state" hidden></span>
+    </section>
+    <div id="notice" class="notice" role="alert" hidden></div>
+    <section id="workspace" hidden>
+      <section id="compactSummary" class="compact-summary" aria-label="Subdivision and builder schedules" title="All subdivision schedules, independently of the builder and fiscal-year filters"></section>
+      <section class="matrix-panel">
+        <div class="matrix-tools">
+          <div class="matrix-title"><h2>Builder forecasts</h2><span id="matrixCount"></span></div>
+          <div class="segments" role="group" aria-label="Displayed values">
+            <button data-view="forecast" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16V9m6 7V4m6 12v-5"/></svg>Forecast</button>
+            <button data-view="actual" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>Sold</button>
+            <button data-view="scheduled" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M6 2v4m8-4v4M3 8h14"/></svg>Scheduled</button>
+          </div>
+          <div class="matrix-actions"><button id="check" class="btn" hidden>Check status</button><button id="discard" class="btn" hidden>Discard local changes</button><button id="export" class="btn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-3-3 3 3 3-3M4 13v4h12v-4"/></svg>Export CSV</button></div>
+        </div>
+        <div class="matrix-scroll" id="matrixScroll" tabindex="0" aria-label="Builder forecast matrix"><table id="matrix"></table></div>
+        <div class="matrix-foot"><span id="matrixHint"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3h10l3 3v11H3V3zM6 3v5h8V3M6 17v-6h8v6"/></svg>Autosaves on field change · Tab or Enter to move</span><span class="legend"><i class="editable-dot"></i>Editable <i class="locked-dot"></i>Locked <i class="missing-dot"></i>Missing year</span></div>
+      </section>
+      <details class="snapshot" id="summary" hidden><summary><svg class="summary-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V4h14v12H3M3 8h14M8 8v8"/></svg><span>Subdivision &amp; takedown schedules</span><span class="subtle">Native summary</span><svg class="summary-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary><iframe id="summaryFrame" title="Subdivision and builder takedown summary" sandbox="" loading="lazy"></iframe></details>
+    </section>
+    <section id="empty" class="empty"><span class="empty-grid" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="30" rx="5"/><path d="M6 19h36M18 19v20M30 19v20M6 29h36"/></svg></span><h2>Select a subdivision</h2></section>
+    <footer class="app-foot"><span>WFY runs from February through January</span><span>Forecast Manager · v1.3.0</span></footer>
+  </div>
+</main>
+<div id="modal" class="modal" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><header class="dialog-head"><div><span id="dialogKicker" class="kicker">FORECAST YEAR</span><h2 id="dialogTitle">Add forecast year</h2></div><button id="dialogClose" class="close-btn" aria-label="Close"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div class="dialog-body" id="dialogBody"></div><footer class="dialog-foot"><span id="dialogStatus" role="status" aria-live="polite"></span><div><button id="dialogCancel" class="btn">Cancel</button><button id="dialogAction" class="btn primary">Create forecast year</button></div></footer></section></div>
+<script>
+LMCriticalErrors.configure({widget:"Forecast Manager",version:"1.3.0",code:"FORECAST",getContext:function(){return window.LMRuntime?LMRuntime.current():{};}});
+// Creator v2 UTIL handshake is shared with the permanent loader.
+// ZOHO.CREATOR.init is the legacy v1 equivalent; do not mix initialization versions.
+window.forecastReporterReady=function(){LMCriticalErrors.markReady();};
+</script>
+<script src="forecast-app.js?v=1.3.0"></script>
+</body>
+</html>

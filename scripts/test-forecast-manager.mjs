@@ -10,6 +10,11 @@ const monthNames=['February','March','April','May','June','July','August','Septe
 const clone=value=>JSON.parse(JSON.stringify(value));
 const base={Settings:[{ID:1,Open_Forecasting_Window:true}],Subdivision:[{ID:10,Subdivision_Name:'Fixture phase',Subdivision_Code:'FX01',Phase:'1',Builders:[20,21],Unforecasted_Lots:5}],Builder:[{ID:20,Builder_Name:'Fixture Builder A'},{ID:21,Builder_Name:'Fixture Builder B'}],Forecast_Year:[{ID:30,Subdivision1:10,Builder1:20,Forecast_Year:'2026',Status:'Builder',Forecast_Name:'FX01 - Fixture Builder A - FC2026'}],Forecast:monthNames.map((month,index)=>({ID:100+index,Subdivision1:10,Builder1:20,Forecast_Year2:30,Forecast_Year:'2026',Forecast_Month:month,Forecast_Start_Date:date(M.start('2026',index)),Forecasted_Lots:index===8?2:null,Actual_Lots:index===0?4:null,Scheduled_Lots:index===8?1:null,Delete_me:false})),Lots:Array.from({length:10},(_,index)=>({ID:200+index,Subdivision:10,Builder1:20,Phase:'1',Model:false,Status:index<3?'Sold':'Contracted',Purchase_Date:index<3?date('2026-09-01'):null,Close_Date:index<3?date('2026-09-15'):null}))};
 
+// Catalog keeps legacy matrix identities while exposing native Builder.Type1 for creation pickers.
+const typedCatalog=clone(base);typedCatalog.Builder[0].Type1='Builder';typedCatalog.Builder[1].Type1='Placeholder';
+const catalogRead=forecastRuntime(source,typedCatalog),catalogResult=catalogRead.invoke({action:'catalog'});
+assert.equal(catalogResult.ok,true);assert.equal(catalogResult.builders.find(row=>row.id==='20').type,'Builder');assert.equal(catalogResult.builders.find(row=>row.id==='21').type,'Placeholder');assert.equal(catalogRead.writes.length,0);
+
 // Compare the archived FEB...JAN input workflows, rather than assuming a month-end rule.
 const ds=fs.readFileSync(new URL('../creator/exports/Land_Master_2026-08-06.ds',import.meta.url),'utf8');
 function exportedYears(form){const begin=ds.indexOf('\t\tform '+form+'\n'),end=ds.indexOf('\n\t\tform ',begin+1),block=ds.slice(begin,end),options=block.match(/must have Forecast_Year\s*\([\s\S]*?values = \{([^}]+)\}/);assert.ok(options,form+' required year picklist is present');return JSON.parse('['+options[1]+']');}
@@ -39,8 +44,40 @@ assert.equal(M.lock({start:'2026-10-01'},{today:'2026-10-07',windowOpen:false}),
 function run(tables=base,today){return forecastRuntime(source,tables,today);}
 let engine=run(),response=engine.invoke({action:'snapshot',subdivisionId:'10'});
 assert.equal(response.ok,true,JSON.stringify(response));assert.equal(response.subdivision.expectedUnforecasted,5);assert.equal(engine.writes.length,0);
+const inventoryTables=clone(base);
+inventoryTables.Subdivision[0].Territory='Fort Hood';
+inventoryTables.Builder.push({ID:22,Builder_Name:'Fixture Builder A'});
+inventoryTables.Lots=[
+  {ID:801,Subdivision:10,Builder1:20,Status:'Contracted',Close_Date:date('2027-03-01'),Purchase_Date:date('2027-02-01')},
+  {ID:802,Subdivision:10,Builder1:20,Status:'Sold',Purchase_Date:date('2027-02-01')},
+  {ID:803,Subdivision:10,Builder1:22,Status:'Contracted',Model:true,Archived:true},
+  {ID:804,Subdivision:10,Builder1:21,Status:'Open'},
+  {ID:805,Subdivision:10,Builder1:null,Status:'Scheduled'},
+  {ID:806,Subdivision:10,Builder1:null,Status:'On Hold'},
+  {ID:807,Subdivision:999,Builder1:20,Status:'Sold'}
+];
+const inventoryRead=run(inventoryTables),inventoryResult=inventoryRead.invoke({action:'snapshot',subdivisionId:'10'});
+assert.equal(inventoryResult.ok,true);assert.equal(inventoryRead.writes.length,0,'inventory breakdown never writes');
+const insightsContext=vm.createContext({});vm.runInContext(fs.readFileSync(new URL('../widgets/lot-sales-explorer/src/app/sales-model.js',import.meta.url),'utf8'),insightsContext);
+const insights=insightsContext.LotSalesModel,rawLots=inventoryTables.Lots.map(row=>({...row,Close_Date:row.Close_Date?new Date(row.Close_Date).toISOString():null,Purchase_Date:row.Purchase_Date?new Date(row.Purchase_Date).toISOString():null}));
+const normalized=insights.normalize({lots:rawLots,builders:inventoryTables.Builder,subdivisions:inventoryTables.Subdivision});
+const counts=insights.subdivisionCounts(normalized).get('10');
+assert.deepEqual(JSON.parse(JSON.stringify(inventoryResult.inventory.counts)),{Total:counts.total,Sold:counts.sold,Scheduled:counts.scheduled,Contracted:counts.contracted,Open:counts.open},'same all-date status rules as Data Insights, including archived/model lots');
+assert.deepEqual(JSON.parse(JSON.stringify(inventoryResult.inventory.builders)).sort((a,b)=>a.builder.localeCompare(b.builder)),JSON.parse(JSON.stringify(insights.builderStatusMatrix(insights.subdivisionBuilderBreakdown(normalized,'10')))),'Data Insights builder matrix excludes Open, merges matching display names and retains Unassigned');
+assert.equal(inventoryResult.inventory.territory,'Fort Hood');
 let matrix=M.matrix(response,['20','20','21'],['2026','2027','2026']);assert.equal(matrix.length,2);assert.equal(matrix[0].years.length,2);assert.equal(matrix[0].years[0].months[11].start,'2027-01-01');assert.equal(matrix[1].years[0].parent,null);
 assert.equal(M.verifyEnsure(response,'20','2026'),true);assert.equal(M.verifyEnsure(response,'21','2026'),false);
+assert.equal(M.hasYear(response,'20','2026'),true);assert.equal(M.hasYear(response,'21','2026'),false);
+const incompleteConflict=clone(response);incompleteConflict.months=[];assert.equal(M.verifyEnsure(incompleteConflict,'20','2026'),false);assert.equal(M.hasYear(incompleteConflict,'20','2026'),true,'an existing parent blocks creation even without all children');
+const duplicateConflict=clone(response);duplicateConflict.years.push({...duplicateConflict.years[0],id:'duplicate'});assert.equal(M.hasYear(duplicateConflict,'20','2026'),true,'duplicate parents also block creation');
+assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409961','2024'),true,'exact large string builder IDs and years outside visible filters remain checked');
+assert.equal(M.hasYear({years:[{builderId:'90071992547409961',year:'2024'}]},'90071992547409962','2024'),false);
+assert.equal(M.hasYear(response,'','2026'),false);assert.equal(M.hasYear(response,'20',''),false);
+const visible=M.visibleMatrix(response,['20','21'],['2026','2027']);assert.equal(visible.length,1,'assigned builder with no forecast parent is omitted');assert.equal(visible[0].builderId,'20');assert.equal(visible[0].years[1].parent,null,'a missing year for an existing visible builder retains its Create Forecast cell');
+assert.equal(M.visibleMatrix(response,['20','21'],['2027']).length,0,'parents outside the selected fiscal years do not create empty rows');
+assert.equal(M.visibleMatrix(response,['21'],['2026','2027']).length,0,'explicitly choosing an empty builder cannot add a row');
+assert.equal(M.visibleMatrix(incompleteConflict,['20'],['2026']).length,1,'an incomplete existing parent remains visible for review');assert.equal(M.visibleMatrix(duplicateConflict,['20'],['2026']).length,1,'duplicate parent issues remain visible for review');
+assert.equal(M.visibleMatrix({...response,years:[],months:[]},['20','21'],['2026']).length,0,'a subdivision with no forecast parents has no phantom builder rows');
 const repeatedIds=clone(response);repeatedIds.months[1].id=repeatedIds.months[0].id;assert.equal(M.verifyEnsure(repeatedIds,'20','2026'),false,'creation verification requires 12 distinct persisted child IDs');
 
 const save={action:'save',subdivisionId:'10',forecastId:'108',value:6,expected:2};
@@ -64,6 +101,12 @@ engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderI
 assert.equal(response.ok,true);assert.equal(response.createdParent,true);assert.equal(response.createdMonths,12);assert.equal(M.verifyEnsure(response,'21','2027'),true);assert.equal(engine.tables.Forecast_Year.length,2);assert.equal(engine.tables.Forecast.length,24);
 const created=engine.tables.Forecast.filter(month=>month.Builder1===21);assert.equal(created.find(month=>month.Forecast_Month==='January').Forecast_Start_Date,date('2028-01-01'));assert.ok(created.every(month=>month.Forecasted_Lots==null));
 const wrote=engine.writes.length;response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'});assert.equal(response.ok,true);assert.equal(response.createdParent,false);assert.equal(response.createdMonths,0);assert.equal(engine.writes.length,wrote,'an existing complete year is idempotent');
+const creationTotals=clone(base);
+creationTotals.Lots.push(...['Contracted','Scheduled','Scheduled','Sold'].map((Status,index)=>({ID:950+index,Subdivision:10,Builder1:21,Status,Close_Date:date('2027-03-01')})),{ID:960,Subdivision:999,Builder1:21,Status:'Scheduled'},{ID:961,Subdivision:10,Builder1:20,Status:'Scheduled'},{ID:962,Subdivision:10,Builder1:21,Status:'Sold',Close_Date:date('2028-02-01')});
+engine=run(creationTotals);response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2027'});assert.equal(response.ok,true);
+const totalsParent=engine.tables.Forecast_Year.find(row=>String(row.ID)===response.ensuredParentId);
+assert.equal(totalsParent.Total_Contracted_Lots,3,'native creation includes both Contracted and Scheduled lots within the selected subdivision/builder');
+assert.equal(totalsParent.Total_Sold_Lots,1,'native sold count is limited to February through January');
 for(const unsupported of ['2018','2047','2050']){engine=run();assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:unsupported}).ok,false,'both required picklists must support '+unsupported);assert.equal(engine.writes.length,0);}
 engine=run();response=engine.invoke({action:'ensure',subdivisionId:'10',builderId:'21',year:'2046'});assert.equal(response.ok,true);assert.equal(M.verifyEnsure(response,'21','2046'),true);
 const incomplete=clone(base);incomplete.Forecast.pop();engine=run(incomplete);assert.equal(engine.invoke({action:'ensure',subdivisionId:'10',builderId:'20',year:'2026'}).ok,false);assert.equal(engine.writes.length,0,'an incomplete existing year is not silently rewritten');

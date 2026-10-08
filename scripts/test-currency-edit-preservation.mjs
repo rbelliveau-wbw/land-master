@@ -48,7 +48,12 @@ for(const value of [12500109.92,12.123456,-12.123456,0]){
 assert.equal(context.fmt(12500109.92),'$12,500,109.92');
 for(const parser of ['parseMoney','v','budgetUnitNumber'])for(const credit of ['($12,500,109.923456)','−$12,500,109.923456'])assert.equal(context[parser](credit),-12500109.923456,parser+' preserves formatted credits');
 assert.equal(context.metricRaw({Land_Cost:'($12,500,109.92)'},'Land_Cost'),-12500109.92);
-assert.equal(context.fmt(-0.25),'-$0.25');assert.equal(context.fmt(0),'$0.00');
+assert.equal(context.fmt(-0.25),'-$0.25');assert.equal(context.fmt(0),'$0');
+for(const show of [context.fmt,context.fmtRequestMoney]){
+  assert.equal(show(20000),'$20,000');assert.equal(show(-20000),'-$20,000');
+  assert.equal(context.parseMoney(show(12.123456,true)),show===context.fmt?12.123456:12.12);
+}
+assert.ok(!budget.includes('$0.00'),'zero currency labels also omit cents');
 assert.equal(context.fmtK(12.25),'$12.25');assert.equal(context.metricDisp('money',12.25),'$12.25');
 assert.equal(context.budgetLots({Lot_Total_Residential:'7.9'}),8,'lot counts retain explicit whole-number rounding');
 const rendered=context.renderBudgetMetrics({...S.edBudget,Land_Cost:12500109.92,Lot_Price:12.123456});

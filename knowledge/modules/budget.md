@@ -1,4 +1,20 @@
 
+## Main-page currency (122.28.36)
+
+The project list rounds project totals, Avg $/Lot, phase Grand Total and $/Lot,
+and preliminary/final summaries to the nearest dollar. Aggregation uses raw
+amounts; detail/edit screens retain fractional precision. No Creator deployment
+is required. Regression and rollback to 122.28.35:
+[main-page dollar display](../../docs/main-page-dollar-display-2026-10-08.md).
+
+## Currency presentation (122.28.33)
+
+Dollar displays omit trailing `.00`, including project/phase totals, metric cards,
+category/item/per-unit amounts, zero labels and request/modification balances.
+Nonzero cents and editable precision remain intact; data and approvals are
+unchanged. No Creator deployment is required. Regression and rollback to
+122.28.32: [currency display release](../../docs/currency-display-2026-10-08.md).
+
 ## Full User Access owner names
 
 Owner pickers and displays prefer User_Access.Full_Name, preserving original
@@ -6,6 +22,32 @@ record IDs and login/email permission identities. Blank names keep the existing
 fallback. See [scope, verification and rollback](../../docs/owner-full-names.md).
 
 # Budget Module
+
+## Compact phase financial table (122.28.35)
+
+The single-phase editor adopts the approved Compact table layout. Item codes
+sit below wrapping names, category/lock/code metadata sits below wrapping
+category titles, Per Unit appears once above compact row switches, and
+Preliminary status badges stack beneath the heading. Note actions remain in
+the item column. All eleven columns remain, including HCSS and GP actuals;
+narrow screens retain the matrix's internal scrolling. All-phase and comparison
+layouts retain their existing behavior.
+
+Changed files: Budget widget HTML/CSS, version/hash manifests, immutable release
+and production mapping, plus this module and the general style guide. No Creator
+forms or fields, Deluge functions, Custom APIs, approval routing, financial
+calculations or persistence contracts change. No Creator publication is required.
+
+Regression: partial Development/Engineering locks with editable Construction,
+long names/codes and notes, per-unit switches and unit/rate entry, monetary totals,
+all eleven columns, narrow matrix scrolling, all-phase/comparison rendering,
+repository validation and Pages build. Full validation and Pages build passed.
+An offline fixture using the actual renderers and source CSS verified all eleven
+columns at 1024/1366/1600px, long labels, saved-value checks, large rate inputs,
+stacked statuses, and sticky headings during contained horizontal scrolling.
+No Creator records were written during verification. Rollback: restore production
+Budget mapping to 122.28.33
+and rebuild Pages; retain the permanent Creator widget URL.
 
 ## Native attachment upload receipts (122.28.31)
 

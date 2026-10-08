@@ -593,7 +593,7 @@
       "custom_apis": [
         {
           "name": "Forecast_Manager_Widget",
-          "source": "New proposed OAuth2 custom API; not deployed"
+          "source": "Enabled selective OAuth2 Development/Production API; Default forecastManagerWidget compiled and published through Creator 9.59"
         },
         {
           "name": "Report_Proforma_Widget_Error",

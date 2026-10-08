@@ -27,10 +27,10 @@ assert.equal(c.requestBalanceSnapshot(m,{...example,PROJ_Actual:undefined}).rema
 m.requestAmount='30.01';c.renderRequestBalance(example);assert.equal(node('requestPreviewBtn').disabled,true);
 assert.doesNotMatch(node('requestBalance').innerHTML,/− GP Actuals/,'GP is a reference rather than a second deduction');
 c.itemModAgg=()=>({approved:25.25});m=modal();
-c.renderRequestBalance(item);assert.match(node('requestBalance').innerHTML,/Revised Final[\s\S]*\$525.50/);assert.match(node('requestBalance').innerHTML,/POs Issued[\s\S]*\$15.25/);
+c.renderRequestBalance(item);assert.match(node('requestBalance').innerHTML,/Revised Final[\s\S]*\$525\.5<\/span>/);assert.match(node('requestBalance').innerHTML,/POs Issued[\s\S]*\$15.25/);
 m.requestAmount='510.26';c.renderRequestBalance(item);assert.equal(node('requestPreviewBtn').disabled,true);assert.equal(node('requestBudgetGuard').classList.show,true);assert.match(node('requestBalance').innerHTML,/-\$0.01/);
 m.requestAmount='510.25';c.renderRequestBalance(item);assert.equal(node('requestPreviewBtn').disabled,false,'exact balance is allowed');
-m.poState='unavailable';c.renderRequestBalance(item);assert.equal(node('requestPreviewBtn').disabled,true);assert.doesNotMatch(node('requestBalance').innerHTML,/\$0.00/,'unavailable is never a zero balance');
+m.poState='unavailable';c.renderRequestBalance(item);assert.equal(node('requestPreviewBtn').disabled,true);assert.doesNotMatch(node('requestBalance').innerHTML,/\$0(?:<|\.)/,'unavailable is never a zero balance');
 m.poState='loaded';m.poItemId='another';assert.equal(c.requestBalanceSnapshot(m,item),null);m.poItemId=itemId;
 assert.equal(c.requestBalanceSnapshot(m,{...item,Budget_Ttl:undefined}),null);assert.equal(c.requestBalanceSnapshot(m,{...item,PROJ_Actual:'invalid'}).actual,null);
 for(const bad of ['20.001','-1','invalid','1e3'])assert.equal(c.requestAmountNumber(bad),0);assert.equal(c.requestAmountNumber('$1,250.25'),1250.25);

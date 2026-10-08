@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-08T02:12:13.917Z",
+  "generated_at": "2026-10-08T14:23:52.180Z",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.92",
+      "version": "1.80.94",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and configurable sequential approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "2fab795ce0a60913654fa12fe93c78f503c034fb24452a92e9a75d65b0bc41ac",
+      "source_sha256": "32747bbce786f8c19f717c3478c8be4e744081374f88c12e2714f7bb61318222",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.4",
+      "version": "122.29.5",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "cfabf7f916d774dc5a602849db18cf1753a9262e371f75f6b70d794153778343",
+      "source_sha256": "ecafb185a0dd1697f015bd2d8dbc2ba1cdaca3acac2a3e9ae25b069e56370e62",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -247,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.5.46",
+      "version": "1.5.47",
       "description": "Read-only Lot Sales dashboard with User_Access visibility gates and seven Measure options.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "ba72c023d8d65f08c8838e20b1dcc093084c4d34814c262266ca47ced6312109",
+      "source_sha256": "62eacfdfeffe645a68f3388ff59090e8cd612c82d132a20d3e656676910e69a5",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [
@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.2.1",
-      "description": "Compact native schedule cards, one builder row across February fiscal years, inline saves and verified missing-year creation.",
+      "version": "1.5.3",
+      "description": "Hide builder rows without forecast years in the selected fiscal years while preserving missing-year creation and review rows.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "532766644a3ee7923b0ecfb2aacc2a8f142f19b4a0b1f1fe856a62149c88182c",
+      "source_sha256": "6baa1d0d1a86e9b116e0a0ce405cd53f788d7c3bbe4fc8c3842ded9edbea0f78",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",
@@ -296,7 +296,7 @@
       },
       "dependency_inventory": "manifests/widget-dependencies.json#forecast-manager",
       "hosting_entry": "index.html (generated from app/widget.html)",
-      "trust": "Frontend published for user implementation/testing. Native summary/math preserved from committed Deluge; current live development audit, Creator compilation and new API audience/setup remain pending. Unknown context/missing API fails closed."
+      "trust": "Native backend compiled and deployed through Creator 9.59; selective Development/Production APIs verified. Version 1.3 adds a read-only Data Insights inventory breakdown; window/date/save/create guards remain unchanged. Version 1.4 exposes native Builder.Type1 in the read-only catalog and preserves verified save/create behavior."
     }
   ]
 }

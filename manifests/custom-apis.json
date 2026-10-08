@@ -417,15 +417,21 @@
         "widgets/forecast-manager/src/app/forecast-app.js"
       ],
       "matching_creator_function": "forecastManagerWidget",
-      "confidence": "proposed-new-contract-not-deployed",
+      "confidence": "verified-enabled-2026-10-08",
       "method": "POST",
       "authentication": "OAuth2",
-      "user_scope": "Existing Forecast Manager permitted audience; verify live before enabling",
+      "user_scope": "Selective: 15 current native Forecast Manager application users plus 2 administrators",
       "parameters": [
         "payload:string"
       ],
       "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
-      "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
+      "notes": "Enabled and live widget loading verified October 8, 2026. Default forecastManagerWidget returns String with payload:String. Native permitted audience audited from form/page profiles and user assignments; application Page grants unchanged. Corrected native Scheduled + Contracted creation count published through Creator 9.57. Read-only catalog first; data-editing tests only in Development. See knowledge/releases/forecast-manager-backend-2026-10-08.md. Stage API remains unconfigured. Read-only all-date Data Insights inventory totals and builder status matrix added through Creator 9.58; bindings and audience unchanged. See knowledge/releases/forecast-manager-layout-v1.3.0-2026-10-08.md. Creator 9.59 adds native Builder.Type1 as catalog type for the compact Add Forecast chooser; matrix identities and API audience unchanged. See knowledge/releases/forecast-manager-v1.4.0-2026-10-08.md.",
+      "application": "Land Master",
+      "environment": "DEVELOPMENT",
+      "enabled": true,
+      "namespace": "Default",
+      "content_type": "application/json",
+      "argument_type": "Key and Value"
     },
     {
       "name": "Forecast_Manager_Widget_STAGE",
@@ -441,7 +447,7 @@
         "payload:string"
       ],
       "response": "Standard result: JSON string with ok/action/server date/window and persisted snapshot",
-      "notes": "Candidate only. Requires live development workflow audit, Creator compilation and audience verification. No production or stage binding has been configured."
+      "notes": "Proposed only; no Stage API configured. The function is published to Stage 9.59 as part of normal Production deployment. Development and Production API bindings are enabled and verified."
     },
     {
       "name": "Forecast_Manager_Widget",
@@ -449,10 +455,10 @@
         "widgets/forecast-manager/src/app/forecast-app.js"
       ],
       "matching_creator_function": "forecastManagerWidget",
-      "confidence": "proposed-new-contract-not-deployed",
+      "confidence": "verified-enabled-2026-10-08",
       "method": "POST",
       "authentication": "OAuth2",
-      "user_scope": "Existing Forecast Manager permitted audience; verify live before enabling",
+      "user_scope": "Selective: 15 current native Forecast Manager application users plus 2 administrators",
       "parameters": [
         "payload:string"
       ],

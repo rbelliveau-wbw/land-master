@@ -1,14 +1,14 @@
 # Forecast Manager widget contract
 
-## Evidence and pending live audit
+## Evidence and live deployment
 
-The implementation was audited against `creator/exports/Land_Master_2026-08-06.ds`, all 12 `FEB_Edit_Forecast_Manager` through `JAN_Edit_Forecast_Manager` input workflows, native manager search/loading, `Create_Forecasts_Mass_Cre`, the parent/child forms and existing refresh schedules. The current committed `buildForecastManagerSummary.dg` is reused without changes. The export predates the requested October 7, 2026 live audit; current development workflows remain unverified because the Codex browser runtime fails before connecting to Zoho. Offline execution is not Creator compilation.
+The initial implementation was audited against `creator/exports/Land_Master_2026-08-06.ds`. On October 8, 2026, the supported in-app browser connected successfully and the current Development editor, native workflow, schema, summary and audience were inspected. The downloaded Development export confirmed the FEB–JAN guards, unique parent name, bidirectional child lookup, required year picklists and mass-create fields. The live mass-create workflow includes both Contracted and Scheduled lots in `Total_Contracted_Lots`; `forecastManagerWidget` was corrected to preserve that behavior. The live `buildForecastManagerSummary` matched the committed function apart from Creator formatting and is reused unchanged. See [deployment evidence](../releases/forecast-manager-backend-2026-10-08.md).
 
 The 1.1.0 candidate redesign follows the actual Legal and Pro Forma widgets: shared navy/blue palette, compact white topbar, custom searchable filters, one subdivision/metrics strip, navy pill views, dense builder rows and a mounted creation dialog. It moves the existing schedule summary below the grid and keeps the missing-year action visible on mobile. Presentation changes touch widget.html, forecast.css and forecast-app.js; the February mapping, field-change save behavior, native window/date guards, server function and API contracts remain unchanged from 1.0.1. The inert browser runner captures desktop, mobile, empty, picker and creation progress/result renders for visual review.
 
 The user selected Compact cards from the three summary mockups. Release 1.2.0 implements a visible complete native snapshot above the matrix, using the unchanged Deluge summary as the calculation authority. `forecast-summary.js` passively extracts native text and allowlisted bar widths/colors, builds trusted DOM, retains every schedule and all-phase contract section, and falls back to the sandboxed native iframe if structure is unsupported. It does not join by Builder name or recalculate business values. The shared structured-model helper proposed in [the audit](forecast-summary-data.md) remains a future backend refactor, not an installed dependency. Standard report pickers add keyboard navigation, selection counts, centered SVG markers and immediate filter clearing. Inline field-change saves and creation guards remain unchanged.
 
-The user explicitly authorized publishing the frontend to obtain the permanent Widget Manager URL for implementation/testing. Development and production Pages mappings now select 1.2.1; the loader uses the authenticated Creator environment even through the permanent production registration URL. Stage remains unmapped. Creator compilation, new API installation/audience and live designated-record verification remain pending because the browser runtime cannot connect. Missing API/session information fails closed with disabled controls. This frontend publication does not enable or replace the native manager automatically.
+Development and production Pages mappings select 1.2.1; the loader uses the authenticated Creator environment even through the permanent production registration URL. Stage hosting remains unmapped. The Default String function with one String `payload` argument compiled in Development, persisted code was reopened, and the read-only catalog ran first. The exact DEV and unsuffixed Production APIs are enabled with POST, OAuth2, application/json, Key and Value, Standard response, and the audited selective native audience. Creator publication followed Development → Stage → Production. Native manager forms and workflows remain available. Missing API/session information still fails closed with disabled controls.
 
 ## Read and write contract
 
@@ -37,18 +37,18 @@ The future forecast sum intentionally has the native criteria, including its lac
 
 ## Missing-year creation
 
-WFY is the starting year: February YYYY through January YYYY+1. The raw export's required parent picklist supports 2019–2050 and the required child picklist supports 2018–2046. Creation therefore supports their intersection, 2019–2046; the year filter retains 2018–2050 and All years includes existing years. Verify both current live picklists before expanding creation. Copy the native collection insert: Status Builder; Subdivision1/Builder1; canonical unique Forecast_Name `code - builder - FCyear`; Subdivision_Code; Full_Year_Forecast=0; current native sold/contracted counts; Added_User from the login. Insert all 12 `Forecast_Year.Forecast_Months()` rows with month, fiscal year, date, builder and subdivision in the parent insert. Native blank monthly values stay blank.
+WFY is the starting year: February YYYY through January YYYY+1. The raw export's required parent picklist supports 2019–2050 and the required child picklist supports 2018–2046. Creation therefore supports their intersection, 2019–2046; the year filter retains 2018–2050 and All years includes existing years. Verify both current live picklists before expanding creation. Copy the native collection insert: Status Builder; Subdivision1/Builder1; canonical unique Forecast_Name `code - builder - FCyear`; Subdivision_Code; Full_Year_Forecast=0; native fiscal Sold count and Contracted + Scheduled count; Added_User from the login. Insert all 12 `Forecast_Year.Forecast_Months()` rows with month, fiscal year, date, builder and subdivision in the parent insert. Native blank monthly values stay blank.
 
 Existing complete combinations are read-only no-ops. Do not adopt Planning parents or repair an incomplete existing year automatically. The unique Forecast_Name and combination check protect normal duplicate attempts; concurrent creation and Creator transaction behavior must be verified in development. Creation follows the native mass-create path, which can create blank records while forecasting is closed; that does not allow locked counts to be edited.
 
-Success requires a persisted parent and exactly one linked, correctly scoped child for each of February–January with the correct start date and unique record ID. The modal only confirms 13 records after that predicate passes. After an ambiguous response, Check status fetches a snapshot and never resends ensure/save. A saved month also requires subdivision unforecasted to match the independently computed native result before recovery is marked verified.
+Success requires a persisted parent and exactly one linked, correctly scoped child for each of February–January with the correct start date and unique record ID. Release 1.5 removes the creation progress/result modal at the user's explicit request: show an inline pending status and reveal the matrix row only after that predicate passes. Top Add Forecast retains its Builder/WFY selection modal, which closes on commit. After an ambiguous response, Check status fetches a snapshot and never resends ensure/save; creation, edits and filters stay blocked until verified. A saved month also requires subdivision unforecasted to match the independently computed native result before recovery is marked verified.
 
 ## Affected objects
 
 - Reads: Settings.Open_Forecasting_Window; Subdivision (ID, Subdivision_Name, Subdivision_Code, Builders, Phase, Unforecasted_Lots); Builder (ID, Builder_Name); Forecast_Year and Forecast; Lots (Subdivision, Builder1, Phase, Model, Status, Purchase_Date, Close_Date); summary dependencies of the unchanged buildForecastManagerSummary.
 - Updates: Forecast.Forecasted_Lots and Subdivision.Unforecasted_Lots only.
 - Creates: Forecast_Year (Status, Subdivision1, Builder1, Forecast_Year, Forecast_Name, Subdivision_Code, Forecast_Months, Full_Year_Forecast, Total_Sold_Lots, Total_Contracted_Lots, Added_User) and Forecast child rows (Forecast_Month, Forecast_Year, Forecast_Start_Date, Builder1, Subdivision1, native Forecast_Year2 linkage).
-- New function/API: forecastManagerWidget; Forecast_Manager_Widget_DEV, Forecast_Manager_Widget_STAGE, Forecast_Manager_Widget. These are proposed new contracts, not claimed existing bindings.
+- Installed function/API: forecastManagerWidget; enabled Forecast_Manager_Widget_DEV and Forecast_Manager_Widget. Forecast_Manager_Widget_STAGE remains proposed and unconfigured.
 - Existing form Forecast_Manager, workflows, scheduled tasks, summary function and other widgets remain unchanged.
 
 ## Deployment and regression gates
@@ -95,6 +95,71 @@ References: [Zoho SDK2 custom API](https://www.zoho.com/creator/help/js-api/v2/c
 5. Run `node scripts/test-forecast-manager.mjs`, the inert browser fixture runner with Playwright available, `npm run validate`, and `npm run build:pages`. Inspect desktop/mobile renders and the progress result.
 6. Create an immutable frontend release, promote the appropriate environment mappings, deploy Pages and verify the published bootstrap and assets. Publish Creator components/APIs through the normal environment workflow only after the development gates pass. The final production URL is a delivery item after verification, not evidence that the backend is ready.
 
+Completed live results, retained Development test IDs, the selective audience, Production 9.57 publication, and limitations are recorded in [the October 8 deployment record](../releases/forecast-manager-backend-2026-10-08.md). Exact date boundaries and concurrent race cases must not be described as live verified when only offline fixtures covered them.
+
 ## Rollback
 
-The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings; it has the same backend contract and is also unverified in Creator. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+The prior immutable 1.1.0 candidate restores the pre-card frontend through environment mappings but keeps the same backend contract. Current frontend is 1.5.3; Creator backend 9.59 is published. The immediate presentation/interaction rollback is frontend 1.5.2. The pre-integration native manager is the operational rollback baseline. Keep the native Forecast_Manager registration available as the operational fallback. Roll back this new integration by removing its Page/widget entry and disabling any newly installed API bindings; restore prior mappings or remove forecast-manager mappings when withdrawing hosting. Do not delete forecast data during rollback. Persisted edits are real data, and newly created forecast parents/children require explicit reviewed data remediation if necessary.
+
+## Version 1.3.0 presentation and inventory
+
+The navy title card contains the native subdivision facts. The separate page
+heading and Forecast scope KPI strip are removed. Subdivision changes load
+automatically; failed/unknown entries block filter changes, and clearing the
+subdivision hides the workspace. Native 320px schedule cards sit to the right of
+the copied Data Insights all-date lot-status card, stacking on mobile.
+
+`forecastManagerWidget` adds `inventory` to snapshots/save/ensure responses:
+counts (Total, Sold, Scheduled, Contracted, Open), territory and the native Data
+Insights builder matrix. Close Date means Sold; otherwise Purchase Date means
+Scheduled; otherwise stored Sold/Scheduled/Contracted is used, with other values
+counted Open. Archived/model lots are included, no matrix builder/year filtering
+is applied, and builder rows exclude Open and group by trimmed display name to
+match Data Insights. This is a read-only addition; summary HTML and existing
+forecast guards/writes are unchanged. Missing inventory shows Unavailable, never
+fabricated zeroes. Backend deployment must precede frontend promotion.
+
+Rollback frontend mapping to immutable 1.2.1; the additive backend is backward
+compatible with that release. No data rollback is needed for this presentation
+and read-only response change.
+
+## Version 1.4 interaction correction
+
+Only button[data-view] triggers a view change. Month clicks retain the mounted
+input and typing focus. Sold/Scheduled numeric zeroes display blank in the matrix
+and totals; source values, forecast zeroes and exports remain unchanged.
+
+Row-level Create Forecast bypasses builder/year selection and captures the row's
+exact destination. Top-level Add Forecast opens the compact selector, restricted
+to native Builder.Type1 == Builder and supported WFY 2019–2046. The catalog
+adds type while retaining all legacy identities. Both routes call the existing
+one-parent/twelve-child ensure action with unchanged verification and recovery.
+The selected title is the compact light-statistics structure with navy coloring.
+Rollback to frontend 1.3.0; the additive catalog type remains backward-compatible.
+
+## Version 1.5.2 creation chooser
+
+Top Add Forecast starts with no builder or WFY selected and Create disabled. A
+read-only, full-subdivision snapshot refreshes existing Builder forecast parents
+on each opening, independent of the matrix filters. Any matching parent blocks
+Create (including incomplete or duplicate parents) and shows a subtle red message.
+Pending or failed conflict checks also keep Create disabled; closing ignores late
+responses. The native ensure preflight remains authoritative for concurrent writes
+and non-Builder status conflicts. No backend change or new API is needed.
+
+Put subdivision name/code in the navy modal header. Remove the route card and
+calendar-range sentence; retain searchable Type1 Builder and WFY 2019–2046 pickers.
+Add Forecast sits immediately after the fiscal-year filter; window status is 14px
+(40% larger). Inline creation and read-only unknown-result reconciliation are
+unchanged. Rollback frontend mapping to 1.5.1.
+
+## Version 1.5.3 visible builder rows
+
+The forecast matrix and CSV use only builder rows with a Forecast_Year parent or
+duplicate-parent issue in at least one selected year. Subdivision assignment alone
+does not create a row. Keep missing-year cells for the other selected years of a
+visible builder; keep incomplete/duplicate existing parents visible for review.
+With no matching rows show No forecast available. Top Add Forecast still offers
+all catalog Type1 Builder choices, so their first year can be created without an
+empty matrix row. Native summary/inventory scope, records and write guards are
+unchanged. Rollback frontend mapping to 1.5.2.
