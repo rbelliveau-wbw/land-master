@@ -3,6 +3,12 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.34` restores proposal-only action editing, uses the established
+full access endpoint, and allows manual Acquisition creation without Project
+or Subdivision. New records/actions retain Legal review; other privileges
+remain separate. [Diagnosis, verification and rollback](../../docs/contract-proposal-access-2026-10-08.md).
+Frontend only; rollback Production to `1.61.31`.
+
 Release `1.61.18` reduces the pricing-only black success confirmation another
 10%. Colors, scope and behavior remain unchanged. No Creator deployment.
 [Changes and rollback](../../knowledge/modules/contracts.md#pricing-confirmation-reduced-another-10-16118).

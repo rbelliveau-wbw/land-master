@@ -15,6 +15,20 @@ fallback. See [scope, verification and rollback](../../docs/owner-full-names.md)
 
 # Contracts Module
 
+## Proposal access and manual Acquisition (1.61.34)
+
+`Propose_Contract_Changes` permits ordinary action edits, completion/reopening,
+reordering and proposed Contract/action creation without `Edit_Contracts`.
+Inline saves now share that permission; new grid actions from proposal-only
+users are Proposed. Contracts returns to the established full access API while
+the lean endpoint's affected-user Production parity remains unverified.
+Approve/Delete/Archive/Templates and completed-contract locks remain separate.
+Acquisition is available for manual creation without Project or Subdivision;
+stale scope is cleared and excluded from save/setup. New parents remain Proposed
+for Legal review. Frontend only; no Creator publication. See
+[diagnosis, regression scope and rollback](../../docs/contract-proposal-access-2026-10-08.md).
+Rollback Production to 1.61.32.
+
 ## Attachment uploads in the existing workspace (1.61.29)
 
 Contract attachments accept either documented root or data file receipts and
