@@ -34,3 +34,43 @@ Rollback: remap frontend to **1.5.1** and deploy Pages; no data/backend rollback
 
 Local verification: `npm run validate` passed (exit 0). The final selection
 guard also passed focused model and JavaScript checks.
+
+Build: npm run build:pages passed, producing 31 environment paths. Main release
+commit: f73f551cc3e77c49a5184d723af0aba49c6cbed0.
+[Release CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/37811015174)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/37811015253)
+completed successfully.
+
+Supported inert chooser creation: StyleCraft/WFY 2027 sent one ensure, closed the
+chooser, revealed 12 month inputs, removed the missing combination and returned
+All changes saved. No progress/result modal was shown. This is fixture evidence,
+not a new Creator data-writing test.
+
+Live Creator Production: permanent registered URL loaded PRODUCTION v1.5.2 and
+Arroyo Ranch - Phase 05 automatically. Initial modal choices were empty/disabled.
+DR Horton/WFY 2027 showed the muted red conflict warning, with Create disabled.
+The compact modal was 430px wide/236px high with warning. Header contains AR05
+identity; no route card/date caption. All forecast actions use navy #0b2345 and
+white text. Add Forecast immediately follows the fiscal-year filter; window state
+is 14px. Removed schedule heading and bottom legend each have zero DOM matches.
+
+Current October 2026: one green month header, all four builder month cells and
+one totals cell; the same applies to Sold/Scheduled. All 27 header boundaries have
+one consistent 2px solid rgb(124,153,184) separator. Complete outlined schedule
+tracks measure 298px and monthly tracks 282px; 0% monthly meters retain visible
+empty tracks. Sold/Scheduled contain no displayed numeric zero month/footer cells.
+Clicking Adams Homes October preserves input focus/value without a save.
+
+Before/after read-only comparison: all 96 forecast IDs, values and edit-disabled
+states, plus all 52 native summary label/value pairs, are unchanged. No Production
+save/ensure was triggered. Creator functions, API bindings, native window/date
+restrictions and subdivision subtotal math remain as published in 9.59.
+
+Screenshot evidence saved locally under C:/Users/R/Desktop/claude/tmp/:
+forecast-manager-v1.5.2-conflict.png, forecast-manager-v1.5.2-matrix.png and
+forecast-manager-v1.5.2-production.png. The Creator tab remains open for review.
+
+Limit: chooser read-only availability checks cover Builder-status parents exposed
+by the existing snapshot. The unchanged native ensure preflight handles other
+status conflicts and changes made concurrently after a read. A failed lookup
+keeps Create disabled rather than assuming the combination is available.
