@@ -14,6 +14,7 @@
     "User_Access.Full_Name",
     "Company.ID",
     "Territory.Territory_Name",
+    "Territory.VP",
     "Budget_Approvals",
     "Contract_Approvals"
   ],
@@ -26,8 +27,10 @@
   },
   "steps": "Ordered steps JSON belongs to one policy version; no separate decision history",
   "confirmedPurchaseOrderRules": {
-    "defaultChain": "TBD; do not activate a guessed chain",
-    "cooCondition": "Budget modification attached means a specific Budget_Modification linked by Payment_Request.PO_Budget_Modification",
+    "defaultChain": "CFO always; also COO and Territory VP when any item exceeds available budget. Sequential order awaits user confirmation.",
+    "cooCondition": "Budget line exceeded: aggregate this PO by budget item and compare each item against its available budget after other POs, independently of pending modification credits",
+    "vpSource": "Exactly one current User_Access identity in the matching Territory.VP; no separate VP role assignment for POs",
+    "scope": "All-companies PO policy and CFO/COO assignments are supported; company-specific PO configuration takes precedence",
     "selfApproval": "Deny",
     "duplicatePerson": "Reject",
     "rejectionReservation": "Retain",
@@ -44,6 +47,7 @@
   "windows": "Start inclusive, end exclusive; overlapping published windows at same scope rejected",
   "api": {
     "name": "Manage_Approval_Policies_DEV",
+    "productionName": "Manage_Approval_Policies",
     "function": "manageApprovalPolicies",
     "authentication": "OAuth2",
     "userScope": "Admin only",
