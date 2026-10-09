@@ -1,5 +1,19 @@
 
 
+## Development release parity — October 9, 2026
+
+Development now uses the existing immutable Contracts `1.61.37` release.
+It had remained pinned to `1.61.5`, whose `ncTypeChoices` explicitly excluded
+Acquisition from New Contract. Manual Acquisition returned in `1.61.34`, but
+the subsequent Production promotions had not updated Development. This mapping
+change restores the picker and the current owned-edit/completed-lock behavior;
+the authenticated Creator environment still selects Development data and APIs.
+No Creator form, field, function or API changes or publication are required.
+Regression: manual Acquisition picker, location-free Proposed creation, owned
+editing/completed locks, stable environment routing and built Dev/release byte
+identity. Development now follows the repository-wide latest-release policy;
+see [release process and rollback](../../docs/release-process.md).
+
 ## Review badge loads on startup (1.61.37)
 
 Startup and Refresh start a pending-only LOI read in the background and patch the

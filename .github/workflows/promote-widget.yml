@@ -19,6 +19,8 @@ on:
           - contract-management
           - tax-center
           - milestone-gantt
+          - manage-lots
+          - lot-sales-explorer
           - settings-manager
           - forecast-manager
       version:

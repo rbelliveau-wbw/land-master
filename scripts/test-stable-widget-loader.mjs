@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {assertReleaseSource} from './lib/release-source-guard.mjs';
+import {latestWidgetRelease, developmentReleaseErrors} from './lib/development-releases.mjs';
 import vm from 'node:vm';
 import {stableWidgetLoader, stampLocalAssets, htmlAssetFingerprint} from './stable-widget-loader.mjs';
 
@@ -280,6 +281,10 @@ assert.notEqual(htmlAssetFingerprint('😃'), htmlAssetFingerprint('😄'), 'UTF
   const writeSource = (configVersion, html) => {fs.mkdirSync(sourceDir, {recursive:true}); fs.writeFileSync(configPath, JSON.stringify({version:configVersion})); fs.writeFileSync(sourcePath, html);};
   const createRelease = () => spawnSync(process.execPath, [fileURLToPath(new URL('./create-release.mjs', import.meta.url)),widget,version], {cwd:directory,encoding:'utf8'});
   try {
+    const environmentFile = path.join(directory, 'deploy', 'environments.json');
+    const deployment = {environments:{development:{[widget]:'1.2.3','other-widget':'2.0.0'},stage:{[widget]:'1.2.1'},production:{[widget]:'1.2.2'}},runtime_frontend_routing:[widget]};
+    fs.mkdirSync(path.dirname(environmentFile), {recursive:true}); fs.writeFileSync(environmentFile, JSON.stringify(deployment));
+    const initialEnvironmentBytes = fs.readFileSync(environmentFile);
     writeSource(version, '<script>const version="1.2.4";</script>');
     const result = assertReleaseSource(directory, widget, version);
     assert.equal(result.sourceHash, crypto.createHash('sha256').update(fs.readFileSync(sourcePath)).digest('hex'));
@@ -288,6 +293,7 @@ assert.notEqual(htmlAssetFingerprint('😃'), htmlAssetFingerprint('😄'), 'UTF
     assert.throws(() => assertReleaseSource(directory, widget, version), /config version must match/);
     const mismatch = createRelease(); assert.notEqual(mismatch.status, 0); assert.match(mismatch.stderr, /config version must match/);
     assert.equal(fs.existsSync(target), false);
+    assert(fs.readFileSync(environmentFile).equals(initialEnvironmentBytes), 'A failed release cannot change any environment mapping.');
     writeSource(version, '<script>const version="1.2.3";</script>');
     assert.throws(() => assertReleaseSource(directory, widget, version), /Stamp the requested version/);
     writeSource(version, '<script>const version="1.2.40";</script>');
@@ -310,9 +316,26 @@ assert.notEqual(htmlAssetFingerprint('😃'), htmlAssetFingerprint('😄'), 'UTF
     assertReleaseSource(directory, widget, version);
     assert.equal(fs.readFileSync(path.join(historical, 'release.json'), 'utf8'), '{historical nonstandard metadata', 'Existing historical metadata is never repaired/rejected retroactively.');
     const created = createRelease(); assert.equal(created.status, 0, created.stderr);
+    const updatedDeployment = JSON.parse(fs.readFileSync(environmentFile, 'utf8'));
+    assert.equal(updatedDeployment.environments.development[widget], version, 'The actual release CLI automatically promotes its widget to Development.');
+    assert.equal(updatedDeployment.environments.development['other-widget'], '2.0.0');
+    assert.deepEqual(updatedDeployment.environments.stage, deployment.environments.stage);
+    assert.deepEqual(updatedDeployment.environments.production, deployment.environments.production);
+    assert.deepEqual(updatedDeployment.runtime_frontend_routing, deployment.runtime_frontend_routing);
+    assert.deepEqual(developmentReleaseErrors(directory, [widget], updatedDeployment.environments.development), []);
+    assert.match(developmentReleaseErrors(directory, [widget], {[widget]:'1.2.3'})[0], /must use latest immutable release 1\.2\.4/);
+    assert.match(developmentReleaseErrors(directory, [widget], {})[0], /found \(missing\)/);
     assert(fs.readFileSync(path.join(target, 'index.html')).equals(fs.readFileSync(sourcePath)), 'Actual release CLI preserves source document bytes after passing preflight.');
     assert.equal(JSON.parse(fs.readFileSync(path.join(target, 'release.json'), 'utf8')).source_sha256, crypto.createHash('sha256').update(fs.readFileSync(sourcePath)).digest('hex'));
     const repeat = createRelease(); assert.notEqual(repeat.status, 0); assert.match(repeat.stderr, /already exists and is immutable/);
+    assert.deepEqual(JSON.parse(fs.readFileSync(environmentFile, 'utf8')), updatedDeployment, 'An immutable-release replay leaves all environment mappings intact.');
+    for (const candidate of ['1.9.20','1.10.0','2.0.0','10.0.0']) {
+      const candidatePath = path.join(directory, 'releases', widget, candidate); fs.mkdirSync(candidatePath, {recursive:true}); fs.writeFileSync(path.join(candidatePath, 'index.html'), '<html>Fixture</html>');
+    }
+    fs.mkdirSync(path.join(directory, 'releases', widget, '99.0.0'), {recursive:true});
+    assert.equal(latestWidgetRelease(directory, widget), '10.0.0', 'Numeric version ordering handles major/minor/patch boundaries and ignores incomplete folders.');
+    assert.match(developmentReleaseErrors(directory, [widget], updatedDeployment.environments.development)[0], /must use latest immutable release 10\.0\.0/);
+    assert.equal(latestWidgetRelease(directory, 'missing-widget'), null);
     const widgetRoot = new URL('../widgets/', import.meta.url);
     for (const entry of fs.readdirSync(widgetRoot, {withFileTypes:true}).filter(entry => entry.isDirectory())) {
       const config = new URL(`${entry.name}/widget.config.json`, widgetRoot), source = new URL(`${entry.name}/src/app/widget.html`, widgetRoot);

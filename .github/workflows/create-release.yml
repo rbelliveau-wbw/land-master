@@ -15,6 +15,8 @@ on:
           - contract-management
           - tax-center
           - milestone-gantt
+          - manage-lots
+          - lot-sales-explorer
           - settings-manager
           - forecast-manager
       version:
@@ -36,10 +38,12 @@ jobs:
           node-version: '20'
       - run: npm run validate
       - run: npm run release -- "${{ inputs.widget }}" "${{ inputs.version }}"
+      - run: npm run validate
+      - run: npm run build:pages
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
         with:
           branch: "release/${{ inputs.widget }}-${{ inputs.version }}"
           commit-message: "Release ${{ inputs.widget }} ${{ inputs.version }}"
           title: "Release ${{ inputs.widget }} ${{ inputs.version }}"
-          body: "Creates an immutable widget release. Review validation and promotion separately."
+          body: "Creates an immutable widget release and updates Development to the latest release. Includes validation and Pages build. Stage and Production promotion remain separate."
