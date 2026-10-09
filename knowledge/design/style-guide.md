@@ -163,11 +163,21 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 ## Filter and month pickers
 
+The multi-item PO ledger has its own single-select item picker. Offer only
+eligible items whose verified Final Budget plus approved signed modifications
+is nonzero. Each option shows Modified budget and After existing POs, with
+exact cents when present. A fully committed item remains selectable when its
+modified budget is nonzero. Retain old selections on saved POs. Keep the vendor
+field about 30% narrower than the former half-width header field on desktop;
+retain the existing narrow-screen layout. The proposed right-side grouped
+receipt is a mockup pending design approval.
+
 Check, Wire and Purchase Order creation uses Budget → finalized line item →
 searchable Vendor → request details. Global entry chooses Budget first; phase
 entry starts at line item. Only show eligible finalized items in the shared
 Bud Mod, Check, Wire and Purchase Order picker. Hide unavailable rows instead of
-showing disabled choices. Preserve finalized zero-value items and search by
+showing disabled choices. Preserve finalized zero-value items in the legacy
+shared request picker (the multi-item PO exception is above) and search by
 name or code. Use the Detail panel vendor picker: put the line-item name and
 code in its title bar; searchable rows show location/contact when present and
 select a candidate for the adjacent contact/phone/address/payment terms panel.

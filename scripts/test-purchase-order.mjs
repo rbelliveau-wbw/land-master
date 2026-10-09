@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import './test-po-item-picker.mjs';
 const ctx=vm.createContext({});
 vm.runInContext(await readFile(new URL('../widgets/budget-manager/src/app/po-domain.js',import.meta.url),'utf8'),ctx);
 const PO=ctx.LMPO;

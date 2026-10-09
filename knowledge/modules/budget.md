@@ -663,6 +663,25 @@ remaining controls. No Creator backend deployment is required. See
 
 ## Compact Purchase Order ledger (122.29.8)
 
+### Item picker refinement (122.29.9)
+
+The PO item dropdown excludes zero modified totals (Final Budget plus approved
+signed modifications) and unresolved balances. Options show that modified
+total and the remaining amount after existing reserved POs. When editing a
+reserved PO, its own saved allocation is added back before displaying
+availability. Negative modified totals and nonzero budgets with zero remaining
+funds remain eligible. Existing saved selections keep their display labels.
+The desktop vendor field is approximately 30% narrower. The right-side receipt
+panel is a separate design mockup and is not included in this release.
+
+Changed source: `po-ui.js`, `purchase-orders.css`, version/hash manifests,
+immutable release and Development/Production Budget mappings. No Creator forms,
+fields, functions or Custom APIs change; no Creator publication is required.
+Regression coverage executes the actual picker for signed modifications,
+duplicate own reservations, exhausted budgets, exact string IDs, saved zero
+selections, failed/loading reads and alphabetical order. Rollback: restore
+Budget mappings to 122.29.8 and rebuild Pages, retaining permanent widget URLs.
+
 The existing Budget widget accepts up to 100 thin line rows with an inline
 description, pencil editor, quantity, UOM, searchable Cost Element 1–5, unit price
 and total. Cost codes are generated from `C_`, the subdivision code, item minor
