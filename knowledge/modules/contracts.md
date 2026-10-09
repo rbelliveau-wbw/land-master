@@ -1,3 +1,19 @@
+## Archive persistence and Territory filter (1.61.40)
+
+Archive/Unarchive sends the existing `Contract.Archive` decision box as Creator's
+documented `"true"` / `"false"` strings. The existing exact-ID fresh read supplies
+the archive outcome: a denied, missing or unchanged flag leaves the contract
+visible and reports failure. This is specific to the archive operation; ordinary
+editable/calculated saves retain the established acknowledgement policy.
+Separate Delete/Archive access, current-session guards and completed locks remain.
+
+The main Contracts list and board share the modern searchable Territory
+multi-select, with alphabetized choices from current contracts, composed filters,
+and Clear filters support. No new forms, fields, APIs or Creator publication.
+Checks cover archive/restore, ignored/denied updates, missing Archive, denied
+permission, territory selection, multiple choices, search and reset. Rollback
+the widget mapping to `1.61.39`.
+
 ## Attachment acknowledgements and owned Lot pricing (1.61.39)
 
 Native FILE success (`code:3000` without explicit API failures) now confirms

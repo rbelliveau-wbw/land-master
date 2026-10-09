@@ -67,6 +67,10 @@ Lot contract reports use compact branch rows: pale blue on a Master with visible
 
 ## Record dropdowns
 
+Legal's main Contracts report includes an alphabetized Territory multi-select
+using its existing modern searchable filter popup. Compose it with the other
+report filters and search; keep the same selection, Clear and Done controls.
+
 Contract parent relationships use a compact blue bordered Parent Contract
 control in the expanded left summary, an optional searchable single picker in
 the new modal, and a compact relationship editor from the three-dot menu.

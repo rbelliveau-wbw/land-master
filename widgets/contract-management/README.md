@@ -3,6 +3,11 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.40` uses Creator string decision-box values for Archive/Unarchive,
+keeps the row visible when its archive state is not saved, and adds the modern
+Territory multi-select to the main Contracts list/board. Existing access and
+completed locks remain. No Creator deployment; rollback `1.61.39`.
+
 Release `1.61.34` restores proposal-only action editing, uses the established
 full access endpoint, and allows manual Acquisition creation without Project
 or Subdivision. New records/actions retain Legal review; other privileges
