@@ -21,7 +21,11 @@ map approvalConfigurationSnapshot()
 		}
 		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
 		for each companyRow in Company[ID != 0] { companies.add({"id":companyRow.ID.toString(),"label":companyRow.Company_Name}); }
-		for each territoryRow in Territory[ID != 0] { territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name}); }
+		for each territoryRow in Territory[ID != 0]
+		{
+			vpIds = List(); for each vpPerson in territoryRow.VP { if(!vpIds.contains(vpPerson.ID.toString())) { vpIds.add(vpPerson.ID.toString()); } }
+			territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name,"vpUserAccessIds":vpIds});
+		}
 		auditRows = List();
 		for each event in Approval_Config_Audit[ID != 0]
 		{

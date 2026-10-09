@@ -71,11 +71,18 @@ map resolveApprovalRoute(map context)
 				if(context.get("hasBudgetModification") != true) { applies = false; }
 				reason = "A budget modification is linked to this PO";
 			}
+			else if(condition == "Budget line exceeded")
+			{
+				if(policy.Workflow != "Purchase Order" || (context.get("hasBudgetOverrun") != true && context.get("hasBudgetOverrun") != false)) { result.put("error","An explicit PO budget-line overrun context is required."); return result; }
+				if(context.get("hasBudgetOverrun") != true) { applies = false; }
+				reason = "At least one PO budget item exceeds its available budget";
+			}
 			else if(condition != "Always") { result.put("error","Unsupported step condition."); return result; }
 			if(applies != true)
 			{
 				excludedReason = condition+" threshold is not met";
 				if(condition == "Budget modification attached") { excludedReason = "No budget modification is linked to this PO"; }
+				if(condition == "Budget line exceeded") { excludedReason = "All PO budget items are within their available budgets"; }
 				if(step.get("enabled") == false) { excludedReason = "Disabled"; }
 				excluded.add({"key":step.get("key"),"reason":excludedReason});
 			}
@@ -84,7 +91,19 @@ map resolveApprovalRoute(map context)
 				roleText = step.get("roleId").toString();
 				role = Approval_Role[ID == roleText.toLong()];
 				if(role.ID == null || role.Active != true) { result.put("error","Role is missing or inactive for step "+expectedOrder); return result; }
-				assignmentId = 0; assignmentRank = -1; assignmentCount = 0;
+				assignmentId = 0; assignmentRank = -1; assignmentCount = 0; personId = 0; assignmentActive = false;
+				territoryVP = policy.Workflow == "Purchase Order" && role.Role_Name == "VP";
+				if(territoryVP)
+				{
+					territoryRecord = Territory[Territory_Name == territory];
+					if(territoryRecord.count() != 1) { result.put("error","The PO territory must identify one Territory record with a VP."); return result; }
+					vpIds = List();
+					for each vpPerson in territoryRecord.VP { if(!vpIds.contains(vpPerson.ID)) { vpIds.add(vpPerson.ID); } }
+					if(vpIds.size() != 1) { result.put("error","Configure exactly one VP on the PO Territory record."); return result; }
+					personId = vpIds.get(0); assignmentActive = true;
+				}
+				else
+				{
 				for each assignment in Approval_Role_Assignment[Role == role.ID && Company == companyText.toLong()]
 				{
 					aTerritory = ifnull(assignment.Territory_Key,""); aDepartment = ifnull(assignment.Department_Key,"");
@@ -98,13 +117,16 @@ map resolveApprovalRoute(map context)
 				}
 				if(assignmentCount != 1) { result.put("error","Assignment for "+role.Role_Name+" is missing or ambiguous at the highest applicable scope."); return result; }
 				assignment = Approval_Role_Assignment[ID == assignmentId];
-				person = User_Access[ID == assignment.Person];
+				personId = assignment.Person; assignmentActive = assignment.Active == true;
+				}
+				person = User_Access[ID == personId];
 				email = ifnull(person.Approver_Email,"").trim();
-				if(assignment.Active != true || person.ID == null || person.Approval_Routing_Enabled != true || person.User == null || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
+				if(assignmentActive != true || person.ID == null || person.Approval_Routing_Enabled != true || person.User == null || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
 				if(policy.Self_Approval == "Deny" && person.ID.toString() == submitterText) { result.put("error","Policy forbids submitter self-approval."); return result; }
 				if(policy.Duplicate_Person == "Reject" && people.contains(person.ID.toString())) { result.put("error","One person fills multiple required roles; this policy rejects the overlap."); return result; }
 				people.add(person.ID.toString());
-				route.add({"order":route.size()+1,"policyStepOrder":expectedOrder,"key":step.get("key"),"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentId.toString(),"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason});
+				assignmentText = assignmentId.toString(); if(territoryVP) { assignmentText = ""; }
+				route.add({"order":route.size()+1,"policyStepOrder":expectedOrder,"key":step.get("key"),"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason});
 			}
 		}
 		if(route.size() == 0) { result.put("error","No enabled applicable approval steps."); return result; }

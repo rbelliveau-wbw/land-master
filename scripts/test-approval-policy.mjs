@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const ctx=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/settings-manager/src/app/approval-policy-domain.js','utf8'),ctx);
 const api=ctx.LMApprovalPolicy;
-const config={roles:[{id:'1',name:'VP',active:true},{id:'2',name:'COO',active:true}],users:[{id:'11',name:'First',user:'login-first',approverEmail:'first@example.com',routingEnabled:true},{id:'12',name:'Second',user:'login-second',approverEmail:'second@example.com',routingEnabled:true}],assignments:[{id:'21',roleId:'1',companyId:'31',userAccessId:'11',active:true},{id:'22',roleId:'2',companyId:'31',userAccessId:'12',active:true}],policies:[{id:'41',companyId:'31',workflow:'Purchase Order',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',steps:[{key:'vp',order:1,roleId:'1',condition:'Always',enabled:true},{key:'coo',order:2,roleId:'2',condition:'Above',threshold:'100.00',enabled:true}]}]};
+const config={roles:[{id:'1',name:'Legal',active:true},{id:'2',name:'COO',active:true}],users:[{id:'11',name:'First',user:'login-first',approverEmail:'first@example.com',routingEnabled:true},{id:'12',name:'Second',user:'login-second',approverEmail:'second@example.com',routingEnabled:true}],assignments:[{id:'21',roleId:'1',companyId:'31',userAccessId:'11',active:true},{id:'22',roleId:'2',companyId:'31',userAccessId:'12',active:true}],policies:[{id:'41',companyId:'31',workflow:'Purchase Order',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',steps:[{key:'first',order:1,roleId:'1',condition:'Always',enabled:true},{key:'coo',order:2,roleId:'2',condition:'Above',threshold:'100.00',enabled:true}]}]};
 const context={companyId:'31',workflow:'Purchase Order',submitterId:'19',territory:'North',department:'Development',amount:'100.00',effectiveDate:'2026-10-08',recordId:'51'};
 const clone=v=>JSON.parse(JSON.stringify(v));
 assert.equal(api.resolve(config,context).route.length,1);
@@ -39,3 +39,26 @@ for(const workflow of ['Pro Forma','Contract']){
   assert.equal(api.resolve(c,{...straight,amount:'9999999999999.99'}).route.length,2);
 }
 console.log('Policy threshold boundaries, explicit overrides, missing/inactive/ambiguous identities, overlap rules and detached snapshots passed.');
+
+// PO VP comes from the current Territory.VP, regardless of conflicting legacy
+// role assignments. Other workflows continue to use centralized assignments.
+c=clone(config);c.roles[0].name='VP';c.territories=[{id:'North',vpUserAccessIds:['12']}];
+assert.equal(api.resolve(c,context).route[0].userAccessId,'12');
+assert.equal(api.resolve(c,context).route[0].assignmentId,'');
+assert.throws(()=>api.resolve(c,{...context,territory:'Unknown'}),/Territory record/);
+c.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(c,context),/exactly one VP/);
+c.territories[0].vpUserAccessIds=['11','12'];assert.throws(()=>api.resolve(c,context),/exactly one VP/);
+c.territories[0].vpUserAccessIds=['19'];assert.throws(()=>api.resolve(c,context),/unroutable/);
+c.territories[0].vpUserAccessIds=['11'];assert.throws(()=>api.resolve(c,{...context,submitterId:'11'}),/self-approval/);
+c.territories[0].vpUserAccessIds=['12'];assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/overlap/);
+c.policies[0].workflow='Budget';assert.equal(api.resolve(c,{...context,workflow:'Budget'}).route[0].userAccessId,'11');
+
+c=clone(config);c.roles[0].name='CFO';c.policies[0].steps[1].condition='Budget line exceeded';
+assert.equal(api.resolve(c,{...context,amount:'999999.00',hasBudgetOverrun:false}).route.length,1);
+assert.equal(api.resolve(c,{...context,amount:'0.01',hasBudgetOverrun:true}).route.length,2);
+assert.throws(()=>api.resolve(c,context),/overrun context/);
+const nativePO=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');
+assert.match(nativePO,/groupedCents\.get\(itemKey\) > beforeAvailable/,'Overrun is item-level and does not use the full PO total or pending-modification credits.');
+assert.match(nativePO,/Every PO must include CFO approval/);
+assert.match(nativePO,/budgetExceeded && \(cooFound != true \|\| vpFound != true\)/);
+console.log('PO CFO requirement, item-level overrun condition and Territory VP identity resolution passed.');

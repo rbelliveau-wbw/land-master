@@ -164,8 +164,9 @@ string manageApprovalPolicies(string payload)
 					if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*") || !ifnull(step.get("key"),"").toString().matches("[A-Za-z0-9-]{1,80}") || role.ID == null || role.Active != true || step.get("order") != order || keys.contains(step.get("key")) || (step.get("enabled") != true && step.get("enabled") != false)) { result.put("error","Policy steps have invalid roles, order, keys or enabled flags."); }
 					keys.add(step.get("key")); condition = step.get("condition");
 					if((policy.Workflow == "Pro Forma" || policy.Workflow == "Contract") && condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); }
-					if(condition != "Always" && condition != "Above" && condition != "At or above" && condition != "Budget modification attached") { result.put("error","Unsupported step condition."); }
+					if(condition != "Always" && condition != "Above" && condition != "At or above" && condition != "Budget modification attached" && condition != "Budget line exceeded") { result.put("error","Unsupported step condition."); }
 					if(condition == "Budget modification attached" && policy.Workflow != "Purchase Order") { result.put("error","Linked budget modification conditions belong to Purchase Orders."); }
+					if(condition == "Budget line exceeded" && policy.Workflow != "Purchase Order") { result.put("error","Budget-line overrun conditions belong to Purchase Orders."); }
 					typedThreshold=Map(); typedThreshold.put("value",step.get("threshold"));
 					if((condition == "Above" || condition == "At or above") && !typedThreshold.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Threshold must be a decimal string."); }
 					if((condition == "Above" || condition == "At or above") && thisapp.poCurrencyString(ifnull(step.get("threshold"),"").toString()) == "") { result.put("error","Threshold must be exact currency."); }

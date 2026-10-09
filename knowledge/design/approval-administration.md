@@ -14,6 +14,14 @@ Published policies open as a new version. Show the evaluated people, ordered
 roles and inclusion/exclusion reasons in Preview. Compare server routing with
 the same configuration snapshot before displaying a verified route.
 
+Purchase Orders always require CFO approval. The Budget line exceeded condition
+adds COO and the territory VP when any item's combined PO lines exceed its
+available budget after existing POs. VP resolves directly from Territory.VP;
+the company role-assignment table continues to supply CFO and COO. Reject an
+empty or ambiguous territory VP, an unroutable person, submitter approval or
+one person filling multiple required steps. Preview uses the same territory
+lookup identities as the server. No new forms or Custom APIs are needed.
+
 Audit details show before/after values and the actor's User Access identity.
 Follow [transfer progress](transfer-progress.md) for configuration writes.
 Keep unknown writes locked in the dialog's recovery state and offer read-only

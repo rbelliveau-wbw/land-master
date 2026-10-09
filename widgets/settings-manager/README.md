@@ -1,11 +1,17 @@
 # Settings Manager
 
-## Shared approval administration candidate (1.4.0)
+## Shared approval administration (1.4.3)
 
-Development-only Roles, Assignments, versioned Policies, Preview and audit UI.
-No adapter is enabled and existing approval workflows remain unchanged. Native
-helper compilation, access guards and execution migrations remain required;
-see the [implementation and native handoff](../../creator/functions/PURCHASE_ORDER_HANDOFF.md).
+Settings → Approvals contains Roles, Assignments, versioned Policies, Preview
+and Audit in authenticated Development and Production sessions. The existing
+owner-only APIs and backend authorization remain in force. PO VP steps resolve
+from the selected Territory record's VP lookup rather than a separate role
+assignment. CFO is required on every PO; COO and territory VP are required if
+any item's allocation exceeds its available budget after other POs.
+
+Pro Forma and Budget templates initialize their existing linked Budget_Approvals
+records only when their workflow adapter is enabled. Existing decisions, notes,
+recipients and in-progress chains retain the original execution flow.
 
 A grouped, autosaving editor for the **single** Land Master `Settings` record.
 
@@ -26,8 +32,8 @@ record id baked into the page source.
 | Report | `All_Pro_Formas` | Options for the curve row `Pro_Forma` lookup |
 
 Existing Settings and curve data use native `ZOHO.CREATOR.DATA` SDK2 methods.
-The unpromoted approval administration candidate proposes the owner-only
-`Manage_Approval_Policies_DEV` Custom API; it is not yet registered.
+Approval administration uses the existing owner-only `Manage_Approval_Policies`
+or `Manage_Approval_Policies_DEV` Custom API selected by Creator environment.
 The existing critical-error reporter retains its separately configured Custom API.
 
 ## Sections

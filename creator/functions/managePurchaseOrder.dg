@@ -3,7 +3,7 @@ string managePurchaseOrder(string payload)
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
 	operationId = 0;
 	lockId = 0;
-	writeStarted = false; wasReserved = false; priorBundle = Map(); modificationPlan = List();
+	writeStarted = false; wasReserved = false; priorBundle = Map(); modificationPlan = List(); budgetExceeded = false;
 	try
 	{
 		p = payload.toMap();
@@ -215,6 +215,7 @@ string managePurchaseOrder(string payload)
 						beforeAvailable = available.get(itemKey)+ifnull(ownAllocation.get(itemKey),0); otherPending = ifnull(pendingCredits.get(itemKey),0)-ifnull(ownCredits.get(itemKey),0);
 						if(p.get("expectedBalances") == null || p.get("expectedBalances").get(itemKey) != beforeAvailable.toString() || p.get("expectedPendingModifications") == null || p.get("expectedPendingModifications").get(itemKey) != otherPending.toString()) { result.put("error","Item balances changed. Refresh and review before submitting."); }
 						shortfall = groupedCents.get(itemKey)-beforeAvailable-otherPending;
+						if(groupedCents.get(itemKey) > beforeAvailable) { budgetExceeded = true; }
 						if(shortfall > 0)
 						{
 							if(shortfall > 999999999999999) { result.put("error","Automatic modification exceeds supported currency capacity."); }
@@ -227,15 +228,16 @@ string managePurchaseOrder(string payload)
 			}
 			companyText = ""; territory = "";
 			if(budget.Subdivision1 != null) { territory = ifnull(budget.Subdivision1.Territory,""); if(budget.Subdivision1.Company1 != null) { companyText = budget.Subdivision1.Company1.ID.toString(); } }
-			context = {"workflow":"Purchase Order","budgetId":budgetId,"companyId":companyText,"territory":territory,"department":"","submitterId":access.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":p.get("amount"),"hasBudgetModification":modificationPlan.size() > 0};
+			context = {"workflow":"Purchase Order","budgetId":budgetId,"companyId":companyText,"territory":territory,"department":"","submitterId":access.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":p.get("amount"),"hasBudgetModification":modificationPlan.size() > 0,"hasBudgetOverrun":budgetExceeded};
 			resolved = thisapp.resolveApprovalRoute(context);
 			if(resolved.get("success") != true) { result.put("error",resolved.get("error")); }
 			else
 			{
-				cooFound = false;
+				cfoFound = false; cooFound = false; vpFound = false;
 				resolvedSnapshot = resolved.get("snapshot"); resolvedSteps = resolvedSnapshot.get("route"); approvalTitles = {"VP","Legal","CFO","COO","CEO"};
-				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role").toUpperCase() == "COO") { cooFound = true; } }
-				if(modificationPlan.size() > 0 && cooFound != true) { result.put("error","The PO template must include COO when a budget modification is required."); }
+				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role") == "CFO") { cfoFound = true; } if(step.get("role") == "COO") { cooFound = true; } if(step.get("role") == "VP") { vpFound = true; } }
+				if(cfoFound != true) { result.put("error","Every PO must include CFO approval."); }
+				if(budgetExceeded && (cooFound != true || vpFound != true)) { result.put("error","POs exceeding any available item budget require both COO and Territory VP approval."); }
 			}
 		}
 		operation = PO_Operation[ID == operationId];
