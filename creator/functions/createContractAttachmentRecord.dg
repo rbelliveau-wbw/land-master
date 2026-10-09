@@ -18,6 +18,12 @@ string createContractAttachmentRecord(string contractId)
 	}
 	try
 	{
+		if(ifnull(contractRows.Status,"").toString() == "Complete")
+		{
+			response.put("ok",false);
+			response.put("message","This contract is complete and read-only.");
+			return response.toString();
+		}
 		attachmentId = insert into Contract_Version
 		[
 			Contract1=vContractId.toLong()

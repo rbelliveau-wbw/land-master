@@ -7,19 +7,19 @@ function fn(name){ const start=source.indexOf('function '+name+'('); assert.ok(s
 const h=await ready({realDOM:true}),ctx=h.c,c={ID:'123',Contract_Type:'Lot',Status:'Complete',Owner:[{ID:'42'}],Lots1:[]};
 Object.assign(ctx.S,{myAccessId:'42',currentUser:'rbelliveau@wbdevelopment.com',acc:{known:true,edit:false},clp:{cid:'123',lots0:[]},nc:{sub:['20'],lotIds:[]},contracts:[c],lots:[]});
 h.reports[ctx.CFG.reports.contracts]=[c];
-assert.equal(ctx.mayChangeLotsPricing('123'),true);
+assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed owner cannot backfill');
 ctx.S.myAccessId='99'; ctx.S.acc.edit=true;
 assert.equal(ctx.mayChangeLotsPricing('123'),false,'general edit alone cannot unlock a completed contract');
 ctx.S.myAccessId='42'; c.Contract_Type='Deed'; assert.equal(ctx.mayChangeLotsPricing('123'),false); c.Contract_Type='Lot';
-assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Lots1:['1']}),false);
-assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Contract_Type:'Lot (Amendment)',Parent_Contract:'9'}),false);
+assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Lots1:['1']}),true);
+assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Contract_Type:'Lot (Amendment)',Parent_Contract:'9'}),true);
 assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Contract_Type:'Deed'}),true,'Lot editing cannot convert to unrelated contract types');
 assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Status:'New'}),true,'backfill must never reopen the contract');
 assert.equal(ctx.lockBlocks(ctx.CFG.reports.contracts,'123',{Lots1:['1'],Builder:'9'}),true);
 ctx.S.pricing=[{ID:'5',Contract1:{ID:'123'}}]; ctx.S.actions=[];ctx.S.approvals=[];ctx.S.versions=[];
-assert.equal(ctx.lockBlocks(ctx.CFG.reports.pricing,'5',{Base_Price:250}),false);
+assert.equal(ctx.lockBlocks(ctx.CFG.reports.pricing,'5',{Base_Price:250}),true);
 ctx.S.clp=null; assert.equal(ctx.lockBlocks(ctx.CFG.reports.pricing,'5',{Base_Price:250}),true); ctx.S.clp={cid:'123',lots0:[]};
-assert.match(ctx.contractBackfillBanner(),/All lot statuses are selectable/); ctx.S.currentUser='rbelliveau@another.com'; assert.equal(ctx.contractBackfillBanner(),''); ctx.S.currentUser='another'; assert.equal(ctx.contractBackfillBanner(),'');
+assert.equal(ctx.contractBackfillBanner(),'','temporary completed backfill banner is removed'); ctx.S.currentUser='rbelliveau@another.com'; assert.equal(ctx.contractBackfillBanner(),''); ctx.S.currentUser='another'; assert.equal(ctx.contractBackfillBanner(),'');
 for(const status of ['Open','Sold','Scheduled','Contracted','On Hold','',null,'Legacy']) {
   assert.equal(ctx.lotPickable({ID:'1',Status:status,Contract1:''},{}),true,'all unclaimed statuses can be selected');
   assert.equal(ctx.lotPickable({ID:'1',Status:status,Contract1:''},{'1':{id:'other'}}),false,'parent contract claims always block');
@@ -46,6 +46,6 @@ assert.throws(()=>ctx.lotMissingWrites({...blank,Lot_Size:50},c,pr,'9','7'),/siz
 assert.throws(()=>ctx.lotMissingWrites({ID:'1'},c,pr,'9','7'),/complete exact Lot/);
 await assert.rejects(ctx.updateRecord('1',{Base_Price:100000},ctx.CFG.reports.lots),/guarded server/);
 await assert.rejects(ctx.healLotWrites(c,{ids:['1'],prById:{'1':pr},buyerId:'9'},{scheduleId:'7'}),/safe Lot transfer/,'old unguarded repair cannot write');
-await assert.rejects(ctx.clpBackfillLinks('123',['1']),/Lot verification is unavailable/,'dormant backfill fails closed against an older backend');
+await assert.rejects(ctx.clpBackfillLinks('123',['1']),/read-only|Lot verification is unavailable/,'dormant backfill cannot write a completed contract');
 assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name===ctx.CFG.reports.lots).length,0);
-console.log('Contract owner backfill and unclaimed all-status selection remain; both contract association directions block, Open/blank-only transfers protect status/dates/buyer, zero/size preservation and no direct Lot updates pass.');
+console.log('Completed owner backfill is locked; unclaimed all-status selection remains; both contract association directions block, Open/blank-only transfers protect status/dates/buyer, zero/size preservation and no direct Lot updates pass.');

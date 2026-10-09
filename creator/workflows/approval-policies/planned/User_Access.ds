@@ -381,7 +381,7 @@ form User_Access
 	description
 	[
 		type = tooltip
-		message = "Full edit of contracts and their actions: status, fields, actions, approvals, attachments, lots and pricing. Also grants everything Propose Contract Changes gives. Completed contracts stay locked for everyone."
+		message = "Edit all open contracts and their actions, owners, approvals, attachments, lots and pricing. Includes Edit Owned Contracts and Actions. Completed contracts are read-only for everyone."
 	]
 		row = 4
 		column = 1
@@ -418,12 +418,12 @@ form User_Access
 	Propose_Contract_Changes
 	(
 	type = checkbox
-		displayname = "Propose Contract Changes"
+		displayname = "Edit Owned Contracts and Actions"
 		initial value = false
 	description
 	[
 		type = tooltip
-		message = "Dev Managers. Propose new contracts and propose, edit and reorder actions, all landing in Review for Legal rather than going live. Granted automatically by Edit Contracts."
+		message = "Edit your open contracts and all their actions, owners, approvals, attachments, lots and pricing. You must be added as an owner to edit. New records wait for Legal review. Completed contracts are read-only for everyone."
 	]
 		row = 4
 		column = 2

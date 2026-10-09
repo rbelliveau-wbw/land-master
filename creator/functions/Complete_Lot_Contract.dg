@@ -102,6 +102,11 @@ string Complete_Lot_Contract(string contractId)
 		resp.put("lotIds",contractLotIds);
 		return resp.toString();
 	}
+	if(ifnull(c.Status,"").toString() == "Complete")
+	{
+		resp.put("error","This contract is complete and read-only.");
+		return resp.toString();
+	}
 	if(pm.get("lotIds") != null)
 	{
 		for each suppliedLotId in pm.get("lotIds")

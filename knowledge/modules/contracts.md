@@ -1,5 +1,16 @@
 
 
+## Owned editing and completed lock — October 9, 2026
+
+The existing `Propose_Contract_Changes` checkbox is now labelled **Edit Owned
+Contracts and Actions**. It allows editing open contracts whose Owner list
+includes the current User Access ID, including Owner changes and child actions,
+files, pricing and approval routing. General editors can edit all open contracts.
+Completed contracts are read-only for everyone; this supersedes every historical
+completed-owner/backfill exception below. Separate Legal acceptance, parent
+delete/archive and template grants remain. See [scope, checks, Creator changes
+and rollback](../../docs/contract-owned-edit-2026-10-09.md).
+
 ## Save policy — October 8, 2026
 
 Acknowledged successful saves no longer compare refreshed editable/calculated

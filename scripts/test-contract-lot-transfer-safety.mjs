@@ -74,23 +74,12 @@ function completedEditor(h,checkOverride={}){
  h.c.S.nc={type:'Lot (Master)',project:'',builder:BUILDER,parent:'',sub:[SUB],lotIds:[LOT,OTHER],ppf:{40:'125',50:'200'}};h.c.S.clp={cid:ID,lots0:[LOT],ppf0:'{"40":"100"}',terms:{Number_of_Lots:'20',Initial_Takedown:'',Initial_Takedown_Days:'',Subsequent_Takedown_Lots:'',Subsequent_Takedown_Days:''}};
  h.reports.Contract_Pricing_Report=[{ID:(BigInt(NEW)+95n).toString(),Contract1:{ID},Lot_Size:'40',Price_per_Ft:'100',Base_Price:'4000'},{ID:(BigInt(NEW)+96n).toString(),Contract1:{ID},Lot_Size:'80',Price_per_Ft:'100',Base_Price:'8000'}];h.c.S.pricing=clone(h.reports.Contract_Pricing_Report);return {...f,rows};
 }
-{
- const h=await ready({realDOM:true}),f=completedEditor(h),native=h.api.updateRecordById,pricesAtParentSave=[];
- h.api.updateRecordById=async config=>{const result=await native(config);if(config.report_name==='All_Contracts1'){
-   const newPrice=h.reports.Contract_Pricing_Report.find(row=>Number(row.Lot_Size)===50);pricesAtParentSave.push(newPrice?.Base_Price);assert.equal(h.reports.Contract_Pricing_Report.length,2,'obsolete size is removed before the parent can trigger transfer');assert.equal(newPrice.Base_Price,10000);Object.assign(f.rows[1],{Base_Price:newPrice.Base_Price,Status:'Contracted',Builder1:BUILDER,Contract1:ID,Contract_Schedule:SCHEDULE});
-  }return result;};
- const result=await h.c.clpSave();assert.equal(result.error,null);assert.deepEqual(pricesAtParentSave,[10000]);assert.equal(f.rows[1].Base_Price,10000);assert.equal(f.rows[0].Base_Price,0);assert.deepEqual(h.reports.All_Contracts1[0].Lots1,[LOT,OTHER]);assert.deepEqual(f.calls.map(row=>row.mode),['Check','Check','LinkOnly']);assert.equal(nativeLotWrites(h).length,0);
- const parentIndex=h.calls.findIndex(call=>call.method==='update'&&call.config.report_name==='All_Contracts1'),priceIndices=h.calls.map((call,index)=>({call,index})).filter(({call})=>call.method==='delete'||call.method==='add'&&call.config.form_name==='Contract_Pricing'||call.method==='update'&&call.config.report_name==='Contract_Pricing_Report').map(({index})=>index);assert.ok(priceIndices.every(index=>index<parentIndex),'every verified pricing reconciliation write precedes the completed parent write');
+for(const flags of [{ctEdit:true,ctPropose:false},{ctEdit:false,ctPropose:true}]){
+ const h=await ready({realDOM:true,accessFlags:flags}),f=completedEditor(h),before=clone(h.reports);
+ assert.equal(await h.c.clpSave(),false,'completed contracts refuse Lots and Pricing before starting a write');
+ assert.deepEqual(h.reports,before);assert.deepEqual(f.calls,[]);assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0);
 }
-{
- const h=await ready({realDOM:true}),f=completedEditor(h),native=h.api.addRecords;h.api.addRecords=config=>config.form_name==='Contract_Pricing'?Promise.resolve({code:2945,message:'pricing fixture rejection'}):native(config);const result=await h.c.clpSave();assert.ok(result.error);assert.deepEqual(h.reports.All_Contracts1[0].Lots1,[{ID:LOT}]);assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name==='All_Contracts1').length,0,'failed pricing cannot trigger a completed-parent transfer with old prices');assert.equal(f.rows[1].Base_Price,'');assert.equal(f.rows[1].Status,'Open');assert.deepEqual(f.calls.map(row=>row.mode),['Check']);assert.equal(nativeLotWrites(h).length,0);
-}
-{
- const h=await ready({realDOM:true}),f=completedEditor(h,{lotTransferPolicy:undefined}),result=await h.c.clpSave();assert.ok(result.error);assert.equal(h.calls.filter(call=>['update','add','delete'].includes(call.method)).length,0,'a completed parent edit fails closed before pricing or native completion without the safe backend');assert.deepEqual(f.calls.map(row=>row.mode),['Check']);
-}
-{
- const h=await ready({realDOM:true}),f=completedEditor(h),native=h.api.updateRecordById;h.api.updateRecordById=async config=>{const result=await native(config);if(config.report_name==='Contract_Pricing_Report')h.reports.All_Contracts1[0].Lots1=[{ID:OTHER}];return result;};const result=await h.c.clpSave();assert.ok(result.error);assert.match(result.error,/selection changed/);assert.equal(h.calls.filter(call=>call.method==='update'&&call.config.report_name==='All_Contracts1').length,0);assert.deepEqual(h.reports.All_Contracts1[0].Lots1,[{ID:OTHER}]);assert.equal(f.rows[1].Base_Price,'');assert.equal(nativeLotWrites(h).length,0);
-}
+
 for(const wrap of [body=>({code:3000,message:'success',details:{output:JSON.stringify(body)}}),body=>({code:3000,result:JSON.stringify(body)}),body=>({code:3000,result:{body:JSON.stringify(body)}}),body=>({code:3000,details:{response:JSON.stringify({body})}}),body=>({code:3000,response:{data:{output:JSON.stringify(body)}}})]){
  const h=await ready({realDOM:true}),row=lot(),f=install(h,[row],(p,rows)=>{const before=beforeRows(rows);row.Contract1=ID;return response(p,before,rows,{[LOT]:['Contract1']});}),native=h.api.invokeCustomApi;
  h.api.invokeCustomApi=async config=>{const raw=await native(config);return config.api_name.startsWith('Complete_Lot_Contract')?wrap(JSON.parse(raw.details.output)):raw;};

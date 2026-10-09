@@ -105,6 +105,11 @@ for(const field of ['Number_of_Lots','Initial_Takedown','Initial_Takedown_Days',
  const h=fixture();h.db.Contract[0][field]=null;const out=h.run();assert.ok(out.error,'existing Production required terms remain enforced');assert.equal(h.events.length,0);
 }
 const productionBaseline=fs.readFileSync(new URL('../creator/functions/baseline/Complete_Lot_Contract.production-V9.43.2026-10-05.dg',import.meta.url),'utf8');
+for(const mode of ['Complete','LinkOnly']){
+ const h=fixture();h.db.Contract[0].Status='Complete';const before=structuredClone(h.db),out=h.run(mode);
+ assert.match(out.error,/read-only/);assert.equal(h.events.length,0);assert.deepEqual(JSON.parse(JSON.stringify(h.db)),before,'completed parent blocks every server transfer write');
+ assert.equal(h.run('Check').lotTransferPolicy,'open-blank-placeholder-v1','completed read-only capability checks remain available');
+}
 assert.doesNotMatch(productionBaseline,/Second_Closing/,'Captured Production rollback baseline remains unchanged');
 assert.doesNotMatch(source,/\bLot_Size\s*=(?!=)/m,'candidate never writes Lot Size');
 console.log('PASS actual Lot transfer candidate: read-only policy handshake, exact captured IDs, Open/blank and Placeholder gates, whole-Lot lifecycle protection, zero/size preservation, conditional fills, status last, unique pricing, shared schedules, LinkOnly and raced/dropped-write readback. Native compilation/deployment and isolation remain unverified.');

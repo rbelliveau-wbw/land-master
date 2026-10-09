@@ -50,7 +50,7 @@ ctx.ncApplyAccess({found:true,legalAssignedToMe:'false',Legal_Assigned_to_Me:'tr
 assert.equal(ctx.S.loiMine, false, 'normalized custom API key takes precedence over the field-name fallback');
 ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
 let deleteRequest;const nativeDelete=h.api.deleteRecords;
-h.reports[ctx.CFG.reports.contracts]=[{ID:'999999999999999999'}];
+h.reports[ctx.CFG.reports.contracts]=[{ID:'999999999999999999',Status:'New'}];
 h.api.deleteRecords=async args=>{deleteRequest=args;return nativeDelete(args);};
 await ctx.sdkDeleteById(ctx.CFG.reports.contracts,'999999999999999999');
 assert.equal(deleteRequest.payload.criteria, '(ID == 999999999999999999)');
@@ -74,7 +74,7 @@ assert.equal(ctx.lotCountWarning(3,[{ID:'1'},{ID:'2'}]), '2 selected / 3 total l
 const ownedLot={ID:'123',Contract_Type:'Lot',Status:'New',Owner:[{ID:'42'},{ID:'99'}]};
 ctx.findContract=()=>ownedLot;
 ctx.S.myAccessId='42';
-ctx.ncApplyAccess({found:true,ctEdit:false});
+ctx.ncApplyAccess({found:true,ctEdit:false,ctPropose:true});
 assert.equal(ctx.mayChangeLotsPricing('123'),true,'a contract owner can change lots without general edit access');
 ctx.S.myAccessId='77';
 assert.equal(ctx.mayChangeLotsPricing('123'),false,'another user cannot change lots');
@@ -85,7 +85,7 @@ assert.equal(ctx.mayChangeLotsPricing('123'),true,'general editors retain access
 ownedLot.Status='Complete';
 assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed contracts remain locked');
 ctx.S.myAccessId='42';
-assert.equal(ctx.mayChangeLotsPricing('123'),true,'completed Lot contracts allow owners to backfill');
+assert.equal(ctx.mayChangeLotsPricing('123'),false,'completed Lot contracts lock owners too');
 ownedLot.Status='New';
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'1.5'}), /whole numbers/);
 assert.throws(() => ctx.clpTermChanges({}, {Number_of_Lots:'-1'}), /whole numbers/);
@@ -94,7 +94,7 @@ const changes=ctx.clpTermChanges({Number_of_Lots:20,Initial_Takedown:10}, {Numbe
 assert.equal(changes.Number_of_Lots,30);
 assert.equal(changes.Second_Closing_Lots,20,'second terms exhaust the obligation so blank recurrence remains valid');
 // A terms-only edit must work with zero selected lots and must not delete pricing.
-const contract={ID:'123',Contract_Type:'Lot (Master)',Number_of_Lots:40,Lots1:[]};
+const contract={ID:'123',Status:'New',Contract_Type:'Lot (Master)',Number_of_Lots:40,Lots1:[]};
 ctx.S.nc={type:'Lot (Master)',parent:'',sub:[],lotIds:[],ppf:{}};
 ctx.S.clp={cid:'123',lots0:[],ppf0:'{}',terms:{Number_of_Lots:'45',Initial_Takedown:'10',Initial_Takedown_Days:'30',Second_Closing_Lots:'5',Second_Closing_Days:'45',Subsequent_Takedown_Lots:'5',Subsequent_Takedown_Days:'90'}};
 ctx.S.pricing=[{ID:'44',Contract1:{ID:'123'},Lot_Size:50,Price_per_Ft:1000,Base_Price:50000}];

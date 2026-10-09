@@ -7,8 +7,8 @@ string Send_Contract_Approvals(string contractId)
 
 	    A Custom API runs as the publishing admin, so the caller's identity comes
 	    in the body (the same way Get_User_Access_DEV receives it) and is checked
-	    against User_Access.Edit_Contracts - the same flag the widget's canEdit()
-	    is built on.
+	    against Edit Contracts or Edit Owned Contracts and Actions plus the
+	    Contract.Owner lookup. Completed contracts remain read-only.
 
 	    What it does, per approver whose Email switch is on and who is still
 	    Not Sent:
@@ -72,17 +72,28 @@ string Send_Contract_Approvals(string contractId)
 		requester = zoho.loginuser;
 	}
 	accessRow = User_Access[User == requester];
-	if(accessRow.ID == null || accessRow.Edit_Contracts != true)
-	{
-		resp.put("success",false);
-		resp.put("message","You do not have Edit Contracts permission, so you cannot send a contract for approvals.");
-		return resp.toString();
-	}
 	contract = Contract[ID == cid];
 	if(contract.ID == null)
 	{
 		resp.put("success",false);
 		resp.put("message","Contract not found.");
+		return resp.toString();
+	}
+	ownedEdit = false;
+	if(accessRow.ID != null && accessRow.Propose_Contract_Changes == true)
+	{
+		for each ownerId in contract.Owner
+		{
+			if(ownerId == accessRow.ID)
+			{
+				ownedEdit = true;
+			}
+		}
+	}
+	if(accessRow.ID == null || (accessRow.Edit_Contracts != true && ownedEdit != true))
+	{
+		resp.put("success",false);
+		resp.put("message","You need Edit Contracts permission or Edit Owned Contracts and Actions and to be added as an owner.");
 		return resp.toString();
 	}
 	if(contract.Archive == true)

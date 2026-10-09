@@ -22,10 +22,12 @@ for(const reply of [
   assert.equal(deletes(h)[0].config.payload.skip_workflow,undefined,'native validations and workflows remain enabled');
   assert.equal(h.reports.All_Contract_Actions.length,0);
   assert.equal(h.c.contractHasReviews(),false);
-  const reads=h.calls.slice(before).filter(call=>['count','records'].includes(call.method));
+  const allReads=h.calls.slice(before).filter(call=>['count','records'].includes(call.method));
+  assert.ok(allReads.some(call=>call.config.report_name===h.c.CFG.reports.contracts&&call.config.criteria==='(ID == '+ID+')'),'deletes check the current parent lock before dispatch');
+  const reads=allReads.filter(call=>call.config.report_name===h.c.CFG.reports.actions);
   assert.ok(reads.every(call=>call.config.report_name===h.c.CFG.reports.actions&&call.config.criteria==='(ID == '+ACTION+')'));
-  assert.equal(reads.filter(call=>call.method==='count').length,2,'preflight existence and post-delete absence use fresh counts');
-  assert.equal(reads.filter(call=>call.method==='records').length,1,'confirmed zero count needs no empty-page inference');
+  assert.equal(reads.filter(call=>call.method==='count').length,3,'current child scope, preflight existence and post-delete absence use fresh counts');
+  assert.equal(reads.filter(call=>call.method==='records').length,2,'current child scope and preflight; confirmed zero count needs no empty-page inference');
 }
 
 for(const reply of [validations,{code:3000,result:[{code:3000,data:{ID:Number(ID)}}]},{code:3000,result:[{code:3000,data:{id:ID}}]}]){
@@ -78,7 +80,7 @@ for(const conflict of [ID,Number(ACTION)]){
 
 {
   const h=await ready();h.reports.All_Contract_Actions=[];
-  await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION),/exact record was not returned/);
+  await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION),/current child record is unavailable|exact record was not returned/);
   assert.equal(deletes(h).length,0,'an already absent or invisible target cannot authorize a new delete');
   assert.equal(h.c.contractHasReviews(),false);
 }

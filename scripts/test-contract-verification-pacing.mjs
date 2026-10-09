@@ -6,7 +6,7 @@ const attempt=h=>Object.values(h.c.S.sdkMutationReviews||{})[0];
 
 {
   const h=await ready({ratePacing:true,fakeTime:true});
-  while(h.c.LMPerf.snapshot().rate.dispatched<39)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
+  while(h.c.LMPerf.snapshot().rate.dispatched<35)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
   const pending=h.c.updateRecord(ACTION,{Dev_Notes:'paced verification'},h.c.CFG.reports.actions);
   await drain();
   assert.equal(updates(h).length,1);assert.equal(attempt(h).status,'pending');assert.equal(attempt(h).verificationPending,true);
@@ -24,8 +24,9 @@ const attempt=h=>Object.values(h.c.S.sdkMutationReviews||{})[0];
 
 {
   const h=await ready({ratePacing:true,fakeTime:true}),held=deferred(),native=h.api.getRecords;
-  while(h.c.LMPerf.snapshot().rate.dispatched<37)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
-  h.api.getRecords=config=>config.report_name===h.c.CFG.reports.actions&&config.criteria==='(ID == '+ACTION+')'?held.promise.then(()=>native(config)):native(config);
+  while(h.c.LMPerf.snapshot().rate.dispatched<33)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
+  let childReads=0;
+  h.api.getRecords=config=>config.report_name===h.c.CFG.reports.actions&&config.criteria==='(ID == '+ACTION+')'&&++childReads>1?held.promise.then(()=>native(config)):native(config);
   const pending=h.c.updateRecord(ACTION,{Dev_Notes:'hung readback'},h.c.CFG.reports.actions),rejected=assert.rejects(pending,error=>error.noReplay===true);
   await drain();assert.equal(h.c.LMPerf.snapshot().active,1);assert.equal(attempt(h).verificationPending,true);
   const queued=h.c.LMData.request('unrelated-budget-queue',()=>({code:3000}));await drain();

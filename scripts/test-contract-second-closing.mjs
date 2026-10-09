@@ -51,7 +51,7 @@ const clpHTML=c.clpTermsPanel();assert.match(clpHTML,/Initial Closing.*Second Cl
 assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'typing and copying do not persist or update a schedule');
 
 Object.assign(c.S,{myAccessId:ACCESS,acc:{known:true,edit:true},contracts:[{...modern,Status:'Complete',Owner:[{ID:ACCESS}]}],clp:{cid:ID},nc:{sub:[SUB],lotIds:[]}});
-assert.equal(c.lockBlocks(c.CFG.reports.contracts,ID,{Second_Closing_Lots:18,Second_Closing_Days:60}),false,'completed owners can save only approved term fields in the active editor');
+assert.equal(c.lockBlocks(c.CFG.reports.contracts,ID,{Second_Closing_Lots:18,Second_Closing_Days:60}),true,'completed owners cannot change terms even in an active editor');
 assert.equal(c.lockBlocks(c.CFG.reports.contracts,ID,{Second_Closing_Lots:18,Status:'New'}),true);
 c.S.clp=null;assert.equal(c.lockBlocks(c.CFG.reports.contracts,ID,{Second_Closing_Lots:18}),true);
 h.reports.All_Contracts1=[{...modern,Status:'New'}];c.S.contracts=plain(h.reports.All_Contracts1);

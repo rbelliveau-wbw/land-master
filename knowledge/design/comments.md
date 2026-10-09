@@ -71,6 +71,10 @@ hidden controls alone do not establish authorization. Reply inserts a quote
 into the composer. Inline Edit retains Save/Cancel; Delete uses the widget's
 confirmation and existing soft-delete behavior. No native browser dialogs.
 
+Completed Contracts are read-only, including their comments. Their host disables
+the composer and author edit/delete controls and checks current parent status
+before comment writes. Open-contract posting and author windows remain unchanged.
+
 Disable duplicate Post/keyboard submissions and conflicting actions during a
 write. Show concise live status in the mounted thread. Clear a draft and update
 counts only after the intended persisted result is confirmed. Unknown create

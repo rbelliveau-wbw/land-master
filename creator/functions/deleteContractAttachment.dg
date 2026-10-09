@@ -17,6 +17,13 @@ string deleteContractAttachment(string contractId, string attachmentId)
 		response.put("message","Attachment record was not found for this Contract.");
 		return response.toString();
 	}
+	contractRows = Contract[ID == vContractId.toLong()];
+	if(contractRows.count() == 0 || ifnull(contractRows.Status,"").toString() == "Complete")
+	{
+		response.put("ok",false);
+		response.put("message","This contract is unavailable or complete and read-only.");
+		return response.toString();
+	}
 	try
 	{
 		delete from Contract_Version[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
