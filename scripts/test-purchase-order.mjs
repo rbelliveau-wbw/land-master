@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import './test-po-item-picker.mjs';
+import './test-po-summary.mjs';
 const ctx=vm.createContext({});
 vm.runInContext(await readFile(new URL('../widgets/budget-manager/src/app/po-domain.js',import.meta.url),'utf8'),ctx);
 const PO=ctx.LMPO;
@@ -53,3 +54,11 @@ assert.equal(allocation.allocated,202n);assert.equal(allocation.remaining,-102n)
 const own=PO.allocations(payload.lines,balances,payload.lines,[{budgetItemId:line.budgetItemId,amount:'0.50',status:'Rejected'}])[0];
 assert.equal(own.available,302n);assert.equal(own.pending,0n);assert.equal(own.shortfall,0n);
 console.log('Purchase order exact decimals, pricing nulls, grouping, draft/submit and legacy commitment tests passed.');
+
+const copied=PO.duplicate({...line,ID:'native-child',poId:'parent',revision:'saved-revision'},'new-line');
+assert.equal(copied.key,'new-line');
+for(const field of ['ID','poId','revision'])assert.equal(field in copied,false,'Never copy persisted '+field);
+for(const field of ['budgetItemId','description','uom','costElement','pricingMode','quantity','unitPrice','finalAmount','costCode'])assert.equal(copied[field],line[field]);
+const manualCopy=PO.duplicate(PO.override(line,'9.99'),'manual-copy');
+assert.equal(manualCopy.quantity,null);assert.equal(manualCopy.unitPrice,null);assert.equal(manualCopy.finalAmount,'9.99');
+console.log('PO duplicate: all entry fields preserved, manual nulls retained, native identities stripped.');

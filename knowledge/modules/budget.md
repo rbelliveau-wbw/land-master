@@ -729,3 +729,34 @@ rollback. Do not replay an unverified write.
 The existing `Budget_Management1` page accepts the Text page variable
 `purchaseOrderId`, alongside `budgetId`, `page` and `modificationId`. Combined PO
 approval emails open that saved PO inside the existing Budget Manager widget.
+
+
+### PO Summary, duplication and eligible costs (122.29.11)
+
+The existing PO dialog now includes a horizontal **Summary** panel on the right
+on desktop, stacked below the editor on narrower screens. Each distinct cost
+code appears once, with Modified budget, Existing POs, Available, This PO and
+Remaining. Repeated codes consolidate. Codes sharing a Budget Item show Shared:
+their This PO and Remaining use all current lines for that item, preserving the
+existing shared budget calculation rather than inventing element budgets.
+The total footer sums the PO once. Pending modification and automatic shortfall
+hints remain visible; unavailable balances display dashes. Saved reservations
+are restored once when showing this PO's before/after balance.
+
+Description stays inline; the pencil is replaced with a compact blue overlapping
+squares Duplicate line button. It inserts immediately after the source, keeps
+all entry fields and manual pricing nulls, generates a fresh key and strips native
+child/parent/revision IDs. Duplication stops at 100 lines and is hidden when locked.
+The searchable item dropdown excludes the 8000 and 9000 classes and cost codes
+4000–4099, retaining other 4000-class items. Existing saved selections remain
+readable; the nonzero modified-budget and category-lock requirements still apply.
+
+Changed source: po-domain.js, po-ui.js, purchase-orders.css and widget.html, plus
+focused tests, docs, version/hash manifests and immutable release. Development
+and Production use 122.29.11. No Creator forms, fields, functions or Custom APIs
+change; no Creator publication is required. Regression checks cover exclusions
+at 4099/4100 and class boundaries, copying without native identities, manual
+nulls, shared cost-code balances, own reservations and missing balances. Actual
+source browser checks cover desktop/narrow fit, duplicate placement and totals,
+and the 100-line cap. Rollback Production to 122.29.10 and rebuild Pages; keep
+Development on the latest complete release under the repository release policy.

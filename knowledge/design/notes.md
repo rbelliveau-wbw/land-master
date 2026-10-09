@@ -26,3 +26,9 @@ unknown writes from unsent failures. Verified saves update the yellow state and
 use the shared [success popup](success-feedback.md). Never claim an unknown save
 succeeded. In the Lots list, place Notes between Select and Lot rather than beside
 On Hold, and follow the report's read-only/Edit mode switch.
+
+
+The Purchase Order spreadsheet ledger is an explicit exception (October 9, 2026):
+Description remains an inline text field. Replace its pencil with a 23 px rounded
+square blue duplicate button containing overlapping squares, matching the user
+reference. Do not apply this exception to Budget's other item-note controls.

@@ -289,3 +289,9 @@ confirmations use one heading, without a repeated kicker.
 
 Insights waits for complete report data before populating any period; loading or
 failed history never leaves partial results visible.
+
+
+Purchase Order's companion receipt panel is titled Summary. Keep cost codes and
+all budget arithmetic on one horizontal table row, right-align tabular currency,
+and use green for nonnegative remaining budgets. It sits to the right on desktop
+and stacks on narrow screens with horizontal overflow contained inside its table.

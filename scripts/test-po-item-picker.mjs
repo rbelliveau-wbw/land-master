@@ -41,3 +41,14 @@ context.model.balanceState='unavailable';
 assert.equal(context.itemRows(true).length,0,'Failed balances do not authorize item choices');
 assert.equal(context.itemRows().length,6,'Existing selections retain their readable labels');
 console.log('PO item picker: signed modified totals, other PO reservations, saved selections, exact IDs and unavailable reads passed.');
+
+context.model.balanceState='loaded';
+const originals=context.options.items();
+const codes=['4000','4010','4099','4100','4500','4999','7999','8000','8500','8999','9000','9999'];
+context.options.items=()=>originals.concat(codes.map(code=>({ID:'code-'+code,Item_Name:code,Cost_Code:code})));
+context.model.balances.push(...codes.map(code=>({budgetItemId:'code-'+code,finalCents:'100',modCents:'0',availableCents:'100',minorCode:code})));
+const included=new Set(context.itemRows(true).map(row=>row.id));
+for(const code of ['4000','4010','4099','8000','8500','8999','9000','9999']) assert.equal(included.has('code-'+code),false,code+' excluded');
+for(const code of ['4100','4500','4999','7999']) assert.equal(included.has('code-'+code),true,code+' retained');
+assert.equal(context.itemRows().length,18,'Excluded existing selections remain readable');
+console.log('PO dropdown exclusions: land 4000–4099, classes 8000/9000; other 4000 items retained.');
