@@ -70,8 +70,12 @@ the same record's workspace on cancel; never use a native browser dialog.
 
 During a write, block duplicate and conflicting file actions and retain the
 mounted record context. Report errors beside the files and preserve reviewable
-results. A created child ID does not prove file upload succeeded: verify the
-file acknowledgement and persisted file under that same child and parent.
+results. A created child ID does not prove file upload succeeded: require the
+native FILE success acknowledgement and confirm the same child ID and parent.
+Native `code:3000` without an explicit API failure confirms that captured upload;
+filename and filepath metadata are optional. Do not compare refreshed file
+metadata after that acknowledgement: Creator can sanitize filenames or omit
+file fields. This supersedes the former automatic file-metadata equality gate.
 Unknown outcomes retain their inputs and require read-only recovery; they
 cannot trigger another insert, upload, alias retry or cleanup without proof.
 An unrecognized upload acknowledgement is not the final outcome: after its

@@ -229,6 +229,13 @@ Show complete cached prices immediately during refresh and preserve edits.
 Loading data must not briefly appear as a yellow missing-input step; arm that
 highlight only after selected Lot sizes are known and required prices are absent.
 
+Open Lot (Master) and Lot (Amendment) contracts expose Change Lots & Pricing in
+the workspace header, main-list drilldown and pricing card to general editors
+and users with Edit Owned Contracts and Actions who own that contract. Keep
+the button visible but disabled during a pending save or retained review;
+completed contracts and unauthorized users have no editing control. Callable
+open/save paths retain the same ownership, current-status and write guards.
+
 Lot contract creation reveals location, Builder, and name in small numbered cards. Start a Master with Type and the required Project; start an Amendment with Type and required Subdivision. Use a pale-yellow surface and amber outline for the next unfinished card and its missing required input, following Tax Parcel Year's active-step treatment. Completed cards lose the highlight. Keep optional subdivision and lot choices behind the contract identity, and pricing behind lot selection. Respect reduced motion and retain a visible keyboard focus ring.
 
 Show the editable Actions panel as soon as a Lot type is selected. Its template checklist stays visible while Project, Subdivision, Builder, and name are incomplete or cleared.

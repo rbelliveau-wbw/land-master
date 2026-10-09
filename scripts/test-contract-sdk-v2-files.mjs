@@ -19,7 +19,7 @@ function files(h,{fileMetadata='object'}={}){
  const bytes=await h.c.sdkReadVersionFile(id),blob=await h.c.fileResponseToBlob(bytes,'application/pdf');assert.deepEqual(Array.from(new Uint8Array(await blob.arrayBuffer())),[37,80,68,70,45,128,255],'native byte content retains high bytes');
  h.c.S.versions=structuredClone(h.reports.All_Contract_Versions);assert.equal(await h.c.doDeleteVersion(id,ID),true);assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,1);assert.equal(h.calls.filter(call=>call.method==='delete').length,0,'custom delete never replays direct SDK delete');assert.equal(h.reports.All_Contract_Versions.length,0);assert.equal(h.c.S.versions.length,0);
 }
-for(const envelope of [{code:3000},{code:3000,data:{filename:'fixture.pdf',filepath:'native_fixture.pdf',status:'failure'}},{code:3000,data:{filename:'fixture.pdf',filepath:'native_fixture.pdf'},result:[{code:2899}]},{code:3000,data:{filename:'fixture.pdf'}},{code:2898,message:'Denied file'}]){
+for(const envelope of [{code:3000,data:{filename:'fixture.pdf',filepath:'native_fixture.pdf',status:'failure'}},{code:3000,data:{filename:'fixture.pdf',filepath:'native_fixture.pdf'},result:[{code:2899}]},{code:2898,message:'Denied file'}]){
  const h=await ready(),f=files(h),id=await h.c.createContractAttachmentRecord(ID);let writes=0;h.c.ZOHO.CREATOR.FILE.uploadFile=async()=>{writes++;return envelope;};
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}));await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}));assert.equal(writes,1);assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Contract_Versions.length,1,'unknown file outcome never deletes its child');assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,0);
 }
@@ -94,7 +94,7 @@ console.log('PASS actual attachment batch controller: captured files/parent, exp
 
 {
  const h=await ready({realDOM:true}),f=files(h),other=(BigInt(ID)+600n).toString();h.c.S.contracts.push({...h.c.findContract(ID),ID:other,Contract_Name:'Another contract'});
- h.c.showAttachmentsModal(ID);h.c.ZOHO.CREATOR.FILE.uploadFile=async()=>({code:3000});
+ h.c.showAttachmentsModal(ID);h.c.ZOHO.CREATOR.FILE.uploadFile=async()=>{throw new Error('Upload acknowledgement lost');};
  const result=await h.c.addVersionFiles(ID,[{name:'retained-review.pdf',size:25}]);assert.ok(result.error);const run=h.c.S.contractWorkflowHistory[0];
  assert.notEqual(h.c.closeOverlays(),false,'a settled unresolved result may be dismissed without clearing its review ledger');assert.equal(h.c.document.getElementById('attStatus'),null);assert.equal(h.c.S.contractWorkflow,null);
  h.c.showAttachmentsModal(ID);const status=h.c.document.getElementById('attStatus');assert.ok(status,'the same contract can reopen its unresolved attachment result');assert.match(status.textContent,/review|check|verify/i);assert.ok(status.querySelector('button'));

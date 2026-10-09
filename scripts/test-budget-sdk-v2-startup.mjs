@@ -293,17 +293,22 @@ for(const response of [fileAck,rootFileAck,{...rootFileAck,data:{}},{...rootFile
   assert.equal(JSON.stringify(response),original,'normalization never modifies the native acknowledgement');
   if(response===fileAck)assert.equal(out,response,'existing SDK data envelope identity remains unchanged');
 }
-const fileFailures=[null,{}, {code:3000}, {code:3000,data:{ID:'1'}},
-  {code:3000,data:{filename:'',filepath:'stored_test.pdf'}}, {code:3000,data:{filename:'test.pdf',filepath:123}},
+for(const response of [{code:3000},{code:3000,data:{ID:'1'}},{code:3000,data:{filename:'',filepath:'stored_test.pdf'}},{code:3000,data:{filename:'test.pdf',filepath:123}},
+  {...rootFileAck,filepath:''},{...rootFileAck,filename:42},{...rootFileAck,data:{...fileAck.data}},
+  {...rootFileAck,data:{filename:'different.pdf',filepath:'different_path'}},{...rootFileAck,data:{filename:'test.pdf'}},{...rootFileAck,data:[fileAck.data]},{...rootFileAck,result:[]}]){
+  let uploads=0;FILE.uploadFile=async()=>{uploads++;return response;};const original=JSON.stringify(response);
+  assert.equal(transport.budgetUploadSuccess(response),true);
+  await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'});
+  assert.equal(uploads,1);assert.equal(JSON.stringify(response),original,'metadata is optional and the native receipt is immutable');
+}
+const fileFailures=[null,{},
   {code:3000,result:[{code:2894,message:'No report named All_Contract_Versions'}]},
   {code:3000,result:[fileAck,{code:2899,message:'Denied'}]},
   {...fileAck,success:false}, {...fileAck,data:{...fileAck.data,success:false}},
-  {...rootFileAck,success:false},{...rootFileAck,filepath:''},{...rootFileAck,filename:42},
-  {...rootFileAck,data:{...fileAck.data}},{...rootFileAck,data:{filename:'different.pdf',filepath:'different_path'}},
-  {...rootFileAck,data:{filename:'test.pdf'}},{...rootFileAck,data:[fileAck.data]},
+  {...rootFileAck,success:false},
   {...rootFileAck,details:{code:2898,message:'Denied'}},{...rootFileAck,details:{output:JSON.stringify({code:2899})}},
   {...rootFileAck,details:[{code:3000,data:{status:'failure'}}]},
-  {...fileAck,details:{success:false}},{...rootFileAck,result:[]},
+  {...fileAck,details:{success:false}},
   {...rootFileAck,code:2894,message:'No report named All_Contract_Versions'},
   ...['error','failed','failure'].flatMap(status => [{...fileAck,status},{...fileAck,data:{...fileAck.data,status}}])];
 for(const response of fileFailures) {
@@ -383,7 +388,7 @@ for(const uploadResponse of [rootFileAck,{...rootFileAck,data:{}},{...rootFileAc
 }
 for(const uploadResponse of [{...rootFileAck,filepath:'another_path'},{...rootFileAck,filename:'another.pdf'}]){
   const {context:c,counts}=attachmentHarness({uploadResponse});await c.uploadBudgetAttachments([selectedFile]);
-  assert.ok(c.S.attachmentUploadReview,'a root success receipt cannot excuse a persisted filename/path mismatch');assert.equal(await c.recheckBudgetAttachmentUpload(),false);assert.equal(counts.toasts,0);assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
+  assert.equal(c.S.attachmentUploadReview,null,'native upload success is not overturned by filename/path comparisons');assert.equal(counts.toasts,1);assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);
 }
 for(const options of [
   {uploadError:new Error('Upload applied but response lost')},
@@ -422,16 +427,18 @@ for(const options of [
 for(const options of [
   {uploadError:new Error('Unknown upload'),persist:false},
   {uploadError:new Error('Unknown upload'),readError:{code:2898,message:'Denied'}},
-  {readRow:row => ({...row,File_field1:{filename:'different.pdf',filepath:'wrong_path'}})},
   {readRow:row => ({...row,Budget:{ID:'99'}})},
-  {readRow:row => ({...row,ID:'99'})},
-  {readRow:row => {const next={...row};delete next.File_field1;return next;}}
+  {readRow:row => ({...row,ID:'99'})}
 ]) {
   const {context:c,counts}=attachmentHarness(options);
   await c.uploadBudgetAttachments([selectedFile]);
   assert.ok(c.S.attachmentUploadReview,'denied/mismatched/unreadable persisted state keeps review pending');
   assert.equal(await c.recheckBudgetAttachmentUpload(),false);assert.ok(c.S.attachmentUploadReview);
   assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);assert.equal(counts.toasts,0);
+}
+for(const readRow of [row=>({...row,File_field1:{filename:'different.pdf',filepath:'wrong_path'}}),row=>{const next={...row};delete next.File_field1;return next;}]){
+  const {context:c,counts}=attachmentHarness({uploadResponse:{code:3000},readRow});await c.uploadBudgetAttachments([selectedFile]);
+  assert.equal(counts.create,1);assert.equal(counts.upload,1);assert.equal(counts.delete,0);assert.equal(counts.toasts,1);assert.equal(c.S.attachmentUploadReview,null,'native success tolerates formatted or omitted file metadata');
 }
 {
   const {context:c,counts}=attachmentHarness({persist:false,uploadResponse:{code:2899,message:'No permission'}});

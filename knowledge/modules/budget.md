@@ -1,3 +1,17 @@
+## Attachment acknowledgements (122.29.12)
+
+Native FILE success (`code:3000` without explicit API failures) now confirms
+the captured upload even when Creator omits metadata or sanitizes filenames.
+Fresh reads still require the exact attachment ID, parent and current scope;
+unknown replies keep saved-file recovery and no-replay protections. Preview,
+download, delete and existing write permissions remain unchanged.
+
+Existing Purchase Order Summary and cost filters from 122.29.11 are retained.
+Regression: metadata-free/root/data success, changed or omitted report metadata,
+exact parent checks, native errors, held writes and read-only recovery. No
+Creator publication is required. Production rollback: `122.29.11`. See the
+[system save policy](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 ## Empty budget detail reporting (122.29.6)
 
 ## Save policy — October 8, 2026

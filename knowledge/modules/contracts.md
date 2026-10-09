@@ -1,3 +1,22 @@
+## Attachment acknowledgements and owned Lot pricing (1.61.39)
+
+Native FILE success (`code:3000` without explicit API failures) now confirms
+the captured upload even when Creator omits metadata or sanitizes filenames.
+Fresh reads still require the exact attachment ID, parent and current scope;
+unknown replies keep saved-file recovery and no-replay protections. Preview,
+download, delete and existing write permissions remain unchanged.
+
+Edit Owned Contracts and Actions exposes Change Lots & Pricing directly in the
+workspace header and existing drilldown/pricing card for owned open Lot (Master)
+and Lot (Amendment) contracts. A pending save/review disables the visible button;
+completed contracts stay read-only for every user. Open owned amendments of a
+completed master keep their own editing status. No backend changes.
+
+Regression: actual attachment batch with metadata-free success and sanitized CSV
+names in Production/Development/Stage; ownership-only modal opening; nonowner,
+completed, stale-parent, lost-reply and duplicate-write guards. Production
+rollback: `1.61.37`. See the [system save policy](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 
 
 ## Development release parity — October 9, 2026

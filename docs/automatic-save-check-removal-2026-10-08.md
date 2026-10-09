@@ -124,3 +124,40 @@ or backend publication is involved.
 | milestone-gantt | 1.1.9 | 1.1.8 |
 | settings-manager | 1.4.2 | 1.3.11 |
 | forecast-manager | 1.5.4 | 1.5.3 |
+
+## Attachment follow-up — October 9, 2026
+
+The supplied Contracts 1.61.37 audit confirms attachment creation, FILE upload
+and fresh record reads succeeded before the UI rejected missing native filepath
+metadata. All upload widgets had the same additional metadata gate. The exact
+raw upload reply was not supplied; regressions cover omitted metadata, alternate
+root/data envelopes and Creator-sanitized CSV filenames.
+
+Contracts 1.61.39, Budget 122.29.12 and Pro Forma 1.80.99 trust native FILE
+code:3000 success without explicit API failures. They no longer compare optional
+acknowledgement metadata or reread file fields after that success. Exact
+attachment ID, parent, count and session checks remain. Unrecognized/lost replies
+retain exact saved-file recovery with no repeated insert/upload. Other widgets
+have no FILE upload path and need no release for this fix.
+
+Affected existing form/report: Contract_Version / All_Contract_Versions; file
+field File_field1 and parents Contract1, Budget and Pro_Forma. Existing
+Create_Contract_Attachment_Record, Create_Budget_Attachment_Record and
+Create_Proforma_Attachment_Record Custom APIs (and environment variants) are
+unchanged. No Creator form, field, function, Custom API or publication changes.
+
+Contracts also exposes Change Lots & Pricing for users with Edit Owned Contracts
+and Actions on their owned open Lot (Master)/(Amendment) contracts. The button
+is visible but disabled during pending/review work, and absent for completed or
+unauthorized contracts. Fresh callable ownership/status guards stay intact.
+
+Regression checks execute actual widget/controller paths: metadata-free/sanitized
+file success, real nested errors, exact parent mismatch, stale sessions, lost
+replies, no replay, partial results and inline recovery; owned Lot modal opening
+and nonowner/completed refusals. Run npm run validate and npm run build:pages.
+Native Creator upload writes are not used as release tests.
+
+Development and Production mappings advance together for these three releases;
+Stage is unchanged. Production rollback mappings: Contracts 1.61.37, Budget
+122.29.11, Pro Forma 1.80.98. Follow the latest-release Development policy if
+creating a subsequent correction. No data rollback is involved.

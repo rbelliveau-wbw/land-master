@@ -3,6 +3,28 @@ import fs from 'node:fs';
 import {ready,drain,ID,ACTION,ACCESS,NEW} from './test-contract-sdk-v2-foundation.mjs';
 const owned={ctEdit:false,ctPropose:true,ctApprove:false,ctDeleteArchive:false,ctTemplates:false};
 const writes=h=>h.calls.filter(c=>['update','add','delete','upload'].includes(c.method));
+for(const type of ['Lot (Master)','Lot (Amendment)']){
+ const h=await ready({accessFlags:owned,realDOM:true});
+ for(const row of [h.c.findContract(ID),h.reports.All_Contracts1[0]])Object.assign(row,{Contract_Type:type});
+ h.c.S.selId=ID;h.c.S.view='detail';h.c.renderDetail();
+ const headerButtons=()=>Array.from(h.node('view').querySelectorAll('.info-nav button')).filter(node=>node.textContent==='Change Lots & Pricing');
+ assert.equal(h.c.canEdit(),false);assert.equal(h.c.mayChangeLotsPricing(ID),true);
+ assert.equal(headerButtons().length,1,'owned-only '+type+' has a direct workspace button');assert.equal(headerButtons()[0].disabled,false);
+ assert.match(h.c.drillRow(h.c.findContract(ID)),/Change Lots &amp; Pricing/);
+ h.c.clpOpen(ID);await drain();assert.equal(h.c.S.clp.cid,ID,'owned-only editor opens the actual Lots and Pricing modal');
+ assert.match(h.node('overlays').textContent,/Change Lots.*Pricing/);
+}
+{
+ const h=await ready({accessFlags:owned,realDOM:true});h.c.findContract(ID).Contract_Type='Lot (Master)';h.c.S.selId=ID;h.c.S.view='detail';
+ h.c.S.fileReviews={held:{status:'unknown'}};h.c.renderDetail();
+ const buttons=Array.from(h.node('view').querySelectorAll('.info-nav button')).filter(node=>node.textContent==='Change Lots & Pricing');
+ assert.equal(buttons.length,1,'a held attachment keeps the owned Lots and Pricing button visible');assert.equal(buttons[0].disabled,true);
+ assert.equal(h.c.mayChangeLotsPricing(ID),false);h.c.clpOpen(ID);assert.ok(!h.c.S.clp,'a review cannot bypass the pending-write guard');
+ assert.match(h.c.contractEditWarning(ID),/pending save/);assert.doesNotMatch(h.c.contractEditWarning(ID),/added as an owner/);
+ h.c.S.fileReviews={};h.c.renderDetail();assert.equal(h.c.mayChangeLotsPricing(ID),true);
+ h.c.findContract(ID).Owner=[{ID:NEW}];h.c.renderDetail();assert.equal(h.c.hasLotsPricingAccess(ID),false);assert.doesNotMatch(h.node('view').innerHTML,/Change Lots &amp; Pricing/);
+ h.c.findContract(ID).Owner=[{ID:ACCESS}];h.c.findContract(ID).Status='Complete';h.c.renderDetail();assert.equal(h.c.hasLotsPricingAccess(ID),false);assert.doesNotMatch(h.node('view').innerHTML,/Change Lots &amp; Pricing/);
+}
 {
  const h=await ready({accessFlags:owned}),master={ID:NEW,Contract_Type:'Lot (Master)',Status:'Complete',Owner:[{ID:ACCESS}]};
  h.reports.All_Contracts1.push(master);h.c.S.contracts.push({...master});

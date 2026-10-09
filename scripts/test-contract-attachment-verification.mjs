@@ -5,7 +5,7 @@ const PATH='1690000000000_fixture.pdf',OTHER=(BigInt(NEW)+200n).toString();
 function install(h,{email=true,uploadEnvelope,afterUpload}={}){
  const native=h.api.invokeCustomApi,calls={create:0,upload:0};
  h.api.invokeCustomApi=async config=>{
-  if(config.api_name!==h.c.CFG.customApis.createAttachment)return native(config);
+  if(config.api_name.replace(/_(DEV|STAGE)$/i,'')!==h.c.CFG.customApis.createAttachment.replace(/_(DEV|STAGE)$/i,''))return native(config);
   calls.create++;
   const row={ID:NEW,Contract1:{ID:config.payload.contractId},File_field1:''};
   if(email!==undefined)row.Email_Attachment=email;
@@ -24,7 +24,18 @@ function install(h,{email=true,uploadEnvelope,afterUpload}={}){
 
 for(const envelope of [
  {code:3000,data:{filename:'fixture.pdf',filepath:PATH,message:'success'}},
- {code:3000,filename:'fixture.pdf',filepath:PATH,message:'File uploaded successfully !'}
+ {code:3000,filename:'fixture.pdf',filepath:PATH,message:'File uploaded successfully !'},
+ {code:3000},
+ {code:3000,data:{message:'success'}},
+ {code:3000,result:[]},
+ {code:3000,data:[]},
+ {code:3000,data:'File uploaded successfully'},
+ {code:3000,data:JSON.stringify({filename:'fixture.pdf',filepath:PATH})},
+ {code:3000,filename:'fixture.pdf',filepath:PATH,data:{filename:'fixture.pdf',filepath:PATH}},
+ {code:3000,filename:'fixture.pdf',filepath:PATH,data:{}},
+ {code:3000,filename:'fixture.pdf'},
+ {code:3000,data:{filepath:PATH}},
+ {code:3000,filename:'',filepath:PATH}
 ]){
  const h=await ready(),calls=install(h,{uploadEnvelope:envelope}),id=await h.c.createContractAttachmentRecord(ID);
  await h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20});
@@ -33,17 +44,13 @@ for(const envelope of [
 }
 
 for(const envelope of [
- {code:3000,filename:'fixture.pdf',filepath:PATH,data:{filename:'fixture.pdf',filepath:PATH}},
- {code:3000,filename:'fixture.pdf',filepath:PATH,data:{}},
  {code:3000,filename:'fixture.pdf',filepath:PATH,status:'failure'},
  {code:3000,data:{filename:'fixture.pdf',filepath:PATH,status:'failure'}},
+ {code:3000,data:JSON.stringify({code:2899,message:'Denied'})},
  {code:3000,filename:'fixture.pdf',filepath:PATH,result:[{code:2898}]},
  {code:3000,data:{filename:'fixture.pdf',filepath:PATH},details:{output:{code:2898}}},
  {code:3000,filename:'fixture.pdf',filepath:PATH,payload:{code:2898}},
- {code:3000,filename:'fixture.pdf'},
- {code:3000,data:{filepath:PATH}},
- {code:2898,filename:'fixture.pdf',filepath:PATH},
- {code:3000,filename:'',filepath:PATH}
+ {code:2898,filename:'fixture.pdf',filepath:PATH}
 ]){
  const h=await ready(),calls=install(h,{uploadEnvelope:envelope,afterUpload:row=>{row.File_field1='';}}),id=await h.c.createContractAttachmentRecord(ID);
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}),error=>error.noReplay===true);
@@ -52,13 +59,23 @@ for(const envelope of [
  assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Contract_Versions.length,1,'unknown files retain their child');
 }
 
-for(const change of [row=>{row.Contract1={ID:OTHER};},row=>{row.File_field1='/download?filepath=another.pdf';}]){
+for(const change of [row=>{row.Contract1={ID:OTHER};}]){
  const h=await ready(),calls=install(h,{uploadEnvelope:{code:3000,filename:'fixture.pdf',filepath:PATH},afterUpload:change}),id=await h.c.createContractAttachmentRecord(ID);
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}),/verification/);
  const key=h.c.contractAttachmentKey('upload',ID,id);
  assert.equal(await h.c.recheckContractAttachment(key,'upload'),false,'root acknowledgement still requires exact persisted parent and path');
  Object.assign(h.reports.All_Contract_Versions[0],{Contract1:{ID},File_field1:{filepath:PATH}});
  assert.equal(await h.c.recheckContractAttachment(key,'upload'),true);assert.equal(calls.upload,1,'recheck is read-only');
+}
+
+for(const env of ['', 'development', 'stage']){
+ const h=await ready({realDOM:true,criticalReporter:true,initialize:()=>({envUrlFragment:env?'/environment/'+env:'',loginUser:'actual-actor@example.test'})}),calls=install(h,{uploadEnvelope:{code:3000},afterUpload:row=>{row.File_field1='/download?filepath=1791557700000_Land_Master_Users__1_.csv';}});
+ h.c.showAttachmentsModal(ID);
+ const result=await h.c.addVersionFiles(ID,[{name:'Land Master Users (1).csv',size:20}]);
+ assert.equal(result.error,null,'native success survives missing upload metadata and Creator filename sanitization');
+ assert.equal(calls.create,1);assert.equal(calls.upload,1);assert.equal(h.c.contractHasReviews(),false);
+ assert.equal(h.c.S.contractWorkflowHistory[0].entries.every(row=>row.state==='verified'),true);
+ assert.doesNotMatch(h.node('overlays').textContent,/needs read-only review|native uploaded file path/);
 }
 
 for(const receipt of [{code:3000},{code:3000,result:{message:'File saved'}},{code:3000,filename:'fixture.pdf',filepath:PATH,data:{filename:'fixture.pdf',filepath:PATH}}]){
@@ -96,7 +113,7 @@ for(const email of [undefined,false,'false']){
 {
  const h=await ready(),native=h.api.invokeCustomApi;let calls=0;
  h.api.invokeCustomApi=async config=>{
-  if(config.api_name!==h.c.CFG.customApis.createAttachment)return native(config);
+  if(config.api_name.replace(/_(DEV|STAGE)$/i,'')!==h.c.CFG.customApis.createAttachment.replace(/_(DEV|STAGE)$/i,''))return native(config);
   calls++;
   return {code:3000,details:{output:JSON.stringify({ok:false,message:'Attachment record creation failed: specific native validation fault ?tokenId=private-token&next=1'})}};
  };

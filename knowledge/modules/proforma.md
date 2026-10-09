@@ -1,3 +1,17 @@
+## Attachment acknowledgements (1.80.99)
+
+Native FILE success (`code:3000` without explicit API failures) now confirms
+the captured upload even when Creator omits metadata or sanitizes filenames.
+Fresh reads still require the exact attachment ID, parent and current scope;
+unknown replies keep saved-file recovery and no-replay protections. Preview,
+download, delete and existing write permissions remain unchanged.
+
+Regression: metadata-free success and sanitized/missing report fields across
+Production/Development/Stage, parent changes, real failures and lost replies,
+one native upload, partial batches and mounted inline progress. No Creator
+publication is required. Production rollback: `1.80.98`. See the
+[system save policy](../../docs/automatic-save-check-removal-2026-10-08.md).
+
 
 
 ## Save policy — October 8, 2026

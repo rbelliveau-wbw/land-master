@@ -8,6 +8,13 @@ const file=makeFile('receipt.bin'),path='native/'+file.name;
 const receipt={filename:file.name,filepath:path};
 const preview=config=>/^Get_Proforma_Attachment_Preview/.test(config.api_name)?{code:3000,result:JSON.stringify({success:true,base64:Buffer.from(bytes).toString('base64'),fileName:file.name})}:undefined;
 const blank=()=>({ID:OTHER,Pro_Forma:{ID},File_field1:''});
+for(const env of ['PRODUCTION','DEVELOPMENT','STAGE'])for(const metadata of ['sanitized','omitted']){
+ const csv=makeFile('Land Master Users (1).csv');
+ const h=await ready({init:()=>({envUrlFragment:env==='PRODUCTION'?'':'/environment/'+env.toLowerCase(),loginUser:'fixture@example.test'}),upload:(config,apply)=>{apply();const row=h.storage.All_Contract_Versions[0];if(metadata==='omitted')delete row.File_field1;else row.File_field1='native/Land_Master_Users__1_.csv';return {code:3000};}});
+ h.storage.All_Contract_Versions=[blank()];await h.widget.pfSdkUploadFile(OTHER,csv,ID);
+ assert.equal(h.widget.PFTransport.snapshot().reviews.length,0,'native success accepts optional/sanitized metadata in '+env);
+ assert.equal(h.widget.PFTransport.snapshot().ledger.at(-1).state,'verified');assert.equal(h.calls.filter(call=>call.method==='upload').length,1);
+}
 for(const rootReceipt of [false,true])for(const persisted of ['object','scalar','url','singleton']){
  const h=await ready({invoke:preview,upload:(config,apply)=>{apply();const value=persisted==='object'?{...receipt}:persisted==='scalar'?path:persisted==='url'?'/api/download?filepath='+encodeURIComponent(path):[{...receipt}];h.storage.All_Contract_Versions[0].File_field1=value;return rootReceipt?{code:3000,...receipt}:{code:3000,data:{...receipt}};}});
  h.storage.All_Contract_Versions=[blank()];await h.widget.pfSdkUploadFile(OTHER,file,ID);
@@ -45,13 +52,13 @@ for(const badField of [
  'https://example.test/download',
 ]){
  const h=await ready({invoke:preview,upload:(config,apply)=>{apply();h.storage.All_Contract_Versions[0].File_field1=badField;return {code:3000,...receipt};}});h.storage.All_Contract_Versions=[blank()];
- await assert.rejects(h.widget.pfSdkUploadFile(OTHER,file,ID),error=>error.noReplay);
- assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);
+ await h.widget.pfSdkUploadFile(OTHER,file,ID);
+ assert.equal(h.widget.PFTransport.snapshot().reviews.length,0,'acknowledged uploads never compare refreshed metadata');
 }
 for(const acknowledged of [false,true])for(const change of ['parent','name']){
- const h=await ready({upload:(config,apply)=>{apply();if(change==='parent')h.storage.All_Contract_Versions[0].Pro_Forma=OTHER;else h.storage.All_Contract_Versions[0].File_field1={filename:'wrong.bin',filepath:path};return acknowledged?{code:3000,...receipt}:{code:3000};}});h.storage.All_Contract_Versions=[blank()];
- await assert.rejects(h.widget.pfSdkUploadFile(OTHER,file,ID),error=>error.noReplay);
- assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'persisted '+change+' remains unverified');
+ const h=await ready({upload:(config,apply)=>{apply();if(change==='parent')h.storage.All_Contract_Versions[0].Pro_Forma=OTHER;else h.storage.All_Contract_Versions[0].File_field1={filename:'wrong.bin',filepath:path};return acknowledged?{code:3000,...receipt}:{};}});h.storage.All_Contract_Versions=[blank()];
+ if(acknowledged&&change==='name'){await h.widget.pfSdkUploadFile(OTHER,file,ID);assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);}
+ else{await assert.rejects(h.widget.pfSdkUploadFile(OTHER,file,ID),error=>error.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'persisted '+change+' remains unverified for a changed parent or lost acknowledgement');}
 }
 {
  const gate=held(),h=await ready({upload:(config,apply)=>{apply();return gate.promise;}});h.storage.All_Contract_Versions=[blank()];const pending=h.widget.pfSdkUploadFile(OTHER,file,ID);await drain();h.c.LMRuntime.apply({envUrlFragment:'/environment/stage',loginUser:'another@example.test'});gate.resolve({code:3000,...receipt});await assert.rejects(pending,error=>error.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1,'changed actor cannot verify a saved attachment');
@@ -76,7 +83,7 @@ function creator(config,storage,next){const content=preview(config);if(content)r
 }
 {
  let next=90071992548350000n,uploads=0,denyReadback=true;const files=[file,makeFile('second.bin'),makeFile('not-sent.bin')];
- const h=await ready({read:config=>{if(uploads===2&&denyReadback&&config.report_name==='All_Contract_Versions'&&/ID ==/.test(config.criteria||''))throw Error('Record read temporarily unavailable');},invoke:(config,storage)=>{if(/^Get_Proforma_Attachment_Preview/.test(config.api_name)&&uploads===2&&denyReadback)throw Error('Preview temporarily unavailable');return creator(config,storage,()=>next++);},upload:(config,apply)=>{apply();uploads++;const ack={filename:config.file.name,filepath:'native/'+config.file.name};return uploads===2?{code:3000,...ack,data:{...ack}}:{code:3000,...ack};}});
+ const h=await ready({read:config=>{if(uploads===2&&denyReadback&&config.report_name==='All_Contract_Versions'&&/ID ==/.test(config.criteria||''))throw Error('Record read temporarily unavailable');},invoke:(config,storage)=>{if(/^Get_Proforma_Attachment_Preview/.test(config.api_name)&&uploads===2&&denyReadback)throw Error('Preview temporarily unavailable');return creator(config,storage,()=>next++);},upload:(config,apply)=>{apply();uploads++;const ack={filename:config.file.name,filepath:'native/'+config.file.name};return uploads===2?{code:3000,...ack,success:false}:{code:3000,...ack};}});
  h.widget.S.attachmentsByPf[ID]=[];assert.equal(h.widget.openPfAttachmentModal(ID),true);await h.widget.uploadPfAttachments(files,h.widget.pfAttachmentActionContext(true));await drain();
  assert.deepEqual(Array.from(h.widget.S.attachmentUploadResults,row=>row.state),['Added','Needs review','Not sent']);assert.equal(uploads,2);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);assert.equal(h.document.getElementById('pfAttachmentModalRecheck').hidden,false);assert.equal(h.document.getElementById('pfNativeProgress').hidden,true);
  const terminalClose=await h.dispatch('click',h.document.getElementById('proformaAttachmentModalClose'),{type:'click'});assert.notEqual(terminalClose.prevented,true,'capture gate allows terminal inline Close');await h.document.getElementById('proformaAttachmentModalClose').fire('click');

@@ -66,6 +66,10 @@ counts, actual API failures, prewrite validation, operation-specific protections
 and duplicate-send guards. Exact comparisons are allowed for explicit read-only
 recovery of lost/ambiguous replies. See [the system save policy](docs/automatic-save-check-removal-2026-10-08.md).
 
+Native FILE `code:3000` success without explicit API failures follows the same
+policy: optional filename/path or refreshed file metadata must not gate success.
+Keep exact attachment ID/parent/scope confirmation and unknown-reply recovery.
+
 ## UI copy style
 
 - Robby does not like verbose explanatory text blocks in widget UI (2026-08-13).
