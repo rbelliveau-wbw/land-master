@@ -3,7 +3,7 @@
 
 Contract management and token-based LOI legal review.
 
-Release `1.61.40` uses Creator string decision-box values for Archive/Unarchive,
+Release `1.61.41` uses Creator string decision-box values for Archive/Unarchive,
 keeps the row visible when its archive state is not saved, and adds the modern
 Territory multi-select to the main Contracts list/board. Existing access and
 completed locks remain. No Creator deployment; rollback `1.61.39`.

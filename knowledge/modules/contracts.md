@@ -1,4 +1,4 @@
-## Archive persistence and Territory filter (1.61.40)
+## Archive persistence and Territory filter (1.61.41)
 
 Archive/Unarchive sends the existing `Contract.Archive` decision box as Creator's
 documented `"true"` / `"false"` strings. The existing exact-ID fresh read supplies
@@ -13,6 +13,8 @@ and Clear filters support. No new forms, fields, APIs or Creator publication.
 Checks cover archive/restore, ignored/denied updates, missing Archive, denied
 permission, territory selection, multiple choices, search and reset. Rollback
 the widget mapping to `1.61.39`.
+
+Native Development verification as demouser_1 / Contract Mgmt reproduced the original archive bug. Contract.Archive is Admin Only in the native field builder, so this profile cannot persist it; the new guard correctly keeps the row visible and reports failure. Changing field visibility and publishing it requires separate confirmation. The Territory selector is frontend only. Version 1.61.41 also restores controls after an archive failure.
 
 ## Attachment acknowledgements and owned Lot pricing (1.61.39)
 
