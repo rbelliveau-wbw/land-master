@@ -26,6 +26,10 @@ an edit after completion or ownership removal. This is prewrite authorization;
 the prohibited automatic post-save editable-field equality check stays removed.
 Viewing files, comments and read-only recovery remain available.
 
+An open child or amendment does not inherit its master's completed lock. Status
+and ownership are checked on the contract being changed; its actions use that
+contract's status and owners. Existing Lot eligibility and claim guards remain.
+
 ## Creator and release
 
 Existing forms/fields: `User_Access.Propose_Contract_Changes`, `Edit_Contracts`,

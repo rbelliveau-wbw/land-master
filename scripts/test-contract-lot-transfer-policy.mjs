@@ -5,7 +5,7 @@ import vm from 'node:vm';
 // Execute the saved candidate through a narrow Deluge syntax adapter. This is
 // not a Creator compiler and makes no claim about native transaction isolation.
 const source=fs.readFileSync(new URL('../creator/functions/Complete_Lot_Contract.dg',import.meta.url),'utf8');
-const fields=['ID','Lots1','Contract1','Lot_Size','Builder_Name','Builder1','Status','Close_Date','Purchase_Date','Contract_Schedule','Base_Price','Escalator','Takedown_Schedule_Code','Subdivisions'];
+const fields=['ID','Lots1','Contract1','Parent_Contract','Lot_Size','Builder_Name','Builder1','Status','Close_Date','Purchase_Date','Contract_Schedule','Base_Price','Escalator','Takedown_Schedule_Code','Subdivisions'];
 const forms='Contract_Pricing|Takedown_Schedule|Subdivision|Contract|Builder|Lots';
 function criterion(expression){
  expression=expression.replace(/\b(Lots1|Subdivisions)\s*==\s*(\w+)/g,'$1.includes($2)');
@@ -105,6 +105,12 @@ for(const field of ['Number_of_Lots','Initial_Takedown','Initial_Takedown_Days',
  const h=fixture();h.db.Contract[0][field]=null;const out=h.run();assert.ok(out.error,'existing Production required terms remain enforced');assert.equal(h.events.length,0);
 }
 const productionBaseline=fs.readFileSync(new URL('../creator/functions/baseline/Complete_Lot_Contract.production-V9.43.2026-10-05.dg',import.meta.url),'utf8');
+for(const mode of ['Complete','LinkOnly']){
+ const master={ID:OTHER,Contract_Type:'Lot (Master)',Status:'Complete',Parent_Contract:null,Builder:BUYER,Project:'project',Lots1:list([])},h=fixture({contracts:[master]});
+ Object.assign(h.db.Contract[0],{Contract_Type:'Lot (Amendment)',Status:'New',Parent_Contract:OTHER,Project:'project'});
+ const before=JSON.parse(JSON.stringify(master)),out=h.run(mode);assert.equal(out.error,undefined,'an open amendment can transfer lots under a completed master');
+ assert.equal(out.outcomes[0].verified,true);assert.equal(h.db.Lots[0].Contract1,ID);assert.deepEqual(JSON.parse(JSON.stringify(master)),before,'completed master is untouched');
+}
 for(const mode of ['Complete','LinkOnly']){
  const h=fixture();h.db.Contract[0].Status='Complete';const before=structuredClone(h.db),out=h.run(mode);
  assert.match(out.error,/read-only/);assert.equal(h.events.length,0);assert.deepEqual(JSON.parse(JSON.stringify(h.db)),before,'completed parent blocks every server transfer write');

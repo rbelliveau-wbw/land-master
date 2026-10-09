@@ -4,6 +4,16 @@ import {ready,drain,ID,ACTION,ACCESS,NEW} from './test-contract-sdk-v2-foundatio
 const owned={ctEdit:false,ctPropose:true,ctApprove:false,ctDeleteArchive:false,ctTemplates:false};
 const writes=h=>h.calls.filter(c=>['update','add','delete','upload'].includes(c.method));
 {
+ const h=await ready({accessFlags:owned}),master={ID:NEW,Contract_Type:'Lot (Master)',Status:'Complete',Owner:[{ID:ACCESS}]};
+ h.reports.All_Contracts1.push(master);h.c.S.contracts.push({...master});
+ for(const row of [h.reports.All_Contracts1[0],h.c.findContract(ID)])Object.assign(row,{Contract_Type:'Lot (Amendment)',Parent_Contract:{ID:NEW}});
+ assert.equal(h.c.mayEdit(NEW),false);assert.equal(h.c.mayEdit(ID),true,'an open owned child does not inherit its completed master lock');
+ await h.c.updateRecord(ID,{Contract_Name:'Open amendment'},h.c.CFG.reports.contracts);
+ await h.c.updateRecord(ACTION,{Dev_Notes:'Open child action'},h.c.CFG.reports.actions);
+ assert.equal(h.reports.All_Contracts1[0].Contract_Name,'Open amendment');assert.equal(h.reports.All_Contract_Actions[0].Dev_Notes,'Open child action');
+ assert.equal(master.Status,'Complete');assert.equal(writes(h).length,2,'only the child and its action are changed');
+}
+{
  const h=await ready({accessFlags:owned,realDOM:true});assert.equal(h.c.mayEdit(ID),true);
  h.c.S.ownerEdit={cid:ID};h.c.S.ownerPick=[ACCESS,NEW];
  // Use the existing Owner picker, including removing your own access.
