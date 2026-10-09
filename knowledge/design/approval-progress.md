@@ -12,6 +12,10 @@ This is Robby's preferred interaction for sending, advancing, rejecting, and com
 
 ### Phase labels in current modules
 
+The Pro Forma Send for Approvals tooltip directs users to complete the Offer:
+"Complete all required fields in the Offer section before sending for approval."
+Once its deferred options load, retain the specific missing-field reasons.
+
 | Action | Phase 1 | Phase 2 | Phase 3 |
 | --- | --- | --- | --- |
 | Budget, non-final Approve | Recording approval | Activating the next approver | Sending approval email |

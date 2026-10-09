@@ -7,6 +7,16 @@ fields with the submitted payload. Record identity/count, real API errors,
 preflight and duplicate-send guards remain; explicit unknown-reply recovery is
 read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
+## Approval readiness tooltip (1.80.97)
+
+Before deferred company, seller and property options load, Send for Approvals says:
+"Complete all required fields in the Offer section before sending for approval."
+After loading, the existing checks still identify missing fields. This changes
+copy only; no forms, fields, functions or Custom APIs change, and no Creator
+deployment is required. Regression: deferred startup, Offer readiness and approval
+progress checks, repository validation and Pages build. Production rollback:
+1.80.95 via `deploy/environments.json`.
+
 ## Main-page currency (1.80.94)
 
 The main list rounds Land Cost and Net Profit to the nearest dollar, preserving
@@ -719,7 +729,7 @@ The send action opens the persistent Contracts-style progress and per-Budget ver
 
 ## Startup/report refinement — 2026-10-04
 
-Pro Forma 1.80.71 shows the complete authorized header/approval list before loading company, seller, property and template options. A dependent action waits for all options to publish atomically for its actor/load. A failed or stale read cannot seed a draft or substitute an empty collection. The main-list approval readiness message stays explicitly unverified until options load; original checks then run. Same-fixture startup requests: 29 → 9, with all 2,139 properties retained after the deferred load. No Creator deployment; rollback 1.80.69.
+Pro Forma 1.80.71 shows the complete authorized header/approval list before loading company, seller, property and template options. A dependent action waits for all options to publish atomically for its actor/load. A failed or stale read cannot seed a draft or substitute an empty collection. The main-list approval readiness message directs users to complete required Offer fields (wording updated in 1.80.97); original checks run when options load. Same-fixture startup requests: 29 → 9, with all 2,139 properties retained after the deferred load. No Creator deployment; rollback 1.80.69.
 
 Evidence and further improvements: [startup refinements](../../docs/startup-refinements-2026-10-04.md).
 # SDK2 lot-mix save hotfix — 2026-10-05
