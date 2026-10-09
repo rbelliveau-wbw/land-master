@@ -7,6 +7,14 @@ fields with the submitted payload. Record identity/count, real API errors,
 preflight and duplicate-send guards remain; explicit unknown-reply recovery is
 read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
+## Approval tooltip layering (1.80.98)
+
+The approval header sits above the route and its numbered steps so Send for
+Approvals reasons remain visible on hover and keyboard focus. This changes CSS
+only; no Creator deployment is required. Regression: overlapping tooltip and
+COO step, hover/focus, approval progress, repository validation and Pages build.
+Production rollback: 1.80.97 via `deploy/environments.json`.
+
 ## Approval readiness tooltip (1.80.97)
 
 Before deferred company, seller and property options load, Send for Approvals says:

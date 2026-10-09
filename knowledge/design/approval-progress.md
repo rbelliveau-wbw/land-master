@@ -15,6 +15,14 @@ This is Robby's preferred interaction for sending, advancing, rejecting, and com
 The Pro Forma Send for Approvals tooltip directs users to complete the Offer:
 "Complete all required fields in the Offer section before sending for approval."
 Once its deferred options load, retain the specific missing-field reasons.
+Keep the approval header in a positioned layer above the route and its numbered
+steps so the tooltip remains readable on hover and keyboard focus.
+
+Legal's Review badge loads on module startup and refresh without delaying the
+Contracts page. Count a proposed contract and all its actions once, each proposed
+action on an existing contract once, and each pending LOI once. The badge shows
+the whole queue regardless of page filters; patch its mounted count as background
+data arrives. Denied or pending LOI reads retain an explicitly incomplete count.
 
 | Action | Phase 1 | Phase 2 | Phase 3 |
 | --- | --- | --- | --- |

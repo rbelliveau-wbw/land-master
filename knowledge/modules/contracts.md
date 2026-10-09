@@ -1,5 +1,21 @@
 
 
+## Review badge loads on startup (1.61.37)
+
+Startup and Refresh start a pending-only LOI read in the background and patch the
+mounted Review badge when it settles. A proposed contract and all its actions
+count as one item; each separately proposed action and each pending LOI count as
+one. Page filters do not change the badge. Contracts stay usable while LOIs load
+or are denied; incomplete counts retain the existing `+` or dash indicator.
+This supersedes the click-only LOI loading in 1.60.54 below. No new form, field,
+backend function, Custom API or Creator deployment is required. Existing
+`Add_Pro_Forma.LOI_Legal_Status` is read through `All_Pro_Formas_All_Fields` with
+the pending-only criterion; Contract/Contract_Actions statuses and relationships
+retain their existing meaning. Regression: delayed/denied startup, refresh,
+grouped parent/actions, standalone proposals, filter-independent counts,
+permission/token/stale-scope checks, repository validation and Pages build.
+Production rollback: 1.61.35 via `deploy/environments.json`.
+
 ## Owned editing and completed lock — October 9, 2026
 
 The existing `Propose_Contract_Changes` checkbox is now labelled **Edit Owned
