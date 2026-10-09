@@ -774,3 +774,35 @@ nulls, shared cost-code balances, own reservations and missing balances. Actual
 source browser checks cover desktop/narrow fit, duplicate placement and totals,
 and the 100-line cap. Rollback Production to 122.29.10 and rebuild Pages; keep
 Development on the latest complete release under the repository release policy.
+
+
+### PO entry polish (122.29.13)
+
+The PO budget-item dropdown sorts by numeric cost code and groups by major code
+and the item's existing Budget Category. Group order follows the first cost code;
+each category's items stay ascending. Options display a cost-code pill followed
+by Item Name and the two existing budget amounts. Search includes group names
+and hides groups without matches. The 8/9-class exclusions also cover extended
+codes such as 99991, while 4100–4999 remain eligible.
+
+Editable ledger cells have a pale blue surface, visible border and subtle glow;
+locked/manual-derived cells stay muted. Cost Element defaults to 5 on new lines
+and uses a compact five-option single-select without a search field. Duplicate
+still preserves the source's chosen element. Request Date and Date Needed reuse
+the Budget request date picker (calendar icon, floating dialog, weekday headings,
+Today/Tomorrow/Clear), with ISO PO dates and unchanged US dates for Check/Wire.
+Opening the calendar no longer rebuilds or enlarges the main PO dialog.
+
+The PO header amount is calculated from exact line cents, including edits to
+saved drafts. There is no editable Full PO Amount field or balance-match prompt.
+Both receipt and editor footers say TOTAL with larger text. The ledger uses an
+800px minimum row width; panels stack below 1400px and tables contain horizontal
+overflow on small screens.
+
+Source changes: po-ui.js, purchase-orders.css and widget.html, focused tests,
+version/hash manifests, docs and immutable release. No Creator forms, fields,
+functions or Custom APIs change; no Creator publication is required. Regression
+checks cover sorted/grouped eligible options, default element 5, exact calculated
+save totals, date round trips and retained Check/Wire behavior, plus browser
+selection/search, date dismissal, editable surfaces and responsive containment.
+Rollback Production to 122.29.12; keep Development on the latest complete release.

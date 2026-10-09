@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');
+const pop={classList:{remove:()=>{}}};let dispatched=0,selected=null,closed=0;
+const input={value:'',isConnected:true,setAttribute:()=>{},closest:()=>({querySelector:()=>({setAttribute:()=>{}})}),focus:()=>{},dispatchEvent:()=>{dispatched++;}};
+const ctx=vm.createContext({$:()=>pop,cleanVal:value=>String(value||''),document:{addEventListener:()=>{}},window:{addEventListener:()=>{}},Event:class{}});
+vm.runInContext(source.slice(source.indexOf('var REQUEST_DATE_PICKER ='),source.indexOf('function wireModForm(fin, agg)')),ctx);
+Object.assign(ctx.REQUEST_DATE_PICKER,{input,iso:true,onSelect:value=>{selected=value;},onClose:()=>{closed++;}});
+ctx.setRequestDateFromPicker('02/29/2028');assert.equal(selected,'2028-02-29');assert.equal(input.value,'2028-02-29');assert.equal(dispatched,0);assert.equal(closed,1);
+Object.assign(ctx.REQUEST_DATE_PICKER,{input,iso:true,onSelect:value=>{selected=value;}});selected=null;
+ctx.setRequestDateFromPicker('02/29/2027');assert.equal(selected,null,'Invalid leap date never selected');assert.equal(ctx.REQUEST_DATE_PICKER.input,input);
+ctx.REQUEST_DATE_PICKER.iso=true;assert.equal(ctx.requestPickerSelectedDate('2027-02-29'),null);assert.equal(ctx.requestPickerSelectedDate('2028-02-29').getDate(),29);
+Object.assign(ctx.REQUEST_DATE_PICKER,{input,iso:false,onSelect:null,onClose:null});ctx.setRequestDateFromPicker('10/20/2026');assert.equal(input.value,'10/20/2026');assert.equal(dispatched,1,'Existing Check/Wire input event retained');
+console.log('Shared date picker: exact ISO PO dates, leap-day validation, close callback and existing US-date request behavior passed.');

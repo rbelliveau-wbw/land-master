@@ -302,3 +302,12 @@ Purchase Order's companion receipt panel is titled Summary. Keep cost codes and
 all budget arithmetic on one horizontal table row, right-align tabular currency,
 and use green for nonnegative remaining budgets. It sits to the right on desktop
 and stacks on narrow screens with horizontal overflow contained inside its table.
+
+
+Purchase Order item choices show a cost-code pill before Item Name, in numeric
+code order under visible major-code and Budget Category headings. Keep amount
+columns aligned. Its ledger uses pale blue input surfaces, a fine blue border
+and a subtle focus glow to distinguish editable cells. Cost Element starts at 5
+and needs only five single-select options. Reuse Budget's floating request date
+picker rather than mounting a calendar inside the form. PO totals are calculated
+and labeled TOTAL in larger type; omit an editable header-amount control.

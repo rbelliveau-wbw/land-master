@@ -26,7 +26,7 @@ context.options={items:()=>[
 ]};
 vm.runInContext(source.slice(start,end),context);
 const choices=context.itemRows(true);
-assert.deepEqual(Array.from(choices,row=>row.id),['3','4','5','9007199254740993']);
+assert.deepEqual(Array.from(choices,row=>row.id),['9007199254740993','3','4','5']);
 const survey=choices.find(row=>row.id==='9007199254740993');
 assert.equal(survey.modified,10500n,'Final plus approved signed modifications');
 assert.equal(survey.available,3000n,'Other POs deducted once, before this draft');
@@ -44,11 +44,18 @@ console.log('PO item picker: signed modified totals, other PO reservations, save
 
 context.model.balanceState='loaded';
 const originals=context.options.items();
-const codes=['4000','4010','4099','4100','4500','4999','7999','8000','8500','8999','9000','9999'];
+const codes=['4000','4010','4099','4100','4500','4999','7999','8000','8500','8999','9000','9999','88001','99991'];
 context.options.items=()=>originals.concat(codes.map(code=>({ID:'code-'+code,Item_Name:code,Cost_Code:code})));
 context.model.balances.push(...codes.map(code=>({budgetItemId:'code-'+code,finalCents:'100',modCents:'0',availableCents:'100',minorCode:code})));
 const included=new Set(context.itemRows(true).map(row=>row.id));
-for(const code of ['4000','4010','4099','8000','8500','8999','9000','9999']) assert.equal(included.has('code-'+code),false,code+' excluded');
+for(const code of ['4000','4010','4099','8000','8500','8999','9000','9999','88001','99991']) assert.equal(included.has('code-'+code),false,code+' excluded');
 for(const code of ['4100','4500','4999','7999']) assert.equal(included.has('code-'+code),true,code+' retained');
-assert.equal(context.itemRows().length,18,'Excluded existing selections remain readable');
+assert.equal(context.itemRows().length,20,'Excluded existing selections remain readable');
 console.log('PO dropdown exclusions: land 4000–4099, classes 8000/9000; other 4000 items retained.');
+
+const ordered=context.itemRows(true).filter(row=>row.code).map(row=>row.code);
+assert.deepEqual(Array.from(ordered),['CB01-3225','4100','4500','4999','7999'].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})));
+context.options.itemCategory=row=>({id:'cat-1',name:'Engineering'});
+assert.equal(context.itemRows(true)[0].categoryName,'Engineering');
+assert.equal(context.itemRows(true).find(row=>row.id==='code-4500').majorCode,'4000');
+console.log('PO picker: numeric cost-code order, major/category metadata and extended 8/9-class exclusions passed.');
