@@ -10,14 +10,16 @@ map approvalConfigurationSnapshot()
 			fromText = ""; toText = "";
 			if(assignmentRow.Effective_From != null) { fromText = assignmentRow.Effective_From.toString("yyyy-MM-dd"); }
 			if(assignmentRow.Effective_To != null) { toText = assignmentRow.Effective_To.toString("yyyy-MM-dd"); }
-			assignments.add({"id":assignmentRow.ID.toString(),"roleId":assignmentRow.Role.toString(),"companyId":assignmentRow.Company.toString(),"territory":ifnull(assignmentRow.Territory_Key,""),"department":ifnull(assignmentRow.Department_Key,""),"userAccessId":assignmentRow.Person.toString(),"active":assignmentRow.Active,"effectiveFrom":fromText,"effectiveTo":toText});
+			companyKey = ""; if(assignmentRow.Company != null) { companyKey = assignmentRow.Company.toString(); }
+			assignments.add({"id":assignmentRow.ID.toString(),"roleId":assignmentRow.Role.toString(),"companyId":companyKey,"territory":ifnull(assignmentRow.Territory_Key,""),"department":ifnull(assignmentRow.Department_Key,""),"userAccessId":assignmentRow.Person.toString(),"active":assignmentRow.Active,"effectiveFrom":fromText,"effectiveTo":toText});
 		}
 		for each policyRow in Approval_Policy[ID != 0]
 		{
 			fromText = ""; toText = "";
 			if(policyRow.Effective_From != null) { fromText = policyRow.Effective_From.toString("yyyy-MM-dd"); }
 			if(policyRow.Effective_To != null) { toText = policyRow.Effective_To.toString("yyyy-MM-dd"); }
-			policies.add({"id":policyRow.ID.toString(),"companyId":policyRow.Company.toString(),"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"version":policyRow.Version,"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"duplicatePerson":policyRow.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":policyRow.Steps_JSON.toJSONList(),"adapterEnabled":policyRow.Adapter_Enabled});
+			companyKey = ""; if(policyRow.Company != null) { companyKey = policyRow.Company.toString(); }
+			policies.add({"id":policyRow.ID.toString(),"companyId":companyKey,"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"version":policyRow.Version,"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"duplicatePerson":policyRow.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":policyRow.Steps_JSON.toJSONList(),"adapterEnabled":policyRow.Adapter_Enabled});
 		}
 		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
 		for each companyRow in Company[ID != 0] { companies.add({"id":companyRow.ID.toString(),"label":companyRow.Company_Name}); }

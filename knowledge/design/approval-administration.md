@@ -21,6 +21,10 @@ the company role-assignment table continues to supply CFO and COO. Reject an
 empty or ambiguous territory VP, an unroutable person, submitter approval or
 one person filling multiple required steps. Preview uses the same territory
 lookup identities as the server. No new forms or Custom APIs are needed.
+Use All companies for the shared PO policy and CFO/COO assignments so the same
+chain does not need to be copied onto every company. Company-specific PO
+templates and assignments override that default. This global fallback is
+limited to Purchase Orders; other workflow templates keep their company scope.
 
 Audit details show before/after values and the actor's User Access identity.
 Follow [transfer progress](transfer-progress.md) for configuration writes.

@@ -19,3 +19,18 @@ assert.equal(admin.equal({enabled:false},{enabled:'false'}),false);
 console.log('Approval admin field, token, ordered-route and audited state verification passed.');
 
 assert.equal(admin.verify({...receipt,after:{...receipt.after,steps:[{...run.data.steps[0],threshold:'100.01'}]}},run).steps[0].threshold,'100.01');
+
+const html=await readFile(new URL('../widgets/settings-manager/src/app/widget.html',import.meta.url),'utf8');
+const transport=html.slice(html.indexOf('function approvalScope()'),html.indexOf("document.getElementById('approval-admin').onclick"));
+for(const environment of ['DEVELOPMENT','PRODUCTION']){
+  const calls=[];
+  const transportContext=vm.createContext({S:{live:true,recId:'1'},LMRuntime:{current:()=>({environment,user:'owner',appLinkName:'land-master'}),apiName:name=>name+(environment==='DEVELOPMENT'?'_DEV':'')},LMApprovalAdmin:{create:options=>options},LMData:{request:(_key,run)=>run()},ZOHO:{CREATOR:{DATA:{invokeCustomApi:async request=>{calls.push(request);return request.api_name.startsWith('Get_User_Access_Lean')?{code:3000,result:JSON.stringify({found:true,myId:'123'})}:{code:3000,result:JSON.stringify({contract:'approval-policy-v1',success:true})};}}}}});
+  vm.runInContext('window={LMApprovalAdmin};'+transport,transportContext);
+  await vm.runInContext("getApprovalAdmin().call({action:'List'})",transportContext);
+  assert.equal(calls[0].http_method,environment==='DEVELOPMENT'?'POST':'GET');
+  if(environment==='PRODUCTION'){assert.equal('payload' in calls[0],false);assert.equal('query_params' in calls[0],false);}
+  else assert.equal(calls[0].payload.user,'owner');
+  assert.equal(calls[1].api_name,'Manage_Approval_Policies'+(environment==='DEVELOPMENT'?'_DEV':''));
+  assert.equal(calls[1].http_method,'POST');assert.equal(JSON.parse(calls[1].payload.payload).userAccessId,'123');
+}
+console.log('Actual approval admin transport: Production authenticated GET, Development POST, exact caller ID and environment-specific policy API passed.');

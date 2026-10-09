@@ -22,13 +22,14 @@ map resolveApprovalRoute(map context)
 		if(day.toString("yyyy-MM-dd") != context.get("effectiveDate")) { result.put("error","Effective date is invalid."); return result; }
 		amount = amountText.replaceAll("[.]","").toLong();
 		policyId = 0; bestRank = -1; matched = 0;
-		for each policy in Approval_Policy[Workflow == context.get("workflow") && Company == companyText.toLong() && Status == "Published"]
+		for each policy in Approval_Policy[Workflow == context.get("workflow") && Status == "Published"]
 		{
+			if(policy.Company != companyText.toLong() && (context.get("workflow") != "Purchase Order" || policy.Company != null)) { continue; }
 			valid = (policy.Effective_From == null || policy.Effective_From <= day) && (policy.Effective_To == null || day < policy.Effective_To);
 			pTerritory = ifnull(policy.Territory_Key,""); pDepartment = ifnull(policy.Department_Key,"");
 			if(valid && (pTerritory == "" || pTerritory == territory) && (pDepartment == "" || pDepartment == department))
 			{
-				rank = 0; if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
+				rank = 0; if(policy.Company != null) { rank = rank+8; } if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
 				if(rank > bestRank) { bestRank = rank; policyId = policy.ID; matched = 1; }
 				else if(rank == bestRank) { matched = matched+1; }
 			}
@@ -104,13 +105,14 @@ map resolveApprovalRoute(map context)
 				}
 				else
 				{
-				for each assignment in Approval_Role_Assignment[Role == role.ID && Company == companyText.toLong()]
+				for each assignment in Approval_Role_Assignment[Role == role.ID]
 				{
+					if(assignment.Company != companyText.toLong() && (policy.Workflow != "Purchase Order" || assignment.Company != null)) { continue; }
 					aTerritory = ifnull(assignment.Territory_Key,""); aDepartment = ifnull(assignment.Department_Key,"");
 					aValid = (assignment.Effective_From == null || assignment.Effective_From <= day) && (assignment.Effective_To == null || day < assignment.Effective_To);
 					if(aValid && (aTerritory == "" || aTerritory == territory) && (aDepartment == "" || aDepartment == department))
 					{
-						rank = 0; if(aTerritory != "") { rank = rank+4; } if(aDepartment != "") { rank = rank+2; }
+						rank = 0; if(assignment.Company != null) { rank = rank+8; } if(aTerritory != "") { rank = rank+4; } if(aDepartment != "") { rank = rank+2; }
 						if(rank > assignmentRank) { assignmentRank = rank; assignmentId = assignment.ID; assignmentCount = 1; }
 						else if(rank == assignmentRank) { assignmentCount = assignmentCount+1; }
 					}

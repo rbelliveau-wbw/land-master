@@ -1,6 +1,6 @@
 # Settings Manager
 
-## Shared approval administration (1.4.3)
+## Shared approval administration (1.4.4)
 
 Settings → Approvals contains Roles, Assignments, versioned Policies, Preview
 and Audit in authenticated Development and Production sessions. The existing
@@ -8,6 +8,10 @@ owner-only APIs and backend authorization remain in force. PO VP steps resolve
 from the selected Territory record's VP lookup rather than a separate role
 assignment. CFO is required on every PO; COO and territory VP are required if
 any item's allocation exceeds its available budget after other POs.
+One All companies PO template and CFO/COO assignments cover every company;
+existing company-specific overrides take priority. Other workflows retain
+company-specific templates. Production identity uses the existing authenticated
+GET endpoint; Development uses its existing POST endpoint.
 
 Pro Forma and Budget templates initialize their existing linked Budget_Approvals
 records only when their workflow adapter is enabled. Existing decisions, notes,

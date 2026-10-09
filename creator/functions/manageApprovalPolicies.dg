@@ -35,6 +35,7 @@ string manageApprovalPolicies(string payload)
 		for each identityField in identityFields
 		{
 			identityValue = data.get(identityField);
+			if(identityField == "companyId" && identityValue == "") { continue; }
 			if(identityField != "id" || (identityValue != null && identityValue != ""))
 			{
 				typedIdentity=Map(); typedIdentity.put("value",identityValue);
@@ -97,8 +98,9 @@ string manageApprovalPolicies(string payload)
 		}
 		if(action == "SaveAssignment")
 		{
-			role = Approval_Role[ID == data.get("roleId").toString().toLong()]; person = User_Access[ID == data.get("userAccessId").toString().toLong()]; company = Company[ID == data.get("companyId").toString().toLong()];
-			if(role.ID == null || person.ID == null || company.ID == null || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role, User Access, company and explicit active setting are required."); }
+			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
+			role = Approval_Role[ID == data.get("roleId").toString().toLong()]; person = User_Access[ID == data.get("userAccessId").toString().toLong()];
+			if(role.ID == null || person.ID == null || (data.get("companyId") != "" && companyId == null) || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role, User Access, valid company scope and explicit active setting are required."); }
 			else
 			{
 				fromDate = null; toDate = null;
@@ -112,23 +114,23 @@ string manageApprovalPolicies(string payload)
 				Added_User=zoho.loginuser
 				Role=role.ID
 				Person=person.ID
-				Company=company.ID
+				Company=companyId
 			]; idText = newId.toString(); }
 					assignment = Approval_Role_Assignment[ID == idText.toLong()];
-					assignment.Role=role.ID; assignment.Person=person.ID; assignment.Company=company.ID; assignment.Territory_Key=ifnull(data.get("territory"),""); assignment.Department_Key=ifnull(data.get("department"),""); assignment.Active=data.get("active"); assignment.Effective_From=fromDate; assignment.Effective_To=toDate;
+					assignment.Role=role.ID; assignment.Person=person.ID; assignment.Company=companyId; assignment.Territory_Key=ifnull(data.get("territory"),""); assignment.Department_Key=ifnull(data.get("department"),""); assignment.Active=data.get("active"); assignment.Effective_From=fromDate; assignment.Effective_To=toDate;
 				}
 			}
 		}
 		if(action == "SavePolicy")
 		{
-			company = Company[ID == data.get("companyId").toString().toLong()];
-			if(company.ID == null || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Company and 1–30 ordered steps are required."); }
+			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
+			if((data.get("companyId") == "" && data.get("workflow") != "Purchase Order") || (data.get("companyId") != "" && companyId == null) || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Choose a company (or All companies for POs) and enter 1–30 ordered steps."); }
 			else
 			{
 				if(idText == "") { newId = insert into Approval_Policy
 			[
 				Added_User=zoho.loginuser
-				Company=company.ID
+				Company=companyId
 				Status="Draft"
 				Version=data.get("version")
 				Adapter_Enabled=false
@@ -137,7 +139,7 @@ string manageApprovalPolicies(string payload)
 				if(policy.Status != "Draft") { result.put("error","Published policies are immutable. Create a new Draft version."); }
 				else
 				{
-					policy.Company=company.ID; policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Version=data.get("version"); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Duplicate_Person=data.get("duplicatePerson"); policy.Steps_JSON=data.get("steps").toString();
+					policy.Company=companyId; policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Version=data.get("version"); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Duplicate_Person=data.get("duplicatePerson"); policy.Steps_JSON=data.get("steps").toString();
 					policy.Effective_From=null; policy.Effective_To=null;
 					if(ifnull(data.get("effectiveFrom"),"") != "") { policy.Effective_From=data.get("effectiveFrom").toDate("yyyy-MM-dd"); }
 					if(ifnull(data.get("effectiveTo"),"") != "") { policy.Effective_To=data.get("effectiveTo").toDate("yyyy-MM-dd"); }

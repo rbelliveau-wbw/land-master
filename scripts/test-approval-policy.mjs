@@ -62,3 +62,13 @@ assert.match(nativePO,/groupedCents\.get\(itemKey\) > beforeAvailable/,'Overrun 
 assert.match(nativePO,/Every PO must include CFO approval/);
 assert.match(nativePO,/budgetExceeded && \(cooFound != true \|\| vpFound != true\)/);
 console.log('PO CFO requirement, item-level overrun condition and Territory VP identity resolution passed.');
+
+c=clone(config);c.policies[0].companyId='';c.assignments.forEach(a=>a.companyId='');
+assert.equal(api.resolve(c,context).route[0].userAccessId,'11');
+assert.equal(api.resolve(c,{...context,companyId:'32'}).route[0].userAccessId,'11');
+c.policies.push({...clone(c.policies[0]),id:'42',companyId:'31',version:2});
+assert.equal(api.resolve(c,context).policyId,'42','Company-specific PO policies override the shared default.');
+c.assignments.push({...c.assignments[0],id:'23',companyId:'31',userAccessId:'12'});
+assert.equal(api.resolve(c,context).route[0].userAccessId,'12','Existing company assignments take precedence.');
+c.policies[0].workflow='Budget';assert.throws(()=>api.resolve(c,{...context,workflow:'Budget',companyId:'32'}),/Missing published/,'Shared PO default does not change Budget routing.');
+console.log('One all-company PO template and company-specific overrides passed.');
