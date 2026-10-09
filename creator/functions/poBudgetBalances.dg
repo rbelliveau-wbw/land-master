@@ -7,9 +7,12 @@ map poBudgetBalances(string budgetId)
 	try
 	{
 		budgetKey = budgetId.toLong();
+        budget = Add_Budget[ID == budgetKey];
 		committed = Map();
+		pendingModifications = Map();
 		for each po in Payment_Request[Budget == budgetKey && Request_Type == "Purchase Order"]
 		{
+			if(ifnull(po.PO_Revision,"") != "" && po.PO_Status == "Draft") { continue; }
 			if(ifnull(po.PO_Revision,"") == "")
 			{
 				// Historical single-item POs count the parent exactly once.
@@ -29,6 +32,20 @@ map poBudgetBalances(string budgetId)
 				{
 					savedPO = snapshot.get("snapshot");
 					savedLines = savedPO.get("lines");
+					if(savedPO.get("approvalBundle") != null)
+					{
+						poBundle = savedPO.get("approvalBundle");
+						linkedModifications = poBundle.get("modifications");
+						for each linkedMod in linkedModifications
+						{
+							if(linkedMod.get("status") != "Approved")
+							{
+								modKey = linkedMod.get("budgetItemId"); modCents = linkedMod.get("amount").replaceAll("[.]","").toLong();
+								if(ifnull(pendingModifications.get(modKey),0) > 999999999999999-modCents) { result.put("error","Pending PO modifications exceed supported exact capacity."); return result; }
+								pendingModifications.put(modKey,ifnull(pendingModifications.get(modKey),0)+modCents);
+							}
+						}
+					}
 					for each line in savedLines
 					{
 						itemKey = line.get("budgetItemId");
@@ -59,7 +76,7 @@ map poBudgetBalances(string budgetId)
 			}
 			issued = ifnull(committed.get(item.ID.toString()),0);
 			availableCents = finalCents+modCents-issued;
-			balances.add({"budgetItemId":item.ID.toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":availableCents.toString()});
+			balances.add({"budgetItemId":item.ID.toString(),"subdivisionCode":ifnull(budget.Subdivision1.Subdivision_Code,""),"minorCode":ifnull(item.Cost_Code,0).toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":availableCents.toString(),"pendingModificationCents":ifnull(pendingModifications.get(item.ID.toString()),0).toString()});
 		}
 		result.put("balances",balances);
 		result.put("success",true);

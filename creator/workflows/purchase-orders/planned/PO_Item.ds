@@ -75,6 +75,22 @@ row = 1
 column = 1
 width = medium
 )
+UOM
+(
+type = picklist
+values = {"CY","EA","LB","LF","LOTS","LS","S","SET","SF","SY","TN","VF","WK"}
+row = 1
+column = 1
+width = medium
+)
+Cost_Code
+(
+type = text
+maxchar = 100
+row = 1
+column = 1
+width = medium
+)
 Quantity
 (
 type = decimal

@@ -83,6 +83,7 @@ string sendApprovalReminders()
 		for each  row in pendingRows
 		{
 			rowType = ifnull(row.Type1,"").trim();
+			if(rowType == "Purchase Order") { continue; }
 			approverEmail = ifnull(row.Approver,"").trim();
 			approverRole = ifnull(row.Title,"").trim();
 			sentThis = false;

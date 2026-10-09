@@ -1,0 +1,65 @@
+map poApprovalBundle(string purchaseOrderId)
+{
+	result = {"success":false};
+	try
+	{
+		po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
+		if(po.ID == null) { result.put("error","Purchase Order not found."); return result; }
+		selectedId = 0;
+		for each candidate in Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == purchaseOrderId]
+		{
+			if(candidate.ID > selectedId) { selectedId = candidate.ID; }
+		}
+		if(selectedId == 0) { result.put("error","No combined approval chain is recorded for this PO."); return result; }
+		captured = Approval_Route_Snapshot[ID == selectedId];
+		context = captured.Context_JSON.toMap(); route = captured.Route_JSON.toMap().get("route"); executionIds = captured.Execution_JSON.toJSONList();
+		if(context.get("budgetId") != po.Budget.toString() || context.get("recordId") != purchaseOrderId || context.get("submissionRevision") != captured.Submission_Revision || (po.PO_Approval_State != "Rejected" && captured.Submission_Revision != po.PO_Revision)) { result.put("error","The approval chain does not match this PO submission."); return result; }
+		if(executionIds.size() != route.size() || executionIds.size() == 0) { result.put("error","The combined approval chain is incomplete."); return result; }
+		modifications = List(); seenItems = List();
+		for each intended in context.get("modifications")
+		{
+			modification = Budget_Modification[ID == intended.get("id").toLong() && Budget == po.Budget];
+			if(modification.ID == null || modification.Budget_Item.toString() != intended.get("budgetItemId") || modification.Modification_Type != "Increase" || thisapp.poCurrencyString(modification.Amount.toString()) != intended.get("amount") || modification.Reference_Number != intended.get("reference") || seenItems.contains(intended.get("budgetItemId"))) { result.put("error","A linked budget modification differs from this PO approval bundle."); return result; }
+			seenItems.add(intended.get("budgetItemId"));
+			modifications.add({"id":modification.ID.toString(),"budgetItemId":modification.Budget_Item.toString(),"amount":intended.get("amount"),"reference":modification.Reference_Number,"status":modification.Status});
+		}
+		rows = List(); pending = 0; approved = 0; rejected = 0; position = 0; active = Map(); seenRows = List(); seenPeople = List();
+		for each executionId in executionIds
+		{
+			position = position+1; step = route.get(position-1); row = Budget_Approvals[ID == executionId.toLong() && Budget == po.Budget && Type1 == "Purchase Order"];
+			if(step.get("userAccessId") == context.get("submitterId") || seenPeople.contains(step.get("userAccessId"))) { result.put("error","PO approval steps must use distinct people and exclude the submitter."); return result; }
+			seenPeople.add(step.get("userAccessId"));
+			if(row.ID == null || seenRows.contains(executionId) || row.Sort_Order != position || row.Title != step.get("role") || row.Approver != step.get("email")) { result.put("error","A PO approval step differs from its captured route."); return result; }
+			seenRows.add(executionId); sent = ""; responded = "";
+			if(row.Sent_Date != null) { sent = row.Sent_Date.toString("yyyy-MM-dd"); }
+			if(row.Responded_Date != null) { responded = row.Responded_Date.toString("yyyy-MM-dd"); }
+			entry = {"id":executionId,"order":position,"role":row.Title,"email":row.Approver,"userAccessId":step.get("userAccessId"),"status":row.Status,"sentDate":sent,"respondedDate":responded,"notes":ifnull(row.Approval_Notes,"")};
+			if(row.Status == "Pending") { pending = pending+1; active = entry; }
+			else if(row.Status == "Approved") { approved = approved+1; }
+			else if(row.Status == "Rejected") { rejected = rejected+1; }
+			else if(row.Status != "Not Sent") { result.put("error","Unknown PO approval step state."); return result; }
+			rows.add(entry);
+		}
+		chainValid = pending <= 1;
+		if(po.PO_Approval_State == "Pending") { chainValid = pending == 1 && rejected == 0; }
+		if(po.PO_Approval_State == "Approved") { chainValid = approved == rows.size() && pending == 0; }
+		if(po.PO_Approval_State == "Rejected") { chainValid = rejected == 1 && pending == 0; }
+		if(chainValid != true) { result.put("error","The PO approval state and combined chain do not reconcile."); return result; }
+		if(po.PO_Approval_State == "Pending")
+		{
+			for each entry in rows { if((entry.get("order") < active.get("order") && entry.get("status") != "Approved") || (entry.get("order") > active.get("order") && entry.get("status") != "Not Sent")) { result.put("error","PO approval order needs review."); return result; } }
+		}
+		for each modification in modifications
+		{
+			wanted = "Submitted"; if(po.PO_Approval_State == "Approved") { wanted = "Approved"; } if(po.PO_Approval_State == "Rejected") { wanted = "Rejected"; }
+			if(modification.get("status") != wanted) { result.put("error","PO and linked modification approval states differ."); return result; }
+		}
+		canApprove = false; access = User_Access[User == zoho.loginuser];
+		if(access.count() == 1 && active.get("userAccessId") == access.ID.toString() && context.get("submitterId") != access.ID.toString()) { canApprove = true; }
+		canRetryEmail = canApprove || zoho.loginuser == zoho.adminuser || (access.count() == 1 && context.get("submitterId") == access.ID.toString());
+		result.put("bundle",{"snapshotId":captured.ID.toString(),"revision":captured.Submission_Revision,"submitterId":context.get("submitterId"),"modifications":modifications,"rows":rows,"active":active,"canApprove":canApprove,"canRetryEmail":canRetryEmail,"emailSent":active.get("sentDate") != null && active.get("sentDate") != ""});
+		result.put("success",true);
+	}
+	catch(bundleError) { result.put("error","The combined PO and modification approval chain could not be verified."); }
+	return result;
+}

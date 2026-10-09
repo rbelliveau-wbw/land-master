@@ -660,3 +660,64 @@ check. Contract uploads preserve the Email switch without requiring it to be on;
 Budget phase rows omit the direct Approvals shortcut and reserve space for their
 remaining controls. No Creator backend deployment is required. See
 [regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).
+
+## Compact Purchase Order ledger (122.29.8)
+
+### Item picker refinement (122.29.9)
+
+The PO item dropdown excludes zero modified totals (Final Budget plus approved
+signed modifications) and unresolved balances. Options show that modified
+total and the remaining amount after existing reserved POs. When editing a
+reserved PO, its own saved allocation is added back before displaying
+availability. Negative modified totals and nonzero budgets with zero remaining
+funds remain eligible. Existing saved selections keep their display labels.
+The desktop vendor field is approximately 30% narrower. The right-side receipt
+panel is a separate design mockup and is not included in this release.
+
+Changed source: `po-ui.js`, `purchase-orders.css`, version/hash manifests,
+immutable release and Development/Production Budget mappings. No Creator forms,
+fields, functions or Custom APIs change; no Creator publication is required.
+Regression coverage executes the actual picker for signed modifications,
+duplicate own reservations, exhausted budgets, exact string IDs, saved zero
+selections, failed/loading reads and alphabetical order. Rollback: restore
+Budget mappings to 122.29.8 and rebuild Pages, retaining permanent widget URLs.
+
+The existing Budget widget accepts up to 100 thin line rows with an inline
+description, pencil editor, quantity, UOM, searchable Cost Element 1–5, unit price
+and total. Cost codes are generated from `C_`, the subdivision code, item minor
+code and line Cost Element. Supported UOM values are CY, EA, LB, LF, LOTS, LS, S,
+SET, SF, SY, TN, VF and WK. New rows require a UOM; older saved rows remain readable.
+
+Each line shows its item's available budget, the current PO's allocation to that
+item, and remaining budget. Reserved other POs are included once; Draft POs do
+not reserve funds. Rejection retains the reservation. Submission creates one
+automatic modification per item shortfall and captures one sequential approval
+chain covering the PO and every modification. Each person decides once; the
+submitter is excluded and people cannot repeat. COO is required when a
+modification is created. Resubmission resets decisions and retains notes.
+
+The approval email contains the PO header, all lines, modifications and chain.
+Automatic modifications cannot be edited, submitted or repaired through the
+independent modification flow. Existing Budget and Pro Forma approval behavior
+continues through its existing handlers. A published company PO template is
+required before submission; the owner's default chain remains TBD.
+
+Affected schema: `PO_Item.UOM`, `PO_Item.Cost_Code`,
+`Payment_Request.PO_Approval_State`, `Budget_Approvals.Type1` and
+`Budget_Modification.Amount` (16 digits, 2 places). Development and Production
+PO/policy APIs use authenticated POST payloads and currently have Admin-only
+audiences. Creator backend publication is required along with the widget release.
+See [function boundaries and cleanup](../../docs/purchase-order-function-boundaries.md).
+
+Verification covers exact cent rounding, duplicate item allocations, other PO
+reservations, automatic shortfalls, saved-line readback, unknown-write rechecks,
+and existing payment-request paths. Native testing saved and independently read
+back 100 calculated rows with UOM and cost code. Rollback the widget mapping to
+122.29.7; retain saved PO data and use a compatible Creator version for backend
+rollback. Do not replay an unverified write.
+
+### PO email links
+
+The existing `Budget_Management1` page accepts the Text page variable
+`purchaseOrderId`, alongside `budgetId`, `page` and `modificationId`. Combined PO
+approval emails open that saved PO inside the existing Budget Manager widget.

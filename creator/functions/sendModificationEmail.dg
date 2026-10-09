@@ -17,6 +17,7 @@ string sendModificationEmail(int modificationId, string action)
 		return "Unknown action: " + vAction;
 	}
 	modRec = Budget_Modification[ID == vModId];
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification uses the combined Purchase Order approval chain."; }
 	if(modRec == null)
 	{
 		return "Modification not found.";
@@ -68,7 +69,8 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		rowStatus = ifnull(chainRow.Status,"").trim();
 		rowSort = ifnull(chainRow.Sort_Order,0).toLong();
-		if((rowStatus == "Pending" || rowStatus == "Not Sent") && rowSort < nextSortOrder)
+		candidateStatus = rowStatus == "Pending" || rowStatus == "Not Sent";
+		if(candidateStatus && rowSort < nextSortOrder)
 		{
 			nextApprovalRec = chainRow;
 			nextSortOrder = rowSort;

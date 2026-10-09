@@ -31,6 +31,7 @@
                  	approverEmail = ifnull(approvalRec.Approver,"").trim();
                  	approvalRole = ifnull(approvalRec.Title,"").trim();
                  	approvalType = ifnull(approvalRec.Type1,"").trim();
+	if(approvalType == "Purchase Order") { return "Purchase Orders use the combined PO email. Open the PO to check or retry its notification."; }
                  	approvalSortOrder = ifnull(approvalRec.Sort_Order,0).toLong();
                  	if(approverEmail == "")
                  	{

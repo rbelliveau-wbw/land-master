@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T18:38:24.905739+00:00",
+  "generated_at": "2026-08-07T13:38:24.905739-05:00",
   "warning": "Creator DS exports do not provide a verified Custom API registry. Verify method, parameters, auth, user scope, and enabled status in Creator Microservices.",
   "custom_apis": [
     {
@@ -510,6 +510,52 @@
       ],
       "response_type": "Standard",
       "notes": "Registered and configuration verified in Creator Microservices; function execution verified separately. Widget API invocation has not yet been verified."
+    },
+    {
+      "name": "Manage_Purchase_Order",
+      "consumers": [
+        "widgets/budget-manager/src/app/po-controller.js"
+      ],
+      "matching_creator_function": "managePurchaseOrder",
+      "confidence": "verified-native-2026-10-08",
+      "environment": "Production",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration."
+    },
+    {
+      "name": "Manage_Approval_Policies",
+      "consumers": [
+        "widgets/settings-manager/src/app/approval-admin.js"
+      ],
+      "matching_creator_function": "manageApprovalPolicies",
+      "confidence": "verified-native-2026-10-08",
+      "environment": "Production",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration."
     }
   ]
 }

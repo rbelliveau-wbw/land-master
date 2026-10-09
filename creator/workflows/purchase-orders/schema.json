@@ -61,10 +61,14 @@
     "poCurrencyString",
     "poMultiplyExact",
     "poValidatePayload",
+    "resolveApprovalRoute",
+    "snapshotApprovalRoute",
+    "poApprovalBundle",
     "poSnapshot",
     "poBudgetBalances",
-    "managePurchaseOrder",
-    "manageBudget"
+    "sendPurchaseOrderEmail",
+    "handlePurchaseOrderApproval",
+    "managePurchaseOrder"
   ],
   "managed_validation_workflows": {
     "PO_Item": "Validate PO Item",
@@ -79,8 +83,8 @@
   },
   "accounting_project_code": "TBD; parent accounting fields stay true null for managed multi-item PO",
   "atomicity": "No cross-record transaction claim. Parent and children are separately persisted and verified. Unresolved operations retain unique phase locks and require review.",
-  "approval_state": "Not Configured; no policy-driven financial transitions until owner rules are confirmed",
-  "poBudgetModificationLink": "Payment_Request.PO_Budget_Modification -> Budget_Modification.ID; optional, restricted by server to the same phase budget",
+  "approval_state": "Not Configured for Draft; Pending, Approved or Rejected for a submitted combined PO/modification chain",
+  "poBudgetModificationLink": "Payment_Request.PO_Budget_Modification points to the first automatically created item shortfall modification; the captured PO route includes every modification. The widget has no manual selector.",
   "confirmedOwnerRules": {
     "confirmedAt": "2026-10-08",
     "defaultChain": "TBD",
@@ -91,5 +95,22 @@
     "resubmission": "Reset prior decisions; retain notes",
     "overrideAuthority": "Tentative: super admins and CFO after submission/approval; awaiting explicit authority",
     "testNotificationRecipient": "rbellivea@wbdevelopment.com"
-  }
+  },
+  "max_lines": 100,
+  "uoms": [
+    "CY",
+    "EA",
+    "LB",
+    "LF",
+    "LOTS",
+    "LS",
+    "S",
+    "SET",
+    "SF",
+    "SY",
+    "TN",
+    "VF",
+    "WK"
+  ],
+  "cost_code": "C_ + Subdivision.Subdivision_Code + - + Budget_Item.Cost_Code + - + PO_Item.Cost_Element"
 }
