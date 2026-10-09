@@ -35,6 +35,7 @@ contract's status and owners. Existing Lot eligibility and claim guards remain.
 Existing forms/fields: `User_Access.Propose_Contract_Changes`, `Edit_Contracts`,
 `Contract.Owner`, `Contract.Status`, child `Contract1`, and the existing action,
 approval, version, pricing and comment fields. No new field/API is required.
+The native `User_Access_Report` column/quickview label follows the renamed field.
 
 Creator deployment is required for the checkbox's display label/tooltip and:
 
@@ -64,3 +65,28 @@ fixtures; none sends production emails or changes business records.
 Rollback frontend: restore production mapping to immutable `1.61.34`.
 Rollback backend: restore the four function bodies from commit `3776be3` and
 the previous display label/tooltip; saved checkbox assignments remain intact.
+
+## Publication verification — October 9, 2026
+
+The release and child/master regression checks reached main at `8445d0a`.
+Repository validation and Pages build passed; main CI and Pages deployment
+passed. All nine live Production Contract Management assets matched the tested
+`1.61.35` build, including the permanent bootstrap.
+
+Creator Production `9.62` published the four saved functions. Production `9.63`
+published only the two User Access field metadata changes and the corresponding
+report label. A fresh Production form and report showed **Edit Owned Contracts
+and Actions**; the rendered checkbox still had `name="Propose_Contract_Changes"`.
+No access-record grants were changed.
+
+The authenticated Production Legal host loaded the new widget successfully:
+89 contracts, 578 actions, 138 versions and 157 approvals. The new fixture checks
+confirmed edits to an open owned amendment and its actions, and both server Lot
+transfer modes beneath a completed master, without modifying that master.
+
+No Production business records or approval emails were used for testing. A
+targeted Production `Send_Contract_Approvals` Check response was not exercised:
+the connected Creator API screen exposed endpoint metadata and configuration,
+but no authenticated API test runner. Native publication and fixture validation
+do not establish live approval delivery; that check remains a verification
+limitation.
