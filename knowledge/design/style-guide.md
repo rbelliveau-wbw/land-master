@@ -165,8 +165,10 @@ Keep the Escalator switch in the Markup & Escalator header. Show the base lot pr
 
 The multi-item PO ledger has its own single-select item picker. Offer only
 eligible items whose verified Final Budget plus approved signed modifications
-is nonzero. Each option shows Modified budget and After existing POs, with
-exact cents when present. A fully committed item remains selectable when its
+is nonzero. Use a wider, taller dropdown with one horizontal row per item and
+aligned Modified budget / After existing POs columns; show labels once in the
+sticky heading. Preserve exact cents and keep narrow-screen scrolling contained
+inside the menu. A fully committed item remains selectable when its
 modified budget is nonzero. Retain old selections on saved POs. Keep the vendor
 field about 30% narrower than the former half-width header field on desktop;
 retain the existing narrow-screen layout. The proposed right-side grouped

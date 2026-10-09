@@ -665,6 +665,14 @@ remaining controls. No Creator backend deployment is required. See
 
 ### Item picker refinement (122.29.9)
 
+122.29.10 widens the menu to 780px (bounded by the viewport), increases the
+visible list height and aligns each item and both amounts on one horizontal
+row under a sticky column heading. Narrow screens scroll within the menu;
+search, keyboard selection and all balance rules are unchanged. The receipt
+design remains a mockup. Validation/Pages build and actual-source visual checks
+cover the dropdown; no Creator backend publication is needed. Rollback the
+Budget widget mappings to 122.29.9.
+
 The PO item dropdown excludes zero modified totals (Final Budget plus approved
 signed modifications) and unresolved balances. Options show that modified
 total and the remaining amount after existing reserved POs. When editing a
