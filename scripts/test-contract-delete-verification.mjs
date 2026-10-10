@@ -5,6 +5,16 @@ const deletes=h=>h.calls.filter(call=>call.method==='delete');
 const key=h=>'delete:'+h.c.CFG.reports.actions+':'+ACTION;
 const validations={code:2945,message:'Field validation failed'};
 
+for(const code of [1130,2896,2897,2932]){
+  for(const wrapped of [false,true]){
+    const h=await ready(),failure={code,message:'Native permission denied',data:{ID:Number(ACTION)}};let sends=0;
+    h.api.deleteRecords=async()=>{sends++;return wrapped?{code:3000,result:[failure]}:failure;};
+    await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION),error=>error.message==='Native permission denied'&&String(error.code)===String(code));
+    assert.equal(h.reports.All_Contract_Actions.length,1);assert.equal(h.c.contractHasReviews(),false,'known rejection plus exact retained target releases review, even if failure metadata includes an ID');
+    assert.equal(sends,1,'no automatic delete replay');
+  }
+}
+
 for(const reply of [
   {response:{code:3000}},
   {response:validations},

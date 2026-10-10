@@ -96,13 +96,14 @@
     const api=options.api||(root.ZOHO&&root.ZOHO.CREATOR&&root.ZOHO.CREATOR.DATA);
     const report=options.reportName||options.report_name;
     if(!report||!api||typeof api.getRecords!=='function'||typeof api.getRecordCount!=='function')return Promise.reject(failure(report,null,'Creator SDK v2 data bridge is unavailable.'));
+    if(options.parallelExact&&!/^\(ID == \d+\)$/.test(options.criteria||''))return Promise.reject(failure(report,null,'Parallel exact reads require one captured record ID.'));
     const check=()=>{if(options.isCancelled&&options.isCancelled()){const error=failure(report,null,'Load superseded.');error.cancelled=true;throw error;}};
     try{check();}catch(error){return Promise.reject(error);}
     const fields=Array.isArray(options.fields)?options.fields.join(','):options.fields;
     options.reportName=report;
     if(Array.isArray(options.fields))options.fields=Object.freeze(options.fields.slice());
     Object.freeze(options);
-    const key=JSON.stringify([context(),report,options.criteria||'',fields||'',options.cacheKey||'',...(options.countAtEnd?['count-at-end']:[])]);
+    const key=JSON.stringify([context(),report,options.criteria||'',fields||'',options.cacheKey||'',...(options.countAtEnd?['count-at-end']:[]),...(options.parallelExact?['parallel-exact']:[])]);
     const existing=cache.get(key);
     if(!options.fresh&&existing&&existing.expires>Date.now())return Promise.resolve(existing.rows);
     if(!options.fresh&&inFlight.has(key)&&!options.isCancelled)return inFlight.get(key).promise;
@@ -114,6 +115,20 @@
     const promise=(async()=>{
       check();
       async function counted(){let countResponse;try{countResponse=await request(report+':count',()=>{check();return api.getRecordCount({report_name:report,...query});},{readOnly:true});}catch(error){check();if(error&&error.cancelled)throw error;throw failure(report,error);}check();const rawCount=countResponse&&countResponse.result&&countResponse.result.records_count,number=Number(rawCount);if(code(countResponse)!=='3000'||responseFailed(countResponse)||(typeof rawCount!=='number'&&typeof rawCount!=='string')||(typeof rawCount==='string'&&!/^\d+$/.test(rawCount.trim()))||!Number.isSafeInteger(number)||number<0)throw failure(report,countResponse);return number;}
+      // One exact-ID selection: start the independent count and full row together.
+      // Both must settle successfully before any row can support a subsequent write.
+      if(options.parallelExact){
+        const config={report_name:report,max_records:1000,field_config:fields?'custom':'all',...query};if(fields)config.fields=fields;
+        const recordTask=request(report+':records',()=>{check();return api.getRecords(config);},{readOnly:true}).catch(error=>{check();if(error&&error.cancelled)throw error;if(scanEnvelope(error,true).recordEnd)return error;throw failure(report,error);});
+        const [expected,response]=await Promise.all([counted(),recordTask]);check();
+        const empty=scanEnvelope(response,true).recordEnd;
+        if(!empty&&(code(response)!=='3000'||responseFailed(response)||!Array.isArray(response.data)))throw failure(report,response);
+        const rows=empty?[]:response.data,id=options.criteria.match(/^\(ID == (\d+)\)$/)[1];
+        if(expected>1||rows.length!==expected||rows.some(row=>!row||typeof row.ID!=='string'||row.ID!==id)||response.record_cursor||response.headers&&response.headers.record_cursor)throw failure(report,response,report+': exact record identity/count could not be verified.');
+        if(options.onProgress)options.onProgress({report,page:1,count:rows.length,expected,done:true});
+        if(options.ttlMs>0&&!read.invalidated)cache.set(key,{options,rows,expires:Date.now()+options.ttlMs});
+        return rows;
+      }
       let expected;
       if(!options.countAtEnd){
         let countResponse;

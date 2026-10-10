@@ -101,6 +101,12 @@ does not change persisted success predicates or permissions.
 
 ## Source references
 
+Contract attachment and approver Email switches send Creator checkbox strings
+(`"true"`/`"false"`) in either direction. Restore controls after settled success or
+failure, including after a remounted approval surface. Pending writes still hold
+controls; unknown outcomes retain their no-replay guard while allowing dismissal
+after the native request settles. See [Contract recovery regressions](../../docs/contracts-create-and-permission-recovery-2026-10-10.md).
+
 - [Legal widget](../../widgets/contract-management/src/app/widget.html):
   `showAttachmentsModal`, `attachmentsPanel`, `attachmentAuthorLabel`.
 - [Budget widget](../../widgets/budget-manager/src/app/widget.html): attachment

@@ -140,3 +140,9 @@ dismissed; Open contract opens the created record. Errors stay visible and exact
 Check status never replays or resumes unsent setup. Pending close locks, focus
 trap, inert background, reduced motion, private audit and captured draft protections
 remain. Routine Lots & Pricing retains its button/banner exception.
+
+October 10: creation skips synthetic stage-display delays at the user's request.
+Advance immediately from verified ledger events and allow terminal Close as soon
+as actual creation/checks settle. Keep the result visible until dismissed. Other
+multi-record operations retain their existing display pacing; network requests
+are never delayed for animation. See [creation speed evidence](../../docs/contracts-create-and-permission-recovery-2026-10-10.md).
