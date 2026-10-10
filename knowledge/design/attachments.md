@@ -103,7 +103,9 @@ does not change persisted success predicates or permissions.
 
 Contract attachment and approver Email switches send Creator checkbox strings
 (`"true"`/`"false"`) in either direction. Restore controls after settled success or
-failure, including after a remounted approval surface. Pending writes still hold
+failure. Normalize Contract Version's configured Yes/No Email labels when reading
+the attachment report so a saved on switch remains on after refresh, including
+after a remounted approval surface. Pending writes still hold
 controls; unknown outcomes retain their no-replay guard while allowing dismissal
 after the native request settles. See [Contract recovery regressions](../../docs/contracts-create-and-permission-recovery-2026-10-10.md).
 

@@ -34,3 +34,20 @@ for(const kind of ['attachment','approver']){
   await h.c.toggleEmailAttach(NEW,ID);assert.equal(sends,1,'unknown outcomes retain the no-replay guard');
 }
 console.log('PASS actual attachment/approver Email switches: Creator string checkbox payloads, both directions, permission rollback, restored modal controls, pending duplicate exclusion and unknown no-replay.');
+
+{
+  const h=await ready({realDOM:true}),row={ID:NEW,Contract1:{ID},Email_Attachment:'No',File_Upload:'fixture.pdf'};
+  h.reports.All_Contract_Versions.push(row);h.c.S.versions=await h.c.sdkGetAll(h.c.CFG.reports.versions);h.c.showAttachmentsModal(ID);
+  const native=h.api.updateRecordById;
+  h.api.updateRecordById=async config=>{const reply=await native(config);row.Email_Attachment=config.payload.data.Email_Attachment==='true'?'Yes':'No';return reply;};
+  await h.c.toggleEmailAttach(NEW,ID);
+  h.c.S.versions=await h.c.sdkGetAll(h.c.CFG.reports.versions);h.c.showAttachmentsModal(ID);
+  assert.equal(row.Email_Attachment,'Yes','the native report retains its configured display label');
+  assert.equal(h.c.truthy(h.c.findVersion(NEW).Email_Attachment),true,'a fresh report reload keeps the switch on');
+  assert.equal(h.c.document.querySelector('#overlays .att-mail').classList.contains('on'),true);
+  await h.c.toggleEmailAttach(NEW,ID);h.c.S.versions=await h.c.sdkGetAll(h.c.CFG.reports.versions);
+  assert.equal(row.Email_Attachment,'No');assert.equal(h.c.truthy(h.c.findVersion(NEW).Email_Attachment),false,'a second click saves off after report formatting');
+  assert.equal(h.c.contractFieldComparable('Yes','Email_Attachment',h.c.CFG.reports.versions,'true'),true,'explicit recovery understands the same native display label');
+  assert.equal(h.c.truthy('True'),true);assert.equal(h.c.truthy('False'),false);
+}
+console.log('PASS configured Yes/No attachment decision labels: fresh report reload, actual rendered switch, on/off payload selection and explicit recovery; case-insensitive native True/False.');

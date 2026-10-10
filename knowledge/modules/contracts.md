@@ -904,11 +904,12 @@ verifies absence using a counted collection rather than reading a deleted ID.
 Pending requests and duplicate uncertain writes remain protected. No Creator
 deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).
 
-## Creation speed, Email switches and permission recovery (1.61.42)
+## Creation speed, Email switches and permission recovery (1.61.43)
 
 Creation overlaps exact-ID count/read pairs, reuses verified parent preflights and
 removes artificial display pauses. Attachment/approver Email switches persist
-Creator checkbox strings and settled handlers restore controls. Known rejected
+Creator checkbox strings, normalize the native attachment report's Yes/No labels,
+and settled handlers restore controls. Known rejected
 deletes with a freshly verified retained target no longer lock the widget or hide
 native permission errors behind reply metadata. The approved native Contract
 Approvals Delete grants for Dev/Land Acq, Contract Mgmt and CFO require Creator

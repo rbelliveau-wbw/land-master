@@ -1,4 +1,4 @@
-# Contracts 1.61.42
+# Contracts 1.61.43
 
 Creation starts independent exact-ID counts and full-field reads together, reuses
 its verified parent for subdivision/status preflights, and displays completed
@@ -21,6 +21,14 @@ confirms deletion; conflicting success replies or unavailable readbacks stay unk
 The UI never substitutes an acknowledgement ID or repeats a deletion automatically.
 Native failure messages also survive nested JSON envelopes.
 
+Live Development verification as `demouser_3` found another display issue:
+`All_Contract_Versions.Email_Attachment` uses `displaytrue="Yes"` and
+`displayfalse="No"` in the current native export. The native record persisted Yes,
+but the old widget interpreted it as off after refresh. Version 1.61.43 normalizes
+those labels only on that report/field and accepts native True/False casing.
+Explicit unknown-write recovery uses the same field-specific normalization;
+successful saves do not gain a new automatic editable-field equality gate.
+
 ## Creator permissions
 
 Live Creator showed Contract Approvals Delete disabled for Dev/Land Acq - Proforma &
@@ -28,6 +36,11 @@ Budgets and Contract Mgmt. The user approved Contract Approvals Delete for those
 profiles and CFO through `All_Contract_Approvals`, including production publication.
 This is a separate native permission deployment. Parent Contract Delete and unrelated
 profile settings remain unchanged. No new field, Deluge function or Custom API.
+
+The native profile editor also rewrote form-menu Tab flags and field visibility
+metadata for forms without a report grant. Production publication was held for
+the user's decision on those additional generated changes; the frontend release
+is independent. Do not infer that a GitHub Pages deployment publishes profiles.
 
 ## Regression and rollback
 
@@ -38,6 +51,9 @@ profile settings remain unchanged. No new field, Deluge function or Custom API.
   rows, cursors, cancellation and cache isolation.
 - Actual Email switches cover both directions, permission rollback, restored modal
   controls, pending duplicate exclusion and unknown no-replay behavior.
+- The Yes/No native report fixture saves on, reloads through the real adapter,
+  checks the rendered switch and saves off. The raw report row remains unchanged
+  by normalization; read-only recovery recognizes the same labels.
 - Delete tests cover permission failures carrying conflicting/numeric ID metadata,
   retained targets, applied deletion after lost replies, actor changes and unavailable
   verification. Existing SDK/approval/transfer/attachment/creation suites, complete
