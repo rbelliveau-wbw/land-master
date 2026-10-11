@@ -916,8 +916,8 @@ Full repository validation and Pages build passed before main/Production.
 Production QA on Bluebonnet Crossing Phase 01 (budget 4410926000001671002)
 saved and reopened test PO 4410926000005148040 with 250 EA/manual lines at
 $0.22 each ($55 total), submitted it once and completed its one CFO approval.
-Creator recorded one sent approval to rbelliveau@wbdevelopment.com; inbox
-delivery was not independently checked. No budget modifications were created.
+Creator recorded one sent approval to rbelliveau@wbdevelopment.com, and the
+owner confirmed inbox receipt. No budget modifications were created.
 The original draft 4410926000005159046 was preserved.
 
 The native deletion preflight exposed a Creator runtime failure caused by using
@@ -932,6 +932,22 @@ Production PreviewDelete then succeeded for the approved test PO: 500 line
 records across saved/submitted revisions, two receipts, one route, one approval
 and zero modifications. Permanent deletion remains a separately confirmed test
 action; a successful preview does not claim that those records were removed.
+
+PO approval notifications use `Notifications@wbdevelopment.com` as their From
+address, matching the app's existing contract/pro forma notification sender.
+This is a one-function Creator change (`sendPurchaseOrderEmail`) with no widget,
+form, field, API or permission changes. The native-source send regression checks
+the sender, exact single test recipient and recorded-delivery duplicate guard.
+An already recorded approval email is not resent by changing its sender.
+The Development editor compiled the sender change and its reopened source matched
+the repository function. Only that function was selected from the 18 pending
+components and promoted through Stage to Production V9.71. Optional deployment
+notification recipients were removed. The existing recorded test email was not
+resent; the owner has not yet checked a new inbox message from this sender.
+Full repository validation and the Pages build passed. This backend-only change
+keeps the existing Budget Manager Production 122.29.20 mapping.
+Sender-only rollback: restore `sendPurchaseOrderEmail` from commit 77660f2 and
+republish that function; no widget or record rollback is needed.
 
 Rollback: map Budget Manager Production to 122.29.18 and rebuild Pages, and restore
 the prior Creator functions from that main commit. Restoring code does not restore

@@ -42,7 +42,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		body = body+"</ol><p><a href='"+url+"'>Review and approve PO and all modifications</a></p></div>";
 		sendmail
 		[
-			from :"jking@wbdevelopment.com"
+			from :"Notifications@wbdevelopment.com"
 			to :approval.Approver
 			subject :subjectLine
 			message :body
