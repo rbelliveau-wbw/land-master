@@ -30,13 +30,16 @@ next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com'
 
 function block(name,nextName){let start=admin.indexOf('function '+name+'(');if(admin.slice(start-6,start)==='async ')start-=6;let end=admin.indexOf('function '+nextName+'(',start);if(admin.slice(end-6,end)==='async ')end-=6;assert.ok(start>=0&&end>start,name);return admin.slice(start,end);}
 for(const [name,nextName] of [['esc','copy'],['copy','stable'],['stable','equal'],['equal','verify'],['picker','choices'],['choices','field'],['field','check'],['check','companies'],['companies','territories'],['territories','departments'],['departments','roleRows'],['roleRows','userRows'],['userRows','testCFOFields'],['testCFOFields','scopeFields'],['scopeFields','render'],['editor','load'],['input','click'],['click','close'],['preview','input']])vm.runInContext(block(name,nextName),c);
-c.config=clone(config);c.editing='Policies';c.draft=clone(config.policies[0]);delete c.draft.steps[0].poTestCFO;c.pending=null;c.busy=false;c.same=()=>true;c.render=()=>{};c.panel={};
+c.config=clone(config);c.editing='Policies';c.draft=clone(config.policies[0]);delete c.draft.steps[0].poTestCFO;c.pending=null;c.busy=false;c.same=()=>true;let renders=0;c.render=()=>{renders++;};c.panel={};const scopeBadge={textContent:''};c.card={querySelector:selector=>selector==='[data-ap-test-scope="0"]'?scopeBadge:null};
 function element(dataset,attrs=[],extra={}){return {dataset,...extra,hasAttribute:name=>attrs.includes(name),closest(){return this;}};}
 c.input({target:element({index:'0'},['data-ap-test-toggle'],{checked:true,type:'checkbox'})});
 assert.deepEqual(clone(c.draft.steps[0].poTestCFO),{budgetId:'',userAccessId:'',email:'',allowSelfApproval:true,maxAmount:'55.00'});assert.equal(c.draft.steps[0].roleId,'1');assert.equal(c.draft.steps[0].enabled,true);assert.equal(c.draft.steps[0].condition,'Always');
 let html=c.editor();for(const label of ['Test CFO','Person (User Access)','Budget ID','Test email','Maximum test amount'])assert.ok(html.includes(label));assert.match(html,/Routing disabled/,'Test picker includes existing users with general routing disabled');assert.match(html,/data-ap-test-toggle/);assert.match(html,/no modifications or overruns/);
 c.click({target:element({apPick:'userAccessId',index:'0',value:test.userAccessId},['data-ap-test'])});
+const rendersBeforeInput=renders;
 c.input({target:element({apField:'budgetId',index:'0'},['data-ap-test'],{value:test.budgetId,type:'text'})});
+assert.match(scopeBadge.textContent,new RegExp(test.budgetId));assert.equal(renders,rendersBeforeInput,'Typing a scope field patches its label without rebuilding focused controls');
+c.input({target:element({apField:'maxAmount',index:'0'},['data-ap-test'],{value:'12.50',type:'text'})});assert.match(scopeBadge.textContent,/up to \$12\.50/);assert.equal(renders,rendersBeforeInput);
 c.input({target:element({apField:'email',index:'0'},['data-ap-test'],{value:test.email,type:'text'})});
 assert.equal(c.draft.steps[0].poTestCFO.userAccessId,test.userAccessId);assert.equal(c.draft.steps[0].poTestCFO.budgetId,test.budgetId);assert.equal(c.draft.budgetId,undefined,'Test fields cannot spill onto the policy');
 c.input({target:element({index:'0'},['data-ap-test-toggle'],{checked:false,type:'checkbox'})});assert.equal('poTestCFO' in c.draft.steps[0],false);

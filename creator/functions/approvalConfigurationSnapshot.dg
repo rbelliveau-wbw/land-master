@@ -19,7 +19,10 @@ map approvalConfigurationSnapshot()
 			if(policyRow.Effective_From != null) { fromText = policyRow.Effective_From.toString("yyyy-MM-dd"); }
 			if(policyRow.Effective_To != null) { toText = policyRow.Effective_To.toString("yyyy-MM-dd"); }
 			companyKey = ""; if(policyRow.Company != null) { companyKey = policyRow.Company.toString(); }
-			policies.add({"id":policyRow.ID.toString(),"companyId":companyKey,"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"version":policyRow.Version,"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"duplicatePerson":policyRow.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":policyRow.Steps_JSON.toJSONList(),"adapterEnabled":policyRow.Adapter_Enabled});
+			// Native toJSONList elements can be JSON text. Return step objects in the configuration DTO.
+			policySteps = List();
+			for each rawPolicyStep in policyRow.Steps_JSON.toJSONList() { policySteps.add(rawPolicyStep.toString().toMap()); }
+			policies.add({"id":policyRow.ID.toString(),"companyId":companyKey,"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"version":policyRow.Version,"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"duplicatePerson":policyRow.Duplicate_Person,"effectiveFrom":fromText,"effectiveTo":toText,"steps":policySteps,"adapterEnabled":policyRow.Adapter_Enabled});
 		}
 		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
 		for each companyRow in Company[ID != 0] { companies.add({"id":companyRow.ID.toString(),"label":companyRow.Company_Name}); }
@@ -28,14 +31,24 @@ map approvalConfigurationSnapshot()
 			vpIds = List(); for each vpPerson in territoryRow.VP { if(!vpIds.contains(vpPerson.ID.toString())) { vpIds.add(vpPerson.ID.toString()); } }
 			territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name,"vpUserAccessIds":vpIds});
 		}
-		auditRows = List();
+		auditRows = List(); auditActor = User_Access[User == zoho.loginuser];
 		for each event in Approval_Config_Audit[ID != 0]
 		{
 			beforeValue = Map(); afterValue = Map(); intendedValue = Map();
 			if(ifnull(event.Before_JSON,"") != "") { beforeValue=event.Before_JSON.toMap(); }
 			if(ifnull(event.After_JSON,"") != "") { afterValue=event.After_JSON.toMap(); }
 			if(ifnull(event.Intended_JSON,"") != "") { intendedValue=event.Intended_JSON.toMap(); }
-			auditRows.add({"id":event.ID.toString(),"action":event.Action,"status":event.Status,"actorId":event.Actor.toString(),"before":beforeValue,"after":afterValue,"intended":intendedValue,"error":ifnull(event.Error_Text,"")});
+			for each auditValue in {beforeValue,afterValue,intendedValue}
+			{
+				if(auditValue.get("steps") != null)
+				{
+					auditSteps=List(); for each rawAuditStep in auditValue.get("steps") { auditSteps.add(rawAuditStep.toString().toMap()); }
+					auditValue.put("steps",auditSteps);
+				}
+			}
+			auditToken = "";
+			if(zoho.loginuser == zoho.adminuser && auditActor.count() == 1) { if(event.Actor == auditActor.ID) { auditToken=ifnull(event.Token,""); } }
+			auditRows.add({"id":event.ID.toString(),"action":event.Action,"status":event.Status,"actorId":event.Actor.toString(),"token":auditToken,"before":beforeValue,"after":afterValue,"intended":intendedValue,"error":ifnull(event.Error_Text,"")});
 		}
 		result.put("configuration",{"roles":roles,"assignments":assignments,"policies":policies,"users":users,"companies":companies,"territories":territories,"audit":auditRows});
 		result.put("canAdmin",zoho.loginuser == zoho.adminuser); result.put("success",true);

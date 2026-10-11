@@ -12,12 +12,14 @@ map poApprovalBundle(string purchaseOrderId)
 		}
 		if(selectedId == 0) { result.put("error","No combined approval chain is recorded for this PO."); return result; }
 		captured = Approval_Route_Snapshot[ID == selectedId];
-		context = captured.Context_JSON.toMap(); routeSnapshot = captured.Route_JSON.toMap(); route = routeSnapshot.get("route"); executionIds = captured.Execution_JSON.toJSONList();
+		context = captured.Context_JSON.toMap(); routeSnapshot = captured.Route_JSON.toMap(); route = List(); executionIds = captured.Execution_JSON.toJSONList();
+		for each rawCapturedStep in routeSnapshot.get("route") { route.add(rawCapturedStep.toString().toMap()); }
 		if(context.get("budgetId") != po.Budget.toString() || context.get("recordId") != purchaseOrderId || context.get("submissionRevision") != captured.Submission_Revision || (po.PO_Approval_State != "Rejected" && captured.Submission_Revision != po.PO_Revision)) { result.put("error","The approval chain does not match this PO submission."); return result; }
 		if(executionIds.size() != route.size() || executionIds.size() == 0) { result.put("error","The combined approval chain is incomplete."); return result; }
 		modifications = List(); seenItems = List();
-		for each intended in context.get("modifications")
+		for each rawIntended in context.get("modifications")
 		{
+			intended = rawIntended.toString().toMap();
 			modification = Budget_Modification[ID == intended.get("id").toLong() && Budget == po.Budget];
 			if(modification.ID == null || modification.Budget_Item.toString() != intended.get("budgetItemId") || modification.Modification_Type != "Increase" || thisapp.poCurrencyString(modification.Amount.toString()) != intended.get("amount") || modification.Reference_Number != intended.get("reference") || seenItems.contains(intended.get("budgetItemId"))) { result.put("error","A linked budget modification differs from this PO approval bundle."); return result; }
 			seenItems.add(intended.get("budgetItemId"));

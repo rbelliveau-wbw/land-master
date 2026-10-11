@@ -49,7 +49,8 @@ map resolveApprovalRoute(map context)
 		{
 			if(policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject") { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); return result; }
 		}
-		steps = policy.Steps_JSON.toJSONList();
+		steps = List();
+		for each rawPolicyStep in policy.Steps_JSON.toJSONList() { steps.add(rawPolicyStep.toString().toMap()); }
 		if(steps.size() == 0 || steps.size() > 30) { result.put("error","Published policy requires 1–30 ordered steps."); return result; }
 		// Owner-configured PO testing uses one captured CFO identity without changing shared assignments.
 		for each configuredStep in steps
