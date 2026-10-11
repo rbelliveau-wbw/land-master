@@ -1,6 +1,6 @@
 map handlePurchaseOrderApproval(map request)
 {
-	result = {"success":false,"contract":"po-v1","writeState":"not-started"}; changed = false;
+	result = {"success":false,"contract":"po-v1","writeState":"not-started"}; changed = false; decisionLockId = 0;
 	try
 	{
 		poId = request.get("id").toString(); rowId = request.get("approvalId").toString(); action = request.get("action"); note = ifnull(request.get("note"),"").toString().trim();
@@ -8,6 +8,8 @@ map handlePurchaseOrderApproval(map request)
 		po = Payment_Request[ID == poId.toLong() && Budget == request.get("budgetId").toString().toLong() && Request_Type == "Purchase Order"];
 		access = User_Access[User == zoho.loginuser];
 		if(po.ID == null || access.count() != 1 || access.ID.toString() != request.get("userAccessId") || po.PO_Revision != request.get("expectedRevision")) { result.put("error","PO revision or authenticated User Access identity changed."); return result; }
+		decisionAction = action; if(action == "CheckDecision") { decisionAction = request.get("decision"); }
+		decisionToken = "decision-"+zoho.encryption.sha256(poId+"|"+po.PO_Revision+"|"+rowId+"|"+decisionAction);
 		checked = thisapp.poApprovalBundle(poId);
 		if(checked.get("success") != true) { result.put("error",checked.get("error")); return result; }
 		bundle = checked.get("bundle"); found = Map();
@@ -35,6 +37,13 @@ map handlePurchaseOrderApproval(map request)
 		{
 			if(action != "Approve" && action != "Reject" && action != "RetryEmail") { result.put("error","Unsupported PO approval action."); return result; }
 			if(po.PO_Approval_State != "Pending" || bundle.get("active").get("id") != rowId || found.get("status") != "Pending") { result.put("error","This approval step is no longer active."); return result; }
+			decisionLockId = insert into PO_Phase_Lock
+			[
+				Added_User=zoho.loginuser
+				Phase_Key=po.Budget.toString()
+				Operation_Token=decisionToken
+				Actor=access.ID
+			];
 			if(action == "RetryEmail") { mail = thisapp.sendPurchaseOrderEmail(poId); }
 			else
 			{
@@ -90,8 +99,10 @@ map handlePurchaseOrderApproval(map request)
 				if(matched != true) { result.put("writeState","unknown"); result.put("error","An approved item balance is unavailable."); return result; }
 			}
 		}
+		delete from PO_Phase_Lock[Phase_Key == po.Budget.toString() && Operation_Token == decisionToken && Actor == access.ID]; decisionLockId = 0;
+		if(PO_Phase_Lock[Phase_Key == po.Budget.toString() && Operation_Token == decisionToken].count() > 0) { result.put("writeState","unknown"); result.put("error","The approval operation lock needs review."); return result; }
 		result.put("success",true); result.put("writeState","verified"); result.put("snapshot",saved); result.put("decisionRowId",rowId); result.put("decision",wanted);
 	}
-	catch(decisionError) { result.put("writeState",if(changed,"unknown","not-started")); result.put("error","The PO approval could not be verified. Use read-only Check before another decision."); }
+	catch(decisionError) { result.put("writeState",if(changed || decisionLockId != 0,"unknown","not-started")); result.put("error","The PO approval could not be verified. Use read-only Check before another decision."); }
 	return result;
 }

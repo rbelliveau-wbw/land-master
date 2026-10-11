@@ -87,16 +87,16 @@
   "poBudgetModificationLink": "Payment_Request.PO_Budget_Modification points to the first automatically created item shortfall modification; the captured PO route includes every modification. The widget has no manual selector.",
   "confirmedOwnerRules": {
     "confirmedAt": "2026-10-08",
-    "defaultChain": "TBD",
-    "cooCondition": "A specific budget modification linked to this PO; no amount threshold",
+    "defaultChain": "CFO always; configured additional approvers when this PO creates budget modifications",
     "selfApproval": "Deny",
     "duplicatePerson": "Reject",
     "rejectionReservation": "Keep reserved",
     "resubmission": "Reset prior decisions; retain notes",
     "overrideAuthority": "Tentative: super admins and CFO after submission/approval; awaiting explicit authority",
-    "testNotificationRecipient": "rbellivea@wbdevelopment.com"
+    "testNotificationRecipient": "rbelliveau@wbdevelopment.com",
+    "additionalApproversCondition": "PO-created budget modifications"
   },
-  "max_lines": 100,
+  "max_lines": 250,
   "uoms": [
     "CY",
     "EA",
@@ -112,5 +112,20 @@
     "VF",
     "WK"
   ],
-  "cost_code": "C_ + Subdivision.Subdivision_Code + - + Budget_Item.Cost_Code + - + PO_Item.Cost_Element"
+  "cost_code": "C_ + Subdivision.Subdivision_Code + - + Budget_Item.Cost_Code + - + PO_Item.Cost_Element",
+  "deletion": {
+    "states": [
+      "Draft",
+      "Submitted"
+    ],
+    "approvalStates": [
+      "Not Configured",
+      "Pending",
+      "Approved",
+      "Rejected"
+    ],
+    "permission": "Existing active-budget edit grants; separate delete permission deferred during testing",
+    "preview": "Exact revision and server-owned associated record set",
+    "recovery": "Read-only CheckDelete; no replay after ambiguous responses"
+  }
 }

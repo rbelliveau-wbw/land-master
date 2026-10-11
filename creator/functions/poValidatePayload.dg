@@ -5,7 +5,7 @@ map poValidatePayload(string payload)
 	costElements = {"1","2","3","4","5"};
 	try
 	{
-		if(payload.length() > 300000) { result.put("error","PO exceeds the supported request size."); return result; }
+		if(payload.length() > 500000) { result.put("error","PO exceeds the supported request size."); return result; }
 		p = payload.toMap();
 		action = ifnull(p.get("action"),"");
 		if(action != "Save" && action != "Submit") { result.put("error","Action must be Save or Submit."); return result; }
@@ -32,7 +32,7 @@ map poValidatePayload(string payload)
 			if(!dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || dateText.toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateText) { result.put("error","Both valid request dates are required."); return result; }
 		}
 		lines = p.get("lines");
-		if(lines == null || lines.size() == 0 || lines.size() > 200) { result.put("error","Enter 1–200 complete PO lines."); return result; }
+		if(lines == null || lines.size() == 0 || lines.size() > 250) { result.put("error","Enter 1–250 complete PO lines."); return result; }
 		keys = List();
 		grouped = Map();
 		totalCents = 0;

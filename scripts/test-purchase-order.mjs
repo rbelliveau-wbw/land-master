@@ -49,8 +49,8 @@ assert.deepEqual(Array.from(PO.uoms),['CY','EA','LB','LF','LOTS','LS','S','SET',
 for(const uom of ['ACRE','LOT','TON','TONS',''])assert.throws(()=>PO.validate({...payload,lines:[{...line,uom}]},false),/UOM/);
 const zero={...line,key:'no-charge',unitPrice:'0.00',finalAmount:'0.00'};
 assert.equal(PO.validate({...payload,amount:'1.01',lines:[line,zero]},true).total,'1.01');
-assert.equal(PO.validate({...payload,amount:'202.00',lines:Array.from({length:200},(_,i)=>({...line,key:'row-'+i}))},true).lines.length,200);
-assert.throws(()=>PO.validate({...payload,lines:Array.from({length:201},(_,i)=>({...line,key:'row-'+i}))},false),/1–200/);
+assert.equal(PO.validate({...payload,amount:'252.50',lines:Array.from({length:250},(_,i)=>({...line,key:'row-'+i}))},true).lines.length,250);
+assert.throws(()=>PO.validate({...payload,lines:Array.from({length:251},(_,i)=>({...line,key:'row-'+i}))},false),/1–250/);
 const balances=[{budgetItemId:line.budgetItemId,availableCents:'100',pendingModificationCents:'50'}];
 const allocation=PO.allocations(payload.lines,balances,[],[])[0];
 assert.equal(allocation.allocated,202n);assert.equal(allocation.remaining,-102n);assert.equal(allocation.shortfall,52n);

@@ -16,3 +16,16 @@ console.log('PO duplicate guards, lost-response read-only recovery, persisted he
 
 for(const [field,value]of [["vendorId","9"],["amount","2.00"],["requestDate","2026-10-07"]])assert.equal(c.LMPOController.verify({...snapshot,[field]:value},payload)[field],value);
 for(const [field,value]of [["vendorId","9"],["amount","2.00"],["requestDate","2026-10-07"]])assert.throws(()=>c.LMPOController.verify({...snapshot,[field]:value},payload,true),/verified/);
+
+const plan={id:'5',budgetId:'1',revision:'draft-revision',proof:'native-preview-proof',rollupItems:[],items:['6','7'],operations:['8'],snapshots:[],approvals:[],modifications:[]};
+const deletion={action:'Delete',id:'5',budgetId:'1',expectedRevision:'draft-revision',deletePlan:plan,token:'delete-test-token-000001',userAccessId:'3'};
+let deleteCalls=[],deleteResolve;const deleter=c.LMPOController.create({timeoutMs:15,call:p=>{deleteCalls.push(structuredClone(p));return new Promise(resolve=>deleteResolve=resolve);},onState(){}});
+await deleter.remove(deletion);assert.equal(deleter.state().unknown,true);assert.equal(deleteCalls.length,1);await assert.rejects(()=>deleter.remove(deletion),/unresolved/);await assert.rejects(()=>deleter.begin(payload),/unresolved/);
+const checkDelete=deleter.check();await new Promise(resolve=>setImmediate(resolve));assert.equal(deleteCalls[1].action,'CheckDelete');assert.equal(deleteCalls[1].lines,undefined);assert.deepEqual(deleteCalls[1].deletePlan,plan);deleteResolve({success:true,contract:'po-v1',writeState:'verified',deleted:plan,remaining:0});await checkDelete;assert.equal(deleter.state().unknown,false);assert.equal(deleter.state().deleted.id,'5');
+for(const altered of [{...plan,id:'9'},{...plan,items:['6','6']},{...plan,items:[6]},{...plan,revision:'stale'}])assert.throws(()=>c.LMPOController.validateDeletePlan(altered,deletion),/verified/);
+assert.throws(()=>c.LMPOController.verifyDeleted({deleted:plan,remaining:1},deletion),/verified/);assert.throws(()=>c.LMPOController.verifyDeleted({deleted:{...plan,items:['6']},remaining:0},deletion),/verified/);
+console.log('PO deletion: exact previews, duplicate-send blocking, captured read-only recovery and full associated-record verification passed.');
+
+const withModification={...payload,automaticModifications:true,expectedBalances:{'4':'101'},expectedPendingModifications:{'4':'0'}};
+const vpSnapshot={...snapshot,budgetModificationId:'9',approvalBundle:{modifications:[{id:'9',budgetItemId:'4',amount:'1.00',status:'Submitted'}],rows:[{role:'CFO',status:'Pending'},{role:'VP',status:'Not Sent'}]}};
+assert.equal(c.LMPOController.verify(vpSnapshot,withModification),vpSnapshot,'Any configured additional role satisfies the modification route');assert.throws(()=>c.LMPOController.verify({...vpSnapshot,approvalBundle:{...vpSnapshot.approvalBundle,rows:[{role:'CFO',status:'Pending'}]}},withModification),/approver/);

@@ -12,6 +12,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Approval administration](approval-administration.md) | Roles, assignments, versioned policies, audit details and route preview |
 | [Transfer progress](transfer-progress.md) | A committing action that writes to several records |
 | [Record details](record-details.md) | Read-only main-report details, identity/date pills, compact previews and complete detail modals |
+| [Payment requests](payment-requests.md) | Budget Requests cards, PO vendor/amount/status columns and Edit/View actions |
 | [Takedown receipts](takedown-receipts.md) | Builder Takedown editor, sequential interest periods and live receipt |
 | [Lot lists](lot-lists.md) | Block-grouped lot tables, cell editing, shift selection and mass updates |
 | [Success feedback](success-feedback.md) | Black routine success popups, contextual wording and inline save accompaniment; preserve inline green checks |

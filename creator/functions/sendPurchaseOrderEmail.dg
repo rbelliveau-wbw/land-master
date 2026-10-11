@@ -9,6 +9,10 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		approval = Budget_Approvals[ID == active.get("id").toLong()];
 		if(approval.Sent_Date != null) { return "OK: Approval email already recorded."; }
 		po = Payment_Request[ID == purchaseOrderId.toLong()];
+		for each deletionLock in PO_Phase_Lock[Phase_Key == po.Budget.toString()]
+		{
+			if(ifnull(deletionLock.Operation_Token,"").startsWith("delete-")) { return "ERROR: PO deletion is in progress. Notification was not sent."; }
+		}
 		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { return "ERROR: PO approval state changed before notification."; }
 		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");

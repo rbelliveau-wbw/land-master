@@ -868,3 +868,51 @@ roles when the PO creates budget modifications, with no policy dates, versions
 or multiple-role controls. Published Save changes future submissions in place.
 Creator promotion is required for the policy behavior and 200-line validation.
 See [handoff](../../docs/approval-policy-simplification-2026-10-11.md).
+
+## PO Ledger, 250 lines and deletion (122.29.20)
+
+Managed PO cards use the selected Ledger design: a pale heading strip, wrapping
+vendor identity, right-aligned navy amount, status and outlined Edit/View action.
+Shared grid columns keep large currency amounts clear of status. Narrow cards
+stack into two columns. Existing report dates appear only when supplied; the
+card renderer does not add per-row API calls. See [the card guide](../design/payment-requests.md).
+
+The editor and native payload validator accept 1–250 lines, with a 500,000-character
+request ceiling. Item names remain separate from editable descriptions and the
+element heading is ELEM. Modification submissions accept CFO plus any configured
+additional roles rather than requiring the role name COO.
+
+Delete PO is available to current budget editors for managed drafts and submitted
+POs, including Pending, Rejected and Approved approvals. A read-only PreviewDelete
+captures the parent revision, every line revision, operation receipts, captured
+PO/modification routes, approval rows and modifications proven by the native
+PO:<parent ID>: reference prefix. Unrelated/externally linked modifications remain
+untouched; shared associations or unresolved phase writes block deletion.
+The widget asks for permanent-delete confirmation, then Delete recomputes the
+preview, acquires the unique phase lock and removes children before the parent.
+Removing the parent releases its PO commitment. Removed approved modifications
+recalculate affected item and phase totals with the existing helpers.
+Approval decisions use the same phase lock; notification retries cannot send
+while a deletion lock is present. Ambiguous deletion replies retain the lock and
+captured IDs; CheckDelete is read-only and never replays deletion.
+
+Changed files: Budget HTML/CSS and PO UI/domain/controller, matching regression
+checks, PO schema contract, design/module guides, release/version/hash metadata
+and Development/Production mappings. Native functions: managePurchaseOrder,
+poValidatePayload, handlePurchaseOrderApproval and sendPurchaseOrderEmail. Existing
+Manage_Purchase_Order APIs are unchanged. No new Creator forms, fields or grants.
+Both frontend deployment and Creator promotion are required. Budget edit grants
+continue to protect deletion; a separate deletion permission is deferred by the owner.
+
+Regression evidence: actual native-source tests for 250/251 limits, all PO deletion
+states, all line revisions, foreign/shared identities, stale previews, competing
+approval/deletion locks, no deletion emails, approved-modification rollups and
+read-only partial-write recovery. Requests tests retain exact IDs, phase scoping,
+Edit/View eligibility and guarded Get recovery. Browser card QA covers long vendor
+names, large amounts and 380px viewport without card overflow. Native Development
+compilation and reopened token readback passed before Creator promotion.
+Full repository validation and Pages build passed before main/Production.
+
+Rollback: map Budget Manager Production to 122.29.18 and rebuild Pages, and restore
+the prior Creator functions from that main commit. Restoring code does not restore
+permanently deleted records. No cross-record transaction or automatic replay is claimed.

@@ -34,7 +34,7 @@ assert.equal(reads[0].options.fields,undefined,'A native report with zero expose
 assert.deepEqual(apiReads.map(read=>read.action),['List','Vendors'],'Managed PO metadata and vendors read once per phase, without per-row Get');
 assert.equal(c.S.checkWireRequestsByBudget[budgetId].length,1,'The blank native row and its managed PO merge once');
 let html=c.renderCheckWireRequestColumn(c.S.edBudget);
-assert.match(html,/2-C Equipment, LLC/);assert.match(html,/Draft/);assert.match(html,new RegExp("data-request-po-open='"+poId+"'"));assert.match(html,/>Edit PO<\/button>/);
+assert.match(html,/2-C Equipment, LLC/);assert.match(html,/Draft/);assert.match(html,new RegExp("data-request-po-open='"+poId+"'"));assert.match(html,/>Edit PO<\/span>/);
 assert.doesNotMatch(html,/mpc-meta|Request · Budget item/,'Managed rows without native dates do not show fabricated dashes or blank duplicates');
 assert.equal(c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId).length,1,'List POs missing from report layout still appear');
 const complete=c.mergeManagedPurchaseOrderRequests([draft],managedResponse,vendorResponse,budgetId);assert.equal(complete[0].Request_Date,draft.Request_Date,'Native generic dates are retained when available');
@@ -43,9 +43,9 @@ const check={ID:'900000000000000008',Budget:{ID:budgetId},Request_Type:'Check',R
 assert.equal(c.mergeManagedPurchaseOrderRequests([check,draft],managedResponse,vendorResponse,budgetId).length,2,'Other payment requests remain in the list');
 const trigger={id:'edit-po'};await c.openSavedPurchaseOrder(poId,trigger);
 assert.equal(opens[0].id,poId);assert.equal(opens[0].budget.ID,budgetId);assert.equal(opens[0].trigger,trigger);
-editable=false;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>View PO<\/button>/);editable=true;
-for(const approval of ['Pending','Approved']){c.S.checkWireRequestsByBudget[budgetId]=[{...draft,PO_Status:'Submitted',PO_Approval_State:approval}];assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>View PO<\/button>/);}
-c.S.checkWireRequestsByBudget[budgetId]=[{...draft,PO_Status:'Submitted',PO_Approval_State:'Rejected'}];assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>Edit PO<\/button>/);
+editable=false;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>View PO<\/span>/);editable=true;
+for(const approval of ['Pending','Approved']){c.S.checkWireRequestsByBudget[budgetId]=[{...draft,PO_Status:'Submitted',PO_Approval_State:approval}];assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>View PO<\/span>/);}
+c.S.checkWireRequestsByBudget[budgetId]=[{...draft,PO_Status:'Submitted',PO_Approval_State:'Rejected'}];assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>Edit PO<\/span>/);
 for(const changed of [{Request_Type:'Check'},{PO_Revision:''},{ID:Number(poId)},{Budget:{ID:'another-budget'}}]){c.S.checkWireRequestsByBudget[budgetId]=[{...draft,...changed}];assert.doesNotMatch(c.renderCheckWireRequestColumn(c.S.edBudget),/data-request-po-open/);await c.openSavedPurchaseOrder(poId,trigger);}
 assert.equal(opens.length,1,'Foreign, legacy and rounded identities never open an editor');
 c.S.checkWireRequestsByBudget[budgetId]=[draft];c.S.edPhaseIdx='all';await c.openSavedPurchaseOrder(poId,trigger);assert.equal(opens.length,1);c.S.edPhaseIdx=0;

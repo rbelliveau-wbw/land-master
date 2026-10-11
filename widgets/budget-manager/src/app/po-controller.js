@@ -14,7 +14,7 @@
       Object.keys(planned).forEach(function(id){if(!wanted.expectedBalances||typeof wanted.expectedBalances[id]!=='string'||!wanted.expectedPendingModifications||typeof wanted.expectedPendingModifications[id]!=='string')throw new Error('Submission item balance was not verified.');var amount=planned[id]-BigInt(wanted.expectedBalances[id])-BigInt(wanted.expectedPendingModifications[id]);if(amount>0n)expected[id]=root.LMPO.currency(amount);});
       bundle.modifications.forEach(function(mod){if(typeof mod.id!=='string'||!/^\d+$/.test(mod.id)||seen.has(mod.budgetItemId)||expected[mod.budgetItemId]!==mod.amount||mod.status!=='Submitted')throw new Error('Automatic budget modification was not verified.');seen.add(mod.budgetItemId);});
       if(seen.size!==Object.keys(expected).length||(snapshot.budgetModificationId||null)!==(bundle.modifications.length?bundle.modifications[0].id:null))throw new Error('Linked budget modification bundle was not verified.');
-      if(bundle.modifications.length&&!bundle.rows.some(function(row){return row.role.toUpperCase()==='COO';}))throw new Error('Required COO step was not verified.');
+      if(bundle.modifications.length&&!bundle.rows.some(function(row){return row.role.toUpperCase()!=='CFO';}))throw new Error('Required budget modification approver was not verified.');
     }else if((snapshot.budgetModificationId==null?null:snapshot.budgetModificationId)!==(wanted.budgetModificationId==null?null:wanted.budgetModificationId))throw new Error("Linked budget modification was not verified.");
     if(!Array.isArray(snapshot.lines)||snapshot.lines.length!==wanted.lines.length)throw new Error("PO line count was not verified.");
     var ids=new Set();snapshot.lines.forEach(function(line,index){if(typeof line.ID!=="string"||!/^\d+$/.test(line.ID)||ids.has(line.ID))throw new Error("Unique saved line IDs were not verified.");ids.add(line.ID);if(compareFields)for(var field of ["key","budgetItemId","description","costElement","uom","costCode","pricingMode","quantity","unitPrice","finalAmount"])if(line[field]!==wanted.lines[index][field])throw new Error("Line "+(index+1)+" "+field+" was not verified.");});return snapshot;
@@ -41,21 +41,24 @@
     }
     function execute(check){
       var captured=run;
-      var payload=check?(captured.decision?Object.assign({},captured.payload,{action:'CheckDecision',decision:captured.payload.action}):{action:"Check",budgetId:captured.payload.budgetId,userAccessId:captured.payload.userAccessId,token:captured.payload.token}):captured.payload;
+      var payload=check?(captured.deletion?Object.assign({},captured.payload,{action:'CheckDelete'}):captured.decision?Object.assign({},captured.payload,{action:'CheckDecision',decision:captured.payload.action}):{action:"Check",budgetId:captured.payload.budgetId,userAccessId:captured.payload.userAccessId,token:captured.payload.token}):captured.payload;
       captured.busy=true;options.onState(captured,check?"checking":"saving");
       var timer;
-      return Promise.race([Promise.resolve().then(function(){return options.call(payload);}),new Promise(function(resolve,reject){timer=setTimeout(function(){reject(new Error("Response was lost or timed out. The PO may have been saved."));},options.timeoutMs||90000);})]).then(function(receipt){
+      return Promise.race([Promise.resolve().then(function(){return options.call(payload);}),new Promise(function(resolve,reject){timer=setTimeout(function(){reject(new Error(captured.deletion?"Response was lost or timed out. The PO may have been deleted.":"Response was lost or timed out. The PO may have been saved."));},options.timeoutMs||90000);})]).then(function(receipt){
         if(!receipt||receipt.contract!=="po-v1")throw new Error("PO verification is unavailable in this environment.");
         if(receipt.success!==true||receipt.writeState!=="verified"){
           if(!check&&receipt.writeState==="not-started") { captured.unknown=false;captured.rejected=true;captured.error=receipt.error||"PO was not saved.";options.onState(captured,"rejected");return null; }
           throw new Error(receipt.error||"Saved PO could not be verified.");
         }
-        captured.snapshot=(captured.decision?verifyDecision:verify)(receipt.snapshot,captured.payload,check);captured.unknown=false;captured.error="";options.onState(captured,"verified");return captured.snapshot;
+        if(captured.deletion){captured.deleted=verifyDeleted(receipt,captured.payload);}else{captured.snapshot=(captured.decision?verifyDecision:verify)(receipt.snapshot,captured.payload,check);}captured.unknown=false;captured.error="";options.onState(captured,"verified");return captured.deleted||captured.snapshot;
       }).catch(function(error){captured.unknown=true;captured.error=error.message||String(error);options.onState(captured,"unknown");return null;}).finally(function(){clearTimeout(timer);captured.busy=false;options.onState(captured,"settled");});
     }
     function check(){if(!run||run.busy||!run.unknown)return Promise.resolve(null);return execute(true);}
     function decide(payload){if(run&&(run.busy||run.unknown))return Promise.reject(new Error('A PO operation is active or unresolved. Use read-only Check.'));run={payload:JSON.parse(JSON.stringify(payload)),decision:true,busy:true,unknown:false,snapshot:null,error:''};options.onState(run,'prepared');return execute(false);}
-    return {begin:begin,decide:decide,check:check,state:state,verify:verify};
+    function remove(payload){if(run&&(run.busy||run.unknown))return Promise.reject(new Error('A PO operation is active or unresolved. Use read-only Check.'));validateDeletePlan(payload.deletePlan,payload);run={payload:JSON.parse(JSON.stringify(payload)),deletion:true,busy:true,unknown:false,snapshot:null,deleted:null,error:''};options.onState(run,'prepared');return execute(false);}
+    return {begin:begin,decide:decide,remove:remove,check:check,state:state,verify:verify};
   }
-  root.LMPOController={create:create,verify:verify,verifyDecision:verifyDecision};
+  function validateDeletePlan(plan,wanted){if(!plan||plan.id!==wanted.id||plan.budgetId!==wanted.budgetId||plan.revision!==wanted.expectedRevision||typeof plan.proof!=='string'||!plan.proof)throw new Error('Deletion preview identity was not verified.');['items','operations','snapshots','approvals','modifications','rollupItems'].forEach(function(key){if(!Array.isArray(plan[key])||plan[key].some(function(id){return typeof id!=='string'||!/^\d+$/.test(id);})||new Set(plan[key]).size!==plan[key].length)throw new Error('Deletion record identities were not verified.');});return plan;}
+  function verifyDeleted(receipt,wanted){var plan=validateDeletePlan(receipt.deleted,wanted);if(receipt.remaining!==0||plan.proof!==wanted.deletePlan.proof||['items','operations','snapshots','approvals','modifications','rollupItems','status','commitmentState','approvalState'].some(function(key){return JSON.stringify(plan[key])!==JSON.stringify(wanted.deletePlan[key]);}))throw new Error('PO and associated record deletion was not verified.');return plan;}
+  root.LMPOController={create:create,verify:verify,verifyDecision:verifyDecision,validateDeletePlan:validateDeletePlan,verifyDeleted:verifyDeleted};
 })(typeof globalThis!=="undefined"?globalThis:this);

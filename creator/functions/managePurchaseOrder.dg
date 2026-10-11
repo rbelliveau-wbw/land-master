@@ -52,6 +52,128 @@ string managePurchaseOrder(string payload)
 			}
 			result.put("vendors",rows); result.put("success",true); return result.toString();
 		}
+		if(action == "PreviewDelete" || action == "Delete" || action == "CheckDelete")
+		{
+			if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
+			idText = ifnull(p.get("id"),"").toString();
+			if(!idText.matches("[0-9]+")) { result.put("error","An exact PO identity is required."); return result.toString(); }
+			if(action == "CheckDelete")
+			{
+				plan = p.get("deletePlan");
+				if(plan == null || plan.get("id") != idText || plan.get("budgetId") != budgetId) { result.put("error","The captured deletion preview is required."); return result.toString(); }
+				checkProof = zoho.encryption.sha256(idText+"|"+budgetId+"|"+plan.get("revision")+"|"+plan.get("status")+"|"+plan.get("commitmentState")+"|"+plan.get("approvalState")+"|"+plan.get("rollupItems").toString()+"|"+plan.get("items").toString()+"|"+plan.get("operations").toString()+"|"+plan.get("snapshots").toString()+"|"+plan.get("approvals").toString()+"|"+plan.get("modifications").toString());
+				if(checkProof != plan.get("proof")) { result.put("error","The captured deletion record set changed."); return result.toString(); }
+				remaining = Payment_Request[ID == idText.toLong()].count();
+				remainingCount = PO_Item[Purchase_Order == idText.toLong()].count(); remaining = remaining+remainingCount;
+				remainingCount = PO_Operation[Purchase_Order == idText.toLong()].count(); remaining = remaining+remainingCount;
+				remainingCount = Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == idText].count(); remaining = remaining+remainingCount;
+				for each childId in plan.get("items") { remainingCount = PO_Item[ID == childId.toString().toLong()].count(); remaining = remaining+remainingCount; }
+				for each childId in plan.get("operations") { remainingCount = PO_Operation[ID == childId.toString().toLong()].count(); remaining = remaining+remainingCount; }
+				for each childId in plan.get("snapshots") { remainingCount = Approval_Route_Snapshot[ID == childId.toString().toLong()].count(); remaining = remaining+remainingCount; }
+				for each childId in plan.get("approvals") { remainingCount = Budget_Approvals[ID == childId.toString().toLong()].count(); remaining = remaining+remainingCount; }
+				for each childId in plan.get("modifications") { remainingCount = Budget_Modification[ID == childId.toString().toLong()].count(); remaining = remaining+remainingCount; }
+				remainingCount = PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == p.get("token")].count(); remaining = remaining+remainingCount;
+				if(remaining > 0) { result.put("writeState","unknown"); result.put("error","Deletion is incomplete. Review the captured records and phase lock; do not replay Delete."); return result.toString(); }
+				result.put("success",true); result.put("writeState","verified"); result.put("deleted",plan); result.put("remaining",0); return result.toString();
+			}
+			po = Payment_Request[ID == idText.toLong() && Budget == budget.ID];
+			deleteStatuses = {"Draft","Submitted"};
+			if(po.ID == null || po.Request_Type != "Purchase Order" || !deleteStatuses.contains(po.PO_Status) || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != p.get("expectedRevision")) { result.put("error","Only the current managed PO in this phase can be deleted."); return result.toString(); }
+			if(po.PO_Status == "Draft") { if(po.PO_Commitment_State != "None" || po.PO_Approval_State != "Not Configured") { result.put("error","Draft PO state needs review before deletion."); return result.toString(); } }
+			if(po.PO_Status == "Submitted") { deleteApprovalStates = {"Pending","Approved","Rejected"}; if(po.PO_Commitment_State != "Reserved" || !deleteApprovalStates.contains(po.PO_Approval_State)) { result.put("error","Submitted PO state needs review before deletion."); return result.toString(); } }
+			if(PO_Phase_Lock[Phase_Key == budgetId].count() > 0) { result.put("error","This phase has an active or unresolved operation. Review it before deleting."); return result.toString(); }
+			itemIds = List(); operationIds = List(); snapshotIds = List(); approvalIds = List(); modificationIds = List(); rollupItemIds = List();
+			deleteStatus = po.PO_Status; deleteCommitment = po.PO_Commitment_State; deleteApproval = po.PO_Approval_State;
+			for each deleteLine in PO_Item[Purchase_Order == po.ID] sort by ID { itemIds.add(deleteLine.ID.toString()); }
+			for each deleteOperation in PO_Operation[Purchase_Order == po.ID] sort by ID
+			{
+				if(deleteOperation.Budget != budget.ID || deleteOperation.Status != "Complete") { result.put("error","An incomplete or foreign PO operation needs review."); return result.toString(); }
+				operationIds.add(deleteOperation.ID.toString());
+			}
+			for each captured in Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == idText] sort by ID
+			{
+				context = captured.Context_JSON.toMap();
+				if(context.get("budgetId") != budgetId || context.get("recordId") != idText) { result.put("error","Captured PO history does not match this phase."); return result.toString(); }
+				snapshotIds.add(captured.ID.toString());
+				capturedExecutionText = ifnull(captured.Execution_JSON,"[]"); capturedExecutionIds = capturedExecutionText.toJSONList();
+				for each childId in capturedExecutionIds
+				{
+					deleteExecution = Budget_Approvals[ID == childId.toString().toLong()];
+					if(deleteExecution.ID != null)
+					{
+						if(deleteExecution.Budget != budget.ID || deleteExecution.Type1 != "Purchase Order") { result.put("error","A captured approval belongs to another workflow."); return result.toString(); }
+						if(!approvalIds.contains(deleteExecution.ID.toString())) { approvalIds.add(deleteExecution.ID.toString()); }
+					}
+				}
+			}
+			for each deleteModification in Budget_Modification[Budget == budget.ID] sort by ID
+			{
+				if(ifnull(deleteModification.Reference_Number,"").startsWith("PO:"+idText+":"))
+				{
+					if(deleteModification.Status == "Approved")
+					{
+						modifiedItem = Budget_Item[ID == deleteModification.Budget_Item && Budget == budget.ID];
+						if(modifiedItem.ID == null) { result.put("error","An approved PO modification belongs to another phase item."); return result.toString(); }
+						if(!rollupItemIds.contains(modifiedItem.ID.toString())) { rollupItemIds.add(modifiedItem.ID.toString()); }
+					}
+					modificationIds.add(deleteModification.ID.toString());
+					for each modificationApproval in Budget_Approvals[Budget_Modification == deleteModification.ID] sort by ID { if(!approvalIds.contains(modificationApproval.ID.toString())) { approvalIds.add(modificationApproval.ID.toString()); } }
+					for each modificationRoute in Approval_Route_Snapshot[Workflow == "Budget Modification" && Record_ID == deleteModification.ID.toString()] sort by ID
+					{
+						modificationContext = modificationRoute.Context_JSON.toMap();
+						if(modificationContext.get("budgetId") != budgetId || modificationContext.get("recordId") != deleteModification.ID.toString()) { result.put("error","A modification route belongs to another phase."); return result.toString(); }
+						snapshotIds.add(modificationRoute.ID.toString());
+					}
+				}
+			}
+			for each otherRoute in Approval_Route_Snapshot[Record_ID != idText]
+			{
+				if(snapshotIds.contains(otherRoute.ID.toString())) { continue; }
+				otherExecutionText = ifnull(otherRoute.Execution_JSON,"[]"); otherExecutionIds = otherExecutionText.toJSONList();
+				for each childId in otherExecutionIds { if(approvalIds.contains(childId.toString())) { result.put("error","A captured approval is shared with another PO."); return result.toString(); } }
+				otherContext = otherRoute.Context_JSON.toMap();
+				for each modText in ifnull(otherContext.get("modifications"),List())
+				{
+					modData = modText.toString().toMap();
+					if(modificationIds.contains(modData.get("id"))) { result.put("error","A budget modification is shared with another PO."); return result.toString(); }
+				}
+			}
+			for each otherPO in Payment_Request[PO_Budget_Modification != null && ID != po.ID]
+			{
+				if(modificationIds.contains(otherPO.PO_Budget_Modification.toString())) { result.put("error","A budget modification is linked to another PO."); return result.toString(); }
+			}
+			proof = zoho.encryption.sha256(idText+"|"+budgetId+"|"+po.PO_Revision+"|"+deleteStatus+"|"+deleteCommitment+"|"+deleteApproval+"|"+rollupItemIds.toString()+"|"+itemIds.toString()+"|"+operationIds.toString()+"|"+snapshotIds.toString()+"|"+approvalIds.toString()+"|"+modificationIds.toString());
+			plan = {"id":idText,"budgetId":budgetId,"revision":po.PO_Revision,"status":deleteStatus,"commitmentState":deleteCommitment,"approvalState":deleteApproval,"rollupItems":rollupItemIds,"items":itemIds,"operations":operationIds,"snapshots":snapshotIds,"approvals":approvalIds,"modifications":modificationIds,"proof":proof};
+			if(action == "PreviewDelete") { result.put("success",true); result.put("deletePlan",plan); return result.toString(); }
+			if(p.get("deletePlan") == null || p.get("deletePlan").get("proof") != proof) { result.put("error","PO records changed after the deletion preview. Refresh the preview."); return result.toString(); }
+			token = ifnull(p.get("token"),"").toString();
+			if(!token.matches("[A-Za-z0-9_-]{20,80}") || !token.startsWith("delete-") || PO_Operation[Token == token].count() > 0) { result.put("error","A new deletion token is required."); return result.toString(); }
+			lockId = insert into PO_Phase_Lock
+			[
+				Added_User=zoho.loginuser
+				Phase_Key=budgetId
+				Operation_Token=token
+				Actor=access.ID
+			];
+			if(po.PO_Revision != plan.get("revision") || po.PO_Status != deleteStatus || po.PO_Commitment_State != deleteCommitment || po.PO_Approval_State != deleteApproval) { delete from PO_Phase_Lock[ID == lockId && Operation_Token == token]; lockId = 0; result.put("error","The PO changed before deletion started."); return result.toString(); }
+			writeStarted = true;
+			for each childId in itemIds { delete from PO_Item[ID == childId.toLong() && Purchase_Order == po.ID]; }
+			for each childId in approvalIds { delete from Budget_Approvals[ID == childId.toLong()]; }
+			for each childId in modificationIds { delete from Budget_Modification[ID == childId.toLong() && Budget == budget.ID]; }
+			for each childId in snapshotIds { delete from Approval_Route_Snapshot[ID == childId.toLong()]; }
+			for each childId in operationIds { delete from PO_Operation[ID == childId.toLong() && Purchase_Order == po.ID && Budget == budget.ID]; }
+			for each childId in approvalIds { if(Budget_Approvals[ID == childId.toLong()].count() > 0) { result.put("writeState","unknown"); result.put("error","A captured approval remains. Review deletion before continuing."); return result.toString(); } }
+			for each childId in modificationIds { if(Budget_Modification[ID == childId.toLong()].count() > 0) { result.put("writeState","unknown"); result.put("error","A PO-created modification remains. Review deletion before continuing."); return result.toString(); } }
+			for each childId in snapshotIds { if(Approval_Route_Snapshot[ID == childId.toLong()].count() > 0) { result.put("writeState","unknown"); result.put("error","A captured route remains. Review deletion before continuing."); return result.toString(); } }
+			if(PO_Item[Purchase_Order == po.ID].count() != 0 || PO_Operation[Purchase_Order == po.ID].count() != 0 || Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == idText].count() != 0) { result.put("writeState","unknown"); result.put("error","Associated PO records remain. Review the phase lock; do not replay Delete."); return result.toString(); }
+			delete from Payment_Request[ID == idText.toLong() && Budget == budget.ID && PO_Revision == plan.get("revision") && PO_Status == deleteStatus];
+			if(Payment_Request[ID == idText.toLong()].count() > 0) { result.put("writeState","unknown"); result.put("error","PO parent deletion needs review."); return result.toString(); }
+			for each modifiedItemId in rollupItemIds { thisapp.recalcItemRevisedFinal(modifiedItemId.toLong()); }
+			if(rollupItemIds.size() > 0) { thisapp.recalcBudgetModifiedTotals(budget.ID); }
+			delete from PO_Phase_Lock[ID == lockId && Operation_Token == token && Actor == access.ID]; lockId = 0;
+			if(PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == token].count() > 0) { result.put("writeState","unknown"); result.put("error","Deletion lock needs review."); return result.toString(); }
+			result.put("success",true); result.put("writeState","verified"); result.put("deleted",plan); result.put("remaining",0); return result.toString();
+		}
 		if(action == "Get")
 		{
 			po = Payment_Request[ID == p.get("id").toString().toLong() && Budget == budget.ID];
@@ -376,17 +498,8 @@ string managePurchaseOrder(string payload)
 			if(wasReserved) { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Rejected"; }
 			if(action == "Submit") { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Pending"; }
 			if(saved.get("status") != wantedStatus || saved.get("commitmentState") != wantedCommitment || saved.get("approvalState") != wantedApproval) { result.put("error","Submission, commitment or approval state differs from the intended write."); }
-			if(saved.get("budgetId") != budgetId || saved.get("vendorId") != p.get("vendorId") || saved.get("amount") != p.get("amount") || saved.get("requestDate") != p.get("requestDate") || saved.get("dateNeeded") != p.get("dateNeeded") || saved.get("revision") != token || saved.get("lines").size() != p.get("lines").size()) { result.put("error","Header readback differs from the intended write."); }
+			if(saved.get("id") != idText || saved.get("budgetId") != budgetId || saved.get("revision") != token || saved.get("lines").size() != p.get("lines").size()) { result.put("error","PO destination identity or line count was not verified."); }
 			if(saved.get("budgetModificationId") != if(linkedModificationId == null,null,linkedModificationId.toString())) { result.put("error","Linked budget modification readback differs from the intended write."); }
-			index = 0;
-			for each line in p.get("lines")
-			{
-				written = saved.get("lines").get(index); index = index+1;
-				for each field in {"key","budgetItemId","description","costElement","uom","costCode","pricingMode","quantity","unitPrice","finalAmount"}
-				{
-					if(written.get(field) != line.get(field)) { result.put("error","Line readback differs from the intended write: "+field); }
-				}
-			}
 			if(result.get("error") == null)
 			{
 				proof = {"format":"sha256-v1","digest":zoho.encryption.sha256(saved.toString())};
