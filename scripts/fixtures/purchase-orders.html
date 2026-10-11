@@ -8,7 +8,7 @@
 const orders=new Map(),receipts=new Map();let writes=0,lost=false;
 const items=[{ID:'1003',Item_Name:'Roadwork',Budget_Code:'100'},{ID:'1004',Item_Name:'Utilities',Budget_Code:'200'}];
 const ui=LMPOUI.create({scope:()=> 'development-fixture',userAccessId:()=> '1005',canEdit:()=>true,phaseName:()=> 'Example phase',items:()=>items,vendors:async()=>[{ID:'1002',Vendor_Name:'Example vendor'}],saved(){},call:async p=>{
- if(p.action==='Balances')return {success:true,contract:'po-v1',balances:items.map(i=>({budgetItemId:i.ID,finalCents:'100000',modCents:'0',issuedCents:'0',availableCents:'100000'}))};
+ if(p.action==='Balances')return {success:true,contract:'po-v1',balances:items.map(i=>({budgetItemId:i.ID,finalCents:'100000',modCents:'0',issuedCents:'0',availableCents:'100000',pendingModificationCents:'0',subdivisionCode:'SH01',minorCode:'3225'}))};
  if(p.action==='List')return {success:true,contract:'po-v1',rows:[...orders.values()].map(x=>({id:x.id,amount:x.amount,status:x.status}))};
  if(p.action==='Get')return {success:true,contract:'po-v1',snapshot:structuredClone(orders.get(p.id))};
  if(p.action==='Check')return receipts.get(p.token);

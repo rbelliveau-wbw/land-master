@@ -30,17 +30,15 @@ map applySharedApprovalPolicy(map context)
 		}
 		companyText = ifnull(context.get("companyId"),"").toString();
 		if(!companyText.matches("[0-9]+")) { result.put("success",true); return result; }
-		territory = ifnull(context.get("territory"),""); department = ifnull(context.get("department"),""); day = context.get("effectiveDate").toDate("yyyy-MM-dd");
+		territory = ifnull(context.get("territory"),""); department = ifnull(context.get("department"),"");
 		bestRank = -1; matches = 0; selectedId = 0;
 		for each candidatePolicy in Approval_Policy[Workflow == workflow && Company == companyText.toLong() && Status == "Published"]
 		{
 			pTerritory = ifnull(candidatePolicy.Territory_Key,""); pDepartment = ifnull(candidatePolicy.Department_Key,"");
-			effectiveValid = true; scopeValid = true;
-			if(candidatePolicy.Effective_From != null && candidatePolicy.Effective_From > day) { effectiveValid = false; }
-			if(candidatePolicy.Effective_To != null && day >= candidatePolicy.Effective_To) { effectiveValid = false; }
+			scopeValid = true;
 			if(pTerritory != "" && pTerritory != territory) { scopeValid = false; }
 			if(pDepartment != "" && pDepartment != department) { scopeValid = false; }
-			if(effectiveValid && scopeValid)
+			if(scopeValid)
 			{
 				rank = 0; if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
 				if(rank > bestRank) { bestRank = rank; matches = 1; selectedId = candidatePolicy.ID; }
@@ -55,9 +53,13 @@ map applySharedApprovalPolicy(map context)
 		result.put("shared",true);
 		if(workflow == "Budget" && context.get("amountBasisConfirmed") != true)
 		{
-			for each budgetTemplateStep in selected.Steps_JSON.toJSONList()
+			for each rawBudgetTemplateStep in selected.Steps_JSON.toJSONList()
 			{
-				if(budgetTemplateStep.get("enabled") == true && (budgetTemplateStep.get("condition") == "Above" || budgetTemplateStep.get("condition") == "At or above")) { result.put("error","The Budget threshold amount basis must be confirmed before this template can start an approval chain."); return result; }
+				budgetTemplateStep=rawBudgetTemplateStep.toString().toMap();
+				if(budgetTemplateStep.get("enabled") == true)
+				{
+					if(budgetTemplateStep.get("condition") == "Above" || budgetTemplateStep.get("condition") == "At or above") { result.put("error","The Budget threshold amount basis must be confirmed before this template can start an approval chain."); return result; }
+				}
 			}
 		}
 		resolved = thisapp.resolveApprovalRoute(context);

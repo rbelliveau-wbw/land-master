@@ -233,11 +233,11 @@ string managePurchaseOrder(string payload)
 			if(resolved.get("success") != true) { result.put("error",resolved.get("error")); }
 			else
 			{
-				cfoFound = false; cooFound = false; vpFound = false;
+				cfoFound = false; additionalFound = false;
 				resolvedSnapshot = resolved.get("snapshot"); resolvedSteps = resolvedSnapshot.get("route"); approvalTitles = {"VP","Legal","CFO","COO","CEO"};
-				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role") == "CFO") { cfoFound = true; } if(step.get("role") == "COO") { cooFound = true; } if(step.get("role") == "VP") { vpFound = true; } }
+				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role") == "CFO") { cfoFound = true; } if(step.get("role") != "CFO") { additionalFound = true; } }
 				if(cfoFound != true) { result.put("error","Every PO must include CFO approval."); }
-				if(budgetExceeded && (cooFound != true || vpFound != true)) { result.put("error","POs exceeding any available item budget require both COO and Territory VP approval."); }
+				if(modificationPlan.size() > 0 && additionalFound != true) { result.put("error","Configure additional approvers for POs that create budget modifications."); }
 			}
 		}
 		operation = PO_Operation[ID == operationId];

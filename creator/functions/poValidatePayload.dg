@@ -32,7 +32,7 @@ map poValidatePayload(string payload)
 			if(!dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || dateText.toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateText) { result.put("error","Both valid request dates are required."); return result; }
 		}
 		lines = p.get("lines");
-		if(lines == null || lines.size() == 0 || lines.size() > 100) { result.put("error","Enter 1–100 complete PO lines."); return result; }
+		if(lines == null || lines.size() == 0 || lines.size() > 200) { result.put("error","Enter 1–200 complete PO lines."); return result; }
 		keys = List();
 		grouped = Map();
 		totalCents = 0;

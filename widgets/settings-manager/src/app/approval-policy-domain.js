@@ -13,13 +13,10 @@
   function validatePolicy(policy){
     id(policy.id);if(policy.companyId!==''||policy.workflow!=='Purchase Order')id(policy.companyId);
     if(!["Budget","Budget Modification","Pro Forma","Contract","Purchase Order"].includes(policy.workflow))fail("Unsupported workflow.");
-    if(!Number.isSafeInteger(policy.version)||policy.version<1)fail("A positive policy version is required.");
-    if(!["Allow","Deny"].includes(policy.selfApproval)||!["Separate steps","Reject"].includes(policy.duplicatePerson))fail("Choose self-approval and multiple-role rules before publication.");
-    if(policy.workflow==="Purchase Order"&&(policy.selfApproval!=="Deny"||policy.duplicatePerson!=="Reject"))fail("Purchase Orders require distinct approvers and forbid submitter self-approval.");
-    if(policy.effectiveFrom)date(policy.effectiveFrom);if(policy.effectiveTo)date(policy.effectiveTo);
-    if(policy.effectiveFrom&&policy.effectiveTo&&policy.effectiveTo<=policy.effectiveFrom)fail("Effective end must follow start (end is exclusive).");
+    if(!["Allow","Deny"].includes(policy.selfApproval))fail("Choose the self-approval rule before publication.");
+    if(policy.workflow==="Purchase Order"&&policy.selfApproval!=="Deny")fail("Purchase Orders forbid submitter self-approval.");
     if(!Array.isArray(policy.steps)||!policy.steps.length||policy.steps.length>30)fail("Enter 1–30 ordered steps.");
-    var keys=new Set();policy.steps.forEach(function(step,index){if(typeof step.key!=="string"||!step.key||keys.has(step.key))fail("Step keys must be unique.");keys.add(step.key);id(step.roleId);if(step.order!==index+1)fail("Steps must have contiguous, unique order.");if(typeof step.enabled!=="boolean")fail("Each step needs an explicit enabled setting.");if(!["Always","Above","At or above","Budget modification attached","Budget line exceeded"].includes(step.condition))fail("Choose a supported step condition.");if(["Pro Forma","Contract"].includes(policy.workflow)&&step.condition!=="Always")fail("Pro Forma and Contract use straight approval chains without amount thresholds.");if(["Budget modification attached","Budget line exceeded"].includes(step.condition)&&policy.workflow!=="Purchase Order")fail("Budget modification and overrun conditions belong to Purchase Orders.");if(step.condition==="Above"||step.condition==="At or above")cents(step.threshold);
+    var keys=new Set();policy.steps.forEach(function(step,index){if(typeof step.key!=="string"||!step.key||keys.has(step.key))fail("Step keys must be unique.");keys.add(step.key);id(step.roleId);if(step.order!==index+1)fail("Steps must have contiguous, unique order.");if(typeof step.enabled!=="boolean")fail("Each step needs an explicit enabled setting.");if(!["Always","Above","At or above","Budget modification attached"].includes(step.condition))fail("Choose a supported step condition.");if(["Pro Forma","Contract"].includes(policy.workflow)&&step.condition!=="Always")fail("Pro Forma and Contract use straight approval chains without amount thresholds.");if(step.condition==="Budget modification attached"&&policy.workflow!=="Purchase Order")fail("Budget modification conditions belong to Purchase Orders.");if(step.condition==="Above"||step.condition==="At or above")cents(step.threshold);
       if(step.poTestCFO!=null){
         var test=step.poTestCFO;
         if(!test||typeof test!=="object"||Array.isArray(test)||policy.workflow!=="Purchase Order"||policy.steps.length!==1||step.enabled!==true||step.condition!=="Always")fail("Test CFO requires one enabled Always step on a Purchase Order policy.");
@@ -27,20 +24,20 @@
         if(typeof test.email!=="string"||!/^[^\s@,;<>\"]+@[^\s@,;<>\"]+\.[^\s@,;<>\"]+$/.test(test.email)||test.allowSelfApproval!==true)fail("Test CFO needs one email and explicit scoped self-approval.");
         var maximum=cents(test.maxAmount);if(maximum<=0n||maximum>5500n)fail("Test CFO maximum must be positive and at most 55.00.");
       }
-    });return policy;
+    });if(policy.workflow==='Purchase Order')policy.steps.forEach(function(step,index){if(index===0){if(step.condition!=='Always'||step.enabled!==true)fail('CFO must approve every purchase order.');}else if(step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});return policy;
   }
   function resolve(config,ctx){
     id(ctx.companyId);id(ctx.submitterId);var amount=["Pro Forma","Contract"].includes(ctx.workflow)?0n:cents(ctx.amount),day=date(ctx.effectiveDate);
-    var policy=choose(config.policies.filter(function(p){return p.workflow===ctx.workflow&&p.status==="Published"&&validAt(p,day);}),ctx,"published policy");
+    var policy=choose(config.policies.filter(function(p){return p.workflow===ctx.workflow&&p.status==="Published";}),ctx,"published policy");
     validatePolicy(policy);if(policy.enabled!==true)fail("Applicable published policy is disabled.");
-    var route=[],excluded=[],people=new Set();
+    var route=[],excluded=[];
     policy.steps.forEach(function(step){
-      var linked=step.condition==="Budget modification attached",overrun=step.condition==="Budget line exceeded";
+      var linked=step.condition==="Budget modification attached";
       if(linked&&typeof ctx.hasBudgetModification!=="boolean")fail("Linked PO budget modification context is required.");
-      if(overrun&&typeof ctx.hasBudgetOverrun!=="boolean")fail("An explicit PO budget-line overrun context is required.");
-      var threshold=step.condition==="Above"||step.condition==="At or above"?cents(step.threshold):null,applies=step.enabled&&(linked?ctx.hasBudgetModification:overrun?ctx.hasBudgetOverrun:threshold===null||step.condition==="Above"&&amount>threshold||step.condition==="At or above"&&amount>=threshold);
-      if(!applies){excluded.push({key:step.key,reason:!step.enabled?"Disabled":linked?"No budget modification is linked to this PO":overrun?"All PO budget items are within their available budgets":step.condition+" threshold is not met"});return;}
+      var threshold=step.condition==="Above"||step.condition==="At or above"?cents(step.threshold):null,applies=step.enabled&&(linked?ctx.hasBudgetModification:threshold===null||step.condition==="Above"&&amount>threshold||step.condition==="At or above"&&amount>=threshold);
+      if(!applies){excluded.push({key:step.key,reason:!step.enabled?"Disabled":linked?"No budget modification is linked to this PO":step.condition+" threshold is not met"});return;}
       var roles=config.roles.filter(function(r){return r.id===step.roleId;});if(roles.length!==1||roles[0].active!==true)fail("Missing, ambiguous or inactive role for step "+step.order+".");
+      if(policy.workflow==='Purchase Order'&&(step.order===1?roles[0].name!=='CFO':roles[0].name==='CFO'))fail('PO policies need CFO first, then additional approvers for budget modifications.');
       var assignment,test=step.poTestCFO;
       if(test){
         if(roles[0].name!=="CFO")fail("Test CFO must use the active CFO role.");
@@ -56,14 +53,13 @@
       if(assignment.active!==true)fail("Assignment for "+roles[0].name+" is inactive.");if(assignment.id!=='')id(assignment.id);id(assignment.userAccessId);
       var users=config.users.filter(function(u){return u.id===assignment.userAccessId;});if(users.length!==1||!users[0].user||!test&&(users[0].routingEnabled!==true||typeof users[0].approverEmail!=="string"||!/^\S+@\S+\.\S+$/.test(users[0].approverEmail)))fail("Missing, inactive or unroutable approver for "+roles[0].name+".");
       if(policy.selfApproval==="Deny"&&assignment.userAccessId===ctx.submitterId&&!(test&&test.allowSelfApproval===true))fail("Policy forbids submitter self-approval.");
-      if(policy.duplicatePerson==="Reject"&&people.has(assignment.userAccessId))fail("One person fills multiple required roles; policy rejects this overlap.");people.add(assignment.userAccessId);
-      var resolved={order:route.length+1,policyStepOrder:step.order,key:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":overrun?"At least one PO budget item exceeds its available budget":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
+      var resolved={order:route.length+1,policyStepOrder:step.order,key:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
       if(test)resolved.poTestCFO=test;route.push(resolved);
     });
     if(!route.length)fail("No enabled applicable approval steps.");
     // Detached submission evidence; configuration edits cannot mutate an active route.
-    return JSON.parse(JSON.stringify({policyId:policy.id,policyVersion:policy.version,context:ctx,route:route,excluded:excluded,selfApproval:policy.selfApproval,duplicatePerson:policy.duplicatePerson}));
+    return JSON.parse(JSON.stringify({policyId:policy.id,context:ctx,route:route,excluded:excluded,selfApproval:policy.selfApproval}));
   }
-  function assertPublish(candidate,policies){validatePolicy(candidate);var start=candidate.effectiveFrom||"0000-00-00",end=candidate.effectiveTo||"9999-12-31";policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&p.companyId===candidate.companyId&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||"")&&start<(p.effectiveTo||"9999-12-31")&&(p.effectiveFrom||"0000-00-00")<end)fail("Published policy effective windows overlap in the same scope.");});return candidate;}
+  function assertPublish(candidate,policies){validatePolicy(candidate);policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&p.companyId===candidate.companyId&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||""))fail("A published policy already exists in this scope. Edit that policy.");});return candidate;}
   root.LMApprovalPolicy={resolve:resolve,validatePolicy:validatePolicy,assertPublish:assertPublish,currency:currency};
 })(typeof globalThis!=="undefined"?globalThis:this);

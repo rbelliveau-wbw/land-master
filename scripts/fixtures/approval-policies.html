@@ -4,16 +4,16 @@
 <h1>Approval policy fixture</h1><p>Local simulation — no Creator writes or notifications.</p><button id="open">Open Approvals</button>
 <script src="/approval-policy-domain.js"></script><script src="/approval-admin.js"></script>
 <script>
-const config={roles:[{id:'11',name:'Example role',active:true}],companies:[{id:'21',label:'Example company'}],territories:[{id:'North',label:'North'}],users:[{id:'31',user:'example.user',name:'Example person',approverEmail:'test@example.invalid',routingEnabled:true},{id:'32',user:'example.submitter',name:'Example submitter',approverEmail:'submitter@example.invalid',routingEnabled:true}],assignments:[{id:'41',roleId:'11',companyId:'21',userAccessId:'31',active:true,territory:'',department:'',effectiveFrom:'',effectiveTo:''}],policies:[{id:'51',workflow:'Purchase Order',companyId:'21',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',effectiveFrom:'',effectiveTo:'',territory:'',department:'',adapterEnabled:false,steps:[{key:'step-one',roleId:'11',order:1,condition:'At or above',threshold:'100.00',enabled:true}]}],audit:[]};
+const config={roles:[{id:'11',name:'CFO',active:true}],companies:[{id:'21',label:'Example company'}],territories:[{id:'North',label:'North'}],users:[{id:'31',user:'example.user',name:'Example person',approverEmail:'test@example.invalid',routingEnabled:true},{id:'32',user:'example.submitter',name:'Example submitter',approverEmail:'submitter@example.invalid',routingEnabled:true}],assignments:[{id:'41',roleId:'11',companyId:'21',userAccessId:'31',active:true,territory:'',department:'',effectiveFrom:'',effectiveTo:''}],policies:[{id:'51',workflow:'Purchase Order',companyId:'21',status:'Published',enabled:true,selfApproval:'Deny',territory:'',department:'',adapterEnabled:false,steps:[{key:'step-one',roleId:'11',order:1,condition:'Always',enabled:true}]}],audit:[]};
 const receipts=new Map();let count=60;
 const ui=LMApprovalAdmin.create({scope:()=> 'development-fixture',call:async p=>{
- if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,configuration:structuredClone(config)};
+ if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:'scope-v1',currentDate:'2026-10-11',actorId:'32',configuration:structuredClone(config)};
  if(p.action==='Preview'){try{return {contract:'approval-policy-v1',success:true,snapshot:LMApprovalPolicy.resolve(config,p.context)};}catch(e){return {contract:'approval-policy-v1',success:false,error:e.message};}}
  if(p.action==='Check')return receipts.get(p.token);
  const collection=p.action==='SaveRole'?'roles':p.action==='SaveAssignment'?'assignments':'policies';
  let before=config[collection].find(r=>r.id===p.data.id),after={...structuredClone(p.data),id:p.data.id||String(++count)};
  if(p.action==='Publish')after={...before,status:'Published'};
- if(p.action==='SavePolicy')Object.assign(after,{status:'Draft',adapterEnabled:false});
+ if(p.action==='SavePolicy')Object.assign(after,{status:p.data.status||'Draft',adapterEnabled:false});
  const index=config[collection].findIndex(r=>r.id===after.id);if(index<0)config[collection].push(after);else config[collection][index]=after;
  config.audit.push({id:String(++count),action:p.action,status:'Complete',actorId:'32',before:structuredClone(before||{}),after:structuredClone(after)});
  const receipt={contract:'approval-policy-v1',success:true,writeState:'verified',token:p.token,after};receipts.set(p.token,receipt);await new Promise(r=>setTimeout(r,300));return receipt;

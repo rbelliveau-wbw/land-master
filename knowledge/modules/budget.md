@@ -724,9 +724,9 @@ Each line shows its item's available budget, the current PO's allocation to that
 item, and remaining budget. Reserved other POs are included once; Draft POs do
 not reserve funds. Rejection retains the reservation. Submission creates one
 automatic modification per item shortfall and captures one sequential approval
-chain covering the PO and every modification. Each person decides once; the
-submitter is excluded and people cannot repeat. COO is required when a
-modification is created. Resubmission resets decisions and retains notes.
+chain covering the PO and every modification. The submitter is excluded on ordinary routes. CFO always approves; selected
+additional roles apply when submission creates budget modifications. Policies
+assume distinct people and have no duplicate-person option. Resubmission resets decisions and retains notes.
 
 The approval email contains the PO header, all lines, modifications and chain.
 Automatic modifications cannot be edited, submitted or repaired through the
@@ -856,3 +856,15 @@ was caught in native Production and corrected by the immutable 122.29.15 release
 Temporary PO test CFO configuration is documented in
 [the October 11 handoff](../../docs/po-test-cfo-2026-10-11.md). It requires five
 existing Creator function updates; the user retains promotion control.
+
+## PO entry and simple policies — October 11, 2026
+
+Budget Manager 122.29.18 supports 200 PO lines, including Add, +10, Duplicate
+and backend Save/Submit validation. The ledger shows a separate read-only Item
+name from the selected Budget Item; edited PO descriptions never replace it.
+Description and Unit price give space to that column; Element is labeled ELEM.
+No new field stores the name. Settings Manager 1.5.0 has CFO always plus optional
+roles when the PO creates budget modifications, with no policy dates, versions
+or multiple-role controls. Published Save changes future submissions in place.
+Creator promotion is required for the policy behavior and 200-line validation.
+See [handoff](../../docs/approval-policy-simplification-2026-10-11.md).

@@ -3,73 +3,29 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import './test-po-test-cfo-backend.mjs';
 const ctx=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/settings-manager/src/app/approval-policy-domain.js','utf8'),ctx);
-const api=ctx.LMApprovalPolicy;
-const config={roles:[{id:'1',name:'Legal',active:true},{id:'2',name:'COO',active:true}],users:[{id:'11',name:'First',user:'login-first',approverEmail:'first@example.com',routingEnabled:true},{id:'12',name:'Second',user:'login-second',approverEmail:'second@example.com',routingEnabled:true}],assignments:[{id:'21',roleId:'1',companyId:'31',userAccessId:'11',active:true},{id:'22',roleId:'2',companyId:'31',userAccessId:'12',active:true}],policies:[{id:'41',companyId:'31',workflow:'Purchase Order',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',steps:[{key:'first',order:1,roleId:'1',condition:'Always',enabled:true},{key:'coo',order:2,roleId:'2',condition:'Above',threshold:'100.00',enabled:true}]}]};
-const context={companyId:'31',workflow:'Purchase Order',submitterId:'19',territory:'North',department:'Development',amount:'100.00',effectiveDate:'2026-10-08',recordId:'51'};
-const clone=v=>JSON.parse(JSON.stringify(v));
-assert.equal(api.resolve(config,context).route.length,1);
-assert.equal(api.resolve(config,{...context,amount:'99.99'}).route.length,1);
-assert.equal(api.resolve(config,{...context,amount:'100.01'}).route.length,2);
-let c=clone(config);c.policies[0].steps[1].condition='At or above';assert.equal(api.resolve(c,context).route.length,2);
-c.policies[0].steps[1].enabled=false;assert.equal(api.resolve(c,{...context,amount:'99999.99'}).route.length,1);
-c=clone(config);c.assignments.push({...c.assignments[0],id:'23',territory:'North',userAccessId:'12'});assert.equal(api.resolve(c,context).route[0].userAccessId,'12');
-c.assignments.at(-1).active=false;assert.throws(()=>api.resolve(c,context),/inactive/);
-c=clone(config);c.assignments.push({...c.assignments[0],id:'24'});assert.throws(()=>api.resolve(c,context),/Ambiguous/);
-c=clone(config);c.assignments=[];assert.throws(()=>api.resolve(c,context),/Missing assignment/);
-c=clone(config);c.users[0].routingEnabled=false;assert.throws(()=>api.resolve(c,context),/inactive/);
-c=clone(config);c.users[0].approverEmail='login-first';assert.throws(()=>api.resolve(c,context),/unroutable/);
-c=clone(config);c.assignments[1].userAccessId='11';assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/overlap/);c.policies[0].duplicatePerson='Separate steps';assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/distinct approvers/);c.policies[0].workflow='Budget';assert.equal(api.resolve(c,{...context,workflow:'Budget',amount:'100.01'}).route.length,2);
-assert.throws(()=>api.resolve(config,{...context,submitterId:'11'}),/self-approval/);
-c=clone(config);c.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(c,context),/forbid submitter/);
-c=clone(config);c.policies[0].steps[1].condition='Budget modification attached';delete c.policies[0].steps[1].threshold;
-assert.equal(api.resolve(c,{...context,amount:'0.01',hasBudgetModification:true}).route.length,2);
-assert.equal(api.resolve(c,{...context,amount:'9999999999999.99',hasBudgetModification:false}).route.length,1);
-assert.throws(()=>api.resolve(c,context),/modification context/);
-assert.match(api.resolve(c,{...context,hasBudgetModification:true}).route[1].reason,/linked to this PO/);
-c=clone(config);const snapshot=api.resolve(c,context);c.policies[0].version=2;c.users[0].approverEmail='new@example.com';assert.equal(snapshot.policyVersion,1);assert.equal(snapshot.route[0].email,'first@example.com');
-c=clone(config);c.policies.push({...c.policies[0],id:'42'});assert.throws(()=>api.resolve(c,context),/Ambiguous/);assert.throws(()=>api.assertPublish({...c.policies[0],id:'43'},c.policies),/overlap/);
-c=clone(config);c.policies[0].effectiveTo='2026-10-08';assert.throws(()=>api.resolve(c,context),/Missing published/);
-assert.throws(()=>api.resolve(config,{...context,amount:100}),/decimal|currency/);
-assert.throws(()=>api.resolve(config,{...context,companyId:31}),/ID string/);
-for(const workflow of ['Pro Forma','Contract']){
-  c=clone(config);c.policies[0].workflow=workflow;
-  assert.throws(()=>api.resolve(c,{...context,workflow}),/straight approval chains/);
-  c.policies[0].steps.forEach(step=>{step.condition='Always';delete step.threshold;});
-  const straight={...context,workflow};delete straight.amount;
-  assert.equal(api.resolve(c,straight).route.length,2);
-  assert.equal(api.resolve(c,{...straight,amount:'9999999999999.99'}).route.length,2);
-}
-console.log('Policy threshold boundaries, explicit overrides, missing/inactive/ambiguous identities, overlap rules and detached snapshots passed.');
+const api=ctx.LMApprovalPolicy,clone=v=>JSON.parse(JSON.stringify(v));
+const config={roles:[{id:'1',name:'CFO',active:true},{id:'2',name:'COO',active:true},{id:'3',name:'VP',active:true}],users:[{id:'11',name:'First',user:'first',approverEmail:'first@example.com',routingEnabled:true},{id:'12',name:'Second',user:'second',approverEmail:'second@example.com',routingEnabled:true},{id:'13',name:'Third',user:'third',approverEmail:'third@example.com',routingEnabled:true}],assignments:[{id:'21',roleId:'1',companyId:'31',userAccessId:'11',active:true},{id:'22',roleId:'2',companyId:'31',userAccessId:'12',active:true},{id:'23',roleId:'3',companyId:'31',userAccessId:'13',active:true}],territories:[{id:'North',vpUserAccessIds:['13']}],policies:[{id:'41',companyId:'31',workflow:'Budget',status:'Published',enabled:true,selfApproval:'Deny',steps:[{key:'cfo',order:1,roleId:'1',condition:'Always',enabled:true},{key:'coo',order:2,roleId:'2',condition:'Above',threshold:'100.00',enabled:true}]}]};
+const context={companyId:'31',workflow:'Budget',submitterId:'19',territory:'North',department:'Development',amount:'100.00',effectiveDate:'2026-10-11',recordId:'51'};
+assert.equal(api.resolve(config,context).route.length,1);assert.equal(api.resolve(config,{...context,amount:'100.01'}).route.length,2);
+let c=clone(config);c.policies[0].steps[1].condition='At or above';assert.equal(api.resolve(c,context).route.length,2);c.policies[0].steps[1].enabled=false;assert.equal(api.resolve(c,{...context,amount:'99999.99'}).route.length,1);
+c=clone(config);c.assignments.push({...c.assignments[0],id:'24',territory:'North',userAccessId:'12'});assert.equal(api.resolve(c,context).route[0].userAccessId,'12');c.assignments.at(-1).active=false;assert.throws(()=>api.resolve(c,context),/inactive/);
+c=clone(config);c.assignments.push({...c.assignments[0],id:'24'});assert.throws(()=>api.resolve(c,context),/Ambiguous/);c=clone(config);c.assignments=[];assert.throws(()=>api.resolve(c,context),/Missing assignment/);
+for(const user of [{routingEnabled:false},{approverEmail:'invalid'}]){c=clone(config);Object.assign(c.users[0],user);assert.throws(()=>api.resolve(c,context),/inactive|unroutable/);}
+assert.throws(()=>api.resolve(config,{...context,submitterId:'11'}),/self-approval/);assert.throws(()=>api.resolve(config,{...context,amount:100}),/currency/);assert.throws(()=>api.resolve(config,{...context,companyId:31}),/ID string/);
+c=clone(config);c.assignments[0].effectiveFrom='2026-10-12';assert.throws(()=>api.resolve(c,context),/Missing assignment/,'Assignment dates keep their existing meaning.');
+c=clone(config);Object.assign(c.policies[0],{version:0,effectiveFrom:'2030-01-01',effectiveTo:'2020-01-01',duplicatePerson:'ignored'});const snapshot=api.resolve(c,context);assert.equal(snapshot.route.length,1);assert.equal('policyVersion' in snapshot,false);assert.equal('duplicatePerson' in snapshot,false);c.users[0].approverEmail='later@example.com';assert.equal(snapshot.route[0].email,'first@example.com');
+c=clone(config);c.policies.push({...c.policies[0],id:'42'});assert.throws(()=>api.resolve(c,context),/Ambiguous/);assert.throws(()=>api.assertPublish({...c.policies[0],id:'43'},c.policies),/already exists/);
+for(const workflow of ['Pro Forma','Contract']){c=clone(config);c.policies[0].workflow=workflow;assert.throws(()=>api.resolve(c,{...context,workflow}),/straight approval chains/);c.policies[0].steps.forEach(s=>s.condition='Always');const input={...context,workflow};delete input.amount;assert.equal(api.resolve(c,input).route.length,2);}
 
-// PO VP comes from the current Territory.VP, regardless of conflicting legacy
-// role assignments. Other workflows continue to use centralized assignments.
-c=clone(config);c.roles[0].name='VP';c.territories=[{id:'North',vpUserAccessIds:['12']}];
-assert.equal(api.resolve(c,context).route[0].userAccessId,'12');
-assert.equal(api.resolve(c,context).route[0].assignmentId,'');
-assert.throws(()=>api.resolve(c,{...context,territory:'Unknown'}),/Territory record/);
-c.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(c,context),/exactly one VP/);
-c.territories[0].vpUserAccessIds=['11','12'];assert.throws(()=>api.resolve(c,context),/exactly one VP/);
-c.territories[0].vpUserAccessIds=['19'];assert.throws(()=>api.resolve(c,context),/unroutable/);
-c.territories[0].vpUserAccessIds=['11'];assert.throws(()=>api.resolve(c,{...context,submitterId:'11'}),/self-approval/);
-c.territories[0].vpUserAccessIds=['12'];assert.throws(()=>api.resolve(c,{...context,amount:'100.01'}),/overlap/);
-c.policies[0].workflow='Budget';assert.equal(api.resolve(c,{...context,workflow:'Budget'}).route[0].userAccessId,'11');
-
-c=clone(config);c.roles[0].name='CFO';c.policies[0].steps[1].condition='Budget line exceeded';
-assert.equal(api.resolve(c,{...context,amount:'999999.00',hasBudgetOverrun:false}).route.length,1);
-assert.equal(api.resolve(c,{...context,amount:'0.01',hasBudgetOverrun:true}).route.length,2);
-assert.throws(()=>api.resolve(c,context),/overrun context/);
-const nativePO=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');
-assert.match(nativePO,/groupedCents\.get\(itemKey\) > beforeAvailable/,'Overrun is item-level and does not use the full PO total or pending-modification credits.');
-assert.match(nativePO,/Every PO must include CFO approval/);
-assert.match(nativePO,/budgetExceeded && \(cooFound != true \|\| vpFound != true\)/);
-console.log('PO CFO requirement, item-level overrun condition and Territory VP identity resolution passed.');
-
-c=clone(config);c.policies[0].companyId='';c.assignments.forEach(a=>a.companyId='');
-assert.equal(api.resolve(c,context).route[0].userAccessId,'11');
-assert.equal(api.resolve(c,{...context,companyId:'32'}).route[0].userAccessId,'11');
-c.policies.push({...clone(c.policies[0]),id:'42',companyId:'31',version:2});
-assert.equal(api.resolve(c,context).policyId,'42','Company-specific PO policies override the shared default.');
-c.assignments.push({...c.assignments[0],id:'23',companyId:'31',userAccessId:'12'});
-assert.equal(api.resolve(c,context).route[0].userAccessId,'12','Existing company assignments take precedence.');
-c.policies[0].workflow='Budget';assert.throws(()=>api.resolve(c,{...context,workflow:'Budget',companyId:'32'}),/Missing published/,'Shared PO default does not change Budget routing.');
-console.log('One all-company PO template and company-specific overrides passed.');
+// A PO's only branch is whether its submission creates budget modifications.
+c=clone(config);c.policies[0].workflow='Purchase Order';c.policies[0].steps[1].condition='Budget modification attached';c.policies[0].steps.push({key:'vp',order:3,roleId:'3',condition:'Budget modification attached',enabled:true});
+const po={...context,workflow:'Purchase Order',hasBudgetModification:false,hasBudgetOverrun:false};
+for(const amount of ['0.01','100.00','999999.00'])assert.deepEqual(clone(api.resolve(c,{...po,amount}).route.map(r=>r.role)),['CFO']);
+assert.deepEqual(clone(api.resolve(c,{...po,hasBudgetOverrun:true}).route.map(r=>r.role)),['CFO'],'An overrun without new modifications does not add approvers.');
+assert.deepEqual(clone(api.resolve(c,{...po,hasBudgetModification:true}).route.map(r=>r.role)),['CFO','COO','VP']);assert.throws(()=>api.resolve(c,{...po,hasBudgetModification:undefined}),/modification context/);
+for(const condition of ['Above','At or above','Budget line exceeded','Always']){const bad=clone(c);bad.policies[0].steps[1].condition=condition;assert.throws(()=>api.resolve(bad,po),/Additional PO approvers|supported step condition/);}
+const wrongCFO=clone(c);wrongCFO.roles[0].name='Legal';assert.throws(()=>api.resolve(wrongCFO,po),/CFO first/);assert.throws(()=>api.resolve(c,{...po,submitterId:'11'}),/self-approval/);
+const normal=clone(c);normal.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(normal,po),/forbid submitter/);const missingVP=clone(c);missingVP.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(missingVP,{...po,hasBudgetModification:true}),/exactly one VP/);
+c.policies[0].companyId='';c.assignments.forEach(a=>a.companyId='');assert.equal(api.resolve(c,{...po,companyId:'32'}).route[0].userAccessId,'11');c.policies.push({...clone(c.policies[0]),id:'42',companyId:'31'});assert.equal(api.resolve(c,po).policyId,'42');
+const native=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');assert.match(native,/modificationPlan.size\(\) > 0 && additionalFound != true/);assert.match(native,/Every PO must include CFO approval/);assert.doesNotMatch(native,/budgetExceeded && \(cooFound/);
+console.log('Simple policy routing: no dates/versions/multiple-role options; CFO-only PO or CFO plus modification approvers; exact scopes, identities and immutable submitted routes passed.');

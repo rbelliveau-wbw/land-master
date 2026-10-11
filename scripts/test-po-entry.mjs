@@ -13,4 +13,10 @@ vm.runInContext(save,ctx);
 await ctx.save('Save');assert.equal(ctx.savedPayload.amount,'3.03','Saved PO total calculated from exact line cents, ignoring old header');
 ctx.model.lines[1].finalAmount='3.04';await ctx.save('Save');assert.equal(ctx.savedPayload.amount,'4.05','Editing a saved draft recalculates its header');
 vm.runInContext(source.slice(source.indexOf('    function lineNew()'),source.indexOf('    function render()')),ctx);assert.equal(ctx.lineNew().costElement,'5');
-console.log('PO entry: calculated save amount, draft edits, exact cents and Cost Element default passed.');
+// Render the real ledger with edited descriptions. Item names resolve from
+// the selected Budget Item rather than from the editable description.
+const nodes=new Map();ctx.card={querySelector:selector=>{if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',insertAdjacentHTML(){}});return nodes.get(selector);}};ctx.overlay={querySelector:()=>({})};ctx.closePopover=()=>{};ctx.itemRows=()=>[{id:'2001',label:'CB01-3225 · Survey & inspection',name:'Survey & inspection'}];ctx.esc=value=>String(value??'').replaceAll('&','&amp;').replaceAll('"','&quot;');ctx.dateField=()=>'';ctx.patchBalances=()=>{};ctx.patchTotal=()=>{};ctx.chevron='';ctx.duplicateIcon='';ctx.x='';ctx.model.phase='Bluebonnet Phase 01';ctx.model.status='Draft';
+vm.runInContext(source.slice(source.indexOf('    function picker('),source.indexOf('    function money(')),ctx);
+vm.runInContext(source.slice(source.indexOf('    function render()'),source.indexOf('    function bundleHtml()')),ctx);ctx.render();
+assert.match(nodes.get('.po-body').innerHTML,/2 \/ 200/);assert.match(nodes.get('.po-body').innerHTML,/<span>Item name<\/span>/);assert.match(nodes.get('.po-body').innerHTML,/<span>ELEM<\/span>/);assert.equal((nodes.get('.po-body').innerHTML.match(/aria-label="Item name">Survey &amp; inspection/g)||[]).length,2);ctx.model.lines[0].description='Changed PO description';ctx.render();assert.match(nodes.get('.po-body').innerHTML,/Changed PO description/);assert.equal((nodes.get('.po-body').innerHTML.match(/aria-label="Item name">Survey &amp; inspection/g)||[]).length,2);
+console.log('PO entry: calculated save amount, exact cents, ELEM, 200-line display and fixed item names after description edits passed.');

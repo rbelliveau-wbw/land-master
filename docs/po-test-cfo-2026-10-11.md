@@ -28,7 +28,7 @@ and never resaves the policy. Its scope badge updates as the budget ID changes.
 ## Exact test configuration
 
 - Workflow: Purchase Order; one active CFO / Always / enabled step.
-- Policy rules: Self_Approval Deny; Duplicate_Person Reject.
+- Policy rules: Self_Approval Deny; no duplicate-person setting.
 - Test budget: `4410926000001671002` (Bluebonnet Crossing - Phase 01).
 - Test person: `4410926000004465004` (Robby Belliveau / wbdevelopment).
 - Test email: `rbelliveau@wbdevelopment.com`.
@@ -50,13 +50,13 @@ The server and local preview require exact string IDs, a single valid email,
 an existing login identity, one CFO step, a positive maximum at most $55, and
 the exact budget/no-overrun context. A different budget, higher amount or
 modification fails closed. Normal PO routes still exclude the submitter and
-require distinct people. Test routes capture the entire exception in the
+use the configured people. Test routes capture the entire exception in the
 immutable snapshot; approval decisions read that verified evidence, never a
 client-supplied permission flag. Test emails are marked `[PO TEST]`.
 
 ## Creator handoff
 
-Save/compile these six existing functions in Development, then the user
+Save/compile these ten existing functions in Development, then the user
 promotes them through Stage to Production:
 
 1. `resolveApprovalRoute`
@@ -65,11 +65,15 @@ promotes them through Stage to Production:
 4. `handlePurchaseOrderApproval`
 5. `sendPurchaseOrderEmail`
 6. `approvalConfigurationSnapshot`
+7. `snapshotApprovalRoute`
+8. `applySharedApprovalPolicy`
+9. `managePurchaseOrder`
+10. `poValidatePayload`
 
 Existing APIs `Manage_Approval_Policies` / `_DEV` and
 `Manage_Purchase_Order` / `_DEV` retain their bindings. No new function, form,
 field or API is introduced. A Pages deployment does not publish Creator code.
-The test policy must remain Draft until all six functions reach Production.
+The test policy must remain Draft until all ten functions reach Production.
 After promotion, publish the policy, preview the exact $55 context, and require
 exactly one CFO row for Robby/email before submitting the saved PO once.
 
@@ -83,13 +87,10 @@ The approval snapshot uses existing `Approval_Route_Snapshot.Context_JSON`,
 Final no-modification approval skips budget rollup writes; the test changes
 only PO and its operation/lock/approval records plus PO routing configuration.
 
-To restore normal CFO routing, end the test policy's effective window and start
-the next policy version at the same boundary. The end must be later than the
-test start; a test beginning today can end tomorrow at the earliest. Disable
-Test CFO in the successor and configure Julie's existing active CFO assignment.
-Publish the non-overlapping successor, then Preview using its effective date
-because Preview resolves published policies. Existing captured test POs retain
-their historical route.
+To restore normal CFO routing, disable Test CFO in the same policy and Save.
+Configure Julie's existing CFO assignment as needed. Changes to a Published
+policy apply immediately to future submissions; captured test POs keep their
+historical route. There are no policy date windows or new versions.
 
 ## Verification and rollback
 

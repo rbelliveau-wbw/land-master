@@ -44,7 +44,7 @@
     if (payload.budgetModificationId!=null && (typeof payload.budgetModificationId!=="string" || !/^\d+$/.test(payload.budgetModificationId))) throw new Error("Linked budget modification must be a Creator ID string or null.");
     var header = money(payload.amount);
     if (header <= 0n) throw new Error("PO amount must be positive.");
-    if (!Array.isArray(payload.lines) || !payload.lines.length || payload.lines.length > 100) throw new Error("Enter 1–100 complete lines.");
+    if (!Array.isArray(payload.lines) || !payload.lines.length || payload.lines.length > 200) throw new Error("Enter 1–200 complete lines.");
     var total = 0n, grouped = Object.create(null), keys = new Set();
     var lines = payload.lines.map(function(line) {
       if (!line || !/^[A-Za-z0-9-]{1,80}$/.test(line.key) || keys.has(line.key)) throw new Error("Each line needs a unique key.");
