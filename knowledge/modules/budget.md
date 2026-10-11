@@ -952,3 +952,27 @@ republish that function; no widget or record rollback is needed.
 Rollback: map Budget Manager Production to 122.29.18 and rebuild Pages, and restore
 the prior Creator functions from that main commit. Restoring code does not restore
 permanently deleted records. No cross-record transaction or automatic replay is claimed.
+
+## PO editor title and spacing (122.29.22)
+
+The PO status moves into a compact pill beside Purchase Order in the navy title
+card. The Line items/count row is removed, so the vendor/date fields lead directly
+into the ledger. The last row has 9px bottom padding to match the column heading's
+9px top padding; ordinary rows retain 2px padding. The 250-line validation and
+add/duplicate guards remain in place. Hide the record status pill during progress
+and in the Saved POs list; restore it when returning to an individual PO.
+
+Changed files: `src/app/po-ui.js`, `purchase-orders.css`, the HTML version markers,
+widget config/hash manifest, existing PO entry renderer regression, design/module
+guides, immutable 122.29.22 release and Development/Production mappings. No Creator
+forms, fields, functions, Custom APIs or permissions change. Only the frontend
+deployment is required; no Creator publication is needed.
+
+Browser QA uses the actual editor and stylesheet with local-only data: status in
+the header, no heading/count row, direct field-to-ledger ordering, matching 9px
+outer padding, and compact ordinary rows with one and eleven lines. The proposed
+budget-item/sub-line modal is a separate interactive mockup, not part of this
+production implementation. Its local Save/Cancel, item totals and 320px layout
+were checked. Rollback: restore Budget Manager Production 122.29.20 and rebuild
+Pages at the same permanent widget URL.
+Full repository validation and the Pages build passed before main/Production.

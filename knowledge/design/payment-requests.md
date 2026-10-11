@@ -16,3 +16,11 @@ beside amount, status beside action. Keep overflow inside the card and allow
 long vendor names to wrap. Check, Wire and legacy PO cards retain their current
 presentation and behavior. This is a display change; never add per-row requests
 or infer absent dates to fill the design.
+
+The PO line-item editor keeps 9px of padding above the column headings and below
+the last row. Retain the compact 2px padding between entry rows and contain any
+horizontal scrolling inside the ledger.
+Show its status as a compact pill beside Purchase Order in the navy title card.
+Omit the redundant Line items heading and line-count row above the ledger so the
+header fields lead directly into the column headings. Keep the existing 250-line
+validation and add/duplicate limit guards.
