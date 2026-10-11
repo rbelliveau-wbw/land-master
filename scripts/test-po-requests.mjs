@@ -13,21 +13,34 @@ function block(source,name,next){
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 const budgetId='900000000000000001',poId='900000000000000002',vendorId='900000000000000003';
 const draft={ID:poId,Budget:{ID:budgetId},Request_Type:'Purchase Order',Request_Amount:'55.00',Request_Date:'11-Oct-2026',Date_Needed:'20-Oct-2026',Vendor:{ID:vendorId,display_value:'2-C Equipment, LLC'},PO_Status:'Draft',PO_Approval_State:'Not Configured',PO_Revision:'draft-revision',PO_Line_Count:'1'};
-let scope='production-session',nav=1,editable=true,response=[draft],opens=[],reads=[],renders=[];
-const c=vm.createContext({S:{edBudget:{ID:budgetId},edPhaseIdx:0,globalMode:'modifications',checkWireRequestState:{},checkWireRequestsByBudget:{}},CFG:{reports:{checkWireRequests:'All_Wire_Requests'}},
+const managedPO={id:poId,amount:'55.00',status:'Draft',revision:'draft-revision',vendorId};
+const managedResponse={contract:'po-v1',success:true,rows:[managedPO]},vendorResponse={contract:'po-v1',success:true,vendors:[{ID:vendorId,Vendor_Name:'2-C Equipment, LLC'}]};
+let scope='production-session',nav=1,editable=true,response=[{ID:poId,checkbox:'false'}],opens=[],reads=[],apiReads=[],renders=[],apiFailure='';
+const c=vm.createContext({S:{myAccessId:'900000000000000007',edBudget:{ID:budgetId},edPhaseIdx:0,globalMode:'modifications',checkWireRequestState:{},checkWireRequestsByBudget:{}},CFG:{reports:{checkWireRequests:'All_Wire_Requests'}},
   Promise,Set,Error,JSON,Number,cleanVal:value=>String(value??'').trim(),firstRaw:(row,keys)=>row[keys[0]],lookupId:value=>String(value?.ID||value||''),lookupName:value=>value?.display_value||'',lookupMatchesId:(value,id)=>value?.ID===id||value===id,
   esc:value=>String(value??''),escAttr:value=>String(value??''),findItemById:()=>null,fmt:value=>'$'+value,v:value=>Number(value),modBadge:status=>'<span>'+status+'</span>',poDevelopment:()=>true,canEditBudget:()=>editable,
   budgetNavigationToken:()=>nav,budgetNavigationCurrent:(token,view,id)=>token===nav&&c.S.edBudget?.ID===id,budgetCreateScope:()=>scope,renderModPhasePanel:budget=>renders.push(budget.ID),auditLog(){},toastShow(){},requireBudgetRequestDetail:()=>true,
   sdkGetAllRecords:(report,criteria,options)=>{reads.push({report,criteria,options});return typeof response==='function'?response():Promise.resolve(response);},
+  unwrapBudgetManageResponse:value=>value,
+  sdkRunBudgetFunction:async(name,args)=>{assert.equal(name,'managePurchaseOrder');const payload=JSON.parse(args.payload);assert.equal(payload.budgetId,budgetId);assert.equal(payload.userAccessId,c.S.myAccessId);apiReads.push(payload);if(payload.action===apiFailure)throw new Error('PO read unavailable');return JSON.parse(JSON.stringify(payload.action==='List'?managedResponse:vendorResponse));},
   getPurchaseOrderUI:()=>({open:async(budget,trigger,id)=>opens.push({budget,trigger,id})})
 });c.window=c;
-for(const name of ['loadCheckWireRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
+vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),c);
+for(const name of ['loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
 await c.loadCheckWireRequests(budgetId);
 assert.equal(c.S.checkWireRequestState[budgetId],'loaded');
 assert.match(reads[0].criteria,new RegExp('Budget == '+budgetId));
-for(const field of ['Vendor','PO_Status','PO_Approval_State','PO_Revision','PO_Line_Count'])assert.ok(reads[0].options.fields.includes(field),'Explicit PO projection includes '+field);
+assert.equal(reads[0].options.fields,undefined,'A native report with zero exposed columns uses all fields');
+assert.deepEqual(apiReads.map(read=>read.action),['List','Vendors'],'Managed PO metadata and vendors read once per phase, without per-row Get');
+assert.equal(c.S.checkWireRequestsByBudget[budgetId].length,1,'The blank native row and its managed PO merge once');
 let html=c.renderCheckWireRequestColumn(c.S.edBudget);
 assert.match(html,/2-C Equipment, LLC/);assert.match(html,/Draft/);assert.match(html,new RegExp("data-request-po-open='"+poId+"'"));assert.match(html,/>Edit PO<\/button>/);
+assert.doesNotMatch(html,/mpc-meta|Request · Budget item/,'Managed rows without native dates do not show fabricated dashes or blank duplicates');
+assert.equal(c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId).length,1,'List POs missing from report layout still appear');
+const complete=c.mergeManagedPurchaseOrderRequests([draft],managedResponse,vendorResponse,budgetId);assert.equal(complete[0].Request_Date,draft.Request_Date,'Native generic dates are retained when available');
+assert.equal(complete[0].Request_Amount,managedPO.amount,'Authoritative managed amount overrides same-ID generic metadata');
+const check={ID:'900000000000000008',Budget:{ID:budgetId},Request_Type:'Check',Request_Amount:'10.00'};
+assert.equal(c.mergeManagedPurchaseOrderRequests([check,draft],managedResponse,vendorResponse,budgetId).length,2,'Other payment requests remain in the list');
 const trigger={id:'edit-po'};await c.openSavedPurchaseOrder(poId,trigger);
 assert.equal(opens[0].id,poId);assert.equal(opens[0].budget.ID,budgetId);assert.equal(opens[0].trigger,trigger);
 editable=false;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>View PO<\/button>/);editable=true;
@@ -50,9 +63,13 @@ vm.runInContext(block(widget,'loadCheckWireRequests'),c);
 // Fresh reads supersede older replies; errors or foreign rows stay unavailable.
 const old=deferred(),fresh=deferred();response=()=>old.promise;const first=c.loadCheckWireRequests(budgetId);
 assert.equal(c.loadCheckWireRequests(budgetId),first,'Concurrent request reads deduplicate');
-response=()=>fresh.promise;const second=c.loadCheckWireRequests(budgetId,true);fresh.resolve([{...draft,Request_Amount:'60.00'}]);await second;
+response=()=>fresh.promise;managedPO.amount='60.00';const second=c.loadCheckWireRequests(budgetId,true);fresh.resolve([{...draft,Request_Amount:'50.00'}]);await second;
 old.resolve([draft]);await first;assert.equal(c.S.checkWireRequestsByBudget[budgetId][0].Request_Amount,'60.00');assert.equal(reads.at(-1).options.fresh,true);
-for(const invalid of [[{...draft,Budget:{ID:'elsewhere'}}],[draft,draft],[{...draft,ID:Number(poId)}]]){response=invalid;await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable');}
+for(const invalid of [[{...draft,Budget:{ID:'elsewhere'}}],[{...draft,Budget:null}],[draft,draft],[{...draft,ID:Number(poId)}]]){response=invalid;await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable');}
+for(const changed of [{id:Number(poId)},{revision:''},{status:'Unknown'},{vendorId:Number(vendorId)},{vendorId:'900000000000000099'},{amount:55},{amount:'0.00'},{amount:'55.001'},{budgetId:'900000000000000099'}])assert.throws(()=>c.mergeManagedPurchaseOrderRequests([{ID:poId}],{...managedResponse,rows:[{...managedPO,...changed}]},vendorResponse,budgetId));
+assert.throws(()=>c.mergeManagedPurchaseOrderRequests([{ID:poId}],{...managedResponse,rows:[managedPO,managedPO]},vendorResponse,budgetId),/identities/);
+for(const vendors of [vendorResponse.vendors.concat(vendorResponse.vendors),[{ID:Number(vendorId),Vendor_Name:'Rounded'}],[{ID:vendorId,Vendor_Name:''}]])assert.throws(()=>c.mergeManagedPurchaseOrderRequests([{ID:poId}],managedResponse,{...vendorResponse,vendors},budgetId),/vendor identities/);
+response=[{ID:poId}];for(const action of ['List','Vendors']){apiFailure=action;await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable','Partial managed reads fail closed');}apiFailure='';
 response=()=>Promise.reject(new Error('Report denied'));await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable');
 const changed=deferred();response=()=>changed.promise;const pending=c.loadCheckWireRequests(budgetId,true);scope='another-session';changed.resolve([draft]);await pending;assert.equal(c.S.checkWireRequestState[budgetId],'loading','A stale session cannot publish requests');scope='production-session';
 
@@ -71,4 +88,4 @@ after.resolve({contract:'po-v1',success:true,snapshot:{...snapshot,id:'900000000
 assert.equal(u.model.id,'900000000000000006','A late saved PO reply cannot replace the latest selection');
 assert.match(ui,/loadState:purchaseOrderId\?'loading':'loaded'/,'Direct saved-PO entry starts locked while vendors load');
 assert.match(ui,/data-po-reload/,'Failed loads offer a read-only retry');
-console.log('PO Requests: exact saved draft editing, permission/status labels, explicit projection, fresh saved-list reloads and guarded Get recovery passed.');
+console.log('PO Requests: blank native report, scoped List/Vendors merge, exact draft editing, fresh reads, malformed/foreign identities and guarded Get recovery passed.');

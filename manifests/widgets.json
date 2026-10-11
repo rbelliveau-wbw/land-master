@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-11T13:37:58.465Z",
+  "generated_at": "2026-10-11T14:02:07.137Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.14",
+      "version": "122.29.15",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "db23afc9966613859c9447a09a8f065b76fb7b60e6f5026b15844c7235c40ee3",
+      "source_sha256": "cc763fb13166ed7f476ed7b4f08df9bbb6819b1a72b9c5e15e3eaf9fa106660a",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -220,13 +220,13 @@
       "slug": "settings-manager",
       "name": "Settings Manager",
       "module": "settings",
-      "version": "1.4.2",
+      "version": "1.4.5",
       "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
       "source_entry": "widgets/settings-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Settings",
-      "source_sha256": "d155a0b52fd11b897b023c773bbb5b40791967d0546362c935fc5881ace2ba53",
+      "source_sha256": "67a56a5dc41809279cfa37627aa9a12f66834ae48f431ee159028a982fdd5555",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

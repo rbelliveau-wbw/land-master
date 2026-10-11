@@ -36,7 +36,9 @@ string manageApprovalPolicies(string payload)
 		{
 			identityValue = data.get(identityField);
 			if(identityField == "companyId" && identityValue == "") { continue; }
-			if(identityField != "id" || (identityValue != null && identityValue != ""))
+			validateIdentity = identityField != "id";
+			if(identityValue != null && identityValue != "") { validateIdentity = true; }
+			if(validateIdentity)
 			{
 				typedIdentity=Map(); typedIdentity.put("value",identityValue);
 				if(!typedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Configuration identities must be exact ID strings."); return result.toString(); }
@@ -45,13 +47,50 @@ string manageApprovalPolicies(string payload)
 		for each dateField in {"effectiveFrom","effectiveTo"}
 		{
 			dateValue=ifnull(data.get(dateField),"");
-			if(dateValue != "" && (!dateValue.toString().matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || dateValue.toString().toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateValue)) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
+			if(dateValue != "")
+			{
+				if(!dateValue.toString().matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
+				if(dateValue.toString().toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateValue) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
+			}
+		}
+		// Test CFO data lives only in an owner-managed PO policy, never on shared User Access or assignments.
+		if(action == "SavePolicy" || action == "Publish")
+		{
+			testPolicyData = data;
+			if(action == "Publish")
+			{
+				testPolicy = Approval_Policy[ID == idText.toLong()];
+				if(testPolicy.ID == null) { result.put("error","Policy was not found."); return result.toString(); }
+				testPolicyData = {"workflow":testPolicy.Workflow,"steps":testPolicy.Steps_JSON.toJSONList(),"selfApproval":testPolicy.Self_Approval,"duplicatePerson":testPolicy.Duplicate_Person};
+			}
+			testPolicySteps = testPolicyData.get("steps");
+			for each testPolicyStep in testPolicySteps
+			{
+				if(testPolicyStep.get("poTestCFO") != null)
+				{
+					testCFO = testPolicyStep.get("poTestCFO");
+					if(testPolicyData.get("workflow") != "Purchase Order" || testPolicySteps.size() != 1 || testPolicyStep.get("enabled") != true || testPolicyStep.get("condition") != "Always" || testPolicyData.get("selfApproval") != "Deny" || testPolicyData.get("duplicatePerson") != "Reject" || testCFO.get("allowSelfApproval") != true) { result.put("error","PO test CFO requires one enabled Always CFO step with Deny and Reject policy rules."); return result.toString(); }
+					for each testIdentityField in {"budgetId","userAccessId"}
+					{
+						typedTestIdentity = {"value":testCFO.get(testIdentityField)};
+						if(!typedTestIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","PO test CFO identities must be exact ID strings."); return result.toString(); }
+					}
+					typedTestEmail = {"value":testCFO.get("email")};
+					testEmailIsString = typedTestEmail.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[^\"]+\"[ ]*[}][ ]*");
+					testEmailValid = testEmailIsString && ifnull(testCFO.get("email"),"").toString().matches("[^\\s@,;<>\"]+@[^\\s@,;<>\"]+[.][^\\s@,;<>\"]+");
+					typedTestAmount = {"value":testCFO.get("maxAmount")}; testMaximum = thisapp.poCurrencyString(ifnull(testCFO.get("maxAmount"),"").toString());
+					if(!typedTestAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*") || testMaximum == "" || testMaximum.replaceAll("[.]","").toLong() <= 0 || testMaximum.replaceAll("[.]","").toLong() > 5500 || testEmailValid != true) { result.put("error","PO test CFO needs a valid email and a positive maximum of at most $55."); return result.toString(); }
+					testRole = Approval_Role[ID == testPolicyStep.get("roleId").toString().toLong()]; testPerson = User_Access[ID == testCFO.get("userAccessId").toLong()]; testBudget = Add_Budget[ID == testCFO.get("budgetId").toLong()];
+					if(testRole.ID == null || testRole.Active != true || testRole.Role_Name != "CFO" || testPerson.ID == null || ifnull(testPerson.User,"").toString().trim() == "" || testBudget.ID == null) { result.put("error","PO test CFO requires an active CFO role, an existing login identity and an existing budget."); return result.toString(); }
+				}
+			}
 		}
 		if(action == "SavePolicy")
 		{
 			workflows={"Budget","Budget Modification","Pro Forma","Contract","Purchase Order"};
 			typedVersion=Map(); typedVersion.put("value",data.get("version"));
-			if(!workflows.contains(data.get("workflow")) || !typedVersion.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*[1-9][0-9]{0,5}[ ]*[}][ ]*") || (data.get("enabled") != true && data.get("enabled") != false)) { result.put("error","Workflow, positive integer version and explicit enabled setting are required."); return result.toString(); }
+			enabledKnown = data.get("enabled") == true || data.get("enabled") == false;
+			if(!workflows.contains(data.get("workflow")) || !typedVersion.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*[1-9][0-9]{0,5}[ ]*[}][ ]*") || enabledKnown != true) { result.put("error","Workflow, positive integer version and explicit enabled setting are required."); return result.toString(); }
 		}
 		lockId = insert into Approval_Config_Lock
 			[
@@ -87,7 +126,8 @@ string manageApprovalPolicies(string payload)
 		if(action == "SaveRole")
 		{
 			name = ifnull(data.get("name"),"").toString().trim();
-			if(name == "" || name.length() > 80 || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role name and explicit active setting are required."); }
+			activeKnown = data.get("active") == true || data.get("active") == false;
+			if(name == "" || name.length() > 80 || activeKnown != true) { result.put("error","Role name and explicit active setting are required."); }
 			else if(idText == "") { newId = insert into Approval_Role
 			[
 				Added_User=zoho.loginuser
@@ -100,7 +140,10 @@ string manageApprovalPolicies(string payload)
 		{
 			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
 			role = Approval_Role[ID == data.get("roleId").toString().toLong()]; person = User_Access[ID == data.get("userAccessId").toString().toLong()];
-			if(role.ID == null || person.ID == null || (data.get("companyId") != "" && companyId == null) || (data.get("active") != true && data.get("active") != false)) { result.put("error","Role, User Access, valid company scope and explicit active setting are required."); }
+			assignmentCompanyValid = true;
+			if(data.get("companyId") != "" && companyId == null) { assignmentCompanyValid = false; }
+			activeKnown = data.get("active") == true || data.get("active") == false;
+			if(role.ID == null || person.ID == null || assignmentCompanyValid != true || activeKnown != true) { result.put("error","Role, User Access, valid company scope and explicit active setting are required."); }
 			else
 			{
 				fromDate = null; toDate = null;
@@ -124,7 +167,10 @@ string manageApprovalPolicies(string payload)
 		if(action == "SavePolicy")
 		{
 			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
-			if((data.get("companyId") == "" && data.get("workflow") != "Purchase Order") || (data.get("companyId") != "" && companyId == null) || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Choose a company (or All companies for POs) and enter 1–30 ordered steps."); }
+			policyCompanyValid = true;
+			if(data.get("companyId") == "" && data.get("workflow") != "Purchase Order") { policyCompanyValid = false; }
+			if(data.get("companyId") != "" && companyId == null) { policyCompanyValid = false; }
+			if(policyCompanyValid != true || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Choose a company (or All companies for POs) and enter 1–30 ordered steps."); }
 			else
 			{
 				if(idText == "") { newId = insert into Approval_Policy
@@ -149,13 +195,20 @@ string manageApprovalPolicies(string payload)
 		if(action == "Publish")
 		{
 			policy = Approval_Policy[ID == idText.toLong()];
-			if(policy.Workflow == "Purchase Order" && (policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject")) { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); }
-			if(policy.ID == null || policy.Status != "Draft" || policy.Version == null || policy.Version < 1 || (policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") || (policy.Duplicate_Person != "Separate steps" && policy.Duplicate_Person != "Reject")) { result.put("error","A valid Draft and explicit self/multiple-role rules are required."); }
+			if(policy.Workflow == "Purchase Order")
+			{
+				if(policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject") { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); }
+			}
+			selfRuleKnown = policy.Self_Approval == "Allow" || policy.Self_Approval == "Deny";
+			duplicateRuleKnown = policy.Duplicate_Person == "Separate steps" || policy.Duplicate_Person == "Reject";
+			if(policy.ID == null || policy.Status != "Draft" || policy.Version == null || policy.Version < 1 || selfRuleKnown != true || duplicateRuleKnown != true) { result.put("error","A valid Draft and explicit self/multiple-role rules are required."); }
 			else
 			{
 				for each other in Approval_Policy[Company == policy.Company && Workflow == policy.Workflow && Status == "Published" && ID != policy.ID]
 				{
-					overlaps = (policy.Effective_From == null || other.Effective_To == null || policy.Effective_From < other.Effective_To) && (other.Effective_From == null || policy.Effective_To == null || other.Effective_From < policy.Effective_To);
+					overlaps = true;
+					if(policy.Effective_From != null && other.Effective_To != null) { if(policy.Effective_From >= other.Effective_To) { overlaps = false; } }
+					if(other.Effective_From != null && policy.Effective_To != null) { if(other.Effective_From >= policy.Effective_To) { overlaps = false; } }
 					if(ifnull(other.Territory_Key,"") == ifnull(policy.Territory_Key,"") && ifnull(other.Department_Key,"") == ifnull(policy.Department_Key,"") && overlaps) { result.put("error","Published effective windows overlap at the same scope. Retire the previous window explicitly."); }
 				}
 				order = 0; keys = List();
@@ -163,24 +216,35 @@ string manageApprovalPolicies(string payload)
 				{
 					order = order+1; role = Approval_Role[ID == step.get("roleId").toString().toLong()];
 					typedRole=Map(); typedRole.put("value",step.get("roleId"));
-					if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*") || !ifnull(step.get("key"),"").toString().matches("[A-Za-z0-9-]{1,80}") || role.ID == null || role.Active != true || step.get("order") != order || keys.contains(step.get("key")) || (step.get("enabled") != true && step.get("enabled") != false)) { result.put("error","Policy steps have invalid roles, order, keys or enabled flags."); }
+					stepEnabledKnown = step.get("enabled") == true || step.get("enabled") == false;
+					if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*") || !ifnull(step.get("key"),"").toString().matches("[A-Za-z0-9-]{1,80}") || role.ID == null || role.Active != true || step.get("order") != order || keys.contains(step.get("key")) || stepEnabledKnown != true) { result.put("error","Policy steps have invalid roles, order, keys or enabled flags."); }
 					keys.add(step.get("key")); condition = step.get("condition");
-					if((policy.Workflow == "Pro Forma" || policy.Workflow == "Contract") && condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); }
+					if(policy.Workflow == "Pro Forma" || policy.Workflow == "Contract")
+					{
+						if(condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); }
+					}
 					if(condition != "Always" && condition != "Above" && condition != "At or above" && condition != "Budget modification attached" && condition != "Budget line exceeded") { result.put("error","Unsupported step condition."); }
 					if(condition == "Budget modification attached" && policy.Workflow != "Purchase Order") { result.put("error","Linked budget modification conditions belong to Purchase Orders."); }
 					if(condition == "Budget line exceeded" && policy.Workflow != "Purchase Order") { result.put("error","Budget-line overrun conditions belong to Purchase Orders."); }
 					typedThreshold=Map(); typedThreshold.put("value",step.get("threshold"));
-					if((condition == "Above" || condition == "At or above") && !typedThreshold.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Threshold must be a decimal string."); }
-					if((condition == "Above" || condition == "At or above") && thisapp.poCurrencyString(ifnull(step.get("threshold"),"").toString()) == "") { result.put("error","Threshold must be exact currency."); }
+					if(condition == "Above" || condition == "At or above")
+					{
+						if(!typedThreshold.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Threshold must be a decimal string."); }
+						if(thisapp.poCurrencyString(ifnull(step.get("threshold"),"").toString()) == "") { result.put("error","Threshold must be exact currency."); }
+					}
 				}
-				if(order == 0 || order > 30 || (policy.Effective_From != null && policy.Effective_To != null && policy.Effective_To <= policy.Effective_From)) { result.put("error","Invalid steps or effective window."); }
+				policyWindowValid = true;
+				if(policy.Effective_From != null && policy.Effective_To != null) { if(policy.Effective_To <= policy.Effective_From) { policyWindowValid = false; } }
+				if(order == 0 || order > 30 || policyWindowValid != true) { result.put("error","Invalid steps or effective window."); }
 				if(result.get("error") == null) { policy.Status="Published"; }
 			}
 		}
 		if(action == "Retire")
 		{
 			policy = Approval_Policy[ID == idText.toLong()]; end = data.get("effectiveTo").toDate("yyyy-MM-dd");
-			if(policy.ID == null || policy.Status != "Published" || end < zoho.currentdate || (policy.Effective_From != null && end <= policy.Effective_From)) { result.put("error","Retirement must be a valid current/future exclusive end date."); }
+			retirementWindowValid = true;
+			if(policy.Effective_From != null) { if(end <= policy.Effective_From) { retirementWindowValid = false; } }
+			if(policy.ID == null || policy.Status != "Published" || end < zoho.currentdate || retirementWindowValid != true) { result.put("error","Retirement must be a valid current/future exclusive end date."); }
 			else { policy.Effective_To=end; }
 		}
 		after = thisapp.approvalConfigurationSnapshot(); audit = Approval_Config_Audit[ID == auditId];

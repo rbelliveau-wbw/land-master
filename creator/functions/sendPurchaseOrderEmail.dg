@@ -13,6 +13,12 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		body = "<div style='font-family:Arial,sans-serif;color:#0b2345;line-height:1.5'><h2>Purchase Order Approval</h2><p><b>"+phase+"</b><br>Vendor: "+vendor+"<br>PO: "+purchaseOrderId+"<br>Amount: $"+po.PO_Amount_Exact+"<br>Request date: "+po.Request_Date.toString("yyyy-MM-dd")+"<br>Date needed: "+po.Date_Needed.toString("yyyy-MM-dd")+"</p><table style='border-collapse:collapse;width:100%;font-size:12px'><tr style='background:#edf4ff'><th align='left'>Cost code / budget item</th><th align='left'>Description</th><th>Quantity</th><th>UOM</th><th>Unit price</th><th>Total</th></tr>";
+		subjectLine = "Purchase Order Approval · "+ifnull(po.Budget.Budget_Name,"")+" · $"+po.PO_Amount_Exact;
+		if(bundle.get("poTestCFO") != null)
+		{
+			subjectLine = "[PO TEST] "+subjectLine;
+			body = "<div style='padding:12px;background:#fff3cd;color:#654d00;font-family:Arial,sans-serif'><b>PO TEST</b> · Temporary CFO approval for this budget only, up to $"+bundle.get("poTestCFO").get("maxAmount")+". Submitter self-approval is enabled for this captured test route.</div>"+body;
+		}
 		for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
 		{
 			itemName = ifnull(line.Budget_Item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
@@ -34,7 +40,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		[
 			from :"jking@wbdevelopment.com"
 			to :approval.Approver
-			subject :"Purchase Order Approval · "+ifnull(po.Budget.Budget_Name,"")+" · $"+po.PO_Amount_Exact
+			subject :subjectLine
 			message :body
 		]
 		approval.Sent_Date=zoho.currentdate;

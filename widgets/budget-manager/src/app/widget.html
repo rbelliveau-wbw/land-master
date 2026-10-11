@@ -4,14 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.14"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.15"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.14"></script>
-<script src="po-controller.js?v=122.29.14"></script>
-<script src="po-ui.js?v=122.29.14"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.14">
+<script src="po-domain.js?v=122.29.15"></script>
+<script src="po-controller.js?v=122.29.15"></script>
+<script src="po-ui.js?v=122.29.15"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.15">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1771,8 +1771,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.14">
-<script src="success-feedback.js?v=122.29.14"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.15">
+<script src="success-feedback.js?v=122.29.15"></script>
 </head>
 <body>
 
@@ -2654,7 +2654,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.14", code:"BMW",
+  widget:"Budget Manager", version:"122.29.15", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -12544,17 +12544,18 @@ function loadCheckWireRequests(budgetId, fresh) {
   if (!bid || !fresh && S.checkWireRequestState[bid]) return S.checkWireRequestLoads[bid] || Promise.resolve();
   var generation=S.checkWireRequestGeneration[bid]=(S.checkWireRequestGeneration[bid]||0)+1;
   function current(){return generation===S.checkWireRequestGeneration[bid]&&scope===budgetCreateScope("requests",bid);}
-  var fields=["ID","Budget","Budget_Item","Request_Type","Request_Amount","Request_Date","Date_Needed"];
-  if(poDevelopment())fields=fields.concat(["Vendor","PO_Status","PO_Approval_State","PO_Revision","PO_Line_Count"]);
   // Payment_Request / All_Wire_Requests are verified in Production.
+  // The native report can expose no field columns; managed PO metadata comes from its API.
   S.checkWireRequestState[bid] = "loading";
-  var pending=sdkGetAllRecords(CFG.reports.checkWireRequests, "(Budget == " + bid + ")",{fields:fields,fresh:!!fresh,isCancelled:function(){return !current();}})
-    .then(function (rows) {
+  var managed=poDevelopment(),actor=String(S.myAccessId||"");
+  function poRead(action){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:action,budgetId:bid,userAccessId:actor})}).then(unwrapBudgetManageResponse);}
+  var pending=Promise.all([
+    sdkGetAllRecords(CFG.reports.checkWireRequests, "(Budget == " + bid + ")",{fresh:!!fresh,isCancelled:function(){return !current();}}),
+    managed?poRead("List"):Promise.resolve(null),
+    managed?poRead("Vendors"):Promise.resolve(null)
+  ]).then(function (results) {
       if(!current())return;
-      var ids=new Set();
-      if(!Array.isArray(rows))throw new Error("Requests could not be loaded.");
-      rows.forEach(function(row){if(!row||typeof row.ID!=="string"||!/^\d+$/.test(row.ID)||ids.has(row.ID)||!lookupMatchesId(row.Budget,bid))throw new Error("Requests do not match this budget.");ids.add(row.ID);});
-      S.checkWireRequestsByBudget[bid] = rows || [];
+      S.checkWireRequestsByBudget[bid] = mergeManagedPurchaseOrderRequests(results[0],results[1],results[2],bid);
       S.checkWireRequestState[bid] = "loaded";
     })
     .catch(function (err) {
@@ -12568,6 +12569,25 @@ function loadCheckWireRequests(budgetId, fresh) {
     });
   S.checkWireRequestLoads[bid]=pending;
   return pending;
+}
+function mergeManagedPurchaseOrderRequests(rows,managed,vendors,budgetId) {
+  var byId=new Map();
+  if(!Array.isArray(rows))throw new Error("Requests could not be loaded.");
+  rows.forEach(function(row){
+    if(!row||typeof row.ID!=="string"||!/^\d+$/.test(row.ID)||byId.has(row.ID)||Object.prototype.hasOwnProperty.call(row,"Budget")&&!lookupMatchesId(row.Budget,budgetId))throw new Error("Requests do not match this budget.");
+    byId.set(row.ID,Object.assign({},row));
+  });
+  if(managed===null)return Array.from(byId.values());
+  if(!managed||managed.contract!=="po-v1"||managed.success!==true||!Array.isArray(managed.rows)||!vendors||vendors.contract!=="po-v1"||vendors.success!==true||!Array.isArray(vendors.vendors))throw new Error(managed&&managed.error||vendors&&vendors.error||"Saved POs could not be loaded.");
+  var vendorNames=new Map(),poIds=new Set();
+  vendors.vendors.forEach(function(vendor){if(!vendor||typeof vendor.ID!=="string"||!/^\d+$/.test(vendor.ID)||vendorNames.has(vendor.ID)||typeof vendor.Vendor_Name!=="string"||!vendor.Vendor_Name.trim())throw new Error("PO vendor identities are unavailable.");vendorNames.set(vendor.ID,vendor.Vendor_Name);});
+  managed.rows.forEach(function(po){
+    if(!po||typeof po.id!=="string"||!/^\d+$/.test(po.id)||poIds.has(po.id)||typeof po.revision!=="string"||!po.revision.trim()||["Draft","Submitted"].indexOf(po.status)<0||typeof po.vendorId!=="string"||!/^\d+$/.test(po.vendorId)||!vendorNames.has(po.vendorId)||Object.prototype.hasOwnProperty.call(po,"budgetId")&&po.budgetId!==budgetId)throw new Error("Saved PO identities do not match this budget.");
+    if(!window.LMPO||LMPO.money(po.amount)<=0n)throw new Error("Saved PO amounts are unavailable.");
+    poIds.add(po.id);
+    byId.set(po.id,Object.assign({},byId.get(po.id)||{},{ID:po.id,Budget:{ID:budgetId},Request_Type:"Purchase Order",Request_Amount:po.amount,PO_Status:po.status,PO_Revision:po.revision,Vendor:{ID:po.vendorId,display_value:vendorNames.get(po.vendorId)}}));
+  });
+  return Array.from(byId.values());
 }
 function savedPurchaseOrderRequest(request,budgetId) {
   return !!request&&poDevelopment()&&typeof request.ID==="string"&&/^\d+$/.test(request.ID)&&lookupMatchesId(request.Budget,String(budgetId))&&cleanVal(request.Request_Type)==="Purchase Order"&&!!cleanVal(request.PO_Revision);
@@ -12596,9 +12616,10 @@ function renderCheckWireRequestColumn(b) {
     var editablePO=managedPO&&canEditBudget(b)&&(status==="Draft"||status==="Submitted"&&approvalState==="Rejected");
     if(managedPO)itemName=lookupName(request.Vendor)||"Vendor";
     var poAction=managedPO?"<div class='mpc-acts'><button class='mbtn sm "+(editablePO?"primary":"neutral")+"' type='button' data-request-po-open='"+escAttr(request.ID)+"'>"+(editablePO?"Edit PO":"View PO")+"</button></div>":"";
+    var dates=managedPO&&!date&&!needed?"":"<div class='mpc-meta'>Request " + esc(date || "—") + " · Needed " + esc(needed || "—") + "</div>";
     return "<div class='mod-page-card'><div class='mpc-main'>" +
       "<div class='mpc-item'>" + esc(type) + " · " + esc(itemName) + "</div>" +
-      "<div class='mpc-meta'>Request " + esc(date || "—") + " · Needed " + esc(needed || "—") + "</div>" +
+      dates +
       "</div>" + (rawAmount ? "<div class='mpc-amount pos'>" + fmt(v(rawAmount)) + "</div>" : "") +
       (managedPO?"<div class='mpc-side'><div class='mpc-status'>"+modBadge(approvalState&&approvalState!=="Not Configured"?approvalState:status)+"</div>"+poAction+"</div>":"") + "</div>";
   }).join("") + "</div>";
@@ -13349,7 +13370,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.14",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.15",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

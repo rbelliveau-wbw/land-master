@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+import './test-po-test-cfo-backend.mjs';
 const ctx=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/settings-manager/src/app/approval-policy-domain.js','utf8'),ctx);
 const api=ctx.LMApprovalPolicy;
 const config={roles:[{id:'1',name:'Legal',active:true},{id:'2',name:'COO',active:true}],users:[{id:'11',name:'First',user:'login-first',approverEmail:'first@example.com',routingEnabled:true},{id:'12',name:'Second',user:'login-second',approverEmail:'second@example.com',routingEnabled:true}],assignments:[{id:'21',roleId:'1',companyId:'31',userAccessId:'11',active:true},{id:'22',roleId:'2',companyId:'31',userAccessId:'12',active:true}],policies:[{id:'41',companyId:'31',workflow:'Purchase Order',version:1,status:'Published',enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',steps:[{key:'first',order:1,roleId:'1',condition:'Always',enabled:true},{key:'coo',order:2,roleId:'2',condition:'Above',threshold:'100.00',enabled:true}]}]};

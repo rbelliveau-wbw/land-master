@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import './test-po-test-cfo-frontend.mjs';
 const context=vm.createContext({});
 vm.runInContext(await readFile(new URL('../widgets/settings-manager/src/app/approval-admin.js',import.meta.url),'utf8'),context);
 const admin=context.LMApprovalAdmin;

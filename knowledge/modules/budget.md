@@ -807,11 +807,15 @@ save totals, date round trips and retained Check/Wire behavior, plus browser
 selection/search, date dismissal, editable surfaces and responsive containment.
 Rollback Production to 122.29.12; keep Development on the latest complete release.
 
-### Saved PO editing from Requests (122.29.14)
+### Saved PO editing from Requests (122.29.15)
 
-The specific budget's Requests tab explicitly reads Payment Request identity,
-dates and amount plus managed PO vendor, status, approval state, revision and
-line count. This avoids blank rows when Creator's report layout omits fields.
+The specific budget's Requests tab reads its scoped Payment Request report with
+all available fields and merges the exact managed PO identities, vendor, amount,
+status and revision from existing List and Vendors commands. Production's native
+report has no visible field columns and rejects custom projections; the managed
+PO command remains authoritative when the report returns ID-only rows. Dates and
+approval state appear when the report exposes them; Get loads the full saved PO
+when opened, without per-row Get calls for the Requests list.
 Managed Draft POs show **Edit PO** for budget editors; rejected submitted POs
 retain the existing editable revision flow. Pending/approved POs and read-only
 users show **View PO**. Check, Wire and legacy PO rows retain their existing
@@ -833,7 +837,12 @@ Affected existing fields: `Payment_Request.ID`, `Budget`, `Budget_Item`,
 this editing change requires no Creator form, field, function or API publication.
 
 Regression covers draft/rejected editing, pending/approved/read-only viewing,
-exact string IDs and phase scope, report projections, post-save fresh reads,
+exact string IDs and phase scope, ID-only report/API merging, post-save fresh reads,
 duplicate/foreign/malformed rows, failed loads, lost scope and superseded reads.
 Rollback Production Budget Manager to 122.29.13 and rebuild Pages; retain saved
-PO records and the permanent widget URL.
+PO records and the permanent widget URL. The initial 122.29.14 projection failure
+was caught in native Production and corrected by the immutable 122.29.15 release.
+
+Temporary PO test CFO configuration is documented in
+[the October 11 handoff](../../docs/po-test-cfo-2026-10-11.md). It requires five
+existing Creator function updates; the user retains promotion control.

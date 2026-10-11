@@ -24,10 +24,16 @@ map resolveApprovalRoute(map context)
 		policyId = 0; bestRank = -1; matched = 0;
 		for each policy in Approval_Policy[Workflow == context.get("workflow") && Status == "Published"]
 		{
-			if(policy.Company != companyText.toLong() && (context.get("workflow") != "Purchase Order" || policy.Company != null)) { continue; }
-			valid = (policy.Effective_From == null || policy.Effective_From <= day) && (policy.Effective_To == null || day < policy.Effective_To);
+			companyMatches = policy.Company == companyText.toLong();
+			if(context.get("workflow") == "Purchase Order" && policy.Company == null) { companyMatches = true; }
+			if(companyMatches != true) { continue; }
+			valid = true;
+			if(policy.Effective_From != null) { if(policy.Effective_From > day) { valid = false; } }
+			if(policy.Effective_To != null) { if(day >= policy.Effective_To) { valid = false; } }
 			pTerritory = ifnull(policy.Territory_Key,""); pDepartment = ifnull(policy.Department_Key,"");
-			if(valid && (pTerritory == "" || pTerritory == territory) && (pDepartment == "" || pDepartment == department))
+			if(pTerritory != "" && pTerritory != territory) { valid = false; }
+			if(pDepartment != "" && pDepartment != department) { valid = false; }
+			if(valid)
 			{
 				rank = 0; if(policy.Company != null) { rank = rank+8; } if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
 				if(rank > bestRank) { bestRank = rank; policyId = policy.ID; matched = 1; }
@@ -39,9 +45,34 @@ map resolveApprovalRoute(map context)
 		if(policy.Version == null || policy.Version < 1) { result.put("error","Published policy version is invalid."); return result; }
 		if(policy.Enabled != true) { result.put("error","The applicable published policy is disabled. No company fallback was used."); return result; }
 		if((policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") || (policy.Duplicate_Person != "Separate steps" && policy.Duplicate_Person != "Reject")) { result.put("error","Self-approval and multiple-role rules must be explicitly configured."); return result; }
-		if(policy.Workflow == "Purchase Order" && (policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject")) { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); return result; }
+		if(policy.Workflow == "Purchase Order")
+		{
+			if(policy.Self_Approval != "Deny" || policy.Duplicate_Person != "Reject") { result.put("error","Purchase Orders require distinct approvers and forbid submitter self-approval."); return result; }
+		}
 		steps = policy.Steps_JSON.toJSONList();
 		if(steps.size() == 0 || steps.size() > 30) { result.put("error","Published policy requires 1–30 ordered steps."); return result; }
+		// Owner-configured PO testing uses one captured CFO identity without changing shared assignments.
+		for each configuredStep in steps
+		{
+			if(configuredStep.get("poTestCFO") != null)
+			{
+				testCFO = configuredStep.get("poTestCFO");
+				if(policy.Workflow != "Purchase Order" || steps.size() != 1 || configuredStep.get("enabled") != true || configuredStep.get("condition") != "Always" || testCFO.get("allowSelfApproval") != true) { result.put("error","PO test CFO requires one enabled Always CFO step."); return result; }
+				for each testIdentityField in {"budgetId","userAccessId"}
+				{
+					typedTestIdentity = {"value":testCFO.get(testIdentityField)};
+					if(!typedTestIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","PO test CFO identities must be exact ID strings."); return result; }
+				}
+				typedContextBudget = {"value":context.get("budgetId")};
+				if(!typedContextBudget.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","PO test budget context must be an exact ID string."); return result; }
+				typedTestEmail = {"value":testCFO.get("email")};
+				testEmailIsString = typedTestEmail.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[^\"]+\"[ ]*[}][ ]*");
+				testEmailValid = testEmailIsString && ifnull(testCFO.get("email"),"").toString().matches("[^\\s@,;<>\"]+@[^\\s@,;<>\"]+[.][^\\s@,;<>\"]+");
+				typedTestAmount = {"value":testCFO.get("maxAmount")}; testMaximum = thisapp.poCurrencyString(ifnull(testCFO.get("maxAmount"),"").toString());
+				if(!typedTestAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*") || testMaximum == "" || testMaximum.replaceAll("[.]","").toLong() <= 0 || testMaximum.replaceAll("[.]","").toLong() > 5500 || testEmailValid != true) { result.put("error","PO test CFO needs a valid email and a positive maximum of at most $55."); return result; }
+				if(context.get("budgetId") != testCFO.get("budgetId") || amount > testMaximum.replaceAll("[.]","").toLong() || context.get("hasBudgetModification") != false || context.get("hasBudgetOverrun") != false) { result.put("error","This PO is outside the configured test budget, amount or no-overrun scope."); return result; }
+			}
+		}
 		route = List(); excluded = List(); people = List(); stepKeys = List(); expectedOrder = 0;
 		for each step in steps
 		{
@@ -51,7 +82,10 @@ map resolveApprovalRoute(map context)
 			if(!typedRole.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Step role ID must be a string."); return result; }
 			stepKeys.add(step.get("key"));
 			condition = step.get("condition");
-			if((policy.Workflow == "Pro Forma" || policy.Workflow == "Contract") && condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); return result; }
+			if(policy.Workflow == "Pro Forma" || policy.Workflow == "Contract")
+			{
+				if(condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains without amount thresholds."); return result; }
+			}
 			applies = step.get("enabled") == true;
 			reason = "Required step";
 			if(step.get("enabled") != true && step.get("enabled") != false) { result.put("error","Step enabled state is not explicit."); return result; }
@@ -74,7 +108,8 @@ map resolveApprovalRoute(map context)
 			}
 			else if(condition == "Budget line exceeded")
 			{
-				if(policy.Workflow != "Purchase Order" || (context.get("hasBudgetOverrun") != true && context.get("hasBudgetOverrun") != false)) { result.put("error","An explicit PO budget-line overrun context is required."); return result; }
+				overrunKnown = context.get("hasBudgetOverrun") == true || context.get("hasBudgetOverrun") == false;
+				if(policy.Workflow != "Purchase Order" || overrunKnown != true) { result.put("error","An explicit PO budget-line overrun context is required."); return result; }
 				if(context.get("hasBudgetOverrun") != true) { applies = false; }
 				reason = "At least one PO budget item exceeds its available budget";
 			}
@@ -94,7 +129,13 @@ map resolveApprovalRoute(map context)
 				if(role.ID == null || role.Active != true) { result.put("error","Role is missing or inactive for step "+expectedOrder); return result; }
 				assignmentId = 0; assignmentRank = -1; assignmentCount = 0; personId = 0; assignmentActive = false;
 				territoryVP = policy.Workflow == "Purchase Order" && role.Role_Name == "VP";
-				if(territoryVP)
+				poTestCFO = step.get("poTestCFO"); testStep = poTestCFO != null;
+				if(testStep)
+				{
+					if(role.Role_Name != "CFO") { result.put("error","PO test override must use the CFO role."); return result; }
+					personId = poTestCFO.get("userAccessId").toLong(); assignmentActive = true; reason = "PO test CFO";
+				}
+				else if(territoryVP)
 				{
 					territoryRecord = Territory[Territory_Name == territory];
 					if(territoryRecord.count() != 1) { result.put("error","The PO territory must identify one Territory record with a VP."); return result; }
@@ -107,10 +148,16 @@ map resolveApprovalRoute(map context)
 				{
 				for each assignment in Approval_Role_Assignment[Role == role.ID]
 				{
-					if(assignment.Company != companyText.toLong() && (policy.Workflow != "Purchase Order" || assignment.Company != null)) { continue; }
+					assignmentCompanyMatches = assignment.Company == companyText.toLong();
+					if(policy.Workflow == "Purchase Order" && assignment.Company == null) { assignmentCompanyMatches = true; }
+					if(assignmentCompanyMatches != true) { continue; }
 					aTerritory = ifnull(assignment.Territory_Key,""); aDepartment = ifnull(assignment.Department_Key,"");
-					aValid = (assignment.Effective_From == null || assignment.Effective_From <= day) && (assignment.Effective_To == null || day < assignment.Effective_To);
-					if(aValid && (aTerritory == "" || aTerritory == territory) && (aDepartment == "" || aDepartment == department))
+					aValid = true;
+					if(assignment.Effective_From != null) { if(assignment.Effective_From > day) { aValid = false; } }
+					if(assignment.Effective_To != null) { if(day >= assignment.Effective_To) { aValid = false; } }
+					if(aTerritory != "" && aTerritory != territory) { aValid = false; }
+					if(aDepartment != "" && aDepartment != department) { aValid = false; }
+					if(aValid)
 					{
 						rank = 0; if(assignment.Company != null) { rank = rank+8; } if(aTerritory != "") { rank = rank+4; } if(aDepartment != "") { rank = rank+2; }
 						if(rank > assignmentRank) { assignmentRank = rank; assignmentId = assignment.ID; assignmentCount = 1; }
@@ -123,12 +170,21 @@ map resolveApprovalRoute(map context)
 				}
 				person = User_Access[ID == personId];
 				email = ifnull(person.Approver_Email,"").trim();
-				if(assignmentActive != true || person.ID == null || person.Approval_Routing_Enabled != true || person.User == null || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
-				if(policy.Self_Approval == "Deny" && person.ID.toString() == submitterText) { result.put("error","Policy forbids submitter self-approval."); return result; }
+				if(testStep)
+				{
+					if(ifnull(person.User,"").toString().trim() == "") { result.put("error","PO test CFO login identity is unavailable."); return result; }
+					email = poTestCFO.get("email").toString();
+				}
+				routingEnabled = person.Approval_Routing_Enabled == true;
+				if(testStep) { routingEnabled = true; }
+				if(assignmentActive != true || person.ID == null || routingEnabled != true || person.User == null || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
+				if(policy.Self_Approval == "Deny" && person.ID.toString() == submitterText && !testStep) { result.put("error","Policy forbids submitter self-approval."); return result; }
 				if(policy.Duplicate_Person == "Reject" && people.contains(person.ID.toString())) { result.put("error","One person fills multiple required roles; this policy rejects the overlap."); return result; }
 				people.add(person.ID.toString());
-				assignmentText = assignmentId.toString(); if(territoryVP) { assignmentText = ""; }
-				route.add({"order":route.size()+1,"policyStepOrder":expectedOrder,"key":step.get("key"),"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason});
+				assignmentText = assignmentId.toString(); if(territoryVP || testStep) { assignmentText = ""; }
+				resolvedStep = {"order":route.size()+1,"policyStepOrder":expectedOrder,"key":step.get("key"),"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason};
+				if(testStep) { resolvedStep.put("poTestCFO",poTestCFO); }
+				route.add(resolvedStep);
 			}
 		}
 		if(route.size() == 0) { result.put("error","No enabled applicable approval steps."); return result; }
