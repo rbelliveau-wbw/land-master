@@ -178,6 +178,13 @@ field about 30% narrower than the former half-width header field on desktop;
 retain the existing narrow-screen layout. The proposed right-side grouped
 receipt is a mockup pending design approval.
 
+In a budget's Requests list, managed Purchase Orders show their vendor, dates,
+amount and status using the existing compact request card. Put **Edit PO** or
+**View PO** beside the status in the card's action area. Draft and rejected PO
+editing follows the existing budget permission; other saved states open their
+current read-only workspace. Keep the editor locked while loading a saved PO,
+with a short loading label and Retry load on failure.
+
 Check, Wire and Purchase Order creation uses Budget → finalized line item →
 searchable Vendor → request details. Global entry chooses Budget first; phase
 entry starts at line item. Only show eligible finalized items in the shared

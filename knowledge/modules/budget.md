@@ -806,3 +806,34 @@ checks cover sorted/grouped eligible options, default element 5, exact calculate
 save totals, date round trips and retained Check/Wire behavior, plus browser
 selection/search, date dismissal, editable surfaces and responsive containment.
 Rollback Production to 122.29.12; keep Development on the latest complete release.
+
+### Saved PO editing from Requests (122.29.14)
+
+The specific budget's Requests tab explicitly reads Payment Request identity,
+dates and amount plus managed PO vendor, status, approval state, revision and
+line count. This avoids blank rows when Creator's report layout omits fields.
+Managed Draft POs show **Edit PO** for budget editors; rejected submitted POs
+retain the existing editable revision flow. Pending/approved POs and read-only
+users show **View PO**. Check, Wire and legacy PO rows retain their existing
+behavior. Each action opens the exact saved PO through the existing phase-scoped
+Get command, preserving its parent ID and expected revision.
+
+Saved PO entry stays locked until the exact PO/budget snapshot is loaded and
+validated. Failed loads offer Retry load and cannot save a blank new PO. A newer
+selection supersedes older replies, and opening a different saved PO clears the
+previous approval bundle. Successful PO saves force a fresh Requests read; the
+previous truthy `idle` state no longer prevents the list from updating.
+
+Frontend source: Budget `widget.html` and `po-ui.js`; regression:
+`scripts/test-po-requests.mjs` through the existing purchase-order suite.
+Affected existing fields: `Payment_Request.ID`, `Budget`, `Budget_Item`,
+`Request_Type`, `Request_Amount`, `Request_Date`, `Date_Needed`, `Vendor`,
+`PO_Status`, `PO_Approval_State`, `PO_Revision`, `PO_Line_Count`. Existing
+`managePurchaseOrder` and `Manage_Purchase_Order` / `_DEV` contracts are reused;
+this editing change requires no Creator form, field, function or API publication.
+
+Regression covers draft/rejected editing, pending/approved/read-only viewing,
+exact string IDs and phase scope, report projections, post-save fresh reads,
+duplicate/foreign/malformed rows, failed loads, lost scope and superseded reads.
+Rollback Production Budget Manager to 122.29.13 and rebuild Pages; retain saved
+PO records and the permanent widget URL.

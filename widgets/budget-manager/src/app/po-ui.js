@@ -7,13 +7,13 @@
   function localDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
   function dateValid(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)&&!isNaN(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value;}
   function create(options){
-    var model=null,overlay=null,card=null,controller=null,trigger=null,previousInert=[],generation=0,visualBusy=false,progress=false,openedAt=0,popover=null;
+    var model=null,overlay=null,card=null,controller=null,trigger=null,previousInert=[],generation=0,loadGeneration=0,visualBusy=false,progress=false,openedAt=0,popover=null;
     var unresolved=Object.create(null);
     function current(){return model&&options.scope()===model.scope;}
     function call(payload){return options.call(Object.assign({},payload,{budgetId:model.budgetId,userAccessId:options.userAccessId()}));}
     var chevron='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 10 5 5 5-5"/></svg>';
     var duplicateIcon='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-    function readOnly(){return model.status==='Submitted'&&model.approvalState!=='Rejected'||!model.editable;}
+    function readOnly(){return model.loadState==='loading'||model.loadState==='unavailable'||model.status==='Submitted'&&model.approvalState!=='Rejected'||!model.editable;}
     function picker(label,value,rows,field,key){var selected=rows.find(function(row){return row.id===value;});return '<label class="po-field"><span>'+esc(label)+'</span><button type="button" class="po-picker-trigger'+(!selected?' is-placeholder':'')+'" data-po-picker="'+esc(field)+'" data-key="'+esc(key||'')+'" aria-haspopup="listbox" aria-expanded="false" aria-label="'+esc(label)+'" '+(readOnly()?'disabled':'')+'><span>'+esc(selected?selected.label:field==='uom'?'Unit':'Choose…')+'</span>'+chevron+'</button></label>';}
     function field(label,value,name,key,locked){return '<label class="po-field"><span>'+esc(label)+'</span><input aria-label="'+esc(label)+'" data-po-field="'+name+'" data-key="'+esc(key||'')+'" value="'+esc(value)+'" '+(locked||readOnly()?'readonly':'')+' '+(/amount|Price|quantity|Amount/i.test(name)?'inputmode="decimal"':'')+'></label>';}
     function money(value){try{var negative=typeof value==='string'&&value[0]==='-';var exact=root.LMPO.currency(root.LMPO.money(negative?value.slice(1):value)),parts=exact.split('.');return (negative?'−$':'$')+parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(parts[1]==='00'?'':'.'+parts[1]);}catch(e){return '—';}}
@@ -72,6 +72,8 @@
       if(model.approvalBundle)html+=bundleHtml();
       card.querySelector('.po-body').innerHTML=html;
       card.querySelector('footer').innerHTML='<button class="mbtn neutral" data-po-saved>Saved POs</button><button class="po-link" data-po-refresh>Refresh balances</button><span class="po-spacer"></span>'+(!locked?'<button class="mbtn neutral" data-po-save="Save">Save draft</button><button class="mbtn primary" data-po-save="Submit">'+(model.approvalState==='Rejected'?'Resubmit PO':'Submit PO')+'</button>':'<button class="mbtn neutral" data-po-close>Close</button>');
+      if(model.loadState==='loading')card.querySelector('footer').insertAdjacentHTML('afterbegin','<span role="status" aria-live="polite">Loading saved PO…</span>');
+      if(model.loadState==='unavailable'&&model.loadId)card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-reload>Retry load</button>');
       if(model.approvalBundle&&model.approvalBundle.canApprove&&model.approvalState==='Pending'){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="Reject">Reject PO</button><button class="mbtn primary" data-po-decision="Approve">Approve PO &amp; mods</button>');}
       if(model.approvalBundle&&model.approvalBundle.canRetryEmail&&model.approvalState==='Pending'&&!model.approvalBundle.emailSent){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="RetryEmail">Retry email</button>');}
       patchBalances();
@@ -130,13 +132,25 @@
       mountProgress();await controller.begin(payload);
     }catch(e){error(e.message);}}
     async function savedList(){var own=generation;try{var resp=await call({action:'List'});if(!current()||own!==generation)return;if(resp.contract!=='po-v1'||!resp.success||!Array.isArray(resp.rows))throw new Error(resp.error||'Saved POs unavailable.');overlay.querySelector('.po-summary').hidden=true;card.querySelector('.po-body').innerHTML='<div data-po-error class="po-error" role="alert" hidden></div><div class="po-saved-list">'+resp.rows.map(function(row){if(typeof row.id!=='string'||!/^\d+$/.test(row.id))throw new Error('Invalid PO ID.');return '<button class="mbtn neutral" data-po-open="'+esc(row.id)+'">'+money(row.amount)+' · '+esc(row.status)+'</button>';}).join('')+'</div>';card.querySelector('footer').innerHTML='<button class="mbtn neutral" data-po-back>Back to draft</button>';}catch(e){error(e.message);}}
-    async function get(id){var own=generation;try{var resp=await call({action:'Get',id:id});if(!current()||own!==generation)return;if(!resp||resp.contract!=='po-v1'||!resp.success||!resp.snapshot||resp.snapshot.id!==id||resp.snapshot.budgetId!==model.budgetId)throw new Error(resp&&resp.error||'PO could not be loaded.');if(!['Draft','Submitted'].includes(resp.snapshot.status)||resp.snapshot.commitmentState!==(resp.snapshot.status==='Submitted'?'Reserved':'None')||!['Not Configured','Pending','Approved','Rejected'].includes(resp.snapshot.approvalState))throw new Error('Saved PO state could not be verified.');root.LMPO.validate(Object.assign({},resp.snapshot,{lines:resp.snapshot.lines.map(function(line){return Object.assign({},line,{uom:line.uom||"EA"});})}),resp.snapshot.status==='Submitted');Object.assign(model,resp.snapshot);model.reservedLines=resp.snapshot.commitmentState==='Reserved'?resp.snapshot.lines.map(function(l){return Object.assign({},l);}):[];render();refresh();}catch(e){error(e.message);}}
+    async function get(id){
+      var own=generation,load=++loadGeneration;
+      model.loadState='loading';model.loadId=id;model.error='';model.approvalBundle=null;model.approvalNote='';render();
+      try{
+        var resp=await call({action:'Get',id:id});
+        if(!current()||own!==generation||load!==loadGeneration)return;
+        if(!resp||resp.contract!=='po-v1'||!resp.success||!resp.snapshot||resp.snapshot.id!==id||resp.snapshot.budgetId!==model.budgetId)throw new Error(resp&&resp.error||'PO could not be loaded.');
+        if(!['Draft','Submitted'].includes(resp.snapshot.status)||resp.snapshot.commitmentState!==(resp.snapshot.status==='Submitted'?'Reserved':'None')||!['Not Configured','Pending','Approved','Rejected'].includes(resp.snapshot.approvalState))throw new Error('Saved PO state could not be verified.');
+        root.LMPO.validate(Object.assign({},resp.snapshot,{lines:resp.snapshot.lines.map(function(line){return Object.assign({},line,{uom:line.uom||"EA"});})}),resp.snapshot.status==='Submitted');
+        Object.assign(model,resp.snapshot);model.loadState='loaded';model.reservedLines=resp.snapshot.commitmentState==='Reserved'?resp.snapshot.lines.map(function(l){return Object.assign({},l);}):[];render();refresh();
+      }catch(e){if(!current()||own!==generation||load!==loadGeneration)return;model.loadState='unavailable';error(e.message);render();}
+    }
     function click(event){if(popover&&!popover.element.contains(event.target)&&!popover.trigger.contains(event.target)){closePopover();}var target=event.target.closest('button,input[data-po-date]');if(!target)return;
       if(target.hasAttribute('data-po-pop-close')){closePopover();return;}
       if(target.hasAttribute('data-po-close')){close();return;}
       if(target.hasAttribute('data-po-done')){var run=controller.state();if(run&&run.snapshot){Object.assign(model,run.snapshot);model.reservedLines=run.snapshot.commitmentState==='Reserved'?run.snapshot.lines.map(function(l){return Object.assign({},l);}):[];progress=false;render();refresh();return;}if(run&&run.rejected){progress=false;render();return;}close();return;}
       if(target.hasAttribute('data-po-check')){if(!visualBusy){openedAt=performance.now();controller.check();}return;}
       if(progress||!current())return;
+      if(target.hasAttribute('data-po-reload')){get(model.loadId);return;}
       if(target.dataset.poDecision){decide(target.dataset.poDecision).catch(function(e){error(e.message);});return;}
       if(target.hasAttribute('data-po-saved')){savedList();return;}if(target.dataset.poOpen){get(target.dataset.poOpen);return;}if(target.hasAttribute('data-po-back')){render();return;}if(target.hasAttribute('data-po-refresh')){refresh();return;}
       if(readOnly())return;
@@ -151,7 +165,7 @@
     }
     async function open(budget,source,purchaseOrderId){if(overlay)return;trigger=source||document.activeElement;generation++;var pending=unresolved[String(budget.ID)];
       if(pending){if(pending.model.scope!==options.scope())throw new Error('An unresolved PO belongs to another Creator session. Review that operation before opening a new draft.');model=pending.model;controller=pending.controller;mount();mountProgress();onState(controller.state(),'settled');return;}
-      model={budgetId:String(budget.ID),phase:options.phaseName(budget),scope:options.scope(),editable:options.canEdit(budget),amount:'',reservedLines:[],vendorId:'',budgetModificationId:null,modifications:options.modifications?options.modifications():[],requestDate:localDate(new Date()),dateNeeded:'',lines:[lineNew()],vendors:[],balances:[],balanceState:'loading',error:''};
+      model={budgetId:String(budget.ID),phase:options.phaseName(budget),scope:options.scope(),editable:options.canEdit(budget),loadState:purchaseOrderId?'loading':'loaded',loadId:purchaseOrderId?String(purchaseOrderId):'',amount:'',reservedLines:[],vendorId:'',budgetModificationId:null,modifications:options.modifications?options.modifications():[],requestDate:localDate(new Date()),dateNeeded:'',lines:[lineNew()],vendors:[],balances:[],balanceState:'loading',error:''};
       controller=root.LMPOController.create({call:call,onState:onState});mount();render();var own=generation;
       try{var vendors=await options.vendors();if(!current()||own!==generation)return;var seen=new Set();vendors.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=vendors;render();}catch(e){if(current())error(e.message);}
       if(current()){if(purchaseOrderId)await get(String(purchaseOrderId));else refresh();}
