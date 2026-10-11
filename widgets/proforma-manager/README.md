@@ -3,7 +3,11 @@
 
 Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
 
-Current release: `1.80.90`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Release `1.80.101` uses `Attachment` / `All_Attachments`, retaining the `Pro_Forma`
+parent and `File_field1` upload field. Creator Development updates require the
+user's promotion; see the [rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
+Current release: `1.80.101`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 ## Verified attachment uploads and inline progress (1.80.90)
 

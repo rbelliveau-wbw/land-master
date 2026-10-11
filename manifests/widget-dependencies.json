@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-03T22:37:37.106Z",
+  "generated_at": "2026-10-11T13:38:54.124057+00:00",
   "method": "inferred by scanning widget source and matching exact Creator form/report names",
   "widgets": {
     "proforma-manager": {
@@ -18,6 +18,16 @@
           "name": "Delete_Proforma_Attachment",
           "config_key": "deleteProformaAttachment",
           "source": "customApis object"
+        },
+        {
+          "name": "Get_Proforma_Approval_PDF",
+          "config_key": "approvalPdfApiCandidates",
+          "source": "candidate array"
+        },
+        {
+          "name": "Get_Proforma_Approval_PDF1",
+          "config_key": "approvalPdfApiCandidates",
+          "source": "candidate array"
         },
         {
           "name": "Get_Proforma_Attachment_Preview",
@@ -65,14 +75,19 @@
           "source": "customApis object"
         },
         {
-          "name": "Save_PF",
-          "config_key": "save",
+          "name": "Review_PF",
+          "config_key": "aiReview",
           "source": "customApis object"
         },
         {
-          "name": "Save_PF1",
+          "name": "Save_PF",
           "config_key": "saveApiCandidates",
           "source": "candidate array"
+        },
+        {
+          "name": "Save_PF1",
+          "config_key": "save",
+          "source": "customApis object"
         },
         {
           "name": "SavePF",
@@ -90,33 +105,27 @@
           "source": "customApis object"
         },
         {
-          "name": "Update_Proforma_Approval_Recipient",
-          "config_key": "updateProformaApprovalRecipient",
+          "name": "Update_Assigned_To_Me",
+          "config_key": "updateAssignedToMe",
           "source": "customApis object"
         },
         {
-          "name": "PF_Budget_Transfer",
-          "config_key": "budgetTransferCall",
-          "source": "dedicated transfer API; Production binding after Creator publish"
-        },
-        {
-          "name": "PF_Budget_Transfer_DEV",
-          "config_key": "budgetTransferCall",
-          "source": "LMRuntime Development mapping; verified Creator Microservices"
+          "name": "Update_Proforma_Approval_Recipient",
+          "config_key": "updateProformaApprovalRecipient",
+          "source": "customApis object"
         }
       ],
       "forms_referenced": [
         "Add_Budget",
         "Add_Pro_Forma",
+        "Additional_Items",
+        "Attachment",
         "Budget_Approvals",
         "Budget_Category",
-        "Budget_Item",
-        "Budget_Modification",
         "Builder",
         "Company",
         "Construction_Curve",
         "Contract",
-        "Contract_Version",
         "LOI_Worksheet",
         "Land_Installments",
         "Lots",
@@ -125,11 +134,13 @@
         "Proforma_Phase",
         "Project",
         "Property",
+        "Settings",
         "Subdivision",
         "User_Access"
       ],
       "reports_referenced": [
         "All_Additional_Items",
+        "All_Attachments",
         "All_Budget_Approvals",
         "All_Budget_Categories",
         "All_Budget_Items",
@@ -137,7 +148,6 @@
         "All_Builders",
         "All_Companies",
         "All_Construction_Cost_Curves",
-        "All_Contract_Versions",
         "All_Land_Installments",
         "All_Pro_Formas",
         "All_Pro_Formas_All_Fields",
@@ -151,20 +161,13 @@
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.DATA.getRecords",
-        "ZOHO.CREATOR.DATA.getRecordCount",
-        "ZOHO.CREATOR.DATA.addRecords",
-        "ZOHO.CREATOR.DATA.updateRecordById",
-        "ZOHO.CREATOR.DATA.deleteRecords",
-        "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.FILE.uploadFile",
         "ZOHO.CREATOR.FILE.readFile",
-        "ZOHO.CREATOR.UTIL.getInitParams",
-        "ZOHO.CREATOR.UTIL.getQueryParams",
-        "ZOHO.CREATOR.UTIL.navigateParentURL"
+        "ZOHO.CREATOR.UTIL"
       ],
       "external_domains": [
         "cdn.jsdelivr.net",
-        "static.zohocdn.com"
+        "static.zohocdn.com",
+        "www.w3.org"
       ]
     },
     "budget-manager": {
@@ -172,6 +175,16 @@
         {
           "name": "Create_Budget_Attachment_Record",
           "config_key": "createBudgetAttachmentRecord",
+          "source": "customApis object"
+        },
+        {
+          "name": "Create_Budget_From_Subdivision",
+          "config_key": "createBudgetFromSubdivision",
+          "source": "customApis object"
+        },
+        {
+          "name": "Create_Budget_Modification",
+          "config_key": "createBudgetModification",
           "source": "customApis object"
         },
         {
@@ -190,7 +203,7 @@
           "source": "customApis object"
         },
         {
-          "name": "Get_User_Access",
+          "name": "Get_User_Access_Lean",
           "config_key": "getUserAccess",
           "source": "customApis object"
         },
@@ -215,8 +228,23 @@
           "source": "customApis object"
         },
         {
+          "name": "Manage_Purchase_Order",
+          "config_key": "managePurchaseOrder",
+          "source": "customApis object"
+        },
+        {
+          "name": "Modification_Admin",
+          "config_key": "modificationAdmin",
+          "source": "customApis object"
+        },
+        {
           "name": "Report_Proforma_Widget_Error",
           "config_key": "errorReport",
+          "source": "customApis object"
+        },
+        {
+          "name": "Send_Modification_Email",
+          "config_key": "sendModificationEmail",
           "source": "customApis object"
         },
         {
@@ -235,91 +263,76 @@
           "source": "customApis object"
         },
         {
+          "name": "Submit_Budget_Modification",
+          "config_key": "submitBudgetModification",
+          "source": "customApis object"
+        },
+        {
           "name": "syncBudgetApprovalStatus",
           "config_key": "syncBudgetApprovalStatus",
           "source": "customApis object"
         },
         {
-          "name": "Create_Budget_From_Subdivision",
-          "config_key": "createBudgetFromSubdivision",
-          "source": "customApis object; Development setup tracked in GLOBAL_BUDGET_ADD_HANDOFF.md"
+          "name": "Update_Assigned_To_Me",
+          "config_key": "updateAssignedToMe",
+          "source": "customApis object"
         }
       ],
       "forms_referenced": [
         "Add_Budget",
         "Add_Pro_Forma",
+        "Attachment",
         "Budget_Approvals",
         "Budget_Category",
         "Budget_Import_Item",
         "Budget_Item",
-        "Budget_Modification",
-        "Budget_Months",
-        "Comment_Log",
-        "Contract_Version",
+        "External_System_Mapping",
         "Lots",
-        "Payment_Request",
         "Proforma_Item",
         "Project",
         "Subdivision",
-        "User_Access",
-        "Vendors"
+        "User_Access"
       ],
       "reports_referenced": [
+        "All_Attachments",
         "All_Budget_Approvals",
         "All_Budget_Categories",
         "All_Budget_Item_Imports",
         "All_Budget_Items",
-        "All_Budget_Modifications",
         "All_Budgets",
-        "All_Contract_Versions",
+        "All_External_System_Mappings",
         "All_Pro_Formas",
         "All_Pro_Formas_All_Fields",
         "All_Proforma_Phases",
         "All_Projects",
         "All_Subdivisions",
-        "All_Vendors",
-        "All_Wire_Requests",
         "Proforma_Item_Report",
         "User_Access_Report"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.getRecordById",
-        "ZOHO.CREATOR.API.invokeCustomApi",
-        "ZOHO.CREATOR.API.invokeCustomApi.",
-        "ZOHO.CREATOR.API.readFile",
-        "ZOHO.CREATOR.API.updateRecord",
-        "ZOHO.CREATOR.API.uploadFile",
         "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.getRecordById",
+        "ZOHO.CREATOR.DATA.getRecords",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.DATA.invokeCustomApi.",
+        "ZOHO.CREATOR.DATA.updateRecordById",
+        "ZOHO.CREATOR.FILE.readFile",
+        "ZOHO.CREATOR.FILE.uploadFile",
         "ZOHO.CREATOR.UTIL",
-        "ZOHO.CREATOR.UTIL.getInitParams",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.UTIL.getInitParams"
       ],
       "external_domains": [
         "cdn.jsdelivr.net",
         "cdnjs.cloudflare.com",
         "creatorapp.zoho.com",
         "creatorexport.zoho.com",
+        "rbelliveau-wbw.github.io",
         "static.zohocdn.com",
         "www.w3.org"
-      ],
-      "live_payment_request_metadata": "creator/workflows/PAYMENT_REQUEST_LIVE_SCHEMA.md"
+      ]
     },
     "land-master": {
-      "custom_apis": [
-        {
-          "name": "Get_Land_Master_Choices",
-          "source": "loadLocationChoices; environment suffix selected by LMRuntime.apiName"
-        },
-        {
-          "name": "Ingest_Plat",
-          "config_key": "platIngest",
-          "source": "customApis object"
-        }
-      ],
+      "custom_apis": [],
       "forms_referenced": [
         "Additional_Items",
         "Builder",
@@ -352,26 +365,29 @@
         "All_Projects",
         "All_Property",
         "All_Subdivisions",
-        "All_Takedown_Schedules",
-        "All_Active_Lots_List_View"
+        "All_Takedown_Schedules"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.API",
-        "ZOHO.CREATOR.API.addRecord",
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.invokeCustomApi",
-        "ZOHO.CREATOR.API.updateRecord",
-        "ZOHO.CREATOR.UTIL.navigateParentURL",
-        "ZOHO.CREATOR.appName",
-        "ZOHO.CREATOR.init"
+        "ZOHO.CREATOR.DATA",
+        "ZOHO.CREATOR.DATA.addRecords",
+        "ZOHO.CREATOR.DATA.deleteRecords",
+        "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.DATA.updateRecordById",
+        "ZOHO.CREATOR.UTIL.navigateParentURL"
       ],
       "external_domains": [
         "static.zohocdn.com",
-        "www.w3.org"
+        "www.w3.org",
+        "…"
       ]
     },
     "contract-management": {
       "custom_apis": [
+        {
+          "name": "Complete_Lot_Contract",
+          "config_key": "completeLotContract",
+          "source": "customApis object"
+        },
         {
           "name": "Create_Contract_Attachment_Record",
           "config_key": "createAttachment",
@@ -388,6 +404,11 @@
           "source": "customApis object"
         },
         {
+          "name": "Get_User_Access",
+          "config_key": "getUserAccess",
+          "source": "customApis object"
+        },
+        {
           "name": "Report_Proforma_Widget_Error",
           "config_key": "errorReport",
           "source": "customApis object"
@@ -398,44 +419,64 @@
           "source": "customApis object"
         },
         {
-          "name": "Get_User_Access",
-          "config_key": "getUserAccess",
+          "name": "Send_Contract_Approvals",
+          "config_key": "sendContractApprovals",
+          "source": "customApis object"
+        },
+        {
+          "name": "Update_Assigned_To_Me",
+          "config_key": "updateAssignedToMe",
           "source": "customApis object"
         }
       ],
       "forms_referenced": [
+        "Add_Pro_Forma",
+        "Attachment",
         "Builder",
         "Company",
         "Contract",
         "Contract_Actions",
-        "Contract_Version",
+        "Contract_Approvals",
+        "Contract_Pricing",
+        "Forecast",
         "Lots",
+        "Project",
         "Property",
+        "Settings",
         "Subdivision",
-        "Project"
+        "Takedown_Schedule",
+        "User_Access"
       ],
       "reports_referenced": [
+        "All_Active_Lots_Contracts_View",
+        "All_Attachments",
+        "All_Builders",
         "All_Contract_Actions",
-        "All_Contract_Versions",
+        "All_Contract_Approvals",
         "All_Contracts",
+        "All_Contracts1",
         "All_Pro_Formas_All_Fields",
-        "All_Projects"
+        "All_Projects",
+        "All_Subdivisions",
+        "All_Takedown_Schedules",
+        "Contract_Pricing_Report"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.DATA.getRecords",
-        "ZOHO.CREATOR.DATA.getRecordCount",
-        "ZOHO.CREATOR.DATA.addRecords",
-        "ZOHO.CREATOR.DATA.updateRecordById",
-        "ZOHO.CREATOR.DATA.deleteRecords",
+        "ZOHO.CREATOR.API.readFile",
+        "ZOHO.CREATOR.DATA",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.FILE.uploadFile",
         "ZOHO.CREATOR.FILE.readFile",
-        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.FILE.uploadFile",
+        "ZOHO.CREATOR.UTIL",
         "ZOHO.CREATOR.UTIL.getQueryParams",
         "ZOHO.CREATOR.UTIL.navigateParentURL"
       ],
       "external_domains": [
-        "static.zohocdn.com"
+        "cdnjs.cloudflare.com",
+        "creatorapp.zoho.com",
+        "rbelliveau-wbw.github.io",
+        "static.zohocdn.com",
+        "www.w3.org"
       ]
     },
     "tax-center": {
@@ -447,7 +488,10 @@
         }
       ],
       "forms_referenced": [
+        "Add_Pro_Forma",
+        "Builder",
         "Company",
+        "Lots",
         "Project",
         "Property",
         "Subdivision",
@@ -464,52 +508,12 @@
         "All_Taxing_Jurisdictions"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.DATA",
-        "ZOHO.CREATOR.DATA.addRecords",
-        "ZOHO.CREATOR.DATA.getRecordCount",
-        "ZOHO.CREATOR.DATA.getRecords",
-        "ZOHO.CREATOR.DATA.updateRecordById",
         "ZOHO.CREATOR.UTIL",
-        "ZOHO.CREATOR.UTIL.getInitParams",
         "ZOHO.CREATOR.UTIL.setIframeHeight"
       ],
       "external_domains": [
         "static.zohocdn.com",
         "www.w3.org"
-      ]
-    },
-    "manage-lots": {
-      "custom_apis": [],
-      "forms_referenced": [
-        "Builder",
-        "Builder_Takedown",
-        "Contract",
-        "Lots",
-        "Settings",
-        "Subdivision",
-        "Takedown_Template",
-        "Additional_Items"
-      ],
-      "reports_referenced": [
-        "All_Active_Lots_Contracts_View",
-        "All_Builder_Takedowns",
-        "All_Builders",
-        "All_Contracts1",
-        "All_Lots_All_Fields",
-        "All_Subdivisions",
-        "All_Active_Lots_List_View",
-        "All_Takedown_Templates",
-        "All_Additional_Items"
-      ],
-      "sdk_calls": [
-        "ZOHO.CREATOR.UTIL.getInitParams",
-        "ZOHO.CREATOR.DATA.getRecords",
-        "ZOHO.CREATOR.DATA.getRecordCount",
-        "ZOHO.CREATOR.DATA.addRecords",
-        "ZOHO.CREATOR.DATA.updateRecordById"
-      ],
-      "external_domains": [
-        "js.zohostatic.com"
       ]
     },
     "milestone-gantt": {
@@ -529,85 +533,90 @@
         "All_Milestones",
         "All_Subdivisions"
       ],
-      "sdk_calls": [
-        "ZOHO.CREATOR.API.getAllRecords",
-        "ZOHO.CREATOR.API.updateRecord",
-        "ZOHO.CREATOR.appName",
-        "ZOHO.CREATOR.init"
-      ],
+      "sdk_calls": [],
       "external_domains": [
         "fonts.googleapis.com",
         "fonts.gstatic.com",
         "static.zohocdn.com"
       ]
     },
-    "lot-sales-explorer": {
+    "manage-lots": {
+      "custom_apis": [],
       "forms_referenced": [
-        "User_Access",
-        "Lots",
-        "Subdivision",
-        "Project",
+        "Additional_Items",
         "Builder",
-        "Add_Budget",
-        "Budget_Category",
-        "Budget_Item",
-        "Budget_Modification"
+        "Builder_Takedown",
+        "Contract",
+        "Lots",
+        "Subdivision"
       ],
       "reports_referenced": [
+        "All_Active_Lots_Contracts_View",
+        "All_Active_Lots_List_View",
+        "All_Additional_Items",
+        "All_Builder_Takedowns",
+        "All_Builders",
+        "All_Contracts1",
         "All_Lots_All_Fields",
         "All_Subdivisions",
-        "All_Projects",
-        "All_Builders",
-        "All_Budgets",
-        "All_Budget_Categories",
-        "All_Budget_Items",
-        "All_Budget_Modifications"
+        "All_Takedown_Templates"
       ],
-      "custom_apis": [
-        {
-          "name": "Get_User_Access",
-          "config_key": "getUserAccess",
-          "source": "insights-access.js"
-        },
-        {
-          "name": "Report_Proforma_Widget_Error",
-          "config_key": "errorReport",
-          "source": "existing diagnostic reporter"
-        }
+      "sdk_calls": [],
+      "external_domains": [
+        "js.zohostatic.com"
+      ]
+    },
+    "settings-manager": {
+      "custom_apis": [],
+      "forms_referenced": [
+        "Builder",
+        "Construction_Curve",
+        "Contract",
+        "Forecast",
+        "Lots",
+        "Project",
+        "Settings"
+      ],
+      "reports_referenced": [
+        "All_Construction_Curves",
+        "All_Contract_Actions",
+        "All_Contract_Approvals",
+        "All_Pro_Formas",
+        "All_Settings"
       ],
       "sdk_calls": [
-        "ZOHO.CREATOR.DATA.getRecords",
-        "ZOHO.CREATOR.DATA.getRecordCount",
         "ZOHO.CREATOR.DATA.invokeCustomApi",
+        "ZOHO.CREATOR.UTIL",
         "ZOHO.CREATOR.UTIL.getInitParams"
       ],
       "external_domains": [
         "static.zohocdn.com"
       ]
     },
-    "forecast-manager": {
+    "lot-sales-explorer": {
+      "custom_apis": [],
       "forms_referenced": [
-        "Settings",
-        "Subdivision",
         "Builder",
-        "Forecast_Year",
-        "Forecast",
-        "Lots"
+        "Lots",
+        "Project",
+        "Subdivision"
       ],
       "reports_referenced": [],
-      "custom_apis": [
-        {
-          "name": "Forecast_Manager_Widget",
-          "source": "Enabled selective OAuth2 Development/Production API; Default forecastManagerWidget compiled and published through Creator 9.59"
-        },
-        {
-          "name": "Report_Proforma_Widget_Error",
-          "source": "Existing diagnostic reporter"
-        }
+      "sdk_calls": [],
+      "external_domains": [
+        "static.zohocdn.com"
+      ]
+    },
+    "forecast-manager": {
+      "custom_apis": [],
+      "forms_referenced": [
+        "Builder",
+        "Forecast",
+        "Subdivision"
       ],
+      "reports_referenced": [],
       "sdk_calls": [
-        "ZOHO.CREATOR.DATA.invokeCustomApi",
-        "ZOHO.CREATOR.UTIL.getInitParams"
+        "ZOHO.CREATOR.init"
       ],
       "external_domains": [
         "static.zohocdn.com"

@@ -18,7 +18,7 @@ function harness(){
   const zone={classList:{toggle(name,on){if(on)classes.add(name);else classes.delete(name);}},classes};
   let allowed=true;
   const context=vm.createContext({S:{edBudget:{ID:BID},edPhaseIdx:0,globalMode:'attachments',liveSDK:true,attachmentsByBudget:{},accessUsers:[]},
-    CFG:{attachmentBudgetField:'Budget',attachmentFileField:'File_field1',reports:{attachments:'All_Contract_Versions'},reportCandidates:{}},Promise,Error,Date,URL,URLSearchParams,Number,
+    CFG:{attachmentBudgetField:'Budget',attachmentFileField:'File_field1',reports:{attachments:'All_Attachments'},reportCandidates:{}},Promise,Error,Date,URL,URLSearchParams,Number,
     $:()=>pane,esc,escAttr:esc,phaseName:()=>"Existing Phase",budgetNavigationToken:()=>({}),budgetNavigationCurrent:()=>true,
     budgetFeature:key=>features[key]||(features[key]={status:'loaded',generation:0}),budgetFeatureStateHtml:()=>'<div>Attachments unavailable · Retry</div>',
     budgetAttachments:b=>(context.S.attachmentsByBudget[b.ID]||[]).slice(),canAddBudgetAttachment:()=>allowed,
@@ -126,7 +126,7 @@ function harness(){
   c.loadBudgetFeature=(_key,loader,publish)=>loader().then(result=>{publish(result);return result;});
   vm.runInContext(adapter,c);for(const name of ['getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','loadBudgetAttachments'])vm.runInContext(block(name),c);
   const result=await c.loadBudgetAttachments(BID,true),read=calls.find(call=>call.method==='read').config;
-  assert.equal(read.report_name,'All_Contract_Versions');assert.equal(read.criteria,`(Budget == ${BID})`);assert.equal(read.field_config,'custom');assert.equal(read.fields,'ID,Budget,File_field1,Date_field1,Added_Time,Modified_Time,Added_User');
+  assert.equal(read.report_name,'All_Attachments');assert.equal(read.criteria,`(Budget == ${BID})`);assert.equal(read.field_config,'custom');assert.equal(read.fields,'ID,Budget,File_field1,Date_field1,Added_Time,Modified_Time,Added_User');
   assert.equal(result[0].recordId,RID);assert.equal(result[0].budgetId,BID);assert.equal(result[0].name,'detail.pdf');assert.equal(result[0].filePath,'/api/file/detail.pdf');assert.equal(result[0].addedTime,'01-Oct-2026');assert.equal(result[0].addedUser,'Native author');
   delete rows[0].Added_User;rows[0].Modified_User='Wrong author';await c.loadBudgetAttachments(BID,true);assert.equal(c.S.attachmentsByBudget[BID][0].addedUser,'');
 }

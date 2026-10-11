@@ -1,3 +1,13 @@
+## Attachment form and report rename (1.80.101) — October 11, 2026
+
+Pro Forma file records use `Attachment` and `All_Attachments`, retaining
+`Pro_Forma` as the parent lookup and `File_field1` as the upload field. Attachment
+counts, file actions and the existing Custom APIs use the renamed form/report.
+The October 10 production `.ds` predates this rename; the October 11 Development
+export and live Creator Development checks confirm it. Creator promotion remains
+with the user. See the
+[affected surfaces, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
 ## Attachment acknowledgements (1.80.99)
 
 Native FILE success (`code:3000` without explicit API failures) now confirms
@@ -205,9 +215,9 @@ The attachment presentation suite exercises the actual access caller/parser, nat
 
 The main list pairs its comment action with a paperclip/count button. The button and View Attachments menu open Legal's attachment dialog in place; list filters, scroll, selection, Dashboard and editor drafts remain intact. The existing record attachment workspace is retained. The dialog captures a separate exact Pro Forma ID, token and actor/environment scope; its upload/delete permissions use that selected saved record. Shared file rows and actions retain raw parent IDs, file paths, dates, preview formats, named buttons and the 50 MB limit. Email remains Legal-only.
 
-One background SDK1 attachment batch uses `API.getRecordCount` before and after complete 200-row `getAllRecords` paging for `All_Contract_Versions`. Every child ID, parent lookup and file field must be valid before counts publish. There is no 5,000-row cap, per-list-row request or error-to-zero fallback. Badges show loading/unavailable distinctly and patch mounted controls without rebuilding the list or editor. A complete full-report exact-parent fallback retains existing unsupported-criteria/empty-scope recovery; permission, malformed and incomplete reads never use that fallback. Newer verified scoped counts take precedence over an older global batch. Exact scoped reads refresh files and badges after upload/delete; actor/environment or report refresh invalidates file caches. Closed/replaced dialogs and older summary generations cannot publish into the current surface. Busy file actions block duplicate writes, conflicting dialog/tab changes and Close/Escape. Focus is trapped and restored, background controls are inert, and body scrolling is restored on dismissal.
+One background SDK1 attachment batch uses `API.getRecordCount` before and after complete 200-row `getAllRecords` paging for `All_Attachments`. Every child ID, parent lookup and file field must be valid before counts publish. There is no 5,000-row cap, per-list-row request or error-to-zero fallback. Badges show loading/unavailable distinctly and patch mounted controls without rebuilding the list or editor. A complete full-report exact-parent fallback retains existing unsupported-criteria/empty-scope recovery; permission, malformed and incomplete reads never use that fallback. Newer verified scoped counts take precedence over an older global batch. Exact scoped reads refresh files and badges after upload/delete; actor/environment or report refresh invalidates file caches. Closed/replaced dialogs and older summary generations cannot publish into the current surface. Busy file actions block duplicate writes, conflicting dialog/tab changes and Close/Escape. Focus is trapped and restored, background controls are inert, and body scrolling is restored on dismissal.
 
-Added by reads only saved `Contract_Version.Added_User`. A nonblank explicit username/email establishes the identity match; display aliases cannot override it. One exact case-insensitive match in the existing User Access roster supplies `fullName`; absent or ambiguous matches retain the genuine saved creator display or —. Backend additive roster fields and visible `Added_User`, `Pro_Forma`, `File_field1` attachment report fields are required; no new grants or roster queries are introduced.
+Added by reads only saved `Attachment.Added_User`. A nonblank explicit username/email establishes the identity match; display aliases cannot override it. One exact case-insensitive match in the existing User Access roster supplies `fullName`; absent or ambiguous matches retain the genuine saved creator display or —. Backend additive roster fields and visible `Added_User`, `Pro_Forma`, `File_field1` attachment report fields are required; no new grants or roster queries are introduced.
 
 `scripts/test-proforma-attachment-presentation.mjs` executes the actual list/dialog renderers and handlers, counted native SDK1 reader, stale generations/session/cache guards, readonly/busy/close/focus routes, escaped author metadata, captured file actions and upload/delete badge updates. It verifies 5,201 complete rows beyond the old general-reader cap and retains Budget transfer regression coverage. User waived native UI gates for this presentation change; SDK1 transport remains unchanged. Existing SDK1 mutation fallback/retry acknowledgement limitations remain for its separately gated SDK migration; this release does not claim unknown-write reconciliation. No Creator form/function/API deployment is required beyond the already published author roster/report visibility changes. Rollback: Proforma Manager 1.80.63 through the environment mapping; Budget transfer behavior from 1.80.61 remains intact.
 
@@ -402,7 +412,7 @@ The approval packet extends the first-page reimbursement schedule to the bottom 
 
 The Offer form exposes `LOI_Worksheet.Assumed_Effective_Date`, `LOI_Worksheet.Projected_Hard_Close_Date`, and `Add_Pro_Forma.Authorized_Signer_for_Seller`. Effective Date defaults to the current date when empty and remains editable. Projected Hard Close and Authorized Signer support enter, change, and clear operations. Earnest-money timing preserves relative text such as "90 days after execution" when no calendar due date exists.
 
-The export modal adds **LOI/Contract**. It reuses `Get_Proforma_Approval_PDF` with `format: "docx"`, calls the shared `PF_Build_LOI_Document` merge helper, and downloads the Writer result without creating a Contract, Contract Version, approval submission, or email. Exactly one Builder seller and at least one Property parcel record are required. All parcel IDs and unique county/city values are combined into the existing Writer merge fields; multiple sellers or no parcels return a manual-preparation message. Development uses the existing `Get_Proforma_Approval_PDF` Custom API, and production uses `Get_Proforma_Approval_PDF1`; both target the same named function in their environment.
+The export modal adds **LOI/Contract**. It reuses `Get_Proforma_Approval_PDF` with `format: "docx"`, calls the shared `PF_Build_LOI_Document` merge helper, and downloads the Writer result without creating a Contract, Attachment, approval submission, or email. Exactly one Builder seller and at least one Property parcel record are required. All parcel IDs and unique county/city values are combined into the existing Writer merge fields; multiple sellers or no parcels return a manual-preparation message. Development uses the existing `Get_Proforma_Approval_PDF` Custom API, and production uses `Get_Proforma_Approval_PDF1`; both target the same named function in their environment.
 
 Closed Pro Formas keep a grey disabled Edit button between View and Comments for users who otherwise have edit access. Regression coverage includes packet pagination and long text, optional comments, correct reimbursement type filtering, date/signer persistence contracts, DOCX boundaries, and closed-row alignment. Creator function drafts were compiled in Development; Creator publishing remains a separate human action. Rollback: map production proforma-manager to `1.79.14` and restore the previous Creator function bodies from git.
 
@@ -553,10 +563,10 @@ The `New Pro Forma` action is the visually prominent primary action in the portf
 
 ## Attachments
 
-Pro Forma attachments use one `Contract_Version` record per file, matching the Budget attachment pattern:
+Pro Forma attachments use one `Attachment` record per file, matching the Budget attachment pattern:
 
 - parent lookup: `Pro_Forma` (the `Add_Pro_Forma` record ID)
-- child report: `All_Contract_Versions`
+- child report: `All_Attachments`
 - file field: `File_field1`
 - create API/function: `Create_Proforma_Attachment_Record` / `createProformaAttachmentRecord`
 - delete API/function: `Delete_Proforma_Attachment` / `deleteProformaAttachment`
@@ -564,7 +574,11 @@ Pro Forma attachments use one `Contract_Version` record per file, matching the B
 
 The widget exposes the attachment workspace from both Dashboard and Edit. It supports multiple-file upload, embedded PDF/image/text/media preview, download, and delete, subject to ordinary Pro Forma edit permissions. The persistent `Pro Forma List` action is the canonical route back to the portfolio.
 
-The current committed Creator export predates the live `Contract_Version.Pro_Forma` field. Do not add it manually to `creator/generated/`; refresh the `.ds` export after the live Creator configuration is published.
+Current targeted attachment metadata from the October 11 Development export includes
+`Attachment.Pro_Forma` and `All_Attachments`. The October 10 production `.ds`
+predates the rename. The captured post-edit Development export supplies the
+targeted attachment overlay; refresh after Creator promotion and preserve the
+historical exports.
 
 ## AI review
 
@@ -599,7 +613,7 @@ loadDetail(sourceId) → recordToModel() → forkModel() → editor (unsaved, id
   along with the source model being byte-identical after a fork.
 
 What a duplicate deliberately does not carry: approvals (`Budget_Approvals`), AI review
-records and the `AI_Review_*` stamps, attachments (`Contract_Version`), the LOI Worksheet and
+records and the `AI_Review_*` stamps, attachments (`Attachment`), the LOI Worksheet and
 its Sellers/Properties, `LOI_Legal_Status` / `LOI_Approval_Token` / `LOI_Contract`, `Archive`,
 and every server-computed total. Most of these are excluded by construction: the copy only
 carries what `HEADER_FIELDS` and `buildSavePayload` carry. LOI *header* fields are in

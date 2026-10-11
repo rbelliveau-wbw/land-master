@@ -1,3 +1,14 @@
+## Attachment form and report rename (1.61.45) — October 11, 2026
+
+The shared file form is `Attachment` and its report is `All_Attachments`.
+Contract attachment reads, uploads, approvals and deletion use these link names.
+Keep the parent lookup `Contract1`, upload field `File_field1`, Email switch
+`Email_Attachment` and existing `Contract.Contract_Versions` lookup field.
+The October 10 production `.ds` predates this rename; the October 11 Development
+export and live Creator Development checks confirm it. Creator promotion remains
+with the user. See the
+[affected surfaces, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
 ## Archive persistence and Territory filter (1.61.41)
 
 Archive/Unarchive sends the existing `Contract.Archive` decision box as Creator's
@@ -653,7 +664,7 @@ Regression: required Master Project, no-subdivision Master, same-Project phases,
 
 ## Attachment creator labels and compact modal (1.60.43)
 
-Attachment rows use only Creator `Contract_Version.Added_User` for Added by, across the file modal, attachment page, approval file list and detail file card. The recorded creator username/email is matched case-insensitively and exactly against the already loaded User Access roster; one unambiguous match uses its `fullName` / `Full_Name`, including composite first/last names. Domains and username suffixes are retained, and account aliases are used only when actually supplied by the roster. Missing or conflicting matches retain the genuine native creator display; absent or malformed creators show —. `Modified_User`, a record ID and the current signed-in actor never substitute for the creator. The attachment modal omits its explanatory preview footer and retains the existing upload area, file-info styling, Preview/Download/Delete buttons and Legal-only Email toggle. SDK1 transport, access policy, 50 MB limit, preview formats, upload/delete and email behavior are unchanged. No extra roster/report requests, forms, functions or Custom APIs are introduced by this frontend. The existing access API must provide the roster full names, and the file report must expose `Added_User`; unavailable data is never inferred. `scripts/test-contract-attachment-presentation.mjs` exercises actual renderers, exact identity joins, composite names, ambiguity/missing cases, escaped text, string IDs, file-input/drop delegation and retained controls/styles. Native gates should confirm creator/full-name availability and modal appearance. Rollback: restore Contract Management 1.60.42 through the environment mapping.
+Attachment rows use only Creator `Attachment.Added_User` for Added by, across the file modal, attachment page, approval file list and detail file card. The recorded creator username/email is matched case-insensitively and exactly against the already loaded User Access roster; one unambiguous match uses its `fullName` / `Full_Name`, including composite first/last names. Domains and username suffixes are retained, and account aliases are used only when actually supplied by the roster. Missing or conflicting matches retain the genuine native creator display; absent or malformed creators show —. `Modified_User`, a record ID and the current signed-in actor never substitute for the creator. The attachment modal omits its explanatory preview footer and retains the existing upload area, file-info styling, Preview/Download/Delete buttons and Legal-only Email toggle. SDK1 transport, access policy, 50 MB limit, preview formats, upload/delete and email behavior are unchanged. No extra roster/report requests, forms, functions or Custom APIs are introduced by this frontend. The existing access API must provide the roster full names, and the file report must expose `Added_User`; unavailable data is never inferred. `scripts/test-contract-attachment-presentation.mjs` exercises actual renderers, exact identity joins, composite names, ambiguity/missing cases, escaped text, string IDs, file-input/drop delegation and retained controls/styles. Native gates should confirm creator/full-name availability and modal appearance. Rollback: restore Contract Management 1.60.42 through the environment mapping.
 
 ## Bolder rounded Lot branches (1.60.42)
 
@@ -781,9 +792,9 @@ The current contract widget supports token-based legal review using `tokenId`. P
 
 ## Attachments
 
-`Contract_Version` is also used by Budget attachments. Confirm the correct parent lookup (`Contract1` versus `Budget`) before changing shared attachment logic.
+`Attachment` is also used by Budget attachments. Confirm the correct parent lookup (`Contract1` versus `Budget`) before changing shared attachment logic.
 
-Contracts use one `Contract_Version` record per file with `Contract1` as the
+Contracts use one `Attachment` record per file with `Contract1` as the
 parent lookup and `File_field1` as the upload field. Attachment record creation,
 deletion, and exact-byte reads use these Custom APIs first:
 
@@ -793,7 +804,7 @@ deletion, and exact-byte reads use these Custom APIs first:
 
 `Get_Contract_Attachment_Preview` supplies the same base64 bytes to both the
 in-widget preview and download paths. The function must verify both the
-`Contract_Version.ID` and `Contract1` parent before returning a file.
+`Attachment.ID` and `Contract1` parent before returning a file.
 
 ## Lot picker unavailable cues (1.60.32)
 

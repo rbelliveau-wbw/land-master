@@ -11,9 +11,10 @@
 					{
 					on click
 					(
-						//This code goes through all Takedown_Schedules daily and updates the following fields
-										//1. Takedown_Schedule.Lots_Sold
-										//2. Takedown_Schedule.Takedown_Start_Date
+						// Replacement on-click action body for the existing native report action.
+										// This body incorporates all four exported actions; remove duplicate actions
+										// when installing it. Requires the proposed fields and cadence function first.
+										// Preserve the existing sales count and earliest Purchase_Date refresh.
 										status = "Sold";
 										lotCount = 0;
 										for each  subdiv in input.Subdivisions
@@ -27,64 +28,132 @@
 											}
 											input.Lots_Sold = lotCount;
 										}
+										cadenceCanRefresh = true;
+										if(input.Second_Closing_Lots == null && input.Second_Closing_Days == null)
+										{
+											// Legacy expected-lots calculation remains before its end-date calculation,
+											// as in the export. Editing cadence requires Second Closing on form save.
+											if(input.Takedown_Start_Date != null)
+											{
+												if(input.Status != "Completed" && input.Takedown_Start_Date != NULL && input.Total_Lot_Obligation != NULL && input.Initial_Takedown != null && input.Continued_Takedown_Delay_Days != 0)
+												{
+													dayDifference = abs(daysBetween(input.Takedown_Start_Date,today));
+													info dayDifference;
+													contdMultiple = floor((dayDifference - input.Initial_Delay_Days) / input.Continued_Takedown_Delay_Days);
+													if(dayDifference <= input.Initial_Delay_Days)
+													{
+														input.Lots_Expected = 0;
+													}
+													if(dayDifference > input.Initial_Delay_Days && addDay(input.Takedown_Start_Date,dayDifference) < input.Takedown_End_Date)
+													{
+														input.Lots_Expected = input.Initial_Takedown + contdMultiple * input.Continued_Takedown;
+													}
+													if(input.Takedown_End_Date <= today)
+													{
+														input.Lots_Expected = input.Total_Lot_Obligation;
+													}
+												}
+											}
+											if(input.Takedown_Start_Date != null)
+											{
+												takedownLength = ceil((input.Total_Lot_Obligation - input.Initial_Takedown) / input.Continued_Takedown) * input.Continued_Takedown_Delay_Days + input.Initial_Delay_Days;
+												input.Takedown_End_Date = input.Takedown_Start_Date.addDay(takedownLength);
+											}
+										}
+										else
+										{
+											cadenceCanRefresh = false;
+											cadenceStart = ifnull(input.Initial_Closing_Date,input.Takedown_Start_Date);
+											cadenceTerms = Map();
+											cadenceTerms.put("Total_Lot_Obligation",input.Total_Lot_Obligation);
+											cadenceTerms.put("Initial_Takedown",input.Initial_Takedown);
+											cadenceTerms.put("Initial_Due_Offset_Days",input.Initial_Delay_Days);
+											cadenceTerms.put("Second_Closing_Lots",input.Second_Closing_Lots);
+											cadenceTerms.put("Second_Closing_Days",input.Second_Closing_Days);
+											cadenceTerms.put("Continued_Takedown",input.Continued_Takedown);
+											cadenceTerms.put("Continued_Takedown_Delay_Days",input.Continued_Takedown_Delay_Days);
+											cadenceTerms.put("Elapsed_Days",0);
+											if(cadenceStart != null)
+											{
+												cadenceTerms.put("Elapsed_Days",daysBetween(cadenceStart,today));
+											}
+											cadence = thisapp.Calculate_Takedown_Cadence(cadenceTerms);
+											if(cadence.get("ok") == true)
+											{
+												cadenceCanRefresh = true;
+												if(cadenceStart != null)
+												{
+													input.Takedown_Start_Date = cadenceStart;
+													input.Takedown_End_Date = cadenceStart.addDay(cadence.get("endOffsetDays"));
+													if(input.Status != "Completed")
+													{
+														input.Lots_Expected = cadence.get("lotsExpected");
+													}
+												}
+												else
+												{
+													input.Takedown_End_Date = null;
+													if(input.Status != "Completed")
+													{
+														input.Lots_Expected = 0;
+													}
+												}
+											}
+											else
+											{
+												info cadence.get("message");
+											}
+										}
+										// Preserve the native sales/status decisions, guarded against invalid new terms.
+										if(cadenceCanRefresh)
+										{
+											if(input.Status == "Active" || input.Status == "Behind")
+											{
+												lotsSold = input.Lots_Sold;
+												lotsExpected = input.Lots_Expected;
+												input.Takedown_Schedule_Code = input.Subdivisions.Subdivision_Code + ' - ' + input.Builder1.Builder_Name;
+												if(lotsSold < lotsExpected)
+												{
+													input.Status = "Behind";
+												}
+												if(lotsSold >= input.Total_Lot_Obligation)
+												{
+													input.Status = "Completed";
+													input.Completion_Percent = 100;
+												}
+												if(lotsSold < input.Total_Lot_Obligation)
+												{
+													input.Completion_Percent = lotsSold / input.Total_Lot_Obligation * 100;
+												}
+											}
+										}
 					)
 					}
 					actions  (Takedown_Start_Date is not null)
 					{
 					on click
 					(
-						if(Status != "Completed" && Takedown_Start_Date != NULL && Total_Lot_Obligation != NULL && Initial_Takedown != null && Continued_Takedown_Delay_Days != 0)
-										{
-											dayDifference = abs(daysBetween(input.Takedown_Start_Date,today));
-											info dayDifference;
-											contdMultiple = floor((dayDifference - input.Initial_Delay_Days) / input.Continued_Takedown_Delay_Days);
-											if(dayDifference <= Initial_Delay_Days)
-											{
-												input.Lots_Expected = 0;
-											}
-											if(dayDifference > Initial_Delay_Days && addDay(input.Takedown_Start_Date,dayDifference) < Takedown_End_Date)
-											{
-												input.Lots_Expected = input.Initial_Takedown + contdMultiple * input.Continued_Takedown;
-											}
-											if(Takedown_End_Date <= today)
-											{
-												input.Lots_Expected = input.Total_Lot_Obligation;
-											}
-										}
+						// Expected-lot calculation is owned by the first action in this workflow.
+										// Original action body is retained in the Second Closing migration backup.
+										secondClosingCalculationOwnedByFirstAction = true;
 					)
 					}
 					actions 
 					{
 					on click
 					(
-						if(Takedown_Start_Date != null)
-										{
-											takedownLength = ceil((input.Total_Lot_Obligation - input.Initial_Takedown) / input.Continued_Takedown) * input.Continued_Takedown_Delay_Days + input.Initial_Delay_Days;
-											//tdStart = Takedown_Start_Date;
-											input.Takedown_End_Date = input.Takedown_Start_Date.addDay(takedownLength);
-										}
+						// Expected-lot calculation is owned by the first action in this workflow.
+										// Original action body is retained in the Second Closing migration backup.
+										secondClosingCalculationOwnedByFirstAction = true;
 					)
 					}
 					actions  (Status == "Active" || Status == "Behind")
 					{
 					on click
 					(
-						lotsSold = input.Lots_Sold;
-										lotsExpected = input.Lots_Expected;
-										input.Takedown_Schedule_Code = input.Subdivisions.Subdivision_Code + ' - ' + input.Builder1.Builder_Name;
-										if(lotsSold < lotsExpected)
-										{
-											input.Status = "Behind";
-										}
-										if(lotsSold >= input.Total_Lot_Obligation)
-										{
-											input.Status = "Completed";
-											input.Completion_Percent = 100;
-										}
-										if(lotsSold < input.Total_Lot_Obligation)
-										{
-											input.Completion_Percent = lotsSold / input.Total_Lot_Obligation * 100;
-										}
+						// Expected-lot calculation is owned by the first action in this workflow.
+										// Original action body is retained in the Second Closing migration backup.
+										secondClosingCalculationOwnedByFirstAction = true;
 					)
 					}
 				}
@@ -566,8 +635,8 @@
 					{
 					on click
 					(
-						//get latest Contract Version by created date
-										contractFiles = Contract_Version[Contract1 == input.ID && Email_Attachment == TRUE].File_field1.getAll();
+						//get latest Attachment by created date
+										contractFiles = Attachment[Contract1 == input.ID && Email_Attachment == TRUE].File_field1.getAll();
 										minApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == "Not Sent"].minimum(Approval_Sequence);
 										for each  contractApproval in input.Approvals1
 										{
@@ -577,7 +646,7 @@
 											{
 												sendmail
 												[
-													from :"Contracts@wbdevelopment.com"
+													from :"Notifications@wbdevelopment.com"
 													to :contractApproval.Approver
 													subject :input.Builder.Builder_Name + " " + contractApproval.Type1 + " for " + input.Subdivision1.Subdivision_Name + " is awaiting your approval."
 													message :emailBody + "<p>Subdivision: " + input.Subdivision1.Subdivision_Name + "</p>" + "<p>Buyer: " + input.Builder.Builder_Name + "</p>" + "<p>Initiated by: " + input.Modified_User + "</p>"
@@ -635,8 +704,8 @@
 					{
 					on click
 					(
-						//get latest Contract Version by created date
-										contractFile = Contract_Version[Contract1 == input.ID].File_field1 sort by Date_field1 desc;
+						//get latest Attachment by created date
+										contractFile = Attachment[Contract1 == input.ID].File_field1 sort by Date_field1 desc;
 										minApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == "Not Sent"].minimum(Approval_Sequence);
 										for each  contractApproval in input.Approvals1
 										{
@@ -645,7 +714,7 @@
 											{
 												sendmail
 												[
-													from :"Contracts@wbdevelopment.com"
+													from :"Notifications@wbdevelopment.com"
 													to :contractApproval.Approver
 													subject :input.Builder.Builder_Name + " contract for " + input.Subdivision1.Subdivision_Name + " is awaiting your approval."
 													message :emailBody + "<p>Subdivision: " + input.Subdivision1.Subdivision_Name + "</p>" + "<p>Buyer: " + input.Builder.Builder_Name + "</p>" + "<p>Initiated by: " + input.Modified_User + "</p>"
@@ -696,125 +765,16 @@
 					{
 					on click
 					(
-						// Create the Budget
-										newBudget = insert into Add_Budget
-										[
-											Subdivision1=input.ID
-											Added_User=zoho.loginuser
-											Budget_Type="Development"
-											Budget_Name=input.Subdivision_Code + " - " + zoho.currentdate
-											Subdivision_Code=input.Subdivision_Code
-										];
-										// Add 8 approval rows to the new Budget
-										newBudgetRec = Add_Budget[ID == newBudget];
-										// Construction - VP
-										row1 = Add_Budget.Approvals();
-										row1.Approver="VP@wbdevelopment.com";
-										row1.Title="VP";
-										row1.Status="Not Sent";
-										row1.Type1="Construction";
-										row1.Sort_Order=1;
-										// Construction - CFO
-										row2 = Add_Budget.Approvals();
-										row2.Approver="jking@wbdevelopment.com";
-										row2.Title="CFO";
-										row2.Status="Not Sent";
-										row2.Type1="Construction";
-										row2.Sort_Order=2;
-										// Construction - COO
-										row3 = Add_Budget.Approvals();
-										row3.Approver="dreinke@wbdevelopment.com";
-										row3.Title="COO";
-										row3.Status="Not Sent";
-										row3.Type1="Construction";
-										row3.Sort_Order=3;
-										// Development - VP
-										row5 = Add_Budget.Approvals();
-										row5.Approver="VP@wbdevelopment.com";
-										row5.Title="VP";
-										row5.Status="Not Sent";
-										row5.Type1="Development";
-										row5.Sort_Order=1;
-										// Development - CFO
-										row6 = Add_Budget.Approvals();
-										row6.Approver="jking@wbdevelopment.com";
-										row6.Title="CFO";
-										row6.Status="Not Sent";
-										row6.Type1="Development";
-										row6.Sort_Order=2;
-										// Development - COO
-										row7 = Add_Budget.Approvals();
-										row7.Approver="dreinke@wbdevelopment.com";
-										row7.Title="COO";
-										row7.Status="Not Sent";
-										row7.Type1="Development";
-										row7.Sort_Order=3;
-										approvalRows = Collection();
-										approvalRows.insert(row1);
-										approvalRows.insert(row2);
-										approvalRows.insert(row3);
-										approvalRows.insert(row5);
-										approvalRows.insert(row6);
-										approvalRows.insert(row7);
-										newBudgetRec.Approvals.insert(approvalRows);
-										// Backfill / enforce Sort_Order on all Budget Approval rows
-										for each  budgetApproval in Budget_Approvals[ID != 0]
+						creationResponse = thisapp.createBudgetFromSubdivision(input.ID.toString(),"create");
+										creationResult = creationResponse.toMap();
+										if(creationResult.get("success") == true && creationResult.get("verified") == true)
 										{
-											approvalTitle = ifnull(budgetApproval.Title,"").trim().toUpperCase();
-											if(approvalTitle == "VP")
-											{
-												budgetApproval.Sort_Order=1;
-											}
-											else if(approvalTitle == "CFO")
-											{
-												budgetApproval.Sort_Order=2;
-											}
-											else if(approvalTitle == "COO")
-											{
-												budgetApproval.Sort_Order=3;
-											}
-											else if(approvalTitle == "CEO")
-											{
-												budgetApproval.Sort_Order=4;
-											}
+											success message "Budget successfully created for " + input.Subdivision_Name;
 										}
-										// Fetch all Budget Categories where Template_Item = TRUE
-										budgetCategories = Budget_Category[Template_Item == true];
-										for each  category in budgetCategories
+										else
 										{
-											// Create a new Budget Category linked to the new Budget
-											newBudgetCategory = insert into Budget_Category
-											[
-												Budget_Category_Name=category.Budget_Category_Name
-												Budget=newBudget
-												Category_Code=category.Category_Code
-												Template_Item=false
-												Added_User=zoho.loginuser
-												Deparment=category.Deparment
-												Reimbursements=category.Reimbursements
-											];
-											// Fetch all Budget Items where Template_Item=TRUE and Category = Budget_Category.Name
-											budgetItems = Budget_Item[Template_Item == true && Category = category.Budget_Category_Name];
-											for each  item in budgetItems
-											{
-												// Create a new Budget Item linked to the new Budget Category
-												newBudgetItem = insert into Budget_Item
-												[
-													Item_Name=item.Item_Name
-													Department=item.Department
-													Category=item.Category
-													Dept_Code=item.Dept_Code
-													Cost_Code=item.Cost_Code
-													Budget=newBudget
-													Budget_Category=newBudgetCategory
-													Template_Item=false
-													Added_User=zoho.loginuser
-													Budget_Code=input.Subdivision_Code + "-" + item.Cost_Code
-													Department=item.Department
-												];
-											}
+											info ifnull(creationResult.get("error"),"Budget creation needs review. Check the subdivision before creating again.");
 										}
-										success message "Budget successfully created for " + input.Subdivision_Name;
 					)
 					}
 				}
@@ -1129,7 +1089,7 @@
 										//Send mail to all email address in the list, including the downloaded PDF file as an attachment.
 										sendmail
 										[
-											from :"contracts@wbdevelopment.com"
+											from :"Notifications@wbdevelopment.com"
 											to :"rbelliveau@wbdevelopment.com"
 											subject :"Budget"
 											message :"hey33"
@@ -1470,6 +1430,111 @@
 												rows.insert(row7);
 												rows.insert(row8);
 												b.Approvals.insert(rows);
+											}
+										}
+					)
+					}
+				}
+			}
+			Diagnose_HeavyJob_Cost_Sy as "Diagnose_HeavyJob_Cost_Sync"
+			{
+				type =  functions
+				form = Add_Budget
+				execution type = for each record	
+				on start
+				{
+					actions 
+					{
+					on click
+					(
+						// ================================================
+										// Script: Analytics → Budget_Import_Item Upsert
+										// What it does:
+										// - Exports selected columns from a Zoho Analytics view.
+										// - Builds a list of Subdivision codes that have Budgets.
+										// - For each exported row whose JobCode is in that list:
+										//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+										//     • Else insert a new Budget_Import_Item with mapped fields.
+										// Notes:
+										// - Ensure TotalActualCost is numeric (normalize if needed).
+										// - Requires valid Analytics connection (zoho_analytics_connection).
+										// ================================================
+										portalId = "700737166";
+										orgId = "700732567";
+										workspaceId = "2107789000000003001";
+										viewId = "2107789000023717814";
+										// === 2) Analytics request setup ===
+										headers = Map();
+										headers.put("ZANALYTICS-ORGID",orgId);
+										config = Map();
+										config.put("responseFormat","json");
+										cols = List();
+										cols.add("Major Code");
+										cols.add("H.Minor Code");
+										cols.add("TotalActualCost");
+										cols.add("J.JobCodeFinal");
+										cols.add("H.JobCode");
+										cols.add("CostCodeDescription");
+										config.put("selectedColumns",cols);
+										// === 3) Kick off the async export job ===
+										params = Map();
+										params.put("CONFIG",config.toString());
+										resp = invokeurl
+										[
+											url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+											type :GET
+											parameters:params
+											headers:headers
+											connection:"zoho_analytics_connection"
+										];
+										// === 4) Short delay to let the job initialize ===
+										getUrl("https://postman-echo.com/delay/8");
+										// === 5) Grab the jobId ===
+										jobId = resp.get("data").get("jobId");
+										// === 6) Fetch the completed JSON export ===
+										dataResp = invokeurl
+										[
+											url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+											type :GET
+											headers:headers
+											connection:"zoho_analytics_connection"
+										];
+										// === 7) Parse the rows array ===
+										rows = dataResp.get("data");
+										// === 8) Loop through every analytics row and update each project ===
+										extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+										for each  rec in rows
+										{
+											//get subdiv code
+											subdiv = External_System_Mapping[External_Code == rec.get("H.JobCode") && External_System == "HeavyJob"];
+											budgCheck = Add_Budget[Subdivision_Code == subdiv.Subdivision1.Subdivision_Code];
+											//make item if budget exists
+											if(budgCheck.count() > 0)
+											{
+												codeBuild = rec.get("H.JobCode") + "-HJ-" + rec.get("H.Minor Code");
+												budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "HeavyJob"];
+												if(budgimpItem.count() == 1 && budgimpItem.Cost != rec.get("TotalActualCost"))
+												{
+													budgimpItem.Cost=rec.get("TotalActualCost");
+													budgimpItem.Updated_Date=zoho.currentdate;
+													budgimpItem.Data_Source="HeavyJob";
+												}
+												if(budgimpItem.count() == 0)
+												{
+													impItem = insert into Budget_Import_Item
+													[
+														Data_Source="HeavyJob"
+														Cost=rec.get("TotalActualCost")
+														Cost_Code_Description=rec.get("CostCodeDescription")
+														Code=codeBuild
+														Subdivision_Code=subdiv.Subdivision1.Subdivision_Code
+														Major_Code=rec.get("Major Code")
+														Minor_Code=rec.get("H.Minor Code")
+														Added_User=zoho.loginuser
+														Updated_Date=zoho.currentdate
+													];
+													//CREATE MILESTONE IN CREATOR
+												}
 											}
 										}
 					)

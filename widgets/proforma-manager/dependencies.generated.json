@@ -16,6 +16,16 @@
       "source": "customApis object"
     },
     {
+      "name": "Get_Proforma_Approval_PDF",
+      "config_key": "approvalPdfApiCandidates",
+      "source": "candidate array"
+    },
+    {
+      "name": "Get_Proforma_Approval_PDF1",
+      "config_key": "approvalPdfApiCandidates",
+      "source": "candidate array"
+    },
+    {
       "name": "Get_Proforma_Attachment_Preview",
       "config_key": "getProformaAttachmentPreview",
       "source": "customApis object"
@@ -61,14 +71,19 @@
       "source": "customApis object"
     },
     {
-      "name": "Save_PF",
-      "config_key": "save",
+      "name": "Review_PF",
+      "config_key": "aiReview",
       "source": "customApis object"
     },
     {
-      "name": "Save_PF1",
+      "name": "Save_PF",
       "config_key": "saveApiCandidates",
       "source": "candidate array"
+    },
+    {
+      "name": "Save_PF1",
+      "config_key": "save",
+      "source": "customApis object"
     },
     {
       "name": "SavePF",
@@ -86,19 +101,27 @@
       "source": "customApis object"
     },
     {
+      "name": "Update_Assigned_To_Me",
+      "config_key": "updateAssignedToMe",
+      "source": "customApis object"
+    },
+    {
       "name": "Update_Proforma_Approval_Recipient",
       "config_key": "updateProformaApprovalRecipient",
       "source": "customApis object"
     }
   ],
   "forms_referenced": [
+    "Add_Budget",
     "Add_Pro_Forma",
+    "Additional_Items",
+    "Attachment",
     "Budget_Approvals",
+    "Budget_Category",
     "Builder",
     "Company",
     "Construction_Curve",
     "Contract",
-    "Contract_Version",
     "LOI_Worksheet",
     "Land_Installments",
     "Lots",
@@ -107,42 +130,39 @@
     "Proforma_Phase",
     "Project",
     "Property",
+    "Settings",
+    "Subdivision",
     "User_Access"
   ],
   "reports_referenced": [
     "All_Additional_Items",
+    "All_Attachments",
     "All_Budget_Approvals",
+    "All_Budget_Categories",
+    "All_Budget_Items",
+    "All_Budgets",
     "All_Builders",
     "All_Companies",
     "All_Construction_Cost_Curves",
-    "All_Contract_Versions",
     "All_Land_Installments",
     "All_Pro_Formas",
     "All_Pro_Formas_All_Fields",
     "All_Proforma_Months",
     "All_Proforma_Phases",
+    "All_Projects",
     "All_Property",
+    "All_Subdivisions",
     "LOI_Worksheet_Report",
     "Proforma_Item_Report"
   ],
   "sdk_calls": [
-    "ZOHO.CREATOR.API",
-    "ZOHO.CREATOR.API.addRecord",
-    "ZOHO.CREATOR.API.deleteRecord",
-    "ZOHO.CREATOR.API.getAllRecords",
-    "ZOHO.CREATOR.API.invokeCustomApi",
-    "ZOHO.CREATOR.API.readFile",
-    "ZOHO.CREATOR.API.updateRecord",
-    "ZOHO.CREATOR.API.uploadFile",
-    "ZOHO.CREATOR.DATA",
-    "ZOHO.CREATOR.DATA.invokeCustomApi",
-    "ZOHO.CREATOR.UTIL",
-    "ZOHO.CREATOR.UTIL.getInitParams",
-    "ZOHO.CREATOR.getInitParams",
-    "ZOHO.CREATOR.init"
+    "ZOHO.CREATOR.DATA.getRecords",
+    "ZOHO.CREATOR.FILE.readFile",
+    "ZOHO.CREATOR.UTIL"
   ],
   "external_domains": [
     "cdn.jsdelivr.net",
-    "static.zohocdn.com"
+    "static.zohocdn.com",
+    "www.w3.org"
   ]
 }

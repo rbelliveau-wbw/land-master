@@ -95,7 +95,7 @@
                  			return result.toString();
                  		}
                  		// Call the existing function that generates the Writer document,
-                 		// creates/reuses the Acquisition Contract, and attaches Contract_Version.
+                 		// creates/reuses the Acquisition Contract, and attaches Attachment.
                  		contractResultText = thisapp.Create_LOI_Contract(proformaId);
                  		contractResult = contractResultText.toMap();
                  		contractSuccess = contractResult.get("success");

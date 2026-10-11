@@ -15,7 +15,7 @@ string getContractAttachmentPreview(string contractId, string attachmentId)
 	}
 	try
 	{
-		attachmentRows = Contract_Version[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+		attachmentRows = Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
 		if(attachmentRows.count() == 0)
 		{
 			response.put("ok",false);

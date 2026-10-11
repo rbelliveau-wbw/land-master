@@ -90,7 +90,7 @@ assert.match(budgetSource,/\.phase-comment,\.phase-attachment\{width:28\.75px;he
 assert.match(budgetSource,/function budgetAttachmentButton\(b,label\)/,'Budget phases have attachment controls');
 assert.match(budgetSource,/function budgetAttachmentActionIcon\(\).*21\.44 11\.05/s,'Budget attachment actions use the Legal paperclip icon');
 assert.match(budgetSource,/budgetAttachmentButton\(b, phaseName\(b\)\) \+\s*budgetCommentButton\("Budget"/,'Budget phase actions order attachments before comments');
-assert.match(budgetSource,/function loadBudgetAttachments\(budgetId, force\)/,'Budget attachment counts load only for the opened parent from Contract_Version records');
+assert.match(budgetSource,/function loadBudgetAttachments\(budgetId, force\)/,'Budget attachment counts load only for the opened parent from Attachment records');
 assert.match(budgetSource,/function budgetAttachmentBadge\(id\).*status===\"loaded\"/,'Budget attachment badges preserve unknown/loading/error until a complete parent read');
 assert.match(budgetSource,/openBudgetAttachmentModal\(attachment\.dataset\.budgetAttachments,attachment\)/,'Budget main-list attachment buttons open the selected phase modal');
 assert.match(budgetSource,/\.ptable tbody td:first-child\{[^}]*overflow:visible/,'Budget action badges can render beyond the action cell');

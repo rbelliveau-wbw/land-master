@@ -26,7 +26,7 @@ for(const kind of ['attachment','approver']){
 
 {
   const h=await ready({realDOM:true}),row={ID:NEW,Contract1:{ID},Email_Attachment:'false',File_Upload:'fixture.pdf'};
-  h.reports.All_Contract_Versions.push(row);h.c.S.versions.push({...row});h.c.showAttachmentsModal(ID);
+  h.reports.All_Attachments.push(row);h.c.S.versions.push({...row});h.c.showAttachmentsModal(ID);
   let sends=0;h.api.updateRecordById=async()=>{sends++;throw new Error('Connection lost after sending');};
   await h.c.toggleEmailAttach(NEW,ID);await drain();
   assert.equal(h.c.contractHasReviews(),true);assert.equal(h.c.canEdit(),false);
@@ -37,7 +37,7 @@ console.log('PASS actual attachment/approver Email switches: Creator string chec
 
 {
   const h=await ready({realDOM:true}),row={ID:NEW,Contract1:{ID},Email_Attachment:'No',File_Upload:'fixture.pdf'};
-  h.reports.All_Contract_Versions.push(row);h.c.S.versions=await h.c.sdkGetAll(h.c.CFG.reports.versions);h.c.showAttachmentsModal(ID);
+  h.reports.All_Attachments.push(row);h.c.S.versions=await h.c.sdkGetAll(h.c.CFG.reports.versions);h.c.showAttachmentsModal(ID);
   const native=h.api.updateRecordById;
   h.api.updateRecordById=async config=>{const reply=await native(config);row.Email_Attachment=config.payload.data.Email_Attachment==='true'?'Yes':'No';return reply;};
   await h.c.toggleEmailAttach(NEW,ID);

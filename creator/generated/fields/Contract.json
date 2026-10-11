@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T14:25:00-05:00",
+  "generated_at": "2026-10-11T14:09:23.200257+00:00",
   "form": "Contract",
   "display_name": "Add Contract",
   "fields": [
@@ -331,7 +331,7 @@
       "link_name": "Contract_Versions",
       "display_name": "Contract Versions",
       "type": "grid",
-      "values": "Contract_Version.ID",
+      "values": "Attachment.ID",
       "display_format": null,
       "initial_value": null,
       "private": false

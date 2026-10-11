@@ -46,7 +46,7 @@ for (const [environment, mapping] of Object.entries(envs)) {
   }
 }
 
-for (const required of ['Add_Pro_Forma', 'Add_Budget', 'Contract', 'Contract_Version', 'Subdivision', 'Company', 'User_Access']) {
+for (const required of ['Add_Pro_Forma', 'Add_Budget', 'Contract', 'Attachment', 'Subdivision', 'Company', 'User_Access']) {
   if (!formSet.has(required)) warnings.push(`Expected core form not parsed from current export: ${required}`);
 }
 errors.push(...developmentReleaseErrors(root, widgets.map(widget => widget.slug), envs.development));

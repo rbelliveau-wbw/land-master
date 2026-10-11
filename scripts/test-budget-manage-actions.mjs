@@ -15,7 +15,7 @@ assert.match(widget,/\.budget-row-menu-pop\{display:none;position:fixed;z-index:
 assert.match(widget,/\.budget-row-menu-item:disabled,.budget-row-menu-item\.is-off\{opacity:\.48;cursor:default/,'disabled actions retain a normal cursor');
 assert.doesNotMatch(widget,/\.budget-row-menu-item:disabled[^}]*cursor:not-allowed/,'disabled actions do not show the prohibited cursor');
 assert.match(widget,/Delete_Archive_Budgets/,'the widget reads the Budget delete/archive permission');
-for(const label of ['Budget items','Budget categories','Budget month schedules','Approval records','Budget modifications','Attachments and contract versions','Comments']) assert.ok(widget.includes('"'+label+'"'),'the delete modal lists '+label);
+for(const label of ['Budget items','Budget categories','Budget month schedules','Approval records','Budget modifications','Attachments','Comments']) assert.ok(widget.includes('"'+label+'"'),'the delete modal lists '+label);
 
 assert.match(access,/row\.Delete_Archive_Budgets == true/,'server access payload reads the new boolean');
 assert.match(access,/result\.put\("budgetDeleteArchive",budgetDeleteArchive\)/,'server access payload exposes the new boolean');
@@ -23,7 +23,7 @@ assert.match(backend,/User_Access\[User == zoho\.loginuser\]/,'the mutation func
 assert.match(backend,/accessRow\.ID\.toString\(\) != accessIdText/,'the supplied access id must belong to the signed-in user');
 assert.match(backend,/accessRow\.Delete_Archive_Budgets != true/,'the mutation function enforces permission server-side');
 assert.match(backend,/budgetRow\.Archived=archiveValue/,'archive and restore persist Add_Budget.Archived');
-for(const form of ['Budget_Approvals','Budget_Modification','Budget_Item','Budget_Category','Budget_Months','Contract_Version','Comment_Log']) assert.ok(backend.includes('delete from '+form+'['),'delete cascades '+form);
+for(const form of ['Budget_Approvals','Budget_Modification','Budget_Item','Budget_Category','Budget_Months','Attachment','Comment_Log']) assert.ok(backend.includes('delete from '+form+'['),'delete cascades '+form);
 assert.ok(backend.indexOf('delete from Budget_Approvals')<backend.indexOf('delete from Budget_Modification'),'approval children are removed before modification parents');
 assert.ok(backend.indexOf('delete from Budget_Item')<backend.indexOf('delete from Budget_Category'),'items are removed before categories');
 assert.ok(backend.indexOf('delete from Comment_Log')<backend.indexOf('delete from Add_Budget'),'children are removed before the budget parent');

@@ -1,0 +1,15 @@
+{
+  "custom_apis": [],
+  "forms_referenced": [
+    "Builder",
+    "Forecast",
+    "Subdivision"
+  ],
+  "reports_referenced": [],
+  "sdk_calls": [
+    "ZOHO.CREATOR.init"
+  ],
+  "external_domains": [
+    "static.zohocdn.com"
+  ]
+}

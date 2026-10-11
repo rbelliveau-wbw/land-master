@@ -110,14 +110,14 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		delete from Budget_Months[ID == childId];
 	}
 	deleteIds = List();
-	for each attachmentRow in Contract_Version[Budget == budgetKey]
+	for each attachmentRow in Attachment[Budget == budgetKey]
 	{
 		deleteIds.add(attachmentRow.ID);
 	}
-	deleted.put("Contract_Version",deleteIds.size());
+	deleted.put("Attachment",deleteIds.size());
 	for each childId in deleteIds
 	{
-		delete from Contract_Version[ID == childId];
+		delete from Attachment[ID == childId];
 	}
 	deleteIds = List();
 	for each commentRow in Comment_Log[Budget == budgetKey]

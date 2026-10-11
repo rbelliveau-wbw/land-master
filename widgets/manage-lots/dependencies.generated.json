@@ -1,32 +1,25 @@
 {
   "custom_apis": [],
   "forms_referenced": [
+    "Additional_Items",
     "Builder",
     "Builder_Takedown",
     "Contract",
     "Lots",
-    "Settings",
-    "Subdivision",
-    "Takedown_Template",
-    "Additional_Items"
+    "Subdivision"
   ],
   "reports_referenced": [
     "All_Active_Lots_Contracts_View",
+    "All_Active_Lots_List_View",
+    "All_Additional_Items",
     "All_Builder_Takedowns",
     "All_Builders",
     "All_Contracts1",
     "All_Lots_All_Fields",
     "All_Subdivisions",
-    "All_Active_Lots_List_View",
-    "All_Takedown_Templates",
-    "All_Additional_Items"
+    "All_Takedown_Templates"
   ],
-  "sdk_calls": [
-    "ZOHO.CREATOR.UTIL.getInitParams",
-    "ZOHO.CREATOR.DATA.getRecords",
-    "ZOHO.CREATOR.DATA.getRecordCount",
-    "ZOHO.CREATOR.DATA.addRecords"
-  ],
+  "sdk_calls": [],
   "external_domains": [
     "js.zohostatic.com"
   ]

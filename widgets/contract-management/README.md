@@ -3,6 +3,12 @@
 
 Contract management and token-based LOI legal review.
 
+Release `1.61.45` uses the shared `Attachment` form and `All_Attachments` report.
+The `Contract1`, `File_field1`, `Email_Attachment` and
+`Contract.Contract_Versions` field names stay unchanged. Creator Development
+updates require the user's promotion; see the
+[rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
 Release `1.61.41` uses Creator string decision-box values for Archive/Unarchive,
 keeps the row visible when its archive state is not saved, and adds the modern
 Territory multi-select to the main Contracts list/board. Existing access and
@@ -207,7 +213,7 @@ The Internal Approvals modal's **Send for Approvals** button calls the Custom AP
 Both APIs expose the Deluge function `string Send_Contract_Approvals(string contractId)`
 (`creator/functions/Send_Contract_Approvals.dg`), which sends the styled email from
 `Send_Contract_Approval_Email` to every approver whose Email switch is on and who is still
-Not Sent, attaches every Contract_Version flagged `Email_Attachment`, flips those rows to
+Not Sent, attaches every Attachment flagged `Email_Attachment`, flips those rows to
 Awaiting Approval, stamps `Last/Next_Reminder_Date`, and moves the contract to Awaiting
 Approvals. The daily `sendApprovalReminders` job re-sends the same email when a row's
 `Next_Reminder_Date` arrives. The button is enabled only when at least one approver is

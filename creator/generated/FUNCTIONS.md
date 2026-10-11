@@ -1,23 +1,25 @@
 # Custom Deluge Functions
 
+August 6, 2026 baseline with the October 11 Attachment overlay. See [snapshot provenance](application.json).
+
 | Function | Returns | Parameters | Detected forms |
 | --- | --- | --- | --- |
 | applyBudgetTrackFinalState | string | 3 | Add_Budget, Budget_Category, Budget_Item |
 | buildForecastManagerSummary | string | 1 | Forecast, Subdivision, Takedown_Schedule |
 | Claim_Proforma | string | 2 | Add_Pro_Forma, User_Access |
-| createBudgetAttachmentRecord | string | 1 | Add_Budget, Contract_Version |
+| createBudgetAttachmentRecord | string | 1 | Add_Budget, Attachment |
 | createBuilderTakedown | void | 1 | Builder_Takedown, Takedown_Template |
 | createContract | void | 1 | Builder_Takedown, Subdivision |
 | createTaxtable | void | 1 |  |
 | createTaxTemplate | void | 1 |  |
-| Create_LOI_Contract | string | 1 | Add_Pro_Forma, Company, Contract, Contract_Version |
+| Create_LOI_Contract | string | 1 | Add_Pro_Forma, Attachment, Budget_Approvals, Contract, Contract_Actions, LOI_Worksheet |
 | defaultFunction | void | 1 |  |
-| deleteBudgetAttachment | string | 2 | Contract_Version |
-| exportBudgetSnapshot | string | 2 | Add_Budget, Budget_Approvals, Budget_Category, Budget_Item, Contract_Version |
+| deleteBudgetAttachment | string | 2 | Attachment |
+| exportBudgetSnapshot | string | 2 | Add_Budget, Attachment, Budget_Approvals, Budget_Category, Budget_Item |
 | forLoop | list | 2 |  |
 | formStyle | string | 0 |  |
 | generateApprovedBudgetPDF | string | 1 |  |
-| getBudgetAttachmentPreview | string | 2 | Contract_Version |
+| getBudgetAttachmentPreview | string | 2 | Attachment |
 | getUserAccess | string | 1 | Add_Pro_Forma, User_Access |
 | handleApprovalAction | string | 4 | Add_Budget, Budget_Approvals, Budget_Category, Budget_Item |
 | Handle_Proforma_Approval_Action | map | 4 | Add_Pro_Forma, Budget_Approvals |
@@ -55,3 +57,12 @@
 | Update_Proforma_Approval_Recipient | map | 1 | Budget_Approvals |
 | utilitiesconvertIntegerToCurrency | string | 1 |  |
 | utilitiesmakeRange | list | 2 |  |
+| createContractAttachmentRecord | string | 1 | Attachment, Contract |
+| createProformaAttachmentRecord | string | 1 | Add_Pro_Forma, Attachment |
+| deleteContractAttachment | string | 2 | Attachment, Contract |
+| deleteProformaAttachment | string | 2 | Attachment |
+| getContractAttachmentPreview | string | 2 | Attachment |
+| getProformaAttachmentPreview | string | 2 | Attachment |
+| manageBudget | string | 3 | Add_Budget, Attachment, Budget_Approvals, Budget_Category, Budget_Import_Item, Budget_Item |
+| Send_Contract_Approvals | string | 1 | Attachment, Contract, Contract_Approvals, User_Access |
+| Send_Contract_Approval_Email | map | 3 | Attachment, Contract, Contract_Approvals, Subdivision |

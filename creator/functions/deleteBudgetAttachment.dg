@@ -7,14 +7,14 @@
                  	{
                  		return "Missing Budget ID or attachment ID.";
                  	}
-                 	attachmentRows = Contract_Version[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+                 	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
                  	if(attachmentRows.count() == 0)
                  	{
                  		return "Attachment record was not found for this budget.";
                  	}
                  	try 
                  	{
-                 		delete from Contract_Version[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+                 		delete from Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
                  		return "Attachment deleted.";
                  	}	catch (deleteError)
                  	{

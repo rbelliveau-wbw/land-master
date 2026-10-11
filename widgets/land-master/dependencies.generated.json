@@ -35,18 +35,16 @@
     "All_Takedown_Schedules"
   ],
   "sdk_calls": [
-    "ZOHO.CREATOR.API",
-    "ZOHO.CREATOR.API.addRecord",
-    "ZOHO.CREATOR.API.deleteRecord",
-    "ZOHO.CREATOR.API.getAllRecords",
-    "ZOHO.CREATOR.API.invokeCustomApi",
-    "ZOHO.CREATOR.API.updateRecord",
-    "ZOHO.CREATOR.UTIL.navigateParentURL",
-    "ZOHO.CREATOR.appName",
-    "ZOHO.CREATOR.init"
+    "ZOHO.CREATOR.DATA",
+    "ZOHO.CREATOR.DATA.addRecords",
+    "ZOHO.CREATOR.DATA.deleteRecords",
+    "ZOHO.CREATOR.DATA.invokeCustomApi",
+    "ZOHO.CREATOR.DATA.updateRecordById",
+    "ZOHO.CREATOR.UTIL.navigateParentURL"
   ],
   "external_domains": [
     "static.zohocdn.com",
-    "www.w3.org"
+    "www.w3.org",
+    "…"
   ]
 }

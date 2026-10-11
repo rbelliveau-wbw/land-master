@@ -1,0 +1,27 @@
+{
+  "custom_apis": [],
+  "forms_referenced": [
+    "Builder",
+    "Construction_Curve",
+    "Contract",
+    "Forecast",
+    "Lots",
+    "Project",
+    "Settings"
+  ],
+  "reports_referenced": [
+    "All_Construction_Curves",
+    "All_Contract_Actions",
+    "All_Contract_Approvals",
+    "All_Pro_Formas",
+    "All_Settings"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.DATA.invokeCustomApi",
+    "ZOHO.CREATOR.UTIL",
+    "ZOHO.CREATOR.UTIL.getInitParams"
+  ],
+  "external_domains": [
+    "static.zohocdn.com"
+  ]
+}

@@ -12,7 +12,7 @@ string getProformaAttachmentPreview(string proformaId, string attachmentId)
 	}
 	try
 	{
-		attachmentRows = Contract_Version[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
+		attachmentRows = Attachment[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
 		if(attachmentRows.count() == 0)
 		{
 			response.put("ok",false);

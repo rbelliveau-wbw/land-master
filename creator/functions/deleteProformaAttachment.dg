@@ -7,18 +7,19 @@ string deleteProformaAttachment(string proformaId, string attachmentId)
 	{
 		return "Missing Pro Forma ID or attachment ID.";
 	}
-	attachmentRows = Contract_Version[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
+	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
 	if(attachmentRows.count() == 0)
 	{
 		return "Attachment record was not found for this Pro Forma.";
 	}
 	try
 	{
-		delete from Contract_Version[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
+		delete from Attachment[ID == vAttachmentId.toLong() && Pro_Forma == vProformaId.toLong()];
 		return "Attachment deleted.";
 	}
 	catch (deleteError)
 	{
 		return "Attachment deletion failed: " + deleteError.toString();
 	}
+	return "xd";
 }

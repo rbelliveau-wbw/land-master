@@ -6,6 +6,28 @@ const root = process.cwd();
 const widgets = JSON.parse(fs.readFileSync(path.join(root, 'manifests/widgets.json'), 'utf8')).widgets;
 const errors = [];
 
+// These Creator component link names were renamed. Check deployable source only:
+// immutable releases and exported historical snapshots retain their original names.
+// The Contract.Contract_Versions subform is a separate, unchanged field.
+function verifyAttachmentLinkNames(directory, extensions) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      verifyAttachmentLinkNames(file, extensions);
+    } else if (extensions.has(path.extname(file))) {
+      const source = fs.readFileSync(file, 'utf8');
+      const retiredLink = source.match(/\b(?:Contract_Version|All_Contract_Versions)\b/);
+      if (retiredLink) {
+        errors.push(`${path.relative(root, file)}: retired Creator link name ${retiredLink[0]}; use Attachment / All_Attachments.`);
+      }
+    }
+  }
+}
+for (const widget of widgets) {
+  verifyAttachmentLinkNames(path.join(root, 'widgets', widget.slug, 'src'), new Set(['.html', '.js', '.json']));
+}
+verifyAttachmentLinkNames(path.join(root, 'creator/functions'), new Set(['.dg']));
+
 for (const widget of widgets) {
   const htmlPath = path.join(root, widget.source_entry);
   const html = fs.readFileSync(htmlPath, 'utf8');
@@ -105,7 +127,7 @@ for (const required of [
 }
 for (const [file, required] of [
   ['createContractAttachmentRecord.dg', ['Contract1=vContractId.toLong()', 'Email_Attachment=true']],
-  ['deleteContractAttachment.dg', ['Contract1 == vContractId.toLong()', 'delete from Contract_Version']],
+  ['deleteContractAttachment.dg', ['Contract1 == vContractId.toLong()', 'delete from Attachment']],
   ['getContractAttachmentPreview.dg', ['Contract1 == vContractId.toLong()', 'zoho.encryption.base64Encode', 'response.put("base64",encodedFile)']]
 ]) {
   const source = fs.readFileSync(path.join(root, 'creator/functions', file), 'utf8');

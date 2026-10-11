@@ -10,7 +10,7 @@ string deleteContractAttachment(string contractId, string attachmentId)
 		response.put("message","Missing Contract ID or attachment ID.");
 		return response.toString();
 	}
-	attachmentRows = Contract_Version[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+	attachmentRows = Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
 	if(attachmentRows.count() == 0)
 	{
 		response.put("ok",false);
@@ -26,7 +26,7 @@ string deleteContractAttachment(string contractId, string attachmentId)
 	}
 	try
 	{
-		delete from Contract_Version[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+		delete from Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
 		response.put("ok",true);
 		response.put("attachmentId",vAttachmentId);
 		response.put("message","Attachment deleted.");

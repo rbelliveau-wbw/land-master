@@ -13,7 +13,7 @@ string Send_Contract_Approvals(string contractId)
 	    What it does, per approver whose Email switch is on and who is still
 	    Not Sent:
 	      - sends the styled approval email (Send_Contract_Approval_Email), with
-	        every Contract_Version whose Email_Attachment is checked attached
+	        every Attachment whose Email_Attachment is checked attached
 	      - Status -> Awaiting Approval, Reject_Reason cleared,
 	        Last/Next_Reminder_Date stamped
 	    Then Contract.Status -> Awaiting Approvals and Current_Approver -> the
@@ -179,7 +179,7 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("roles",roles);
 		return resp.toString();
 	}
-	attachedCount = Contract_Version[Contract1 == cid && Email_Attachment == true].count();
+	attachedCount = Attachment[Contract1 == cid && Email_Attachment == true].count();
 	if(attachedCount == 0)
 	{
 		resp.put("success",false);

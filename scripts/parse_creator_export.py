@@ -84,18 +84,21 @@ def parse_forms(lines: list[str], start: int, end: int) -> list[dict[str, Any]]:
             starts.append((index, match.group(1)))
 
     forms: list[dict[str, Any]] = []
+    field_declaration = re.compile(
+        r"^\s*(?:(?:must have unique|must have|unique)\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*$"
+    )
     for position, (start_line, name) in enumerate(starts):
         stop_line = starts[position + 1][0] if position + 1 < len(starts) else end
         block = lines[start_line:stop_line]
-        text = "\n".join(block)
-        display_match = re.search(r'displayname\s*=\s*"([^"]+)"', text)
+        header_end = next((
+            index for index in range(1, len(block) - 1)
+            if field_declaration.match(block[index]) and block[index + 1].strip() == "("
+        ), len(block))
+        display_match = re.search(r'displayname\s*=\s*"([^"]+)"', "\n".join(block[:header_end]))
         fields: list[dict[str, Any]] = []
         index = 1
         while index < len(block) - 1:
-            declaration = re.match(
-                r"^\s*(?:(?:must have unique|unique)\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*$",
-                block[index],
-            )
+            declaration = field_declaration.match(block[index])
             if declaration and block[index + 1].strip() == "(":
                 field_name = declaration.group(1)
                 opening_indent = len(block[index + 1]) - len(block[index + 1].lstrip())

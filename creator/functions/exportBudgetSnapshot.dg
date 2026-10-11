@@ -3,7 +3,7 @@
                  	/********* MANUAL BUDGET EXPORT ENTRY POINT *********/
                  	// Creates either a PDF or Excel-compatible .xls snapshot
                  	// using the budget's current saved values and creates one
-                 	// Contract_Version record per exported attachment.
+                 	// Attachment record per exported attachment.
                  	vBudgetId = ifnull(budgetId,"").trim();
                  	vExportType = ifnull(exportType,"").trim().toUpperCase();
                  	if(vBudgetId == "")
@@ -356,7 +356,7 @@
                  			fileName = pdfFilePrefix + "_" + safeFileName + "_" + zoho.currenttime.toString("yyyyMMdd_HHmmss") + ".pdf";
                  			pdfFile.setFileName(fileName);
                  			/********* CREATE ONE ATTACHMENT RECORD *********/
-                 			attachmentId = insert into Contract_Version
+                 			attachmentId = insert into Attachment
                  			[
                  				Budget=vBudgetId.toLong()
                  				Date_field1=zoho.currenttime
@@ -366,7 +366,7 @@
                  			];
                  			if(attachmentId == null || attachmentId == 0)
                  			{
-                 				return "Budget PDF was generated, but the Contract_Version attachment record was not created.";
+                 				return "Budget PDF was generated, but the Attachment attachment record was not created.";
                  			}
                  			return "Budget PDF added to Attachments as " + fileName + ".";
                  		}
@@ -597,7 +597,7 @@
                  			return "Budget Excel export failed: toFile did not return a valid file.";
                  		}
                  		/********* CREATE ONE ATTACHMENT RECORD *********/
-                 		attachmentId = insert into Contract_Version
+                 		attachmentId = insert into Attachment
                  		[
                  			Budget=vBudgetId.toLong()
                  			Date_field1=zoho.currenttime
@@ -607,7 +607,7 @@
                  		];
                  		if(attachmentId == null || attachmentId == 0)
                  		{
-                 			return "Budget Excel file was generated, but the Contract_Version attachment record was not created.";
+                 			return "Budget Excel file was generated, but the Attachment attachment record was not created.";
                  		}
                  		return "Budget Excel file added to Attachments as " + fileName + ".";
                  	}	catch (exportError)

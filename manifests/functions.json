@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T14:25:00-05:00",
+  "generated_at": "2026-10-11T14:09:23.200257+00:00",
   "source": "creator/generated/functions.json",
   "functions": [
     {
@@ -128,23 +128,14 @@
       "source": "creator/functions/createBudgetAttachmentRecord.dg",
       "reads_or_writes_forms": [
         "Add_Budget",
-        "Contract_Version"
+        "Attachment"
       ],
       "thisapp_calls": [],
-      "possible_calls": [
-        "Map",
-        "count",
-        "ifnull",
-        "put",
-        "toLong",
-        "toString",
-        "trim"
-      ],
       "connections": [],
       "contains_sendmail": false,
       "contains_invokeurl": false,
-      "line_start": 16689,
-      "line_end": 16724
+      "line_start": 22181,
+      "line_end": 22216
     },
     {
       "name": "createBuilderTakedown",
@@ -261,36 +252,21 @@
       "source": "creator/functions/Create_LOI_Contract.dg",
       "reads_or_writes_forms": [
         "Add_Pro_Forma",
-        "Company",
+        "Attachment",
+        "Budget_Approvals",
         "Contract",
-        "Contract_Version"
+        "Contract_Actions",
+        "LOI_Worksheet",
+        "User_Access"
       ],
-      "thisapp_calls": [],
-      "possible_calls": [
-        "List",
-        "Map",
-        "add",
-        "contains",
-        "get",
-        "ifnull",
-        "isFile",
-        "put",
-        "replaceAll",
-        "round",
-        "setFileName",
-        "size",
-        "toLong",
-        "toString",
-        "toWords",
-        "trim"
+      "thisapp_calls": [
+        "PF_Build_LOI_Document"
       ],
-      "connections": [
-        "zoho_writer"
-      ],
+      "connections": [],
       "contains_sendmail": false,
-      "contains_invokeurl": true,
-      "line_start": 16877,
-      "line_end": 17327
+      "contains_invokeurl": false,
+      "line_start": 22876,
+      "line_end": 23122
     },
     {
       "name": "defaultFunction",
@@ -326,21 +302,14 @@
       ],
       "source": "creator/functions/deleteBudgetAttachment.dg",
       "reads_or_writes_forms": [
-        "Contract_Version"
+        "Attachment"
       ],
       "thisapp_calls": [],
-      "possible_calls": [
-        "count",
-        "ifnull",
-        "toLong",
-        "toString",
-        "trim"
-      ],
       "connections": [],
       "contains_sendmail": false,
       "contains_invokeurl": false,
-      "line_start": 17335,
-      "line_end": 17358
+      "line_start": 23130,
+      "line_end": 23153
     },
     {
       "name": "exportBudgetSnapshot",
@@ -358,34 +327,17 @@
       "source": "creator/functions/exportBudgetSnapshot.dg",
       "reads_or_writes_forms": [
         "Add_Budget",
+        "Attachment",
         "Budget_Approvals",
         "Budget_Category",
-        "Budget_Item",
-        "Contract_Version"
+        "Budget_Item"
       ],
       "thisapp_calls": [],
-      "possible_calls": [
-        "Collection",
-        "child",
-        "convertToPDF",
-        "ifnull",
-        "insert",
-        "isFile",
-        "replaceAll",
-        "setFileName",
-        "text",
-        "toDecimal",
-        "toFile",
-        "toLong",
-        "toString",
-        "toUpperCase",
-        "trim"
-      ],
       "connections": [],
       "contains_sendmail": false,
       "contains_invokeurl": false,
-      "line_start": 17359,
-      "line_end": 17928
+      "line_start": 23220,
+      "line_end": 23837
     },
     {
       "name": "forLoop",
@@ -516,25 +468,14 @@
       ],
       "source": "creator/functions/getBudgetAttachmentPreview.dg",
       "reads_or_writes_forms": [
-        "Contract_Version"
+        "Attachment"
       ],
       "thisapp_calls": [],
-      "possible_calls": [
-        "Map",
-        "base64Encode",
-        "count",
-        "ifnull",
-        "length",
-        "put",
-        "toLong",
-        "toString",
-        "trim"
-      ],
       "connections": [],
       "contains_sendmail": false,
       "contains_invokeurl": false,
-      "line_start": 18271,
-      "line_end": 18334
+      "line_start": 24593,
+      "line_end": 24656
     },
     {
       "name": "getUserAccess",
@@ -773,13 +714,23 @@
       "name": "manageBudget",
       "return_type": "string",
       "parameters": [
-        { "type": "string", "name": "budgetId" },
-        { "type": "string", "name": "action" },
-        { "type": "string", "name": "userAccessId" }
+        {
+          "type": "string",
+          "name": "budgetId"
+        },
+        {
+          "type": "string",
+          "name": "action"
+        },
+        {
+          "type": "string",
+          "name": "userAccessId"
+        }
       ],
       "source": "creator/functions/manageBudget.dg",
       "reads_or_writes_forms": [
         "Add_Budget",
+        "Attachment",
         "Budget_Approvals",
         "Budget_Category",
         "Budget_Import_Item",
@@ -787,14 +738,17 @@
         "Budget_Modification",
         "Budget_Months",
         "Comment_Log",
-        "Contract_Version",
+        "PO_Operation",
+        "PO_Phase_Lock",
+        "Payment_Request",
         "User_Access"
       ],
       "thisapp_calls": [],
-      "possible_calls": ["List", "Map", "add", "ifnull", "put", "size", "toLong", "toLowerCase", "toString", "trim"],
       "connections": [],
       "contains_sendmail": false,
-      "contains_invokeurl": false
+      "contains_invokeurl": false,
+      "line_start": 27171,
+      "line_end": 27307
     },
     {
       "name": "Manage_Proforma_Approval_Config",
@@ -1461,23 +1415,11 @@
       "thisapp_calls": [
         "Create_LOI_Contract"
       ],
-      "possible_calls": [
-        "Create_LOI_Contract",
-        "Map",
-        "get",
-        "ifnull",
-        "put",
-        "toLong",
-        "toMap",
-        "toString",
-        "toUpperCase",
-        "trim"
-      ],
       "connections": [],
       "contains_sendmail": true,
       "contains_invokeurl": false,
-      "line_start": 22262,
-      "line_end": 22372
+      "line_start": 36192,
+      "line_end": 36330
     },
     {
       "name": "sendApprovalEmail",
@@ -1898,6 +1840,204 @@
         "Territory"
       ],
       "notes": "Verified saved and executed in Creator Development on 2026-09-30. Read-only; returns JSON lists. User will promote the backend."
+    },
+    {
+      "name": "createContractAttachmentRecord",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "contractId"
+        }
+      ],
+      "source": "creator/functions/createContractAttachmentRecord.dg",
+      "reads_or_writes_forms": [
+        "Attachment",
+        "Contract"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22777,
+      "line_end": 22822
+    },
+    {
+      "name": "createProformaAttachmentRecord",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        }
+      ],
+      "source": "creator/functions/createProformaAttachmentRecord.dg",
+      "reads_or_writes_forms": [
+        "Add_Pro_Forma",
+        "Attachment"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 22823,
+      "line_end": 22858
+    },
+    {
+      "name": "deleteContractAttachment",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "contractId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/deleteContractAttachment.dg",
+      "reads_or_writes_forms": [
+        "Attachment",
+        "Contract"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23154,
+      "line_end": 23195
+    },
+    {
+      "name": "deleteProformaAttachment",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/deleteProformaAttachment.dg",
+      "reads_or_writes_forms": [
+        "Attachment"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 23196,
+      "line_end": 23219
+    },
+    {
+      "name": "getContractAttachmentPreview",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "contractId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/getContractAttachmentPreview.dg",
+      "reads_or_writes_forms": [
+        "Attachment"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 24657,
+      "line_end": 24717
+    },
+    {
+      "name": "getProformaAttachmentPreview",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "proformaId"
+        },
+        {
+          "type": "string",
+          "name": "attachmentId"
+        }
+      ],
+      "source": "creator/functions/getProformaAttachmentPreview.dg",
+      "reads_or_writes_forms": [
+        "Attachment"
+      ],
+      "thisapp_calls": [],
+      "connections": [],
+      "contains_sendmail": false,
+      "contains_invokeurl": false,
+      "line_start": 24726,
+      "line_end": 24787
+    },
+    {
+      "name": "Send_Contract_Approvals",
+      "return_type": "string",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "contractId"
+        }
+      ],
+      "source": "creator/functions/Send_Contract_Approvals.dg",
+      "reads_or_writes_forms": [
+        "Attachment",
+        "Contract",
+        "Contract_Approvals",
+        "User_Access"
+      ],
+      "thisapp_calls": [
+        "Send_Contract_Approval_Email",
+        "Send_Contract_Approvals"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 37042,
+      "line_end": 37296
+    },
+    {
+      "name": "Send_Contract_Approval_Email",
+      "return_type": "map",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "contractId"
+        },
+        {
+          "type": "string",
+          "name": "approvalId"
+        },
+        {
+          "type": "string",
+          "name": "mode"
+        }
+      ],
+      "source": "creator/functions/Send_Contract_Approval_Email.dg",
+      "reads_or_writes_forms": [
+        "Attachment",
+        "Contract",
+        "Contract_Approvals",
+        "Subdivision"
+      ],
+      "thisapp_calls": [
+        "PF_Packet_Money"
+      ],
+      "connections": [],
+      "contains_sendmail": true,
+      "contains_invokeurl": false,
+      "line_start": 37297,
+      "line_end": 37589
     }
   ]
 }

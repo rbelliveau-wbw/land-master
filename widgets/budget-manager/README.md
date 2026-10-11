@@ -1,6 +1,10 @@
 
 # Budget Manager
 
+Release `122.29.16` uses `Attachment` / `All_Attachments`, retaining the `Budget` parent
+and `File_field1` upload field. Creator Development updates require the user's
+promotion; see the [rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
 ## Multi-item purchase-order candidate (122.29.2)
 
 Development-only multi-item PO editor with exact cents, calculated/manual lines,
@@ -22,7 +26,7 @@ for regression evidence and rollback to 122.28.30.
 
 Budget management, approvals, attachments, and pro forma comparison.
 
-Current release: `122.26.3`. Compact project cards with every phase always visible and Pro Forma styling; searchable multi-select project, territory, and lifecycle filters with external clear controls; direct owner/mapping editing. Category and item sizing remains at the original dimensions. See `../../knowledge/modules/budget.md` for regression and rollback notes. The release includes `src/app/budget-layout.css` alongside the existing widget files.
+Current release: `122.29.16`. Compact project cards with every phase always visible and Pro Forma styling; searchable multi-select project, territory, and lifecycle filters with external clear controls; direct owner/mapping editing. Category and item sizing remains at the original dimensions. See `../../knowledge/modules/budget.md` for regression and rollback notes. The release includes `src/app/budget-layout.css` alongside the existing widget files.
 
 ## Baseline
 

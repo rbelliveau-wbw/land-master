@@ -2,6 +2,10 @@
 
 This is the shared design contract for Legal, Budget and Pro Forma attachment
 actions and workspaces. Legal's `showAttachmentsModal` is the visual reference.
+The shared form is `Attachment` and the report is `All_Attachments`. Parent
+fields remain `Contract1`, `Budget` and `Pro_Forma`; uploads use `File_field1`.
+The existing `Contract.Contract_Versions` lookup field retains its link name.
+See the [rename and deployment notes](../../docs/attachment-form-rename-2026-10-11.md).
 The required main-list flow is a paperclip action that opens an attachment
 modal for that record, retaining the list's filters, selection and scroll.
 Budget 122.28.18 and Pro Forma 1.80.64 implement this main-list flow, sharing
@@ -40,7 +44,7 @@ for another record or a closed modal cannot replace or reopen the current view.
 Refresh the affected row badge after a verified upload or deletion, including
 operations performed from a different attachment surface.
 
-**Added by** means the persisted original `Contract_Version.Added_User`.
+**Added by** means the persisted original `Attachment.Added_User`.
 Resolve its explicit username/email to one exact, case-insensitive User Access
 roster match and display that row's `fullName`. The roster adds `userName`,
 `approverEmail` and `fullName` while preserving its older keys. Preserve a real
@@ -103,7 +107,7 @@ does not change persisted success predicates or permissions.
 
 Contract attachment and approver Email switches send Creator checkbox strings
 (`"true"`/`"false"`) in either direction. Restore controls after settled success or
-failure. Normalize Contract Version's configured Yes/No Email labels when reading
+failure. Normalize Attachment's configured Yes/No Email labels when reading
 the attachment report so a saved on switch remains on after refresh, including
 after a remounted approval surface. Pending writes still hold
 controls; unknown outcomes retain their no-replay guard while allowing dismissal

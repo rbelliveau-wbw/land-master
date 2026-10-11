@@ -13,7 +13,7 @@ string createProformaAttachmentRecord(string proformaId)
 	}
 	try
 	{
-		attachmentId = insert into Contract_Version
+		attachmentId = insert into Attachment
 		[
 			Pro_Forma=vProformaId.toLong()
 			Date_field1=zoho.currenttime
@@ -33,4 +33,5 @@ string createProformaAttachmentRecord(string proformaId)
 		response.put("message","Attachment record creation failed: " + createError.toString());
 		return response.toString();
 	}
+	return response.toString();
 }

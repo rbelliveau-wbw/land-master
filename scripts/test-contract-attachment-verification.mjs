@@ -9,12 +9,12 @@ function install(h,{email=true,uploadEnvelope,afterUpload}={}){
   calls.create++;
   const row={ID:NEW,Contract1:{ID:config.payload.contractId},File_field1:''};
   if(email!==undefined)row.Email_Attachment=email;
-  h.reports.All_Contract_Versions.push(row);
+  h.reports.All_Attachments.push(row);
   return {code:3000,details:{output:JSON.stringify({ok:true,attachmentId:NEW})}};
  };
  h.c.ZOHO.CREATOR.FILE={uploadFile:async()=>{
   calls.upload++;
-  const row=h.reports.All_Contract_Versions.find(row=>row.ID===NEW);
+  const row=h.reports.All_Attachments.find(row=>row.ID===NEW);
   row.File_field1='/download?filepath='+encodeURIComponent(PATH);
   if(afterUpload)afterUpload(row);
   return uploadEnvelope||{code:3000,data:{filename:'fixture.pdf',filepath:PATH}};
@@ -56,7 +56,7 @@ for(const envelope of [
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}),error=>error.noReplay===true);
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}));
  assert.equal(calls.upload,1,'ambiguous or failed upload replies never replay');
- assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Contract_Versions.length,1,'unknown files retain their child');
+ assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Attachments.length,1,'unknown files retain their child');
 }
 
 for(const change of [row=>{row.Contract1={ID:OTHER};}]){
@@ -64,7 +64,7 @@ for(const change of [row=>{row.Contract1={ID:OTHER};}]){
  await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}),/verification/);
  const key=h.c.contractAttachmentKey('upload',ID,id);
  assert.equal(await h.c.recheckContractAttachment(key,'upload'),false,'root acknowledgement still requires exact persisted parent and path');
- Object.assign(h.reports.All_Contract_Versions[0],{Contract1:{ID},File_field1:{filepath:PATH}});
+ Object.assign(h.reports.All_Attachments[0],{Contract1:{ID},File_field1:{filepath:PATH}});
  assert.equal(await h.c.recheckContractAttachment(key,'upload'),true);assert.equal(calls.upload,1,'recheck is read-only');
 }
 
@@ -93,14 +93,14 @@ for(const email of [undefined,false,'false']){
  const h=await ready(),calls=install(h,{email}),key=h.c.contractAttachmentKey('create',ID);
  if(email===undefined){
   const native=h.api.invokeCustomApi;
-  h.api.invokeCustomApi=async config=>{const response=await native(config);if(config.api_name===h.c.CFG.customApis.createAttachment)delete h.reports.All_Contract_Versions[0].Email_Attachment;return response;};
+  h.api.invokeCustomApi=async config=>{const response=await native(config);if(config.api_name===h.c.CFG.customApis.createAttachment)delete h.reports.All_Attachments[0].Email_Attachment;return response;};
  }
  assert.equal(await h.c.createContractAttachmentRecord(ID),NEW,'an off or omitted Email switch does not prevent attachment creation');
  assert.equal(h.c.contractHasReviews(),false);
  assert.equal(h.c.S.contractAttachmentParents[NEW].cid,ID);assert.equal(h.c.S.contractAttachmentParents[NEW].scope,h.c.contractMutationScope());
  await h.c.sdkUploadVersionFile(NEW,{name:'fixture.pdf',size:20});
  assert.equal(calls.create,1);assert.equal(calls.upload,1,'FILE upload proceeds after exact child and Contract parent verification');
- assert.equal(h.reports.All_Contract_Versions[0].Email_Attachment,email===undefined?undefined:email,'upload preserves the persisted email setting');
+ assert.equal(h.reports.All_Attachments[0].Email_Attachment,email===undefined?undefined:email,'upload preserves the persisted email setting');
 }
 
 {
@@ -120,7 +120,7 @@ for(const email of [undefined,false,'false']){
  await assert.rejects(h.c.createContractAttachmentRecord(ID),error=>error.noReplay===true&&error.attachmentPhase==='native'&&/specific native validation fault/.test(error.message)&&!error.message.includes('private-token'));
  await assert.rejects(h.c.createContractAttachmentRecord(ID));
  assert.equal(calls,1,'decoded native failure details preserve cause without a second create');
- assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Contract_Versions.length,0);
+ assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Attachments.length,0);
  assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'a native create failure never falls back to CRUD or cleanup');
 }
 

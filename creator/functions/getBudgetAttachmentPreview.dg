@@ -14,7 +14,7 @@
                  	}
                  	try 
                  	{
-                 		attachmentRows = Contract_Version[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+                 		attachmentRows = Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
                  		if(attachmentRows.count() == 0)
                  		{
                  			response.put("ok",false);

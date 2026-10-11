@@ -194,7 +194,7 @@ string Create_LOI_Contract(string proformaId)
 			trace.add(keepEntry);
 		}
 		stage = "attach_contract_version";
-		contractVersionId = insert into Contract_Version
+		contractVersionId = insert into Attachment
 		[
 			Added_User=zoho.loginuser
 			Contract1=contractId
@@ -204,7 +204,7 @@ string Create_LOI_Contract(string proformaId)
 		versionEntry = Map();
 		versionEntry.put("level","success");
 		versionEntry.put("stage",stage);
-		versionEntry.put("message","Merged DOCX attached through Contract Version");
+		versionEntry.put("message","Merged DOCX attached through Attachment");
 		versionEntry.put("meta",{"contractVersionId":contractVersionId.toString(),"contractId":contractId.toString(),"fileField":"File_field1","fileName":fileName});
 		trace.add(versionEntry);
 		stage = "complete";

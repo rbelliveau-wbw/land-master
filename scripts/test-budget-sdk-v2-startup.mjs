@@ -23,6 +23,8 @@ const turn = () => new Promise(resolve => setImmediate(resolve));
 const clone = value => JSON.parse(JSON.stringify(value));
 const landingCategoryFields = JSON.parse(source.match(/landingCategoryFields:\s*(\[[^\]]+\])/)[1]);
 assert.deepEqual(landingCategoryFields,['ID','Budget','Deparment','Prelim_Budget_Total','Budget_Total']);
+assert.match(source,/attachments:\s*"All_Attachments"/,'Budget reads the renamed attachment report');
+assert.match(source,/attachment:\s*"Attachment"/,'Budget creates use the renamed attachment form');
 assert.match(source,/getUserAccess:\s*"Get_User_Access_Lean"/,'the selected permission API is the registered lean endpoint');
 const hardcodedStart = source.indexOf('var HARDCODED_PERMS = {'), hardcodedEnd = source.indexOf('\n};',hardcodedStart) + 3;
 assert.ok(hardcodedStart >= 0 && hardcodedEnd > hardcodedStart,'the existing portal override map exists');
@@ -65,10 +67,10 @@ assert.deepEqual(calls.pop(), {method:'addRecords',config:{form_name:'Comment_Lo
 const record = await transport.sdkGetRecordById('All_Budgets','900000000000000001');
 assert.equal(record.ID,'900000000000000001');
 assert.equal(calls.pop().config.field_config,'all');
-await transport.sdkUploadFile('All_Contract_Versions','900000000000000001','File_field1',{name:'test.pdf'});
-assert.deepEqual(calls.pop().config,{report_name:'All_Contract_Versions',id:'900000000000000001',field_name:'File_field1',file:{name:'test.pdf'}});
-assert.equal(await transport.sdkReadFile('All_Contract_Versions','900000000000000001','File_field1','test.pdf'),'file content');
-assert.deepEqual(calls.pop().config,{report_name:'All_Contract_Versions',id:'900000000000000001',field_name:'File_field1',file_path:'test.pdf'});
+await transport.sdkUploadFile('All_Attachments','900000000000000001','File_field1',{name:'test.pdf'});
+assert.deepEqual(calls.pop().config,{report_name:'All_Attachments',id:'900000000000000001',field_name:'File_field1',file:{name:'test.pdf'}});
+assert.equal(await transport.sdkReadFile('All_Attachments','900000000000000001','File_field1','test.pdf'),'file content');
+assert.deepEqual(calls.pop().config,{report_name:'All_Attachments',id:'900000000000000001',field_name:'File_field1',file_path:'test.pdf'});
 await transport.sdkInvokeCustomApi('Get_User_Access',{__method:'GET',__params:{user:'reviewer'}});
 assert.deepEqual(calls.pop().config,{api_name:'Get_User_Access_DEV',http_method:'POST',content_type:'application/json',payload:{user:'reviewer'}});
 await transport.sdkInvokeCustomApi('Handle_Approval_Action',{budgetId:'1',approvalAction:'Check'});
@@ -284,11 +286,12 @@ for(const response of [{code:3000,data:{ID:'1'}},{code:3000,result:[{code:3000,d
 
 const fileAck={code:3000,data:{filename:'test.pdf',filepath:'stored_test.pdf'}};
 const rootFileAck={code:3000,filename:'test.pdf',filepath:'stored_test.pdf',message:'File uploaded successfully !'};
-transport.CFG.reportCandidates.All_Contract_Versions=['All_Contract_Versions','Contract_Version_Report'];
+transport.CFG.reportCandidates.All_Attachments=JSON.parse(source.match(/All_Attachments:\s*(\[[^\]]+\])/)[1]);
+assert.deepEqual(transport.CFG.reportCandidates.All_Attachments,['All_Attachments'],'the renamed attachment report has no legacy aliases');
 for(const response of [fileAck,rootFileAck,{...rootFileAck,data:{}},{...rootFileAck,details:{message:'Completed',limits:{remaining:10}}}]){
   let uploads=0;FILE.uploadFile=async()=>{uploads++;return response;};const original=JSON.stringify(response);
   assert.equal(transport.budgetUploadSuccess(response),true);
-  const out=await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'});
+  const out=await transport.sdkUploadFile('All_Attachments','1','File_field1',{name:'test.pdf'});
   assert.equal(out.data.filename,'test.pdf');assert.equal(out.data.filepath,'stored_test.pdf');assert.equal(uploads,1,'each documented metadata shape sends exactly one native upload');
   assert.equal(JSON.stringify(response),original,'normalization never modifies the native acknowledgement');
   if(response===fileAck)assert.equal(out,response,'existing SDK data envelope identity remains unchanged');
@@ -298,35 +301,35 @@ for(const response of [{code:3000},{code:3000,data:{ID:'1'}},{code:3000,data:{fi
   {...rootFileAck,data:{filename:'different.pdf',filepath:'different_path'}},{...rootFileAck,data:{filename:'test.pdf'}},{...rootFileAck,data:[fileAck.data]},{...rootFileAck,result:[]}]){
   let uploads=0;FILE.uploadFile=async()=>{uploads++;return response;};const original=JSON.stringify(response);
   assert.equal(transport.budgetUploadSuccess(response),true);
-  await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'});
+  await transport.sdkUploadFile('All_Attachments','1','File_field1',{name:'test.pdf'});
   assert.equal(uploads,1);assert.equal(JSON.stringify(response),original,'metadata is optional and the native receipt is immutable');
 }
 const fileFailures=[null,{},
-  {code:3000,result:[{code:2894,message:'No report named All_Contract_Versions'}]},
+  {code:3000,result:[{code:2894,message:'No report named All_Attachments'}]},
   {code:3000,result:[fileAck,{code:2899,message:'Denied'}]},
   {...fileAck,success:false}, {...fileAck,data:{...fileAck.data,success:false}},
   {...rootFileAck,success:false},
   {...rootFileAck,details:{code:2898,message:'Denied'}},{...rootFileAck,details:{output:JSON.stringify({code:2899})}},
   {...rootFileAck,details:[{code:3000,data:{status:'failure'}}]},
   {...fileAck,details:{success:false}},
-  {...rootFileAck,code:2894,message:'No report named All_Contract_Versions'},
+  {...rootFileAck,code:2894,message:'No report named All_Attachments'},
   ...['error','failed','failure'].flatMap(status => [{...fileAck,status},{...fileAck,data:{...fileAck.data,status}}])];
 for(const response of fileFailures) {
   let uploads=0;FILE.uploadFile=async () => {uploads++;return response;};
   const before=invalidations.length;
-  await assert.rejects(transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),error => error.noReplay && error.raw === response && error.response === response);
+  await assert.rejects(transport.sdkUploadFile('All_Attachments','1','File_field1',{name:'test.pdf'}),error => error.noReplay && error.raw === response && error.response === response);
   assert.equal(uploads,1,'unknown/mixed/malformed file responses never replay through aliases');
   assert.equal(invalidations.length,before,'unconfirmed file responses do not invalidate as success');
 }
 let fileAttempts=0;const lostFile=new Error('Upload response lost');
 FILE.uploadFile=async () => {fileAttempts++;throw lostFile;};
-await assert.rejects(transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),error => error.raw === lostFile && error.noReplay);
+await assert.rejects(transport.sdkUploadFile('All_Attachments','1','File_field1',{name:'test.pdf'}),error => error.raw === lostFile && error.noReplay);
 assert.equal(fileAttempts,1);
-fileAttempts=0;FILE.uploadFile=async config => {fileAttempts++;return config.report_name === 'All_Contract_Versions' ? {code:2894,message:'No report named All_Contract_Versions'} : fileAck;};
-assert.equal(await transport.sdkUploadFile('All_Contract_Versions','1','File_field1',{name:'test.pdf'}),fileAck);
-assert.equal(fileAttempts,2,'only a definite missing report rejection may select the documented alias');
+fileAttempts=0;FILE.uploadFile=async config => {fileAttempts++;return config.report_name === 'All_Attachments' ? {code:2894,message:'No report named All_Attachments'} : fileAck;};
+await assert.rejects(transport.sdkUploadFile('All_Attachments','1','File_field1',{name:'test.pdf'}),/Attachment upload report is unavailable/);
+assert.equal(fileAttempts,1,'a missing renamed attachment report cannot replay through legacy aliases');
 FILE.readFile=async () => new Uint8Array([1,2,3]);
-assert.deepEqual([...await transport.sdkReadFile('All_Contract_Versions','1','File_field1','stored_test.pdf')],[1,2,3],'readFile retains its independent raw binary contract');
+assert.deepEqual([...await transport.sdkReadFile('All_Attachments','1','File_field1','stored_test.pdf')],[1,2,3],'readFile retains its independent raw binary contract');
 
 const attachmentId='900000000000000003', parentId='900000000000000004';
 const selectedFile={name:'test.pdf',size:10,type:'application/pdf'};
@@ -335,7 +338,7 @@ function attachmentHarness(options={}) {
   let row={ID:attachmentId,Budget:{ID:parentId},File_field1:''};
   const context=install({
     S:{liveSDK:true,useMock:false,edBudget:{ID:parentId},attachmentBusy:false,attachmentUploadReview:null},
-    CFG:{forms:{},reports:{attachments:'All_Contract_Versions'},reportCandidates:{All_Contract_Versions:['All_Contract_Versions','Contract_Version_Report']},attachmentFileField:'File_field1',attachmentBudgetField:'Budget',customApis:{createBudgetAttachmentRecord:'Create_Budget_Attachment_Record',deleteBudgetAttachment:'Delete_Budget_Attachment'}},
+    CFG:{forms:{},reports:{attachments:'All_Attachments'},reportCandidates:{All_Attachments:['All_Attachments']},attachmentFileField:'File_field1',attachmentBudgetField:'Budget',customApis:{createBudgetAttachmentRecord:'Create_Budget_Attachment_Record',deleteBudgetAttachment:'Delete_Budget_Attachment'}},
     ZOHO:{CREATOR:{DATA:{
       invokeCustomApi:async config => {
         if(config.api_name === 'Create_Budget_Attachment_Record') {

@@ -15,12 +15,7 @@
     "All_Milestones",
     "All_Subdivisions"
   ],
-  "sdk_calls": [
-    "ZOHO.CREATOR.API.getAllRecords",
-    "ZOHO.CREATOR.API.updateRecord",
-    "ZOHO.CREATOR.appName",
-    "ZOHO.CREATOR.init"
-  ],
+  "sdk_calls": [],
   "external_domains": [
     "fonts.googleapis.com",
     "fonts.gstatic.com",

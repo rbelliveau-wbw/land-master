@@ -1693,7 +1693,7 @@ select.apr-in{cursor:pointer}
    ATTACHMENTS PANEL - presentation ported from budget-manager
    (budget:328,344-349,385-413). Budget's DATA layer is not ported: it
    keeps a multi-file field on one record per budget, where Contracts has
-   one Contract_Version record per file, so every action here delegates to
+   one Attachment record per file, so every action here delegates to
    the functions this widget already had.
    ══════════════════════════════════════════════════════════════════════ */
 .attachment-page-panel{max-width:1180px;margin:0 auto;padding:2px 0 42px}
@@ -1908,7 +1908,7 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.61.43"></script>
+<script src="success-feedback.js?v=1.61.45"></script>
 </head>
 <body>
 
@@ -1952,12 +1952,12 @@ select.apr-in{cursor:pointer}
    Home: searchable list + kanban board of All_Contracts.
    Detail: Contract_Actions manager — drag/arrow reorder, inline
    expand edit, quick complete (advances Current_Action), reopen,
-   propose action, Contract_Version attachments.
+   propose action, Attachment records.
    Demo mode when the Creator SDK is absent.
    ============================================================ */
 
 var CFG = {
-  version: "1.61.43", pageSize: 200, maxPages: 25,
+  version: "1.61.45", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -1965,7 +1965,7 @@ var CFG = {
   reports: {
     contracts: "All_Contracts1",
     actions: "All_Contract_Actions",
-    versions: "All_Contract_Versions",
+    versions: "All_Attachments",
     proformas: "All_Pro_Formas_All_Fields",
     approvals: "All_Contract_Approvals",
     subdivisions: "All_Subdivisions",
@@ -1976,7 +1976,7 @@ var CFG = {
     comments: "Comment_Log_Report",
     takedowns: "All_Takedown_Schedules"
   },
-  forms: { action: "Contract_Actions", contract: "Contract", version: "Contract_Version", approval: "Contract_Approvals", proforma: "Add_Pro_Forma", builder: "Builder", pricing: "Contract_Pricing", takedown: "Takedown_Schedule", comment: "Comment_Log" },
+  forms: { action: "Contract_Actions", contract: "Contract", version: "Attachment", approval: "Contract_Approvals", proforma: "Add_Pro_Forma", builder: "Builder", pricing: "Contract_Pricing", takedown: "Takedown_Schedule", comment: "Comment_Log" },
   customApis: { reviewLOI: "Review_LOI_Request", errorReport: "Report_Proforma_Widget_Error", createAttachment: "Create_Contract_Attachment_Record", deleteAttachment: "Delete_Contract_Attachment", attachmentPreview: "Get_Contract_Attachment_Preview", getUserAccess: "Get_User_Access", updateAssignedToMe: "Update_Assigned_To_Me", completeLotContract: "Complete_Lot_Contract", sendContractApprovals: "Send_Contract_Approvals" }
 };
 /* Reserve headroom below Creator's per-user minute limit; only reads may retry. */
@@ -2758,7 +2758,7 @@ function contractApprovalCurrent(p){return contractApprovalProgress===p&&p.scope
 
 
 /* ---------------- SDK layer (envelope machinery, proven in v7 widget) ---------------- */
-var contractFieldKinds={"All_Contracts1":{"Subdivision1":"multi","Builder":"lookup","Earnest_Money_Per_Lot":"number","Number_of_Lots":"number","Initial_Takedown":"number","Initial_Takedown_Days":"number","Second_Closing_Lots":"number","Second_Closing_Days":"number","Subsequent_Takedown_Lots":"number","Subsequent_Takedown_Days":"number","Lots1":"multi","Takedown_Schedule1":"lookup","Company_Entity":"lookup","Project":"lookup","Completion_Date":"date","Earnest_Money":"number","Total_Contract_Price":"number","Pricing":"lookup","Contract_Actions":"lookup","Approvals1":"lookup","Redlines":"lookup","Contract_Versions":"lookup"},"All_Contract_Actions":{"Start_Date":"date","Due_Date":"date","Complete_Date":"date","Contract1":"lookup"},"All_Contract_Approvals":{"Approval_Sequence":"number","Contract1":"lookup","Reminder_Interval_Days":"number","Last_Reminder_Date":"date","Next_Reminder_Date":"date","Approval_Date":"date"},"All_Contract_Versions":{"Contract1":"lookup","Budget":"lookup"},"Contract_Pricing_Report":{"Contract1":"lookup","Base_Price":"number"},"All_Active_Lots_Contracts_View":{"Purchase_Price":"number","Purchase_Date":"date","Proforma":"lookup","Seller":"lookup","Company1":"lookup","Projects":"multi","Subdivisions":"multi","Acres":"number","Original_Acres":"number","Construction_Acres":"number","cost_per_acre_FT":"number"}};
+var contractFieldKinds={"All_Contracts1":{"Subdivision1":"multi","Builder":"lookup","Earnest_Money_Per_Lot":"number","Number_of_Lots":"number","Initial_Takedown":"number","Initial_Takedown_Days":"number","Second_Closing_Lots":"number","Second_Closing_Days":"number","Subsequent_Takedown_Lots":"number","Subsequent_Takedown_Days":"number","Lots1":"multi","Takedown_Schedule1":"lookup","Company_Entity":"lookup","Project":"lookup","Completion_Date":"date","Earnest_Money":"number","Total_Contract_Price":"number","Pricing":"lookup","Contract_Actions":"lookup","Approvals1":"lookup","Redlines":"lookup","Contract_Versions":"lookup"},"All_Contract_Actions":{"Start_Date":"date","Due_Date":"date","Complete_Date":"date","Contract1":"lookup"},"All_Contract_Approvals":{"Approval_Sequence":"number","Contract1":"lookup","Reminder_Interval_Days":"number","Last_Reminder_Date":"date","Next_Reminder_Date":"date","Approval_Date":"date"},"All_Attachments":{"Contract1":"lookup","Budget":"lookup","Pro_Forma":"lookup","Date_field1":"date","File_field1":"fileupload","Email_Attachment":"bool"},"Contract_Pricing_Report":{"Contract1":"lookup","Base_Price":"number"},"All_Active_Lots_Contracts_View":{"Purchase_Price":"number","Purchase_Date":"date","Proforma":"lookup","Seller":"lookup","Company1":"lookup","Projects":"multi","Subdivisions":"multi","Acres":"number","Original_Acres":"number","Construction_Acres":"number","cost_per_acre_FT":"number"}};
 /* Private native SDK2 transport. Generated only into the ignored preparation app. */
 function contractReleaseBusy(){S.busy=false;contractControls();}
 function contractOwn(value,key){return !!value&&Object.prototype.hasOwnProperty.call(value,key);}
@@ -6986,7 +6986,7 @@ function aprAdd(cid){
    and - the one switch that matters - whether each one actually receives the
    approval email. Status is read-only here: Send_for_Approvals and the
    approver's own response drive it, and hand-editing it hid the real state.
-   Attachments: which Contract_Version files ride that same email. */
+   Attachments: which Attachment files ride that same email. */
 var APR_ICON_MAIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>';
 var APR_ICON_CLIP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
 function aprMailSwitch(on,onclick,labels){
@@ -8008,7 +8008,7 @@ function addVersionFiles(cid,fileList){
  var chain=Promise.resolve();files.forEach(function(file,index){chain=chain.then(function(){return contractFileWorkflowStep(run,'attachment-create-'+index,'create','',file);}).then(function(id){contractWorkflowCheck(run);return contractFileWorkflowStep(run,'attachment-upload-'+index,'upload',id,file);});});
  return chain.then(function(){contractWorkflowCheck(run);return contractWorkflowFinish(run);}).catch(function(error){auditLog('error','Captured attachment batch stopped',{contractId:cid,note:errText(error)});return contractWorkflowFinish(run,error);});
 }
-/* Send_for_Approvals attaches only the Contract_Version rows whose Email_Attachment
+/* Send_for_Approvals attaches only the Attachment rows whose Email_Attachment
    is true, so this one flag decides whether an approver ever sees the document. The
    widget wrote it nowhere and showed it read-only, which is why approval mail went
    out empty. Uploads now default it on and this is how you take a file back off. */
@@ -8081,7 +8081,7 @@ function attStatus(cid,msg,isErr){
 /* ══ ATTACHMENTS PANEL ══════════════════════════════════════════════════
    Layout ported from budget-manager renderAttachmentPage (budget:5910).
    Budget's data layer is deliberately NOT ported - it stores many files on
-   one record per budget, Contracts stores one Contract_Version per file -
+   one record per budget, Contracts stores one Attachment per file -
    so every action delegates to the functions that already existed here. */
 function attachmentIconSvg(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>';
@@ -8174,11 +8174,11 @@ function attachmentsPanel(cid){
   return '<div class="attachment-page-panel"><div class="attachment-page-card">'
     +'<div class="attachment-page-head"><div class="attachment-page-title-wrap">'
       +'<div class="attachment-page-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7L9.2 18.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>Attachments <span class="attachment-count">'+vers.length+'</span></div>'
-      +'<div class="attachment-page-sub">One Contract Version record per file \u00b7 <b>'+onEmail+'</b> of '+vers.length+' ride the approval email</div>'
+      +'<div class="attachment-page-sub">One Attachment record per file \u00b7 <b>'+onEmail+'</b> of '+vers.length+' ride the approval email</div>'
     +'</div></div>'
     +'<div class="attachment-page-drop">'
       +'<div class="att-drop" id="attPanelDrop"><svg style="width:20px;height:20px;color:#7c9aca;flex:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>'
-      +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates a Contract Version record per file \u00b7 50 MB max</div>'
+      +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates an Attachment record per file \u00b7 50 MB max</div>'
       +(may?'<button class="btn primary sm" type="button" onclick="document.getElementById(\'attPanelFile\').click()">Choose Files</button>':'')
       +'<input type="file" id="attPanelFile" multiple style="display:none"/></div>'
     +'</div>'
@@ -8228,7 +8228,7 @@ function showAttachmentsModal(cid){
     modalHead("Attachments · "+vers.length+" file"+(vers.length===1?"":"s"),c.Contract_Name||"Contract")
     +'<div class="modal-body">'
     +'<div class="att-drop" id="attDrop"><svg style="width:20px;height:20px;color:#7c9aca;flex:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>'
-    +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates a Contract Version record per file · 50 MB max</div>'
+    +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates an Attachment record per file · 50 MB max</div>'
     +'<button class="btn primary sm" onclick="document.getElementById(\'attFile\').click()">Choose Files</button>'
     +'<input type="file" id="attFile" multiple style="display:none"/></div>'
     +'<div class="att-status" id="attStatus" role="status" aria-live="polite"></div>'
@@ -9510,7 +9510,7 @@ function detailSwitch(cid){
 }
 function addFile(){
   if(!needsContractEdit(S.selId))return;
-  if(S.demo){ banner("ok","Demo mode — inside Creator this opens the Contract Version form.",{info:true}); return; }
+  if(S.demo){ banner("ok","Demo mode — inside Creator this opens the Attachment form.",{info:true}); return; }
   openParent("#Form:"+CFG.forms.version+"?Contract1="+S.selId);
 }
 

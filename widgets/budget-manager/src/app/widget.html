@@ -4,14 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.15"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.16"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.15"></script>
-<script src="po-controller.js?v=122.29.15"></script>
-<script src="po-ui.js?v=122.29.15"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.15">
+<script src="po-domain.js?v=122.29.16"></script>
+<script src="po-controller.js?v=122.29.16"></script>
+<script src="po-ui.js?v=122.29.16"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.16">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1771,8 +1771,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.15">
-<script src="success-feedback.js?v=122.29.15"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.16">
+<script src="success-feedback.js?v=122.29.16"></script>
 </head>
 <body>
 
@@ -2304,7 +2304,7 @@ var CFG = {
     proformaPhases: "All_Proforma_Phases", // acquisition model phase metadata
     userAccess:   "User_Access_Report",  // User_Access report — per-user access control for this module
     importItems:  "All_Budget_Item_Imports", // Budget_Import_Item report — raw import rows feeding the budget
-    attachments: "All_Contract_Versions", // Contract_Version child records; one record per budget attachment
+    attachments: "All_Attachments", // Attachment child records; one record per budget attachment
     comments: "Comment_Log_Report",
     modifications: "All_Budget_Modifications", // Budget_Modification records — after-finalized changes to Final
     checkWireRequests: "All_Wire_Requests", // Payment_Request; verified in live Production
@@ -2319,13 +2319,13 @@ var CFG = {
     budget:      "Add_Budget",
     project:     "Project",              // form behind All_Projects
     importItem:  "Budget_Import_Item",   // form behind All_Budget_Item_Imports (used for the Budget_Item assignment write)
-    attachment:  "Contract_Version",      // child attachment form; one record per file
+    attachment:  "Attachment",      // child attachment form; one record per file
     modification: "Budget_Modification",  // after-finalized modification; approval rows carry Type1 == "Modification"
     externalMapping: "External_System_Mapping", // form behind All_External_System_Mappings
     comment: "Comment_Log"
   },
-  attachmentFileField: "File_field1",   // single-file field on Contract_Version
-  attachmentBudgetField: "Budget",        // lookup from Contract_Version to Add_Budget
+  attachmentFileField: "File_field1",   // single-file field on Attachment
+  attachmentBudgetField: "Budget",        // lookup from Attachment to Add_Budget
   budgetNotesField: "Notes",           // phase-level notes field on Add_Budget
   creatorHost: "https://creatorapp.zoho.com",
   creatorExportHost: "https://creatorexport.zoho.com",
@@ -2378,7 +2378,7 @@ var CFG = {
     All_Proforma_Phases: ["All_Proforma_Phases", "All_Proforma_Phase", "Proforma_Phases"],
     All_Budget_Categories: ["All_Budget_Categories", "All_Budget_Category", "Budget_Categories", "Budget_Category_Report"],
     All_Budget_Items: ["All_Budget_Items", "All_Budget_Item", "Budget_Items", "Budget_Item_Report"],
-    All_Contract_Versions: ["All_Contract_Versions", "Contract_Version_Report", "All_Contract_Version", "Contract_Versions"],
+    All_Attachments: ["All_Attachments"],
     All_Budget_Approvals: ["All_Budget_Approvals", "All_Budget_Approval", "Budget_Approvals", "Budget_Approvals_Report"],
     All_User_Access: ["User_Access_Report", "All_User_Access", "User_Access", "All_User_Accesses"],
     All_Budget_Item_Imports: ["All_Budget_Item_Imports", "All_Budget_Import_Items", "Budget_Item_Imports", "Budget_Import_Items", "All_Budget_Import_Item"],
@@ -2654,7 +2654,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.15", code:"BMW",
+  widget:"Budget Manager", version:"122.29.16", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -4987,7 +4987,7 @@ function openBudgetComments(field,id,label,trigger) {
 }
 
 var budgetManageConfirmResolver=null;
-var BUDGET_DELETE_CHILDREN=["Budget items","Budget categories","Budget month schedules","Approval records","Budget modifications","Attachments and contract versions","Comments"];
+var BUDGET_DELETE_CHILDREN=["Budget items","Budget categories","Budget month schedules","Approval records","Budget modifications","Attachments","Comments"];
 function budgetArchived(b){return accessTruthy(firstRaw(b,["Archived"]));}
 function positionBudgetRowMenu(menuWrap){
   if(!menuWrap||!menuWrap.classList.contains("open"))return;
@@ -13370,7 +13370,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.15",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.16",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

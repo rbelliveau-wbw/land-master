@@ -13,7 +13,7 @@
                  	}
                  	try 
                  	{
-                 		attachmentId = insert into Contract_Version
+                 		attachmentId = insert into Attachment
                  		[
                  			Budget=vBudgetId.toLong()
                  			Date_field1=zoho.currenttime

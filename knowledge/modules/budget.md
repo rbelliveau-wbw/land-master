@@ -1,3 +1,13 @@
+## Attachment form and report rename (122.29.16) — October 11, 2026
+
+Budget file records use `Attachment` and `All_Attachments`, retaining `Budget`
+as the parent lookup and `File_field1` as the upload field. Budget deletion and
+the existing attachment Custom APIs use the renamed form/report. The October 10
+production `.ds` predates this rename; the October 11 Development export and live
+Creator Development checks confirm it. Creator promotion remains with the user.
+See the
+[affected surfaces, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
+
 ## Attachment acknowledgements (122.29.12)
 
 Native FILE success (`code:3000` without explicit API failures) now confirms
@@ -285,7 +295,7 @@ The phase paperclip now opens attachments over the main list, using the same fil
 
 Each modal captures the exact loaded phase ID and startup/navigation/environment/app/actor scope, then requests fresh counted detail through the existing parent-scoped attachment loader. Closing a loading modal is safe; late replies cannot replace or reopen another phase. Errors remain unavailable with Retry rather than becoming zero. Verified upload/delete refreshes that phase's detail and existing badge patch/invalidation path without rebuilding the list. Read-only users retain Preview and Download. Busy writes block Close, Escape, navigation and conflicting file mutations; unknown uploads keep the existing read-only Recheck/no-replay controls. The native picker belongs to the modal session, so a file selection arriving after dismissal cannot upload into the retained editor.
 
-The named dialog traps keyboard focus, makes the background inert, and restores the original paperclip focus and page scroll on close. Preview and Delete confirmation remain nested existing surfaces; Escape dismisses the active child first. Preview deletion resolves the exact retained child ID rather than relying on a stale file index. Existing `Contract_Version.Budget`/`File_field1` create, FILE verification, upload/delete failure guards and `Get_Budget_Attachment_Preview` PDF route are unchanged. No Creator schema, report, permission, function or API deployment is required.
+The named dialog traps keyboard focus, makes the background inert, and restores the original paperclip focus and page scroll on close. Preview and Delete confirmation remain nested existing surfaces; Escape dismisses the active child first. Preview deletion resolves the exact retained child ID rather than relying on a stale file index. Existing `Attachment.Budget`/`File_field1` create, FILE verification, upload/delete failure guards and `Get_Budget_Attachment_Preview` PDF route are unchanged. No Creator schema, report, permission, function or API deployment is required.
 
 Actual-source fixtures exercise the mounted landing/control handlers, canonical counted detail transport, exact large string IDs, fresh/retry/denied reads, dismissed-phase replies, environment/app/actor/startup/navigation changes, readonly/busy/review controls, native picker session retention, upload/delete scope and badge refresh, nested keyboard/focus/inert behavior, preserved list/editor/search/scroll and original editor workspace. The existing startup/FILE/no-replay, automatic badge and financial suites also pass. The user waived native UI gates for this presentation change; these checks do not claim a new live upload/delete or rendered browser visual check. Rollback: map Budget Manager to `122.28.17`.
 
@@ -371,11 +381,11 @@ Creator deployment is required: save `handleApprovalAction` in Development, publ
 
 Each phase row shows a three-dot menu before View. Archive/Restore and Delete are always present; users without `User_Access.Delete_Archive_Budgets` see both disabled. The server repeats the permission check through `Manage_Budget`, so the UI is not the security boundary.
 
-Archive writes `Add_Budget.Archived`. Delete permanently removes the selected budget's `Budget_Approvals`, `Budget_Modification`, `Budget_Item`, `Budget_Category`, `Budget_Months`, `Contract_Version`, and `Comment_Log` children before removing `Add_Budget`. Existing `Budget_Import_Item` history is retained and its deleted-item lookup assignments are cleared. The confirmation modal lists the seven deleted child object types. `All_Budgets` must expose `Archived`; `getUserAccess` must return `budgetDeleteArchive`; Custom API `Manage_Budget` is POST/OAuth2/All users with `{budgetId, action, userAccessId}`. Rollback: Creator prior app version and widget `122.27.11`.
+Archive writes `Add_Budget.Archived`. Delete permanently removes the selected budget's `Budget_Approvals`, `Budget_Modification`, `Budget_Item`, `Budget_Category`, `Budget_Months`, `Attachment`, and `Comment_Log` children before removing `Add_Budget`. Existing `Budget_Import_Item` history is retained and its deleted-item lookup assignments are cleared. The confirmation modal lists the seven deleted child object types. `All_Budgets` must expose `Archived`; `getUserAccess` must return `budgetDeleteArchive`; Custom API `Manage_Budget` is POST/OAuth2/All users with `{budgetId, action, userAccessId}`. Rollback: Creator prior app version and widget `122.27.11`.
 
 ## Attachment and comment actions (122.27.5)
 
-Project comments are 30% larger. Each phase now shows a Legal-matching paperclip attachment count followed by its comment count; both phase controls match Legal at 28.75px with the same hover treatment. The Actions column is sized for all four controls and lets count badges render without clipping. Attachment counts load from the existing `Contract_Version.Budget` records and open the phase's existing Attachments workspace. Rollback: `122.27.4`.
+Project comments are 30% larger. Each phase now shows a Legal-matching paperclip attachment count followed by its comment count; both phase controls match Legal at 28.75px with the same hover treatment. The Actions column is sized for all four controls and lets count badges render without clipping. Attachment counts load from the existing `Attachment.Budget` records and open the phase's existing Attachments workspace. Rollback: `122.27.4`.
 
 ## Comment Log on Projects and Budgets (122.27.0)
 
@@ -402,7 +412,7 @@ Budget landing, phase/category/item editing, HCSS and GP actuals, preliminary/un
 
 ## Attachments
 
-Attachments use one `Contract_Version` record per file:
+Attachments use one `Attachment` record per file:
 
 - lookup: `Budget`
 - file field: `File_field1`

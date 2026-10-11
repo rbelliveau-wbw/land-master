@@ -10,7 +10,7 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 	    mode   "Send"      first send (from Send_Contract_Approvals)
 	           "Reminder"  re-send from the daily sendApprovalReminders job
 
-	    Attaches every Contract_Version whose Email_Attachment is checked.
+	    Attaches every Attachment whose Email_Attachment is checked.
 	    Stamps Last_Reminder_Date / Next_Reminder_Date on the approval row.
 	    Does NOT change Status - the caller owns that.                          */
 	response = Map();
@@ -43,10 +43,10 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 			return response;
 		}
 		// ---------- attachments: every version flagged for the approval email ----------
-		attachedFiles = Contract_Version[Contract1 == contractIdLong && Email_Attachment == true].File_field1.getAll();
+		attachedFiles = Attachment[Contract1 == contractIdLong && Email_Attachment == true].File_field1.getAll();
 		attachmentRows = "";
 		attachmentCount = 0;
-		versionRows = Contract_Version[Contract1 == contractIdLong && Email_Attachment == true] sort by Date_field1 desc;
+		versionRows = Attachment[Contract1 == contractIdLong && Email_Attachment == true] sort by Date_field1 desc;
 		for each  versionRow in versionRows
 		{
 			fileName = ifnull(versionRow.File_field1,"").toString();

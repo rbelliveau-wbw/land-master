@@ -5,6 +5,7 @@
 - Verify LOI field names against creator/generated/fields/Add_Pro_Forma.json.
 - Do not change approval email content, PDF generation, or Writer merge behavior unless explicitly requested.
 - Treat Proforma and approval record IDs as strings in browser code.
+- Attachments use `Attachment` / `All_Attachments` with `Pro_Forma` and `File_field1`. The October 10 production `.ds` predates the rename; verify live Creator metadata first.
 
 ## Required reading
 

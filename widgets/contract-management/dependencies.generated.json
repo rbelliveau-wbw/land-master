@@ -1,6 +1,31 @@
 {
   "custom_apis": [
     {
+      "name": "Complete_Lot_Contract",
+      "config_key": "completeLotContract",
+      "source": "customApis object"
+    },
+    {
+      "name": "Create_Contract_Attachment_Record",
+      "config_key": "createAttachment",
+      "source": "customApis object"
+    },
+    {
+      "name": "Delete_Contract_Attachment",
+      "config_key": "deleteAttachment",
+      "source": "customApis object"
+    },
+    {
+      "name": "Get_Contract_Attachment_Preview",
+      "config_key": "attachmentPreview",
+      "source": "customApis object"
+    },
+    {
+      "name": "Get_User_Access",
+      "config_key": "getUserAccess",
+      "source": "customApis object"
+    },
+    {
       "name": "Report_Proforma_Widget_Error",
       "config_key": "errorReport",
       "source": "customApis object"
@@ -9,42 +34,65 @@
       "name": "Review_LOI_Request",
       "config_key": "reviewLOI",
       "source": "customApis object"
+    },
+    {
+      "name": "Send_Contract_Approvals",
+      "config_key": "sendContractApprovals",
+      "source": "customApis object"
+    },
+    {
+      "name": "Update_Assigned_To_Me",
+      "config_key": "updateAssignedToMe",
+      "source": "customApis object"
     }
   ],
   "forms_referenced": [
+    "Add_Pro_Forma",
+    "Attachment",
     "Builder",
     "Company",
     "Contract",
     "Contract_Actions",
-    "Contract_Version",
+    "Contract_Approvals",
+    "Contract_Pricing",
+    "Forecast",
     "Lots",
+    "Project",
     "Property",
+    "Settings",
     "Subdivision",
-    "Project"
+    "Takedown_Schedule",
+    "User_Access"
   ],
   "reports_referenced": [
+    "All_Active_Lots_Contracts_View",
+    "All_Attachments",
+    "All_Builders",
     "All_Contract_Actions",
-    "All_Contract_Versions",
+    "All_Contract_Approvals",
     "All_Contracts",
+    "All_Contracts1",
     "All_Pro_Formas_All_Fields",
-    "All_Projects"
+    "All_Projects",
+    "All_Subdivisions",
+    "All_Takedown_Schedules",
+    "Contract_Pricing_Report"
   ],
   "sdk_calls": [
-    "ZOHO.CREATOR.API",
-    "ZOHO.CREATOR.API.addRecord",
-    "ZOHO.CREATOR.API.deleteRecord",
-    "ZOHO.CREATOR.API.getAllRecords",
-    "ZOHO.CREATOR.API.invokeCustomApi",
-    "ZOHO.CREATOR.API.updateRecord",
+    "ZOHO.CREATOR.API.readFile",
     "ZOHO.CREATOR.DATA",
     "ZOHO.CREATOR.DATA.invokeCustomApi",
+    "ZOHO.CREATOR.FILE.readFile",
+    "ZOHO.CREATOR.FILE.uploadFile",
     "ZOHO.CREATOR.UTIL",
     "ZOHO.CREATOR.UTIL.getQueryParams",
-    "ZOHO.CREATOR.UTIL.navigateParentURL",
-    "ZOHO.CREATOR.appName",
-    "ZOHO.CREATOR.init"
+    "ZOHO.CREATOR.UTIL.navigateParentURL"
   ],
   "external_domains": [
-    "static.zohocdn.com"
+    "cdnjs.cloudflare.com",
+    "creatorapp.zoho.com",
+    "rbelliveau-wbw.github.io",
+    "static.zohocdn.com",
+    "www.w3.org"
   ]
 }

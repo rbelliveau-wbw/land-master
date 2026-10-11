@@ -1,18 +1,79 @@
 {
   "application": "Land Master",
   "export_generated_on": "2026-08-06 12:23:44 America/Chicago",
-  "repository_generated_at": "2026-08-06T14:25:00-05:00",
+  "repository_generated_at": "2026-10-11T14:09:23.200257+00:00",
   "source_export": "creator/exports/Land_Master_2026-08-06.ds",
   "source_sha256": "1c6f5e80a318b7ae2e01bd0857957cff788b91e9475937c682ddd8e32e13e0ca",
   "counts": {
     "forms": 57,
-    "fields": 1269,
+    "fields": 1271,
     "reports": 70,
     "pages": 17,
-    "custom_functions": 53,
+    "custom_functions": 62,
     "workflows": 346,
     "workflow_functions": 41,
     "connections": 4
   },
-  "trust": "Generated directly from the uploaded Zoho Creator DS export. Re-run scripts/parse_creator_export.py after replacing the export."
+  "trust": "Composite metadata: the original committed export remains the baseline; only Attachment form/report and related references are overlaid from the recorded live Development export. This is not a full refresh of unrelated live schemas.",
+  "snapshot_type": "baseline-with-targeted-overlay",
+  "base_commit": "a5829d7056fed1323d72b9d3b06a87afed04dd0a",
+  "overlays": [
+    {
+      "id": "attachment-rename-2026-10-11",
+      "source_export": "creator/exports/Land_Master_2026-10-11-development.ds",
+      "source_sha256": "ac34619ebc99b693128011d9b77091a1ed93c074c96181ded6eb414ddcdd1e2a",
+      "applied_at": "2026-10-11T14:09:23.200257+00:00",
+      "scope": {
+        "forms": [
+          "Contract",
+          "Attachment"
+        ],
+        "reports": [
+          "All_Attachments"
+        ],
+        "functions": [
+          "createBudgetAttachmentRecord",
+          "createContractAttachmentRecord",
+          "createProformaAttachmentRecord",
+          "Create_LOI_Contract",
+          "deleteBudgetAttachment",
+          "deleteContractAttachment",
+          "deleteProformaAttachment",
+          "exportBudgetSnapshot",
+          "getBudgetAttachmentPreview",
+          "getContractAttachmentPreview",
+          "getProformaAttachmentPreview",
+          "manageBudget",
+          "Review_LOI_Request",
+          "Send_Contract_Approvals",
+          "Send_Contract_Approval_Email"
+        ],
+        "workflow_form_bindings": [
+          "Hide_Fields_set_Defaults_"
+        ],
+        "workflow_metadata": [
+          "Hide_Fields_set_Defaults_"
+        ]
+      },
+      "notes": "Attachment form/report and Hide Fields workflow metadata use the final captured schema. Other form changes are limited to lookup target names. Unrelated generated schemas retain the original baseline.",
+      "source_environment": "Development",
+      "native_form_captions": {
+        "on_add": "Attachment",
+        "on_edit": "Attachment",
+        "success_message": "Attachment Added Successfully"
+      }
+    }
+  ],
+  "raw_captured_source": {
+    "source_export": "creator/exports/Land_Master_2026-10-11-development.ds",
+    "source_sha256": "ac34619ebc99b693128011d9b77091a1ed93c074c96181ded6eb414ddcdd1e2a",
+    "sections": [
+      "custom-functions-section.ds",
+      "workflow-section.ds",
+      "workflow-functions-section.ds"
+    ],
+    "notes": "Raw sections are captured from the complete final Development export, independently of the composite generated schema.",
+    "source_environment": "Development",
+    "captured_at": "2026-10-11T14:05:25.496257+00:00"
+  }
 }

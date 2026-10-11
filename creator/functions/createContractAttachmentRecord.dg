@@ -24,7 +24,7 @@ string createContractAttachmentRecord(string contractId)
 			response.put("message","This contract is complete and read-only.");
 			return response.toString();
 		}
-		attachmentId = insert into Contract_Version
+		attachmentId = insert into Attachment
 		[
 			Contract1=vContractId.toLong()
 			Date_field1=zoho.currenttime
