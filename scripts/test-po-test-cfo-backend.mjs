@@ -7,6 +7,14 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // verifies behavior; it does not replace native Creator compilation or email QA.
 const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poValidatePayload','managePurchaseOrder'];
 const source=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
+// Creator keeps native record iterator types across branches. Reusing one for a
+// function-result map compiles but fails at runtime; JS alone cannot model it.
+function recordResultAliases(text){
+  const records=new Set([...text.matchAll(/for each\s+(\w+)\s+in\s+[A-Z]\w*\[/g)].map(m=>m[1]));
+  return [...text.matchAll(/\b(\w+)\s*=\s*thisapp\.\w+\(/g)].map(m=>m[1]).filter(name=>records.has(name));
+}
+assert.deepEqual(recordResultAliases('for each captured in Approval_Route_Snapshot[ID != null] {} captured = thisapp.snapshotApprovalRoute(context);'),['captured']);
+for(const [name,text] of Object.entries(source))assert.deepEqual(recordResultAliases(text),[],`${name}: native record/function-result variable alias`);
 function compile(text){
   text=text.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,body)=>`insertRecord("${form}",recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)=(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}))`);
   text=text.replace(/delete from (\w+)\[([^\]]+)\]/g,(_,form,criteria)=>`removeRecords("${form}",query("${form}",row=>${criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2')},""))`);

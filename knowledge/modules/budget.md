@@ -913,6 +913,26 @@ names, large amounts and 380px viewport without card overflow. Native Developmen
 compilation and reopened token readback passed before Creator promotion.
 Full repository validation and Pages build passed before main/Production.
 
+Production QA on Bluebonnet Crossing Phase 01 (budget 4410926000001671002)
+saved and reopened test PO 4410926000005148040 with 250 EA/manual lines at
+$0.22 each ($55 total), submitted it once and completed its one CFO approval.
+Creator recorded one sent approval to rbelliveau@wbdevelopment.com; inbox
+delivery was not independently checked. No budget modifications were created.
+The original draft 4410926000005159046 was preserved.
+
+The native deletion preflight exposed a Creator runtime failure caused by using
+`captured` both as an Approval_Route_Snapshot record iterator and a function-result
+map. Dedicated record variables remove that native type collision; a source
+regression detects record/function-result aliases that the JS runtime cannot
+model. PreviewDelete failures include an exception diagnostic in the existing
+audit response without initiating writes. The corrected function compiled and
+matched reopened native tokens before its single-component Stage/Production
+promotion to Creator 9.70. Unrelated pending Creator components were excluded.
+Production PreviewDelete then succeeded for the approved test PO: 500 line
+records across saved/submitted revisions, two receipts, one route, one approval
+and zero modifications. Permanent deletion remains a separately confirmed test
+action; a successful preview does not claim that those records were removed.
+
 Rollback: map Budget Manager Production to 122.29.18 and rebuild Pages, and restore
 the prior Creator functions from that main commit. Restoring code does not restore
 permanently deleted records. No cross-record transaction or automatic replay is claimed.

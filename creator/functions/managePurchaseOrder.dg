@@ -36,9 +36,9 @@ string managePurchaseOrder(string payload)
 		if(action == "ApprovalPO")
 		{
 			rowId = p.get("approvalId").toString(); matchId = "";
-			for each captured in Approval_Route_Snapshot[Workflow == "Purchase Order"]
+			for each approvalLookupRoute in Approval_Route_Snapshot[Workflow == "Purchase Order"]
 			{
-				if(ifnull(captured.Execution_JSON,"") != "" && captured.Execution_JSON.toJSONList().contains(rowId) && captured.Context_JSON.toMap().get("budgetId") == budgetId) { matchId = captured.Record_ID; }
+				if(ifnull(approvalLookupRoute.Execution_JSON,"") != "" && approvalLookupRoute.Execution_JSON.toJSONList().contains(rowId) && approvalLookupRoute.Context_JSON.toMap().get("budgetId") == budgetId) { matchId = approvalLookupRoute.Record_ID; }
 			}
 			if(matchId == "") { result.put("error","This PO approval could not be resolved."); return result.toString(); }
 			result = thisapp.poSnapshot(matchId); result.put("contract","po-v1"); return result.toString();
@@ -90,12 +90,12 @@ string managePurchaseOrder(string payload)
 				if(deleteOperation.Budget != budget.ID || deleteOperation.Status != "Complete") { result.put("error","An incomplete or foreign PO operation needs review."); return result.toString(); }
 				operationIds.add(deleteOperation.ID.toString());
 			}
-			for each captured in Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == idText] sort by ID
+			for each deleteRoute in Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == idText] sort by ID
 			{
-				context = captured.Context_JSON.toMap();
+				context = deleteRoute.Context_JSON.toMap();
 				if(context.get("budgetId") != budgetId || context.get("recordId") != idText) { result.put("error","Captured PO history does not match this phase."); return result.toString(); }
-				snapshotIds.add(captured.ID.toString());
-				capturedExecutionText = ifnull(captured.Execution_JSON,"[]"); capturedExecutionIds = capturedExecutionText.toJSONList();
+				snapshotIds.add(deleteRoute.ID.toString());
+				capturedExecutionText = ifnull(deleteRoute.Execution_JSON,"[]"); capturedExecutionIds = capturedExecutionText.toJSONList();
 				for each childId in capturedExecutionIds
 				{
 					deleteExecution = Budget_Approvals[ID == childId.toString().toLong()];
@@ -514,6 +514,7 @@ string managePurchaseOrder(string payload)
 	}
 	catch(e)
 	{
+		if(action == "PreviewDelete") { result.put("diagnostic",e.toString()); }
 		if(writeStarted == true || operationId != 0) { result.put("writeState","unknown"); result.put("error","The operation could not be verified. Keep the phase lock and use read-only Check."); }
 		else { result.put("error","This phase is busy, or validation failed. No PO write was started."); }
 		// A lock acquired before receipt creation can also be unresolved: never auto-take-over.
