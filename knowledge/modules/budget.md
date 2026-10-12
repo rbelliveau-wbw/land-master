@@ -879,7 +879,7 @@ See [handoff](../../docs/approval-policy-simplification-2026-10-11.md).
 
 ## PO Ledger, 250 lines and deletion (122.29.20)
 
-Managed PO cards use the approved Soft rail row (122.29.24): blue PO pill,
+Managed PO cards use the approved Soft rail row (122.29.25): blue PO pill,
 vendor, MM/DD/YYYY request date, green amount, status and Edit/View action.
 Omit the heading strip. Keep rows slim, truncate long vendors and contain narrow
 screen scrolling inside the card. Missing dates show an em dash; the
