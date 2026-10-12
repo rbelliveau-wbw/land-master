@@ -26,7 +26,8 @@ const c=vm.createContext({S:{myAccessId:'900000000000000007',edBudget:{ID:budget
   getPurchaseOrderUI:()=>({open:async(budget,trigger,id)=>opens.push({budget,trigger,id})})
 });c.window=c;
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),c);
-for(const name of ['loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
+for(const name of ['loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','requestDateParts','fmtDateUS','poRequestCardDate','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
+for(const [input,output]of [['2026-10-12','10/12/2026'],['1/2/2026','01/02/2026'],['2024-02-29','02/29/2024'],['2026-02-29','—'],['','—'],['bad-date','—']])assert.equal(c.poRequestCardDate(input),output);
 await c.loadCheckWireRequests(budgetId);
 assert.equal(c.S.checkWireRequestState[budgetId],'loaded');
 assert.match(reads[0].criteria,new RegExp('Budget == '+budgetId));
@@ -38,6 +39,10 @@ assert.match(html,/2-C Equipment, LLC/);assert.match(html,/Draft/);assert.match(
 assert.doesNotMatch(html,/mpc-meta|Request · Budget item/,'Managed rows without native dates do not show fabricated dashes or blank duplicates');
 assert.equal(c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId).length,1,'List POs missing from report layout still appear');
 const complete=c.mergeManagedPurchaseOrderRequests([draft],managedResponse,vendorResponse,budgetId);assert.equal(complete[0].Request_Date,draft.Request_Date,'Native generic dates are retained when available');
+managedPO.requestDate='2026-10-12';managedPO.dateNeeded='2026-10-20';
+const dated=c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId);assert.equal(dated[0].Request_Date,'2026-10-12','API-only profiles receive header dates without a per-row Get');assert.equal(dated[0].Date_Needed,'2026-10-20');
+assert.equal(c.mergeManagedPurchaseOrderRequests([draft],managedResponse,vendorResponse,budgetId)[0].Request_Date,'2026-10-12','Managed header dates override stale generic metadata');
+c.S.checkWireRequestsByBudget[budgetId]=dated;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/10\/12\/2026/);
 assert.equal(complete[0].Request_Amount,managedPO.amount,'Authoritative managed amount overrides same-ID generic metadata');
 const check={ID:'900000000000000008',Budget:{ID:budgetId},Request_Type:'Check',Request_Amount:'10.00'};
 assert.equal(c.mergeManagedPurchaseOrderRequests([check,draft],managedResponse,vendorResponse,budgetId).length,2,'Other payment requests remain in the list');

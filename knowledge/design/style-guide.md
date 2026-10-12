@@ -3,6 +3,11 @@
 This guide captures reusable visual preferences established in production work.
 Use the short [design index](README.md) to find a focused component guide.
 
+Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
+PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green
+amount, status and compact Edit/View action. Omit column headings and repeated
+Purchase Order text; keep every element on one horizontal row.
+
 Budget phase-list rows show the three-dot menu, View, attachments and comments
 in the Actions cell. Omit the direct Approvals shortcut. Reserve enough column
 width for those controls and their count badges; allow the action group to wrap

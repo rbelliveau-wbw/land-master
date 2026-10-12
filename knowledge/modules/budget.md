@@ -879,11 +879,21 @@ See [handoff](../../docs/approval-policy-simplification-2026-10-11.md).
 
 ## PO Ledger, 250 lines and deletion (122.29.20)
 
-Managed PO cards use the selected Ledger design: a pale heading strip, wrapping
-vendor identity, right-aligned navy amount, status and outlined Edit/View action.
-Shared grid columns keep large currency amounts clear of status. Narrow cards
-stack into two columns. Existing report dates appear only when supplied; the
+Managed PO cards use the approved Soft rail row (122.29.24): blue PO pill,
+vendor, MM/DD/YYYY request date, green amount, status and Edit/View action.
+Omit the heading strip. Keep rows slim, truncate long vendors and contain narrow
+screen scrolling inside the card. Missing dates show an em dash; the
 card renderer does not add per-row API calls. See [the card guide](../design/payment-requests.md).
+
+The existing `managePurchaseOrder` List response now includes native
+`requestDate` and `dateNeeded` in YYYY-MM-DD, so API-only profiles receive dates
+even when the separate Check/Wire report is denied. Merge these authoritative
+dates before formatting; preserve the old report dates when an older API omits
+the fields. Creator publication is required for this function only. No forms,
+fields, other Custom API scopes or write/approval behavior changed.
+Regression: ISO and US dates, invalid/leap dates, denied separate report,
+scoped parent IDs, edit eligibility and native List. Rollback widget 122.29.23
+and the previous managePurchaseOrder List projection from 5977c3d.
 
 The editor and native payload validator accept 1–250 lines, with a 500,000-character
 request ceiling. Item names remain separate from editable descriptions and the

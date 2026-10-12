@@ -4,14 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.23"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.24"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.23"></script>
-<script src="po-controller.js?v=122.29.23"></script>
-<script src="po-ui.js?v=122.29.23"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.23">
+<script src="po-domain.js?v=122.29.24"></script>
+<script src="po-controller.js?v=122.29.24"></script>
+<script src="po-ui.js?v=122.29.24"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.24">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1066,24 +1066,19 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .requests-column{min-width:0}
 .requests-column-title{font-size:14px;font-weight:800;color:var(--navy);margin:0 0 10px}
 .requests-column .mod-page-card{flex-wrap:wrap}
-.po-request-ledger{container-type:inline-size;container-name:po-request-card;background:#fff;border:1px solid #dce5ef;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px rgba(16,47,84,.05)}
-.po-request-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(82px,max-content) minmax(66px,max-content) 100px;column-gap:14px}
-.po-request-labels,.po-request-values{display:grid;grid-column:1/-1;grid-template-columns:subgrid;align-items:center;padding:12px 18px}
-.po-request-labels{background:#edf3fb;border-bottom:1px solid #dce5ef;color:#647b97;font-size:10.5px;font-weight:600}
-.po-request-labels>span:nth-child(2){text-align:right}
-.po-request-values{padding-top:18px;padding-bottom:18px}
-.po-request-identity{min-width:0;display:flex;flex-direction:column;gap:7px}
-.po-request-kind{color:#647b97;font-size:11px}
-.po-request-vendor{font-size:14px;font-weight:600;color:var(--navy);overflow-wrap:anywhere}
-.po-request-dates{color:#647b97;font-size:10.5px;overflow-wrap:anywhere}
-.po-request-amount{color:var(--navy);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
-.po-request-status{justify-self:start;max-width:100%}
-.po-request-status .mod-badge{font-weight:600;white-space:normal}
-.po-request-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;justify-self:end;min-height:36px;box-sizing:border-box;padding:8px 11px;border:1px solid #dce5ef;border-radius:7px;background:#fff;color:#214f91;font-family:inherit;font-size:11.5px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .15s,border-color .15s}
+.po-request-ledger{background:#fff;border:1px solid #dce5ef;border-left:3px solid #5689d5;border-radius:9px;overflow:auto;box-shadow:0 2px 8px rgba(16,47,84,.04)}
+.po-request-values{display:grid;grid-template-columns:minmax(150px,1fr) 88px max-content max-content max-content;align-items:center;gap:12px;padding:8px 13px;min-width:560px;min-height:54px;box-sizing:border-box}
+.po-request-identity{min-width:0;display:flex;align-items:center;gap:11px}
+.po-request-kind{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:4px 8px;border-radius:999px;background:#e4eeff;color:#245a9d;font-size:11px;font-weight:800;letter-spacing:.04em}
+.po-request-vendor{font-size:14px;font-weight:600;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.po-request-date{color:#607590;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.po-request-amount{color:#0b7862;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.po-request-status{max-width:100%}
+.po-request-status .mod-badge{font-weight:600;white-space:nowrap}
+.po-request-action{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;box-sizing:border-box;padding:7px 9px;border:1px solid #dce5ef;border-radius:7px;background:#fff;color:#245a9d;font-family:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .15s,border-color .15s}
 .po-request-action:hover{background:#edf3fb;border-color:#aac2e2}
 .po-request-action:focus-visible{outline:2px solid #285b97;outline-offset:3px}
 .po-request-action svg{width:14px;height:14px;flex:none}
-@container po-request-card (max-width:420px){.po-request-grid{grid-template-columns:minmax(0,1fr)}.po-request-labels{display:none}.po-request-values{grid-template-columns:minmax(0,1fr) auto;gap:16px}.po-request-amount{grid-column:2;grid-row:1}.po-request-status{grid-column:1}.po-request-action{grid-column:2}}
 .request-context{margin-bottom:14px}
 .request-department{display:inline-flex;align-items:center;padding:3px 8px;border:1px solid #cbd9eb;border-radius:6px;background:#f4f8ff;color:#285b97;font-size:10px;font-weight:800}
 .request-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1789,8 +1784,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.23">
-<script src="success-feedback.js?v=122.29.23"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.24">
+<script src="success-feedback.js?v=122.29.24"></script>
 </head>
 <body>
 
@@ -2672,7 +2667,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.23", code:"BMW",
+  widget:"Budget Manager", version:"122.29.24", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -12612,7 +12607,10 @@ function mergeManagedPurchaseOrderRequests(rows,managed,vendors,budgetId) {
     if(!po||typeof po.id!=="string"||!/^\d+$/.test(po.id)||poIds.has(po.id)||typeof po.revision!=="string"||!po.revision.trim()||["Draft","Submitted"].indexOf(po.status)<0||typeof po.vendorId!=="string"||!/^\d+$/.test(po.vendorId)||!vendorNames.has(po.vendorId)||Object.prototype.hasOwnProperty.call(po,"budgetId")&&po.budgetId!==budgetId)throw new Error("Saved PO identities do not match this budget.");
     if(!window.LMPO||LMPO.money(po.amount)<=0n)throw new Error("Saved PO amounts are unavailable.");
     poIds.add(po.id);
-    byId.set(po.id,Object.assign({},byId.get(po.id)||{},{ID:po.id,Budget:{ID:budgetId},Request_Type:"Purchase Order",Request_Amount:po.amount,PO_Status:po.status,PO_Revision:po.revision,Vendor:{ID:po.vendorId,display_value:vendorNames.get(po.vendorId)}}));
+    var header={ID:po.id,Budget:{ID:budgetId},Request_Type:"Purchase Order",Request_Amount:po.amount,PO_Status:po.status,PO_Revision:po.revision,Vendor:{ID:po.vendorId,display_value:vendorNames.get(po.vendorId)}};
+    if(typeof po.requestDate==="string")header.Request_Date=po.requestDate;
+    if(typeof po.dateNeeded==="string")header.Date_Needed=po.dateNeeded;
+    byId.set(po.id,Object.assign({},byId.get(po.id)||{},header));
   });
   return Array.from(byId.values());
 }
@@ -12624,6 +12622,11 @@ function openSavedPurchaseOrder(id,source) {
   var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});
   if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid))return;
   try{return getPurchaseOrderUI().open(S.edBudget,source,id).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
+}
+function poRequestCardDate(value) {
+  var text=cleanVal(value),match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  var parsed=match?requestDateParts(match[2]+"/"+match[3]+"/"+match[1]):requestDateParts(text);
+  return parsed?fmtDateUS(parsed):"—";
 }
 function renderCheckWireRequestColumn(b) {
   var bid = String(b.ID), state = S.checkWireRequestState[bid] || "loading";
@@ -12644,14 +12647,12 @@ function renderCheckWireRequestColumn(b) {
     var editablePO=managedPO&&canEditBudget(b)&&(status==="Draft"||status==="Submitted"&&approvalState==="Rejected");
     if(managedPO)itemName=lookupName(request.Vendor)||"Vendor";
     if(managedPO){
-      var poDateParts=[];if(date)poDateParts.push("Requested "+esc(date));if(needed)poDateParts.push("Needed "+esc(needed));
-      return "<article class='po-request-ledger' aria-label='Purchase order'><div class='po-request-grid'>"+
-        "<div class='po-request-labels' aria-hidden='true'><span>Request / vendor</span><span>Amount</span><span>Status</span><span></span></div>"+
-        "<div class='po-request-values'><div class='po-request-identity'><span class='po-request-kind'>Purchase order</span><strong class='po-request-vendor'>"+esc(itemName)+"</strong>"+
-        (poDateParts.length?"<span class='po-request-dates'>"+poDateParts.join(" · ")+"</span>":"")+"</div>"+
+      return "<article class='po-request-ledger' aria-label='Purchase order'>"+
+        "<div class='po-request-values'><div class='po-request-identity'><span class='po-request-kind'>PO</span><strong class='po-request-vendor' title='"+escAttr(itemName)+"'>"+esc(itemName)+"</strong></div>"+
+        "<span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span>"+
         "<strong class='po-request-amount' aria-label='PO amount'>"+fmt(v(rawAmount))+"</strong>"+
         "<div class='po-request-status'>"+modBadge(approvalState&&approvalState!=="Not Configured"?approvalState:status)+"</div>"+
-        "<button class='po-request-action' type='button' data-request-po-open='"+escAttr(request.ID)+"'><span>"+(editablePO?"Edit PO":"View PO")+"</span><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' aria-hidden='true'><path d='M7 17 17 7M7 7h10v10'/></svg></button></div></div></article>";
+        "<button class='po-request-action' type='button' data-request-po-open='"+escAttr(request.ID)+"'><span>"+(editablePO?"Edit PO":"View PO")+"</span><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' aria-hidden='true'><path d='M7 17 17 7M7 7h10v10'/></svg></button></div></article>";
     }
     var dates="<div class='mpc-meta'>Request " + esc(date || "—") + " · Needed " + esc(needed || "—") + "</div>";
     return "<div class='mod-page-card'><div class='mpc-main'>" +
@@ -13407,7 +13408,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.23",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.24",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;
