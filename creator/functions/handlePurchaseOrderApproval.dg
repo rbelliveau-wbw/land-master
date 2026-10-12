@@ -1,12 +1,19 @@
 map handlePurchaseOrderApproval(map request)
 {
+	 environmentType = thisapp.environment.type;
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"}; changed = false; decisionLockId = 0;
 	try
 	{
 		poId = request.get("id").toString(); rowId = request.get("approvalId").toString(); action = request.get("action"); note = ifnull(request.get("note"),"").toString().trim();
 		if(!poId.matches("[0-9]+") || !rowId.matches("[0-9]+") || note.length() > 10000) { result.put("error","PO, approval identity or note is invalid."); return result; }
 		po = Payment_Request[ID == poId.toLong() && Budget == request.get("budgetId").toString().toLong() && Request_Type == "Purchase Order"];
-		access = User_Access[User == zoho.loginuser];
+		actorUser = zoho.loginuser;
+		if(environmentType == "Development" && zoho.loginuser == zoho.adminuser)
+		{
+			previewActor = User_Access[ID == request.get("userAccessId").toString().toLong()];
+			if(previewActor.count() == 1) { actorUser = previewActor.User; }
+		}
+		access = User_Access[User == actorUser];
 		if(po.ID == null || access.count() != 1 || access.ID.toString() != request.get("userAccessId") || po.PO_Revision != request.get("expectedRevision")) { result.put("error","PO revision or authenticated User Access identity changed."); return result; }
 		decisionAction = action; if(action == "CheckDecision") { decisionAction = request.get("decision"); }
 		decisionToken = "decision-"+zoho.encryption.sha256(poId+"|"+po.PO_Revision+"|"+rowId+"|"+decisionAction);
@@ -16,7 +23,12 @@ map handlePurchaseOrderApproval(map request)
 		for each entry in bundle.get("rows") { if(entry.get("id") == rowId) { found = entry; } }
 		notificationOnly = action == "RetryEmail" || (action == "CheckDecision" && request.get("decision") == "RetryEmail");
 		authorized = found.get("id") != null;
-		if(notificationOnly) { authorized = authorized && bundle.get("canRetryEmail") == true; }
+		if(notificationOnly)
+		{
+			// Use the verified actor, never the native owner's bundle permission in View-as.
+			canRetry = bundle.get("active").get("userAccessId") == access.ID.toString() || bundle.get("submitterId") == access.ID.toString() || actorUser == zoho.adminuser;
+			authorized = authorized && canRetry;
+		}
 		// The exception comes only from poApprovalBundle's validated immutable test scope, never this request.
 		else
 		{
@@ -104,5 +116,5 @@ map handlePurchaseOrderApproval(map request)
 		result.put("success",true); result.put("writeState","verified"); result.put("snapshot",saved); result.put("decisionRowId",rowId); result.put("decision",wanted);
 	}
 	catch(decisionError) { result.put("writeState",if(changed || decisionLockId != 0,"unknown","not-started")); result.put("error","The PO approval could not be verified. Use read-only Check before another decision."); }
-	return result;
+	return thisapp.poActorResponse(result,ifnull(request.get("userAccessId"),"").toString());
 }

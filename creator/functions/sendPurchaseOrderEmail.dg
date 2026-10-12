@@ -1,5 +1,6 @@
 string sendPurchaseOrderEmail(string purchaseOrderId)
 {
+	 environmentType = thisapp.environment.type;
 	try
 	{
 		checked = thisapp.poApprovalBundle(purchaseOrderId);
@@ -16,36 +17,63 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { return "ERROR: PO approval state changed before notification."; }
 		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-		body = "<div style='font-family:Arial,sans-serif;color:#0b2345;line-height:1.5'><h2>Purchase Order Approval</h2><p><b>"+phase+"</b><br>Vendor: "+vendor+"<br>PO: "+purchaseOrderId+"<br>Amount: $"+po.PO_Amount_Exact+"<br>Request date: "+po.Request_Date.toString("yyyy-MM-dd")+"<br>Date needed: "+po.Date_Needed.toString("yyyy-MM-dd")+"</p><table style='border-collapse:collapse;width:100%;font-size:12px'><tr style='background:#edf4ff'><th align='left'>Cost code / budget item</th><th align='left'>Description</th><th>Quantity</th><th>UOM</th><th>Unit price</th><th>Total</th></tr>";
+		requestDate = "—"; neededDate = "—";
+		if(po.Request_Date != null) { requestDate = po.Request_Date.toString("MM/dd/yyyy"); }
+		if(po.Date_Needed != null) { neededDate = po.Date_Needed.toString("MM/dd/yyyy"); }
+		role = ifnull(active.get("role"),"Approver").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		modTotal = 0.00;
+		for each modification in bundle.get("modifications") { modTotal = modTotal+modification.get("amount").toDecimal(); }
+		modSummary = "None required";
+		if(bundle.get("modifications").size() > 0) { modSummary = bundle.get("modifications").size()+" modifications · $"+modTotal; }
+		url = zoho.appuri+"#Page:Budget_Management1?budgetId="+po.Budget.toString()+"&purchaseOrderId="+purchaseOrderId;
+		body = "<div style='background:#eef3fa;padding:20px;font-family:Arial,sans-serif;color:#17385f'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:640px;margin:auto;background:white;border:1px solid #d5e1ee'><tr><td style='background:#17385f;color:white;padding:18px 22px'><div style='font-size:12px'>PURCHASE ORDER APPROVAL</div><h2 style='font-size:21px;margin:6px 0'>"+phase+"</h2><div>"+vendor+"</div></td></tr><tr><td style='padding:20px 22px'><div style='font-size:28px;font-weight:bold;color:#08745a'>$"+po.PO_Amount_Exact+"</div><p style='margin:8px 0 16px'>Your "+role+" approval is requested.</p><table style='width:100%;font-size:13px;line-height:1.7'><tr><td>PO</td><td align='right'>"+purchaseOrderId+"</td></tr><tr><td>Request date / needed</td><td align='right'>"+requestDate+" / "+neededDate+"</td></tr><tr><td>Line items</td><td align='right'>"+po.PO_Line_Count+"</td></tr><tr><td>Budget modifications</td><td align='right'>"+modSummary+"</td></tr></table><p style='font-size:13px;color:#526982'>Full line details are in the attached Excel file.</p><p style='margin:20px 0 4px'><a href='"+url+"' style='display:inline-block;padding:12px 18px;background:#2256a6;color:white;text-decoration:none;font-weight:bold'>Review purchase order</a></p></td></tr></table></div>";
 		subjectLine = "Purchase Order Approval · "+ifnull(po.Budget.Budget_Name,"")+" · $"+po.PO_Amount_Exact;
+		if(environmentType == "Development") { subjectLine = "[DEV TEST] "+subjectLine; }
 		if(bundle.get("poTestCFO") != null)
 		{
 			subjectLine = "[PO TEST] "+subjectLine;
 			body = "<div style='padding:12px;background:#fff3cd;color:#654d00;font-family:Arial,sans-serif'><b>PO TEST</b> · Temporary CFO approval for this budget only, up to $"+bundle.get("poTestCFO").get("maxAmount")+". Submitter self-approval is enabled for this captured test route.</div>"+body;
 		}
+		// Real Excel SpreadsheetML (.xls), using the application's native export format.
+		// Keep title/summary rows at 22/18 points; no oversized cover or spacer rows.
+		excelXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet' xmlns:x='urn:schemas-microsoft-com:office:excel'><Styles><Style ss:ID='Default' ss:Name='Normal'><Alignment ss:Vertical='Center'/><Font ss:FontName='Calibri' ss:Size='10' ss:Color='#17385F'/></Style><Style ss:ID='Title'><Font ss:Size='13' ss:Bold='1' ss:Color='#FFFFFF'/><Interior ss:Color='#17385F' ss:Pattern='Solid'/></Style><Style ss:ID='Header'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Total'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Date'><NumberFormat ss:Format='mm/dd/yy'/></Style><Style ss:ID='Number'><NumberFormat ss:Format='0.###'/></Style><Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style></Styles><Worksheet ss:Name='Purchase Order'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='140'/><Column ss:Width='220'/><Column ss:Width='55'/><Column ss:Width='45'/><Column ss:Width='40'/><Column ss:Width='80'/><Column ss:Width='85'/>";
+		excelXml = excelXml+"<Row ss:Height='22' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7' ss:StyleID='Title'><Data ss:Type='String'>Purchase Order</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7'><Data ss:Type='String'>"+phase+"</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Vendor</Data></Cell><Cell ss:MergeAcross='1'><Data ss:Type='String'>"+vendor+"</Data></Cell><Cell ss:Index='4'><Data ss:Type='String'>PO ID</Data></Cell><Cell ss:MergeAcross='3'><Data ss:Type='String'>"+purchaseOrderId+"</Data></Cell></Row>";
+		excelXml = excelXml+"<Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Request date</Data></Cell>";
+		if(po.Request_Date != null) { excelXml = excelXml+"<Cell ss:StyleID='Date'><Data ss:Type='DateTime'>"+po.Request_Date.toString("yyyy-MM-dd")+"T00:00:00.000</Data></Cell>"; } else { excelXml = excelXml+"<Cell/>"; }
+		excelXml = excelXml+"<Cell ss:Index='3'><Data ss:Type='String'>Date needed</Data></Cell>";
+		if(po.Date_Needed != null) { excelXml = excelXml+"<Cell ss:StyleID='Date'><Data ss:Type='DateTime'>"+po.Date_Needed.toString("yyyy-MM-dd")+"T00:00:00.000</Data></Cell>"; } else { excelXml = excelXml+"<Cell/>"; }
+		excelXml = excelXml+"</Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>PO total</Data></Cell><Cell ss:StyleID='Money'><Data ss:Type='Number'>"+po.PO_Amount_Exact+"</Data></Cell><Cell><Data ss:Type='String'>Line items</Data></Cell><Cell><Data ss:Type='Number'>"+po.PO_Line_Count+"</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Budget mods</Data></Cell><Cell ss:MergeAcross='1'><Data ss:Type='String'>"+modSummary+"</Data></Cell><Cell><Data ss:Type='String'>Approver</Data></Cell><Cell ss:MergeAcross='3'><Data ss:Type='String'>"+role+"</Data></Cell></Row><Row ss:Height='20' ss:StyleID='Header'>";
+		for each heading in {"Cost code","Item name","Description","Qty","UOM","ELEM","Unit price","Total"} { excelXml = excelXml+"<Cell><Data ss:Type='String'>"+heading+"</Data></Cell>"; }
+		excelXml = excelXml+"</Row>";
 		for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
 		{
 			itemName = ifnull(line.Budget_Item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-			note = ifnull(line.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\n","<br>");
-			body = body+"<tr><td style='padding:9px;border-bottom:1px solid #d5e1ee'><b>"+ifnull(line.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")+"</b><br>"+itemName+"</td><td>"+note+"</td><td align='right'>"+ifnull(line.Quantity_Exact,"—")+"</td><td align='center'>"+ifnull(line.UOM,"—")+"</td><td align='right'>"+ifnull(line.Unit_Price_Exact,"—")+"</td><td align='right'>$"+line.Final_Amount_Exact+"</td></tr>";
+			note = ifnull(line.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			code = ifnull(line.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			excelXml = excelXml+"<Row><Cell><Data ss:Type='String'>"+code+"</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>"+itemName+"</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>"+note+"</Data></Cell>";
+			if(line.Quantity_Exact != null && line.Quantity_Exact != "") { excelXml = excelXml+"<Cell ss:StyleID='Number'><Data ss:Type='Number'>"+line.Quantity_Exact+"</Data></Cell>"; } else { excelXml = excelXml+"<Cell/>"; }
+			excelXml = excelXml+"<Cell><Data ss:Type='String'>"+ifnull(line.UOM,"")+"</Data></Cell><Cell><Data ss:Type='String'>"+ifnull(line.Cost_Element,"")+"</Data></Cell>";
+			if(line.Unit_Price_Exact != null && line.Unit_Price_Exact != "") { excelXml = excelXml+"<Cell ss:StyleID='Money'><Data ss:Type='Number'>"+line.Unit_Price_Exact+"</Data></Cell>"; } else { excelXml = excelXml+"<Cell/>"; }
+			excelXml = excelXml+"<Cell ss:StyleID='Money'><Data ss:Type='Number'>"+line.Final_Amount_Exact+"</Data></Cell></Row>";
 		}
-		body = body+"</table><h3>Budget Modifications</h3>";
-		if(bundle.get("modifications").size() == 0) { body = body+"<p>No budget modifications required.</p>"; }
+		excelXml = excelXml+"<Row ss:Height='20'><Cell ss:MergeAcross='6' ss:StyleID='Header'><Data ss:Type='String'>Total</Data></Cell><Cell ss:StyleID='Total' ss:Formula='=SUM(R8C8:R"+(po.PO_Line_Count+7)+"C8)'><Data ss:Type='Number'>"+po.PO_Amount_Exact+"</Data></Cell></Row></Table><WorksheetOptions xmlns='urn:schemas-microsoft-com:office:excel'><FreezePanes/><FrozenNoSplit/><SplitHorizontal>7</SplitHorizontal><TopRowBottomPane>7</TopRowBottomPane><Selected/><Print><ValidPrinterInfo/><HorizontalResolution>300</HorizontalResolution><VerticalResolution>300</VerticalResolution></Print><PageSetup><Layout x:Orientation='Landscape'/></PageSetup></WorksheetOptions></Worksheet>";
+		if(bundle.get("modifications").size() > 0) { excelXml = excelXml+"<Worksheet ss:Name='Budget Modifications'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='220'/><Column ss:Width='95'/><Column ss:Width='140'/><Row ss:Height='20' ss:StyleID='Header'><Cell><Data ss:Type='String'>Cost code</Data></Cell><Cell><Data ss:Type='String'>Item name</Data></Cell><Cell><Data ss:Type='String'>Increase</Data></Cell><Cell><Data ss:Type='String'>Modification ID</Data></Cell></Row>"; }
 		for each modification in bundle.get("modifications")
 		{
 			item = Budget_Item[ID == modification.get("budgetItemId").toLong()]; name = ifnull(item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-			body = body+"<p>"+name+" · +$"+modification.get("amount")+" · Modification "+modification.get("id")+"</p>";
+			code = ifnull(item.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			excelXml = excelXml+"<Row><Cell><Data ss:Type='String'>"+code+"</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>"+name+"</Data></Cell><Cell ss:StyleID='Money'><Data ss:Type='Number'>"+modification.get("amount")+"</Data></Cell><Cell><Data ss:Type='String'>"+modification.get("id")+"</Data></Cell></Row>";
 		}
-		body = body+"<h3>Approval chain</h3><ol>";
-		for each step in bundle.get("rows") { safeRole = step.get("role").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); safeNotes = step.get("notes").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); body = body+"<li>"+safeRole+" · "+step.get("status")+if(safeNotes == "","","<br>"+safeNotes)+"</li>"; }
-		url = zoho.appuri+"#Page:Budget_Management1?budgetId="+po.Budget.toString()+"&purchaseOrderId="+purchaseOrderId;
-		body = body+"</ol><p><a href='"+url+"'>Review and approve PO and all modifications</a></p></div>";
+		if(bundle.get("modifications").size() > 0) { excelXml = excelXml+"</Table></Worksheet>"; }
+		excelXml = excelXml+"</Workbook>";
+		excelFile = excelXml.toFile("Purchase_Order_"+purchaseOrderId+".xls");
 		sendmail
 		[
 			from :"Notifications@wbdevelopment.com"
 			to :approval.Approver
 			subject :subjectLine
 			message :body
+			Attachments :file:excelFile
 		]
 		approval.Sent_Date=zoho.currentdate;
 		if(approval.Sent_Date == null) { return "ERROR: Email delivery stamp could not be verified."; }

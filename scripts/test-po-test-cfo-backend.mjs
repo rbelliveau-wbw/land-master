@@ -5,7 +5,7 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 // Execute the checked-in Deluge functions against local records. This harness
 // verifies behavior; it does not replace native Creator compilation or email QA.
-const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poValidatePayload','managePurchaseOrder'];
+const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','poActorResponse','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poValidatePayload','managePurchaseOrder'];
 const source=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
 // Creator keeps native record iterator types across branches. Reusing one for a
 // function-result map compiles but fails at runtime; JS alone cannot model it.
@@ -18,7 +18,7 @@ for(const [name,text] of Object.entries(source))assert.deepEqual(recordResultAli
 function compile(text){
   text=text.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,body)=>`insertRecord("${form}",recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)=(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}))`);
   text=text.replace(/delete from (\w+)\[([^\]]+)\]/g,(_,form,criteria)=>`removeRecords("${form}",query("${form}",row=>${criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2')},""))`);
-  text=text.replace(/sendmail\s*\[([^\]]+)\]/g,(_,body)=>`sendMail(recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)\s*:(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}));`);
+  text=text.replace(/sendmail\s*\[([^\]]+)\]/g,(_,body)=>`sendMail(recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)\s*:(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2].replace(/^\s*file:/,'');}).join(',')}));`);
   text=text.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)?`recordValues(${body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')})`:whole);
   text=text.replace(/\{("(?:\\.|[^"\\])*")\}/g,'[$1]');
   return translate(text).js.replace(/\.length\(\)/g,'.length').replace(/catch\((\w+)\)\s*\{/g,(_,error)=>`catch(${error}) { if(typeof result!=='undefined') result.put('testDiagnostic',${error}.message);`);
@@ -29,9 +29,9 @@ const step={key:'test-cfo',order:1,roleId:'1',condition:'Always',enabled:true,po
 const policy={ID:41,Company:31,Workflow:'Purchase Order',Version:1,Status:'Published',Enabled:true,Self_Approval:'Deny',Duplicate_Person:'Reject',Steps_JSON:JSON.stringify([step]),Territory_Key:'',Department_Key:'',Effective_From:null,Effective_To:null,Adapter_Enabled:false};
 const input={workflow:'Purchase Order',budgetId:'61',companyId:'31',territory:'North',department:'',submitterId:'19',effectiveDate:'2026-10-11',amount:'55.00',hasBudgetModification:false,hasBudgetOverrun:false};
 const clone=value=>JSON.parse(JSON.stringify(value));
-function runtime({context=input,policyRow=policy,login='test-owner',users,extraTables={},mailFailure=false,deleteFailure=false}={}){
+function runtime({context=input,policyRow=policy,login='test-owner',environment='Production',users,extraTables={},mailFailure=false,deleteFailure=false}={}){
   const tables={Approval_Policy:[clone(policyRow)],Approval_Role:[{ID:1,Role_Name:'CFO',Active:true}],Approval_Role_Assignment:[{ID:21,Role:1,Company:31,Person:12,Active:true,Territory_Key:'',Department_Key:'',Effective_From:null,Effective_To:null}],User_Access:users||[{ID:19,User:'test-owner',Full_Name:'Robby Belliveau',Approver_Email:'legal@example.com',Approval_Routing_Enabled:false},{ID:12,User:'normal-cfo',Full_Name:'Normal CFO',Approver_Email:'normal@example.com',Approval_Routing_Enabled:true}],Territory:[],Company:[{ID:31}],Add_Budget:[{ID:61}],Approval_Config_Audit:[],Approval_Config_Lock:[],PO_Phase_Lock:[],PO_Item:[],PO_Operation:[],Budget_Modification:[],Budget_Approvals:[],Payment_Request:[],Approval_Route_Snapshot:[],...clone(extraTables)};
-  const c=vm.createContext({tables:clone(tables),payload:clone(context),login,mailFailure,deleteFailure});
+  const c=vm.createContext({tables:clone(tables),payload:clone(context),login,environment,mailFailure,deleteFailure});
   vm.runInContext(`
   tables=JSON.parse(JSON.stringify(tables));payload=JSON.parse(JSON.stringify(payload));
   function map(v){if(!v||typeof v!=='object'||Object.prototype.hasOwnProperty.call(v,'get'))return v;if(Array.isArray(v))return v.map(map);for(var k of Object.keys(v))v[k]=map(v[k]);Object.defineProperties(v,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=map(v);}},remove:{value:function(k){delete this[k];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});return v;}
@@ -49,6 +49,8 @@ function runtime({context=input,policyRow=policy,login='test-owner',users,extraT
   function clone(value){return JSON.parse(JSON.stringify(value));}
   var thisapp={poCurrencyString(v){if(typeof v!=='string'||!/^\\d+(?:\\.\\d{1,2})?$/.test(v))return '';var parts=v.split('.');return parts[0]+'.'+(parts[1]||'').padEnd(2,'0');},recalcBudgetModifiedTotals(){rollups++;},recalcItemRevisedFinal(){rollups++;},poBudgetBalances(){return map({success:true,balances:[]});},approvalConfigurationSnapshot(){return map({success:true,configuration:{policies:[],roles:[],assignments:[]}});}};
   var request=map(payload);
+  thisapp.environment={type:environment};
+  String.prototype.toFile=function(name){return {name,content:this.toString()};};
   `+names.map(name=>programs[name]+`;thisapp.${name}=${name};`).join('\n'),c);
   return {c,run:(name,value)=>{c.argument=clone(value);return clone(vm.runInContext(`${name}(map(argument))`,c));},tables:()=>clone(c.tables)};
 }
@@ -79,6 +81,24 @@ r=runtime({extraTables:submitted()});prepareDecision(r);let outcome=r.run('handl
 r=runtime({extraTables:submitted(),login:'normal-cfo'});prepareDecision(r);outcome=r.run('handlePurchaseOrderApproval',{...decision,userAccessId:'12',poTestCFO:testCFO});assert.equal(outcome.success,false);assert.equal(r.c.writes,0,'A request marker cannot authorize another identity');
 r=runtime({extraTables:submitted()});let sent=vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c);assert.match(sent,/^OK:/);assert.equal(r.c.mails.length,1);assert.equal(r.c.mails[0].from,'Notifications@wbdevelopment.com');assert.equal(r.c.mails[0].to,testCFO.email);assert.match(r.c.mails[0].subject,/^\[PO TEST\]/);assert.match(r.c.mails[0].message,/PO TEST/);vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c);assert.equal(r.c.mails.length,1,'Recorded delivery cannot be resent');
 r=runtime({extraTables:submitted(),mailFailure:true});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^ERROR:/);assert.equal(r.tables().Budget_Approvals[0].Sent_Date,null);
+// Execute the real attachment generator with changed descriptions and mixed pricing.
+const emailTables=submitted();emailTables.Payment_Request[0].PO_Line_Count=2;
+emailTables.PO_Item=[
+  {ID:201,Purchase_Order:51,Revision:'revision-one',Line_Order:1,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:'Changed <description>',Quantity_Exact:'2',UOM:'EA',Cost_Element:'5',Unit_Price_Exact:'10.00',Final_Amount_Exact:'20.00'},
+  {ID:202,Purchase_Order:51,Revision:'revision-one',Line_Order:2,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:'=1+1',Quantity_Exact:null,UOM:'LS',Cost_Element:'5',Unit_Price_Exact:null,Final_Amount_Exact:'35.00'}
+];
+r=runtime({extraTables:emailTables});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
+const packet=r.c.mails[0];assert.equal(packet.Attachments.name,'Purchase_Order_51.xls');
+assert.match(packet.Attachments.content,/urn:schemas-microsoft-com:office:spreadsheet/);
+assert.match(packet.Attachments.content,/Tanks &amp; valves/);assert.match(packet.Attachments.content,/Changed &lt;description&gt;/);
+assert.match(packet.Attachments.content,/<Data ss:Type='String'>=1\+1<\/Data>/,'Description is text, never an Excel formula');
+assert.match(packet.Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/);
+assert.equal((packet.Attachments.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,5,'Five compact summary rows');
+assert.match(packet.Attachments.content,/ss:Height='22' ss:AutoFitHeight='0'/);assert.doesNotMatch(packet.Attachments.content,/ss:Height='(?:[3-9]\d|\d{3})'/);
+assert.match(packet.Attachments.content,/<Data ss:Type='Number'>20.00<\/Data>/);assert.match(packet.Attachments.content,/<Data ss:Type='Number'>35.00<\/Data>/);
+assert.match(packet.Attachments.content,/<Data ss:Type='DateTime'>2026-10-12T00:00:00.000<\/Data>/);
+assert.match(packet.message,/Full line details are in the attached Excel file/);assert.doesNotMatch(packet.message,/Changed &lt;description&gt;|Approval chain/,'Email stays summarized');
+r=runtime({extraTables:emailTables,environment:'Development'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);assert.match(r.c.mails[0].subject,/\[DEV TEST\]/);
 // Owner-only policy preflight rejects a bad override before creating any audits/locks.
 const policyData={id:'',companyId:'31',workflow:'Purchase Order',enabled:true,selfApproval:'Deny',steps:[step]};
 const configCall=(r,payload)=>JSON.parse(vm.runInContext(`manageApprovalPolicies(${JSON.stringify(JSON.stringify({token:'test-operation-token-000001',...payload}))})`,r.c));
@@ -122,3 +142,19 @@ r=runtime({extraTables:deletionTables(),deleteFailure:true});const interruptedPr
 for(const approvalState of ['Pending','Rejected','Approved']){const t=deletionTables();Object.assign(t.Payment_Request[0],{PO_Status:'Submitted',PO_Commitment_State:'Reserved',PO_Approval_State:approvalState});t.Budget_Modification[0].Status=approvalState==='Approved'?'Approved':'Submitted';r=runtime({extraTables:t});const pre=deleteCall(r,{action:'PreviewDelete'});assert.equal(pre.success,true,JSON.stringify(pre));const out=deleteCall(r,{...deletePayload,deletePlan:pre.deletePlan});assert.equal(out.success,true,JSON.stringify(out));assert.equal(r.tables().Payment_Request.some(row=>row.ID===51),false);assert.equal(r.c.rollups,approvalState==='Approved'?2:0,'Only removed approved PO modifications recalculate financial totals');assert.equal(r.c.mails.length,0);}
 r=runtime({extraTables:{...submitted(),PO_Phase_Lock:[{ID:99,Phase_Key:'61',Operation_Token:'delete-in-progress'}]}});prepareDecision(r);assert.equal(r.run('handlePurchaseOrderApproval',decision).success,false);assert.equal(r.tables().Budget_Approvals[0].Status,'Pending');assert.equal(r.c.writes,0,'A competing deletion lock blocks approval changes');assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^ERROR:/);assert.equal(r.c.mails.length,0,'No approval email during deletion');
 console.log('Native-source PO approvals, 250-line boundary, exact policy recovery, scoped deletion in every PO state and read-only interrupted-delete checks passed.');
+// View-as can select existing profile grants only for the authenticated Dev owner.
+const previewTables=deletionTables();previewTables.User_Access.push({ID:20,User:'demo-profile',Edit_All_Budgets:true});
+for(const environment of ['Production','Stage']){r=runtime({extraTables:previewTables,environment});const denied=deleteCall(r,{action:'PreviewDelete',userAccessId:'20'});assert.equal(denied.success,false);assert.equal(r.c.writes,0);}
+r=runtime({extraTables:previewTables,environment:'Development'});assert.equal(deleteCall(r,{action:'PreviewDelete',userAccessId:'20'}).success,true);assert.equal(r.c.writes,0);
+r=runtime({extraTables:previewTables,environment:'Development',login:'demo-profile'});assert.equal(deleteCall(r,{action:'PreviewDelete',userAccessId:'19'}).success,false);assert.equal(r.c.writes,0,'Non-owner cannot impersonate the owner');
+previewTables.User_Access[1].Edit_All_Budgets=false;r=runtime({extraTables:previewTables,environment:'Development'});assert.equal(deleteCall(r,{action:'PreviewDelete',userAccessId:'20'}).success,false);assert.equal(r.c.writes,0,'Owner preview still obeys selected profile grants');
+const cfoPreview=submitted();const cfoRoute=JSON.parse(cfoPreview.Approval_Route_Snapshot[0].Route_JSON);
+cfoRoute.route[0].userAccessId='12';cfoRoute.route[0].poTestCFO.userAccessId='12';cfoPreview.Approval_Route_Snapshot[0].Route_JSON=JSON.stringify(cfoRoute);
+for(const environment of ['Production','Stage']){r=runtime({extraTables:cfoPreview,environment});prepareDecision(r);assert.equal(r.run('handlePurchaseOrderApproval',{...decision,userAccessId:'12'}).success,false);assert.equal(r.c.writes,0);}
+r=runtime({extraTables:cfoPreview,environment:'Development'});prepareDecision(r);
+let hintBundle=r.run('poApprovalBundle','51').bundle;assert.equal(hintBundle.canApprove,false,'Native owner is not the captured CFO profile');
+// Invoke the two-argument helper directly in the same native-source harness.
+const projected=JSON.parse(vm.runInContext(`poActorResponse(map(${JSON.stringify({success:true,snapshot:{approvalBundle:hintBundle}})}),'12').toString()`,r.c));
+assert.equal(projected.snapshot.approvalBundle.canApprove,true);
+assert.equal(r.run('handlePurchaseOrderApproval',{...decision,userAccessId:'12'}).success,true,'Dev owner preview decides only as the assigned CFO');assert.equal(r.tables().Payment_Request[0].PO_Approval_State,'Approved');
+console.log('PO email: compact typed Excel, escaped fixed item names, formula-safe descriptions, one recipient and no duplicate send. Dev profile preview retains grants and fails closed in Stage/Production.');

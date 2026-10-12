@@ -71,6 +71,13 @@ assert.throws(()=>c.mergeManagedPurchaseOrderRequests([{ID:poId}],{...managedRes
 for(const vendors of [vendorResponse.vendors.concat(vendorResponse.vendors),[{ID:Number(vendorId),Vendor_Name:'Rounded'}],[{ID:vendorId,Vendor_Name:''}]])assert.throws(()=>c.mergeManagedPurchaseOrderRequests([{ID:poId}],managedResponse,{...vendorResponse,vendors},budgetId),/vendor identities/);
 response=[{ID:poId}];for(const action of ['List','Vendors']){apiFailure=action;await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable','Partial managed reads fail closed');}apiFailure='';
 response=()=>Promise.reject(new Error('Report denied'));await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable');
+response=()=>Promise.reject(Object.assign(new Error('Profile cannot view Check/Wire requests'),{permissionDenied:true}));
+await c.loadCheckWireRequests(budgetId,true);
+assert.equal(c.S.checkWireRequestState[budgetId],'loaded','An authorized PO API result survives a denied independent Check/Wire report');
+assert.equal(c.S.checkWireRequestsByBudget[budgetId][0].ID,poId);
+assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/Check \/ wire requests unavailable for this profile/);
+assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/Edit PO/);
+apiFailure='List';await c.loadCheckWireRequests(budgetId,true);assert.equal(c.S.checkWireRequestState[budgetId],'unavailable','Report denial never conceals a failed PO authorization');apiFailure='';
 const changed=deferred();response=()=>changed.promise;const pending=c.loadCheckWireRequests(budgetId,true);scope='another-session';changed.resolve([draft]);await pending;assert.equal(c.S.checkWireRequestState[budgetId],'loading','A stale session cannot publish requests');scope='production-session';
 
 // Opening a saved PO cannot save a blank new draft before its exact Get completes.

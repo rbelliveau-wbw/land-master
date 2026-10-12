@@ -1,0 +1,23 @@
+map poActorResponse(map response, string userAccessId)
+{
+	 environmentType = thisapp.environment.type;
+	// Permission hints are projected only after the caller has authenticated the actor.
+	// This changes the Development preview display, never a Production grant.
+	if(environmentType == "Development" && zoho.loginuser == zoho.adminuser && response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+"))
+	{
+		actor = User_Access[ID == userAccessId.toLong()];
+		if(actor.count() == 1)
+		{
+			snapshot = response.get("snapshot"); bundle = snapshot.get("approvalBundle");
+			if(bundle != null)
+			{
+				active = bundle.get("active");
+				canApprove = active.get("userAccessId") == userAccessId && (bundle.get("submitterId") != userAccessId || active.get("poTestCFO") != null);
+				bundle.put("canApprove",canApprove);
+				bundle.put("canRetryEmail",canApprove || bundle.get("submitterId") == userAccessId || actor.User == zoho.adminuser);
+				snapshot.put("approvalBundle",bundle); response.put("snapshot",snapshot);
+			}
+		}
+	}
+	return response;
+}

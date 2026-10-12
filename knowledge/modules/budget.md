@@ -1,3 +1,11 @@
+## PO Development profiles and approval attachment (122.29.23)
+
+Owner-only native Development View-as selects the existing profile for PO
+permissions and operation Actor. Stage/Production authentication remains strict.
+A denied Check/Wire report no longer hides independently authorized PO cards.
+Approval email summarizes the request and attaches a compact formatted Excel
+file. See [scope, regression and rollback](../../docs/po-dev-profiles-email-2026-10-12.md).
+
 ## Attachment form and report rename (122.29.16) — October 11, 2026
 
 Budget file records use `Attachment` and `All_Attachments`, retaining `Budget`

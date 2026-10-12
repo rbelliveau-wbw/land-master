@@ -1,9 +1,11 @@
 string managePurchaseOrder(string payload)
 {
+	 environmentType = thisapp.environment.type;
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
 	operationId = 0;
 	lockId = 0;
 	writeStarted = false; wasReserved = false; priorBundle = Map(); modificationPlan = List(); budgetExceeded = false;
+	p = Map();
 	try
 	{
 		p = payload.toMap();
@@ -18,7 +20,16 @@ string managePurchaseOrder(string payload)
 			typedIdentity = {"value":p.get("id")};
 			if(!typedIdentity.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}]")) { result.put("error","PO identity must be a string."); return result.toString(); }
 		}
-		access = User_Access[User == zoho.loginuser];
+		// Custom APIs execute as the owner during Creator's Development View-as preview.
+		// Only that already-authenticated owner may simulate an existing profile in Development.
+		// Stage/Production and ordinary users always retain their authenticated identity.
+		actorUser = zoho.loginuser;
+		if(environmentType == "Development" && zoho.loginuser == zoho.adminuser)
+		{
+			previewActor = User_Access[ID == p.get("userAccessId").toString().toLong()];
+			if(previewActor.count() == 1) { actorUser = previewActor.User; }
+		}
+		access = User_Access[User == actorUser];
 		if(access.count() != 1 || access.ID.toString() != ifnull(p.get("userAccessId"),"").toString()) { result.put("error","An unambiguous authenticated User Access identity is required."); return result.toString(); }
 		budgetId = ifnull(p.get("budgetId"),"").toString();
 		if(!budgetId.matches("[0-9]+")) { result.put("error","Phase budget is required."); return result.toString(); }
@@ -41,7 +52,7 @@ string managePurchaseOrder(string payload)
 				if(ifnull(approvalLookupRoute.Execution_JSON,"") != "" && approvalLookupRoute.Execution_JSON.toJSONList().contains(rowId) && approvalLookupRoute.Context_JSON.toMap().get("budgetId") == budgetId) { matchId = approvalLookupRoute.Record_ID; }
 			}
 			if(matchId == "") { result.put("error","This PO approval could not be resolved."); return result.toString(); }
-			result = thisapp.poSnapshot(matchId); result.put("contract","po-v1"); return result.toString();
+			result = thisapp.poSnapshot(matchId); result.put("contract","po-v1"); return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 		}
 		if(action == "Vendors")
 		{
@@ -178,7 +189,7 @@ string managePurchaseOrder(string payload)
 		{
 			po = Payment_Request[ID == p.get("id").toString().toLong() && Budget == budget.ID];
 			if(po.ID == null) { result.put("error","PO not found in this phase."); return result.toString(); }
-			result = thisapp.poSnapshot(po.ID.toString()); result.put("contract","po-v1"); return result.toString();
+			result = thisapp.poSnapshot(po.ID.toString()); result.put("contract","po-v1"); return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 		}
 		if(action == "List")
 		{
@@ -223,7 +234,7 @@ string managePurchaseOrder(string payload)
 				result.put("success",true); result.put("writeState","verified"); result.put("snapshot",actual.get("snapshot"));
 			}
 			else { result.put("writeState","unknown"); result.put("error","Operation is incomplete or has a newer revision. Read-only review is required."); }
-			return result.toString();
+			return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 		}
 		if(action == "Balances")
 		{
@@ -282,7 +293,7 @@ string managePurchaseOrder(string payload)
 			Status="Started"
 		];
 		// Recheck identity, permission and compare-and-set revision after acquiring the phase lock.
-		access = User_Access[User == zoho.loginuser];
+		access = User_Access[User == actorUser];
 		budget = Add_Budget[ID == budgetId.toLong()];
 		canEdit = access.count() == 1 && access.ID.toString() == p.get("userAccessId") && access.Edit_All_Budgets == true;
 		for each owner in budget.Budget_Owner
@@ -507,7 +518,7 @@ string managePurchaseOrder(string payload)
 				if(operation.Snapshot_JSON != proof.toString()) { result.put("writeState","unknown"); result.put("error","PO verification receipt could not be persisted."); return result.toString(); }
 				operation.Status="Complete";
 				delete from PO_Phase_Lock[ID == lockId];
-				result.put("success",true); result.put("writeState","verified"); result.put("snapshot",saved); return result.toString();
+				result.put("success",true); result.put("writeState","verified"); result.put("snapshot",saved); return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 			}
 		}
 		operation.Status="Unknown"; operation.Error_Text=result.get("error"); result.put("writeState","unknown");
