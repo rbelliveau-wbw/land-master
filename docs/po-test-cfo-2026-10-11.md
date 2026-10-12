@@ -1,5 +1,10 @@
 # PO draft editing and temporary test CFO — October 11, 2026
 
+Historical implementation: Settings 1.5.1 removes new test overrides in favor
+of ordinary all-budget CFO assignments. See
+[the October 12 correction and native test evidence](po-dev-profiles-email-2026-10-12.md).
+Captured historical routes remain valid; this document describes their original scope.
+
 Robby authorized a Production PO test in Bluebonnet Crossing - Phase 01,
 email only to `rbelliveau@wbdevelopment.com`, acting as the test CFO. He will
 restore Julie as approver after testing and retains Creator promotion control.

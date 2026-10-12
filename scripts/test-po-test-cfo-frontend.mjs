@@ -28,28 +28,21 @@ const normal=api.resolve(next,context);assert.equal(normal.route[0].userAccessId
 next.assignments[0].userAccessId=test.userAccessId;assert.throws(()=>api.resolve(next,context),/unroutable/,'General routing remains disabled outside the test');
 next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com';assert.equal(result.route[0].poTestCFO.email,'test@example.com','Captured test scope is detached');
 
+// Historical routes retain their captured safeguards; new configuration has no
+// budget test controls, marker, amount cap or self-approval exception.
+assert.throws(()=>api.assertPublish(config.policies[0],[]),/no longer supported/);
 function block(name,nextName){let start=admin.indexOf('function '+name+'(');if(admin.slice(start-6,start)==='async ')start-=6;let end=admin.indexOf('function '+nextName+'(',start);if(admin.slice(end-6,end)==='async ')end-=6;assert.ok(start>=0&&end>start,name);return admin.slice(start,end);}
-for(const [name,nextName] of [['esc','copy'],['copy','stable'],['stable','equal'],['equal','verify'],['picker','choices'],['choices','field'],['field','check'],['check','companies'],['companies','territories'],['territories','departments'],['departments','roleRows'],['roleRows','userRows'],['userRows','testCFOFields'],['testCFOFields','scopeFields'],['scopeFields','render'],['policyData','ensureCFO'],['ensureCFO','poSteps'],['poSteps','editor'],['editor','load'],['input','click'],['click','close'],['preview','input']])vm.runInContext(block(name,nextName),c);
-c.config=clone(config);c.editing='Policies';c.draft=clone(config.policies[0]);delete c.draft.steps[0].poTestCFO;c.pending=null;c.busy=false;c.same=()=>true;let renders=0;c.render=()=>{renders++;};c.panel={};const scopeBadge={textContent:''};c.card={querySelector:selector=>selector==='[data-ap-test-scope="0"]'?scopeBadge:null};
-function element(dataset,attrs=[],extra={}){return {dataset,...extra,hasAttribute:name=>attrs.includes(name),closest(){return this;}};}
-c.input({target:element({index:'0'},['data-ap-test-toggle'],{checked:true,type:'checkbox'})});
-assert.deepEqual(clone(c.draft.steps[0].poTestCFO),{budgetId:'',userAccessId:'',email:'',allowSelfApproval:true,maxAmount:'55.00'});assert.equal(c.draft.steps[0].roleId,'1');assert.equal(c.draft.steps[0].enabled,true);assert.equal(c.draft.steps[0].condition,'Always');
-let html=c.editor();for(const label of ['Test CFO','Person (User Access)','Budget ID','Test email','Maximum test amount'])assert.ok(html.includes(label));assert.match(html,/Routing disabled/,'Test picker includes existing users with general routing disabled');assert.match(html,/data-ap-test-toggle/);assert.match(html,/no modifications or overruns/);
-c.click({target:element({apPick:'userAccessId',index:'0',value:test.userAccessId},['data-ap-test'])});
-const rendersBeforeInput=renders;
-c.input({target:element({apField:'budgetId',index:'0'},['data-ap-test'],{value:test.budgetId,type:'text'})});
-assert.match(scopeBadge.textContent,new RegExp(test.budgetId));assert.equal(renders,rendersBeforeInput,'Typing a scope field patches its label without rebuilding focused controls');
-c.input({target:element({apField:'maxAmount',index:'0'},['data-ap-test'],{value:'12.50',type:'text'})});assert.match(scopeBadge.textContent,/up to \$12\.50/);assert.equal(renders,rendersBeforeInput);
-c.input({target:element({apField:'email',index:'0'},['data-ap-test'],{value:test.email,type:'text'})});
-assert.equal(c.draft.steps[0].poTestCFO.userAccessId,test.userAccessId);assert.equal(c.draft.steps[0].poTestCFO.budgetId,test.budgetId);assert.equal(c.draft.budgetId,undefined,'Test fields cannot spill onto the policy');
-c.input({target:element({index:'0'},['data-ap-test-toggle'],{checked:false,type:'checkbox'})});assert.equal('poTestCFO' in c.draft.steps[0],false);
-c.draft.steps[0].poTestCFO=clone(test);c.click({target:element({apPick:'workflow',index:'',value:'Budget'})});assert.equal('poTestCFO' in c.draft.steps[0],false);assert.doesNotMatch(c.editor(),/data-ap-test-toggle/);
-c.draft=clone(context);c.editing='Preview';assert.match(c.editor(),/[Bb]udget ID/);c.draft.workflow='Contract';assert.doesNotMatch(c.editor(),/[Bb]udget ID/);
-
-// The real Preview handler sends exact budget scope and compares the full test route.
-c.draft=clone(context);c.config=clone(config);const nodes={};c.card={querySelector:selector=>nodes[selector]||(nodes[selector]={disabled:false,innerHTML:''})};let sent;
-c.policyReady=true;c.today='2026-10-11';c.options={call:async request=>{sent=clone(request);return {contract:'approval-policy-v1',success:true,snapshot:api.resolve(c.config,request.context)};}};c.msg=message=>{throw new Error(message);};
-await c.preview();assert.equal(sent.context.budgetId,test.budgetId);assert.equal(typeof sent.context.budgetId,'string');assert.match(nodes['[data-ap-route]'].innerHTML,/PO test CFO/);
-c.policyReady=true;c.today='2026-10-11';c.options.call=async request=>{const snapshot=clone(api.resolve(c.config,request.context));delete snapshot.route[0].poTestCFO;return {contract:'approval-policy-v1',success:true,snapshot};};
-await assert.rejects(()=>c.preview(),/Server route differs/,'Preview rejects a backend that omits the captured test scope');
-console.log('Scoped PO Test CFO frontend: exact budget/amount guards, self-approval exception, normal denial, nested settings controls and Preview parity passed.');
+for(const [name,nextName] of [['esc','copy'],['copy','stable'],['stable','equal'],['equal','verify'],['picker','choices'],['choices','field'],['field','check'],['check','companies'],['companies','territories'],['territories','departments'],['departments','roleRows'],['roleRows','userRows'],['userRows','scopeFields'],['scopeFields','render'],['policyData','ensureCFO'],['ensureCFO','poSteps'],['poSteps','editor'],['editor','load'],['preview','input']])vm.runInContext(block(name,nextName),c);
+c.config=clone(config);c.editing='Policies';c.draft=c.policyData(clone(config.policies[0]));
+assert.equal(c.draft.steps[0].poTestCFO,undefined);assert.deepEqual(clone(c.config.policies[0].steps[0].poTestCFO),test,'Reading config never alters saved history');
+let html=c.editor();assert.match(html,/CFO · Always/);assert.doesNotMatch(html,/Test CFO|Budget ID|Test settings|Maximum test amount|data-ap-test/);
+c.editing='Preview';c.draft={...clone(context)};delete c.draft.budgetId;assert.doesNotMatch(c.editor(),/Test budget|Budget ID/);
+const globalConfig=clone(config);globalConfig.policies[0]=c.policyData(globalConfig.policies[0]);globalConfig.policies[0].companyId='';globalConfig.assignments[0].companyId='';
+for(const companyId of ['31','99'])for(const amount of ['0.01','55.01','1000000.00']){
+  const routed=api.resolve(globalConfig,{...c.draft,companyId,territory:'Any territory',amount});assert.equal(routed.route.length,1);assert.equal(routed.route[0].userAccessId,'12');assert.equal(routed.route[0].reason,'Required step');assert.equal(routed.route[0].poTestCFO,undefined);
+}
+assert.throws(()=>api.resolve(globalConfig,{...c.draft,submitterId:'12'}),/self-approval/);
+c.config=globalConfig;c.busy=false;c.same=()=>true;c.panel={};c.policyReady=true;c.today='2026-10-12';const nodes={};c.card={querySelector:selector=>nodes[selector]||(nodes[selector]={disabled:false,innerHTML:''})};let sent;
+c.options={call:async request=>{sent=clone(request);return {contract:'approval-policy-v1',success:true,snapshot:clone(api.resolve(globalConfig,request.context))};}};c.msg=message=>{throw new Error(message);};
+await c.preview();assert.equal(sent.context.budgetId,undefined);assert.match(nodes['[data-ap-route]'].innerHTML,/Normal CFO/);
+console.log('All-budget CFO configuration: no test-budget controls or new overrides, ordinary assignments across companies and amounts, preserved historical routes and standard self-approval denial.');

@@ -60,6 +60,6 @@
     // Detached submission evidence; configuration edits cannot mutate an active route.
     return JSON.parse(JSON.stringify({policyId:policy.id,context:ctx,route:route,excluded:excluded,selfApproval:policy.selfApproval}));
   }
-  function assertPublish(candidate,policies){validatePolicy(candidate);policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&p.companyId===candidate.companyId&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||""))fail("A published policy already exists in this scope. Edit that policy.");});return candidate;}
+  function assertPublish(candidate,policies){validatePolicy(candidate);if(candidate.steps.some(function(step){return step.poTestCFO!=null;}))fail("Budget-specific CFO test overrides are no longer supported. Configure the CFO assignment for all budgets.");policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&p.companyId===candidate.companyId&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||""))fail("A published policy already exists in this scope. Edit that policy.");});return candidate;}
   root.LMApprovalPolicy={resolve:resolve,validatePolicy:validatePolicy,assertPublish:assertPublish,currency:currency};
 })(typeof globalThis!=="undefined"?globalThis:this);

@@ -56,14 +56,47 @@ Carlile Hills Phase 01 budget `4410926000005122080`, October 12, 2026:
 
 Both native saves and actor-scoped read-only Check returned `success:true`,
 `writeState:verified`, exact parent/budget IDs and two distinct children.
-Both remain Draft, with no reservation or modification. Development vendors
+Both were initially saved as Draft, with no reservation or modification. Development vendors
 `4410926000005162018` (Site Services) and `4410926000005162020` (Materials)
 were created for these tests. No Production data was changed by these tests.
 
-Development has no existing PO policy/assignments. A new inactive Draft test
-policy `4410926000005174032` captures CFO role `4410926000005174026`,
-Demo User 5, Robby's email, this budget and maximum $55. Its existing native
-test mode also permits self-approval within that scope; the planned test uses
-Demo User 3 as submitter and Demo User 5 as approver. Publication is awaiting
-action-time approval. Do not claim live approval/email delivery until that
-test has completed.
+The $35 PO was then submitted as Demo User 3 and approved as Demo User 5.
+Submission revision `2627431a-c4ab-4fd1-a394-e7c6fac40318` has two current
+children `4410926000005162046` and `4410926000005162048`; the original draft
+children remain historical. Route snapshot `4410926000005162050` and approval
+row `4410926000005162052` captured the CFO. Native `Sent_Date` confirmed one
+notification to Robby's email on October 12. The final state is Approved with
+Reserved commitment and zero budget modifications. The $20 PO remains Draft.
+This verifies native sending, not independent inbox receipt or native Excel rendering.
+
+## All-budget CFO configuration
+
+Settings Manager 1.5.1 removes Test CFO, test budget and amount controls.
+Editing/saving a policy strips the legacy override from a detached copy;
+captured route snapshots and historical audit data keep their original values.
+`manageApprovalPolicies` rejects new SavePolicy/Publish overrides, while legacy
+interrupted Draft reconciliation remains supported. This is an additional
+Creator function change beyond the four email/profile functions above.
+
+Development policy `4410926000005174032` is Published for all companies,
+territories and departments, with ordinary CFO role `4410926000005174026`
+and global assignment `4410926000005174048` to Demo User 5. Its existing
+User Access routing flag is enabled; no edit/approval grants changed.
+Native Preview without any budget ID successfully routed a $5,000 PO to
+rbelliveau@wbdevelopment.com. Normal self-approval denial applies; the old
+test exception does not apply to future submissions. Modification approvers
+remain configurable separately; this test policy contains only CFO.
+
+Production policy `4410926000005148030` was saved Published for all companies,
+territories and departments with its budget override removed. Global CFO
+assignment `4410926000005162060` uses role `4410926000005148006` and Robby's
+Production User Access record `4410926000004465004`. Existing approval/edit
+grants remain unchanged. Routing is enabled and the approver email is now
+rbelliveau@wbdevelopment.com (the old shared approval email was legal@).
+These are environment-specific configuration records; publishing code does
+not copy Development policy IDs into Production.
+
+Regression includes ordinary global routing across companies and amounts,
+rejection of new test overrides, preservation of captured routes and legacy
+recovery, plus the native parent/children/email/decision test above.
+Rollback Settings to 1.5.0 and restore manageApprovalPolicies from 288d7d0.

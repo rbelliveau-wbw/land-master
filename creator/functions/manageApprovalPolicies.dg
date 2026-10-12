@@ -110,6 +110,9 @@ string manageApprovalPolicies(string payload)
 			{
 				if(testPolicyStep.get("poTestCFO") != null)
 				{
+					// Historical captured routes and interrupted receipts remain readable.
+					// New configuration uses the ordinary CFO assignment across budgets.
+					if(action != "Reconcile") { result.put("error","Budget-specific PO test CFO overrides are no longer supported. Configure the CFO assignment for all budgets."); return result.toString(); }
 					isPOTestPolicy = true;
 					testCFO = testPolicyStep.get("poTestCFO");
 					if(testPolicyData.get("workflow") != "Purchase Order" || testPolicySteps.size() != 1 || testPolicyStep.get("enabled") != true || testPolicyStep.get("condition") != "Always" || testPolicyData.get("selfApproval") != "Deny" || testCFO.get("allowSelfApproval") != true) { result.put("error","PO test CFO requires one enabled Always CFO step with submitter self-approval denied."); return result.toString(); }
