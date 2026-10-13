@@ -8,15 +8,15 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.101"></script>
-<script src="pf-save-audit.js?v=1.80.101"></script>
-<script src="pf-progress.js?v=1.80.101"></script>
+<script src="pf-save-verification.js?v=1.80.102"></script>
+<script src="pf-save-audit.js?v=1.80.102"></script>
+<script src="pf-progress.js?v=1.80.102"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.101"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.101">
-<script src="comments.js?v=1.80.101"></script>
+<script src="budget-transfer-ui.js?v=1.80.102"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.102">
+<script src="comments.js?v=1.80.102"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -1821,7 +1821,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.101"></script>
+<script src="success-feedback.js?v=1.80.102"></script>
 </head>
 <body>
 
@@ -2235,7 +2235,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.101";
+var PFW_VERSION="1.80.102";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -6970,6 +6970,71 @@ function installmentRows(list){
   (list||[]).forEach(function(r){ rows.push([xNum(r.Installment),xNum(r.Month1),xNum(r.Percent1),xNum(r.Cost),String(r.Date1||"")]); });
   return rows;
 }
+/* Export-only monthly view. Phase rows stay untouched in the calculation/save model. */
+function proformaMonthExportRows(months){
+  var groups=Object.create(null);
+  var sumFields=["Lots_Sold","Base_Lot_Sales","Additional_Markup_Income","Escalator_Interest_Accrued",
+    "Finished_Lot_Sales","Land_Cost","Land_Sale","PID_MUD_Revenue","Entitlement_Engineering",
+    "Entitlement_Engineering_Addl","Construction_Cost_Base","Construction_Cost_Addl","Reimbursements","Reimbursed_Fees"];
+  function number(v,key,month){
+    var n=xNum(v);
+    if(n!=="" && (typeof n!=="number" || !isFinite(n))) throw Error("Cannot export month "+month+": invalid "+key+".");
+    return n;
+  }
+  function phases(rows,key,month){
+    var ids=[];
+    rows.forEach(function(r){
+      var id=number(r[key],key,month);
+      if(id==="")return;
+      if(id<1 || Math.floor(id)!==id)throw Error("Cannot export month "+month+": invalid "+key+".");
+      if(ids.indexOf(id)<0)ids.push(id);
+    });
+    ids.sort(function(a,b){return a-b;});
+    return ids.length>1?ids.join(", "):ids.length?ids[0]:"";
+  }
+  function saleMetadata(rows,key,month){
+    var entries=[],values=[];
+    rows.forEach(function(r){
+      var v=number(r[key],key,month);
+      if(v==="")return;
+      if(values.indexOf(v)<0)values.push(v);
+      entries.push({phase:number(r.Lot_Sale_Phase,"Lot_Sale_Phase",month),value:v});
+    });
+    if(values.length<2)return values.length?values[0]:"";
+    /* Different phases' rates/durations are labels, never sums or averages. */
+    if(entries.some(function(e){return e.phase==="";}))throw Error("Cannot export month "+month+": "+key+" needs a sale phase.");
+    entries.sort(function(a,b){return (a.phase-b.phase)||(a.value-b.value);});
+    var labels=[];
+    entries.forEach(function(e){var label="Phase "+e.phase+": "+e.value;if(labels.indexOf(label)<0)labels.push(label);});
+    return labels.join("; ");
+  }
+  (months||[]).forEach(function(r){
+    var month=number(r.Month1,"Month",r.Month1);
+    if(month==="" || month<1 || Math.floor(month)!==month)throw Error("Cannot export an invalid month number.");
+    (groups[month]||(groups[month]=[])).push(r);
+  });
+  return Object.keys(groups).map(Number).sort(function(a,b){return a-b;}).map(function(month){
+    var rows=groups[month],masters=rows.filter(function(r){return xBool(r.Master_Month)==="Yes";});
+    if(masters.length!==1)throw Error("Cannot export month "+month+": expected one Master row.");
+    var master=masters[0],out={Month1:month,date:master.date,Master_Month:true};
+    rows.forEach(function(r){
+      if(!r.date)return;
+      if(out.date && ymShort(r.date)!==ymShort(out.date))throw Error("Cannot export month "+month+": conflicting dates.");
+      out.date=r.date;
+    });
+    sumFields.forEach(function(key){
+      var total="";
+      rows.forEach(function(r){var v=number(r[key],key,month);if(v!=="")total=(total===""?0:total)+v;});
+      if(total!=="" && !isFinite(total))throw Error("Cannot export month "+month+": invalid "+key+" total.");
+      out[key]=total;
+    });
+    ["Const_Phase","Eng_Phase","Lot_Sale_Phase"].forEach(function(key){out[key]=phases(rows,key,month);});
+    ["Escalator_Percentage","Escalator_Elapsed_Months","Escalator_Applied_Pct"].forEach(function(key){out[key]=saleMetadata(rows,key,month);});
+    /* These already include every phase. In particular, never sum running balances. */
+    ["Cash_Flow","Running_Cash_Flow"].forEach(function(key){out[key]=number(master[key],key,month);});
+    return out;
+  });
+}
 function buildProformaWorkbook(X,m,c){
   var wb=X.utils.book_new();
   function add(name,rows,widths){
@@ -7019,8 +7084,8 @@ function buildProformaWorkbook(X,m,c){
     add("Months",[["Month","Date","Master","Const Phase","Eng Phase","Lot Sale Phase","Lots Sold","Base Lot Sales","Additional Markup Income",
       "Escalator Interest Accrued","Escalator Percentage","Escalator Elapsed Months","Escalator Applied %",
       "Finished Lot Sales","Land Cost","Land Sale","PID/MUD Revenue","Entitlement & Eng","Ent & Eng Add'l","Construction Base","Construction Add'l","Reimbursements","Reimbursed Fees","Cash Flow","Running Cash Flow"]]
-      .concat(c.months.map(function(r){
-        return [xNum(r.Month1),ymShort(r.date),r.Master_Month?"Yes":"No",xNum(r.Const_Phase),xNum(r.Eng_Phase),xNum(r.Lot_Sale_Phase),
+      .concat(proformaMonthExportRows(c.months).map(function(r){
+        return [xNum(r.Month1),ymShort(r.date),"Yes",r.Const_Phase,r.Eng_Phase,r.Lot_Sale_Phase,
           xNum(r.Lots_Sold),xNum(r.Base_Lot_Sales),xNum(r.Additional_Markup_Income),xNum(r.Escalator_Interest_Accrued),
           xNum(r.Escalator_Percentage),xNum(r.Escalator_Elapsed_Months),xNum(r.Escalator_Applied_Pct),
           xNum(r.Finished_Lot_Sales),xNum(r.Land_Cost),xNum(r.Land_Sale),xNum(r.PID_MUD_Revenue),

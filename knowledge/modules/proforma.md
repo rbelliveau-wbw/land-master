@@ -807,3 +807,10 @@ working Budget approach, without a download/byte-comparison gate. PF deletion
 verifies absence using a counted collection rather than reading a deleted ID.
 Pending requests and duplicate uncertain writes remain protected. No Creator
 deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).
+## One month per Excel row (1.80.102)
+
+The Excel Months sheet combines overlapping phase detail into one row per month.
+Amounts and lots sum; Cash Flow and Running Cash Flow come once from the Master.
+Multiple phase IDs and differing phase rates remain labeled. The calculator,
+Months & Phases editor, saved rows and Creator workflows are unchanged. No
+Creator deployment is required. See [verification and rollback](../../docs/proforma-monthly-excel-export-1.80.102.md).

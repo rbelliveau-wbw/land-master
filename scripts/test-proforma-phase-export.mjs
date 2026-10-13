@@ -34,7 +34,7 @@ const format={
 const ctx=vm.createContext({...format,S:{ed:{calc:null}},PhaseSalesEngine:globalThis.PhaseSalesEngine,
   document:{getElementById:()=>null}});
 vm.runInContext(widgetFunction('phaseSalesPlan')+'\n'+widgetFunction('phaseSalesDisplaySummary')+'\n'+widgetFunction('proformaInputRows')+'\n'
-  +widgetFunction('buildProformaWorkbook')+'\n'+widgetFunction('renderMonthsPane'),ctx);
+  +widgetFunction('proformaMonthExportRows')+'\n'+widgetFunction('buildProformaWorkbook')+'\n'+widgetFunction('renderMonthsPane'),ctx);
 const X={utils:{
   book_new:()=>({SheetNames:[],Sheets:{}}),
   aoa_to_sheet:rows=>({rows}),
