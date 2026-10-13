@@ -99,6 +99,13 @@ Accept and soft red Reject paired and reachable on narrow screens. Reuse the
 approval rejection colors defined below rather than inventing a destructive
 button treatment for this queue.
 
+Construction statuses use distinct pastel surfaces with matching saturated
+text and picker/filter dots: violet Pending Review, blue New, rose Rejected,
+cyan Feasibility, gold Awaiting Purchasing, orange Awaiting Development,
+fuchsia Awaiting Other, teal Approved, green Complete, and slate Cancelled.
+Use the same palette for request/action chips, status menus, and board rails.
+Keep labels visible and Legal's existing palette unchanged.
+
 ## Record dropdowns
 
 Legal's main Contracts report includes an alphabetized Territory multi-select

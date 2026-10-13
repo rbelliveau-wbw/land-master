@@ -1482,6 +1482,10 @@ select.apr-in{cursor:pointer}
 #cboPop .cbo-opt.on{font-weight:800;color:var(--navy)}
 #cboPop .cbo-opt.on::after{content:"\2713";margin-left:auto;color:var(--primary-2);font-weight:900}
 #cboPop .cbo-dot{width:9px;height:9px;border-radius:50%;flex:none}
+#cboPop .cbo-opt.construction-status-opt{background:var(--status-bg);color:var(--status-fg);margin:3px 0;font-weight:750}
+#cboPop .construction-status-opt:hover,#cboPop .construction-status-opt.act,#cboPop .construction-status-opt.on{box-shadow:inset 0 0 0 1px var(--status-fg)}
+#cboPop .construction-status-opt.on::after{content:none}
+#cboPop .construction-status-check{display:block;flex:none;margin-left:auto;color:var(--status-fg)}
 #cboPop .cbo-none{padding:10px;text-align:center;font-size:11.5px;color:var(--faint)}
 .msel-pop{position:fixed;z-index:85;width:288px;background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 14px 40px rgba(15,39,68,.2),0 2px 8px rgba(15,39,68,.08);display:flex;flex-direction:column;overflow:hidden;animation:popIn .14s ease}
 .msel-search{padding:9px 10px;border-bottom:1px solid var(--line)}
@@ -2016,7 +2020,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.1", pageSize: 200, maxPages: 25,
+  version: "1.62.2", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -4173,8 +4177,18 @@ var STATUS_COLORS={
   "Approved":["#ccfbf1","#0f766e"],"Complete":["#d1fae5","#047857"],
   "Current":["#dbeafe","#1e40af"],"Overdue":["#fee2e2","#dc2626"],"Open":["#f1f5f9","#64748b"]
 };
+var CONSTRUCTION_STATUS_COLORS={
+  "Proposed":["#f3e8ff","#7e22ce"],"New":["#dbeafe","#1d4ed8"],
+  "Rejected":["#ffe4e6","#be123c"],"Feasibility":["#cffafe","#0e7490"],
+  "Awaiting Purchasing":["#fef3c7","#b45309"],"Awaiting Development":["#ffedd5","#c2410c"],
+  "Awaiting Other":["#fae8ff","#a21caf"],"Approved":["#ccfbf1","#0f766e"],
+  "Complete":["#dcfce7","#15803d"],"Cancelled":["#e2e8f0","#475569"]
+};
+function statusColors(label,mode){
+  return ((mode||S.workMode)==='construction'&&CONSTRUCTION_STATUS_COLORS[label])||STATUS_COLORS[label]||["#eef2f7","#5c7394"];
+}
 function chip(label){
-  var c=STATUS_COLORS[label]||["#eef2f7","#5c7394"];
+  var c=statusColors(label);
   return '<span class="tag" style="background:'+c[0]+';color:'+c[1]+'">'+esc(label)+'</span>';
 }
 
@@ -4282,6 +4296,7 @@ function cbo(o){
     +(o.af?' data-af="'+attr(o.af)+'"':'')+(o.aid?' data-aid="'+attr(o.aid)+'"':'')
     +(o.field?' data-f="'+attr(o.field)+'"':'')+(o.rid?' data-id="'+attr(o.rid)+'"':'')
     +(o.blank?' data-blank="1"':'')+(o.dots?' data-dots="1"':'')
+    +(o.statusMode?' data-status-mode="'+attr(o.statusMode)+'"':'')
     +(o.style?' style="'+attr(o.style)+'"':'')
     +(o.title?' title="'+attr(o.title)+'"':'')
     +(o.onpick?' data-onpick="'+attr(o.onpick)+'"':'')
@@ -4296,12 +4311,13 @@ function cbo(o){
 function cboStatus(o){
   var opts=(o.opts||(o.aid?workActionStatuses(findAction(o.aid)):constructionMode()?CONSTRUCTION_STATUSES:ACTION_STATUSES)).slice();
   if(o.value&&opts.indexOf(o.value)<0) opts.push(o.value);
+  var mode=o.aid?actionWorkModule(findAction(o.aid)):S.workMode,col=statusColors(o.value,mode);
   return cbo({id:o.id,cls:(o.cls||"")+" cbo-status",af:o.af,aid:o.aid,value:o.value,opts:opts,dots:true,
-              style:"background-color:"+o.bg+";color:"+o.fg,title:o.title,
+              statusMode:mode,style:"background-color:"+(mode==='construction'?col[0]:o.bg)+";color:"+(mode==='construction'?col[1]:o.fg),title:o.title,
               onpick:(o.onpick?o.onpick+";":"")+"cboRepaintStatus(el,value)"});
 }
 function cboRepaintStatus(el,v){
-  var c=STATUS_COLORS[v]||["#eef2f7","#5c7394"];
+  var c=statusColors(v,el.getAttribute("data-status-mode")||S.workMode);
   el.style.backgroundColor=c[0]; el.style.color=c[1];
 }
 /* the subdivision options arrive after ncLoadLots resolves */
@@ -4340,10 +4356,11 @@ function cboRender(q){
   if(!rows.length){ list.innerHTML='<div class="cbo-none">No matches</div>'; return; }
   var cur=CBO.btn?String(CBO.btn.value||""):"";
   var dots=CBO.btn&&CBO.btn.getAttribute("data-dots");
+  var mode=CBO.btn&&CBO.btn.getAttribute("data-status-mode")||S.workMode,colorful=dots&&mode==='construction';
   list.innerHTML=rows.map(function(o,i){
-    var dot=dots?'<span class="cbo-dot" style="background:'+((STATUS_COLORS[o.v]||["#eef2f7","#5c7394"])[1])+'"></span>':'';
-    return '<div class="cbo-opt'+(o.v===cur?" on":"")+(i===CBO.act?" act":"")+'" data-i="'+i+'" onmousedown="event.preventDefault();cboPick('+i+')">'
-      +dot+'<span>'+esc(o.label||"\u2014")+'</span></div>';
+    var col=statusColors(o.v,mode),dot=dots?'<span class="cbo-dot" style="background:'+col[1]+'"></span>':'';
+    return '<div class="cbo-opt'+(colorful?' construction-status-opt':'')+(o.v===cur?" on":"")+(i===CBO.act?" act":"")+'"'+(colorful?' style="--status-bg:'+col[0]+';--status-fg:'+col[1]+'"':'')+' data-i="'+i+'" onmousedown="event.preventDefault();cboPick('+i+')">'
+      +dot+'<span>'+esc(o.label||"\u2014")+'</span>'+(colorful&&o.v===cur?'<svg class="construction-status-check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l3 3 7-6"/></svg>':'')+'</div>';
   }).join("");
 }
 function cboPick(i){
@@ -4430,7 +4447,7 @@ function mselRows(kind){
   var sel=mselSelected(kind), cfg=mselCfg(kind);
   if(kind==='parentedit'||kind==='ncparent')return contractParentPickerRows(kind,sel);
   return mselOptions(kind).map(function(o){
-    var dot=cfg.dot?'<span class="msel-dot" style="background:'+((STATUS_COLORS[o.v]||["#eef2f7","#5c7394"])[1])+'"></span>':'';
+    var dot=cfg.dot?'<span class="msel-dot" style="background:'+statusColors(o.v)[1]+'"></span>':'';
     var parentKind=kind==='parentedit'||kind==='ncparent';
     var mark=parentKind?'<span class="msel-pick"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l3 3 7-6"/></svg></span>':cfg.single?'<span class="msel-pick">\u2713</span>':'<span class="msel-box">\u2713</span>';
     return '<'+(parentKind?'button type="button" aria-pressed="'+(sel.indexOf(o.v)>=0)+'"':'div')+' class="msel-opt'+(sel.indexOf(o.v)>=0?" on":"")+'" data-val="'+attr(o.v)+'" onclick="mselToggle(\'' + kind + '\',this.getAttribute(\'data-val\'))">'
@@ -9354,7 +9371,7 @@ function drillRow(c){
     var age=agingText(a);
     var owner=String(a.Dev_Mgr||"").trim();
     var dueIn=toInput(a.Due_Date);
-    var sc=STATUS_COLORS[status]||["#eef2f7","#5c7394"];
+    var sc=statusColors(status,actionWorkModule(a));
     var noteTxt=String(a.Dev_Notes||"").replace(/\s+/g," ").trim();
 
     /* ---- L1..L9 : fixed lanes, so every row's controls line up ---- */
@@ -9484,7 +9501,7 @@ function completeContractCascade(cid,c,openActs){
 function statusCell(c){
   var cur=String(c.Status||"New");
   if(cur==='Proposed')return '<span class="contract-status-readonly" style="background:#f3e8ff;color:#7e22ce" title="'+(workModule(c)==='construction'?'Awaiting acceptance in Construction Review.':'Awaiting acceptance in Review by someone with Approval Queue access.')+'">'+esc(workStatusLabel(cur,c))+'</span>';
-  var col=STATUS_COLORS[cur]||["#eef2f7","#5c7394"];
+  var col=statusColors(cur,workModule(c));
   /* a locked contract shows its status, it does not offer to change it */
   if(contractLocked(c)||!mayEdit(c.ID))
     return '<span class="contract-status-readonly lockchip" style="background:'+col[0]+';color:'+col[1]+'" title="Complete — read-only.">'
@@ -9660,7 +9677,7 @@ function renderBoard(list){
     }).join("");
     return '<div class="bcol" data-status="'+attr(s)+'"'
       +' ondragover="bDragOver(event)" ondragleave="bDragLeave(event)" ondrop="bDrop(event)">'
-      +'<div class="bcol-head"><span class="bar" style="background:'+(COL_BARS[s]||"#8ea0bd")+'"></span>'+esc(workStatusLabel(s))+'<span class="n">'+cards.length+'</span></div>'
+      +'<div class="bcol-head"><span class="bar" style="background:'+(constructionMode()?statusColors(s)[1]:COL_BARS[s]||"#8ea0bd")+'"></span>'+esc(workStatusLabel(s))+'<span class="n">'+cards.length+'</span></div>'
       +'<div class="bcol-cards">'+inner+'<div class="bcol-drop">Drop here</div></div></div>';
   }).join("");
   return '<div class="boardwrap">'+cols+'</div>';
@@ -9742,8 +9759,8 @@ function renderDetail(){
     +'<div class="info-field"><div class="info-lbl">Status</div><div class="info-val">'
     +(mayEdit(c.ID)&&String(c.Status||'')!=='Proposed'
       ?cboStatus({id:"cStatusSel",cls:"cbo-pill",value:String(c.Status||"New"),opts:pickableContractStatuses(String(c.Status||"New")),
-                  bg:(STATUS_COLORS[String(c.Status||"New")]||["#eef2f7","#5c7394"])[0],
-                  fg:(STATUS_COLORS[String(c.Status||"New")]||["#eef2f7","#5c7394"])[1]})
+                  bg:statusColors(String(c.Status||"New"),workModule(c))[0],
+                  fg:statusColors(String(c.Status||"New"),workModule(c))[1]})
       :'<span class="det-status-ro" title="'+attr(contractLocked(c)
           ?"Complete — read-only."
           :String(c.Status||'')==='Proposed'?(construction?"Awaiting acceptance in Construction Review.":"Awaiting acceptance in Review by someone with Approval Queue access."):(construction?"Changing request status needs Edit All Construction Requests access.":"Changing contract status needs Edit Contracts access."))+'">'

@@ -141,6 +141,15 @@ Both checks must finish successfully before this update is reported live.
 Robby's desktop-only verification preference is recorded in root AGENTS.md
 and the general style guide; do not spend time checking phone/tablet formatting.
 
+## Status colors in 1.62.2
+
+Construction status pickers use distinct pastel rows with matching text, dots,
+and a centered SVG selection check. Request/action chips, status-filter dots,
+and Construction board rails reuse the palette; Legal keeps its existing
+colors. Status choices, saved values, callbacks, permissions, and native
+fields/APIs/functions are unchanged. This is a frontend-only immutable release;
+Creator remains on `9.81`, and widget rollback is `1.62.1`.
+
 ## Creator deployment checklist
 
 The schema manifest records exact additive link names, field types, choices,
