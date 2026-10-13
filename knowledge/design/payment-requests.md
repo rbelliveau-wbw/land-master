@@ -62,3 +62,8 @@ Saved PO View/Edit opens an explicit loading state. Hide entry fields, zero tota
 and the Summary until the exact snapshot and vendor roster arrive together. Read
 them in parallel. Failed loads show the error and Retry load; retain close/focus
 handling and never expose a blank editable draft for a saved PO.
+
+Review PO after a save or decision refreshes budget balances before rendering
+calculations for the new saved snapshot. Show checking/unavailable figures until
+the current read completes; an older balance reply cannot replace a newer one.
+Retain exact-cent reservation and pending-modification reconciliation.

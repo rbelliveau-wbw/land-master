@@ -1119,3 +1119,28 @@ and failed-read/retry tests loaded the saved amount with zero writes. The native
 email function compiled and its reopened token fingerprint matches the reviewed
 source (768875516daab2dc). The approved Development demo-user permission change
 lets demouser_1 open the pending VP PO and exposes Approve PO & mods.
+
+## PO review after an over-budget submission (122.29.32)
+
+The October 13 critical report came from Review PO immediately after Submit.
+The acknowledged $50,065 reserved PO carried a $100 pending modification, but
+the dialog rendered against its pre-submit balance with zero pending mods.
+That mixed snapshot triggered the strict pending-modification invariant.
+
+Get and Review PO now start the automatic balance refresh before revealing
+calculations for a replacement saved snapshot. Allocations use balances only
+when that read is loaded; checking or failed reads remain unverified. A balance
+read generation rejects older replies. Exact-cent reconciliation still rejects
+inconsistent loaded balances. No native data, policy, function or API contract
+changes are needed for this frontend patch. Rollback: Budget Manager 122.29.31.
+
+Regressions reproduce the report's amount/shortfall, verify the immediate review
+and post-refresh formula, late pre-submit replies and failed reads, and preserve
+the strict domain invariant. The local browser fixture simulates Submit and
+Review with a real captured VP → CFO → COO bundle without Creator writes/mail.
+Native email URL correction from 122.29.31 is published in Creator Stage and
+Production 9.80, selecting only sendPurchaseOrderEmail.
+
+Validation: full npm run validate and npm run build:pages passed. The browser
+Submit → Review test retained the $50,065 total and captured chain immediately,
+then displayed $49,965 available and +$100 modification without console errors.

@@ -51,3 +51,28 @@ assert.equal(closed,0);assert.equal(ctx.deleteReview,false);assert.equal(ctx.mod
 assert.doesNotMatch(nodes.get('footer').innerHTML,/Saved POs|Refresh balances/);assert.match(nodes.get('footer').innerHTML,/attachment-action delete po-delete/);assert.match(nodes.get('footer').innerHTML,/aria-label="Delete PO"/);
 vm.runInContext(source.slice(source.indexOf('    function bundleHtml('),source.indexOf('    async function decide(')),ctx);ctx.model.approvalBundle={rows:[{order:1,role:'CFO',status:'Approved',notes:'Verified'}],modifications:[],canApprove:false};assert.match(ctx.bundleHtml(),/data-po-chain-state="Approved"/);assert.match(ctx.bundleHtml(),/po-chain-status/);
 console.log('PO review: captured child counts, compact confirmation, Cancel/Escape restores PO without Delete, removed shortcuts and status-specific approval markup passed.');
+
+// Reproduce the critical report: Review PO receives a new $100 modification
+// while the cached balance still has zero pending modifications, before Submit.
+const review=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),review);review.root=review;
+const oldBalance={budgetItemId:'2001',finalCents:'5000000',modCents:'0',issuedCents:'3500',availableCents:'4996500',pendingModificationCents:'0'};
+const newBalance={...oldBalance,issuedCents:'5010000',availableCents:'-10000',pendingModificationCents:'10000'};
+const submitted={id:'5001',budgetId:'1001',status:'Submitted',commitmentState:'Reserved',approvalState:'Pending',amount:'50065.00',lines:[{key:'one',budgetItemId:'2001',finalAmount:'50065.00'}],approvalBundle:{modifications:[{budgetItemId:'2001',amount:'100.00',status:'Submitted'}]}};
+review.model={budgetId:'1001',lines:submitted.lines,reservedLines:[],balances:[oldBalance],balanceState:'loaded'};review.generation=1;review.balanceGeneration=0;review.current=()=>true;review.progress=true;review.popover=null;review.deleteReview=false;
+review.controller={state:()=>({snapshot:submitted})};review.error=message=>{review.model.error=message;};
+vm.runInContext(source.slice(source.indexOf('    function allocationRows()'),source.indexOf('    function summaryRows()')),review);
+vm.runInContext(source.slice(source.indexOf('    async function refresh()'),source.indexOf('    function setDeleteReview(')),review);
+vm.runInContext(source.slice(source.indexOf('    function click(event)'),source.indexOf('    async function open(')),review);
+const rendered=[];review.render=()=>{if(!review.progress)rendered.push({state:review.model.balanceState,allocation:review.allocationRows()[0]});};
+const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+let pending=deferred();const reads=[];review.call=p=>{reads.push(p.action);assert.equal(p.action,'Balances','Review performs only a read');return pending.promise;};
+const stale=pending;const earlierBalance=review.refresh();
+pending=deferred();review.click({target:{closest:selector=>selector==='button,input[data-po-date]'?{hasAttribute:name=>name==='data-po-done'}:null}});
+assert.equal(review.progress,false);assert.equal(review.model.id,'5001');assert.equal(review.model.amount,'50065.00');assert.equal(rendered[0].state,'loading');assert.equal(rendered[0].allocation.verified,false,'First review render cannot combine a saved mod with pre-submit balances');
+pending.resolve({contract:'po-v1',success:true,balances:[newBalance]});await new Promise(resolve=>setImmediate(resolve));
+assert.equal(review.model.balanceState,'loaded');assert.equal(rendered.at(-1).allocation.available,4996500n);assert.equal(rendered.at(-1).allocation.remaining,-10000n);assert.equal(rendered.at(-1).allocation.pending,0n);assert.equal(rendered.at(-1).allocation.shortfall,10000n);
+stale.resolve({contract:'po-v1',success:true,balances:[oldBalance]});await earlierBalance;assert.equal(review.model.balances[0].pendingModificationCents,'10000','A late pre-submit balance cannot overwrite the refreshed balance');
+pending=deferred();const failedRefresh=review.refresh();pending.reject(new Error('Balance read denied'));await failedRefresh;assert.equal(review.model.balanceState,'unavailable');assert.equal(rendered.at(-1).allocation.verified,false,'Failed refresh cannot reuse cached amounts');
+assert.throws(()=>review.LMPO.allocations(submitted.lines,[oldBalance],submitted.lines,submitted.approvalBundle.modifications),/does not reconcile/,'Strict reconciliation still rejects genuinely inconsistent loaded balances');
+assert.deepEqual(reads,['Balances','Balances','Balances']);
+console.log('PO Review after Submit: saved $50,065 PO and $100 mod, unknown-then-fresh budget, late read exclusion, failed read and strict reconciliation passed without writes.');
