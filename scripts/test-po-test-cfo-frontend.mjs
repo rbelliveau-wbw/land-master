@@ -31,18 +31,21 @@ next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com'
 // Historical routes retain their captured safeguards; new configuration has no
 // budget test controls, marker, amount cap or self-approval exception.
 assert.throws(()=>api.assertPublish(config.policies[0],[]),/no longer supported/);
-function block(name,nextName){let start=admin.indexOf('function '+name+'(');if(admin.slice(start-6,start)==='async ')start-=6;let end=admin.indexOf('function '+nextName+'(',start);if(admin.slice(end-6,end)==='async ')end-=6;assert.ok(start>=0&&end>start,name);return admin.slice(start,end);}
-for(const [name,nextName] of [['esc','copy'],['copy','stable'],['stable','equal'],['equal','verify'],['picker','choices'],['choices','field'],['field','check'],['check','companies'],['companies','territories'],['territories','departments'],['departments','roleRows'],['roleRows','userRows'],['userRows','scopeFields'],['scopeFields','render'],['policyData','ensureCFO'],['ensureCFO','poSteps'],['poSteps','editor'],['editor','load'],['preview','input']])vm.runInContext(block(name,nextName),c);
-c.config=clone(config);c.editing='Policies';c.draft=c.policyData(clone(config.policies[0]));
-assert.equal(c.draft.steps[0].poTestCFO,undefined);assert.deepEqual(clone(c.config.policies[0].steps[0].poTestCFO),test,'Reading config never alters saved history');
-let html=c.editor();assert.match(html,/CFO · Always/);assert.doesNotMatch(html,/Test CFO|Budget ID|Test settings|Maximum test amount|data-ap-test/);
-c.editing='Preview';c.draft={...clone(context)};delete c.draft.budgetId;assert.doesNotMatch(c.editor(),/Test budget|Budget ID/);
-const globalConfig=clone(config);globalConfig.policies[0]=c.policyData(globalConfig.policies[0]);globalConfig.policies[0].companyId='';globalConfig.assignments[0].companyId='';
+assert.equal(admin.split('return {open:open};').length,2);
+vm.runInContext(admin.replace('return {open:open};',`return {open:open,editor:editor,policyData:policyData,preview:preview,
+ fixture:function(value){config=value.config;editing=value.editing;draft=value.draft;card=value.card||null;panel=value.panel||null;policyReady=value.policyReady!==false;scope='frontend-fixture';busy=false;actorId='12';},
+ state:function(){return {draft:draft,config:config};}};`),c);
+let sent;const nodes={};const uiCard={querySelector:selector=>nodes[selector]||(nodes[selector]={disabled:false,innerHTML:'',textContent:''})};
+const uiOptions={scope:()=> 'frontend-fixture',call:async request=>{sent=clone(request);return {contract:'approval-policy-v1',success:true,snapshot:clone(api.resolve(globalConfig,request.context))};}};
+const ui=c.LMApprovalAdmin.create(uiOptions);
+const savedConfig=clone(config),policyDraft=ui.policyData(clone(config.policies[0]));ui.fixture({config:savedConfig,editing:'Policies',draft:policyDraft});
+assert.equal(policyDraft.steps[0].poTestCFO,undefined);assert.equal('companyId' in policyDraft,false);assert.deepEqual(clone(savedConfig.policies[0].steps[0].poTestCFO),test,'Reading config never alters saved history');
+let html=ui.editor();assert.match(html,/CFO/);assert.match(html,/Without budget modifications/);assert.match(html,/With attached budget modifications/);assert.doesNotMatch(html,/Test CFO|Budget ID|Test settings|Maximum test amount|data-ap-test|Company/);
+const previewDraft={...clone(context)};delete previewDraft.budgetId;ui.fixture({config:savedConfig,editing:'Preview',draft:previewDraft});assert.doesNotMatch(ui.editor(),/Test budget|Budget ID|Company|Effective date/);
+const globalConfig=clone(config);globalConfig.policies[0]=ui.policyData(globalConfig.policies[0]);for(const row of globalConfig.assignments){delete row.companyId;delete row.effectiveFrom;delete row.effectiveTo;}
 for(const companyId of ['31','99'])for(const amount of ['0.01','55.01','1000000.00']){
-  const routed=api.resolve(globalConfig,{...c.draft,companyId,territory:'Any territory',amount});assert.equal(routed.route.length,1);assert.equal(routed.route[0].userAccessId,'12');assert.equal(routed.route[0].reason,'Required step');assert.equal(routed.route[0].poTestCFO,undefined);
+  const routed=api.resolve(globalConfig,{...previewDraft,companyId,territory:'Any territory',amount});assert.equal(routed.route.length,1);assert.equal(routed.route[0].userAccessId,'12');assert.equal(routed.route[0].reason,'Required step');assert.equal(routed.route[0].poTestCFO,undefined);
 }
-assert.throws(()=>api.resolve(globalConfig,{...c.draft,submitterId:'12'}),/self-approval/);
-c.config=globalConfig;c.busy=false;c.same=()=>true;c.panel={};c.policyReady=true;c.today='2026-10-12';const nodes={};c.card={querySelector:selector=>nodes[selector]||(nodes[selector]={disabled:false,innerHTML:''})};let sent;
-c.options={call:async request=>{sent=clone(request);return {contract:'approval-policy-v1',success:true,snapshot:clone(api.resolve(globalConfig,request.context))};}};c.msg=message=>{throw new Error(message);};
-await c.preview();assert.equal(sent.context.budgetId,undefined);assert.match(nodes['[data-ap-route]'].innerHTML,/Normal CFO/);
-console.log('All-budget CFO configuration: no test-budget controls or new overrides, ordinary assignments across companies and amounts, preserved historical routes and standard self-approval denial.');
+assert.throws(()=>api.resolve(globalConfig,{...previewDraft,submitterId:'12'}),/self-approval/);
+ui.fixture({config:globalConfig,editing:'Preview',draft:previewDraft,panel:{},card:uiCard});await ui.preview();assert.equal(sent.context.budgetId,undefined);assert.equal('companyId' in sent.context,false);assert.equal('effectiveDate' in sent.context,false);assert.match(nodes['[data-ap-route]'].innerHTML,/Normal CFO/);
+console.log('Perpetual CFO configuration: no test/company/date controls or new overrides, ordinary assignments across amounts, preserved historical routes and standard self-approval denial.');

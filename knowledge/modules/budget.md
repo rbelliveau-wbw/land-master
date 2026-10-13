@@ -1,3 +1,31 @@
+## Approval administration without Company or dates — October 13, 2026
+
+Settings Manager's Approvals dialog starts on Approval rules and separates
+ordered rules from Approvers. Cards show the route or assigned person and email;
+Test route shows numbered recipients. Searchable pickers open above or below
+their controls within the overlay so the editor footer cannot clip them.
+The PO rule shows CFO without new modifications and VP → CFO → COO with attached
+budget modifications. The existing budget calculations and captured PO routes
+are retained.
+
+Approval configuration now uses only Territory and Department and persists until
+changed or disabled. `policyModel: territory-perpetual-v2` gates writes and route
+testing until the matching Creator functions are promoted. The Creator handoff
+deletes Company, Effective_From and Effective_To from Approval_Policy and
+Approval_Role_Assignment; business Company fields, modification transaction
+dates, audit JSON and submitted route snapshots remain intact. Review existing
+configuration for scope collisions before removing these fields. Creator changes
+are for the owner to promote. See the
+[field removal and promotion handoff](../releases/approval-territory-perpetual-v2-2026-10-13.md)
+and [approval administration guide](../design/approval-administration.md).
+
+Regression: both PO route branches, exact recipients/order, Territory VP,
+permanent assignments, Territory/Department overrides, ambiguous and disabled
+scopes, unroutable people, submitter exclusion, read-only unknown-write recovery,
+picker clipping and keyboard dismissal. Rollback Settings Manager to 1.5.2 and
+restore the pre-removal Creator schema/functions and configuration backup
+together; the prior frontend alone cannot restore deleted scope/date fields.
+
 ## PO budget context and vendor entry — October 13, 2026
 
 Budget Manager 122.29.27 places Available, Remaining or Modification, and the

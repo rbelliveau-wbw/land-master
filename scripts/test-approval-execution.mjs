@@ -26,7 +26,7 @@ function execute({policies=[basePolicy],rows=baseRows,steps=route,workflow='Pro 
   function insertRecord(form,data){data.ID=Math.max(100,...tables[form].map(row=>row.ID))+1;tables[form].push(data);writes++;return data.ID;}
   function recordValues(...pairs){var data={};for(var i=0;i<pairs.length;i+=2)data[pairs[i]]=pairs[i+1];return data;}
   var thisapp={resolveApprovalRoute(){return map({success:resolved,error:resolved?null:'Missing assignment',snapshot:map({route:steps.map(map)})});},snapshotApprovalRoute(c){captures.push(JSON.parse(JSON.stringify(c)));return map({success:true,snapshotId:'71',snapshot:map({route:steps.map(map)})});}};
-  var input=map({workflow,recordId:'51',budgetId:'61',companyId:'31',submitterId:'19',territory:'North',department,amountBasisConfirmed,effectiveDate:'2026-10-08'});
+  var input=map({workflow,recordId:'51',budgetId:'61',submitterId:'19',territory:'North',department,amountBasisConfirmed});
   `+js,context);
   const result=vm.runInContext('applySharedApprovalPolicy(input)',context);
   return {result:JSON.parse(JSON.stringify(result)),rows:JSON.parse(JSON.stringify(context.tables.Budget_Approvals)),writes:context.writes,captures:context.captures};
@@ -38,7 +38,10 @@ for(const history of [{Status:'Pending'},{Status:'Approved'},{Status:'Rejected'}
 r=execute({resolved:false});assert.equal(r.result.success,false);assert.equal(r.result.error,'Missing assignment');assert.equal(r.writes,0);
 for(const policies of [[],[{...basePolicy,Adapter_Enabled:false}]]){r=execute({policies});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.writes,0);assert.equal(r.captures.length,0);}
 r=execute({policies:[basePolicy,{...basePolicy,ID:42}]});assert.equal(r.result.success,false);assert.equal(r.writes,0);
-r=execute({policies:[basePolicy,{...basePolicy,ID:42,Territory_Key:'North',Adapter_Enabled:false}]});assert.equal(r.result.shared,false);assert.equal(r.writes,0,'highest disabled adapter retains legacy; it does not fall back to company policy');
+r=execute({policies:[basePolicy,{...basePolicy,ID:42,Territory_Key:'North',Adapter_Enabled:false}]});assert.equal(r.result.shared,false);assert.equal(r.writes,0,'highest disabled adapter retains legacy; it does not fall back to a broader policy');
+r=execute({policies:[{...basePolicy,Company:999,Effective_From:'2099-01-01',Effective_To:'1900-01-01'}]});assert.equal(r.result.shared,true,'Removed company/date columns do not prevent a new untouched chain from using its territory policy');
+r=execute({policies:[basePolicy,{...basePolicy,ID:42,Company:999}]});assert.equal(r.result.success,false);assert.equal(r.writes,0,'Former company-specific policy collisions fail before writes');
+assert.doesNotMatch(source,/candidatePolicy\.(?:Company|Effective_From|Effective_To)|context.get\("(?:companyId|effectiveDate)"\)/,'Native adapter has no dependency on removed approval scope/date functionality');
 r=execute({denied:true});assert.equal(r.result.success,false);assert.equal(r.writes,0);
 r=execute({steps:Array.from({length:9},(_,i)=>({order:i+1,role:'Role '+i,email:'role'+i+'@example.com'}))});assert.equal(r.result.success,false);assert.equal(r.writes,0);assert.match(r.result.error,/8 approval steps/);
 for(const department of ['Development','Construction']){

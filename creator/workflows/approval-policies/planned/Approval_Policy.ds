@@ -2,20 +2,11 @@ form Approval_Policy
 {
 	displayname = "Approval Policy"
 	success message = "Configuration saved"
-	Company
-	(
-		type = picklist
-		values = Company.ID
-		displayformat = [Company_Name]
-		row = 1
-		column = 1
-		width = medium
-	)
 	Workflow
 	(
 		type = picklist
 		values = {"Budget","Budget Modification","Pro Forma","Contract","Purchase Order"}
-		row = 2
+		row = 1
 		column = 1
 		width = medium
 	)
@@ -23,7 +14,7 @@ form Approval_Policy
 	(
 		type = text
 		maxchar = 80
-		row = 3
+		row = 2
 		column = 1
 		width = medium
 	)
@@ -31,7 +22,7 @@ form Approval_Policy
 	(
 		type = text
 		maxchar = 80
-		row = 4
+		row = 3
 		column = 1
 		width = medium
 	)
@@ -39,7 +30,7 @@ form Approval_Policy
 	(
 		type = number
 		maxchar = 6
-		row = 5
+		row = 4
 		column = 1
 		width = medium
 	)
@@ -47,7 +38,7 @@ form Approval_Policy
 	(
 		type = picklist
 		values = {"Draft","Published"}
-		row = 6
+		row = 5
 		column = 1
 		width = medium
 	)
@@ -55,23 +46,7 @@ form Approval_Policy
 	(
 		type = checkbox
 		initial value = false
-		row = 7
-		column = 1
-		width = medium
-	)
-	Effective_From
-	(
-		type = date
-		alloweddays = 0,1,2,3,4,5,6
-		row = 8
-		column = 1
-		width = medium
-	)
-	Effective_To
-	(
-		type = date
-		alloweddays = 0,1,2,3,4,5,6
-		row = 9
+		row = 6
 		column = 1
 		width = medium
 	)
@@ -79,7 +54,7 @@ form Approval_Policy
 	(
 		type = picklist
 		values = {"Unspecified","Allow","Deny"}
-		row = 10
+		row = 7
 		column = 1
 		width = medium
 	)
@@ -87,7 +62,7 @@ form Approval_Policy
 	(
 		type = picklist
 		values = {"Unspecified","Separate steps","Reject"}
-		row = 11
+		row = 8
 		column = 1
 		width = medium
 	)
@@ -95,7 +70,7 @@ form Approval_Policy
 	(
 		type = textarea
 
-		row = 12
+		row = 9
 		column = 1
 		width = medium
 	)
@@ -103,7 +78,7 @@ form Approval_Policy
 	(
 		type = checkbox
 		initial value = false
-		row = 13
+		row = 10
 		column = 1
 		width = medium
 	)

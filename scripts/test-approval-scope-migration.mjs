@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {auditApprovalScopeMigration} from './audit-approval-scope-migration.mjs';
+const original={configuration:{policies:[{id:'41',workflow:'Purchase Order',status:'Published',companyId:'31',territory:'',department:''}],assignments:[{id:'21',roleId:'1',userAccessId:'11',active:true,companyId:'31',territory:'',department:''}],audit:[]},locks:[]};
+const clone=value=>JSON.parse(JSON.stringify(value));
+assert.equal(auditApprovalScopeMigration(original).readyForFieldDeletion,true);
+let next=clone(original);delete next.locks;assert.equal(auditApprovalScopeMigration(next).readyForFieldDeletion,false,'Native List cannot certify that retained write locks are absent');
+next=clone(original);next.configuration.policies.push({...next.configuration.policies[0],id:'42',companyId:'32'});let report=auditApprovalScopeMigration(next);assert.equal(report.publishedPolicyCollisions.length,1);assert.deepEqual(report.publishedPolicyCollisions[0].records.map(row=>row.id),['41','42']);assert.equal(report.readyForFieldDeletion,false);
+next=clone(original);next.configuration.assignments.push({...next.configuration.assignments[0],id:'22',companyId:'32',active:false,effectiveFrom:'2099-01-01'});report=auditApprovalScopeMigration(next);assert.equal(report.assignmentCollisions.length,1);assert.match(report.blockers.join(' '),/disabling a duplicate/);
+next=clone(original);next.configuration.policies.push({...next.configuration.policies[0],id:'42',status:'Draft',territory:'North'});assert.equal(auditApprovalScopeMigration(next).readyForFieldDeletion,true,'Distinct Territory overrides remain independent');
+next=clone(original);next.configuration.audit.push({id:'51',status:'Started',action:'SavePolicy',actorId:'11',token:'existing-operation'});next.locks.push({id:'61',lockKey:'shared-approval-policy',token:'existing-operation'});report=auditApprovalScopeMigration(next);assert.equal(report.unfinishedAudits.length,1);assert.equal(report.retainedLocks.length,1);assert.equal(report.readyForFieldDeletion,false);
+assert.throws(()=>auditApprovalScopeMigration({configuration:{...original.configuration,assignments:[{id:21}]},locks:[]}),/exact Creator/);
+for(const patch of [{roleId:1},{userAccessId:''},{active:'true'},{territory:null},{department:undefined}]){next=clone(original);Object.assign(next.configuration.assignments[0],patch);assert.throws(()=>auditApprovalScopeMigration(next),'An incomplete assignment inventory cannot certify deletion readiness');}
+for(const patch of [{workflow:undefined},{workflow:'Other'},{status:undefined},{status:'Inactive'}]){next=clone(original);Object.assign(next.configuration.policies[0],patch);assert.throws(()=>auditApprovalScopeMigration(next),/supported workflow/);}
+next=clone(original);next.configuration.audit.push({id:'51',actorId:'11',status:'Unknown'});assert.throws(()=>auditApprovalScopeMigration(next),/Unknown configuration audit/);
+assert.deepEqual(original.configuration.policies[0],{id:'41',workflow:'Purchase Order',status:'Published',companyId:'31',territory:'',department:''},'Read-only audit does not rewrite evidence');
+console.log('Approval field-removal audit: exact IDs, Company/date collisions, inactive duplicates, Started receipts and retained locks fail closed without choosing recipients.');

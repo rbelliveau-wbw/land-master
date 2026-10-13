@@ -3,44 +3,38 @@ map resolveApprovalRoute(map context)
 	result = {"success":false,"contract":"approval-policy-v1"};
 	try
 	{
-		for each identityField in {"companyId","submitterId"}
+		for each identityField in {"submitterId"}
 		{
 			typedIdentity = Map(); typedIdentity.put("value",context.get(identityField));
-			if(!typedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Company and submitter IDs must be strings."); return result; }
+			if(!typedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Submitter ID must be an exact string."); return result; }
 		}
 		workflows = {"Budget","Budget Modification","Pro Forma","Contract","Purchase Order"};
 		if(!workflows.contains(context.get("workflow"))) { result.put("error","Workflow is invalid."); return result; }
-		companyText = ifnull(context.get("companyId"),"").toString();
 		submitterText = ifnull(context.get("submitterId"),"").toString();
 		amountText = thisapp.poCurrencyString(ifnull(context.get("amount"),"").toString());
 		typedAmount = Map(); typedAmount.put("value",context.get("amount"));
 		if(context.get("workflow") == "Pro Forma" || context.get("workflow") == "Contract") { amountText = "0.00"; typedAmount.put("value","0.00"); }
-		if(amountText == "" || !typedAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Company, submitter identity and an exact amount are required."); return result; }
+		if(amountText == "" || !typedAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Submitter identity and an exact amount are required."); return result; }
 		territory = ifnull(context.get("territory"),"").toString();
 		department = ifnull(context.get("department"),"").toString();
-		day = context.get("effectiveDate").toString().toDate("yyyy-MM-dd");
-		if(day.toString("yyyy-MM-dd") != context.get("effectiveDate")) { result.put("error","Effective date is invalid."); return result; }
 		amount = amountText.replaceAll("[.]","").toLong();
 		policyId = 0; bestRank = -1; matched = 0;
 		for each policy in Approval_Policy[Workflow == context.get("workflow") && Status == "Published"]
 		{
-			companyMatches = policy.Company == companyText.toLong();
-			if(context.get("workflow") == "Purchase Order" && policy.Company == null) { companyMatches = true; }
-			if(companyMatches != true) { continue; }
 			valid = true;
 			pTerritory = ifnull(policy.Territory_Key,""); pDepartment = ifnull(policy.Department_Key,"");
 			if(pTerritory != "" && pTerritory != territory) { valid = false; }
 			if(pDepartment != "" && pDepartment != department) { valid = false; }
 			if(valid)
 			{
-				rank = 0; if(policy.Company != null) { rank = rank+8; } if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
+				rank = 0; if(pTerritory != "") { rank = rank+4; } if(pDepartment != "") { rank = rank+2; }
 				if(rank > bestRank) { bestRank = rank; policyId = policy.ID; matched = 1; }
 				else if(rank == bestRank) { matched = matched+1; }
 			}
 		}
 		if(matched != 1) { result.put("error","Published policy is missing or ambiguous at the highest applicable scope."); return result; }
 		policy = Approval_Policy[ID == policyId];
-		if(policy.Enabled != true) { result.put("error","The applicable published policy is disabled. No company fallback was used."); return result; }
+		if(policy.Enabled != true) { result.put("error","The applicable published policy is disabled. No broader fallback was used."); return result; }
 		if(policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") { result.put("error","Self-approval must be explicitly configured."); return result; }
 		if(policy.Workflow == "Purchase Order")
 		{
@@ -146,18 +140,13 @@ map resolveApprovalRoute(map context)
 				{
 				for each assignment in Approval_Role_Assignment[Role == role.ID]
 				{
-					assignmentCompanyMatches = assignment.Company == companyText.toLong();
-					if(policy.Workflow == "Purchase Order" && assignment.Company == null) { assignmentCompanyMatches = true; }
-					if(assignmentCompanyMatches != true) { continue; }
 					aTerritory = ifnull(assignment.Territory_Key,""); aDepartment = ifnull(assignment.Department_Key,"");
 					aValid = true;
-					if(assignment.Effective_From != null) { if(assignment.Effective_From > day) { aValid = false; } }
-					if(assignment.Effective_To != null) { if(day >= assignment.Effective_To) { aValid = false; } }
 					if(aTerritory != "" && aTerritory != territory) { aValid = false; }
 					if(aDepartment != "" && aDepartment != department) { aValid = false; }
 					if(aValid)
 					{
-						rank = 0; if(assignment.Company != null) { rank = rank+8; } if(aTerritory != "") { rank = rank+4; } if(aDepartment != "") { rank = rank+2; }
+						rank = 0; if(aTerritory != "") { rank = rank+4; } if(aDepartment != "") { rank = rank+2; }
 						if(rank > assignmentRank) { assignmentRank = rank; assignmentId = assignment.ID; assignmentCount = 1; }
 						else if(rank == assignmentRank) { assignmentCount = assignmentCount+1; }
 					}

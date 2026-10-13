@@ -1,5 +1,11 @@
 # PO approval routing — October 9, 2026
 
+Historical release record. The October 13
+[territory/permanent approval handoff](../knowledge/releases/approval-territory-perpetual-v2-2026-10-13.md)
+replaces Company scoping with permanent Territory/Department scope. The current
+PO branch is whether submission creates new budget modifications: CFO alone,
+or the configured VP → CFO → COO route. Existing submitted routes are retained.
+
 Every new PO submission requires CFO approval. When the PO's combined lines for
 any budget item exceed that item's available budget after other POs, COO and the
 territory VP are also required. Pending modification credits do not suppress

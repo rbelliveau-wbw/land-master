@@ -291,8 +291,7 @@
 			response.put("pendingApprovalId",firstExisting.ID.toString());
 			return response;
 		}
-		policyCompany = ""; if(pf.Purchasing_Company != null) { policyCompany = pf.Purchasing_Company.ID.toString(); }
-		policyContext = {"workflow":"Pro Forma","recordId":proformaIdText,"companyId":policyCompany,"territory":ifnull(pf.Territory,""),"department":"","submitterId":accessRow.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd")};
+		policyContext = {"workflow":"Pro Forma","recordId":proformaIdText,"territory":ifnull(pf.Territory,""),"department":"","submitterId":accessRow.ID.toString()};
 		policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 		if(policyExecution.get("success") != true) { response.put("success",false); response.put("message",policyExecution.get("error")); return response; }
 		if(policyExecution.get("shared") == true) { response.put("policySnapshotId",policyExecution.get("snapshotId")); }

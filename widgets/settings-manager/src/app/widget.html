@@ -8,8 +8,8 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="settings-controller.js"></script>
-<script src="approval-policy-domain.js?v=1.5.2"></script>
-<script src="approval-admin.js?v=1.5.2"></script>
+<script src="approval-policy-domain.js?v=1.5.3"></script>
+<script src="approval-admin.js?v=1.5.3"></script>
 <link rel="stylesheet" href="approval-admin.css">
 <script src="critical-error-reporter.js"></script>
 <style>
@@ -282,7 +282,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.5.2";
+var SMW_VERSION = "1.5.3";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){

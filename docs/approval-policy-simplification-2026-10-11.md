@@ -1,5 +1,11 @@
 # Simple PO policies and 200-line entry — October 11, 2026
 
+Historical release record. The October 13
+[territory/permanent approval handoff](../knowledge/releases/approval-territory-perpetual-v2-2026-10-13.md)
+supersedes assignment date behavior, Company scoping and the readiness model
+below. It removes the six approval-only Company/effective-date fields while
+preserving historical receipts and submitted routes.
+
 User direction: the only PO route branch is whether submission creates budget
 modifications. CFO always approves; the configured additional roles then approve
 when the modification plan is nonempty. There are no PO amount thresholds,

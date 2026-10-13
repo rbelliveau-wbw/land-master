@@ -3,26 +3,20 @@ map approvalConfigurationSnapshot()
 	result = {"success":false,"contract":"approval-policy-v1"};
 	try
 	{
-		roles = List(); assignments = List(); policies = List(); users = List(); companies = List(); territories = List();
+		roles = List(); assignments = List(); policies = List(); users = List(); territories = List();
 		for each roleRow in Approval_Role[ID != 0] { roles.add({"id":roleRow.ID.toString(),"name":roleRow.Role_Name,"active":roleRow.Active}); }
 		for each assignmentRow in Approval_Role_Assignment[ID != 0]
 		{
-			fromText = ""; toText = "";
-			if(assignmentRow.Effective_From != null) { fromText = assignmentRow.Effective_From.toString("yyyy-MM-dd"); }
-			if(assignmentRow.Effective_To != null) { toText = assignmentRow.Effective_To.toString("yyyy-MM-dd"); }
-			companyKey = ""; if(assignmentRow.Company != null) { companyKey = assignmentRow.Company.toString(); }
-			assignments.add({"id":assignmentRow.ID.toString(),"roleId":assignmentRow.Role.toString(),"companyId":companyKey,"territory":ifnull(assignmentRow.Territory_Key,""),"department":ifnull(assignmentRow.Department_Key,""),"userAccessId":assignmentRow.Person.toString(),"active":assignmentRow.Active,"effectiveFrom":fromText,"effectiveTo":toText});
+			assignments.add({"id":assignmentRow.ID.toString(),"roleId":assignmentRow.Role.toString(),"territory":ifnull(assignmentRow.Territory_Key,""),"department":ifnull(assignmentRow.Department_Key,""),"userAccessId":assignmentRow.Person.toString(),"active":assignmentRow.Active});
 		}
 		for each policyRow in Approval_Policy[ID != 0]
 		{
-			companyKey = ""; if(policyRow.Company != null) { companyKey = policyRow.Company.toString(); }
 			// Native toJSONList elements can be JSON text. Return step objects in the configuration DTO.
 			policySteps = List();
 			for each rawPolicyStep in policyRow.Steps_JSON.toJSONList() { policySteps.add(rawPolicyStep.toString().toMap()); }
-			policies.add({"id":policyRow.ID.toString(),"companyId":companyKey,"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"steps":policySteps,"adapterEnabled":policyRow.Adapter_Enabled});
+			policies.add({"id":policyRow.ID.toString(),"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"steps":policySteps,"adapterEnabled":policyRow.Adapter_Enabled});
 		}
 		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
-		for each companyRow in Company[ID != 0] { companies.add({"id":companyRow.ID.toString(),"label":companyRow.Company_Name}); }
 		for each territoryRow in Territory[ID != 0]
 		{
 			vpIds = List(); for each vpPerson in territoryRow.VP { if(!vpIds.contains(vpPerson.ID.toString())) { vpIds.add(vpPerson.ID.toString()); } }
@@ -47,7 +41,7 @@ map approvalConfigurationSnapshot()
 			if(zoho.loginuser == zoho.adminuser && auditActor.count() == 1) { if(event.Actor == auditActor.ID) { auditToken=ifnull(event.Token,""); } }
 			auditRows.add({"id":event.ID.toString(),"action":event.Action,"status":event.Status,"actorId":event.Actor.toString(),"token":auditToken,"before":beforeValue,"after":afterValue,"intended":intendedValue,"error":ifnull(event.Error_Text,"")});
 		}
-		result.put("configuration",{"roles":roles,"assignments":assignments,"policies":policies,"users":users,"companies":companies,"territories":territories,"audit":auditRows});
+		result.put("configuration",{"roles":roles,"assignments":assignments,"policies":policies,"users":users,"territories":territories,"audit":auditRows});
 		result.put("canAdmin",zoho.loginuser == zoho.adminuser); result.put("success",true);
 	}
 	catch(e) { result.put("error","Approval configuration cannot be read completely."); }

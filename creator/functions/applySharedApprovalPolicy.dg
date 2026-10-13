@@ -28,11 +28,9 @@ map applySharedApprovalPolicy(map context)
 			// continue through the original workflow with their original recipients.
 			if(existingExecution.Status != "Not Sent" || existingExecution.Sent_Date != null || existingExecution.Responded_Date != null || ifnull(existingExecution.Approval_Notes,"").trim() != "") { result.put("shared",false); result.put("success",true); result.put("retainedExistingRoute",true); return result; }
 		}
-		companyText = ifnull(context.get("companyId"),"").toString();
-		if(!companyText.matches("[0-9]+")) { result.put("success",true); return result; }
 		territory = ifnull(context.get("territory"),""); department = ifnull(context.get("department"),"");
 		bestRank = -1; matches = 0; selectedId = 0;
-		for each candidatePolicy in Approval_Policy[Workflow == workflow && Company == companyText.toLong() && Status == "Published"]
+		for each candidatePolicy in Approval_Policy[Workflow == workflow && Status == "Published"]
 		{
 			pTerritory = ifnull(candidatePolicy.Territory_Key,""); pDepartment = ifnull(candidatePolicy.Department_Key,"");
 			scopeValid = true;

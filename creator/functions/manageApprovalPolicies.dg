@@ -12,7 +12,7 @@ string manageApprovalPolicies(string payload)
 		// Wider scopes require a separate authenticated-caller proof and explicit admin grant.
 		access = User_Access[User == zoho.loginuser];
 		if(access.count() != 1 || access.ID.toString() != p.get("userAccessId") || zoho.loginuser != zoho.adminuser) { result.put("error","Application-owner configuration access is required."); return result.toString(); }
-		if(action == "List") { listed=thisapp.approvalConfigurationSnapshot(); listed.put("policyModel","ordered-cfo-v1"); listed.put("currentDate",zoho.currentdate.toString("yyyy-MM-dd")); listed.put("actorId",access.ID.toString()); return listed.toString(); }
+		if(action == "List") { listed=thisapp.approvalConfigurationSnapshot(); listed.put("policyModel","territory-perpetual-v2"); listed.put("actorId",access.ID.toString()); return listed.toString(); }
 		if(action == "Preview") { return thisapp.resolveApprovalRoute(p.get("context")).toString(); }
 		if(action == "Reassign" || action == "EnableAdapter") { result.put("error","Reassignment authority and native workflow migration must be approved and verified first."); return result.toString(); }
 		token = ifnull(p.get("token"),"").toString();
@@ -59,19 +59,25 @@ string manageApprovalPolicies(string payload)
 					data.remove(contextFlag);
 				}
 			}
-			policyFields={"id","companyId","workflow","territory","department","status","enabled","selfApproval","steps","adapterEnabled"};
-			if(action == "Reconcile") { for each legacyField in {"version","duplicatePerson","effectiveFrom","effectiveTo"} { policyFields.add(legacyField); } }
+			policyFields={"id","workflow","territory","department","status","enabled","selfApproval","steps","adapterEnabled"};
+			if(action == "Reconcile")
+			{
+				for each legacyField in {"version","duplicatePerson","companyId","effectiveFrom","effectiveTo"} { policyFields.add(legacyField); }
+				// Deleted scope/date columns cannot prove a lost legacy write. Preserve its audit and lock.
+				for each removedField in {"companyId","effectiveFrom","effectiveTo"}
+				{
+					if(ifnull(data.get(removedField),"") != "") { result.put("error","Resolve this legacy company/date save receipt before the approval schema migration. Completed receipts remain available through read-only Check."); return result.toString(); }
+				}
+			}
 			for each field in data.keys() { if(!policyFields.contains(field)) { result.put("error","Unsupported policy field: "+field); return result.toString(); } }
 			if(data.get("status") != null && data.get("status") != "Draft" && data.get("status") != "Published") { result.put("error","Policy status is invalid."); return result.toString(); }
 			if(data.get("adapterEnabled") != null && data.get("adapterEnabled") != false) { result.put("error","Policy saves cannot enable a native workflow adapter."); return result.toString(); }
 		}
 		identityFields = {"id"};
-		if(action == "SaveAssignment") { identityFields={"id","roleId","userAccessId","companyId"}; }
-		if(action == "SavePolicy" || action == "Reconcile") { identityFields={"id","companyId"}; }
+		if(action == "SaveAssignment") { identityFields={"id","roleId","userAccessId"}; }
 		for each identityField in identityFields
 		{
 			identityValue = data.get(identityField);
-			if(identityField == "companyId" && identityValue == "") { continue; }
 			validateIdentity = identityField != "id";
 			if(identityValue != null && identityValue != "") { validateIdentity = true; }
 			if(validateIdentity)
@@ -82,15 +88,8 @@ string manageApprovalPolicies(string payload)
 		}
 		if(action == "SaveAssignment")
 		{
-		for each dateField in {"effectiveFrom","effectiveTo"}
-		{
-			dateValue=ifnull(data.get(dateField),"");
-			if(dateValue != "")
-			{
-				if(!dateValue.toString().matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
-				if(dateValue.toString().toDate("yyyy-MM-dd").toString("yyyy-MM-dd") != dateValue) { result.put("error","Configuration dates must be valid ISO dates."); return result.toString(); }
-			}
-		}
+			assignmentFields={"id","roleId","userAccessId","territory","department","active"};
+			for each field in data.keys() { if(!assignmentFields.contains(field)) { result.put("error","Unsupported assignment field: "+field+". Refresh approval settings."); return result.toString(); } }
 		}
 		// Test CFO data lives only in an owner-managed PO policy, never on shared User Access or assignments.
 		isPOTestPolicy = false;
@@ -187,6 +186,10 @@ string manageApprovalPolicies(string payload)
 			{
 				if(ifnull(reconciliationAudit.After_JSON,"") == "") { result.put("error","Completed draft receipt has no verified record."); return result.toString(); }
 				reconciliationCompletedAfter=reconciliationAudit.After_JSON.toMap();
+				for each removedField in {"companyId","effectiveFrom","effectiveTo"}
+				{
+					if(ifnull(reconciliationCompletedAfter.get(removedField),"") != "") { result.put("error","This completed legacy receipt includes removed company/date evidence. Use read-only Check; resolve any retained lock before schema migration."); return result.toString(); }
+				}
 				typedCompletedIdentity={"value":reconciliationCompletedAfter.get("id")};
 				if(!typedCompletedIdentity.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}][ ]*")) { result.put("error","Completed draft receipt identity is invalid."); return result.toString(); }
 				if(reconciliationCompletedAfter.get("status") != "Draft" || reconciliationCompletedAfter.get("adapterEnabled") != false || ifnull(reconciliationCompletedAfter.get("id"),"").toString() == "") { result.put("error","Completed draft receipt is invalid."); return result.toString(); }
@@ -201,17 +204,15 @@ string manageApprovalPolicies(string payload)
 				if(reconciliationAudit.Status == "Complete") { reconciliationIntendedRecords.add(reconciliationCompletedAfter); }
 				candidateProof=candidate.toString().toMap(); legacyPolicy=Approval_Policy[ID == candidate.get("id").toLong()];
 				candidateProof.put("version",legacyPolicy.Version); candidateProof.put("duplicatePerson",legacyPolicy.Duplicate_Person);
-				legacyFrom=""; legacyTo=""; if(legacyPolicy.Effective_From != null) { legacyFrom=legacyPolicy.Effective_From.toString("yyyy-MM-dd"); } if(legacyPolicy.Effective_To != null) { legacyTo=legacyPolicy.Effective_To.toString("yyyy-MM-dd"); }
-				candidateProof.put("effectiveFrom",legacyFrom); candidateProof.put("effectiveTo",legacyTo);
 				for each intendedPolicy in reconciliationIntendedRecords
 				{
-				for each field in {"companyId","workflow","territory","department","enabled","selfApproval"}
+				for each field in {"workflow","territory","department","enabled","selfApproval"}
 				{
 					if(ifnull(candidate.get(field),"").toString() != ifnull(intendedPolicy.get(field),"").toString()) { candidateMatches=false; }
 				}
 				for each field in intendedPolicy.keys()
 				{
-					if(field != "id" && field != "status" && field != "adapterEnabled" && field != "steps") { if(ifnull(candidateProof.get(field),"").toString() != ifnull(intendedPolicy.get(field),"").toString()) { candidateMatches=false; } }
+					if(field != "id" && field != "status" && field != "adapterEnabled" && field != "steps" && field != "companyId" && field != "effectiveFrom" && field != "effectiveTo") { if(ifnull(candidateProof.get(field),"").toString() != ifnull(intendedPolicy.get(field),"").toString()) { candidateMatches=false; } }
 				}
 				// Compare each ordered step and its test evidence by field, independent of JSON key order.
 				candidateSteps = candidate.get("steps"); intendedSteps = intendedPolicy.get("steps");
@@ -278,7 +279,7 @@ string manageApprovalPolicies(string payload)
 			otherPolicies = beforeConfiguration.get("policies");
 			for each otherPolicy in otherPolicies
 			{
-				if(otherPolicy.get("id") != idText && otherPolicy.get("companyId") == data.get("companyId") && otherPolicy.get("workflow") == data.get("workflow") && otherPolicy.get("territory") == ifnull(data.get("territory"),"") && otherPolicy.get("department") == ifnull(data.get("department"),"")) { delete from Approval_Config_Lock[ID == lockId]; lockId=0; result.put("error","This scope already has a policy. Edit that policy."); return result.toString(); }
+				if(otherPolicy.get("id") != idText && otherPolicy.get("workflow") == data.get("workflow") && otherPolicy.get("territory") == ifnull(data.get("territory"),"") && otherPolicy.get("department") == ifnull(data.get("department"),"")) { delete from Approval_Config_Lock[ID == lockId]; lockId=0; result.put("error","This scope already has a policy. Edit that policy."); return result.toString(); }
 			}
 		}
 		expectedPolicyStatus="Draft";
@@ -316,45 +317,29 @@ string manageApprovalPolicies(string payload)
 		}
 		if(action == "SaveAssignment")
 		{
-			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
 			role = Approval_Role[ID == data.get("roleId").toString().toLong()]; person = User_Access[ID == data.get("userAccessId").toString().toLong()];
-			assignmentCompanyValid = true;
-			if(data.get("companyId") != "" && companyId == null) { assignmentCompanyValid = false; }
 			activeKnown = data.get("active") == true || data.get("active") == false;
-			if(role.ID == null || person.ID == null || assignmentCompanyValid != true || activeKnown != true) { result.put("error","Role, User Access, valid company scope and explicit active setting are required."); }
+			if(role.ID == null || person.ID == null || activeKnown != true) { result.put("error","Role, User Access and explicit active setting are required."); }
 			else
 			{
-				fromDate = null; toDate = null;
-				if(ifnull(data.get("effectiveFrom"),"") != "") { fromDate = data.get("effectiveFrom").toDate("yyyy-MM-dd"); }
-				if(ifnull(data.get("effectiveTo"),"") != "") { toDate = data.get("effectiveTo").toDate("yyyy-MM-dd"); }
-				if(fromDate != null && toDate != null && toDate <= fromDate) { result.put("error","Assignment end must follow start."); }
-				else
-				{
-					if(idText == "") { newId = insert into Approval_Role_Assignment
+				if(idText == "") { newId = insert into Approval_Role_Assignment
 			[
 				Added_User=zoho.loginuser
 				Role=role.ID
 				Person=person.ID
-				Company=companyId
 			]; idText = newId.toString(); }
-					assignment = Approval_Role_Assignment[ID == idText.toLong()];
-					assignment.Role=role.ID; assignment.Person=person.ID; assignment.Company=companyId; assignment.Territory_Key=ifnull(data.get("territory"),""); assignment.Department_Key=ifnull(data.get("department"),""); assignment.Active=data.get("active"); assignment.Effective_From=fromDate; assignment.Effective_To=toDate;
-				}
+				assignment = Approval_Role_Assignment[ID == idText.toLong()];
+				assignment.Role=role.ID; assignment.Person=person.ID; assignment.Territory_Key=ifnull(data.get("territory"),""); assignment.Department_Key=ifnull(data.get("department"),""); assignment.Active=data.get("active");
 			}
 		}
 		if(action == "SavePolicy")
 		{
-			companyId = null; if(data.get("companyId") != "") { company = Company[ID == data.get("companyId").toString().toLong()]; companyId = company.ID; }
-			policyCompanyValid = true;
-			if(data.get("companyId") == "" && data.get("workflow") != "Purchase Order") { policyCompanyValid = false; }
-			if(data.get("companyId") != "" && companyId == null) { policyCompanyValid = false; }
-			if(policyCompanyValid != true || data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Choose a company (or All companies for POs) and enter 1–30 ordered steps."); }
+			if(data.get("steps").size() == 0 || data.get("steps").size() > 30 || data.get("steps").toString().length() > 40000) { result.put("error","Enter 1–30 ordered steps."); }
 			else
 			{
 				if(idText == "") { newId = insert into Approval_Policy
 			[
 				Added_User=zoho.loginuser
-				Company=companyId
 				Status="Draft"
 				Adapter_Enabled=false
 			]; idText = newId.toString(); }
@@ -362,7 +347,7 @@ string manageApprovalPolicies(string payload)
 				if(policy.Status != expectedPolicyStatus) { result.put("error","Policy status changed before saving."); }
 				else
 				{
-					policy.Company=companyId; policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Steps_JSON=data.get("steps").toString();
+					policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Steps_JSON=data.get("steps").toString();
 				}
 			}
 		}
@@ -372,7 +357,7 @@ string manageApprovalPolicies(string payload)
 			if(policy.count() != 1 || policy.Status != "Draft") { result.put("error","A saved Draft is required."); }
 			else
 			{
-				for each other in Approval_Policy[Company == policy.Company && Workflow == policy.Workflow && Status == "Published" && ID != policy.ID]
+				for each other in Approval_Policy[Workflow == policy.Workflow && Status == "Published" && ID != policy.ID]
 				{
 					if(ifnull(other.Territory_Key,"") == ifnull(policy.Territory_Key,"") && ifnull(other.Department_Key,"") == ifnull(policy.Department_Key,"")) { result.put("error","A published policy already exists in this scope. Edit that policy."); }
 				}

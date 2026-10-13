@@ -1,21 +1,46 @@
 <!doctype html><meta charset="utf-8"><title>Approval browser fixture</title>
 <link rel="stylesheet" href="/approval-admin.css">
-<style>body{font:14px system-ui;background:#f3f6fa;color:#0b2345;padding:24px}.btn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}button{cursor:pointer}.muted{color:#67758a}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
-<h1>Approval policy fixture</h1><p>Local simulation — no Creator writes or notifications.</p><button id="open">Open Approvals</button>
+<style>body{font:14px system-ui;background:#f3f6fa;color:#0b2345;padding:24px}.btn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}button{cursor:pointer}.muted{color:#67758a}pre{white-space:pre-wrap;overflow-wrap:anywhere}.fixture-controls{display:flex;align-items:center;gap:18px}</style>
+<h1>Approval policy fixture</h1><p>Local simulation — no Creator writes or notifications.</p>
+<div class="fixture-controls"><button id="open">Open Approvals</button><label><input type="checkbox" id="legacy"> Native update pending</label><span id="writes" role="status">Writes: 0</span></div>
 <script src="/approval-policy-domain.js"></script><script src="/approval-admin.js"></script>
 <script>
-const config={roles:[{id:'11',name:'CFO',active:true}],companies:[{id:'21',label:'Example company'}],territories:[{id:'North',label:'North'}],users:[{id:'31',user:'example.user',name:'Example person',approverEmail:'test@example.invalid',routingEnabled:true},{id:'32',user:'example.submitter',name:'Example submitter',approverEmail:'submitter@example.invalid',routingEnabled:true}],assignments:[{id:'41',roleId:'11',companyId:'21',userAccessId:'31',active:true,territory:'',department:'',effectiveFrom:'',effectiveTo:''}],policies:[{id:'51',workflow:'Purchase Order',companyId:'21',status:'Published',enabled:true,selfApproval:'Deny',territory:'',department:'',adapterEnabled:false,steps:[{key:'step-one',roleId:'11',order:1,condition:'Always',enabled:true}]}],audit:[]};
-const receipts=new Map();let count=60;
+const config={
+ roles:[{id:'11',name:'VP',active:true},{id:'12',name:'CFO',active:true},{id:'13',name:'COO',active:true}],
+ territories:[{id:'22',label:'Bryan / College Station',vpUserAccessIds:['31']},{id:'23',label:'Fort Hood',vpUserAccessIds:['35']}],
+ users:[
+  {id:'31',user:'vp.demo',name:'Avery Brooks',approverEmail:'vp@example.invalid',routingEnabled:true},
+  {id:'32',user:'cfo.demo',name:'Morgan Ellis',approverEmail:'cfo@example.invalid',routingEnabled:true},
+  {id:'33',user:'coo.demo',name:'Riley Parker',approverEmail:'coo@example.invalid',routingEnabled:true},
+  {id:'34',user:'submitter.demo',name:'Jordan Lane',approverEmail:'submitter@example.invalid',routingEnabled:true},
+  {id:'35',user:'vp.forthood',name:'Casey King',approverEmail:'vp.forthood@example.invalid',routingEnabled:true},
+  ...Array.from({length:24},(_,index)=>({id:String(100+index),user:'demo.'+index,name:'Demo Approver '+String(index+1).padStart(2,'0'),approverEmail:'approver.'+index+'@example.invalid',routingEnabled:true})),
+  {id:'150',user:'disabled.demo',name:'Taylor Reed',approverEmail:'disabled@example.invalid',routingEnabled:false}
+ ],
+ assignments:[
+  {id:'41',roleId:'12',userAccessId:'32',active:true,territory:'',department:''},
+  {id:'42',roleId:'13',userAccessId:'33',active:true,territory:'',department:''},
+  {id:'43',roleId:'12',userAccessId:'150',active:false,territory:'23',department:'Construction'}
+ ],
+ policies:[{id:'51',workflow:'Purchase Order',status:'Published',enabled:true,selfApproval:'Deny',territory:'',department:'',adapterEnabled:false,steps:[
+  {key:'vp',roleId:'11',order:1,condition:'Budget modification attached',enabled:true},
+  {key:'cfo',roleId:'12',order:2,condition:'Always',enabled:true},
+  {key:'coo',roleId:'13',order:3,condition:'Budget modification attached',enabled:true}
+ ]}],audit:[]
+};
+const receipts=new Map();let count=200,writeCount=0;
 const ui=LMApprovalAdmin.create({scope:()=> 'development-fixture',call:async p=>{
- if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:'ordered-cfo-v1',currentDate:'2026-10-11',actorId:'32',configuration:structuredClone(config)};
+ if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:document.querySelector('#legacy').checked?'ordered-cfo-v1':'territory-perpetual-v2',actorId:'34',configuration:structuredClone(config)};
  if(p.action==='Preview'){try{return {contract:'approval-policy-v1',success:true,snapshot:LMApprovalPolicy.resolve(config,p.context)};}catch(e){return {contract:'approval-policy-v1',success:false,error:e.message};}}
  if(p.action==='Check')return receipts.get(p.token);
+ if(document.querySelector('#legacy').checked)return {contract:'approval-policy-v1',success:false,writeState:'not-started',error:'Creator update pending · configuration changes are paused'};
  const collection=p.action==='SaveRole'?'roles':p.action==='SaveAssignment'?'assignments':'policies';
  let before=config[collection].find(r=>r.id===p.data.id),after={...structuredClone(p.data),id:p.data.id||String(++count)};
  if(p.action==='Publish')after={...before,status:'Published'};
  if(p.action==='SavePolicy')Object.assign(after,{status:p.data.status||'Draft',adapterEnabled:false});
  const index=config[collection].findIndex(r=>r.id===after.id);if(index<0)config[collection].push(after);else config[collection][index]=after;
- config.audit.push({id:String(++count),action:p.action,status:'Complete',actorId:'32',before:structuredClone(before||{}),after:structuredClone(after)});
+ config.audit.push({id:String(++count),action:p.action,status:'Complete',actorId:'34',actorName:'Jordan Lane',token:p.token,before:structuredClone(before||{}),after:structuredClone(after)});
+ writeCount++;document.querySelector('#writes').textContent='Writes: '+writeCount;
  const receipt={contract:'approval-policy-v1',success:true,writeState:'verified',token:p.token,after};receipts.set(p.token,receipt);await new Promise(r=>setTimeout(r,300));return receipt;
 }});
 document.querySelector('#open').onclick=()=>ui.open();

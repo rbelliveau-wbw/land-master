@@ -1,0 +1,45 @@
+{
+  "contract": "approval-scope-migration-v2",
+  "policyModel": "territory-perpetual-v2",
+  "status": "source-prepared-user-promotes-creator",
+  "authoritativeSchemaSource": "creator/exports/Land_Master_2026-10-11-development.ds",
+  "removeFields": [
+    {"form": "Approval_Policy", "field": "Company", "type": "Company lookup"},
+    {"form": "Approval_Policy", "field": "Effective_From", "type": "date"},
+    {"form": "Approval_Policy", "field": "Effective_To", "type": "date"},
+    {"form": "Approval_Role_Assignment", "field": "Company", "type": "Company lookup"},
+    {"form": "Approval_Role_Assignment", "field": "Effective_From", "type": "date"},
+    {"form": "Approval_Role_Assignment", "field": "Effective_To", "type": "date"}
+  ],
+  "preserve": [
+    "Company form and all Company fields outside Approval_Policy and Approval_Role_Assignment",
+    "Approval_Config_Audit Before_JSON/Intended_JSON/After_JSON and operation tokens",
+    "Approval_Route_Snapshot captured Context_JSON/Route_JSON/Execution_JSON",
+    "Budget_Approvals execution records, recipients, decisions, notes and timestamps",
+    "Territory.VP lookup and Territory/Department scope keys",
+    "Approval_Policy legacy Version/Duplicate_Person recovery evidence"
+  ],
+  "functionBundle": [
+    "approvalConfigurationSnapshot",
+    "resolveApprovalRoute",
+    "applySharedApprovalPolicy",
+    "startApprovalChain",
+    "createBudgetModification",
+    "submitBudgetModification",
+    "Start_Proforma_Approval_Chain",
+    "managePurchaseOrder",
+    "manageApprovalPolicies"
+  ],
+  "activateLast": "manageApprovalPolicies",
+  "unchangedApis": ["Manage_Approval_Policies", "Manage_Approval_Policies_DEV", "Manage_Purchase_Order", "Manage_Purchase_Order_DEV"],
+  "scopeOrder": ["Territory + Department", "Territory", "Department", "All"],
+  "preconditions": [
+    "Archive an exact native approval-configuration and audit export before field deletion.",
+    "Resolve every Started or unknown approval-configuration receipt and retained Approval_Config_Lock with the original native helper before migrating.",
+    "Inventory colliding workflow/Territory/Department policies and role/Territory/Department assignments, including inactive records. Obtain a human choice for conflicting surviving recipients or routes.",
+    "Verify exact native field link names and all native dependencies in Creator before deleting only the six listed fields.",
+    "Pause new approval submissions/configuration edits while the native function bundle is installed and compiled."
+  ],
+  "readiness": "The frontend blocks configuration writes and Preview until List advertises territory-perpetual-v2. Historical inspection and token-only Check remain available.",
+  "handoff": "knowledge/releases/approval-territory-perpetual-v2-2026-10-13.md"
+}

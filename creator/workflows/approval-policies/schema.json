@@ -1,5 +1,6 @@
 {
-  "status": "Development forms and all shared configuration/resolver/snapshot functions installed and compiled; native List and SaveRole verified; existing workflow adapters remain in progress",
+  "status": "Territory-perpetual source prepared; Company/effective-date field deletion and Creator promotion require the owner handoff. Historical exports retain the pre-removal schema.",
+  "policyModel": "territory-perpetual-v2",
   "forms": [
     "Approval_Role",
     "Approval_Role_Assignment",
@@ -12,7 +13,6 @@
     "User_Access.ID",
     "User_Access.Approver_Email",
     "User_Access.Full_Name",
-    "Company.ID",
     "Territory.Territory_Name",
     "Territory.VP",
     "Budget_Approvals",
@@ -25,12 +25,12 @@
     "helpText": "Allows shared approval policies to assign this person to a step. Off blocks routing even when their role assignment is active. Notifications use Approver Email. This does not grant budget editing or approval override permissions.",
     "nativeVerified": true
   },
-  "steps": "Ordered steps JSON belongs to one policy version; no separate decision history",
+  "steps": "Ordered steps JSON belongs to one editable policy; submitted routes retain immutable recipient snapshots and existing execution decisions",
   "confirmedPurchaseOrderRules": {
-    "defaultChain": "CFO always; also COO and Territory VP when any item exceeds available budget. Sequential order awaits user confirmation.",
-    "cooCondition": "Budget line exceeded: aggregate this PO by budget item and compare each item against its available budget after other POs, independently of pending modification credits",
+    "defaultChain": "CFO without new budget modifications; VP then CFO then COO when submission creates attached budget modifications",
+    "cooCondition": "The server's new budget modification plan is nonempty; pending modification credits retain their existing calculation",
     "vpSource": "Exactly one current User_Access identity in the matching Territory.VP; no separate VP role assignment for POs",
-    "scope": "All-companies PO policy and CFO/COO assignments are supported; company-specific PO configuration takes precedence",
+    "scope": "Territory and Department only, with an all-territory/all-department default; Company does not participate in approval configuration",
     "selfApproval": "Deny",
     "duplicatePerson": "Reject",
     "rejectionReservation": "Retain",
@@ -41,10 +41,15 @@
   "precedence": [
     "Territory+Department",
     "Territory",
-    "Company+Department",
-    "Company"
+    "Department",
+    "All territories and departments"
   ],
-  "windows": "Start inclusive, end exclusive; overlapping published windows at same scope rejected",
+  "windows": "None. Assignments and rules persist until changed or disabled; approval effective-date fields are deleted.",
+  "removedFields": {
+    "Approval_Role_Assignment": ["Company", "Effective_From", "Effective_To"],
+    "Approval_Policy": ["Company", "Effective_From", "Effective_To"]
+  },
+  "removalContract": "manifests/approval-scope-removal.json",
   "api": {
     "name": "Manage_Approval_Policies_DEV",
     "productionName": "Manage_Approval_Policies",

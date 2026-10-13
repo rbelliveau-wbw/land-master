@@ -37,10 +37,10 @@
 																		}
 		// Only initialize a new, untouched chain from the central template.
 		// Existing approval handlers, staging, emails and finalization are retained.
-		policyCompany = ""; policyTerritory = "";
-		if(budgetRec.Subdivision1 != null) { policyTerritory = ifnull(budgetRec.Subdivision1.Territory,""); if(budgetRec.Subdivision1.Company1 != null) { policyCompany = budgetRec.Subdivision1.Company1.ID.toString(); } }
+		policyTerritory = "";
+		if(budgetRec.Subdivision1 != null) { policyTerritory = ifnull(budgetRec.Subdivision1.Territory,""); }
 		policySubmitter = User_Access[User == zoho.loginuser];
-		policyContext = {"workflow":"Budget","recordId":vBudgetId.toString(),"companyId":policyCompany,"territory":policyTerritory,"department":vApprovalType,"submitterId":ifnull(policySubmitter.ID,0).toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":"0.00","amountBasisConfirmed":false};
+		policyContext = {"workflow":"Budget","recordId":vBudgetId.toString(),"territory":policyTerritory,"department":vApprovalType,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":"0.00","amountBasisConfirmed":false};
 		policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 		if(policyExecution.get("success") != true) { return "Approval template could not be loaded: " + policyExecution.get("error"); }
 		budgetRec = Add_Budget[ID == vBudgetId];
