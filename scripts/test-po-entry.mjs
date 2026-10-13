@@ -61,7 +61,7 @@ const submitted={id:'5001',budgetId:'1001',status:'Submitted',commitmentState:'R
 review.model={budgetId:'1001',lines:submitted.lines,reservedLines:[],balances:[oldBalance],balanceState:'loaded'};review.generation=1;review.balanceGeneration=0;review.current=()=>true;review.progress=true;review.popover=null;review.deleteReview=false;
 review.controller={state:()=>({snapshot:submitted})};review.error=message=>{review.model.error=message;};
 vm.runInContext(source.slice(source.indexOf('    function allocationRows()'),source.indexOf('    function summaryRows()')),review);
-vm.runInContext(source.slice(source.indexOf('    async function refresh()'),source.indexOf('    function setDeleteReview(')),review);
+vm.runInContext(source.slice(source.indexOf('    async function readBalances()'),source.indexOf('    function setDeleteReview(')),review);
 vm.runInContext(source.slice(source.indexOf('    function click(event)'),source.indexOf('    async function open(')),review);
 const rendered=[];review.render=()=>{if(!review.progress)rendered.push({state:review.model.balanceState,allocation:review.allocationRows()[0]});};
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
@@ -74,5 +74,6 @@ assert.equal(review.model.balanceState,'loaded');assert.equal(rendered.at(-1).al
 stale.resolve({contract:'po-v1',success:true,balances:[oldBalance]});await earlierBalance;assert.equal(review.model.balances[0].pendingModificationCents,'10000','A late pre-submit balance cannot overwrite the refreshed balance');
 pending=deferred();const failedRefresh=review.refresh();pending.reject(new Error('Balance read denied'));await failedRefresh;assert.equal(review.model.balanceState,'unavailable');assert.equal(rendered.at(-1).allocation.verified,false,'Failed refresh cannot reuse cached amounts');
 assert.throws(()=>review.LMPO.allocations(submitted.lines,[oldBalance],submitted.lines,submitted.approvalBundle.modifications),/does not reconcile/,'Strict reconciliation still rejects genuinely inconsistent loaded balances');
+const beforeWarm=reads.length;review.progress=true;review.controller={state:()=>({snapshot:submitted,reviewBalances:{state:'loaded',balances:[newBalance]}})};review.click({target:{closest:selector=>selector==='button,input[data-po-date]'?{hasAttribute:name=>name==='data-po-done'}:null}});assert.equal(reads.length,beforeWarm,'Review reuses balances freshly loaded after the acknowledged mutation');assert.equal(review.model.loadState,'loaded');assert.equal(rendered.at(-1).allocation.available,4996500n,'Warm Review reveals its Summary immediately');
 assert.deepEqual(reads,['Balances','Balances','Balances']);
 console.log('PO Review after Submit: saved $50,065 PO and $100 mod, unknown-then-fresh budget, late read exclusion, failed read and strict reconciliation passed without writes.');

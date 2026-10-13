@@ -1144,3 +1144,35 @@ Production 9.80, selecting only sendPurchaseOrderEmail.
 Validation: full npm run validate and npm run build:pages passed. The browser
 Submit → Review test retained the $50,065 total and captured chain immediately,
 then displayed $49,965 available and +$100 modification without console errors.
+
+## Legal-style PO results and parallel Summary (122.29.34)
+
+The PO editor no longer supplies the large worksheet dimensions to progress and
+success. The separate progress presentation matches Legal's 540px navy dialog,
+slim bar, numbered stage chips, explicit outcome, collapsed Saved items and
+pinned Done/Review PO actions. Unknown replies alone expose Check status, with
+the existing controller's read-only recovery. Pending Close/Escape and duplicate
+write locks, focus, inert background, exact identities/counts and email warnings
+remain. Resolved vendor names appear in the progress context.
+
+Get, vendor roster and budget Balances now start together. The saved PO and its
+Summary reveal atomically after these parallel reads; a failed balance read
+still opens the saved PO with truthful unavailable figures. Confirmed save or
+decision responses preload fresh balances while the terminal result is shown.
+Review PO uses that run's refreshed result rather than starting another read;
+late replies retain actor/dialog/read-generation guards. The strict pending-mod
+invariant stays intact. No write is replayed to speed up or demonstrate the UI.
+
+Changed UI: po-progress.js, po-ui.js, purchase-orders.css and widget asset entry.
+No forms, fields, functions or Custom APIs change; no Creator deployment is
+required. Development and Production use 122.29.34. Rollback: restore mapping
+122.29.32 without changing saved POs, captured approvals or native email helpers.
+
+Validation: full npm run validate and npm run build:pages passed. Actual-source
+regressions cover parallel Get/vendor/Balance dispatch and atomic publication,
+post-write warm Review, late replies, failed balances, strict pending-mod math,
+compact result sizing and truthful success/warning/unknown controls. Browser QA
+verified the 540px result, collapsed saved items, pending Escape lock, lost reply
+and read-only Check status with one simulated write, immediate warm Summary and
+the 390px layout. All approval actions for screenshots used local disposable
+simulation; no native approval or notification was replayed.

@@ -117,3 +117,14 @@ commits, verify proposed actions before releasing their parent, and retain
 unknown writes for read-only checking. Decline retains its confirmation. Require
 a confirmed Approval Queue grant; Proposed is read-only outside Review. This
 exception does not change token-based LOI review or other approval progress dialogs.
+
+## Purchase Order results — October 13, 2026
+
+Use Legal's compact approval progress/result treatment for managed PO actions.
+Keep the editor's large worksheet dimensions separate. Use the navy header,
+slim bar, colored numbered stages and outcome, with saved lines/modifications/
+captured approval statuses collapsed under Saved items. Done dismisses; Review
+PO returns to the saved record. Check status appears only after an unknown reply
+and retains the existing read-only controller recovery. Notification warnings
+must not look like verified delivery. Keep focus, inert background, pending
+locks and display-only pacing; this styling does not change approval routing.

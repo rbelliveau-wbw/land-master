@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import './test-po-item-picker.mjs';
 import './test-po-summary.mjs';
 import './test-po-entry.mjs';
+import './test-po-progress.mjs';
 import './test-po-date-picker.mjs';
 import './test-po-requests.mjs';
 const ctx=vm.createContext({});

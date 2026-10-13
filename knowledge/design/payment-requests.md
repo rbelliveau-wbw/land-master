@@ -67,3 +67,11 @@ Review PO after a save or decision refreshes budget balances before rendering
 calculations for the new saved snapshot. Show checking/unavailable figures until
 the current read completes; an older balance reply cannot replace a newer one.
 Retain exact-cent reservation and pending-modification reconciliation.
+
+PO save/approval/delete progress uses Legal's compact 540px result dialog:
+navy header and slim progress bar, numbered stages with colored chips, a clear
+outcome, collapsed Saved items and a pinned footer. Done dismisses; Review PO
+opens the saved record. Show Check status only for unknown replies. Keep pending
+Close/Escape locks, focus handling, exact saved identities and notification
+warnings. Saved PO and Summary read together in parallel; preload fresh balances
+after a confirmed mutation so Review PO can reveal both together.
