@@ -1094,3 +1094,28 @@ Preview resolved VP → CFO → COO from the territory VP and active CFO/COO ass
 The existing Creator 9.79 already contains the required PO functions. This release
 promotes Budget Manager 122.29.30 and ordered Settings Manager 1.5.2; no additional
 Creator schema or function deployment is required for these presentation fixes.
+
+## Saved PO loading and absolute email links (122.29.31)
+
+Saved PO View/Edit now shows Loading purchase order until its scoped snapshot and
+vendor roster have both arrived. The independent reads run in parallel; no blank
+entry fields or $0 totals flash before the saved data. Failure shows Retry load
+and Close. Existing identity, stale reply, readonly and unknown-write guards stay
+in force. Frontend rollback is 122.29.30.
+
+`sendPurchaseOrderEmail` uses an absolute HTTPS Creator page URL for Development,
+Stage or Production, retaining the budget and PO IDs. Relative `zoho.appuri` caused
+Gmail to redirect to an invalid host. The function signature, recipient, attachment,
+send stamp and duplicate guard are unchanged. Publish this one native function
+through Stage to Production; GitHub Pages cannot deploy Deluge. Emails already
+delivered retain their old link; use the corrected PO page URL without recreating
+the PO or altering approval state. Backend rollback: prior function at 98c3f6d2.
+
+Validation: full `npm run validate` and `npm run build:pages` passed. Actual-source
+regressions cover waiting for both independent reads, hidden draft fields and
+false totals, read-only load failure/retry and exact HTTPS email URLs in all three
+environments with the delivery duplicate guard intact. Local browser slow-read
+and failed-read/retry tests loaded the saved amount with zero writes. The native
+email function compiled and its reopened token fingerprint matches the reviewed
+source (768875516daab2dc). The approved Development demo-user permission change
+lets demouser_1 open the pending VP PO and exposes Approve PO & mods.

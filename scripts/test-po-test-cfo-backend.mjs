@@ -99,6 +99,14 @@ assert.match(packet.Attachments.content,/<Data ss:Type='Number'>20.00<\/Data>/);
 assert.match(packet.Attachments.content,/<Data ss:Type='DateTime'>2026-10-12T00:00:00.000<\/Data>/);
 assert.match(packet.message,/Full line details are in the attached Excel file/);assert.doesNotMatch(packet.message,/Changed &lt;description&gt;|Approval chain/,'Email stays summarized');
 r=runtime({extraTables:emailTables,environment:'Development'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);assert.match(r.c.mails[0].subject,/\[DEV TEST\]/);
+// Gmail requires absolute URLs; the native appuri can be only an owner/app path.
+for(const [environment,path] of [['Production',''],['Development','/environment/development'],['Stage','/environment/stage'],['development','/environment/development']]){
+ r=runtime({extraTables:emailTables,environment});vm.runInContext("zoho.appuri='wbdevelopment/environment/development/land-master/'",r.c);assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
+ const href=r.c.mails[0].message.match(/href='([^']+)'/)[1],url=new URL(href);assert.equal(url.protocol,'https:');assert.equal(url.hostname,'creatorapp.zoho.com');assert.equal(url.pathname,`/wbdevelopment${path}/land-master/`);assert.equal(url.hash,'#Page:Budget_Management1?budgetId=61&purchaseOrderId=51');assert.equal(r.c.mails.length,1);
+ vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c);assert.equal(r.c.mails.length,1,'URL correction preserves the recorded-delivery guard');
+}
+r=runtime({extraTables:emailTables,environment:'Unknown'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^ERROR:/);assert.equal(r.c.mails.length,0);assert.equal(r.tables().Budget_Approvals[0].Sent_Date,null);
+console.log('PO email URLs: absolute HTTPS Creator host, exact Dev/Stage/Prod path and PO identity, unknown-environment denial and duplicate delivery guard passed.');
 // The same compact workbook is used for a read-only download and email.
 r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.equal(workbook.content,packet.Attachments.content);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
 const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_Description='General & <scope>';r=runtime({extraTables:withDescription});workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true);assert.match(workbook.content,/General &amp; &lt;scope&gt;/);assert.match(workbook.content,/SUM\(R9C8:R10C8\)/);assert.equal((workbook.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,6);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);

@@ -57,3 +57,8 @@ The editing toggle reads Row / Spreadsheet. Spreadsheet Undo includes typed cell
 edits as well as range paste and fill-down. Double-click or F2 edits a cell;
 keyboard focus entering the ledger updates its active cell. Retain exact amounts,
 atomic paste validation and the 250-line limit.
+
+Saved PO View/Edit opens an explicit loading state. Hide entry fields, zero totals
+and the Summary until the exact snapshot and vendor roster arrive together. Read
+them in parallel. Failed loads show the error and Retry load; retain close/focus
+handling and never expose a blank editable draft for a saved PO.

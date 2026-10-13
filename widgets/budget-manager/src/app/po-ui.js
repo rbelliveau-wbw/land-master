@@ -66,6 +66,7 @@
       card.querySelector('#po-title').textContent='Purchase Order';
       var status=model.loadState==='loading'?'Loading':model.loadState==='unavailable'?'Unavailable':model.approvalState&&model.approvalState!=='Not Configured'?model.approvalState:model.status||'Draft',badge=card.querySelector('[data-po-status-badge]');
       badge.hidden=false;badge.textContent=status;badge.dataset.poState=status;
+      if(model.loadState==='loading'||model.loadState==='unavailable'){renderLoadState();return;}
       var locked=readOnly(),items=itemRows();
       card.querySelector('#po-context').textContent=model.phase;card.querySelector('[data-po-title-vendor]').hidden=false;
       var html='<div class="po-error" data-po-error role="alert" '+(model.error?'':'hidden')+'>'+esc(model.error)+'</div>';
@@ -103,6 +104,11 @@
       previewTimer=setTimeout(async function(){if(!current()||generation!==own||previewGeneration!==request||progress)return;try{var response=await call({action:'PreviewApprovals',amount:model.amount,hasBudgetModification:shortfall>0n,hasBudgetOverrun:overrun});if(!current()||generation!==own||previewGeneration!==request||progress)return;if(!response||response.contract!=='po-v1'||response.success!==true||!response.approvalPreview||!Array.isArray(response.approvalPreview.roles)||!response.approvalPreview.roles.length||response.approvalPreview.roles.some(function(row,index){return typeof row.role!=='string'||row.order!==index+1;})||response.approvalPreview.roles.filter(function(row){return row.role==='CFO';}).length!==1)throw new Error(response&&response.error||'Approval preview is unavailable.');model.previewRoles=response.approvalPreview.roles;model.previewState='loaded';}catch(e){if(!current()||generation!==own||previewGeneration!==request||progress)return;model.previewState='unavailable';model.previewError=e.message;}patchContext();},250);
     }
     async function refreshVendors(){var own=generation,rows=await options.vendors();if(!current()||generation!==own)return false;var seen=new Set();rows.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=rows;model.vendorRefresh=false;return true;}
+    function renderLoadState(){
+      var loading=model.loadState==='loading';card.querySelector('#po-context').textContent=model.phase;card.querySelector('[data-po-title-vendor]').hidden=true;overlay.querySelector('.po-summary').hidden=true;
+      card.querySelector('.po-body').innerHTML='<section class="po-load-state" '+(loading?'role="status" aria-live="polite" aria-busy="true"':'role="alert"')+'>'+(loading?'<span class="po-load-spinner" aria-hidden="true"></span>':'')+'<strong>'+(loading?'Loading purchase order…':'Purchase order unavailable')+'</strong>'+(!loading&&model.error?'<p>'+esc(model.error)+'</p>':'')+'</section>';
+      card.querySelector('footer').innerHTML='<span class="po-spacer"></span>'+(!loading?'<button class="mbtn neutral" data-po-reload>Retry load</button>':'')+'<button class="mbtn neutral" data-po-close>Close</button>';
+    }
     function bundleHtml(){var bundle=model.approvalBundle;return '<section class="po-approval-bundle"><div class="po-ledger-title"><h3>Approval chain</h3><span class="po-spacer"></span><span class="po-chain-state" data-po-state="'+esc(model.approvalState)+'">'+esc(model.approvalState)+'</span></div><div class="po-approval-steps">'+bundle.rows.map(function(row){return '<div data-po-chain-state="'+esc(row.status)+'"><span class="po-step-order">'+esc(row.order)+'</span><strong>'+esc(row.role)+'</strong><span class="po-chain-status">'+esc(row.status)+'</span>'+(row.notes?'<p>'+esc(row.notes)+'</p>':'')+'</div>';}).join('')+'</div>'+bundle.modifications.map(function(mod){var item=options.items().find(function(row){return row.ID===mod.budgetItemId;});return '<div class="po-bundle-mod"><span>'+esc(item&&item.Item_Name||'Budget item')+'</span><strong>+'+money(mod.amount)+'</strong><span>'+esc(mod.status)+'</span></div>';}).join('')+(bundle.canApprove&&model.approvalState==='Pending'?'<label class="po-field po-decision-note"><span>Approval notes</span><textarea aria-label="Approval notes" data-po-approval-note maxlength="9000">'+esc(model.approvalNote||'')+'</textarea></label>':'')+'</section>';}
     async function decide(action){if(progress||visualBusy||!current()||!model.approvalBundle)return;var bundle=model.approvalBundle;if(action==='RetryEmail'?!bundle.canRetryEmail:!bundle.canApprove)return;var note=(bundle.active.notes?bundle.active.notes+'\n\n':'')+(model.approvalNote||'').trim();mountProgress(action);await controller.decide({action:action,id:model.id,budgetId:model.budgetId,approvalId:bundle.active.id,expectedRevision:model.revision,note:note,userAccessId:options.userAccessId()});}
     function lineCode(line){if(readOnly()&&line.costCode)return line.costCode;var balance=model.balances.find(function(row){return row.budgetItemId===line.budgetItemId;});return balance?root.LMPO.costCode(balance.subdivisionCode,balance.minorCode,line.costElement):(line.costCode||'');}
@@ -161,11 +167,12 @@
       if(action==='Submit'){payload.expectedBalances={};payload.expectedPendingModifications={};allocationRows().forEach(function(row){if(!row.verified)throw new Error('Item balance is unverified.');payload.expectedBalances[row.budgetItemId]=String(row.available);payload.expectedPendingModifications[row.budgetItemId]=String(row.pending);});}
       mountProgress();await controller.begin(payload);
     }catch(e){error(e.message);}}
-    async function get(id){
+    function loadVendors(){var own=generation;return Promise.resolve().then(function(){return options.vendors();}).then(function(vendors){if(!current()||own!==generation)return;var seen=new Set();vendors.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=vendors;});}
+    async function get(id,vendorsReady){
       var own=generation,load=++loadGeneration;
       model.loadState='loading';model.loadId=id;model.error='';model.approvalBundle=null;model.approvalNote='';render();
       try{
-        var resp=await call({action:'Get',id:id});
+        var responses=await Promise.all([call({action:'Get',id:id}),vendorsReady||Promise.resolve()]),resp=responses[0];
         if(!current()||own!==generation||load!==loadGeneration)return;
         if(!resp||resp.contract!=='po-v1'||!resp.success||!resp.snapshot||resp.snapshot.id!==id||resp.snapshot.budgetId!==model.budgetId)throw new Error(resp&&resp.error||'PO could not be loaded.');
         if(!['Draft','Submitted'].includes(resp.snapshot.status)||resp.snapshot.commitmentState!==(resp.snapshot.status==='Submitted'?'Reserved':'None')||!['Not Configured','Pending','Approved','Rejected'].includes(resp.snapshot.approvalState))throw new Error('Saved PO state could not be verified.');
@@ -180,7 +187,7 @@
       if(target.hasAttribute('data-po-check')){if(!visualBusy){openedAt=performance.now();controller.check();}return;}
       if(progress||!current()||visualBusy)return;
       if(target.hasAttribute('data-po-delete')){previewDelete();return;}if(target.hasAttribute('data-po-delete-confirm')){removePO().catch(function(e){error(e.message);});return;}if(target.hasAttribute('data-po-delete-cancel')){cancelDelete();return;}
-      if(target.hasAttribute('data-po-reload')){get(model.loadId);return;}
+      if(target.hasAttribute('data-po-reload')){get(model.loadId,loadVendors());return;}
       if(target.dataset.poDecision){decide(target.dataset.poDecision).catch(function(e){error(e.message);});return;}
       if(target.hasAttribute('data-po-saved')){savedList();return;}if(target.dataset.poOpen){get(target.dataset.poOpen);return;}if(target.hasAttribute('data-po-back')){render();return;}if(target.hasAttribute('data-po-refresh')){refresh();return;}
       if(readOnly())return;
@@ -196,9 +203,9 @@
     async function open(budget,source,purchaseOrderId,intent){if(overlay)return;trigger=source||document.activeElement;generation++;var pending=unresolved[String(budget.ID)];
       if(pending){if(pending.model.scope!==options.scope())throw new Error('An unresolved PO belongs to another Creator session. Review that operation before opening a new draft.');model=pending.model;controller=pending.controller;mount();mountProgress(controller.state().payload.action);onState(controller.state(),'settled');return;}
       model={budgetId:String(budget.ID),phase:options.phaseName(budget),scope:options.scope(),editable:options.canEdit(budget),loadState:purchaseOrderId?'loading':'loaded',loadId:purchaseOrderId?String(purchaseOrderId):'',amount:'',description:'',gridMode:'row',preview:intent==='view',deleteFromList:intent==='delete',reservedLines:[],vendorId:'',budgetModificationId:null,modifications:options.modifications?options.modifications():[],requestDate:localDate(new Date()),dateNeeded:'',lines:[lineNew()],vendors:[],balances:[],balanceState:'loading',error:''};
-      controller=root.LMPOController.create({call:call,onState:onState});mount();render();var own=generation;
-      try{var vendors=await options.vendors();if(!current()||own!==generation)return;var seen=new Set();vendors.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=vendors;render();}catch(e){if(current())error(e.message);}
-      if(current()){if(purchaseOrderId){await get(String(purchaseOrderId));if(intent==='delete'&&current()&&model.loadState==='loaded')await previewDelete();}else refresh();}
+      controller=root.LMPOController.create({call:call,onState:onState});mount();render();var own=generation,vendorsReady=loadVendors();
+      if(purchaseOrderId){await get(String(purchaseOrderId),vendorsReady);if(intent==='delete'&&current()&&own===generation&&model.loadState==='loaded')await previewDelete();}
+      else{try{await vendorsReady;}catch(e){if(current()&&own===generation)error(e.message);}if(current()&&own===generation){render();refresh();}}
     }
     return {open:open,isOpen:function(){return !!overlay;}};
   }
