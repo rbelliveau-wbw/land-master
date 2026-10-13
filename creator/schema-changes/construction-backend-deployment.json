@@ -1,6 +1,6 @@
 {
   "environment": "DEVELOPMENT",
-  "productionPublished": false,
+  "productionPublished": true,
   "verification": "All eight functions independently reselected and copied. All eleven workflows saved through native Workflow Builder, independently reopened, verified as exactly one script action with the entire reviewed body; comparison preserves strings and parentheses.",
   "functions": [
     {
@@ -192,5 +192,9 @@
     "node scripts/test-contract-email-switches.mjs passed",
     "node scripts/test-contract-loi-permissions.mjs passed"
   ],
-  "auditCorrection": "Initial IDE workflow save appended duplicate actions. All four affected workflows repaired in native Workflow Builder (Field/SetApproved/Comments 5→1; ApprovalTemplate 6→1). Old duplicate DSL captures are explicitly rejected audit records; final builder captures and after.dg are authoritative."
+  "auditCorrection": "Initial IDE workflow save appended duplicate actions. All four affected workflows repaired in native Workflow Builder (Field/SetApproved/Comments 5→1; ApprovalTemplate 6→1). Old duplicate DSL captures are explicitly rejected audit records; final builder captures and after.dg are authoritative.",
+  "stagePublished": true,
+  "stageCreatorVersion": "9.81",
+  "productionCreatorVersion": "9.81",
+  "nativePublicationManifest": "creator/schema-changes/construction-native-publication.json"
 }

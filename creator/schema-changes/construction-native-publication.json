@@ -1,0 +1,203 @@
+{
+  "status": "production-published",
+  "from": "Development",
+  "to": "Stage",
+  "previousStageVersion": "9.80",
+  "previousProductionVersion": "9.80",
+  "selectedComponents": [
+    {
+      "name": "Add Contract",
+      "value": "201#4410926000000197013"
+    },
+    {
+      "name": "Construction Request",
+      "value": "202#4410926000005188029"
+    },
+    {
+      "name": "Construction Plans",
+      "value": "202#4410926000005188031"
+    },
+    {
+      "name": "Work Module",
+      "value": "202#4410926000005188030"
+    },
+    {
+      "name": "MUD",
+      "value": "202#4410926000005188033"
+    },
+    {
+      "name": "Priority",
+      "value": "202#4410926000005188032"
+    },
+    {
+      "name": "Description",
+      "value": "202#4410926000005188035"
+    },
+    {
+      "name": "Date Needed",
+      "value": "202#4410926000005188034"
+    },
+    {
+      "name": "Contract Info",
+      "value": "202#4410926000000197131"
+    },
+    {
+      "name": "Type",
+      "value": "202#4410926000001181054"
+    },
+    {
+      "name": "Status",
+      "value": "202#4410926000000978217"
+    },
+    {
+      "name": "All Contracts",
+      "value": "301#4410926000002866079"
+    },
+    {
+      "name": "Load Approval Template - Contract",
+      "value": "601#4410926000001150050"
+    },
+    {
+      "name": "Load Contract Action Template - Contract",
+      "value": "601#4410926000001162063"
+    },
+    {
+      "name": "Field Validations - Contract",
+      "value": "601#4410926000001227001"
+    },
+    {
+      "name": "Send for Approvals - Contracts",
+      "value": "605#4410926000000978007"
+    },
+    {
+      "name": "Send for Approvals",
+      "value": "605#4410926000001238587"
+    },
+    {
+      "name": "Contract Actions",
+      "value": "201#4410926000001136098"
+    },
+    {
+      "name": "Section",
+      "value": "202#4410926000001136216"
+    },
+    {
+      "name": "Type",
+      "value": "202#4410926000001162009"
+    },
+    {
+      "name": "Work Module",
+      "value": "202#4410926000005188059"
+    },
+    {
+      "name": "Status",
+      "value": "202#4410926000002866232"
+    },
+    {
+      "name": "All Contract Actions",
+      "value": "301#4410926000001136170"
+    },
+    {
+      "name": "Construction Contract Actions Validation",
+      "value": "601#4410926000005188114"
+    },
+    {
+      "name": "User Access",
+      "value": "201#4410926000003582007"
+    },
+    {
+      "name": "Construction",
+      "value": "202#4410926000005188063"
+    },
+    {
+      "name": "Submit Construction Requests",
+      "value": "202#4410926000005188065"
+    },
+    {
+      "name": "Edit All Construction Requests",
+      "value": "202#4410926000005188064"
+    },
+    {
+      "name": "Contract Approvals",
+      "value": "201#4410926000000978028"
+    },
+    {
+      "name": "Set Contract Approved - Contract Approval",
+      "value": "601#4410926000002599384"
+    },
+    {
+      "name": "Construction Contract Approvals Validation",
+      "value": "601#4410926000005188123"
+    },
+    {
+      "name": "Comment Log",
+      "value": "201#4410926000004743010"
+    },
+    {
+      "name": "Validate Comment Log",
+      "value": "601#4410926000004743130"
+    },
+    {
+      "name": "Attachment",
+      "value": "201#4410926000000964222"
+    },
+    {
+      "name": "Construction Attachment Validation",
+      "value": "601#4410926000005188127"
+    },
+    {
+      "name": "Construction",
+      "value": "501#4410926000005188138"
+    },
+    {
+      "name": "Contracts - Previous Day Actions Update Digest",
+      "value": "602#4410926000003345002"
+    },
+    {
+      "name": "getUserAccess",
+      "value": "606#4410926000003606025"
+    },
+    {
+      "name": "Create_LOI_Contract",
+      "value": "606#4410926000003980177"
+    },
+    {
+      "name": "sendApprovalReminders",
+      "value": "606#4410926000004356160"
+    },
+    {
+      "name": "createContractAttachmentRecord",
+      "value": "606#4410926000004604027"
+    },
+    {
+      "name": "deleteContractAttachment",
+      "value": "606#4410926000004604033"
+    },
+    {
+      "name": "Send_Contract_Approval_Email",
+      "value": "606#4410926000004698003"
+    },
+    {
+      "name": "Send_Contract_Approvals",
+      "value": "606#4410926000004698009"
+    },
+    {
+      "name": "getUserAccessLean",
+      "value": "606#4410926000005003335"
+    }
+  ],
+  "excluded": [
+    "Forecast Management",
+    "Forecast Year Subform",
+    "Payment Request",
+    "CFO",
+    "Dev/Land Acq - Proforma & Budgets",
+    "App Menu",
+    "Theme"
+  ],
+  "permissionsAssigned": false,
+  "stageVersion": "9.81",
+  "productionVersion": "9.81",
+  "creatorComponentCount": 40,
+  "verifiedAt": "2026-10-13T20:14:35.907Z"
+}
