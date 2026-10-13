@@ -150,6 +150,12 @@ colors. Status choices, saved values, callbacks, permissions, and native
 fields/APIs/functions are unchanged. This is a frontend-only immutable release;
 Creator remains on `9.81`, and widget rollback is `1.62.1`.
 
+Desktop actual-source preview verified the colored options, readable labels,
+matching request/action chips, and centered selected check. Existing
+Construction and full Contracts SDK regressions passed. Full `npm run validate`
+and `npm run build:pages` passed before main/Production promotion. No business
+records were created or changed for the color checks.
+
 ## Creator deployment checklist
 
 The schema manifest records exact additive link names, field types, choices,
