@@ -45,7 +45,7 @@ if(keeperId != 0 && input.ID.toLong() != keeperId)
 	input.Next_Workflow_Run = null;
 	sendmail
 	[
-		from :"rbelliveau@wbdevelopment.com"
+		from :"Notifications@wbdevelopment.com"
 		to :"rbelliveau@wbdevelopment.com"
 		subject :"Land Master - DUPLICATE Settings record created (ID " + input.ID + ")"
 		message :"A second Settings record was created and bypassed the on-validate guard.<br><br>Next_Workflow_Run has been cleared on the new row so the six daily Settings-anchored schedules do not double-fire.<br><br>Delete record " + input.ID + " from the All Settings report. The record to KEEP is " + keeperId + "."

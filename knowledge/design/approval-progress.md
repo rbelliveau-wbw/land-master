@@ -41,6 +41,14 @@ Use the equivalent three short, truthful phases for a new object. A phase is Don
 
 ## Verification contract
 
+All Land Master application emails use `Notifications@wbdevelopment.com` as
+their sender. This includes approvals, reminders and recap emails, modification
+notices, watchdog reports, LOI decisions, and application error alerts. Keep
+recipient selection, approval routing, delivery stamps, and duplicate-send
+guards unchanged when updating the sender. `scripts/test-email-senders.mjs`
+checks deployable function and workflow source; historical exports remain
+snapshots of the application at export time.
+
 - Poll **only the targeted reconciliation API and record/track**, about once per second. Do not refresh an entire report or scan unrelated approval flows to infer success. Use the Creator record ID as a string in browser code.
 - Keep a bounded reconciliation window: current flows use **20 seconds**, with **one automatic repair attempt after about 5 seconds** when the targeted persisted state permits a safe repair. No infinite spinner or unbounded retry loop.
 - Prefer the existing Custom API and function when they can safely support targeted `Check` and `Repair` modes. Add a new endpoint only when the existing contract cannot serve the new flow. The server must enforce permissions as well as the widget.

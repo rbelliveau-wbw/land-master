@@ -23,7 +23,7 @@
                  		}
                  		sendmail
                  		[
-                 			from :zoho.adminuserid
+			from :"Notifications@wbdevelopment.com"
                  			to :"rbelliveau@wbdevelopment.com"
                  			subject :subjectText
                  			message :bodyText

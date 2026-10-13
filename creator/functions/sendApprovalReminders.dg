@@ -171,7 +171,7 @@ string sendApprovalReminders()
 			recapBody = recapBody + "<p style='margin:0 0 14px 0;font-size:13px;color:#475569;'>No pending approvals needed reminders. Next budget reminder " + newNext.toString() + ".</p></div>";
 			sendmail
 			[
-				from :"jking@wbdevelopment.com"
+				from :"Notifications@wbdevelopment.com"
 				to :"rbelliveau@wbdevelopment.com"
 				subject :"Approval reminders: nothing to send"
 				message :recapBody
@@ -206,7 +206,7 @@ string sendApprovalReminders()
 	emailSubject = "Approval reminders sent: " + totalSent + " (contracts " + contractCount + ", budgets " + budgetCount + ", pro formas " + proformaCount + ", mods " + modCount + ")";
 	sendmail
 	[
-		from :"jking@wbdevelopment.com"
+		from :"Notifications@wbdevelopment.com"
 		to :"rbelliveau@wbdevelopment.com"
 		subject :emailSubject
 		message :recapBody

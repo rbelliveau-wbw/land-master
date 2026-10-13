@@ -132,7 +132,7 @@
                  	// Internal app URL for the Budget Management page hosting the widget.
                  	widgetPageUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Budget_Management1";
                  	// Verified sender for all approval emails.
-                 	fromAddress = "jking@wbdevelopment.com";
+	fromAddress = "Notifications@wbdevelopment.com";
                  	// Build budget display info.
                  	budgetName = ifnull(budgetRec.Budget_Name,"Budget Review");
                  	projectName = ifnull(budgetRec.Project,"");

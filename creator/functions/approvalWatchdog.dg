@@ -29,7 +29,7 @@ string approvalWatchdog()
 	// Modification repairs delegate to sendModificationEmail, which already picks
 	// the next approver, stamps the record and runs the Revised/Modified Final
 	// rollups. Reusing it keeps one implementation of that logic.
-	fromAddress = "rbelliveau@wbdevelopment.com";
+	fromAddress = "Notifications@wbdevelopment.com";
 	toAddress = "rbelliveau@wbdevelopment.com";
 	/***************************************************************
 	 * PASS 1: CLASSIFY AND COUNT EVERY APPROVAL ROW

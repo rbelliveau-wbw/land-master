@@ -73,7 +73,7 @@
                  			{
                  				sendmail
                  				[
-                 					from :zoho.adminuserid
+					from :"Notifications@wbdevelopment.com"
                  					to :pf.Acquisition_Email
                  					subject :"LOI Rejected by Legal - " + ifnull(pf.Name,"Pro Forma")
                  					message :"Legal rejected the LOI for <b>" + ifnull(pf.Name,"Pro Forma") + "</b>.<br><br><b>Legal note:</b><br>" + noteValue
@@ -115,7 +115,7 @@
                  		{
                  			sendmail
                  			[
-                 				from :zoho.adminuserid
+				from :"Notifications@wbdevelopment.com"
                  				to :pf.Acquisition_Email
                  				subject :"LOI Approved by Legal - " + ifnull(pf.Name,"Pro Forma")
                  				message :"Legal approved the LOI for <b>" + ifnull(pf.Name,"Pro Forma") + "</b> and Contract <b>" + contractIdText + "</b> was created.<br><br><b>Legal note:</b><br>" + if(noteValue == "","No note entered.",noteValue)
