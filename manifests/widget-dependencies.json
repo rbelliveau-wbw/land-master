@@ -433,6 +433,7 @@
         "Add_Pro_Forma",
         "Attachment",
         "Builder",
+        "Comment_Log",
         "Company",
         "Contract",
         "Contract_Actions",
@@ -459,6 +460,7 @@
         "All_Projects",
         "All_Subdivisions",
         "All_Takedown_Schedules",
+        "Comment_Log_Report",
         "Contract_Pricing_Report"
       ],
       "sdk_calls": [

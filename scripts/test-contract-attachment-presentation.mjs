@@ -19,11 +19,11 @@ let mounted='',uploads=[];
 const ctx={
   S:{contracts:[{ID:CID,Contract_Name:'Legal Fixture'}],versions:[],users:[],user:'Current Actor'},
   document:{querySelectorAll:()=>[],querySelector:()=>null},$:el,
-  mayEdit:()=>true,openModal:html=>{mounted=html;},
+  mayEdit:()=>true,canAddContractAttachments:()=>true,constructionAccess:()=>false,openModal:html=>{mounted=html;},
   addVersionFiles:(cid,files)=>uploads.push({cid,files}),APR_ICON_CLIP:'',
 };
 vm.createContext(ctx);
-for(const name of ['esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','contractFilePaths','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','attachmentsPanel','wireAttachmentsPanel','attachmentModalRows','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
+for(const name of ['workModule','esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','contractFilePaths','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','attachmentsPanel','wireAttachmentsPanel','attachmentModalRows','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
 
 for(const [file,label] of [
  [{filename:'Legal.pdf',filepath:'native_Legal.pdf'},'Legal.pdf'],

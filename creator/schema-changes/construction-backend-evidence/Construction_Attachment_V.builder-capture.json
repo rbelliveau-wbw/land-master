@@ -1,0 +1,10 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Construction_Attachment_V",
+  "verification": "Workflow Builder saved then independently reopened; every native script action counted; complete body captured.",
+  "verificationBy": "root",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "storedAttachment = Attachment[ID == input.ID];\nattachmentParentId = input.Contract1;\nif(storedAttachment.count() > 0)\n{\n\tattachmentParentId = storedAttachment.Contract1;\n}\nif(attachmentParentId != null)\n{\n\tattachmentParent = Contract[ID == attachmentParentId];\n\tif(attachmentParent.count() > 0 && ifnull(attachmentParent.Work_Module,\"\") == \"Construction\")\n\t{\n\t\tattachmentAccess = User_Access[User == zoho.loginuser];\n\t\tif(attachmentAccess.count() == 0 || (attachmentAccess.Edit_All_Construction_Requests != true && attachmentAccess.Submit_Construction_Requests != true))\n\t\t{\n\t\t\talert \"Construction request access is required to add attachments.\";\n\t\t\tcancel submit;\n\t\t}\n\t\tif(ifnull(attachmentParent.Status,\"\") == \"Complete\")\n\t\t{\n\t\t\talert \"This construction request is complete and read-only.\";\n\t\t\tcancel submit;\n\t\t}\n\t\tif(storedAttachment.count() > 0)\n\t\t{\n\t\t\tif(input.Contract1 != storedAttachment.Contract1)\n\t\t\t{\n\t\t\t\talert \"An attachment cannot be moved to another request.\";\n\t\t\t\tcancel submit;\n\t\t\t}\n\t\t\tif(attachmentAccess.Edit_All_Construction_Requests != true && storedAttachment.Added_User != zoho.loginuser)\n\t\t\t{\n\t\t\t\talert \"You can only upload files to your own construction attachments.\";\n\t\t\t\tcancel submit;\n\t\t\t}\n\t\t}\n\t}\n}\nif(storedAttachment.count() > 0 && input.Contract1 != storedAttachment.Contract1 && input.Contract1 != null)\n{\n\tnewAttachmentParent = Contract[ID == input.Contract1];\n\tif(newAttachmentParent.count() > 0 && ifnull(newAttachmentParent.Work_Module,\"\") == \"Construction\")\n\t{\n\t\talert \"An attachment cannot be moved to another request.\";\n\t\tcancel submit;\n\t}\n}\n"
+  ]
+}

@@ -1,0 +1,172 @@
+// Contract / on add or edit / on validate. New construction inputs stay optional
+// in Creator; required input checks are confined to the construction widget.
+storedRequest = Contract[ID == input.ID];
+requestMode = ifnull(input.Work_Module,"");
+if(requestMode == "")
+{
+	requestMode = "Legal";
+}
+if(requestMode != "Legal" && requestMode != "Construction")
+{
+	alert "Choose Legal or Construction for Work Module.";
+	cancel submit;
+}
+if(storedRequest.count() > 0)
+{
+	storedMode = ifnull(storedRequest.Work_Module,"");
+	if(storedMode == "")
+	{
+		storedMode = "Legal";
+	}
+	if(requestMode != storedMode)
+	{
+		alert "An existing request cannot be moved between Legal and Construction.";
+		cancel submit;
+	}
+}
+constructionTypes = {"Internal","Offsite","Amenity","MUD Bid"};
+if(requestMode == "Construction")
+{
+	constructionAccess = User_Access[User == zoho.loginuser];
+	constructionEditor = constructionAccess.count() > 0 && constructionAccess.Edit_All_Construction_Requests == true;
+	constructionSubmitter = constructionAccess.count() > 0 && constructionAccess.Submit_Construction_Requests == true;
+	if(storedRequest.count() > 0)
+	{
+		if(constructionEditor != true)
+		{
+			alert "Edit All Construction Requests permission is required to change a submitted request.";
+			cancel submit;
+		}
+		if(ifnull(storedRequest.Status,"") == "Complete")
+		{
+			alert "This construction request is complete and read-only.";
+			cancel submit;
+		}
+	}
+	else
+	{
+		if(constructionEditor != true && constructionSubmitter != true)
+		{
+			alert "Submit Construction Requests or Edit All Construction Requests permission is required.";
+			cancel submit;
+		}
+		// Submit-only users cannot bypass the construction Review queue.
+		input.Status = "Proposed";
+		submittedActionCount = 0;
+		for each  submittedAction in input.Contract_Actions
+		{
+			submittedActionCount = submittedActionCount + 1;
+		}
+		if(constructionEditor != true && submittedActionCount > 0)
+		{
+			alert "Construction task lists are added by the construction reviewer.";
+			cancel submit;
+		}
+	}
+	if(input.Contract_Type != null && !constructionTypes.contains(input.Contract_Type))
+	{
+		alert "Choose a construction Budget Type.";
+		cancel submit;
+	}
+	if(input.Subdivision1 != null && input.Subdivision1.size() > 1)
+	{
+		alert "Choose one Subdivision for a construction request.";
+		cancel submit;
+	}
+	// Derive request scope from the selected Subdivision, including API writes.
+	for each  requestSubdivisionId in input.Subdivision1
+	{
+		requestSubdivision = Subdivision[ID == requestSubdivisionId];
+		if(requestSubdivision.count() == 0)
+		{
+			alert "The selected Subdivision is unavailable.";
+			cancel submit;
+		}
+		input.Project = requestSubdivision.Project;
+		input.Company_Entity = requestSubdivision.Company1;
+		input.County = requestSubdivision.County;
+		input.City = requestSubdivision.City;
+		input.Territory = requestSubdivision.Territory;
+		requestProject = Project[ID == requestSubdivision.Project];
+		if(input.Territory == null || input.Territory == "")
+		{
+			if(requestProject.count() > 0)
+			{
+				input.Territory = requestProject.Territory;
+			}
+		}
+	}
+	submittedApprovalCount = 0;
+	for each  submittedApproval in input.Approvals1
+	{
+		submittedApprovalCount = submittedApprovalCount + 1;
+	}
+	if(submittedApprovalCount > 0)
+	{
+		alert "Construction requests do not use Legal contract approvals.";
+		cancel submit;
+	}
+	// Linked actions inherit the parent's module and budget type.
+	for each  constructionAction in input.Contract_Actions
+	{
+		constructionAction.Work_Module="Construction";
+		constructionAction.Type_field=input.Contract_Type;
+		constructionAction.Template_Action=false;
+	}
+}
+else if(constructionTypes.contains(input.Contract_Type))
+{
+	alert "Construction Budget Types require Construction Work Module.";
+	cancel submit;
+}
+isLotRequest = input.Contract_Type == "Lot" || input.Contract_Type == "Lot (Master)" || input.Contract_Type == "Lot (Amendment)";
+if(isLotRequest)
+{
+	if(input.Builder == null)
+	{
+		alert "Lot contracts must have a Builder / Counterparty selection.";
+		cancel submit;
+	}
+}
+if(input.Contract_Type == "Lot (Amendment)" && input.Subdivision1.size() == 0)
+{
+	alert "Lot (Amendment) must have a Subdivision selection.";
+	cancel submit;
+}
+if(input.Parent_Contract != null)
+{
+	parentContract = Contract[ID == input.Parent_Contract];
+	if(parentContract.count() == 0 || parentContract.ID == input.ID || parentContract.Parent_Contract != null)
+	{
+		alert "Choose a top-level Parent Contract. A contract cannot be its own parent.";
+		cancel submit;
+	}
+	parentMode = ifnull(parentContract.Work_Module,"");
+	if(parentMode == "")
+	{
+		parentMode = "Legal";
+	}
+	if(parentMode != requestMode)
+	{
+		alert "The parent request must be in the same Work Module.";
+		cancel submit;
+	}
+	if(input.ID != null)
+	{
+		childContracts = Contract[Parent_Contract == input.ID];
+		if(childContracts.count() > 0)
+		{
+			alert "A Master with child contracts cannot be assigned a parent.";
+			cancel submit;
+		}
+	}
+	if(input.Contract_Type == "Lot (Amendment)")
+	{
+		parentIsLotMaster = parentContract.Contract_Type == "Lot (Master)" || parentContract.Contract_Type == "Lot";
+		if(parentIsLotMaster != true || parentContract.Builder != input.Builder || parentContract.Project != input.Project)
+		{
+			alert "The optional parent must be a Lot (Master) with the same Project and Builder / Counterparty.";
+			cancel submit;
+		}
+	}
+}

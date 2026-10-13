@@ -1,0 +1,10 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Set_Contract_Approved_Con",
+  "verification": "Workflow Builder saved then independently reopened; every native script action counted; complete body captured.",
+  "verificationBy": "construction_backend",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "// Contract_Approvals / on add or edit / on success.\n// Candidate replacement for \"Set Contract Approved - Contract Approval\".\n// Keep a Proposed parent in Legal Review while its approval rows are created.\ncontract = Contract[ID == input.Contract1];\napprovals = Contract_Approvals[Contract1 == input.Contract1 && Status != \"Approved\" && Status != \"Not Sent\"];\nif(contract.ID != null && ifnull(contract.Work_Module,\"\") != \"Construction\" && ifnull(contract.Status,\"\") != \"Proposed\" && approvals.count() == 0)\n{\n\tcontract.Status=\"Approved\";\n}\n"
+  ]
+}

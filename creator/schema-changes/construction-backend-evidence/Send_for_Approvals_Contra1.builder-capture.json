@@ -1,0 +1,10 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Send_for_Approvals_Contra1",
+  "verification": "Workflow Builder saved then independently reopened; every native script action counted; complete body captured.",
+  "verificationBy": "root",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "if(ifnull(input.Work_Module,\"\") != \"Construction\")\n{\n\t//get latest Attachment by created date\n\tcontractFiles = Attachment[Contract1 == input.ID && Email_Attachment == TRUE].File_field1.getAll();\n\tminApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == \"Not Sent\"].minimum(Approval_Sequence);\n\tfor each  contractApproval in input.Approvals1\n\t{\n\t\tcontractApproval.Reject_Reason=null;\n\t\temailBody = \"<p>The following contract is awaiting your approval.</p><br><a href='https://creatorapp.zohopublic.com/wbdevelopment/land-master/Contract_Approvals/record-edit/All_Contract_Approvals/\" + contractApproval.ID + \"/56FD5tkOEUKxhpxFhOkgQrUbN8yQVks7WpPAUU6R300UDB4bp59fsE4RDETy3Sp4yTUaMzeVmfY3OkmXRWSh3O2uXKn4pSrnGeOT'>Approve/Reject</a>\";\n\t\tif(contractApproval.Approval_Email == TRUE)\n\t\t{\n\t\t\tsendmail\n\t\t\t[\n\t\t\t\tfrom :\"Notifications@wbdevelopment.com\"\n\t\t\t\tto :contractApproval.Approver\n\t\t\t\tsubject :input.Builder.Builder_Name + \" \" + contractApproval.Type1 + \" for \" + input.Subdivision1.Subdivision_Name + \" is awaiting your approval.\"\n\t\t\t\tmessage :emailBody + \"<p>Subdivision: \" + input.Subdivision1.Subdivision_Name + \"</p>\" + \"<p>Buyer: \" + input.Builder.Builder_Name + \"</p>\" + \"<p>Initiated by: \" + input.Modified_User + \"</p>\"\n\t\t\t\tAttachments :file:contractFiles\n\t\t\t]\n\t\t\tcontractApproval.Status=\"Awaiting Approval\";\n\t\t\tcontractApproval.Approval_Email=FALSE;\n\t\t\tcontractApproval.Last_Reminder_Date=zoho.currentdate;\n\t\t\tcontractApproval.Next_Reminder_Date=contractApproval.Last_Reminder_Date.addDay(contractApproval.Reminder_Interval_Days);\n\t\t\tinput.Status = \"Awaiting Approvals\";\n\t\t\tinput.Current_Approver = contractApproval.Approver;\n\t\t}\n\t}\n}\n"
+  ]
+}

@@ -1,0 +1,261 @@
+string Send_Contract_Approvals(string contractId)
+{
+	/*  Custom API behind the widget's "Send for Approvals" button.
+
+	    Request body (JSON POST):  {"contractId":"<Contract.ID>","user":"name@wbdevelopment.com"}
+	    Also accepts a bare id when called with thisapp.Send_Contract_Approvals(id).
+
+	    A Custom API runs as the publishing admin, so the caller's identity comes
+	    in the body (the same way Get_User_Access_DEV receives it) and is checked
+	    against Edit Contracts or Edit Owned Contracts and Actions plus the
+	    Contract.Owner lookup. Completed contracts remain read-only.
+
+	    What it does, per approver whose Email switch is on and who is still
+	    Not Sent:
+	      - sends the styled approval email (Send_Contract_Approval_Email), with
+	        every Attachment whose Email_Attachment is checked attached
+	      - Status -> Awaiting Approval, Reject_Reason cleared,
+	        Last/Next_Reminder_Date stamped
+	    Then Contract.Status -> Awaiting Approvals and Current_Approver -> the
+	    lowest-sequence approver just emailed.
+
+	    Unlike the old "Send for Approvals - Contracts" report action this does
+	    NOT clear Approval_Email after sending: Status is the gate, so the Email
+	    switch in the widget keeps meaning "this person is on the email".
+
+	    Response (JSON string):
+	      success      true when at least one email went out
+	      sent         [approver emails]
+	      skipped      ["email: reason", ...]
+	      attachments  number of files attached
+	      message      one line for the banner                                  */
+	resp = Map();
+	sentList = List();
+	skippedList = List();
+	raw = ifnull(contractId,"").toString().trim();
+	cid = 0;
+	requester = "";
+	mode = "Send";
+	targetIds = List();
+	if(raw.startsWith("{"))
+	{
+		pm = raw.toMap();
+		if(pm.get("contractId") != null)
+		{
+			cid = pm.get("contractId").toString().toLong();
+		}
+		if(pm.get("user") != null)
+		{
+			requester = pm.get("user").toString().trim();
+		}
+		if(pm.get("mode") != null)
+		{
+			mode = pm.get("mode").toString().trim();
+		}
+		if(pm.get("targetIds") != null)
+		{
+			targetIds = pm.get("targetIds");
+		}
+	}
+	else if(raw != "")
+	{
+		cid = raw.toLong();
+	}
+	if(cid == 0)
+	{
+		resp.put("success",false);
+		resp.put("message","Missing contractId.");
+		return resp.toString();
+	}
+	if(requester == "")
+	{
+		requester = zoho.loginuser;
+	}
+	accessRow = User_Access[User == requester];
+	contract = Contract[ID == cid];
+	if(contract.ID == null)
+	{
+		resp.put("success",false);
+		resp.put("message","Contract not found.");
+		return resp.toString();
+	}
+	if(ifnull(contract.Work_Module,"") == "Construction")
+	{
+		resp.put("success",false);
+		resp.put("message","Construction requests do not use Legal contract approvals.");
+		return resp.toString();
+	}
+	ownedEdit = false;
+	if(accessRow.ID != null && accessRow.Propose_Contract_Changes == true)
+	{
+		for each  ownerId in contract.Owner
+		{
+			if(ownerId == accessRow.ID)
+			{
+				ownedEdit = true;
+			}
+		}
+	}
+	if(accessRow.ID == null || (accessRow.Edit_Contracts != true && ownedEdit != true))
+	{
+		resp.put("success",false);
+		resp.put("message","You need Edit Contracts permission or Edit Owned Contracts and Actions and to be added as an owner.");
+		return resp.toString();
+	}
+	if(contract.Archive == true)
+	{
+		resp.put("success",false);
+		resp.put("message","This contract is archived. Unarchive it before sending for approvals.");
+		return resp.toString();
+	}
+	if(ifnull(contract.Status,"").toString() == "Complete")
+	{
+		resp.put("success",false);
+		resp.put("message","This contract is complete and locked.");
+		return resp.toString();
+	}
+	// Reconcile only the approvers selected when the widget opened progress.
+	// A repair emails an unsent target at most once and never replays a sent row.
+	if(mode == "Check" || mode == "Repair")
+	{
+		if(targetIds.size() == 0)
+		{
+			resp.put("ok",false);
+			resp.put("message","No approval rows were supplied for verification.");
+			return resp.toString();
+		}
+		activeCount = 0;
+		sentCount = 0;
+		missingCount = 0;
+		addresses = List();
+		roles = List();
+		for each  targetId in targetIds
+		{
+			targetRow = Contract_Approvals[ID == targetId.toString().toLong() && Contract1 == cid];
+			if(targetRow.ID == null || targetRow.Approval_Email != true)
+			{
+				resp.put("ok",false);
+				resp.put("message","A selected approver is missing or no longer enabled for email.");
+				return resp.toString();
+			}
+			rowStatus = ifnull(targetRow.Status,"").toString().trim();
+			if(mode == "Repair" && rowStatus == "Not Sent" || rowStatus == "" && targetRow.Last_Reminder_Date == null)
+			{
+				repairResult = thisapp.Send_Contract_Approval_Email(cid.toString(),targetRow.ID.toString(),"Send");
+				if(ifnull(repairResult.get("success"),false) == true)
+				{
+					targetRow.Status="Awaiting Approval";
+					targetRow.Reject_Reason=null;
+					if(ifnull(contract.Status,"").toString() != "Awaiting Approvals")
+					{
+						contract.Status="Awaiting Approvals";
+						contract.Current_Approver=ifnull(targetRow.Approver,"").toString();
+					}
+				}
+				rowStatus = ifnull(targetRow.Status,"").toString().trim();
+			}
+			if(rowStatus == "Awaiting Approval")
+			{
+				activeCount = activeCount + 1;
+				if(targetRow.Last_Reminder_Date != null)
+				{
+					sentCount = sentCount + 1;
+				}
+				else
+				{
+					missingCount = missingCount + 1;
+				}
+			}
+			else
+			{
+				missingCount = missingCount + 1;
+			}
+			addresses.add(ifnull(targetRow.Approver,"").toString());
+			roles.add(ifnull(targetRow.Type1,"").toString());
+		}
+		contract = Contract[ID == cid];
+		resp.put("ok",true);
+		resp.put("contractId",cid.toString());
+		resp.put("parentStatus",ifnull(contract.Status,"").toString());
+		resp.put("targetCount",targetIds.size());
+		resp.put("activeCount",activeCount);
+		resp.put("sentCount",sentCount);
+		resp.put("missingCount",missingCount);
+		resp.put("addresses",addresses);
+		resp.put("roles",roles);
+		return resp.toString();
+	}
+	attachedCount = Attachment[Contract1 == cid && Email_Attachment == true].count();
+	if(attachedCount == 0)
+	{
+		resp.put("success",false);
+		resp.put("message","Attach at least one file to the approval email (Attachments tab) before sending.");
+		return resp.toString();
+	}
+	/* A blank Status counts as Not Sent: rows inserted through the Data API
+	   (the widget's add-approver row before 1.60.4) never received the form's
+	   initial value, so an exact match silently skipped them. */
+	pending = Contract_Approvals[Contract1 == cid && Approval_Email == true && Status == "Not Sent" || Status == null || Status == ""] sort by Approval_Sequence;
+	if(pending.count() == 0)
+	{
+		resp.put("success",false);
+		resp.put("message","No approver is switched on for the email, or every switched-on approver has already been sent.");
+		return resp.toString();
+	}
+	firstApprover = "";
+	for each  row in pending
+	{
+		// A prior draft/restart may retain an old reminder stamp. The helper
+		// creates fresh delivery evidence after sendmail succeeds.
+		row.Last_Reminder_Date=null;
+		emailResp = thisapp.Send_Contract_Approval_Email(cid.toString(),row.ID.toString(),"Send");
+		if(ifnull(emailResp.get("success"),false) == true)
+		{
+			row.Status="Awaiting Approval";
+			row.Reject_Reason=null;
+			approverText = ifnull(row.Approver,"").toString();
+			sentList.add(approverText);
+			if(firstApprover == "")
+			{
+				firstApprover = approverText;
+			}
+		}
+		else
+		{
+			skippedList.add(ifnull(row.Approver,"(no email)").toString() + ": " + ifnull(emailResp.get("message"),"send failed").toString());
+		}
+	}
+	if(sentList.size() > 0)
+	{
+		contract.Status="Awaiting Approvals";
+		contract.Current_Approver=firstApprover;
+	}
+	resp.put("success",sentList.size() > 0);
+	resp.put("sent",sentList);
+	resp.put("skipped",skippedList);
+	resp.put("attachments",attachedCount);
+	if(sentList.size() > 0)
+	{
+		msg = "Approval email sent to " + sentList.size() + " approver";
+		if(sentList.size() != 1)
+		{
+			msg = msg + "s";
+		}
+		msg = msg + " with " + attachedCount + " file";
+		if(attachedCount != 1)
+		{
+			msg = msg + "s";
+		}
+		msg = msg + ".";
+		if(skippedList.size() > 0)
+		{
+			msg = msg + " " + skippedList.size() + " could not be sent.";
+		}
+		resp.put("message",msg);
+	}
+	else
+	{
+		resp.put("message","No approval email could be sent: " + skippedList.toString());
+	}
+	return resp.toString();
+}

@@ -104,6 +104,37 @@ fallback. See [scope, verification and rollback](../../docs/owner-full-names.md)
 
 # Contracts Module
 
+## Legal and Construction tasks — October 13, 2026
+
+The shared workspace adds a Construction mode selected initially by `workMode`
+and exposed only when either new User Access checkbox is granted:
+`Edit_All_Construction_Requests` or `Submit_Construction_Requests`. Submit-only
+users create requests and add attachments/comments without editing existing
+requests, actions, or templates. Editors also review open requests and maintain
+the Construction checklists. Existing Legal grants retain their scope.
+
+`Contract.Work_Module` and `Contract_Actions.Work_Module` separate requests and
+templates; historical blank values mean Legal. Construction reuses `Contract_Type`
+and action `Type_field` with Internal, Offsite, Amenity, and MUD Bid options. New
+optional Contract fields are `Construction_Plans`, `MUD` (checkbox, default false),
+`Priority`, `Date_Needed`, and `Description`. Only the Construction UI requires
+these request inputs. Selecting one `Subdivision1` infers Project, Territory,
+phase, and company context. No independent Project/Territory entry is needed.
+
+Construction submission creates a Proposed request without checklist seeds;
+acceptance seeds the matching Construction templates. Both modes retain Legal's
+expansion, submission/editing, file, and comment patterns. The template tab is
+Manage Task Templates; creation buttons are New Legal Task and New Construction
+Task. No new Custom API registration is required: full/lean access functions
+add `constructionEditAll` and `constructionSubmit` to their existing responses.
+
+Creator schema/report/backend publication is separate from the immutable hosted
+widget release. The four CP Release/Construction Start Estimate/Goal source
+fields remain unverified and must not display fabricated dates. See the
+[implementation and deployment contract](../../docs/construction-tasks.md),
+[native schema state](../../creator/schema-changes/construction-tasks.json), and
+[schema/permission regression](../../scripts/test-construction-schema.mjs).
+
 ## Proposal access and manual Acquisition (1.61.34)
 
 `Propose_Contract_Changes` permits ordinary action edits, completion/reopening,

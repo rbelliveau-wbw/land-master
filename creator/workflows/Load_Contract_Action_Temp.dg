@@ -1,0 +1,16 @@
+// Existing Creator workflow Load_Contract_Action_Temp; preserve Legal behavior.
+if(ifnull(input.Work_Module,"") != "Construction")
+{
+	settings = Settings[ID != 0];
+	for each  action in settings.Builder_Contract_Action_Template
+	{
+		if(ifnull(action.Work_Module,"") != "Construction")
+		{
+			actionRow = Contract.Contract_Actions();
+			actionRow.Work_Module="Legal";
+			actionRow.Contract_Action=action.Contract_Action;
+			actionRow.Sort_Order=action.Sort_Order;
+			input.Contract_Actions.insert(actionRow);
+		}
+	}
+}

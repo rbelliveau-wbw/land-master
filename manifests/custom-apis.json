@@ -104,10 +104,16 @@
       "consumers": [
         "widgets/lot-sales-explorer/src/app/insights-access.js",
         "widgets/proforma-manager/src/app/widget.html",
-        "widgets/budget-manager/src/app/widget.html"
+        "widgets/budget-manager/src/app/widget.html",
+        "widgets/contract-management/src/app/widget.html"
       ],
       "matching_creator_function": "getUserAccess",
-      "confidence": "inferred-name-match"
+      "confidence": "inferred-name-match",
+      "response_extensions": {
+        "constructionEditAll": "User_Access.Edit_All_Construction_Requests == true",
+        "constructionSubmit": "User_Access.Submit_Construction_Requests == true"
+      },
+      "response_extension_deployment": "See creator/schema-changes/construction-tasks.json for independently verified Development/Production publication state. Existing Legal keys, auth and parameters are retained."
     },
     {
       "name": "Get_User_Access_Lean",
@@ -128,6 +134,11 @@
       "environment": "PRODUCTION",
       "enabled": true,
       "development_link_name": "Get_User_Access_Lean_DEV",
+      "response_extensions": {
+        "constructionEditAll": "User_Access.Edit_All_Construction_Requests == true",
+        "constructionSubmit": "User_Access.Submit_Construction_Requests == true"
+      },
+      "response_extension_deployment": "See creator/schema-changes/construction-tasks.json; full/lean responses preserve independent Construction and Legal grants.",
       "notes": "Enabled details verified in Creator Microservices on 2026-10-02; Land Master PRODUCTION, Default.getUserAccessLean, backend 9.33. Same OAuth2 and All users scope as existing full access API. Signed-in Production GET parity remains pending; function-editor Execute used Development data. Authenticated widget access calls omit the user argument/query_params/parameters/payload so Deluge uses authoritative zoho.loginuser; neither native email nor its local part reliably identifies the Creator username. Additive only; no widget caller adopted at this verification snapshot. All full-response flags/roster retained, proformaOwners omitted."
     },
     {
@@ -147,6 +158,11 @@
       ],
       "response": "Standard {code:3000,result:<JSON string>}",
       "environment": "DEVELOPMENT",
+      "response_extensions": {
+        "constructionEditAll": "User_Access.Edit_All_Construction_Requests == true",
+        "constructionSubmit": "User_Access.Submit_Construction_Requests == true"
+      },
+      "response_extension_deployment": "See creator/schema-changes/construction-tasks.json; the existing Development identity alias remains unchanged.",
       "notes": "Land Master DEVELOPMENT, Default.getUserAccessLeanDev; application/json Key and Value. Preserves the exact existing Development-only identity alias. Live full/lean comparison matched every 37 retained keys against full38 with only proformaOwners omitted; denied-response parity also passed. Existing full endpoints unchanged; no widget caller adopted yet."
     },
     {

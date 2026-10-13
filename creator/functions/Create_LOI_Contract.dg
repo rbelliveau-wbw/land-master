@@ -79,15 +79,16 @@ string Create_LOI_Contract(string proformaId)
 		   newly created ones use the new scheme. */
 		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
 		contractId = null;
-		existingContract = Contract[Contract_Name == contractName && Contract_Type == "Acquisition"];
+		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
 		if(existingContract.ID == null)
 		{
-			existingContract = Contract[Contract_Name == legacyContractName && Contract_Type == "Acquisition"];
+			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
 		}
 		if(existingContract.ID != null)
 		{
 			contractId = existingContract.ID;
 			existingContract.Contract_Type="Acquisition";
+			existingContract.Work_Module="Legal";
 			existingContract.Territory=contractTerritory;
 			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
 			{
@@ -107,6 +108,7 @@ string Create_LOI_Contract(string proformaId)
 				Added_User=zoho.loginuser
 				Contract_Name=contractName
 				Contract_Type="Acquisition"
+				Work_Module="Legal"
 				Territory=contractTerritory
 				WBW_Point_Person=wbwPointPerson
 				Status="Proposed"
@@ -131,7 +133,7 @@ string Create_LOI_Contract(string proformaId)
 		existingActionCount = Contract_Actions[Contract1 == contractId].count();
 		if(existingActionCount == 0)
 		{
-			templateActions = Contract_Actions[Contract1 == null && Type_field == "Acquisition" && Template_Action == true] sort by Sort_Order;
+			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Template_Action == true) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")] sort by Sort_Order;
 			seededCount = 0;
 			seededTitles = List();
 			for each  templateAction in templateActions
@@ -149,6 +151,7 @@ string Create_LOI_Contract(string proformaId)
 					insert into Contract_Actions
 					[
 						Contract1=contractId
+						Work_Module="Legal"
 						Contract_Action=actionTitle
 						Sort_Order=actionSort
 						Status="Proposed"
@@ -175,7 +178,7 @@ string Create_LOI_Contract(string proformaId)
 				   nothing to work through. */
 				/* Distinguish "no template exists" from "the rows are there but not
 				   flagged", which is the one way the flag check can bite. */
-				untaggedCount = Contract_Actions[Contract1 == null && Type_field == "Acquisition"].count();
+				untaggedCount = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")].count();
 				noTemplateEntry = Map();
 				noTemplateEntry.put("level","warn");
 				noTemplateEntry.put("stage",stage);

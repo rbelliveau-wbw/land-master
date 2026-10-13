@@ -1,0 +1,10 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Load_Contract_Action_Temp",
+  "verification": "Workflow Builder saved then independently reopened; every native script action counted; complete body captured.",
+  "verificationBy": "construction_backend",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "// Existing Creator workflow Load_Contract_Action_Temp; preserve Legal behavior.\nif(ifnull(input.Work_Module,\"\") != \"Construction\")\n{\n\tsettings = Settings[ID != 0];\n\tfor each  action in settings.Builder_Contract_Action_Template\n\t{\n\t\tif(ifnull(action.Work_Module,\"\") != \"Construction\")\n\t\t{\n\t\t\tactionRow = Contract.Contract_Actions();\n\t\t\tactionRow.Work_Module=\"Legal\";\n\t\t\tactionRow.Contract_Action=action.Contract_Action;\n\t\t\tactionRow.Sort_Order=action.Sort_Order;\n\t\t\tinput.Contract_Actions.insert(actionRow);\n\t\t}\n\t}\n}\n"
+  ]
+}

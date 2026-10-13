@@ -1,0 +1,11 @@
+// Candidate new Contract_Approvals / on add or edit / on validate action.
+// The Legal approval track must never accept a Construction parent.
+if(input.Contract1 != null)
+{
+ approvalParent = Contract[ID == input.Contract1];
+ if(approvalParent.count() > 0 && ifnull(approvalParent.Work_Module,"") == "Construction")
+ {
+  alert "Construction requests do not use Legal contract approvals.";
+  cancel submit;
+ }
+}

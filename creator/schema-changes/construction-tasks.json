@@ -1,0 +1,372 @@
+{
+  "change": "construction-tasks",
+  "status": "development-native-installation-complete-production-and-hosted-publication-pending",
+  "source_snapshot": "creator/exports/Land_Master_2026-10-11-development.ds",
+  "generated_metadata_refreshed": false,
+  "backend_deployment_manifest": "creator/schema-changes/construction-backend-deployment.json",
+  "live_inspection": {
+    "performed_by": "root",
+    "classification_link_name": "Work_Module",
+    "development_native_creation": "All nine optional fields independently confirmed in refreshed native Development source",
+    "contract_field_verification": {
+      "section": "Construction Request",
+      "fields": ["Work_Module", "Construction_Plans", "Priority", "MUD", "Date_Needed", "Description"],
+      "mandatory_stars": false,
+      "independent_builder_tab": true,
+      "ide_save_response": "generic error",
+      "persistence": "confirmed by independent builder read",
+      "native_source_refresh": "confirmed; all six optional fields and additive Contract type/status choices persisted"
+    },
+    "action_classification_verification": "Work_Module independently confirmed optional in refreshed Development source",
+    "user_access_verification": "Both new permission fields independently confirmed as optional checkboxes with initial value=false in refreshed Development source",
+    "note": "The committed Development export contains no Contract/Contract_Actions Legal/Construction classification. New native field evidence, compile status, report exposure and publication are recorded independently."
+  },
+  "authorization": {
+    "request": "Implement Project-sidebar Construction request form, two User Access permissions, all required optional Creator fields, Legal-style shared UI and mode-specific templates/picklists.",
+    "submit_only": "Submit new requests and add attachments/comments; no editing existing request fields or checklist actions, including own requests.",
+    "production": "User authorized push to main and prod after implementation."
+  },
+  "fields": [
+    {
+      "form": "Contract",
+      "link_name": "Work_Module",
+      "display_name": "Work Module",
+      "type": "picklist",
+      "choices": ["Legal", "Construction"],
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": false,
+      "populated_by": "active work mode",
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Construction_Plans",
+      "display_name": "Construction Plans",
+      "type": "picklist",
+      "choices": ["Prelim", "First Round", "Final"],
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": true,
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract",
+      "link_name": "MUD",
+      "display_name": "MUD",
+      "type": "checkbox",
+      "ui_choices": ["Yes", "No"],
+      "default": false,
+      "native_mandatory": false,
+      "construction_ui_required": true,
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Priority",
+      "display_name": "Priority",
+      "type": "picklist",
+      "choices": ["ASAP", "High", "Medium"],
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": true,
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Date_Needed",
+      "display_name": "Date Needed",
+      "type": "date",
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": true,
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Description",
+      "display_name": "Description",
+      "type": "textarea",
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": true,
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract_Actions",
+      "link_name": "Work_Module",
+      "display_name": "Work Module",
+      "type": "picklist",
+      "choices": ["Legal", "Construction"],
+      "default": null,
+      "native_mandatory": false,
+      "construction_ui_required": false,
+      "populated_by": "parent request module or template mode",
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "User_Access",
+      "link_name": "Edit_All_Construction_Requests",
+      "display_name": "Edit All Construction Requests",
+      "type": "checkbox",
+      "default": false,
+      "native_mandatory": false,
+      "capabilities": ["read", "submit", "edit-open", "review", "actions", "templates", "attachments", "comments"],
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "User_Access",
+      "link_name": "Submit_Construction_Requests",
+      "display_name": "Submit Construction Requests",
+      "type": "checkbox",
+      "default": false,
+      "native_mandatory": false,
+      "capabilities": ["read", "submit", "attachments", "comments"],
+      "status": "development-source-persistence-verified"
+    }
+  ],
+  "existing_field_changes": [
+    {
+      "form": "Contract",
+      "link_name": "Contract_Type",
+      "add_choices": ["Internal", "Offsite", "Amenity", "MUD Bid"],
+      "native_mandatory_unchanged": true,
+      "preserve_existing_choices": true,
+      "ui_scope": "active module",
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract_Actions",
+      "link_name": "Type_field",
+      "native_type": "picklist",
+      "add_choices": ["Internal", "Offsite", "Amenity", "MUD Bid"],
+      "native_mandatory_unchanged": true,
+      "preserve_existing_choices": true,
+      "schema_choice_extension_required": true,
+      "ui_scope": "active module",
+      "status": "development-refreshed-source-persistence-verified-all-original-and-four-new-choices"
+    },
+    {
+      "form": "Contract",
+      "link_name": "Status",
+      "add_choices": ["Rejected", "Awaiting Purchasing", "Awaiting Development", "Awaiting Other", "Cancelled"],
+      "native_mandatory_unchanged": true,
+      "preserve_existing_choices": true,
+      "ui_scope": "active module",
+      "status": "development-source-persistence-verified"
+    },
+    {
+      "form": "Contract_Actions",
+      "link_name": "Status",
+      "add_choices": ["Rejected", "Awaiting Purchasing", "Awaiting Development", "Awaiting Other", "Cancelled"],
+      "native_mandatory_unchanged": true,
+      "preserve_existing_choices": true,
+      "ui_scope": "active module",
+      "status": "development-refreshed-source-persistence-verified"
+    }
+  ],
+  "required_policy": "No new native Mandatory flags and no global Construction completeness validation. Require Construction fields only in its request UI; preserve existing Legal mandatory and historical-record behavior.",
+  "classification": {
+    "request_field": "Contract.Work_Module",
+    "action_template_field": "Contract_Actions.Work_Module",
+    "blank": "Legal",
+    "new_construction_request": "Construction",
+    "child_action": "inherit verified parent mode",
+    "template_selection": ["Work_Module", "Type_field"],
+    "backfill": "none"
+  },
+  "subdivision_context": {
+    "input": "Contract.Subdivision1",
+    "construction_selection_count": 1,
+    "source_form": "Subdivision",
+    "existing_source_fields": ["Project", "Territory", "Phase", "Company1", "City", "County", "Projects_Status"],
+    "persisted_parent_context": ["Project", "Territory", "Company_Entity", "City", "County"],
+    "independent_user_context_inputs": [],
+    "schedule_dates": {
+      "requested": ["CP Release Estimate", "CP Release Goal", "Construction Start Estimate", "Construction Start Goal"],
+      "status": "source-mapping-unverified",
+      "policy": "No fabricated dates and no new user-entered schedule context; verify Zoho Projects/source fields before mapping."
+    }
+  },
+  "request_audit_display": {
+    "requestor": "Contract.Added_User",
+    "date_submitted": "Contract.Added_Time",
+    "drafts": "not-added",
+    "create_equals_submit": true
+  },
+  "review": {
+    "submission_parent_status": "Proposed",
+    "seed_actions_at_submission": false,
+    "accept_permission": "Edit_All_Construction_Requests",
+    "seed_actions_at_acceptance": true,
+    "template_scope": "Construction + matching Budget Type",
+    "legal_approval_seed": false
+  },
+  "reports_requiring_field_visibility": [
+    {
+      "name": "All_Contracts1",
+      "fields": ["Work_Module", "Construction_Plans", "MUD", "Priority", "Date_Needed", "Description"],
+      "preserve_fields": ["Added_User", "Added_Time", "Parent_Contract", "Contract_Type", "Subdivision1", "Project", "Territory"],
+      "verified_projections": 3,
+      "status": "development-refreshed-source-verified-all-six-fields-in-three-projections"
+    },
+    {
+      "name": "All_Contract_Actions",
+      "fields": ["Work_Module"],
+      "preserve_fields": ["Type_field", "Template_Action", "Contract1", "Sort_Order", "Added_User", "Added_Time"],
+      "verified_projections": 3,
+      "status": "development-refreshed-source-verified-Work_Module-in-three-projections"
+    }
+  ],
+  "user_access_functions_requiring_update": ["getUserAccess", "getUserAccessDev", "getUserAccessLean", "getUserAccessLeanDev"],
+  "user_access_response_keys": ["constructionEditAll", "constructionSubmit"],
+  "construction_status_choices": ["Proposed", "New", "Rejected", "Feasibility", "Awaiting Purchasing", "Awaiting Development", "Awaiting Other", "Approved", "Complete", "Cancelled"],
+  "construction_status_labels": {"Proposed": "Pending Review"},
+  "page_entry": {
+    "link_name": "Construction",
+    "initial_module": "Construction",
+    "variable": "workMode",
+    "variable_value": "construction",
+    "authorization_source": "User Access API; page/query parameter does not grant access",
+    "source_candidate": "creator/schema-changes/construction-tasks/Construction.page.ds",
+    "page_load_source": "creator/schema-changes/construction-tasks/Construction.page-load.dg",
+    "status": "development-page-created-reloaded-and-default-script-persistence-verified",
+    "created_by": "root via native Duplicate Legal page UI",
+    "preserved_variables": ["contractId", "loiReviewId", "tokenId"],
+    "widget_link_name": "contract_management",
+    "permanent_widget_url": "https://rbelliveau-wbw.github.io/land-master/prod/contract-management/",
+    "widget_manifest_parameter_bindings": "none; no new binding required",
+    "mode_default": "If workMode is blank, the page-load script sets input.workMode to construction",
+    "native_script_verification": "saved/compiled; Execute enabled; page reload confirmed Text workMode variable and default script persisted",
+    "runtime_mode_verification": "pending root native verification; SDK getQueryParams reads page-variable values and frontend has native-page fallback",
+    "page_setup_agent": {
+      "browser_inventory": "apps:[], browsers:[]",
+      "create_iab_tab_result": "Browser is not available: iab",
+      "native_mutation_performed": false,
+      "source_candidate_limit": "Initial exported candidate was superseded by root's observed native duplicate/widget component. Native page-load script is recorded separately rather than inventing its DS serialization syntax."
+    }
+  },
+  "native_workflows_to_check_for_mode_scope": ["Load_Contract_Action_Temp", "Load_Approval_Template_Co", "Daily Legal public-action notification", "Legal approval entry points"],
+  "verified_development_functions": [
+    "Create_LOI_Contract",
+    "Send_Contract_Approval_Email",
+    "Send_Contract_Approvals",
+    "createContractAttachmentRecord",
+    "deleteContractAttachment",
+    "getUserAccess",
+    "getUserAccessLean",
+    "sendApprovalReminders"
+  ],
+  "function_verification": "All eight replacement function bodies saved and independently reloaded in Development; before/after evidence in creator/schema-changes/construction-backend-evidence",
+  "verified_development_workflows": [
+    {
+      "link_name": "Construction_Contract_Act",
+      "display_name": "Construction Contract Actions Validation",
+      "source": "creator/workflows/Construction_Contract_Actions_Validation.dg",
+      "status": "development-single-action-exact-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Construction_Contract_App",
+      "display_name": "Construction Contract Approvals Validation",
+      "source": "creator/workflows/Construction_Contract_Approvals_Validation.dg",
+      "status": "development-single-action-exact-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Construction_Attachment_V",
+      "display_name": "Construction Attachment Validation",
+      "source": "creator/workflows/Construction_Attachment_Validation.dg",
+      "status": "development-single-action-exact-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Field_Validations_Contrac",
+      "source": "creator/workflows/Field_Validations_Contrac.dg",
+      "status": "development-repaired-single-action-full-body-verified",
+      "native_script_action_count": 1,
+      "prior_native_script_action_count": 5,
+      "context": "Subdivision.Territory first, Project.Territory fallback; row loops replace unsupported subform.size()"
+    },
+    {
+      "link_name": "Set_Contract_Approved_Con",
+      "source": "creator/workflows/Set_Contract_Approved_Con.dg",
+      "status": "development-repaired-single-action-full-body-verified",
+      "native_script_action_count": 1,
+      "prior_native_script_action_count": 5
+    },
+    {
+      "link_name": "Validate_Comment_Log",
+      "source": "creator/workflows/Validate_Comment_Log.dg",
+      "status": "development-repaired-single-action-full-body-verified",
+      "native_script_action_count": 1,
+      "prior_native_script_action_count": 5
+    },
+    {
+      "link_name": "Load_Approval_Template_Co",
+      "source": "creator/workflows/Load_Approval_Template_Co.dg",
+      "status": "development-repaired-single-action-full-body-verified",
+      "native_script_action_count": 1,
+      "prior_native_script_action_count": 6
+    },
+    {
+      "link_name": "Load_Contract_Action_Temp",
+      "source": "creator/workflows/Load_Contract_Action_Temp.dg",
+      "status": "development-compiled-reloaded-single-action-full-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Contracts_Previous_Day_Ac",
+      "source": "creator/workflows/Contracts_Previous_Day_Ac.dg",
+      "status": "development-single-action-full-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Send_for_Approvals_Contra1",
+      "source": "creator/workflows/Send_for_Approvals_Contra1.dg",
+      "status": "development-single-action-full-body-verified",
+      "native_script_action_count": 1
+    },
+    {
+      "link_name": "Send_for_Approvals",
+      "source": "creator/workflows/Send_for_Approvals.dg",
+      "status": "development-single-action-full-body-verified",
+      "native_script_action_count": 1
+    }
+  ],
+  "permission_grants_changed": false,
+  "widget_candidate_version": "1.62.0",
+  "widget_candidate_state": "immutable-local-candidate-created; local Development mapping selected; hosted deployment unverified; Production mapping remains 1.61.45",
+  "release_blockers": [
+    "Creator Production publication before hosted widget Production promotion"
+  ],
+  "publication": {
+    "creator_development_schema_saved": true,
+    "creator_development_reports_saved": true,
+    "creator_development_page_saved": true,
+    "creator_development_backend_saved": true,
+    "creator_development_saved": true,
+    "creator_stage_published": false,
+    "creator_production_published": false,
+    "hosted_widget_development_promoted": false,
+    "hosted_widget_production_promoted": false,
+    "main_pushed": false,
+    "pages_deployment_verified": false
+  },
+  "verification": {
+    "targeted_checks": "scripts/test-construction-schema.mjs passed: actual full/lean standard/Development permission bodies, independent grants, optional schema and Legal choice preservation",
+    "targeted_check_results": {
+      "scripts/test-construction-schema.mjs": "passed",
+      "scripts/test-contract-construction.mjs": "passed: actual whole-widget request creation/edit/review/file/comment flows, mode/filter separation and native page fallback",
+      "scripts/test-design-docs.mjs": "passed: documentation discovery and repository link checks"
+    },
+    "npm_validate": "pending",
+    "build_pages": "pending",
+    "native_permission_profiles": "unchanged; native permission behavior fixtures passed; no actual User Access grants assigned",
+    "native_compile_reopen": "Development installation complete: eight functions independently reloaded; all eleven workflow/report/digest guards exactly one reviewed script action with full-body verification; all nine optional fields/picklist additions, both report projection changes and Construction page persisted. Duplicate workflow repairs confirmed by root/backend reports, including task loader strict full-body source match."
+  },
+  "rollback": {
+    "widget_version": "1.61.45",
+    "creator": "Disable new mode/page/routing or restore changed backend functions independently. Retain optional fields and saved request data; do not delete or backfill records."
+  }
+}

@@ -1,0 +1,28 @@
+Load_Approval_Template_Co as "Load Approval Template - Contract"
+{
+	type =  form
+	form = Contract
+    description = "Workflow"
+
+	record event = on add
+
+	on load
+	{
+		actions 
+		{
+			custom deluge script
+			(
+					settings = Settings[ID != 0];
+				for each  approver in settings.Builder_Approval_Template
+				{
+					approvalRow = Contract.Approvals1();
+					approvalRow.Approval_Sequence=approver.Approval_Sequence;
+					approvalRow.Approver=approver.Approver;
+					input.Approvals1.insert(approvalRow);
+				}
+			)
+		}
+	}
+
+}
+

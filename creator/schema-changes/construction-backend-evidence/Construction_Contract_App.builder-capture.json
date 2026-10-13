@@ -1,0 +1,10 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Construction_Contract_App",
+  "verification": "Workflow Builder saved then independently reopened; every native script action counted; complete body captured.",
+  "verificationBy": "root",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "if(input.Contract1 != null)\n{\n\tapprovalParent = Contract[ID == input.Contract1];\n\tif(approvalParent.count() > 0 && ifnull(approvalParent.Work_Module,\"\") == \"Construction\")\n\t{\n\t\talert \"Construction requests do not use Legal contract approvals.\";\n\t\tcancel submit;\n\t}\n}\n"
+  ]
+}

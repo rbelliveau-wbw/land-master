@@ -1,0 +1,196 @@
+{
+  "environment": "DEVELOPMENT",
+  "productionPublished": false,
+  "verification": "All eight functions independently reselected and copied. All eleven workflows saved through native Workflow Builder, independently reopened, verified as exactly one script action with the entire reviewed body; comparison preserves strings and parentheses.",
+  "functions": [
+    {
+      "name": "getUserAccess",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/getUserAccess.dg"
+    },
+    {
+      "name": "getUserAccessLean",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/getUserAccessLean.dg"
+    },
+    {
+      "name": "createContractAttachmentRecord",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/createContractAttachmentRecord.dg"
+    },
+    {
+      "name": "deleteContractAttachment",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/deleteContractAttachment.dg"
+    },
+    {
+      "name": "Create_LOI_Contract",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/Create_LOI_Contract.dg"
+    },
+    {
+      "name": "Send_Contract_Approvals",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/Send_Contract_Approvals.dg"
+    },
+    {
+      "name": "Send_Contract_Approval_Email",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/Send_Contract_Approval_Email.dg"
+    },
+    {
+      "name": "sendApprovalReminders",
+      "namespace": "Default",
+      "savedAndReloaded": true,
+      "source": "creator/functions/sendApprovalReminders.dg"
+    }
+  ],
+  "existingWorkflows": [
+    {
+      "link": "Field_Validations_Contrac",
+      "label": "Field Validations - Contract",
+      "savedAndReloaded": true,
+      "source": "creator/workflows/Field_Validations_Contrac.dg",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Field_Validations_Contrac.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Field_Validations_Contrac.builder-capture.json"
+    },
+    {
+      "link": "Set_Contract_Approved_Con",
+      "label": "Set Contract Approved - Contract Approval",
+      "savedAndReloaded": true,
+      "source": "creator/workflows/Set_Contract_Approved_Con.dg",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Set_Contract_Approved_Con.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Set_Contract_Approved_Con.builder-capture.json"
+    },
+    {
+      "link": "Validate_Comment_Log",
+      "label": "Validate Comment Log",
+      "savedAndReloaded": true,
+      "source": "creator/workflows/Validate_Comment_Log.dg",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Validate_Comment_Log.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Validate_Comment_Log.builder-capture.json"
+    },
+    {
+      "link": "Load_Approval_Template_Co",
+      "label": "Load Approval Template - Contract",
+      "source": "creator/workflows/Load_Approval_Template_Co.dg",
+      "savedAndReloaded": true,
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Load_Approval_Template_Co.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Load_Approval_Template_Co.builder-capture.json"
+    },
+    {
+      "link": "Load_Contract_Action_Temp",
+      "label": "Load Contract Action Template - Contract",
+      "source": "creator/workflows/Load_Contract_Action_Temp.dg",
+      "savedAndReloaded": true,
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Load_Contract_Action_Temp.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Load_Contract_Action_Temp.builder-capture.json"
+    },
+    {
+      "link": "Contracts_Previous_Day_Ac",
+      "label": "Contracts - Previous Day Actions Update Digest",
+      "source": "creator/workflows/Contracts_Previous_Day_Ac.dg",
+      "savedAndReloaded": true,
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Contracts_Previous_Day_Ac.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Contracts_Previous_Day_Ac.builder-capture.json"
+    },
+    {
+      "link": "Send_for_Approvals",
+      "label": "Send for Approvals",
+      "source": "creator/workflows/Send_for_Approvals.dg",
+      "savedAndReloaded": true,
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Send_for_Approvals.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Send_for_Approvals.builder-capture.json"
+    },
+    {
+      "link": "Send_for_Approvals_Contra1",
+      "label": "Send for Approvals - Contract Files",
+      "source": "creator/workflows/Send_for_Approvals_Contra1.dg",
+      "savedAndReloaded": true,
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Send_for_Approvals_Contra1.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Send_for_Approvals_Contra1.builder-capture.json"
+    }
+  ],
+  "newWorkflows": [
+    {
+      "link": "Construction_Contract_Act",
+      "label": "Construction Contract Actions Validation",
+      "source": "creator/workflows/Construction_Contract_Actions_Validation.dg",
+      "savedAndReloaded": true,
+      "verificationBy": "root native workflow builder",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Construction_Contract_Act.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Construction_Contract_Act.builder-capture.json"
+    },
+    {
+      "link": "Construction_Contract_App",
+      "label": "Construction Contract Approvals Validation",
+      "source": "creator/workflows/Construction_Contract_Approvals_Validation.dg",
+      "savedAndReloaded": true,
+      "verificationBy": "root native workflow builder",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Construction_Contract_App.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Construction_Contract_App.builder-capture.json"
+    },
+    {
+      "link": "Construction_Attachment_V",
+      "label": "Construction Attachment Validation",
+      "source": "creator/workflows/Construction_Attachment_Validation.dg",
+      "savedAndReloaded": true,
+      "verificationBy": "root native workflow builder",
+      "status": "native-development-verified",
+      "nativeScriptActionCount": 1,
+      "evidence": "creator/schema-changes/construction-backend-evidence/Construction_Attachment_V.after.dg",
+      "capture": "creator/schema-changes/construction-backend-evidence/Construction_Attachment_V.builder-capture.json"
+    }
+  ],
+  "pending": [],
+  "compilerRepairs": [
+    {
+      "source": "deleteContractAttachment",
+      "detail": "Creator rejects redundant outer parentheses in delete-from Attachment criteria; retained equivalent ID AND parent match without outer wrapper."
+    },
+    {
+      "source": "Field_Validations_Contrac",
+      "detail": "Native subform collections do not support size(); explicit row loops count supplied actions/approvals. Lookup list Subdivision1 retains size()."
+    },
+    {
+      "source": "Field_Validations_Contrac",
+      "detail": "Nested type-specific parent and scope checks avoid mixed Boolean grouping changes from the native formatter; native-derived body tested for Construction parents across Builder/Project scope."
+    }
+  ],
+  "scopeInference": "Subdivision supplies Project, Territory, Company_Entity, County and City. Project.Territory is only a fallback for blank Subdivision.Territory.",
+  "permissions": "Both booleans default false; no grants assigned and no native profile permissions changed.",
+  "requiredInputs": "No new Creator field mandatory flags or unconditional native construction input completeness rules.",
+  "tests": [
+    "node scripts/test-construction-backend.mjs passed",
+    "node scripts/test-contract-email-switches.mjs passed",
+    "node scripts/test-contract-loi-permissions.mjs passed"
+  ],
+  "auditCorrection": "Initial IDE workflow save appended duplicate actions. All four affected workflows repaired in native Workflow Builder (Field/SetApproved/Comments 5→1; ApprovalTemplate 6→1). Old duplicate DSL captures are explicitly rejected audit records; final builder captures and after.dg are authoritative."
+}

@@ -1,0 +1,26 @@
+if(ifnull(input.Work_Module,"") != "Construction")
+{
+	//get latest Attachment by created date
+	contractFile = Attachment[Contract1 == input.ID].File_field1 sort by Date_field1 desc;
+	minApprovalsequence = Contract_Approvals[Contract1 == input.ID && Status == "Not Sent"].minimum(Approval_Sequence);
+	for each  contractApproval in input.Approvals1
+	{
+		emailBody = "<p>The following contract is awaiting your approval.</p><br><a href='https://creatorapp.zohopublic.com/wbdevelopment/land-master/Contract_Approvals/record-edit/All_Contract_Approvals/" + contractApproval.ID + "/56FD5tkOEUKxhpxFhOkgQrUbN8yQVks7WpPAUU6R300UDB4bp59fsE4RDETy3Sp4yTUaMzeVmfY3OkmXRWSh3O2uXKn4pSrnGeOT'>Approve/Reject</a>";
+		if(contractApproval.Status == "Not Sent" && contractApproval.Approval_Sequence == minApprovalsequence)
+		{
+			sendmail
+			[
+				from :"Notifications@wbdevelopment.com"
+				to :contractApproval.Approver
+				subject :input.Builder.Builder_Name + " contract for " + input.Subdivision1.Subdivision_Name + " is awaiting your approval."
+				message :emailBody + "<p>Subdivision: " + input.Subdivision1.Subdivision_Name + "</p>" + "<p>Buyer: " + input.Builder.Builder_Name + "</p>" + "<p>Initiated by: " + input.Modified_User + "</p>"
+				Attachments :file:contractFile
+			]
+			contractApproval.Status="Awaiting Approval";
+			contractApproval.Last_Reminder_Date=zoho.currentdate;
+			contractApproval.Next_Reminder_Date=contractApproval.Last_Reminder_Date.addDay(contractApproval.Reminder_Interval_Days);
+			input.Status = "Awaiting Approvals";
+			input.Current_Approver = contractApproval.Approver;
+		}
+	}
+}

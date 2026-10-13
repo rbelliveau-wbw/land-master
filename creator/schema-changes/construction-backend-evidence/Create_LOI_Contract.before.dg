@@ -1,0 +1,247 @@
+string Create_LOI_Contract(string proformaId)
+{
+	result = Map();
+	trace = List();
+	stage = "writer_merge";
+	try 
+	{
+		// Submission authority comes only from the dedicated permission for the signed-in user.
+		legalAccess = User_Access[User == zoho.loginuser];
+		if(legalAccess.count() == 0 || legalAccess.Submit_to_Legal_Module != true)
+		{
+			result.put("success",false);
+			result.put("message","Submit to Legal Module access is required.");
+			return result.toString();
+		}
+		if(proformaId == null || proformaId.trim() == "")
+		{
+			result.put("success",false);
+			result.put("message","No Pro Forma ID was supplied.");
+			return result.toString();
+		}
+		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+		if(pf.count() == 0)
+		{
+			result.put("success",false);
+			result.put("message","The Pro Forma record could not be found.");
+			return result.toString();
+		}
+		legalApprovalRows = Budget_Approvals[Proforma == pf.ID];
+		legalFullyApproved = ifnull(pf.Status,"") == "Approved";
+		if(legalApprovalRows.count() > 0)
+		{
+			legalFullyApproved = true;
+			for each  legalApproval in legalApprovalRows
+			{
+				if(ifnull(legalApproval.Status,"") != "Approved")
+				{
+					legalFullyApproved = false;
+				}
+			}
+		}
+		if(!legalFullyApproved || pf.Lock_Inputs != true || pf.Archive == true || ifnull(pf.Status,"") == "LOI in Progress")
+		{
+			result.put("success",false);
+			result.put("message","The Pro Forma must be fully approved, locked, active, and not already submitted to Legal.");
+			return result.toString();
+		}
+		loiRec = null;
+		for each  worksheet in LOI_Worksheet[Proforma == pf.ID]
+		{
+			if(loiRec == null || worksheet.Is_Current == true)
+			{
+				loiRec = worksheet;
+			}
+		}
+		if(loiRec == null || loiRec.Company == null)
+		{
+			result.put("success",false);
+			result.put("message","Select the Purchasing Company in the LOI Worksheet before submitting to Legal.");
+			return result.toString();
+		}
+		document = thisapp.PF_Build_LOI_Document(proformaId);
+		if(ifnull(document.get("success"),false) != true)
+		{
+			return document.toString();
+		}
+		pf = Add_Pro_Forma[ID == proformaId.toLong()];
+		trace = document.get("audit");
+		missing = document.get("missing");
+		mergedFile = document.get("file");
+		fileName = document.get("fileName");
+		contractTerritory = document.get("contractTerritory");
+		wbwPointPerson = document.get("wbwPointPerson");
+		stage = "create_or_reuse_contract";
+		contractName = "Acquisition - " + ifnull(pf.Name,"Pro Forma");
+		/* Contracts created before this rename are named "<Pro Forma> - LOI", and reuse is
+		   matched on the name alone - so without the legacy lookup a resubmit would miss the
+		   existing record and insert a duplicate. Old contracts keep their old name; only
+		   newly created ones use the new scheme. */
+		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
+		contractId = null;
+		existingContract = Contract[Contract_Name == contractName && Contract_Type == "Acquisition"];
+		if(existingContract.ID == null)
+		{
+			existingContract = Contract[Contract_Name == legacyContractName && Contract_Type == "Acquisition"];
+		}
+		if(existingContract.ID != null)
+		{
+			contractId = existingContract.ID;
+			existingContract.Contract_Type="Acquisition";
+			existingContract.Territory=contractTerritory;
+			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
+			{
+				existingContract.WBW_Point_Person=wbwPointPerson;
+			}
+			reuseEntry = Map();
+			reuseEntry.put("level","info");
+			reuseEntry.put("stage",stage);
+			reuseEntry.put("message","Existing Acquisition LOI Contract reused and required values confirmed");
+			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":ifnull(existingContract.Contract_Name,contractName),"matchedLegacyName":ifnull(existingContract.Contract_Name,"") == legacyContractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
+			trace.add(reuseEntry);
+		}
+		else
+		{
+			contractId = insert into Contract
+			[
+				Added_User=zoho.loginuser
+				Contract_Name=contractName
+				Contract_Type="Acquisition"
+				Territory=contractTerritory
+				WBW_Point_Person=wbwPointPerson
+				Status="Proposed"
+			];
+			createEntry = Map();
+			createEntry.put("level","success");
+			createEntry.put("stage",stage);
+			createEntry.put("message","Acquisition Contract record created");
+			createEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":wbwPointPerson,"status":"Proposed"});
+			trace.add(createEntry);
+		}
+		stage = "seed_contract_actions";
+		/* The Contract form's "Load Contract Action Template" workflow runs ON LOAD, so it
+		   only fires when a person opens the Add Contract form. This function inserts the
+		   Contract directly, so that workflow never runs and the checklist arrived empty.
+		   Seed it here from the Acquisition action template.
+
+		   A template row is a Contract_Actions record flagged Template_Action, carrying a
+		   Type_field, with no Contract. All three matter: an ordinary action row whose
+		   contract was deleted would still have a type and no contract, and without the
+		   flag it would be seeded onto every future LOI as a phantom checklist item. */
+		existingActionCount = Contract_Actions[Contract1 == contractId].count();
+		if(existingActionCount == 0)
+		{
+			templateActions = Contract_Actions[Contract1 == null && Type_field == "Acquisition" && Template_Action == true] sort by Sort_Order;
+			seededCount = 0;
+			seededTitles = List();
+			for each  templateAction in templateActions
+			{
+				actionTitle = ifnull(templateAction.Contract_Action,"").trim();
+				if(actionTitle != "")
+				{
+					seededCount = seededCount + 1;
+					actionSort = ifnull(templateAction.Sort_Order,seededCount);
+					isFirstAction = false;
+					if(seededCount == 1)
+					{
+						isFirstAction = true;
+					}
+					insert into Contract_Actions
+					[
+						Contract1=contractId
+						Contract_Action=actionTitle
+						Sort_Order=actionSort
+						Status="Proposed"
+						Complete=false
+						Current_Action=isFirstAction
+						Added_User=zoho.loginuser
+					]
+					seededTitles.add(actionTitle);
+				}
+			}
+			if(seededCount > 0)
+			{
+				seedEntry = Map();
+				seedEntry.put("level","success");
+				seedEntry.put("stage",stage);
+				seedEntry.put("message","Acquisition action template applied to the Contract");
+				seedEntry.put("meta",{"contractId":contractId.toString(),"actionsSeeded":seededCount,"actions":seededTitles});
+				trace.add(seedEntry);
+			}
+			else
+			{
+				/* Surfaced rather than swallowed: an empty checklist here means the
+				   Acquisition template has no rows, and Legal would get a contract with
+				   nothing to work through. */
+				/* Distinguish "no template exists" from "the rows are there but not
+				   flagged", which is the one way the flag check can bite. */
+				untaggedCount = Contract_Actions[Contract1 == null && Type_field == "Acquisition"].count();
+				noTemplateEntry = Map();
+				noTemplateEntry.put("level","warn");
+				noTemplateEntry.put("stage",stage);
+				noTemplateEntry.put("message","No Acquisition action template rows were found - the Contract has an empty checklist");
+				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":"Acquisition","typedButUnflaggedRows":untaggedCount});
+				trace.add(noTemplateEntry);
+			}
+		}
+		else
+		{
+			keepEntry = Map();
+			keepEntry.put("level","info");
+			keepEntry.put("stage",stage);
+			keepEntry.put("message","Contract already has actions - template not reapplied");
+			keepEntry.put("meta",{"contractId":contractId.toString(),"existingActions":existingActionCount});
+			trace.add(keepEntry);
+		}
+		stage = "attach_contract_version";
+		contractVersionId = insert into Attachment
+		[
+			Added_User=zoho.loginuser
+			Contract1=contractId
+			Date_field1=zoho.currentdate
+			File_field1=mergedFile
+		];
+		versionEntry = Map();
+		versionEntry.put("level","success");
+		versionEntry.put("stage",stage);
+		versionEntry.put("message","Merged DOCX attached through Attachment");
+		versionEntry.put("meta",{"contractVersionId":contractVersionId.toString(),"contractId":contractId.toString(),"fileField":"File_field1","fileName":fileName});
+		trace.add(versionEntry);
+		stage = "complete";
+		result.put("success",true);
+		completeMessage = "LOI submitted to Legal and attached to the Contract.";
+		if(missing.size() > 0)
+		{
+			completeMessage = "LOI submitted to Legal with " + missing.size().toString() + " missing field(s) flagged in the document: " + missing.toString(", ") + ".";
+		}
+		result.put("message",completeMessage);
+		result.put("proformaId",pf.ID.toString());
+		result.put("contractId",contractId.toString());
+		result.put("contractVersionId",contractVersionId.toString());
+		result.put("fileName",fileName);
+		result.put("missing",missing);
+		result.put("warnings",missing);
+		result.put("contractUrl",zoho.appuri + "page-embed/Contract_Mgmt?contractId=" + contractId.toString());
+		result.put("stage",stage);
+		result.put("audit",trace);
+		return result.toString();
+	}	catch (e)
+	{
+		errorEntry = Map();
+		errorEntry.put("level","error");
+		errorEntry.put("stage",stage);
+		errorEntry.put("message","Unhandled exception in Create_LOI_Contract");
+		errorEntry.put("meta",{"error":e.message,"lineNo":e.lineNo,"proformaId":proformaId});
+		trace.add(errorEntry);
+		result.put("success",false);
+		result.put("message","LOI submission failed during " + stage + " at line " + e.lineNo.toString() + ": " + e.message);
+		result.put("stage",stage);
+		result.put("error",e.message);
+		result.put("errorLine",e.lineNo);
+		result.put("audit",trace);
+		return result.toString();
+	}
+	result.put("success",false);
+	result.put("message","LOI submission ended without a response.");
+	return result.toString();
+}

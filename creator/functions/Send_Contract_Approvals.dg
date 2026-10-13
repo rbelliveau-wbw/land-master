@@ -79,6 +79,12 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("message","Contract not found.");
 		return resp.toString();
 	}
+	if(ifnull(contract.Work_Module,"") == "Construction")
+	{
+		resp.put("success",false);
+		resp.put("message","Construction requests do not use Legal contract approvals.");
+		return resp.toString();
+	}
 	ownedEdit = false;
 	if(accessRow.ID != null && accessRow.Propose_Contract_Changes == true)
 	{

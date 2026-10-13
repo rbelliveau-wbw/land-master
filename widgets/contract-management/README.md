@@ -1,7 +1,17 @@
 
 # Contract Management
 
-Contract management and token-based LOI legal review.
+Legal and Construction task management, with token-based LOI legal review.
+
+Construction uses the shared widget with `workMode=construction` and either
+`Edit_All_Construction_Requests` or `Submit_Construction_Requests`. Submit-only
+users create requests and add files/comments; they do not edit existing fields
+or checklists. `Work_Module` separates Contract records and action templates,
+with legacy blank values remaining Legal. All new native request fields are
+optional; only the Construction UI requires its inputs. Subdivision selection
+infers Project/Territory/context. See the
+[Construction contract and deployment checklist](../../docs/construction-tasks.md)
+and [verified schema state](../../creator/schema-changes/construction-tasks.json).
 
 Release `1.61.45` uses the shared `Attachment` form and `All_Attachments` report.
 The `Contract1`, `File_field1`, `Email_Attachment` and

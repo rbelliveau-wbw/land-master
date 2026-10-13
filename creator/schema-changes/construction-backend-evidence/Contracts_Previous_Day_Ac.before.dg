@@ -1,0 +1,119 @@
+/********* DAILY PUBLIC CREATED / MODIFIED CONTRACT ACTION EMAIL *********/
+settings = Settings[ID != 0];
+// Change this field name if your Settings field is different
+vRecipients = ifnull(settings.Receive_Legal_Notifications,"");
+if(vRecipients != "")
+{
+	vYesterday = zoho.currentdate.addDay(-1);
+	vToday = zoho.currentdate;
+	/********* CREATED BY PUBLIC YESTERDAY *********/
+	publicCreatedActions = Contract_Actions[Added_User == "Public" && Added_Time >= vYesterday && Added_Time < vToday] sort by Added_Time asc;
+	/********* MODIFIED BY PUBLIC YESTERDAY *********/
+	publicModifiedActions = Contract_Actions[Modified_User == "Public" && Modified_Time >= vYesterday && Modified_Time < vToday] sort by Modified_Time asc;
+	vCreatedRows = "";
+	vModifiedRows = "";
+	vCreatedCount = 0;
+	vModifiedCount = 0;
+	/********* BUILD CREATED ROWS *********/
+	for each  actionRow in publicCreatedActions
+	{
+		vContractName = "";
+		if(actionRow.Contract1 != null)
+		{
+			vContractName = ifnull(actionRow.Contract1.Contract_Name,"");
+		}
+		vDevNotes = ifnull(actionRow.Dev_Notes,"");
+		vDevNotes = vDevNotes.replaceAll("\n","<br>");
+		vCreatedRows = vCreatedRows + "<tr>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vContractName + "</td>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Contract_Action,"") + "</td>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vDevNotes + "</td>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Status,"") + "</td>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Dev_Mgr,"") + "</td>";
+		vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Added_Time,"") + "</td>";
+		vCreatedRows = vCreatedRows + "</tr>";
+		vCreatedCount = vCreatedCount + 1;
+	}
+	/********* BUILD MODIFIED ROWS *********/
+	for each  actionRow in publicModifiedActions
+	{
+		// Avoid showing a newly-created Public action twice in the same email
+		vCreatedByPublicYesterday = false;
+		if(actionRow.Added_User == "Public" && actionRow.Added_Time >= vYesterday && actionRow.Added_Time < vToday)
+		{
+			vCreatedByPublicYesterday = true;
+		}
+		if(vCreatedByPublicYesterday == false)
+		{
+			vContractName = "";
+			if(actionRow.Contract1 != null)
+			{
+				vContractName = ifnull(actionRow.Contract1.Contract_Name,"");
+			}
+			vDevNotes = ifnull(actionRow.Dev_Notes,"");
+			vDevNotes = vDevNotes.replaceAll("\n","<br>");
+			vModifiedRows = vModifiedRows + "<tr>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vContractName + "</td>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Contract_Action,"") + "</td>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vDevNotes + "</td>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Status,"") + "</td>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Dev_Mgr,"") + "</td>";
+			vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Modified_Time,"") + "</td>";
+			vModifiedRows = vModifiedRows + "</tr>";
+			vModifiedCount = vModifiedCount + 1;
+		}
+	}
+	if(vCreatedCount > 0 || vModifiedCount > 0)
+	{
+		vBody = "";
+		vBody = vBody + "<div style='font-family:Arial,sans-serif;color:#111827;'>";
+		vBody = vBody + "<h2 style='margin:0 0 6px 0;color:#0f172a;'>Contract Actions Created / Modified</h2>";
+		vBody = vBody + "<div style='margin-bottom:16px;color:#6b7280;font-size:13px;'>Activity from " + vYesterday.toString("MM/dd/yyyy") + "</div>";
+		if(vCreatedCount > 0)
+		{
+			vBody = vBody + "<h3 style='margin:18px 0 8px 0;color:#166534;font-size:16px;'>Created</h3>";
+			vBody = vBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;margin-bottom:18px;'>";
+			vBody = vBody + "<thead>";
+			vBody = vBody + "<tr style='background:#f3f4f6;'>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Contract</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Action</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Notes</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Status</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Manager</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Created Time</th>";
+			vBody = vBody + "</tr>";
+			vBody = vBody + "</thead>";
+			vBody = vBody + "<tbody>";
+			vBody = vBody + vCreatedRows;
+			vBody = vBody + "</tbody>";
+			vBody = vBody + "</table>";
+		}
+		if(vModifiedCount > 0)
+		{
+			vBody = vBody + "<h3 style='margin:18px 0 8px 0;color:#1d4ed8;font-size:16px;'>Modified</h3>";
+			vBody = vBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;margin-bottom:18px;'>";
+			vBody = vBody + "<thead>";
+			vBody = vBody + "<tr style='background:#f3f4f6;'>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Contract</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Action</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Notes</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Status</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Manager</th>";
+			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Modified Time</th>";
+			vBody = vBody + "</tr>";
+			vBody = vBody + "</thead>";
+			vBody = vBody + "<tbody>";
+			vBody = vBody + vModifiedRows;
+			vBody = vBody + "</tbody>";
+			vBody = vBody + "</table>";
+		}
+		vBody = vBody + "</div>";
+		sendmail
+		[
+			from :"Notifications@wbdevelopment.com"
+			to :vRecipients
+			subject :"Contract Actions Updated - " + vYesterday.toString("MM/dd/yyyy")
+			message :vBody
+		]
+	}
+}

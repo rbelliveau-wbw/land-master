@@ -10,7 +10,7 @@ string deleteContractAttachment(string contractId, string attachmentId)
 		response.put("message","Missing Contract ID or attachment ID.");
 		return response.toString();
 	}
-	attachmentRows = Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong()];
 	if(attachmentRows.count() == 0)
 	{
 		response.put("ok",false);
@@ -24,9 +24,19 @@ string deleteContractAttachment(string contractId, string attachmentId)
 		response.put("message","This contract is unavailable or complete and read-only.");
 		return response.toString();
 	}
+	if(ifnull(contractRows.Work_Module,"") == "Construction")
+	{
+		attachmentAccess = User_Access[User == zoho.loginuser];
+		if(attachmentAccess.count() == 0 || attachmentAccess.Edit_All_Construction_Requests != true)
+		{
+			response.put("ok",false);
+			response.put("message","Edit All Construction Requests permission is required to delete attachments.");
+			return response.toString();
+		}
+	}
 	try
 	{
-		delete from Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+		delete from Attachment[ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong()];
 		response.put("ok",true);
 		response.put("attachmentId",vAttachmentId);
 		response.put("message","Attachment deleted.");

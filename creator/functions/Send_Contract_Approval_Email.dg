@@ -36,6 +36,12 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 			return response;
 		}
 		toAddress = ifnull(approvalRow.Approver,"").toString().trim();
+		if(ifnull(contract.Work_Module,"") == "Construction")
+		{
+			response.put("success",false);
+			response.put("message","Construction requests do not use Legal contract approvals.");
+			return response;
+		}
 		if(toAddress == "")
 		{
 			response.put("success",false);

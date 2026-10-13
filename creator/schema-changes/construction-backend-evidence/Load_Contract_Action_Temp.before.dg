@@ -1,0 +1,8 @@
+settings = Settings[ID != 0];
+for each  action in settings.Builder_Contract_Action_Template
+{
+	actionRow = Contract.Contract_Actions();
+	actionRow.Contract_Action=action.Contract_Action;
+	actionRow.Sort_Order=action.Sort_Order;
+	input.Contract_Actions.insert(actionRow);
+}

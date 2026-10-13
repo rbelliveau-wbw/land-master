@@ -12,6 +12,25 @@ if(input.Project == null && input.Budget == null && input.Pro_Forma == null && i
 	cancel submit;
 }
 existingComment = Comment_Log[ID == input.ID];
+// Construction submitters can discuss requests without gaining request editing.
+commentContractId = input.Contract1;
+if(existingComment.count() > 0)
+{
+	commentContractId = existingComment.Contract1;
+}
+if(commentContractId != null)
+{
+	commentContract = Contract[ID == commentContractId];
+	if(commentContract.count() > 0 && ifnull(commentContract.Work_Module,"") == "Construction")
+	{
+		commentAccess = User_Access[User == zoho.loginuser];
+		if(commentAccess.count() == 0 || (commentAccess.Edit_All_Construction_Requests != true && commentAccess.Submit_Construction_Requests != true))
+		{
+			alert "Construction request access is required to add or change comments.";
+			cancel submit;
+		}
+	}
+}
 if(existingComment.count() > 0)
 {
 	if(existingComment.Added_User != zoho.loginuser)

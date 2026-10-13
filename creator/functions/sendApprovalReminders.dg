@@ -28,6 +28,8 @@ string sendApprovalReminders()
 	dueContractApprovals = Contract_Approvals[Status == "Awaiting Approval" && Next_Reminder_Date <= today && Contract1 != null];
 	for each  ca in dueContractApprovals
 	{
+		if(ifnull(ca.Contract1.Work_Module,"") != "Construction")
+		{
 		ctResp = thisapp.Send_Contract_Approval_Email(ca.Contract1.ID.toString(),ca.ID.toString(),"Reminder");
 		if(ifnull(ctResp.get("success"),false) == true)
 		{
@@ -43,6 +45,7 @@ string sendApprovalReminders()
 		{
 			contractFailed = contractFailed + 1;
 			contractRows = contractRows + "<tr><td style='" + tdStyle + "color:#b91c1c;'>Contract (failed)</td><td style='" + tdStyle + "'>" + ifnull(ca.Approver,"") + "</td><td style='" + tdStyle + "'>" + ifnull(ca.Type1,"") + "</td><td style='" + tdStyle + "'>" + ifnull(ctResp.get("message"),"") + "</td></tr>";
+		}
 		}
 	}
 	/********* PASS 2: BUDGET / PRO FORMA / MODIFICATION (Settings gate) *********/

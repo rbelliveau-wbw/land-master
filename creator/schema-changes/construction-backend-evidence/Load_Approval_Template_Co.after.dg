@@ -1,0 +1,12 @@
+// Existing Creator workflow Load_Approval_Template_Co; preserve Legal behavior.
+if(ifnull(input.Work_Module,"") != "Construction")
+{
+	settings = Settings[ID != 0];
+	for each  approver in settings.Builder_Approval_Template
+	{
+		approvalRow = Contract.Approvals1();
+		approvalRow.Approval_Sequence=approver.Approval_Sequence;
+		approvalRow.Approver=approver.Approver;
+		input.Approvals1.insert(approvalRow);
+	}
+}
