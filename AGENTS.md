@@ -209,6 +209,9 @@ Keep exact attachment ID/parent/scope confirmation and unknown-reply recovery.
 
 ## Required verification
 
+Robby's direction October 13, 2026: use desktop-only UI verification. Do not
+spend time checking phone or tablet formatting.
+
 Before declaring a widget change complete:
 
 ```bash

@@ -1604,11 +1604,16 @@ select.apr-in{cursor:pointer}
 .work-mode-switch{display:inline-flex;padding:3px;gap:3px;border:1px solid #d5e0ee;border-radius:10px;background:#e9eff6;flex:none}
 .work-mode-switch button{border:0;background:transparent;color:#6d819e;font-family:inherit;font-size:12px;font-weight:800;padding:8px 15px;border-radius:7px;cursor:pointer}
 .work-mode-switch button.active{background:#12315b;color:#fff;box-shadow:0 2px 5px #12315b22}
+#workModeHeader{display:flex;align-items:center;flex:none;margin-left:16px}
+.topbar .crumb{min-width:0;max-width:min(45vw,600px);overflow:hidden}
+.topbar .work-mode-switch{padding:2px;border-radius:9px}
+.topbar .work-mode-switch button{padding:6px 13px;font-size:11.5px}
+.work-mode-switch button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .construction-form{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
 .construction-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .construction-fields>.nc-f{grid-column:auto}
 .construction-fields .wide{grid-column:1/-1}.construction-fields .cbo{width:100%;min-height:36px}
-.construction-fields .dt{display:flex;align-items:center;min-height:36px;padding:8px 10px;border:1px solid #d6e0ee;border-radius:7px;background:#f7f9fc}
+.construction-fields .dt{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;min-height:36px;padding:8px 10px;border:1px solid #d6e0ee;border-radius:7px;background:#f7f9fc;font-weight:750;font-variant-numeric:tabular-nums}
 .construction-fields textarea{resize:vertical;min-height:110px}.construction-context{background:#f6f9fe;border:1px solid #d8e3f0;border-radius:12px;overflow:hidden}
 .construction-context h3{margin:0;padding:14px 15px;border-bottom:1px solid #dce6f1;font-size:12px;color:var(--navy)}
 .construction-context dl{margin:0;padding:14px 15px;display:grid;grid-template-columns:1fr;gap:5px}.construction-context dt{font-size:10px;font-weight:800;color:var(--muted)}
@@ -1617,8 +1622,38 @@ select.apr-in{cursor:pointer}
 .construction-request-summary{padding:14px 16px;margin:0 0 16px;border:1px solid var(--line);border-radius:12px;background:#fff;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .construction-request-summary .wide{grid-column:1/-1}.construction-request-summary .fl{display:block;margin-bottom:5px}.construction-request-summary p{margin:0;white-space:pre-wrap;color:var(--navy);font-size:12px}
 .construction-readonly{font-size:11px;color:var(--muted);padding:10px 0}.construction-form-error{color:#b91c1c;font-size:12px;font-weight:750;padding:12px 0 0}
+.construction-priority{display:inline-flex;align-items:center;padding:4px 9px;border:1px solid #dbe5f1;border-radius:7px;background:#f1f5fb;color:#536783;font-size:11px;font-weight:800;white-space:nowrap}
+.construction-priority.priority-medium{background:#eff6ff;border-color:#dbeafe;color:#285b97}
+.construction-priority.priority-high{background:#fff7ed;border-color:#fed7aa;color:#b45309}
+.construction-priority.priority-asap{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
+.construction-drill .drillbox{grid-template-columns:280px minmax(0,1fr)}
+.construction-drill .drill-facts{padding:16px;gap:10px}
+.construction-drill .drill-actions{padding:16px 18px;background:#fff}
+.construction-drill .dtitle{font-size:13px;letter-spacing:0;text-transform:none;color:var(--navy);margin-bottom:12px}
+.construction-drill-description{padding:12px 0 2px;border-top:1px solid #d5e0ee}
+.construction-drill-description .fl{display:block;margin-bottom:6px}
+.construction-drill-description p{margin:0;max-height:120px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.55;color:var(--navy)}
+.construction-review-queue{display:flex;flex-direction:column;gap:12px;padding:0 18px 22px;overflow:auto}
+.construction-review-card{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:20px;padding:18px 20px;border:1px solid var(--line);border-left:4px solid var(--primary);border-radius:12px;background:#fff;box-shadow:var(--shadow)}
+.construction-review-main{min-width:0}
+.construction-review-card .review-open{display:block;max-width:100%;padding:0;border:0;background:none;text-align:left;font-family:inherit;font-size:14px;line-height:1.4;cursor:pointer;overflow-wrap:anywhere}
+.construction-review-card .review-open:hover{text-decoration:underline;text-underline-offset:3px}
+.construction-review-card .review-open:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:3px}
+.construction-review-meta{display:flex;gap:6px 12px;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:11px;line-height:1.5}
+.construction-review-description{margin:9px 0 0;max-width:720px;color:#536783;font-size:12px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.construction-review-facts{display:grid;grid-template-columns:repeat(3,minmax(90px,auto));align-items:center;gap:18px;padding:0 20px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.construction-review-facts .fl{display:block;margin-bottom:7px}
+.construction-review-facts .review-value{font-size:12px;font-weight:800;color:var(--navy);white-space:nowrap;font-variant-numeric:tabular-nums}
+.construction-review-decisions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.construction-review-decisions .btn{min-width:76px;height:34px;font-size:11.5px}
+.construction-review-reject{border-color:#b91c1c;background:#fef2f2;color:#b91c1c}
+.construction-review-reject:hover{border-color:#991b1b;background:#fee2e2;color:#991b1b}
+.construction-review-empty{padding:35px 20px;border:1px dashed #cfdbeb;border-radius:12px;background:#fff;text-align:center;color:var(--muted);font-size:13px}
 @media(max-width:900px){.construction-form{grid-template-columns:1fr}.construction-context dl{grid-template-columns:1fr 1fr}.construction-request-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.construction-fields{grid-template-columns:1fr}.construction-fields .wide{grid-column:1}.construction-request-summary{grid-template-columns:1fr}}
+@media(max-width:1000px){.construction-review-card{grid-template-columns:minmax(0,1fr) auto;gap:16px}.construction-review-main,.construction-review-facts{grid-column:1}.construction-review-facts{grid-template-columns:repeat(3,minmax(0,1fr));border:0;border-top:1px solid var(--line);padding:12px 0 0}.construction-review-decisions{grid-column:2;grid-row:1/span 2;flex-direction:column}}
+@media(max-width:760px){.topbar{height:auto;min-height:48px;flex-wrap:wrap;row-gap:8px;padding:10px 14px}.topbar .crumb{flex:1;max-width:none}.topbar .spacer{display:none}#workModeHeader{order:4;flex-basis:100%;margin-left:0}.topbar .statusline{font-size:10px}.construction-drill .drillbox{grid-template-columns:1fr}.construction-drill .drill-facts{border-right:0;border-bottom:1px solid var(--line)}.construction-review-queue{padding:0 14px 18px}}
+@media(max-width:600px){.construction-review-card{grid-template-columns:1fr;padding:16px;gap:12px}.construction-review-main,.construction-review-facts,.construction-review-decisions{grid-column:1;grid-row:auto}.construction-review-decisions{flex-direction:row}.construction-review-facts{gap:10px}.construction-review-facts .review-value{font-size:11px}}
 .home-switch .review-n{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;
   margin-left:0;border-radius:999px;background:rgba(11,35,69,.08);color:var(--primary);
   font-size:9.5px;font-weight:850;font-variant-numeric:tabular-nums}
@@ -1688,6 +1723,11 @@ select.apr-in{cursor:pointer}
 .detail-header .info-nav{display:flex;align-items:center;padding:0 10px;border-left:1px solid var(--line)}
 .detail-header .detail-switch{width:auto;white-space:nowrap}
 .detail-header .detail-switch button{flex:none}
+.construction-detail-header .info-nav{gap:9px;padding:10px 12px}
+.construction-detail-header .info-nav>.btn{height:32px;padding:0 11px;white-space:nowrap;border-radius:8px}
+.construction-detail-header .info-nav .detail-switch{margin:0;flex:none}
+.construction-detail-header .info-nav .detail-switch button{height:30px;padding:0 12px}
+.construction-detail-header .info-nav .comment-activity-btn{width:32px;height:32px;margin-left:1px;flex:none}
 .info-parent-btn{border:0;background:none;padding:0;text-align:left;color:var(--primary);font:inherit;cursor:pointer;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .context-list-btn{display:inline-flex;flex:none;width:37px;height:37px;padding:0;
   align-items:center;justify-content:center;cursor:pointer;
@@ -1936,6 +1976,7 @@ select.apr-in{cursor:pointer}
     Land Master
   </div>
   <div class="crumb" id="crumb"><a onclick="goHome()">Contracts</a></div>
+  <div id="workModeHeader"></div>
   <div class="spacer"></div>
   <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading…</span></span>
   <button class="auditbtn" id="auditToggle" onclick="toggleAudit()" title="Open the audit log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span class="audit-n" id="auditCount"></span></button>
@@ -1975,7 +2016,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.0", pageSize: 200, maxPages: 25,
+  version: "1.62.1", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2470,7 +2511,8 @@ function dtSync(el){
   var cell=el.parentNode; if(!cell||!cell.classList) return;
   var out=cell.querySelector(".dt-v"); if(!out) return;
   var v=el.value;
-  out.textContent=v?prettyDate(v):"\u2014";
+  var numeric=cell.getAttribute("data-date-format")==="numeric";
+  out.textContent=v?(numeric?fmtDate(v):prettyDate(v)):(numeric?"MM/dd/YYYY":"\u2014");
   cell.classList.toggle("empty",!v);
   if(cell.getAttribute("data-kind")==="due"){
     cell.classList.toggle("is-od",!!v&&v<todayInput()&&cell.getAttribute("data-done")!=="1");
@@ -6001,16 +6043,16 @@ function constructionFields(){
   var v=constructionDraft(),editing=!!S.constructionEdit,c=editing&&findContract(S.constructionEdit.cid),requestor=c?attachmentAuthorLabel(c):ncUserLabel(S.myAccessId)||S.currentUser||'—';
   var subs=(S.subdivisions||[]).map(function(sub){return {v:String(sub.ID),label:String(sub.Subdivision_Name||sub.ID)};}).sort(function(a,b){return a.label.localeCompare(b.label);});if(v.sub.length&&!subs.some(function(sub){return sub.v===v.sub[0];}))subs.push({v:v.sub[0],label:subNameFor(v.sub[0])});
   var parentOpts=contractParentOptions(v,editing&&S.constructionEdit.cid);
-  var date='<span class="dt'+(v.needed?'':' empty')+'" data-kind="due" role="button" tabindex="0" aria-label="Date Needed" onclick="qdOpen(event,this.querySelector(\'.dt-in\'))" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){qdOpen(event,this.querySelector(\'.dt-in\'));}"><span class="dt-v">'+esc(v.needed?prettyDate(v.needed):'Choose date')+'</span><input type="date" class="dt-in" id="construction_needed" value="'+attr(v.needed)+'" tabindex="-1" aria-hidden="true" oninput="constructionDraft().needed=this.value;dtSync(this)"/></span>';
+  var date='<span class="dt'+(v.needed?'':' empty')+'" data-kind="due" data-date-format="numeric" role="button" tabindex="0" aria-label="Date Needed" onclick="qdOpen(event,this.querySelector(\'.dt-in\'))" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){qdOpen(event,this.querySelector(\'.dt-in\'));}"><span class="dt-v">'+esc(v.needed?fmtDate(v.needed):'MM/dd/YYYY')+'</span><input type="date" class="dt-in" id="construction_needed" value="'+attr(v.needed)+'" tabindex="-1" aria-hidden="true" oninput="constructionDraft().needed=this.value;dtSync(this)"/></span>';
   return '<div class="construction-meta"><span>Requestor <b>'+esc(requestor)+'</b></span><span>Date submitted <b>'+esc(c?fmtDate(c.Added_Time)||'—':'Set on submission')+'</b></span></div><div class="construction-form"><div><div class="construction-fields">'
-    +constructionCombo('sub','Subdivision',subs,v.sub[0]||'',true,true)
+    +constructionCombo('sub','Subdivision',subs,v.sub[0]||'',true)
+    +constructionField('Date Needed',date,false,true)
     +constructionCombo('type','Budget Type',CONSTRUCTION_TYPES,v.type,true)
     +constructionCombo('plans','Construction Plans',CONSTRUCTION_PLANS,v.plans,true)
     +constructionCombo('mud','MUD',['Yes','No'],v.mud,true)
     +constructionCombo('priority','Priority',CONSTRUCTION_PRIORITIES,v.priority,true)
-    +constructionField('Date Needed',date,false,true)
+    +constructionField('Request Name','<input class="input" id="construction_name" value="'+attr(v.name)+'" oninput="constructionDraft().name=this.value" autocomplete="off"/>',false,true)
     +constructionCombo('parent','Parent request',parentOpts,v.parent,false)
-    +constructionField('Request Name','<input class="input" id="construction_name" value="'+attr(v.name)+'" oninput="constructionDraft().name=this.value" autocomplete="off"/>',true,true)
     +constructionField('Description','<textarea class="input" id="construction_description" oninput="constructionDraft().description=this.value" placeholder="Describe the requested work…">'+esc(v.description)+'</textarea>',true,true)
     +'</div><div id="construction_form_error" class="construction-form-error" role="alert"></div></div>'+constructionContextHTML(v)+'</div>';
 }
@@ -6050,7 +6092,22 @@ function constructionReviewRun(cid,ok){
     contractWorkflowReserve(run,'parent-final-status','update',CFG.reports.contracts);return chain.then(function(){return contractWorkflowStep(run,'parent-final-status','update',CFG.reports.contracts,String(cid),{Status:ok?'New':'Rejected'},true);});
   }).then(function(){return contractWorkflowFinish(run);}).catch(function(error){return contractWorkflowFinish(run,error);});
 }
-function renderConstructionReviews(){var rows=proposedContracts();$('crumb').innerHTML='<a onclick="showContracts()">Construction</a><span>›</span><strong>Review</strong>';var body=rows.map(function(c){return '<tr><td><button class="review-open" onclick="openContract(\''+attr(c.ID)+'\')">'+esc(c.Contract_Name||'Construction Task')+'</button></td><td>'+esc(contractSubText(c)||'—')+'</td><td>'+esc(c.Contract_Type||'—')+'</td><td>'+esc(c.Priority||'—')+'</td><td>'+esc(fmtDate(c.Date_Needed)||'—')+'</td><td><button class="btn primary sm" onclick="pcDecide(\''+attr(c.ID)+'\',true)">Accept</button> <button class="btn ghost sm" onclick="pcDecide(\''+attr(c.ID)+'\',false)">Reject</button></td></tr>';}).join('');$('view').innerHTML=homeSwitch('loi')+'<div class="filterrow"><h1>Construction Review</h1><span class="scope-count">'+rows.length+'</span></div><div class="workarea"><div class="tablecard">'+(body?'<div class="tscroll"><table class="wtable review-table"><thead><tr><th>Request</th><th>Subdivision</th><th>Budget Type</th><th>Priority</th><th>Date Needed</th><th>Decision</th></tr></thead><tbody>'+body+'</tbody></table></div>':'<div class="empty"><b>No requests awaiting review</b></div>')+'</div></div>';}
+function constructionPriorityHTML(value){var label=String(value||'').trim(),kind={ASAP:'asap',High:'high',Medium:'medium'}[label]||'';return '<span class="construction-priority'+(kind?' priority-'+kind:'')+'">'+esc(label||'—')+'</span>';}
+function renderConstructionReviews(){
+  var rows=proposedContracts(),held=contractInteractionHeld()?' disabled':'';
+  $('crumb').innerHTML='<a onclick="showContracts()">Construction</a><span>›</span><strong>Review</strong>';
+  var body=rows.map(function(c){
+    var requestor=attachmentAuthorLabel(c),submitted=fmtDate(c.Added_Time),description=String(c.Description||'').trim();
+    return '<article class="construction-review-card">'
+      +'<div class="construction-review-main"><button type="button" class="review-open" onclick="openContract(\''+attr(c.ID)+'\')">'+esc(c.Contract_Name||'Construction Task')+'</button>'
+      +'<div class="construction-review-meta"><span>'+esc(contractSubText(c)||'—')+'</span>'+(requestor&&requestor!=='—'?'<span>Requested by '+esc(requestor)+'</span>':'')+(submitted?'<span>Submitted '+esc(submitted)+'</span>':'')+'</div>'
+      +(description?'<p class="construction-review-description" title="'+attr(description)+'">'+esc(description)+'</p>':'')+'</div>'
+      +'<div class="construction-review-facts"><div><span class="fl">Budget Type</span><span class="review-value">'+esc(c.Contract_Type||'—')+'</span></div><div><span class="fl">Priority</span>'+constructionPriorityHTML(c.Priority)+'</div><div><span class="fl">Date Needed</span><span class="review-value">'+esc(fmtDate(c.Date_Needed)||'—')+'</span></div></div>'
+      +'<div class="construction-review-decisions"><button type="button" class="btn primary"'+held+' onclick="pcDecide(\''+attr(c.ID)+'\',true)">Accept</button><button type="button" class="btn construction-review-reject"'+held+' onclick="pcDecide(\''+attr(c.ID)+'\',false)">Reject</button></div>'
+      +'</article>';
+  }).join('');
+  $('view').innerHTML=homeSwitch('loi')+'<div class="filterrow"><h1>Construction Review</h1><span class="scope-count">'+rows.length+'</span></div><section class="construction-review-queue" aria-label="Construction requests awaiting review">'+(body||'<div class="construction-review-empty">No requests awaiting review</div>')+'</section>';
+}
 function ncFields(){
   if(S.nc&&S.nc.workMode==='construction')return constructionFields();
   var v=S.nc, lot=(isLotType(v.type));
@@ -6429,7 +6486,7 @@ function refreshReviewCount(){
   });
 }
 function homeSwitch(active){
-  return '<div style="padding:14px 18px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+workModeSwitchHTML()+'<div class="home-switch">'
+  return '<div style="padding:14px 18px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="home-switch">'
     +'<button class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">'+(constructionMode()?'Requests':'Contracts')+'</button>'
     +(!constructionMode()||constructionEditAccess()?'<button class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span></button>':'')
     +(canTemplates()?'<button class="'+(active==="actions"?"active":"")+'" onclick="showManageActions()">Manage Task Templates</button>':'')
@@ -9257,8 +9314,17 @@ function afState(id,kind){
   }
 }
 function drillRow(c){
+  var construction=workModule(c)==='construction';
   var facts=[];
   function fact(l,v){ if(v!=null&&String(v)!==""&&String(v)!=="—") facts.push('<div class="dfact"><span>'+l+'</span><span>'+v+'</span></div>'); }
+  if(construction){
+    fact("Date Needed",esc(fmtDate(c.Date_Needed)));
+    fact("Priority",constructionPriorityHTML(c.Priority));
+    fact("Construction Plans",esc(c.Construction_Plans||""));
+    fact("MUD",esc(constructionMudLabel(c.MUD)));
+    facts.push(contractParentSummary(c).replace('Parent Contract','Parent Request'));
+    if(String(c.Description||'').trim())facts.push('<div class="construction-drill-description"><span class="fl">Description</span><p>'+esc(c.Description)+'</p></div>');
+  }else{
   fact(workModule(c)==='construction'?"Budget Type":"Type",esc(lotTypeLabel(c.Contract_Type)));
   facts.push(contractParentSummary(c));
   if(contractSubText(c)) fact("Subdivision",'<span title="'+attr(contractSubTitle(c))+'">'+esc(contractSubText(c))+'</span>');
@@ -9272,6 +9338,7 @@ function drillRow(c){
   fact("Total Price",num(c.Total_Contract_Price)?money(c.Total_Contract_Price):"");
   fact("Completion",toInput(c.Completion_Date)?'<span style="color:var(--amber)">'+esc(fmtDate(c.Completion_Date))+'</span>':"");
   fact("Current Approver",esc(c.Current_Approver||""));
+  }
   var all=actionsFor(c.ID);
   var shownActs=S.drillDone?all:all.filter(function(x){ return !truthy(x.Complete); });
   var curId=currentIdFor(c.ID);
@@ -9349,17 +9416,16 @@ function drillRow(c){
       +row+form+'</div>';
   }).join("");
   var st=statsFor(c.ID);
-  return '<tr class="drillrow"><td colspan="8" style="padding:0;max-width:none;white-space:normal">'
+  return '<tr class="drillrow'+(construction?' construction-drill':'')+'"><td colspan="8" style="padding:0;max-width:none;white-space:normal">'
     +'<div class="drillbox">'
     +'<div class="drill-facts">'+(facts.join("")||'<div class="dfact"><span>Info</span><span>—</span></div>')
     +'<div class="drill-btns">'
-    +'<button class="dbtn hero" onclick="event.stopPropagation();openContract(\''+c.ID+'\')">Open '+(String(c.Contract_Type)==="Issue"?"Issue":"Contract")+' <span style="font-size:13px">→</span></button>'
+    +'<button class="dbtn hero" onclick="event.stopPropagation();openContract(\''+c.ID+'\')">Open '+(construction?'Request':String(c.Contract_Type)==="Issue"?"Issue":"Contract")+' <span style="font-size:13px">→</span></button>'
     +'<button class="dbtn" onclick="event.stopPropagation();showAttachmentsModal(\''+c.ID+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Attachments</button>'
     +(workModule(c)!=='construction'?'<button class="dbtn" onclick="event.stopPropagation();showApprovalsModal(\''+c.ID+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Approvals</button>':'')
     +(workModule(c)==='construction'&&mayEdit(c.ID)?'<button class="dbtn" onclick="event.stopPropagation();constructionEditOpen(\''+c.ID+'\')">Edit request</button>':'')
     +(hasLotsPricingAccess(c.ID)?'<button class="dbtn wide"'+(mayChangeLotsPricing(c.ID)&&!contractInteractionHeld()?'':' disabled')+' onclick="event.stopPropagation();clpOpen(\''+c.ID+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>Change Lots &amp; Pricing</button>':'')
     +'</div></div>'
-    +(workModule(c)==='construction'?constructionSummary(c):'')
     +'<div class="drill-actions"><div class="dtitle">Actions'
     +'<span class="scope-count" style="min-width:18px;height:16px;font-size:9.5px">'+st.done+'/'+st.total+'</span>'
     +(st.overdue?'<span class="tag" style="background:#fee2e2;color:#dc2626">'+st.overdue+' overdue</span>':'')
@@ -9417,7 +9483,7 @@ function completeContractCascade(cid,c,openActs){
 }
 function statusCell(c){
   var cur=String(c.Status||"New");
-  if(cur==='Proposed')return '<span class="contract-status-readonly" style="background:#f3e8ff;color:#7e22ce" title="Awaiting acceptance in Review by someone with Approval Queue access.">'+esc(workStatusLabel(cur,c))+'</span>';
+  if(cur==='Proposed')return '<span class="contract-status-readonly" style="background:#f3e8ff;color:#7e22ce" title="'+(workModule(c)==='construction'?'Awaiting acceptance in Construction Review.':'Awaiting acceptance in Review by someone with Approval Queue access.')+'">'+esc(workStatusLabel(cur,c))+'</span>';
   var col=STATUS_COLORS[cur]||["#eef2f7","#5c7394"];
   /* a locked contract shows its status, it does not offer to change it */
   if(contractLocked(c)||!mayEdit(c.ID))
@@ -9657,19 +9723,20 @@ function addFile(){
 function renderDetail(){
   var c=findContract(S.selId);
   if(!c){ goHome(); return; }
+  var construction=workModule(c)==='construction';
   if(workModule(c)==='construction'&&S.detailTab==='approvals')S.detailTab='edit';
   var st=statsFor(c.ID);
   var all=actionsFor(c.ID);
   var shown=S.showDone?all:all.filter(function(a){ return !truthy(a.Complete); });
 
-  $("crumb").innerHTML='<a onclick="goHome()">Contracts</a><span class="sep">/</span><strong>'+esc(c.Contract_Name||"Contract")+'</strong>';
+  $("crumb").innerHTML='<a onclick="goHome()">'+(construction?'Construction Requests':'Contracts')+'</a><span class="sep">/</span><strong>'+esc(c.Contract_Name||(construction?'Construction Task':'Contract'))+'</strong>';
 
   var strip='<div class="info-strip">'
-    +'<div class="info-name-block"><div class="info-kicker">'+(S.actionsMode==="edit"?"Edit Contract Actions":"Contract Workspace")+'</div><div class="info-name">'+esc(c.Contract_Name||("Contract "+c.ID))+'</div></div>'
+    +'<div class="info-name-block"><div class="info-kicker">'+(construction?(S.actionsMode==="edit"?"Edit Construction Actions":"Request Workspace"):(S.actionsMode==="edit"?"Edit Contract Actions":"Contract Workspace"))+'</div><div class="info-name">'+esc(c.Contract_Name||((construction?"Request ":"Contract ")+c.ID))+'</div></div>'
     +'<div class="info-nav">'+detailSwitch(c.ID)+(workModule(c)==='construction'&&mayEdit(c.ID)?'<button class="btn sm" onclick="constructionEditOpen(\''+c.ID+'\')">Edit request</button>':'')+contractCommentButton(c)+(hasLotsPricingAccess(c.ID)?'<button class="btn sm"'+(mayChangeLotsPricing(c.ID)&&!contractInteractionHeld()?'':' disabled')+' onclick="clpOpen(\''+c.ID+'\')">Change Lots &amp; Pricing</button>':'')+'</div>'
-    +(c.Contract_Type?'<div class="info-field"><div class="info-lbl">Type</div><div class="info-val">'+(isLotContract(c)&&mayChangeLotsPricing(c.ID)?cbo({id:"detail_lot_type",value:lotTypeLabel(c.Contract_Type),opts:["Lot (Master)","Lot (Amendment)"],title:"Change Lot Type & Parent",onpick:"clpOpenType('"+String(c.ID)+"',value)"}):esc(c.Contract_Type))+'</div></div>':'')
+    +(c.Contract_Type?'<div class="info-field"><div class="info-lbl">'+(construction?'Budget Type':'Type')+'</div><div class="info-val">'+(isLotContract(c)&&mayChangeLotsPricing(c.ID)?cbo({id:"detail_lot_type",value:lotTypeLabel(c.Contract_Type),opts:["Lot (Master)","Lot (Amendment)"],title:"Change Lot Type & Parent",onpick:"clpOpenType('"+String(c.ID)+"',value)"}):esc(c.Contract_Type))+'</div></div>':'')
     +(isLotContract(c)?'<div class="info-field"><div class="info-lbl">Project</div><div class="info-val">'+(mayChangeLotsPricing(c.ID)?'<button class="info-parent-btn" title="Change Project" onclick="clpOpen(\''+c.ID+'\')">'+esc(lotContractProject(c)?ncProjectLabel(lotContractProject(c)):"Choose Project")+'</button>':esc(displayValue(c.Project)||"—"))+'</div></div><div class="info-field"><div class="info-lbl">Territory</div><div class="info-val">'+esc(c.Territory||"—")+'</div></div>':'')
-    +'<div class="info-field"><div class="info-lbl">Parent Contract</div><div class="info-val">'+(contractChildren(c.ID).length?contractMasterBadge(c):mayEdit(c.ID)?'<button class="info-parent-btn" title="Assign or change Parent Contract" onclick="contractParentOpen(\''+c.ID+'\')">'+esc(contractParentName(c)||"Assign parent")+'</button>':esc(contractParentName(c)||"None"))+'</div></div>'
+    +'<div class="info-field"><div class="info-lbl">'+(construction?'Parent Request':'Parent Contract')+'</div><div class="info-val">'+(contractChildren(c.ID).length?contractMasterBadge(c):mayEdit(c.ID)?'<button class="info-parent-btn" title="Assign or change '+(construction?'Parent Request':'Parent Contract')+'" onclick="contractParentOpen(\''+c.ID+'\')">'+esc(contractParentName(c)||"Assign parent")+'</button>':esc(contractParentName(c)||"None"))+'</div></div>'
     +(contractSubText(c)?'<div class="info-field"><div class="info-lbl">Subdivision</div><div class="info-val" title="'+attr(contractSubTitle(c))+'">'+esc(contractSubText(c))+'</div></div>':'')
     +(displayValue(c.Builder)?'<div class="info-field"><div class="info-lbl">Builder</div><div class="info-val">'+esc(displayValue(c.Builder))+'</div></div>':'')
     +'<div class="info-field"><div class="info-lbl">Status</div><div class="info-val">'
@@ -9679,7 +9746,7 @@ function renderDetail(){
                   fg:(STATUS_COLORS[String(c.Status||"New")]||["#eef2f7","#5c7394"])[1]})
       :'<span class="det-status-ro" title="'+attr(contractLocked(c)
           ?"Complete — read-only."
-          :String(c.Status||'')==='Proposed'?"Awaiting acceptance in Review by someone with Approval Queue access.":"Changing contract status needs Edit Contracts access.")+'">'
+          :String(c.Status||'')==='Proposed'?(construction?"Awaiting acceptance in Construction Review.":"Awaiting acceptance in Review by someone with Approval Queue access."):(construction?"Changing request status needs Edit All Construction Requests access.":"Changing contract status needs Edit Contracts access."))+'">'
         +esc(workStatusLabel(c.Status,c))
         +(contractLocked(c)?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':'')
       +'</span>')
@@ -9701,7 +9768,7 @@ function renderDetail(){
 
   if(S.actionsMode==="edit"){
     actionsCard='<section class="acard-shell">'
-      +'<div class="ac-head"><div><h2 class="ac-title">Edit Actions</h2><div class="ac-sub">Attorney workspace · edit any field inline · add actions directly</div></div>'
+      +'<div class="ac-head"><div><h2 class="ac-title">Edit Actions</h2><div class="ac-sub">'+(construction?'Edit fields inline · add actions directly':'Attorney workspace · edit any field inline · add actions directly')+'</div></div>'
       +'<div class="spacer"></div>'+modeSeg
       +'<button class="toggle-btn'+(S.showDone?" on":"")+'" onclick="toggleDone()"><span class="toggle-track"><span class="toggle-knob"></span></span>Show Completed</button>'
       +'</div>'
@@ -9749,11 +9816,11 @@ function renderDetail(){
   else if(S.detailTab==="approvals") panel=approvalsPanel(c.ID);
   else                               panel=(workModule(c)==='construction'?constructionSummary(c):'')+'<div class="dgrid">'+actionsCard+side+'</div>';
 
-  var backTitle=(S.detailFrom==="review")?"Back to review queue":"Back to All Contracts";
+  var backTitle=(S.detailFrom==="review")?"Back to review queue":construction?"Back to Construction Requests":"Back to All Contracts";
   var backCall =(S.detailFrom==="review")?"showLOIReviews()":"goHome()";
 
   $("view").innerHTML=homeSwitch('contracts')+'<div class="detailwrap">'
-    +'<div class="detail-header">'
+    +'<div class="detail-header'+(construction?' construction-detail-header':'')+'">'
         +'<button class="context-list-btn" type="button" title="'+attr(backTitle)+'" aria-label="'+attr(backTitle)+'" onclick="'+backCall+'">'
         +'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>'
     +strip
@@ -10325,7 +10392,7 @@ function flipPlay(prev,movedId,flashClass){
 function queueFlip(movedId,flashClass){
   PENDING_FLIP={prev:flipCapture(),moved:movedId||null,cls:flashClass||"justmoved"};
 }
-var SCROLL_SELECTORS=[".tscroll",".detailwrap",".loi-review-page",".boardwrap",".workarea"];
+var SCROLL_SELECTORS=[".tscroll",".detailwrap",".loi-review-page",".construction-review-queue",".boardwrap",".workarea"];
 function viewKey(){
   /* detailTab must be in the key: renderAll restores the previous scrollTop
      whenever viewKey is unchanged, so without it a tab switch reads as "same
@@ -10385,6 +10452,7 @@ function renderAll(){
   var same=(key===LAST_VIEW_KEY);
   var st=same?captureScroll():null;
   renderView();
+  var modeHeader=$("workModeHeader");if(modeHeader)modeHeader.innerHTML=workModeSwitchHTML();
   var backfill=$("contract_backfill_banner");
   if(!backfill){ backfill=document.createElement("div"); backfill.id="contract_backfill_banner"; document.body.insertBefore(backfill,document.body.firstChild); }
   backfill.innerHTML=contractBackfillBanner();

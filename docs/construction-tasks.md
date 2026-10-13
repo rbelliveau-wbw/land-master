@@ -93,6 +93,37 @@ Construction status choices are Proposed (shown as **Pending Review**), New,
 Rejected, Feasibility, Awaiting Purchasing, Awaiting Development, Awaiting Other,
 Approved, Complete, and Cancelled. Existing Legal choices remain unchanged.
 
+## UI refinements for 1.62.1 — deployment pending
+
+Keep the Legal/Construction chooser in the persistent white header beside the
+breadcrumb, so it stays available across the request list, Review, templates,
+and full workspace. The existing permission check still controls whether
+Construction appears.
+
+The Construction form pairs half-width **Subdivision** and **Date Needed** in
+its first row, and pairs **Request Name** with **Parent request**. Date Needed
+displays `MM/dd/YYYY` using the existing custom date picker. Its hidden input
+continues to carry ISO `yyyy-MM-dd`, and the saved Creator date format is
+unchanged. Numeric display is scoped to this Construction field; Legal action
+dates keep their existing formatting.
+
+Expanded Construction rows use a single compact facts rail, Parent control,
+and description on the left, with a 280px desktop width. Actions occupy the
+remaining main area on the right; omit a repeated full request-summary block.
+Stack the rail and actions on narrow screens. Keep the full Construction
+workspace's header controls aligned at 32px and use Request labels for its
+record/navigation context. Legal expanded rows retain their established layout.
+
+Construction Review uses responsive cards. The main area shows request name,
+Subdivision, requestor, submitted date, and a short description. The three
+facts are Budget Type, a Priority badge, and numeric Date Needed. Keep Accept
+and the soft red Reject action paired and reachable when the card stacks.
+
+These are frontend presentation changes for the next immutable `1.62.1`
+release, with `1.62.0` as the widget rollback. No Creator publication, Custom
+API, field, or permission changes are required. This section records the
+requested design; it does not claim `1.62.1` has deployed.
+
 ## Creator deployment checklist
 
 The schema manifest records exact additive link names, field types, choices,

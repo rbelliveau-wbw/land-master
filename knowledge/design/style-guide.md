@@ -3,6 +3,9 @@
 This guide captures reusable visual preferences established in production work.
 Use the short [design index](README.md) to find a focused component guide.
 
+UI verification is desktop-only, per Robby's October 13, 2026 direction.
+Do not spend time checking phone or tablet formatting.
+
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
 PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green
 amount, status and compact Edit/View action. Omit column headings and repeated
@@ -69,6 +72,32 @@ Lot picker hover cards show record details and relevant claim/hold warnings; omi
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.
 
 Lot contract reports use compact branch rows: pale blue on a Master with visible Amendments, a lighter tint on its children, and a shared blue rail and branch connector. Make connectors visibly bold with rounded elbows and a stronger blue rail. Keep status colors independent. Put a counted collapse control beside the Master; omit repeated parent names on nested children and retain them when filters leave a child on its own.
+
+## Legal and Construction workspaces
+
+Keep the Legal/Construction chooser in the persistent white header beside the
+breadcrumb. It remains visible while navigating the list, Review, templates,
+and full workspace; only authorized users see Construction.
+
+In the Construction request form, pair half-width Subdivision and Date Needed
+on the first row, and pair Request Name with Parent request. Display Date Needed
+as `MM/dd/YYYY` using the existing floating custom picker. Retain ISO
+`yyyy-MM-dd` in the hidden value carrier and the existing save conversion. Scope
+numeric formatting to this field so Legal's compact action dates stay intact.
+
+Expanded Construction rows have one compact facts rail, Parent control, and
+description on the left, capped at 280px on desktop. Give Actions the remaining
+main area on the right; omit duplicated full summaries. Stack these areas on
+narrow screens. In the full Construction workspace, align header controls at
+32px and use Request labels in the record/navigation context. Preserve the
+existing Legal expanded-row layout.
+
+Construction Review uses responsive cards: request name, Subdivision,
+requestor, submitted date, and a short description in the main area; Budget
+Type, a Priority badge, and numeric Date Needed as three aligned facts. Keep
+Accept and soft red Reject paired and reachable on narrow screens. Reuse the
+approval rejection colors defined below rather than inventing a destructive
+button treatment for this queue.
 
 ## Record dropdowns
 
