@@ -5,7 +5,7 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 // Execute the checked-in Deluge functions against local records. This harness
 // verifies behavior; it does not replace native Creator compilation or email QA.
-const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','poActorResponse','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poValidatePayload','managePurchaseOrder'];
+const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','poActorResponse','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poExcelWorkbook','poValidatePayload','managePurchaseOrder'];
 const source=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
 // Creator keeps native record iterator types across branches. Reusing one for a
 // function-result map compiles but fails at runtime; JS alone cannot model it.
@@ -99,6 +99,11 @@ assert.match(packet.Attachments.content,/<Data ss:Type='Number'>20.00<\/Data>/);
 assert.match(packet.Attachments.content,/<Data ss:Type='DateTime'>2026-10-12T00:00:00.000<\/Data>/);
 assert.match(packet.message,/Full line details are in the attached Excel file/);assert.doesNotMatch(packet.message,/Changed &lt;description&gt;|Approval chain/,'Email stays summarized');
 r=runtime({extraTables:emailTables,environment:'Development'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);assert.match(r.c.mails[0].subject,/\[DEV TEST\]/);
+// The same compact workbook is used for a read-only download and email.
+r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.equal(workbook.content,packet.Attachments.content);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
+const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_Description='General & <scope>';r=runtime({extraTables:withDescription});workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true);assert.match(workbook.content,/General &amp; &lt;scope&gt;/);assert.match(workbook.content,/SUM\(R9C8:R10C8\)/);assert.equal((workbook.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,6);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
+const descriptionPayload={action:'Submit',budgetId:'61',vendorId:'91',amount:'1.00',token:'description-test-000000001',requestDate:'2026-10-11',dateNeeded:'2026-10-12',lines:[{key:'line-1',budgetItemId:'71',description:'Inspection',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'1.00'}]};
+for(const description of ['', 'Header description\nSecond line', 'x'.repeat(1000), 'x'.repeat(1001), 1, []]){r=runtime();const result=r.run('poValidatePayload',JSON.stringify({...descriptionPayload,description}));assert.equal(result.success,typeof description==='string'&&description.length<=1000,JSON.stringify(result));assert.equal(r.c.writes,0);}
 // Owner-only policy preflight rejects a bad override before creating any audits/locks.
 const policyData={id:'',companyId:'31',workflow:'Purchase Order',enabled:true,selfApproval:'Deny',steps:[step]};
 const normalPolicyData={...policyData,steps:[{...step,poTestCFO:null}]};

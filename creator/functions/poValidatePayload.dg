@@ -16,6 +16,11 @@ map poValidatePayload(string payload)
 		}
 		typedValue = Map(); typedValue.put("value",p.get("amount"));
 		if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Amount must be an exact decimal string."); return result; }
+		if(p.get("description") != null)
+		{
+			typedValue=Map(); typedValue.put("value",p.get("description"));
+			if(!typedValue.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\".*\"[ ]*[}][ ]*") || p.get("description").toString().length() > 1000) { result.put("error","PO Description must be text, maximum 1000 characters."); return result; }
+		}
 		amount = thisapp.poCurrencyString(ifnull(p.get("amount"),"").toString());
 		if(p.get("budgetModificationId") != null)
 		{

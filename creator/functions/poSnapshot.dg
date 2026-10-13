@@ -13,6 +13,7 @@ map poSnapshot(string purchaseOrderId)
 		p.put("id",po.ID.toString());
 		p.put("budgetId",po.Budget.toString());
 		p.put("vendorId",po.Vendor.toString());
+		p.put("description",ifnull(po.PO_Description,""));
 		modificationId = null;
 		if(po.PO_Budget_Modification != null)
 		{

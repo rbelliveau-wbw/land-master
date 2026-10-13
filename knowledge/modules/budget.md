@@ -1051,3 +1051,27 @@ production implementation. Its local Save/Cancel, item totals and 320px layout
 were checked. Rollback: restore Budget Manager Production 122.29.20 and rebuild
 Pages at the same permanent widget URL.
 Full repository validation and the Pages build passed before main/Production.
+
+## PO editing, row actions and captured approvers (122.29.28)
+
+Optional Payment_Request.PO_Description is surfaced in the PO editor and compact
+Excel packet. Vendor/add-vendor move into the navy title; Request date, Date needed
+and Description lead the body. The editor keeps a stable viewport-bounded height.
+Row/Excel mode provides atomic validated range paste, copy, fill-down, keyboard
+navigation and range Undo within the existing 250-line limit.
+
+Requests rows use attachment-style preview, eligible edit, download and red trash
+icons. Delete opens the existing child-record preview; Cancel returns to Requests.
+Captured approver initials are green/amber/red/muted for Approved/Pending/Rejected/
+Not Sent. The mini modal displays names, roles, sent/responded dates and statuses.
+List returns validated captured summaries; only opening a chain triggers one Get.
+Drafts do not invent a captured chain.
+
+Creator changes: optional multiline PO_Description, poValidatePayload, poSnapshot,
+poApprovalBundle, managePurchaseOrder, sendPurchaseOrderEmail and new shared
+poExcelWorkbook. Download is a read-only action on the existing scoped API, with
+the same Excel generator as email. No Custom API, permission or routing-policy
+change. Old widgets omitting Description preserve saved text; explicit empty text
+clears it. Production frontend rollback is 122.29.26 (prior mapping); Development
+rollback is 122.29.27. Restore prior functions from bee8ffdc, retaining the new
+optional field and any saved descriptions.

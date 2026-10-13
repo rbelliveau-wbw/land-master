@@ -42,6 +42,7 @@
   function validate(payload, submit) {
     if (!payload || typeof payload.budgetId!=="string" || typeof payload.vendorId!=="string" || !/^\d+$/.test(payload.budgetId) || !/^\d+$/.test(payload.vendorId)) throw new Error("Phase and vendor are required.");
     if (payload.budgetModificationId!=null && (typeof payload.budgetModificationId!=="string" || !/^\d+$/.test(payload.budgetModificationId))) throw new Error("Linked budget modification must be a Creator ID string or null.");
+    if(payload.description!=null&&(typeof payload.description!=="string"||payload.description.length>1000))throw new Error("PO Description must be text, maximum 1000 characters.");
     var header = money(payload.amount);
     if (header <= 0n) throw new Error("PO amount must be positive.");
     if (!Array.isArray(payload.lines) || !payload.lines.length || payload.lines.length > 250) throw new Error("Enter 1–250 complete lines.");

@@ -185,6 +185,13 @@ string managePurchaseOrder(string payload)
 			if(PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == token].count() > 0) { result.put("writeState","unknown"); result.put("error","Deletion lock needs review."); return result.toString(); }
 			result.put("success",true); result.put("writeState","verified"); result.put("deleted",plan); result.put("remaining",0); return result.toString();
 		}
+		if(action == "Download")
+		{
+			po = Payment_Request[ID == p.get("id").toString().toLong() && Budget == budget.ID];
+			if(po.ID == null) { result.put("error","PO not found in this phase."); return result.toString(); }
+			verifiedDownload=thisapp.poSnapshot(po.ID.toString()); if(verifiedDownload.get("success") != true) { result.put("error",verifiedDownload.get("error")); return result.toString(); }
+			result=thisapp.poExcelWorkbook(po.ID.toString()); result.put("contract","po-v1"); return result.toString();
+		}
 		if(action == "Get")
 		{
 			po = Payment_Request[ID == p.get("id").toString().toLong() && Budget == budget.ID];
@@ -199,7 +206,9 @@ string managePurchaseOrder(string payload)
 				requestDateText = ""; neededDateText = "";
 				if(po.Request_Date != null) { requestDateText = po.Request_Date.toString("yyyy-MM-dd"); }
 				if(po.Date_Needed != null) { neededDateText = po.Date_Needed.toString("yyyy-MM-dd"); }
-				rows.add({"id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
+				summaryRows=List(); summaryAvailable=true;
+				if(ifnull(po.PO_Approval_State,"Not Configured") != "Not Configured") { summaryBundle=thisapp.poApprovalBundle(po.ID.toString()); if(summaryBundle.get("success") == true) { summaryRows=summaryBundle.get("bundle").get("rows"); } else { summaryAvailable=false; } }
+				rows.add({"approvals":summaryRows,"approvalSummaryAvailable":summaryAvailable,"id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
 			}
 			result.put("rows",rows); result.put("success",true); return result.toString();
 		}
@@ -221,6 +230,7 @@ string managePurchaseOrder(string payload)
 				}
 				else
 				{
+				if(ifnull(currentSnapshot.get("description"),"") != ifnull(recordedSnapshot.get("description"),"")) { sameSnapshot=false; }
 				for each headerField in {"id","budgetId","vendorId","budgetModificationId","amount","requestDate","dateNeeded","revision","status","commitmentState","approvalState"}
 				{
 					if(currentSnapshot.get(headerField) != recordedSnapshot.get(headerField)) { sameSnapshot = false; }
@@ -455,6 +465,7 @@ string managePurchaseOrder(string payload)
 		];
 		}
 		po = Payment_Request[ID == idText.toLong()];
+		if(p.get("description") != null) { po.PO_Description=p.get("description"); }
 		po.Vendor=vendor.ID; po.Request_Date=p.get("requestDate").toDate("yyyy-MM-dd"); po.Date_Needed=p.get("dateNeeded").toDate("yyyy-MM-dd");
 		po.PO_Budget_Modification=linkedModificationId;
 		po.Request_Amount=p.get("amount").toDecimal(); po.PO_Amount_Exact=p.get("amount");

@@ -4,14 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.27"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.28"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.27"></script>
-<script src="po-controller.js?v=122.29.27"></script>
-<script src="po-ui.js?v=122.29.27"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.27">
+<script src="po-domain.js?v=122.29.28"></script>
+<script src="po-grid.js?v=122.29.28"></script>
+<script src="po-controller.js?v=122.29.28"></script>
+<script src="po-ui.js?v=122.29.28"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.28">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1079,6 +1080,9 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .po-request-action:hover{background:#edf3fb;border-color:#aac2e2}
 .po-request-action:focus-visible{outline:2px solid #285b97;outline-offset:3px}
 .po-request-action svg{width:14px;height:14px;flex:none}
+.po-request-actions{display:flex;gap:6px;align-items:center}.po-request-actions .attachment-action{width:28px;height:28px;padding:0;display:grid;place-items:center}.po-request-actions .attachment-action svg{width:14px;height:14px}.po-request-values{grid-template-columns:minmax(60px,1fr) max-content 78px max-content max-content max-content;min-width:560px}
+.po-route-pill{display:flex;align-items:center;padding:5px 6px;border:1px solid transparent;border-radius:9px;background:transparent;cursor:pointer}.po-route-pill:hover{border-color:#98b8d9;background:#f5f9ff}.po-route-pill:focus-visible{outline:2px solid #6399e8;outline-offset:2px}.po-approver-circle{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:50%;font-size:10px;font-weight:750;background:#e6edf5;color:#6c819c}.po-approver-circle[data-status=Approved]{background:#087c64;color:#fff}.po-approver-circle[data-status=Pending]{background:#f7cf65;color:#674c0c}.po-approver-circle[data-status=Rejected]{background:#c6434d;color:#fff}.po-route-link{width:10px;height:2px;background:#bacbde}.po-route-link.is-approved{background:#087c64}.po-route-empty{width:28px;text-align:center;color:#9aabc0}
+.po-chain-detail-overlay{position:fixed;inset:0;z-index:2500;display:grid;place-items:center;background:#10233e60;backdrop-filter:blur(3px);padding:18px}.po-chain-detail-modal{width:min(560px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid #d5e1ee;border-radius:14px;box-shadow:0 24px 70px #0b234540}.po-chain-detail-modal>header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 20px;background:linear-gradient(115deg,#173f78,#0b2345);color:#fff}.po-chain-detail-modal h3{margin:0 0 4px;font-size:18px}.po-chain-detail-modal header span{font-size:11px;color:#d3e2f6}.po-chain-detail-body{padding:8px 20px}.po-approval-detail-row{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #e4edf6}.po-approval-detail-row:last-child{border-bottom:0}.po-approval-detail-row>div{min-width:0;flex:1}.po-approval-detail-row strong{display:block;font-size:13px;color:#173f78;overflow-wrap:anywhere}.po-approval-detail-row>div>span{display:block;font-size:11px;color:#647d9e;margin-top:3px}.po-approval-detail-row small{display:block;font-size:10px;color:#7e92ad;margin-top:5px}.po-detail-status{font-size:10px;padding:4px 7px;border-radius:6px;background:#eaf0f7;color:#61758f;white-space:nowrap}.po-detail-status[data-status=Approved]{background:#e3f5ed;color:#126847}.po-detail-status[data-status=Pending]{background:#fff2cf;color:#805815}.po-detail-status[data-status=Rejected]{background:#ffe8e8;color:#98343c}.po-detail-read-status{padding:0 20px 12px;font-size:11px;color:#7387a3}.po-detail-read-status:empty{display:none}.po-detail-empty{font-size:12px;color:#7387a3}.po-download-spinner{animation:po-download-spin .8s linear infinite}@keyframes po-download-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.po-download-spinner{animation:none}}
 .request-context{margin-bottom:14px}
 .request-department{display:inline-flex;align-items:center;padding:3px 8px;border:1px solid #cbd9eb;border-radius:6px;background:#f4f8ff;color:#285b97;font-size:10px;font-weight:800}
 .request-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1784,8 +1788,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.27">
-<script src="success-feedback.js?v=122.29.27"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.28">
+<script src="success-feedback.js?v=122.29.28"></script>
 </head>
 <body>
 
@@ -2667,7 +2671,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.27", code:"BMW",
+  widget:"Budget Manager", version:"122.29.28", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -12612,6 +12616,11 @@ function mergeManagedPurchaseOrderRequests(rows,managed,vendors,budgetId) {
     if(typeof po.requestDate==="string")header.Request_Date=po.requestDate;
     if(typeof po.dateNeeded==="string")header.Date_Needed=po.dateNeeded;
     if(typeof po.approvalState==="string")header.PO_Approval_State=po.approvalState;
+    header._poApprovals=null;
+    if(po.approvalSummaryAvailable!==false&&Array.isArray(po.approvals)){
+      var approvalIds=new Set();po.approvals.forEach(function(row,index){if(!row||typeof row.id!=="string"||!/^\d+$/.test(row.id)||approvalIds.has(row.id)||row.order!==index+1||typeof row.role!=="string"||typeof row.email!=="string"||typeof row.userAccessId!=="string"||!["Approved","Pending","Rejected","Not Sent"].includes(row.status)||row.name!=null&&typeof row.name!=="string")throw new Error("Saved PO approval identities are unavailable.");approvalIds.add(row.id);});
+      header._poApprovals=po.approvals.map(function(row){return Object.assign({},row);});
+    }
     byId.set(po.id,Object.assign({},byId.get(po.id)||{},header));
   });
   return Array.from(byId.values());
@@ -12619,11 +12628,49 @@ function mergeManagedPurchaseOrderRequests(rows,managed,vendors,budgetId) {
 function savedPurchaseOrderRequest(request,budgetId) {
   return !!request&&poDevelopment()&&typeof request.ID==="string"&&/^\d+$/.test(request.ID)&&lookupMatchesId(request.Budget,String(budgetId))&&cleanVal(request.Request_Type)==="Purchase Order"&&!!cleanVal(request.PO_Revision);
 }
-function openSavedPurchaseOrder(id,source) {
+function openSavedPurchaseOrder(id,source,intent) {
   if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
   var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});
   if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid))return;
-  try{return getPurchaseOrderUI().open(S.edBudget,source,id).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
+  try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
+}
+function poApprovalInitials(row){var parts=cleanVal(row.name).split(/\s+/).filter(Boolean);return parts.length?(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:"")).toUpperCase():"?";}
+function poApproverCircles(request){
+  var rows=request._poApprovals;if(!Array.isArray(rows)||!rows.length)return "<span class='po-route-empty' title='"+(rows?"No approval chain recorded yet":"Approval chain unavailable")+"'>—</span>";
+  return "<button class='po-route-pill' type='button' data-request-po-approvals='"+escAttr(request.ID)+"' aria-label='View PO approval details' title='View PO approval details'>"+rows.map(function(row,index){return(index?"<span class='po-route-link"+(rows[index-1].status==="Approved"?" is-approved":"")+"' aria-hidden='true'></span>":"")+"<span class='po-approver-circle' data-status='"+escAttr(row.status)+"' title='"+escAttr((row.name||row.email)+" · "+row.role+" · "+row.status)+"'>"+esc(poApprovalInitials(row))+"</span>";}).join("")+"</button>";
+}
+var poApprovalDetail=null;
+function closePOApprovalDetails(){var detail=poApprovalDetail;if(!detail)return;poApprovalDetail=null;detail.overlay.remove();detail.inert.forEach(function(pair){pair[0].inert=pair[1];});if(detail.trigger&&detail.trigger.isConnected)detail.trigger.focus();}
+function poApprovalDetailsHtml(rows){return rows.length?rows.map(function(row){return "<div class='po-approval-detail-row'><span class='po-approver-circle' data-status='"+escAttr(row.status)+"'>"+esc(poApprovalInitials(row))+"</span><div><strong>"+esc(row.name||row.email||row.role)+"</strong><span>"+esc(row.role)+"</span><small>Sent "+esc(poRequestCardDate(row.sentDate||""))+" · Responded "+esc(poRequestCardDate(row.respondedDate||""))+"</small></div><span class='po-detail-status' data-status='"+escAttr(row.status)+"'>"+esc(row.status)+"</span></div>";}).join(""):"<p class='po-detail-empty'>No approval chain recorded.</p>";}
+async function openPOApprovalDetails(id,trigger){
+  if(poApprovalDetail||!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
+  var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid)||!Array.isArray(request._poApprovals)||!request._poApprovals.length)return;
+  var scope=budgetCreateScope("po",bid),overlay=document.createElement("div");overlay.className="po-chain-detail-overlay";
+  overlay.innerHTML="<section class='po-chain-detail-modal' role='dialog' aria-modal='true' aria-labelledby='po-chain-detail-title'><header><div><h3 id='po-chain-detail-title'>PO Approvals</h3><span>"+esc(lookupName(request.Vendor)||"Vendor")+" · "+esc(phaseName(S.edBudget))+"</span></div><button type='button' class='po-x' aria-label='Close PO approval details' data-po-detail-close><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M6 6l12 12M18 6L6 18'/></svg></button></header><div class='po-chain-detail-body' data-po-detail-body>"+poApprovalDetailsHtml(request._poApprovals)+"</div><div class='po-detail-read-status' data-po-detail-status role='status' aria-live='polite'>Refreshing…</div></section>";
+  document.body.appendChild(overlay);var detail={overlay:overlay,trigger:trigger,inert:Array.from(document.body.children).filter(function(node){return node!==overlay&&node.tagName!=="SCRIPT"&&node.tagName!=="STYLE";}).map(function(node){var old=node.inert;node.inert=true;return[node,old];})};poApprovalDetail=detail;
+  overlay.addEventListener("click",function(event){if(event.target===overlay||event.target.closest("[data-po-detail-close]"))closePOApprovalDetails();});overlay.addEventListener("keydown",function(event){if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closePOApprovalDetails();}if(event.key==="Tab"){event.preventDefault();overlay.querySelector("[data-po-detail-close]").focus();}});overlay.querySelector("[data-po-detail-close]").focus();
+  try{
+    var response=unwrapBudgetManageResponse(await sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"Get",id:id,budgetId:bid,userAccessId:String(S.myAccessId||"")})}));
+    if(poApprovalDetail!==detail||!S.edBudget||String(S.edBudget.ID)!==bid||budgetCreateScope("po",bid)!==scope)return;
+    if(!response||response.contract!=="po-v1"||response.success!==true||!response.snapshot||response.snapshot.id!==id||response.snapshot.budgetId!==bid)throw new Error("Approval details unavailable.");
+    var rows=response.snapshot.approvalBundle?response.snapshot.approvalBundle.rows:[];if(!Array.isArray(rows))throw new Error("Approval details unavailable.");
+    overlay.querySelector("[data-po-detail-body]").innerHTML=poApprovalDetailsHtml(rows);overlay.querySelector("[data-po-detail-status]").textContent="";
+  }catch(error){if(poApprovalDetail===detail&&S.edBudget&&String(S.edBudget.ID)===bid&&budgetCreateScope("po",bid)===scope)overlay.querySelector("[data-po-detail-status]").textContent="Could not refresh · showing saved summary";}
+}
+var poDownloads=new Set();
+async function downloadSavedPurchaseOrder(id,button){
+  if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
+  var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;}),scope=budgetCreateScope("po",bid),key=scope+"|"+id;
+  if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid)||poDownloads.has(key))return;
+  poDownloads.add(key);var original=button.innerHTML;button.disabled=true;button.setAttribute("aria-busy","true");
+  button.innerHTML="<svg class='po-download-spinner' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='8' stroke-dasharray='34 16'/></svg>";
+  try{
+    var result=unwrapBudgetManageResponse(await sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"Download",id:id,budgetId:bid,userAccessId:String(S.myAccessId||"")})}));
+    if(!S.edBudget||String(S.edBudget.ID)!==bid||budgetCreateScope("po",bid)!==scope)return;
+    if(!result||result.contract!=="po-v1"||result.success!==true||result.id!==id||result.budgetId!==bid||result.filename!=="Purchase_Order_"+id+".xls"||typeof result.content!=="string"||!result.content.startsWith("<?xml")||!result.content.includes("</Workbook>"))throw new Error(result&&result.error||"PO Excel file unavailable.");
+    triggerBlobDownload(new Blob([result.content],{type:"application/vnd.ms-excel;charset=utf-8"}),result.filename);
+  }catch(error){if(S.edBudget&&String(S.edBudget.ID)===bid&&budgetCreateScope("po",bid)===scope)toastShow(error.message||"PO Excel download failed.");}
+  finally{poDownloads.delete(key);if(button.isConnected){button.innerHTML=original;button.disabled=false;button.removeAttribute("aria-busy");}}
 }
 function poRequestCardDate(value) {
   var text=cleanVal(value),match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -12651,10 +12698,15 @@ function renderCheckWireRequestColumn(b) {
     if(managedPO){
       return "<article class='po-request-ledger' aria-label='Purchase order'>"+
         "<div class='po-request-values'><div class='po-request-identity'><span class='po-request-kind'>PO</span><strong class='po-request-vendor' title='"+escAttr(itemName)+"'>"+esc(itemName)+"</strong></div>"+
+        poApproverCircles(request)+
         "<span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span>"+
         "<strong class='po-request-amount' aria-label='PO amount'>"+fmt(v(rawAmount))+"</strong>"+
         "<div class='po-request-status'>"+modBadge(approvalState&&approvalState!=="Not Configured"?approvalState:status)+"</div>"+
-        "<button class='po-request-action' type='button' data-request-po-open='"+escAttr(request.ID)+"'><span>"+(editablePO?"Edit PO":"View PO")+"</span><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' aria-hidden='true'><path d='M7 17 17 7M7 7h10v10'/></svg></button></div></article>";
+        "<div class='po-request-actions attachment-page-row-actions'>"+
+        "<button class='attachment-action' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='view' aria-label='Preview PO' title='Preview PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/></svg></button>"+
+        (editablePO?"<button class='attachment-action' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='edit' aria-label='Edit PO' title='Edit PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5'/></svg></button>":"")+
+        "<button class='attachment-action' type='button' data-request-po-download='"+escAttr(request.ID)+"' aria-label='Download PO Excel' title='Download PO Excel'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M12 3v12M7 10l5 5 5-5'/><path d='M5 21h14'/></svg></button>"+
+        (canEditBudget(b)?"<button class='attachment-action delete' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='delete' aria-label='Delete PO' title='Delete PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14'/><path d='M10 11v6M14 11v6'/></svg></button>":"")+"</div></div></article>";
     }
     var dates="<div class='mpc-meta'>Request " + esc(date || "—") + " · Needed " + esc(needed || "—") + "</div>";
     return "<div class='mod-page-card'><div class='mpc-main'>" +
@@ -12903,8 +12955,12 @@ function handleModDecision(modId, rowId, approve, notes) {
 $("modModalClose").addEventListener("click", closeModModal);
 $("modOverlay").addEventListener("click", function (e) { if (e.target === this) closeModModal(); });
 document.addEventListener("click", function (e) {
+  var approvalPO=e.target.closest("[data-request-po-approvals]");
+  if(approvalPO){openPOApprovalDetails(approvalPO.dataset.requestPoApprovals,approvalPO);return;}
+  var downloadPO=e.target.closest("[data-request-po-download]");
+  if(downloadPO){downloadSavedPurchaseOrder(downloadPO.dataset.requestPoDownload,downloadPO);return;}
   var savedPO=e.target.closest("[data-request-po-open]");
-  if(savedPO){openSavedPurchaseOrder(savedPO.dataset.requestPoOpen,savedPO);return;}
+  if(savedPO){openSavedPurchaseOrder(savedPO.dataset.requestPoOpen,savedPO,savedPO.dataset.requestPoIntent);return;}
   var requestButton = e.target.closest("#requestMenuBtn");
   if (requestButton) {
     var menu = $("requestMenu"), open = menu && menu.style.display !== "none";
@@ -13410,7 +13466,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.27",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.28",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

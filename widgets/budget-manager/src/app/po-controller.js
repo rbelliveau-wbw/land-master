@@ -16,6 +16,7 @@
       if(seen.size!==Object.keys(expected).length||(snapshot.budgetModificationId||null)!==(bundle.modifications.length?bundle.modifications[0].id:null))throw new Error('Linked budget modification bundle was not verified.');
       if(bundle.modifications.length&&!bundle.rows.some(function(row){return row.role.toUpperCase()!=='CFO';}))throw new Error('Required budget modification approver was not verified.');
     }else if((snapshot.budgetModificationId==null?null:snapshot.budgetModificationId)!==(wanted.budgetModificationId==null?null:wanted.budgetModificationId))throw new Error("Linked budget modification was not verified.");
+    if(compareFields&&wanted.description!=null&&snapshot.description!==wanted.description)throw new Error("PO Description was not verified.");
     if(!Array.isArray(snapshot.lines)||snapshot.lines.length!==wanted.lines.length)throw new Error("PO line count was not verified.");
     var ids=new Set();snapshot.lines.forEach(function(line,index){if(typeof line.ID!=="string"||!/^\d+$/.test(line.ID)||ids.has(line.ID))throw new Error("Unique saved line IDs were not verified.");ids.add(line.ID);if(compareFields)for(var field of ["key","budgetItemId","description","costElement","uom","costCode","pricingMode","quantity","unitPrice","finalAmount"])if(line[field]!==wanted.lines[index][field])throw new Error("Line "+(index+1)+" "+field+" was not verified.");});return snapshot;
   }

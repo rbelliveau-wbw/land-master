@@ -3,7 +3,7 @@
 <style>body{font:14px system-ui;background:#f3f6fa;color:#0b2345;padding:24px}.mbtn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}.primary{background:#0b2345;color:white}button{cursor:pointer}</style>
 <h1>Purchase Order fixture</h1><p>Local simulation — no Creator writes or notifications.</p>
 <button id="open">Open PO</button><button id="lose">Lose next response</button><output id="writes">Writes: 0</output>
-<script src="/po-domain.js"></script><script src="/po-controller.js"></script><script src="/po-ui.js"></script>
+<script src="/po-domain.js"></script><script src="/po-grid.js"></script><script src="/po-controller.js"></script><script src="/po-ui.js"></script>
 <script>
 const orders=new Map(),receipts=new Map();let writes=0,lost=false;
 const items=[{ID:'1003',Item_Name:'Roadwork',Budget_Code:'100'},{ID:'1004',Item_Name:'Utilities',Budget_Code:'200'}];
