@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-10-13T20:20:10.800Z",
+  "creatorStageVersion": "9.81",
+  "creatorProductionVersion": "9.81",
+  "widgetVersion": "1.62.0",
+  "implementationCommit": "a09757d77ce4a22c10271fb423abb8c72254c600",
+  "promotionCommit": "d5cfb9438be0016241282271dc6c0bbc2c972b5b",
+  "ci": "https://github.com/rbelliveau-wbw/land-master/actions/runs/38461343579",
+  "pages": "https://github.com/rbelliveau-wbw/land-master/actions/runs/38461343606",
+  "ciConclusion": "success",
+  "pagesConclusion": "success",
+  "liveLegal": {
+    "development": {
+      "connected": true,
+      "recordCount": 14,
+      "newTaskButton": "New Legal Task",
+      "templateTab": "Manage Task Templates"
+    },
+    "production": {
+      "connected": true,
+      "recordCount": 46,
+      "newTaskButton": "New Legal Task",
+      "templateTab": "Manage Task Templates"
+    }
+  },
+  "constructionTabHiddenWithoutNewGrant": true,
+  "noUserGrantsChanged": true,
+  "nativePositiveConstructionProfilesTested": false,
+  "nativeConstructionPagePreview": "Existing Development demouser_1 profile denies the new standalone Construction page; no native profile grants were changed.",
+  "constructionModeTests": "Whole-widget fixtures verify create, review, once-only templates, inferred subdivision context, independent permissions, submit-only attachments/comments and denied existing edits.",
+  "projectMilestoneDateMappings": "Unverified mappings remain Unavailable in the context sidebar."
+}

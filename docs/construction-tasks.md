@@ -110,7 +110,8 @@ validation workflow links are
 `Construction_Contract_Act`, `Construction_Contract_App`, and
 `Construction_Attachment_V`; their longer source filenames are recorded in the
 manifest. Existing User Access grants have not been changed. Production
-publication is still a separate pending step.
+Creator publication is verified at version **9.81**, matching Stage: 40 actual
+components were published from 45 tree entries.
 
 Development backend installation is complete. Native builder repairs reduced
 `Field_Validations_Contrac`, `Set_Contract_Approved_Con`, and
@@ -123,8 +124,11 @@ Earlier first-block-only comparisons have been superseded by complete
 action-count/source verification. The
 [backend deployment state](../creator/schema-changes/construction-backend-deployment.json)
 records these checks separately from the verified fields, reports, page, and
-functions. Production and hosted publication remain pending. Native permission
-fixtures passed; no actual user grants or native profile permissions changed.
+functions. The main implementation commit `a09757d7` passed CI and Pages
+deployment. Development hosting is verified. Promotion commit `d5cfb943`
+deploys hosted `1.62.0` for Stage/Production; its CI and Pages deployment passed.
+Native permission fixtures passed; no actual user grants or native
+profile permissions changed.
 
 1. Inspect live Development `Contract`, `Contract_Actions`, and `User_Access`
    before creating classification fields, to avoid duplicate fields remembered
@@ -149,8 +153,9 @@ fixtures passed; no actual user grants or native profile permissions changed.
    same permanent hosted widget URL. Reuse the existing Legal page entry and
    retain LOI token routing.
 7. Compile/save/reopen changed Development backend functions. Exercise the
-   native UI/SDK with submit-only, editor, Legal-only, and no-access accounts.
-   Do not equate a local fixture pass with live permission/profile verification.
+   native UI/SDK where authorized accounts are available. Submit-only, editor,
+   Legal-only, and no-access behavior passed fixtures; those are not four live
+   account/profile tests. Do not change actual grants solely to run a smoke test.
 8. Publish Creator schema/backend changes before promoting the new hosted
    widget to Production: Legal creation also writes the new optional
    `Work_Module` field. Development, Stage, and Production activation must be
@@ -164,10 +169,28 @@ variable. The same `contract_management` widget retains its permanent
 There are no widget manifest parameter bindings to change. The compiled
 [page-load script](../creator/schema-changes/construction-tasks/Construction.page-load.dg)
 sets a blank `workMode` to `construction`; SDK query parameters expose page
-variable values. Native opening/default-mode verification remains a separate
-check. The [page source](../creator/schema-changes/construction-tasks/Construction.page.ds)
+variable values. Positive opening/default-mode behavior passed whole-widget
+fixtures; live Construction access was not granted for testing. The
+[page source](../creator/schema-changes/construction-tasks/Construction.page.ds)
 records the observed widget component and four variable names; the page-load
 script is kept separately because its complete export syntax is unverified.
+
+Live Development Legal is connected and displays **Manage Task Templates**,
+**New Legal Task**, and the 14 existing Legal records. Construction stays hidden
+without either new User Access grant. The separate Construction page was denied
+for `demouser_1` under its existing native profile. The module's User Access
+flags and Creator's page access are separate: assign the intended Construction
+permission for the mode switch, and native page access for the separate page.
+This implementation has not assigned either kind of access to actual users.
+
+Production Legal is live and connected on hosted `1.62.0`, showing the 46 Legal
+records, **Manage Task Templates**, and **New Legal Task**. It shows only Legal
+because the signed-in user's Construction grants are false. This confirms the
+existing Legal workflow and hidden-mode behavior; it does not claim a positive
+live Construction session or four live permission-profile tests.
+The [final live verification record](../creator/schema-changes/construction-live-verification.json)
+contains the native version proof, CI/Pages links, Development/Production Legal
+smoke results, and the remaining permission/milestone-mapping limitations.
 
 ## Regression and rollback
 
@@ -189,9 +212,10 @@ script is kept separately because its complete export syntax is unverified.
 Before reporting a widget release complete, run the targeted Construction
 checks, `npm run validate`, and `npm run build:pages`. Record the immutable
 release version and previous Development mapping in the change manifest.
-The immutable local candidate is Contract Management `1.62.0`, and the local
-Development mapping now selects it. Hosted deployment is unverified; Production
-still maps to `1.61.45`. Both environments mapped to `1.61.45` before this change.
+Contract Management `1.62.0` is pushed to main and verified on Development.
+Stage/Production mappings select it, their Pages deployment passed, and the
+Production Legal smoke check passed. Both environments mapped to `1.61.45`
+before this change.
 
 Rollback the hosted widget to `1.61.45` and rebuild
 Pages. Keep the additive optional Creator fields and existing Construction data;

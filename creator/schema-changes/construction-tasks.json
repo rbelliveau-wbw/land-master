@@ -1,9 +1,10 @@
 {
   "change": "construction-tasks",
-  "status": "development-native-installation-complete-production-and-hosted-publication-pending",
+  "status": "published-native-stage-and-production-9.81-hosted-stage-and-production-1.62.0-verified",
   "source_snapshot": "creator/exports/Land_Master_2026-10-11-development.ds",
   "generated_metadata_refreshed": false,
   "backend_deployment_manifest": "creator/schema-changes/construction-backend-deployment.json",
+  "live_verification_manifest": "creator/schema-changes/construction-live-verification.json",
   "live_inspection": {
     "performed_by": "root",
     "classification_link_name": "Work_Module",
@@ -238,7 +239,7 @@
     "widget_manifest_parameter_bindings": "none; no new binding required",
     "mode_default": "If workMode is blank, the page-load script sets input.workMode to construction",
     "native_script_verification": "saved/compiled; Execute enabled; page reload confirmed Text workMode variable and default script persisted",
-    "runtime_mode_verification": "pending root native verification; SDK getQueryParams reads page-variable values and frontend has native-page fallback",
+    "runtime_mode_verification": "Positive Construction/page-variable behavior passed whole-widget fixtures. The default page-load script compiled/reloaded; direct native page access denied to demouser_1 by its unchanged Creator profile. No positive live Construction session or four actual permission profiles are claimed.",
     "page_setup_agent": {
       "browser_inventory": "apps:[], browsers:[]",
       "create_iab_tab_result": "Browser is not available: iab",
@@ -336,22 +337,39 @@
   ],
   "permission_grants_changed": false,
   "widget_candidate_version": "1.62.0",
-  "widget_candidate_state": "immutable-local-candidate-created; local Development mapping selected; hosted deployment unverified; Production mapping remains 1.61.45",
-  "release_blockers": [
-    "Creator Production publication before hosted widget Production promotion"
-  ],
+  "widget_candidate_state": "1.62.0 immutable release pushed and deployed for Development/Stage/Production; native Stage/Production version9.81 verified; Production Legal runtime connected and verified",
+  "release_blockers": [],
   "publication": {
     "creator_development_schema_saved": true,
     "creator_development_reports_saved": true,
     "creator_development_page_saved": true,
     "creator_development_backend_saved": true,
     "creator_development_saved": true,
-    "creator_stage_published": false,
-    "creator_production_published": false,
-    "hosted_widget_development_promoted": false,
-    "hosted_widget_production_promoted": false,
-    "main_pushed": false,
-    "pages_deployment_verified": false
+    "creator_stage_published": true,
+    "creator_production_published": true,
+    "creator_version": "9.81",
+    "creator_component_count": 40,
+    "creator_publish_tree_entries": 45,
+    "hosted_widget_development_promoted": true,
+    "hosted_widget_stage_mapping_selected": true,
+    "hosted_widget_production_mapping_selected": true,
+    "hosted_widget_stage_promoted": true,
+    "hosted_widget_production_promoted": true,
+    "main_pushed": true,
+    "implementation_commit": "a09757d7",
+    "promotion_commit": "d5cfb943",
+    "development_pages_deployment_verified": true,
+    "production_pages_deployment_verified": true,
+    "pages_deployment_verified": true,
+    "implementation_verified_run_urls": [
+      "https://github.com/rbelliveau-wbw/land-master/actions/runs/38460579723",
+      "https://github.com/rbelliveau-wbw/land-master/actions/runs/38460579701"
+    ],
+    "promotion_ci_pages": "both passed; Pages deployment job completed 2026-10-13T20:17:33Z",
+    "promotion_verified_run_urls": [
+      "https://github.com/rbelliveau-wbw/land-master/actions/runs/38461343579",
+      "https://github.com/rbelliveau-wbw/land-master/actions/runs/38461343606"
+    ]
   },
   "verification": {
     "targeted_checks": "scripts/test-construction-schema.mjs passed: actual full/lean standard/Development permission bodies, independent grants, optional schema and Legal choice preservation",
@@ -360,8 +378,13 @@
       "scripts/test-contract-construction.mjs": "passed: actual whole-widget request creation/edit/review/file/comment flows, mode/filter separation and native page fallback",
       "scripts/test-design-docs.mjs": "passed: documentation discovery and repository link checks"
     },
-    "npm_validate": "pending",
-    "build_pages": "pending",
+    "npm_validate": "passed in implementation and promotion CI",
+    "build_pages": "passed in implementation and promotion Pages deployments",
+    "runtime_development_legal": "live connected; Manage Task Templates and New Legal Task displayed; 14 prior Legal records visible; Construction button hidden without grants",
+    "runtime_development_construction_page": "demouser_1 denied by its existing native Creator profile; no page/profile/User Access grants changed",
+    "runtime_production_legal": "live connected; 46 Legal records visible; Manage Task Templates and New Legal Task displayed; Work module shows Legal only because Construction grants are false; screenshot legal-production-1.62.0.png",
+    "positive_construction_live_session": "not performed; positive mode/permission/request/file/comment/review behavior verified by fixtures without granting actual users access",
+    "actual_four_permission_profiles_live_tested": false,
     "native_permission_profiles": "unchanged; native permission behavior fixtures passed; no actual User Access grants assigned",
     "native_compile_reopen": "Development installation complete: eight functions independently reloaded; all eleven workflow/report/digest guards exactly one reviewed script action with full-body verification; all nine optional fields/picklist additions, both report projection changes and Construction page persisted. Duplicate workflow repairs confirmed by root/backend reports, including task loader strict full-body source match."
   },
