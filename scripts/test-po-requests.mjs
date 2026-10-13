@@ -26,7 +26,7 @@ const c=vm.createContext({S:{myAccessId:'900000000000000007',edBudget:{ID:budget
   getPurchaseOrderUI:()=>({open:async(budget,trigger,id)=>opens.push({budget,trigger,id})})
 });c.window=c;
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),c);
-for(const name of ['loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','requestDateParts','fmtDateUS','poRequestCardDate','poApprovalInitials','poApproverCircles','poApprovalDetailsHtml','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
+for(const name of ['loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','requestDateParts','fmtDateUS','poRequestCardDate','poApprovalRoleLabel','poApproverCircles','poApprovalDetailsHtml','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
 for(const [input,output]of [['2026-10-12','10/12/2026'],['1/2/2026','01/02/2026'],['2024-02-29','02/29/2024'],['2026-02-29','—'],['','—'],['bad-date','—']])assert.equal(c.poRequestCardDate(input),output);
 await c.loadCheckWireRequests(budgetId);
 assert.equal(c.S.checkWireRequestState[budgetId],'loaded');
@@ -104,8 +104,8 @@ assert.match(ui,/data-po-reload/,'Failed loads offer a read-only retry');
 console.log('PO Requests: blank native report, scoped List/Vendors merge, exact draft editing, fresh reads, malformed/foreign identities and guarded Get recovery passed.');
 
 const routeRows=[{id:'901',order:1,role:'VP',email:'vp@example.com',userAccessId:'11',name:'Vera Person',status:'Approved',sentDate:'2026-10-10',respondedDate:'2026-10-11'},{id:'902',order:2,role:'CFO',email:'cfo@example.com',userAccessId:'12',name:'Robby Belliveau',status:'Pending',sentDate:'2026-10-12',respondedDate:null},{id:'903',order:3,role:'COO',email:'coo@example.com',userAccessId:'13',name:'Chris Officer',status:'Rejected',sentDate:null,respondedDate:'2026-10-13'}];
-const circleHtml=c.poApproverCircles({...draft,_poApprovals:routeRows});for(const status of ['Approved','Pending','Rejected'])assert.match(circleHtml,new RegExp("data-status='"+status+"'"));assert.match(circleHtml,/>RB<\/span>/);assert.match(circleHtml,/data-request-po-approvals/);assert.equal(c.poApprovalInitials({name:'Émile Ng'}),'ÉN');assert.equal(c.poApprovalInitials({name:''}),'?');assert.doesNotMatch(c.poApproverCircles({...draft,_poApprovals:[]}),/data-request-po-approvals/);
-const detail=c.poApprovalDetailsHtml(routeRows);assert.match(detail,/Robby Belliveau/);assert.match(detail,/10\/12\/2026/);assert.match(detail,/10\/13\/2026/);assert.match(detail,/Pending/);console.log('PO approver circles: actual initials, all recorded states, no invented draft chain and succinct dated details passed.');
+const circleHtml=c.poApproverCircles({...draft,_poApprovals:routeRows});for(const status of ['Approved','Pending','Rejected'])assert.match(circleHtml,new RegExp("data-status='"+status+"'"));assert.match(circleHtml,/>CFO<\/span>/);assert.match(circleHtml,/data-request-po-approvals/);assert.equal(c.poApprovalRoleLabel({role:'VP',name:'Émile Ng'}),'VP');assert.equal(c.poApprovalRoleLabel({role:''}),'?');assert.doesNotMatch(c.poApproverCircles({...draft,_poApprovals:[]}),/data-request-po-approvals/);
+const detail=c.poApprovalDetailsHtml(routeRows);assert.match(detail,/Robby Belliveau/);assert.match(detail,/10\/12\/2026/);assert.match(detail,/10\/13\/2026/);assert.match(detail,/Pending/);console.log('PO approver circles: captured roles, all recorded states, no invented draft chain and succinct dated details passed.');
 
 // Download uses one read-only call, exact scope and the established Blob helper.
 c.poDownloads=new Set();c.Blob=Blob;let blobs=[],downloadCalls=0; c.triggerBlobDownload=(blob,filename)=>blobs.push({blob,filename});

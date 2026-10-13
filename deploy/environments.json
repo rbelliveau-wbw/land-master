@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-10-13T18:17:25.794Z",
+  "generated_at": "2026-10-13T18:59:46.651Z",
   "note": "Creator registrations retain stable Production URLs. Migrated widget loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
       "proforma-manager": "1.80.101",
-      "budget-manager": "122.29.28",
+      "budget-manager": "122.29.30",
       "land-master": "8.15.9",
       "contract-management": "1.61.45",
       "tax-center": "19.17.14",
@@ -26,13 +26,13 @@
     },
     "production": {
       "proforma-manager": "1.80.101",
-      "budget-manager": "122.29.28",
+      "budget-manager": "122.29.30",
       "land-master": "8.15.9",
       "contract-management": "1.61.45",
       "tax-center": "19.17.14",
       "milestone-gantt": "1.1.9",
       "manage-lots": "0.13.1",
-      "settings-manager": "1.5.1",
+      "settings-manager": "1.5.2",
       "lot-sales-explorer": "1.5.47",
       "forecast-manager": "1.5.4"
     }

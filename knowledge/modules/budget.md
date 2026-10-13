@@ -1075,3 +1075,22 @@ change. Old widgets omitting Description preserve saved text; explicit empty tex
 clears it. Production frontend rollback is 122.29.26 (prior mapping); Development
 rollback is 122.29.27. Restore prior functions from bee8ffdc, retaining the new
 optional field and any saved descriptions.
+
+## PO spreadsheet fixes and role circles (122.29.30)
+
+The Row / Spreadsheet toggle replaces the Excel editing label. Typed cell edits
+now join range paste and fill-down in Undo history; double-click edits keep arrow
+keys inside text, and keyboard focus updates the active cell. Vendor creation uses
+navy text on a pale-blue button in the title. Captured approval circles show their
+recorded role (VP/CFO/COO); the tooltip and detail modal retain person and status.
+No form, field, function or API change is needed. Production frontend rollback:
+Budget Manager 122.29.28; preserve saved POs and their captured approval routes.
+
+Validation: actual-source grid/Requests regressions and full `npm run validate`,
+`npm run build:pages` passed. Browser checks covered range paste, exact calculated
+amounts, typed Undo preserving pasted rows, fill-down/Undo, rejected formula paste,
+double-click text arrows and Row/Spreadsheet switching. Native Development policy
+Preview resolved VP → CFO → COO from the territory VP and active CFO/COO assignments.
+The existing Creator 9.79 already contains the required PO functions. This release
+promotes Budget Manager 122.29.30 and ordered Settings Manager 1.5.2; no additional
+Creator schema or function deployment is required for these presentation fixes.

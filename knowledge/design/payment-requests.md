@@ -12,7 +12,7 @@ View PO use the same compact outlined button with a small arrow icon and a visib
 keyboard focus ring. Preserve the exact PO identity, existing edit eligibility,
 and the same phase-scoped opening action.
 
-Captured approvers use initials in connected 28px circles: green Approved, amber
+Captured approvers use their recorded role (VP, CFO, COO) in connected 28px circles: green Approved, amber
 Pending, red Rejected and muted Not Sent. Show every captured step; drafts with
 no recorded route show a dash. Hover outlines the clickable chain. Its compact
 read-only modal shows names, roles, sent/responded dates and statuses; a targeted
@@ -37,7 +37,7 @@ Modification on the first line, then ordered approver pills. Drafts use the
 server's read-only route preview; submitted POs use their captured chain.
 CFO is required for every PO; a new modification can route VP → CFO → COO.
 Show unknown budget/route data as unavailable. Keep Add New Vendor beside the
-Vendor label, using the same pale-blue dashed treatment as Add line, and open
+Vendor label, using navy text on a pale-blue solid button with adequate contrast in the navy title, and open
 the existing vendor form in the current Creator environment.
 
 Approval chains use a green heading and green completed steps/status pills;
@@ -52,3 +52,8 @@ and red Delete PO. Show all-revision line items, operation receipts, approval
 routes, approval records and PO-created budget modifications, plus the release
 of the commitment. Cancel, Escape and backdrop return to the same PO. Keep the
 captured preview and existing deletion progress/recovery guards.
+
+The editing toggle reads Row / Spreadsheet. Spreadsheet Undo includes typed cell
+edits as well as range paste and fill-down. Double-click or F2 edits a cell;
+keyboard focus entering the ledger updates its active cell. Retain exact amounts,
+atomic paste validation and the 250-line limit.

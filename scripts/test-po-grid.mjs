@@ -26,3 +26,18 @@ assert.equal(grid.paste(initial,{row:0,col:2},Array.from({length:250},()=>['test
 assert.throws(()=>grid.paste(initial,{row:1,col:2},Array.from({length:250},()=>['test']),items,newLine),/250-line/);
 assert.equal(initial.length,1,'Every rejected range leaves existing rows intact');
 console.log('PO grid: quoted Excel ranges, atomic validated 250-row paste, exact calculations, fill-down, manual totals, immutable item names and rejected input passed.');
+// Actual grid event handlers: a typed edit is one Undo transaction, separate from paste.
+const handlers=new Map(),buttons={};let rendered=0,focused=null;
+const model={gridMode:'excel',lines:result.map(l=>({...l}))};
+const noClasses={toggle(){}};
+function node(row,col){return {dataset:{poRow:String(row),poCol:String(col)},classList:noClasses,closest(selector){return selector==='[data-po-cell]'?this:null;},focus(){focused={row,col};},scrollIntoView(){},select(){},hasAttribute(){return false;}};}
+const container={classList:noClasses,addEventListener(type,fn){handlers.set(type,fn);},querySelectorAll(){return [];},querySelector(selector){if(selector.includes('data-po-grid-fill'))return buttons.fill;if(selector.includes('data-po-grid-undo'))return buttons.undo;if(selector.includes('data-po-grid-status'))return {textContent:''};const match=selector.match(/data-po-row="(\d+)".*data-po-col="(\d+)"/);return match?node(Number(match[1]),Number(match[2])):null;}};
+function event(target,extra={}){return {target,key:'',prevented:false,preventDefault(){this.prevented=true;},stopPropagation(){},...extra};}
+function command(name){return {disabled:true,closest(selector){return selector==='[data-po-grid-'+name+']'?this:null;},click(){handlers.get('click')(event(this));}};}
+buttons.fill=command('fill');buttons.undo=command('undo');
+const bound=grid.bind({container,model:()=>model,items:()=>items,displayItems:()=>items,newLine,locked:()=>false,busy:()=>false,render(){rendered++;bound.paint();},error(message){throw Error(message);}});bound.paint();
+const quantity=node(0,3);handlers.get('focusin')(event(quantity));handlers.get('input')(event(quantity));model.lines[0].quantity='7';model.lines[0].finalAmount='8641.92';handlers.get('input')(event(quantity));model.lines[0].quantity='72';model.lines[0].finalAmount='88888.32';
+assert.equal(buttons.undo.disabled,false);buttons.undo.click();assert.equal(model.lines.length,2);assert.equal(model.lines[0].quantity,'2');assert.equal(model.lines[0].finalAmount,'2469.12');assert.equal(buttons.undo.disabled,true,'Typing within one cell is one Undo transaction');
+handlers.get('focusin')(event(node(1,6)));handlers.get('keydown')(event(node(1,6),{key:'ArrowLeft'}));assert.deepEqual(focused,{row:1,col:5},'Tab/focus entry updates the active cell before navigation');
+const description=node(0,2);handlers.get('focusin')(event(description));handlers.get('dblclick')(event(description));const arrow=event(description,{key:'ArrowLeft'});handlers.get('keydown')(arrow);assert.equal(arrow.prevented,false,'Double-click keeps arrow keys in the text editor');
+assert.equal(rendered,1);console.log('Spreadsheet event regressions: grouped typed Undo, preserved rows/totals, keyboard focus entry and double-click text editing passed.');
