@@ -1176,3 +1176,24 @@ verified the 540px result, collapsed saved items, pending Escape lock, lost repl
 and read-only Check status with one simulated write, immediate warm Summary and
 the 390px layout. All approval actions for screenshots used local disposable
 simulation; no native approval or notification was replayed.
+
+## Single PO chain and attached budget modifications (122.29.35)
+
+Saved POs display the captured approval chain only in the bottom section; the
+upper budget context retains Available and Modification/Remaining but omits its
+duplicate role flow. Unsaved drafts retain their read-only approval preview.
+Attached modification rows are grouped in a pale amber panel titled Attached
+budget modifications, with their existing item names, amounts and statuses.
+No modification panel appears when none are linked. Approval notes and actions
+remain in the captured-chain section.
+
+UI-only changes: po-ui.js, purchase-orders.css and widget version entry. No forms,
+fields, backend functions or Custom APIs change; no Creator deployment required.
+Rollback: Budget Manager 122.29.34. Existing exact balance/approval, save/recovery
+and routing guards remain. Verify a saved PO with/without attached modifications
+and the unchanged draft route preview, then full validation and Pages build.
+
+Validation: the existing focused PO suite, full npm run validate and Pages build
+passed. Browser checks showed one bottom chain, zero upper approval flows, the
+attached-modification heading/item/amount/status, and the unchanged draft route
+preview with zero writes.

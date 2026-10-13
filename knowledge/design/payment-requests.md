@@ -33,8 +33,11 @@ header fields lead directly into the column headings. Keep the existing 250-line
 validation and add/duplicate limit guards.
 
 Keep budget context to the left of the PO total: Available and Remaining or
-Modification on the first line, then ordered approver pills. Drafts use the
-server's read-only route preview; submitted POs use their captured chain.
+Modification on the first line. Drafts use the server's read-only route preview
+with ordered approver pills. Saved POs show their captured chain once in the
+bottom Approval chain section, without repeating the upper flow. Group linked
+modification rows beneath an Attached budget modifications heading in a pale
+amber panel, keeping their item names, amounts and recorded statuses.
 CFO is required for every PO; a new modification can route VP → CFO → COO.
 Show unknown budget/route data as unavailable. Keep Add New Vendor beside the
 Vendor label, using navy text on a pale-blue solid button with adequate contrast in the navy title, and open
