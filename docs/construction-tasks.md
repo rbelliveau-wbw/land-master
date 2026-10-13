@@ -156,6 +156,14 @@ Construction and full Contracts SDK regressions passed. Full `npm run validate`
 and `npm run build:pages` passed before main/Production promotion. No business
 records were created or changed for the color checks.
 
+## Dots-only correction in 1.62.3
+
+Color only the Construction status picker/filter dots. Restore standard menu
+backgrounds, labels, hover/selection, status chips, and board rails. Keep the
+centered SVG selected check in standard blue. Status values, saves, permissions,
+fields, and Custom APIs are unchanged. This frontend-only release requires no
+Creator publication. Rollback is `1.62.2`; desktop verification only.
+
 ## Creator deployment checklist
 
 The schema manifest records exact additive link names, field types, choices,

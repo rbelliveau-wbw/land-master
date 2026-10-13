@@ -99,12 +99,13 @@ Accept and soft red Reject paired and reachable on narrow screens. Reuse the
 approval rejection colors defined below rather than inventing a destructive
 button treatment for this queue.
 
-Construction statuses use distinct pastel surfaces with matching saturated
-text and picker/filter dots: violet Pending Review, blue New, rose Rejected,
+Construction status color is limited to picker/filter dots: violet Pending
+Review, blue New, rose Rejected,
 cyan Feasibility, gold Awaiting Purchasing, orange Awaiting Development,
 fuchsia Awaiting Other, teal Approved, green Complete, and slate Cancelled.
-Use the same palette for request/action chips, status menus, and board rails.
-Keep labels visible and Legal's existing palette unchanged.
+Keep menu rows and labels neutral, with the standard blue hover/selection and
+checkmark. Do not extend this dot palette to chip surfaces, text, or board rails.
+This reflects Robby's October 13 correction: "Just the dots need color."
 
 ## Record dropdowns
 
