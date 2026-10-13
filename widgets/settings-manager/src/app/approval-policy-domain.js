@@ -24,12 +24,13 @@
         if(typeof test.email!=="string"||!/^[^\s@,;<>\"]+@[^\s@,;<>\"]+\.[^\s@,;<>\"]+$/.test(test.email)||test.allowSelfApproval!==true)fail("Test CFO needs one email and explicit scoped self-approval.");
         var maximum=cents(test.maxAmount);if(maximum<=0n||maximum>5500n)fail("Test CFO maximum must be positive and at most 55.00.");
       }
-    });if(policy.workflow==='Purchase Order')policy.steps.forEach(function(step,index){if(index===0){if(step.condition!=='Always'||step.enabled!==true)fail('CFO must approve every purchase order.');}else if(step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});return policy;
+    });if(policy.workflow==='Purchase Order'){var required=policy.steps.filter(function(step){return step.condition==='Always'&&step.enabled===true;});if(required.length!==1)fail('Exactly one enabled CFO must approve every purchase order.');policy.steps.forEach(function(step){if(step.condition!=='Always'&&step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});}return policy;
   }
   function resolve(config,ctx){
     id(ctx.companyId);id(ctx.submitterId);var amount=["Pro Forma","Contract"].includes(ctx.workflow)?0n:cents(ctx.amount),day=date(ctx.effectiveDate);
     var policy=choose(config.policies.filter(function(p){return p.workflow===ctx.workflow&&p.status==="Published";}),ctx,"published policy");
     validatePolicy(policy);if(policy.enabled!==true)fail("Applicable published policy is disabled.");
+    if(policy.workflow==='Purchase Order'){var cfoRoles=config.roles.filter(function(role){return role.name==='CFO';}),cfoSteps=policy.steps.filter(function(step){return cfoRoles.some(function(role){return role.id===step.roleId;});});if(cfoSteps.length!==1||cfoSteps[0].condition!=='Always'||cfoSteps[0].enabled!==true)fail('Exactly one enabled CFO must approve every purchase order.');policy.steps.forEach(function(step){if(step!==cfoSteps[0]&&step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});}
     var route=[],excluded=[];
     policy.steps.forEach(function(step){
       var linked=step.condition==="Budget modification attached";
@@ -37,7 +38,7 @@
       var threshold=step.condition==="Above"||step.condition==="At or above"?cents(step.threshold):null,applies=step.enabled&&(linked?ctx.hasBudgetModification:threshold===null||step.condition==="Above"&&amount>threshold||step.condition==="At or above"&&amount>=threshold);
       if(!applies){excluded.push({key:step.key,reason:!step.enabled?"Disabled":linked?"No budget modification is linked to this PO":step.condition+" threshold is not met"});return;}
       var roles=config.roles.filter(function(r){return r.id===step.roleId;});if(roles.length!==1||roles[0].active!==true)fail("Missing, ambiguous or inactive role for step "+step.order+".");
-      if(policy.workflow==='Purchase Order'&&(step.order===1?roles[0].name!=='CFO':roles[0].name==='CFO'))fail('PO policies need CFO first, then additional approvers for budget modifications.');
+      if(policy.workflow==='Purchase Order'&&(roles[0].name==='CFO'?(step.condition!=='Always'||!step.enabled):step.condition!=='Budget modification attached'))fail('CFO is always required; other PO roles apply only to budget modifications.');
       var assignment,test=step.poTestCFO;
       if(test){
         if(roles[0].name!=="CFO")fail("Test CFO must use the active CFO role.");

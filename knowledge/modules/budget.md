@@ -1,3 +1,40 @@
+## PO budget context and vendor entry — October 13, 2026
+
+Budget Manager 122.29.27 places Available, Remaining or Modification, and the
+ordered required approvals to the left of the PO total. Item allocations are
+grouped once, pending modification credits retain their existing meaning, and
+shortfalls remain per item. Drafts use the read-only `PreviewApprovals` action on
+`Manage_Purchase_Order` / `_DEV`, with scope and submitter derived on the server.
+The preview creates no records and sends no email. Stale replies are discarded;
+unresolved balances or routes show unavailable rather than guessed approvers.
+Submitted POs display their captured chain. New modification routes support
+VP → CFO → COO; CFO is the sole required role when no new modification is created.
+
+Add New Vendor sits beside the Vendor label, matching Add line. It opens the
+existing `Vendors` form in the authenticated environment. Reopening the vendor
+picker refreshes its options while retaining the PO draft.
+
+Settings Manager 1.5.2 preserves the mandatory CFO at its configured position
+and provides Move up/down for the complete modification route. Its readiness
+gate requires `policyModel: ordered-cfo-v1`. Publish the changed existing
+`manageApprovalPolicies`, `resolveApprovalRoute` and `managePurchaseOrder`
+functions before frontend promotion. No forms, fields or Custom APIs are added.
+Existing submitted routes are unchanged. Native policy setup is Development only.
+
+The three functions compiled in Development and were reopened to verify their
+non-comment tokens against this source. Development's existing global policy
+was updated in place to VP → CFO → COO when new modifications are created;
+its ordinary CFO assignment was retained and its territory VP was enabled for
+routing. COO membership still requires the owner's Dev user-record selection.
+Production promotion is held pending approval of Creator's required Stage
+publication; production widget mappings remain at their prior releases.
+
+Regression: both route branches and CFO at step two; missing/duplicate/disabled
+CFO; direct territory VP resolution; exact per-item shortfalls, pending credits,
+stale preview responses, unavailable reads, vendor refresh and narrow layouts.
+Rollback Budget to 122.29.26 and Settings to 1.5.1, and restore the three functions
+from 7a5b89ef when reverting backend behavior. Preserve saved policies and routes.
+
 ## PO review and delete confirmation (122.29.26)
 
 The approval chain uses green for approved steps, with amber Pending and red

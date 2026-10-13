@@ -23,9 +23,17 @@ const po={...context,workflow:'Purchase Order',hasBudgetModification:false,hasBu
 for(const amount of ['0.01','100.00','999999.00'])assert.deepEqual(clone(api.resolve(c,{...po,amount}).route.map(r=>r.role)),['CFO']);
 assert.deepEqual(clone(api.resolve(c,{...po,hasBudgetOverrun:true}).route.map(r=>r.role)),['CFO'],'An overrun without new modifications does not add approvers.');
 assert.deepEqual(clone(api.resolve(c,{...po,hasBudgetModification:true}).route.map(r=>r.role)),['CFO','COO','VP']);assert.throws(()=>api.resolve(c,{...po,hasBudgetModification:undefined}),/modification context/);
-for(const condition of ['Above','At or above','Budget line exceeded','Always']){const bad=clone(c);bad.policies[0].steps[1].condition=condition;assert.throws(()=>api.resolve(bad,po),/Additional PO approvers|supported step condition/);}
-const wrongCFO=clone(c);wrongCFO.roles[0].name='Legal';assert.throws(()=>api.resolve(wrongCFO,po),/CFO first/);assert.throws(()=>api.resolve(c,{...po,submitterId:'11'}),/self-approval/);
+for(const condition of ['Above','At or above','Budget line exceeded','Always']){const bad=clone(c);bad.policies[0].steps[1].condition=condition;assert.throws(()=>api.resolve(bad,po),/Additional PO approvers|supported step condition|enabled CFO/);}
+const wrongCFO=clone(c);wrongCFO.roles[0].name='Legal';assert.throws(()=>api.resolve(wrongCFO,po),/CFO/);assert.throws(()=>api.resolve(c,{...po,submitterId:'11'}),/self-approval/);
 const normal=clone(c);normal.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(normal,po),/forbid submitter/);const missingVP=clone(c);missingVP.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(missingVP,{...po,hasBudgetModification:true}),/exactly one VP/);
 c.policies[0].companyId='';c.assignments.forEach(a=>a.companyId='');assert.equal(api.resolve(c,{...po,companyId:'32'}).route[0].userAccessId,'11');c.policies.push({...clone(c.policies[0]),id:'42',companyId:'31'});assert.equal(api.resolve(c,po).policyId,'42');
 const native=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');assert.match(native,/modificationPlan.size\(\) > 0 && additionalFound != true/);assert.match(native,/Every PO must include CFO approval/);assert.doesNotMatch(native,/budgetExceeded && \(cooFound/);
+const ordered=clone(c);ordered.policies=ordered.policies.slice(0,1);ordered.policies[0].steps=[ordered.policies[0].steps[2],ordered.policies[0].steps[0],ordered.policies[0].steps[1]].map((step,index)=>({...step,order:index+1}));
+assert.deepEqual(clone(api.resolve(ordered,{...po,hasBudgetModification:true}).route.map(row=>row.role)),['VP','CFO','COO']);
+assert.deepEqual(clone(api.resolve(ordered,po).route.map(row=>row.role)),['CFO']);
+assert.equal(api.resolve(ordered,po).route[0].policyStepOrder,2);
+const missingCFO=clone(ordered);missingCFO.policies[0].steps.splice(1,1);missingCFO.policies[0].steps.forEach((step,index)=>step.order=index+1);assert.throws(()=>api.resolve(missingCFO,po),/CFO/);
+const duplicateCFO=clone(ordered);duplicateCFO.policies[0].steps[2].roleId='1';assert.throws(()=>api.resolve(duplicateCFO,po),/CFO/);
+const previewSource=native.slice(native.indexOf('if(action == "PreviewApprovals")'),native.indexOf('if(action != "Save"'));
+assert.match(previewSource,/canEdit != true/);assert.match(previewSource,/budget.Subdivision1/);assert.match(previewSource,/resolveApprovalRoute/);assert.doesNotMatch(previewSource,/insert into|sendmail|snapshotApprovalRoute|delete from/);
 console.log('Simple policy routing: no dates/versions/multiple-role options; CFO-only PO or CFO plus modification approvers; exact scopes, identities and immutable submitted routes passed.');

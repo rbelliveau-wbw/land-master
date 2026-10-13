@@ -12,7 +12,7 @@ string manageApprovalPolicies(string payload)
 		// Wider scopes require a separate authenticated-caller proof and explicit admin grant.
 		access = User_Access[User == zoho.loginuser];
 		if(access.count() != 1 || access.ID.toString() != p.get("userAccessId") || zoho.loginuser != zoho.adminuser) { result.put("error","Application-owner configuration access is required."); return result.toString(); }
-		if(action == "List") { listed=thisapp.approvalConfigurationSnapshot(); listed.put("policyModel","scope-v1"); listed.put("currentDate",zoho.currentdate.toString("yyyy-MM-dd")); listed.put("actorId",access.ID.toString()); return listed.toString(); }
+		if(action == "List") { listed=thisapp.approvalConfigurationSnapshot(); listed.put("policyModel","ordered-cfo-v1"); listed.put("currentDate",zoho.currentdate.toString("yyyy-MM-dd")); listed.put("actorId",access.ID.toString()); return listed.toString(); }
 		if(action == "Preview") { return thisapp.resolveApprovalRoute(p.get("context")).toString(); }
 		if(action == "Reassign" || action == "EnableAdapter") { result.put("error","Reassignment authority and native workflow migration must be approved and verified first."); return result.toString(); }
 		token = ifnull(p.get("token"),"").toString();
@@ -142,7 +142,7 @@ string manageApprovalPolicies(string payload)
 			if(testPolicyData.get("selfApproval") != "Allow" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Choose the self-approval rule."); return result.toString(); }
 			if(testPolicyData.get("workflow") == "Purchase Order" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Purchase Orders forbid submitter self-approval."); return result.toString(); }
 			if(testPolicySteps == null || testPolicySteps.size() == 0 || testPolicySteps.size() > 30 || testPolicySteps.toString().length() > 40000) { result.put("error","Enter 1–30 approvers."); return result.toString(); }
-			stepOrder=0; configuredKeys=List();
+			stepOrder=0; configuredKeys=List(); configuredCFO=0;
 			for each rawConfiguredStep in testPolicySteps
 			{
 				configuredStep=rawConfiguredStep.toString().toMap(); stepOrder=stepOrder+1;
@@ -154,8 +154,8 @@ string manageApprovalPolicies(string payload)
 				configuredKeys.add(configuredStep.get("key")); condition=configuredStep.get("condition"); workflow=testPolicyData.get("workflow");
 				if(workflow == "Purchase Order")
 				{
-					if(stepOrder == 1) { if(configuredRole.Role_Name != "CFO" || condition != "Always" || configuredStep.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result.toString(); } }
-					else { if(condition != "Budget modification attached" || configuredRole.Role_Name == "CFO") { result.put("error","Additional PO approvers are used only when the PO creates budget modifications."); return result.toString(); } }
+					if(configuredRole.Role_Name == "CFO") { configuredCFO=configuredCFO+1; if(condition != "Always" || configuredStep.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result.toString(); } }
+					else { if(condition != "Budget modification attached") { result.put("error","Additional PO approvers are used only when the PO creates budget modifications."); return result.toString(); } }
 				}
 				else if(workflow == "Pro Forma" || workflow == "Contract") { if(condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains."); return result.toString(); } }
 				else if(condition != "Always" && condition != "Above" && condition != "At or above") { result.put("error","Unsupported approver condition."); return result.toString(); }
@@ -166,6 +166,7 @@ string manageApprovalPolicies(string payload)
 				}
 			}
 		}
+		if(action == "SavePolicy" || action == "Publish" || action == "Reconcile") { if(testPolicyData.get("workflow") == "Purchase Order" && configuredCFO != 1) { result.put("error","Exactly one CFO must approve every purchase order."); return result.toString(); } }
 		if(action == "Reconcile")
 		{
 			// Verify an already written draft. Never replay the policy save or replace its retained lock.

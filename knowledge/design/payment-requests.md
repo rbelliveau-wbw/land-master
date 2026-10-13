@@ -26,6 +26,14 @@ Omit the redundant Line items heading and line-count row above the ledger so the
 header fields lead directly into the column headings. Keep the existing 250-line
 validation and add/duplicate limit guards.
 
+Keep budget context to the left of the PO total: Available and Remaining or
+Modification on the first line, then ordered approver pills. Drafts use the
+server's read-only route preview; submitted POs use their captured chain.
+CFO is required for every PO; a new modification can route VP → CFO → COO.
+Show unknown budget/route data as unavailable. Keep Add New Vendor beside the
+Vendor label, using the same pale-blue dashed treatment as Add line, and open
+the existing vendor form in the current Creator environment.
+
 Approval chains use a green heading and green completed steps/status pills;
 Pending stays amber and Rejected stays red. Remove Saved POs and Refresh
 balances from the footer; retain automatic balance reads. The Requests card

@@ -244,6 +244,24 @@ string managePurchaseOrder(string payload)
 			if(PO_Phase_Lock[Phase_Key == budgetId].count() > 0) { result.put("error","This phase has a write in progress or an unresolved operation."); return result.toString(); }
 			result = thisapp.poBudgetBalances(budgetId); result.put("contract","po-v1"); return result.toString();
 		}
+		if(action == "PreviewApprovals")
+		{
+			if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
+			previewAmount=thisapp.poCurrencyString(ifnull(p.get("amount"),"").toString());
+			typedPreviewAmount={"value":p.get("amount")};
+			if(!typedPreviewAmount.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Preview amount must be an exact currency string."); return result.toString(); }
+			if(previewAmount == "" || (p.get("hasBudgetModification") != true && p.get("hasBudgetModification") != false) || (p.get("hasBudgetOverrun") != true && p.get("hasBudgetOverrun") != false)) { result.put("error","Exact amount and explicit modification context are required."); return result.toString(); }
+			companyText=""; territory="";
+			if(budget.Subdivision1 != null) { territory=ifnull(budget.Subdivision1.Territory,""); if(budget.Subdivision1.Company1 != null) { companyText=budget.Subdivision1.Company1.ID.toString(); } }
+			previewContext={"workflow":"Purchase Order","budgetId":budgetId,"companyId":companyText,"territory":territory,"department":"","submitterId":access.ID.toString(),"effectiveDate":zoho.currentdate.toString("yyyy-MM-dd"),"amount":previewAmount,"hasBudgetModification":p.get("hasBudgetModification"),"hasBudgetOverrun":p.get("hasBudgetOverrun")};
+			previewRoute=thisapp.resolveApprovalRoute(previewContext);
+			if(previewRoute.get("success") != true) { result.put("error",previewRoute.get("error")); return result.toString(); }
+			previewRoles=List();
+			previewSnapshot=previewRoute.get("snapshot"); previewSteps=previewSnapshot.get("route");
+			for each previewStep in previewSteps { previewRoles.add({"order":previewStep.get("order"),"role":previewStep.get("role")}); }
+			if(p.get("hasBudgetModification") == true && previewRoles.size() < 2) { result.put("error","Configure additional approvers for POs that create budget modifications."); return result.toString(); }
+			result.put("approvalPreview",{"roles":previewRoles,"hasBudgetModification":p.get("hasBudgetModification")}); result.put("success",true); return result.toString();
+		}
 		if(action != "Save" && action != "Submit") { result.put("error","Unsupported PO action."); return result.toString(); }
 		// Owner approved Creator's Max Digits 16 / Places 2 on 2026-10-08.
 		// Currency boundary persisted exactly in the native Development test.

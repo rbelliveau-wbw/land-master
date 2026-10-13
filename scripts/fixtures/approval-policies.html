@@ -7,7 +7,7 @@
 const config={roles:[{id:'11',name:'CFO',active:true}],companies:[{id:'21',label:'Example company'}],territories:[{id:'North',label:'North'}],users:[{id:'31',user:'example.user',name:'Example person',approverEmail:'test@example.invalid',routingEnabled:true},{id:'32',user:'example.submitter',name:'Example submitter',approverEmail:'submitter@example.invalid',routingEnabled:true}],assignments:[{id:'41',roleId:'11',companyId:'21',userAccessId:'31',active:true,territory:'',department:'',effectiveFrom:'',effectiveTo:''}],policies:[{id:'51',workflow:'Purchase Order',companyId:'21',status:'Published',enabled:true,selfApproval:'Deny',territory:'',department:'',adapterEnabled:false,steps:[{key:'step-one',roleId:'11',order:1,condition:'Always',enabled:true}]}],audit:[]};
 const receipts=new Map();let count=60;
 const ui=LMApprovalAdmin.create({scope:()=> 'development-fixture',call:async p=>{
- if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:'scope-v1',currentDate:'2026-10-11',actorId:'32',configuration:structuredClone(config)};
+ if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:'ordered-cfo-v1',currentDate:'2026-10-11',actorId:'32',configuration:structuredClone(config)};
  if(p.action==='Preview'){try{return {contract:'approval-policy-v1',success:true,snapshot:LMApprovalPolicy.resolve(config,p.context)};}catch(e){return {contract:'approval-policy-v1',success:false,error:e.message};}}
  if(p.action==='Check')return receipts.get(p.token);
  const collection=p.action==='SaveRole'?'roles':p.action==='SaveAssignment'?'assignments':'policies';

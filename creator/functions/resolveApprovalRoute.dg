@@ -72,6 +72,7 @@ map resolveApprovalRoute(map context)
 			}
 		}
 		route = List(); excluded = List(); stepKeys = List(); expectedOrder = 0;
+		cfoSteps = 0;
 		for each step in steps
 		{
 			expectedOrder = expectedOrder+1;
@@ -82,7 +83,9 @@ map resolveApprovalRoute(map context)
 			condition = step.get("condition");
 			if(policy.Workflow == "Purchase Order")
 			{
-				if(expectedOrder == 1) { if(condition != "Always" || step.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result; } }
+				poRole = Approval_Role[ID == step.get("roleId").toString().toLong()];
+				if(poRole.ID == null) { result.put("error","PO approver role was not found."); return result; }
+				if(poRole.Role_Name == "CFO") { cfoSteps=cfoSteps+1; if(condition != "Always" || step.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result; } }
 				else { if(condition != "Budget modification attached") { result.put("error","Additional PO approvers are used only when the PO creates budget modifications."); return result; } }
 			}
 			if(policy.Workflow == "Pro Forma" || policy.Workflow == "Contract")
@@ -122,11 +125,6 @@ map resolveApprovalRoute(map context)
 				roleText = step.get("roleId").toString();
 				role = Approval_Role[ID == roleText.toLong()];
 				if(role.ID == null || role.Active != true) { result.put("error","Role is missing or inactive for step "+expectedOrder); return result; }
-				if(policy.Workflow == "Purchase Order")
-				{
-					if(expectedOrder == 1) { if(role.Role_Name != "CFO") { result.put("error","CFO must approve every purchase order."); return result; } }
-					else { if(role.Role_Name == "CFO") { result.put("error","Additional PO approvers must use a different role."); return result; } }
-				}
 				assignmentId = 0; assignmentRank = -1; assignmentCount = 0; personId = 0; assignmentActive = false;
 				territoryVP = policy.Workflow == "Purchase Order" && role.Role_Name == "VP";
 				poTestCFO = step.get("poTestCFO"); testStep = poTestCFO != null;
@@ -185,6 +183,7 @@ map resolveApprovalRoute(map context)
 				route.add(resolvedStep);
 			}
 		}
+		if(policy.Workflow == "Purchase Order" && cfoSteps != 1) { result.put("error","Exactly one CFO must approve every purchase order."); return result; }
 		if(route.size() == 0) { result.put("error","No enabled applicable approval steps."); return result; }
 		result.put("snapshot",{"policyId":policy.ID.toString(),"context":context,"route":route,"excluded":excluded,"selfApproval":policy.Self_Approval});
 		result.put("success",true);

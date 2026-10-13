@@ -19,7 +19,7 @@ for(const email of ['one@example.com,two@example.com','one@example.com;two@examp
 for(const workflow of ['Budget','Budget Modification','Pro Forma','Contract']){next=clone(config);next.policies[0].workflow=workflow;assert.throws(()=>api.resolve(next,{...context,workflow}),/Test CFO/);}
 for(const changed of [{enabled:false},{condition:'Above',threshold:'1.00'}]){next=clone(config);Object.assign(next.policies[0].steps[0],changed);assert.throws(()=>api.resolve(next,context),/Test CFO/);}
 next=clone(config);next.policies[0].steps.push({key:'disabled',order:2,roleId:'1',condition:'Always',enabled:false});assert.throws(()=>api.resolve(next,context),/one enabled Always/);
-next=clone(config);next.roles[0].name='COO';assert.throws(()=>api.resolve(next,context),/CFO role|CFO first/);
+next=clone(config);next.roles[0].name='COO';assert.throws(()=>api.resolve(next,context),/CFO/);
 next=clone(config);next.roles[0].active=false;assert.throws(()=>api.resolve(next,context),/inactive role/);
 for(const users of [[],[{...config.users[0],user:''}],[{...config.users[0],user:null}],[config.users[0],config.users[0]]]){next=clone(config);next.users=users;assert.throws(()=>api.resolve(next,context),/unroutable/);}
 next=clone(config);next.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(next,context),/forbid submitter/);
