@@ -43,6 +43,7 @@ managedPO.requestDate='2026-10-12';managedPO.dateNeeded='2026-10-20';
 const dated=c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId);assert.equal(dated[0].Request_Date,'2026-10-12','API-only profiles receive header dates without a per-row Get');assert.equal(dated[0].Date_Needed,'2026-10-20');
 assert.equal(c.mergeManagedPurchaseOrderRequests([draft],managedResponse,vendorResponse,budgetId)[0].Request_Date,'2026-10-12','Managed header dates override stale generic metadata');
 c.S.checkWireRequestsByBudget[budgetId]=dated;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/10\/12\/2026/);
+managedPO.status='Submitted';managedPO.approvalState='Approved';const approved=c.mergeManagedPurchaseOrderRequests([],managedResponse,vendorResponse,budgetId);assert.equal(approved[0].PO_Approval_State,'Approved');c.S.checkWireRequestsByBudget[budgetId]=approved;assert.match(c.renderCheckWireRequestColumn(c.S.edBudget),/>Approved<\/span>/,'API-only profiles show final approval status instead of Submitted');managedPO.status='Draft';managedPO.approvalState='Not Configured';c.S.checkWireRequestsByBudget[budgetId]=dated;
 assert.equal(complete[0].Request_Amount,managedPO.amount,'Authoritative managed amount overrides same-ID generic metadata');
 const check={ID:'900000000000000008',Budget:{ID:budgetId},Request_Type:'Check',Request_Amount:'10.00'};
 assert.equal(c.mergeManagedPurchaseOrderRequests([check,draft],managedResponse,vendorResponse,budgetId).length,2,'Other payment requests remain in the list');

@@ -25,3 +25,16 @@ Show its status as a compact pill beside Purchase Order in the navy title card.
 Omit the redundant Line items heading and line-count row above the ledger so the
 header fields lead directly into the column headings. Keep the existing 250-line
 validation and add/duplicate limit guards.
+
+Approval chains use a green heading and green completed steps/status pills;
+Pending stays amber and Rejected stays red. Remove Saved POs and Refresh
+balances from the footer; retain automatic balance reads. The Requests card
+shows the native approval state when available, including Approved/Rejected.
+
+PO deletion uses the attachment-style 28px red square trash icon. Its preview
+matches the budget Delete dialog: centered red trash circle, compact title,
+vendor/amount/phase identity, pink child-record list with exact counts, Cancel
+and red Delete PO. Show all-revision line items, operation receipts, approval
+routes, approval records and PO-created budget modifications, plus the release
+of the commitment. Cancel, Escape and backdrop return to the same PO. Keep the
+captured preview and existing deletion progress/recovery guards.

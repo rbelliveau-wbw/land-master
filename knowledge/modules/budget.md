@@ -1,3 +1,23 @@
+## PO review and delete confirmation (122.29.26)
+
+The approval chain uses green for approved steps, with amber Pending and red
+Rejected. The footer retains its existing save/submit/decision actions and a
+28px red trash icon; Saved POs and manual Refresh balances are removed while
+automatic balance loading remains. The compact delete preview reuses budget
+confirmation styling and shows vendor, amount, phase and exact captured child
+counts. Cancel/Escape/backdrop restores the same PO and returns focus to trash.
+The final deletion still uses its captured record set, duplicate guard,
+three-stage progress and read-only unknown-reply recovery.
+
+`managePurchaseOrder` List additionally returns existing `PO_Approval_State`
+as `approvalState`, so report-denied profiles display Approved rather than the
+header's Submitted lifecycle status. No form/field additions or approval,
+email, commitment or deletion business rules change. Publish this function to
+Creator. Regression: final status on API-only Requests, PreviewDelete counts,
+Cancel/Escape with no Delete call, removed footer buttons, direct saved PO
+entry, existing parent/children deletion and pending/unknown progress guards.
+Rollback widget 122.29.25 and restore managePurchaseOrder from 8597451.
+
 ## PO Development profiles and approval attachment (122.29.23)
 
 Owner-only native Development View-as selects the existing profile for PO

@@ -199,7 +199,7 @@ string managePurchaseOrder(string payload)
 				requestDateText = ""; neededDateText = "";
 				if(po.Request_Date != null) { requestDateText = po.Request_Date.toString("yyyy-MM-dd"); }
 				if(po.Date_Needed != null) { neededDateText = po.Date_Needed.toString("yyyy-MM-dd"); }
-				rows.add({"id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
+				rows.add({"id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
 			}
 			result.put("rows",rows); result.put("success",true); return result.toString();
 		}
