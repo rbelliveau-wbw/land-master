@@ -93,7 +93,7 @@ Construction status choices are Proposed (shown as **Pending Review**), New,
 Rejected, Feasibility, Awaiting Purchasing, Awaiting Development, Awaiting Other,
 Approved, Complete, and Cancelled. Existing Legal choices remain unchanged.
 
-## UI refinements for 1.62.1 — deployment pending
+## UI refinements for 1.62.1
 
 Keep the Legal/Construction chooser in the persistent white header beside the
 breadcrumb, so it stays available across the request list, Review, templates,
@@ -119,10 +119,27 @@ Subdivision, requestor, submitted date, and a short description. The three
 facts are Budget Type, a Priority badge, and numeric Date Needed. Keep Accept
 and the soft red Reject action paired and reachable when the card stacks.
 
-These are frontend presentation changes for the next immutable `1.62.1`
-release, with `1.62.0` as the widget rollback. No Creator publication, Custom
-API, field, or permission changes are required. This section records the
-requested design; it does not claim `1.62.1` has deployed.
+These frontend presentation changes are in immutable `1.62.1`, with `1.62.0`
+as the widget rollback. Development, Stage, and Production mappings select it.
+Creator remains on `9.81`; no new publication, Custom API, function, field,
+or permission changes are required. The existing Contract, Contract_Actions,
+Attachment, and comment contracts remain unchanged.
+
+The source update is `e5057583`, and the release/promotion commit is
+`8cb7c2febe7b7f88731b2e7392e6a72f81c245d8`. Full `npm run validate` and
+`npm run build:pages` passed locally. Desktop actual-source browser checks
+covered the header chooser, New Construction Task form and custom calendar,
+expanded three-action request row, workspace toolbar, and Review cards using
+isolated sample data. No live request, decision, file, comment, or grant was
+created or changed for these checks. Permission, owned-edit, family-report,
+attachment, and SDK regressions passed; date checks confirm numeric display,
+ISO storage, and unchanged Legal date formatting.
+
+Deployment evidence is available in the release's [CI run](https://github.com/rbelliveau-wbw/land-master/actions/runs/38468172057)
+and [Pages run](https://github.com/rbelliveau-wbw/land-master/actions/runs/38468172188).
+Both checks must finish successfully before this update is reported live.
+Robby's desktop-only verification preference is recorded in root AGENTS.md
+and the general style guide; do not spend time checking phone/tablet formatting.
 
 ## Creator deployment checklist
 
