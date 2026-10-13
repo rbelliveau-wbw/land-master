@@ -2,8 +2,10 @@
 
 The requested Approvals redesign removes Company scope and effective dates from
 approval configuration. Assignments apply until edited or disabled. The native
-source is prepared for the user to install and promote through Creator; a
-frontend release alone does not delete native columns or activate this contract.
+Development migration is complete: all nine functions compiled and all six
+fields were deleted after explicit user confirmation. The user owns Creator
+promotion to Stage/Production; the frontend is already published as Settings
+Manager 1.5.3. Frontend promotion alone does not promote native changes.
 
 The API envelope remains `approval-policy-v1`. Native List advertises
 `policyModel: territory-perpetual-v2` only after the new administration function
@@ -95,9 +97,8 @@ chains can initialize without Company/date context while existing decisions and
 notes remain unchanged. `test-approval-scope-migration.mjs` verifies the read-only
 collision/lock review without selecting a person.
 
-These offline regressions do not confirm Creator compilation or live field
-deletion. Complete native compilation and environment checks when installing
-the bundle.
+These offline regressions are supplemented by the native Development checks
+recorded below. Repeat the environment checks after Creator promotion.
 
 Settings Manager 1.5.3 passed the complete `npm run validate` and
 `npm run build:pages` gates. Desktop fixture checks covered the full ordered PO
@@ -107,8 +108,36 @@ Development's existing read-only configuration helper returned one policy,
 two assignments and ten completed audit records. The owner-view native lock
 report showed no records; the exported DTO passed the v2 migration auditor
 with no collisions or unfinished receipts. Private backup and desktop evidence
-are retained outside the committed release. Native functions/field deletions
-are not claimed as deployed by this source release.
+are retained outside the committed release.
+
+## Completed native Development migration — October 13, 2026
+
+The user explicitly confirmed deletion of the six fields and dependency removal.
+The fresh preflight again found one policy, two assignments, ten completed
+configuration audit records and no retained configuration locks. Native field
+values were blank; their original values and native function bodies were backed
+up outside the committed release.
+
+All nine functions in the bundle were saved, compiled and independently reloaded.
+Native Budget-start and Pro Forma-start bodies differed from the repository
+baseline only in Creator formatting of existing conditions. Their native bodies
+were preserved and only the Company/date context was replaced; source now
+reflects those native bodies with whitespace cleanup. Existing financial,
+restart, repair, self-approval and notification behavior was not redesigned.
+
+Creator's View Field References showed zero references for each deletion target.
+Company, Effective_From and Effective_To were deleted from both forms. Reloaded
+native form previews confirmed all six fields absent. Business Company fields,
+transaction dates, policy recovery evidence and captured approval history remain.
+
+The live Settings List handshake unlocked `territory-perpetual-v2`. Native
+read-only Preview verified CFO alone without new modifications and VP → CFO → COO
+with new modifications, with the requested Gmail/WB Development/Yalgo recipients.
+The tests sent no emails and made no configuration or approval decisions.
+
+Promote the nine-function/two-form Creator bundle together. The manifest records
+the completed Development checks; native Stage/Production promotion remains the
+user's action. After promotion, refresh Approvals and repeat both route previews.
 
 ## Rollback
 

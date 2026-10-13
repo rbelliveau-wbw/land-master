@@ -1,7 +1,16 @@
 {
   "contract": "approval-scope-migration-v2",
   "policyModel": "territory-perpetual-v2",
-  "status": "source-prepared-user-promotes-creator",
+  "status": "development-complete-awaiting-user-creator-promotion",
+  "developmentVerification": {
+    "date": "2026-10-13",
+    "compiledAndReloadedFunctionCount": 9,
+    "deletedFieldCount": 6,
+    "nativeReferencesOnEachDeletedField": 0,
+    "reloadedFormsConfirmFieldsAbsent": true,
+    "livePreviewRoutesVerified": ["CFO", "VP -> CFO -> COO"],
+    "creatorPromotionOwner": "user"
+  },
   "authoritativeSchemaSource": "creator/exports/Land_Master_2026-10-11-development.ds",
   "removeFields": [
     {"form": "Approval_Policy", "field": "Company", "type": "Company lookup"},
