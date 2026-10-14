@@ -11,7 +11,7 @@ const config={roles:[{id:'1',name:'CFO',active:true}],users:[{id:test.userAccess
 const context={workflow:'Purchase Order',companyId:'31',submitterId:test.userAccessId,budgetId:test.budgetId,amount:'55.00',effectiveDate:'2026-10-11',hasBudgetModification:false,hasBudgetOverrun:false};
 const result=api.resolve(config,context);
 assert.equal(result.route.length,1);assert.equal(result.route[0].userAccessId,test.userAccessId);assert.equal(result.route[0].email,test.email);assert.equal(result.route[0].reason,'PO test CFO');assert.equal(result.route[0].assignmentId,'');assert.deepEqual(clone(result.route[0].poTestCFO),test);
-assert.equal(result.selfApproval,'Deny');assert.equal('duplicatePerson' in result,false);assert.equal('policyVersion' in result,false);
+assert.equal(result.selfApproval,'Allow');assert.equal('duplicatePerson' in result,false);assert.equal('policyVersion' in result,false);
 for(const changed of [{budgetId:'another-budget'},{budgetId:Number(test.budgetId)},{budgetId:undefined},{amount:'55.01'},{hasBudgetModification:true},{hasBudgetOverrun:true},{hasBudgetModification:undefined},{hasBudgetOverrun:undefined}])assert.throws(()=>api.resolve(config,{...context,...changed}),/scope|ID|currency/);
 let next=clone(config);next.policies[0].steps[0].poTestCFO.maxAmount='0.01';assert.equal(api.resolve(next,{...context,amount:'0.01'}).route.length,1);assert.throws(()=>api.resolve(next,{...context,amount:'0.02'}),/scope/);
 for(const changed of [{maxAmount:'55.01'},{maxAmount:'0.00'},{maxAmount:'55.001'},{maxAmount:55},{allowSelfApproval:false},{email:'invalid'},{userAccessId:Number(test.userAccessId)},{budgetId:Number(test.budgetId)}]){next=clone(config);Object.assign(next.policies[0].steps[0].poTestCFO,changed);assert.throws(()=>api.resolve(next,context));}
@@ -22,9 +22,9 @@ next=clone(config);next.policies[0].steps.push({key:'disabled',order:2,roleId:'1
 next=clone(config);next.roles[0].name='COO';assert.throws(()=>api.resolve(next,context),/CFO/);
 next=clone(config);next.roles[0].active=false;assert.throws(()=>api.resolve(next,context),/inactive role/);
 for(const users of [[],[{...config.users[0],user:''}],[{...config.users[0],user:null}],[config.users[0],config.users[0]]]){next=clone(config);next.users=users;assert.throws(()=>api.resolve(next,context),/unroutable/);}
-next=clone(config);next.policies[0].selfApproval='Allow';assert.throws(()=>api.resolve(next,context),/forbid submitter/);
+next=clone(config);next.policies[0].selfApproval='Allow';assert.equal(api.resolve(next,context).selfApproval,'Allow');
 next=clone(config);delete next.policies[0].steps[0].poTestCFO;
-const normal=api.resolve(next,context);assert.equal(normal.route[0].userAccessId,'12');assert.equal('poTestCFO' in normal.route[0],false);assert.throws(()=>api.resolve(next,{...context,submitterId:'12'}),/self-approval/);
+const normal=api.resolve(next,context);assert.equal(normal.route[0].userAccessId,'12');assert.equal('poTestCFO' in normal.route[0],false);assert.equal(api.resolve(next,{...context,submitterId:'12'}).route[0].userAccessId,'12');
 next.assignments[0].userAccessId=test.userAccessId;assert.throws(()=>api.resolve(next,context),/unroutable/,'General routing remains disabled outside the test');
 next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com';assert.equal(result.route[0].poTestCFO.email,'test@example.com','Captured test scope is detached');
 
@@ -46,6 +46,6 @@ const globalConfig=clone(config);globalConfig.policies[0]=ui.policyData(globalCo
 for(const companyId of ['31','99'])for(const amount of ['0.01','55.01','1000000.00']){
   const routed=api.resolve(globalConfig,{...previewDraft,companyId,territory:'Any territory',amount});assert.equal(routed.route.length,1);assert.equal(routed.route[0].userAccessId,'12');assert.equal(routed.route[0].reason,'Required step');assert.equal(routed.route[0].poTestCFO,undefined);
 }
-assert.throws(()=>api.resolve(globalConfig,{...previewDraft,submitterId:'12'}),/self-approval/);
+assert.equal(api.resolve(globalConfig,{...previewDraft,submitterId:'12'}).route[0].userAccessId,'12');
 ui.fixture({config:globalConfig,editing:'Preview',draft:previewDraft,panel:{},card:uiCard});await ui.preview();assert.equal(sent.context.budgetId,undefined);assert.equal('companyId' in sent.context,false);assert.equal('effectiveDate' in sent.context,false);assert.match(nodes['[data-ap-route]'].innerHTML,/Normal CFO/);
-console.log('Perpetual CFO configuration: no test/company/date controls or new overrides, ordinary assignments across amounts, preserved historical routes and standard self-approval denial.');
+console.log('Perpetual CFO configuration: no test/company/date controls or new overrides, ordinary assignments across amounts, preserved historical routes and manual PO submitter approval.');

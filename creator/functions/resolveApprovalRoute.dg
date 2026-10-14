@@ -35,11 +35,9 @@ map resolveApprovalRoute(map context)
 		if(matched != 1) { result.put("error","Published policy is missing or ambiguous at the highest applicable scope."); return result; }
 		policy = Approval_Policy[ID == policyId];
 		if(policy.Enabled != true) { result.put("error","The applicable published policy is disabled. No broader fallback was used."); return result; }
-		if(policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") { result.put("error","Self-approval must be explicitly configured."); return result; }
-		if(policy.Workflow == "Purchase Order")
-		{
-			if(policy.Self_Approval != "Deny") { result.put("error","Purchase Orders forbid submitter self-approval."); return result; }
-		}
+		if(policy.Workflow != "Purchase Order" && policy.Self_Approval != "Allow" && policy.Self_Approval != "Deny") { result.put("error","Self-approval must be explicitly configured."); return result; }
+		effectiveSelfApproval = policy.Self_Approval;
+		if(policy.Workflow == "Purchase Order") { effectiveSelfApproval = "Allow"; }
 		steps = List();
 		for each rawPolicyStep in policy.Steps_JSON.toJSONList() { steps.add(rawPolicyStep.toString().toMap()); }
 		if(steps.size() == 0 || steps.size() > 30) { result.put("error","Published policy requires 1–30 ordered steps."); return result; }
@@ -177,7 +175,7 @@ map resolveApprovalRoute(map context)
 				routingEnabled = person.Approval_Routing_Enabled == true;
 				if(testStep) { routingEnabled = true; }
 				if(assignmentActive != true || person.ID == null || routingEnabled != true || ifnull(person.User,"").toString().trim() == "" || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
-				if(policy.Self_Approval == "Deny" && person.ID.toString() == submitterText && !testStep) { result.put("error","Policy forbids submitter self-approval."); return result; }
+				if(policy.Workflow != "Purchase Order" && policy.Self_Approval == "Deny" && person.ID.toString() == submitterText && !testStep) { result.put("error","Policy forbids submitter self-approval."); return result; }
 				assignmentText = assignmentId.toString(); if(territoryVP || territoryDevMgr || testStep) { assignmentText = ""; }
 				resolvedKey = step.get("key"); if(territoryDevMgr && personIds.size() > 1) { resolvedKey = resolvedKey+"-"+person.ID.toString(); }
 				resolvedStep = {"order":route.size()+1,"policyStepOrder":expectedOrder,"key":resolvedKey,"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason};
@@ -188,7 +186,7 @@ map resolveApprovalRoute(map context)
 		}
 		if(policy.Workflow == "Purchase Order" && cfoSteps != 1) { result.put("error","Exactly one CFO must approve every purchase order."); return result; }
 		if(route.size() == 0) { result.put("error","No enabled applicable approval steps."); return result; }
-		result.put("snapshot",{"policyId":policy.ID.toString(),"context":context,"route":route,"excluded":excluded,"selfApproval":policy.Self_Approval});
+		result.put("snapshot",{"policyId":policy.ID.toString(),"context":context,"route":route,"excluded":excluded,"selfApproval":effectiveSelfApproval});
 		result.put("success",true);
 	}
 	catch(e) { result.put("error","Approval configuration is invalid. Check scope, approvers and exact amounts."); }

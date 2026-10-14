@@ -114,7 +114,7 @@ string manageApprovalPolicies(string payload)
 					if(action != "Reconcile") { result.put("error","Budget-specific PO test CFO overrides are no longer supported. Configure the CFO assignment for all budgets."); return result.toString(); }
 					isPOTestPolicy = true;
 					testCFO = testPolicyStep.get("poTestCFO");
-					if(testPolicyData.get("workflow") != "Purchase Order" || testPolicySteps.size() != 1 || testPolicyStep.get("enabled") != true || testPolicyStep.get("condition") != "Always" || testPolicyData.get("selfApproval") != "Deny" || testCFO.get("allowSelfApproval") != true) { result.put("error","PO test CFO requires one enabled Always CFO step with submitter self-approval denied."); return result.toString(); }
+					if(testPolicyData.get("workflow") != "Purchase Order" || testPolicySteps.size() != 1 || testPolicyStep.get("enabled") != true || testPolicyStep.get("condition") != "Always" || testCFO.get("allowSelfApproval") != true) { result.put("error","PO test CFO requires one enabled Always CFO step with scoped testing enabled."); return result.toString(); }
 					for each testIdentityField in {"budgetId","userAccessId"}
 					{
 						typedTestIdentity = {"value":testCFO.get(testIdentityField)};
@@ -138,8 +138,7 @@ string manageApprovalPolicies(string payload)
 		}
 		if(action == "SavePolicy" || action == "Publish" || action == "Reconcile")
 		{
-			if(testPolicyData.get("selfApproval") != "Allow" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Choose the self-approval rule."); return result.toString(); }
-			if(testPolicyData.get("workflow") == "Purchase Order" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Purchase Orders forbid submitter self-approval."); return result.toString(); }
+			if(testPolicyData.get("workflow") != "Purchase Order" && testPolicyData.get("selfApproval") != "Allow" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Choose the self-approval rule."); return result.toString(); }
 			if(testPolicySteps == null || testPolicySteps.size() == 0 || testPolicySteps.size() > 30 || testPolicySteps.toString().length() > 40000) { result.put("error","Enter 1–30 approvers."); return result.toString(); }
 			stepOrder=0; configuredKeys=List(); configuredCFO=0;
 			for each rawConfiguredStep in testPolicySteps

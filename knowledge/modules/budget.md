@@ -1256,3 +1256,6 @@ managePurchaseOrder, saved in Development and published through Stage to
 Creator Production 9.84 (PO approvers and Territory Dev Mgr).
 No existing PO records, submitted routes or native permissions are changed by
 this release. Rollback: Budget 122.29.36 and Settings 1.5.4.
+
+## PO submitters remain approvers (2026-10-14)
+Purchase Order routing always allows the submitter to remain a manual approver in their assigned position, including existing rules stored as Deny. It never auto-approves or skips that step. Other workflows are unchanged. Settings 1.5.7; native resolveApprovalRoute, manageApprovalPolicies and poApprovalBundle. See docs/po-submitter-manual-approval-2026-10-14.md.

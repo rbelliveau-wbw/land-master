@@ -2,7 +2,7 @@
   "slug": "settings-manager",
   "name": "Settings Manager",
   "module": "settings",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
   "source_entry": "widgets/settings-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
