@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
 const widget=fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8');
-const names=['canEditPf','canEditOwner','ownerEditBlockedReason','canViewProformaApprovals','canSendProformaApprovalsFor','canConfigureProformaApprovalsFor'];
+const names=['canEditPf','canEditOwner','ownerEditBlockedReason','canViewProformaApprovals','canSendProformaApprovalsFor'];
 const ctx={S:{proformas:[]},permissions:{},perms(){return {editAll:false,editOwned:false,editOwner:false,sendApprovals:false,...ctx.permissions};},userOwnsPf:r=>!!r?.mine,protectedInputLock:r=>!!r?.locked};
 vm.createContext(ctx);for(const name of names){const i=widget.indexOf('function '+name+'(');const end=widget.indexOf('\nfunction ',i+1);vm.runInContext(widget.slice(i,end).split('\n/*')[0],ctx);}
 const owned={ID:'1',mine:true},other={ID:'2',mine:false};
 ctx.permissions={editOwned:true};assert.equal(ctx.canEditPf(owned),true);assert.equal(ctx.canEditPf(other),false);
 assert.equal(ctx.canEditOwner(owned),true);assert.equal(ctx.canEditOwner(other),false);assert.equal(ctx.canEditOwner({...owned,locked:true}),false);
-assert.equal(ctx.canConfigureProformaApprovalsFor(owned),true);assert.equal(ctx.canConfigureProformaApprovalsFor(other),false);assert.equal(ctx.canSendProformaApprovalsFor(owned),false);
+assert.equal(ctx.canSendProformaApprovalsFor(owned),false);
 ctx.permissions={sendApprovals:true};assert.equal(ctx.canSendProformaApprovalsFor(owned),true);assert.equal(ctx.canSendProformaApprovalsFor(other),false);assert.equal(ctx.canEditOwner(owned),false);
 ctx.permissions={sendApprovals:true,editAll:true};assert.equal(ctx.canSendProformaApprovalsFor(other),true);
 ctx.permissions={ownerEditSend:true};assert.equal(ctx.canEditPf(owned),false);assert.equal(ctx.canSendProformaApprovalsFor(owned),false);
@@ -32,10 +32,10 @@ assert.ok(save.indexOf('// Validate changed owner assignments')<save.indexOf('in
 console.log('Split Pro Forma owner/edit/send access and signed-in owner update checks passed.');
 
 const recipientSource=fs.readFileSync('creator/functions/Update_Proforma_Approval_Recipient.dg','utf8');
-const recipientGate=translate('string recipientGate()\n{\nresponse = Map();\n'+recipientSource.slice(recipientSource.indexOf('isPfOwner = false;'),recipientSource.indexOf('// Fetch by the Creator record ID'))+'\nresponse.put("success",true);return response.toString();\n}').js;
-for(const mine of [false,true])for(const send of [false,true])for(const editAll of [false,true])for(const editOwned of [false,true])for(const apprAll of [false,true]){
- const c=vm.createContext({mine,send,editAll,editOwned,apprAll});
- vm.runInContext('function Map(){return {put(k,v){this[k]=v;},toString(){return JSON.stringify(this);}};}var accessRow={ID:10,Send_Pro_Formas_for_Approvals:send,Edit_All_Proformas:editAll,Edit_Owned_Proformas:editOwned,Edit_All_Pro_Forma_Approvals:apprAll},pf={Owner:[{ID:mine?10:20}]};'+recipientGate,c);
- assert.equal(JSON.parse(vm.runInContext('recipientGate()',c)).success,apprAll||(send&&(editAll||mine))||(editOwned&&mine));
-}
-console.log('Recipient backend grant/scope combinations passed.');
+const retired=vm.createContext({});
+vm.runInContext('function Map(){return {put(k,v){this[k]=v;}};}'+translate(recipientSource).js,retired);
+const retiredResult=vm.runInContext('Update_Proforma_Approval_Recipient({})',retired);
+assert.equal(retiredResult.success,false);
+assert.match(retiredResult.message,/Settings/);
+assert.doesNotMatch(widget,/function canConfigureProformaApprovalsFor|data-pf-appr-recipient=/);
+console.log('Legacy recipient editing is retired; Settings owns new routes.');

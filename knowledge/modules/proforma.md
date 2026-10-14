@@ -1,3 +1,18 @@
+## Settings approval routing — October 14, 2026
+
+Untouched Pro Formas preview Settings → Approvals and require its published,
+enabled policy at submission. Per-record approver editing and the legacy seeded
+route are retired. VP and every selected Dev Mgr come from the document's
+Territory across all shared-policy workflows; other roles use Settings
+assignments. Existing submitted routes retain recipients, decisions and notes.
+
+The existing Start Custom API safely previews through `Check` with
+`settingsPreview: true`; old native responses block sending. `StartSettings`
+checks the confirmed policy and recipient identities before execution writes.
+Send retains the established three-step progress/modal predicates above, and
+Check stays read-only. Repair cannot start untouched Draft legacy rows.
+See [functions, workflow retirement, regression and coordinated rollback](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+
 ## Attachment form and report rename (1.80.101) — October 11, 2026
 
 Pro Forma file records use `Attachment` and `All_Attachments`, retaining
@@ -814,3 +829,19 @@ Amounts and lots sum; Cash Flow and Running Cash Flow come once from the Master.
 Multiple phase IDs and differing phase rates remain labeled. The calculator,
 Months & Phases editor, saved rows and Creator workflows are unchanged. No
 Creator deployment is required. See [verification and rollback](../../docs/proforma-monthly-excel-export-1.80.102.md).
+## Lot Sales sharing and focus (1.80.103) — October 14, 2026
+
+Same for all phases sits between the phase title and allocated-lots badge.
+Enabling it copies Phase 1 settings and its lot count once. Every phase's lot
+count stays independently editable so the project allocation can be balanced;
+subsequent shared timing/pricing edits do not recopy allocations. Confirmation
+cancellation leaves the draft unchanged. Numeric commits and live phase-card
+updates retain the mounted input/navigation controls, preserving first-click
+focus and keyboard navigation.
+
+This phase change is widget-only and uses the existing `Proforma_Phase` inputs;
+no phase forms, fields or API contracts change. Regression covers copy/cancel,
+independent lot edits while sharing, shared take edits, read-only navigation,
+field commits, incomplete schedule recovery and retained click/focus targets.
+Widget rollback: Proforma Manager `1.80.102`. The approval changes in this same
+release require the separate [Creator publication](../../docs/proforma-settings-approval-routing-2026-10-14.md).

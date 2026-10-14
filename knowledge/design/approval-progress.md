@@ -118,6 +118,16 @@ unknown writes for read-only checking. Decline retains its confirmation. Require
 a confirmed Approval Queue grant; Proposed is read-only outside Review. This
 exception does not change token-based LOI review or other approval progress dialogs.
 
+## Pro Forma Settings routing — October 14, 2026
+
+Pro Forma submissions now preview Settings through a safe read-only Check
+request with `settingsPreview: true`. Confirm the ordered recipients before
+the committing send and check that intent before native execution-row writes.
+An old native response blocks submission. A definite Settings preflight failure
+is reconciled once and ends with its reason; Repair cannot activate untouched
+Draft defaults. Existing submitted recipients and approval-progress terminal
+predicates remain in force. See [the routing contract](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+
 ## Purchase Order results — October 13, 2026
 
 Use Legal's compact approval progress/result treatment for managed PO actions.

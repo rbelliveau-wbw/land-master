@@ -164,11 +164,16 @@ for (const required of [
   'Tick \\u201CSend Pro Formas for Approvals\\u201D on your User Access record',
   'You must be an owner of this Pro Forma, unless you have Edit All Proformas',
   "+(canSendProformaApprovalsFor(r)?'<button type=\"button\" class=\"pf-row-menu-item",
-  'function canEditProformaApprovalRecipientsFor(recOrId)',
-  'invokeProformaApprovalApi("updateProformaApprovalRecipient"',
-  'data-pf-appr-recipient='
+  'function loadProformaApprovalSettings(pf,force)',
+  'mode:"Check",settingsPreview:true',
+  'mode:"StartSettings",expectedPolicyId:settings.policyId',
+  'value.contract!=="proforma-approval-settings-v1"',
+  'value.policyModel!=="territory-perpetual-v2"'
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: dedicated Pro Forma send access is missing ${required}.`);
+}
+for (const forbidden of ['data-pf-appr-config-title', 'data-pf-appr-config-email', 'data-pf-appr-recipient=', 'data-pf-appr-add=', 'invokeProformaApprovalApi("manageProformaApprovalConfig"', 'invokeProformaApprovalApi("updateProformaApprovalRecipient"']) {
+  if (proformaHtml.includes(forbidden)) errors.push(`proforma-manager: legacy per-record approval configuration remains: ${forbidden}.`);
 }
 if (proformaHtml.includes('flags.send != null ? flags.send : flags.Send_for_Approvals')) {
   errors.push('proforma-manager: Pro Forma send access still falls back to the Budget Send_for_Approvals flag.');
@@ -339,19 +344,16 @@ for (const required of [
 }
 for (const required of [
   'accessRow.Send_Pro_Formas_for_Approvals != true',
-  'canSendThisProforma = accessRow.Edit_All_Proformas == true;',
+  'canSendThisProforma = accessRow.Edit_All_Proformas == true || isPfOwner;',
   'You must be an owner of this Pro Forma to send it for approvals, unless you have Edit All Proformas.'
 ]) {
   if (!startProformaApproval.includes(required)) errors.push(`Start_Proforma_Approval_Chain: owner-scoped send access is missing ${required}.`);
 }
 const updateProformaApprovalRecipient = fs.readFileSync(path.join(root, 'creator/functions/Update_Proforma_Approval_Recipient.dg'), 'utf8');
-for (const required of [
-  'isPfOwner = false;',
-  'if(canEditRecipient == false && accessRow.Send_Pro_Formas_for_Approvals == true)',
-  'if(accessRow.Edit_All_Proformas == true || isPfOwner == true)',
-  'accessRow.Edit_Owned_Proformas == true && isPfOwner == true'
-]) {
-  if (!updateProformaApprovalRecipient.includes(required)) errors.push(`Update_Proforma_Approval_Recipient: owner-scoped recipient access is missing ${required}.`);
+const retiredProformaConfig = fs.readFileSync(path.join(root, 'creator/functions/Manage_Proforma_Approval_Config.dg'), 'utf8');
+for (const [name, source] of [['Update_Proforma_Approval_Recipient', updateProformaApprovalRecipient], ['Manage_Proforma_Approval_Config', retiredProformaConfig]]) {
+  if (!source.includes('response.put("success",false);') || !source.includes('Settings > Approval')) errors.push(`${name}: retired endpoint must direct configuration to Settings.`);
+  if (/insert into|delete from|row\.\w+\s*=|Budget_Approvals\[/.test(source)) errors.push(`${name}: retired endpoint must preserve historical execution rows.`);
 }
 const killProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Kill_Proforma_Approval_Flow.dg'), 'utf8');
 if (!killProformaApproval.includes('pf.Status="Draft";')) {

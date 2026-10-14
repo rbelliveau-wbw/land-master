@@ -8,15 +8,15 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.102"></script>
-<script src="pf-save-audit.js?v=1.80.102"></script>
-<script src="pf-progress.js?v=1.80.102"></script>
+<script src="pf-save-verification.js?v=1.80.103"></script>
+<script src="pf-save-audit.js?v=1.80.103"></script>
+<script src="pf-progress.js?v=1.80.103"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.102"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.102">
-<script src="comments.js?v=1.80.102"></script>
+<script src="budget-transfer-ui.js?v=1.80.103"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.103">
+<script src="comments.js?v=1.80.103"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -176,6 +176,7 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 .ps-phase-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .ps-phase-title{color:var(--navy);font-size:15px;font-weight:800}.ps-phase-detail,.ps-phase-end{color:#54708f;font-size:11px}.ps-phase-end{margin-left:auto}
 .ps-phase-controls{display:flex;align-items:end;gap:15px;flex-wrap:wrap}.ps-phase-controls .fld{width:110px}.ps-phase-controls .fld>label{display:block;margin-bottom:3px;color:#5b7190;font-size:9px;font-weight:800;text-transform:uppercase}.ps-phase-controls .ps-input-wrap input{height:29px}.ps-phase-controls .ps-switch{min-height:29px}
+.ps-phase-heading .ps-switch{min-height:24px;margin:0 3px;font-size:10px!important}
 .ps-delay-row{margin-top:12px;padding-top:12px;border-top:1px solid #d7e2f2}.ps-delay-row .fld{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;align-items:center}.ps-delay-row .fld .hint{grid-column:1/-1}
 .ps-input-wrap{position:relative;width:100%;max-width:140px}.ps-input-wrap input{width:100%;height:31px;padding-right:60px!important;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;background:#f3f8ff}
 .ps-input-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#54708f;font-size:11px;pointer-events:none}
@@ -1821,7 +1822,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.102"></script>
+<script src="success-feedback.js?v=1.80.103"></script>
 </head>
 <body>
 
@@ -2235,7 +2236,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.102";
+var PFW_VERSION="1.80.103";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -2291,8 +2292,6 @@ var CFG = {
     handleProformaApproval: "Handle_Proforma_Approval_Action",
     sendProformaApprovalEmail: "Send_Proforma_Approval_Email",
     killProformaApproval: "Kill_Proforma_Approval_Flow",
-    updateProformaApprovalRecipient: "Update_Proforma_Approval_Recipient",
-    manageProformaApprovalConfig: "Manage_Proforma_Approval_Config",
     createProformaAttachmentRecord: "Create_Proforma_Attachment_Record",
     deleteProformaAttachment: "Delete_Proforma_Attachment",
     getProformaAttachmentPreview: "Get_Proforma_Attachment_Preview",
@@ -4119,9 +4118,8 @@ function modelToCalc(m){
 
 
 /* ════════════════════════════════════════════════════════════
-   PRO FORMA APPROVALS — one track: VP → Legal → CFO → COO
+   PRO FORMA APPROVALS — sequential route from Settings policies
    ════════════════════════════════════════════════════════════ */
-var PF_DEFAULT_APPROVAL_ROLES=["VP","Legal","CFO","COO"];
 var PF_LIFECYCLE_STATUSES=["Draft","Pending Approval","Approved","LOI in Progress","Closed"];
 function normalizeProformaLifecycleStatus(v){
   var raw=approvalText(v).toLowerCase();
@@ -4226,9 +4224,9 @@ function syncApprovalAccessVisibility(){
 }
 function proformaApprovalState(pfOrId){
   var rows=approvalRowsForPf(pfOrId),statuses=rows.map(function(r){return approvalStatus(r).toLowerCase();});
-  var started=statuses.some(function(s){return s&&s!=="not sent";});
-  var pending=statuses.some(function(s){return s==="pending";});
   var lifecycle=approvalText(pfOrId&&typeof pfOrId==="object"&&pfOrId.Status).toLowerCase();
+  var started=lifecycle==="pending approval"||statuses.some(function(s){return s&&s!=="not sent";})||rows.some(function(row){return !!approvalText(row.Sent_Date)||!!approvalText(row.Responded_Date)||!!approvalNote(row);});
+  var pending=statuses.some(function(s){return s==="pending";});
   var complete=(rows.length>0&&statuses.every(function(s){return s==="approved";}))||lifecycle==="approved";
   var rejected=statuses.some(function(s){return s==="rejected";});
   return {rows:rows,started:started,pending:pending,complete:complete,rejected:rejected};
@@ -4262,42 +4260,31 @@ function invokeProformaApprovalApi(key,args){
   var apiName=CFG.customApis[key]||key,argsObj=args||{};
   auditLog("info","Calling Pro Forma approval API",{api:apiName,args:argsObj});
   if(!S.liveSDK){
-    var pfId=String(argsObj.proformaId||""),rows=approvalRowsForPf(pfId),now=new Date().toISOString();
+    var mockInput=argsObj.proformaId;
+    if(key==="startProformaApproval"&&String(mockInput||"").charAt(0)==="{")mockInput=JSON.parse(mockInput);
+    var pfId=String(mockInput&&typeof mockInput==="object"?mockInput.id:mockInput||""),rows=approvalRowsForPf(pfId),now=new Date().toISOString();
     if(key==="startProformaApproval"){
-      if(!rows.length){PF_DEFAULT_APPROVAL_ROLES.forEach(function(role,i){S.approvals.push({ID:"mock_appr_"+pfId+"_"+(i+1),Proforma:pfId,Title:role,Approver:role.toLowerCase()+"@wbdevelopment.com",Sort_Order:i+1,Status:i===0?"Pending":"Not Sent",Type1:"Pro Forma",Sent_Date:i===0?now:""});});}
-      else rows.forEach(function(r,i){r.Status=i===0?"Pending":"Not Sent";r.Sent_Date=i===0?now:"";});
+      var mockSettings=S.mockProformaApprovalSettings;
+      if(mockInput&&mockInput.settingsPreview===true){
+        if(!mockSettings)return Promise.reject(new Error("Configure the Pro Forma approval route in Settings → Approvals."));
+        return Promise.resolve({success:true,contract:"proforma-approval-settings-v1",policyModel:"territory-perpetual-v2",proformaId:pfId,policyId:String(mockSettings.policyId),route:mockSettings.route});
+      }
+      if(!mockSettings)return Promise.reject(new Error("Configure the Pro Forma approval route in Settings → Approvals."));
+      S.approvals=(S.approvals||[]).filter(function(row){return approvalPfId(row)!==pfId;});
+      mockSettings.route.forEach(function(step,i){S.approvals.push({ID:"mock_appr_"+pfId+"_"+(i+1),Proforma:pfId,Title:step.role,Approver:step.email,Sort_Order:i+1,Status:i===0?"Pending":"Not Sent",Type1:"Pro Forma",Sent_Date:i===0?now:""});});
       var p=(S.proformas||[]).find(function(x){return String(x.ID)===pfId;});if(p){p.Lock_Inputs="true";p.Status="Pending Approval";}
     }else if(key==="handleProformaApproval"){
       var row=(S.approvals||[]).find(function(x){return String(x.ID)===String(argsObj.approvalId);});
       if(row){row.Approval_Notes=argsObj.approvalNote||"";var act=argsObj.approvalAction;if(act==="Approved"){row.Status="Approved";row.Responded_Date=now;var nx=approvalRowsForPf(pfId).find(function(x){return intN(x.Sort_Order)===intN(row.Sort_Order)+1;});if(nx){nx.Status="Pending";nx.Sent_Date=now;}}else if(act==="Rejected"){var all=approvalRowsForPf(pfId).slice().sort(function(a,b){return intN(a.Sort_Order)-intN(b.Sort_Order);});all.forEach(function(x){if(x!==row){x.Status="Not Sent";x.Sent_Date="";x.Responded_Date="";x.Approval_Notes="";}});row.Status="Rejected";row.Responded_Date=now;if(all[0]){all[0].Status="Pending";all[0].Sent_Date=now;all[0].Responded_Date="";}}}
     }else if(key==="killProformaApproval"){
       rows.forEach(function(r){r.Status="Not Sent";r.Approval_Notes="";r.Sent_Date="";r.Responded_Date="";});var kp=(S.proformas||[]).find(function(x){return String(x.ID)===pfId;});if(kp){kp.Lock_Inputs="false";kp.Status="Draft";}
-    }else if(key==="updateProformaApprovalRecipient"){
-      var ur=(S.approvals||[]).find(function(x){return String(x.ID)===String(argsObj.approvalId);});if(ur)ur.Approver=argsObj.approverEmail||"";
-    }else if(key==="manageProformaApprovalConfig"){
-      var cfgRows=approvalRowsForPf(pfId),cfgAction=String(argsObj.configAction||"").toLowerCase();
-      if(cfgAction==="add"){
-        var next=cfgRows.length+1,newId="mock_appr_"+pfId+"_"+Date.now();
-        S.approvals.push({ID:newId,Proforma:pfId,Title:argsObj.title||("Approver "+next),Approver:argsObj.approverEmail||"",Sort_Order:next,Status:"Not Sent",Type1:"Pro Forma"});
-        return Promise.resolve({success:true,mock:true,approvalId:newId});
-      }
-      if(cfgAction==="update"){
-        var cfgRow=(S.approvals||[]).find(function(x){return String(x.ID)===String(argsObj.approvalId);});
-        if(cfgRow){cfgRow.Title=argsObj.title||cfgRow.Title;cfgRow.Approver=String(argsObj.approverEmail==null?cfgRow.Approver:argsObj.approverEmail);}
-      }else if(cfgAction==="delete"){
-        S.approvals=(S.approvals||[]).filter(function(x){return String(x.ID)!==String(argsObj.approvalId);});
-        approvalRowsForPf(pfId).forEach(function(r,i){r.Sort_Order=i+1;});
-      }else if(cfgAction==="reorder"){
-        var ids=String(argsObj.orderedIds||"").split(",").filter(Boolean),byId={};cfgRows.forEach(function(r){byId[String(r.ID)]=r;});
-        ids.forEach(function(id,i){if(byId[id])byId[id].Sort_Order=i+1;});
-      }
     }
     return Promise.resolve({success:true,mock:true});
   }
   return sdkInvoke({api_name:apiName,http_method:"POST",content_type:"application/json",payload:argsObj}).then(function(resp){
     if(responseBad(resp))throw resp;
     var parsed=parseApprovalApiResult(resp);
-    if(parsed&&(parsed.success===false||parsed.success==="false"))throw {message:parsed.error||parsed.message||"Approval API failed",response:resp};
+    if(parsed&&(parsed.success===false||parsed.success==="false"))throw {message:parsed.error||parsed.message||"Approval API failed",response:resp,acknowledgedFailure:true};
     auditLog("success","Pro Forma approval API completed",{api:apiName,response:parsed});
     return parsed;
   });
@@ -4330,9 +4317,6 @@ function refreshProformaApprovalState(pfId){
   });
 }
 function setApprovalBusy(v){S.approvalBusy=!!v;var pane=document.querySelector('.ed-pane[data-pane="approvals"]');if(pane)pane.classList.toggle("pf-appr-busy",!!v);}
-function proformaApprovalRecipientLines(pfId){
-  return approvalRowsForPf(pfId).map(function(row){return {role:approvalRole(row),email:approvalEmail(row),id:String(row.ID)};});
-}
 var pfApprovalProgress=null,PF_APPROVAL_TICK=560;
 var PF_APPROVAL_STEPS=["Recording approval request","Activating the first approver","Sending approval email"];
 var PF_REJECT_STEPS=["Recording rejection","Restarting approval at VP","Sending return email"];
@@ -4428,22 +4412,23 @@ function pfApprovalCheck(p){
   pfProgressSnapshot(p,"Check").then(function(s){
     if(pfApprovalProgress!==p||p.terminal||p.pendingFinish)return;
     if(pfApprovalInspect(p,s))return;
+    if(p.kind!=="reject"&&p.startRejected){pfApprovalFinish(p,"error",p.startRejected);return;}
     if(!p.repairUsed&&Date.now()-p.startedAt>=5000&&(!p.kind||p.kind!=="reject"||pfRejectRecorded(p,s))){p.repairUsed=true;pfProgressSnapshot(p,"Repair").then(function(r){if(pfApprovalProgress===p&&!p.terminal&&!pfApprovalInspect(p,r))pfApprovalSchedule(p);}).catch(function(err){auditLog("error","Pro Forma approval repair failed",errMeta(err));pfApprovalSchedule(p);});}
     else pfApprovalSchedule(p);
   }).catch(function(err){auditLog("error","Pro Forma send check failed",errMeta(err));pfApprovalSchedule(p);});
 }
 function pfApprovalAttempt(p,write){
-  p.terminal="";p.message="";p.displayStep=0;p.targetStep=0;p.last=null;p.pendingFinish=null;p.repairUsed=false;p.reconciliationUnavailable=false;p.startedAt=Date.now();
+  p.terminal="";p.message="";p.displayStep=0;p.targetStep=0;p.last=null;p.pendingFinish=null;p.repairUsed=false;p.reconciliationUnavailable=false;p.startRejected="";p.startedAt=Date.now();
   clearTimeout(p.timer);clearTimeout(p.deadlineTimer);clearTimeout(p.visualTimer);p.visualTimer=null;
   p.deadlineTimer=setTimeout(function(){if(pfApprovalProgress!==p||p.terminal||p.pendingFinish)return;var s=p.last;if(p.kind==="reject"){if(pfRejectRecorded(p,s)&&s.firstStatus==="Pending"&&Number(s.pendingCount)===1&&!s.sentDate)pfApprovalFinish(p,"warning","VP is active, but the return email could not be verified.");else pfApprovalFinish(p,"error","The rejection or return route could not be verified. Check this Pro Forma before trying again.");}else if(s&&s.status==="Pending Approval"&&s.firstStatus==="Pending"&&Number(s.pendingCount)===1&&!s.sentDate)pfApprovalFinish(p,"warning","The first approver is active, but the approval email could not be verified.");else pfApprovalFinish(p,"error","Approval submission or routing could not be verified. Check this Pro Forma before trying again.");},20000);
   pfApprovalRender(p);document.getElementById("pfApprovalRun").focus();
-  if(write)(p.kind==="reject"?invokeProformaApprovalApi("handleProformaApproval",{proformaId:p.id,approvalId:p.approvalId,approvalAction:"Rejected",approvalNote:p.note}):invokeProformaApprovalApi("startProformaApproval",{proformaId:p.id})).then(function(){if(p.kind==="reject")p.writeAcknowledged=true;},function(err){auditLog("error","Pro Forma approval write returned an error; checking persisted state",errMeta(err));}).then(function(){pfApprovalSchedule(p);});
+  if(write)(p.kind==="reject"?invokeProformaApprovalApi("handleProformaApproval",{proformaId:p.id,approvalId:p.approvalId,approvalAction:"Rejected",approvalNote:p.note}):invokeProformaApprovalApi("startProformaApproval",proformaApprovalStartPayload(p.id,p.settings))).then(function(){if(p.kind==="reject")p.writeAcknowledged=true;},function(err){if(p.kind!=="reject"&&err&&err.acknowledgedFailure)p.startRejected=String(err.message||"Approval submission was rejected. Refresh the Settings route before sending again.");auditLog("error","Pro Forma approval write returned an error; checking persisted state",errMeta(err));}).then(function(){pfApprovalSchedule(p);});
   else pfApprovalSchedule(p);
 }
-function executeStartProformaApproval(id){
+function executeStartProformaApproval(id,settings){
   id=String(id||"");if(!id||pfApprovalProgress)return;
   var rec=(S.proformas||[]).find(function(x){return String(x.ID)===id;})||{};
-  var p={id:id,name:String(rec.Name||("Pro Forma "+id)),trigger:document.activeElement,displayStep:0,targetStep:0,terminal:"",timer:null,deadlineTimer:null,visualTimer:null,last:null,repairUsed:false,pendingFinish:null};
+  var p={id:id,settings:settings,name:String(rec.Name||("Pro Forma "+id)),trigger:document.activeElement,displayStep:0,targetStep:0,terminal:"",timer:null,deadlineTimer:null,visualTimer:null,last:null,repairUsed:false,pendingFinish:null};
   pfApprovalProgress=p;setApprovalBusy(true);document.getElementById("pfApprovalRows").textContent="";document.getElementById("pfApprovalRun").classList.add("show");pfApprovalAttempt(p,true);
 }
 function executeRejectProformaApproval(id,aid,note,trigger){
@@ -4465,7 +4450,7 @@ document.getElementById("pfApprovalRetry").addEventListener("click",function(){
       return pfApprovalSchedule(p);
     }
     if(warning||s.status==="Pending Approval"){p.repairUsed=true;return pfProgressSnapshot(p,"Repair").then(function(r){if(pfApprovalProgress===p&&!p.terminal&&!pfApprovalInspect(p,r))pfApprovalSchedule(p);});}
-    return invokeProformaApprovalApi("startProformaApproval",{proformaId:p.id}).catch(function(err){auditLog("error","Pro Forma approval retry returned an error",errMeta(err));}).then(function(){pfApprovalSchedule(p);});
+    return invokeProformaApprovalApi("startProformaApproval",proformaApprovalStartPayload(p.id,p.settings)).catch(function(err){if(err&&err.acknowledgedFailure)p.startRejected=String(err.message||"Approval submission was rejected. Refresh the Settings route before sending again.");auditLog("error","Pro Forma approval retry returned an error",errMeta(err));}).then(function(){pfApprovalSchedule(p);});
   }).catch(function(err){auditLog("error","Pro Forma retry check failed",errMeta(err));pfApprovalSchedule(p);});
 });
 document.addEventListener("keydown",function(e){var p=pfApprovalProgress;if(!p)return;if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();if(p.terminal)pfApprovalClose();return;}if(e.key!=="Tab")return;var root=document.getElementById("pfApprovalRun"),items=Array.from(root.querySelectorAll("button:not([hidden]):not(:disabled)"));if(!items.length){e.preventDefault();root.focus();return;}if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items[items.length-1].focus();}else if(!e.shiftKey&&document.activeElement===items[items.length-1]){e.preventDefault();items[0].focus();}},true);
@@ -4529,13 +4514,9 @@ function proformaSendApprovalsGate(pfOrId){
   if(state.complete) reasons.push("Already fully approved — cancel and reset the flow to send again");
   else if(state.started) reasons.push("Already sent — cancel and reset the flow to send again");
   if(S.ed&&String(S.ed.id||"")===id&&(S.ed.dirty||S.ed.loiDirty)) reasons.push("Save your unsaved changes first");
-  if(!state.rows.length) reasons.push("No approval steps are configured for this Pro Forma");
   var readiness=proformaApprovalReadiness(id);
   if(!readiness.ready){ loiFixable=true; readiness.issues.forEach(function(x){ reasons.push(x); }); }
-  if(state.rows.length){
-    var noEmail=proformaApprovalRecipientLines(id).filter(function(x){return !x.email;});
-    if(noEmail.length) reasons.push("No email on file for: "+noEmail.map(function(x){return x.role;}).join(", "));
-  }
+
   return {can:reasons.length===0, reasons:reasons, loiFixable:loiFixable, state:state};
 }
 function sendApprovalsWhyText(gate){
@@ -4551,34 +4532,25 @@ function sendApprovalsWhyIcon(gate){
 }
 function runStartProformaApproval(pfId){
   if(!pfReferencesReady())return pfReferenceAction(function(){return runStartProformaApproval(pfId);});
-  var id=String(pfId||"");if(!id)return;
+  var id=String(pfId||"");if(!id||S.approvalSettingsPending||S.approvalBusy||pfApprovalProgress)return;
   var rec=(S.proformas||[]).find(function(r){return String(r.ID)===id;})||((S.ed&&S.ed.model&&String(S.ed.model.ID)===id)?S.ed.model:null);
   var gate=proformaSendApprovalsGate(rec||id);
   if(!gate.can){
     auditLog("warn","Send for Approvals blocked",{proformaId:id,reasons:gate.reasons});
-    uiConfirm({
-      tone:"danger",
-      kicker:"Not ready to send",
-      title:gate.loiFixable?"Complete the Offer records before sending":"Send for Approvals is not available yet",
-      message:"Clear every line below first.",
-      list:gate.reasons,
-      okLabel:gate.loiFixable?"Open Offer tab":"Close",
-      cancelLabel:gate.loiFixable?"Close":false
-    }).then(function(openLOI){ if(openLOI&&gate.loiFixable&&S.ed&&String(S.ed.id||"")===id) setPane("loi"); });
-    return;
+    return uiConfirm({tone:"danger",kicker:"Not ready to send",title:gate.loiFixable?"Complete the Offer records before sending":"Send for Approvals is not available yet",message:"Clear every line below first.",list:gate.reasons,okLabel:gate.loiFixable?"Open Offer tab":"Close",cancelLabel:gate.loiFixable?"Close":false})
+      .then(function(openLOI){if(openLOI&&gate.loiFixable&&S.ed&&String(S.ed.id||"")===id)setPane("loi");});
   }
-  var recipients=proformaApprovalRecipientLines(id);
-  uiConfirm({
-    tone:"default",
-    kicker:"Approval chain",
-    title:"Send for Approvals?",
-    message:'Are you sure you want to send "'+String((rec&&rec.Name)||"this Pro Forma")+'" for approvals?',
-    steps:recipients.map(function(x){return x.role+" — "+x.email;}),
-    note:"Emails are sent sequentially in the order shown above.",
-    okLabel:"Send for Approvals",
-    cancelLabel:"Cancel"
-  }).then(function(ok){if(ok)executeStartProformaApproval(id);});
+  var key=proformaApprovalSettingsKey(rec);S.approvalSettingsPending=id;setApprovalBusy(true);
+  return loadProformaApprovalSettings(rec,true).then(function(settings){
+    if(key!==proformaApprovalSettingsKey(rec)||!proformaSendApprovalsGate(rec).can)throw new Error("This Pro Forma changed. Save it and refresh the approval route.");
+    return uiConfirm({tone:"default",kicker:"Settings approval chain",title:"Send for Approvals?",message:'Are you sure you want to send "'+String(rec.Name||"this Pro Forma")+'" for approvals?',steps:settings.route.map(function(step){return step.role+" — "+step.email;}),note:"Emails are sent sequentially in the order shown above.",okLabel:"Send for Approvals",cancelLabel:"Cancel"})
+      .then(function(ok){if(!ok)return;if(key!==proformaApprovalSettingsKey(rec)||!proformaSendApprovalsGate(rec).can)throw new Error("This Pro Forma changed. Refresh the approval route before sending.");executeStartProformaApproval(id,settings);});
+  }).catch(function(error){
+    auditLog("error","Settings approval route unavailable",{proformaId:id,error:errMeta(error)});
+    return uiConfirm({tone:"danger",kicker:false,title:"Approval route unavailable",message:String(error&&error.message||"Check Settings → Approvals and refresh the route."),okLabel:"Close",cancelLabel:false});
+  }).then(function(){if(S.approvalSettingsPending===id)S.approvalSettingsPending=null;if(!pfApprovalProgress)setApprovalBusy(false);if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();});
 }
+
 function runProformaApprovalAction(pfId,approvalId,action,note){
   var id=String(pfId||""),aid=String(approvalId||"");if(!id||!aid)return;
   var approvalRow=(S.approvals||[]).find(function(row){return String(row.ID)===aid;});
@@ -4612,186 +4584,87 @@ function runKillProformaApproval(pfId){
       .then(function(){setApprovalBusy(false);renderApprovalPane();});
   });
 }
-function invokeProformaApprovalConfig(pfId,configAction,extra){
-  var args={proformaId:String(pfId||""),configAction:String(configAction||""),approvalId:"",title:"",approverEmail:"",orderedIds:""};
-  Object.keys(extra||{}).forEach(function(k){args[k]=extra[k];});
-  return invokeProformaApprovalApi("manageProformaApprovalConfig",args);
+function proformaApprovalSettingsKey(pf){
+  var scope=S.liveSDK&&typeof LMRuntime!=="undefined"?LMRuntime.current():null;
+  return JSON.stringify({id:String(pf&&pf.ID||""),territory:approvalText(pf&&pf.Territory),actor:approvalText(S.currentUser),scope:scope});
 }
-function canConfigureProformaApprovalsFor(rec){
-  var p=perms();
-  /* Edit All Pro Forma Approvals stays the admin route; the owner grant configures the
-     route only on Pro Formas you own - the same scope it gives ordinary editing.
-     The configuration Custom API enforces the same administrator/owned-record scope. */
-  return !!p.apprAll || (!!p.editOwned && userOwnsPf(rec));
+function proformaApprovalSettingsEntry(pf){
+  var entry=(S.proformaApprovalSettingsCache||{})[String(pf&&pf.ID||"")];
+  return entry&&entry.key===proformaApprovalSettingsKey(pf)?entry:null;
 }
-/* Send Pro Formas for Approvals grants the deliberately narrower ability to fix
-   recipient email addresses before the chain starts. It does not allow changing
-   step names, sequence, or membership of the route. Existing route administrators
-   retain their recipient-edit ability. */
-function canEditProformaApprovalRecipientsFor(recOrId){
-  var id=String((recOrId&&typeof recOrId==="object"?recOrId.ID:recOrId)||"");
-  var rec=(recOrId&&typeof recOrId==="object")?recOrId:((S.proformas||[]).find(function(r){return String(r.ID)===id;})||((S.ed&&S.ed.model&&String(S.ed.model.ID)===id)?S.ed.model:null));
-  var state=proformaApprovalState(rec||id);
-  return !state.started&&!S.approvalBusy&&!!(canSendProformaApprovalsFor(rec||id)||canConfigureProformaApprovalsFor(rec||id));
-}
-function approvalConfigEditable(pfId){
-  var id=String(pfId||"");
-  var rec=(S.proformas||[]).find(function(r){return String(r.ID)===id;})||((S.ed&&S.ed.model&&String(S.ed.model.ID)===id)?S.ed.model:null);
-  var st=proformaApprovalState(rec||id);
-  return canConfigureProformaApprovalsFor(rec||id)&&!st.started&&!S.approvalBusy;
-}
-function refreshApprovalConfig(pfId,message){
-  return loadApprovals().then(function(){renderApprovalPane();if(message)toast(message,"ok");});
-}
-function runAddProformaApproval(pfId){
-  var id=String(pfId||"");if(!approvalConfigEditable(id)){toast("Cancel the active approval flow before changing the route.","err");return;}
-  var next=approvalRowsForPf(id).length+1;
-  setApprovalBusy(true);toast("Adding approval step…");
-  invokeProformaApprovalConfig(id,"add",{title:"Approver "+next,approverEmail:""})
-    .then(function(){return refreshApprovalConfig(id,"Approval step added.");})
-    .catch(function(err){auditLog("error","Could not add Pro Forma approval step",{proformaId:id,error:errMeta(err)});toast("Add failed: "+((err&&err.message)||"unknown error"),"err");})
-    .then(function(){setApprovalBusy(false);renderApprovalPane();var inputs=document.querySelectorAll('[data-pf-appr-config-title]');if(inputs.length)inputs[inputs.length-1].focus();});
-}
-function runUpdateProformaApprovalConfig(pfId,approvalId,tile){
-  var id=String(pfId||""),aid=String(approvalId||"");if(!id||!aid||!tile)return;
-  if(!approvalConfigEditable(id)){toast("Cancel the active approval flow before changing the route.","err");renderApprovalPane();return;}
-  var titleEl=tile.querySelector('[data-pf-appr-config-title]'),emailEl=tile.querySelector('[data-pf-appr-config-email]');
-  var title=approvalText(titleEl&&titleEl.value),email=approvalText(emailEl&&emailEl.value);
-  if(!title){toast("Each approval step needs a name.","err");if(titleEl)titleEl.focus();return;}
-  if(email&&email.indexOf("@")<1){toast("Enter a valid approver email or leave it blank.","err");if(emailEl)emailEl.focus();return;}
-  tile.classList.add("saving");
-  invokeProformaApprovalConfig(id,"update",{approvalId:aid,title:title,approverEmail:email})
-    .then(function(){var row=(S.approvals||[]).find(function(x){return String(x.ID)===aid;});if(row){row.Title=title;row.Approver=email;}tile.classList.remove("saving");tile.classList.add("saved");setTimeout(function(){tile.classList.remove("saved");},900);})
-    .catch(function(err){tile.classList.remove("saving");auditLog("error","Could not update Pro Forma approval step",{proformaId:id,approvalId:aid,error:errMeta(err)});toast("Approval step update failed: "+((err&&err.message)||"unknown error"),"err");renderApprovalPane();});
-}
-function runDeleteProformaApproval(pfId,approvalId){
-  var id=String(pfId||""),aid=String(approvalId||""),rows=approvalRowsForPf(id),row=rows.find(function(r){return String(r.ID)===aid;});
-  if(!approvalConfigEditable(id)){toast("Cancel the active approval flow before changing the route.","err");return;}
-  if(rows.length<=1){toast("An approval route must contain at least one step.","err");return;}
-  uiConfirm({tone:"danger",kicker:"Approval route",title:"Remove approval step?",message:'Remove "'+approvalRole(row)+'" from this Pro Forma approval route?',okLabel:"Remove Step",cancelLabel:"Keep Step"}).then(function(ok){
-    if(!ok)return;setApprovalBusy(true);toast("Removing approval step…");
-    invokeProformaApprovalConfig(id,"delete",{approvalId:aid})
-      .then(function(){return refreshApprovalConfig(id,"Approval step removed.");})
-      .catch(function(err){auditLog("error","Could not delete Pro Forma approval step",{proformaId:id,approvalId:aid,error:errMeta(err)});toast("Remove failed: "+((err&&err.message)||"unknown error"),"err");})
-      .then(function(){setApprovalBusy(false);renderApprovalPane();});
+function validateProformaApprovalSettings(value,id){
+  if(!value||value.success!==true||value.contract!=="proforma-approval-settings-v1"||value.policyModel!=="territory-perpetual-v2"||typeof value.proformaId!=="string"||value.proformaId!==id){
+    throw new Error("Creator approval routing needs the Settings update before this Pro Forma can be sent.");
+  }
+  if(typeof value.policyId!=="string"||!/^\d+$/.test(value.policyId)||!Array.isArray(value.route)||!value.route.length||value.route.length>8)throw new Error("Settings did not return a valid Pro Forma approval route.");
+  value.route.forEach(function(step,i){
+    if(!step||step.order!==i+1||typeof step.key!=="string"||!step.key||typeof step.role!=="string"||!step.role.trim()||typeof step.roleId!=="string"||!/^\d+$/.test(step.roleId)||typeof step.userAccessId!=="string"||!/^\d+$/.test(step.userAccessId)||typeof step.email!=="string"||! /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(step.email))throw new Error("Settings returned an incomplete Pro Forma approver.");
   });
+  return value;
 }
-function saveProformaApprovalOrder(pfId,ids){
-  var id=String(pfId||"");ids=(ids||[]).map(String);
-  if(!approvalConfigEditable(id)||!ids.length)return;
-  setApprovalBusy(true);toast("Saving approval order…");
-  invokeProformaApprovalConfig(id,"reorder",{orderedIds:ids.join(",")})
-    .then(function(){return refreshApprovalConfig(id,"Approval order saved.");})
-    .catch(function(err){auditLog("error","Could not reorder Pro Forma approvals",{proformaId:id,orderedIds:ids,error:errMeta(err)});toast("Reorder failed: "+((err&&err.message)||"unknown error"),"err");})
-    .then(function(){setApprovalBusy(false);renderApprovalPane();});
+function loadProformaApprovalSettings(pf,force){
+  var id=String(pf&&pf.ID||""),key=proformaApprovalSettingsKey(pf),cache=S.proformaApprovalSettingsCache||(S.proformaApprovalSettingsCache={}),current=cache[id];
+  if(!id)return Promise.reject(new Error("Save the Pro Forma first."));
+  if(current&&current.key===key){
+    if(current.status==="loading")return current.promise;
+    if(!force)return current.status==="ready"?Promise.resolve(current.value):Promise.reject(current.error);
+  }
+  var entry={key:key,status:"loading",value:null,error:null,promise:null};cache[id]=entry;
+  /* Check is read only on the old API too. An unknown Preview mode would fall
+     through to Start in older Creator code, so never send that mode here. */
+  entry.promise=invokeProformaApprovalApi("startProformaApproval",{proformaId:JSON.stringify({id:id,mode:"Check",settingsPreview:true})}).then(function(value){
+    value=validateProformaApprovalSettings(value,id);
+    if(cache[id]!==entry||key!==proformaApprovalSettingsKey(pf))throw new Error("Approval route context changed. Refresh the route.");
+    entry.status="ready";entry.value=value;return value;
+  },function(error){throw error;}).catch(function(error){entry.status="error";entry.error=error;throw error;});
+  return entry.promise;
 }
-function runMoveProformaApproval(pfId,approvalId,delta){
-  var rows=approvalRowsForPf(pfId),idx=rows.findIndex(function(r){return String(r.ID)===String(approvalId);}),next=idx+Number(delta||0);
-  if(idx<0||next<0||next>=rows.length)return;
-  var tmp=rows[idx];rows[idx]=rows[next];rows[next]=tmp;saveProformaApprovalOrder(pfId,rows.map(function(r){return String(r.ID);}));
+function proformaApprovalStartPayload(id,settings){
+  return {proformaId:JSON.stringify({id:String(id),mode:"StartSettings",expectedPolicyId:settings.policyId,expectedRoute:settings.route.map(function(step){return {order:step.order,key:step.key,roleId:step.roleId,role:step.role,userAccessId:step.userAccessId,email:step.email};})})};
 }
-function initProformaApprovalDrag(host,pfId){
-  var list=host&&host.querySelector('[data-pf-appr-config-list]');if(!list)return;
-  var dragged=null,startOrder="";
-  list.querySelectorAll('[data-pf-appr-drag]').forEach(function(handle){
-    handle.addEventListener("dragstart",function(e){
-      if(!approvalConfigEditable(pfId)){e.preventDefault();return;}
-      dragged=handle.closest('[data-pf-appr-config-tile]');if(!dragged)return;
-      startOrder=Array.from(list.querySelectorAll('[data-pf-appr-config-tile]')).map(function(t){return t.getAttribute('data-approval-id');}).join(',');
-      dragged.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged.getAttribute('data-approval-id'));
-    });
-    handle.addEventListener("dragend",function(){if(dragged)dragged.classList.remove('dragging');dragged=null;});
-  });
-  list.addEventListener("dragover",function(e){
-    if(!dragged)return;e.preventDefault();e.dataTransfer.dropEffect='move';
-    var tiles=Array.from(list.querySelectorAll('[data-pf-appr-config-tile]:not(.dragging)'));
-    var after=tiles.find(function(tile){var r=tile.getBoundingClientRect();return e.clientY<r.top+r.height/2;});
-    if(after)list.insertBefore(dragged,after);else list.appendChild(dragged);
-  });
-  list.addEventListener("drop",function(e){
-    if(!dragged)return;e.preventDefault();
-    var ids=Array.from(list.querySelectorAll('[data-pf-appr-config-tile]')).map(function(t){return t.getAttribute('data-approval-id');});
-    if(ids.join(',')!==startOrder)saveProformaApprovalOrder(pfId,ids);else renderApprovalPane();
-  });
-}
-function runUpdateProformaApprovalRecipient(pfId,approvalId,email,input){
-  var id=String(pfId||""),aid=String(approvalId||"");
-  email=approvalText(email);
-  if(!aid)return;
-  if(!email||email.indexOf("@")<1){toast("Enter a valid approver email.","err");if(input)input.focus();return;}
-  var rec=(S.proformas||[]).find(function(r){return String(r.ID)===id;});
-  if(!canEditProformaApprovalRecipientsFor(rec||id)){toast("Recipient emails can only be changed before the approval chain starts.","err");return;}
-  setApprovalBusy(true);
-  if(input){input.disabled=true;input.classList.add("saving");}
-  invokeProformaApprovalApi("updateProformaApprovalRecipient",{proformaId:id,approvalId:aid,approverEmail:email}).then(function(){
-    return refreshProformaApprovalState(id);
-  }).then(function(){
-    toast("Approver updated.","ok");
-  }).catch(function(err){
-    auditLog("error","Could not update Pro Forma approver",{proformaId:pfId,approvalId:aid,email:email,error:errMeta(err)});
-    toast("Approver update failed: "+((err&&err.message)||"unknown error"),"err");
-  }).then(function(){
-    if(input){input.disabled=false;input.classList.remove("saving");}
-    setApprovalBusy(false);
-    renderApprovalPane();
-  });
+function refreshProformaApprovalSettings(pfId){
+  var id=String(pfId||""),pf=S.ed&&S.ed.model;
+  if(!pf||String(pf.ID)!==id||!canViewProformaApprovals()||S.approvalBusy)return;
+  var request=loadProformaApprovalSettings(pf,true);renderApprovalPane();
+  request.then(function(){if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();},function(){if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();});
 }
 function renderApprovalPane(){
   var host=document.querySelector('.ed-pane[data-pane="approvals"]');if(!host)return;
   if(!canViewProformaApprovals()){host.innerHTML="";return;}
   var pf=S.ed&&S.ed.model;
-  if(!pf||!pf.ID){host.innerHTML='<div class="pf-appr-info"><b>Save the Pro Forma first.</b><br>The default approval route is created by the Pro Forma on-save workflow.</div>';return;}
-  var state=proformaApprovalState(pf),rows=state.rows,busy=!!S.approvalBusy,canConfigure=canConfigureProformaApprovalsFor(pf)&&!state.started,canEditRecipients=canEditProformaApprovalRecipientsFor(pf);
-  var top='<div class="pf-appr-panel-top"><div><h2>Pro Forma Approvals</h2><div class="pf-appr-panel-sub">'+(canConfigure?'Drag to reorder. Names and email addresses save automatically when edited.':(canEditRecipients?'You can update recipient email addresses before sending. Send Pro Formas for Approvals applies to Pro Formas you own unless you have Edit All Proformas.':(state.started?'The route is locked while approvals are active.':'Viewing only \u2014 editing this route needs Edit All Pro Forma Approvals, or Edit Owned Pro Formas on a Pro Forma you own.')))+'</div></div><div class="spacer"></div>'+approvalStatusMarkup(approvalStateLabel(state));
-  if(canConfigure)top+='<button type="button" class="pf-appr-primary" data-pf-appr-add="'+esc(String(pf.ID))+'">+ Add Approver</button>';
-  /* Same gate and the same why-icon as the row menu, so the two entry points can never
-     disagree about whether a chain can start. Greyed rather than hidden: clicking it opens
-     the list of what is still outstanding. */
+  if(!pf||!pf.ID){host.innerHTML='<div class="pf-appr-info"><b>Save the Pro Forma first.</b><br>Approvers are managed in Settings → Approvals.</div>';return;}
+  var id=String(pf.ID),state=proformaApprovalState(pf),rows=state.rows,busy=!!S.approvalBusy,entry=null;
+  if(!state.started&&!state.complete){
+    entry=proformaApprovalSettingsEntry(pf);
+    if(!entry){loadProformaApprovalSettings(pf).then(function(){if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();},function(){if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();});entry=proformaApprovalSettingsEntry(pf);}
+    rows=entry&&entry.status==="ready"?entry.value.route.map(function(step){return {Title:step.role,Approver:step.email,Sort_Order:step.order,Status:"Not Sent",Full_Name:step.name||""};}):[];
+  }
+  var top='<div class="pf-appr-panel-top"><div><h2>Pro Forma Approvals</h2><div class="pf-appr-panel-sub">'+(state.started||state.complete?'Submitted approval route.':'Approvers are managed in Settings → Approvals.')+'</div></div><div class="spacer"></div>'+approvalStatusMarkup(approvalStateLabel(state));
+  if(!state.started&&!state.complete)top+='<button type="button" class="btn sm" data-pf-appr-refresh-settings="'+esc(id)+'"'+(busy||entry&&entry.status==="loading"?' disabled':'')+'>Refresh Route</button>';
   if(canSendProformaApprovalsFor(pf)){
     var apprGate=proformaSendApprovalsGate(pf);
-    top+='<button type="button" class="pf-appr-primary'+(apprGate.can?'':' is-off')+'" data-pf-appr-start="'+esc(String(pf.ID))+'" aria-disabled="'+(apprGate.can?'false':'true')+'"'
-      +(apprGate.can?' title="Send this Pro Forma through the approval chain."':'')
-      +'>Send for Approvals'+sendApprovalsWhyIcon(apprGate)+'</button>';
+    top+='<button type="button" class="pf-appr-primary'+(apprGate.can?'':' is-off')+'" data-pf-appr-start="'+esc(id)+'" aria-disabled="'+(apprGate.can?'false':'true')+'"'+(busy?' disabled':'')
+      +(apprGate.can?' title="Send this Pro Forma through the Settings approval chain."':'')+'>Send for Approvals'+sendApprovalsWhyIcon(apprGate)+'</button>';
   }
-  if(state.started&&perms().apprAll)top+='<button type="button" class="pf-appr-danger" data-pf-appr-cancel="'+esc(String(pf.ID))+'">Cancel &amp; Reset Approvals</button>';
+  if(state.started&&perms().apprAll)top+='<button type="button" class="pf-appr-danger" data-pf-appr-cancel="'+esc(id)+'">Cancel &amp; Reset Approvals</button>';
   top+='</div>';
-  var body='';
-  if(canConfigure){
-    var tiles=rows.map(function(r,i){
-      var aid=String(r.ID),first=i===0,last=i===rows.length-1;
-      return '<div class="pf-appr-config-tile" data-pf-appr-config-tile data-approval-id="'+esc(aid)+'">'
-        +'<div class="pf-appr-drag" data-pf-appr-drag draggable="true" title="Drag to reorder" aria-label="Drag '+esc(approvalRole(r))+' to reorder"><span></span><span></span><span></span></div>'
-        +'<div class="pf-appr-order">'+(i+1)+'</div>'
-        +'<label class="pf-appr-config-field"><span>Step name</span><input type="text" maxlength="80" value="'+esc(approvalRole(r))+'" data-pf-appr-config-title data-pf-id="'+esc(String(pf.ID))+'" data-approval-id="'+esc(aid)+'"></label>'
-        +'<label class="pf-appr-config-field email"><span>Approver email</span><input type="email" value="'+esc(approvalEmail(r))+'" placeholder="name@wbdevelopment.com" data-pf-appr-config-email data-pf-id="'+esc(String(pf.ID))+'" data-approval-id="'+esc(aid)+'"></label>'
-        +'<div class="pf-appr-config-status">'+approvalStatusMarkup(approvalStatus(r))+'<small class="pf-appr-save-state"><b>Saving…</b><i>Saved</i></small></div>'
-        +'<div class="pf-appr-config-controls"><button type="button" class="pf-appr-icon-btn" data-pf-appr-move="-1" data-pf-id="'+esc(String(pf.ID))+'" data-approval-id="'+esc(aid)+'" '+(first?'disabled':'')+' title="Move up">↑</button><button type="button" class="pf-appr-icon-btn" data-pf-appr-move="1" data-pf-id="'+esc(String(pf.ID))+'" data-approval-id="'+esc(aid)+'" '+(last?'disabled':'')+' title="Move down">↓</button><button type="button" class="pf-appr-icon-btn delete" data-pf-appr-delete="'+esc(aid)+'" data-pf-id="'+esc(String(pf.ID))+'" title="Remove approval step">×</button></div>'
-        +'</div>';
-    }).join('');
-    if(!tiles)tiles='<div class="pf-appr-empty-route"><b>No approval steps configured</b><span>Add the first approver to build the route.</span></div>';
-    body='<div class="pf-appr-route-preview">'+approvalStepperHtml(rows)+'</div><div class="pf-appr-config-list" data-pf-appr-config-list>'+tiles+'</div>';
-  }else{
-    var cards=rows.map(function(r,i){
-      var status=approvalStatus(r),isPending=status.toLowerCase()==="pending",canAct=isPending&&canEditProformaApprovalRow(r),role=approvalRole(r);
-      var recipient=canEditRecipients
-        ? '<input type="email" value="'+esc(approvalEmail(r))+'" placeholder="name@wbdevelopment.com" data-pf-appr-recipient="'+esc(String(r.ID))+'" data-pf-id="'+esc(String(pf.ID))+'" aria-label="Approver email for '+esc(role)+'">'
-        : '<span class="ro">'+esc(approvalEmail(r)||"Not assigned")+'</span>';
-      var meta='Sent: '+esc(approvalDate(r.Sent_Date))+(r.Responded_Date?' · Responded: '+esc(approvalDate(r.Responded_Date)):'');
-      var note=approvalNote(r),noteHtml='';
-      if(canAct){
-        noteHtml='<div class="pf-appr-note"><textarea data-pf-appr-note="'+esc(String(r.ID))+'" placeholder="Enter an approval note…">'+esc(note)+'</textarea></div><div class="pf-appr-actions"><button type="button" class="btn" data-pf-appr-action="Pending" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(String(pf.ID))+'">Save Note</button><button type="button" class="btn approve" data-pf-appr-action="Approved" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(String(pf.ID))+'">Approve</button>'+'<button type="button" class="btn reject" data-pf-appr-action="Rejected" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(String(pf.ID))+'">Reject</button></div>';
-      }else{
-        noteHtml='<div class="pf-appr-note-view'+(note?'':' empty')+'">'+esc(note||"No approval note entered.")+'</div>';
-        if(isPending&&(canSendProformaApprovalsFor(pf)||canEditProformaApprovalRow(r)))noteHtml+='<div class="pf-appr-actions"><button type="button" class="btn resend" data-pf-appr-resend="'+esc(String(r.ID))+'" data-pf-id="'+esc(String(pf.ID))+'">Resend Email</button></div>';
-      }
-      return '<div class="pf-appr-row"><div class="pf-appr-row-head"><div class="pf-appr-row-role"><span class="pf-appr-seq">'+(i+1)+'</span>'+esc(role)+'</div><div class="pf-appr-row-recipient">'+recipient+'</div><div class="pf-appr-meta">'+meta+'</div>'+approvalStatusMarkup(status)+'</div>'+noteHtml+'</div>';
-    }).join('');
-    if(!cards)cards='<div class="pf-appr-info"><b>No approval steps are configured.</b><br>Cancel the flow if needed, then add an approver.</div>';
-    body='<div class="pf-appr-flow-card">'+approvalStepperHtml(rows)+cards+'</div>';
-  }
+  var cards=rows.map(function(r,i){
+    var status=approvalStatus(r),isPending=status.toLowerCase()==="pending",canAct=state.started&&isPending&&canEditProformaApprovalRow(r),role=approvalRole(r);
+    var recipient='<span class="ro">'+(r.Full_Name?esc(r.Full_Name)+' · ':'')+esc(approvalEmail(r)||"Not assigned")+'</span>';
+    var meta=state.started||state.complete?'Sent: '+esc(approvalDate(r.Sent_Date))+(r.Responded_Date?' · Responded: '+esc(approvalDate(r.Responded_Date)):''):'Settings';
+    var note=approvalNote(r),noteHtml='';
+    if(canAct){
+      noteHtml='<div class="pf-appr-note"><textarea data-pf-appr-note="'+esc(String(r.ID))+'" placeholder="Enter an approval note…">'+esc(note)+'</textarea></div><div class="pf-appr-actions"><button type="button" class="btn" data-pf-appr-action="Pending" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Save Note</button><button type="button" class="btn approve" data-pf-appr-action="Approved" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Approve</button><button type="button" class="btn reject" data-pf-appr-action="Rejected" data-pf-appr-id="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Reject</button></div>';
+    }else if(state.started||state.complete){
+      noteHtml='<div class="pf-appr-note-view'+(note?'':' empty')+'">'+esc(note||"No approval note entered.")+'</div>';
+      if(isPending&&(canSendProformaApprovalsFor(pf)||canEditProformaApprovalRow(r)))noteHtml+='<div class="pf-appr-actions"><button type="button" class="btn resend" data-pf-appr-resend="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Resend Email</button></div>';
+    }
+    return '<div class="pf-appr-row"><div class="pf-appr-row-head"><div class="pf-appr-row-role"><span class="pf-appr-seq">'+(i+1)+'</span>'+esc(role)+'</div><div class="pf-appr-row-recipient">'+recipient+'</div><div class="pf-appr-meta">'+meta+'</div>'+approvalStatusMarkup(status)+'</div>'+noteHtml+'</div>';
+  }).join('');
+  var body=rows.length?'<div class="pf-appr-flow-card">'+approvalStepperHtml(rows)+cards+'</div>':'<div class="pf-appr-info" role="status"><b>'+(entry&&entry.status==="loading"?'Loading Settings approval route…':'Approval route unavailable')+'</b>'+(entry&&entry.status==="error"?'<br>'+esc(entry.error&&entry.error.message||'Check Settings → Approvals and refresh the route.'):'')+'</div>';
   host.innerHTML='<div class="pf-appr-panel'+(busy?' pf-appr-busy':'')+'">'+top+body+'</div>';
-  if(canConfigure)initProformaApprovalDrag(host,String(pf.ID));
 }
+
 function renderApprovalQueue(){
   var host=document.getElementById("pfApprQueue");if(!host)return;
   if(!canViewProformaApprovals()){host.innerHTML="";return;}
@@ -4803,7 +4676,7 @@ function renderApprovalQueue(){
     var rows=groups[id].sort(function(a,b){return intN(a.Sort_Order)-intN(b.Sort_Order);}),myPending=rows.some(function(r){return approvalStatus(r).toLowerCase()==="pending"&&userOwnsProformaApproval(r);});
     if(ui.scope==="mine"&&!myPending)return;
     var hay=(String(pf.Name||"")+" "+String(pf.Territory||"")+" "+rows.map(function(r){return approvalEmail(r)+" "+approvalRole(r);}).join(" ")).toLowerCase();if(q&&hay.indexOf(q)<0)return;
-    var st=proformaApprovalState(id),mini=rows.map(function(r){return '<div class="pf-appr-minirow"><div class="pf-appr-role">'+esc(approvalRole(r))+'</div><div class="pf-appr-email">'+esc(approvalEmail(r)||"Not assigned")+'</div><div class="pf-appr-date">'+esc(approvalDate(r.Sent_Date))+'</div><div>'+approvalStatusMarkup(approvalStatus(r))+'</div></div>';}).join('');
+    var st=proformaApprovalState(id);if(!st.started&&!st.complete)return;var mini=rows.map(function(r){return '<div class="pf-appr-minirow"><div class="pf-appr-role">'+esc(approvalRole(r))+'</div><div class="pf-appr-email">'+esc(approvalEmail(r)||"Not assigned")+'</div><div class="pf-appr-date">'+esc(approvalDate(r.Sent_Date))+'</div><div>'+approvalStatusMarkup(approvalStatus(r))+'</div></div>';}).join('');
     cards.push({pending:st.pending?0:1,name:String(pf.Name||""),html:'<div class="pf-appr-card"><div class="pf-appr-card-head"><div class="pf-appr-card-title"><b>'+esc(pf.Name||("Pro Forma #"+id))+'</b><span>'+esc(pf.Territory||"No territory")+' · '+esc(approvalStateLabel(st))+'</span></div><div class="pf-appr-card-actions"><button type="button" class="btn sm primary" data-pf-appr-open="'+esc(id)+'">Review</button></div></div>'+approvalStepperHtml(rows)+'<div class="pf-appr-minirows">'+mini+'</div></div>'});
   });
   cards.sort(function(a,b){return a.pending-b.pending||a.name.localeCompare(b.name);});
@@ -8484,7 +8357,25 @@ function refreshPhaseSalesFeedback(){
      being typed would discard focus, the caret, and a partially entered value. */
   var draft=document.createElement("div");
   draft.innerHTML=panePhaseSales();
-  [".ps-nav",".ps-balance",".ps-phase-detail",".ps-summary"].forEach(function(selector){
+  /* A live calculation can finish between pointer down and click, or while a
+     phase button has keyboard focus. Keep the navigation controls mounted. */
+  var nav=pane.querySelector(".ps-nav"),nextNav=draft.querySelector(".ps-nav");
+  if(nav&&nextNav)nav.querySelectorAll("[data-ps-select]").forEach(function(button){
+    var nextButton=nextNav.querySelector('[data-ps-select="'+button.getAttribute("data-ps-select")+'"]');
+    if(!nextButton)return;
+    button.className=nextButton.className;
+    ["aria-pressed","aria-label"].forEach(function(attribute){button.setAttribute(attribute,nextButton.getAttribute(attribute));});
+    [".ps-nav-title","small"].forEach(function(selector){
+      var current=button.querySelector(selector),next=nextButton.querySelector(selector);
+      if(current&&next&&current.textContent!==next.textContent)current.textContent=next.textContent;
+    });
+    var timing=button.querySelector(".ps-card-window"),nextTiming=nextButton.querySelector(".ps-card-window");
+    if(timing){
+      timing.style.display=nextTiming?"":"none";
+      if(nextTiming&&timing.innerHTML!==nextTiming.innerHTML)timing.innerHTML=nextTiming.innerHTML;
+    }else if(nextTiming)button.appendChild(nextTiming);
+  });
+  [".ps-balance",".ps-phase-detail",".ps-summary"].forEach(function(selector){
     var current=pane.querySelector(selector),next=draft.querySelector(selector);
     if(current&&next)current.replaceWith(next);
   });
@@ -9928,7 +9819,12 @@ function phaseSalesSharedLocked(m,index){
 }
 function phaseSalesSetShared(m,enabled){
   m.Same_Lot_Sales_All_Phases=enabled?"true":"false";
-  if(enabled)phaseSalesCopyShared(m,(m.phaseSales||[])[0]);
+  if(enabled){
+    var source=(m.phaseSales||[])[0];
+    phaseSalesCopyShared(m,source);
+    /* Copy allocations once; individual lot edits must still balance the project. */
+    if(source)(m.phaseSales||[]).forEach(function(row){if(row!==source)row.Total_Lots=source.Total_Lots;});
+  }
 }
 function phaseSalesPlan(m,rows){
   return PhaseSalesEngine.plan({totalLots:m.Lots,phaseCount:m.Phases,
@@ -10029,9 +9925,9 @@ function panePhaseSales(){
         +'</button>';}).join('')
     +'</nav><div class="ps-editor"><div class="ps-phase-head"><div class="ps-phase-heading"><span class="ps-phase-title">Phase '+(selected+1)+'</span>'
     +'<span class="ps-phase-detail">'+acres.replace(/^ · /,'')+'</span>'
+    +'<label class="ps-switch" title="Copy Phase 1 settings and lot count to every phase; lot counts stay editable"><input type="checkbox" role="switch" data-ps-shared="1"'+(String(m.Same_Lot_Sales_All_Phases)==='true'?' checked':'')+'/><span class="ps-switch-track" aria-hidden="true"></span>Same for all phases</label>'
     +'<span class="ps-balance'+(balance.delta?' bad':'')+'" role="status">'+esc(balanceText)+'</span></div><div class="ps-phase-controls">'
     +phaseSalesField('Lots in phase','Total_Lots',row,selected,{unit:'lots'})
-    +'<label class="ps-switch"><input type="checkbox" role="switch" data-ps-shared="1"'+(String(m.Same_Lot_Sales_All_Phases)==='true'?' checked':'')+'/><span class="ps-switch-track" aria-hidden="true"></span>Same for all phases</label>'
     +(summary?'<span class="ps-phase-end">Construction ends · '+esc(phaseMonthText(m,summary.Const_End_Month))+'</span>':'')
     +'</div></div>'
     +'<div class="ps-group"><h4>Initial take</h4><div class="ps-group-body"><div class="fgrid">'
@@ -10689,6 +10585,8 @@ function wireEditInputs(){
   host.oninput=function(e){
     if(!pfPublicReady())return false;PFTransport.noteDraft();
     var t=e.target, m=S.ed.model;
+    /* The shared slider commits only after its change confirmation succeeds. */
+    if(t.getAttribute&&t.getAttribute("data-ps-shared"))return;
     var phaseKey=t.getAttribute&&t.getAttribute("data-ps-k");
     if(phaseKey){
       if(!canSavePf(m)||isInputLocked(m))return;
@@ -10866,13 +10764,14 @@ function wireEditInputs(){
     if(t&&t.getAttribute&&t.getAttribute("data-ps-k")){
       if(!canSavePf(m)||isInputLocked(m))return;
       if(t.getAttribute("data-ps-k")!=="Total_Lots" && phaseSalesSharedLocked(m,+t.getAttribute("data-ps-i")))return;
-      formatNumericInput(t);rerenderPane("lotsales");recalcLive();return;
+      /* Keep the next pointer/Tab target mounted when this field loses focus. */
+      formatNumericInput(t);recalcLive();return;
     }
     if(t&&t.getAttribute&&t.getAttribute("data-ps-shared")){
-      if(!canSavePf(m)||isInputLocked(m))return;
-      var enable=t.checked;
+      if(!canSavePf(m)||isInputLocked(m)||S.ed.phaseSharePending)return;
+      var enable=t.checked,source=(m.phaseSales||[])[0];
       function applyShared(){
-        if(!S.ed||S.ed.model!==m)return;
+        if(!S.ed||S.ed.model!==m||!canSavePf(m)||isInputLocked(m)||(m.phaseSales||[])[0]!==source)return;
         phaseSalesSetShared(m,enable);
         S.ed.dirty=true;updateDirtyChip();rerenderPane("lotsales");recalcLive();
         var switchInput=document.querySelector('.ed-pane[data-pane="lotsales"] [data-ps-shared]');
@@ -10880,8 +10779,13 @@ function wireEditInputs(){
       }
       if(enable && (m.phaseSales||[]).length>1){
         t.checked=false;
-        uiConfirm({kicker:false,title:"Apply to all?",message:"Later phase settings will be replaced; lot counts stay.",okLabel:"Apply",cancelLabel:"Cancel"})
-          .then(function(approved){if(approved)applyShared();else t.focus();});
+        S.ed.phaseSharePending=true;
+        uiConfirm({kicker:false,title:"Apply to all?",message:"Phase 1 settings and lot count will be copied to all phases; lot counts stay editable.",okLabel:"Apply",cancelLabel:"Cancel"})
+          .then(function(approved){
+            if(!S.ed||S.ed.model!==m)return;
+            S.ed.phaseSharePending=false;
+            if(approved)applyShared();else t.focus();
+          });
       }else applyShared();
       return;
     }
@@ -12659,14 +12563,9 @@ document.addEventListener("click",function(e){
   var cancel=e.target.closest&&e.target.closest("[data-pf-appr-cancel]");if(cancel){runKillProformaApproval(cancel.getAttribute("data-pf-appr-cancel"));return;}
   var resend=e.target.closest&&e.target.closest("[data-pf-appr-resend]");if(resend){runResendProformaApproval(resend.getAttribute("data-pf-id"),resend.getAttribute("data-pf-appr-resend"));return;}
   var act=e.target.closest&&e.target.closest("[data-pf-appr-action]");if(act){var aid=act.getAttribute("data-pf-appr-id"),ta=document.querySelector('[data-pf-appr-note="'+aid+'"]');runProformaApprovalAction(act.getAttribute("data-pf-id"),aid,act.getAttribute("data-pf-appr-action"),ta?ta.value:"");return;}
-  var add=e.target.closest&&e.target.closest("[data-pf-appr-add]");if(add){runAddProformaApproval(add.getAttribute("data-pf-appr-add"));return;}
-  var del=e.target.closest&&e.target.closest("[data-pf-appr-delete]");if(del){runDeleteProformaApproval(del.getAttribute("data-pf-id"),del.getAttribute("data-pf-appr-delete"));return;}
-  var move=e.target.closest&&e.target.closest("[data-pf-appr-move]");if(move){runMoveProformaApproval(move.getAttribute("data-pf-id"),move.getAttribute("data-approval-id"),move.getAttribute("data-pf-appr-move"));return;}
+  var refresh=e.target.closest&&e.target.closest("[data-pf-appr-refresh-settings]");if(refresh){refreshProformaApprovalSettings(refresh.getAttribute("data-pf-appr-refresh-settings"));return;}
 });
-document.addEventListener("change",function(e){
-  var inp=e.target.closest&&e.target.closest("[data-pf-appr-recipient]");if(inp){runUpdateProformaApprovalRecipient(inp.getAttribute("data-pf-id"),inp.getAttribute("data-pf-appr-recipient"),inp.value,inp);return;}
-  var cfg=e.target.closest&&e.target.closest("[data-pf-appr-config-title],[data-pf-appr-config-email]");if(cfg){var tile=cfg.closest('[data-pf-appr-config-tile]');runUpdateProformaApprovalConfig(cfg.getAttribute('data-pf-id'),cfg.getAttribute('data-approval-id'),tile);}
-});
+
 (function(){var q=document.getElementById("pfApprSearch");if(q)q.addEventListener("input",debounce(function(){S.approvalUI.search=q.value;renderApprovalQueue();},140));})();
 
 document.getElementById("dealRoom").addEventListener("keydown", function(e){
@@ -12952,7 +12851,6 @@ window.__PFW_TEST__={ensurePFReferences:ensurePFReferences,pfReferencesReady:pfR
   proformaSendApprovalsGate:proformaSendApprovalsGate, sendApprovalsWhyText:sendApprovalsWhyText,
   canEditPf:canEditPf, userOwnsPf:userOwnsPf, pfOwnerIds:pfOwnerIds,
   canSendProformaApprovals:canSendProformaApprovals, canSendProformaApprovalsFor:canSendProformaApprovalsFor,
-  canConfigureProformaApprovalsFor:canConfigureProformaApprovalsFor, canEditProformaApprovalRecipientsFor:canEditProformaApprovalRecipientsFor, approvalConfigEditable:approvalConfigEditable,
   validateLOISubformDraft:validateLOISubformDraft,
   loiAcreCheck:loiAcreCheck, loiAcreFieldHtml:loiAcreFieldHtml, loiAcreHintText:loiAcreHintText, refreshLoiAcreField:refreshLoiAcreField,
   loiPriceCheck:loiPriceCheck, loiPriceHintText:loiPriceHintText, refreshLoiPriceField:refreshLoiPriceField,

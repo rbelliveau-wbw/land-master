@@ -205,6 +205,8 @@ Keep phase cards to the left of the inputs and the live schedule to the right wh
 
 Keep the timeline a compact card capped at 340px instead of stretching across a wide monitor. Put the overall lot-allocation status beside the selected phase heading in a clearly bordered pill, using green for balanced and red for over/under.
 
+Place the Same for all phases slider between the phase title and allocation badge. Enabling it copies Phase 1 settings and lot count once; keep each phase's lot count editable for balancing. Commit numeric fields and refresh phase-card metadata in place so pointer clicks and keyboard focus keep their targets.
+
 Keep the Escalator switch in the Markup & Escalator header. Show the base lot price and the price after markup together in a small pill; align Markup, Lot price, Annual escalator, and Esc start date in two columns when enabled. Briefly highlight the schedule when the selected phase changes, and honor reduced-motion settings.
 
 ## Filter and month pickers

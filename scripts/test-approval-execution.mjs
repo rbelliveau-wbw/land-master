@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
+import './test-proforma-settings-routing-native.mjs';
 
 // Execute the actual Deluge adapter against explicit record fixtures. This is
 // an offline regression harness, not evidence of native Creator compilation.
@@ -11,11 +12,11 @@ const executable=source.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,fiel
 const js=translate(executable).js.replace('catch(adapterError) {','catch(adapterError) { result.put("testDiagnostic",adapterError.message);');
 const baseRows=[{ID:101,Proforma:51,Type1:'Pro Forma',Sort_Order:1,Title:'Old VP',Approver:'old@example.com',Status:'Not Sent',Approval_Notes:'',Sent_Date:null,Responded_Date:null},{ID:102,Proforma:51,Type1:'Pro Forma',Sort_Order:2,Title:'Old CFO',Approver:'old@example.com',Status:'Not Sent',Approval_Notes:'',Sent_Date:null,Responded_Date:null}];
 const basePolicy={ID:41,Workflow:'Pro Forma',Company:31,Status:'Published',Adapter_Enabled:true,Territory_Key:'',Department_Key:'',Effective_From:null,Effective_To:null};
-const route=[{order:1,role:'VP',email:'first@example.com'},{order:2,role:'CFO',email:'second@example.com'}];
-function execute({policies=[basePolicy],rows=baseRows,steps=route,workflow='Pro Forma',department='',amountBasisConfirmed=false,resolved=true,denied=false}={}){
-  const context=vm.createContext({tables:structuredClone({Approval_Policy:policies,Budget_Approvals:rows}),steps:structuredClone(steps),workflow,department,amountBasisConfirmed,resolved,denied});
+const route=[{order:1,key:'vp',roleId:'1',role:'VP',userAccessId:'11',email:'first@example.com'},{order:2,key:'cfo',roleId:'2',role:'CFO',userAccessId:'12',email:'second@example.com'}];
+function execute({policies=[basePolicy],rows=baseRows,steps=route,capturedSteps=steps,expectedRoute=null,expectedPolicyId='41',workflow='Pro Forma',department='',amountBasisConfirmed=false,resolved=true,denied=false}={}){
+  const context=vm.createContext({tables:structuredClone({Approval_Policy:policies,Budget_Approvals:rows}),steps:structuredClone(steps),capturedSteps:structuredClone(capturedSteps),expectedRoute:structuredClone(expectedRoute),expectedPolicyId,workflow,department,amountBasisConfirmed,resolved,denied});
   vm.runInContext(`
-  tables=JSON.parse(JSON.stringify(tables));steps=JSON.parse(JSON.stringify(steps));
+  tables=JSON.parse(JSON.stringify(tables));steps=JSON.parse(JSON.stringify(steps));capturedSteps=JSON.parse(JSON.stringify(capturedSteps));expectedRoute=JSON.parse(JSON.stringify(expectedRoute));
   function Map(){return map({});}function map(v){return Object.assign(v,{get(k){return this[k]??null;},put(k,v){this[k]=v;}});}
   function List(){return [];}function ifnull(v,f){return v==null?f:v;}
   Array.prototype.add=function(v){this.push(v);};Array.prototype.get=function(i){return this[i]??null;};Array.prototype.count=Array.prototype.size=function(){return this.length;};Array.prototype.contains=function(v){return this.includes(v);};
@@ -25,8 +26,8 @@ function execute({policies=[basePolicy],rows=baseRows,steps=route,workflow='Pro 
   function query(form,predicate,sort){if(denied)throw Error('Denied read');var result=(tables[form]||[]).map(record).filter(predicate);if(sort)result.sort((a,b)=>a[sort]-b[sort]);return new Proxy(result,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;},set(a,k,v){if(!a.length)throw Error('Missing record');a[0][k]=v;return true;}});}
   function insertRecord(form,data){data.ID=Math.max(100,...tables[form].map(row=>row.ID))+1;tables[form].push(data);writes++;return data.ID;}
   function recordValues(...pairs){var data={};for(var i=0;i<pairs.length;i+=2)data[pairs[i]]=pairs[i+1];return data;}
-  var thisapp={resolveApprovalRoute(){return map({success:resolved,error:resolved?null:'Missing assignment',snapshot:map({route:steps.map(map)})});},snapshotApprovalRoute(c){captures.push(JSON.parse(JSON.stringify(c)));return map({success:true,snapshotId:'71',snapshot:map({route:steps.map(map)})});}};
-  var input=map({workflow,recordId:'51',budgetId:'61',submitterId:'19',territory:'North',department,amountBasisConfirmed});
+  var thisapp={resolveApprovalRoute(){return map({success:resolved,error:resolved?null:'Missing assignment',snapshot:map({policyId:'41',route:steps.map(map)})});},snapshotApprovalRoute(c){captures.push(JSON.parse(JSON.stringify(c)));return map({success:true,snapshotId:'71',snapshot:map({policyId:'41',route:capturedSteps.map(map)})});}};
+  var input=map({workflow,recordId:'51',budgetId:'61',submitterId:'19',territory:'North',department,amountBasisConfirmed,expectedRoute,expectedPolicyId});
   `+js,context);
   const result=vm.runInContext('applySharedApprovalPolicy(input)',context);
   return {result:JSON.parse(JSON.stringify(result)),rows:JSON.parse(JSON.stringify(context.tables.Budget_Approvals)),writes:context.writes,captures:context.captures};
@@ -36,9 +37,9 @@ r=execute({steps:route.slice(0,1)});assert.equal(r.result.success,true);assert.e
 r=execute({steps:[...route,{order:3,role:'Legal',email:'legal@example.com'}]});assert.equal(r.result.success,true);assert.equal(r.rows.length,3);assert.equal(r.rows[2].Type1,'Pro Forma');assert.equal(r.rows[2].Proforma,51);
 for(const history of [{Status:'Pending'},{Status:'Approved'},{Status:'Rejected'},{Approval_Notes:'Keep this note'},{Sent_Date:'2026-10-08'},{Responded_Date:'2026-10-08'}]){const rows=[{...baseRows[0],...history},baseRows[1]];r=execute({rows});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.result.retainedExistingRoute,true);assert.equal(r.writes,0);assert.equal(r.captures.length,0);assert.deepEqual(r.rows,rows);}
 r=execute({resolved:false});assert.equal(r.result.success,false);assert.equal(r.result.error,'Missing assignment');assert.equal(r.writes,0);
-for(const policies of [[],[{...basePolicy,Adapter_Enabled:false}]]){r=execute({policies});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.writes,0);assert.equal(r.captures.length,0);}
+for(const policies of [[],[{...basePolicy,Adapter_Enabled:false}]]){r=execute({policies});assert.equal(r.result.success,false);assert.equal(r.result.shared,false);assert.match(r.result.error,/Settings/);assert.equal(r.writes,0);assert.equal(r.captures.length,0);}
 r=execute({policies:[basePolicy,{...basePolicy,ID:42}]});assert.equal(r.result.success,false);assert.equal(r.writes,0);
-r=execute({policies:[basePolicy,{...basePolicy,ID:42,Territory_Key:'North',Adapter_Enabled:false}]});assert.equal(r.result.shared,false);assert.equal(r.writes,0,'highest disabled adapter retains legacy; it does not fall back to a broader policy');
+r=execute({policies:[basePolicy,{...basePolicy,ID:42,Territory_Key:'North',Adapter_Enabled:false}]});assert.equal(r.result.success,false);assert.equal(r.result.shared,false);assert.equal(r.writes,0,'highest disabled Pro Forma adapter fails; it does not fall back to legacy or broader policy');
 r=execute({policies:[{...basePolicy,Company:999,Effective_From:'2099-01-01',Effective_To:'1900-01-01'}]});assert.equal(r.result.shared,true,'Removed company/date columns do not prevent a new untouched chain from using its territory policy');
 r=execute({policies:[basePolicy,{...basePolicy,ID:42,Company:999}]});assert.equal(r.result.success,false);assert.equal(r.writes,0,'Former company-specific policy collisions fail before writes');
 assert.doesNotMatch(source,/candidatePolicy\.(?:Company|Effective_From|Effective_To)|context.get\("(?:companyId|effectiveDate)"\)/,'Native adapter has no dependency on removed approval scope/date functionality');
@@ -47,6 +48,7 @@ r=execute({steps:Array.from({length:9},(_,i)=>({order:i+1,role:'Role '+i,email:'
 for(const department of ['Development','Construction']){
   const rows=baseRows.map(row=>({...row,Proforma:null,Budget:51,Type1:department}));const untouched={...rows[0],ID:103,Type1:department==='Development'?'Construction':'Development'};
   const policy={...basePolicy,Workflow:'Budget',Steps_JSON:JSON.stringify([{enabled:true,condition:'Always'}])};
+  for(const policies of [[],[{...policy,Adapter_Enabled:false}]]){r=execute({workflow:'Budget',department,rows,policies});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.writes,0,'Budget migration fallback remains unchanged');}
   r=execute({workflow:'Budget',department,rows:[...rows,untouched],policies:[policy],steps:[...route,{order:3,role:'Legal',email:'legal@example.com'}]});
   assert.equal(r.result.success,true,JSON.stringify(r.result));assert.deepEqual(r.result.executionRows,['101','102','104']);assert.equal(r.rows[3].Budget,51);assert.equal(r.rows[3].Type1,department);assert.deepEqual(r.rows[2],untouched,'other budget track remains exactly unchanged');
   const conditional={...policy,Steps_JSON:JSON.stringify([{enabled:true,condition:'Above',threshold:'1000.00'}])};
@@ -54,4 +56,9 @@ for(const department of ['Development','Construction']){
   r=execute({workflow:'Budget',department,rows:[{...rows[0],Status:'Rejected'},rows[1]],policies:[conditional],resolved:false});assert.equal(r.result.retainedExistingRoute,true);assert.equal(r.writes,0,'existing rejected chain does not depend on new thresholds or role assignments');
 }
 r=execute({workflow:'Budget Modification',rows:[],policies:[{...basePolicy,Workflow:'Budget Modification'}]});assert.equal(r.result.success,true);assert.equal(r.rows.length,2);for(const row of r.rows){assert.equal(row.Budget,61);assert.equal(row.Budget_Modification,51);assert.equal(row.Type1,'Modification');}
+for(const policies of [[],[{...basePolicy,Workflow:'Budget Modification',Adapter_Enabled:false}]]){r=execute({workflow:'Budget Modification',rows:[],policies});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.writes,0,'Budget Modification migration fallback remains unchanged');}
+r=execute({expectedRoute:route});assert.equal(r.result.success,true,JSON.stringify(r.result));
+for(const field of ['order','key','roleId','role','userAccessId','email']){const expected=structuredClone(route);expected[0][field]=field==='order'?8:'changed';r=execute({expectedRoute:expected});assert.equal(r.result.success,false);assert.match(r.result.error,/route changed/);assert.equal(r.writes,0);assert.equal(r.captures.length,0);}
+r=execute({expectedRoute:route,expectedPolicyId:'42'});assert.equal(r.result.success,false);assert.equal(r.writes,0);assert.equal(r.captures.length,0);
+r=execute({expectedRoute:route,capturedSteps:[{...route[0],email:'changed@example.com'},route[1]]});assert.equal(r.result.success,false);assert.match(r.result.error,/during capture/);assert.equal(r.writes,0);assert.equal(r.captures.length,1);
 console.log('Templates initialize untouched native execution rows; existing decisions, recipients and notes remain unchanged. New/fewer steps, migration gates and failed reads passed.');

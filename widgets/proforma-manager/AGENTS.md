@@ -1,6 +1,6 @@
 # Proforma Manager Codex Instructions
 
-- Approval sequence is VP → Legal → CFO → COO unless current Creator metadata and business documentation explicitly supersede it.
+- Approval sequence comes from the applicable Settings policy. VP and every selected Dev Mgr come from the document's Territory; preserve submitted routes and approval history. See `../../docs/proforma-settings-approval-routing-2026-10-14.md`.
 - Do not alter LOI behavior during approval-only work.
 - Verify LOI field names against creator/generated/fields/Add_Pro_Forma.json.
 - Do not change approval email content, PDF generation, or Writer merge behavior unless explicitly requested.

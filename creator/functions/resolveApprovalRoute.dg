@@ -121,7 +121,7 @@ map resolveApprovalRoute(map context)
 				if(role.ID == null || role.Active != true) { result.put("error","Role is missing or inactive for step "+expectedOrder); return result; }
 				assignmentId = 0; assignmentRank = -1; assignmentCount = 0; personId = 0; assignmentActive = false;
 				personIds = List(); territoryDevMgr = role.Role_Name == "Dev Mgr";
-				territoryVP = policy.Workflow == "Purchase Order" && role.Role_Name == "VP";
+				territoryVP = role.Role_Name == "VP";
 				poTestCFO = step.get("poTestCFO"); testStep = poTestCFO != null;
 				if(testStep)
 				{
@@ -139,10 +139,10 @@ map resolveApprovalRoute(map context)
 				else if(territoryVP)
 				{
 					territoryRecord = Territory[Territory_Name == territory];
-					if(territoryRecord.count() != 1) { result.put("error","The PO territory must identify one Territory record with a VP."); return result; }
+					if(territoryRecord.count() != 1) { result.put("error","The territory must identify one Territory record with a VP."); return result; }
 					vpIds = List();
 					for each vpPerson in territoryRecord.VP { if(!vpIds.contains(vpPerson.ID)) { vpIds.add(vpPerson.ID); } }
-					if(vpIds.size() != 1) { result.put("error","Configure exactly one VP on the PO Territory record."); return result; }
+					if(vpIds.size() != 1) { result.put("error","Configure exactly one VP on the Territory record."); return result; }
 					personId = vpIds.get(0); assignmentActive = true;
 				}
 				else

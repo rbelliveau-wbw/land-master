@@ -43,11 +43,20 @@ map applySharedApprovalPolicy(map context)
 				else if(rank == bestRank) { matches = matches+1; }
 			}
 		}
-		if(matches == 0) { result.put("success",true); return result; }
+		if(matches == 0)
+		{
+			if(workflow == "Pro Forma") { result.put("error","Configure a published Pro Forma approval policy in Settings before sending approvals."); return result; }
+			result.put("success",true); return result;
+		}
 		if(matches != 1) { result.put("error","Published policy is ambiguous at the highest applicable scope."); return result; }
 		selected = Approval_Policy[ID == selectedId];
-		// Until one workflow passes its migration gate, retain its existing execution.
-		if(selected.Adapter_Enabled != true) { result.put("success",true); return result; }
+		// Budget migration gates retain their existing fallback. New Pro Formas
+		// require Settings routing rather than per-record approver configuration.
+		if(selected.Adapter_Enabled != true)
+		{
+			if(workflow == "Pro Forma") { result.put("error","Enable the Pro Forma approval policy adapter in Settings before sending approvals."); return result; }
+			result.put("success",true); return result;
+		}
 		result.put("shared",true);
 		if(workflow == "Budget" && context.get("amountBasisConfirmed") != true)
 		{
@@ -64,11 +73,40 @@ map applySharedApprovalPolicy(map context)
 		if(resolved.get("success") != true) { result.put("error",resolved.get("error")); return result; }
 		resolvedRoute = resolved.get("snapshot").get("route");
 		if(workflow == "Pro Forma" && resolvedRoute.size() > 8) { result.put("error","Pro Forma execution supports up to 8 approval steps."); return result; }
+		if(workflow == "Pro Forma" && context.get("expectedRoute") != null)
+		{
+			expectedRoute = context.get("expectedRoute");
+			if(resolved.get("snapshot").get("policyId") != context.get("expectedPolicyId") || expectedRoute.size() != resolvedRoute.size()) { result.put("error","The Settings approval route changed. Refresh it before sending approvals."); return result; }
+			expectedPosition = 0;
+			for each actualResolvedStep in resolvedRoute
+			{
+				expectedResolvedStep = expectedRoute.get(expectedPosition).toString().toMap();
+				for each expectedField in {"order","key","roleId","role","userAccessId","email"}
+				{
+					if(expectedResolvedStep.get(expectedField) != actualResolvedStep.get(expectedField)) { result.put("error","The Settings approval route changed. Refresh it before sending approvals."); return result; }
+				}
+				expectedPosition = expectedPosition+1;
+			}
+		}
 		context.put("executionRows",ids);
 		context.put("submissionRevision",zoho.currenttime.toString("yyyyMMddHHmmssSSS"));
 		captured = thisapp.snapshotApprovalRoute(context);
 		if(captured.get("success") != true) { result.put("error",captured.get("error")); return result; }
 		route = captured.get("snapshot").get("route"); boundIds = List(); position = 0;
+		if(workflow == "Pro Forma" && context.get("expectedRoute") != null)
+		{
+			if(captured.get("snapshot").get("policyId") != context.get("expectedPolicyId") || expectedRoute.size() != route.size()) { result.put("error","The Settings approval route changed during capture. Refresh it before sending approvals."); return result; }
+			expectedPosition = 0;
+			for each actualCapturedStep in route
+			{
+				expectedCapturedStep = expectedRoute.get(expectedPosition).toString().toMap();
+				for each capturedExpectedField in {"order","key","roleId","role","userAccessId","email"}
+				{
+					if(expectedCapturedStep.get(capturedExpectedField) != actualCapturedStep.get(capturedExpectedField)) { result.put("error","The Settings approval route changed during capture. Refresh it before sending approvals."); return result; }
+				}
+				expectedPosition = expectedPosition+1;
+			}
+		}
 		for each step in route
 		{
 			if(position < ids.size()) { executionId = ids.get(position).toLong(); }

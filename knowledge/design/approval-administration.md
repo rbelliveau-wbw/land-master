@@ -43,8 +43,10 @@ budget overrun covered by existing pending modifications does not add roles.
 There are no PO amount thresholds or condition/order pickers. Add/remove extra
 approvers in display order. Collapse optional territory/department scope.
 Historical Test CFO scope remains only in captured evidence and read-only
-receipt recovery, not the normal editor. VP resolves directly from Territory.VP;
-other roles use approver assignments. Identify that VP source in the UI. Reject
+receipt recovery, not the normal editor. In every shared-policy workflow, VP
+resolves directly from the document's Territory.VP, and Dev Mgr resolves every
+selected Territory.Dev_Mgr person. Other roles use approver assignments.
+Identify those Territory sources in the UI. Reject
 ambiguous or unroutable recipients and ordinary submitter approval. The user
 guarantees distinct people in each policy, so no
 duplicate-person mode, merging or repeated-role machinery is provided. Preview
@@ -120,5 +122,13 @@ must approve before the following role starts. This retains the one-approver-
 at-a-time chain; it does not send concurrent approvals. Resolve every person
 and validate their login, routing flag, approval email and self-approval before
 creating a route. Never fall back to a global Dev Mgr assignment. The captured
-route retains people after Territory edits. PO VP behavior remains unchanged.
+route retains people after Territory edits. VP resolves exactly one unique
+Territory.VP person in every shared-policy workflow, including Pro Forma and
+Budget. Never fall back to a separate VP assignment.
 Native updates: approvalConfigurationSnapshot and resolveApprovalRoute.
+
+Pro Forma's Approvals tab previews Settings rules without exposing a separate
+route editor. New submissions require a usable Settings policy; keep existing
+submitted recipients and decisions. Its read-only capability uses the existing
+Check mode with settingsPreview so an older API cannot mistake preview for a
+send. See [native/frontend routing and retirement](../../docs/proforma-settings-approval-routing-2026-10-14.md).

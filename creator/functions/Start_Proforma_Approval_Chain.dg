@@ -5,16 +5,42 @@ map Start_Proforma_Approval_Chain(string proformaId)
 	{
 		proformaIdText = ifnull(proformaId,"").toString().trim();
 		progressMode = "Start";
+		progressInput = Map();
 		if(proformaIdText.startsWith("{"))
 		{
 			progressInput = proformaIdText.toMap();
+			typedProformaId = {"value":progressInput.get("id")};
+			if(!typedProformaId.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]{1,30}\"[ ]*[}][ ]*"))
+			{
+				response.put("success",false);
+				response.put("message","Pro Forma ID must be an exact string.");
+				return response;
+			}
 			proformaIdText = ifnull(progressInput.get("id"),"").toString().trim();
 			progressMode = ifnull(progressInput.get("mode"),"Start").toString().trim();
+		}
+		// The widget requests Settings preview through Check so the previous API
+		// cannot mistake the new preview mode for approval initiation.
+		if(progressMode == "Check" && progressInput.get("settingsPreview") == true)
+		{
+			progressMode = "Preview";
+		}
+		if(progressMode != "Start" && progressMode != "StartSettings" && progressMode != "Preview" && progressMode != "Check" && progressMode != "Repair")
+		{
+			response.put("success",false);
+			response.put("message","Unsupported Pro Forma approval mode.");
+			return response;
 		}
 		if(proformaIdText == "")
 		{
 			response.put("success",false);
 			response.put("message","Pro Forma ID is required.");
+			return response;
+		}
+		if(!proformaIdText.matches("[0-9]{1,30}"))
+		{
+			response.put("success",false);
+			response.put("message","Pro Forma ID is invalid.");
 			return response;
 		}
 		proformaIdLong = proformaIdText.toLong();
@@ -32,23 +58,74 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			response.put("message","A User Access record is required to send a Pro Forma for approvals.");
 			return response;
 		}
-		if(accessRow.Send_Pro_Formas_for_Approvals != true)
-		{
-			response.put("success",false);
-			response.put("message","You do not have Send Pro Formas for Approvals permission.");
-			return response;
-		}
-		canSendThisProforma = accessRow.Edit_All_Proformas == true;
-		if(canSendThisProforma == false && pf.Owner != null)
+		isPfOwner = false;
+		if(pf.Owner != null)
 		{
 			for each  ownerRow in pf.Owner
 			{
 				if(ownerRow.ID.toString() == accessRow.ID.toString())
 				{
-					canSendThisProforma = true;
+					isPfOwner = true;
 					break;
 				}
 			}
+		}
+		canSendThisProforma = accessRow.Edit_All_Proformas == true || isPfOwner;
+		policyContext = {"workflow":"Pro Forma","recordId":proformaIdText,"territory":ifnull(pf.Territory,""),"department":"","submitterId":accessRow.ID.toString()};
+		if(progressMode == "Preview")
+		{
+			response.put("success",false);
+			response.put("contract","proforma-approval-settings-v1");
+			response.put("policyModel","territory-perpetual-v2");
+			response.put("mode","Preview");
+			response.put("proformaId",proformaIdText);
+			canPreviewRoute = accessRow.Edit_All_Pro_Forma_Approvals == true;
+			if(accessRow.Edit_Owned_Pro_Forma_Approvals == true && isPfOwner)
+			{
+				canPreviewRoute = true;
+			}
+			if(accessRow.Edit_Owned_Proformas == true && isPfOwner)
+			{
+				canPreviewRoute = true;
+			}
+			if(accessRow.Send_Pro_Formas_for_Approvals == true && canSendThisProforma)
+			{
+				canPreviewRoute = true;
+			}
+			if(canPreviewRoute == false)
+			{
+				response.put("message","You do not have permission to view this Pro Forma approval route.");
+				return response;
+			}
+			previewResolution = thisapp.resolveApprovalRoute(policyContext);
+			if(previewResolution.get("success") != true)
+			{
+				response.put("message",previewResolution.get("error"));
+				return response;
+			}
+			previewSnapshot = previewResolution.get("snapshot");
+			previewPolicy = Approval_Policy[ID == previewSnapshot.get("policyId").toLong()];
+			if(previewPolicy.Adapter_Enabled != true)
+			{
+				response.put("message","Enable the Pro Forma approval policy adapter in Settings before sending approvals.");
+				return response;
+			}
+			previewRoute = previewSnapshot.get("route");
+			if(previewRoute.size() == 0 || previewRoute.size() > 8)
+			{
+				response.put("message","Pro Forma execution supports 1 to 8 approval steps.");
+				return response;
+			}
+			response.put("success",true);
+			response.put("policyId",previewSnapshot.get("policyId"));
+			response.put("route",previewRoute);
+			return response;
+		}
+		if(accessRow.Send_Pro_Formas_for_Approvals != true)
+		{
+			response.put("success",false);
+			response.put("message","You do not have Send Pro Formas for Approvals permission.");
+			return response;
 		}
 		if(canSendThisProforma == false)
 		{
@@ -65,12 +142,17 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			progressCount = 0;
 			progressPending = 0;
 			progressApproved = 0;
+			progressLaterUntouched = true;
 			for each  progressRow in progressRows
 			{
 				progressCount = progressCount + 1;
 				if(progressFirst == null)
 				{
 					progressFirst = progressRow;
+				}
+				else if(progressRow.Status != "Not Sent" || progressRow.Sent_Date != null || progressRow.Responded_Date != null || ifnull(progressRow.Approval_Notes,"").trim() != "")
+				{
+					progressLaterUntouched = false;
 				}
 				if(ifnull(progressRow.Status,"").trim() == "Pending")
 				{
@@ -82,7 +164,15 @@ map Start_Proforma_Approval_Chain(string proformaId)
 				}
 			}
 			repairError = "";
-			if(progressMode == "Repair" && ifnull(pf.Status,"").trim() == "Draft" || ifnull(pf.Status,"").trim() == "Pending Approval" && progressFirst != null && progressApproved == 0 && progressPending == 0 || (progressPending == 1 && ifnull(progressFirst.Status,"").trim() == "Pending") && ifnull(progressFirst.Status,"").trim() == "Not Sent" || ifnull(progressFirst.Status,"").trim() == "Pending")
+			repairCandidate = false;
+			if(progressMode == "Repair" && progressFirst != null && progressLaterUntouched && progressApproved == 0)
+			{
+				parentCanRepair = ifnull(pf.Status,"").trim() == "Pending Approval";
+				firstCanRepair = ifnull(progressFirst.Status,"").trim() == "Pending";
+				pendingCanRepair = progressPending == 1;
+				repairCandidate = parentCanRepair && firstCanRepair && pendingCanRepair && progressFirst.Responded_Date == null && ifnull(progressFirst.Approval_Notes,"").trim() == "";
+			}
+			if(repairCandidate)
 			{
 				progressFirst.Status="Pending";
 				pf.Lock_Inputs=true;
@@ -265,11 +355,21 @@ map Start_Proforma_Approval_Chain(string proformaId)
 		firstExisting = null;
 		existingPending = 0;
 		existingApproved = 0;
+		existingHistory = false;
+		existingLaterUntouched = true;
 		for each  existingRow in rows
 		{
 			if(firstExisting == null)
 			{
 				firstExisting = existingRow;
+			}
+			else if(existingRow.Status != "Not Sent" || existingRow.Sent_Date != null || existingRow.Responded_Date != null || ifnull(existingRow.Approval_Notes,"").trim() != "")
+			{
+				existingLaterUntouched = false;
+			}
+			if(existingRow.Status != "Not Sent" || existingRow.Sent_Date != null || existingRow.Responded_Date != null || ifnull(existingRow.Approval_Notes,"").trim() != "")
+			{
+				existingHistory = true;
 			}
 			if(ifnull(existingRow.Status,"").trim() == "Pending")
 			{
@@ -280,7 +380,7 @@ map Start_Proforma_Approval_Chain(string proformaId)
 				existingApproved = existingApproved + 1;
 			}
 		}
-		if(firstExisting != null && ifnull(firstExisting.Status,"").trim() == "Pending" && firstExisting.Sent_Date != null && existingPending == 1 && existingApproved == 0)
+		if(firstExisting != null && ifnull(firstExisting.Status,"").trim() == "Pending" && firstExisting.Sent_Date != null && firstExisting.Responded_Date == null && ifnull(firstExisting.Approval_Notes,"").trim() == "" && existingLaterUntouched && existingPending == 1 && existingApproved == 0)
 		{
 			pf.Status="Pending Approval";
 			pf.Lock_Inputs=true;
@@ -289,8 +389,24 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			response.put("pendingApprovalId",firstExisting.ID.toString());
 			return response;
 		}
-		policyContext = {"workflow":"Pro Forma","recordId":proformaIdText,"territory":ifnull(pf.Territory,""),"department":"","submitterId":accessRow.ID.toString()};
-
+		if(existingHistory)
+		{
+			response.put("success",false);
+			response.put("message","This Pro Forma already has approval history. Check its current approval flow before sending again.");
+			return response;
+		}
+		if(progressMode == "StartSettings")
+		{
+			typedExpectedPolicy = {"value":progressInput.get("expectedPolicyId")};
+			if(!typedExpectedPolicy.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]{1,30}\"[ ]*[}][ ]*") || progressInput.get("expectedRoute") == null)
+			{
+				response.put("success",false);
+				response.put("message","Refresh the Settings approval route before sending approvals.");
+				return response;
+			}
+			policyContext.put("expectedPolicyId",progressInput.get("expectedPolicyId"));
+			policyContext.put("expectedRoute",progressInput.get("expectedRoute"));
+		}
 		policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 		if(policyExecution.get("success") != true)
 		{
@@ -301,6 +417,12 @@ map Start_Proforma_Approval_Chain(string proformaId)
 		if(policyExecution.get("shared") == true)
 		{
 			response.put("policySnapshotId",policyExecution.get("snapshotId"));
+		}
+		else
+		{
+			response.put("success",false);
+			response.put("message","Configure and enable the Pro Forma approval policy in Settings before sending approvals.");
+			return response;
 		}
 		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
 		if(rows.count() == 0)
@@ -359,12 +481,15 @@ map Start_Proforma_Approval_Chain(string proformaId)
 		firstRow.Sent_Date=null;
 		firstRow.Responded_Date=null;
 		pf.Lock_Inputs=true;
+		previousPfStatus = ifnull(pf.Status,"Draft");
+		pf.Status="Pending Approval";
 		emailResult = thisapp.Send_Proforma_Approval_Email_With_Context(proformaIdText,firstRow.ID.toString(),"Started","","System");
 		if(ifnull(emailResult.get("success"),false) != true)
 		{
 			firstRow.Status="Not Sent";
 			firstRow.Sent_Date=null;
 			pf.Lock_Inputs=false;
+			pf.Status=previousPfStatus;
 			response.put("success",false);
 			response.put("message",emailResult.get("message"));
 			return response;

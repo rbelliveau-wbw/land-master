@@ -439,8 +439,8 @@ assert.match(pricedHtml,/First sale \$55,000 · Final <b>\+2\.05%<\/b>/,
 assert.match(pricedHtml,/Next phase increase to match final <b>12\.25%<\/b>/,
   'the next phase setting must compare final finished price to the shared project base');
 
-// Sharing is confirmed before it copies Phase 1 inputs; later phase lot counts
-// stay editable even while the other sales controls are disabled.
+// Sharing copies Phase 1 settings and lots once. Every phase's allocation stays
+// editable independently while recurring/timing/pricing inputs remain shared.
 const sharedModel={Lots:10,Phases:2,Total_Acres:5,Sale_Price_FF:1000,Lot_Size_Ft:50,
   Lot_Sales_Schedule_Version:'2',Same_Lot_Sales_All_Phases:'false',phaseSales:[
     {Phase:1,Total_Lots:'4',Initial_Take_Lots:'2',Initial_Delay_Months:'1',
@@ -464,7 +464,7 @@ vm.runInContext(['fmt$','phaseSalesCopyShared','phaseSalesSharedLocked','phaseSa
   .map(widgetFunction).join('\n'),sharedContext);
 assert.equal(sharedContext.phaseSalesSharedLocked(sharedModel,1),false);
 sharedContext.phaseSalesSetShared(sharedModel,true);
-assert.equal(sharedModel.phaseSales[1].Total_Lots,'6','sharing keeps phase allocations');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'4','enabling sharing copies Phase 1 lot count');
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'2');
 assert.equal(sharedModel.phaseSales[1].Take_Frequency,'Quarterly');
 assert.equal(sharedModel.phaseSales[1].Esc_Start_Date,'2028-01-01');
@@ -482,6 +482,11 @@ assert.match(sharedPhaseHtml,/data-ps-frequency="Monthly"[^>]*disabled/);
 assert.match(sharedPhaseHtml,/data-ps-frequency="Quarterly"[^>]*disabled/);
 assert.match(sharedPhaseHtml,/data-ps-enable="1"[^>]*disabled/);
 assert.match(sharedPhaseHtml,/data-month-kind="esc"[^>]*disabled/);
+assert.ok(sharedPhaseHtml.indexOf('class="ps-phase-title"')<sharedPhaseHtml.indexOf('data-ps-shared="1"'));
+assert.ok(sharedPhaseHtml.indexOf('data-ps-shared="1"')<sharedPhaseHtml.indexOf('class="ps-balance'),
+  'the shared slider sits between the phase title and allocation badge');
+assert.ok(sharedPhaseHtml.indexOf('data-ps-shared="1"')<sharedPhaseHtml.indexOf('class="ps-phase-controls"'),
+  'sharing is in the heading, separate from Lots in phase');
 sharedContext.S.ed.phaseSelected=0;
 const firstPhaseHtml=sharedContext.panePhaseSales();
 assert.doesNotMatch(phaseInput(firstPhaseHtml,'Initial_Take_Lots'),/\bdisabled\b/,
@@ -491,6 +496,7 @@ sharedContext.S.ed.phaseSelected=1;
 assert.doesNotMatch(phaseInput(sharedContext.panePhaseSales(),'Initial_Take_Lots'),/\bdisabled\b/,
   'turning sharing off restores editing without clearing copied values');
 sharedModel.phaseSales[1].Initial_Take_Lots='5';
+sharedModel.phaseSales[1].Total_Lots='6';
 const sharedHost={addEventListener(){}};
 let modalOptions,confirmChoice=false,refreshes=0;
 sharedContext.document={getElementById:()=>sharedHost,querySelector:()=>null};
@@ -507,23 +513,26 @@ sharedContext.wireEditInputs();
 const sharedToggle={checked:true,focused:false,
   getAttribute(name){return name==='data-ps-shared'?'1':null;},
   focus(){this.focused=true;}};
+sharedHost.oninput({target:sharedToggle});
 sharedHost.onchange({target:sharedToggle});
 await Promise.resolve();
 assert.equal(modalOptions.title,'Apply to all?');
-assert.equal(modalOptions.message,'Later phase settings will be replaced; lot counts stay.');
+assert.equal(modalOptions.message,'Phase 1 settings and lot count will be copied to all phases; lot counts stay editable.');
 assert.equal(modalOptions.okLabel,'Apply');
 assert.equal(modalOptions.cancelLabel,'Cancel');
 assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'false','Cancel keeps sharing off');
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'5','Cancel preserves later phase inputs');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'6','Cancel preserves phase lots');
 assert.equal(sharedContext.S.ed.dirty,false,'Cancel does not dirty the form');
 assert.equal(sharedToggle.checked,false);
 assert.equal(refreshes,0);
 confirmChoice=true;sharedToggle.checked=true;
 sharedHost.onchange({target:sharedToggle});
+sharedHost.onchange({target:sharedToggle});
 await Promise.resolve();
 assert.equal(sharedModel.Same_Lot_Sales_All_Phases,'true');
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'2');
-assert.equal(sharedModel.phaseSales[1].Total_Lots,'6');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'4');
 assert.equal(sharedContext.S.ed.dirty,true);
 assert.equal(refreshes,1);
 const blockedInput={value:'99',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'1'}[name]||null;}};
@@ -536,6 +545,11 @@ assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','later phase lot counts st
 const firstInput={value:'3',getAttribute(name){return {'data-ps-k':'Initial_Take_Lots','data-ps-i':'0'}[name]||null;}};
 sharedHost.oninput({target:firstInput});
 assert.equal(sharedModel.phaseSales[1].Initial_Take_Lots,'3','Phase 1 edits propagate while sharing is on');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','shared settings edits preserve independently balanced lots');
+const firstLotsInput={value:'5',getAttribute(name){return {'data-ps-k':'Total_Lots','data-ps-i':'0'}[name]||null;}};
+sharedHost.oninput({target:firstLotsInput});
+assert.equal(sharedModel.phaseSales[0].Total_Lots,'5','Phase 1 lot count remains editable');
+assert.equal(sharedModel.phaseSales[1].Total_Lots,'7','Phase 1 lot edits do not recopy other allocations');
 assert.equal(sharedModel.phaseSales[1].Esc_Start_Date,'2028-01-01',
   'lot allocations and take edits do not change the user-entered Esc Start Date');
 sharedToggle.checked=false;

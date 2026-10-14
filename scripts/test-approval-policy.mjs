@@ -45,3 +45,25 @@ console.log('Perpetual territory policy routing: no Company or date semantics; T
 const dm=clone(config);dm.roles.push({id:'4',name:'Dev Mgr',active:true});dm.users.push({id:'101',name:'Dev One',user:'dev-one',approverEmail:'dev1@example.com',routingEnabled:true},{id:'102',name:'Dev Two',user:'dev-two',approverEmail:'dev2@example.com',routingEnabled:true});dm.territories[0].devMgrUserAccessIds=['101','102','101'];dm.policies[0].workflow='Purchase Order';dm.policies[0].steps=[{key:'dev-mgr',order:1,roleId:'4',condition:'Budget modification attached',enabled:true},{key:'cfo',order:2,roleId:'1',condition:'Always',enabled:true}];
 const dmContext={workflow:'Purchase Order',territory:'North',department:'',submitterId:'99',amount:'1.00',hasBudgetModification:true};let dmRoute=clone(api.resolve(dm,dmContext).route);assert.deepEqual(dmRoute.map(row=>row.userAccessId),['101','102','11']);assert.deepEqual(dmRoute.map(row=>row.order),[1,2,3]);assert.deepEqual(dmRoute.map(row=>row.policyStepOrder),[1,1,2]);assert.equal(new Set(dmRoute.map(row=>row.key)).size,3);assert.deepEqual(clone(api.resolve(dm,{...dmContext,hasBudgetModification:false}).route).map(row=>row.role),['CFO']);const dmMissing=clone(dm);dmMissing.territories[0].devMgrUserAccessIds=[];assert.throws(()=>api.resolve(dmMissing,dmContext),/at least one Dev Mgr/);assert.throws(()=>api.resolve(dm,{...dmContext,submitterId:'101'}),/self-approval/);const dmInactive=clone(dm);dmInactive.users.find(u=>u.id==='102').routingEnabled=false;assert.throws(()=>api.resolve(dmInactive,dmContext),/unroutable/);
 console.log('Approval preview Territory Dev Mgr mirrors native multi-recipient expansion and keeps every selected approval before the following role.');
+
+// VP and every Dev Mgr come from the document's Territory in every workflow.
+// Legacy/scoped assignments for those roles cannot change that source.
+for(const workflow of ['Pro Forma','Budget','Budget Modification','Contract','Purchase Order']){
+ const all=clone(dm);all.territories=[{id:'Waco',vpUserAccessIds:['13'],devMgrUserAccessIds:['101','102']}];
+ all.assignments.push({id:'25',roleId:'3',territory:'Waco',userAccessId:'12',active:true},{id:'26',roleId:'4',territory:'Waco',userAccessId:'12',active:true});
+ const conditional=workflow==='Purchase Order'?'Budget modification attached':'Always';
+ all.policies[0].workflow=workflow;all.policies[0].steps=[{key:'vp',order:1,roleId:'3',condition:conditional,enabled:true},{key:'dev-mgr',order:2,roleId:'4',condition:conditional,enabled:true},{key:'cfo',order:3,roleId:'1',condition:'Always',enabled:true}];
+ const input={...dmContext,workflow,territory:'Waco',recordId:'51'};
+ const captured=clone(api.resolve(all,input));
+ assert.deepEqual(captured.route.map(row=>row.userAccessId),['13','101','102','11'],workflow);
+ assert.deepEqual(captured.route.map(row=>row.order),[1,2,3,4],workflow);
+ assert.deepEqual(captured.route.map(row=>row.policyStepOrder),[1,2,2,3],workflow);
+ assert.deepEqual(captured.route.slice(0,3).map(row=>row.assignmentId),['','',''],workflow);
+ const noVP=clone(all);noVP.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(noVP,input),/exactly one VP/,workflow);
+ const noManagers=clone(all);noManagers.territories[0].devMgrUserAccessIds=[];assert.throws(()=>api.resolve(noManagers,input),/at least one Dev Mgr/,workflow);
+ assert.throws(()=>api.resolve(all,{...input,territory:'Unassigned'}),/one Territory record/,workflow);
+ all.territories[0].vpUserAccessIds=['12'];all.territories[0].devMgrUserAccessIds=['101'];
+ assert.deepEqual(captured.route.map(row=>row.userAccessId),['13','101','102','11'],'captured recipients survive Territory edits');
+ assert.deepEqual(clone(api.resolve(all,input)).route.map(row=>row.userAccessId),['12','101','11'],'future submissions use current Territory recipients');
+}
+console.log('All workflow previews use Territory VP and all Territory Dev Mgrs, with no legacy assignment fallback.');

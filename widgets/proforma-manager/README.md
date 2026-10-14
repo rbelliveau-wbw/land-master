@@ -1,13 +1,21 @@
 
 # Proforma Manager
 
-Pro forma input, LOI workflow, comparison, and configurable sequential approvals.
+Pro forma input, LOI workflow, comparison, and Settings-managed sequential approvals.
 
 Release `1.80.101` uses `Attachment` / `All_Attachments`, retaining the `Pro_Forma`
 parent and `File_field1` upload field. Creator Development updates require the
 user's promotion; see the [rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
 
-Current release: `1.80.101`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.103`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+
+Lot Sales keeps Same for all phases between the phase title and allocated-lots badge. Enabling sharing copies Phase 1's settings and lot count; lot counts remain independently editable to balance allocations. Numeric commits and live phase-card updates preserve the clicked or focused control.
+
+Untouched Pro Formas preview their route from Settings → Approvals. Per-record
+approver configuration is retired; VP and every selected Dev Mgr resolve from
+the assigned Territory across all shared-policy workflows. Native Settings
+readiness and the confirmed recipient intent are required before sending.
+Existing submitted history stays intact. [Creator deployment and rollback](../../docs/proforma-settings-approval-routing-2026-10-14.md).
 
 ## Verified attachment uploads and inline progress (1.80.90)
 

@@ -1,5 +1,14 @@
 # Settings Manager
 
+## Territory approvers — October 14, 2026
+
+VP and Dev Mgr always resolve from the Territory assigned to the document,
+across every shared-policy workflow. Each unique selected Dev Mgr has an
+individual sequential approval before the next role; VP requires one unique
+person. Global/scoped assignments cannot override these Territory recipients.
+Other roles retain Settings assignment precedence. Pro Forma's old per-record
+approver setup is retired. See [deployment and regressions](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+
 ## Shared approval administration (1.4.4)
 
 Settings → Approvals contains Roles, Assignments, versioned Policies, Preview

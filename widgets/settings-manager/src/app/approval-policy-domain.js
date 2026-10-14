@@ -48,11 +48,11 @@
         var devIds=Array.from(new Set(devTerritories[0].devMgrUserAccessIds||[]));
         if(!devIds.length)fail('Configure at least one Dev Mgr on the Territory record.');
         assignments=devIds.map(function(person){return {id:'',userAccessId:id(person),active:true};});
-      }else if(ctx.workflow==="Purchase Order"&&roles[0].name==="VP"){
+      }else if(roles[0].name==="VP"){
         var territories=(config.territories||[]).filter(function(t){return t.id===ctx.territory;});
-        if(territories.length!==1)fail("The PO territory must identify one Territory record with a VP.");
+        if(territories.length!==1)fail("The territory must identify one Territory record with a VP.");
         var vpIds=Array.from(new Set(territories[0].vpUserAccessIds||[]));
-        if(vpIds.length!==1)fail("Configure exactly one VP on the PO Territory record.");
+        if(vpIds.length!==1)fail("Configure exactly one VP on the Territory record.");
         assignment={id:'',userAccessId:id(vpIds[0]),active:true};
       }else assignment=choose(config.assignments.filter(function(a){return a.roleId===step.roleId;}),ctx,"assignment for "+roles[0].name);
       (assignments||[assignment]).forEach(function(assignment){

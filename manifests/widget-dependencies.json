@@ -50,11 +50,6 @@
           "source": "customApis object"
         },
         {
-          "name": "Manage_Proforma_Approval_Config",
-          "config_key": "manageProformaApprovalConfig",
-          "source": "customApis object"
-        },
-        {
           "name": "Proforma_Bulk_Save",
           "config_key": "bulkSave",
           "source": "customApis object"
@@ -107,11 +102,6 @@
         {
           "name": "Update_Assigned_To_Me",
           "config_key": "updateAssignedToMe",
-          "source": "customApis object"
-        },
-        {
-          "name": "Update_Proforma_Approval_Recipient",
-          "config_key": "updateProformaApprovalRecipient",
           "source": "customApis object"
         }
       ],
