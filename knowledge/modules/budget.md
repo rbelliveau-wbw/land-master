@@ -1252,6 +1252,7 @@ Desktop height is 944 px with viewport cap and internal matrix scrolling.
 An Approvers card below Summary uses the existing read-only PreviewApprovals
 action, including all territory Dev Mgr recipients when the PO creates mods.
 Native changes are approvalConfigurationSnapshot, resolveApprovalRoute and
-managePurchaseOrder, pending Creator save/compile/Stage/Production promotion.
+managePurchaseOrder, saved in Development and published through Stage to
+Creator Production 9.84 (PO approvers and Territory Dev Mgr).
 No existing PO records, submitted routes or native permissions are changed by
 this release. Rollback: Budget 122.29.36 and Settings 1.5.4.

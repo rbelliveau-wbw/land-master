@@ -7,20 +7,21 @@ PO Vendor is centered; Add New Vendor opens a separate dialog and selects the
 exact acknowledged created ID. Increase desktop card height 18%, keep matrix
 scrolling internal and show contextual Approvers below Summary.
 
-## Creator handoff — not deployed from this session
+## Creator deployment — completed
 
-The in-Codex browser is visible but its control tools are unavailable. External
-Chrome is not authorized. Save and compile these existing functions in Dev:
+In-Codex browser control was restored through its installed Browser runtime.
+The following existing functions were saved successfully in Development:
 
 1. [approvalConfigurationSnapshot](../creator/functions/approvalConfigurationSnapshot.dg): expose Territory.Dev_Mgr as devMgrUserAccessIds.
 2. [resolveApprovalRoute](../creator/functions/resolveApprovalRoute.dg): resolve every unique Territory.Dev_Mgr user into consecutive individual approvals. All must approve before the next role; retain sequential delivery and all permission/self-approval/routing guards.
 3. [managePurchaseOrder](../creator/functions/managePurchaseOrder.dg): read-only PreviewApprovals includes resolved people and emails for the new sidebar.
 
-Promote those changes to Stage, then Production. No schema, forms, Custom API
-registrations or permission changes are needed. Until promoted, Dev Mgr routing
-and detailed person/email previews remain unavailable from the existing native
-backend. Widget inline saves and native vendor creation are independent of the
-new function changes. Do not rewrite already captured routes.
+These three functions were published to Stage in package 9.84, titled
+PO approvers and Territory Dev Mgr. Creator Environments subsequently confirmed
+Production 9.84, and Version History confirmed that package title and description.
+At final verification Stage showed a separate newer 9.85 package; it was not
+created or promoted by this change. No schema, forms, Custom API registrations
+or permission changes were made. Already captured routes were not rewritten.
 
 ## Verification and rollback
 
@@ -31,6 +32,7 @@ missing/unroutable members and self-approval; exact vendor selection, duplicate
 clicks, uncertain no-replay, and escaped contextual recipient details.
 Full npm run validate and npm run build:pages passed before widget promotion.
 In-app and native record testing are left to Robby. Native compile and Creator
-promotion are pending the handoff above. No live emails or test records were
-created. Roll back widget mappings to Budget 122.29.36 and Settings 1.5.4; revert
-the three native functions separately if promoted. Captured routes remain saved.
+promotion completed through the native editor and Environments UI. No PO approval
+emails or test records were created. Roll back widget mappings to Budget
+122.29.36 and Settings 1.5.4; revert the three native functions separately.
+Captured routes remain saved.
