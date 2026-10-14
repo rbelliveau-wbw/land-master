@@ -10,7 +10,7 @@ Data Insights keeps branding, connection status, Refresh and Diagnostics in the
 sidebar, reclaiming the full-width shell header for report height. Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All
-beside the filter controls; its label describes the next action for visible
+immediately after Hide Empty, before the space leading to Reset; its label describes the next action for visible
 groups. Lot Count is the initial and Reset measure.
 
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
