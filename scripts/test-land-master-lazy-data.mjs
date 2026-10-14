@@ -24,6 +24,7 @@ function harness({read,choices}={}){
     sdkGetAll(report,criteria,onProgress,options){reads.push({report,options});return Promise.resolve(read?read(report,options,reads.length):fixture[report]);},
     loadLocationChoices:choices||(async()=>{}),LMPerf:{start(){},end(name,meta){metrics.push({name,...meta});},mark(name,meta){metrics.push({name,...meta});}},diag(label,details){if(details?.error)errors.push(details.error);},beginLoadProgress(){},updateLoadProgress(){},finishLoadProgress(){},setLoadRendering(){},
     requestAnimationFrame(fn){fn();},setTimeout(fn){fn();},showAppConfirm(title,message,label,action){c.confirmedAction=action;},closeFilterPopup(){},closeBulkModal(){c.S.bulkOpen=false;},
+    recordDialogFocus:{open(){},close(){}},propertyWorkspace:{closeDate(){},afterRender(){}},propertyTransferCount:()=>null,
     renderTable(){},renderCounts(){},renderFilterButtons(){}});
   c.window=c;vm.runInContext(controller,c);
   vm.runInContext(section('var S =','function $(id)'),c);c.S.liveSDK=true;

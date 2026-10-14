@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
 
 const source = fs.readFileSync('widgets/land-master/src/app/widget.html', 'utf8');
 
@@ -37,7 +39,17 @@ forbidText('},permissionDenied);', 'Permission failures must not bypass automati
 requireText("op.row.isNew=false;op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code", 'Successful creates must be reconciled into a retained draft.');
 requireText('op.row.originalSystem=op.row.system;op.row.originalCode=op.row.code;', 'Successful updates must be reconciled into a retained draft.');
 requireText('if(S.mappingDraft)S.mappingDraft.rows=S.mappingDraft.rows.filter(function(r){return r!==op.row;});', 'Successful deletes must be removed from a retained draft.');
-requireText("function lookupChoiceRequired(){var type=S.lookupPopupMode==='field'?S.editorType:currentType();return type==='subdivision'&&S.lookupPopupField==='Company1';}", 'Subdivision Development Company must be treated as a required lookup in both editor modes.');
+const lookupStart=source.indexOf('function lookupChoiceRequired('),lookupEnd=source.indexOf('\nfunction ',lookupStart+1);
+assert.ok(lookupStart>=0&&lookupEnd>lookupStart);
+const lookupContext=vm.createContext({S:{},currentType:()=>lookupContext.tableType});
+vm.runInContext(source.slice(lookupStart,lookupEnd),lookupContext);
+for(const mode of ['field','table']){
+  lookupContext.S.lookupPopupMode=mode;
+  for(const [type,field,required] of [['subdivision','Company1',true],['subdivision','Land_Company',false],['property','Company1',false],['propertyTransfer','From_Company',true],['propertyTransfer','To_Company',true]]){
+    lookupContext.S.editorType=type;lookupContext.tableType=type;lookupContext.S.lookupPopupField=field;
+    assert.equal(lookupContext.lookupChoiceRequired(),required,`${type}.${field} required lookup behavior in ${mode} mode`);
+  }
+}
 requireText("var h=lookupChoiceRequired()?'':'<button", 'Required lookup popups must omit the Clear selection action.');
 requireText('if(!next&&lookupChoiceRequired())return closeLookupPopup();', 'Required lookup saves must defensively reject an empty selection before calling Creator.');
 requireText('var PROJECT_STATUS_COLOR_MAP=', 'Land Master must carry the Budget Widget project-status color map.');

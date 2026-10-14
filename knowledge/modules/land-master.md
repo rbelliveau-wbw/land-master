@@ -140,6 +140,12 @@ The lot editor offers Open, Contracted, Scheduled, and Sold to match the Creator
 
 Projects, subdivisions, properties, companies, builders, lots, milestones, forecasts, takedown schedules, related records, search, filters, and edit dialogs.
 
+Property Transfers (8.16.0) adds the New-menu form and property-scoped history
+tab. Transfers are history only; Company edits remain manual. The Development
+form/report/validation workflow require user-owned Creator promotion. The widget
+handles a missing transfer report without affecting existing Property editors.
+See [field, behavior, regression, and rollback details](../../docs/property-transfers-2026-10-14.md).
+
 ## Current UI rules
 
 - Product name is **Land Master**, not Land Registry or Workbench.

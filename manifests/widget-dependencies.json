@@ -336,6 +336,7 @@
         "Milestones",
         "Project",
         "Property",
+        "Property_Transfer",
         "Subdivision",
         "Takedown_Schedule"
       ],
@@ -355,7 +356,8 @@
         "All_Projects",
         "All_Property",
         "All_Subdivisions",
-        "All_Takedown_Schedules"
+        "All_Takedown_Schedules",
+        "Property_Transfer_Report"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.DATA",

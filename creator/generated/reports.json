@@ -527,6 +527,13 @@
       "type": "default list",
       "source_form": "LOI_Worksheet",
       "custom_actions": []
+    },
+    {
+      "link_name": "Property_Transfer_Report",
+      "display_name": "Property Transfers",
+      "type": "list",
+      "source_form": "Property_Transfer",
+      "custom_actions": []
     }
   ]
 }

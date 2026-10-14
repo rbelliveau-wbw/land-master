@@ -3,6 +3,19 @@
 Use this guide for read-only record detail dialogs opened from a main report.
 The first implementation is Manage Lots' Builder Takedowns report.
 
+Land Master Property edit/view dialogs also use the navy title and pale-blue
+body. Group fields in white, finely bordered cards rather than one long flat
+form: Property & location, Ownership & relationships, Acreage & financials,
+Designation & coverage, and Descriptions & notes. Keep existing fields and staged
+Save behavior. Show concise property identity, county, acreage, and facility in
+the header; omit internal report names. Property Transfer uses matching cards,
+a compact source-to-destination summary at the right, conditional partial
+amount controls, and automatic record activity. History uses dated rows with
+company direction, transfer type, status, amount, and View / Edit. Date entry
+accepts MM/DD/YYYY and offers a floating custom calendar with keyboard controls.
+Keep modal controls centered, trap focus, make the report background inert,
+and return focus to the opener. No ownership update accompanies transfer saves.
+
 Legal/Contracts closing summaries use one line per saved tier: `Initial: 20 lots / 30 days`,
 `Second: 9 lots / 180 days`, and `Cont'd: 9 lots / 90 days`. Apply the same compact
 format in main-report rows, expanded previews, and the Contract detail header.

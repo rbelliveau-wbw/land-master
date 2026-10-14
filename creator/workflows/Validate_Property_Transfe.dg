@@ -1,0 +1,38 @@
+// Property transfers record history only. Ownership remains a manual edit.
+if(input.From_Company == input.To_Company)
+{
+	alert "From Company and To Company must be different.";
+	cancel submit;
+}
+if(input.Transfer_Scope == "Partial")
+{
+	if(input.Amount_Unit == null || (input.Amount_Unit != "Percentage" && input.Amount_Unit != "Acres"))
+	{
+		alert "Choose Percentage or Acres for a partial transfer.";
+		cancel submit;
+	}
+	if(input.Amount_Transferred == null || input.Amount_Transferred <= 0)
+	{
+		alert "Enter a positive partial transfer amount.";
+		cancel submit;
+	}
+	if(input.Amount_Unit == "Percentage" && input.Amount_Transferred >= 100)
+	{
+		alert "A partial transfer must be less than 100%.";
+		cancel submit;
+	}
+	if(input.Amount_Unit == "Acres" && input.Property != null)
+	{
+		propertyRow = Property[ID == input.Property];
+		if(propertyRow.Acres != null && propertyRow.Acres > 0 && input.Amount_Transferred >= propertyRow.Acres)
+		{
+			alert "A partial transfer must be less than the property acreage.";
+			cancel submit;
+		}
+	}
+}
+else
+{
+	input.Amount_Unit = null;
+	input.Amount_Transferred = null;
+}

@@ -1,0 +1,46 @@
+{
+  "change": "property-transfer",
+  "environment": "DEVELOPMENT",
+  "status": "development-native-saved-and-reopened",
+  "productionPublished": false,
+  "promotionOwner": "user",
+  "form": "Property_Transfer",
+  "report": "Property_Transfer_Report",
+  "workflow": "Validate_Property_Transfe",
+  "workflowEvent": "Created or Edited / Validations on form submission",
+  "fieldMetadata": "creator/generated/fields/Property_Transfer.json",
+  "formSnapshot": "creator/schema-changes/property-transfer/form.ds",
+  "reportSnapshot": "creator/schema-changes/property-transfer/report.ds",
+  "workflowSource": "creator/workflows/Validate_Property_Transfe.dg",
+  "auditFields": [
+    "Added_User",
+    "Added_Time",
+    "Modified_User",
+    "Modified_Time"
+  ],
+  "companyUpdate": false,
+  "attachments": false,
+  "requiredProductionComponents": [
+    "Property Transfer form and fields",
+    "Property Transfers report",
+    "Validate Property Transfer workflow",
+    "CFO permission changes"
+  ],
+  "verification": "Native form builder and fresh IDE reselect confirmed all ten fields. Report columns and workflow script saved in Development. No Creator environment publication performed.",
+  "cfoPermissions": {
+    "profile": "CFO",
+    "environment": "DEVELOPMENT",
+    "savedAndReopened": true,
+    "add": true,
+    "viewReport": "Property_Transfer_Report",
+    "editReport": "Property_Transfer_Report",
+    "viewAll": true,
+    "modifyAll": true,
+    "delete": false,
+    "existingDependenciesRetained": [
+      "Land & Projects page",
+      "All_Property",
+      "All_Companies"
+    ]
+  }
+}

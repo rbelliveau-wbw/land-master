@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-10-14T17:02:48.842154Z",
+  "form": "Property_Transfer",
+  "display_name": "Property Transfer",
+  "method": "Normalized native Development Application IDE capture; existing export metadata retained.",
+  "source": "creator/schema-changes/property-transfer/form.ds",
+  "fields": [
+    {
+      "link_name": "Property",
+      "display_name": "Property",
+      "type": "picklist",
+      "values": "Property.ID",
+      "display_format": "[Property_ID]",
+      "initial_value": null,
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "From_Company",
+      "display_name": "From Company",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Company_Name]",
+      "initial_value": null,
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "To_Company",
+      "display_name": "To Company",
+      "type": "picklist",
+      "values": "Company.ID",
+      "display_format": "[Company_Name]",
+      "initial_value": null,
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "Transfer_Date",
+      "display_name": "Effective Transfer Date",
+      "type": "date",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "Transfer_Type",
+      "display_name": "Transfer Type",
+      "type": "picklist",
+      "values": "{\"Land Investment\",\"Development Company\",\"Plat Recordation\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "Status",
+      "display_name": "Status",
+      "type": "picklist",
+      "values": "{\"Draft\",\"Pending\",\"Completed\",\"Cancelled\"}",
+      "display_format": null,
+      "initial_value": "\"Draft\"",
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "Transfer_Scope",
+      "display_name": "Transfer Scope",
+      "type": "picklist",
+      "values": "{\"Full\",\"Partial\"}",
+      "display_format": null,
+      "initial_value": "\"Full\"",
+      "private": false,
+      "mandatory": true
+    },
+    {
+      "link_name": "Amount_Unit",
+      "display_name": "Amount Unit",
+      "type": "picklist",
+      "values": "{\"Percentage\",\"Acres\"}",
+      "display_format": null,
+      "initial_value": null,
+      "private": false,
+      "mandatory": false
+    },
+    {
+      "link_name": "Amount_Transferred",
+      "display_name": "Amount Transferred",
+      "type": "decimal",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false,
+      "mandatory": false
+    },
+    {
+      "link_name": "Notes",
+      "display_name": "Notes",
+      "type": "textarea",
+      "values": null,
+      "display_format": null,
+      "initial_value": null,
+      "private": false,
+      "mandatory": false
+    }
+  ]
+}

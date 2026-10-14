@@ -1,0 +1,131 @@
+form Property_Transfer
+{
+	displayname = "Property Transfer"
+	success message = "Property transfer recorded."
+	Section
+	(
+		type = section
+		row = 1
+		column = 0
+		width = medium
+	)
+	must have Property
+	(
+		type = picklist
+		values = Property.ID
+		displayformat = [Property_ID]
+		sortorder = ascending
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have From_Company
+	(
+		type = picklist
+		displayname = "From Company"
+		values = Company.ID
+		displayformat = [Company_Name]
+		sortorder = ascending
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have To_Company
+	(
+		type = picklist
+		displayname = "To Company"
+		values = Company.ID
+		displayformat = [Company_Name]
+		sortorder = ascending
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have Transfer_Date
+	(
+		type = date
+		displayname = "Effective Transfer Date"
+		alloweddays = 0,1,2,3,4,5,6
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have Transfer_Type
+	(
+		type = picklist
+		displayname = "Transfer Type"
+		values = {"Land Investment","Development Company","Plat Recordation"}
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have Status
+	(
+		type = picklist
+		values = {"Draft","Pending","Completed","Cancelled"}
+		initial value = "Draft"
+		row = 1
+		column = 1
+		width = medium
+	)
+	must have Transfer_Scope
+	(
+		type = picklist
+		displayname = "Transfer Scope"
+		values = {"Full","Partial"}
+		initial value = "Full"
+		row = 1
+		column = 1
+		width = medium
+	)
+	Amount_Unit
+	(
+		type = picklist
+		displayname = "Amount Unit"
+		values = {"Percentage","Acres"}
+		row = 1
+		column = 1
+		width = medium
+	)
+	Amount_Transferred
+	(
+		type = decimal
+		displayname = "Amount Transferred"
+		decimalplace = 4
+		row = 1
+		column = 1
+		width = medium
+	)
+	Notes
+	(
+		type = textarea
+		height = 100px
+		row = 1
+		column = 1
+		width = medium
+	)
+	actions
+	{
+		on add
+		{
+			submit
+			(
+				type = submit
+				displayname = "Record Transfer"
+			)
+		}
+		on edit
+		{
+			update
+			(
+				type = submit
+				displayname = "Update"
+			)
+			cancel
+			(
+				type = cancel
+				displayname = "Cancel"
+			)
+		}
+	}
+}

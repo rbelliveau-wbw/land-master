@@ -1,0 +1,22 @@
+list Property_Transfer_Report
+{
+	displayName = "Property Transfers"
+	show all rows from Property_Transfer
+	(
+		Property
+		From_Company
+		To_Company
+		Transfer_Date
+		Transfer_Type
+		Status
+		Transfer_Scope
+		Amount_Unit
+		Amount_Transferred
+		Notes
+		Added_User
+		Added_Time
+		Modified_User
+		Modified_Time
+		ID
+	)
+}
