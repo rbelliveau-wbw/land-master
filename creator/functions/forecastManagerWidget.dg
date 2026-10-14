@@ -41,6 +41,7 @@ string forecastManagerWidget(string payload)
 				choice.put("id",builderChoice.ID.toString());
 				choice.put("name",ifnull(builderChoice.Builder_Name,""));
 				choice.put("type",ifnull(builderChoice.Type1,""));
+				choice.put("placeholder",ifnull(builderChoice.Builder_Name,"").trim().toLowerCase() == "placeholder");
 				builderChoices.add(choice);
 			}
 			response.put("subdivisions",subdivisionChoices);
@@ -48,7 +49,7 @@ string forecastManagerWidget(string payload)
 			response.put("ok",true);
 			return response.toString();
 		}
-		if(action != "snapshot" && action != "save" && action != "ensure")
+		if(action != "snapshot" && action != "save" && action != "ensure" && action != "note" && action != "assign_preview" && action != "assign" && action != "assign_status")
 		{
 			response.put("message","Unknown forecast action.");
 			return response.toString();
@@ -61,6 +62,174 @@ string forecastManagerWidget(string payload)
 			return response.toString();
 		}
 		monthNames = {"February","March","April","May","June","July","August","September","October","November","December","January"};
+		if(action == "note")
+		{
+			noteParentId = ifnull(request.get("parentId"),"").toString().toLong();
+			noteParent = Forecast_Year[(ID == noteParentId) && (Subdivision1 == subdivisionId)];
+			if(noteParent.count() != 1 || noteParent.Builder1 == null)
+			{
+				response.put("message","The forecast year is unavailable.");
+				return response.toString();
+			}
+			noteBuilder = Builder[ID == noteParent.Builder1];
+			if(noteBuilder.count() != 1 || ifnull(noteBuilder.Builder_Name,"").trim().toLowerCase() != "placeholder")
+			{
+				response.put("message","Notes can be edited only for a placeholder builder.");
+				return response.toString();
+			}
+			newNote = ifnull(request.get("note"),"").toString();
+			if(newNote.length() > 10000)
+			{
+				response.put("message","Builder notes cannot exceed 10,000 characters.");
+				return response.toString();
+			}
+			if(ifnull(noteParent.Builder_Notes,"") != ifnull(request.get("expected"),"").toString())
+			{
+				response.put("message","The note changed since it was loaded. Reopen it before editing.");
+				return response.toString();
+			}
+			writeStarted = true;
+			noteParent.Builder_Notes=newNote;
+			response.put("savedNoteParentId",noteParent.ID.toString());
+		}
+		if(action == "assign_preview" || action == "assign" || action == "assign_status")
+		{
+			sourceBuilderId = ifnull(request.get("sourceBuilderId"),"").toString().toLong();
+			destinationBuilderId = ifnull(request.get("destinationBuilderId"),"").toString().toLong();
+			sourceBuilder = Builder[ID == sourceBuilderId];
+			destinationBuilder = Builder[ID == destinationBuilderId];
+			if(sourceBuilder.count() != 1 || ifnull(sourceBuilder.Builder_Name,"").trim().toLowerCase() != "placeholder" || destinationBuilder.count() != 1 || destinationBuilder.Type1 != "Builder" || ifnull(destinationBuilder.Builder_Name,"").trim().toLowerCase() == "placeholder" || sourceBuilderId == destinationBuilderId)
+			{
+				response.put("message","Only a placeholder can be assigned to a real builder.");
+				return response.toString();
+			}
+			assignment = Map();
+			assignment.put("sourceBuilderId",sourceBuilderId.toString());
+			assignment.put("destinationBuilderId",destinationBuilderId.toString());
+			parentIds = List();
+			forecastIds = List();
+			assignmentParents = List();
+			if(action == "assign_status")
+			{
+				// Explicit read-only recovery: never retry an ambiguous assignment.
+				assignmentVerified = true;
+				for each expectedParentId in request.get("parentIds")
+				{
+					checkedParent = Forecast_Year[(ID == expectedParentId.toString().toLong()) && (Subdivision1 == subdivisionId) && (Builder1 == destinationBuilderId)];
+					if(checkedParent.count() != 1)
+					{
+						assignmentVerified = false;
+					}
+					else
+					{
+						parentIds.add(checkedParent.ID.toString());
+					}
+				}
+				for each expectedForecastId in request.get("forecastIds")
+				{
+					checkedForecast = Forecast[(ID == expectedForecastId.toString().toLong()) && (Subdivision1 == subdivisionId) && (Builder1 == destinationBuilderId)];
+					if(checkedForecast.count() != 1)
+					{
+						assignmentVerified = false;
+					}
+					else
+					{
+						forecastIds.add(checkedForecast.ID.toString());
+					}
+				}
+				if(Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == sourceBuilderId)].count() > 0 || Forecast[(Subdivision1 == subdivisionId) && (Builder1 == sourceBuilderId)].count() > 0 || request.get("parentIds").isEmpty())
+				{
+					assignmentVerified = false;
+				}
+				assignment.put("verified",assignmentVerified);
+			}
+			else
+			{
+				// All fiscal years and all months for this pair, independently of filters.
+				for each assignParent in Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == sourceBuilderId)]
+				{
+					if(Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == sourceBuilderId) && (Forecast_Year == assignParent.Forecast_Year)].count() != 1)
+					{
+						response.put("message","Duplicate placeholder years need review before assigning.");
+						return response.toString();
+					}
+					if(Forecast_Year[(Subdivision1 == subdivisionId) && (Builder1 == destinationBuilderId) && (Forecast_Year == assignParent.Forecast_Year)].count() > 0)
+					{
+						response.put("message","The selected builder already has WFY " + assignParent.Forecast_Year + " here. Review the existing forecasts before assigning.");
+						return response.toString();
+					}
+					for each linkedForecast in Forecast[Forecast_Year2 == assignParent.ID]
+					{
+						if(linkedForecast.Subdivision1 != subdivisionId || linkedForecast.Builder1 != sourceBuilderId)
+						{
+							response.put("message","A linked forecast has a different builder or subdivision. Review its relationships before assigning.");
+							return response.toString();
+						}
+					}
+					parentIds.add(assignParent.ID.toString());
+					assignmentParent = Map();
+					assignmentParent.put("id",assignParent.ID.toString());
+					assignmentParent.put("year",assignParent.Forecast_Year);
+					assignmentParent.put("monthCount",Forecast[Forecast_Year2 == assignParent.ID].count());
+					assignmentParents.add(assignmentParent);
+				}
+				for each assignForecast in Forecast[(Subdivision1 == subdivisionId) && (Builder1 == sourceBuilderId)]
+				{
+					if(assignForecast.Forecast_Year2 != null && !parentIds.contains(assignForecast.Forecast_Year2.toString()))
+					{
+						response.put("message","A forecast links to another builder's year. Review its relationships before assigning.");
+						return response.toString();
+					}
+					forecastIds.add(assignForecast.ID.toString());
+				}
+				if(parentIds.isEmpty())
+				{
+					response.put("message","No placeholder forecast years remain for this subdivision.");
+					return response.toString();
+				}
+				if(action == "assign")
+				{
+					if(request.get("parentIds") == null || request.get("forecastIds") == null || request.get("parentIds").size() != parentIds.size() || request.get("forecastIds").size() != forecastIds.size())
+					{
+						response.put("message","The placeholder forecasts changed. Reopen the assignment.");
+						return response.toString();
+					}
+					for each currentParentId in parentIds
+					{
+						if(!request.get("parentIds").contains(currentParentId))
+						{
+							response.put("message","The forecast years changed. Reopen the assignment.");
+							return response.toString();
+						}
+					}
+					for each currentForecastId in forecastIds
+					{
+						if(!request.get("forecastIds").contains(currentForecastId))
+						{
+							response.put("message","The forecast months changed. Reopen the assignment.");
+							return response.toString();
+						}
+					}
+					writeStarted = true;
+					for each writeParentId in parentIds
+					{
+						writeParent = Forecast_Year[ID == writeParentId.toLong()];
+						writeParent.Builder1=destinationBuilderId;
+						writeParent.Forecast_Name=subdiv.Subdivision_Code + " - " + destinationBuilder.Builder_Name + " - FC" + writeParent.Forecast_Year;
+					}
+					for each writeForecastId in forecastIds
+					{
+						writeForecast = Forecast[ID == writeForecastId.toLong()];
+						writeForecast.Builder1=destinationBuilderId;
+					}
+					assignment.put("acknowledged",true);
+				}
+			}
+			assignment.put("parentIds",parentIds);
+			assignment.put("forecastIds",forecastIds);
+			assignment.put("parents",assignmentParents);
+			response.put("assignment",assignment);
+		}
 		if(action == "save")
 		{
 			forecastId = ifnull(request.get("forecastId"),"").toString().toLong();
@@ -285,6 +454,7 @@ string forecastManagerWidget(string payload)
 			response.put("createdMonths",createdMonths);
 			// Verification is returned with the complete snapshot; the widget checks all twelve destinations.
 		}
+		response.put("builderActionsVersion",1);
 		subdivision = Map();
 		subdivision.put("id",subdiv.ID.toString());
 		subdivision.put("name",ifnull(subdiv.Subdivision_Name,""));
@@ -365,6 +535,15 @@ string forecastManagerWidget(string payload)
 		inventory.put("builders",lotBuilders);
 		inventory.put("territory",ifnull(subdiv.Territory,"Unassigned"));
 		response.put("inventory",inventory);
+		// Legal contract existence, without a status/archive filter or matrix-year scope.
+		lotContractBuilderIds = List();
+		for each lotContract in Contract[(Contract_Type == "Lot") || (Contract_Type == "Lot (Master)") || (Contract_Type == "Lot (Amendment)")]
+		{
+			if(lotContract.Builder != null && lotContract.Subdivision1 != null && lotContract.Subdivision1.contains(subdivisionId))
+			{
+				lotContractBuilderIds.add(lotContract.Builder.toString());
+			}
+		}
 		years = List();
 		monthRecords = List();
 		for each fy in Forecast_Year[(Subdivision1 == subdivisionId) && (Status == "Builder")] sort by Forecast_Year
@@ -374,6 +553,8 @@ string forecastManagerWidget(string payload)
 			yearRecord.put("builderId",ifnull(fy.Builder1,"").toString());
 			yearRecord.put("year",fy.Forecast_Year);
 			yearRecord.put("name",fy.Forecast_Name);
+			yearRecord.put("note",ifnull(fy.Builder_Notes,""));
+			yearRecord.put("hasLotContract",lotContractBuilderIds.contains(ifnull(fy.Builder1,"").toString()));
 			years.add(yearRecord);
 			for each child in Forecast[(Forecast_Year2 == fy.ID) && (Delete_me != true)] sort by Forecast_Start_Date
 			{

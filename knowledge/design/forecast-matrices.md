@@ -1,5 +1,26 @@
 # Forecast matrices
 
+## Placeholder actions — v1.6
+
+Only the native Builder named Placeholder offers a clickable name. Its searchable
+single-choice picker contains real Type1 Builder destinations. A fresh all-year
+preflight lists the exact Forecast Years and Forecasts for the source Builder ID
+and selected Subdivision ID; filters never narrow reassignment. Existing target
+years or inconsistent relationships block the operation without merging counts.
+Use the mounted transfer progress/result modal and read-only status recovery.
+Real builder identities remain read-only after assignment.
+
+Use the user-supplied outlined round pencil for notes: pale blue when empty,
+yellow when any saved note exists across that builder's subdivision years,
+including hidden years. Its accessible label and tooltip distinguish the states.
+Open per-WFY text areas backed by Forecast_Year.Builder_Notes; save each year
+separately. Preserve notes on assignment, with read-only access afterward.
+Show a document/check for any Lot, Lot (Master), or Lot (Amendment) contract for
+the same builder and subdivision, and a document/X when none exists. Include all
+contract statuses and archived contracts, per user direction. Unknown status is
+distinct from No while the Creator backend is awaiting promotion. CSV includes
+the saved year's note and the scoped contract flag.
+
 ## Layout
 
 Keep each selected builder on one row. Pin its name on the left and group each fiscal year's 12 months and total to the right. The Land Master fiscal year starts in February and ends in January of the following calendar year. Put both calendar dates beneath the WFY heading. Pin column headings and the totals footer within an internally scrolling table; the page itself must fit a mobile viewport.

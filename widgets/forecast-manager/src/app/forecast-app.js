@@ -7,8 +7,8 @@
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
   const changed = () => [...S.entries.values()].some(entry=>entry.phase === 'failed' || entry.phase === 'unknown');
-  const busy = () => S.pending > 0 || S.loading || S.creating;
-  const creationReview = () => S.creation && S.creation.phase === 'unknown';
+  const busy = () => S.pending > 0 || S.loading || S.creating || S.rowPending;
+  const creationReview = () => S.creation && S.creation.phase === 'unknown' || S.rowOperation && S.rowOperation.phase === 'unknown';
   function notice(message, error = false) {const host = $('notice'); host.textContent = message || ''; host.classList.toggle('error',error); host.hidden = !message; if(error && window.LMSuccess) LMSuccess.clear();}
   function decode(raw) {
     let data = raw;
@@ -67,6 +67,8 @@
     $('creationStatus').classList.toggle('error',!!S.creation&&S.creation.phase!=='pending');
     $('saveStatus').textContent=S.creating?'Creating forecast year…':S.loading?'Loading…':S.pending?S.pending+' change'+(S.pending===1?'':'s')+' saving…':changed()||creationReview()?'Changes need review':S.snapshot?'All changes saved':'Ready';
     $('saveStatus').dataset.state=busy()?'busy':changed()||creationReview()?'review':'ready';
+    if(S.rowPending)$('saveStatus').textContent='Saving builder changes…';
+    document.querySelectorAll('[data-assign-name],[data-builder-notes]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview()||S.snapshot?.builderActionsVersion!==1;});
     $('subText').textContent=S.catalog?(S.catalog.subdivisions.find(row=>row.id===S.sub)||{}).name || 'Choose subdivision':'Choose subdivision';
     $('builderText').textContent=S.builders?S.builders.length+' builder'+(S.builders.length===1?'':'s'):'All for subdivision';
     $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All years';
@@ -86,7 +88,7 @@
     html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3).toUpperCase()+'</th>').join('')+'<th class="year-total">TOTAL</th>').join('')+'</tr></thead><tbody>';
     for(const row of matrix) {
       const builderName=name(row.builderId),initials=builderName.split(/\s+/).filter(Boolean).slice(0,2).map(word=>word[0]).join('').toUpperCase(),yearCount=row.years.filter(year=>year.parent).length;
-      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column"><div class="builder-identity"><span class="builder-avatar" aria-hidden="true">'+esc(initials)+'</span><div class="builder-label"><span class="builder-name" title="'+esc(builderName)+'">'+esc(builderName)+'</span><small>'+yearCount+' fiscal year'+(yearCount===1?'':'s')+'</small></div></div></th>';
+      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column"><div class="builder-identity"><span class="builder-avatar" aria-hidden="true">'+esc(initials)+'</span><div class="builder-label">'+ForecastBuilderActions.label(row.builderId)+'<small>'+yearCount+' fiscal year'+(yearCount===1?'':'s')+'</small></div></div></th>';
       for(const year of row.years) {
         if(year.issue) {html+='<td colspan="13" class="missing-year issue">'+esc(year.issue)+' · Review in Creator</td>';continue;}
         if(!year.parent) {html+='<td colspan="13" class="missing-year"><div class="missing-content"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 2v4m10-4v4M3 9h18m-9 3v5m-2.5-2.5h5"/></svg><span><b>No forecast available.</b></span><button class="btn" data-create-builder="'+esc(row.builderId)+'" data-create-year="'+esc(year.year)+'"'+(busy()?' disabled':'')+'>Create Forecast</button></div></td>';continue;}
@@ -157,6 +159,7 @@
     });
   }
   async function checkStatus() {
+    if(S.rowOperation && S.rowOperation.phase==='unknown') {await ForecastBuilderActions.recheck();return;}
     if(creationReview()) {await checkCreation(S.creation.destination);return;}
     if(busy() || !S.snapshot) return;
     S.loading=true;patch();
@@ -179,7 +182,7 @@
     $('dialogClose').disabled=false;$('dialogCancel').hidden=false;$('dialogCancel').textContent='Cancel';$('dialogCancel').disabled=false;
     $('modal').hidden=false;$('app').inert=true;$('dialogClose').focus();
   }
-  function closeDialog() {if(S.creating)return;closePicker();$('modal').hidden=true;$('app').inert=false;S.dialog=null;if(S.focus&&S.focus.isConnected)S.focus.focus();}
+  function closeDialog() {if(S.creating||S.rowPending)return;closePicker();$('modal').hidden=true;$('app').inert=false;S.dialog=null;if(S.focus&&S.focus.isConnected)S.focus.focus();}
   function discardDialog(next) {
     const changes=[...S.entries.values()].filter(entry=>['failed','unknown'].includes(entry.phase));
     openDialog('Discard local changes?','FORECAST CHANGES','<ul class="review-list">'+changes.map(entry=>'<li>'+esc(name(entry.builderId)+' · '+entry.month+' '+entry.year)+' · '+esc(entry.attempted==null?'Blank':entry.attempted)+'</li>').join('')+'</ul><p class="dialog-note">Saved Creator values stay unchanged.</p>',()=>{S.entries.clear();closeDialog();render();notice('');if(next)next();},'Discard local changes');
@@ -243,6 +246,7 @@
   }
   function closePicker() {if(S.picker){const p=S.picker; p.element.remove();p.anchor.setAttribute('aria-expanded','false');p.anchor.removeAttribute('aria-controls');S.picker=null;}}
   function pickerOptions(kind) {
+    if(kind==='assignBuilder')return S.catalog.builders.filter(row=>row.type==='Builder'&&row.placeholder!==true&&row.name.trim().toLowerCase()!=='placeholder').map(row=>({id:row.id,label:row.name}));
     if(kind==='sub')return S.catalog.subdivisions.map(row=>({id:row.id,label:row.name,detail:row.code}));
     if(kind==='builders'||kind==='newBuilder')return S.catalog.builders.filter(row=>kind!=='newBuilder'||row.type==='Builder').map(row=>({id:row.id,label:row.name}));
     const first=kind==='newYear'?2019:2018,last=kind==='newYear'?2046:2050;
@@ -261,7 +265,7 @@
     p.element.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key)||((event.key==='Home'||event.key==='End')&&event.target.tagName==='INPUT'))return;const options=[...p.element.querySelectorAll('.option')];if(!options.length)return;event.preventDefault();const index=options.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?options.length-1:event.key==='ArrowDown'?(index+1)%options.length:index<=0?options.length-1:index-1;options[next].focus();});
     p.element.addEventListener('click',event=>{
       const button=event.target.closest('button');if(!button)return;
-      if(button.hasAttribute('data-pop-close')){if(kind.startsWith('new')){closePicker();anchor.focus();}else clearPicker(p);return;}
+      if(button.hasAttribute('data-pop-close')){if(kind.startsWith('new')||kind==='assignBuilder'){closePicker();anchor.focus();}else clearPicker(p);return;}
       if(button.hasAttribute('data-pop-all')){p.all=true;p.selected.clear();drawOptions(p);return;}
       if(button.hasAttribute('data-pop-clear')){clearPicker(p);return;}
       if(button.hasAttribute('data-pop-visible')){p.all=false;p.visible.forEach(option=>p.selected.add(option.id));drawOptions(p);return;}
@@ -280,6 +284,7 @@
   }
   function commitPicker(p) {
     const values=[...p.selected];
+    if(p.kind==='assignBuilder'){closePicker();ForecastBuilderActions.confirm(p.anchor.dataset.assignName,values[0]);return;}
     if((p.kind==='sub'||p.kind==='builders'||p.kind==='years') && changed()){closePicker();notice('Check or discard local changes before changing filters.',true);return;}
     const nextSub=values[0]||'', subdivisionChanged=p.kind==='sub'&&nextSub!==S.sub;
     if(subdivisionChanged){S.sub=nextSub;S.snapshot=null;S.creation=null;S.entries.clear();}
@@ -291,8 +296,8 @@
   }
   function exportCsv() {
     if(busy()||!S.snapshot)return;
-    const matrix=rows(), fields=['Subdivision','Code','Builder','WFY','Month','Calendar month','Forecasted lots','Sold lots','Scheduled lots'];
-    const lines=[fields,...matrix.flatMap(row=>row.years.flatMap(year=>year.months.map(month=>[S.snapshot.subdivision.name,S.snapshot.subdivision.code,name(row.builderId),year.year,month.month,month.start.slice(0,7),month.id&&month.forecast!=null?month.forecast:'',month.id&&month.actual!=null?month.actual:'',month.id&&month.scheduled!=null?month.scheduled:''])))];
+    const matrix=rows(), fields=['Subdivision','Code','Builder','WFY','Month','Calendar month','Forecasted lots','Sold lots','Scheduled lots','Builder notes','Lot contract'];
+    const lines=[fields,...matrix.flatMap(row=>row.years.flatMap(year=>year.months.map(month=>[S.snapshot.subdivision.name,S.snapshot.subdivision.code,name(row.builderId),year.year,month.month,month.start.slice(0,7),month.id&&month.forecast!=null?month.forecast:'',month.id&&month.actual!=null?month.actual:'',month.id&&month.scheduled!=null?month.scheduled:'',year.parent?year.parent.note||'':'',year.parent&&typeof year.parent.hasLotContract==='boolean'?year.parent.hasLotContract?'Yes':'No':''])))];
     const cell=value=>{const s=String(value);return '"'+(/^[=+@-]/.test(s)?"'":'')+s.replace(/"/g,'""')+'"';};
     const url=URL.createObjectURL(new Blob(['\ufeff'+lines.map(line=>line.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Forecasts-'+S.snapshot.subdivision.code.replace(/[^a-z0-9_-]/gi,'-')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
     if(window.LMSuccess)LMSuccess.show('Forecast CSV ready.');
@@ -310,7 +315,7 @@
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){if(S.picker){const anchor=S.picker.anchor;closePicker();anchor.focus();}else if(S.dialog){event.preventDefault();closeDialog();}return;}
     const container=S.picker?S.picker.element:S.dialog?$('modal'):null;
-    if(event.key==='Tab'&&container){const items=[...container.querySelectorAll('button:not(:disabled),input:not(:disabled),[tabindex="0"]')].filter(element=>!element.hidden&&element.getClientRects().length);if(!items.length){event.preventDefault();return;}const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
+    if(event.key==='Tab'&&container){const items=[...container.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),[tabindex="0"]')].filter(element=>!element.hidden&&element.getClientRects().length);if(!items.length){event.preventDefault();return;}const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
   });
   window.addEventListener('resize',()=>{if(S.picker)positionPicker(S.picker);});window.addEventListener('scroll',()=>{if(S.picker)positionPicker(S.picker);},true);
   async function boot() {
@@ -327,5 +332,6 @@
     finally {clearTimeout(timer);}
   }
   window.ForecastApp=Object.freeze({decode});
+  ForecastBuilderActions.connect({S,esc,name,busy,changed,creationReview,openDialog,closeDialog,openPicker,request,applySnapshot,render,controls,patch,notice});
   boot();
 })();

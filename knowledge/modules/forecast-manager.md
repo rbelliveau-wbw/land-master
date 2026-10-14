@@ -1,5 +1,54 @@
 # Forecast Manager widget contract
 
+## October 14, 2026 builder actions — 1.6.0
+
+The live Creator Development catalog identifies the placeholder as the Builder
+named `Placeholder` with Type1 `Builder`, not a separate Type1 value. The catalog
+now returns an explicit `placeholder` flag. Only that identity can be replaced;
+destinations must be real Type1 Builder records. Requests use string IDs.
+
+`assign_preview` returns all parent/month IDs for the source builder and selected
+subdivision, independent of status, dates, deletion markers, or visible fiscal
+years. It rejects duplicate source years, existing target builder/year pairs,
+and inconsistent cross-parent relationships. `assign` rechecks the same scope
+and exact destination IDs/counts before updating Builder1 on every matching
+Forecast_Year and Forecast and refreshing parent Forecast_Name. It preserves
+notes, lot counts, fiscal years, dates, and the Subdivision.Builders list.
+`assign_status` performs only reads against the original destination ledger;
+partial or unknown replies never automatically replay the batch.
+
+`note` updates one scoped Forecast_Year.Builder_Notes, allows blank and up to
+10,000 characters, and rejects stale notes before writing. Notes are editable
+only while the builder is Placeholder; retained notes remain viewable after
+assignment. Acknowledged writes confirm destination identity; exact note values
+are checked only during explicit recovery of an ambiguous reply. Metadata edits
+are independent of monthly forecasting-window/date guards, which are unchanged.
+
+Snapshot years add `note` and `hasLotContract`. Contract existence includes native
+Contract.Contract_Type `Lot (Master)` and `Lot (Amendment)`, plus legacy `Lot`;
+Contract.Builder must match and the multi-lookup Subdivision1 must contain the
+selected subdivision. All statuses/archive states count, as requested.
+`builderActionsVersion:1` gates the frontend until backend publication.
+
+The multiline field and both report columns were added through the Creator UI:
+All_Forecast_Years.Builder_Notes and All_Forecasts.Forecast_Year2.Builder_Notes.
+The function compiled in Development and returned these fields from a read-only
+native execution. Existing APIs/audiences were retained. No live forecast data
+was changed for testing. See the [schema/evidence](../../creator/schema-changes/forecast-builder-actions/schema.json).
+
+PMP publishes the immutable frontend to repository Development/Production;
+Creator promotion remains with the user under current AGENTS.md. Before that
+promotion, Production retains its current month behavior and shows the added
+builder actions disabled with unknown contract status. After promotion, reload
+the existing permanent widget URL; no registration change is needed.
+
+Regression covers all-year/multi-subdivision scope, duplicate/stale/relationship
+rejections, real-builder locks, preserved counts/notes, blank/conflicting notes,
+contract types/statuses, desktop/mobile rendering, pending locks, and recovery
+without replay. Rollback frontend mappings to 1.5.5 and restore the captured
+function before removing an unused field/report column. Retain saved notes;
+reversing actual builder assignments requires separately reviewed data changes.
+
 ## Save policy — October 8, 2026
 
 Acknowledged successful saves no longer compare refreshed editable/calculated

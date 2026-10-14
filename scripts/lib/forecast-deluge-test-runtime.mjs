@@ -13,7 +13,7 @@ export function forecastRuntime(source,tables,today='2026-10-07') {
   });
   let {js}=translate(insert);
   js=js.replace(/INSERTSTRUCT(\d+)TOKEN/g,(whole,index)=>structures[Number(index)]);
-  js=js.replace(/\.sum\((\w+)\)/g,'.sum("$1")').replace(/\.count\(ID\)/g,'.count()').replace(/\bFALSE\b/g,'false').replace(/\bTRUE\b/g,'true').replace(/Forecast_Year\.Forecast_Months\(\)/g,'monthRowNew()');
+  js=js.replace(/\.sum\((\w+)\)/g,'.sum("$1")').replace(/\.count\(ID\)/g,'.count()').replace(/\.length\(\)/g,'.length').replace(/\bFALSE\b/g,'false').replace(/\bTRUE\b/g,'true').replace(/Forecast_Year\.Forecast_Months\(\)/g,'monthRowNew()');
   const context=vm.createContext({tablesJson:JSON.stringify(tables),today:date(today)});
   vm.runInContext(`
     var tables=JSON.parse(tablesJson),writes=[];
@@ -28,6 +28,8 @@ export function forecastRuntime(source,tables,today='2026-10-07') {
     Array.prototype.add=function(value){this.push(value);};
     Array.prototype.isEmpty=function(){return !this.length;};
     Array.prototype.count=function(){return this.length;};
+    Array.prototype.size=function(){return this.length;};
+    Array.prototype.contains=function(value){return this.includes(value);};
     Array.prototype.sum=function(field){return this.reduce((sum,row)=>sum+(row[field]??0),0);};
     String.prototype.toMap=function(){return JSON.parse(this);};
     Object.defineProperty(Object.prototype,'get',{value:function(key){return Object.hasOwn(this,key)?this[key]:null;},configurable:true});

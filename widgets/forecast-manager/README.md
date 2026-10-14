@@ -1,5 +1,14 @@
 # Forecast Manager
 
+Version 1.6.0 adds clickable Placeholder reassignment across every fiscal year
+for its subdivision, per-Forecast-Year builder notes with empty/yellow pencil
+states, and Legal Lot contract yes/no icons scoped to builder + subdivision.
+Both native forecast reports include Builder Notes; CSV includes notes and
+contract status. See [the current contract](../../knowledge/modules/forecast-manager.md#october-14-2026-builder-actions--160).
+Creator changes are saved in Development; PMP leaves Creator promotion to the
+user. Until publication, the frontend disables the new metadata actions and
+shows contract status as unavailable while existing forecasting remains usable.
+
 One row per selected builder, with fiscal years extending to the right. WFY 2026 means February 2026 through January 2027. Months save on field change; Sold and Scheduled are read-only views. Searchable filters, per-year totals, the existing subdivision/takedown summary, CSV export and missing-year creation retain the native manager's purpose.
 
 The 1.2.0 release follows Legal and Pro Forma and the selected Compact cards layout. The visible snapshot retains every subdivision fact, each schedule's capacity/progress/current-month pace, closing terms and four recent-sales periods. Multi-phase contracts keep their all-phase section, and repeated builder schedules remain separate. A passive adapter arranges the unchanged Deluge HTML output; it never recalculates business math. Unsupported markup stays available in the sandboxed native-summary fallback. The forecast matrix and field-change save queue remain unchanged.

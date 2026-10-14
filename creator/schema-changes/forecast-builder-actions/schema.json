@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-14",
+  "status": "saved-and-compiled-in-development; Creator promotion left to user",
+  "fields": [
+    {"form": "Forecast_Year", "link_name": "Builder_Notes", "display_name": "Builder Notes", "type": "multiline", "required": false}
+  ],
+  "reports": [
+    {"report": "All_Forecast_Years", "field": "Builder_Notes", "status": "added through Creator Configure Fields for Web"},
+    {"report": "All_Forecasts", "field": "Forecast_Year2.Builder_Notes", "display_name": "Builder Notes", "status": "related field added through Creator Configure Fields for Web"}
+  ],
+  "functions": ["forecastManagerWidget"],
+  "custom_apis": "Existing Forecast_Manager_Widget_DEV / Forecast_Manager_Widget bindings are retained; no access changes",
+  "production_compatibility": "Frontend builder actions remain disabled and contract status remains unknown until builderActionsVersion 1 is returned by the published Creator function.",
+  "record_writes_during_live_verification": 0,
+  "rollback_function": "evidence/forecastManagerWidget.before.dg",
+  "rollback_frontend": "1.5.5"
+}
