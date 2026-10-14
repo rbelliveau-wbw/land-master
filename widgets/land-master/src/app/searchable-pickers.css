@@ -32,6 +32,7 @@ select[hidden]{display:none!important}
 .lm-picker-footer button{border:1px solid #c8d4e5;border-radius:8px;padding:5px 9px;background:#fff;color:#0b2345;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
 .lm-picker-footer [data-done]{background:#2563eb;color:#fff;border-color:#2563eb}
 .lm-picker-footer [hidden]{display:none}
+.lm-picker-head[hidden],.lm-picker-footer[hidden]{display:none}
 @keyframes lm-picker-enter{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.lm-picker-menu{animation:none}.lm-picker-trigger,.lm-picker-trigger svg,.lm-picker-close{transition:none}}
 

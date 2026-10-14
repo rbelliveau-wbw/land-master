@@ -16,6 +16,10 @@ accepts MM/DD/YYYY and offers a floating custom calendar with keyboard controls.
 Keep modal controls centered, trap focus, make the report background inert,
 and return focus to the opener. No ownership update accompanies transfer saves.
 
+Transfer type, status, scope, and amount-unit choices use compact text-only
+single-select popovers with no search bar or checkbox markers. Retain the modern
+trigger, selected-row highlight, keyboard controls, and staged Save behavior.
+
 Legal/Contracts closing summaries use one line per saved tier: `Initial: 20 lots / 30 days`,
 `Second: 9 lots / 180 days`, and `Cont'd: 9 lots / 90 days`. Apply the same compact
 format in main-report rows, expanded previews, and the Contract detail header.

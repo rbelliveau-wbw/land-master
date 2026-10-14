@@ -58,3 +58,19 @@ New menu, searchable choices, and transfer history reopening.
 
 Widget rollback: map Land Master to `8.15.9` and redeploy Pages. Retain transfer
 records and the new backend components; reverting the widget does not erase history.
+
+## Single-select refinement — 8.16.1
+
+Fixed-choice single selects now use text-only modern popovers with no search bar
+or checkbox markers, including Transfer Type, Status, Transfer Scope, and Measure
+by. The current option remains highlighted, selection closes the popover, and
+keyboard navigation/dismissal returns focus to the trigger. Record lookups keep
+search and multi-select filters keep their selection controls.
+
+Changed files: the Land Master picker JS/CSS, widget version/config/manifest,
+immutable release, environment mappings, and these design/promotion notes.
+No Creator forms, fields, workflows, functions, Custom APIs, or permissions change
+in this refinement; no additional Creator promotion is required. The original
+Property Transfer backend promotion remains user-owned. Verify fixed-choice
+menus, keyboard selection/Escape, optional Clear, record lookup search, and
+multi-select controls. Roll back this refinement to widget release `8.16.0`.

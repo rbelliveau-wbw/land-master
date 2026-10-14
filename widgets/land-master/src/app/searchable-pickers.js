@@ -38,9 +38,12 @@
       var row = document.createElement('button');
       row.type = 'button'; row.className = 'lm-picker-option';
       row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(option.selected));
-      var mark = document.createElement('span'); mark.className = 'lm-picker-mark'; mark.innerHTML = option.selected ? "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"m4 10 4 4 8-8\"/></svg>" : '';
       var text = document.createElement('span'); text.textContent = option.textContent;
-      row.append(mark, text);
+      if (active.multiple) {
+        var mark = document.createElement('span'); mark.className = 'lm-picker-mark'; mark.innerHTML = option.selected ? "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"m4 10 4 4 8-8\"/></svg>" : '';
+        row.append(mark);
+      }
+      row.append(text);
       row.addEventListener('click', function () {
         if (!active) return;
         if (active.multiple) { option.selected = !option.selected; change(); render(); }
@@ -75,7 +78,7 @@
         if (!rows.length) return; var current = rows.indexOf(document.activeElement), next = event.key === 'ArrowDown' ? Math.min(current + 1, rows.length - 1) : Math.max(current - 1, 0); rows[next].focus();
       }
       if (event.key === 'Tab') {
-        var focusable = Array.from(menu.querySelectorAll('input,button')).filter(function (el) { return !el.hidden && !el.disabled; });
+        var focusable = Array.from(menu.querySelectorAll('input,button')).filter(function (el) { return !el.disabled && el.getClientRects().length; });
         var first = focusable[0], last = focusable[focusable.length-1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
@@ -94,11 +97,16 @@
     if (select.disabled) return;
     initMenu(); if (active === select) return close(true); close(false); active = select;
     search.value = ''; search.placeholder = 'Search ' + label(select) + '…';
+    var searchable = select.multiple || select.getAttribute('data-ftype') === 'lookup';
+    menu.querySelector('.lm-picker-head').hidden = !searchable;
+    menu.classList.toggle('lm-picker-single', !select.multiple);
     list.setAttribute('aria-label', label(select)); list.setAttribute('aria-multiselectable', String(select.multiple));
     footer.querySelector('[data-visible]').hidden = !select.multiple;
     footer.querySelector('[data-done]').hidden = !select.multiple;
     footer.querySelector('.lm-picker-count').hidden = !select.multiple;
-    footer.querySelector('[data-clear]').hidden = !select.multiple && !Array.from(select.options).some(function (o) { return !o.value; });
+    var clearable = !select.required && select.getAttribute('data-req') !== '1' && Array.from(select.options).some(function (o) { return !o.value; });
+    footer.querySelector('[data-clear]').hidden = !select.multiple && !clearable;
+    footer.hidden = !select.multiple && !clearable;
     render(); menu.hidden = false;
     var rect = select._pickerButton.getBoundingClientRect(), width = Math.min(Math.max(rect.width, 300), window.innerWidth-24);
     anchor = {left:rect.left, top:rect.top};
@@ -106,7 +114,9 @@
     menu.style.maxHeight = Math.max(160, window.innerHeight-24)+'px';
     var height = Math.min(menu.offsetHeight, window.innerHeight-24);
     menu.style.top = Math.max(12, rect.bottom+height+6 < window.innerHeight-12 ? rect.bottom+6 : Math.min(rect.top-height-6, window.innerHeight-height-12))+'px';
-    select._pickerButton.setAttribute('aria-expanded', 'true'); search.focus();
+    select._pickerButton.setAttribute('aria-expanded', 'true');
+    var focus = searchable ? search : list.querySelector('[aria-selected="true"]') || list.querySelector('button');
+    if (focus) focus.focus();
   }
   function enhance(root) {
     if (active && !active.isConnected) close(false);
