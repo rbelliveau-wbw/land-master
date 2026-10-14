@@ -1280,3 +1280,18 @@ Frontend only: no forms, fields, functions or Custom APIs change, and no Creator
 promotion is required. Regression coverage includes both read-completion orders,
 approval/deletion refresh, drafts, failed/stale reads and action permissions.
 Rollback: Budget 122.29.40. See docs/po-request-refresh-2026-10-14.md.
+
+## CFO attached modification visibility and curved rail (122.29.42)
+
+Submitted PO children use the existing authenticated managePurchaseOrder Get
+snapshot as well as report data. This fixes the CFO seeing her own modifications
+but missing another submitter's children when the native report is limited to
+own records. Get reads are bounded to three, cached with the phase's request
+state and refreshed after saves/decisions. Exact PO, phase, revision and child
+identities are required; failed child reads retain the PO with Retry. Supplement
+only the Requests display, keeping report-backed financial aggregates unchanged.
+Shared connectors use continuous 2px gold trunks with rounded SVG elbows.
+No Creator forms, fields, functions or Custom APIs change; no promotion required.
+Tests cover restricted reports, duplicate/stale data, malformed identities,
+read failures, actor changes, bounded concurrency and connector geometry.
+Rollback: Budget 122.29.41. See docs/po-cfo-child-visibility-2026-10-14.md.

@@ -20,6 +20,18 @@ signed budget change and its approval relationship to the PO. Its budget increas
 is separate from the parent payment amount. Keep underlying aggregates unchanged.
 All rows use actual saved data; missing dates are last in the sort and show a dash.
 
+Use a 2px warm-gold trunk with rounded SVG elbows into each child. Keep the last
+trunk end relative to the child's center so rounded joins stay continuous at any
+row height. Connectors are decorative and do not intercept pointer events.
+
+The modification report may expose only records created by the current profile.
+For submitted managed POs, the phase load reads the existing authenticated Get
+snapshot with at most three requests in flight. Render its verified captured
+children together with report rows, once per exact child ID. Preserve actual
+report dates when available; missing dates stay unknown. Keep these supplemental
+rows out of financial report caches. Failed child reads retain the PO and expose
+an explicit unavailable/Retry state; changed actor/phase replies cannot publish.
+
 After an acknowledged submitted PO save, approval decision or deletion, refresh
 both request headers and budget modifications from native reads before the final
 Requests repaint. Draft saves only refresh request headers. Retain navigation,
@@ -47,7 +59,8 @@ Pending, red Rejected and muted Not Sent. Show every captured step; drafts with
 no recorded route show a dash. Hover outlines the clickable chain. Its compact
 read-only modal shows names, roles, sent/responded dates and statuses; a targeted
 Get refreshes only the selected PO. Escape, backdrop and Close restore focus.
-List supplies summaries without per-card network requests or fabricated data.
+List supplies approval summaries. Submitted PO child completeness is verified
+during the bounded phase load, never by a render-triggered request.
 
 The PO title card contains Purchase Order, status, phase, Vendor and Add New
 Vendor. The vendor link opens the existing form in the current Creator environment.
