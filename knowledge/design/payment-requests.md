@@ -105,3 +105,6 @@ from actual balance shortfall. Show each resolved person, role, approval email
 and order; present unavailable routing truthfully. Do not repeat the captured
 saved chain in the draft preview card. Native managePurchaseOrder preview now
 includes names and emails; no new fields or endpoints are needed.
+
+Budget 122.29.38 removes the PO approver preview footer sentence; the route, recipient cards and approval behavior are unchanged. Frontend only, with no Creator promotion required.
+
