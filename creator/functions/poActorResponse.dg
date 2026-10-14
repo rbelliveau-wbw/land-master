@@ -12,7 +12,7 @@ map poActorResponse(map response, string userAccessId)
 			if(bundle != null)
 			{
 				active = bundle.get("active");
-				canApprove = active.get("userAccessId") == userAccessId && (bundle.get("submitterId") != userAccessId || active.get("poTestCFO") != null);
+				canApprove = active.get("userAccessId") == userAccessId;
 				bundle.put("canApprove",canApprove);
 				bundle.put("canRetryEmail",canApprove || bundle.get("submitterId") == userAccessId || actor.User == zoho.adminuser);
 				snapshot.put("approvalBundle",bundle); response.put("snapshot",snapshot);

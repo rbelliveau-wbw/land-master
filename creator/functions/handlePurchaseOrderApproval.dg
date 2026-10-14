@@ -29,14 +29,12 @@ map handlePurchaseOrderApproval(map request)
 			canRetry = bundle.get("active").get("userAccessId") == access.ID.toString() || bundle.get("submitterId") == access.ID.toString() || actorUser == zoho.adminuser;
 			authorized = authorized && canRetry;
 		}
-		// The exception comes only from poApprovalBundle's validated immutable test scope, never this request.
+		// The authenticated assigned approver may also be the PO submitter.
 		else
 		{
-			decisionActorAllowed = bundle.get("submitterId") != access.ID.toString();
-			if(found.get("poTestCFO") != null && bundle.get("poTestCFO") != null) { decisionActorAllowed = true; }
-			authorized = authorized && found.get("userAccessId") == access.ID.toString() && decisionActorAllowed;
+			authorized = authorized && found.get("userAccessId") == access.ID.toString();
 		}
-		if(authorized != true) { result.put("error","Only the assigned approver can decide; the submitter cannot approve."); return result; }
+		if(authorized != true) { result.put("error","Only the assigned approver can decide."); return result; }
 		wanted = "Approved"; if(action == "Reject" || request.get("decision") == "Reject") { wanted = "Rejected"; }
 		if(action == "CheckDecision")
 		{

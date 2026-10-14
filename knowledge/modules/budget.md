@@ -1259,3 +1259,5 @@ this release. Rollback: Budget 122.29.36 and Settings 1.5.4.
 
 ## PO submitters remain approvers (2026-10-14)
 Purchase Order routing always allows the submitter to remain a manual approver in their assigned position, including existing rules stored as Deny. It never auto-approves or skips that step. Other workflows are unchanged. Settings 1.5.7; native resolveApprovalRoute, manageApprovalPolicies and poApprovalBundle. See docs/po-submitter-manual-approval-2026-10-14.md.
+
+PO submitter execution correction: poApprovalBundle, poActorResponse and handlePurchaseOrderApproval also allow the authenticated assigned submitter through captured-chain validation and manual decision. No automatic approval; duplicate people and current-step checks retained. Creator promotion left to the user. See docs/po-submitter-execution-fix-2026-10-14.md.

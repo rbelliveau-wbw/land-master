@@ -1,0 +1,5 @@
+# PO submitter execution checks (2026-10-14)
+
+The prior route resolver fix did not remove the remaining submitter exclusions in the captured-chain reader, Dev actor permission hints and manual decision handler. This correction changes poApprovalBundle, poActorResponse and handlePurchaseOrderApproval. A submitter assigned to the current step can approve manually. No steps auto-approve or skip; duplicate people, wrong actors, inactive steps, captured identities/revisions, locks and notification protections remain. Historical scoped test routes still require their full scope evidence.
+
+Actual-source regressions execute normal captured-chain reading, manual approval as its submitter, Dev hints, unassigned actor denial and duplicate-person denial. Creator Development saves/compilation are separate from repository validation. Creator Stage/Production promotion is left to the user; no frontend widget release or permission/data changes are needed. Roll back these three native function sources if necessary.

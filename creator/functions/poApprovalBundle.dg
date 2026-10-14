@@ -55,9 +55,8 @@ map poApprovalBundle(string purchaseOrderId)
 				if(testPerson.ID == null || ifnull(testPerson.User,"").toString().trim() == "") { result.put("error","Captured PO test CFO login identity is unavailable."); return result; }
 				testSelfApproval = true; testCFOEvidence = testCFO;
 			}
-			submitterStepBlocked = false;
-			if(step.get("userAccessId") == context.get("submitterId") && !testSelfApproval) { submitterStepBlocked = true; }
-			if(submitterStepBlocked || seenPeople.contains(step.get("userAccessId"))) { result.put("error","PO approval steps must use distinct people and exclude the submitter."); return result; }
+			if(step.get("reason") == "PO test CFO" && step.get("poTestCFO") == null) { result.put("error","Captured PO test CFO scope could not be verified."); return result; }
+			if(seenPeople.contains(step.get("userAccessId"))) { result.put("error","PO approval steps must use distinct people."); return result; }
 			seenPeople.add(step.get("userAccessId"));
 			if(row.ID == null || seenRows.contains(executionId) || row.Sort_Order != position || row.Title != step.get("role") || row.Approver != step.get("email")) { result.put("error","A PO approval step differs from its captured route."); return result; }
 			seenRows.add(executionId); sent = ""; responded = "";
@@ -91,7 +90,7 @@ map poApprovalBundle(string purchaseOrderId)
 		canApprove = false; access = User_Access[User == zoho.loginuser];
 		if(access.count() == 1 && active.get("userAccessId") == access.ID.toString())
 		{
-			if(context.get("submitterId") != access.ID.toString() || active.get("poTestCFO") != null) { canApprove = true; }
+			canApprove = true;
 		}
 		canRetryEmail = canApprove || zoho.loginuser == zoho.adminuser || (access.count() == 1 && context.get("submitterId") == access.ID.toString());
 		bundle = {"snapshotId":captured.ID.toString(),"revision":captured.Submission_Revision,"submitterId":context.get("submitterId"),"modifications":modifications,"rows":rows,"active":active,"canApprove":canApprove,"canRetryEmail":canRetryEmail,"emailSent":active.get("sentDate") != null && active.get("sentDate") != ""};
