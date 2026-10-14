@@ -1,3 +1,21 @@
+# Request list
+
+The phase Requests tab uses the selected Connected Rail layout: one newest-first
+list of Purchase Orders, Check requests, Wire requests and budget modifications.
+Keep one shared column grid so type pills, names/descriptions, approvers, dates,
+amounts, statuses and icon actions line up across request types. Omit separate
+Budget Modifications/Payment Requests headings and modification summary tiles.
+Keep aligned columns on narrow screens with list scrolling; preserve keyboard
+focus and action names.
+
+PO-created modifications sit immediately beneath their owning PO, with a fixed
+indent and branch connector. Match exact PO identity, current revision and phase
+using the stored PO reference; never use a vendor name or reason-text match.
+Unmatched modifications remain standalone rows. The child displays item/code,
+signed budget change and its approval relationship to the PO. Its budget increase
+is separate from the parent payment amount. Keep underlying aggregates unchanged.
+All rows use actual saved data; missing dates are last in the sort and show a dash.
+
 # Payment request cards
 
 Managed POs in Budget's phase Requests tab use the approved Soft rail row: PO pill,
@@ -11,7 +29,8 @@ Use the attachment-style 28px square eye, eligible pencil, download and red tras
 icons, with accessible names, tooltips and visible keyboard focus rings. Preserve
 exact PO identity, edit eligibility and phase scope. On narrow screens keep the
 row horizontal with internal scrolling; truncate vendor names with a full tooltip.
-Check, Wire and legacy PO cards retain their existing presentation and behavior.
+Check, Wire and legacy PO rows share the request-list presentation while retaining
+their existing behavior and permissions. Do not invent unavailable row actions.
 
 Captured approvers use their recorded role (VP, CFO, COO) in connected 28px circles: green Approved, amber
 Pending, red Rejected and muted Not Sent. Show every captured step; drafts with

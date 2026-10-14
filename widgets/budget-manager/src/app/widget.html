@@ -4,16 +4,16 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.39"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.40"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.39"></script>
-<script src="po-grid.js?v=122.29.39"></script>
-<script src="po-controller.js?v=122.29.39"></script>
-<script src="po-progress.js?v=122.29.39"></script>
-<script src="po-ui.js?v=122.29.39"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.39">
+<script src="po-domain.js?v=122.29.40"></script>
+<script src="po-grid.js?v=122.29.40"></script>
+<script src="po-controller.js?v=122.29.40"></script>
+<script src="po-progress.js?v=122.29.40"></script>
+<script src="po-ui.js?v=122.29.40"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.40">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1082,6 +1082,39 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .po-request-action:focus-visible{outline:2px solid #285b97;outline-offset:3px}
 .po-request-action svg{width:14px;height:14px;flex:none}
 .po-request-actions{display:flex;gap:6px;align-items:center}.po-request-actions .attachment-action{width:28px;height:28px;padding:0;display:grid;place-items:center}.po-request-actions .attachment-action svg{width:14px;height:14px}.po-request-values{grid-template-columns:minmax(60px,1fr) max-content 78px max-content max-content max-content;min-width:560px}
+.request-rail-scroll{overflow-x:auto;padding:2px 0 7px}
+.request-rail-list{display:grid;gap:12px;min-width:924px;margin:0;padding:0;list-style:none}
+.request-rail-group{min-width:0;position:relative}
+.request-rail-row{overflow:visible}
+.request-rail-row .po-request-values,.request-rail-child .po-request-values{grid-template-columns:64px minmax(190px,1fr) 142px 90px 112px 106px 130px;gap:10px;min-width:0;min-height:62px;padding:8px 13px}
+.request-rail-row .po-request-kind,.request-rail-child .po-request-kind{width:58px;min-height:26px;padding:3px 5px;box-sizing:border-box;font-size:10px;letter-spacing:.035em}
+.request-rail-primary{min-width:0;text-align:left}
+.request-rail-primary .po-request-vendor{display:block;font-size:13px}
+.request-rail-description{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;font-size:11px;color:#69809d;line-height:1.4}
+.request-rail-row .po-request-date,.request-rail-child .po-request-date{text-align:left;font-size:11px}
+.request-rail-route{min-width:0;display:flex;align-items:center;overflow:auto;text-align:left}
+.request-rail-route .po-route-pill{padding-left:0;padding-right:0;flex:none}
+.request-rail-route .po-approver-circle{width:25px;height:25px;font-size:9px}
+.request-rail-route .po-route-link{width:8px}
+.request-rail-row .po-request-status,.request-rail-child .po-request-status{justify-self:start}
+.request-rail-row .po-request-amount,.request-rail-child .po-request-amount{font-size:16px}
+.request-rail-row .po-request-actions,.request-rail-child .po-request-actions{display:grid;grid-template-columns:repeat(4,28px);gap:6px;justify-self:start}
+.request-rail-action-space{width:28px;height:28px}
+.request-rail-row[data-kind=wire]{border-left-color:#8b6dbb}.request-rail-row[data-kind=wire] .po-request-kind{background:#f0eafb;color:#7453a2}
+.request-rail-row[data-kind=check]{border-left-color:#23a087}.request-rail-row[data-kind=check] .po-request-kind{background:#e5f7f1;color:#087c64}
+.request-rail-row[data-kind=modification]{border-left-color:#dba94b}.request-rail-row[data-kind=modification] .po-request-kind{background:#fff3d5;color:#98610b}
+.request-rail-row[data-kind=modification] .po-request-amount{color:#a2670d}.request-rail-row .po-request-amount.neg,.request-rail-child .po-request-amount.neg{color:#b3261e}
+.request-rail-children{display:grid;gap:7px;margin:7px 0 0 28px;padding:0;list-style:none;position:relative}
+.request-rail-children:before{content:"";position:absolute;top:-7px;bottom:28px;left:-14px;width:1px;background:#d5b675}
+.request-rail-child{position:relative;background:#fffaf0;border:1px solid #eadbb8;border-radius:8px}
+.request-rail-child:before{content:"";position:absolute;top:50%;left:-14px;width:14px;height:1px;background:#d5b675}
+.request-rail-child .po-request-values{grid-template-columns:64px minmax(160px,1fr) 142px 90px 112px 106px 130px;min-height:51px}.request-rail-child .po-request-kind{background:#fff0c9;color:#98610b;font-size:9px}
+.request-rail-child .po-request-amount{color:#a2670d;font-size:14px}
+.request-rail-inherited{font-size:10px;line-height:1.4;color:#8e743e}
+.request-rail-sort{margin-left:9px;color:#69809d;font-size:11px;font-weight:500}
+.request-rail-notice{font-size:12px;color:#69809d;margin:0 0 10px}
+.request-rail-route-empty{font-size:11px;color:#91a1b7}
+.request-rail-action.approve{color:#087c64;background:#edf9f4;border-color:#b9e1d2}
 .po-route-pill{display:flex;align-items:center;padding:5px 6px;border:1px solid transparent;border-radius:9px;background:transparent;cursor:pointer}.po-route-pill:hover{border-color:#98b8d9;background:#f5f9ff}.po-route-pill:focus-visible{outline:2px solid #6399e8;outline-offset:2px}.po-approver-circle{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:50%;font-size:10px;font-weight:750;background:#e6edf5;color:#6c819c}.po-approver-circle[data-status=Approved]{background:#087c64;color:#fff}.po-approver-circle[data-status=Pending]{background:#f7cf65;color:#674c0c}.po-approver-circle[data-status=Rejected]{background:#c6434d;color:#fff}.po-route-link{width:10px;height:2px;background:#bacbde}.po-route-link.is-approved{background:#087c64}.po-route-empty{width:28px;text-align:center;color:#9aabc0}
 .po-chain-detail-overlay{position:fixed;inset:0;z-index:2500;display:grid;place-items:center;background:#10233e60;backdrop-filter:blur(3px);padding:18px}.po-chain-detail-modal{width:min(560px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border:1px solid #d5e1ee;border-radius:14px;box-shadow:0 24px 70px #0b234540}.po-chain-detail-modal>header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 20px;background:linear-gradient(115deg,#173f78,#0b2345);color:#fff}.po-chain-detail-modal h3{margin:0 0 4px;font-size:18px}.po-chain-detail-modal header span{font-size:11px;color:#d3e2f6}.po-chain-detail-body{padding:8px 20px}.po-approval-detail-row{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #e4edf6}.po-approval-detail-row:last-child{border-bottom:0}.po-approval-detail-row>div{min-width:0;flex:1}.po-approval-detail-row strong{display:block;font-size:13px;color:#173f78;overflow-wrap:anywhere}.po-approval-detail-row>div>span{display:block;font-size:11px;color:#647d9e;margin-top:3px}.po-approval-detail-row small{display:block;font-size:10px;color:#7e92ad;margin-top:5px}.po-detail-status{font-size:10px;padding:4px 7px;border-radius:6px;background:#eaf0f7;color:#61758f;white-space:nowrap}.po-detail-status[data-status=Approved]{background:#e3f5ed;color:#126847}.po-detail-status[data-status=Pending]{background:#fff2cf;color:#805815}.po-detail-status[data-status=Rejected]{background:#ffe8e8;color:#98343c}.po-detail-read-status{padding:0 20px 12px;font-size:11px;color:#7387a3}.po-detail-read-status:empty{display:none}.po-detail-empty{font-size:12px;color:#7387a3}.po-download-spinner{animation:po-download-spin .8s linear infinite}@keyframes po-download-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.po-download-spinner{animation:none}}
 .request-context{margin-bottom:14px}
@@ -1789,8 +1822,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.39">
-<script src="success-feedback.js?v=122.29.39"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.40">
+<script src="success-feedback.js?v=122.29.40"></script>
 </head>
 <body>
 
@@ -2672,7 +2705,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.39", code:"BMW",
+  widget:"Budget Manager", version:"122.29.40", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -12029,7 +12062,7 @@ function maybeRepairModChains(b) {
   if (S.modRepairTried[bid]) return;
   var mods = modsForBudget(bid);
   var broken = mods.some(function (mod) {
-    return modStatusOf(mod).toLowerCase() === "submitted" && modChainRows(mod.ID).length === 0;
+    return !/^PO:[0-9]+:[^:]+$/.test(cleanVal(mod.Reference_Number)) && modStatusOf(mod).toLowerCase() === "submitted" && modChainRows(mod.ID).length === 0;
   });
   if (!broken) return;
   S.modRepairTried[bid] = true;
@@ -12653,7 +12686,12 @@ function openSavedPurchaseOrder(id,source,intent) {
   if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid))return;
   try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent,intent==='delete'?{id:id,budgetId:bid,revision:cleanVal(request.PO_Revision),status:cleanVal(request.PO_Status),amount:cleanVal(request.Request_Amount),vendorName:lookupName(request.Vendor)}:null).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
 }
-function poApprovalRoleLabel(row){return cleanVal(row.role)||"?";}
+function poApprovalRoleLabel(row){
+  var name=cleanVal(row.name),matches=(S.accessUsers||[]).filter(function(person){return typeof person.id==="string"&&person.id===row.userAccessId;});
+  if(!name&&matches.length===1)name=rosterFullName(matches[0]);
+  var parts=name.split(/\s+/).filter(Boolean);
+  return parts.length?(parts[0][0]+(parts.length>1?parts[parts.length-1][0]:"")).toUpperCase():cleanVal(row.role)||"?";
+}
 function poApproverCircles(request){
   var rows=request._poApprovals;if(!Array.isArray(rows)||!rows.length)return "<span class='po-route-empty' title='"+(rows?"No approval chain recorded yet":"Approval chain unavailable")+"'>—</span>";
   return "<button class='po-route-pill' type='button' data-request-po-approvals='"+escAttr(request.ID)+"' aria-label='View PO approval details' title='View PO approval details'>"+rows.map(function(row,index){return(index?"<span class='po-route-link"+(rows[index-1].status==="Approved"?" is-approved":"")+"' aria-hidden='true'></span>":"")+"<span class='po-approver-circle' data-status='"+escAttr(row.status)+"' title='"+escAttr((row.name||row.email)+" · "+row.role+" · "+row.status)+"'>"+esc(poApprovalRoleLabel(row))+"</span>";}).join("")+"</button>";
@@ -12692,66 +12730,117 @@ async function downloadSavedPurchaseOrder(id,button){
   finally{poDownloads.delete(key);if(button.isConnected){button.innerHTML=original;button.disabled=false;button.removeAttribute("aria-busy");}}
 }
 function poRequestCardDate(value) {
-  var text=cleanVal(value),match=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  var parsed=match?requestDateParts(match[2]+"/"+match[3]+"/"+match[1]):requestDateParts(text);
-  return parsed?fmtDateUS(parsed):"—";
+  var rank=requestRailDateRank(value);if(rank===-Infinity)return "—";
+  var date=new Date(rank);
+  return String(date.getUTCMonth()+1).padStart(2,"0")+"/"+String(date.getUTCDate()).padStart(2,"0")+"/"+date.getUTCFullYear();
+}
+function requestRailDateRank(value) {
+  var text=cleanVal(value),match=text.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?(?:Z|[+-]\d{2}:?\d{2})?$/),year,month,day,hour=0,minute=0,second=0;
+  if(match){year=+match[1];month=+match[2];day=+match[3];hour=+(match[4]||0);minute=+(match[5]||0);second=+(match[6]||0);}
+  else {
+    match=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i);
+    if(match){month=+match[1];day=+match[2];year=+match[3];hour=+(match[4]||0);minute=+(match[5]||0);second=+(match[6]||0);if(match[7]){hour=hour%12+(match[7].toUpperCase()==="PM"?12:0);}}
+    else {
+      match=text.match(/^(\d{1,2})[- ]([A-Za-z]{3})[- ](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$/i);
+      if(!match)return -Infinity;
+      day=+match[1];month=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(match[2].toLowerCase())+1;year=+match[3];hour=+(match[4]||0);minute=+(match[5]||0);second=+(match[6]||0);if(match[7])hour=hour%12+(match[7].toUpperCase()==="PM"?12:0);
+    }
+  }
+  var date=new Date(Date.UTC(year,month-1,day,hour,minute,second));
+  return month>=1&&month<=12&&hour<24&&minute<60&&second<60&&date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day?date.getTime():-Infinity;
+}
+function requestRailDateValue(row,isMod) {
+  var keys=isMod?["Effective_Date","Added_Time"]:["Request_Date","Added_Time"];
+  for(var index=0;index<keys.length;index++){var date=cleanVal(row[keys[index]]);if(requestRailDateRank(date)!==-Infinity)return date;}
+  return "";
+}
+function requestRailGroups(b,requests,mods) {
+  var bid=String(b.ID),seenRequests=new Set(),seenMods=new Set(),groups=[],parents=new Map();
+  (requests||[]).forEach(function(request){
+    if(!request||Object.prototype.hasOwnProperty.call(request,"Budget")&&!lookupMatchesId(request.Budget,bid)||seenRequests.has(String(request.ID)))return;
+    seenRequests.add(String(request.ID));var date=requestRailDateValue(request,false),group={kind:"payment",record:request,children:[],date:date,rank:requestRailDateRank(date)};
+    groups.push(group);if(savedPurchaseOrderRequest(request,bid))parents.set(request.ID,group);
+  });
+  (mods||[]).forEach(function(mod){
+    if(!mod||!lookupMatchesId(firstRaw(mod,["Budget","Budget1","Add_Budget"]),bid)||seenMods.has(String(mod.ID)))return;
+    seenMods.add(String(mod.ID));var reference=cleanVal(mod.Reference_Number),match=reference.match(/^PO:([0-9]+):([^:]+)$/),parent=match?parents.get(match[1]):null;
+    if(parent&&reference==="PO:"+parent.record.ID+":"+cleanVal(parent.record.PO_Revision))parent.children.push(mod);
+    else {var date=requestRailDateValue(mod,true);groups.push({kind:"modification",record:mod,children:[],date:date,rank:requestRailDateRank(date)});}
+  });
+  function order(a,b2){if(a.rank!==b2.rank)return a.rank>b2.rank?-1:1;var aid=String(a.record.ID||""),bid2=String(b2.record.ID||"");if(/^\d+$/.test(aid)&&/^\d+$/.test(bid2)){if(aid.length!==bid2.length)return bid2.length-aid.length;if(aid!==bid2)return aid>bid2?-1:1;}return a.kind.localeCompare(b2.kind)||aid.localeCompare(bid2);}
+  groups.forEach(function(group){group.children.sort(function(a,b2){return order({rank:requestRailDateRank(requestRailDateValue(a,true)),record:a,kind:"modification"},{rank:requestRailDateRank(requestRailDateValue(b2,true)),record:b2,kind:"modification"});});});
+  return groups.sort(order);
+}
+function requestRailIcon(action,label,attrs,classes) {
+  var paths={view:"<path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/>",edit:"<path d='m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5'/>",download:"<path d='M12 3v12M7 10l5 5 5-5M5 21h14'/>",delete:"<path d='M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6'/>",approve:"<path d='m5 12 4 4L19 6'/>",send:"<path d='m3 3 18 9-18 9 4-9-4-9ZM7 12h14'/>",reopen:"<path d='M4 9a8 8 0 1 1 0 6M4 3v6h6'/>"};
+  return "<button class='attachment-action request-rail-action "+(classes||"")+"' type='button' "+attrs+" aria-label='"+escAttr(label)+"' title='"+escAttr(label)+"'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'>"+paths[action]+"</svg></button>";
+}
+function requestRailIdentity(type,name,description) {
+  return "<span class='po-request-kind'>"+esc(type)+"</span><div class='request-rail-primary'><strong class='po-request-vendor' title='"+escAttr(name)+"'>"+esc(name)+"</strong>"+(description?"<span class='request-rail-description' title='"+escAttr(description)+"'>"+esc(description)+"</span>":"")+"</div>";
+}
+function renderRequestRailPayment(b,request,children) {
+  var bid=String(b.ID),type=cleanVal(request.Request_Type)||"Request",managed=savedPurchaseOrderRequest(request,bid),kind=type==="Wire"?"wire":type==="Check"?"check":"po",item=firstRaw(request,["Budget_Item"]),itemId=lookupId(item),budgetItem=itemId?findItemById(itemId):null;
+  var itemName=budgetItem?cleanVal(budgetItem.Item_Name):lookupName(item),code=budgetItem?cleanVal(budgetItem.Budget_Code||budgetItem.Cost_Code):"",vendorName=lookupName(request.Vendor),name=vendorName||itemName||type,description=cleanVal(request.PO_Description)||[itemName,code].filter(Boolean).join(" · ");
+  if(managed&&!description&&children&&children.length){var details=children.map(function(mod){var identity=requestRailModIdentity(mod);return [identity.name,identity.code].filter(Boolean).join(" · ");});description=Array.from(new Set(details)).join(" · ");}
+  if(!managed&&vendorName&&!description)description=cleanVal(request.Department);
+  var status=cleanVal(request.PO_Approval_State),savedStatus=cleanVal(request.PO_Status),date=requestRailDateValue(request,false),needed=cleanVal(request.Date_Needed),rawAmount=cleanVal(request.Request_Amount),blank="<span class='request-rail-action-space' aria-hidden='true'></span>",acts=blank+blank+blank+blank;
+  if(managed){
+    status=status&&status!=="Not Configured"?status:savedStatus;
+    var attrs="data-request-po-open='"+escAttr(request.ID)+"' ",editable=canEditBudget(b)&&(savedStatus==="Draft"||savedStatus==="Submitted"&&status==="Rejected");
+    acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):blank)+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canEditBudget(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):blank);
+  }
+  return "<article class='po-request-ledger request-rail-row' data-kind='"+kind+"' aria-label='"+escAttr(managed?"Purchase order":type+" request")+"'><div class='po-request-values'>"+requestRailIdentity(type==="Purchase Order"?"PO":type.toUpperCase(),name,description)+"<div class='request-rail-route'>"+(managed?poApproverCircles(request):"<span class='request-rail-route-empty'>—</span>")+"</div><span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount' aria-label='Request amount'>"+(rawAmount?fmt(v(rawAmount)):"—")+"</strong><div class='po-request-status'>"+(status?modBadge(status):"<span class='request-rail-route-empty'>—</span>")+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
+}
+function requestRailModIdentity(mod) {
+  var item=firstRaw(mod,["Budget_Item","Item"]),id=lookupId(item),record=id?findItemById(id):null;
+  return {name:record?cleanVal(record.Item_Name):lookupName(item)||"Budget item",code:record?cleanVal(record.Budget_Code||record.Cost_Code):""};
+}
+function requestRailModChain(mod,info) {
+  if(/^PO:[0-9]+:[^:]+$/.test(cleanVal(mod.Reference_Number)))return "<span class='request-rail-route-empty'>PO approval unavailable</span>";
+  if(!info.chain.length)return "<span class='request-rail-route-empty'>—</span>";
+  return "<button class='po-route-pill' type='button' data-moddetail='"+escAttr(String(mod.ID))+"' aria-label='View budget modification approvers' title='View budget modification approvers'>"+info.chain.map(function(row,index){var status=cleanVal(row.Status)||"Not Sent",role=cleanVal(firstRaw(row,["Title","Role"]))||"?";return(index?"<span class='po-route-link"+(cleanVal(info.chain[index-1].Status)==="Approved"?" is-approved":"")+"' aria-hidden='true'></span>":"")+"<span class='po-approver-circle' data-status='"+escAttr(status)+"' title='"+escAttr(role+" · "+status)+"'>"+esc(role)+"</span>";}).join("")+"</button>";
+}
+function renderRequestRailModification(b,mod,parent) {
+  var identity=requestRailModIdentity(mod),signed=modSignedAmount(mod),date=requestRailDateValue(mod,true),status=cleanVal(mod.Status)||"Draft",blank="<span class='request-rail-action-space' aria-hidden='true'></span>",acts,route,description;
+  if(parent){
+    var state=cleanVal(parent.PO_Approval_State);status=state&&state!=="Not Configured"?state:cleanVal(parent.PO_Status)||status;
+    route="<span class='request-rail-inherited'>With PO Approval</span>";
+    description=[identity.code,cleanVal(mod.Modification_Type)||"Increase"].filter(Boolean).join(" · ");
+    acts=requestRailIcon("view","Preview linked budget modification","data-request-po-open='"+escAttr(parent.ID)+"' data-request-po-intent='view'")+blank+blank+blank;
+  } else {
+    var info=modWithInfo(mod),low=status.toLowerCase(),pending="";
+    route=requestRailModChain(mod,info);
+    description=[identity.code,cleanVal(mod.Reason)||cleanVal(mod.Modification_Type)].filter(Boolean).join(" · ");
+    if(info.pendingRow&&low==="submitted"&&(info.waitingOnMe||canAdminMods()))pending=requestRailIcon("approve","Approve budget modification","data-modapprove='"+escAttr(String(mod.ID))+"' data-row='"+escAttr(String(info.pendingRow.ID))+"'","approve");
+    if(low==="draft"&&!info.chain.length&&canSubmitMod(b))pending=requestRailIcon("send","Submit budget modification for approval","data-modsubmit='"+escAttr(String(mod.ID))+"'");
+    if(low==="rejected"&&canSubmitMod(b))pending=requestRailIcon("reopen","Revise and resubmit budget modification","data-modreopen='"+escAttr(String(mod.ID))+"'");
+    acts=requestRailIcon("view","Preview budget modification","data-moddetail='"+escAttr(String(mod.ID))+"'")+(pending||blank)+blank+blank;
+  }
+  return "<article class='"+(parent?"request-rail-child":"po-request-ledger request-rail-row")+"' data-kind='modification' aria-label='"+(parent?"Budget modification linked to PO "+escAttr(parent.ID):"Budget modification")+"'><div class='po-request-values'>"+requestRailIdentity(parent?"BUD MOD":"MOD",identity.name,description)+"<div class='request-rail-route'>"+route+"</div><span class='po-request-date' title='Effective date'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount "+(signed<0?"neg":"")+"' aria-label='Budget change'>"+fmtModAmount(signed)+"</strong><div class='po-request-status'>"+modBadge(status)+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
+}
+function renderRequestRailList(b) {
+  var bid=String(b.ID),state=S.checkWireRequestState[bid]||"loading",requests=state==="loaded"?S.checkWireRequestsByBudget[bid]||[]:[],mods=modsForBudget(bid),notice="";
+  if(S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid])notice+="<p class='request-rail-notice' role='status'>Check / wire requests unavailable for this profile.</p>";
+  if(state!=="loaded")notice+="<p class='request-rail-notice' role='status'>"+(state==="loading"?"Loading payment requests…":"Payment requests unavailable.")+"</p>";
+  var groups=requestRailGroups(b,requests,mods);
+  if(!groups.length)return notice+(state==="loaded"?"<div class='mod-page-empty'><h3>No requests yet</h3></div>":"");
+  return notice+"<div class='request-rail-scroll'><ol class='request-rail-list' aria-label='Requests, newest first'>"+groups.map(function(group){return "<li class='request-rail-group'>"+(group.kind==="payment"?renderRequestRailPayment(b,group.record,group.children):renderRequestRailModification(b,group.record,null))+(group.children.length?"<ol class='request-rail-children' aria-label='PO budget modifications'>"+group.children.map(function(mod){return "<li>"+renderRequestRailModification(b,mod,group.record)+"</li>";}).join("")+"</ol>":"")+"</li>";}).join("")+"</ol></div>";
 }
 function renderCheckWireRequestColumn(b) {
-  var bid = String(b.ID), state = S.checkWireRequestState[bid] || "loading";
-  var rows = S.checkWireRequestsByBudget[bid] || [];
-  var reportNotice=S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid]?"<div class='mpc-meta' role='status'>Check / wire requests unavailable for this profile.</div>":"";
-  if (state === "unavailable") return "<div class='mod-page-empty'><h3>Requests unavailable</h3></div>";
-  if (state === "loading") return "<div class='mod-page-empty'><h3>Loading requests…</h3></div>";
-  if (!rows.length) return reportNotice+"<div class='mod-page-empty'><h3>"+(reportNotice?"No purchase orders yet":"No payment requests yet")+"</h3></div>";
-  return reportNotice+"<div class='mod-page-list'>" + rows.slice().reverse().map(function (request) {
-    var type = cleanVal(firstRaw(request, ["Request_Type"])) || "Request";
-    var item = firstRaw(request, ["Budget_Item"]);
-    var itemId = lookupId(item), budgetItem = itemId ? findItemById(itemId) : null;
-    var itemName = budgetItem ? cleanVal(budgetItem.Item_Name) : (lookupName(item) || "Budget item");
-    var rawAmount = cleanVal(firstRaw(request, ["Request_Amount"]));
-    var date = cleanVal(firstRaw(request, ["Request_Date"]));
-    var needed = cleanVal(firstRaw(request, ["Date_Needed"]));
-    var managedPO=savedPurchaseOrderRequest(request,bid),status=cleanVal(request.PO_Status),approvalState=cleanVal(request.PO_Approval_State);
-    var editablePO=managedPO&&canEditBudget(b)&&(status==="Draft"||status==="Submitted"&&approvalState==="Rejected");
-    if(managedPO)itemName=lookupName(request.Vendor)||"Vendor";
-    if(managedPO){
-      return "<article class='po-request-ledger' aria-label='Purchase order'>"+
-        "<div class='po-request-values'><div class='po-request-identity'><span class='po-request-kind'>PO</span><strong class='po-request-vendor' title='"+escAttr(itemName)+"'>"+esc(itemName)+"</strong></div>"+
-        poApproverCircles(request)+
-        "<span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span>"+
-        "<strong class='po-request-amount' aria-label='PO amount'>"+fmt(v(rawAmount))+"</strong>"+
-        "<div class='po-request-status'>"+modBadge(approvalState&&approvalState!=="Not Configured"?approvalState:status)+"</div>"+
-        "<div class='po-request-actions attachment-page-row-actions'>"+
-        "<button class='attachment-action' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='view' aria-label='Preview PO' title='Preview PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/></svg></button>"+
-        (editablePO?"<button class='attachment-action' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='edit' aria-label='Edit PO' title='Edit PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='m16 3 5 5-12 12-6 1 1-6L16 3ZM14 5l5 5'/></svg></button>":"")+
-        "<button class='attachment-action' type='button' data-request-po-download='"+escAttr(request.ID)+"' aria-label='Download PO Excel' title='Download PO Excel'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M12 3v12M7 10l5 5 5-5'/><path d='M5 21h14'/></svg></button>"+
-        (canEditBudget(b)?"<button class='attachment-action delete' type='button' data-request-po-open='"+escAttr(request.ID)+"' data-request-po-intent='delete' aria-label='Delete PO' title='Delete PO'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14'/><path d='M10 11v6M14 11v6'/></svg></button>":"")+"</div></div></article>";
-    }
-    var dates="<div class='mpc-meta'>Request " + esc(date || "—") + " · Needed " + esc(needed || "—") + "</div>";
-    return "<div class='mod-page-card'><div class='mpc-main'>" +
-      "<div class='mpc-item'>" + esc(type) + " · " + esc(itemName) + "</div>" +
-      dates +
-      "</div>" + (rawAmount ? "<div class='mpc-amount pos'>" + fmt(v(rawAmount)) + "</div>" : "") +
-      "</div>";
-  }).join("") + "</div>";
+  var bid=String(b.ID),state=S.checkWireRequestState[bid]||"loading",rows=S.checkWireRequestsByBudget[bid]||[],notice=S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid]?"<p class='request-rail-notice' role='status'>Check / wire requests unavailable for this profile.</p>":"";
+  if(state!=="loaded")return "<div class='mod-page-empty'><h3>"+(state==="loading"?"Loading requests…":"Requests unavailable")+"</h3></div>";
+  return notice+"<div class='mod-page-list'>"+requestRailGroups(b,rows,[]).map(function(group){return renderRequestRailPayment(b,group.record);}).join("")+"</div>";
 }
 function renderModPhasePanel(b) {
-  var el = document.getElementById("modPhasePanel"); if (!el) return;
+  var el=document.getElementById("modPhasePanel");if(!el)return;
   if(!budgetModsReady()){el.innerHTML=budgetFeatureStateHtml("modifications","Requests");return;}
   if(b&&!budgetDetailReady(b.ID)){el.innerHTML="<div class='aq-empty' role='status'>Loading line items…</div>";return;}
-  if (!b || S.edPhaseIdx === "all") { el.innerHTML = "<div style='padding:48px;text-align:center;color:var(--muted);font-size:13px'>Modifications are managed per phase. Open a single phase to view them.</div>"; return; }
-  var mods = modsForBudget(b.ID).slice().reverse();
-  var agg = modAgg(modsForBudget(b.ID));
-  var items = S.items[b.ID] || [];
-  var tf = items.reduce(function (s, it) { return s + v(it.Budget_Ttl); }, 0);
-  var canAdd = canSubmitMod(b);
+  if(!b||S.edPhaseIdx==="all"){el.innerHTML="<div class='aq-empty'>Open a phase to view requests.</div>";return;}
+  var canAdd=canSubmitMod(b);
   maybeRepairModChains(b);
-  var approvedCount = mods.filter(function (m) { return modStatusOf(m).toLowerCase() === "approved"; }).length;
-  var pendingCount = mods.filter(function (m) { var s = modStatusOf(m).toLowerCase(); return s === "submitted" || s === "pending"; }).length;
-
   var html = "<div class='mod-page'>";
   html += "<div class='mod-page-head'>" +
-    "<div class='mod-page-title'>Requests</div>" +
+    "<div class='mod-page-title'>Requests<span class='request-rail-sort'>Newest First</span></div>" +
     "<div class='request-menu export-dd-wrap'>" +
       "<button class='btn mod-page-add' type='button' id='requestMenuBtn' aria-expanded='false'>Request <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' style='width:13px;height:13px'><path d='M6 9l6 6 6-6'/></svg></button>" +
       "<div class='export-dd' id='requestMenu' style='display:none'>" +
@@ -12761,66 +12850,7 @@ function renderModPhasePanel(b) {
         "<button class='export-dd-row' type='button' data-request-kind='purchase-order'><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M6 3h12v18H6zM9 8h6M9 12h6M9 16h4'/></svg><span class='export-dd-label'>Purchase Order</span></button>" +
       "</div></div>" +
   "</div>";
-  html += "<div class='mod-tiles'>" +
-    "<div class='mod-tile'><div class='l'>Approved Delta</div><div class='v " + (agg.approved < 0 ? "neg" : "pos") + "'>" + (agg.approved ? fmtModAmount(agg.approved) : "$0") + "</div><div class='s'>" + approvedCount + " approved</div></div>" +
-    "<div class='mod-tile'><div class='l'>Pending Delta</div><div class='v pend'>" + (agg.pending ? fmtModAmount(agg.pending) : "$0") + "</div><div class='s'>" + pendingCount + " awaiting approval</div></div>" +
-    "<div class='mod-tile'><div class='l'>Total Modifications</div><div class='v'>" + mods.length + "</div><div class='s'>on this phase</div></div>" +
-    "<div class='mod-tile hero'><div class='l'>Revised Final</div><div class='v'>" + fmt(tf + agg.approved) + "</div><div class='s'>Final " + fmt(tf) + " " + (agg.approved ? fmtModAmount(agg.approved) : "+$0") + "</div></div>" +
-  "</div>";
-  html += "<div class='requests-grid'><section class='requests-column' aria-label='Budget modifications'><h3 class='requests-column-title'>Budget Modifications</h3>";
-  if (!mods.length) {
-    html += "<div class='mod-page-empty'>" +
-      "<div class='ic'>±</div><h3>No modifications yet</h3>" +
-    "</div>";
-  } else {
-    html += "<div class='mod-page-list'>";
-    mods.forEach(function (mod) {
-      var itId = lookupId(firstRaw(mod, ["Budget_Item", "Item"]));
-      var it = itId ? findItemById(itId) : null;
-      var itemLabel = it ? cleanVal(it.Item_Name) : (lookupName(firstRaw(mod, ["Budget_Item", "Item"])) || "Item");
-      var code = it ? cleanVal(it.Budget_Code || it.Cost_Code || "") : "";
-      var signed = modSignedAmount(mod);
-      var st = cleanVal(mod.Status) || "Draft";
-      var stLow = st.toLowerCase();
-      var info = modWithInfo(mod);
-      var steps = info.chain.map(function (row) {
-        var rs = cleanVal(row.Status || "Not Sent").toLowerCase();
-        var cls = rs.indexOf("approved") >= 0 ? "done" : rs === "pending" ? "pending" : rs.indexOf("reject") >= 0 ? "rejected" : "";
-        return "<span class='step " + cls + "'>" + esc(cleanVal(firstRaw(row, ["Title", "Role"])) || "?") + "</span>";
-      }).join("");
-      var withHtml = info.waitingOnMe
-        ? "<span class='mpc-with me'>⏳ Waiting on you</span>"
-        : "<span class='mpc-with'>" + esc(info.label + (info.who ? " · " + info.who : "")) + "</span>";
-      var acts = "";
-      // Only the addressed approver (or a modification admin) may act on a pending row.
-      if (info.pendingRow && stLow === "submitted" && (info.waitingOnMe || canAdminMods())) {
-        acts += "<button class='mbtn sm approve' data-modapprove='" + escAttr(String(mod.ID)) + "' data-row='" + escAttr(String(info.pendingRow.ID)) + "'>Approve</button>";
-      }
-      if (stLow === "draft" && !info.chain.length && canAdd) {
-        acts += "<button class='mbtn sm primary' data-modsubmit='" + escAttr(String(mod.ID)) + "'>Submit for approval</button>";
-      }
-      // Rejection is terminal — this is the only way back into approvals.
-      if (stLow === "rejected" && canAdd) {
-        acts += "<button class='mbtn sm primary' data-modreopen='" + escAttr(String(mod.ID)) + "'>Revise &amp; Resubmit</button>";
-      }
-      acts += "<button class='mbtn sm neutral' data-moddetail='" + escAttr(String(mod.ID)) + "'>Details</button>";
-      html += "<div class='mod-page-card clickable" + (info.waitingOnMe ? " waiting-me" : "") + "' data-moddetail='" + escAttr(String(mod.ID)) + "'>" +
-        "<div class='mpc-amount " + (signed < 0 ? "neg" : "pos") + "'>" + fmtModAmount(signed) + "<span class='typ'>" + esc(cleanVal(mod.Modification_Type) || "") + "</span>" + modRefPill(mod) + "</div>" +
-        "<div class='mpc-main'>" +
-          "<div class='mpc-item'>" + esc(itemLabel) + (code ? " <span class='codepill'>" + esc(code) + "</span>" : "") + "</div>" +
-          (cleanVal(mod.Reason) ? "<div class='mpc-reason'>" + esc(cleanVal(mod.Reason)) + "</div>" : "") +
-          "<div class='mpc-meta'>" + modDateChips(mod) + "</div>" +
-          (steps ? "<div class='mod-chain'>" + steps + "</div>" : "") +
-        "</div>" +
-        "<div class='mpc-side'>" +
-          "<div class='mpc-status'>" + modBadge(st) + withHtml + "</div>" +
-          "<div class='mpc-acts'>" + acts + "</div>" +
-        "</div>" +
-      "</div>";
-    });
-    html += "</div>";
-  }
-  html += "</section><section class='requests-column' aria-label='Payment requests'><h3 class='requests-column-title'>Payment Requests</h3>" + renderCheckWireRequestColumn(b) + "</section></div></div>";
+  html += renderRequestRailList(b) + "</div>";
   el.innerHTML = html;
   // Deep link / queue hand-off: open the requested modification's detail once data is here.
   if (S.pendingModDetail) {
@@ -13485,7 +13515,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.39",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.40",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

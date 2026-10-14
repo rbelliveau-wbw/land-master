@@ -10,6 +10,7 @@ import './test-po-entry.mjs';
 import './test-po-progress.mjs';
 import './test-po-date-picker.mjs';
 import './test-po-requests.mjs';
+import './test-request-connected-rail.mjs';
 const ctx=vm.createContext({});
 vm.runInContext(await readFile(new URL('../widgets/budget-manager/src/app/po-domain.js',import.meta.url),'utf8'),ctx);
 const PO=ctx.LMPO;

@@ -1264,3 +1264,6 @@ PO submitter execution correction: poApprovalBundle, poActorResponse and handleP
 
 ## Failed PO submission recovery (122.29.39)
 Explicit Recover PO verifies the exact terminal submission receipt, current PO and initial captured approval chain before releasing only its original phase lock. Business records, amounts and approvals stay unchanged; no email or automatic deletion. An uncertain response exposes read-only Check recovery. Creator managePurchaseOrder and handlePurchaseOrderApproval changes are saved in Dev for user promotion. See docs/po-failed-submit-recovery-2026-10-14.md.
+
+## Connected Rail request list (122.29.40)
+Requests uses one newest-first list of PO, Check, Wire and standalone budget modification rows. Exact same-budget PO ID/revision references nest child modifications under their PO once; unmatched mods remain standalone. One shared grid aligns labels, approvers, dates, amounts, statuses and fixed icon slots. Parent payment and child budget delta remain separate; native aggregates and permissions are unchanged. PO children do not trigger standalone approval-chain repair. Frontend only; no new functions or Custom APIs. Rollback: Budget 122.29.39. PMP shorthand is recorded in root AGENTS.md; Creator promotion is left to the user.

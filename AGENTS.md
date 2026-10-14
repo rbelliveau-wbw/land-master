@@ -24,6 +24,11 @@ Chat history and model memory are not authoritative.
 
 ## Release shorthand
 
+- User direction October 14, 2026: a message containing only `PMP`, in all caps,
+  means **push to main and prod in the repository, and leave Creator changes for
+  the user to promote**. Apply the repository commit, immutable release,
+  environment mapping, validation and deployment monitoring steps below. Do not
+  promote Creator changes as part of `PMP`.
 - When the user says `push to main and prod`, treat that as explicit authorization to commit and push the verified change to `main`, update the applicable production environment mapping in `deploy/environments.json`, and monitor the resulting CI and Pages deployment.
 - For widget changes, create and validate the immutable release before promotion. Do not stop after pushing a candidate release when production promotion was requested.
 - User direction October 9, 2026: every Development widget must use its latest complete immutable release so Development tests current behavior. `npm run release` updates its Development mapping automatically; commit that mapping with the release. Repository validation rejects stale Development versions. Stage and Production promotion remain independently controlled.
