@@ -47,6 +47,9 @@ map handlePurchaseOrderApproval(map request)
 		{
 			if(action != "Approve" && action != "Reject" && action != "RetryEmail") { result.put("error","Unsupported PO approval action."); return result; }
 			if(po.PO_Approval_State != "Pending" || bundle.get("active").get("id") != rowId || found.get("status") != "Pending") { result.put("error","This approval step is no longer active."); return result; }
+			priorNotes = ifnull(found.get("notes"),"");
+			if(action != "RetryEmail" && priorNotes != "" && note != priorNotes && !note.startsWith(priorNotes+"\n\n")) { result.put("error","Prior approval notes must be retained."); return result; }
+			if(PO_Phase_Lock[Phase_Key == po.Budget.toString()].count() > 0) { result.put("error","This phase has an unresolved PO save. Recover the saved PO before making an approval decision."); return result; }
 			decisionLockId = insert into PO_Phase_Lock
 			[
 				Added_User=zoho.loginuser
@@ -57,8 +60,6 @@ map handlePurchaseOrderApproval(map request)
 			if(action == "RetryEmail") { mail = thisapp.sendPurchaseOrderEmail(poId); }
 			else
 			{
-				priorNotes = ifnull(found.get("notes"),"");
-				if(priorNotes != "" && note != priorNotes && !note.startsWith(priorNotes+"\n\n")) { result.put("error","Prior approval notes must be retained."); return result; }
 				changed = true; row = Budget_Approvals[ID == rowId.toLong()]; row.Status=wanted; row.Responded_Date=zoho.currentdate; row.Approval_Notes=note;
 				if(wanted == "Rejected")
 				{

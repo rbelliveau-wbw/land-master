@@ -63,6 +63,40 @@ string managePurchaseOrder(string payload)
 			}
 			result.put("vendors",rows); result.put("success",true); return result.toString();
 		}
+		if(action == "Recover" || action == "CheckRecovery")
+		{
+			if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
+			recoveryId = ifnull(p.get("id"),"").toString(); recoveryToken = ifnull(p.get("token"),"").toString();
+			if(!recoveryId.matches("[0-9]+") || recoveryToken == "" || p.get("expectedRevision") != recoveryToken) { result.put("error","The exact saved PO revision is required for recovery."); return result.toString(); }
+			recoveryPO = Payment_Request[ID == recoveryId.toLong() && Budget == budget.ID && Request_Type == "Purchase Order"];
+			recoveryOperation = PO_Operation[Token == recoveryToken && Purchase_Order == recoveryId.toLong() && Budget == budget.ID && Actor == access.ID];
+			recoveryLock = PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == recoveryToken && Actor == access.ID];
+			if(recoveryPO.count() != 1 || recoveryPO.PO_Revision != recoveryToken || recoveryOperation.count() != 1) { result.put("error","The saved PO and operation do not match. No recovery was applied."); return result.toString(); }
+			if(action == "Recover" && (recoveryLock.count() != 1 || PO_Phase_Lock[Phase_Key == budgetId].count() != 1)) { result.put("error","The exact original phase lock is unavailable. Check recovery before another write."); return result.toString(); }
+			if(action == "CheckRecovery" && (recoveryOperation.Status != "Complete" || PO_Phase_Lock[Phase_Key == budgetId].count() != 0)) { result.put("writeState","unknown"); result.put("error","Recovery has not been confirmed. Review the retained operation and lock."); return result.toString(); }
+			if(recoveryOperation.Status != "Unknown" && recoveryOperation.Status != "Complete") { result.put("error","An operation still in progress cannot be recovered."); return result.toString(); }
+			recoveryRequest = recoveryOperation.Request_JSON.toMap();
+			if(recoveryRequest.get("action") != "Submit" || recoveryRequest.get("token") != recoveryToken || recoveryRequest.get("budgetId") != budgetId || ifnull(recoveryRequest.get("digest"),"") == "") { result.put("error","The original submission receipt is unavailable. No recovery was applied."); return result.toString(); }
+			recoveryActual = thisapp.poSnapshot(recoveryId);
+			if(recoveryActual.get("success") != true) { result.put("error",recoveryActual.get("error")); return result.toString(); }
+			recoveredSnapshot = recoveryActual.get("snapshot"); recoveredBundle = recoveredSnapshot.get("approvalBundle");
+			if(recoveredSnapshot.get("id") != recoveryId || recoveredSnapshot.get("budgetId") != budgetId || recoveredSnapshot.get("revision") != recoveryToken || recoveredSnapshot.get("status") != "Submitted" || recoveredSnapshot.get("commitmentState") != "Reserved" || recoveredSnapshot.get("approvalState") != "Pending" || recoveredSnapshot.get("lines").size() != recoveryRequest.get("lineCount") || recoveredBundle == null || recoveredBundle.get("submitterId") != access.ID.toString()) { result.put("error","The saved submission is incomplete or has changed. No recovery was applied."); return result.toString(); }
+			recoveryRows = recoveredBundle.get("rows"); recoveryOrder = 0;
+			for each recoveryRow in recoveryRows
+			{
+				recoveryOrder = recoveryOrder+1; recoveryRowStatus = "Not Sent"; if(recoveryOrder == 1) { recoveryRowStatus = "Pending"; }
+				if(recoveryRow.get("order") != recoveryOrder || recoveryRow.get("status") != recoveryRowStatus || ifnull(recoveryRow.get("respondedDate"),"") != "") { result.put("error","The approval chain has progressed or is incomplete. No recovery was applied."); return result.toString(); }
+			}
+			if(recoveryOrder == 0) { result.put("error","A complete captured approval chain is required for recovery."); return result.toString(); }
+			recoveryProof = {"format":"sha256-v1","digest":zoho.encryption.sha256(recoveredSnapshot.toString())};
+			if(recoveryOperation.Status == "Complete" && recoveryOperation.Snapshot_JSON != recoveryProof.toString()) { result.put("error","The saved completion receipt has changed. No recovery was applied."); return result.toString(); }
+			if(action == "CheckRecovery") { result.put("success",true); result.put("writeState","verified"); result.put("snapshot",recoveredSnapshot); result.put("token",recoveryToken); return thisapp.poActorResponse(result,access.ID.toString()).toString(); }
+			writeStarted = true;
+			recoveryOperation.Snapshot_JSON=recoveryProof.toString(); recoveryOperation.Status="Complete"; recoveryOperation.Error_Text="";
+			delete from PO_Phase_Lock[ID == recoveryLock.ID && Phase_Key == budgetId && Operation_Token == recoveryToken && Actor == access.ID];
+			if(PO_Phase_Lock[Phase_Key == budgetId].count() > 0) { result.put("writeState","unknown"); result.put("error","The verified PO operation lock still needs review. Check its receipt before another write."); return result.toString(); }
+			result.put("success",true); result.put("writeState","verified"); result.put("snapshot",recoveredSnapshot); result.put("token",recoveryToken); return thisapp.poActorResponse(result,access.ID.toString()).toString();
+		}
 		if(action == "PreviewDelete" || action == "Delete" || action == "CheckDelete")
 		{
 			if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
@@ -92,7 +126,13 @@ string managePurchaseOrder(string payload)
 			if(po.ID == null || po.Request_Type != "Purchase Order" || !deleteStatuses.contains(po.PO_Status) || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != p.get("expectedRevision")) { result.put("error","Only the current managed PO in this phase can be deleted."); return result.toString(); }
 			if(po.PO_Status == "Draft") { if(po.PO_Commitment_State != "None" || po.PO_Approval_State != "Not Configured") { result.put("error","Draft PO state needs review before deletion."); return result.toString(); } }
 			if(po.PO_Status == "Submitted") { deleteApprovalStates = {"Pending","Approved","Rejected"}; if(po.PO_Commitment_State != "Reserved" || !deleteApprovalStates.contains(po.PO_Approval_State)) { result.put("error","Submitted PO state needs review before deletion."); return result.toString(); } }
-			if(PO_Phase_Lock[Phase_Key == budgetId].count() > 0) { result.put("error","This phase has an active or unresolved operation. Review it before deleting."); return result.toString(); }
+			if(PO_Phase_Lock[Phase_Key == budgetId].count() > 0)
+			{
+				failedDeleteOp = PO_Operation[Token == po.PO_Revision && Purchase_Order == po.ID && Budget == budget.ID && Actor == access.ID];
+				failedDeleteLock = PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == po.PO_Revision && Actor == access.ID];
+				if(action == "PreviewDelete" && failedDeleteOp.count() == 1 && (failedDeleteOp.Status == "Unknown" || failedDeleteOp.Status == "Complete") && failedDeleteLock.count() == 1 && PO_Phase_Lock[Phase_Key == budgetId].count() == 1) { result.put("recoveryAvailable",true); result.put("recoveryToken",po.PO_Revision); }
+				result.put("error","This phase has an active or unresolved operation. Recover its saved PO before deleting."); return result.toString();
+			}
 			itemIds = List(); operationIds = List(); snapshotIds = List(); approvalIds = List(); modificationIds = List(); rollupItemIds = List();
 			deleteStatus = po.PO_Status; deleteCommitment = po.PO_Commitment_State; deleteApproval = po.PO_Approval_State;
 			for each deleteLine in PO_Item[Purchase_Order == po.ID] sort by ID { itemIds.add(deleteLine.ID.toString()); }
@@ -196,7 +236,14 @@ string managePurchaseOrder(string payload)
 		{
 			po = Payment_Request[ID == p.get("id").toString().toLong() && Budget == budget.ID];
 			if(po.ID == null) { result.put("error","PO not found in this phase."); return result.toString(); }
-			result = thisapp.poSnapshot(po.ID.toString()); result.put("contract","po-v1"); return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
+			result = thisapp.poSnapshot(po.ID.toString()); result.put("contract","po-v1");
+			if(result.get("success") == true && canEdit == true)
+			{
+				failedGetOp = PO_Operation[Token == po.PO_Revision && Purchase_Order == po.ID && Budget == budget.ID && Actor == access.ID];
+				failedGetLock = PO_Phase_Lock[Phase_Key == budgetId && Operation_Token == po.PO_Revision && Actor == access.ID];
+				if(failedGetOp.count() == 1 && (failedGetOp.Status == "Unknown" || failedGetOp.Status == "Complete") && failedGetLock.count() == 1 && PO_Phase_Lock[Phase_Key == budgetId].count() == 1) { result.put("recoveryAvailable",true); result.put("recoveryToken",po.PO_Revision); }
+			}
+			return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 		}
 		if(action == "List")
 		{

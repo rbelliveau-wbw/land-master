@@ -1261,3 +1261,6 @@ this release. Rollback: Budget 122.29.36 and Settings 1.5.4.
 Purchase Order routing always allows the submitter to remain a manual approver in their assigned position, including existing rules stored as Deny. It never auto-approves or skips that step. Other workflows are unchanged. Settings 1.5.7; native resolveApprovalRoute, manageApprovalPolicies and poApprovalBundle. See docs/po-submitter-manual-approval-2026-10-14.md.
 
 PO submitter execution correction: poApprovalBundle, poActorResponse and handlePurchaseOrderApproval also allow the authenticated assigned submitter through captured-chain validation and manual decision. No automatic approval; duplicate people and current-step checks retained. Creator promotion left to the user. See docs/po-submitter-execution-fix-2026-10-14.md.
+
+## Failed PO submission recovery (122.29.39)
+Explicit Recover PO verifies the exact terminal submission receipt, current PO and initial captured approval chain before releasing only its original phase lock. Business records, amounts and approvals stay unchanged; no email or automatic deletion. An uncertain response exposes read-only Check recovery. Creator managePurchaseOrder and handlePurchaseOrderApproval changes are saved in Dev for user promotion. See docs/po-failed-submit-recovery-2026-10-14.md.
