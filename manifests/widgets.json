@@ -5,13 +5,13 @@
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.103",
+      "version": "1.80.106",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and Settings-based approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "d48903ff0a30edfac54a2f77de143635fb11b9f14fc22a96d249fc5923b787b1",
+      "source_sha256": "81fc6c5dfd734b2f4a10f744dbbb18904802d0127e2c0499c68abeb71f5ad381",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -220,13 +220,13 @@
       "slug": "settings-manager",
       "name": "Settings Manager",
       "module": "settings",
-      "version": "1.5.7",
+      "version": "1.5.8",
       "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
       "source_entry": "widgets/settings-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Settings",
-      "source_sha256": "8b20c7104490f213aadcf3ff11d9d86cfe84f3b795f679b28d706a59146264f4",
+      "source_sha256": "ad7831f9748671ae0154b5fba4872806ca52ca0adb54637eb2e0686c84e4cd1d",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

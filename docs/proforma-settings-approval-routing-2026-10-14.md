@@ -1,5 +1,9 @@
 # Pro Forma approvals use Settings — October 14, 2026
 
+**Correction:** preserve every saved route, including Not Sent rows. Only PFs
+without approval rows use Settings; self-approval is always allowed. See the
+[1.80.106 correction and native handoff](proforma-approval-preservation-2026-10-14.md).
+
 Frontend releases: Proforma Manager **1.80.103** and Settings Manager **1.5.6**.
 
 New and untouched Pro Formas show the route from Settings → Approvals. The

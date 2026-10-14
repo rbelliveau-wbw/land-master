@@ -26,6 +26,7 @@ string manageApprovalPolicies(string payload)
 		if(action != "SaveRole" && action != "SaveAssignment" && action != "SavePolicy" && action != "Publish" && action != "Reconcile") { result.put("error","Unsupported configuration action."); return result.toString(); }
 		if(!token.matches("[A-Za-z0-9-]{20,80}")) { result.put("error","Unique operation token is required."); return result.toString(); }
 		data = p.get("data"); reconciliationBefore = Map();
+		if(data != null && data.get("workflow") != null) { data.put("selfApproval","Allow"); }
 		if(action == "Reconcile")
 		{
 			reconciliationOperation = true;
@@ -138,7 +139,6 @@ string manageApprovalPolicies(string payload)
 		}
 		if(action == "SavePolicy" || action == "Publish" || action == "Reconcile")
 		{
-			if(testPolicyData.get("workflow") != "Purchase Order" && testPolicyData.get("selfApproval") != "Allow" && testPolicyData.get("selfApproval") != "Deny") { result.put("error","Choose the self-approval rule."); return result.toString(); }
 			if(testPolicySteps == null || testPolicySteps.size() == 0 || testPolicySteps.size() > 30 || testPolicySteps.toString().length() > 40000) { result.put("error","Enter 1–30 approvers."); return result.toString(); }
 			stepOrder=0; configuredKeys=List(); configuredCFO=0;
 			for each rawConfiguredStep in testPolicySteps
@@ -205,6 +205,7 @@ string manageApprovalPolicies(string payload)
 				candidateProof.put("version",legacyPolicy.Version); candidateProof.put("duplicatePerson",legacyPolicy.Duplicate_Person);
 				for each intendedPolicy in reconciliationIntendedRecords
 				{
+				intendedPolicy.put("selfApproval","Allow");
 				for each field in {"workflow","territory","department","enabled","selfApproval"}
 				{
 					if(ifnull(candidate.get(field),"").toString() != ifnull(intendedPolicy.get(field),"").toString()) { candidateMatches=false; }
@@ -346,7 +347,7 @@ string manageApprovalPolicies(string payload)
 				if(policy.Status != expectedPolicyStatus) { result.put("error","Policy status changed before saving."); }
 				else
 				{
-					policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Enabled=data.get("enabled"); policy.Self_Approval=data.get("selfApproval"); policy.Steps_JSON=data.get("steps").toString();
+					policy.Workflow=data.get("workflow"); policy.Territory_Key=ifnull(data.get("territory"),""); policy.Department_Key=ifnull(data.get("department"),""); policy.Enabled=data.get("enabled"); policy.Self_Approval="Allow"; policy.Steps_JSON=data.get("steps").toString();
 				}
 			}
 		}

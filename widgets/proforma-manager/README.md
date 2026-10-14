@@ -7,7 +7,7 @@ Release `1.80.101` uses `Attachment` / `All_Attachments`, retaining the `Pro_For
 parent and `File_field1` upload field. Creator Development updates require the
 user's promotion; see the [rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
 
-Current release: `1.80.103`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
+Current release: `1.80.106`. The main report shares Budget’s softer blue headers and alternating rows through `src/app/report-layout.css`.
 
 Lot Sales keeps Same for all phases between the phase title and allocated-lots badge. Enabling sharing copies Phase 1's settings and lot count; lot counts remain independently editable to balance allocations. Numeric commits and live phase-card updates preserve the clicked or focused control.
 
@@ -209,3 +209,6 @@ working Budget approach, without a download/byte-comparison gate. PF deletion
 verifies absence using a counted collection rather than reading a deleted ID.
 Pending requests and duplicate uncertain writes remain protected. No Creator
 deployment is required. See [checks and rollback](../../docs/attachment-terminal-recovery-2026-10-07.md).
+
+Saved approval routes, including Not Sent chains, are preserved. Settings applies
+to PFs with no saved approval rows. See the October 14 preservation correction.

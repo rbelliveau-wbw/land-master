@@ -11,7 +11,6 @@
   function validatePolicy(policy){
     id(policy.id);
     if(!["Budget","Budget Modification","Pro Forma","Contract","Purchase Order"].includes(policy.workflow))fail("Unsupported workflow.");
-    if(policy.workflow!=="Purchase Order"&&!["Allow","Deny"].includes(policy.selfApproval))fail("Choose the self-approval rule before publication.");
     if(!Array.isArray(policy.steps)||!policy.steps.length||policy.steps.length>30)fail("Enter 1–30 ordered steps.");
     var keys=new Set();policy.steps.forEach(function(step,index){if(typeof step.key!=="string"||!step.key||keys.has(step.key))fail("Step keys must be unique.");keys.add(step.key);id(step.roleId);if(step.order!==index+1)fail("Steps must have contiguous, unique order.");if(typeof step.enabled!=="boolean")fail("Each step needs an explicit enabled setting.");if(!["Always","Above","At or above","Budget modification attached"].includes(step.condition))fail("Choose a supported step condition.");if(["Pro Forma","Contract"].includes(policy.workflow)&&step.condition!=="Always")fail("Pro Forma and Contract use straight approval chains without amount thresholds.");if(step.condition==="Budget modification attached"&&policy.workflow!=="Purchase Order")fail("Budget modification conditions belong to Purchase Orders.");if(step.condition==="Above"||step.condition==="At or above")cents(step.threshold);
       if(step.poTestCFO!=null){
@@ -57,14 +56,13 @@
       (assignments||[assignment]).forEach(function(assignment){
       if(assignment.active!==true)fail("Assignment for "+roles[0].name+" is inactive.");if(assignment.id!=='')id(assignment.id);id(assignment.userAccessId);
       var users=config.users.filter(function(u){return u.id===assignment.userAccessId;});if(users.length!==1||!users[0].user||!test&&(users[0].routingEnabled!==true||typeof users[0].approverEmail!=="string"||!/^\S+@\S+\.\S+$/.test(users[0].approverEmail)))fail("Missing, inactive or unroutable approver for "+roles[0].name+".");
-      if(policy.workflow!=="Purchase Order"&&policy.selfApproval==="Deny"&&assignment.userAccessId===ctx.submitterId&&!(test&&test.allowSelfApproval===true))fail("Policy forbids submitter self-approval.");
       var resolved={order:route.length+1,policyStepOrder:step.order,key:assignments&&assignments.length>1?step.key+'-'+assignment.userAccessId:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
       if(test)resolved.poTestCFO=test;route.push(resolved);
       });
     });
     if(!route.length)fail("No enabled applicable approval steps.");
     // Detached submission evidence; configuration edits cannot mutate an active route.
-    return JSON.parse(JSON.stringify({policyId:policy.id,context:ctx,route:route,excluded:excluded,selfApproval:policy.workflow==="Purchase Order"?"Allow":policy.selfApproval}));
+    return JSON.parse(JSON.stringify({policyId:policy.id,context:ctx,route:route,excluded:excluded,selfApproval:"Allow"}));
   }
   function assertPublish(candidate,policies){validatePolicy(candidate);if(candidate.steps.some(function(step){return step.poTestCFO!=null;}))fail("Budget-specific CFO test overrides are no longer supported. Configure the CFO assignment for all budgets.");policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||""))fail("A published policy already exists in this scope. Edit that policy.");});return candidate;}
   root.LMApprovalPolicy={resolve:resolve,validatePolicy:validatePolicy,assertPublish:assertPublish,currency:currency};

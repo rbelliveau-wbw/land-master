@@ -1,3 +1,12 @@
+## Preserve existing approval routes — October 14, 2026 correction
+
+Every PF with saved approval rows retains those rows, including entirely Not Sent
+chains. Display and send the saved recipients/order; never substitute Settings
+recipients. Only PFs without approval rows use the published enabled Settings
+policy. Self-approval is always allowed. Read-only Settings previews preserve
+native failure messages and cannot quarantine business writes as unknown sends.
+See [release and native promotion handoff](../../docs/proforma-approval-preservation-2026-10-14.md).
+
 ## Settings approval routing — October 14, 2026
 
 Untouched Pro Formas preview Settings → Approvals and require its published,

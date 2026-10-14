@@ -14,7 +14,7 @@ map approvalConfigurationSnapshot()
 			// Native toJSONList elements can be JSON text. Return step objects in the configuration DTO.
 			policySteps = List();
 			for each rawPolicyStep in policyRow.Steps_JSON.toJSONList() { policySteps.add(rawPolicyStep.toString().toMap()); }
-			policies.add({"id":policyRow.ID.toString(),"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":policyRow.Self_Approval,"steps":policySteps,"adapterEnabled":policyRow.Adapter_Enabled});
+			policies.add({"id":policyRow.ID.toString(),"workflow":policyRow.Workflow,"territory":ifnull(policyRow.Territory_Key,""),"department":ifnull(policyRow.Department_Key,""),"status":policyRow.Status,"enabled":policyRow.Enabled,"selfApproval":"Allow","steps":policySteps,"adapterEnabled":policyRow.Adapter_Enabled});
 		}
 		for each personRow in User_Access[ID != 0] { users.add({"id":personRow.ID.toString(),"user":ifnull(personRow.User,"").toString(),"name":ifnull(personRow.Full_Name,""),"approverEmail":ifnull(personRow.Approver_Email,""),"routingEnabled":personRow.Approval_Routing_Enabled == true}); }
 		for each territoryRow in Territory[ID != 0]

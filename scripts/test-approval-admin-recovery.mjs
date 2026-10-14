@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 
 const source=await readFile(new URL('../widgets/settings-manager/src/app/approval-admin.js',import.meta.url),'utf8');
 const clone=value=>JSON.parse(JSON.stringify(value));
-const editable=value=>{const result=clone(value);if(result.workflow==='Purchase Order')result.selfApproval='Allow';for(const key of ['companyId','version','duplicatePerson','effectiveFrom','effectiveTo','adapterEnabled'])delete result[key];if(Array.isArray(result.steps))result.steps.forEach(step=>delete step.poTestCFO);return result;};
+const editable=value=>{const result=clone(value);result.selfApproval='Allow';for(const key of ['companyId','version','duplicatePerson','effectiveFrom','effectiveTo','adapterEnabled'])delete result[key];if(Array.isArray(result.steps))result.steps.forEach(step=>delete step.poTestCFO);return result;};
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 const token='b2bf8b11-672b-45cb-84a1-71538d9564d1';
 const intended={id:'',companyId:'',workflow:'Purchase Order',version:2,status:'Draft',adapterEnabled:false,enabled:true,selfApproval:'Deny',duplicatePerson:'Reject',steps:[{key:'test-cfo',order:1,roleId:'81',condition:'Always',enabled:true,poTestCFO:{budgetId:'9007199254740993',userAccessId:'9007199254740994',email:'test@example.com',allowSelfApproval:true,maxAmount:'55.00'}}]};

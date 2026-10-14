@@ -28,6 +28,8 @@ map applySharedApprovalPolicy(map context)
 			// continue through the original workflow with their original recipients.
 			if(existingExecution.Status != "Not Sent" || existingExecution.Sent_Date != null || existingExecution.Responded_Date != null || ifnull(existingExecution.Approval_Notes,"").trim() != "") { result.put("shared",false); result.put("success",true); result.put("retainedExistingRoute",true); return result; }
 		}
+		// Every saved PF route is retained, including a chain not yet sent.
+		if(workflow == "Pro Forma" && ids.size() > 0) { result.put("shared",false); result.put("success",true); result.put("retainedExistingRoute",true); return result; }
 		territory = ifnull(context.get("territory"),""); department = ifnull(context.get("department"),"");
 		bestRank = -1; matches = 0; selectedId = 0;
 		for each candidatePolicy in Approval_Policy[Workflow == workflow && Status == "Published"]
@@ -52,7 +54,7 @@ map applySharedApprovalPolicy(map context)
 		selected = Approval_Policy[ID == selectedId];
 		// Budget migration gates retain their existing fallback. New Pro Formas
 		// require Settings routing rather than per-record approver configuration.
-		if(selected.Adapter_Enabled != true)
+		if(workflow != "Pro Forma" && selected.Adapter_Enabled != true)
 		{
 			if(workflow == "Pro Forma") { result.put("error","Enable the Pro Forma approval policy adapter in Settings before sending approvals."); return result; }
 			result.put("success",true); return result;

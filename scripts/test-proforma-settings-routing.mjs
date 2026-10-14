@@ -12,7 +12,7 @@ const pf={ID:'4410926000004947002',Name:'test vp approval routing - Waco',Territ
 const snapshot={success:true,contract:'proforma-approval-settings-v1',policyModel:'territory-perpetual-v2',proformaId:pf.ID,policyId:'441092600000000041',route};
 const host={innerHTML:''};
 const c=vm.createContext({
- S:{liveSDK:true,currentUser:'robby',proformas:[pf],approvals:[{ID:'legacy-1',Proforma:pf.ID,Title:'VP',Approver:'VP_EMAIL@wbdevelopment.com',Sort_Order:1,Status:'Not Sent'}],ed:{model:pf,id:pf.ID,dirty:false,loiDirty:false}},
+ S:{liveSDK:true,currentUser:'robby',proformas:[pf],approvals:[],ed:{model:pf,id:pf.ID,dirty:false,loiDirty:false}},
  runtime:{environment:'production',actor:'robby'},LMRuntime:{current(){return c.runtime;}},
  approvalText:v=>String(v??'').trim(),intN:v=>Number(v)||0,lookupId:v=>v?.ID||v,
  esc:v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
@@ -80,6 +80,17 @@ const startPayload=JSON.parse(c.proformaApprovalStartPayload(pf.ID,sent[0].value
 assert.equal(startPayload.mode,'StartSettings');assert.equal(startPayload.expectedPolicyId,snapshot.policyId);
 assert.deepEqual(startPayload.expectedRoute,route.map(({order,key,roleId,role,userAccessId,email})=>({order,key,roleId,role,userAccessId,email})), 'confirmed exact recipient intent is checked before native writes');
 
+// An existing unsent route is preserved without requesting Settings.
+c.S.approvals=[{ID:'123',Proforma:pf.ID,Title:'Original VP',Approver:'original@example.com',Sort_Order:1,Status:'Not Sent'}];
+c.invokeProformaApprovalApi=()=>{throw new Error('existing routes must not call Settings');};
+c.renderApprovalPane();assert.match(host.innerHTML,/Original VP/);assert.match(host.innerHTML,/original@example.com/);assert.doesNotMatch(host.innerHTML,/Refresh Route|waco-vp@example.com/);
+c.invokeProformaApprovalApi=()=>Promise.resolve({success:true,proformaId:pf.ID,rowCount:1,firstId:'123'});
+await assert.rejects(c.loadProformaApprovalSettings(pf,true),/Promote the Creator/);
+c.invokeProformaApprovalApi=()=>Promise.resolve({success:true,savedRouteContract:'proforma-approval-existing-v1',proformaId:pf.ID,rowCount:1,firstId:'123'});
+assert.equal((await c.loadProformaApprovalSettings(pf,true)).saved,true);
+const saved=await c.loadProformaApprovalSettings(pf,false);assert.equal(saved.saved,true);
+assert.deepEqual(JSON.parse(c.proformaApprovalStartPayload(pf.ID,saved).proformaId),{id:pf.ID,mode:'Start',expectedExistingRoute:[{id:'123',role:'Original VP',email:'original@example.com',order:1}]});
+
 // Existing history stays mounted as a read-only captured route, with its saved
 // notes and recipient. Viewing it makes no Settings preview request.
 c.S.approvals=[{ID:'saved-1',Proforma:pf.ID,Title:'Saved CEO',Approver:'historical@example.com',Sort_Order:1,Status:'Approved',Sent_Date:'2026-10-13',Approval_Notes:'Keep historical note'}];
@@ -98,3 +109,16 @@ const attempt={id:pf.ID,startRejected:'Settings route changed. Refresh it.',term
 progress.pfApprovalCheck(attempt);await Promise.resolve();assert.equal(repairs,0);assert.deepEqual(terminal,{kind:'error',message:attempt.startRejected});
 
 console.log('Pro Forma Settings routing: safe read-only capability, exact confirmed recipients, no legacy controls/default fallback, scoped cache, preserved history and rejected-start recovery passed.');
+
+// Transport exceptions retain the native business-rule message for route display.
+const transport=vm.createContext({S:{liveSDK:true},CFG:{customApis:{startProformaApproval:'Start_Proforma_Approval_Chain'}},auditLog(){},responseBad:()=>false});
+vm.runInContext([fn('parseApprovalApiResult'),fn('invokeProformaApprovalApi'),fn('pfReadOnlyInvoke')].join('\n'),transport);
+for(const raw of [{code:3000,result:JSON.stringify({success:false,message:'Native route reason'})},{code:3000,details:{output:JSON.stringify({success:false,message:'Native route reason'})}}]){
+ transport.sdkInvoke=()=>Promise.reject(Object.assign(new Error('Custom API returned an explicit failure.'),{raw}));
+ await assert.rejects(transport.invokeProformaApprovalApi('startProformaApproval',{proformaId:JSON.stringify({id:pf.ID,mode:'Check',settingsPreview:true})}),e=>e.message==='Native route reason'&&e.acknowledgedFailure===true);
+}
+for(const mode of ['Check','Repair','Start','StartSettings'])assert.equal(transport.pfReadOnlyInvoke({api_name:'Start_Proforma_Approval_Chain',payload:{proformaId:JSON.stringify({id:pf.ID,mode,settingsPreview:true})}}),mode==='Check');
+const {ready}=await import('./fixtures/proforma-sdk-v2-harness.mjs');
+const live=await ready({invoke:cfg=>cfg.api_name.replace(/_DEV$/,'')==='Start_Proforma_Approval_Chain'?{code:3000,result:JSON.stringify({success:false,message:'Native route reason'})}:undefined});
+await assert.rejects(live.widget.sdkInvoke({api_name:'Start_Proforma_Approval_Chain',payload:{proformaId:JSON.stringify({id:pf.ID,mode:'Check',settingsPreview:true})}}));
+assert.equal(live.widget.PFTransport.snapshot().reviews.length,0,'failed read-only route preview cannot lock writes as an unknown mutation');assert.equal(live.widget.PFTransport.snapshot().ledger.length,0);

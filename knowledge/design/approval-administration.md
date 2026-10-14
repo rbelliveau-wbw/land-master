@@ -120,7 +120,7 @@ for shared approval-policy workflows. Expand unique selected users, preserving
 lookup order, into individual sequential approval rows. All selected managers
 must approve before the following role starts. This retains the one-approver-
 at-a-time chain; it does not send concurrent approvals. Resolve every person
-and validate their login, routing flag, approval email and self-approval before
+and validate their login, routing flag and approval email before
 creating a route. Never fall back to a global Dev Mgr assignment. The captured
 route retains people after Territory edits. VP resolves exactly one unique
 Territory.VP person in every shared-policy workflow, including Pro Forma and
@@ -132,3 +132,10 @@ route editor. New submissions require a usable Settings policy; keep existing
 submitted recipients and decisions. Its read-only capability uses the existing
 Check mode with settingsPreview so an older API cannot mistake preview for a
 send. See [native/frontend routing and retirement](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+
+## Self-approval — October 14, 2026
+
+Self-approval is always allowed for every shared workflow. Do not show a Deny or
+Unspecified selector. Retain the legacy field for storage compatibility, return
+Allow in configuration and route DTOs, and ignore old Deny/blank values. Every
+configured recipient still approves their own step.

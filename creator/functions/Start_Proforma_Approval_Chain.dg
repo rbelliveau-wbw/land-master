@@ -105,9 +105,9 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			}
 			previewSnapshot = previewResolution.get("snapshot");
 			previewPolicy = Approval_Policy[ID == previewSnapshot.get("policyId").toLong()];
-			if(previewPolicy.Adapter_Enabled != true)
+			if(previewPolicy.Enabled != true)
 			{
-				response.put("message","Enable the Pro Forma approval policy adapter in Settings before sending approvals.");
+				response.put("message","Enable the Pro Forma approval policy in Settings before sending approvals.");
 				return response;
 			}
 			previewRoute = previewSnapshot.get("route");
@@ -231,6 +231,7 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			}
 			response.put("success",true);
 			response.put("mode",progressMode);
+			response.put("savedRouteContract","proforma-approval-existing-v1");
 			response.put("proformaId",proformaIdText);
 			response.put("status",ifnull(pf.Status,"").toString().trim());
 			response.put("locked",pf.Lock_Inputs == true);
@@ -397,6 +398,10 @@ map Start_Proforma_Approval_Chain(string proformaId)
 		}
 		if(progressMode == "StartSettings")
 		{
+			if(rows.count() > 0)
+			{
+				response.put("success",false); response.put("message","This Pro Forma has a saved approval route. Refresh before sending."); return response;
+			}
 			typedExpectedPolicy = {"value":progressInput.get("expectedPolicyId")};
 			if(!typedExpectedPolicy.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]{1,30}\"[ ]*[}][ ]*") || progressInput.get("expectedRoute") == null)
 			{
@@ -406,6 +411,18 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			}
 			policyContext.put("expectedPolicyId",progressInput.get("expectedPolicyId"));
 			policyContext.put("expectedRoute",progressInput.get("expectedRoute"));
+		}
+		if(progressInput.get("expectedExistingRoute") != null)
+		{
+			expectedExisting = progressInput.get("expectedExistingRoute");
+			if(expectedExisting.size() != rows.count() || rows.count() == 0) { response.put("success",false); response.put("message","The saved approval route changed. Refresh before sending."); return response; }
+			existingPosition = 0;
+			for each savedRow in rows
+			{
+				expectedSaved = expectedExisting.get(existingPosition).toString().toMap();
+				if(expectedSaved.get("id") != savedRow.ID.toString() || expectedSaved.get("role") != ifnull(savedRow.Title,"").trim() || expectedSaved.get("email") != ifnull(savedRow.Approver,"").trim() || expectedSaved.get("order") != savedRow.Sort_Order) { response.put("success",false); response.put("message","The saved approval route changed. Refresh before sending."); return response; }
+				existingPosition = existingPosition + 1;
+			}
 		}
 		policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 		if(policyExecution.get("success") != true)
@@ -418,7 +435,7 @@ map Start_Proforma_Approval_Chain(string proformaId)
 		{
 			response.put("policySnapshotId",policyExecution.get("snapshotId"));
 		}
-		else
+		else if(policyExecution.get("retainedExistingRoute") != true)
 		{
 			response.put("success",false);
 			response.put("message","Configure and enable the Pro Forma approval policy in Settings before sending approvals.");
