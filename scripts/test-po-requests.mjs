@@ -60,9 +60,9 @@ assert.match(widget,/savedPO\.dataset\.requestPoOpen,savedPO/,'Requests action d
 
 // Saving reloads the Requests report instead of leaving its cache at truthy "idle".
 c.purchaseOrderUI=null;c.LMPOUI={create:options=>{c.poOptions=options;return {};}};c.canEditBudget=()=>true;c.phaseName=()=>'';c.closeRequestDatePicker=()=>{};
-vm.runInContext(block(widget,'getPurchaseOrderUI','openCheckWireRequest'),c);c.getPurchaseOrderUI();
+vm.runInContext(block(widget,'refreshPurchaseOrderRequestState'),c);vm.runInContext(block(widget,'getPurchaseOrderUI','openCheckWireRequest'),c);c.getPurchaseOrderUI();
 let refresh;
-c.loadCheckWireRequests=(id,fresh)=>{refresh={id,fresh};};c.S.checkWireRequestState[budgetId]='loaded';c.poOptions.saved({budgetId});
+c.loadCheckWireRequests=(id,fresh)=>{refresh={id,fresh};};c.S.checkWireRequestState[budgetId]='loaded';await c.poOptions.saved({budgetId});
 assert.deepEqual(refresh,{id:budgetId,fresh:true});assert.equal(c.S.checkWireRequestState[budgetId],undefined);
 vm.runInContext(block(widget,'loadCheckWireRequests'),c);
 

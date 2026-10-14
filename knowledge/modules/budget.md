@@ -1267,3 +1267,16 @@ Explicit Recover PO verifies the exact terminal submission receipt, current PO a
 
 ## Connected Rail request list (122.29.40)
 Requests uses one newest-first list of PO, Check, Wire and standalone budget modification rows. Exact same-budget PO ID/revision references nest child modifications under their PO once; unmatched mods remain standalone. One shared grid aligns labels, approvers, dates, amounts, statuses and fixed icon slots. Parent payment and child budget delta remain separate; native aggregates and permissions are unchanged. PO children do not trigger standalone approval-chain repair. Frontend only; no new functions or Custom APIs. Rollback: Budget 122.29.39. PMP shorthand is recorded in root AGENTS.md; Creator promotion is left to the user.
+
+## Immediate PO child refresh and compact actions (122.29.41)
+
+Successful submitted PO saves, approval decisions and deletions refresh request
+headers and native budget modifications before the final Requests repaint. New
+children appear without leaving or reloading the phase. Draft saves refresh only
+headers. Late navigation/actor replies cannot repaint another view; display-read
+failures retain Retry and do not replay the successful mutation. Available icons
+pack together at the right of the shared action column, without empty pencil slots.
+Frontend only: no forms, fields, functions or Custom APIs change, and no Creator
+promotion is required. Regression coverage includes both read-completion orders,
+approval/deletion refresh, drafts, failed/stale reads and action permissions.
+Rollback: Budget 122.29.40. See docs/po-request-refresh-2026-10-14.md.

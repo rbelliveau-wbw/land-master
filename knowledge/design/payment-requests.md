@@ -8,6 +8,10 @@ Budget Modifications/Payment Requests headings and modification summary tiles.
 Keep aligned columns on narrow screens with list scrolling; preserve keyboard
 focus and action names.
 
+Keep the action column shared, but pack only available icons together at its right
+edge with 6px gaps. Do not reserve blank slots for an unavailable Edit or other
+action. A linked modification's single preview icon uses that same right edge.
+
 PO-created modifications sit immediately beneath their owning PO, with a fixed
 indent and branch connector. Match exact PO identity, current revision and phase
 using the stored PO reference; never use a vendor name or reason-text match.
@@ -15,6 +19,12 @@ Unmatched modifications remain standalone rows. The child displays item/code,
 signed budget change and its approval relationship to the PO. Its budget increase
 is separate from the parent payment amount. Keep underlying aggregates unchanged.
 All rows use actual saved data; missing dates are last in the sort and show a dash.
+
+After an acknowledged submitted PO save, approval decision or deletion, refresh
+both request headers and budget modifications from native reads before the final
+Requests repaint. Draft saves only refresh request headers. Retain navigation,
+phase and actor guards; failed display reads expose the existing Retry state and
+never replay a successful write.
 
 # Payment request cards
 

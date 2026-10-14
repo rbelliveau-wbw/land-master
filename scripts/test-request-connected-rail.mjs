@@ -99,3 +99,32 @@ c.S.modifications=[child,{...standalone,Status:'Submitted'}];c.maybeRepairModCha
 assert.equal(repairs.length,1,'A submitted standalone modification without its chain retains the existing recovery');
 assert.equal(repairs[0].name,'modificationAdmin');assert.equal(repairs[0].args.action,'repair');assert.equal(repairs[0].args.budgetId,bid);c.maybeRepairModChains(budget);assert.equal(repairs.length,1,'Repair remains once per budget/session');
 console.log('Connected request rail: PO children excluded from automatic standalone-chain repair; existing standalone repair preserved.');
+// After a PO submission, both request headers and modification records must be
+// fresh before the final repaint; either independent read can finish first.
+function railDeferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
+let saveNav=1,saveScope='actor-one',modsReady=true,saveReads=[],saveRefreshes=[],saveErrors=[];
+c.S.view='vEditor';c.budgetNavigationToken=()=>saveNav;c.budgetCreateScope=()=>saveScope;c.budgetNavigationCurrent=(token,view,id)=>token===saveNav&&c.S.view===view&&String(c.S.edBudget?.ID)===id;
+c.budgetModsReady=()=>modsReady;c.budgetFeatureStateHtml=()=>'<p data-budget-feature-retry="modifications">Requests refresh unavailable</p>';c.auditLog=(level,message,error)=>saveErrors.push({level,message,error});c.maybeRepairModChains=()=>{};
+vm.runInContext(functionSource('refreshPurchaseOrderRequestState'),c);
+for(const first of ['requests','mods']){
+ c.S.edBudget=budget;c.S.globalMode='modifications';c.S.checkWireRequestState[bid]='loaded';c.S.checkWireRequestsByBudget[bid]=[];c.S.modifications=[];modsReady=true;saveReads=[];saveRefreshes=[];
+ const headers=railDeferred(),modified=railDeferred();
+ c.loadCheckWireRequests=(id,fresh)=>{saveReads.push({id,fresh});c.S.checkWireRequestState[id]='loading';return headers.promise.then(rows=>{c.S.checkWireRequestsByBudget[id]=rows;c.S.checkWireRequestState[id]='loaded';c.renderModPhasePanel(budget);});};
+ c.refreshBudgetWorkflowState=(id,options)=>{saveRefreshes.push({id,options});modsReady=false;return modified.promise.then(rows=>{c.S.modifications=rows;modsReady=true;});};
+ const freshening=c.refreshPurchaseOrderRequestState({id:poId,budgetId:bid,status:'Submitted',approvalBundle:{modifications:[{id:child.ID}]}});
+ assert.deepEqual(saveReads,[{id:bid,fresh:true}]);assert.deepEqual(JSON.parse(JSON.stringify(saveRefreshes)),[{id:bid,options:{requireModifications:true}}]);
+ if(first==='requests'){headers.resolve([po]);await new Promise(resolve=>setImmediate(resolve));assert.doesNotMatch(panel.innerHTML,new RegExp(childMarker));modified.resolve([child]);}
+ else {modified.resolve([child]);await new Promise(resolve=>setImmediate(resolve));headers.resolve([po]);}
+ await freshening;assert.match(panel.innerHTML,new RegExp(childMarker),'New attached budget modification appears after save without reloading or reopening');assert.equal(panel.innerHTML.split(childMarker).length-1,1);
+}
+// Draft saves do not read unchanged modification/approval/financial reports.
+saveReads=[];saveRefreshes=[];c.loadCheckWireRequests=async(id,fresh)=>saveReads.push({id,fresh});c.refreshBudgetWorkflowState=async(id,options)=>saveRefreshes.push({id,options});await c.refreshPurchaseOrderRequestState({budgetId:bid,status:'Draft'});assert.equal(saveReads.length,1);assert.equal(saveRefreshes.length,0);
+// Approval decisions and deletion use the same fresh modification-aware callback.
+for(const snapshot of [{budgetId:bid,status:'Submitted',approvalState:'Approved'},{budgetId:bid,deleted:true}]){saveRefreshes=[];await c.refreshPurchaseOrderRequestState(snapshot);assert.equal(saveRefreshes.length,1);assert.equal(saveRefreshes[0].options.requireModifications,true);}
+// A failed display read must not turn an acknowledged PO save into another write.
+modsReady=false;saveErrors=[];c.refreshBudgetWorkflowState=async()=>{throw Error('Report denied');};await c.refreshPurchaseOrderRequestState({budgetId:bid,status:'Submitted'});assert.match(panel.innerHTML,/Requests refresh unavailable/);assert.equal(saveErrors.length,1);assert.equal(writes,0);
+// A late callback cannot repaint another budget, navigation or user session.
+const renderRail=c.renderModPhasePanel;for(const change of [()=>saveNav++,()=>saveScope='new-actor',()=>c.S.edBudget={ID:'other-budget'}]){c.S.edBudget=budget;saveScope='actor-one';modsReady=true;let paints=0;c.renderModPhasePanel=()=>paints++;const late=railDeferred();c.loadCheckWireRequests=()=>late.promise;c.refreshBudgetWorkflowState=()=>late.promise;const pendingSave=c.refreshPurchaseOrderRequestState({budgetId:bid,status:'Submitted'});change();late.resolve();await pendingSave;assert.equal(paints,0);}c.renderModPhasePanel=renderRail;
+// Available icons form one compact group; no placeholder stands in for a pencil.
+editable=true;const pendingIcons=c.renderRequestRailPayment(budget,{...po,PO_Status:'Submitted',PO_Approval_State:'Pending'});assert.equal((pendingIcons.match(/class='attachment-action request-rail-action /g)||[]).length,3);assert.doesNotMatch(pendingIcons,/request-rail-action-space|aria-label='Edit PO'/);assert.equal((c.renderRequestRailModification(budget,child,po).match(/class='attachment-action request-rail-action /g)||[]).length,1);assert.doesNotMatch(c.renderRequestRailModification(budget,child,po),/request-rail-action-space/);
+console.log('PO saved requests refresh: new children appear in either read order, draft avoids broad reads, decisions/deletion refresh modifications, failed/stale reads remain honest and available action icons have no gaps.');
