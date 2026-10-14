@@ -13,7 +13,7 @@ const audit={id:'91',action:'SavePolicy',status:'Started',actorId:'9007199254740
 const configuration={roles:[{id:'81',name:'CFO',active:true}],assignments:[],users:[{id:'9007199254740994',name:'Test person',user:'test-login',approverEmail:'test@example.com',routingEnabled:false}],territories:[],policies:[clone(after)],audit:[clone(audit)]};
 const receipt={contract:'approval-policy-v1',success:true,writeState:'verified',token,after};
 const nodes=new Map();
-const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',hidden:false,disabled:false,value:0});return nodes.get(selector);};
+const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',hidden:false,disabled:false,value:0,focus(){}});return nodes.get(selector);};
 const chips=[{textContent:''},{textContent:''},{textContent:''}];
 const card={querySelector:node,querySelectorAll:selector=>selector==='ol span'?chips:selector==='footer button'?[node('[data-ap-save]')]:[],focus(){}};
 let removed=false;
@@ -33,7 +33,7 @@ const instance=admin.create({scope:()=>scope,call:async payload=>{calls.push(clo
 const reset=()=>{removed=false;calls.length=0;scope='same-admin-session';answer=()=>receipt;instance.fixture({policyReady:true,panel,card,config:clone(configuration),scope});};
 function button(dataset={},attrs=[]){return {target:{dataset,hasAttribute:name=>attrs.includes(name),closest(){return this;}}};}
 
-reset();assert.match(instance.listing(),/Verify saved draft/);assert.match(instance.listing(),new RegExp(token));
+reset();assert.match(instance.listing(),/Verify Saved Draft/);assert.match(instance.listing(),new RegExp(token));
 for(const patch of [{token:''},{token:'short'},{token:12},{action:'Publish'},{status:'Complete'},{intended:null},{intended:undefined},{intended:{...intended,workflow:'Budget'}},{intended:{...intended,steps:[]}},{intended:{...intended,steps:[{...intended.steps[0],enabled:false}]}},{intended:{...intended,steps:[{...intended.steps[0],condition:'Above'}]}},{intended:{...intended,steps:[{...intended.steps[0],poTestCFO:null}]}},{intended:{...intended,steps:[JSON.stringify(intended.steps[0])]}}]){
   const next=clone(configuration);next.audit=[{...clone(audit),...patch}];instance.fixture({policyReady:true,panel,card,config:next,scope});assert.doesNotMatch(instance.listing(),/data-ap-reconcile/,'Only the scoped owner receipt exposes recovery');
 }
@@ -45,7 +45,7 @@ instance.click(button({apReconcile:token}));
 assert.deepEqual(calls,[{action:'Reconcile',token}]);assert.equal(instance.state().busy,true);assert.equal(node('[data-ap-close]').disabled,true);assert.match(node('.ap-body').innerHTML,/Verify draft and receipt/);assert.doesNotMatch(node('.ap-body').innerHTML,/Save and audit change/);
 instance.click(button({apReconcile:token}));instance.click(button({},['data-ap-save']));instance.close();assert.equal(calls.length,1);assert.equal(removed,false);
 resolve(receipt);await tick();await tick();
-assert.equal(instance.state().busy,false);assert.equal(instance.state().pending.after.id,after.id);assert.equal(node('progress').value,3);assert.equal(node('[data-ap-check]').hidden,true);assert.equal(node('[data-ap-done]').textContent,'Review draft');assert.match(node('[data-ap-results]').textContent,/Saved draft verified/);
+assert.equal(instance.state().busy,false);assert.equal(instance.state().pending.after.id,after.id);assert.equal(node('progress').value,3);assert.equal(node('[data-ap-check]').hidden,true);assert.equal(node('[data-ap-done]').textContent,'Review Draft');assert.match(node('[data-ap-results]').textContent,/Saved draft verified/);
 instance.click(button({},['data-ap-done']));await tick();
 assert.deepEqual(calls,[{action:'Reconcile',token},{action:'List'}]);assert.equal(instance.state().pending,null);assert.equal(instance.state().tab,'Policies');assert.equal(instance.state().editing,'Policies');assert.deepEqual(clone(instance.state().draft),editable(after));assert.doesNotMatch(node('.ap-body').innerHTML,/data-ap-test-scope|Budget ID|Test CFO/);
 
@@ -59,7 +59,7 @@ reset();answer=()=>({contract:'approval-policy-v1',success:false,writeState:'not
 
 // A Complete owner receipt can still release its retained lock, only while the
 // exact recorded destination remains a unique Draft in the current snapshot.
-reset();const complete=clone(configuration);complete.audit[0].status='Complete';complete.audit[0].after=clone(after);instance.fixture({policyReady:true,panel,card,config:complete,scope});assert.match(instance.listing(),/Verify saved draft/);await instance.reconcileAudit(token);await tick();assert.equal(instance.state().pending.data.id,after.id);assert.deepEqual(calls,[{action:'Reconcile',token}]);
+reset();const complete=clone(configuration);complete.audit[0].status='Complete';complete.audit[0].after=clone(after);instance.fixture({policyReady:true,panel,card,config:complete,scope});assert.match(instance.listing(),/Verify Saved Draft/);await instance.reconcileAudit(token);await tick();assert.equal(instance.state().pending.data.id,after.id);assert.deepEqual(calls,[{action:'Reconcile',token}]);
 for(const policies of [[],[{...after,status:'Published'}],[clone(after),clone(after)]]){const stale=clone(complete);stale.policies=policies;instance.fixture({policyReady:true,panel,card,config:stale,scope});assert.doesNotMatch(instance.listing(),/data-ap-reconcile/);}
 
 const recoveryRun={action:'Reconcile',data:{id:after.id},token};
@@ -86,7 +86,7 @@ for(const malformed of ['not json','null','[]','42',JSON.stringify({...after.ste
 // Refresh must find one exact Draft policy before opening any editing controls.
 reset();configuration.policies=[];await instance.load(after.id);assert.equal(instance.state().draft,null);assert.match(node('[data-ap-error]').textContent,/verified draft is unavailable/);assert.equal(node('[data-ap-save]').disabled,true);configuration.policies=[clone(after)];
 // Published policies edit the same record and Save applies to future submissions.
-reset();const active={...clone(after),status:'Published',effectiveFrom:'2099-01-01',effectiveTo:'2099-02-01'};const activeConfig=clone(configuration);activeConfig.policies=[active];instance.fixture({panel,card,config:activeConfig,scope,tab:'Policies'});instance.click(button({apEdit:active.id}));assert.equal(instance.state().draft.id,active.id);assert.equal(instance.state().draft.status,'Published');assert.match(node('footer').innerHTML,/Save changes/);assert.match(node('.ap-body').innerHTML,/Without budget modifications/);assert.match(node('.ap-body').innerHTML,/With attached budget modifications/);assert.doesNotMatch(node('.ap-body').innerHTML,/Effective from|Effective to|Version|Duplicate person|Threshold|Condition|Company/);answer=()=>({...receipt,after:active});instance.click(button({},['data-ap-save']));await tick();await tick();assert.equal(calls[0].data.id,active.id);assert.equal(calls[0].data.status,'Published');for(const key of ['companyId','version','duplicatePerson','effectiveFrom','effectiveTo','adapterEnabled'])assert.equal(key in calls[0].data,false,key);assert.equal(instance.state().pending.after.status,'Published');
+reset();const active={...clone(after),status:'Published',effectiveFrom:'2099-01-01',effectiveTo:'2099-02-01'};const activeConfig=clone(configuration);activeConfig.policies=[active];instance.fixture({panel,card,config:activeConfig,scope,tab:'Policies'});instance.click(button({apEdit:active.id}));assert.equal(instance.state().draft.id,active.id);assert.equal(instance.state().draft.status,'Published');assert.match(node('footer').innerHTML,/Save Changes/);assert.match(node('.ap-body').innerHTML,/Without budget modifications/);assert.match(node('.ap-body').innerHTML,/With attached budget modifications/);assert.doesNotMatch(node('.ap-body').innerHTML,/Effective from|Effective to|Version|Duplicate person|Threshold|Condition|Company/);answer=()=>({...receipt,after:active});instance.click(button({},['data-ap-save']));await tick();await tick();assert.equal(calls[0].data.id,active.id);assert.equal(calls[0].data.status,'Published');for(const key of ['companyId','version','duplicatePerson','effectiveFrom','effectiveTo','adapterEnabled'])assert.equal(key in calls[0].data,false,key);assert.equal(instance.state().pending.after.status,'Published');
 reset();instance.fixture({panel,card,config:clone(configuration),scope,tab:'Policies',editing:'Policies',draft:editable(after),policyReady:false});instance.click(button({},['data-ap-save']));await tick();assert.equal(calls.length,0);assert.match(node('[data-ap-error]').textContent,/Creator update pending|Promote the updated Creator/);
 console.log('Approval admin recovery: owner PO audit, token-only reconciliation, lock cleanup, exact Draft receipt, clear PO scenarios, in-place Published save and Creator readiness gate passed.');
 

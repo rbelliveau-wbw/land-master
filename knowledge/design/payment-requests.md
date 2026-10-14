@@ -1,36 +1,39 @@
 # Payment request cards
 
-Managed Purchase Orders in Budget's phase Requests tab use the approved Soft
-rail row. Keep PO pill, vendor, captured approver circles, request date, amount, status and actions on one
+Managed POs in Budget's phase Requests tab use the approved Soft rail row: PO pill,
+vendor, captured approver circles, request date, amount, status and actions on one
 horizontal line. Omit column headings and repeated Purchase Order text. Use a
-white surface, blue left rail, fine border and 9px corners with compact padding.
-The request date sits between vendor and amount in MM/DD/YYYY; unavailable
-dates show an em dash. Keep the date needed in the request-date tooltip.
+white surface, blue left rail, fine border, 9px corners and compact padding.
+Request dates use MM/DD/YYYY; unavailable dates show a dash. Keep Date needed in
+the request-date tooltip. Currency is green and tabular; statuses keep their palette.
 
-Use green tabular currency and the established status badge palette. Edit PO and
-View PO use the same compact outlined button with a small arrow icon and a visible
-keyboard focus ring. Preserve the exact PO identity, existing edit eligibility,
-and the same phase-scoped opening action.
+Use the attachment-style 28px square eye, eligible pencil, download and red trash
+icons, with accessible names, tooltips and visible keyboard focus rings. Preserve
+exact PO identity, edit eligibility and phase scope. On narrow screens keep the
+row horizontal with internal scrolling; truncate vendor names with a full tooltip.
+Check, Wire and legacy PO cards retain their existing presentation and behavior.
 
 Captured approvers use their recorded role (VP, CFO, COO) in connected 28px circles: green Approved, amber
 Pending, red Rejected and muted Not Sent. Show every captured step; drafts with
 no recorded route show a dash. Hover outlines the clickable chain. Its compact
 read-only modal shows names, roles, sent/responded dates and statuses; a targeted
 Get refreshes only the selected PO. Escape, backdrop and Close restore focus.
+List supplies summaries without per-card network requests or fabricated data.
 
-On narrow screens, keep the row horizontal and scrolling inside the card.
-Truncate long vendor names and expose the full name in a tooltip.
-Check, Wire and legacy PO cards retain their current
-presentation and behavior. This is a display change; never add per-row requests
-or infer absent dates to fill the design.
+The PO title card contains Purchase Order, status, phase, Vendor and Add New
+Vendor. The vendor link opens the existing form in the current Creator environment.
+Body fields are Request date, Date needed and optional PO Description (1000
+characters). The viewport-bounded editor height stays stable after row changes,
+with internal scrolling. Keep 9px padding above ledger headers and below the last
+row, and 2px between rows. Omit the Line items/count heading. Retain 250-line guards.
 
-The PO line-item editor keeps 9px of padding above the column headings and below
-the last row. Retain the compact 2px padding between entry rows and contain any
-horizontal scrolling inside the ledger.
-Show its status as a compact pill beside Purchase Order in the navy title card.
-Omit the redundant Line items heading and line-count row above the ledger so the
-header fields lead directly into the column headings. Keep the existing 250-line
-validation and add/duplicate limit guards.
+Row / Spreadsheet mode supports validated TSV range copy/paste, fill-down, keyboard
+navigation and local range Undo. Shift-click/Shift-arrows select, Ctrl+C/V copies
+and pastes, Ctrl+D fills down, F2 edits, and Tab/Enter moves between cells. Item name
+remains derived and immutable. Paste validates eligible cost codes, UOM, ELEM and
+exact decimals atomically, up to 250 rows. Formulas and imported formatting are
+unsupported. Structural row changes clear range Undo history. Downloads use the
+same compact SpreadsheetML .xls generator as the PO email attachment.
 
 Keep budget context to the left of the PO total: Available and Remaining or
 Modification on the first line. Drafts use the server's read-only route preview
@@ -54,7 +57,12 @@ vendor/amount/phase identity, pink child-record list with exact counts, Cancel
 and red Delete PO. Show all-revision line items, operation receipts, approval
 routes, approval records and PO-created budget modifications, plus the release
 of the commitment. Cancel, Escape and backdrop return to the same PO. Keep the
-captured preview and existing deletion progress/recovery guards.
+captured preview and existing deletion progress/recovery guards. From Requests,
+open this compact confirmation immediately with a read-only PreviewDelete using
+the row identity/revision. Do not open or fetch the worksheet, vendors or balances.
+Keep Delete disabled until exact child counts arrive. Cancel, Escape and backdrop
+return to Requests and restore its trash-button focus, including during loading.
+Failures expose Retry preview; late reads cannot reopen a cancelled dialog.
 
 The editing toggle reads Row / Spreadsheet. Spreadsheet Undo includes typed cell
 edits as well as range paste and fill-down. Double-click or F2 edits a cell;

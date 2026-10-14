@@ -1225,3 +1225,19 @@ Validation: the existing focused PO suite, full npm run validate and Pages build
 passed. Browser checks showed one bottom chain, zero upper approval flows, the
 attached-modification heading/item/amount/status, and the unchanged draft route
 preview with zero writes.
+
+## Direct PO deletion and phase breadcrumb (122.29.36)
+
+Requests trash opens the compact delete confirmation immediately. Use the
+cached exact PO ID, budget ID and revision only for scoped PreviewDelete; do
+not first load the PO worksheet, vendors or balances. Disable Delete until
+verified child counts arrive. Cancel remains available during this read; late
+responses cannot reopen or unlock a subsequent dialog. Existing server delete
+permission, revision and child-record guards remain authoritative.
+
+All phase editor tabs use Territory / Project / Phase 01, without repeated
+project names or editor-mode suffixes. Preserve custom phase names.
+Frontend-only: no forms, fields, functions or Custom APIs change. No Creator
+promotion is required. Regression checks exercise direct preview, cancellation,
+stale replies, failure/retry and all breadcrumb rendering paths. In-app testing
+is left to the user by request. Rollback: Budget Manager 122.29.35.

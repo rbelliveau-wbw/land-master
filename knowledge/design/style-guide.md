@@ -364,3 +364,6 @@ and a subtle focus glow to distinguish editable cells. Cost Element starts at 5
 and needs only five single-select options. Reuse Budget's floating request date
 picker rather than mounting a calendar inside the form. PO totals are calculated
 and labeled TOTAL in larger type; omit an editable header-amount control.
+
+Use Title Case on multiword tabs and action buttons, including Approval Rules
+and Add Rule. Keep explanatory headings out of compact approval rule lists.

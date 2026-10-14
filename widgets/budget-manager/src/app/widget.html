@@ -4,16 +4,16 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.35"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.36"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.35"></script>
-<script src="po-grid.js?v=122.29.35"></script>
-<script src="po-controller.js?v=122.29.35"></script>
-<script src="po-progress.js?v=122.29.35"></script>
-<script src="po-ui.js?v=122.29.35"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.35">
+<script src="po-domain.js?v=122.29.36"></script>
+<script src="po-grid.js?v=122.29.36"></script>
+<script src="po-controller.js?v=122.29.36"></script>
+<script src="po-progress.js?v=122.29.36"></script>
+<script src="po-ui.js?v=122.29.36"></script>
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.36">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1789,8 +1789,8 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.35">
-<script src="success-feedback.js?v=122.29.35"></script>
+<link rel="stylesheet" href="budget-layout.css?v=122.29.36">
+<script src="success-feedback.js?v=122.29.36"></script>
 </head>
 <body>
 
@@ -2672,7 +2672,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.35", code:"BMW",
+  widget:"Budget Manager", version:"122.29.36", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -4585,6 +4585,17 @@ function subdivisionCode(b) {
 function territoryName(b) {
   var sub = getSubdivisionRecord(b);
   return cleanVal(firstRaw(b, ["Territory", "Territory1"])) || lookupName(sub, ["Territory", "Territory1", "Territory_Name"]);
+}
+function budgetBreadcrumbPhase(b) {
+  var label=phaseName(b),project=projectName(b);
+  if(label.toLowerCase().startsWith(project.toLowerCase())&&/^(?:$|[\s/|:–—-])/.test(label.slice(project.length)))label=label.slice(project.length).replace(/^[\s/|:–—-]+/,"");
+  if(!label)return "Phase";
+  var numbered=label.match(/^(?:Phase\s*)?(\d+)(.*)$/i);
+  return numbered?"Phase "+numbered[1].padStart(2,"0")+numbered[2]:label;
+}
+function budgetBreadcrumbHtml(b,phase,project) {
+  var parts=[territoryName(b)||"Territory unavailable",project||projectName(b),phase||budgetBreadcrumbPhase(b)];
+  return parts.map(function(label,index){return(index?"<span class='sep' aria-hidden='true'>/</span>":"")+"<span"+(index===2?" class='cur'":"")+">"+esc(label)+"</span>";}).join("");
 }
 function subdivisionMatchKeys(rec) {
   var keys = [], id = lookupId(rec);
@@ -9327,7 +9338,7 @@ function openPhaseEditor(budgetId, mode) {
   S.attachmentPageExpanded = false;
   S.attachmentPageFileIndex = -1;
   var modeLabel = editorModeLabel(S.globalMode);
-  $("edCrumbs").innerHTML = "<span>" + esc(projectName(b)) + "</span><span class='sep'>/</span><span class='cur'>" + esc(phaseName(b)) + " · " + modeLabel + "</span>";
+  $("edCrumbs").innerHTML = budgetBreadcrumbHtml(b);
   S.catFilter = "all";
   S.showProjectRates = false;
   renderCatFilterBar();
@@ -9382,7 +9393,7 @@ function openProjectEditor(projKeyOrName) {
   var tswEl = $("tsw"); if (tswEl) tswEl.style.display = "none";
   var tt = $("tierTools"); if (tt) tt.style.display = "none";
   var ms = $("modeSwitch"); if (ms) ms.style.display = "none";
-  $("edCrumbs").innerHTML = "<span>" + esc(proj.name) + "</span><span class='sep'>/</span><span class='cur'>All Phases · " + tierLabel(S.tier) + "</span>";
+  $("edCrumbs").innerHTML = budgetBreadcrumbHtml(S.edBudget,"All Phases",proj.name);
   setEdAutosave("saved");
   updateEditorActionVisibility();
   var grid = document.getElementById("editorBodyGrid");
@@ -9633,7 +9644,7 @@ document.addEventListener("click", function (e) {
   renderTierFilterBar();
   var proj = findProjectForBudget(S.edBudget);
   if (proj) { renderProjectKpis(proj); renderProjectMatrix(proj); }
-  $("edCrumbs").innerHTML = "<span>" + esc(proj ? proj.name : projectName(S.edBudget)) + "</span><span class='sep'>/</span><span class='cur'>All Phases · " + tierLabel(S.tier) + "</span>";
+  $("edCrumbs").innerHTML = budgetBreadcrumbHtml(S.edBudget,"All Phases",proj&&proj.name);
 });
 function applyCatFilter() {
   [].forEach.call(document.querySelectorAll("#mx tbody.cat-tbody"), function (tb) {
@@ -11278,7 +11289,7 @@ document.addEventListener("click", function (e) {
   var mb = e.target.closest("#modeSwitch button"); if (!mb) return;
   if (mb.dataset.mode !== S.globalMode && !budgetPerUnitNavigationAllowed()) return;
   S.globalMode = mb.dataset.mode;
-  if (S.edBudget) $("edCrumbs").innerHTML = "<span>" + esc(projectName(S.edBudget)) + "</span><span class='sep'>/</span><span class='cur'>" + esc(phaseName(S.edBudget)) + " · " + editorModeLabel(S.globalMode) + "</span>";
+  if (S.edBudget) $("edCrumbs").innerHTML = budgetBreadcrumbHtml(S.edBudget,S.edPhaseIdx==="all"?"All Phases":null);
   updateModeSwitch();
   applyModeView();
   if (S.globalMode === "approvals") { renderApprPhasePanel(S.edBudget); return; }
@@ -12633,7 +12644,7 @@ function openSavedPurchaseOrder(id,source,intent) {
   if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
   var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});
   if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid))return;
-  try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
+  try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent,intent==='delete'?{id:id,budgetId:bid,revision:cleanVal(request.PO_Revision),status:cleanVal(request.PO_Status),amount:cleanVal(request.Request_Amount),vendorName:lookupName(request.Vendor)}:null).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
 }
 function poApprovalRoleLabel(row){return cleanVal(row.role)||"?";}
 function poApproverCircles(request){
@@ -13467,7 +13478,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.35",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.36",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

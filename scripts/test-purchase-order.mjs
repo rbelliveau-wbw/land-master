@@ -1,3 +1,5 @@
+import './test-po-delete-direct.mjs';
+import './test-budget-breadcrumbs.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';

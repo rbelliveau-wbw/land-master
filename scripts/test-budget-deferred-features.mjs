@@ -234,9 +234,9 @@ function harness(){
 // Complete native data may cache after navigation; an obsolete editor callback cannot repaint.
 {
   const {context:c,nodes}=harness(),gate=deferred(),renders=[];
-  install(c,['showView','openPhaseEditor','editorModeLabel']);c.S.budgets=[{ID:'1'},{ID:'2'}];
+  install(c,['showView','openPhaseEditor','editorModeLabel','budgetBreadcrumbPhase','budgetBreadcrumbHtml']);c.S.budgets=[{ID:'1'},{ID:'2'}];
   c.window.scrollTo=()=>{};c.budgetPerUnitNavigationAllowed=()=>true;c.updateEditorActionVisibility=()=>{};
-  c.projectName=()=> 'Project';c.phaseName=b=>b.ID;
+  c.projectName=()=> 'Project';c.phaseName=b=>b.ID;c.territoryName=()=> 'Territory';
   for(const fn of ['updateModeSwitch','setEdAutosave','renderEditorTopInfo','applyModeView','renderCatFilterBar','matrixLoadingRow'])c[fn]=()=>{};
   for(const fn of ['renderPhaseMatrix','renderSummaryMatrices','renderProjectRatesLite','renderApprovalPaneLite','renderAttachmentPane','renderApprPhasePanel'])c[fn]=b=>renders.push({fn,bid:b.ID});
   c.loadBudgetDetail=()=>gate.promise;c.ensureBudgetModifications=()=>gate.promise;

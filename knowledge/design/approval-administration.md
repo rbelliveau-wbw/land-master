@@ -36,7 +36,7 @@ route.
 Purchase Orders use two scenarios: **Without budget modifications** requires CFO;
 **With attached budget modifications** shows the complete ordered route,
 including the mandatory CFO. Label the chain **One approver at a time**.
-Move up/down places modification roles before or
+Drag grips place modification roles before or
 after CFO. The requested route is VP → CFO → COO; without a new modification,
 only CFO remains. Other roles apply only when the server's modification plan is nonempty. A
 budget overrun covered by existing pending modifications does not add roles.
@@ -75,3 +75,25 @@ available as evidence; the six removed scope/date fields no longer exist or
 control routing. Removing configuration fields does not rewrite saved audit JSON,
 submission context JSON or captured approval routes. See the
 [Creator removal and promotion handoff](../releases/approval-territory-perpetual-v2-2026-10-13.md).
+
+## Compact rule editing (Settings Manager 1.5.4)
+
+Use Title Case for tabs and buttons: Approval Rules, Add Rule, Test Route and
+Change History. Omit the workflow-order explanatory heading on the rule list.
+Each approver occupies one compact horizontal row: drag grip, numbered step,
+role and applicable condition fields, Enabled, and a red square trash icon.
+Use Legal-style insertion lines, dragged opacity and stable-key FLIP animation;
+Alt+Up/Down offers keyboard reordering. The required PO CFO can move but cannot
+be disabled or removed. Removing a row animates the remaining rows.
+
+New rules are active by default. Hide the activation checkbox during creation;
+Save Rule first saves the native Draft and then publishes its verified record
+using a distinct operation token. Existing rules show Active and Save Changes.
+Never publish after an ambiguous save or as a side effect of read-only Check.
+A recovered Draft offers an explicit Activate Rule action. Lost publish replies
+retain the exact activation token for read-only recovery.
+
+Configuration writes use the compact Legal progress/result appearance: navy
+header, slim green bar, numbered stages, succinct outcome and Done. Hide tabs
+in that state. Keep failure and unknown outcomes truthful and retain the native
+audit receipt and duplicate-write guards. Done dismisses verified success.

@@ -1,3 +1,4 @@
+import './test-approval-admin-layout.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
