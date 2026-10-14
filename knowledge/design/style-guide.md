@@ -6,6 +6,13 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+Data Insights keeps branding, connection status, Refresh and Diagnostics in the
+sidebar, reclaiming the full-width shell header for report height. Keep the
+timeframe and active filter pills together on a compact navy report bar. Avoid
+repeating the selected date range in another pill. Put Expand All / Collapse All
+beside the filter controls; its label describes the next action for visible
+groups. Lot Count is the initial and Reset measure.
+
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
 PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green
 amount, status and compact Edit/View action. Omit column headings and repeated

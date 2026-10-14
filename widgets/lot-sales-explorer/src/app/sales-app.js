@@ -27,8 +27,7 @@
     const selected = id => [...$(id).selectedOptions].filter(option => option.value).map(option => option.text);
     const scope = (id, single, plural) => { const values = selected(id); return values.length === 1 ? single + ': ' + values[0] : values.length > 1 ? values.length + ' ' + plural : ''; };
     const statuses = selected('status');
-    const period = $('period').value === 'all' ? 'All history' : $('from').value && $('to').value ? monthLabel($('from').value) + ' – ' + monthLabel($('to').value) : 'Choose date range';
-    const chips = [statuses.length ? statuses.join(' & ') + ' lots' : 'All statuses', period, $('dateField').selectedOptions[0]?.text || 'Close Date',
+    const chips = [statuses.length ? statuses.join(' & ') + ' lots' : 'All statuses', $('dateField').selectedOptions[0]?.text || 'Close Date',
       scope('projectStatus', 'Zoho Project Status', 'project statuses'), scope('territory', 'Territory', 'territories'), scope('project', 'Project', 'projects'), scope('builder', 'Builder', 'builders'),
       $('hideEmpty').checked ? 'Empty subdivisions hidden' : '',
       $('excludeBuilders').checked ? 'Unassigned / Other / Placeholder excluded' : 'Unassigned / Other / Placeholder included'].filter(Boolean);
@@ -88,7 +87,7 @@
   function blank(title, subtitle, rangeText = 'Loading months…') {
     $('matrixHead').innerHTML = ''; $('matrixBody').innerHTML = ''; $('matrixFoot').innerHTML = '';
     $('empty').hidden = false; $('empty').innerHTML = '<div class="empty-symbol" aria-hidden="true">▥</div><h2>' + esc(title) + '</h2><p>' + esc(subtitle) + '</p>';
-    $('export').disabled = true; $('monthPage').textContent = rangeText;
+    $('export').disabled = true; $('collapse').disabled = true; $('collapse').textContent = 'Collapse All'; $('monthPage').textContent = rangeText;
   }
   function render() {
     if (!state.permissions?.lotSalesDashboard) return;
@@ -123,6 +122,8 @@
     InsightsControls.placePicker('metric', $('metricSlot'));
     const groups = new Map(), allCounts = state.historyReady ? M.subdivisionCounts(state.lots) : null;
     r.rows.forEach(row => { const key = JSON.stringify([row.status,row.groupId]); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); });
+    $('collapse').disabled = !groups.size;
+    $('collapse').textContent = groups.size && [...groups.keys()].every(key => state.collapsed.has(key)) ? 'Expand All' : 'Collapse All';
     let max = 1;
     r.rows.forEach(row => row.cells.forEach(stats => { max = Math.max(max, stats[metric] || 0); }));
     function cell(stats, row, month, total) {
@@ -366,6 +367,13 @@
   ['from','to'].forEach(id => $(id).addEventListener('change', () => { $('period').value = 'custom'; update(); }));
   $('period').addEventListener('change', () => { applyPeriod(); update(); if ($('period').value === 'custom') { setPanel('allFilters', 'moreFilters', true); queueMicrotask(() => $('fromPicker').focus()); } });
   let searchTimer; $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(update, 160); });
+  $('collapse').addEventListener('click', () => {
+    if (!state.report?.rows.length) return;
+    const groups = new Set(state.report.rows.map(row => JSON.stringify([row.status, row.groupId])));
+    const expand = [...groups].every(key => state.collapsed.has(key));
+    groups.forEach(key => { if (expand) state.collapsed.delete(key); else state.collapsed.add(key); });
+    render();
+  });
   $('matrixBody').addEventListener('click', e => { const group = e.target.closest('[data-group]'), cell = e.target.closest('[data-subdivision]'), card = e.target.closest('[data-card]');
     if (group) { const name = group.dataset.group; if (state.collapsed.has(name)) state.collapsed.delete(name); else state.collapsed.add(name); render(); }
     if (cell) openDetail(cell.dataset.subdivision, cell.dataset.month);
@@ -412,7 +420,7 @@
     $('salesDashboard').querySelector('.sales-filters').classList.toggle('is-expanded', open);
   }
   $('allFilters').addEventListener('click', () => setPanel('allFilters', 'moreFilters', $('moreFilters').hidden));
-  $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'avgPriceFF'; state.collapsed.clear(); applyPeriod(); update(); });
+  $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'count'; state.collapsed.clear(); applyPeriod(); update(); });
   $('audit').addEventListener('click', () => { const version = document.querySelector('.page-foot .version')?.textContent.trim() || 'version unavailable'; $('auditText').textContent = 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()!=='budgets'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });

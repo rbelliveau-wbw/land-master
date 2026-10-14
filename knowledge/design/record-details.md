@@ -1,5 +1,9 @@
 # Record detail modals
 
+Data Insights lot-detail tables use the full modal body width, with no side
+margins around the scroller or reserved empty scrollbar gutter. Keep the title
+and pagination/export footer fixed while the lots scroll independently.
+
 Use this guide for read-only record detail dialogs opened from a main report.
 The first implementation is Manage Lots' Builder Takedowns report.
 

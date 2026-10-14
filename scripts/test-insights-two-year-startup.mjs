@@ -41,4 +41,15 @@ function harness({denied=false}={}){
 {
  const h=harness({denied:true});await drain();assert.equal(h.calls.length,0);assert.equal(h.widget.state.report,null);
 }
-console.log('PASS actual Insights atomic first paint: all periods and Hide Empty wait for complete counted history, failure remains empty, retry publishes full data, metrics/exports/scroll preserved, stale and denied loads cannot publish.');
+{
+ const h=harness();await drain();h.history.resolve(fixture.lots);await drain();
+ assert.equal(h.node('metric').value,'count');
+ const groups=new Set(h.widget.state.report.rows.map(row=>JSON.stringify([row.status,row.groupId])));
+ assert.ok(groups.size);assert.equal(h.node('collapse').disabled,false);assert.equal(h.node('collapse').textContent,'Collapse All');
+ await h.node('collapse').fire('click');assert.equal(h.widget.state.collapsed.size,groups.size);assert.equal(h.node('collapse').textContent,'Expand All');
+ await h.node('collapse').fire('click');assert.equal(h.widget.state.collapsed.size,0);assert.equal(h.node('collapse').textContent,'Collapse All');
+ h.widget.state.collapsed.add([...groups][0]);h.widget.render();
+ assert.equal(h.node('collapse').textContent,groups.size===1?'Expand All':'Collapse All');
+ h.node('metric').value='avgPriceFF';await h.node('reset').fire('click');assert.equal(h.node('metric').value,'count');assert.equal(h.widget.state.collapsed.size,0);
+}
+console.log('PASS Insights atomic first paint, complete history, retry, permissions, Lot Count defaults/reset and visible-group Expand All / Collapse All.');

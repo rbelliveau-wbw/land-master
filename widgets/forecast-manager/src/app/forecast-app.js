@@ -319,7 +319,7 @@
       $('saveStatus').textContent='Identifying Creator session…';
       const context=window.LMFrontendContext&&LMFrontendContext.params?LMRuntime.apply(LMFrontendContext.params):await Promise.race([LMRuntime.capture(),new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('Creator session initialization timed out. Reload this Page in Creator.')),15000);})]);
       if(context.environment==='UNKNOWN'||!context.user||context.user==='(unknown)')throw new Error('Creator did not identify the connected user and environment.');
-      S.ready=true;$('environment').textContent=context.environment;$('environment').classList.toggle('dev',context.environment!=='PRODUCTION');
+      S.ready=true;$('environment').hidden=context.environment==='PRODUCTION';$('environment').textContent=context.environment;$('environment').classList.toggle('dev',context.environment!=='PRODUCTION');
       LMCriticalErrors.configure({apiCandidates:[LMRuntime.apiName('Report_Proforma_Widget_Error')]});forecastReporterReady();
       S.catalog=await request({action:'catalog'});if(!Array.isArray(S.catalog.subdivisions)||!Array.isArray(S.catalog.builders))throw new Error('Forecast choices are unavailable.');
       S.years=[String(M.currentYear(S.catalog.today)),String(M.currentYear(S.catalog.today)+1)];controls();
