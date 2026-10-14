@@ -74,6 +74,14 @@ stored values, calculations or numeric exports to match the display.
 
 In Pro Forma Additional Costs, show the enabled Cost per Unit input with a persistent blue border, pale-blue surface and soft blue glow. Strengthen the glow on keyboard focus. Disabled rates stay muted, and the calculated total keeps its read-only treatment.
 
+Pro Forma cash-flow matrices keep Category and Total frozen during horizontal
+scroll, including expanded child labels and section bands. Keep both frozen
+headers above scrolling month headers. Label additional engineering/development
+items Dev Costs across widget summaries, timeline details and Excel exports.
+The top record card shows Land Purchase using the existing first-installment
+summary. Cash Position includes the first strictly positive cumulative-cash month
+as a project month number and calendar month/year, above its anniversary snapshots.
+
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.
 
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.

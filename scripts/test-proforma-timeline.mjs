@@ -186,9 +186,9 @@ const firstSpend=render(spending,withoutMarker,1),secondSpend=render(spending,wi
 assert.doesNotMatch(firstSpend,/pt-outflow-head|pt-cost-row|pt-spend/,
   'the timeline has no added outflow section or bars');
 const engCards=segmentTags(firstSpend,'eng');
-assert.match(engCards[0],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$10"/,
+assert.match(engCards[0],/data-pt-addl-label="Dev Costs" data-pt-addl-value="\$10"/,
   'Phase 1 engineering shows only its own additional cost');
-assert.match(engCards[1],/data-pt-addl-label="Ent\/Eng Add&#39;l" data-pt-addl-value="\$20"/,
+assert.match(engCards[1],/data-pt-addl-label="Dev Costs" data-pt-addl-value="\$20"/,
   'Phase 2 engineering excludes Phase 1 cost during overlap');
 assert.match(segmentTags(firstSpend,'const')[0],/data-pt-addl-label="Construction Add&#39;l" data-pt-addl-value="\$40"/,
   'Phase 1 construction shows its additional cost');

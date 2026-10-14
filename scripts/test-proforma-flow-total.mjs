@@ -45,7 +45,7 @@ has(/totCell\(lots,fmtN\)\+cellsN\(lots\)/, "the lot-closing phase rows must tot
 has(/totCell\(eng\)\+cells\(eng\)/, "the engineering phase rows must have a total");
 has(/totCell\(con\)\+cells\(con\)/, "the construction phase rows must have a total");
 has(/<td class="tot"><\/td>'\+cells/, "the section band that doubles as the month strip must keep the column aligned");
-has(/colspan="'\+\(FLOW_COLS\+2\)/, "a full-width section band must span the added column");
+has(/<td class="tot"><\/td><td colspan="'\+FLOW_COLS/, "section bands keep Category and Total separate from scrolling months");
 
 /* Cumulative is a running balance: summing it would add the balance to itself. */
 has(/"Cash Flow Monthly"[^\n]*"cf","signed"/, "cash flow monthly keeps its sign — no section above it says which way the money went");
@@ -56,7 +56,9 @@ assert.ok(
   /table\.flow td\.tot,table\.flow th\.tot\{position:sticky;left:220px/.test(css),
   "the Total column must be frozen beside the 220px Category column"
 );
-assert.ok(/table\.flow thead th\.tot\{z-index:3/.test(css), "the Total header must sit above the sticky body cells");
+assert.ok(/table\.flow thead th\.tot\{z-index:4/.test(css), "the Total header must sit above body cells and scrolling month headers");
+assert.match(css,/table\.flow thead th:first-child\{[^}]*z-index:4/,'Category header stays above scrolling months');
+assert.match(css,/table\.flow tr\.xchild td\.xname\{[^}]*position:sticky;left:0/,'expanded labels keep their frozen position');
 
 /* Phase-sales detail must use the same month receipts as Finished Lot Sales. It is
    descriptive and must not increase Total Income a second time. */
@@ -169,6 +171,23 @@ assert.match(elements.get("kpis").innerHTML, /\(\$957,672\)/,
 assert.doesNotMatch(elements.get("kpis").innerHTML, /\$[\d,]+\.\d/);
 assert.equal(JSON.stringify(context.S.dash), dashboardBefore,
   "display rounding leaves both persisted inputs and calculated amounts intact");
+context.ymShort = date => `${context.MONTHS_S[date.m-1]} ${date.y}`;
+context.S.dash.calc.agg = [
+  {m:1,date:{y:2027,m:12},cash:0,runCash:0},
+  {m:2,date:{y:2028,m:1},cash:-100,runCash:-100},
+  {m:3,date:{y:2028,m:2},cash:100,runCash:0},
+  {m:4,date:{y:2028,m:3},cash:10,runCash:10},
+  {m:5,date:{y:2028,m:4},cash:-100,runCash:-90},
+  {m:6,date:{y:2028,m:5},cash:100,runCash:10}
+];
+context.renderDashboard();
+assert.match(elements.get('kpis').innerHTML,/Positive cash: Mth 4 · Mar 2028/,'first strictly positive running balance, including a year boundary');
+context.S.dash.calc.agg = context.S.dash.calc.agg.slice(0,3);
+context.renderDashboard();
+assert.match(elements.get('kpis').innerHTML,/Positive cash: Not reached/,'monthly income and zero running balance do not count as positive cash');
+context.S.dash.calc.agg = [{m:1,date:{y:2027,m:12},runCash:0.001}];
+context.renderDashboard();
+assert.match(elements.get('kpis').innerHTML,/Positive cash: Mth 1 · Dec 2027/,'first-month and fractional positive balances use actual calculation precision');
 context.S.dash.model.Sale_Price_FF = "1444.50";
 context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,

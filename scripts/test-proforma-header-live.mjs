@@ -32,6 +32,7 @@ const context = vm.createContext({
   }),
   ymLabel: d => d ? `${months[d.m - 1]}, ${d.y}` : "—",
   ymShort: d => d ? `${months[d.m - 1]} ${d.y}` : "—",
+  landPurchaseLabel: m => m.purchaseInstallments?.length ? 'May, 2027 (1 of 2)' : m.purchaseDate ? `${months[m.purchaseDate.m-1]}, ${m.purchaseDate.y}` : '—',
   parseDateAny: d => d || null,
   num: v => Number(v) || 0,
   fmt$: v => String(v),
@@ -55,8 +56,12 @@ assert.equal(element("dhTitle").textContent, "Test PF - Dallas/Fort Worth", "uns
 model.purchaseDate = {y: 2027, m: 2};
 model.scheduleReady = true;
 context.recalcLive();
-assert.equal(element("dhPurchase").textContent, "Feb, 2027", "Project Start follows the chosen month");
+assert.equal(element("dhPurchase").textContent, "Feb, 2027", "Land Purchase falls back to the chosen start month");
 assert.equal(element("dhCompletion").textContent, "Dec, 2028", "completion follows the live calculation");
+assert.match(source,/Land Purchase: <b id="dhPurchase">/,'top card uses the requested Land Purchase label');
+model.purchaseInstallments=[{Month1:4},{Month1:8}];
+context.recalcLive();
+assert.equal(element('dhPurchase').textContent,'May, 2027 (1 of 2)','top card uses the existing first land-purchase installment summary');
 
 S.view = "vDash";
 element("dhTitle").textContent = "Saved dashboard title";

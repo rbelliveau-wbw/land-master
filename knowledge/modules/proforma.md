@@ -229,6 +229,31 @@ The three-dot menu opens a top-aligned modal with a Project picker, phase tabs, 
 Transfers use two dedicated Deluge functions and a separate PF_Budget_Transfer Custom API. Normal Pro Forma Save and form workflows are unchanged. Functions and the Development API are saved in Creator; the user publishes the functions and configures the Production API after publication. Production stays preview-only until the dedicated endpoint is ready. See [Creator handoff, fields, verification, and rollback](../../creator/functions/PF_BUDGET_TRANSFER_HANDOFF.md). Widget rollback: 1.80.48.
 # Proforma Module
 
+## Dashboard cash position and expanded Excel matrix (1.80.107, October 14, 2026)
+
+The top record card shows Land Purchase with the existing first purchase-installment
+date/count, falling back to project start when there are no installments. Cash
+Position retains anniversary snapshots and adds the first project month whose
+calculated running cash is strictly positive, with its calendar month/year. Zero
+balances do not qualify; an unreached crossing is explicit. Scenario recalculation
+updates this display without changing financial math or saved records.
+
+Category and Total stay frozen for all cash-flow rows, including expanded child
+labels and section bands. Dev Costs replaces the additional engineering labels
+throughout the widget and workbook. Excel adds a Cash Flow Matrix tab containing
+all schedule months, whole-schedule totals and every expanded sales/item detail,
+independent of dashboard paging or toggles. Numeric export precision and signed
+cash are preserved; cumulative Total takes the final balance. The existing Months
+sheet remains one row per month.
+
+This is frontend-only: no Creator forms, fields, workflows, functions, Custom APIs
+or records change, and no Creator deployment is required. Regression covers first
+positive/zero/unreached cash, year boundaries, first-month positive cash, expanded
+sticky labels, section/header alignment, a 30-month real XLSX round trip, negative
+markup and cash, sub-cent precision, child rows without double-counting, unchanged
+dashboard/model state, and the existing monthly/phase exports. Rollback: remap
+Development and Production Proforma Manager to `1.80.106`.
+
 ## Attachment author visibility and list spacing (1.80.65)
 
 The list groups Comment and Attachments with Budget's explicit 7px action gap, retaining their existing click routes and counts. The full User Access response keeps `userName`, `approverEmail` and `fullName`. When it arrives, mounted file rows update only their author text from the cached row's genuine `Added_User`; list/dialog markup, scroll and editor drafts are retained. Exact parent/child IDs and actor/environment scope guard those patches. A missing `Added_User` stays unavailable: the shared report must expose the saved creator in the SDK1 payload, including Quick View for this deployment. Root owns that Creator report change, which also serves Legal's SDK1 reader; Budget already requests the field explicitly through SDK2.

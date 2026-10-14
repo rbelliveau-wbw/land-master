@@ -14,7 +14,7 @@ const additive={
   'Lots Sold':'Lots_Sold','Base Lot Sales':'Base_Lot_Sales','Additional Markup Income':'Additional_Markup_Income',
   'Escalator Interest Accrued':'Escalator_Interest_Accrued','Finished Lot Sales':'Finished_Lot_Sales',
   'Land Cost':'Land_Cost','Land Sale':'Land_Sale','PID/MUD Revenue':'PID_MUD_Revenue',
-  'Entitlement & Eng':'Entitlement_Engineering',"Ent & Eng Add'l":'Entitlement_Engineering_Addl',
+  'Entitlement & Eng':'Entitlement_Engineering',"Dev Costs":'Entitlement_Engineering_Addl',
   'Construction Base':'Construction_Cost_Base',"Construction Add'l":'Construction_Cost_Addl',
   'Reimbursements':'Reimbursements','Reimbursed Fees':'Reimbursed_Fees'
 };
@@ -92,7 +92,7 @@ assert.equal(result.rows[0]['Lot Sale Phase'],1,'single phase IDs remain numeric
 close(combined['Finished Lot Sales'],combined['Base Lot Sales']+combined['Additional Markup Income']+combined['Escalator Interest Accrued'],'sales components reconcile');
 close(combined['Cash Flow'],combined['Finished Lot Sales']+combined['Land Sale']+combined['PID/MUD Revenue']
   +combined.Reimbursements+combined['Reimbursed Fees']-combined['Land Cost']-combined['Entitlement & Eng']
-  -combined["Ent & Eng Add'l"]-combined['Construction Base']-combined["Construction Add'l"],'monthly cash reconciles');
+  -combined["Dev Costs"]-combined['Construction Base']-combined["Construction Add'l"],'monthly cash reconciles');
 const sameRate=clone(detail);sameRate.forEach(r=>{if(r.Month1==17&&r.Lot_Sale_Phase){r.Escalator_Percentage=5;r.Escalator_Elapsed_Months=3;r.Escalator_Applied_Pct=1.25;}});
 assert.equal(workbook({}, {months:sameRate}).rows.find(r=>r.Month===17)['Escalator Percentage'],5,'matching rates stay numeric and are not added');
 const repeatedPhase=clone(detail);repeatedPhase.find(r=>r.Eng_Phase===3).Eng_Phase=2;
@@ -165,7 +165,7 @@ for(const row of actual){
   close(row['Running Cash Flow'],agg.runCash,'dashboard balance parity');
   close(income({Finished_Lot_Sales:row['Finished Lot Sales'],Land_Sale:row['Land Sale'],PID_MUD_Revenue:row['PID/MUD Revenue'],
     Reimbursements:row.Reimbursements,Reimbursed_Fees:row['Reimbursed Fees']}),agg.totalIncome,'dashboard income parity');
-  close(row['Land Cost']+row['Entitlement & Eng']+row["Ent & Eng Add'l"]+row['Construction Base']+row["Construction Add'l"],agg.totalExpenses,'dashboard expense parity');
+  close(row['Land Cost']+row['Entitlement & Eng']+row["Dev Costs"]+row['Construction Base']+row["Construction Add'l"],agg.totalExpenses,'dashboard expense parity');
 }
 close(actual.reduce((sum,r)=>sum+r['Finished Lot Sales'],0),calc.totals.Gross_Sales,'Gross Sales parity');
 close(actual.reduce((sum,r)=>sum+r['Cash Flow'],0),actual.at(-1)['Running Cash Flow'],'real calculator final cash');

@@ -8,15 +8,15 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.106"></script>
-<script src="pf-save-audit.js?v=1.80.106"></script>
-<script src="pf-progress.js?v=1.80.106"></script>
+<script src="pf-save-verification.js?v=1.80.107"></script>
+<script src="pf-save-audit.js?v=1.80.107"></script>
+<script src="pf-progress.js?v=1.80.107"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.106"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.106">
-<script src="comments.js?v=1.80.106"></script>
+<script src="budget-transfer-ui.js?v=1.80.107"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.107">
+<script src="comments.js?v=1.80.107"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -1077,14 +1077,14 @@ table.flow{border-collapse:collapse;font-size:11px;width:100%;table-layout:fixed
 table.flow th,table.flow td{border-bottom:1px solid #eef1f7;padding:5px 8px;white-space:nowrap;width:96px;max-width:96px;overflow:hidden;text-overflow:ellipsis}
 
 table.flow thead th{position:sticky;top:0;background:#fff;z-index:3;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;border-bottom:1px solid var(--line-strong)}
-table.flow thead th:first-child{text-align:left}
+table.flow thead th:first-child{text-align:left;z-index:4}
 table.flow td{text-align:right}
 table.flow td:first-child,table.flow th:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:2;width:220px;min-width:220px;max-width:220px;font-weight:600;color:var(--text)}
 /* Whole-schedule total, frozen beside Category so it survives the month scroll. It carries no
    colour of its own: the section bands and the row's own class already say what it is. */
 table.flow td.tot,table.flow th.tot{position:sticky;left:220px;background:#fff;z-index:2;
   width:104px;min-width:104px;max-width:104px;text-align:right}
-table.flow thead th.tot{z-index:3;text-align:right}
+table.flow thead th.tot{z-index:4;text-align:right}
 table.flow tbody td{font-variant-numeric:tabular-nums}
 table.flow tbody tr:not(.sect):not(.total-inc):not(.total-exp):not(.cf):hover td{background:var(--ptint)}
 table.flow tr.xparent td:first-child{cursor:pointer;user-select:none}
@@ -1096,7 +1096,7 @@ table.flow .xcaret.open{transform:rotate(90deg)}
 table.flow .xcount{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;color:var(--muted);background:#eef2f8;border-radius:99px;padding:1px 6px}
 table.flow tr.xchild.hid{display:none}
 table.flow tr.xchild td{background:#fbfcfe;font-size:11px;color:var(--muted)}
-table.flow tr.xchild td.xname{padding-left:26px;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px;font-weight:600}
+table.flow tr.xchild td.xname{padding-left:26px;position:sticky;left:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;font-weight:600}
 table.flow tr.xchild td.xname::before{content:"";position:absolute;left:13px;top:50%;width:7px;height:1px;background:#c3d0e4}
 table.flow tr.sect td{background:linear-gradient(90deg,#0b2345,#1e3a6e)!important;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px}
 table.flow tr.sect td{text-align:center}
@@ -1822,7 +1822,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.106"></script>
+<script src="success-feedback.js?v=1.80.107"></script>
 </head>
 <body>
 
@@ -1854,7 +1854,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
     <div class="rec-head-grp" id="recHeadDash">
       <div class="dash-title-block">
         <h1 id="dhTitle">—</h1>
-        <div class="meta">Project Start: <b id="dhPurchase">—</b> &nbsp;|&nbsp; Est. Completion: <b id="dhCompletion">—</b></div>
+        <div class="meta">Land Purchase: <b id="dhPurchase">—</b> &nbsp;|&nbsp; Est. Completion: <b id="dhCompletion">—</b></div>
       </div>
     </div>
     <div class="rec-head-grp" id="recHeadEd">
@@ -1999,7 +1999,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
           <div class="sc-title">Expenses</div>
           <div class="srow"><span>Land Cost</span><b id="lvLC">—</b></div>
           <div class="srow"><span>Entitlement &amp; Eng</span><b id="lvEE">—</b></div>
-          <div class="srow"><span>Ent &amp; Eng Add'l</span><b id="lvEEA">—</b></div>
+          <div class="srow"><span>Dev Costs</span><b id="lvEEA">—</b></div>
           <div class="srow"><span>Construction Base</span><b id="lvCCB">—</b></div>
           <div class="srow"><span>Construction Add'l</span><b id="lvCCA">—</b></div>
           <div class="srow vp-only"><span>G&amp;A Overhead</span><b id="lvOH">—</b></div>
@@ -2236,7 +2236,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.106";
+var PFW_VERSION="1.80.107";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -5688,7 +5688,7 @@ function showView(name){
 function syncPersistentRecordHeader(record,model,calc){
   var r=model||record||{}, source=record||r;
   document.getElementById("dhTitle").textContent=(r.Name||"(unnamed)")+" - "+(r.Territory||"—");
-  document.getElementById("dhPurchase").textContent=model&&model.purchaseDate?ymLabel(model.purchaseDate):ymShort(parseDateAny(source.Estimated_Purchase_Date));
+  document.getElementById("dhPurchase").textContent=model?landPurchaseLabel(model):ymShort(parseDateAny(source.Estimated_Purchase_Date));
   document.getElementById("dhCompletion").textContent=calc&&calc.schedule?ymLabel(calc.schedule.estimatedCompletion):ymShort(parseDateAny(source.Estimated_Completion));
 }
 
@@ -6849,7 +6849,7 @@ function proformaInputRows(m,c){
       ["Reimbursements",xNum(T.Reimbursements)],["Reimbursed Fees",xNum(T.Reimbursed_Fees)],
       ["Land Sale",xNum(T.Land_Sale)],["Total Income",xNum(T.Total_Income)],
       ["Land Cost",xNum(T.Land_Cost)],["Entitlement & Engineering",xNum(T.Entitlement_Cost)],
-      ["Ent & Eng Add'l",xNum(T.Entitlement_Engineering_Addl)],
+      ["Dev Costs",xNum(T.Entitlement_Engineering_Addl)],
       ["Construction Base",xNum(T.Construction_Cost_Base)],["Construction Add'l",xNum(T.Construction_Cost_Addl)],
       ["G&A Overhead",xNum(T.Overhead_Total)],["Engineering Overhead",xNum(T.Engineering_Overhead_Total)],
       ["Construction Overhead",xNum(T.Construction_Overhead_Total)],
@@ -6929,6 +6929,50 @@ function proformaMonthExportRows(months){
     return out;
   });
 }
+/* Full cash dashboard, expanded independently of its visible page and toggle state.
+   Export numeric precision; detail rows describe their parent and are never added twice. */
+function proformaCashFlowMatrixRows(m,c){
+  var agg=c.agg||[], saleParts=phaseSalesAdopted(m)?dashboardSalesBreakdown(c):null;
+  var rows=[["Category","Total"].concat(agg.map(function(a){return "Mth "+a.m+" · "+ymShort(a.date);}))];
+  function section(label){rows.push([label,""].concat(agg.map(function(){return "";})));}
+  function row(label,fn,mode,child){
+    var values=agg.map(function(a){return num(fn(a));});
+    var total=mode==="last"?(values[values.length-1]||0):values.reduce(function(sum,v){return sum+v;},0);
+    if(mode!=="signed" && mode!=="last")total=Math.abs(total);
+    rows.push([(child?"    ":"")+label,total].concat(values));
+  }
+  function expanded(label,bucket,fn){
+    row(label,fn);
+    var names=Object.create(null);
+    agg.forEach(function(a){var items=(a.items&&a.items[bucket])||{};
+      Object.keys(items).forEach(function(name){if(Math.abs(items[name])>0.005)names[name]=1;});});
+    Object.keys(names).sort().forEach(function(name){
+      row(name,function(a){return ((a.items&&a.items[bucket])||{})[name]||0;},null,true);
+    });
+  }
+  section("Inflows");
+  row("Finished Lot Sales",function(a){return a.fls;});
+  if(saleParts){
+    [["Base Price","base"],["Phase Increase","increase"],["Escalator","escalator"]].forEach(function(part){
+      row(part[0],function(a){return (saleParts[a.m]||{})[part[1]]||0;},part[1]==="increase"?"signed":null,true);
+    });
+  }
+  row("Land Sale",function(a){return a.landSale;});
+  row("MUD/PID",function(a){return a.pid;});
+  expanded("Reimbursements","reimb",function(a){return a.reimb;});
+  expanded("Reimbursed Fees","reimbFees",function(a){return a.reimbFees;});
+  row("Total Income",function(a){return a.totalIncome;});
+  section("Outflows");
+  row("Land Cost",function(a){return a.landCost;});
+  row("Engineering Cost",function(a){return Object.keys(a.engByPhase||{}).reduce(function(sum,key){return sum+num(a.engByPhase[key]);},0);});
+  expanded("Dev Costs","engAddl",function(a){return a.engAddl;});
+  row("Construction Cost",function(a){return Object.keys(a.constByPhase||{}).reduce(function(sum,key){return sum+num(a.constByPhase[key]);},0);});
+  expanded("Construction Add'l Cost","constAddl",function(a){return a.constAddl;});
+  row("Total Expenses",function(a){return a.totalExpenses;});
+  row("Cash Flow Monthly",function(a){return a.cash;},"signed");
+  row("Cash Flow Cumulative",function(a){return a.runCash;},"last");
+  return rows;
+}
 function buildProformaWorkbook(X,m,c){
   var wb=X.utils.book_new();
   function add(name,rows,widths){
@@ -6977,7 +7021,7 @@ function buildProformaWorkbook(X,m,c){
   if(c&&(c.months||[]).length){
     add("Months",[["Month","Date","Master","Const Phase","Eng Phase","Lot Sale Phase","Lots Sold","Base Lot Sales","Additional Markup Income",
       "Escalator Interest Accrued","Escalator Percentage","Escalator Elapsed Months","Escalator Applied %",
-      "Finished Lot Sales","Land Cost","Land Sale","PID/MUD Revenue","Entitlement & Eng","Ent & Eng Add'l","Construction Base","Construction Add'l","Reimbursements","Reimbursed Fees","Cash Flow","Running Cash Flow"]]
+      "Finished Lot Sales","Land Cost","Land Sale","PID/MUD Revenue","Entitlement & Eng","Dev Costs","Construction Base","Construction Add'l","Reimbursements","Reimbursed Fees","Cash Flow","Running Cash Flow"]]
       .concat(proformaMonthExportRows(c.months).map(function(r){
         return [xNum(r.Month1),ymShort(r.date),"Yes",r.Const_Phase,r.Eng_Phase,r.Lot_Sale_Phase,
           xNum(r.Lots_Sold),xNum(r.Base_Lot_Sales),xNum(r.Additional_Markup_Income),xNum(r.Escalator_Interest_Accrued),
@@ -6986,6 +7030,16 @@ function buildProformaWorkbook(X,m,c){
           xNum(r.Entitlement_Engineering),xNum(r.Entitlement_Engineering_Addl),xNum(r.Construction_Cost_Base),xNum(r.Construction_Cost_Addl),
           xNum(r.Reimbursements),xNum(r.Reimbursed_Fees),xNum(r.Cash_Flow),xNum(r.Running_Cash_Flow)];
       })),[7,10,8,11,10,13,10,16,25,27,23,26,20,17,13,12,15,17,15,17,17,14,15,13,17]);
+  }
+  if(c&&(c.agg||[]).length){
+    var matrix=proformaCashFlowMatrixRows(m,c);
+    add("Cash Flow Matrix",matrix,[32,18].concat(c.agg.map(function(){return 18;})));
+    var matrixSheet=wb.Sheets["Cash Flow Matrix"];
+    matrixSheet["!rows"]=matrix.map(function(row,index){return {hpt:index?16:28};});
+    for(var ri=1;ri<matrix.length;ri++)for(var ci=1;ci<matrix[ri].length;ci++){
+      var cell=matrixSheet[X.utils.encode_cell({r:ri,c:ci})];
+      if(cell&&cell.t==="n")cell.z='#,##0.00;(#,##0.00);"—"';
+    }
   }
   return wb;
 }
@@ -7881,11 +7935,14 @@ function renderDashboard(){
   /* KPI cards */
   var k=document.getElementById("kpis");
   var inflowsRows=[["Gross Sales",T.Gross_Sales],["MUD Revenue",T.MUD_Revenue],["Reimbursements",T.Reimbursements],["Reimbursed Fees",T.Reimbursed_Fees],["Land Sales (Other)",T.Land_Sale]];
-  var outflowRows=[["Land Cost",T.Land_Cost],["Engineering Base",T.Entitlement_Cost],["Ent/Eng Add'l",T.Entitlement_Engineering_Addl],["Construction Base",T.Construction_Cost_Base],["Construction Add'l",T.Construction_Cost_Addl]];
+  var outflowRows=[["Land Cost",T.Land_Cost],["Engineering Base",T.Entitlement_Cost],["Dev Costs",T.Entitlement_Engineering_Addl],["Construction Base",T.Construction_Cost_Base],["Construction Add'l",T.Construction_Cost_Addl]];
   function kRows(rows){ return rows.map(function(r){ return '<div><span>'+esc(r[0])+'</span><span>'+(incompleteSales?"—":r[1]?fmtWhole$(r[1]):"—")+'</span></div>'; }).join(""); }
   var cpHtml=c.cashPosition.length
     ? c.cashPosition.slice(0,4).map(function(cp){ return ymLabel(cp.date)+": "+fmtWhole$(cp.value); }).join("<br/>")
     : "<span style='opacity:.75;font-weight:600'>"+(incompleteSales?"Complete Lot Sales phase schedule":"No anniversary snapshots yet")+"</span>";
+  var positiveCash=(c.agg||[]).find(function(a){return a.runCash>0;});
+  cpHtml='<div style="margin-bottom:6px"><b>Positive cash: '+(incompleteSales?'—':positiveCash
+    ?'Mth '+positiveCash.m+' · '+ymShort(positiveCash.date):'Not reached')+'</b></div>'+cpHtml;
   k.innerHTML=
     '<div class="kpi slate"><div class="k-label">ROI / IRR / XIRR</div><div class="k-list">'
       +'ROI: '+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'<br/>IRR: '+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'<br/>XIRR: '+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div></div>'
@@ -7959,7 +8016,7 @@ function renderDashboard(){
      var metricLabel='',metricValue='',metricNote='',addlLabel='',addlValue='',totalLabel='',totalValue='',saleGapMarkup='';
      if(key==='eng'){
        metricLabel='Base engineering cost';metricValue=fmtWhole$(phaseCost(ph.Phase,'engByPhase'));
-       addlLabel="Ent/Eng Add'l";
+       addlLabel="Dev Costs";
        addlValue=fmtWhole$(phaseAdditionalCost(ph.Phase,start,end,'Eng_Phase','Entitlement_Engineering_Addl'));
        detail.push(metricLabel+': '+metricValue,addlLabel+': '+addlValue);
      }else if(key==='const'){
@@ -8112,7 +8169,7 @@ function renderDashboard(){
       }).join("");
       return '<tr class="sect"><td>'+esc(t)+'</td><td class="tot"></td>'+cells+'</tr>';
     }
-    return '<tr class="sect"><td colspan="'+(FLOW_COLS+2)+'">'+esc(t)+'</td></tr>';
+    return '<tr class="sect"><td>'+esc(t)+'</td><td class="tot"></td><td colspan="'+FLOW_COLS+'"></td></tr>';
   }
   function row(label, fn, cls, mode){ return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+esc(label)+'</td>'+totCell(fn,fmtWhole$,mode)+cells(fn)+'</tr>'; }
   function inflowDetail(label,key,mode,open){
@@ -8168,7 +8225,7 @@ function renderDashboard(){
         var eng=function(a){ return a.engByPhase[ph.Phase]||0; };
         html+='<tr><td>Phase '+ph.Phase+'</td>'+totCell(eng)+cells(eng)+'</tr>';
       });
-      html+=rowX("E&E Add'l Cost","engAddl",function(a){return a.engAddl;});
+      html+=rowX("Dev Costs","engAddl",function(a){return a.engAddl;});
       html+=row("Total E&E",function(a){return Object.keys(a.engByPhase).reduce(function(s,k){return s+a.engByPhase[k];},0)+a.engAddl;},"total-exp");
       html+=sect("Construction Costs");
       phases.forEach(function(ph){
@@ -8181,7 +8238,7 @@ function renderDashboard(){
       html+=sect("Outflows");
       html+=row("Land Cost",function(a){return a.landCost;});
       html+=row("Engineering Cost",function(a){return Object.keys(a.engByPhase).reduce(function(s,k){return s+a.engByPhase[k];},0);});
-      html+=rowX("E&E Add'l Cost","engAddl",function(a){return a.engAddl;});
+      html+=rowX("Dev Costs","engAddl",function(a){return a.engAddl;});
       html+=row("Construction Cost",function(a){return Object.keys(a.constByPhase).reduce(function(s,k){return s+a.constByPhase[k];},0);});
       html+=rowX("Construction Add'l Cost","constAddl",function(a){return a.constAddl;});
     }
