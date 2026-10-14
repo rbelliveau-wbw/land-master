@@ -37,11 +37,17 @@
       if(!applies){excluded.push({key:step.key,reason:!step.enabled?"Disabled":linked?"No budget modification is linked to this PO":step.condition+" threshold is not met"});return;}
       var roles=config.roles.filter(function(r){return r.id===step.roleId;});if(roles.length!==1||roles[0].active!==true)fail("Missing, ambiguous or inactive role for step "+step.order+".");
       if(policy.workflow==='Purchase Order'&&(roles[0].name==='CFO'?(step.condition!=='Always'||!step.enabled):step.condition!=='Budget modification attached'))fail('CFO is always required; other PO roles apply only to budget modifications.');
-      var assignment,test=step.poTestCFO;
+      var assignment,test=step.poTestCFO,assignments;
       if(test){
         if(roles[0].name!=="CFO")fail("Test CFO must use the active CFO role.");
         if(typeof ctx.budgetId!=="string"||ctx.budgetId!==test.budgetId||amount>cents(test.maxAmount)||ctx.hasBudgetModification!==false||ctx.hasBudgetOverrun!==false)fail("This PO is outside the Test CFO budget, amount or no-overrun scope.");
         assignment={id:'',userAccessId:test.userAccessId,active:true};
+      }else if(roles[0].name==='Dev Mgr'){
+        var devTerritories=(config.territories||[]).filter(function(t){return t.id===ctx.territory;});
+        if(devTerritories.length!==1)fail('The territory must identify one Territory record with Dev Mgr users.');
+        var devIds=Array.from(new Set(devTerritories[0].devMgrUserAccessIds||[]));
+        if(!devIds.length)fail('Configure at least one Dev Mgr on the Territory record.');
+        assignments=devIds.map(function(person){return {id:'',userAccessId:id(person),active:true};});
       }else if(ctx.workflow==="Purchase Order"&&roles[0].name==="VP"){
         var territories=(config.territories||[]).filter(function(t){return t.id===ctx.territory;});
         if(territories.length!==1)fail("The PO territory must identify one Territory record with a VP.");
@@ -49,11 +55,13 @@
         if(vpIds.length!==1)fail("Configure exactly one VP on the PO Territory record.");
         assignment={id:'',userAccessId:id(vpIds[0]),active:true};
       }else assignment=choose(config.assignments.filter(function(a){return a.roleId===step.roleId;}),ctx,"assignment for "+roles[0].name);
+      (assignments||[assignment]).forEach(function(assignment){
       if(assignment.active!==true)fail("Assignment for "+roles[0].name+" is inactive.");if(assignment.id!=='')id(assignment.id);id(assignment.userAccessId);
       var users=config.users.filter(function(u){return u.id===assignment.userAccessId;});if(users.length!==1||!users[0].user||!test&&(users[0].routingEnabled!==true||typeof users[0].approverEmail!=="string"||!/^\S+@\S+\.\S+$/.test(users[0].approverEmail)))fail("Missing, inactive or unroutable approver for "+roles[0].name+".");
       if(policy.selfApproval==="Deny"&&assignment.userAccessId===ctx.submitterId&&!(test&&test.allowSelfApproval===true))fail("Policy forbids submitter self-approval.");
-      var resolved={order:route.length+1,policyStepOrder:step.order,key:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
+      var resolved={order:route.length+1,policyStepOrder:step.order,key:assignments&&assignments.length>1?step.key+'-'+assignment.userAccessId:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
       if(test)resolved.poTestCFO=test;route.push(resolved);
+      });
     });
     if(!route.length)fail("No enabled applicable approval steps.");
     // Detached submission evidence; configuration edits cannot mutate an active route.

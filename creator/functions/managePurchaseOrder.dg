@@ -268,7 +268,7 @@ string managePurchaseOrder(string payload)
 			if(previewRoute.get("success") != true) { result.put("error",previewRoute.get("error")); return result.toString(); }
 			previewRoles=List();
 			previewSnapshot=previewRoute.get("snapshot"); previewSteps=previewSnapshot.get("route");
-			for each previewStep in previewSteps { previewRoles.add({"order":previewStep.get("order"),"role":previewStep.get("role")}); }
+			for each previewStep in previewSteps { previewRoles.add({"order":previewStep.get("order"),"role":previewStep.get("role"),"userAccessId":previewStep.get("userAccessId"),"name":previewStep.get("name"),"email":previewStep.get("email"),"reason":previewStep.get("reason")}); }
 			if(p.get("hasBudgetModification") == true && previewRoles.size() < 2) { result.put("error","Configure additional approvers for POs that create budget modifications."); return result.toString(); }
 			result.put("approvalPreview",{"roles":previewRoles,"hasBudgetModification":p.get("hasBudgetModification")}); result.put("success",true); return result.toString();
 		}

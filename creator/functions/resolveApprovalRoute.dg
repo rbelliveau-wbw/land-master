@@ -120,12 +120,21 @@ map resolveApprovalRoute(map context)
 				role = Approval_Role[ID == roleText.toLong()];
 				if(role.ID == null || role.Active != true) { result.put("error","Role is missing or inactive for step "+expectedOrder); return result; }
 				assignmentId = 0; assignmentRank = -1; assignmentCount = 0; personId = 0; assignmentActive = false;
+				personIds = List(); territoryDevMgr = role.Role_Name == "Dev Mgr";
 				territoryVP = policy.Workflow == "Purchase Order" && role.Role_Name == "VP";
 				poTestCFO = step.get("poTestCFO"); testStep = poTestCFO != null;
 				if(testStep)
 				{
 					if(role.Role_Name != "CFO") { result.put("error","PO test override must use the CFO role."); return result; }
 					personId = poTestCFO.get("userAccessId").toLong(); assignmentActive = true; reason = "PO test CFO";
+				}
+				else if(territoryDevMgr)
+				{
+					territoryRecord = Territory[Territory_Name == territory];
+					if(territoryRecord.count() != 1) { result.put("error","The territory must identify one Territory record with Dev Mgr users."); return result; }
+					for each devMgrPerson in territoryRecord.Dev_Mgr { if(!personIds.contains(devMgrPerson.ID)) { personIds.add(devMgrPerson.ID); } }
+					if(personIds.size() == 0) { result.put("error","Configure at least one Dev Mgr on the Territory record."); return result; }
+					assignmentActive = true;
 				}
 				else if(territoryVP)
 				{
@@ -155,7 +164,10 @@ map resolveApprovalRoute(map context)
 				assignment = Approval_Role_Assignment[ID == assignmentId];
 				personId = assignment.Person; assignmentActive = assignment.Active == true;
 				}
-				person = User_Access[ID == personId];
+				if(!territoryDevMgr) { personIds.add(personId); }
+				for each routePersonId in personIds
+				{
+				person = User_Access[ID == routePersonId];
 				email = ifnull(person.Approver_Email,"").trim();
 				if(testStep)
 				{
@@ -164,12 +176,14 @@ map resolveApprovalRoute(map context)
 				}
 				routingEnabled = person.Approval_Routing_Enabled == true;
 				if(testStep) { routingEnabled = true; }
-				if(assignmentActive != true || person.ID == null || routingEnabled != true || person.User == null || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
+				if(assignmentActive != true || person.ID == null || routingEnabled != true || ifnull(person.User,"").toString().trim() == "" || !email.matches("[^ @]+@[^ @]+[.][^ @]+")) { result.put("error","Approver for "+role.Role_Name+" is inactive or has no valid Approver Email."); return result; }
 				if(policy.Self_Approval == "Deny" && person.ID.toString() == submitterText && !testStep) { result.put("error","Policy forbids submitter self-approval."); return result; }
-				assignmentText = assignmentId.toString(); if(territoryVP || testStep) { assignmentText = ""; }
-				resolvedStep = {"order":route.size()+1,"policyStepOrder":expectedOrder,"key":step.get("key"),"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason};
+				assignmentText = assignmentId.toString(); if(territoryVP || territoryDevMgr || testStep) { assignmentText = ""; }
+				resolvedKey = step.get("key"); if(territoryDevMgr && personIds.size() > 1) { resolvedKey = resolvedKey+"-"+person.ID.toString(); }
+				resolvedStep = {"order":route.size()+1,"policyStepOrder":expectedOrder,"key":resolvedKey,"roleId":role.ID.toString(),"role":role.Role_Name,"assignmentId":assignmentText,"userAccessId":person.ID.toString(),"name":ifnull(person.Full_Name,""),"email":email,"reason":reason};
 				if(testStep) { resolvedStep.put("poTestCFO",poTestCFO); }
 				route.add(resolvedStep);
+				}
 			}
 		}
 		if(policy.Workflow == "Purchase Order" && cfoSteps != 1) { result.put("error","Exactly one CFO must approve every purchase order."); return result; }

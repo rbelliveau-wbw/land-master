@@ -86,3 +86,22 @@ opens the saved record. Show Check status only for unknown replies. Keep pending
 Close/Escape locks, focus handling, exact saved identities and notification
 warnings. Saved PO and Summary read together in parallel; preload fresh balances
 after a confirmed mutation so Review PO can reveal both together.
+
+## PO vendor and contextual approval workspace (122.29.37)
+
+Center the Vendor picker and Add New Vendor in the title card. Add New Vendor
+opens its own nested navy dialog, with the underlying PO inert and focus trapped.
+Use native Vendors creation, require one acknowledged exact ID, append that
+record to the options and select it immediately without losing PO inputs.
+Known native rejection retains the input; lost/malformed replies prohibit a
+second create, including after closing and reopening the vendor dialog.
+
+The desktop main card defaults to 944 px height (18% above 800 px), capped to
+the viewport. Its outer body does not scroll; only the line matrix and lengthy
+captured-chain section scroll internally. Keep delete/result card dimensions
+isolated. Place a second navy/green Approvers card below Summary for drafts.
+The existing debounced context preview determines CFO-only versus added roles
+from actual balance shortfall. Show each resolved person, role, approval email
+and order; present unavailable routing truthfully. Do not repeat the captured
+saved chain in the draft preview card. Native managePurchaseOrder preview now
+includes names and emails; no new fields or endpoints are needed.

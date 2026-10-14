@@ -4,8 +4,8 @@ Use this pattern for approvers, approval rules and route testing. Keep
 role membership separate from ordered approval steps. The Settings Manager
 implementation is [approval-admin.js](../../widgets/settings-manager/src/app/approval-admin.js).
 
-Start on **Approval rules**. Use **Approvers**, **Roles**, **Test route** and
-**Change history** as the other navigation labels. A rule card shows its workflow,
+Start on **Approval Rules**. Use **Approvers**, **Roles**, **Test Route** and
+**Change History** as the other navigation labels. A rule card shows its workflow,
 scope, publication state and ordered roles. An approver card shows the role,
 person's full name, approval email, scope and enabled state. Avoid internal
 record terminology in headings and button labels.
@@ -97,3 +97,28 @@ Configuration writes use the compact Legal progress/result appearance: navy
 header, slim green bar, numbered stages, succinct outcome and Done. Hide tabs
 in that state. Keep failure and unknown outcomes truthful and retain the native
 audit receipt and duplicate-write guards. Done dismisses verified success.
+
+## Inline configuration editing (Settings Manager 1.5.5)
+
+Approvers, roles and existing rules save inline after a 650 ms pause. This is
+the explicit exception to the configuration progress modal: keep the editor
+mounted, show Saving then a centered green Saved check and grouped shared
+success feedback. Pickers, switches, fields, removals and drag order use the
+same audited write contract. Skip unchanged input; keep invalid/incomplete
+drafts without writes. Briefly lock controls during a write to prevent overlap.
+Known not-started failures allow explicit retry; unknown replies keep the exact
+operation token and allow read-only Check Status, without replay.
+
+New Approval Rules retain an explicit Save Rule button and native Draft then
+Publish sequence. Done returns to the rules list within the mounted Approvals
+pane. Existing rules expose Active but have no Save Changes button.
+
+Dev Mgr resolves from the Territory.Dev_Mgr multi-select User_Access lookup
+for shared approval-policy workflows. Expand unique selected users, preserving
+lookup order, into individual sequential approval rows. All selected managers
+must approve before the following role starts. This retains the one-approver-
+at-a-time chain; it does not send concurrent approvals. Resolve every person
+and validate their login, routing flag, approval email and self-approval before
+creating a route. Never fall back to a global Dev Mgr assignment. The captured
+route retains people after Territory edits. PO VP behavior remains unchanged.
+Native updates: approvalConfigurationSnapshot and resolveApprovalRoute.

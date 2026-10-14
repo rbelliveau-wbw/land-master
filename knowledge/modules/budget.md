@@ -1241,3 +1241,17 @@ Frontend-only: no forms, fields, functions or Custom APIs change. No Creator
 promotion is required. Regression checks exercise direct preview, cancellation,
 stale replies, failure/retry and all breadcrumb rendering paths. In-app testing
 is left to the user by request. Rollback: Budget Manager 122.29.35.
+
+## Vendor modal and contextual approvers (122.29.37)
+
+Vendor creation uses native DATA.addRecords on Vendors: Vendor_Name (required),
+Vendor_ID, Contact_Name and Primary_Phone. Existing native form permissions and
+validation remain authoritative. Exact acknowledged ID determines selection;
+unknown replies never retry automatically. The PO worksheet is retained.
+Desktop height is 944 px with viewport cap and internal matrix scrolling.
+An Approvers card below Summary uses the existing read-only PreviewApprovals
+action, including all territory Dev Mgr recipients when the PO creates mods.
+Native changes are approvalConfigurationSnapshot, resolveApprovalRoute and
+managePurchaseOrder, pending Creator save/compile/Stage/Production promotion.
+No existing PO records, submitted routes or native permissions are changed by
+this release. Rollback: Budget 122.29.36 and Settings 1.5.4.

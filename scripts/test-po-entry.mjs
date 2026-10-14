@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync('widgets/budget-manager/src/app/po-ui.js','utf8');
-const ctx=vm.createContext({});
+const ctx=vm.createContext({vendorDialog:null});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),ctx);ctx.root=ctx;
 ctx.model={budgetId:'1001',vendorId:'9001',amount:'999.99',requestDate:'2026-10-09',dateNeeded:'2026-10-20',vendors:[{ID:'9001'}],lines:[{key:'one',budgetItemId:'2001',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'two',budgetItemId:'2001',description:'Testing',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'2.02'}]};
 ctx.options={userAccessId:()=> '8001'};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
@@ -54,7 +54,7 @@ console.log('PO review: captured child counts, compact confirmation, Cancel/Esca
 
 // Reproduce the critical report: Review PO receives a new $100 modification
 // while the cached balance still has zero pending modifications, before Submit.
-const review=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),review);review.root=review;
+const review=vm.createContext({vendorDialog:null});vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),review);review.root=review;
 const oldBalance={budgetItemId:'2001',finalCents:'5000000',modCents:'0',issuedCents:'3500',availableCents:'4996500',pendingModificationCents:'0'};
 const newBalance={...oldBalance,issuedCents:'5010000',availableCents:'-10000',pendingModificationCents:'10000'};
 const submitted={id:'5001',budgetId:'1001',status:'Submitted',commitmentState:'Reserved',approvalState:'Pending',amount:'50065.00',lines:[{key:'one',budgetItemId:'2001',finalAmount:'50065.00'}],approvalBundle:{modifications:[{budgetItemId:'2001',amount:'100.00',status:'Submitted'}]}};

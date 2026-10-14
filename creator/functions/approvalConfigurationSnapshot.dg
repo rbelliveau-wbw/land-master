@@ -20,7 +20,8 @@ map approvalConfigurationSnapshot()
 		for each territoryRow in Territory[ID != 0]
 		{
 			vpIds = List(); for each vpPerson in territoryRow.VP { if(!vpIds.contains(vpPerson.ID.toString())) { vpIds.add(vpPerson.ID.toString()); } }
-			territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name,"vpUserAccessIds":vpIds});
+			devMgrIds = List(); for each devMgrPerson in territoryRow.Dev_Mgr { if(!devMgrIds.contains(devMgrPerson.ID.toString())) { devMgrIds.add(devMgrPerson.ID.toString()); } }
+			territories.add({"id":territoryRow.Territory_Name,"label":territoryRow.Territory_Name,"vpUserAccessIds":vpIds,"devMgrUserAccessIds":devMgrIds});
 		}
 		auditRows = List(); auditActor = User_Access[User == zoho.loginuser];
 		for each event in Approval_Config_Audit[ID != 0]
