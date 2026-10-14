@@ -79,8 +79,11 @@ scroll, including expanded child labels and section bands. Keep both frozen
 headers above scrolling month headers. Label additional engineering/development
 items Dev Costs across widget summaries, timeline details and Excel exports.
 The top record card shows Land Purchase using the existing first-installment
-summary. Cash Position includes the first strictly positive cumulative-cash month
-as a project month number and calendar month/year, above its anniversary snapshots.
+summary. Cash Position keeps anniversary snapshots in its left column. A second
+column inside the same card uses the matching Positive Cash Flow title and shows
+the first strictly positive cumulative-cash project month number and calendar
+month/year underneath. The dashboard record bar places Export directly to the
+right of Comments and opens the existing PDF, Excel and LOI/Contract chooser.
 
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.
 

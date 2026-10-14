@@ -1,3 +1,19 @@
+## Cash card columns and dashboard export (1.80.108, October 14, 2026)
+
+Cash Position uses two columns within the same card: anniversary snapshots on
+the left, and Positive Cash Flow on the right with the existing project month
+number and calendar month/year below its title. The dashboard record bar adds
+Export immediately after Comments. It opens the shared PDF, Excel and
+LOI/Contract chooser for the currently viewed Pro Forma, preserving the dashboard
+and its state through export loading, success and failure.
+
+Changed surfaces: widget source, release/configuration mappings, regression
+checks and documentation. No Creator forms, fields, functions, Custom APIs or
+records change; no Creator deployment is required. Regression: unchanged
+positive-cash timing and snapshots, dashboard action placement and record
+identity, hidden action on other views, existing export options and cold/warm
+downloads. Rollback: Proforma Manager `1.80.107` in Development and Production.
+
 ## Preserve existing approval routes — October 14, 2026 correction
 
 Every PF with saved approval rows retains those rows, including entirely Not Sent

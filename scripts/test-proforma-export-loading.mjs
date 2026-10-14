@@ -27,7 +27,19 @@ for(const view of ['vList','vDash','vEdit']){
   const report=h.node('vList').querySelector('tbody'),firstRow=report.children[0],reportWrites=report.htmlWrites;
   const headerReads=h.calls.filter(call=>call.config.report_name==='All_Pro_Formas_All_Fields').length;
   h.node('listSearch').value='kept search';report.scrollTop=120;
-  h.widget.openExportModal(ID);const exporting=h.widget.exportProformaXlsx(ID);await drain();
+  if(view==='vDash'){
+    const button=h.node('recExportBtn'),comments=h.node('recCommentsBtn');
+    assert.equal(button.hidden,false,'dashboard Export action is visible');
+    assert.equal(button.parentNode,comments.parentNode);
+    assert.equal(button.parentNode.children.indexOf(button),button.parentNode.children.indexOf(comments)+1,'Export is directly right of Comments');
+    await button.fire('click');
+    assert.equal(h.widget.S.exportPfId,ID,'dashboard Export selects the currently viewed record');
+    assert.equal(h.node('exportModal').classList.contains('show'),true,'dashboard button opens the existing chooser');
+  }else{
+    assert.equal(h.node('recExportBtn').hidden,true,'dashboard Export stays hidden on other views');
+    h.widget.openExportModal(ID);
+  }
+  const exporting=h.widget.exportProformaXlsx(ID);await drain();
   visible(h,view);assert.equal(h.downloads.length,0);
   assert.equal(h.node('statusTxt').textContent,priorStatus,'only the export dialog shows loading');
   assert.ok([...h.document.querySelectorAll('#exportModal .ex-choice')].every(button=>button.disabled));

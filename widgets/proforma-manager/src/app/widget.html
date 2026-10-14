@@ -8,15 +8,15 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.107"></script>
-<script src="pf-save-audit.js?v=1.80.107"></script>
-<script src="pf-progress.js?v=1.80.107"></script>
+<script src="pf-save-verification.js?v=1.80.108"></script>
+<script src="pf-save-audit.js?v=1.80.108"></script>
+<script src="pf-progress.js?v=1.80.108"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.107"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.107">
-<script src="comments.js?v=1.80.107"></script>
+<script src="budget-transfer-ui.js?v=1.80.108"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.108">
+<script src="comments.js?v=1.80.108"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -424,6 +424,10 @@ table.pf-list tr.grp-row:hover td{background:linear-gradient(180deg,#f2f5fa,#e9e
 .kpi.violet::before{background:#7c3aed}
 .kpi.violet .k-label{color:#6d28d9}
 .kpi.violet .k-list{font-size:11.5px}
+.cash-position-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.rec-export-btn{flex:none;min-height:36px}
+.rec-export-btn[hidden]{display:none}
+.rec-export-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .assump{display:grid;grid-template-columns:repeat(4,1fr);gap:0 26px;padding:12px 16px 13px}
 @media(max-width:1000px){.assump{grid-template-columns:repeat(2,1fr)}}
 .assump .a-row{display:flex;justify-content:space-between;gap:10px;padding:2.5px 0;border-bottom:1px dashed #edf1f8;font-size:11px}
@@ -1822,7 +1826,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.107"></script>
+<script src="success-feedback.js?v=1.80.108"></script>
 </head>
 <body>
 
@@ -1871,6 +1875,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
     <button type="button" class="rec-seg" data-recview="attachments" role="tab"><svg viewBox="0 0 24 24"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7L9.2 18.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>Attachments</button>
   </div>
   <button type="button" class="rec-comments-btn" id="recCommentsBtn" title="Open comments" aria-label="Open comments" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9H13a8.5 8.5 0 0 1 8 8v.5Z"/></svg><span class="rec-comment-count" id="recCommentCount">0</span></button>
+  <button type="button" class="btn sm rec-export-btn" id="recExportBtn" title="Export Pro Forma" aria-haspopup="dialog" aria-controls="exportModal" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5"/></svg>Export<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></button>
   </div>
   <div class="rec-bar-end">
     <button type="button" class="btn primary sm" id="recSubmitLegalBtn" hidden>Submit to Legal</button>
@@ -2236,7 +2241,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.107";
+var PFW_VERSION="1.80.108";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -5699,7 +5704,7 @@ function syncRecSwitch(name){
   var onRecord=(name==="vDash"||name==="vEdit"||name==="vAttachments");
   var wasHidden=bar.hidden;
   bar.hidden=!onRecord;
-  if(!onRecord){ sw.classList.remove("thumb-on"); return; }
+  if(!onRecord){ document.getElementById("recExportBtn").hidden=true; sw.classList.remove("thumb-on"); return; }
   if(wasHidden) sw.classList.add("no-anim");
   var head=document.getElementById("recHead");
   var grpEd=document.getElementById("recHeadEd"), grpDash=document.getElementById("recHeadDash");
@@ -5721,6 +5726,7 @@ function syncRecSwitch(name){
      the id falls back to S.dash.id — the record viewed before — and every segment then acts
      on the wrong Pro Forma. */
   var recId=(unsavedEditorOpen(name)||(name==="vEdit"&&S.ed&&S.ed.partialSave))?"":String((S.dash&&S.dash.id)||(S.ed&&S.ed.model&&S.ed.model.ID)||"");
+  document.getElementById("recExportBtn").hidden=name!=="vDash"||!recId;
   sw.querySelectorAll(".rec-seg").forEach(function(b){
     var v=b.getAttribute("data-recview");
     b.classList.toggle("active", v===active);
@@ -7941,15 +7947,16 @@ function renderDashboard(){
     ? c.cashPosition.slice(0,4).map(function(cp){ return ymLabel(cp.date)+": "+fmtWhole$(cp.value); }).join("<br/>")
     : "<span style='opacity:.75;font-weight:600'>"+(incompleteSales?"Complete Lot Sales phase schedule":"No anniversary snapshots yet")+"</span>";
   var positiveCash=(c.agg||[]).find(function(a){return a.runCash>0;});
-  cpHtml='<div style="margin-bottom:6px"><b>Positive cash: '+(incompleteSales?'—':positiveCash
-    ?'Mth '+positiveCash.m+' · '+ymShort(positiveCash.date):'Not reached')+'</b></div>'+cpHtml;
+  var positiveCashHtml=incompleteSales?'—':positiveCash
+    ?'Mth '+positiveCash.m+' · '+ymShort(positiveCash.date):'Not reached';
   k.innerHTML=
     '<div class="kpi slate"><div class="k-label">ROI / IRR / XIRR</div><div class="k-list">'
       +'ROI: '+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'<br/>IRR: '+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'<br/>XIRR: '+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div></div>'
     +'<div class="kpi green"><div class="k-label">Total Inflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Income))+'</div><div class="k-rows">'+kRows(inflowsRows)+'</div></div>'
     +'<div class="kpi red"><div class="k-label">Total Outflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Expenses))+'</div><div class="k-rows">'+kRows(outflowRows)+'</div></div>'
     +'<div class="kpi blue"><div class="k-label">Net Profit</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Net_Profit))+'</div></div>'
-    +'<div class="kpi violet"><div class="k-label">Cash Position</div><div class="k-list" style="font-size:12px">'+cpHtml+'</div></div>';
+    +'<div class="kpi violet"><div class="cash-position-columns"><div><div class="k-label">Cash Position</div><div class="k-list" style="font-size:12px">'+cpHtml+'</div></div>'
+      +'<div><div class="k-label">Positive Cash Flow</div><div class="k-list" style="font-size:12px">'+positiveCashHtml+'</div></div></div></div>';
   renderDealRoom();
   document.getElementById("vDash").classList.toggle("meeting", !!S.meetingMode);
   /* assumptions strip */
@@ -12413,6 +12420,7 @@ document.getElementById("recSwitch").addEventListener("click", function(e){
 });
 document.getElementById("recSubmitLegalBtn").addEventListener("click",function(){if(S.view==="vDash"&&S.dash)submitLOIToLegal(String(S.dash.id||""));});
 document.getElementById("recCommentsBtn").addEventListener("click",function(){var id=activeCommentPfId();if(id)openPfComments(id,this);});
+document.getElementById("recExportBtn").addEventListener("click",function(){if(pfPublicReady()&&S.view==="vDash"&&S.dash&&S.dash.id)openExportModal(S.dash.id);});
 document.getElementById("commentModalClose").addEventListener("click",closePfComments);
 document.getElementById("commentModal").addEventListener("click",function(e){if(e.target&&e.target.getAttribute("data-comment-close")==="true")closePfComments();});
 document.addEventListener("keydown",function(e){if(e.key!=="Escape")return;var modal=document.getElementById("commentModal"),confirm=document.getElementById("confirmModal");if(!modal||modal.hidden||(confirm&&confirm.classList.contains("show")))return;e.preventDefault();e.stopImmediatePropagation();closePfComments();},true);

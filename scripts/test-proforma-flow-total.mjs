@@ -181,13 +181,13 @@ context.S.dash.calc.agg = [
   {m:6,date:{y:2028,m:5},cash:100,runCash:10}
 ];
 context.renderDashboard();
-assert.match(elements.get('kpis').innerHTML,/Positive cash: Mth 4 · Mar 2028/,'first strictly positive running balance, including a year boundary');
+assert.match(elements.get('kpis').innerHTML,/Positive Cash Flow<\/div><div class="k-list"[^>]*>Mth 4 · Mar 2028/,'first strictly positive running balance, including a year boundary');
 context.S.dash.calc.agg = context.S.dash.calc.agg.slice(0,3);
 context.renderDashboard();
-assert.match(elements.get('kpis').innerHTML,/Positive cash: Not reached/,'monthly income and zero running balance do not count as positive cash');
+assert.match(elements.get('kpis').innerHTML,/Positive Cash Flow<\/div><div class="k-list"[^>]*>Not reached/,'monthly income and zero running balance do not count as positive cash');
 context.S.dash.calc.agg = [{m:1,date:{y:2027,m:12},runCash:0.001}];
 context.renderDashboard();
-assert.match(elements.get('kpis').innerHTML,/Positive cash: Mth 1 · Dec 2027/,'first-month and fractional positive balances use actual calculation precision');
+assert.match(elements.get('kpis').innerHTML,/Positive Cash Flow<\/div><div class="k-list"[^>]*>Mth 1 · Dec 2027/,'first-month and fractional positive balances use actual calculation precision');
 context.S.dash.model.Sale_Price_FF = "1444.50";
 context.renderDashboard();
 assert.match(elements.get("assump").innerHTML,
