@@ -16,6 +16,7 @@
     "inventory:widgets": "python3 scripts/scan-widget-contracts.py",
     "inventory:creator": "python3 scripts/parse_creator_export.py",
     "test:forecast": "node scripts/test-forecast-manager.mjs",
-    "test:forecast:browser": "node scripts/test-forecast-manager-browser.mjs"
+    "test:forecast:browser": "node scripts/test-forecast-manager-browser.mjs",
+    "test:insights:browser": "node scripts/test-insights-number-transitions-browser.mjs"
   }
 }

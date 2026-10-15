@@ -3,7 +3,8 @@
 Audit date: October 14, 2026. This covers all ten current widget source trees.
 Each entry represents a repeated numeric field family, including every row,
 phase, category, month or grouped copy of that family. Forecast Manager is
-implemented in 1.6.4; the remaining entries are implementation opportunities.
+implemented in 1.6.4; Data Insights is implemented in 1.5.50. The other entries
+are implementation opportunities.
 
 Use the [Sliding push contract](../knowledge/design/number-transitions.md): 420ms,
 16px, real final values immediately, stable field/record/scope identity, no
@@ -121,7 +122,7 @@ Source: [widget.html](../widgets/contract-management/src/app/widget.html)
 | Lot-completion confirmed record/count summaries | Real per-destination acknowledgements only; never invent progress |
 | Attachment/comment counts and applicable numeric detail values | Successful uploads/deletes/comments and exact record refresh |
 
-## Data Insights / Lot Sales Explorer
+## Data Insights / Lot Sales Explorer — implemented 1.5.50
 
 Source: [sales-app.js](../widgets/lot-sales-explorer/src/app/sales-app.js)
 `render`/`renderBuilderMatrix`, [budget-app.js](../widgets/lot-sales-explorer/src/app/budget-app.js)
@@ -140,6 +141,12 @@ Source: [sales-app.js](../widgets/lot-sales-explorer/src/app/sales-app.js)
 
 Do not visually morph a count into dollars or one metric into another. Metric and
 unit are part of the key; transitions apply only to comparable quantities.
+
+Implemented in `number-transitions.js/css`, `sales-app.js` and `budget-app.js`.
+The dormant Budget dashboard remains disabled, including background requests.
+Lot detail record values/counts and pagination also use the shared presentation.
+Refresh comparisons require complete history and the same revalidated access.
+No calculation, report contract, permission or Creator backend changes.
 
 ## Tax Center
 

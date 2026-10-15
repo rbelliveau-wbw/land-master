@@ -25,5 +25,20 @@ Unsupported native HTML keeps the established isolated fallback.
 Desktop browser fixtures verify initial/equal suppression, acknowledged-save
 matrix/summary changes, text/value parity, signed rapid updates, preserved
 editable/date text and reduced motion. Existing save/assignment/recovery guards
-remain authoritative. Other widget adoption is pending; see the
+remain authoritative.
+
+Data Insights 1.5.50 implements the same motion for comparable monthly/period
+measures, group/report totals, frontage and data-quality counts, subdivision
+inventory and builder counts, lot detail numbers, and the dormant Budget
+summary/project/row/category displays. Its number-transitions.js/css preserves
+the existing currency/percentage units, signed values, typography and immediate
+final text. Keys include metric/unit, status/date basis, month or period,
+record/group identity and Budget basis. Refresh comparisons wait for complete
+history and matching revalidated dashboard/revenue permissions; denied or changed
+access discards the prior numbers. The Budget dashboard stays disabled.
+
+Desktop fixtures verify real text/CSV parity, filtered and refreshed counts,
+group/detail updates, unknown/initial/equal suppression, metric/basis identity,
+rapid signed changes, permissions and reduced motion. No calculation, API or
+Creator deployment changes. Other widget adoption is pending; see the
 [complete opportunity inventory](../../docs/number-transition-opportunities-2026-10-14.md).

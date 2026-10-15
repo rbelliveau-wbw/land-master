@@ -33,6 +33,14 @@
       $('excludeBuilders').checked ? 'Unassigned / Other / Placeholder excluded' : 'Unassigned / Other / Placeholder included'].filter(Boolean);
     $('filterSummary').innerHTML = chips.map(value => '<span class="sales-filter-chip">' + esc(value) + '</span>').join('');
   }
+  const numberKey = (...parts) => JSON.stringify(parts);
+  const number = (value, ...parts) => window.InsightsNumbers?.markup(value, numberKey('sales', ...parts)) ?? esc(value);
+  const captureNumbers = root => window.InsightsNumbers?.capture(root) || new Map();
+  const applyNumbers = (root, previous) => window.InsightsNumbers?.apply(root, previous);
+  const reportKey = (r, ...parts) => [r.status, r.dateField, ...parts];
+  const measure = (stats, metric, ...parts) => number(valueLabel(stats, metric), ...parts, metric);
+  const width = (stats, ...parts) => number(decimal(stats.avgWidth), ...parts, 'front-ft');
+  let refreshNumbers = null;
   const dateLabel = date => date ? date.slice(5, 7) + '/' + date.slice(8) + '/' + date.slice(2, 4) : '—';
   const valueLabel = (s, metric) => metric === 'count' ? s && s.count ? integer(s.count) : '' : !s || s[metric] === null ? '—' : money(s[metric]);
   function bucketByMonth(lots, dateField) {
@@ -91,6 +99,7 @@
   }
   function render() {
     if (!state.permissions?.lotSalesDashboard) return;
+    const previousNumbers = refreshNumbers || captureNumbers($('salesDashboard'));
     hideSubdivisionCard();
     enforceRevenueAccess();
     renderFilterSummary();
@@ -106,6 +115,8 @@
     notice(''); state.report = r;
     if ($('period').value === 'all') { $('from').value = r.from; $('to').value = r.to; InsightsControls.syncAll(); renderFilterSummary(); }
     const metric = $('metric').value, def = M.metrics[metric], months = r.months;
+    const scope = (...parts) => reportKey(r, ...parts);
+    const period = (...parts) => scope('period', r.from, r.to, ...parts);
     const filters = selectedFilters(), dateName = r.dateField === 'closeDate' ? 'Close date' : 'Purchase date';
     $('scopeLabel').textContent = (filters.projectIds.length === 1 ? [...$('project').selectedOptions].find(o=>o.value)?.text : filters.projectIds.length ? filters.projectIds.length + ' projects' : 'All projects') + ' · ' + r.status + ' lots · ' + monthLabel(r.from) + ' – ' + monthLabel(r.to);
     $('metric').title = def.description;
@@ -113,9 +124,9 @@
     $('definition').textContent = def.description; $('definition').title = def.description + ' Archived lots are included in historical results. First sale uses all close dates within the current territory/project/builder/search filters. Average front footage uses the selected status and period.';
     const perFootMetric = ['avgPriceFF','avgTotalPriceFF'].includes(metric);
     const missingMetric = metric === 'avgTotalPriceFF' ? 'missingTotalPriceFF' : 'missingPriceFF';
-    $('quality').textContent = [perFootMetric && r.reports.some(part=>part.stats[missingMetric]) ? integer(r.reports.reduce((n,part)=>n+part.stats[missingMetric],0)) + ' lots without usable $/FF' : '', state.historyReady && r.missingDates ? integer(r.missingDates) + ' lots missing ' + dateName.toLowerCase() : ''].filter(Boolean).join(' · ');
+    $('quality').innerHTML = [perFootMetric && r.reports.some(part=>part.stats[missingMetric]) ? number(integer(r.reports.reduce((n,part)=>n+part.stats[missingMetric],0)), ...period('quality', missingMetric)) + ' lots without usable $/FF' : '', state.historyReady && r.missingDates ? number(integer(r.missingDates), ...period('quality', 'missing-dates')) + ' lots missing ' + dateName.toLowerCase() : ''].filter(Boolean).join(' · ');
     $('monthPage').textContent = months.length ? monthLabel(months[months.length - 1]) + ' – ' + monthLabel(months[0]) + ' · ' + months.length + ' months' : 'No months to show';
-    if (!r.rows.length) { blank('No lots match these filters', r.missingDates ? 'Matching lots have no usable ' + dateName.toLowerCase() + ' in this period.' : 'Try another period, status, project, or builder.', $('monthPage').textContent); markUsable(); return; }
+    if (!r.rows.length) { refreshNumbers = null; applyNumbers($('salesDashboard'), previousNumbers); blank('No lots match these filters', r.missingDates ? 'Matching lots have no usable ' + dateName.toLowerCase() + ' in this period.' : 'Try another period, status, project, or builder.', $('monthPage').textContent); markUsable(); return; }
     $('empty').hidden = true; $('export').disabled = !state.historyReady; $('export').title = state.historyReady ? 'Export all selected months' : 'Available when historical data finishes loading';
     $('matrixHead').innerHTML = '<tr><th class="sticky" scope="col"><span id="groupBySlot" class="sales-header-picker"></span></th><th scope="col" title="Earliest Sold close date, across all dates, within current scope filters">First Lot Sale<small>All dates</small></th><th scope="col" title="Mean positive front footage for lots in this period">Avg Front Ft<small>Selected range</small></th><th scope="col" class="period-total" title="Calculated over the entire selected range, including offscreen months"><span id="metricSlot" class="sales-header-picker"></span></th>' + months.map(m => '<th scope="col">' + esc(monthLabel(m).split(' ')[0]) + '<small>' + m.slice(0, 4) + '</small></th>').join('') + '</tr>';
     InsightsControls.placePicker('groupBy', $('groupBySlot'));
@@ -130,33 +141,35 @@
       if (!stats || !stats.count) return '<td class="missing' + (total ? ' period-total' : '') + '">' + (metric === 'count' ? '' : '—') + '</td>';
       const v = stats[metric], shading = !total && v !== null ? ' style="background:rgba(18,131,145,' + (0.025 + (v / max) * .1).toFixed(3) + ')"' : '';
       const title = stats.count + ' lots · ' + stats.eligible + ' with usable $/FF · Click for lot detail';
-      return '<td class="drill-cell' + (total ? ' period-total' : '') + '"' + shading + '><button class="cell-button" data-subdivision="' + esc(row.key) + '" data-month="' + esc(month || '') + '" title="' + esc(title) + '" aria-label="' + esc(row.name + ', ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + valueLabel(stats, metric) + '</button></td>';
+      return '<td class="drill-cell' + (total ? ' period-total' : '') + '"' + shading + '><button class="cell-button" data-subdivision="' + esc(row.key) + '" data-month="' + esc(month || '') + '" title="' + esc(title) + '" aria-label="' + esc(row.name + ', ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, ...scope('row', row.key, month || ['period', r.from, r.to])) + '</button></td>';
     }
     let html = '';
     groups.forEach((rows, group) => {
       const closed = state.collapsed.has(group), count = rows.reduce((n, row) => n + row.stats.count, 0);
       const groupLabel = esc(rows[0].groupName);
-      const groupCount = new Set(rows.map(row => row.id)).size + ' subdivisions · ' + integer(count) + ' lots';
+      const groupScope = period('group', r.groupBy, group);
+      const groupCount = number(integer(new Set(rows.map(row => row.id)).size), ...groupScope, 'subdivisions') + ' subdivisions · ' + number(integer(count), ...groupScope, 'lots') + ' lots';
       const groupLots = closed ? rows.flatMap(row => row.lots) : null;
       const groupStats = closed ? M.stats(groupLots) : null;
       const groupMonths = closed ? bucketByMonth(groupLots, r.dateField) : null;
       const groupFirstSale = closed && state.historyReady ? rows.map(row => row.firstSale).filter(Boolean).sort()[0] || null : null;
       html += '<tr class="territory' + (closed ? ' is-collapsed' : '') + '"><th scope="rowgroup" class="sticky"><button class="territory-toggle" data-group="' + esc(group) + '" aria-expanded="' + !closed + '"><span aria-hidden="true">' + (closed ? '▸' : '▾') + '</span>' + groupLabel + '</button>' + (closed ? '<small class="sales-group-count">' + groupCount + '</small>' : '') + '</th>' +
-        (closed ? '<td class="identity">' + (state.historyReady ? dateLabel(groupFirstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + decimal(groupStats.avgWidth) + '</td><td class="period-total">' + valueLabel(groupStats, metric) + '</td>' + months.map(month => '<td>' + valueLabel(groupMonths.has(month) ? M.stats(groupMonths.get(month)) : null, metric) + '</td>').join('') : '<th colspan="' + (months.length + 3) + '">' + groupCount + '</th>') + '</tr>';
+        (closed ? '<td class="identity">' + (state.historyReady ? dateLabel(groupFirstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(groupStats, ...groupScope) + '</td><td class="period-total">' + measure(groupStats, metric, ...groupScope) + '</td>' + months.map(month => '<td>' + measure(groupMonths.has(month) ? M.stats(groupMonths.get(month)) : null, metric, ...scope('group', r.groupBy, group, month)) + '</td>').join('') : '<th colspan="' + (months.length + 3) + '">' + groupCount + '</th>') + '</tr>';
       if (!closed) rows.forEach(row => {
         const counts = allCounts?.get(row.id);
         const soldOut = counts && counts.total > 0 && counts.sold === counts.total;
         const badge = soldOut ? '<span class="sold-out-badge" title="Sold Out" aria-label="Sold Out"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '';
-        html += '<tr' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + decimal(row.stats.avgWidth) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
+        html += '<tr' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(row.stats, ...period('row', row.key)) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
       });
     });
     $('matrixBody').innerHTML = html;
     $('matrixFoot').innerHTML = r.reports.map(part => {
       const partMonths = bucketByMonth(part.lots, r.dateField);
-      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + valueLabel(stats, metric) + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + (metric === 'count' ? '' : '—') + '</td>';
-      return '<tr><td class="sticky">' + esc(part.status) + ' totals</td><td>—</td><td>' + decimal(part.stats.avgWidth) + '</td>' + totalCell(part.stats, '') + months.map(month => totalCell(partMonths.has(month) ? M.stats(partMonths.get(month)) : null, month)).join('') + '</tr>';
+      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, part.status, r.dateField, 'total', month || ['period', r.from, r.to]) + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + (metric === 'count' ? '' : '—') + '</td>';
+      return '<tr><td class="sticky">' + esc(part.status) + ' totals</td><td>—</td><td>' + width(part.stats, part.status, r.dateField, 'total', r.from, r.to) + '</td>' + totalCell(part.stats, '') + months.map(month => totalCell(partMonths.has(month) ? M.stats(partMonths.get(month)) : null, month)).join('') + '</tr>';
     }).join('');
     if (state.lots.some(lot => lot.missingSubdivision)) notice('Some lots reference subdivisions unavailable to you. Those rows are labeled Unknown or Unassigned.');
+    applyNumbers($('salesDashboard'), previousNumbers); refreshNumbers = null;
     markUsable();
   }
   function update() { hideSubdivisionCard(); render(); }
@@ -176,12 +189,14 @@
   }
   function detailRows() {
     if (!state.permissions?.lotSalesDashboard) return;
+    const previousNumbers = $('detail').open ? captureNumbers($('detail')) : new Map();
     const rows = state.detailLots.slice(state.detailOffset, state.detailOffset + 100);
     const inventory = state.detailInventory !== null, statusGroups = inventory && state.detailStatus === 'All';
     const revenue = canViewRevenue(), columns = revenue ? 14 : 11;
     document.querySelectorAll('#detail thead th').forEach((heading, index) => { heading.hidden = !revenue && [6, 8, 11].includes(index); });
     let previousStatus = null, previousBuilder = null, previousDate = null;
     $('detailBody').innerHTML = rows.map(l => {
+      const detailNumber = (value, field) => number(value, 'lot', l.id, field);
       const total = M.totalPrice(l), validWidth = l.width !== null && l.width > 0;
       const status = M.detailStatus(l), statusChanged = statusGroups && status !== previousStatus;
       const dateField = inventory ? M.detailDateField(l, state.detailDateField) : state.detailDateField;
@@ -189,14 +204,15 @@
       const builderChanged = statusChanged || l.builder !== previousBuilder, selectedDate = l[dateField] || '';
       const builderCount = state.detailGroups.builders.get(inventory ? JSON.stringify([status, l.builder]) : l.builder) || 0;
       const dateCount = state.detailGroups.dates.get(JSON.stringify(inventory ? [status, l.builder, selectedDate] : [l.builder, selectedDate])) || 0;
-      const statusHeading = statusChanged ? '<tr class="detail-status-group status-' + status.toLowerCase() + '"><th colspan="' + columns + '" scope="rowgroup">' + status + '<span class="detail-group-count" aria-label="' + integer(state.detailGroups.statuses.get(status)) + ' lots">' + integer(state.detailGroups.statuses.get(status)) + '</span></th></tr>' : '';
-      const builderHeading = builderChanged ? '<tr class="detail-group"><th colspan="' + columns + '" scope="rowgroup">' + esc(l.builder) + '<span class="detail-group-count" aria-label="' + integer(builderCount) + ' lots">' + integer(builderCount) + '</span></th></tr>' : '';
-      const dateHeading = builderChanged || selectedDate !== previousDate ? '<tr class="detail-date-group"><th colspan="' + columns + '" scope="rowgroup">' + dateName + ' · ' + (selectedDate ? dateLabel(selectedDate) : 'No date') + '<span class="detail-group-count" aria-label="' + integer(dateCount) + ' lots">' + integer(dateCount) + '</span></th></tr>' : '';
+      const statusHeading = statusChanged ? '<tr class="detail-status-group status-' + status.toLowerCase() + '"><th colspan="' + columns + '" scope="rowgroup">' + status + '<span class="detail-group-count" aria-label="' + integer(state.detailGroups.statuses.get(status)) + ' lots">' + number(integer(state.detailGroups.statuses.get(status)), 'detail', state.detailScope, 'status', status) + '</span></th></tr>' : '';
+      const builderHeading = builderChanged ? '<tr class="detail-group"><th colspan="' + columns + '" scope="rowgroup">' + esc(l.builder) + '<span class="detail-group-count" aria-label="' + integer(builderCount) + ' lots">' + number(integer(builderCount), 'detail', state.detailScope, state.detailStatus, 'builder', l.builderId || l.builder) + '</span></th></tr>' : '';
+      const dateHeading = builderChanged || selectedDate !== previousDate ? '<tr class="detail-date-group"><th colspan="' + columns + '" scope="rowgroup">' + dateName + ' · ' + (selectedDate ? dateLabel(selectedDate) : 'No date') + '<span class="detail-group-count" aria-label="' + integer(dateCount) + ' lots">' + number(integer(dateCount), 'detail', state.detailScope, state.detailStatus, 'date', l.builderId || l.builder, dateField, selectedDate) + '</span></th></tr>' : '';
       previousStatus = status; previousBuilder = l.builder; previousDate = selectedDate;
-      return statusHeading + builderHeading + dateHeading + '<tr><td>' + esc(l.code || ('Block ' + l.block + ' · Lot ' + l.lot)) + '</td><td>' + esc(l.builder) + '</td><td>' + (inventory ? '<span class="detail-status-badge status-' + status.toLowerCase() + '">' + esc(l.status || 'Open') + '</span>' : esc(l.status)) + '</td><td>' + dateLabel(l.closeDate) + '</td><td>' + dateLabel(l.purchaseDate) + '</td><td>' + decimal(l.width) + '</td>' + (revenue ? '<td>' + money(l.price) + '</td>' : '') + '<td>' + moneyFF(l.price !== null && l.price >= 0 && validWidth ? l.price / l.width : null) + '</td>' + (revenue ? '<td>' + money(l.interest) + '</td>' : '') + '<td>' + moneyFF(l.interest !== null && validWidth ? l.interest / l.width : null) + '</td><td>' + percent(l.escalator) + '</td>' + (revenue ? '<td>' + money(total) + '</td>' : '') + '<td>' + moneyFF(total !== null && total >= 0 && validWidth ? total / l.width : null) + '</td><td class="lot-notes">' + esc(l.notes || '—') + '</td></tr>';
+      return statusHeading + builderHeading + dateHeading + '<tr><td>' + esc(l.code || ('Block ' + l.block + ' · Lot ' + l.lot)) + '</td><td>' + esc(l.builder) + '</td><td>' + (inventory ? '<span class="detail-status-badge status-' + status.toLowerCase() + '">' + esc(l.status || 'Open') + '</span>' : esc(l.status)) + '</td><td>' + dateLabel(l.closeDate) + '</td><td>' + dateLabel(l.purchaseDate) + '</td><td>' + detailNumber(decimal(l.width), 'front-ft') + '</td>' + (revenue ? '<td>' + detailNumber(money(l.price), 'base-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(l.price !== null && l.price >= 0 && validWidth ? l.price / l.width : null), 'base-usd-per-ft') + '</td>' + (revenue ? '<td>' + detailNumber(money(l.interest), 'interest-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(l.interest !== null && validWidth ? l.interest / l.width : null), 'interest-usd-per-ft') + '</td><td>' + detailNumber(percent(l.escalator), 'escalator-percent') + '</td>' + (revenue ? '<td>' + detailNumber(money(total), 'total-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(total !== null && total >= 0 && validWidth ? total / l.width : null), 'total-usd-per-ft') + '</td><td class="lot-notes">' + esc(l.notes || '—') + '</td></tr>';
     }).join('');
     if (!rows.length) $('detailBody').innerHTML = '<tr><td colspan="' + columns + '" class="detail-empty">No ' + esc(state.detailStatus.toLowerCase()) + ' lots</td></tr>';
-    $('detailPage').textContent = (state.detailLots.length ? state.detailOffset + 1 : 0) + '–' + Math.min(state.detailOffset + 100, state.detailLots.length) + ' of ' + state.detailLots.length + ' lots';
+    $('detailPage').innerHTML = number(integer(state.detailLots.length ? state.detailOffset + 1 : 0), 'detail', state.detailScope, state.detailStatus, 'page-start') + '–' + number(integer(Math.min(state.detailOffset + 100, state.detailLots.length)), 'detail', state.detailScope, state.detailStatus, 'page-end') + ' of ' + number(integer(state.detailLots.length), 'detail', state.detailScope, state.detailStatus, 'lots') + ' lots';
+    applyNumbers($('detail'), previousNumbers);
     $('detailPrev').disabled = state.detailOffset === 0; $('detailNext').disabled = state.detailOffset + 100 >= state.detailLots.length;
     document.querySelector('#detail .detail-scroll').scrollTop = 0;
   }
@@ -210,7 +226,9 @@
     document.querySelectorAll('#detailStatuses [data-detail-status]').forEach(button => {
       const value = button.dataset.detailStatus, active = value === status;
       button.setAttribute('aria-checked', String(active)); button.tabIndex = active ? 0 : -1;
-      button.querySelector('.detail-tab-count').textContent = integer(value === 'All' ? state.detailInventory.length : counts.get(value) || 0);
+      const count = button.querySelector('.detail-tab-count'), previous = captureNumbers(count);
+      count.innerHTML = number(integer(value === 'All' ? state.detailInventory.length : counts.get(value) || 0), 'detail', state.detailScope, 'tab', value);
+      applyNumbers(count, $('detail').open ? previous : new Map());
     });
     $('detailStatuses').style.setProperty('--status-index', ['Sold','Scheduled','Contracted','Open','All'].indexOf(status));
     $('detailMeta').textContent = 'All dates · ' + (status === 'All' ? 'All statuses' : status) + ' · ' + integer(state.detailLots.length) + ' lots';
@@ -219,6 +237,7 @@
   function showDetail(lots, month, title, eyebrow, scope, allHistory = false, inventoryStatus = null) {
     if (!state.permissions?.lotSalesDashboard) return;
     const r = state.report;
+    state.detailScope = numberKey(scope, title, inventoryStatus ? 'inventory' : month || [r.from,r.to], r.dateField);
     state.detailInventory = inventoryStatus ? lots.slice() : null;
     state.detailDateField = r.dateField;
     $('detailStatuses').hidden = !inventoryStatus;
@@ -264,11 +283,11 @@
     const top = below + height <= innerHeight - margin ? below : above >= margin ? above : Math.max(margin, Math.min(below, innerHeight - height - margin));
     card.style.left = Math.round(left) + 'px'; card.style.top = Math.round(top) + 'px';
   }
-  function renderBuilderMatrix(breakdown) {
+  function renderBuilderMatrix(breakdown, subdivisionId) {
     const rows = M.builderStatusMatrix(breakdown);
     if (!rows.length) return '<p class="builder-matrix-empty">No builder takedowns yet.</p>';
     return '<div class="builder-matrix-scroll"><table class="builder-matrix" aria-label="Builder lots by status"><thead><tr><th scope="col">Builder</th><th scope="col" class="is-total">Total</th><th scope="col" class="is-sold">Sold</th><th scope="col" class="is-scheduled">Scheduled</th><th scope="col" class="is-contracted">Contracted</th></tr></thead><tbody>' +
-      rows.map(row => '<tr><th scope="row" title="' + esc(row.builder) + '" aria-label="' + esc(row.builder) + '"><span class="builder-matrix-name">' + esc(M.truncateBuilderName(row.builder)) + '</span></th><td class="is-total">' + integer(row.total) + '</td><td class="is-sold">' + integer(row.Sold) + '</td><td class="is-scheduled">' + integer(row.Scheduled) + '</td><td class="is-contracted">' + integer(row.Contracted) + '</td></tr>').join('') +
+      rows.map(row => '<tr><th scope="row" title="' + esc(row.builder) + '" aria-label="' + esc(row.builder) + '"><span class="builder-matrix-name">' + esc(M.truncateBuilderName(row.builder)) + '</span></th><td class="is-total">' + number(integer(row.total), 'inventory', subdivisionId, 'builder', row.builder, 'total') + '</td><td class="is-sold">' + number(integer(row.Sold), 'inventory', subdivisionId, 'builder', row.builder, 'Sold') + '</td><td class="is-scheduled">' + number(integer(row.Scheduled), 'inventory', subdivisionId, 'builder', row.builder, 'Scheduled') + '</td><td class="is-contracted">' + number(integer(row.Contracted), 'inventory', subdivisionId, 'builder', row.builder, 'Contracted') + '</td></tr>').join('') +
       '</tbody></table></div>';
   }
   function openSubdivisionCard(key, trigger) {
@@ -279,15 +298,17 @@
     if (cardTrigger && cardTrigger !== trigger) cardTrigger.setAttribute('aria-expanded', 'false');
     cardTrigger = trigger; cardTrigger.setAttribute('aria-expanded', 'true');
     state.cardRowKey = key;
+    const previousNumbers = $('subdivisionCard').hidden ? new Map() : captureNumbers($('subdivisionCardBody'));
     const counts = state.historyReady ? M.subdivisionCounts(state.lots).get(row.id) : null;
     const field = state.report.dateField === 'closeDate' ? 'Close Date' : 'Purchase Date';
     const lastDate = row.lots.map(lot => lot[state.report.dateField]).filter(Boolean).sort().at(-1);
     const builders = new Set(row.lots.map(lot => lot.builderId || lot.builder));
-    const item = (label, value, tone = '') => '<div class="subdivision-card-stat' + (tone ? ' is-' + tone : '') + '"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>';
+    const periodCardScope = reportKey(state.report, state.report.from, state.report.to, row.key);
+    const item = (label, value, tone = '') => '<div class="subdivision-card-stat' + (tone ? ' is-' + tone : '') + '"><span>' + esc(label) + '</span><strong>' + (/Date|Sale/.test(label) ? esc(value) : number(value, 'card', row.id, ['Total','Sold','Scheduled','Contracted','Open'].includes(label) ? 'inventory' : periodCardScope, label)) + '</strong></div>';
     const breakdown = counts ? M.subdivisionBuilderBreakdown(state.lots, row.id) : null;
     const progress = counts && counts.total ? '<div class="subdivision-card-progress" role="group" aria-label="Lot progress: ' + esc(counts.sold + ' sold, ' + counts.scheduled + ' scheduled, ' + counts.contracted + ' contracted, ' + counts.open + ' open out of ' + counts.total) + '"><div class="subdivision-card-progress-track">' +
       ['sold','scheduled','contracted'].map(status => '<span class="progress-' + status + '" style="width:' + (counts[status] / counts.total * 100).toFixed(2) + '%"></span>').join('') + '</div><div class="subdivision-progress-breakdown">' +
-      renderBuilderMatrix(breakdown) + '</div></div>' : '';
+      renderBuilderMatrix(breakdown, row.id) + '</div></div>' : '';
     $('subdivisionCardTitle').textContent = row.name;
     $('subdivisionCardContext').textContent = row.territory + (state.report.groupBy === 'builder' ? ' · ' + row.builder : '');
     $('viewSubdivisionLots').innerHTML = (row.lots.length ? 'View Lots' : 'View All Lots') + ' <span aria-hidden="true">→</span>';
@@ -299,6 +320,7 @@
       item('Lots', integer(row.stats.count)) + item('Builders', integer(builders.size)) + item('Average Front Ft', decimal(row.stats.avgWidth)) + item('Average Base $/FF', moneyFF(row.stats.avgPriceFF)) +
       (canViewRevenue() ? item('Total Base Price', money(row.stats.totalPrice)) : '') + item('Latest ' + field, dateLabel(lastDate)) + item('First Lot Sale', state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') +
       '</div></section>';
+    applyNumbers($('subdivisionCardBody'), previousNumbers);
     $('subdivisionCard').hidden = false;
     positionSubdivisionCard();
   }
@@ -332,6 +354,7 @@
       log('Complete history loaded: ' + state.lots.length + ' lots.');
     } catch (error) {
       if (generation !== state.generation) return;
+      refreshNumbers = null;
       state.historyError = error.message; log('History failed: ' + error.message); $('connection').textContent = 'Load failed'; render();
       $('historyBanner').title = error.message;
     }
@@ -356,6 +379,7 @@
       await history(generation);
     } catch (error) {
       if (generation !== state.generation) return;
+      refreshNumbers = null;
       const message = error && error.message || String(error); log('Load failed: ' + message); $('connection').textContent = 'Load failed'; $('summary').textContent = 'Report unavailable';
       blank('Unable to load the report', 'Refresh to retry. Open Diagnostics for details.'); notice(message, true);
       LMCriticalErrors.breadcrumb('error', 'Lot sales report load failed', { message }, false);
@@ -427,6 +451,9 @@
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
   applyPeriod();
   async function authorizeAndLoad() {
+    const priorPermissions = state.permissions;
+    const priorNumbers = state.historyReady ? captureNumbers($('salesDashboard')) : null;
+    refreshNumbers = null;
     const generation = ++state.generation;
     if (window.LMData) LMData.invalidate(options => Object.values(LotSalesCreator.reports).includes(options.reportName || options.report_name));
     if (window.LMPerf) LMPerf.mark('insights:access-start');
@@ -444,6 +471,7 @@
       if (generation !== state.generation) return;
       if (window.LMPerf) LMPerf.mark('insights:access-ready', {granted: permissions.lotSalesDashboard});
       state.permissions = permissions;
+      if (permissions.lotSalesDashboard && priorPermissions?.lotSalesDashboard && permissions.viewTotalLotRevenue === priorPermissions.viewTotalLotRevenue) refreshNumbers = priorNumbers;
       enforceRevenueAccess();
       InsightsShell.setAccess(permissions);
       if (!permissions.lotSalesDashboard) {

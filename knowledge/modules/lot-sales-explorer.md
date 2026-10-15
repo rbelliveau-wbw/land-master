@@ -1,5 +1,33 @@
 # Land Master Insights
 
+## October 15, 2026 number transitions — 1.5.50
+
+Uses the [Sliding push contract](../design/number-transitions.md) for comparable
+monthly and selected-period measures, frontage, group/report totals, quality
+counts, subdivision inventory/builder counts and lot-detail quantities. The
+dormant Budget source also covers summary/project/row/category amounts and
+percentages; its dashboard, scripts and requests remain disabled.
+
+Keys preserve metric/unit, record/group identity, status/date basis, selected
+month or period and Budget basis. First/equal/unknown values and unrelated
+records remain still. Dates, years, lot codes and editable inputs stay static.
+Real final text and CSV data are available immediately, including rapid signed
+updates. Reduced motion skips animation. A native refresh compares only after
+complete history loads and the same dashboard/revenue grants are revalidated;
+changed or denied permissions discard the previous values.
+
+Changed frontend files: sales-app.js, budget-app.js, number-transitions.js/css,
+widget.html and widget.config.json, plus immutable release/environment metadata,
+the desktop fixture and documentation. Forms, fields, reports, functions and
+Custom APIs: none changed. Creator deployment: not required.
+
+Validation: `npm run validate`, `npm run build:pages` and
+`npm run test:insights:browser`. Regression scenarios include all seven measures,
+filters, collapsed groups, native refresh, inventory/detail counts, text/CSV
+parity, access changes, signed rapid updates and reduced motion. Production
+rollback: map lot-sales-explorer to 1.5.49 in deploy/environments.json and rebuild
+Pages. Permanent Insights URLs stay unchanged.
+
 ## Whole-dollar presentation (1.5.47)
 
 All monetary displays round to the nearest dollar, including per-front-foot
