@@ -196,11 +196,11 @@ assert.doesNotMatch(elements.get("assump").innerHTML, /<label>(Sale Price \/ FF|
   "promoted per-foot prices are no longer duplicated in assumptions");
 const returnsCard = elements.get("kpis").innerHTML.split('<div class="kpi green">')[0];
 assert.match(returnsCard,
-  /class="kpi slate"><div class="k-label">ROI \/ IRR \/ XIRR<\/div><div class="k-list">ROI: [^]*<br\/>IRR: [^]*<br\/>XIRR: /,
+  /class="kpi slate"><div class="returns-columns"><div><div class="k-label">ROI \/ IRR \/ XIRR<\/div><div class="k-list">ROI: [^]*<br\/>IRR: [^]*<br\/>XIRR: /,
   "return metrics retain their original heading and stacked appearance");
 assert.match(returnsCard,
   /class="k-gross"><div class="k-label">Gross Profit<\/div><div class="k-big">\$6,658,631<\/div>/,
-  "Gross Profit is added beneath the existing return metrics in the same card");
+  "Gross Profit occupies the second column beside the existing return metrics");
 assert.match(elements.get("kpis").innerHTML,
   /class="kpi violet"[^]*class="cash-position-secondary"[^]*Positive Cash Flow[^]*Peak Cash Out[^]*id="flowPeakCash"/,
   "peak funding sits under Positive Cash Flow inside the Cash Position card");

@@ -1,3 +1,14 @@
+## Cash text sizing and Gross Profit column (1.80.111, October 15, 2026)
+
+Cash Position snapshots, Positive Cash Flow and Peak Cash Out share a 12px value
+size and matching heading styles. Gross Profit is in the second column of the
+returns card, aligned beside the stacked ROI / IRR / XIRR values. Desktop card
+values adapt to available column width without clipping. Pricing, cash controls,
+January resets and all financial calculations are unchanged.
+
+No Creator forms, fields, functions or Custom APIs change; no Creator deployment
+is required. [Changed files, desktop checks and rollback to 1.80.110](../../docs/proforma-dashboard-card-sizing-2026-10-15.md).
+
 ## Restore stacked returns and move peak funding (1.80.110, October 15, 2026)
 
 The first dashboard card restores its original ROI / IRR / XIRR heading and
