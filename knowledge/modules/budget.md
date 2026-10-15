@@ -1,3 +1,12 @@
+## Budget Manager number transitions — 122.29.43, October 15, 2026
+
+Sliding push now covers financial matrices, item/category/phase/project totals, comparisons, PO commitments, modification/payment previews and counts.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 122.29.42.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 ## Approval administration without Company or dates — October 13, 2026
 
 Settings Manager's Approvals dialog starts on Approval rules and separates

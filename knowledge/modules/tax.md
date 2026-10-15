@@ -1,3 +1,12 @@
+## Tax Center number transitions — 19.17.15, October 15, 2026
+
+Sliding push now covers loaded financial summaries, separate server counts, facets, selections, subdivision values, prior-year comparisons and verified batch counts.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 19.17.14.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 
 
 ## Save policy — October 8, 2026

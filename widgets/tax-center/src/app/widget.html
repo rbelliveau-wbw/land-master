@@ -802,7 +802,10 @@ tr.bulk-on{background:var(--psoft)}
 .ss-item.ss-clear{color:var(--muted,#6b7280);font-style:italic}
 .ss-empty{padding:12px 10px;font-size:12px;color:var(--muted,#6b7280);text-align:center}
 </style>
-<script src="success-feedback.js?v=19.17.14"></script>
+<script src="success-feedback.js?v=19.17.15"></script>
+<script src="number-transitions.js?v=19.17.15"></script>
+<script src="number-surfaces.js?v=19.17.15"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.15">
 </head>
 <body>
 
@@ -1359,7 +1362,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.14',
+  version: '19.17.15',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -3147,7 +3150,7 @@ function renderLotRow(r, hidden){
   const isBulk=!!state.bulkSelectedIds[String(r.id)];
   const statusColor=STATUS_DOT[r.status]||'#8b939f';
 
-  let html='<tr class="lot-row '+(isSel?'selected':'')+(isBulk?' bulk-on':'')+(hidden?' lot-hidden':'')+'" onclick="handleRowClick(event,\''+jsArg(r.id)+'\')" style="cursor:pointer">';
+  let html='<tr data-lm-record="'+esc(r.id)+'" class="lot-row '+(isSel?'selected':'')+(isBulk?' bulk-on':'')+(hidden?' lot-hidden':'')+'" onclick="handleRowClick(event,\''+jsArg(r.id)+'\')" style="cursor:pointer">';
   // col 1: status bar
   html+='<td class="status-bar" style="background:'+statusColor+'"></td>';
   // col 2: checkbox
@@ -4506,7 +4509,7 @@ function renderTable(){
       const paidCnt=(full.statuses['Paid (Protested)']||0)+(full.statuses['Paid (Arbitration)']||0)+(full.statuses['Paid (No Protest)']||0);
       let pills='';if(protestCnt)pills+='<span class="subdiv-pill protest">'+protestCnt+' protest</span>';if(untriCnt)pills+='<span class="subdiv-pill untri">'+untriCnt+' untriaged</span>';if(passCnt)pills+='<span class="subdiv-pill pass">'+passCnt+' pass</span>';if(paidCnt)pills+='<span class="subdiv-pill paid">'+paidCnt+' paid</span>';
       const fullLotCount=full.lots.length;const pageNote=fullLotCount!==g.lots.length?' (showing '+g.lots.length+')':'';
-      html+='<tr class="subdiv-row"><td colspan="4"><div style="display:flex;align-items:center;gap:10px"><div style="min-width:0;flex:1"><div class="subdiv-name">'+esc(g.subdivision)+'</div><div class="subdiv-meta">'+fullLotCount+' lots'+pageNote+(pills?' &nbsp;':'')+pills+'</div></div></div></td><td style="font-size:11.5px;color:var(--muted);font-weight:600">'+esc(g.county||'—')+'</td><td></td><td colspan="8" onclick="event.stopPropagation()"><div class="subdiv-bulk"><select onchange="applySubdivStatus(\''+jsArg(g.key)+'\',this)"><option value="">Set all to…</option>'+STATUS_LIST.map(function(s){return '<option>'+esc(s)+'</option>';}).join('')+'</select><button class="btn sm" onclick="selectAllInSubdiv(\''+jsArg(g.key)+'\')">Select all</button></div></td><td style="text-align:right;font-size:11px;font-weight:700;color:var(--muted)">'+money(full.totalApp,true)+'</td><td colspan="5"></td></tr>';
+      html+='<tr class="subdiv-row" data-lm-record="'+esc(g.key)+'"><td colspan="4"><div style="display:flex;align-items:center;gap:10px"><div style="min-width:0;flex:1"><div class="subdiv-name">'+esc(g.subdivision)+'</div><div class="subdiv-meta">'+fullLotCount+' lots'+pageNote+(pills?' &nbsp;':'')+pills+'</div></div></div></td><td style="font-size:11.5px;color:var(--muted);font-weight:600">'+esc(g.county||'—')+'</td><td></td><td colspan="8" onclick="event.stopPropagation()"><div class="subdiv-bulk"><select onchange="applySubdivStatus(\''+jsArg(g.key)+'\',this)"><option value="">Set all to…</option>'+STATUS_LIST.map(function(s){return '<option>'+esc(s)+'</option>';}).join('')+'</select><button class="btn sm" onclick="selectAllInSubdiv(\''+jsArg(g.key)+'\')">Select all</button></div></td><td style="text-align:right;font-size:11px;font-weight:700;color:var(--muted)">'+money(full.totalApp,true)+'</td><td colspan="5"></td></tr>';
       g.lots.forEach(function(r){html+=renderLotRow(r,false);});
     }else g.lots.forEach(function(r){html+=renderLotRow(r,false);});
   });
@@ -4863,6 +4866,9 @@ window.addEventListener('resize',function(){if(_ssPop&&!_ssPop.classList.contain
 // ─── Init ─────────────────────────────────────────────────────────────────
 window.addEventListener('error',function(e){diag('Unhandled widget error',{message:e.message,source:e.filename,line:e.lineno,column:e.colno,stack:e.error&&e.error.stack});});
 window.addEventListener('unhandledrejection',function(e){diag('Unhandled promise rejection',{reason:e.reason});});
+
+/* Repository design: real keyed numeric values, presentation only. */
+if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("tax-center",{state:function(){return state;},ready:function(){return !!(state.referenceLoaded||state.rowsLoaded||state.serverCounts.currentTotal!=null);},actor:function(){return state.perms||state.acc||null;}});
 window.__taxBoot=taxBoot();
 </script>
 

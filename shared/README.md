@@ -1,5 +1,18 @@
 # Creator data helper
 
+## Number transitions
+
+`number-transitions.js/css` implement the repository Sliding push contract.
+`number-surfaces.js` registers explicit quantitative surfaces in Budget, Manage
+Lots, Legal, Tax, Land Master, Gantt and Settings. Run
+`node scripts/sync-number-transitions.mjs` before validation/release; the standalone
+widget copies must match. Other modules retain their existing transition engines.
+Keys identify a record, field and display slot; dates, identifiers and native
+editable values are excluded. Rendering observers schedule presentation only and
+never call Creator. Unknown/ambiguous values remain static. See the
+[design contract](../knowledge/design/number-transitions.md) and
+[rollout evidence](../docs/number-transition-rollout-2026-10-15.md).
+
 `creator-data.js` is synchronized byte-for-byte into the seven current SDK2 source widgets by `node scripts/sync-shared-widget-data.mjs`, including the Tax Development candidate. It provides complete counted/cursor reads, bounded requests, actor/environment/app isolation, scoped invalidation and telemetry. This change does not alter SDK payloads, schema, permissions, workflow defaults or the remaining SDK1 widgets. Source adoption does not imply Production promotion; see the environment mappings and live ledger.
 
 `LMData.responseFailed(response)` inspects explicit native failure fields and only known `result`, `details`, `response` and `output` containers, including object/array or structured JSON values. A native non-3000 code, truthy error, failed status or success:false cannot hide beside a valid count/ID. Successful informational metadata stays valid. Cycles, malformed structured JSON or exhausted 128-node/16-depth bounds are unverified. Repeated references without a cycle remain valid. Report `data` and business fields are opaque; each CRUD validator explicitly checks its native acknowledgement data separately.

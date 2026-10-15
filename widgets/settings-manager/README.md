@@ -1,3 +1,12 @@
+## Settings Manager number transitions — 1.5.9, October 15, 2026
+
+Sliding push now covers construction-curve totals and blank-default counts.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 1.5.8.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 # Settings Manager
 
 ## Territory approvers — October 14, 2026

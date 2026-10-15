@@ -1,3 +1,12 @@
+## Land Master number transitions — 8.16.2, October 15, 2026
+
+Sliding push now covers read-only report quantities, project/record/related counts, selection/pagination, transfer summaries and import/bulk quantities.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 8.16.1.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 
 
 ## Save policy — October 8, 2026

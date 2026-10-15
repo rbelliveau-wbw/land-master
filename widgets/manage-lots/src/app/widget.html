@@ -40,8 +40,11 @@
     @media(max-width:760px){.topbar{padding:0 10px;gap:8px}.brand span:last-child{display:none}.tab{padding:0 10px}.status span:last-child{display:none}.toolbar{padding:11px}.toolbar .field,.sub-filter,.search{width:100%;min-width:100%}.sub-filter-menu{width:100%}.main{padding:12px 11px 96px}.blocks-grid{grid-template-columns:1fr}.grid,.interest{grid-template-columns:1fr}.span3{grid-column:auto}.selected-detail{display:none}.drag-tip{display:none}th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}th:nth-child(1){width:36%}th:nth-child(2){width:24%}th:nth-child(4){width:40%}}
   </style>
   <link rel="stylesheet" href="lots-grid.css"><script src="subdivision-counts.js"></script>
-<script src="success-feedback.js?v=0.13.1"></script>
+<script src="success-feedback.js?v=0.13.2"></script>
   <link rel="stylesheet" href="lots-list.css">
+<script src="number-transitions.js?v=0.13.2"></script>
+<script src="number-surfaces.js?v=0.13.2"></script>
+<link rel="stylesheet" href="number-transitions.css?v=0.13.2">
 </head>
 <body>
   <header class="topbar">
@@ -78,7 +81,7 @@
   <script>
   (function(){
     "use strict";
-    var CFG={version:"0.13.1",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
+    var CFG={version:"0.13.2",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
     var S={live:false,view:"lots",audit:[],auditSeq:0,auditErrs:0,subdivisions:[],builders:[],lots:[],takedowns:[],contracts:[],takedownLotIds:new Set(),selected:new Set(),subdivisionIds:[],takedownSubdivisionIds:[],takedownBuilderIds:[],busy:false,drag:{active:false,selecting:true,seen:new Set(),moved:false,pointerId:null}};
     var $=function(id){return document.getElementById(id)};
     var lotsList=null;
@@ -297,7 +300,7 @@
       var why=!eligible(l)?reason(l):truthy(l.On_Hold)?"Flagged On Hold · Still selectable":"";
       return'<div class="hv-t"><span class="hv-code">'+esc(l.Lot_Code||("Lot "+lotNumber(l)))+'</span><span class="hv-chip" style="background:'+chip[0]+';color:'+chip[1]+'">'+LOT_LABEL[st]+'</span></div>'+body+(why?'<div class="hv-why">'+esc(why)+'</div>':"");
     }
-    function showLotHover(id,x,y){var l=lotById(id);if(!l)return;hideLotHover();hoverId=id;hoverX=x;hoverY=y;var el=document.createElement("div");el.id="lotHover";el.className="lot-hover";el.setAttribute("role","tooltip");el.innerHTML=lotHoverHTML(l);document.body.appendChild(el);var tile=$("blocks").querySelector('[data-id="'+CSS.escape(id)+'"]');if(tile)tile.setAttribute("aria-describedby","lotHover");positionLotHover(x,y);if(!l.Lot_Size)loadLotDetails(lotSubdivisionId(l))}
+    function showLotHover(id,x,y){var l=lotById(id);if(!l)return;hideLotHover();hoverId=id;hoverX=x;hoverY=y;var el=document.createElement("div");el.id="lotHover";el.dataset.lmRecord=String(id);el.className="lot-hover";el.setAttribute("role","tooltip");el.innerHTML=lotHoverHTML(l);document.body.appendChild(el);var tile=$("blocks").querySelector('[data-id="'+CSS.escape(id)+'"]');if(tile)tile.setAttribute("aria-describedby","lotHover");positionLotHover(x,y);if(!l.Lot_Size)loadLotDetails(lotSubdivisionId(l))}
     function wireLotHover(){
       var host=$("blocks");host.addEventListener("pointermove",function(e){if(S.drag.active){hideLotHover();return}var tile=e.target.closest(".lot");if(!tile){hideLotHover();return}var id=tile.dataset.id;hoverX=e.clientX;hoverY=e.clientY;if(id===hoverId){positionLotHover(hoverX,hoverY);return}var shown=!!$("lotHover");hideLotHover();hoverId=id;if(shown)showLotHover(id,hoverX,hoverY);else hoverTimer=setTimeout(function(){showLotHover(id,hoverX,hoverY)},320)});
       host.addEventListener("pointerleave",hideLotHover);host.addEventListener("focusin",function(e){var tile=e.target.closest(".lot");if(!tile)return;var r=tile.getBoundingClientRect();showLotHover(tile.dataset.id,r.left,r.bottom)});host.addEventListener("focusout",hideLotHover);
@@ -334,7 +337,7 @@
     function openTakedownDetail(id,trigger){if(uiLocked())return false;var t=S.takedowns.find(function(row){return String(row.ID)===String(id)});if(!t)return false;openSubdivisionFilter(false);openBuilderFilter(false);hideLotHover();takedownDetailTrigger=trigger||document.activeElement;
       function field(label,key,money){var raw=t[key],value=raw==null?'Unavailable':str(raw)||'—';if(money&&raw!=null&&str(raw).trim()!==''&&Number.isFinite(LMTakedownModel.number(raw)))value=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(LMTakedownModel.number(raw));return '<div class="td-detail-field"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>'}
       function card(title,body){return '<section class="td-detail-card"><h3>'+title+'</h3>'+body+'</section>'}
-      $("takedownDetailTitle").textContent=str(t.Name)||'Builder Takedown';$("takedownDetailSub").textContent=[takedownSubdivisionLabel(t),takedownBuilderLabel(t)].filter(Boolean).join(' · ');
+      $("takedownDetail").dataset.lmRecord=String(t.ID);$("takedownDetailTitle").textContent=str(t.Name)||'Builder Takedown';$("takedownDetailSub").textContent=[takedownSubdivisionLabel(t),takedownBuilderLabel(t)].filter(Boolean).join(' · ');
       $("takedownDetailBody").innerHTML=takedownDatesHTML(t)+'<div class="td-detail-grid">'+card('Overview',field('Status','Status')+field('Lots','Lot_Count')+field('Added','Added_Time'))+card('Financials',field('Base price','Base_Price_Subtotal',true)+field('Interest','Interest_Subtotal',true)+field('Total','Total',true)+field('With additional items','Total_w_Additional',true))+card('Tax & fees',field('Tax method','Tax_Method')+field('Tax per lot','Tax_Per_Lot',true)+field('Tax proration','Tax_Proration_Date')+field('Additional fees per lot','Additional_Fees_Per_Lot',true))+'</div><h3 class="td-lots-title">Lots <span class="count-chip">'+esc(str(t.Lot_Count)||String(lotDetailParts(t.Lots).length))+'</span></h3>'+takedownLotsListHTML(t.Lots)+(str(t.Notes)?'<h3 class="td-lots-title">Notes</h3><div class="td-detail-notes">'+esc(str(t.Notes))+'</div>':'');
       $("takedownDetail").classList.add('open');document.querySelector('.topbar').inert=true;document.querySelector('.toolbar').inert=true;document.querySelector('.main').inert=true;$("closeTakedownDetail").focus();return true;
     }
@@ -377,6 +380,9 @@
     window.__MLW_TEST__={lotsList:lotsList,visibleTakedowns:visibleTakedowns,renderTakedowns:renderTakedowns,openTakedownDetail:openTakedownDetail,closeTakedownDetail:closeTakedownDetail,renderBuilderOptions:renderBuilderOptions,takedownDatesHTML:takedownDatesHTML,S:S,CFG:CFG,load:load,loadSubdivisionCounts:loadSubdivisionCounts,indexes:indexes,lotById:lotById,subdivisionStats:subdivisionStats,lotState:lotState,eligible:eligible,render:render,setSubdivisionIds:setSubdivisionIds,lotHoverHTML:lotHoverHTML,latestSelected:latestSelected,readSubdivisionLots:readSubdivisionLots,ensureSubdivisionLots:ensureSubdivisionLots,controller:manageController,confirm:confirm,openModal:openModal,payload:payload,applySelection:applySelection,closeCreateProgress:closeCreateProgress,recheckCreate:recheckCreate};
     if(window.LMCriticalErrors)LMCriticalErrors.configure({widget:"Manage Lots",version:CFG.version,code:"MLOTS",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,user:r.user,subdivisionIds:S.subdivisionIds.slice(),selectedLots:S.selected.size,view:S.view}}});
     manageController.start().catch(function(error){setMode("Creator connection failed","error");notice("Open inside Creator or Refresh to retry. "+errText(error));auditLog("error","Creator initialization failed",{error:errText(error)},true)});
+/* Repository design: real keyed numeric values, presentation only. */
+if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("manage-lots",{state:function(){return S;},ready:function(){return !!(manageController.state.ready);},actor:function(){return S.perms||S.acc||null;}});
+
   })();
   </script>
 </body>

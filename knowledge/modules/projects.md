@@ -1,3 +1,12 @@
+## Milestone Gantt number transitions — 1.1.10, October 15, 2026
+
+Sliding push now covers milestone/scheduled/unsaved counts, numeric durations and verified destinations.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 1.1.9.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 
 
 ## Save policy — October 8, 2026

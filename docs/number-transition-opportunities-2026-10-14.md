@@ -2,9 +2,30 @@
 
 Audit date: October 14, 2026. This covers all ten current widget source trees.
 Each entry represents a repeated numeric field family, including every row,
-phase, category, month or grouped copy of that family. Forecast Manager is
-implemented in 1.6.4; Data Insights is implemented in 1.5.51. The other entries
-are implementation opportunities.
+phase, category, month or grouped copy of that family. User direction October 15,
+2026 authorizes implementing the remaining callouts and promoting them with PMP.
+All ten widgets now adopt Sliding push for their applicable displayed quantities.
+Editable controls and identity/date values retain their existing behavior.
+
+| Module | Implemented release |
+| --- | --- |
+| Forecast Manager | 1.7.3 (transition adoption from 1.6.4) |
+| Proforma Manager | 1.80.113 |
+| Data Insights | 1.5.52 |
+| Budget Manager | 122.29.43 |
+| Manage Lots | 0.13.2 |
+| Legal / Contract Management | 1.62.4 |
+| Tax Center | 19.17.15 |
+| Land Master | 8.16.2 |
+| Milestone Gantt | 1.1.10 |
+| Settings Manager | 1.5.9 |
+
+The seven-module rollout uses the explicit surface registry in
+[`shared/number-surfaces.js`](../shared/number-surfaces.js). It covers existing
+derived/read-only numeric output families below, using the source UI's available
+fields and counters. Native editable values, dates, IDs, codes, years, approval
+sequence numbers and milestone positions are deliberately static. It adds no
+new derived quantities or progress claims. See [release evidence and rollback](number-transition-rollout-2026-10-15.md).
 
 Use the [Sliding push contract](../knowledge/design/number-transitions.md): 420ms,
 16px, real final values immediately, stable field/record/scope identity, no
@@ -33,7 +54,7 @@ Source: [forecast-app.js](../widgets/forecast-manager/src/app/forecast-app.js)
 | Numeric closing lots/day terms and whole-contract obligation | Native refreshed terms, with conservative ordered identity matching |
 | Recent sales counts, including whole-contract recent sales | Native refreshed snapshot |
 
-## Proforma Manager — highest-value adoption
+## Proforma Manager — implemented 1.80.113
 
 Source: [widget.html](../widgets/proforma-manager/src/app/widget.html)
 `computeProforma`, `finalizeTotals`, `refreshComputedInputs`, `refreshFinancialRowGuidance`,
@@ -60,7 +81,7 @@ Read-only computed inputs need a presentation wrapper or adjacent display;
 editable input value/caret formatting must remain unchanged. Financial units and
 rounding remain owned by the existing Pro Forma calculation/display functions.
 
-## Budget Manager — highest-value adoption
+## Budget Manager — implemented 122.29.43
 
 Source: [widget.html](../widgets/budget-manager/src/app/widget.html)
 `updateCatSubtotal`, `updateProjectMatrixLive`, `renderSummaryMatrices`,
@@ -81,7 +102,7 @@ Source: [widget.html](../widgets/budget-manager/src/app/widget.html)
 | Check/wire/payment request total, PO balance and remaining available amount | Selected PO, request amount, method and reviewed request changes |
 | Request/approval queue counts, phase-list financials and financial badges | Acknowledged requests, approvals, modifications and refresh |
 
-## Manage Lots — highest-value adoption
+## Manage Lots — implemented 0.13.2
 
 Source: [takedown-editor.js](../widgets/manage-lots/src/app/takedown-editor.js)
 `refresh`/`readItems`, [takedown-model.js](../widgets/manage-lots/src/app/takedown-model.js)
@@ -103,7 +124,7 @@ Source: [takedown-editor.js](../widgets/manage-lots/src/app/takedown-editor.js)
 
 Keep incomplete receipts as unavailable rather than animating from or to fake zero.
 
-## Legal / Contract Management
+## Legal / Contract Management — implemented 1.62.4
 
 Source: [widget.html](../widgets/contract-management/src/app/widget.html)
 `statsFor`, `lotClosingSummaryHTML`, `contractParentSummary`, `ncLotSummary`,
@@ -122,7 +143,7 @@ Source: [widget.html](../widgets/contract-management/src/app/widget.html)
 | Lot-completion confirmed record/count summaries | Real per-destination acknowledgements only; never invent progress |
 | Attachment/comment counts and applicable numeric detail values | Successful uploads/deletes/comments and exact record refresh |
 
-## Data Insights / Lot Sales Explorer — implemented 1.5.51
+## Data Insights / Lot Sales Explorer — implemented 1.5.52
 
 Source: [sales-app.js](../widgets/lot-sales-explorer/src/app/sales-app.js)
 `render`/`renderBuilderMatrix`, [budget-app.js](../widgets/lot-sales-explorer/src/app/budget-app.js)
@@ -154,7 +175,7 @@ Lot detail record values/counts and pagination also use the shared presentation.
 Refresh comparisons require complete history and the same revalidated access.
 No calculation, report contract, permission or Creator backend changes.
 
-## Tax Center
+## Tax Center — implemented 19.17.15
 
 Source: [widget.html](../widgets/tax-center/src/app/widget.html)
 `renderSummaryStrip`, `renderSidebar`, `refreshFacetCounts`, `renderTable`,
@@ -172,7 +193,7 @@ Source: [widget.html](../widgets/tax-center/src/app/widget.html)
 Keep financial scope explicit: currently loaded portfolio values and server
 matching-row counts are different measures and must not share a transition key.
 
-## Land Master
+## Land Master — implemented 8.16.2
 
 Source: [widget.html](../widgets/land-master/src/app/widget.html)
 `renderCounts`/`renderAll`/`renderTable`/`renderBulk`/`renderPanel`/`renderPager`,
@@ -191,7 +212,7 @@ Source: [widget.html](../widgets/land-master/src/app/widget.html)
 Property IDs, Facility IDs, EINs, parcel IDs, subdivision codes, dates and bank
 identifiers are identities, even when made of digits; they are not candidates.
 
-## Milestone Gantt
+## Milestone Gantt — implemented 1.1.10
 
 Source: [widget.html](../widgets/milestone-gantt/src/app/widget.html)
 `renderSummary`/`renderRow`/`renderUnscheduled`,
@@ -207,7 +228,7 @@ Source: [widget.html](../widgets/milestone-gantt/src/app/widget.html)
 Keep the timeline's existing spatial/date animation. Use Sliding push only for
 its numeric labels/counts; do not slide date text, bar positions or row order.
 
-## Settings Manager
+## Settings Manager — implemented 1.5.9
 
 Source: [widget.html](../widgets/settings-manager/src/app/widget.html)
 `groupCard`/`curveCard`/`render`,
@@ -230,8 +251,9 @@ totals after post/delete, selected-record counts, approval queue counts and real
 batch result counts can use the same transition. Preserve existing progress
 modals and FLIP row animations; numeric motion complements those components.
 
-Recommended next adoption: Pro Forma calculated financials, Budget live matrices
-and PO balances, then Manage Lots live receipt. Follow with Legal action/lot
-counts, Insights comparable report values, Tax summaries, Land Master counts,
-Gantt counts and the few existing derived Settings displays. This is an audited
-opportunity list, not a request to implement the remaining nine widgets.
+The October 15 rollout completes adoption across this inventory. Keep new or
+changed numeric surfaces aligned with the repository-wide guide and extend the
+explicit registry/tests as needed. Existing values shown inside editable inputs
+stay native; their existing dependent summaries animate instead. A surface with
+unknown data, ambiguous identity or no displayed quantity does not manufacture
+one for animation. Preserve each widget's original calculations and write gates.

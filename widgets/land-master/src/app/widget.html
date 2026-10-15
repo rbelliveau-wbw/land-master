@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.16.1"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.16.2"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.16.1"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.16.1">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.16.1">
-<script src="searchable-pickers.js?v=8.16.1" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.16.1">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.16.1">
-<script src="spreadsheet-import.js?v=8.16.1"></script>
-<script src="lot-import.js?v=8.16.1"></script>
+<script src="property-workspace.js?v=8.16.2"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.16.2">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.16.2">
+<script src="searchable-pickers.js?v=8.16.2" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.16.2">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.16.2">
+<script src="spreadsheet-import.js?v=8.16.2"></script>
+<script src="lot-import.js?v=8.16.2"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -426,7 +426,10 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.16.1"></script>
+<script src="success-feedback.js?v=8.16.2"></script>
+<script src="number-transitions.js?v=8.16.2"></script>
+<script src="number-surfaces.js?v=8.16.2"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.16.2">
 </head>
 <body>
 
@@ -589,7 +592,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.16.1-LAZY-CORE",
+  version: "8.16.2-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1389,6 +1392,9 @@ function initializeCreatorV2(){
   timer=setTimeout(function(){failed(new Error('Creator SDK initialization timed out.'));},5000);
   return Promise.resolve().then(function(){return z.UTIL.getInitParams();}).then(function(params){if(settled)return;if(!params||typeof params!=='object'||Array.isArray(params))throw new Error('Creator initialization parameters are unavailable.');var runtime=LMRuntime.apply(params);if(!runtime||runtime.environment==='UNKNOWN'||!runtime.user||runtime.user==='(unknown)')throw new Error('Creator did not identify the connected user and environment.');settled=true;clearTimeout(timer);S.liveSDK=true;S.demo=false;LMPerf.end('creator-init',{ok:true,environment:runtime.environment});auditOnly('Runtime identity resolved',runtime,false);if(S.errorQueue.length)scheduleErrorEmail(100);return loadData();}).catch(function(err){if(err.cancelled)return;if(!settled){failed(err);return;}if(!S.liveSDK)return;setStatus('err','Creator data load failed');diag('Land Master load failed',{error:err});});
 }
+
+/* Repository design: real keyed numeric values, presentation only. */
+if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("land-master",{state:function(){return S;},ready:function(){return !!(S.demo||LandData.coreReady());},actor:function(){return S.perms||S.acc||null;},columns:function(){return cols();}});
 S.tablePageSize=CFG.tablePageSize||100;renderNewMenu();updateAuditButton();LMPerf.mark('land-script-ready');initializeCreatorV2();
 
 </script>

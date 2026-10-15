@@ -9,8 +9,8 @@ UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
 Input-driven numeric displays use the selected [Sliding push transition](number-transitions.md).
-Forecast Manager, Data Insights and Pro Forma implement the pattern. The focused
-guide and module documentation record actual coverage and pending adoption.
+All ten widgets adopt the pattern for applicable displayed quantities. The
+focused guide, inventory and module documentation record coverage and exclusions.
 
 Data Insights keeps branding, connection status, Refresh and Diagnostics in the
 sidebar, reclaiming the full-width shell header for report height. Keep the

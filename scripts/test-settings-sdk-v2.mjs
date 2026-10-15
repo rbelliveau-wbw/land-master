@@ -53,7 +53,9 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
   context.window=context;context.parent=embedded?{}:context;context.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
   for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
   const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog,money:fmtMoney,read:readControl};\n';
-  vm.runInContext(inline.replace(/boot\(\);\s*\}\)\(\);\s*$/,expose+'boot();\n\n})();'),context);
+  // Expose immediately before the real top-level boot; presentation hooks may
+  // follow it inside the same IIFE. Keep the complete source/startup unchanged.
+  vm.runInContext(inline.replace('\nboot();','\n'+expose+'boot();'),context);
   assert.ok(context.__settingsTest,'Whole source IIFE test exposure found');
   return{context,widget:context.__settingsTest,api,reports,records,curves,calls,warnings,nodes,node,timers,listeners,handshakes:()=>handshakes,maxActive:()=>maxActive,
     tick(ms){const entry=[...timers].find(([,timer])=>timer.ms===ms);assert.ok(entry,'Timer '+ms+' exists');timers.delete(entry[0]);entry[1].fn();}};

@@ -1,3 +1,12 @@
+## Manage Lots number transitions — 0.13.2, October 15, 2026
+
+Sliding push now covers live receipts, per-lot/additional-item amounts, tax/interest, selected/block/subdivision counts and saved lot/takedown details.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 0.13.1.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 # Lots status contract
 
 ## Save policy — October 8, 2026

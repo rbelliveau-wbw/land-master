@@ -1,3 +1,12 @@
+## Contract Management number transitions — 1.62.4, October 15, 2026
+
+Sliding push now covers contract/action/review counts, selected lots and closing quantities, parent summaries, completion quantities and activity badges.
+Real values update immediately; native editable precision/caret, identities, dates,
+financial math, permissions and existing save/approval/recovery gates are retained.
+Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
+no Creator deployment is required. Production rollback: 1.62.3.
+[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 ## Attachment form and report rename (1.61.45) — October 11, 2026
 
 The shared file form is `Attachment` and its report is `All_Attachments`.

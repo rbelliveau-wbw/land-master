@@ -35,6 +35,30 @@ use derived displays or a presentation layer for calculated read-only inputs.
 This guide is linked from root AGENTS.md so future repository work discovers the
 standing rule. Module documentation records actual coverage and pending adoption.
 
+## Repository rollout — October 15, 2026
+
+The [inventory](../../docs/number-transition-opportunities-2026-10-14.md) now records
+adoption in all ten widgets. Budget 122.29.43, Manage Lots 0.13.2, Legal 1.62.4,
+Tax 19.17.15, Land Master 8.16.2, Gantt 1.1.10 and Settings 1.5.9 use the canonical
+`shared/number-transitions.js/css` and explicit `shared/number-surfaces.js` map.
+The standalone copies are synchronized before validation. Preserve Forecast,
+Insights and Pro Forma's existing engines and coverage.
+
+The new adapter observes existing displayed output after original handlers run,
+coalescing presentation in one animation frame. It never reads or writes Creator
+data. It uses complete formatted values, record/field/month/display identity,
+actor/permission isolation and a bounded current-display snapshot. Ambiguous keys
+stay static. Unknown values remove their prior numeric sample. Native input
+values/carets and date/identity labels remain unchanged. Equal re-renders during
+a running push resume its remaining time rather than cancelling or restarting it.
+Reduced motion applies immediately. Existing spatial/FLIP/progress behavior is
+retained; only the existing numeric labels participate.
+
+Desktop fixtures exercise actual documents/renderers in all seven new modules,
+real PO/receipt edits, scope isolation, signed/unknown/equal/rapid values, loading,
+reduced motion and bounded updates in a 2,000-cell report. See
+[coverage and release evidence](../../docs/number-transition-rollout-2026-10-15.md).
+
 ## Pro Forma — 1.80.113, October 15, 2026
 
 Apply the same transition to live editor totals and calculated read-only prices,

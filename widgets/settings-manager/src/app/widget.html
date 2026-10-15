@@ -8,8 +8,8 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="settings-controller.js"></script>
-<script src="approval-policy-domain.js?v=1.5.8"></script>
-<script src="approval-admin.js?v=1.5.8"></script>
+<script src="approval-policy-domain.js?v=1.5.9"></script>
+<script src="approval-admin.js?v=1.5.9"></script>
 <link rel="stylesheet" href="approval-admin.css">
 <script src="critical-error-reporter.js"></script>
 <style>
@@ -249,6 +249,9 @@ td input,td select{padding:5px 8px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
 <script src="success-feedback.js?v=1.4.2"></script>
+<script src="number-transitions.js?v=1.5.9"></script>
+<script src="number-surfaces.js?v=1.5.9"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.5.9">
 </head>
 <body>
 
@@ -282,7 +285,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.5.8";
+var SMW_VERSION = "1.5.9";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -1294,6 +1297,9 @@ function boot(){
 }
 boot();
 
+
+/* Repository design: real keyed numeric values, presentation only. */
+if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("settings-manager",{state:function(){return S;},ready:function(){return !!(S.ready);},actor:function(){return S.perms||S.acc||null;}});
 
 })();
 </script>
