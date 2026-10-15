@@ -194,9 +194,18 @@ assert.match(elements.get("kpis").innerHTML,
   "construction cost and sale price occupy the former standalone profit card");
 assert.doesNotMatch(elements.get("assump").innerHTML, /<label>(Sale Price \/ FF|Base Const Cost \$ \/ FF)<\/label>/,
   "promoted per-foot prices are no longer duplicated in assumptions");
+const returnsCard = elements.get("kpis").innerHTML.split('<div class="kpi green">')[0];
+assert.match(returnsCard,
+  /class="kpi slate"><div class="k-label">ROI \/ IRR \/ XIRR<\/div><div class="k-list">ROI: [^]*<br\/>IRR: [^]*<br\/>XIRR: /,
+  "return metrics retain their original heading and stacked appearance");
+assert.match(returnsCard,
+  /class="k-gross"><div class="k-label">Gross Profit<\/div><div class="k-big">\$6,658,631<\/div>/,
+  "Gross Profit is added beneath the existing return metrics in the same card");
 assert.match(elements.get("kpis").innerHTML,
-  /class="kpi slate returns"[^]*Gross Profit<\/div><div class="k-big">\$6,658,631<\/div><div class="k-list">[^]*<span>ROI<\/span>[^]*<span>IRR<\/span>[^]*<span>XIRR<\/span>/,
-  "Gross Profit is grouped with all three existing return metrics");
+  /class="kpi violet"[^]*class="cash-position-secondary"[^]*Positive Cash Flow[^]*Peak Cash Out[^]*id="flowPeakCash"/,
+  "peak funding sits under Positive Cash Flow inside the Cash Position card");
+assert.doesNotMatch(source.slice(source.indexOf('<div class="card" id="cardFlow">'),source.indexOf('<!-- ATTACHMENTS -->')),
+  /flowPeakCash|Peak Cash Out/, "peak funding is removed from the monthly table controls");
 assert.doesNotMatch(elements.get("kpis").innerHTML, /Net Profit/);
 assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,631<\/div>/,
   "Gross Profit displays whole dollars");

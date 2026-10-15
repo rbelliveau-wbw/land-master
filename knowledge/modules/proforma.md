@@ -1,3 +1,14 @@
+## Restore stacked returns and move peak funding (1.80.110, October 15, 2026)
+
+The first dashboard card restores its original ROI / IRR / XIRR heading and
+large vertically stacked return values. Gross Profit is added below them.
+Peak Cash Out moves into the top Cash Position card, under Positive Cash Flow
+in its right column; the monthly table controls return to their prior layout.
+Pricing, funding calculations and January scroll resets remain unchanged.
+
+No Creator forms, fields, functions or Custom APIs change; no Creator deployment
+is required. [Changed files, desktop verification and rollback to 1.80.109](../../docs/proforma-dashboard-card-correction-2026-10-15.md).
+
 ## Dashboard profit, pricing and cash-flow navigation (1.80.109, October 15, 2026)
 
 Gross Profit shares the first dashboard card with ROI / IRR / XIRR. The former
