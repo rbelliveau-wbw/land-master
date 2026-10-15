@@ -10,6 +10,7 @@
   const COLORS = new Set(['#0d5bd7', '#b8860b', '#f6a6a6', '#edf2fb']);
   const normalize = value => String(value || '').replace(/\s+/g, ' ').trim();
   const views = new WeakMap();
+  const motionGroups = new WeakMap();
 
   function parse(html) {
     if (typeof html !== 'string' || !html.trim()) throw new Error('Missing native summary.');
@@ -314,9 +315,10 @@
     return root;
   }
 
-  function render(html, host, inventory) {
+  function render(html, host, inventory, scope = '') {
     try {
       if (!host || !host.ownerDocument || typeof host.replaceChildren !== 'function') return false;
+      const previous=global.ForecastNumbers ? ForecastNumbers.capture(host) : new Map();
       const model = parse(html), result = build(model, host.ownerDocument, inventory);
       // HTML exposes no record IDs. Carry disclosure state only when the complete
       // ordered structural fingerprint agrees; never reconcile by Builder name.
@@ -328,8 +330,12 @@
           if (oldContract && newContract) newContract.open = oldContract.open;
         });
       }
+      const motionGroup=views.get(host)===signature ? motionGroups.get(host)||1 : (motionGroups.get(host)||0)+1;
+      if(global.ForecastNumbers) ForecastNumbers.summary(result,scope,String(motionGroup));
       host.replaceChildren(result);
+      if(global.ForecastNumbers) ForecastNumbers.apply(host,previous);
       views.set(host, signature);
+      motionGroups.set(host,motionGroup);
       return true;
     } catch (error) {
       // Existing native summary remains available in the caller's sandbox iframe.

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T02:11:33.724Z",
+  "generated_at": "2026-10-15T02:40:25.519Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.6.1",
-      "description": "Compact builder rows with inline Lot contract status, smaller note pencils and placeholder assignment across fiscal years.",
+      "version": "1.6.2",
+      "description": "Sliding push for real-time forecast totals, subdivision balances and native schedule numbers; preserve compact builder actions.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "9ceecac205b0632d4ce22c66a45e468842f488a3cfc58e94bec60e05c29ce981",
+      "source_sha256": "ed8eacdfd26abf85cbe5aa810574ecb52e385faf9b717985adde53e01ef8e619",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",

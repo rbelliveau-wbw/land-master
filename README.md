@@ -3,9 +3,10 @@
 
 Source, Creator metadata, knowledge, immutable widget releases, and deployment tooling for the Land Master Zoho Creator application.
 
-Forecast Manager 1.6.1 uses compact builder rows with inline contract/note icons
-and a smaller pencil. See the [module notes](knowledge/modules/forecast-manager.md)
-for regression coverage and rollback; no additional Creator deployment is needed.
+Forecast Manager 1.6.2 adds Sliding push for changing totals, balances and schedule
+numbers while retaining compact inline icons. See the [module notes](knowledge/modules/forecast-manager.md)
+and the [all-widget transition inventory](docs/number-transition-opportunities-2026-10-14.md).
+No additional Creator deployment is needed.
 
 ## Start here
 

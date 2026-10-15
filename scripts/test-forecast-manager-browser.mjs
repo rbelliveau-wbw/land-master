@@ -43,7 +43,13 @@ await page.addInitScript(({summaryHtml})=>{
       if(!window.__window)return {result:JSON.stringify({...meta,ok:false,unknown:false,message:'Forecasting window closed for the month.'})};
       const month=window.__snapshot.months.find(month=>month.id===body.forecastId);
       if(month.forecast!==body.expected)return {result:JSON.stringify({...meta,ok:false,unknown:false,conflict:true,message:'Forecast changed. Refresh before editing.'})};
+      const difference=Number(body.value||0)-Number(month.forecast||0);
       month.forecast=body.value;
+      const summary=new DOMParser().parseFromString(window.__snapshot.summaryHtml,'text/html');
+      summary.querySelector('.fm-top-stat-v').textContent=String(Number(summary.querySelector('.fm-top-stat-v').textContent)-difference);
+      summary.querySelector('.fm-builder-stat-v').textContent=String(Number(summary.querySelector('.fm-builder-stat-v').textContent)-difference);
+      const status=summary.querySelector('.fm-month-status');status.textContent=status.textContent.replace(/of \d+ sold/,'of '+body.value+' sold');
+      window.__snapshot.summaryHtml=summary.body.innerHTML;
       if(window.__lost){window.__lost=false;throw new Error('Fixture lost response after write');}
       return {code:3000,details:{output:JSON.stringify({...meta,...window.__snapshot,verifiedForecastId:month.id,verifiedValue:month.forecast})}};
     }
@@ -103,7 +109,35 @@ try {
   await page.locator('[data-builder-notes]').click();await page.locator('[data-note-parent]').first().fill('Lost reply note');await page.evaluate(()=>{__lost=true;});await page.locator('[data-note-save]').first().click();await page.waitForFunction(()=>document.getElementById('dialogAction').textContent==='Check status');assert.equal(await page.locator('[data-note-save]').first().isDisabled(),true);const noteWrites=await page.evaluate(()=>__sends.length);await page.locator('#dialogAction').click();await page.waitForFunction(()=>document.getElementById('dialogStatus').textContent==='Saved note confirmed.');assert.equal(await page.evaluate(()=>__sends.length),noteWrites,'note recovery sends no write');
   await loadActions();await page.locator('[data-assign-name]').click();await page.locator('[data-option="90071992547409964"]').click();await page.waitForFunction(()=>!document.getElementById('dialogAction').disabled);await page.evaluate(()=>{__lost=true;});await page.locator('#dialogAction').click();await page.waitForFunction(()=>document.getElementById('dialogAction').textContent==='Check status');assert.equal(await page.evaluate(()=>__sends.length),1);await page.locator('#dialogAction').click();await page.waitForFunction(()=>document.getElementById('dialogStatus').textContent==='Builder assigned to all forecasts.');assert.equal(await page.evaluate(()=>__sends.length),1,'assignment recovery never replays');
   await loadActions();await page.locator('[data-assign-name]').click();await page.locator('[data-option="90071992547409964"]').click();await page.waitForFunction(()=>!document.getElementById('dialogAction').disabled);await page.evaluate(()=>{__conflict=true;});await page.locator('#dialogAction').click();await page.waitForFunction(()=>document.getElementById('dialogStatus').textContent.includes('already has WFY'));assert.equal(await page.locator('#dialogAction').isVisible(),false);assert.equal(await page.evaluate(()=>__snapshot.years.filter(row=>row.builderId==='90071992547409963').length),2,'conflict preserves Placeholder');
-  assert.deepEqual(errors,[]);console.log('PASS: inert fixtures verify existing forecast behaviors plus searchable placeholder assignment, all-year scope, preserved notes, per-year note editing and empty/yellow pencil states, contract yes/no, pending locks, duplicate rejection and recovery without replay. Screenshots: '+output);
+  await loadActions();
+  assert.equal(await page.locator('.number-push.is-changing').count(),0,'first snapshot never animates');
+  assert.ok(await page.evaluate(()=>CSS.supports('content','attr(data-from) / ""')),'outgoing pseudo text has an empty accessible alternative');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const animatedInput=page.getByRole('textbox',{name:'DR Horton WFY 2026 October forecasted lots',exact:true});
+  const startingSummary=await page.locator('.fs-balance-value').textContent();
+  await animatedInput.fill('7');await animatedInput.press('Tab');
+  await page.waitForFunction(()=>document.querySelector('[data-cell].saved'));
+  assert.ok(await page.locator('[data-total] .is-changing').count()>0,'acknowledged save slides the builder WFY total');
+  assert.ok(await page.locator('[data-foot] .is-changing').count()>0,'acknowledged save slides the selected month total');
+  assert.ok(await page.locator('[data-foot-total] .is-changing').count()>0,'acknowledged save slides the selected WFY total');
+  assert.equal(await page.locator('.fs-balance-value .is-changing').count(),1,'subdivision balance slides across summary replacement');
+  assert.equal(await page.locator('.fs-card').first().locator('.fs-card-balance-value .is-changing').count(),1,'schedule balance slides');
+  assert.ok(await page.locator('.fs-card').first().locator('.fs-month-status .is-changing').count()>0,'monthly forecast ratio slides only its changed number');
+  assert.equal(await page.locator('input .number-push,[data-native-label*="Date"] .number-push').count(),0,'editable input and date text stay untouched');
+  assert.equal(await animatedInput.inputValue(),'7');
+  assert.equal(Number((await page.locator('.fs-balance-value').textContent()).replaceAll(',','')),Number(startingSummary.replaceAll(',',''))-5,'final value is immediately real; outgoing text is not duplicated in the DOM');
+  await page.screenshot({path:path.join(output,'sliding-push-save.png'),fullPage:true});
+  await page.waitForFunction(()=>!document.querySelector('.number-push.is-changing'));
+  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
+  assert.equal(await page.locator('.number-push.is-changing').count(),0,'equal refresh values stay still');
+  await page.emulateMedia({reducedMotion:'reduce'});await animatedInput.fill('8');await animatedInput.press('Tab');await page.waitForFunction(()=>document.querySelector('[data-cell].saved')&&document.getElementById('saveStatus').textContent==='All changes saved');
+  assert.equal(await page.locator('.number-push.is-changing').count(),0,'reduced motion uses immediate final values');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>{const host=document.createElement('div');host.id='rapidNumberTest';host.innerHTML=ForecastNumbers.markup('9','rapid');document.body.append(host);const node=host.firstChild;ForecastNumbers.update(node,'10');ForecastNumbers.update(node,'-12');});
+  assert.equal(await page.locator('#rapidNumberTest').textContent(),'-12','rapid responses retain only the newest real value');
+  assert.equal(await page.locator('#rapidNumberTest .number-push').getAttribute('data-from'),'10');
+  await page.waitForFunction(()=>!document.querySelector('#rapidNumberTest .is-changing'));await page.locator('#rapidNumberTest').evaluate(node=>node.remove());
+  assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));
   await page.screenshot({path:path.join(output,'failure.png'),fullPage:true});throw error;

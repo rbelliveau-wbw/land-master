@@ -1,5 +1,15 @@
 # Forecast matrices
 
+## Input-driven number changes — v1.6.2
+
+Apply the selected [Sliding push](number-transitions.md) to changed displayed
+matrix and summary numbers. Keep typing fields and their caret intact; totals
+and native summary values follow acknowledged snapshots. First render, unchanged
+values, dates/year identities and different subdivision/view scopes stay still.
+Native HTML remains the summary authority, with its ordered structural
+fingerprint guarding schedule identity. Preserve blank versus zero and all
+native calculation, scope, save, creation and reassignment rules.
+
 ## Compact builder identities — v1.6.1
 
 The user selected Inline icons on October 14, 2026. Keep the builder name,

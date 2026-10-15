@@ -1,5 +1,28 @@
 # Forecast Manager widget contract
 
+## October 14, 2026 number transitions — 1.6.2
+
+Sliding push animates changed matrix totals/counts, read-only Sold/Scheduled
+cells and numeric summary/schedule fields. The old value exits left; the new
+actual value enters from the right over 420ms/16px. It never delays saves or
+changes calculations. Initial/equal values, dates, year identity, distinct
+subdivision/view scopes and active editable inputs stay still. Reduced motion
+uses immediate values. Rapid updates replace the running visual. Native summary
+structural keys preserve the existing no-name-join policy.
+
+Frontend changes: new number-transitions.js/css, forecast-app.js,
+forecast-summary.js and widget.html, plus desktop browser checks and release
+metadata. No forms/fields/reports/functions/Custom APIs change for this release.
+No additional Creator deployment is required; backend promotion stays with the
+user under PMP. Regression checks cover real final values/text parity,
+matrix/summary save updates, initial/equal suppression, rapid signed values,
+input focus, reduced motion and the existing save/notes/assignment/recovery
+scenarios. Production rollback: 1.6.1. Retain saved records and immutable releases.
+
+The requested native Development reassignment was exercised separately against
+two blank test Forecast Years in AAA Springs, including a hidden year. See the
+[live verification record](../releases/forecast-builder-reassignment-dev-2026-10-14.md).
+
 ## October 14, 2026 compact rows — 1.6.1
 
 Builder names, contract status and the smaller note pencil now share one line.

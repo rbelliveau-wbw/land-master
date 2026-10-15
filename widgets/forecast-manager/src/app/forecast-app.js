@@ -47,7 +47,7 @@
     if(!data.subdivision || data.subdivision.id !== S.sub || !Array.isArray(data.years) || !Array.isArray(data.months)) throw new Error('The forecast snapshot does not match this subdivision.');
     S.snapshot=data;
     for(const [id,entry] of S.entries) {const month=data.months.find(row=>row.id===id);if(entry.phase==='saved'&&(!month||month.forecast!==entry.attempted))S.entries.delete(id);}
-    const summaryHtml=String(data.summaryHtml || ''), compact=window.ForecastSummary && ForecastSummary.render(summaryHtml,$('compactSummary'),data.inventory);
+    const summaryHtml=String(data.summaryHtml || ''), compact=window.ForecastSummary && ForecastSummary.render(summaryHtml,$('compactSummary'),data.inventory,S.sub);
     $('compactSummary').hidden=!compact; $('summary').hidden=!!compact;
     $('summaryFrame').srcdoc=compact?'':'<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><style>body{margin:0;padding:12px;background:#fff} .fm-wrap{border:0!important;padding:0!important;background:#fff!important}</style></head><body>'+summaryHtml+'</body></html>';
   }
@@ -76,13 +76,16 @@
   // Zero suppression is presentation-only: forecast zeroes and export data remain explicit.
   function matrixCount(value) {return S.view!=='forecast' && Number(value||0)===0 ? '' : count(value);}
   function metric(year) {return S.view==='forecast'?year.total:S.view==='actual'?year.actual:year.scheduled;}
+  const numberKey = key => S.sub+'|'+S.view+'|'+key;
+  const numberMarkup = (value,key) => ForecastNumbers.markup(value,numberKey(key));
   function render() {
     controls();
     if(!S.snapshot || S.snapshot.subdivision.id !== S.sub) {$('workspace').hidden=true; $('empty').hidden=false; $('window').hidden=true; return;}
     $('workspace').hidden=false; $('empty').hidden=true;
     $('window').hidden=false; $('window').textContent=S.snapshot.windowOpen?'Forecasting window open':'Forecasting window closed'; $('window').classList.toggle('closed',!S.snapshot.windowOpen);
+    const previous=ForecastNumbers.capture($('matrix'));
     const matrix=rows(), yearList=years().map(String).sort((a,b)=>Number(a)-Number(b));
-    $('matrix').dataset.view=S.view; $('matrixCount').textContent=matrix.length+' builder'+(matrix.length===1?'':'s')+' · '+yearList.length+' year'+(yearList.length===1?'':'s');
+    $('matrix').dataset.view=S.view; ForecastNumbers.text($('matrixCount'),matrix.length+' builder'+(matrix.length===1?'':'s')+' · '+yearList.length+' year'+(yearList.length===1?'':'s'),numberKey('matrix-count'));
     let html='<colgroup><col>'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th>';
     html+=yearList.map(year=>'<th colspan="13"><div class="year-heading"><strong>WFY '+esc(year)+'</strong><small>Feb '+esc(year)+' — Jan '+esc(Number(year)+1)+'</small></div></th>').join('')+'</tr><tr>';
     html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3).toUpperCase()+'</th>').join('')+'<th class="year-total">TOTAL</th>').join('')+'</tr></thead><tbody>';
@@ -93,18 +96,19 @@
         if(!year.parent) {html+='<td colspan="13" class="missing-year"><div class="missing-content"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 2v4m10-4v4M3 9h18m-9 3v5m-2.5-2.5h5"/></svg><span><b>No forecast available.</b></span><button class="btn" data-create-builder="'+esc(row.builderId)+'" data-create-year="'+esc(year.year)+'"'+(busy()?' disabled':'')+'>Create Forecast</button></div></td>';continue;}
         html+=year.months.map((month,index)=>{
           const reason=M.lock(month,S.snapshot), entry=month.id?S.entries.get(month.id):null, value=entry?entry.attempted:month.forecast, phase=entry?entry.phase:'', title=reason||'Sold: '+count(month.actual)+' · Scheduled: '+count(month.scheduled);
-          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(S.view==='forecast'?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(value)+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong>'+matrixCount(month[S.view])+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
+          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(S.view==='forecast'?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(value)+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong>'+numberMarkup(matrixCount(month[S.view]),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
         }).join('');
-        html+='<td class="year-total" data-total="'+esc(M.key(row.builderId,year.year))+'">'+matrixCount(metric(year))+'<small>WFY '+esc(year.year)+'</small></td>';
+        html+='<td class="year-total" data-total="'+esc(M.key(row.builderId,year.year))+'">'+numberMarkup(matrixCount(metric(year)),'total:'+M.key(row.builderId,year.year))+'<small>WFY '+esc(year.year)+'</small></td>';
       }
       html+='</tr>';
     }
     if(!matrix.length) html+='<tr><td colspan="'+(1+13*yearList.length)+'" class="empty-table">No forecast available.</td></tr>';
     html+='</tbody><tfoot><tr><th class="builder-column">Selected total</th>'+yearList.map(year=>{
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
-      return M.months.map((month,index)=>'<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' data-foot="'+esc(year)+'-'+index+'">'+matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0))+'</td>').join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+matrixCount(selected.reduce((sum,row)=>sum+metric(row),0))+'</td>';
+      return M.months.map((month,index)=>'<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0)),'foot:'+year+'-'+index)+'</td>').join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)),'foot-total:'+year)+'</td>';
     }).join('')+'</tr></tfoot>';
     $('matrix').innerHTML=html;
+    ForecastNumbers.apply($('matrix'),previous);
   }
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
   function patch() {
@@ -121,11 +125,11 @@
       cell.title=entry && entry.error || reason || 'Sold: '+count(month.actual)+' · Scheduled: '+count(month.scheduled);
     }
     const matrix=rows();
-    for(const row of matrix) for(const year of row.years) {const cell=document.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) cell.innerHTML=matrixCount(metric(year))+'<small>WFY '+esc(year.year)+'</small>';}
+    for(const row of matrix) for(const year of row.years) {const cell=document.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(metric(year)));}
     for(const year of years().map(String)) {
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
-      M.months.forEach((month,index)=>{const cell=document.querySelector('[data-foot="'+year+'-'+index+'"]'); if(cell) cell.textContent=matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0));});
-      const total=document.querySelector('[data-foot-total="'+year+'"]'); if(total) total.textContent=matrixCount(selected.reduce((sum,row)=>sum+metric(row),0));
+      M.months.forEach((month,index)=>{const cell=document.querySelector('[data-foot="'+year+'-'+index+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0)));});
+      const total=document.querySelector('[data-foot-total="'+year+'"]'); if(total) ForecastNumbers.update(total.querySelector('[data-number-key]'),matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)));
     }
   }
   async function load() {

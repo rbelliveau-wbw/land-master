@@ -6,6 +6,9 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+Input-driven numeric displays use the selected [Sliding push transition](number-transitions.md).
+Forecast Manager implements the pattern; other widgets await adoption.
+
 Data Insights keeps branding, connection status, Refresh and Diagnostics in the
 sidebar, reclaiming the full-width shell header for report height. Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
