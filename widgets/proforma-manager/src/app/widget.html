@@ -8,15 +8,15 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.108"></script>
-<script src="pf-save-audit.js?v=1.80.108"></script>
-<script src="pf-progress.js?v=1.80.108"></script>
+<script src="pf-save-verification.js?v=1.80.109"></script>
+<script src="pf-save-audit.js?v=1.80.109"></script>
+<script src="pf-progress.js?v=1.80.109"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.108"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.108">
-<script src="comments.js?v=1.80.108"></script>
+<script src="budget-transfer-ui.js?v=1.80.109"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.109">
+<script src="comments.js?v=1.80.109"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -421,6 +421,9 @@ table.pf-list tr.grp-row:hover td{background:linear-gradient(180deg,#f2f5fa,#e9e
 .kpi.blue::before{display:none}
 .kpi.blue .k-label{color:rgba(255,255,255,.75)}
 .kpi.blue .k-big{color:#fff;font-size:24px}
+.kpi .k-price+.k-price{margin-top:15px}
+.kpi.slate.returns .k-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:14px;line-height:1.4}
+.kpi.returns .k-list span{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px}
 .kpi.violet::before{background:#7c3aed}
 .kpi.violet .k-label{color:#6d28d9}
 .kpi.violet .k-list{font-size:11.5px}
@@ -435,7 +438,9 @@ table.pf-list tr.grp-row:hover td{background:linear-gradient(180deg,#f2f5fa,#e9e
 .assump .a-row label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#7d90ad}
 .assump .a-row b{font-variant-numeric:tabular-nums}
 .assump .a-row b{font-weight:800;color:var(--navy)}
-.flow-ctl{display:flex;align-items:center;justify-content:center;gap:34px;padding:12px 0 6px}
+.flow-ctl{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:12px 16px 8px}
+.flow-peak{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:700;color:var(--muted)}
+.flow-peak b{color:var(--navy);font-size:18px;font-weight:800;letter-spacing:-.3px;font-variant-numeric:tabular-nums}
 .seg{display:flex;align-items:center;gap:3px;background:#eef2f8;border:1px solid #dde5f0;border-radius:999px;padding:3px}
 .seg button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:26px;padding:0 13px;border:0;background:transparent;font-size:11px;font-weight:750;letter-spacing:0;text-transform:none;color:#5a6b85;border-radius:999px;cursor:pointer;white-space:nowrap;transition:all .13s}
 .seg button:hover{color:var(--primary)}
@@ -1826,7 +1831,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.108"></script>
+<script src="success-feedback.js?v=1.80.109"></script>
 </head>
 <body>
 
@@ -1942,6 +1947,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
     <div class="card mb" id="cardAssump"><div class="assump" id="assump"></div></div>
     <div class="card" id="cardFlow">
       <div class="flow-ctl">
+        <div class="flow-peak"><span>Peak Cash Out</span><b id="flowPeakCash">—</b></div>
         <div class="seg" id="flowSeg" role="group" aria-label="Cash flow view">
           <button data-tab="cash" class="active" aria-pressed="true">Cash Flow</button>
           <button data-tab="in" aria-pressed="false">Inflows</button>
@@ -2241,7 +2247,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.108";
+var PFW_VERSION="1.80.109";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -7695,7 +7701,7 @@ function renderDealRoom(){
   }).join("");
   var strip=changed
     ? '<div class="delta-strip">'
-      +'<div class="ds-item"><span>Net Profit</span><b>'+fmtWhole$(cur.np)+'</b>'+dealFmtDelta(cur.np-base.kpis.np,false,false,'',true)+'</div>'
+      +'<div class="ds-item"><span>Gross Profit</span><b>'+fmtWhole$(cur.np)+'</b>'+dealFmtDelta(cur.np-base.kpis.np,false,false,'',true)+'</div>'
       +'<div class="ds-item"><span>ROI</span><b>'+(cur.roi==null?'—':fmtPct(cur.roi))+'</b>'+((cur.roi!=null&&base.kpis.roi!=null)?dealFmtDelta(cur.roi-base.kpis.roi,true,false):'')+'</div>'
       +'<div class="ds-item"><span>IRR</span><b>'+(cur.irr==null?'—':fmtPct(cur.irr))+'</b>'+((cur.irr!=null&&base.kpis.irr!=null)?dealFmtDelta(cur.irr-base.kpis.irr,true,false):'')+'</div>'
       +'<div class="ds-item"><span>XIRR</span><b>'+(cur.xirr==null?'—':fmtPct(cur.xirr))+'</b>'+((cur.xirr!=null&&base.kpis.xirr!=null)?dealFmtDelta(cur.xirr-base.kpis.xirr,true,false):'')+'</div>'
@@ -7728,7 +7734,7 @@ function renderDealRoom(){
     +'<tr'+(mudChanged?' class="'+(mudEnabled?'cmp-edit-good':'cmp-edit-bad')+'"':'')+'><td>MUD Revenue</td><td>'+mudCell(base.kpis,base.mudRevenueEnabled!==false)+'</td>'
       +pinTds(function(p){return mudCell(p.kpis,p.mudRevenueEnabled!==false);})
       +'<td>'+mudCell(cur,mudEnabled)+'</td><td>'+dealFmtDelta(cur.mud-base.kpis.mud,false,false,'',true)+'</td></tr>'
-    +kpiRow("Net Profit", function(k){ return fmtWhole$(k.np); }, dealFmtDelta(cur.np-base.kpis.np,false,false,'',true))
+    +kpiRow("Gross Profit", function(k){ return fmtWhole$(k.np); }, dealFmtDelta(cur.np-base.kpis.np,false,false,'',true))
     +kpiRow("ROI", function(k){ return k.roi==null?'—':fmtPct(k.roi); }, (cur.roi!=null&&base.kpis.roi!=null)?dealFmtDelta(cur.roi-base.kpis.roi,true,false):'')
     +kpiRow("IRR", function(k){ return k.irr==null?'—':fmtPct(k.irr); }, (cur.irr!=null&&base.kpis.irr!=null)?dealFmtDelta(cur.irr-base.kpis.irr,true,false):'')
     +kpiRow("Peak Cash Out", function(k){ return fmtWhole$(k.peak); }, dealFmtDelta(cur.peak-base.kpis.peak,false,false,'',true))
@@ -7841,7 +7847,7 @@ function renderDealHeavy(){
           +'<span class="sens-test">'+esc(b.span)+'</span>'
           +'<div class="sens-track"><div class="sens-bar" style="width:'+w+'%"></div></div>'
           +'<span class="sens-val"><b>'+irrText+'</b><small>IRR</small></span>'
-          +'<span class="sens-val profit"><b>'+npText+'</b><small>Net profit</small></span>'
+          +'<span class="sens-val profit"><b>'+npText+'</b><small>Gross profit</small></span>'
           +'<span class="sens-tier '+tier+'">'+tierLabel+'</span>'
         +'</div>';
       }).join('');
@@ -7950,13 +7956,15 @@ function renderDashboard(){
   var positiveCashHtml=incompleteSales?'—':positiveCash
     ?'Mth '+positiveCash.m+' · '+ymShort(positiveCash.date):'Not reached';
   k.innerHTML=
-    '<div class="kpi slate"><div class="k-label">ROI / IRR / XIRR</div><div class="k-list">'
-      +'ROI: '+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'<br/>IRR: '+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'<br/>XIRR: '+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div></div>'
+    '<div class="kpi slate returns"><div class="k-label">Gross Profit</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Net_Profit))+'</div><div class="k-list">'
+      +'<div><span>ROI</span>'+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'</div><div><span>IRR</span>'+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'</div><div><span>XIRR</span>'+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div></div></div>'
     +'<div class="kpi green"><div class="k-label">Total Inflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Income))+'</div><div class="k-rows">'+kRows(inflowsRows)+'</div></div>'
     +'<div class="kpi red"><div class="k-label">Total Outflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Expenses))+'</div><div class="k-rows">'+kRows(outflowRows)+'</div></div>'
-    +'<div class="kpi blue"><div class="k-label">Net Profit</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Net_Profit))+'</div></div>'
+    +'<div class="kpi blue"><div class="k-price"><div class="k-label">Const. Cost / LF</div><div class="k-big">'+fmtWhole$(num(m.Const_Cost_FF))+'</div></div>'
+      +'<div class="k-price"><div class="k-label">Sale Price / FF</div><div class="k-big">'+fmtWhole$(num(m.Sale_Price_FF))+'</div></div></div>'
     +'<div class="kpi violet"><div class="cash-position-columns"><div><div class="k-label">Cash Position</div><div class="k-list" style="font-size:12px">'+cpHtml+'</div></div>'
       +'<div><div class="k-label">Positive Cash Flow</div><div class="k-list" style="font-size:12px">'+positiveCashHtml+'</div></div></div></div>';
+  document.getElementById("flowPeakCash").textContent=incompleteSales||!(c.agg||[]).length?"—":fmtWhole$(Math.abs(dealPeakCash(c)));
   renderDealRoom();
   document.getElementById("vDash").classList.toggle("meeting", !!S.meetingMode);
   /* assumptions strip */
@@ -7977,11 +7985,11 @@ function renderDashboard(){
     +'<div>'+aRow("Lot Size FT",fmtN(num(m.Lot_Size_Ft)))+aRow("Est Lots / Acre",fmtN(sch.estLotsPerAcre,2))
       +aRow("Ft St / Lot",fmtN(sch.ftStPerLot,2))+aRow("Engineering Cost $ / Lot",fmtWhole$(num(m.Engineering_Cost_Lot)))
       +aRow("Base Const Cost $ / Lot",fmtWhole$(sch.ftStPerLot*num(m.Const_Cost_FF)))
-      +aRow("Total Cost $ / Lot (excl land)",fmtWhole$(totalCostLot))+aRow("Base Const Cost $ / FF",fmtWhole$(num(m.Const_Cost_FF)))+'</div>'
+      +aRow("Total Cost $ / Lot (excl land)",fmtWhole$(totalCostLot))+'</div>'
     +'<div>'+aRow("Engineering Delay",esc(m.Engineering_Delay_Months||"0")+" Months")+aRow("Engineering Start",ymLabel(sch.engineeringStart))
       +aRow("Engineering Length",esc(m.Engineering_Length_Months||"—")+" Months")+aRow("Eng to Const Delay",esc(m.Construction_Delay_Months||"0")+" Months")
       +aRow("Construction Start",ymLabel(sch.constructionStart))+aRow("Construction Length",esc(m.Construction_Length||"—")+" Months")+'</div>'
-    +'<div>'+aRow("Sale Price / FF",fmtWhole$(num(m.Sale_Price_FF)))+aRow("Lot Sale Price $",fmtWhole$(num(m.Sale_Price_FF)*num(m.Lot_Size_Ft)))
+    +'<div>'+aRow("Lot Sale Price $",fmtWhole$(num(m.Sale_Price_FF)*num(m.Lot_Size_Ft)))
       +aRow("Estimated Lot Sale Start",ymLabel(sch.lotSaleStart))+salesAssumptions
       +aRow("Estimated Completion",ymLabel(sch.estimatedCompletion))+'</div>';
   renderFlowTable();
@@ -12748,8 +12756,13 @@ document.getElementById("flowBody").addEventListener("click", function(e){
     if(next) next.focus();
   }
 });
-document.getElementById("flowPrev").addEventListener("click", function(){ S.dash.page--; renderFlowTable(); });
-document.getElementById("flowNext").addEventListener("click", function(){ S.dash.page++; renderFlowTable(); });
+function changeFlowPage(delta){
+  S.dash.page+=delta;
+  renderFlowTable();
+  ["flowTableWrap","flowTimelineWrap"].forEach(function(id){document.getElementById(id).scrollLeft=0;});
+}
+document.getElementById("flowPrev").addEventListener("click", function(){ changeFlowPage(-1); });
+document.getElementById("flowNext").addEventListener("click", function(){ changeFlowPage(1); });
 document.getElementById("opCancel").addEventListener("click",closeOwnerPicker);
 document.getElementById("opClose").addEventListener("click",closeOwnerPicker);
 document.getElementById("opApply").addEventListener("click",applyOwnerPicker);

@@ -88,6 +88,14 @@ the first strictly positive cumulative-cash project month number and calendar
 month/year underneath. The dashboard record bar places Export directly to the
 right of Comments and opens the existing PDF, Excel and LOI/Contract chooser.
 
+On the Pro Forma dashboard, group Gross Profit with ROI, IRR and XIRR in the
+first summary card. Use the former standalone profit card for construction
+cost per street LF and sale price per lot front foot, retaining the dark-blue
+emphasis. Keep Peak Cash Out beside the cash-flow view controls and show the
+largest cumulative deficit as a positive funding amount. Changing the displayed
+period resets horizontal scroll in both the cash-flow matrix and phase timeline
+to January; expanding rows within the current period preserves scroll position.
+
 Lot picker hover cards show record details and relevant claim/hold warnings; omit generic backfill availability and data-preservation footers.
 
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.

@@ -62,7 +62,7 @@ assert.match(css,/table\.flow tr\.xchild td\.xname\{[^}]*position:sticky;left:0/
 
 /* Phase-sales detail must use the same month receipts as Finished Lot Sales. It is
    descriptive and must not increase Total Income a second time. */
-const elements = new Map(["flowTableWrap", "flowTimelineWrap", "flowTimelineTooltip", "flowHead",
+const elements = new Map(["flowTableWrap", "flowTimelineWrap", "flowTimelineBody", "flowTimelineTooltip", "flowHead",
   "flowBody", "flowPrev", "flowNext", "flowYr"].map(id => [id, {
   innerHTML: "", hidden: false, disabled: false, textContent: ""
 }]));
@@ -142,12 +142,40 @@ assert.match(elements.get("flowBody").innerHTML,
 assert.equal(JSON.stringify(context.S.dash.calc), flowBefore,
   "rendering whole dollars does not rewrite calculated month rows");
 
-/* The dashboard assumption rounds the saved frontage price for display only;
+/* Every period change opens January in both scrollable views. Preserve vertical
+   position and the existing 24-month window, across all four dashboard tabs. */
+vm.runInContext(extractFunction("changeFlowPage"), context);
+context.flowTimelineHtml = () => "Timeline";
+const previousCalc = context.S.dash.calc;
+context.S.dash.calc = {...previousCalc, agg: [...previousCalc.agg,
+  {...agg[0], m: 48, date: {y: 2030, m: 12}}]};
+for (const tab of ["cash", "in", "out", "timeline"]) {
+  context.S.dash.tab = tab;
+  context.S.dash.page = 0;
+  for (const id of ["flowTableWrap", "flowTimelineWrap"])
+    Object.assign(elements.get(id), {scrollLeft: 840, scrollTop: 71});
+  context.changeFlowPage(1);
+  assert.equal(elements.get("flowYr").textContent, "2029 - 2030", `${tab} retains 24-month paging`);
+  for (const id of ["flowTableWrap", "flowTimelineWrap"]) {
+    assert.equal(elements.get(id).scrollLeft, 0, `${tab} next period resets ${id} to January`);
+    assert.equal(elements.get(id).scrollTop, 71, `${tab} preserves vertical position`);
+    elements.get(id).scrollLeft = 400;
+  }
+  context.changeFlowPage(-1);
+  assert.equal(elements.get("flowYr").textContent, "2027 - 2028");
+  for (const id of ["flowTableWrap", "flowTimelineWrap"])
+    assert.equal(elements.get(id).scrollLeft, 0, `${tab} previous period resets ${id}`);
+}
+context.S.dash.calc = previousCalc;
+context.S.dash.tab = "cash";
+
+/* The prominent pricing card rounds the saved frontage price for display only;
    the model retains its fractional value. */
 elements.set("kpis", {innerHTML: ""});
 elements.set("assump", {innerHTML: ""});
 elements.set("vDash", {classList: {toggle() {}}});
-context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Lot_Size_Ft: "56"};
+elements.set("flowPeakCash", {textContent: ""});
+context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Const_Cost_FF: "300.49", Lot_Size_Ft: "56"};
 context.S.dash.calc = {totals: {Gross_Sales: 8088630.52, Total_Income: 8088630.52,
   Total_Expenses: 1430000.01, Net_Profit: 6658630.51}, schedule: {}, cashPosition: [{date: {}, value: -957671.68}],
   phases: [], warnings: []};
@@ -158,19 +186,39 @@ context.renderFlowTable = () => {};
 context.phaseSalesDisplaySummary = () => null;
 context.ymLabel = () => "Jan 2030";
 context.landPurchaseLabel = () => "—";
-vm.runInContext(extractFunction("renderDashboard"), context);
+vm.runInContext(extractFunction("dealPeakCash") + "\n" + extractFunction("renderDashboard"), context);
 const dashboardBefore = JSON.stringify(context.S.dash);
 context.renderDashboard();
-assert.match(elements.get("assump").innerHTML,
-  /<label>Sale Price \/ FF<\/label><b>\$1,444<\/b>/,
-  "the saved Sale Price / FF rounds to whole dollars on the dashboard");
+assert.match(elements.get("kpis").innerHTML,
+  /class="kpi blue"[\s\S]*Const\. Cost \/ LF<\/div><div class="k-big">\$300<\/div>[\s\S]*Sale Price \/ FF<\/div><div class="k-big">\$1,444<\/div>/,
+  "construction cost and sale price occupy the former standalone profit card");
+assert.doesNotMatch(elements.get("assump").innerHTML, /<label>(Sale Price \/ FF|Base Const Cost \$ \/ FF)<\/label>/,
+  "promoted per-foot prices are no longer duplicated in assumptions");
+assert.match(elements.get("kpis").innerHTML,
+  /class="kpi slate returns"[^]*Gross Profit<\/div><div class="k-big">\$6,658,631<\/div><div class="k-list">[^]*<span>ROI<\/span>[^]*<span>IRR<\/span>[^]*<span>XIRR<\/span>/,
+  "Gross Profit is grouped with all three existing return metrics");
+assert.doesNotMatch(elements.get("kpis").innerHTML, /Net Profit/);
 assert.match(elements.get("kpis").innerHTML, /<div class="k-big">\$6,658,631<\/div>/,
-  "Net Profit displays whole dollars");
+  "Gross Profit displays whole dollars");
 assert.match(elements.get("kpis").innerHTML, /\(\$957,672\)/,
   "negative cash snapshots retain their accounting sign and round for display");
 assert.doesNotMatch(elements.get("kpis").innerHTML, /\$[\d,]+\.\d/);
 assert.equal(JSON.stringify(context.S.dash), dashboardBefore,
   "display rounding leaves both persisted inputs and calculated amounts intact");
+assert.equal(elements.get("flowPeakCash").textContent, "—", "no schedule does not invent a funding result");
+context.S.dash.calc.agg = [{totalIncome: 0, totalExpenses: 60},
+  {totalIncome: 10, totalExpenses: 120}, {totalIncome: 250, totalExpenses: 0}];
+const peakBefore = JSON.stringify(context.S.dash.calc);
+context.renderDashboard();
+assert.equal(elements.get("flowPeakCash").textContent, "$170", "peak funding is the magnitude of the lowest cumulative cash balance");
+assert.equal(JSON.stringify(context.S.dash.calc), peakBefore, "peak display cannot mutate monthly cash flows");
+context.S.dash.calc.agg = [{totalIncome: 250, totalExpenses: 60}];
+context.renderDashboard();
+assert.equal(elements.get("flowPeakCash").textContent, "$0", "no cash deficit requires no funding");
+context.S.dash.calc.warnings = ["Complete phase schedule"];
+context.renderDashboard();
+assert.equal(elements.get("flowPeakCash").textContent, "—", "incomplete schedules do not show a calculated peak");
+context.S.dash.calc.warnings = [];
 context.ymShort = date => `${context.MONTHS_S[date.m-1]} ${date.y}`;
 context.S.dash.calc.agg = [
   {m:1,date:{y:2027,m:12},cash:0,runCash:0},
@@ -190,12 +238,12 @@ context.renderDashboard();
 assert.match(elements.get('kpis').innerHTML,/Positive Cash Flow<\/div><div class="k-list"[^>]*>Mth 1 · Dec 2027/,'first-month and fractional positive balances use actual calculation precision');
 context.S.dash.model.Sale_Price_FF = "1444.50";
 context.renderDashboard();
-assert.match(elements.get("assump").innerHTML,
-  /<label>Sale Price \/ FF<\/label><b>\$1,445<\/b>/);
+assert.match(elements.get("kpis").innerHTML,
+  /Sale Price \/ FF<\/div><div class="k-big">\$1,445<\/div>/);
 context.S.dash.model.Sale_Price_FF = "1500";
 context.renderDashboard();
-assert.match(elements.get("assump").innerHTML,
-  /<label>Sale Price \/ FF<\/label><b>\$1,500<\/b>/,
+assert.match(elements.get("kpis").innerHTML,
+  /Sale Price \/ FF<\/div><div class="k-big">\$1,500<\/div>/,
   "whole-number Sale Price / FF values omit decimal places");
 
 console.log("Pro Forma dashboard Total column placement, scope, and sign checks passed.");

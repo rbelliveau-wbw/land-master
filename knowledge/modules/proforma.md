@@ -1,3 +1,22 @@
+## Dashboard profit, pricing and cash-flow navigation (1.80.109, October 15, 2026)
+
+Gross Profit shares the first dashboard card with ROI / IRR / XIRR. The former
+standalone profit card displays construction cost per street LF and sale price
+per lot front foot; those two rates leave the assumptions strip. Dashboard
+scenario profit labels use Gross Profit as well. The persisted `Net_Profit`
+field, calculation basis, editor/list labels and export contracts are unchanged.
+
+Peak Cash Out appears beside the cash-flow controls, using the magnitude of the
+existing scenario peak-deficit calculation across the full schedule. Empty or
+incomplete schedules show —; a complete schedule without a deficit shows $0.
+Previous/Next resets horizontal scrolling in the matrix and timeline to January
+for Cash Flow, Inflows, Outflows and Timeline, preserving 24-month pagination,
+vertical position, row expansion, Cash Position and Positive Cash Flow.
+
+No Creator deployment is required. Verification, changed files, affected
+contracts and rollback to `1.80.108`:
+[dashboard financial summary](../../docs/proforma-dashboard-financial-summary-2026-10-15.md).
+
 ## Cash card columns and dashboard export (1.80.108, October 14, 2026)
 
 Cash Position uses two columns within the same card: anniversary snapshots on
