@@ -202,3 +202,10 @@ and view slider, visible only for Sold + Forecast. Keep two WFY/month header row
 without separate Sold/Forecast group headings. Center each WFY chip and calendar
 date range together over its year in every view. Desktop checks cover placement,
 centering geometry, rendered colors, footer basis, rollover and other-view reset.
+
+October 15, v1.7.7: center the color key and view slider as one group in the
+complete matrix toolbar. Keep the title/count left and Export/recovery controls
+right, using equal flexible side tracks. The legend has no automatic side margin.
+When desktop space is limited, put the group on its own centered row. Keep the
+legend contextual to Sold + Forecast and preserve centered WFY/date headings.
+Desktop geometry checks cover 1440px and the reported 2308px width.

@@ -308,3 +308,9 @@ Sold + Forecast uses blue completed months and green current/future forecasts,
 with its key in the toolbar. Keep the existing WFY/month headers and center each
 year/date group. Existing calculations, blank-zero editing and numeric transitions
 are unchanged. No Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.6-2026-10-15.md).
+
+## Version 1.7.7 centered view controls
+
+The toolbar centers the color key and view slider as one group, with title/counts
+left and Export/recovery actions right. No data or numeric-transition changes;
+no Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.7-2026-10-15.md).

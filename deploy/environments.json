@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T18:38:49.533Z",
+  "generated_at": "2026-10-15T18:47:03.586Z",
   "note": "Creator registrations retain stable Production URLs. Migrated widget loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
@@ -12,7 +12,7 @@
       "manage-lots": "0.13.2",
       "settings-manager": "1.5.9",
       "lot-sales-explorer": "1.5.52",
-      "forecast-manager": "1.7.6"
+      "forecast-manager": "1.7.7"
     },
     "stage": {
       "proforma-manager": "1.80.88",
@@ -34,7 +34,7 @@
       "manage-lots": "0.13.2",
       "settings-manager": "1.5.9",
       "lot-sales-explorer": "1.5.52",
-      "forecast-manager": "1.7.6"
+      "forecast-manager": "1.7.7"
     }
   },
   "path_aliases": {

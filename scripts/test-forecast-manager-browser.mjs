@@ -83,6 +83,11 @@ try {
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
   assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span').allTextContents(),['Sold','Forecast']);
   assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const title=host.querySelector('.matrix-title').getBoundingClientRect(),key=host.querySelector('#matrixLegend').getBoundingClientRect(),switcher=host.querySelector('.segments').getBoundingClientRect();return key.left>title.right&&key.right<switcher.left&&Math.abs((key.top+key.bottom)/2-(switcher.top+switcher.bottom)/2)<1;}),'legend occupies the marked toolbar space before the slider');
+  assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const bar=host.getBoundingClientRect(),group=host.querySelector('.matrix-view-controls').getBoundingClientRect();return Math.abs((group.left+group.right)/2-(bar.left+bar.right)/2)<1;}),'color key and slider center as one group within the full toolbar');
+  await page.setViewportSize({width:2308,height:1066});
+  assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const bar=host.getBoundingClientRect(),group=host.querySelector('.matrix-view-controls').getBoundingClientRect(),title=host.querySelector('.matrix-title').getBoundingClientRect(),actions=host.querySelector('.matrix-actions').getBoundingClientRect();return Math.abs((group.left+group.right)/2-(bar.left+bar.right)/2)<1&&title.right<group.left&&actions.left>group.right;}),'wide desktop preserves centered group, left title and right actions');
+  await page.screenshot({path:path.join(output,'centered-view-controls-wide.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
   assert.equal(await page.locator('#matrix thead tr').count(),2,'retain existing WFY/month rows without Sold/Forecast group headings');
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
