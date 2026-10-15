@@ -93,7 +93,12 @@ try {
       assert.ok(geometry.centered&&geometry.clear,'slider alone stays centered with clear legend/title/actions at '+width+' '+view);
       if(!anchor)anchor=geometry;
       assert.equal(geometry.x,anchor.x,'selection never moves the slider');assert.equal(geometry.width,anchor.width,'selection never resizes the slider');
-      assert.ok(await page.locator('#matrix tbody td[data-month-start],#matrix tfoot td[data-month-start]').evaluateAll(nodes=>nodes.every(node=>{const isCurrent=node.classList.contains('current-month'),hasValue=node.hasAttribute('data-has-value'),basis=node.dataset.basis,fill={sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}[basis],actual=getComputedStyle(node).backgroundColor;if(isCurrent)return actual==='rgb(238, 229, 251)';return hasValue?actual===fill:!Object.values({sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}).includes(actual);})),view+' colors only nonzero values, with lavender current month');
+      assert.ok(await page.locator('#matrix tbody td:not(.missing-year)').evaluateAll(nodes=>nodes.every(node=>['rgb(237, 243, 249)','rgb(229, 237, 246)'].includes(getComputedStyle(node).backgroundColor))),view+' body cells stay neutral, including current month and row totals');
+      assert.ok(await page.locator('#matrix tbody .month-cell[data-has-value]').evaluateAll(nodes=>nodes.every(node=>{const value=node.querySelector('input,strong'),style=getComputedStyle(value),box=value.getBoundingClientRect(),fill={sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}[node.dataset.basis];return style.backgroundColor===fill&&style.borderTopWidth==='1px'&&style.borderRadius==='5px'&&box.width===43&&box.height===30;})),view+' nonzero values use matching 43×30 colored rectangles');
+      assert.ok(await page.locator('#matrix tfoot td[data-month-start]').evaluateAll(nodes=>nodes.every(node=>{const fill={sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}[node.dataset.basis],value=node.querySelector('[data-number-key]'),style=getComputedStyle(value);return getComputedStyle(node).backgroundColor===fill&&style.backgroundColor==='rgba(0, 0, 0, 0)'&&style.borderTopWidth==='0px';})),view+' bottom totals keep full-cell color and no value rectangles');
+      assert.ok(await page.locator('#matrix tbody .year-total>[data-number-key]:not([data-number-value=""])').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).backgroundColor==='rgb(225, 235, 245)'&&node.getBoundingClientRect().width===43&&node.getBoundingClientRect().height===30)),'row year totals use neutral rectangles');
+      assert.ok(await page.locator('#matrix td.current-month').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).borderLeftColor==='rgb(195, 168, 228)'&&getComputedStyle(node).borderLeftWidth==='2px')),'current month retains purple side rails');
+      assert.equal(await page.locator('#matrix th.current-month').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(238, 229, 251)','current heading stays lavender');
       assert.equal(await page.locator('#matrix .current-month-label:visible').count(),1,'current month has an explicit label');
       if(width===2308)await page.screenshot({path:path.join(output,'value-colors-'+view+'-wide.png'),fullPage:true});
     }
@@ -105,8 +110,8 @@ try {
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
   assert.equal(await page.locator('#matrix col[data-month-start="2027-01-01"]').getAttribute('data-basis'),'forecast','fiscal January uses its calendar year');
-  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('strong')).color]),['rgb(220, 236, 255)','rgb(21, 91, 158)']);
-  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(223, 241, 230)');
+  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('strong')).backgroundColor,getComputedStyle(node.querySelector('strong')).color]),['rgb(237, 243, 249)','rgb(220, 236, 255)','rgb(21, 91, 158)']);
+  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('input')).backgroundColor]),['rgb(237, 243, 249)','rgb(223, 241, 230)']);
   assert.equal(await page.locator('#matrix tfoot [data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
   await page.screenshot({path:path.join(output,'sold-forecast-colors.png'),fullPage:true});
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook');
@@ -120,7 +125,8 @@ try {
   const beforeZeros=await page.evaluate(()=>{const before=structuredClone(__snapshot.months);__snapshot.months.forEach(month=>{month.actual=0;month.forecast=0;});return before;});
   await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
   assert.equal(await past.locator('strong').textContent(),'','zero sold lots display blank in the mixed view');
-  assert.equal(await page.locator('#matrix td[data-has-value]').count(),0,'zero refresh removes all metric fills, preserving only current-month lavender');
+  assert.equal(await page.locator('#matrix td[data-has-value]').count(),0,'zero refresh removes value rectangles while bottom totals keep their basis colors');
+  assert.ok(await page.locator('#matrix tbody .month-cell>strong').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle(node).borderTopWidth==='0px')),'empty read-only values have no rectangle');
   assert.equal(await page.locator('#matrix tfoot [data-foot="2026-0"]').textContent(),'','zero mixed month total is blank');
   assert.equal(await page.locator('#matrix tfoot [data-foot-total="2026"]').textContent(),'','zero mixed year total is blank');
   assert.match(await past.getAttribute('title'),/Actuals: 0 · Forecast: 0/,'hover retains actual zero values');

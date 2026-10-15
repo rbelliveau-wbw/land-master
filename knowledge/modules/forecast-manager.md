@@ -325,3 +325,14 @@ and metric-colored values inside it. Forecast remains the initial view; save,
 blank-zero, export and Sliding push behavior is preserved. No forms, fields,
 functions or Custom APIs change; no Creator deployment is required. See
 [release and rollback details](../releases/forecast-manager-v1.7.8-2026-10-15.md).
+
+## Version 1.7.9 value rectangles
+
+Body values use blue Sold, green Forecast or amber Scheduled rectangles matching
+the forecast inputs; body cells remain neutral. Row year totals use neutral
+rectangles. The bottom totals row retains colored month cells and plain numbers,
+including blank zero totals. The current month keeps its lavender heading and
+purple rails without body-cell fill. Existing number-transition wrappers, real
+values, input/caret behavior, writes and exports are unchanged. No Creator forms,
+fields, functions or Custom APIs change; no Creator deployment is required. See
+[release and rollback details](../releases/forecast-manager-v1.7.9-2026-10-15.md).

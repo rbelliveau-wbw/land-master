@@ -484,7 +484,7 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .assignment-success #dialogStatus{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .assignment-success #dialogCancel{padding:8px 16px;border:1px solid #102d50;border-radius:6px;background:#102d50;color:#fff;font-size:13px}
 
-/* Contextual value colors; zero/empty months retain the neutral row surface. */
+/* Contextual rectangles for body values; only the bottom totals fill their cells. */
 .matrix-legend{display:flex;align-items:center;justify-content:center;gap:16px;margin:0;flex:none;color:#234766;font-size:11px;white-space:nowrap}
 .matrix-legend[hidden]{display:none}
 .matrix-legend>span{display:inline-flex;align-items:center;gap:6px}
@@ -497,19 +497,18 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 #matrix [data-basis=sold]{--value-color:#155b9e;--value-fill:#dcecff;--value-line:#a8c9ec}
 #matrix [data-basis=forecast]{--value-color:#246c4d;--value-fill:#dff1e6;--value-line:#a7cfb8}
 #matrix [data-basis=scheduled]{--value-color:#986309;--value-fill:#ffedc4;--value-line:#dfbf75}
-#matrix td[data-basis][data-has-value]{color:var(--value-color);background:var(--value-fill)}
-#matrix .month-cell[data-has-value]>strong{color:var(--value-color)}
+#matrix tfoot td[data-basis]{color:var(--value-color);background:var(--value-fill)}
+#matrix .month-cell[data-has-value]>strong{display:inline-block;box-sizing:border-box;width:43px;height:30px;line-height:28px;border:1px solid var(--value-line);border-radius:5px;background:var(--value-fill);color:var(--value-color);font-weight:700;vertical-align:middle}
 #matrix .month-cell[data-has-value]:not(.failed):not(.unknown) input{color:var(--value-color);background:var(--value-fill);border-color:var(--value-line)}
 #matrix .month-cell:not(.failed):not(.unknown) input:focus{border-color:var(--value-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--value-color) 18%,transparent)}
+#matrix tbody td.year-total{background:#edf3f9}
+#matrix tbody .year-total>[data-number-key]:not([data-number-value=""]){box-sizing:border-box;width:43px;height:30px;line-height:28px;border:1px solid #c2d3e5;border-radius:5px;background:#e1ebf5;color:#173c61}
 
-/* Lavender identifies the server's current calendar month independently of basis. */
-#matrix col.current-month-column{background:#eee5fb}
-#matrix td.current-month,#matrix thead th.current-month{background:#eee5fb!important;color:#76509f!important;border-left:2px solid #c3a8e4;border-right:2px solid #c3a8e4}
-#matrix thead th.current-month{box-shadow:inset 0 3px #c3a8e4}
+/* Current month uses a lavender heading and rails, leaving body cells neutral. */
+#matrix td.current-month,#matrix thead th.current-month{border-left:2px solid #c3a8e4;border-right:2px solid #c3a8e4}
+#matrix thead th.current-month{background:#eee5fb!important;color:#76509f!important;box-shadow:inset 0 3px #c3a8e4}
 .current-month-label{display:none;font-size:9px;line-height:1.3;font-weight:500;letter-spacing:0}
 .current-month .current-month-label{display:block}
-#matrix td.current-month:not([data-has-value]):not(.failed):not(.unknown) input{background:#f5f0fc;border-color:#c3a8e4;color:#76509f}
-#matrix .month-cell.current-month[data-has-value]>strong,#matrix tfoot td.current-month[data-has-value]>[data-number-key]{display:inline-block;min-width:34px;line-height:28px;border-radius:4px;background:var(--value-fill);color:var(--value-color)}
 
 /* Only the fixed-width switcher participates in centering; its legend hangs left. */
 .matrix-view-controls{position:relative;display:flex;align-items:center;justify-content:center;justify-self:center;min-width:0}

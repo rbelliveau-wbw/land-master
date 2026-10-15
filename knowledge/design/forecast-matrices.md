@@ -233,3 +233,23 @@ server's exact month/year and refresh in place across rollover. Retain error,
 pending, unknown and keyboard-focus states, native saves/exports and Sliding push.
 Desktop fixtures cover all views at 1280/1440/2308px, fixed slider geometry,
 legend contents, nonzero/zero refreshes, zero saves and month rollover.
+
+## Colored value rectangles — v1.7.9
+
+The user approved the revised October 15 mockup, explicitly including Scheduled.
+Supersede v1.7.8's full body-cell fills: body cells always retain their neutral
+striped row backgrounds. Give nonzero read-only month values the same 43×30px,
+5px-radius, thin outlined rectangle as the forecast inputs. Fill only that
+rectangle with the existing blue Sold, green Forecast or amber Scheduled color.
+Blank read-only values have no rectangle. Preserve existing input zero/blank
+formatting, editable/locked permissions and error/save states. Row year totals
+use neutral rectangles on neutral cells.
+
+The bottom Selected total row is the exception: its month cells keep full
+basis-color fills, including blank zero totals, and its numbers have no rectangle.
+Its year totals keep their neutral full-cell fill. Identify the current server
+month with its lavender Current heading and purple side rails through body and
+footer; never fill its body cells lavender. Preserve the fixed centered slider,
+contextual legends, server rollover, values/exports and Sliding push wrappers.
+Desktop checks cover all four modes at 1280/1440/2308px, rectangle geometry,
+neutral body cells, colored plain footer values and existing save/recovery/motion.
