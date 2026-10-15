@@ -25,21 +25,28 @@
   const monthLabel = month => new Date(month + '-01T00:00:00Z').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
   function renderFilterSummary() {
     const selected = id => [...$(id).selectedOptions].filter(option => option.value).map(option => option.text);
-    const scope = (id, single, plural) => { const values = selected(id); return values.length === 1 ? single + ': ' + values[0] : values.length > 1 ? values.length + ' ' + plural : ''; };
+    const scope = (id, single, plural) => { const values = selected(id); return values.length === 1 ? esc(single + ': ' + values[0]) : values.length > 1 ? number(integer(values.length), 'filter-count', id) + ' ' + esc(plural) : ''; };
     const statuses = selected('status');
-    const chips = [statuses.length ? statuses.join(' & ') + ' lots' : 'All statuses', $('dateField').selectedOptions[0]?.text || 'Close Date',
+    const chips = [statuses.length ? esc(statuses.join(' & ')) + ' lots' : 'All statuses', esc($('dateField').selectedOptions[0]?.text || 'Close Date'),
       scope('projectStatus', 'Zoho Project Status', 'project statuses'), scope('territory', 'Territory', 'territories'), scope('project', 'Project', 'projects'), scope('builder', 'Builder', 'builders'),
       $('hideEmpty').checked ? 'Empty subdivisions hidden' : '',
       $('excludeBuilders').checked ? 'Unassigned / Other / Placeholder excluded' : 'Unassigned / Other / Placeholder included'].filter(Boolean);
-    $('filterSummary').innerHTML = chips.map(value => '<span class="sales-filter-chip">' + esc(value) + '</span>').join('');
+    $('filterSummary').innerHTML = chips.map(value => '<span class="sales-filter-chip"><span>' + value + '</span></span>').join('');
   }
   const numberKey = (...parts) => JSON.stringify(parts);
   const number = (value, ...parts) => window.InsightsNumbers?.markup(value, numberKey('sales', ...parts)) ?? esc(value);
   const captureNumbers = root => window.InsightsNumbers?.capture(root) || new Map();
   const applyNumbers = (root, previous) => window.InsightsNumbers?.apply(root, previous);
-  const reportKey = (r, ...parts) => [r.status, r.dateField, ...parts];
-  const measure = (stats, metric, ...parts) => number(valueLabel(stats, metric), ...parts, metric);
+  function measure(stats, metric, ...parts) {
+    const r = state.report;
+    const context = numberKey(metric, r?.status, r?.dateField, parts.includes('period') ? [r?.from,r?.to] : null);
+    return window.InsightsNumbers?.markup(valueLabel(stats, metric), numberKey('sales', ...parts, 'measure'), context) ?? esc(valueLabel(stats, metric));
+  }
   const width = (stats, ...parts) => number(decimal(stats.avgWidth), ...parts, 'front-ft');
+  function numberHtml(id, html, animate = true) {
+    const node = $(id), previous = animate ? captureNumbers(node) : new Map();
+    node.innerHTML = html; applyNumbers(node, previous);
+  }
   let refreshNumbers = null;
   const dateLabel = date => date ? date.slice(5, 7) + '/' + date.slice(8) + '/' + date.slice(2, 4) : '—';
   const valueLabel = (s, metric) => metric === 'count' ? s && s.count ? integer(s.count) : '' : !s || s[metric] === null ? '—' : money(s[metric]);
@@ -115,17 +122,17 @@
     notice(''); state.report = r;
     if ($('period').value === 'all') { $('from').value = r.from; $('to').value = r.to; InsightsControls.syncAll(); renderFilterSummary(); }
     const metric = $('metric').value, def = M.metrics[metric], months = r.months;
-    const scope = (...parts) => reportKey(r, ...parts);
-    const period = (...parts) => scope('period', r.from, r.to, ...parts);
+    const scope = (...parts) => parts;
+    const period = (...parts) => scope('period', ...parts);
     const filters = selectedFilters(), dateName = r.dateField === 'closeDate' ? 'Close date' : 'Purchase date';
-    $('scopeLabel').textContent = (filters.projectIds.length === 1 ? [...$('project').selectedOptions].find(o=>o.value)?.text : filters.projectIds.length ? filters.projectIds.length + ' projects' : 'All projects') + ' · ' + r.status + ' lots · ' + monthLabel(r.from) + ' – ' + monthLabel(r.to);
+    $('scopeLabel').innerHTML = (filters.projectIds.length === 1 ? esc([...$('project').selectedOptions].find(o=>o.value)?.text) : filters.projectIds.length ? number(integer(filters.projectIds.length), 'scope', 'projects') + ' projects' : 'All projects') + ' · ' + esc(r.status) + ' lots · ' + monthLabel(r.from) + ' – ' + monthLabel(r.to);
     $('metric').title = def.description;
     $('summary').textContent = r.reports.map(part => part.status + ': ' + integer(part.stats.count) + ' lots across ' + integer(new Set(part.rows.filter(row => row.stats.count).map(row => row.id)).size) + ' subdivisions' + (!f.hideEmpty ? ' · ' + integer(new Set(part.rows.map(row => row.id)).size) + (state.historyReady ? ' populated shown' : ' recent subdivisions shown') : '')).join('. ');
     $('definition').textContent = def.description; $('definition').title = def.description + ' Archived lots are included in historical results. First sale uses all close dates within the current territory/project/builder/search filters. Average front footage uses the selected status and period.';
     const perFootMetric = ['avgPriceFF','avgTotalPriceFF'].includes(metric);
     const missingMetric = metric === 'avgTotalPriceFF' ? 'missingTotalPriceFF' : 'missingPriceFF';
-    $('quality').innerHTML = [perFootMetric && r.reports.some(part=>part.stats[missingMetric]) ? number(integer(r.reports.reduce((n,part)=>n+part.stats[missingMetric],0)), ...period('quality', missingMetric)) + ' lots without usable $/FF' : '', state.historyReady && r.missingDates ? number(integer(r.missingDates), ...period('quality', 'missing-dates')) + ' lots missing ' + dateName.toLowerCase() : ''].filter(Boolean).join(' · ');
-    $('monthPage').textContent = months.length ? monthLabel(months[months.length - 1]) + ' – ' + monthLabel(months[0]) + ' · ' + months.length + ' months' : 'No months to show';
+    $('quality').innerHTML = [perFootMetric && r.reports.some(part=>part.stats[missingMetric]) ? number(integer(r.reports.reduce((n,part)=>n+part.stats[missingMetric],0)), ...period('quality', 'unusable-ff')) + ' lots without usable $/FF' : '', state.historyReady && r.missingDates ? number(integer(r.missingDates), ...period('quality', 'missing-dates')) + ' lots missing ' + dateName.toLowerCase() : ''].filter(Boolean).join(' · ');
+    $('monthPage').innerHTML = months.length ? '<span>' + monthLabel(months[months.length - 1]) + ' – ' + monthLabel(months[0]) + ' · ' + number(integer(months.length), 'range', 'month-count') + ' months</span>' : 'No months to show';
     if (!r.rows.length) { refreshNumbers = null; applyNumbers($('salesDashboard'), previousNumbers); blank('No lots match these filters', r.missingDates ? 'Matching lots have no usable ' + dateName.toLowerCase() + ' in this period.' : 'Try another period, status, project, or builder.', $('monthPage').textContent); markUsable(); return; }
     $('empty').hidden = true; $('export').disabled = !state.historyReady; $('export').title = state.historyReady ? 'Export all selected months' : 'Available when historical data finishes loading';
     $('matrixHead').innerHTML = '<tr><th class="sticky" scope="col"><span id="groupBySlot" class="sales-header-picker"></span></th><th scope="col" title="Earliest Sold close date, across all dates, within current scope filters">First Lot Sale<small>All dates</small></th><th scope="col" title="Mean positive front footage for lots in this period">Avg Front Ft<small>Selected range</small></th><th scope="col" class="period-total" title="Calculated over the entire selected range, including offscreen months"><span id="metricSlot" class="sales-header-picker"></span></th>' + months.map(m => '<th scope="col">' + esc(monthLabel(m).split(' ')[0]) + '<small>' + m.slice(0, 4) + '</small></th>').join('') + '</tr>';
@@ -141,20 +148,20 @@
       if (!stats || !stats.count) return '<td class="missing' + (total ? ' period-total' : '') + '">' + (metric === 'count' ? '' : '—') + '</td>';
       const v = stats[metric], shading = !total && v !== null ? ' style="background:rgba(18,131,145,' + (0.025 + (v / max) * .1).toFixed(3) + ')"' : '';
       const title = stats.count + ' lots · ' + stats.eligible + ' with usable $/FF · Click for lot detail';
-      return '<td class="drill-cell' + (total ? ' period-total' : '') + '"' + shading + '><button class="cell-button" data-subdivision="' + esc(row.key) + '" data-month="' + esc(month || '') + '" title="' + esc(title) + '" aria-label="' + esc(row.name + ', ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, ...scope('row', row.key, month || ['period', r.from, r.to])) + '</button></td>';
+      return '<td class="drill-cell' + (total ? ' period-total' : '') + '"' + shading + '><button class="cell-button" data-subdivision="' + esc(row.key) + '" data-month="' + esc(month || '') + '" title="' + esc(title) + '" aria-label="' + esc(row.name + ', ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, ...scope('row', row.key, month || 'period')) + '</button></td>';
     }
     let html = '';
     groups.forEach((rows, group) => {
       const closed = state.collapsed.has(group), count = rows.reduce((n, row) => n + row.stats.count, 0);
       const groupLabel = esc(rows[0].groupName);
-      const groupScope = period('group', r.groupBy, group);
+      const groupScope = period('group', r.groupBy, rows[0].groupId);
       const groupCount = number(integer(new Set(rows.map(row => row.id)).size), ...groupScope, 'subdivisions') + ' subdivisions · ' + number(integer(count), ...groupScope, 'lots') + ' lots';
       const groupLots = closed ? rows.flatMap(row => row.lots) : null;
       const groupStats = closed ? M.stats(groupLots) : null;
       const groupMonths = closed ? bucketByMonth(groupLots, r.dateField) : null;
       const groupFirstSale = closed && state.historyReady ? rows.map(row => row.firstSale).filter(Boolean).sort()[0] || null : null;
       html += '<tr class="territory' + (closed ? ' is-collapsed' : '') + '"><th scope="rowgroup" class="sticky"><button class="territory-toggle" data-group="' + esc(group) + '" aria-expanded="' + !closed + '"><span aria-hidden="true">' + (closed ? '▸' : '▾') + '</span>' + groupLabel + '</button>' + (closed ? '<small class="sales-group-count">' + groupCount + '</small>' : '') + '</th>' +
-        (closed ? '<td class="identity">' + (state.historyReady ? dateLabel(groupFirstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(groupStats, ...groupScope) + '</td><td class="period-total">' + measure(groupStats, metric, ...groupScope) + '</td>' + months.map(month => '<td>' + measure(groupMonths.has(month) ? M.stats(groupMonths.get(month)) : null, metric, ...scope('group', r.groupBy, group, month)) + '</td>').join('') : '<th colspan="' + (months.length + 3) + '">' + groupCount + '</th>') + '</tr>';
+        (closed ? '<td class="identity">' + (state.historyReady ? dateLabel(groupFirstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(groupStats, ...groupScope) + '</td><td class="period-total">' + measure(groupStats, metric, ...groupScope) + '</td>' + months.map(month => '<td>' + measure(groupMonths.has(month) ? M.stats(groupMonths.get(month)) : null, metric, ...scope('group', r.groupBy, rows[0].groupId, month)) + '</td>').join('') : '<th colspan="' + (months.length + 3) + '">' + groupCount + '</th>') + '</tr>';
       if (!closed) rows.forEach(row => {
         const counts = allCounts?.get(row.id);
         const soldOut = counts && counts.total > 0 && counts.sold === counts.total;
@@ -165,8 +172,8 @@
     $('matrixBody').innerHTML = html;
     $('matrixFoot').innerHTML = r.reports.map(part => {
       const partMonths = bucketByMonth(part.lots, r.dateField);
-      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, part.status, r.dateField, 'total', month || ['period', r.from, r.to]) + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + (metric === 'count' ? '' : '—') + '</td>';
-      return '<tr><td class="sticky">' + esc(part.status) + ' totals</td><td>—</td><td>' + width(part.stats, part.status, r.dateField, 'total', r.from, r.to) + '</td>' + totalCell(part.stats, '') + months.map(month => totalCell(partMonths.has(month) ? M.stats(partMonths.get(month)) : null, month)).join('') + '</tr>';
+      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, 'report-total', month || 'period') + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + (metric === 'count' ? '' : '—') + '</td>';
+      return '<tr><td class="sticky">' + esc(part.status) + ' totals</td><td>—</td><td>' + width(part.stats, 'report-total') + '</td>' + totalCell(part.stats, '') + months.map(month => totalCell(partMonths.has(month) ? M.stats(partMonths.get(month)) : null, month)).join('') + '</tr>';
     }).join('');
     if (state.lots.some(lot => lot.missingSubdivision)) notice('Some lots reference subdivisions unavailable to you. Those rows are labeled Unknown or Unassigned.');
     applyNumbers($('salesDashboard'), previousNumbers); refreshNumbers = null;
@@ -205,14 +212,14 @@
       const builderCount = state.detailGroups.builders.get(inventory ? JSON.stringify([status, l.builder]) : l.builder) || 0;
       const dateCount = state.detailGroups.dates.get(JSON.stringify(inventory ? [status, l.builder, selectedDate] : [l.builder, selectedDate])) || 0;
       const statusHeading = statusChanged ? '<tr class="detail-status-group status-' + status.toLowerCase() + '"><th colspan="' + columns + '" scope="rowgroup">' + status + '<span class="detail-group-count" aria-label="' + integer(state.detailGroups.statuses.get(status)) + ' lots">' + number(integer(state.detailGroups.statuses.get(status)), 'detail', state.detailScope, 'status', status) + '</span></th></tr>' : '';
-      const builderHeading = builderChanged ? '<tr class="detail-group"><th colspan="' + columns + '" scope="rowgroup">' + esc(l.builder) + '<span class="detail-group-count" aria-label="' + integer(builderCount) + ' lots">' + number(integer(builderCount), 'detail', state.detailScope, state.detailStatus, 'builder', l.builderId || l.builder) + '</span></th></tr>' : '';
-      const dateHeading = builderChanged || selectedDate !== previousDate ? '<tr class="detail-date-group"><th colspan="' + columns + '" scope="rowgroup">' + dateName + ' · ' + (selectedDate ? dateLabel(selectedDate) : 'No date') + '<span class="detail-group-count" aria-label="' + integer(dateCount) + ' lots">' + number(integer(dateCount), 'detail', state.detailScope, state.detailStatus, 'date', l.builderId || l.builder, dateField, selectedDate) + '</span></th></tr>' : '';
+      const builderHeading = builderChanged ? '<tr class="detail-group"><th colspan="' + columns + '" scope="rowgroup">' + esc(l.builder) + '<span class="detail-group-count" aria-label="' + integer(builderCount) + ' lots">' + number(integer(builderCount), 'detail', state.detailScope, inventory ? status : state.detailStatus, 'builder', l.builderId || l.builder) + '</span></th></tr>' : '';
+      const dateHeading = builderChanged || selectedDate !== previousDate ? '<tr class="detail-date-group"><th colspan="' + columns + '" scope="rowgroup">' + dateName + ' · ' + (selectedDate ? dateLabel(selectedDate) : 'No date') + '<span class="detail-group-count" aria-label="' + integer(dateCount) + ' lots">' + number(integer(dateCount), 'detail', state.detailScope, inventory ? status : state.detailStatus, 'date', l.builderId || l.builder, dateField, selectedDate) + '</span></th></tr>' : '';
       previousStatus = status; previousBuilder = l.builder; previousDate = selectedDate;
       return statusHeading + builderHeading + dateHeading + '<tr><td>' + esc(l.code || ('Block ' + l.block + ' · Lot ' + l.lot)) + '</td><td>' + esc(l.builder) + '</td><td>' + (inventory ? '<span class="detail-status-badge status-' + status.toLowerCase() + '">' + esc(l.status || 'Open') + '</span>' : esc(l.status)) + '</td><td>' + dateLabel(l.closeDate) + '</td><td>' + dateLabel(l.purchaseDate) + '</td><td>' + detailNumber(decimal(l.width), 'front-ft') + '</td>' + (revenue ? '<td>' + detailNumber(money(l.price), 'base-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(l.price !== null && l.price >= 0 && validWidth ? l.price / l.width : null), 'base-usd-per-ft') + '</td>' + (revenue ? '<td>' + detailNumber(money(l.interest), 'interest-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(l.interest !== null && validWidth ? l.interest / l.width : null), 'interest-usd-per-ft') + '</td><td>' + detailNumber(percent(l.escalator), 'escalator-percent') + '</td>' + (revenue ? '<td>' + detailNumber(money(total), 'total-usd') + '</td>' : '') + '<td>' + detailNumber(moneyFF(total !== null && total >= 0 && validWidth ? total / l.width : null), 'total-usd-per-ft') + '</td><td class="lot-notes">' + esc(l.notes || '—') + '</td></tr>';
     }).join('');
     if (!rows.length) $('detailBody').innerHTML = '<tr><td colspan="' + columns + '" class="detail-empty">No ' + esc(state.detailStatus.toLowerCase()) + ' lots</td></tr>';
-    $('detailPage').innerHTML = number(integer(state.detailLots.length ? state.detailOffset + 1 : 0), 'detail', state.detailScope, state.detailStatus, 'page-start') + '–' + number(integer(Math.min(state.detailOffset + 100, state.detailLots.length)), 'detail', state.detailScope, state.detailStatus, 'page-end') + ' of ' + number(integer(state.detailLots.length), 'detail', state.detailScope, state.detailStatus, 'lots') + ' lots';
-    applyNumbers($('detail'), previousNumbers);
+    $('detailPage').innerHTML = number(integer(state.detailLots.length ? state.detailOffset + 1 : 0), 'detail', state.detailScope, 'page-start') + '–' + number(integer(Math.min(state.detailOffset + 100, state.detailLots.length)), 'detail', state.detailScope, 'page-end') + ' of ' + number(integer(state.detailLots.length), 'detail', state.detailScope, 'lots') + ' lots';
+    applyNumbers($('detailBody'), previousNumbers); applyNumbers($('detailPage'), previousNumbers);
     $('detailPrev').disabled = state.detailOffset === 0; $('detailNext').disabled = state.detailOffset + 100 >= state.detailLots.length;
     document.querySelector('#detail .detail-scroll').scrollTop = 0;
   }
@@ -231,13 +238,13 @@
       applyNumbers(count, $('detail').open ? previous : new Map());
     });
     $('detailStatuses').style.setProperty('--status-index', ['Sold','Scheduled','Contracted','Open','All'].indexOf(status));
-    $('detailMeta').textContent = 'All dates · ' + (status === 'All' ? 'All statuses' : status) + ' · ' + integer(state.detailLots.length) + ' lots';
+    numberHtml('detailMeta', 'All dates · ' + (status === 'All' ? 'All statuses' : esc(status)) + ' · ' + number(integer(state.detailLots.length), 'detail', state.detailScope, 'selected-count') + ' lots', $('detail').open);
     detailRows();
   }
-  function showDetail(lots, month, title, eyebrow, scope, allHistory = false, inventoryStatus = null) {
+  function showDetail(lots, month, title, eyebrow, scope, allHistory = false, inventoryStatus = null, identity = '') {
     if (!state.permissions?.lotSalesDashboard) return;
     const r = state.report;
-    state.detailScope = numberKey(scope, title, inventoryStatus ? 'inventory' : month || [r.from,r.to], r.dateField);
+    state.detailScope = numberKey(identity, inventoryStatus ? 'inventory' : month || [r.from,r.to], r.dateField);
     state.detailInventory = inventoryStatus ? lots.slice() : null;
     state.detailDateField = r.dateField;
     $('detailStatuses').hidden = !inventoryStatus;
@@ -245,17 +252,17 @@
     state.detailGroups = M.detailGroupCounts(state.detailLots, r.dateField);
     state.detailOffset = 0; $('detailTitle').textContent = title;
     $('detailEyebrow').textContent = eyebrow;
-    $('detailMeta').textContent = (allHistory ? 'All dates' : month ? monthLabel(month) : monthLabel(r.from) + ' – ' + monthLabel(r.to)) + ' · ' + scope + ' · ' + state.detailLots.length + ' lots';
+    numberHtml('detailMeta', (allHistory ? 'All dates' : month ? monthLabel(month) : monthLabel(r.from) + ' – ' + monthLabel(r.to)) + ' · ' + esc(scope) + ' · ' + number(integer(state.detailLots.length), 'detail', state.detailScope, 'selected-count') + ' lots', $('detail').open);
     if (inventoryStatus) selectDetailStatus(inventoryStatus); else detailRows();
     $('detail').showModal();
   }
   function openDetail(subdivision, month) {
     const row = state.report?.rows.find(row => row.key === subdivision);
-    if (row) showDetail(row.lots, month, row.name, row.territory.toUpperCase() + ' / LOT DETAIL', row.status);
+    if (row) showDetail(row.lots, month, row.name, row.territory.toUpperCase() + ' / LOT DETAIL', row.status, false, null, row.key);
   }
   function openTotalDetail(status, month) {
     const part = state.report?.reports.find(report => report.status === status);
-    if (part) showDetail(part.lots, month, status + ' lots', (month ? 'MONTH' : 'PERIOD') + ' TOTAL / LOT DETAIL', 'All subdivisions');
+    if (part) showDetail(part.lots, month, status + ' lots', (month ? 'MONTH' : 'PERIOD') + ' TOTAL / LOT DETAIL', 'All subdivisions', false, null, 'report-total');
   }
   let cardTrigger = null, cardHideTimer = null, triggerHovered = false, cardHovered = false, cardKeyboardFocus = false, lastPointerDown = 0;
   function cancelCardHide() { clearTimeout(cardHideTimer); cardHideTimer = null; }
@@ -303,7 +310,7 @@
     const field = state.report.dateField === 'closeDate' ? 'Close Date' : 'Purchase Date';
     const lastDate = row.lots.map(lot => lot[state.report.dateField]).filter(Boolean).sort().at(-1);
     const builders = new Set(row.lots.map(lot => lot.builderId || lot.builder));
-    const periodCardScope = reportKey(state.report, state.report.from, state.report.to, row.key);
+    const periodCardScope = ['selected', row.key];
     const item = (label, value, tone = '') => '<div class="subdivision-card-stat' + (tone ? ' is-' + tone : '') + '"><span>' + esc(label) + '</span><strong>' + (/Date|Sale/.test(label) ? esc(value) : number(value, 'card', row.id, ['Total','Sold','Scheduled','Contracted','Open'].includes(label) ? 'inventory' : periodCardScope, label)) + '</strong></div>';
     const breakdown = counts ? M.subdivisionBuilderBreakdown(state.lots, row.id) : null;
     const progress = counts && counts.total ? '<div class="subdivision-card-progress" role="group" aria-label="Lot progress: ' + esc(counts.sold + ' sold, ' + counts.scheduled + ' scheduled, ' + counts.contracted + ' contracted, ' + counts.open + ' open out of ' + counts.total) + '"><div class="subdivision-card-progress-track">' +
@@ -340,7 +347,7 @@
     try {
       const lots = await LotSalesCreator.loadHistory(ZOHO.CREATOR.DATA, (report, count, total) => {
         if (generation !== state.generation) return;
-        $('historyMessage').textContent = 'Loading report · ' + integer(count) + ' / ' + integer(total) + ' lots';
+        numberHtml('historyMessage', 'Loading report · ' + number(integer(count), 'loading', 'received') + ' / ' + number(integer(total), 'loading', 'total') + ' lots');
       }, { isCancelled: () => generation !== state.generation });
       if (generation !== state.generation) return;
       state.lots = M.normalize({ ...state.references, lots }); state.historyReady = true;if(state.refreshRequested){state.refreshRequested=false;if(window.LMSuccess)LMSuccess.show('Lot sales report refreshed.');}
@@ -348,7 +355,7 @@
       if (window.LMPerf) LMPerf.mark('insights:history-ready', {count: lots.length});
       const scroll = document.querySelector('.matrix-scroll'), left = scroll.scrollLeft, top = scroll.scrollTop;
       render(); scroll.scrollLeft = left; scroll.scrollTop = top;
-      $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' · ' + integer(state.lots.length) + ' lots · All history loaded';
+      numberHtml('updated', 'Updated ' + esc(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) + ' · ' + number(integer(state.lots.length), 'loaded-count') + ' lots · All history loaded');
       // Open drilldowns keep their original snapshot until closed; refreshing never changes rows under the pointer.
       if ($('detail').open) $('detailMeta').textContent += ' · Snapshot from opening';
       log('Complete history loaded: ' + state.lots.length + ' lots.');
@@ -419,7 +426,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('subdivisionCard').hidden) { hideSubdivisionCard(); e.stopPropagation(); } });
   $('closeDetail').addEventListener('click', () => $('detail').close());
   $('closeSubdivisionCard').addEventListener('click', () => { const trigger = cardTrigger; hideSubdivisionCard(); suppressCardFocus = true; trigger?.focus(); queueMicrotask(() => { suppressCardFocus = false; }); });
-  $('viewSubdivisionLots').addEventListener('click', () => { const row = state.report?.rows.find(item => item.key === state.cardRowKey); hideSubdivisionCard(); if (!row || !state.historyReady) return; const status = row.lots.length && ['Sold','Scheduled'].includes(row.status) ? row.status : 'All'; showDetail(state.lots.filter(lot => lot.subdivisionId === row.id), '', row.name, row.territory.toUpperCase() + ' / LOT DETAIL', 'All lots', true, status); });
+  $('viewSubdivisionLots').addEventListener('click', () => { const row = state.report?.rows.find(item => item.key === state.cardRowKey); hideSubdivisionCard(); if (!row || !state.historyReady) return; const status = row.lots.length && ['Sold','Scheduled'].includes(row.status) ? row.status : 'All'; showDetail(state.lots.filter(lot => lot.subdivisionId === row.id), '', row.name, row.territory.toUpperCase() + ' / LOT DETAIL', 'All lots', true, status, row.id); });
   $('detailStatuses').addEventListener('click', e => { const button = e.target.closest('[data-detail-status]'); if (button) selectDetailStatus(button.dataset.detailStatus); });
   $('detailStatuses').addEventListener('keydown', e => {
     const buttons = [...$('detailStatuses').querySelectorAll('[data-detail-status]')], index = buttons.indexOf(e.target);

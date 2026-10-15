@@ -3,7 +3,7 @@
 Audit date: October 14, 2026. This covers all ten current widget source trees.
 Each entry represents a repeated numeric field family, including every row,
 phase, category, month or grouped copy of that family. Forecast Manager is
-implemented in 1.6.4; Data Insights is implemented in 1.5.50. The other entries
+implemented in 1.6.4; Data Insights is implemented in 1.5.51. The other entries
 are implementation opportunities.
 
 Use the [Sliding push contract](../knowledge/design/number-transitions.md): 420ms,
@@ -122,7 +122,7 @@ Source: [widget.html](../widgets/contract-management/src/app/widget.html)
 | Lot-completion confirmed record/count summaries | Real per-destination acknowledgements only; never invent progress |
 | Attachment/comment counts and applicable numeric detail values | Successful uploads/deletes/comments and exact record refresh |
 
-## Data Insights / Lot Sales Explorer — implemented 1.5.50
+## Data Insights / Lot Sales Explorer — implemented 1.5.51
 
 Source: [sales-app.js](../widgets/lot-sales-explorer/src/app/sales-app.js)
 `render`/`renderBuilderMatrix`, [budget-app.js](../widgets/lot-sales-explorer/src/app/budget-app.js)
@@ -139,8 +139,14 @@ Source: [sales-app.js](../widgets/lot-sales-explorer/src/app/sales-app.js)
 | Spend-by-project actual/budget amounts and approved/pending/over-budget counts | Budget filters, project selection and native refresh |
 | Category Final, approved modifications, Revised Final, GP and HCSS detail | Updated selected budget/category data |
 
-Do not visually morph a count into dollars or one metric into another. Metric and
-unit are part of the key; transitions apply only to comparable quantities.
+User direction October 15, 2026: measure switches are a primary transition
+trigger. Slide the full old formatted value out and the actual new value in,
+including dollars → lot count, without interpolating intermediate numbers.
+Preserve subdivision/group/month identity while allowing metric, period, status,
+date-basis and Budget-basis changes to animate the same display slot. Counts in
+filters, picker badges, month pills, detail tabs/pagination and actual loading
+progress also participate. First/unknown values, dates, years, unrelated records
+and reduced motion retain their protections.
 
 Implemented in `number-transitions.js/css`, `sales-app.js` and `budget-app.js`.
 The dormant Budget dashboard remains disabled, including background requests.

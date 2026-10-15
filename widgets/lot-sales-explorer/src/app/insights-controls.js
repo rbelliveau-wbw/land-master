@@ -50,7 +50,13 @@
     const entry = {control,trigger,label,multiple,plain,sync() {
       const selected = [...control.selectedOptions].filter(o=>o.value || !multiple);
       const text = selected.length ? selected[0].text : (control.querySelector('option[value=""]')?.text || 'All');
-      trigger.innerHTML = '<span class="picker-value">'+esc(text)+'</span>'+(selected.length>1?'<span class="picker-count">+'+(selected.length-1)+'</span>':'')+'<svg class="picker-caret" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const signature=JSON.stringify([text,selected.length]);
+      if(entry.signature!==signature){
+        const previous=window.InsightsNumbers?.capture(trigger);
+        const count=window.InsightsNumbers?.markup(selected.length-1,JSON.stringify(['picker',control.id,'additional'])) ?? String(selected.length-1);
+        trigger.innerHTML = '<span class="picker-value">'+esc(text)+'</span>'+(selected.length>1?'<span class="picker-count">+'+count+'</span>':'')+'<svg class="picker-caret" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        window.InsightsNumbers?.apply(trigger,previous);entry.signature=signature;
+      }
       trigger.title = selected.map(o=>o.text).join(', ') || text; trigger.disabled = control.disabled;
       trigger.classList.toggle('has-selection',multiple && selected.length>0);
       wrap.classList.toggle('has-selection',multiple && selected.length>0);clear.hidden=!multiple||!selected.length;clear.disabled=control.disabled;

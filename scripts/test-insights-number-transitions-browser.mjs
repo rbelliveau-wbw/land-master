@@ -10,6 +10,9 @@ fs.mkdirSync(output,{recursive:true});
 const year=new Date().getFullYear();
 const data={projects:[{ID:'p1',Project_Name:'Cedar Hollow'},{ID:'p2',Project_Name:'Copper Ridge'}],subdivisions:[{ID:'s1',Subdivision_Name:'Cedar Hollow — Phase 01',Project:{ID:'p1'},Territory:'North'},{ID:'s2',Subdivision_Name:'Copper Ridge — Phase 02',Project:{ID:'p2'},Territory:'South'}],builders:[{ID:'b1',Builder_Name:'Atlas Homes',Type1:'Builder'},{ID:'b2',Builder_Name:'Pioneer Homes',Type1:'Builder'}],lots:[]};
 for(let i=1;i<=12;i++)data.lots.push({ID:String(90071992547409930n+BigInt(i)),Subdivision:{ID:i<=9?'s1':'s2'},Builder1:{ID:i%3?'b1':'b2'},Status:'Sold',Close_Date:`${year}-03-08`,Purchase_Date:`${year}-02-01`,Lot_Code:`LOT-00${i}`,Lot_Size:String(40+i),Base_Price:String(40000+i*1000),Interest1:'500',Escalator:'3.5'});
+data.lots[0].Close_Date=`${year-1}-03-08`;data.lots[0].Purchase_Date=`${year-1}-02-01`;
+data.builders.push({ID:'b3',Builder_Name:'Third Homes',Type1:'Builder'});
+data.lots.push({...data.lots[1],ID:'90071992547410222',Status:'Scheduled',Close_Date:'',Purchase_Date:`${year}-04-01`});
 const server=http.createServer((req,res)=>{
   const file=new URL(req.url,'http://localhost').pathname.slice(1)||'widget.html';
   const stubs={
@@ -49,8 +52,28 @@ try{
   const csv=fs.readFileSync(path.join(output,'filtered.csv'),'utf8');assert.match(csv,/Sold totals/);assert.doesNotMatch(csv,/number-push|data-from/);
   await settled();await page.evaluate(()=>__sales.render());assert.equal(await page.locator('.is-changing').count(),0,'equal render is still');
   for(const metric of ['avgPriceFF','avgTotalPriceFF','avgPrice','avgPriceWithInterest','totalPrice','totalPriceWithInterest','count']){
-    await change('metric',metric);assert.equal(await page.locator('#matrix .cell-button .is-changing').count(),0,'metric changes never morph units');await keysUnique('#salesDashboard');
+    const previous=await page.locator('#matrixBody tr:not(.territory) .cell-button[data-month=""]').first().textContent();
+    await page.locator('#metricPicker').click();await page.locator('#metricPopup [data-value="'+metric+'"]').click();
+    assert.ok(await page.locator('#matrix .cell-button .is-changing').count()>0,'every measure switch animates through the real picker');
+    assert.equal(await page.locator('#matrixBody tr:not(.territory) .cell-button[data-month=""] .number-push').first().getAttribute('data-from'),previous,'outgoing value retains its old units');
+    assert.equal(await page.locator('#metricPicker').evaluate(n=>n===document.activeElement),true,'picker focus remains on the chosen measure');
+    await keysUnique('#salesDashboard');
+    if(metric==='count')await page.screenshot({path:path.join(output,'measure-base-to-count.png')});
+    await settled();
   }
+  await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('builder'),['b1','b2']);document.getElementById('builder').dispatchEvent(new Event('change'));});await settled();
+  await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('builder'),['b1','b2','b3']);document.getElementById('builder').dispatchEvent(new Event('change'));});
+  assert.ok(await page.locator('#builderPicker .is-changing').count()>0,'picker selected-count badge animates');assert.ok(await page.locator('#filterSummary .is-changing').count()>0,'filter selected-count chip animates');await settled();
+  await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('builder'),['b1']);document.getElementById('builder').dispatchEvent(new Event('change'));});await settled();
+  await change('period','currentYear');assert.ok(await page.locator('#matrix .is-changing').count()>0,'selected period totals animate');assert.ok(await page.locator('#monthPage .is-changing').count()>0,'month count animates');
+  await settled();await change('period','twoYears');await settled();
+  await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('status'),['Scheduled']);document.getElementById('status').dispatchEvent(new Event('change'));});
+  assert.ok(await page.locator('#matrix .is-changing').count()>0,'lot-status changes animate matching report slots');await settled();
+  await change('metric','avgPrice');await settled();const sameDollars=await page.locator('#matrixFoot .cell-button[data-month=""]').textContent();
+  await change('metric','totalPrice');assert.ok(await page.locator('#matrixFoot .is-changing').count()>0,'equal formatted values still animate a different measure');assert.equal(await page.locator('#matrixFoot .cell-button[data-month=""]').textContent(),sameDollars);
+  await settled();await change('metric','count');await settled();
+  await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('status'),['Sold']);document.getElementById('status').dispatchEvent(new Event('change'));});
+  await settled();await change('dateField','closeDate');assert.ok(await page.locator('#matrix .is-changing').count()>0,'date-basis selection animates matching slots');await settled();
   await page.locator('[data-card]').first().hover();await page.locator('#subdivisionCard').waitFor({state:'visible'});
   assert.equal(await page.locator('#subdivisionCard .is-changing').count(),0,'new card stays still');
   await page.evaluate(()=>{const row=__sales.state.report.rows[0],trigger=document.querySelector('[data-card]');__sales.state.lots.push({...__sales.state.lots.find(l=>l.subdivisionId===row.id),id:'90071992547410100'});__sales.openSubdivisionCard(row.key,trigger);});
@@ -60,19 +83,27 @@ try{
   await page.evaluate(()=>{__sales.state.detailLots[0]={...__sales.state.detailLots[0],price:123456};__sales.detailRows();});
   assert.ok(await page.locator('#detailBody .is-changing').count()>0,'same lot financial changes animate');
   assert.equal(await page.locator('#detailBody tr:not([class]) td:first-child [data-number-key]').count(),0,'lot codes stay static');
-  await keysUnique('#detail');await page.locator('#closeDetail').click();
+  await keysUnique('#detail');await settled();
+  await page.locator('[data-detail-status="Scheduled"]').click();
+  assert.ok(await page.locator('#detailMeta .is-changing').count()>0,'status-tab selected count animates');
+  assert.ok(await page.locator('#detailPage .is-changing').count()>0,'status-tab pagination total animates');
+  await page.locator('[data-detail-status="All"]').click();await keysUnique('#detail');
+  await page.locator('#closeDetail').click();
   await page.evaluate(()=>{InsightsControls.setValues(document.getElementById('builder'),[]);document.getElementById('builder').dispatchEvent(new Event('change'));});await settled();
   await page.evaluate(async()=>{__data.lots.push({...__data.lots[0],ID:'90071992547410101'},{...__data.lots[0],ID:'90071992547410103'});await __sales.authorizeAndLoad();});
   assert.ok(await page.locator('#matrix .is-changing').count()>0,'same-permission native refresh compares complete snapshots');
   await settled();await page.locator('#collapse').click();assert.equal(await page.locator('#matrixBody .is-collapsed').count(),2);await keysUnique('#salesDashboard');
+  await change('metric','totalPrice');assert.ok(await page.locator('#matrixBody .is-changing').count()>0,'collapsed group measure switch animates');await settled();
+  await change('metric','count');assert.ok(await page.locator('#matrixBody .is-changing').count()>0);await settled();
   await page.evaluate(()=>{__sales.state.lots=__sales.state.lots.filter(l=>l.builderId==='b1');__sales.render();});assert.ok(await page.locator('#matrixBody .is-changing').count()>0,'collapsed group totals animate');
   await settled();await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
   await page.emulateMedia({reducedMotion:'reduce'});
+  await change('metric','totalPrice');assert.equal(await page.locator('.is-changing').count(),0,'reduced motion also skips measure switches');await change('metric','count');
   await page.evaluate(()=>{__sales.state.lots.push({...__sales.state.lots[0],id:'90071992547410102'});__sales.render();});assert.equal(await page.locator('.is-changing').count(),0,'reduced motion updates immediately');
   await page.emulateMedia({reducedMotion:'no-preference'});
   // Exercise rapid signed transitions directly with real mounted DOM and the shared renderer.
   await page.evaluate(()=>{const host=document.createElement('div');host.id='numberTest';document.body.append(host);window.__showNumber=(value,key='signed')=>{const before=InsightsNumbers.capture(host);host.innerHTML=InsightsNumbers.markup(value,key);InsightsNumbers.apply(host,before);};__showNumber('-$1,200');__showNumber('$100');__showNumber('-$12');});
-  assert.equal(await page.locator('#numberTest').textContent(),'-$12');assert.equal(await page.locator('#numberTest .number-push').first().getAttribute('data-from'),'','sign compares the newest real value');
+  assert.equal(await page.locator('#numberTest').textContent(),'-$12');assert.equal(await page.locator('#numberTest .number-push').first().getAttribute('data-from'),'$100','rapid changes compare the newest complete real value');
   await page.evaluate(()=>__showNumber('—'));assert.equal(await page.locator('#numberTest .is-changing').count(),0);await page.evaluate(()=>__showNumber('5'));assert.equal(await page.locator('#numberTest .is-changing').count(),0,'unknown never becomes fake zero');
   await page.evaluate(()=>__showNumber('99','other-record'));assert.equal(await page.locator('#numberTest .is-changing').count(),0,'unrelated identity stays still');await page.locator('#numberTest').evaluate(n=>n.remove());
   await page.evaluate(async()=>{__revenue=false;await __sales.authorizeAndLoad();});assert.equal(await page.locator('#matrix .is-changing').count(),0,'changed access discards previous values');
@@ -86,10 +117,10 @@ try{
   });
   await change('budgetInclude','all');await change('budgetBasis','revised');await keysUnique('#budgetsDashboard');assert.equal(await page.locator('#budgetsDashboard .is-changing').count(),0);
   await page.evaluate(()=>{__budget.state.rows[0].gp=60000;__budget.render();});assert.ok(await page.locator('#budgetBody .is-changing').count()>0,'budget GP, remaining and percentage animate');
-  await settled();await change('budgetBasis','final');assert.equal(await page.locator('#budgetBody .is-changing').count(),0,'basis is part of identity');
+  await settled();await change('budgetBasis','final');assert.ok(await page.locator('#budgetBody .is-changing').count()>0,'budget-basis changes animate the same amount slots');
   await page.evaluate(()=>__budget.openDetail('90071992547410999'));assert.equal(await page.locator('#budgetDetail .is-changing').count(),0);
   await page.evaluate(()=>{__budget.state.report.rows[0].details[0].gp=80000;__budget.openDetail('90071992547410999');});assert.ok(await page.locator('#budgetDetail .is-changing').count()>0);await keysUnique('#budgetDetail');
   assert.deepEqual(errors,[]);
-  console.log('PASS Insights desktop Sliding push: filters, native refresh, matrix/groups, inventory, lot details, dormant Budget views, immediate final text/CSV, first/equal/unknown/unit/identity suppression, signed rapid changes, permissions and reduced motion. Screenshots: '+output);
+  console.log('PASS Insights desktop Sliding push: filters, native refresh, matrix/groups, inventory, lot details, dormant Budget views, immediate final text/CSV, all seven real-picker measure switches, period/status/basis changes, first/equal/unknown/identity suppression, signed rapid changes, permissions and reduced motion. Screenshots: '+output);
 }catch(error){await page.screenshot({path:path.join(output,'failure.png'),fullPage:true});console.error({errors});throw error;}
 finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

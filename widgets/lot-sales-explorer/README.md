@@ -1,9 +1,9 @@
-# Land Master Insights 1.5.50
+# Land Master Insights 1.5.51
 
-Comparable numeric displays use the Forecast Manager
+Numeric displays, including all seven Measure switches, use the Forecast Manager
 [Sliding push pattern](../../knowledge/design/number-transitions.md).
-See the [1.5.50 contract, checks and rollback](../../knowledge/modules/lot-sales-explorer.md)
-for metric identity, complete-history refresh and permission rules. This frontend
+See the [1.5.51 contract, checks and rollback](../../knowledge/modules/lot-sales-explorer.md)
+for display identity, complete-history refresh and permission rules. This frontend
 release requires no Creator deployment. Budgets remains disabled.
 
 Read-only dashboard workspace with a left menu for Lot Sales. Budgets is temporarily hidden and its scripts and background requests are disabled. The Lot Sales report is a monthly matrix grouped by Project, Territory, or Builder, then subdivision. Switch between mean $/FF, lot count, average base price, and total base price. Filter by Subdivision's Zoho Project Status, territory, project, builder, Sold/Scheduled status, date basis, period, and search; click a cell to inspect its underlying lots. Export the whole selected period or drilldown lots to CSV.

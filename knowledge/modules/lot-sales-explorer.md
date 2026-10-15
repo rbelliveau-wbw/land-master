@@ -1,5 +1,33 @@
 # Land Master Insights
 
+## October 15, 2026 measure-switch transitions — 1.5.51
+
+User direction supersedes the 1.5.50 metric/unit restriction: all seven Measure
+choices trigger Sliding push in subdivision monthly/period cells, collapsed
+group totals and report totals. Base Price → Lot Count now visibly replaces the
+old dollar value with the real count. Each visual retains its original units;
+there is no interpolation between metrics. A changed measure can animate even
+when its rounded number is equal. Period, status, date basis and dormant Budget
+basis/scope changes also retain matching display identities so they can animate.
+
+The module additionally covers filter selection counts/picker badges, month
+count, detail-tab selected counts, pagination and actual loading/loaded counts.
+Inventory, lot-detail numbers and Budget summary/project/row/category displays
+retain the prior coverage. Dates, years, IDs, unrelated records and first/unknown
+values stay static; reduced motion, real final text/CSV, focus, complete history
+and permission checks remain authoritative. Budgets remains disabled.
+
+Changed frontend files: sales-app.js, insights-controls.js, budget-app.js,
+number-transitions.js, widget.html and widget.config.json, plus desktop fixtures,
+documentation, manifests, immutable release and environment mappings. No Creator
+forms, fields, reports, functions or Custom APIs change. Creator deployment is
+not required. Regression: actual Measure picker across all seven choices,
+Base Price → Lot Count, collapsed groups, period/status/date/basis changes,
+inventory/detail tabs and counts, native refresh, text/CSV parity, rapid signed
+updates, access changes and reduced motion. Checks: `npm run validate`,
+`npm run build:pages`, `npm run test:insights:browser`. Production rollback:
+lot-sales-explorer 1.5.50 in deploy/environments.json, then rebuild Pages.
+
 ## October 15, 2026 number transitions — 1.5.50
 
 Uses the [Sliding push contract](../design/number-transitions.md) for comparable
