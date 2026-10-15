@@ -301,3 +301,10 @@ The mixed view now says Sold + Forecast and displays zero counts, forecast input
 and totals blank. Forecast inputs reveal stored zero on focus, preserving
 intentional clearing and unchanged-focus behavior. Stored values and exports are unchanged. No Creator
 deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.5-2026-10-15.md).
+
+## Version 1.7.6 mixed-view colors
+
+Sold + Forecast uses blue completed months and green current/future forecasts,
+with its key in the toolbar. Keep the existing WFY/month headers and center each
+year/date group. Existing calculations, blank-zero editing and numeric transitions
+are unchanged. No Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.6-2026-10-15.md).

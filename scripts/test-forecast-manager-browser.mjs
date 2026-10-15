@@ -29,13 +29,13 @@ await page.addInitScript(({summaryHtml})=>{
     window.__snapshot.years.forEach(row=>{row.note=row.year==='2029'?'Targeting a builder for future lots':'';row.hasLotContract=row.builderId===a;});
   }
   const assignment=body=>{const parents=window.__snapshot.years.filter(row=>row.builderId===body.sourceBuilderId),months=window.__snapshot.months.filter(row=>row.builderId===body.sourceBuilderId);return {sourceBuilderId:body.sourceBuilderId,destinationBuilderId:body.destinationBuilderId,parentIds:parents.map(row=>row.id),forecastIds:months.map(row=>row.id),parents:parents.map(row=>({id:row.id,year:row.year,monthCount:12}))};};
-  window.__calls=[];window.__sends=[];window.__delay=0;window.__lost=false;window.__window=true;
+  window.__today='2026-10-07';window.__calls=[];window.__sends=[];window.__delay=0;window.__lost=false;window.__window=true;
   window.__missing=new URL(location.href).searchParams.get('missing')==='1';
   window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>{window.__init=true;return {loginUser:'inert-forecast-fixture',appLinkName:'land-master',envUrlFragment:'environment/development'};}},DATA:{invokeCustomApi:async config=>{
     if(config.api_name.startsWith('Report_'))return {result:{ok:true}};
     const body=JSON.parse(config.payload.payload);window.__calls.push({api:config.api_name,...body});
     if(window.__missing)return {code:9350,message:"Custom API doesn't exist. Please check the custom API linkname."};
-    const meta={ok:true,action:body.action,today:'2026-10-07',windowOpen:window.__window};
+    const meta={ok:true,action:body.action,today:window.__today,windowOpen:window.__window};
     if(body.action==='catalog')return {code:3000,details:{output:JSON.stringify({...meta,...window.__catalog})}};
     if(['save','ensure','note','assign'].includes(body.action))window.__sends.push(body);
     if(window.__delay)await new Promise(resolve=>setTimeout(resolve,window.__delay));
@@ -77,8 +77,20 @@ try {
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'forecast','new sessions default to Forecast, including after refresh');
   assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'false');
+  assert.equal(await page.locator('#matrixLegend').isVisible(),false,'color key is contextual to Sold + Forecast');
+  assert.ok(await page.locator('.year-heading').evaluateAll(headings=>headings.every(node=>{const a=node.firstElementChild.getBoundingClientRect(),b=node.lastElementChild.getBoundingClientRect(),r=node.getBoundingClientRect();return Math.abs((a.left+b.right)/2-(r.left+r.right)/2)<1;})),'WFY chip and dates center together over each year');
   await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
+  assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span').allTextContents(),['Sold','Forecast']);
+  assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const title=host.querySelector('.matrix-title').getBoundingClientRect(),key=host.querySelector('#matrixLegend').getBoundingClientRect(),switcher=host.querySelector('.segments').getBoundingClientRect();return key.left>title.right&&key.right<switcher.left&&Math.abs((key.top+key.bottom)/2-(switcher.top+switcher.bottom)/2)<1;}),'legend occupies the marked toolbar space before the slider');
+  assert.equal(await page.locator('#matrix thead tr').count(),2,'retain existing WFY/month rows without Sold/Forecast group headings');
+  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
+  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
+  assert.equal(await page.locator('#matrix col[data-month-start="2027-01-01"]').getAttribute('data-basis'),'forecast','fiscal January uses its calendar year');
+  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('strong')).color]),['rgb(237, 244, 255)','rgb(21, 91, 158)']);
+  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(237, 248, 241)');
+  assert.equal(await page.locator('#matrix tfoot [data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
+  await page.screenshot({path:path.join(output,'sold-forecast-colors.png'),fullPage:true});
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook');
   const past=page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]');
   assert.equal(await past.locator('input').count(),0,'completed months show read-only actuals');assert.match(await past.getAttribute('title'),/Actuals: .*Forecast:/);
@@ -181,6 +193,10 @@ try {
   await page.waitForFunction(id=>document.querySelector('[data-cell="'+id+'"]').classList.contains('saved'),zeroSaveId);assert.equal(await zeroSave.inputValue(),'','acknowledged zero save is displayed blank');
   await zeroSave.focus();assert.equal(await zeroSave.inputValue(),'0');await zeroSave.fill('');await zeroSave.press('Tab');await page.waitForFunction(id=>__snapshot.months.find(row=>row.id===id).forecast===null,zeroSaveId);
   assert.equal(await zeroSave.inputValue(),'','intentional clearing remains a true blank');assert.equal(await page.evaluate(()=>__sends.length),2,'zero save and intentional clear each dispatch once');
+  await page.evaluate(()=>{__today='2026-11-01';});await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
+  assert.equal(await page.locator('#matrix col[data-month-start="2026-10-01"]').getAttribute('data-basis'),'sold','server month rollover moves October to Sold blue');
+  assert.equal(await page.locator('#matrix col[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
+  await page.locator('button[data-view="forecast"]').click();assert.equal(await page.locator('#matrixLegend').isVisible(),false);assert.equal(await page.locator('#matrix [data-basis]').count(),0,'other views retain their established styling');
   assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));

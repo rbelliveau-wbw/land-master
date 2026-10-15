@@ -50,7 +50,7 @@ Keep each selected builder on one row. Pin its name on the left and group each f
 
 The October 7 redesign uses **Legal and Pro Forma as the explicit visual references**, replacing the rejected floating KPI-card layout. Reuse their actual tokens and system font, compact white Land Master topbar, navy page title, blue action button, shared navy pill switcher and white report surface. Combine subdivision identity and metrics in one Legal-style info strip: a navy identity block, followed by compact fields with clear scope labels. Use blue Sold, dark-yellow Scheduled and green balance values.
 
-Keep filters compact and searchable, including single-selection subdivision/year creation pickers. Use the shared report search strip, soft-red clear X, checkbox markers only for multi-selection, centered SVG checks, Clear/Select visible/Done controls, selection counts and keyboard navigation. Escape/outside click discard staged changes; Clear immediately resets the filter. Keep menus within the viewport. Use left-aligned WFY chips and calendar dates so year identity stays visible while scrolling. Builder identities use a pinned name with inline status/action icons. Keep past values quiet and readable, with the lock reason available to assistive technology and in a tooltip, rather than repeating Locked under every cell. Month inputs must show blank distinctly from zero. Missing combinations occupy the same builder row and offer Add year & months beside the year identity. Follow Legal/Pro Forma navy dialog styling and the existing progress behavior.
+Keep filters compact and searchable, including single-selection subdivision/year creation pickers. Use the shared report search strip, soft-red clear X, checkbox markers only for multi-selection, centered SVG checks, Clear/Select visible/Done controls, selection counts and keyboard navigation. Escape/outside click discard staged changes; Clear immediately resets the filter. Keep menus within the viewport. Center the WFY chip and calendar dates together over each fiscal year’s columns. Builder identities use a pinned name with inline status/action icons. Keep past values quiet and readable, with the lock reason available to assistive technology and in a tooltip, rather than repeating Locked under every cell. Month inputs must show blank distinctly from zero. Missing combinations occupy the same builder row and offer Add year & months beside the year identity. Follow Legal/Pro Forma navy dialog styling and the existing progress behavior.
 
 The user selected **Compact cards** from the October 7 mockups. Release 1.2.0 puts the complete snapshot above the forecast matrix: navy identity/capacity header, six compact subdivision metrics plus Company/County, and responsive schedule cards. Each card retains progress, current-month meter, paired closing terms and four recent-sales counts in one row. Multi-phase cards preserve their all-phase contract section. Do not achieve density by dropping fields, equating blank with zero, merging repeated schedules or applying matrix filters to the whole-subdivision summary. The native iframe is a fallback for unsupported markup, not the primary summary.
 
@@ -186,3 +186,19 @@ zeroes, forecast editing, hover comparisons and CSV values.
 Mixed-view zero forecast inputs display blank at rest and reveal numeric zero
 on focus. Unchanged focus/blur must never save null; intentional clearing retains
 the native blank-versus-zero meaning. Other views retain their existing inputs.
+
+## Sold + Forecast colors and year alignment — v1.7.6
+
+Use blue (#155b9e on #edf4ff) for completed-month Sold values and green
+(#246c4d on #edf8f1) for current/future forecasts in the mixed view. Color the
+existing month headings, builder cells and selected-month totals; combined year
+totals remain neutral. Preserve the stronger current-month highlight and native
+error/pending styles. Numeric wrappers inherit the basis color without changing
+Sliding push timing, identity or real values. Refresh the basis from the Creator
+server date, preserving fiscal January mapping and month rollover.
+
+Place a concise Sold/Forecast swatch key in the toolbar between the title/counts
+and view slider, visible only for Sold + Forecast. Keep two WFY/month header rows,
+without separate Sold/Forecast group headings. Center each WFY chip and calendar
+date range together over its year in every view. Desktop checks cover placement,
+centering geometry, rendered colors, footer basis, rollover and other-view reset.

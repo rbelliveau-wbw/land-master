@@ -81,6 +81,14 @@
   function comparison(month) {return 'Actuals: '+count(month.actual)+' · Forecast: '+(month.forecast==null?'Not set':count(month.forecast))+' · Scheduled: '+count(month.scheduled);}
   const numberKey = key => S.sub+'|'+S.view+'|'+key;
   const numberMarkup = (value,key) => ForecastNumbers.markup(value,numberKey(key));
+  function refreshMonthColors() {
+    const mixed=S.view==='outlook';$('matrixLegend').hidden=!mixed;
+    document.querySelectorAll('#matrix [data-month-start]').forEach(node=>{
+      const basis=M.isPast({start:node.dataset.monthStart},S.snapshot.today)?'sold':'forecast';
+      if(mixed)node.dataset.basis=basis;else delete node.dataset.basis;
+      if(node.tagName==='TH')node.title=node.title.split(' · ')[0]+(mixed?' · '+(basis==='sold'?'Sold':'Forecast'):'');
+    });
+  }
   function render() {
     controls();
     if(!S.snapshot || S.snapshot.subdivision.id !== S.sub) {$('workspace').hidden=true; $('empty').hidden=false; $('window').hidden=true; return;}
@@ -112,6 +120,7 @@
       return M.months.map((month,index)=>'<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+Number(displayed(row.months[index])||0),0)),'foot:'+year+'-'+index)+'</td>').join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)),'foot-total:'+year)+'</td>';
     }).join('')+'</tr></tfoot>';
     $('matrix').innerHTML=html;
+    refreshMonthColors();
     ForecastNumbers.apply($('matrix'),previous);
   }
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
@@ -120,6 +129,7 @@
     // A new server month can turn a mounted forecast input into an actual cell.
     if(S.view==='outlook' && [...document.querySelectorAll('[data-forecast]')].some(input=>{const month=S.snapshot.months.find(row=>row.id===input.dataset.forecast);return month&&M.isPast(month,S.snapshot.today);})){render();return;}
     document.querySelectorAll('#matrix [data-month-start]').forEach(node=>node.classList.toggle(node.tagName==='COL'?'current-month-column':'current-month',node.dataset.monthStart.slice(0,7)===S.snapshot.today.slice(0,7)));
+    refreshMonthColors();
     $('window').hidden=false; $('window').textContent=S.snapshot.windowOpen?'Forecasting window open':'Forecasting window closed'; $('window').classList.toggle('closed',!S.snapshot.windowOpen);
     for(const input of document.querySelectorAll('[data-forecast]')) {
       const month=S.snapshot.months.find(row=>row.id===input.dataset.forecast), entry=S.entries.get(input.dataset.forecast), reason=M.lock(month,S.snapshot), phase=entry?entry.phase:'';

@@ -491,3 +491,19 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .assignment-success .dialog-foot{padding:12px 20px;background:#f5f8fc}
 .assignment-success #dialogStatus{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .assignment-success #dialogCancel{padding:8px 16px;border:1px solid #102d50;border-radius:6px;background:#102d50;color:#fff;font-size:13px}
+
+/* Sold + Forecast: color the existing months; keep the two-row year/month header. */
+.matrix-legend{display:flex;align-items:center;justify-content:center;gap:16px;margin-left:auto;margin-right:16px;flex:none;color:#234766;font-size:11px;white-space:nowrap}
+.matrix-legend[hidden]{display:none}
+.matrix-legend>span{display:inline-flex;align-items:center;gap:6px}
+.matrix-legend i{display:block;width:9px;height:9px;border-radius:3px;flex:none}
+.matrix-legend .sold-swatch{background:#155b9e}
+.matrix-legend .forecast-swatch{background:#246c4d}
+.year-heading{justify-content:center}
+#matrix[data-view=outlook]{--basis-sold:#155b9e;--basis-sold-fill:#edf4ff;--basis-forecast:#246c4d;--basis-forecast-fill:#edf8f1}
+#matrix[data-view=outlook] [data-basis=sold]{color:var(--basis-sold);background:var(--basis-sold-fill)}
+#matrix[data-view=outlook] [data-basis=forecast]{color:var(--basis-forecast);background:var(--basis-forecast-fill)}
+#matrix[data-view=outlook] .month-cell[data-basis=sold]>strong{color:var(--basis-sold)}
+#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input{color:var(--basis-forecast)}
+#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input:not(:focus):not(:disabled){background:#f8fcfa;border-color:#b1d6bf}
+#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input:focus{background:#f4fff8;border-color:#278360;box-shadow:0 0 0 2px #27836024}
