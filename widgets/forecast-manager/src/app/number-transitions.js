@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
   const active = new WeakMap();
-  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,text:old=>old,changing:'is-changing'});
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:node=>node.dataset.numberValue,text:old=>old,changing:'is-changing'});
   const numeric = value => /^-?\d[\d,]*(?:\.\d+)?$/.test(String(value));
   const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   function markup(value, key) {
@@ -15,7 +15,10 @@
     if (!node) return;
     value = String(value);
     const old = previous === undefined ? node.dataset.numberValue : previous;
-    if (previous === undefined && old === value) return;
+    if (previous === undefined && old === value) {
+      gate?.hold(node,old,(target,before)=>update(target,target.dataset.numberValue,before));
+      return;
+    }
     const running = active.get(node);
     if (running) clearTimeout(running);
     node.classList.remove('is-changing');

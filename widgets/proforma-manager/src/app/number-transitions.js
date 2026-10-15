@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
   const active = new WeakMap(), identities = new WeakMap();
-  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.pfNumberKey,text:old=>old?.text,changing:'pf-number-changing'});
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.pfNumberKey,selector:'[data-pf-number-key]',read:node=>({text:node.dataset.pfNumberText,context:node.dataset.pfNumberContext}),text:old=>old?.text,changing:'pf-number-changing'});
   let nextIdentity = 0;
   const key = (...parts) => JSON.stringify(parts);
   function identity(record) {

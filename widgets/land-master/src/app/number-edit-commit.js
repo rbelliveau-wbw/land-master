@@ -11,6 +11,7 @@
   // Capture precedes the original input handler, including synchronous renderers.
   document.addEventListener('input', event => {
     if (!editable(event.target)) return;
+    if(editing!==event.target)gates.forEach(gate=>gate.begin());
     editing = event.target;
     queueMicrotask(()=>{if(editing&&!editing.isConnected)commit();});
   }, true);
@@ -25,10 +26,14 @@
     else commit();
   },true);
   function create(options) {
-    const pending = new Map(), committed = new Map();
+    const pending = new Map(), committed = new Map(), baselineValues = new Map();
     let applying=false;
     function run(node,old,apply) { applying=true;try{apply(node,old);}finally{applying=false;} }
     const gate = {
+      begin() {
+        baselineValues.clear();
+        document.querySelectorAll(options.selector).forEach(node=>baselineValues.set(options.key(node),options.read(node)));
+      },
       hold(node, old, apply) {
         if(applying)return false;
         const id = options.key(node), prior = pending.get(id);
@@ -39,10 +44,13 @@
           if (committed.has(id)) { run(node,committed.get(id),apply); return true; }
           return false;
         }
-        // Missing samples (permission/record resets) cannot inherit another view's value.
-        const baseline = prior && old !== undefined ? prior.old : old;
+        // Capture before the original input handler; nested renderers may supply an
+        // empty comparison map. Never replace an existing held value with a blank.
+        const baseline = prior ? prior.old : baselineValues.has(id) ? baselineValues.get(id) : old;
         const from = options.text(baseline);
-        node.dataset.numberEditFrom = from ?? '';
+        // A genuinely new/unknown slot has no old visual. Leave it readable/static.
+        if(from===undefined||from===null||from==='')return false;
+        node.dataset.numberEditFrom = from;
         node.style.minWidth = Math.max(String(from??'').length,node.textContent.length)+'ch';
         node.classList.remove(options.changing);
         node.classList.add('number-edit-pending');
@@ -56,7 +64,7 @@
         jobs.forEach(([, {node,old,apply}]) => { if (node.isConnected) run(node,old,apply); });
         requestAnimationFrame(()=>committed.clear());
       },
-      reset() { pending.forEach(({node}) => {node.classList.remove('number-edit-pending');node.style.minWidth='';}); pending.clear();committed.clear(); },
+      reset() { pending.forEach(({node}) => {node.classList.remove('number-edit-pending');node.style.minWidth='';}); pending.clear();committed.clear();baselineValues.clear(); },
       stop() { gate.reset(); gates.delete(gate); }
     };
     gates.add(gate); return gate;

@@ -27,9 +27,9 @@ try{
     window.__render=n=>{
       const value=format(n);
       if(engine==='shared'){host.textContent=value;observer?.flush();}
-      if(engine==='pf'){const old=PFNumbers.capture(host);host.textContent=value;PFNumbers.decorate(host,'derived');PFNumbers.apply(host,old);}
-      if(engine==='insights'){const old=InsightsNumbers.capture(host);host.innerHTML=InsightsNumbers.markup(value,'derived');InsightsNumbers.apply(host,old);}
-      if(engine==='forecast'){const old=ForecastNumbers.capture(host);host.innerHTML=ForecastNumbers.markup(value,'derived');ForecastNumbers.apply(host,old);}
+      if(engine==='pf'){const old=window.__emptyComparisons?new Map():PFNumbers.capture(host);host.textContent=value;PFNumbers.decorate(host,'derived');PFNumbers.apply(host,old);}
+      if(engine==='insights'){const old=window.__emptyComparisons?new Map():InsightsNumbers.capture(host);host.innerHTML=InsightsNumbers.markup(value,'derived');InsightsNumbers.apply(host,old);}
+      if(engine==='forecast'){const old=window.__emptyComparisons?new Map():ForecastNumbers.capture(host);host.innerHTML=ForecastNumbers.markup(value,'derived');ForecastNumbers.apply(host,old);}
     };
     if(engine==='shared')observer=LMNumbers.start({module:'fixture',root:document.body,collect:api=>api.text(host,'derived')});
     __render(1);
@@ -44,6 +44,7 @@ try{
   await page.locator('#driver').focus();await page.evaluate(()=>__render(2));
   assert.ok(await page.locator(changing).count()>0,engine+' focus alone never delays a response');await settle();
   await page.evaluate(()=>__render(1));await settle();
+  await page.evaluate(()=>{window.__emptyComparisons=true;});
   await page.locator('#driver').fill('12.3456789');
   assert.equal(await page.locator('#driver').inputValue(),'12.3456789');assert.equal(await page.evaluate(()=>__model),12.3456789);
   assert.equal(await page.locator(changing).count(),0,engine+' no transition while typing');
@@ -51,6 +52,8 @@ try{
   assert.match(await page.locator('#derived').textContent(),/12,345.679/,'latest calculated DOM text stays available');
   const visual=await page.locator(held).evaluate(n=>({from:n.dataset.numberEditFrom,opacity:getComputedStyle(n.firstElementChild).opacity,before:getComputedStyle(n,'::before').content}));
   assert.match(visual.from,/1,000/);assert.equal(visual.opacity,'0');assert.match(visual.before,/1,000/);
+  await page.evaluate(engine=>{const host=document.getElementById('derived');if(engine==='pf')PFNumbers.apply(host,new Map());if(engine==='insights')InsightsNumbers.apply(host,new Map());if(engine==='forecast')ForecastNumbers.apply(host,new Map());},engine);
+  assert.match(await page.locator(held).getAttribute('data-number-edit-from'),/1,000/,'a second renderer with no comparison cannot blank the held number');
   await page.locator('#driver').fill('42');assert.match(await page.locator(held).getAttribute('data-number-edit-from'),/1,000/,'successive keystrokes retain one baseline');
   await page.locator('#driver').press('Tab');
   await page.waitForFunction(selector=>!!document.querySelector(selector),changing,{timeout:2500}).catch(async error=>{console.error({engine,html:await page.locator('#derived').innerHTML(),errors});throw error;});
@@ -63,6 +66,7 @@ try{
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.locator('#driver').fill('3');await page.locator('#driver').press('Tab');await page.waitForTimeout(30);
   assert.equal(await page.locator(changing).count(),0,engine+' unchanged committed result stays still');
+  await page.evaluate(()=>{window.__emptyComparisons=false;});
   await page.locator('#choice').click();assert.ok(await page.locator(changing).count()>0,engine+' explicit choices remain immediate');await settle();
  }
  assert.deepEqual(errors,[]);

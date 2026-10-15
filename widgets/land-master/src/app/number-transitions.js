@@ -44,7 +44,7 @@
   function start(options){
     if(typeof MutationObserver!=='function')return null;
     let previous=new Map(),actor='',frame=0,stopped=false;const observer=new MutationObserver(schedule);
-    const gate=global.NumberEditCommit?.create({key:node=>node.dataset.lmNumberKey,text:old=>old?.text,changing:'lm-number-changing'});
+    const gate=global.NumberEditCommit?.create({key:node=>node.dataset.lmNumberKey,selector:'[data-lm-number-key]',read:node=>({text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext}),text:old=>old?.text,changing:'lm-number-changing'});
     const root=options.root||document.body,media=global.matchMedia?.('(prefers-reduced-motion: reduce)');
     function watch(){if(!stopped)observer.observe(root,{subtree:true,childList:true,characterData:true});}
     function flush(){

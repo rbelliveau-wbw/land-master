@@ -499,6 +499,7 @@
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
   applyPeriod();
   async function authorizeAndLoad() {
+    window.InsightsNumbers?.reset();
     const priorPermissions = state.permissions;
     const priorNumbers = state.historyReady ? captureNumbers($('salesDashboard')) : null;
     refreshNumbers = null;

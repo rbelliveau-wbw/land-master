@@ -27,8 +27,12 @@ their dependent displays instead.
 **Field-exit rule, October 15, 2026:** after typing begins in an editable text or
 numeric field, retain each dependent display's last committed visual while that
 field is being edited. On Tab, blur or navigation to another control, show the
-latest calculated result with one Sliding push. New numeric slots stay visually
-empty until that boundary and then appear without a first-value animation.
+latest calculated result with one Sliding push. A renderer must never hide a known old number or replace its held visual with
+a blank. Capture the baseline before original field handlers run, retaining it
+through repeated and nested renders even when a comparison map is empty. New
+numeric slots without a prior value remain readable/static.
+This follows Budget's visible-old-value behavior; see the
+[blanking regression correction](../../docs/number-old-values-visible-2026-10-15.md).
 Repeated keystrokes never show intermediate calculated amounts. Reduced motion
 uses the same field-exit boundary with an instant replacement. Native input
 values, exact precision/carets, calculations, validation, saves, requests,

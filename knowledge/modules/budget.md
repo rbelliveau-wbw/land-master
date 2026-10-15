@@ -1,3 +1,9 @@
+## Keep old numbers visible — 122.29.45, October 15, 2026
+
+Existing calculated numbers stay visible during typing, then transition on field
+exit. Nested renders cannot erase the held old value. No Creator contract or
+deployment changes. [Fix, verification and rollback](../../docs/number-old-values-visible-2026-10-15.md).
+
 ## Budget Manager field-exit numbers — 122.29.44, October 15, 2026
 
 Derived visuals retain their last committed number during typing and replace it

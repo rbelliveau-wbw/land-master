@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
   const active = new WeakMap();
-  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,text:old=>old?.text,changing:'is-changing'});
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:node=>({value:node.dataset.numberValue,text:node.dataset.numberText,context:node.dataset.numberContext}),text:old=>old?.text,changing:'is-changing'});
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const numeric = value => /^-?\d[\d,]*(?:\.\d+)?$/.test(value);
   const key = (...parts) => JSON.stringify(parts);
@@ -42,5 +42,5 @@
     });
     jobs.forEach(({node,old})=>applyNode(node,old,reduced));
   }
-  global.InsightsNumbers = Object.freeze({key, markup, capture, apply, set});
+  global.InsightsNumbers = Object.freeze({key, markup, capture, apply, set, reset:()=>gate?.reset()});
 })(window);
