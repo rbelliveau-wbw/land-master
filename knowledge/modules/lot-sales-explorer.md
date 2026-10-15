@@ -1,5 +1,24 @@
 # Land Master Insights
 
+## October 15, 2026 loading-counter correction — 1.5.52
+
+The loading-dot selector matched every nested span, including both numeric
+transition wrappers and their value labels. A received/total counter therefore
+rendered five loading dots and overwrote the outgoing-number pseudo-elements.
+Scope the indicator to the banner's direct message child so it shows one dot
+and the exact latest received/total counts while retaining Sliding push.
+
+Changed files: insights.css, widget.html, widget.config.json, widget manifest,
+existing desktop browser fixture, design/module documentation, immutable release
+and Development/Production mappings. No Creator forms, fields, reports,
+functions or Custom APIs change; no Creator deployment is required.
+Regression: rapid 26,000 → 26,100 → 26,160 of 26,161 loading updates, one loading
+dot, transparent/unclipped number overlays, immediate exact text, reduced motion,
+complete-history/export gates and existing report/control transitions.
+Verification: `npm run validate`, `npm run build:pages`,
+`npm run test:insights:browser`. Production rollback: lot-sales-explorer 1.5.51
+in deploy/environments.json, then rebuild Pages.
+
 ## October 15, 2026 measure-switch transitions — 1.5.51
 
 User direction supersedes the 1.5.50 metric/unit restriction: all seven Measure

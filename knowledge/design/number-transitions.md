@@ -37,6 +37,12 @@ basis/scope/summary/project/row/category displays. Budget navigation and request
 remain disabled. Complete-history and revalidated-permission refresh gates stay
 authoritative. This supersedes 1.5.50's metric/unit/basis exclusions.
 
+Insights 1.5.52 scopes the loading indicator to the banner's direct message
+child. Never style every descendant span's pseudo-element as a loading dot:
+the number-transition wrappers use their own ::before for outgoing values.
+Loading progress must show one dot, the exact latest received/total counts and
+unclipped numeric transitions, including rapid updates and reduced motion.
+
 Forecast Manager 1.6.4 implements this in `number-transitions.js` and
 `number-transitions.css`: builder/year totals, selected month/year totals, matrix
 counts, subdivision/schedule balances, inventory counts, schedule progress text,
