@@ -93,7 +93,9 @@ large vertically stacked return values in the left column of the first summary
 card, with Gross Profit in a second column aligned at the top. Keep the two
 columns readable as desktop card widths change. Use the former standalone profit card for construction
 cost per street LF and sale price per lot front foot, retaining the dark-blue
-emphasis. Keep Peak Cash Out below Positive Cash Flow in the right-hand column
+emphasis. Show Base and Base + Add’l construction rates side by side, using
+total base-plus-additional construction cost divided by street LF for the latter.
+Keep Peak Cash Out below Positive Cash Flow in the right-hand column
 of the top Cash Position card, showing the largest cumulative deficit as a
 positive funding amount. Cash Position, Positive Cash Flow and Peak Cash Out
 use matching heading styles and the same 12px value size. Changing the displayed

@@ -1,3 +1,16 @@
+## Base and combined construction rates (1.80.112, October 15, 2026)
+
+The dark-blue pricing card shows Base and Base + Add’l under Const. Cost / LF.
+Base retains `Const_Cost_FF`; the combined rate is
+`(Construction_Cost_Base + Construction_Cost_Addl) / Total_Street_LF` from the
+current dashboard calculation. The street-foot basis and Sale Price / FF remain
+unchanged. Rates round once for display; construction credits are preserved.
+Missing/nonpositive street length or an incomplete schedule shows — for the
+combined rate.
+
+No Creator forms, fields, functions or Custom APIs change; no Creator deployment
+is required. [Changed files, verification and rollback to 1.80.111](../../docs/proforma-construction-cost-rates-2026-10-15.md).
+
 ## Cash text sizing and Gross Profit column (1.80.111, October 15, 2026)
 
 Cash Position snapshots, Positive Cash Flow and Peak Cash Out share a 12px value

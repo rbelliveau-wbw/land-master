@@ -175,9 +175,9 @@ elements.set("kpis", {innerHTML: ""});
 elements.set("assump", {innerHTML: ""});
 elements.set("vDash", {classList: {toggle() {}}});
 elements.set("flowPeakCash", {textContent: ""});
-context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Const_Cost_FF: "300.49", Lot_Size_Ft: "56"};
+context.S.dash.model = {purchaseDate: {y: 2027, m: 1}, Sale_Price_FF: "1444.45", Const_Cost_FF: "300.49", Total_Street_LF: "100", Lot_Size_Ft: "56"};
 context.S.dash.calc = {totals: {Gross_Sales: 8088630.52, Total_Income: 8088630.52,
-  Total_Expenses: 1430000.01, Net_Profit: 6658630.51}, schedule: {}, cashPosition: [{date: {}, value: -957671.68}],
+  Total_Expenses: 1430000.01, Net_Profit: 6658630.51, Construction_Cost_Base: 30049, Construction_Cost_Addl: 1001.49}, schedule: {}, cashPosition: [{date: {}, value: -957671.68}],
   phases: [], warnings: []};
 context.syncPersistentRecordHeader = () => {};
 context.renderDashboardOwners = () => {};
@@ -190,8 +190,8 @@ vm.runInContext(extractFunction("dealPeakCash") + "\n" + extractFunction("render
 const dashboardBefore = JSON.stringify(context.S.dash);
 context.renderDashboard();
 assert.match(elements.get("kpis").innerHTML,
-  /class="kpi blue"[\s\S]*Const\. Cost \/ LF<\/div><div class="k-big">\$300<\/div>[\s\S]*Sale Price \/ FF<\/div><div class="k-big">\$1,444<\/div>/,
-  "construction cost and sale price occupy the former standalone profit card");
+  /class="kpi blue"[\s\S]*Const\. Cost \/ LF[\s\S]*Base<\/div><div class="k-big">\$300<\/div>[\s\S]*Base \+ Add’l<\/div><div class="k-big">\$311<\/div>[\s\S]*Sale Price \/ FF<\/div><div class="k-big">\$1,444<\/div>/,
+  "pricing card shows base and base-plus-additional construction per street LF, rounding only the final rate");
 assert.doesNotMatch(elements.get("assump").innerHTML, /<label>(Sale Price \/ FF|Base Const Cost \$ \/ FF)<\/label>/,
   "promoted per-foot prices are no longer duplicated in assumptions");
 const returnsCard = elements.get("kpis").innerHTML.split('<div class="kpi green">')[0];
@@ -214,6 +214,26 @@ assert.match(elements.get("kpis").innerHTML, /\(\$957,672\)/,
 assert.doesNotMatch(elements.get("kpis").innerHTML, /\$[\d,]+\.\d/);
 assert.equal(JSON.stringify(context.S.dash), dashboardBefore,
   "display rounding leaves both persisted inputs and calculated amounts intact");
+const constructionTotals = context.S.dash.calc.totals;
+const combinedRate = () => elements.get("kpis").innerHTML.match(/Base \+ Add’l<\/div><div class="k-big">([^<]+)<\/div>/)?.[1];
+constructionTotals.Construction_Cost_Addl = 0;
+context.renderDashboard();
+assert.equal(combinedRate(), "$300", "without additional construction costs the two rates agree");
+constructionTotals.Construction_Cost_Addl = -1001.49;
+context.renderDashboard();
+assert.equal(combinedRate(), "$290", "construction credits reduce the combined rate without clamping");
+constructionTotals.Construction_Cost_Addl = 1001.49;
+for (const feet of ["", "0", "-1"]) {
+  context.S.dash.model.Total_Street_LF = feet;
+  context.renderDashboard();
+  assert.equal(combinedRate(), "—", "unavailable street length cannot produce an invalid construction rate");
+}
+context.S.dash.model.Total_Street_LF = "100";
+context.S.dash.calc.warnings = ["Complete phase schedule"];
+context.renderDashboard();
+assert.equal(combinedRate(), "—", "an incomplete schedule cannot present a combined construction rate");
+context.S.dash.calc.warnings = [];
+context.renderDashboard();
 assert.equal(elements.get("flowPeakCash").textContent, "—", "no schedule does not invent a funding result");
 context.S.dash.calc.agg = [{totalIncome: 0, totalExpenses: 60},
   {totalIncome: 10, totalExpenses: 120}, {totalIncome: 250, totalExpenses: 0}];
