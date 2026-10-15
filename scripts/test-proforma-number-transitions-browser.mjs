@@ -47,7 +47,7 @@ async function setup(target=page,plain=false){
   await target.waitForFunction(()=>document.getElementById('lvTI').textContent!=='—');
 }
 const settled=()=>page.waitForFunction(()=>!document.querySelector('.pf-number-changing'));
-const typeValue=async(input,value)=>{await input.click();await input.press('Control+a');await page.keyboard.insertText(value);};
+const typeValue=async(input,value)=>{await input.click();await input.press('Control+a');await page.keyboard.insertText(value);await page.waitForFunction(()=>document.querySelector('.number-edit-pending'));assert.equal(await page.locator('.pf-number-changing').count(),0,'typing holds derived visuals');assert.equal(await input.evaluate(n=>n===document.activeElement),true,'typing preserves focus');assert.equal(await input.inputValue(),value,'typing preserves exact native precision');await input.press('Tab');};
 const unique=async(selector)=>{
   const duplicates=await page.locator(selector+' [data-pf-number-key]').evaluateAll(nodes=>{const seen=new Set();return nodes.map(n=>n.dataset.pfNumberKey).filter(k=>seen.has(k)||!seen.add(k));});
   assert.deepEqual(duplicates,[],selector+' has stable unique field keys');
@@ -60,7 +60,7 @@ try{
   assert.equal(await existingText(page),await existingText(plain),'formatted text matches the existing renderer exactly');await plain.close();
   const input=page.locator('input[data-k="Land_Cost_Acre"]');await typeValue(input,'12345.67');
   await page.waitForFunction(()=>document.querySelector('#lvLC .pf-number-changing'));
-  assert.equal(await input.evaluate(n=>n===document.activeElement),true,'typing keeps native focus');assert.equal(await input.inputValue(),'12345.67','typing keeps exact editable precision');
+  assert.equal(await page.locator('.number-edit-pending').count(),0,'Tab releases the final visual');assert.equal((await input.inputValue()).replace(/,/g,''),'12345.67','typing keeps exact editable precision');
   assert.equal(await page.locator('#lvLC').textContent(),'$1,234,567','real final calculation is readable immediately');
   assert.equal(await page.locator('#lvLC .pf-number-push').getAttribute('data-pf-number-from'),'$1,000,000');
   assert.equal(await page.locator('[data-calc="engineeringStart"] [data-pf-number-key]').count(),0,'dates remain static');
@@ -69,18 +69,18 @@ try{
   const mix=page.locator('input[data-ik="Price_LF"]');
   await typeValue(mix,'1100.25');await page.waitForFunction(()=>document.querySelector('[data-mixprice="0"]').value.includes('55,012.5'));
   await page.waitForFunction(()=>document.querySelector('.pf-number-input-display .pf-number-changing'));
-  assert.equal(await mix.evaluate(n=>n===document.activeElement),true);assert.equal(await page.locator('[data-mixprice="0"]').getAttribute('readonly'),'');
+  assert.equal(await page.locator('.number-edit-pending').count(),0);assert.equal(await page.locator('[data-mixprice="0"]').getAttribute('readonly'),'');
   await settled();
   await page.evaluate(()=>__PFW_TEST__.setPane('lotsales'));await settled();
   const markup=page.locator('input[data-ps-k="Additional_Markup_Pct"]');await typeValue(markup,'10');
   await page.waitForFunction(()=>document.querySelector('[data-ps-marked-price] .pf-number-changing'));
-  assert.equal(await markup.evaluate(n=>n===document.activeElement),true);await page.waitForFunction(()=>document.querySelector('.ps-final-price .pf-number-changing'));
+  assert.equal(await page.locator('.number-edit-pending').count(),0);await page.waitForFunction(()=>document.querySelector('.ps-final-price .pf-number-changing'));
   await page.screenshot({path:path.join(output,'phase-prices.png')});await settled();
   await page.locator('[data-ps-select="1"]').click();assert.equal(await page.locator('[data-ps-marked-price] .pf-number-changing').count(),0,'another phase is a different identity');await settled();
   await page.evaluate(()=>{__PFW_TEST__.setPane('loi');const S=__PFW_TEST__.S;S.properties=[{ID:'property-1',Property_Name:'Cedar',Acres:'100'}];S.ed.loi.propertyIds=['property-1'];__NUMTEST__.loiRecalcSummary();__NUMTEST__.rerenderPane('loi');});await settled();
   const loiAmount=page.locator('input[data-loi-k="Amount_Per_Acre"]');await typeValue(loiAmount,'12000.25');
   await page.waitForFunction(()=>document.querySelector('#loiEstimatedPrice .pf-number-changing'));
-  assert.equal(await page.locator('#loiEstimatedPrice').textContent(),'$1,200,025');assert.equal(await loiAmount.inputValue(),'12000.25');assert.equal(await loiAmount.evaluate(n=>n===document.activeElement),true);await settled();
+  assert.equal(await page.locator('#loiEstimatedPrice').textContent(),'$1,200,025');assert.equal((await loiAmount.inputValue()).replace(/[$,]/g,''),'12000.25');assert.equal(await page.locator('.number-edit-pending').count(),0);await settled();
   await page.evaluate(()=>{__NUMTEST__.renderMonthsPane();__PFW_TEST__.S.ed.pane='months';});await unique('#monthsPane');await settled();
   await page.evaluate(()=>{const S=__PFW_TEST__.S;S.ed.model.Sale_Price_FF='1300';S.ed.calc=__PFW_TEST__.modelToCalc(S.ed.model);__NUMTEST__.renderMonthsPane();});
   assert.ok(await page.locator('#monthsPane .pf-number-changing').count()>0);assert.equal(await page.locator('#monthsPane table.mp td:nth-child(2) [data-pf-number-key]').count(),0);await settled();
@@ -104,7 +104,7 @@ try{
   await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>__PFW_TEST__.dealApplyDriver('Sale_Price_FF',1800));assert.equal(await page.locator('.pf-number-changing').count(),0,'reduced motion is immediate');await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(async context=>{window.__transferContext=context;await PFBudgetTransferUI.open({id:'pf-transfer',name:'Cedar Hollow',canSend:()=>true,getProjects:async()=>[{ID:'project-1',Project_Name:'Cedar',Proforma:'pf-transfer'}],capabilities:async()=>3,loadContext:async()=>structuredClone(context),preview:async()=>({plan:PFBudgetTransfer.build(context,{1:'s1',2:'s2',3:'s3',4:'s4'}),token:'fixture'}),apply:()=>{throw Error('Fixture must never send');}});},transferFixture());await settled();
   const lots=page.locator('.pfbt [data-metric="Lot_Total_Residential"]');await typeValue(lots,'60');
-  assert.ok(await page.locator('.pfbt .pf-number-changing').count()>0);assert.equal(await lots.evaluate(n=>n===document.activeElement),true);assert.equal(await lots.inputValue(),'60');await unique('.pfbt');
+  assert.ok(await page.locator('.pfbt .pf-number-changing').count()>0);assert.equal(await page.locator('.number-edit-pending').count(),0);assert.equal(await lots.inputValue(),'60');await unique('.pfbt');
   await page.screenshot({path:path.join(output,'budget-transfer.png')});
   assert.deepEqual(errors,[],'actual renderers have no browser/presentation errors');
   console.log('PASS: desktop PF numbers: text parity, native typing/precision, live totals, read-only values, phase identity, monthly/scenario updates, signed rapid values, record scope, reduced motion and Budget transfer.');

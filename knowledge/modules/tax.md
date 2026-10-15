@@ -1,3 +1,11 @@
+## Tax Center field-exit numbers — 19.17.16, October 15, 2026
+
+Derived visuals retain their last committed number during typing and replace it
+once on field exit. Explicit choices remain immediate; native precision, model
+calculations, accessible DOM values, exports and save/API timing are preserved.
+No Creator contracts or deployment change. [Release evidence, regressions and
+rollback](../../docs/number-field-exit-2026-10-15.md).
+
 ## Tax Center number transitions — 19.17.15, October 15, 2026
 
 Sliding push now covers loaded financial summaries, separate server counts, facets, selections, subdivision values, prior-year comparisons and verified batch counts.

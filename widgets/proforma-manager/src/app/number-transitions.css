@@ -11,3 +11,7 @@
 @keyframes pf-number-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-16px)}}
 @keyframes pf-number-in{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){.pf-number-push.pf-number-changing::before{display:none}.pf-number-push.pf-number-changing>.pf-number-value{animation:none}}
+
+/* New derived visuals appear once the edited field is left, including reduced motion. */
+.pf-number-push.number-edit-pending::before{content:attr(data-number-edit-from) / "";visibility:visible;animation:none}
+.pf-number-push.number-edit-pending>.pf-number-value{opacity:0;animation:none}

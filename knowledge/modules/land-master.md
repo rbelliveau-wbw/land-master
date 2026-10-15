@@ -1,3 +1,11 @@
+## Land Master field-exit numbers — 8.16.3, October 15, 2026
+
+Derived visuals retain their last committed number during typing and replace it
+once on field exit. Explicit choices remain immediate; native precision, model
+calculations, accessible DOM values, exports and save/API timing are preserved.
+No Creator contracts or deployment change. [Release evidence, regressions and
+rollback](../../docs/number-field-exit-2026-10-15.md).
+
 ## Land Master number transitions — 8.16.2, October 15, 2026
 
 Sliding push now covers read-only report quantities, project/record/related counts, selection/pagination, transfer summaries and import/bulk quantities.

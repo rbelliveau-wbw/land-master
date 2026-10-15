@@ -38,19 +38,20 @@
     const start=equal?old.start:now,until=start+420,from=equal?old.from:old.text;
     node.dataset.lmNumberFrom=from;node.style.setProperty('--lm-number-delay',Math.min(0,start-now)+'ms');
     // Measure only changing values; untouched large reports never force a layout per cell.
-    node.style.minWidth=Math.max(old.width||0,node.getBoundingClientRect().width)+'px';void node.offsetWidth;node.classList.add('lm-number-changing');
+    node.style.minWidth=Math.max(from.length,text.length)+'ch';node.classList.add('lm-number-changing');
     const job={start,until,from};job.timer=setTimeout(()=>{node.classList.remove('lm-number-changing');node.style.minWidth='';timers.delete(node);},Math.max(0,until-now));timers.set(node,job);return job;
   }
   function start(options){
     if(typeof MutationObserver!=='function')return null;
     let previous=new Map(),actor='',frame=0,stopped=false;const observer=new MutationObserver(schedule);
+    const gate=global.NumberEditCommit?.create({key:node=>node.dataset.lmNumberKey,text:old=>old?.text,changing:'lm-number-changing'});
     const root=options.root||document.body,media=global.matchMedia?.('(prefers-reduced-motion: reduce)');
     function watch(){if(!stopped)observer.observe(root,{subtree:true,childList:true,characterData:true});}
     function flush(){
       frame=0;if(stopped)return;observer.disconnect();
       try{
         const currentActor=key(global.LMRuntime?.current?.()||'',options.actor?.()||'');
-        if(actor!==currentActor){previous.clear();actor=currentActor;}
+        if(actor!==currentActor){previous.clear();gate?.reset();actor=currentActor;}
         // A complete refresh can replace the same authorized snapshot. Retain its
         // old presentation while loading; actor/permission changes above discard it.
         if(options.ready&&!options.ready())return;
@@ -69,8 +70,8 @@
           if(!node.isConnected)continue;const id=node.dataset.lmNumberKey;
           // Ambiguous legacy markup stays readable/static; never borrow another slot's old value.
           if(counts.get(id)>1){apply(node,null,!!media?.matches);continue;}
-          const old=previous.get(id),job=apply(node,old,!!media?.matches);
-          next.set(id,{text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext,width:old?.text===node.dataset.lmNumberText?old.width:node.getBoundingClientRect().width,from:job?.from,start:job?.start,until:job?.until});
+          const old=previous.get(id),job=gate?.hold(node,old,(target,before)=>apply(target,before,!!media?.matches))?null:apply(node,old,!!media?.matches);
+          next.set(id,{text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext,from:job?.from,start:job?.start,until:job?.until});
         }
         previous=next;
       }catch(error){previous.clear();console.warn('Number transitions:',options.module,error);}
@@ -78,7 +79,7 @@
     }
     function schedule(){if(!frame&&!stopped)frame=requestAnimationFrame(flush);}
     const events=['input','change','click'];events.forEach(type=>root.addEventListener(type,schedule));media?.addEventListener?.('change',schedule);watch();schedule();
-    return Object.freeze({flush,stop(){stopped=true;observer.disconnect();cancelAnimationFrame(frame);events.forEach(type=>root.removeEventListener(type,schedule));media?.removeEventListener?.('change',schedule);previous.clear();}});
+    return Object.freeze({flush,stop(){gate?.stop();stopped=true;observer.disconnect();cancelAnimationFrame(frame);events.forEach(type=>root.removeEventListener(type,schedule));media?.removeEventListener?.('change',schedule);previous.clear();}});
   }
   global.LMNumbers=Object.freeze({start,key,identity});
 })(window);

@@ -10,3 +10,5 @@ for(const widget of widgets){
  assert.ok(html.includes('LMNumberSurfaces.install("'+widget+'"'),widget+' installs its own scoped adoption map');
 }
 console.log('PASS: seven module adoption maps are installed; standalone widget assets match the canonical motion, styles and explicit quantity registry. Browser checks verify behavior separately.');
+
+for(const widget of [...widgets,'lot-sales-explorer','proforma-manager','forecast-manager']){const folder='widgets/'+widget+'/src/app/';assert.equal(fs.readFileSync(folder+'number-edit-commit.js','utf8'),fs.readFileSync('shared/number-edit-commit.js','utf8'));assert.ok(fs.readFileSync(folder+'widget.html','utf8').includes('number-edit-commit.js'));}

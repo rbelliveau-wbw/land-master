@@ -1,3 +1,11 @@
+## Data Insights field-exit numbers — 1.5.53, October 15, 2026
+
+Derived visuals retain their last committed number during typing and replace it
+once on field exit. Explicit choices remain immediate; native precision, model
+calculations, accessible DOM values, exports and save/API timing are preserved.
+No Creator contracts or deployment change. [Release evidence, regressions and
+rollback](../../docs/number-field-exit-2026-10-15.md).
+
 # Land Master Insights
 
 ## October 15, 2026 loading-counter correction — 1.5.52

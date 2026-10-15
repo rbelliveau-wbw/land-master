@@ -24,6 +24,26 @@ replaces any running transition with the newest real value. Reduced motion uses
 immediate final values. Editable inputs retain their native value/caret; animate
 their dependent displays instead.
 
+**Field-exit rule, October 15, 2026:** after typing begins in an editable text or
+numeric field, retain each dependent display's last committed visual while that
+field is being edited. On Tab, blur or navigation to another control, show the
+latest calculated result with one Sliding push. New numeric slots stay visually
+empty until that boundary and then appear without a first-value animation.
+Repeated keystrokes never show intermediate calculated amounts. Reduced motion
+uses the same field-exit boundary with an instant replacement. Native input
+values, exact precision/carets, calculations, validation, saves, requests,
+accessible DOM text, copying and exports still update on their original timing.
+Focusing a field without typing does not hold unrelated responses. Explicit
+measure/basis/scenario/filter choices remain immediate. Preserve the visual
+baseline through existing native change handlers and synchronous editor
+replacement/focus restoration; permission and record resets cannot inherit it.
+
+All ten widgets load the canonical `shared/number-edit-commit.js`. Keep these
+standalone copies synchronized. Insights measure changes reuse the current
+complete authorized report and mounted numeric slots; never aggregate history,
+rebuild rows or force a layout per cell merely to change the selected metric.
+See [field-exit rollout and measured performance](../../docs/number-field-exit-2026-10-15.md).
+
 Keep the stable key on the record/field/display slot. A selected measure, basis
 or scenario can be display context rather than a different identity: animate
 its replacement even when the rounded number happens to match. Both visuals

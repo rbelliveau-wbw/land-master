@@ -2,6 +2,7 @@
 (function (global) {
   'use strict';
   const active = new WeakMap(), identities = new WeakMap();
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.pfNumberKey,text:old=>old?.text,changing:'pf-number-changing'});
   let nextIdentity = 0;
   const key = (...parts) => JSON.stringify(parts);
   function identity(record) {
@@ -13,24 +14,25 @@
   function capture(root) {
     const values = new Map();
     root?.querySelectorAll('[data-pf-number-key]').forEach(node => values.set(node.dataset.pfNumberKey, {
-      text:node.dataset.pfNumberText, context:node.dataset.pfNumberContext, width:node.getBoundingClientRect().width
+      text:node.dataset.pfNumberText, context:node.dataset.pfNumberContext, width:0
     }));
     return values;
   }
+  function applyNode(node, old) {
+    const text=node.dataset.pfNumberText, reduced=global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!reduced && old?.text===text && old.context===node.dataset.pfNumberContext && active.has(node)) return;
+    clearTimeout(active.get(node));active.delete(node);
+    node.classList.remove('pf-number-changing');node.style.minWidth='';
+    if (!old || reduced || !node.isConnected || (old.text===text && old.context===node.dataset.pfNumberContext)) return;
+    node.dataset.pfNumberFrom=old.text;
+    node.style.minWidth=Math.max(old.text.length,text.length)+'ch';
+    node.classList.add('pf-number-changing');
+    active.set(node,setTimeout(()=>{node.classList.remove('pf-number-changing');node.style.minWidth='';active.delete(node);},420));
+  }
   function apply(root, previous = new Map()) {
-    if (!root) return;
-    const reduced = global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    root.querySelectorAll('[data-pf-number-key]').forEach(node => {
-      const old = previous.get(node.dataset.pfNumberKey), text = node.dataset.pfNumberText;
-      if (!reduced && old?.text === text && old.context === node.dataset.pfNumberContext && active.has(node)) return;
-      clearTimeout(active.get(node)); active.delete(node);
-      node.classList.remove('pf-number-changing'); node.style.minWidth = '';
-      if (!old || reduced || !node.isConnected || (old.text === text && old.context === node.dataset.pfNumberContext)) return;
-      node.dataset.pfNumberFrom = old.text;
-      node.style.minWidth = Math.max(old.width, node.getBoundingClientRect().width) + 'px';
-      void node.offsetWidth;
-      node.classList.add('pf-number-changing');
-      active.set(node, setTimeout(() => {node.classList.remove('pf-number-changing'); node.style.minWidth = ''; active.delete(node);}, 420));
+    root?.querySelectorAll('[data-pf-number-key]').forEach(node=>{
+      const old=previous.get(node.dataset.pfNumberKey);
+      if (!gate?.hold(node,old,applyNode)) applyNode(node,old);
     });
   }
   const tokens = /\([−-]?\$\d[\d,]*(?:\.\d+)?\)|[+\-−±]?\$?\d[\d,]*(?:\.\d+)?(?:%|\+|\spts)?/g;

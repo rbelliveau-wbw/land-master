@@ -61,10 +61,12 @@ const rows=budget.normalize({budgets:[{ID:SUB,Subdivision1:SUB}],categories:[{ID
 assert.equal(rows[0].final,-100.25);assert.equal(rows[0].gp,-0.25);assert.equal(rows[0].hcss,10.92);
 for(const file of ['sales-app.js','budget-app.js']){
   const source=fs.readFileSync('widgets/lot-sales-explorer/src/app/'+file,'utf8'),match=source.match(/^\s*const money = (.*);$/m);assert.ok(match,file);
-  const show=vm.runInNewContext('('+match[1]+')');assert.equal(show(12500109.92),'$12,500,110');assert.equal(show(-0.25),'-$0');assert.equal(show(0),'$0');assert.equal(show(null),'—');
+  const formatters=(source.match(/^\s*const dollar(?:s|Number)=new Intl\.NumberFormat.*;$/gm)||[]).join('\n');
+  const evaluate=expression=>vm.runInNewContext('(()=>{'+formatters+';return ('+expression+');})()');
+  const show=evaluate(match[1]);assert.equal(show(12500109.92),'$12,500,110');assert.equal(show(-0.25),'-$0');assert.equal(show(0),'$0');assert.equal(show(null),'—');
   assert.equal(show(1234.49),'$1,234');assert.equal(show(1234.50),'$1,235');assert.equal(show(-1234.50),'-$1,235');assert.equal(show(undefined),'—');
   if(file==='sales-app.js'){
-    const perFoot=vm.runInNewContext('('+source.match(/^\s*const moneyFF = (.*);$/m)[1]+')');
+    const perFoot=evaluate(source.match(/^\s*const moneyFF = (.*);$/m)[1]);
     assert.equal(perFoot(1426.86),'$1,427');assert.equal(perFoot(220),'$220');assert.equal(perFoot(null),'—');
   }
 }

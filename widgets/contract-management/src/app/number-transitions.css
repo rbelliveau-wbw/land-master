@@ -11,3 +11,7 @@
 @keyframes lm-number-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-16px)}}
 @keyframes lm-number-in{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){.lm-number-push.lm-number-changing::before{display:none}.lm-number-push.lm-number-changing>.lm-number-value{animation:none}}
+
+/* New derived visuals appear once the edited field is left, including reduced motion. */
+.lm-number-push.number-edit-pending::before{content:attr(data-number-edit-from) / "";visibility:visible;animation:none}
+.lm-number-push.number-edit-pending>.lm-number-value{opacity:0;animation:none}

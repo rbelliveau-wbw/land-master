@@ -2,6 +2,7 @@
 (function (global) {
   'use strict';
   const active = new WeakMap();
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,text:old=>old,changing:'is-changing'});
   const numeric = value => /^-?\d[\d,]*(?:\.\d+)?$/.test(String(value));
   const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   function markup(value, key) {
@@ -22,6 +23,7 @@
     let label = node.querySelector('.number-push-value');
     if (!label) { label=node.ownerDocument.createElement('span');label.className='number-push-value';node.replaceChildren(label); }
     label.textContent = value;
+    if (gate?.hold(node,old,(target,before)=>update(target,target.dataset.numberValue,before))) return;
     const motion = old !== undefined && old !== value && numeric(old) && numeric(value) && !global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     node.dataset.from = motion ? old : value;
     node.style.minWidth = motion ? Math.max(old.length,value.length)+'ch' : '';

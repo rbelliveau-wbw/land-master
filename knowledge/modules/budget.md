@@ -1,3 +1,11 @@
+## Budget Manager field-exit numbers — 122.29.44, October 15, 2026
+
+Derived visuals retain their last committed number during typing and replace it
+once on field exit. Explicit choices remain immediate; native precision, model
+calculations, accessible DOM values, exports and save/API timing are preserved.
+No Creator contracts or deployment change. [Release evidence, regressions and
+rollback](../../docs/number-field-exit-2026-10-15.md).
+
 ## Budget Manager number transitions — 122.29.43, October 15, 2026
 
 Sliding push now covers financial matrices, item/category/phase/project totals, comparisons, PO commitments, modification/payment previews and counts.

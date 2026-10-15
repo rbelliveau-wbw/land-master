@@ -7,3 +7,7 @@
 @keyframes number-push-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-16px)}}
 @keyframes number-push-in{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){.number-push.is-changing::before{display:none}.number-push.is-changing>.number-push-value{animation:none}}
+
+/* New derived visuals appear once the edited field is left, including reduced motion. */
+.number-push.number-edit-pending::before{content:attr(data-number-edit-from) / "";visibility:visible;animation:none}
+.number-push.number-edit-pending>.number-push-value{opacity:0;animation:none}

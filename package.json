@@ -17,8 +17,8 @@
     "inventory:creator": "python3 scripts/parse_creator_export.py",
     "test:forecast": "node scripts/test-forecast-manager.mjs",
     "test:forecast:browser": "node scripts/test-forecast-manager-browser.mjs",
-    "test:insights:browser": "node scripts/test-insights-number-transitions-browser.mjs",
+    "test:insights:browser": "node scripts/test-insights-number-transitions-browser.mjs && node scripts/test-insights-measure-performance-browser.mjs",
     "test:proforma:numbers:browser": "node scripts/test-proforma-number-transitions-browser.mjs",
-    "test:numbers:browser": "node scripts/test-number-transition-rollout-browser.mjs"
+    "test:numbers:browser": "node scripts/test-number-edit-commit-browser.mjs && node scripts/test-number-transition-rollout-browser.mjs"
   }
 }

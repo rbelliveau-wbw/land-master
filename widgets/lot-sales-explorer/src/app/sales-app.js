@@ -17,8 +17,10 @@
     InsightsControls.syncAll();
   }
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const money = value => value === null || value === undefined ? '—' : value.toLocaleString('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0});
-  const moneyFF = value => value === null || value === undefined ? '—' : '$' + value.toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:0 });
+  const dollars=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0});
+  const dollarNumber=new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const money = value => value === null || value === undefined ? '—' : dollars.format(value);
+  const moneyFF = value => value === null || value === undefined ? '—' : '$'+dollarNumber.format(value);
   const percent = value => value === null || value === undefined ? '—' : value.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '%';
   const decimal = value => value === null || value === undefined ? '—' : value.toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
   const integer = value => value.toLocaleString('en-US');
@@ -37,10 +39,16 @@
   const number = (value, ...parts) => window.InsightsNumbers?.markup(value, numberKey('sales', ...parts)) ?? esc(value);
   const captureNumbers = root => window.InsightsNumbers?.capture(root) || new Map();
   const applyNumbers = (root, previous) => window.InsightsNumbers?.apply(root, previous);
+  let collectingMeasures = null, measureSlots = [];
+  function measureContext(metric,parts) {
+    const r=state.report;return numberKey(metric,r?.status,r?.dateField,parts.includes('period')?[r?.from,r?.to]:null);
+  }
   function measure(stats, metric, ...parts) {
-    const r = state.report;
-    const context = numberKey(metric, r?.status, r?.dateField, parts.includes('period') ? [r?.from,r?.to] : null);
-    return window.InsightsNumbers?.markup(valueLabel(stats, metric), numberKey('sales', ...parts, 'measure'), context) ?? esc(valueLabel(stats, metric));
+    const context = measureContext(metric,parts);
+    const html = window.InsightsNumbers?.markup(valueLabel(stats, metric), numberKey('sales', ...parts, 'measure'), context) ?? esc(valueLabel(stats, metric));
+    if (!collectingMeasures) return html;
+    const index=collectingMeasures.length;collectingMeasures.push({stats,parts});
+    return '<span data-sales-measure="'+index+'">'+html+'</span>';
   }
   const width = (stats, ...parts) => number(decimal(stats.avgWidth), ...parts, 'front-ft');
   function numberHtml(id, html, animate = true) {
@@ -104,7 +112,37 @@
     $('empty').hidden = false; $('empty').innerHTML = '<div class="empty-symbol" aria-hidden="true">▥</div><h2>' + esc(title) + '</h2><p>' + esc(subtitle) + '</p>';
     $('export').disabled = true; $('collapse').disabled = true; $('collapse').textContent = 'Collapse All'; $('monthPage').textContent = rangeText;
   }
+  function metricDescription(r, metric) {
+    const def=M.metrics[metric],dateName=r.dateField==='closeDate'?'Close date':'Purchase date';
+    $('metric').title=def.description;
+    $('definition').textContent=def.description;
+    $('definition').title=def.description+' Archived lots are included in historical results. First sale uses all close dates within the current territory/project/builder/search filters. Average front footage uses the selected status and period.';
+    const perFoot=['avgPriceFF','avgTotalPriceFF'].includes(metric),missing=metric==='avgTotalPriceFF'?'missingTotalPriceFF':'missingPriceFF';
+    $('quality').innerHTML=[perFoot&&r.reports.some(part=>part.stats[missing])?number(integer(r.reports.reduce((n,part)=>n+part.stats[missing],0)),'period','quality','unusable-ff')+' lots without usable $/FF':'',state.historyReady&&r.missingDates?number(integer(r.missingDates),'period','quality','missing-dates')+' lots missing '+dateName.toLowerCase():''].filter(Boolean).join(' · ');
+  }
+  function renderMeasure() {
+    enforceRevenueAccess();
+    hideSubdivisionCard();
+    const r=state.report;
+    if (!state.permissions?.lotSalesDashboard || !state.historyReady || !r || !measureSlots.length || refreshNumbers) { render(); return; }
+    const metric=$('metric').value,def=M.metrics[metric],previous=captureNumbers($('salesDashboard'));
+    metricDescription(r,metric);
+    let max=1;r.rows.forEach(row=>row.cells.forEach(stats=>{max=Math.max(max,stats[metric]||0);}));
+    measureSlots.forEach(({node,stats,parts,ariaPrefix})=>{
+      if(!node.isConnected)return;
+      const label=valueLabel(stats,metric);
+      if(window.InsightsNumbers?.set)InsightsNumbers.set(node,label,numberKey('sales',...parts,'measure'),measureContext(metric,parts));
+      else node.textContent=label;
+      const button=node.closest('.cell-button'),td=node.closest('td');
+      if(button)button.setAttribute('aria-label',ariaPrefix+def.label+' '+label+', '+stats.count+' lots');
+      if(button?.hasAttribute('data-subdivision')&&td&&!td.classList.contains('period-total')){
+        const v=stats[metric];td.style.background=v!==null?'rgba(18,131,145,'+(0.025+(v/max)*.1).toFixed(3)+')':'';
+      }
+    });
+    applyNumbers($('salesDashboard'),previous);
+  }
   function render() {
+    collectingMeasures=null;measureSlots=[];
     if (!state.permissions?.lotSalesDashboard) return;
     const previousNumbers = refreshNumbers || captureNumbers($('salesDashboard'));
     hideSubdivisionCard();
@@ -126,12 +164,8 @@
     const period = (...parts) => scope('period', ...parts);
     const filters = selectedFilters(), dateName = r.dateField === 'closeDate' ? 'Close date' : 'Purchase date';
     $('scopeLabel').innerHTML = (filters.projectIds.length === 1 ? esc([...$('project').selectedOptions].find(o=>o.value)?.text) : filters.projectIds.length ? number(integer(filters.projectIds.length), 'scope', 'projects') + ' projects' : 'All projects') + ' · ' + esc(r.status) + ' lots · ' + monthLabel(r.from) + ' – ' + monthLabel(r.to);
-    $('metric').title = def.description;
     $('summary').textContent = r.reports.map(part => part.status + ': ' + integer(part.stats.count) + ' lots across ' + integer(new Set(part.rows.filter(row => row.stats.count).map(row => row.id)).size) + ' subdivisions' + (!f.hideEmpty ? ' · ' + integer(new Set(part.rows.map(row => row.id)).size) + (state.historyReady ? ' populated shown' : ' recent subdivisions shown') : '')).join('. ');
-    $('definition').textContent = def.description; $('definition').title = def.description + ' Archived lots are included in historical results. First sale uses all close dates within the current territory/project/builder/search filters. Average front footage uses the selected status and period.';
-    const perFootMetric = ['avgPriceFF','avgTotalPriceFF'].includes(metric);
-    const missingMetric = metric === 'avgTotalPriceFF' ? 'missingTotalPriceFF' : 'missingPriceFF';
-    $('quality').innerHTML = [perFootMetric && r.reports.some(part=>part.stats[missingMetric]) ? number(integer(r.reports.reduce((n,part)=>n+part.stats[missingMetric],0)), ...period('quality', 'unusable-ff')) + ' lots without usable $/FF' : '', state.historyReady && r.missingDates ? number(integer(r.missingDates), ...period('quality', 'missing-dates')) + ' lots missing ' + dateName.toLowerCase() : ''].filter(Boolean).join(' · ');
+    metricDescription(r,metric);
     $('monthPage').innerHTML = months.length ? '<span>' + monthLabel(months[months.length - 1]) + ' – ' + monthLabel(months[0]) + ' · ' + number(integer(months.length), 'range', 'month-count') + ' months</span>' : 'No months to show';
     if (!r.rows.length) { refreshNumbers = null; applyNumbers($('salesDashboard'), previousNumbers); blank('No lots match these filters', r.missingDates ? 'Matching lots have no usable ' + dateName.toLowerCase() + ' in this period.' : 'Try another period, status, project, or builder.', $('monthPage').textContent); markUsable(); return; }
     $('empty').hidden = true; $('export').disabled = !state.historyReady; $('export').title = state.historyReady ? 'Export all selected months' : 'Available when historical data finishes loading';
@@ -142,10 +176,11 @@
     r.rows.forEach(row => { const key = JSON.stringify([row.status,row.groupId]); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(row); });
     $('collapse').disabled = !groups.size;
     $('collapse').textContent = groups.size && [...groups.keys()].every(key => state.collapsed.has(key)) ? 'Expand All' : 'Collapse All';
+    collectingMeasures=[];
     let max = 1;
     r.rows.forEach(row => row.cells.forEach(stats => { max = Math.max(max, stats[metric] || 0); }));
     function cell(stats, row, month, total) {
-      if (!stats || !stats.count) return '<td class="missing' + (total ? ' period-total' : '') + '">' + (metric === 'count' ? '' : '—') + '</td>';
+      if (!stats || !stats.count) return '<td class="missing' + (total ? ' period-total' : '') + '">' + measure(null,metric,...scope('row',row.key,month||'period')) + '</td>';
       const v = stats[metric], shading = !total && v !== null ? ' style="background:rgba(18,131,145,' + (0.025 + (v / max) * .1).toFixed(3) + ')"' : '';
       const title = stats.count + ' lots · ' + stats.eligible + ' with usable $/FF · Click for lot detail';
       return '<td class="drill-cell' + (total ? ' period-total' : '') + '"' + shading + '><button class="cell-button" data-subdivision="' + esc(row.key) + '" data-month="' + esc(month || '') + '" title="' + esc(title) + '" aria-label="' + esc(row.name + ', ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, ...scope('row', row.key, month || 'period')) + '</button></td>';
@@ -172,9 +207,15 @@
     $('matrixBody').innerHTML = html;
     $('matrixFoot').innerHTML = r.reports.map(part => {
       const partMonths = bucketByMonth(part.lots, r.dateField);
-      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, 'report-total', month || 'period') + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + (metric === 'count' ? '' : '—') + '</td>';
+      const totalCell = (stats, month) => stats?.count ? '<td class="drill-cell' + (month ? '' : ' period-total') + '"><button class="cell-button" data-total-status="' + esc(part.status) + '" data-month="' + esc(month) + '" title="View ' + esc(part.status + ' lots for ' + (month ? monthLabel(month) : 'the selected period')) + '" aria-label="' + esc(part.status + ' total, ' + (month ? monthLabel(month) : 'selected period') + ', ' + def.label + ' ' + valueLabel(stats, metric) + ', ' + stats.count + ' lots') + '">' + measure(stats, metric, 'report-total', month || 'period') + '</button></td>' : '<td class="missing' + (month ? '' : ' period-total') + '">' + measure(null,metric,'report-total',month||'period') + '</td>';
       return '<tr><td class="sticky">' + esc(part.status) + ' totals</td><td>—</td><td>' + width(part.stats, 'report-total') + '</td>' + totalCell(part.stats, '') + months.map(month => totalCell(partMonths.has(month) ? M.stats(partMonths.get(month)) : null, month)).join('') + '</tr>';
     }).join('');
+    measureSlots=[...$('matrix').querySelectorAll('[data-sales-measure]')].map(node=>{
+      const entry=collectingMeasures[Number(node.dataset.salesMeasure)],button=node.closest('.cell-button'),aria=button?.getAttribute('aria-label')||'';
+      const suffix=def.label+' '+valueLabel(entry.stats,metric)+', '+(entry.stats?.count||0)+' lots';
+      return {...entry,node,ariaPrefix:aria.endsWith(suffix)?aria.slice(0,-suffix.length):''};
+    });
+    collectingMeasures=null;
     if (state.lots.some(lot => lot.missingSubdivision)) notice('Some lots reference subdivisions unavailable to you. Those rows are labeled Unknown or Unassigned.');
     applyNumbers($('salesDashboard'), previousNumbers); refreshNumbers = null;
     markUsable();
@@ -394,7 +435,7 @@
   }
   ['projectStatus','territory','project','builder','dateField','excludeBuilders','groupBy','hideEmpty'].forEach(id => $(id).addEventListener('change', () => { if (id === 'groupBy') state.collapsed.clear(); if (id === 'dateField') syncDateBasis(); update(); }));
   $('status').addEventListener('change', () => { syncDateBasis(); update(); });
-  $('metric').addEventListener('change', () => { enforceRevenueAccess(); render(); });
+  $('metric').addEventListener('change', renderMeasure);
   ['from','to'].forEach(id => $(id).addEventListener('change', () => { $('period').value = 'custom'; update(); }));
   $('period').addEventListener('change', () => { applyPeriod(); update(); if ($('period').value === 'custom') { setPanel('allFilters', 'moreFilters', true); queueMicrotask(() => $('fromPicker').focus()); } });
   let searchTimer; $('search').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(update, 160); });

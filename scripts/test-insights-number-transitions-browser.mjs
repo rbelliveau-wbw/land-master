@@ -75,6 +75,10 @@ try{
     assert.equal(await page.locator('#matrixBody tr:not(.territory) .cell-button[data-month=""] .number-push').first().getAttribute('data-from'),previous,'outgoing value retains its old units');
     assert.equal(await page.locator('#metricPicker').evaluate(n=>n===document.activeElement),true,'picker focus remains on the chosen measure');
     await keysUnique('#salesDashboard');
+    assert.equal(await page.evaluate(()=>{
+      const snapshot=()=>[...document.querySelectorAll('#matrix td')].map(td=>[td.textContent,td.style.background,td.querySelector('button')?.getAttribute('aria-label')]);
+      const fast=JSON.stringify(snapshot());__sales.render();return JSON.stringify(snapshot())===fast;
+    }),true,'measure fast path matches the full renderer text, accessible names and heatmap');
     if(metric==='count')await page.screenshot({path:path.join(output,'measure-base-to-count.png')});
     await settled();
   }
