@@ -78,6 +78,7 @@ try {
   assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'false');
   await page.locator('button[data-view="outlook"]').click();
+  assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook');
   const past=page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]');
   assert.equal(await past.locator('input').count(),0,'completed months show read-only actuals');assert.match(await past.getAttribute('title'),/Actuals: .*Forecast:/);
@@ -86,6 +87,19 @@ try {
   const expectedOutlook=await page.evaluate(()=>__snapshot.months.filter(m=>m.builderId===__catalog.builders[0].id&&m.year==='2026').reduce((sum,m)=>sum+Number(m.start<'2026-10-01'?m.actual||0:m.forecast||0),0));
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-total] [data-number-value]').first().getAttribute('data-number-value'),String(expectedOutlook),'year total uses the same actual/forecast basis as its months');
   await page.screenshot({path:path.join(output,'actuals-forecast.png'),fullPage:true});
+  const beforeZeros=await page.evaluate(()=>{const before=structuredClone(__snapshot.months);__snapshot.months.forEach(month=>{month.actual=0;month.forecast=0;});return before;});
+  await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
+  assert.equal(await past.locator('strong').textContent(),'','zero sold lots display blank in the mixed view');
+  assert.equal(await page.locator('#matrix tfoot [data-foot="2026-0"]').textContent(),'','zero mixed month total is blank');
+  assert.equal(await page.locator('#matrix tfoot [data-foot-total="2026"]').textContent(),'','zero mixed year total is blank');
+  assert.match(await past.getAttribute('title'),/Actuals: 0 · Forecast: 0/,'hover retains actual zero values');
+  assert.ok(await page.evaluate(()=>__snapshot.months.every(month=>month.actual===0&&month.forecast===0)),'zero formatting does not mutate the source');
+  const zeroForecast=page.locator('#matrix tbody [data-month-start="2026-10-01"] input').first();
+  assert.equal(await zeroForecast.inputValue(),'','zero forecasts also display blank in the mixed view');
+  await zeroForecast.focus();assert.equal(await zeroForecast.inputValue(),'0','editing reveals the stored zero');
+  await page.locator('button[data-view="outlook"]').focus();assert.equal(await zeroForecast.inputValue(),'','leaving an unchanged zero restores its blank format');
+  assert.equal(await page.evaluate(()=>__sends.length),0,'view formatting sends no writes');
+  await page.evaluate(months=>{__snapshot.months=months;},beforeZeros);await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
   await page.locator('button[data-view="forecast"]').click();assert.equal(await past.locator('input').count(),1,'Forecast toggle restores historical forecast');
   await page.locator('#add').click();assert.equal(await page.locator('#dialogTitle').textContent(),'Add Forecast');assert.ok(await page.locator('.selection-dialog').evaluate(e=>e.getBoundingClientRect().width<=430),'top creation chooser stays compact');await page.locator('[data-picker="newBuilder"]').click();assert.equal(await page.locator('.option').count(),2,'only Type Builder records appear in creation picker');assert.equal(await page.locator('[data-option="90071992547409963"]').count(),0,'placeholder type is excluded only from creation choices');await page.keyboard.press('Escape');await page.locator('[data-picker="newYear"]').click();assert.equal(await page.locator('.option').count(),28,'picker uses supported WFY 2019 through 2046');await page.keyboard.press('Escape');assert.equal(await page.locator('#newBuilderText').textContent(),'Choose builder');assert.equal(await page.locator('#newYearText').textContent(),'Choose fiscal year');assert.equal(await page.locator('#dialogAction').isDisabled(),true);assert.equal(await page.locator('#newRange,.selection-dialog .route').count(),0);assert.match(await page.locator('#dialogContext').textContent(),/Wildwood Estates/);
   await page.locator('[data-picker="newBuilder"]').click();await page.locator('[data-option="90071992547409961"]').click();assert.equal(await page.locator('#dialogAction').isDisabled(),true,'one chosen field cannot enable creation');await page.locator('[data-picker="newYear"]').click();await page.locator('[data-option="2026"]').click();assert.equal(await page.locator('#dialogAction').isDisabled(),true,'existing exact builder/year is disabled');assert.match(await page.locator('#newConflict').textContent(),/already exists/);
@@ -161,6 +175,12 @@ try {
   assert.equal(await page.locator('#rapidNumberTest').textContent(),'-12','rapid responses retain only the newest real value');
   assert.equal(await page.locator('#rapidNumberTest .number-push').getAttribute('data-from'),'10');
   await page.waitForFunction(()=>!document.querySelector('#rapidNumberTest .is-changing'));await page.locator('#rapidNumberTest').evaluate(node=>node.remove());
+  await loadActions();await page.locator('button[data-view="outlook"]').click();
+  const zeroSave=page.getByRole('textbox',{name:'DR Horton WFY 2026 October forecasted lots',exact:true}),zeroSaveId=await zeroSave.getAttribute('data-forecast');
+  await zeroSave.fill('0');await zeroSave.press('Tab');await page.waitForFunction(id=>__snapshot.months.find(row=>row.id===id).forecast===0,zeroSaveId);
+  await page.waitForFunction(id=>document.querySelector('[data-cell="'+id+'"]').classList.contains('saved'),zeroSaveId);assert.equal(await zeroSave.inputValue(),'','acknowledged zero save is displayed blank');
+  await zeroSave.focus();assert.equal(await zeroSave.inputValue(),'0');await zeroSave.fill('');await zeroSave.press('Tab');await page.waitForFunction(id=>__snapshot.months.find(row=>row.id===id).forecast===null,zeroSaveId);
+  assert.equal(await zeroSave.inputValue(),'','intentional clearing remains a true blank');assert.equal(await page.evaluate(()=>__sends.length),2,'zero save and intentional clear each dispatch once');
   assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));

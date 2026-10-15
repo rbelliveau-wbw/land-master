@@ -294,3 +294,10 @@ successful read-only recovery. Show the destination builder, subdivision and one
 year/forecast count line, retaining the existing operation safeguards. Counts
 appear once without animation; matrix/summary Sliding push coverage is unchanged.
 No Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.3-2026-10-15.md).
+
+## Version 1.7.5 Sold + Forecast
+
+The mixed view now says Sold + Forecast and displays zero counts, forecast inputs
+and totals blank. Forecast inputs reveal stored zero on focus, preserving
+intentional clearing and unchanged-focus behavior. Stored values and exports are unchanged. No Creator
+deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.5-2026-10-15.md).

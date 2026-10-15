@@ -73,8 +73,9 @@
     $('builderText').textContent=S.builders?S.builders.length+' builder'+(S.builders.length===1?'':'s'):'All for subdivision';
     $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All years';
   }
-  // Zero suppression is presentation-only: forecast zeroes and export data remain explicit.
-  function matrixCount(value) {return (S.view==='actual'||S.view==='scheduled') && Number(value||0)===0 ? '' : count(value);}
+  // Zero suppression is presentation-only; stored values and exports stay explicit.
+  function matrixCount(value) {return S.view!=='forecast' && Number(value||0)===0 ? '' : count(value);}
+  function forecastInputValue(value) {return S.view==='outlook' && value===0 ? '' : value == null ? '' : value;}
   function metric(year) {return S.view==='outlook'?year.outlook:S.view==='forecast'?year.total:S.view==='actual'?year.actual:year.scheduled;}
   function displayed(month) {return M.displayValue(month,S.view,S.snapshot.today);}
   function comparison(month) {return 'Actuals: '+count(month.actual)+' · Forecast: '+(month.forecast==null?'Not set':count(month.forecast))+' · Scheduled: '+count(month.scheduled);}
@@ -99,7 +100,7 @@
         html+=year.months.map((month,index)=>{
           const past=M.isPast(month,S.snapshot.today), editable=S.view==='forecast'||S.view==='outlook'&&!past;
           const reason=M.lock(month,S.snapshot), entry=month.id?S.entries.get(month.id):null, value=entry?entry.attempted:month.forecast, phase=entry?entry.phase:'', title=comparison(month)+(reason?' · '+reason:'');
-          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(editable?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(value)+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong tabindex="0" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' · '+title)+'">'+numberMarkup(matrixCount(displayed(month)),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
+          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(editable?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(forecastInputValue(value))+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong tabindex="0" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' · '+title)+'">'+numberMarkup(matrixCount(displayed(month)),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
         }).join('');
         html+='<td class="year-total" data-total="'+esc(M.key(row.builderId,year.year))+'">'+numberMarkup(matrixCount(metric(year)),'total:'+M.key(row.builderId,year.year))+'<small>WFY '+esc(year.year)+'</small></td>';
       }
@@ -125,7 +126,7 @@
       const cell=input.closest('td'); cell.classList.toggle('locked',!!reason);
       ['pending','saved','failed','unknown'].forEach(status=>cell.classList.toggle(status,phase===status));
       input.disabled=!!reason || ['pending','failed','unknown'].includes(phase) || S.creating || S.loading || !!creationReview();
-      if(document.activeElement!==input && !entry) input.value=month && month.forecast != null ? month.forecast : '';
+      if(document.activeElement!==input && (!entry||entry.phase==='saved')) input.value=forecastInputValue(month && month.forecast);
       $('state-'+input.dataset.forecast).innerHTML=stateText(phase,reason);
       cell.title=entry && entry.error || comparison(month)+(reason?' · '+reason:'');
     }
@@ -323,6 +324,8 @@
     const create=event.target.closest('[data-create-builder]');if(create&&!create.disabled)startCreation(create.dataset.createBuilder,create.dataset.createYear);
     const view=event.target.closest('button[data-view]');if(view&&!busy()){S.view=view.dataset.view;document.querySelectorAll('button[data-view]').forEach(button=>button.setAttribute('aria-pressed',button===view));render();}
   });
+  $('matrix').addEventListener('focusin',event=>{const input=event.target;if(S.view==='outlook'&&input.dataset.forecast&&input.value===''){const month=S.snapshot.months.find(row=>row.id===input.dataset.forecast);if(month&&month.forecast===0)input.value='0';}});
+  $('matrix').addEventListener('focusout',event=>{const input=event.target,entry=S.entries.get(input.dataset.forecast);if(S.view==='outlook'&&input.dataset.forecast&&input.value==='0'&&(!entry||entry.phase==='saved'))input.value='';});
   $('matrix').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('matrix').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...document.querySelectorAll('[data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
   $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',load);$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);

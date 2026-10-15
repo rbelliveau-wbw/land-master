@@ -156,7 +156,7 @@ builder's first year; an empty matrix says No forecast available.
 
 Use Forecast Manager consistently in the topbar. User direction October 15,
 2026, v1.7.2: default the displayed-values slider to Forecast on a fresh load.
-Its initially pressed button and rendered matrix must agree. Retain Actuals +
+Its initially pressed button and rendered matrix must agree. Retain Sold +
 Forecast as an explicit choice: completed calendar months show sold actuals;
 the current and future months show forecast with existing editing rules. Retain
 Sold and Scheduled views. Refresh preserves the current session's selected view.
@@ -179,3 +179,10 @@ footer copy. Counts come from the completely acknowledged captured plan; first
 appearance stays still. Preserve existing matrix/summary numeric transitions,
 pending/error behavior and read-only recovery. Opening another dialog clears this
 success treatment. See the [transfer-progress exception](transfer-progress.md).
+
+October 15, v1.7.5: the combined view is named Sold + Forecast. Render zero
+read-only month counts and totals blank, matching Sold/Scheduled. Preserve stored
+zeroes, forecast editing, hover comparisons and CSV values.
+Mixed-view zero forecast inputs display blank at rest and reveal numeric zero
+on focus. Unchanged focus/blur must never save null; intentional clearing retains
+the native blank-versus-zero meaning. Other views retain their existing inputs.
