@@ -152,9 +152,12 @@ builder's first year; an empty matrix says No forecast available.
 
 ## October 15 review — v1.7
 
-Use Forecast Manager consistently in the topbar. Default to Actuals + Forecast:
-completed calendar months show sold actuals; the current and future months show
-forecast with existing editing rules. Retain Forecast, Sold and Scheduled views.
+Use Forecast Manager consistently in the topbar. User direction October 15,
+2026, v1.7.2: default the displayed-values slider to Forecast on a fresh load.
+Its initially pressed button and rendered matrix must agree. Retain Actuals +
+Forecast as an explicit choice: completed calendar months show sold actuals;
+the current and future months show forecast with existing editing rules. Retain
+Sold and Scheduled views. Refresh preserves the current session's selected view.
 Hover/focus labels expose both actual and forecast, including blank versus zero.
 Totals follow the displayed basis; WFY still starts in February.
 

@@ -1,5 +1,21 @@
 # Forecast Manager widget contract
 
+## October 15, 2026 Forecast default — 1.7.2
+
+New sessions open with the displayed-values slider on Forecast. The initial HTML
+pressed state and application view both select Forecast; refresh retains the
+session's chosen view. Actuals + Forecast, Sold and Scheduled remain available.
+
+Changed files: forecast-app.js, widget.html, widget.config.json, widget manifest,
+the existing desktop browser fixture, design/module documentation, immutable
+release and Development/Production mappings. No Creator forms, fields, reports,
+functions or Custom APIs change; no Creator deployment is required. Regression:
+Forecast on initial load and refresh, explicit view switches, historical
+actual/forecast display and existing save/recovery flows. Verification:
+`npm run validate`, `npm run build:pages`, `npm run test:forecast:browser`.
+Production rollback: forecast-manager 1.7.1 in deploy/environments.json, then
+rebuild Pages.
+
 ## October 14, 2026 number transitions — 1.6.4
 
 Sliding push animates changed matrix totals/counts, read-only Sold/Scheduled

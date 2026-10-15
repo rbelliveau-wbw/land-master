@@ -74,6 +74,10 @@ try {
   await page.locator('.fs-disclosure > summary').click();assert.equal(await page.locator('.fs-overview').isVisible(),false);assert.equal(await page.locator('.fs-name').isVisible(),true,'identity remains visible when collapsed');
   await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');assert.equal(await page.locator('.fs-overview').isVisible(),false,'refresh preserves collapsed state');
   await page.locator('.fs-disclosure > summary').click();assert.equal(await page.locator('.fs-overview').isVisible(),true);
+  assert.equal(await page.locator('#matrix').getAttribute('data-view'),'forecast','new sessions default to Forecast, including after refresh');
+  assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'false');
+  await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook');
   const past=page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]');
   assert.equal(await past.locator('input').count(),0,'completed months show read-only actuals');assert.match(await past.getAttribute('title'),/Actuals: .*Forecast:/);
@@ -130,6 +134,7 @@ try {
   assert.ok(await page.locator('.fs-progress-label,.fs-month-status,.fs-term-pace').evaluateAll(nodes=>nodes.every(node=>{const number=node.querySelector('.number-push-value')?.firstChild,text=[...node.childNodes].find(child=>child.nodeType===3&&child.textContent.trim());if(!number||!text)return true;const a=document.createRange(),b=document.createRange();a.selectNodeContents(number);b.selectNodeContents(text);return Math.abs(a.getBoundingClientRect().top-b.getBoundingClientRect().top)<.6;})),'inline quantities share the original text baseline');
   assert.ok(await page.evaluate(()=>CSS.supports('content','attr(data-from) / ""')),'outgoing pseudo text has an empty accessible alternative');
   await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.locator('button[data-view="outlook"]').click();
   const animatedInput=page.getByRole('textbox',{name:'DR Horton WFY 2026 October forecasted lots',exact:true});
   const startingSummary=await page.locator('.fs-balance-value').textContent();
   await page.evaluate(()=>{__snapshot.months.find(m=>m.builderId===__catalog.builders[0].id&&m.year==='2026'&&m.month==='February').actual=9;});
