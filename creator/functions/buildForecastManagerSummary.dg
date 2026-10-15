@@ -82,7 +82,7 @@ string buildForecastManagerSummary(int subdivisionId)
 			subCode = ifnull(subRec.Subdivision_Code,"");
 			companyName = ifnull(subRec.Company_Name,"");
 			county = ifnull(subRec.County,"");
-			projectStatus = ifnull(subRec.Status,"");
+			projectStatus = ifnull(subRec.Projects_Status,"");
 			totalLots = ifnull(subRec.Total_Lots,0);
 			lotTotalResidential = ifnull(subRec.Lot_Total_Residential,0);
 			lotsSold = Lots[(Subdivision == subdivisionId) && (Status == "Sold")].count();

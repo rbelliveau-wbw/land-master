@@ -149,3 +149,19 @@ Show a builder only when at least one selected year has a parent or duplicate
 parent issue. Preserve missing cells for its other selected years and keep
 incomplete/duplicate existing parents visible for review. Add Forecast creates a
 builder's first year; an empty matrix says No forecast available.
+
+## October 15 review — v1.7
+
+Use Forecast Manager consistently in the topbar. Default to Actuals + Forecast:
+completed calendar months show sold actuals; the current and future months show
+forecast with existing editing rules. Retain Forecast, Sold and Scheduled views.
+Hover/focus labels expose both actual and forecast, including blank versus zero.
+Totals follow the displayed basis; WFY still starts in February.
+
+Use a full-width subdivision header above an expanded-by-default disclosure.
+Keep identity, county, territory, code/status, last sold and the unchanged capacity
+balance visible. Put inventory and builder schedules below it; collapse both with
+one up/down chevron at the far right. Preserve disclosure choice on refresh for
+the same subdivision. Remove Company/series and Equiv LF of Street from this
+presentation. Use the same one-line recent-sales period labels in phase and
+whole-contract sections while preserving their distinct scopes and source values.

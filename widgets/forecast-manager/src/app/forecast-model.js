@@ -14,6 +14,8 @@
     return String(Number(year) + (index === 11 ? 1 : 0)) + '-' + String(month).padStart(2,'0') + '-01';
   }
   function currentYear(today) {const d = date(today); if (!d) throw new Error('The application date is unavailable.'); return d.getUTCFullYear() - (d.getUTCMonth() === 0 ? 1 : 0);}
+  function isPast(month, today) {return Boolean(date(month.start) && date(today) && month.start < today.slice(0,7)+'-01');}
+  function displayValue(month, view, today) {return month[view === 'outlook' ? isPast(month,today) ? 'actual' : 'forecast' : view];}
   function value(input) {
     if (input == null || String(input).trim() === '') return null;
     if (!/^\d+$/.test(String(input).trim()) || Number(input) > 99999) throw new Error('Enter a whole lot count from 0 to 99,999, or leave blank.');
@@ -67,5 +69,5 @@
     const row = matrix(snapshot,[builderId],[year])[0].years[0];
     return Boolean(row.parent && !row.issue && row.months.length === 12 && row.months.every(month => month.id && !month.issue) && new Set(row.months.map(month=>id(month.id))).size === 12);
   }
-  root.ForecastModel = Object.freeze({months,id,key,date,start,currentYear,value,lock,matrix,visibleMatrix,hasYear,verifyEnsure});
+  root.ForecastModel = Object.freeze({months,id,key,date,start,currentYear,isPast,displayValue,value,lock,matrix,visibleMatrix,hasYear,verifyEnsure});
 })(typeof window === 'undefined' ? globalThis : window);

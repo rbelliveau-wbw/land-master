@@ -451,3 +451,28 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .creation-warning{margin:9px 0 0;font-size:11px;line-height:1.4;color:#a34848}
 .creation-warning.checking{color:var(--muted)}
 .builder-tools{display:flex;align-items:center;gap:5px;flex:none}.builder-tools svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}.note-icon{width:22px;height:22px;padding:0;box-sizing:border-box;display:grid;place-items:center;border:1px solid #bfd3f3;border-radius:50%;background:#f4f8fe;color:#638fce;cursor:pointer}.builder-tools .note-icon svg{width:12px;height:12px}.note-icon.has-note{background:#fff2b9;border-color:#dfbf58;color:#967011}.note-icon:disabled,.assign-name:disabled{cursor:default;opacity:.55}.contract-icon{width:20px;height:22px;display:grid;place-items:center;color:#7e8998}.contract-icon.yes{color:#26754a}.contract-icon.no{color:#a15b61}.contract-icon .contract-yes,.contract-icon .contract-no,.contract-icon .contract-unknown{display:none}.contract-icon.yes .contract-yes,.contract-icon.no .contract-no,.contract-icon.unknown .contract-unknown{display:block}.assign-name{border:0;padding:0;background:none;color:#245e9f;display:flex;align-items:center;gap:4px;font:inherit;font-weight:700;cursor:pointer;text-align:left;max-width:100%}.assign-name svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5}.builder-note-year{display:grid;gap:8px;margin-bottom:18px}.builder-note-year label{font-weight:700;color:#0b2345}.builder-note-year textarea{width:100%;box-sizing:border-box;min-height:110px;resize:vertical;border:1px solid #b8c9dd;border-radius:8px;padding:10px;font:inherit;color:#233951;background:#f5f8fc}.builder-note-year button{justify-self:end}.assignment-route{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#0b2345;font-size:16px}.assignment-progress{height:8px;border-radius:8px;overflow:hidden;background:#dbe5f1;margin:20px 0 12px}.assignment-progress span{display:block;height:100%;width:0;background:#347bb9;transition:width .3s}.assignment-stages,.assignment-results{list-style:none;padding:0;margin:14px 0}.assignment-stages li,.assignment-results li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #dbe3ed}.assignment-stages small{color:#5c718d}.assignment-results strong{color:#26754a;font-size:12px}.builder-name:focus-visible,.note-icon:focus-visible{outline:2px solid #367ac2;outline-offset:3px}@media(prefers-reduced-motion:reduce){.assignment-progress span{transition:none}}
+
+/* Keep subdivision identity visible while collapsing its detail row. */
+.fs-disclosure>.fs-heading{list-style:none;cursor:pointer;border-radius:9px;background:#102b4a}
+.fs-disclosure>.fs-heading::-webkit-details-marker{display:none}
+.fs-disclosure>.fs-heading:focus-visible{outline:3px solid #77a9df;outline-offset:3px}
+.fs-disclosure[open]>.fs-heading{border-radius:9px 9px 0 0}
+.fs-disclosure .fs-title-head{display:flex;align-items:center;padding:12px 16px;gap:24px}
+.fs-disclosure .fs-title-head>.fs-identity{flex:1;min-width:200px}
+.fs-disclosure .fs-title-head .fs-meta{font-size:11px}
+.fs-disclosure .fs-title-head .fs-balance{max-width:none;gap:10px;flex-wrap:nowrap}
+.fs-disclosure .fs-title-head .fs-balance-label{max-width:none;font-size:10px}
+.fs-disclosure .fs-title-head .fs-balance-value{font-size:22px}
+.fs-disclosure .fs-title-context{display:inline-flex;margin-right:14px}
+.fs-disclosure .fs-territory{display:inline-block;margin-top:6px}
+.fs-header-facts{display:flex;margin:0;gap:14px}
+.fs-header-facts .fs-fact{border:0;padding:0}
+.fs-header-facts .fs-fact dt{color:#bccfe4;font-size:10px}
+.fs-header-facts .fs-fact dd{color:#fff;font-size:14px}
+.fs-disclosure-arrow{display:block;flex:none;width:10px;height:10px;border:solid #d9e8f8;border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 3px 5px 0}
+.fs-disclosure[open] .fs-disclosure-arrow{transform:rotate(225deg);margin-top:8px;margin-bottom:0}
+.fs-disclosure .fs-lot-card>.fs-facts{grid-template-columns:repeat(3,minmax(0,1fr));padding:8px;background:#e4edf6;border-bottom:1px solid #c6d5e5}
+.fs-disclosure .fs-lot-card>.fs-facts:empty{display:none}
+.fs-disclosure .fs-lot-card>.fs-facts .fs-fact{padding:0 8px;border:0}
+.fs-sale-label{white-space:nowrap}
+.month-cell>strong:focus-visible{outline:2px solid #5788b9;outline-offset:4px;border-radius:2px}

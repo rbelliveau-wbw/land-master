@@ -261,3 +261,12 @@ With no matching rows show No forecast available. Top Add Forecast still offers
 all catalog Type1 Builder choices, so their first year can be created without an
 empty matrix row. Native summary/inventory scope, records and write guards are
 unchanged. Rollback frontend mapping to 1.5.2.
+
+## Version 1.7 historical view and summary
+
+See [October 15 release and Creator handoff](../releases/forecast-manager-v1.7.1-2026-10-15.md).
+Completed months default to actuals, current/future months retain forecasts, and
+hover labels preserve comparison. The full-width summary starts expanded, with
+a right-side up/down chevron and refresh-preserved collapse state. Company and
+street length are omitted. Summary status uses Subdivision.Projects_Status in
+the prepared Creator function; PMP leaves its deployment to the user.

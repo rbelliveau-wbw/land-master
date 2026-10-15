@@ -191,7 +191,7 @@
       node.append(element('h5', 'fs-recent-title', data.title), list);
       data.rows.forEach(row => {
         const item = element('div', 'fs-sale');
-        item.append(element('dt', 'fs-sale-label', row.label), nativeValue('dd', 'fs-sale-value', row));
+        item.append(element('dt', 'fs-sale-label', row.label.replace(/ Sales$/, '')), nativeValue('dd', 'fs-sale-value', row));
         list.append(item);
       });
       return node;
@@ -207,18 +207,20 @@
       return node;
     }
 
-    const root = element('div', 'fs-summary'), heading = element('header', 'fs-heading'), identity = element('div', 'fs-identity');
+    const root = element('details', 'fs-summary fs-disclosure'), heading = element('summary', 'fs-heading'), identity = element('div', 'fs-identity');
+    root.open = true;
+    heading.title = 'Show or hide lot status and builder schedules';
     const nameRow = model.facts.find(row => row.label === 'Subdivision Name'), codeRow = model.facts.find(row => row.label === 'Subdivision Code');
     const name = element('h2', 'fs-name', model.name), meta = element('div', 'fs-meta', model.meta);
     // Name and code stay in the heading instead of being duplicated in facts.
     if (nameRow && nameRow.value === model.name) { name.dataset.nativeLabel = nameRow.label; name.dataset.nativeValue = nameRow.value; }
     if (codeRow && (!codeRow.value || model.meta.includes(codeRow.value))) { meta.dataset.nativeLabel = codeRow.label; meta.dataset.nativeValue = codeRow.value; }
-    identity.append(name, meta, element('span', 'fs-badge', model.badge));
+    identity.append(name, meta);
     heading.append(identity, balance(model.balance, 'fs-balance'));
     const facts = element('dl', 'fs-facts');
     facts.setAttribute('aria-label', model.factsTitle);
-    // Keep six lot/date metrics together, then company/county as the context row.
-    const orderedFacts = model.facts.filter(row => !['Company', 'County'].includes(row.label)).concat(model.facts.filter(row => ['Company', 'County'].includes(row.label)));
+    // Company/series and street length were explicitly removed from this view.
+    const orderedFacts = model.facts.filter(row => !['Company', 'Equiv LF of Street', 'County'].includes(row.label)).concat(model.facts.filter(row => row.label === 'County'));
     orderedFacts.forEach(row => {
       if ((row === nameRow && name.dataset.nativeLabel) || (row === codeRow && meta.dataset.nativeLabel)) return;
       const item = element('div', 'fs-fact' + (row.label === 'Company' ? ' fs-fact--company' : row.label === 'County' ? ' fs-fact--county' : ''));
@@ -242,19 +244,23 @@
       cards.append(card);
     });
     const titleContext=element('dl','fs-title-context');
-    titleContext.setAttribute('aria-label','Subdivision company and county');
+    titleContext.setAttribute('aria-label','Subdivision county');
     for(const contextFact of [...facts.querySelectorAll('.fs-fact--company,.fs-fact--county')]) titleContext.append(contextFact);
     if(titleContext.childElementCount) identity.append(titleContext);
     const titleHead=element('div','fs-title-head');
-    titleHead.append(identity,heading.lastChild);
-    heading.replaceChildren(titleHead,facts);
+    const headerFacts=element('dl','fs-header-facts');
+    for(const field of [...facts.children]) if(field.querySelector('[data-native-label="Last Sold Date"]')) headerFacts.append(field);
+    const arrow=element('span','fs-disclosure-arrow');
+    arrow.setAttribute('aria-hidden','true');
+    titleHead.append(identity,headerFacts,heading.lastChild,arrow);
+    heading.replaceChildren(titleHead);
     const overview = element('div', 'fs-overview');
     const lotCard = element('aside', 'fs-lot-card');
     lotCard.setAttribute('aria-label', 'Subdivision lot status, all dates');
     if (inventory && inventory.territory) identity.append(element('span', 'fs-territory', inventory.territory));
     const lotBody = element('div', 'subdivision-card-body');
     lotBody.append(element('h3', 'fs-inventory-title', 'Lot status · All dates'));
-    lotCard.append(heading, lotBody);
+    lotCard.append(facts, lotBody);
     const statuses = ['Total', 'Sold', 'Scheduled', 'Contracted', 'Open'];
     const valid = inventory && inventory.counts && Array.isArray(inventory.builders) && statuses.every(status => Number.isSafeInteger(inventory.counts[status]) && inventory.counts[status] >= 0);
     if (valid) {
@@ -310,7 +316,7 @@
     schedulePanel.setAttribute('aria-label', 'Builder schedules');
     schedulePanel.append(cards);
     overview.append(lotCard, schedulePanel);
-    root.append(overview);
+    root.append(heading,overview);
     if (model.empty) cards.append(element('div', 'fs-empty', model.empty));
     return root;
   }
@@ -320,6 +326,10 @@
       if (!host || !host.ownerDocument || typeof host.replaceChildren !== 'function') return false;
       const previous=global.ForecastNumbers ? ForecastNumbers.capture(host) : new Map();
       const model = parse(html), result = build(model, host.ownerDocument, inventory);
+      const summaryScope=scope || model.name+'|'+(model.facts.find(row=>row.label==='Subdivision Code')?.value || '');
+      const oldDisclosure=host.querySelector('.fs-disclosure');
+      result.dataset.summaryScope=summaryScope;
+      if(oldDisclosure && oldDisclosure.dataset.summaryScope===summaryScope) result.open=oldDisclosure.open;
       // HTML exposes no record IDs. Carry disclosure state only when the complete
       // ordered structural fingerprint agrees; never reconcile by Builder name.
       const signature = JSON.stringify([model.name, model.meta, model.schedules.map(row => [row.name, row.obligation, row.terms, row.contract ? [row.contract.title, row.contract.obligation, row.contract.terms.filter(term => !/Sales$|^Lots Expected$/.test(term.label))] : null])]);

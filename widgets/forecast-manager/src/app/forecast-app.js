@@ -2,7 +2,7 @@
   'use strict';
   const M = ForecastModel, $ = id => document.getElementById(id);
   const icons = {check:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3 3 7-7"/></svg>',close:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>'};
-  const S = {ready:false,catalog:null,snapshot:null,sub:'',builders:null,years:[],view:'forecast',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
+  const S = {ready:false,catalog:null,snapshot:null,sub:'',builders:null,years:[],view:'outlook',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
@@ -74,8 +74,10 @@
     $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All years';
   }
   // Zero suppression is presentation-only: forecast zeroes and export data remain explicit.
-  function matrixCount(value) {return S.view!=='forecast' && Number(value||0)===0 ? '' : count(value);}
-  function metric(year) {return S.view==='forecast'?year.total:S.view==='actual'?year.actual:year.scheduled;}
+  function matrixCount(value) {return (S.view==='actual'||S.view==='scheduled') && Number(value||0)===0 ? '' : count(value);}
+  function metric(year) {return S.view==='outlook'?year.outlook:S.view==='forecast'?year.total:S.view==='actual'?year.actual:year.scheduled;}
+  function displayed(month) {return M.displayValue(month,S.view,S.snapshot.today);}
+  function comparison(month) {return 'Actuals: '+count(month.actual)+' · Forecast: '+(month.forecast==null?'Not set':count(month.forecast))+' · Scheduled: '+count(month.scheduled);}
   const numberKey = key => S.sub+'|'+S.view+'|'+key;
   const numberMarkup = (value,key) => ForecastNumbers.markup(value,numberKey(key));
   function render() {
@@ -95,8 +97,9 @@
         if(year.issue) {html+='<td colspan="13" class="missing-year issue">'+esc(year.issue)+' · Review in Creator</td>';continue;}
         if(!year.parent) {html+='<td colspan="13" class="missing-year"><div class="missing-content"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 2v4m10-4v4M3 9h18m-9 3v5m-2.5-2.5h5"/></svg><span><b>No forecast available.</b></span><button class="btn" data-create-builder="'+esc(row.builderId)+'" data-create-year="'+esc(year.year)+'"'+(busy()?' disabled':'')+'>Create Forecast</button></div></td>';continue;}
         html+=year.months.map((month,index)=>{
-          const reason=M.lock(month,S.snapshot), entry=month.id?S.entries.get(month.id):null, value=entry?entry.attempted:month.forecast, phase=entry?entry.phase:'', title=reason||'Sold: '+count(month.actual)+' · Scheduled: '+count(month.scheduled);
-          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(S.view==='forecast'?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(value)+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong>'+numberMarkup(matrixCount(month[S.view]),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
+          const past=M.isPast(month,S.snapshot.today), editable=S.view==='forecast'||S.view==='outlook'&&!past;
+          const reason=M.lock(month,S.snapshot), entry=month.id?S.entries.get(month.id):null, value=entry?entry.attempted:month.forecast, phase=entry?entry.phase:'', title=comparison(month)+(reason?' · '+reason:'');
+          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===S.snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(editable?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(value)+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong tabindex="0" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' · '+title)+'">'+numberMarkup(matrixCount(displayed(month)),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
         }).join('');
         html+='<td class="year-total" data-total="'+esc(M.key(row.builderId,year.year))+'">'+numberMarkup(matrixCount(metric(year)),'total:'+M.key(row.builderId,year.year))+'<small>WFY '+esc(year.year)+'</small></td>';
       }
@@ -105,7 +108,7 @@
     if(!matrix.length) html+='<tr><td colspan="'+(1+13*yearList.length)+'" class="empty-table">No forecast available.</td></tr>';
     html+='</tbody><tfoot><tr><th class="builder-column">Selected total</th>'+yearList.map(year=>{
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
-      return M.months.map((month,index)=>'<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0)),'foot:'+year+'-'+index)+'</td>').join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)),'foot-total:'+year)+'</td>';
+      return M.months.map((month,index)=>'<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+Number(displayed(row.months[index])||0),0)),'foot:'+year+'-'+index)+'</td>').join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)),'foot-total:'+year)+'</td>';
     }).join('')+'</tr></tfoot>';
     $('matrix').innerHTML=html;
     ForecastNumbers.apply($('matrix'),previous);
@@ -113,6 +116,8 @@
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
   function patch() {
     controls(); if(!S.snapshot) return;
+    // A new server month can turn a mounted forecast input into an actual cell.
+    if(S.view==='outlook' && [...document.querySelectorAll('[data-forecast]')].some(input=>{const month=S.snapshot.months.find(row=>row.id===input.dataset.forecast);return month&&M.isPast(month,S.snapshot.today);})){render();return;}
     document.querySelectorAll('#matrix [data-month-start]').forEach(node=>node.classList.toggle(node.tagName==='COL'?'current-month-column':'current-month',node.dataset.monthStart.slice(0,7)===S.snapshot.today.slice(0,7)));
     $('window').hidden=false; $('window').textContent=S.snapshot.windowOpen?'Forecasting window open':'Forecasting window closed'; $('window').classList.toggle('closed',!S.snapshot.windowOpen);
     for(const input of document.querySelectorAll('[data-forecast]')) {
@@ -122,13 +127,20 @@
       input.disabled=!!reason || ['pending','failed','unknown'].includes(phase) || S.creating || S.loading || !!creationReview();
       if(document.activeElement!==input && !entry) input.value=month && month.forecast != null ? month.forecast : '';
       $('state-'+input.dataset.forecast).innerHTML=stateText(phase,reason);
-      cell.title=entry && entry.error || reason || 'Sold: '+count(month.actual)+' · Scheduled: '+count(month.scheduled);
+      cell.title=entry && entry.error || comparison(month)+(reason?' · '+reason:'');
+    }
+    for(const output of document.querySelectorAll('#matrix .month-cell>strong')) {
+      const cell=output.closest('td'), month=S.snapshot.months.find(row=>row.id===cell.dataset.cell);
+      if(!month) continue;
+      const reason=M.lock(month,S.snapshot), title=comparison(month)+(reason?' · '+reason:'');
+      ForecastNumbers.update(output.querySelector('[data-number-key]'),matrixCount(displayed(month)));
+      cell.title=title;output.setAttribute('aria-label',name(month.builderId)+' WFY '+month.year+' '+month.month+' · '+title);
     }
     const matrix=rows();
     for(const row of matrix) for(const year of row.years) {const cell=document.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(metric(year)));}
     for(const year of years().map(String)) {
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
-      M.months.forEach((month,index)=>{const cell=document.querySelector('[data-foot="'+year+'-'+index+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(selected.reduce((sum,row)=>sum+Number(row.months[index][S.view]||0),0)));});
+      M.months.forEach((month,index)=>{const cell=document.querySelector('[data-foot="'+year+'-'+index+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(selected.reduce((sum,row)=>sum+Number(displayed(row.months[index])||0),0)));});
       const total=document.querySelector('[data-foot-total="'+year+'"]'); if(total) ForecastNumbers.update(total.querySelector('[data-number-key]'),matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)));
     }
   }

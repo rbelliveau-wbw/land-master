@@ -60,7 +60,8 @@
       }));
     }
     const lot=root.querySelector('.fs-lot-card');
-    if (lot) fields(lot,scope+'|subdivision',['.fs-balance-value','.fs-fact-value','.subdivision-card-stat>strong']);
+    fields(root,scope+'|subdivision',['.fs-balance-value']);
+    if (lot) fields(lot,scope+'|subdivision',['.fs-fact-value','.subdivision-card-stat>strong']);
     const names=[...root.querySelectorAll('.builder-matrix tbody th')].map(node => node.getAttribute('aria-label'));
     if (lot) fields(lot,scope+'|inventory|'+JSON.stringify(names),['.builder-matrix tbody td']);
     root.querySelectorAll('.fs-card').forEach((card,index) => fields(card,scope+'|schedule|'+signature+'|'+index,[

@@ -32,6 +32,10 @@ const native=monthNames.map(month=>{
 assert.ok(native.every(text=>text===native[0]),'all twelve native month save bodies have the same guards and side effects');
 
 assert.equal(M.currentYear('2027-01-31'),2026);assert.equal(M.currentYear('2027-02-01'),2027);
+for(const [start,today,past] of [['2025-12-01','2026-10-15',true],['2026-09-01','2026-10-01',true],['2026-10-01','2026-10-31',false],['2026-11-01','2026-10-15',false],['2027-01-01','2027-02-01',true],['2027-01-01','2027-01-15',false]]) {
+  const month={start,actual:3,forecast:9,scheduled:2};assert.equal(M.isPast(month,today),past);assert.equal(M.displayValue(month,'outlook',today),past?3:9);assert.equal(M.displayValue(month,'forecast',today),9);assert.equal(M.displayValue(month,'actual',today),3);
+}
+assert.equal(M.displayValue({start:'2026-09-01',actual:0,forecast:9},'outlook','2026-10-15'),0,'zero actuals never fall back to forecast');
 assert.equal(M.start('2026',11),'2027-01-01');assert.equal(M.start('2026',0),'2026-02-01');
 assert.equal(M.value(''),null);assert.equal(M.value('0'),0);assert.equal(M.value('0012'),12);assert.equal(M.id('90071992547409961'),'90071992547409961');
 for(const invalid of ['-1','1.5','1e2','100000','two'])assert.throws(()=>M.value(invalid));

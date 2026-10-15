@@ -54,7 +54,7 @@ export function forecastSummaryFixture(options = {}) {
     Takedown_Start_Date: date('2026-01-05'), Initial_Takedown: 2, Initial_Delay_Days: 30, Second_Closing_Lots: null, Second_Closing_Days: null,
     Continued_Takedown: 3, Continued_Takedown_Delay_Days: 30, Takedown_End_Date: date('2027-01-30'), Last_Takedown_Date: date('2026-08-06'), Last_Takedown_Amount: 4,
     Lots_Expected: 9, Last_30_Day_Sales: 0, Last_90_Day_Sales: 9, Last_6_Month_Sales: 21, Last_12_Month_Sales: 30});
-  const tables = {Subdivision: [{ID: 1, Subdivision_Name: 'Turnbo Ranch - Phase 05', Subdivision_Code: 'TR05', Status: 'Active',
+  const tables = {Subdivision: [{ID: 1, Subdivision_Name: 'Turnbo Ranch - Phase 05', Subdivision_Code: 'TR05', Status: 'Active', Projects_Status: 'Completed',
     Company_Name: 'WBW Single Development Group, LLC - Series 145', County: 'Bell', Total_Lots: 148, Lot_Total_Residential: 148,
     Equiv_LF_of_Street: 5072, Last_Sold_Date: date('2026-08-06')}],
     Takedown_Schedule: [schedule(101, 1, 80), schedule(102, 2, 36), schedule(103, 2, 363, [1, 2, 3, 4], 77)],
@@ -88,6 +88,9 @@ async function browserChecks() {
     await page.setContent('<!doctype html><title>Inert compact summary verification</title><div id="host">Previous summary</div>');
     await page.addScriptTag({content: fs.readFileSync(rendererPath, 'utf8')});
     const fixture = forecastSummaryFixture();
+    const statusMeta=fixture.match(/class='fm-section-meta'>([^<]*)</)[1];
+    assert.match(statusMeta,/Completed/,'summary status uses Projects_Status');
+    assert.doesNotMatch(statusMeta,/Active/,'legacy subdivision Status is not displayed');
     const output = await page.evaluate(html => {
       const source = new DOMParser().parseFromString(html, 'text/html'), host = document.getElementById('host');
       const normalized = value => value.replace(/\s+/g, ' ').trim();
@@ -95,7 +98,7 @@ async function browserChecks() {
       const values = node => [...node.querySelectorAll('[data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
       const nativeCards = [...source.querySelectorAll('.fm-builder-card')];
       const ok = ForecastSummary.render(html, host), cards = [...host.querySelectorAll('.fs-card')];
-      const facts = [...host.querySelectorAll('.fs-lot-card [data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
+      const facts = [...host.querySelectorAll('.fs-heading [data-native-label],.fs-lot-card [data-native-label]')].map(item => [item.dataset.nativeLabel, item.dataset.nativeValue]).sort((a, b) => a[0].localeCompare(b[0]));
       const results = cards.map((card, index) => {
         const native = nativeCards[index], nativeTable = [...native.children].find(child => child.tagName === 'TABLE'), nativeContract = native.querySelector('.fm-contract-scope'), contract = card.querySelector('.fs-contract');
         const nativeProgress = [...native.children].find(child => child.classList.contains('fm-progress-wrap')).querySelector('.fm-progress');
@@ -111,13 +114,13 @@ async function browserChecks() {
           balance: card.querySelector('.fs-card-balance-value').textContent, nativeBalance: native.querySelector('.fm-builder-stat-v').textContent,
           negative: card.querySelector('.fs-card-balance').classList.contains('negative'), nativeNegative: native.querySelector('.fm-builder-stat').classList.contains('fm-builder-stat-neg')};
       });
-      return {ok, facts, nativeFacts: tableRows(source.querySelector('.fm-card .fm-table')), results, count: cards.length,
+      return {ok, facts, nativeFacts: tableRows(source.querySelector('.fm-card .fm-table')).filter(row=>!['Company','Equiv LF of Street'].includes(row[0])), results, count: cards.length,
         topBalance: host.querySelector('.fs-balance-value')?.textContent, nativeTopBalance: source.querySelector('.fm-top-stat-v').textContent,
         headlessRecent: host.querySelectorAll('.fs-contract .fs-sale').length, unsafe: host.querySelectorAll('script,style,img,iframe,link,object,svg,button').length};
     }, fixture);
     assert.equal(output.ok, true, 'actual saved native summary is supported');
     assert.equal(output.count, 3, 'all schedules survive repeated Builder names');
-    assert.deepEqual(output.facts, output.nativeFacts, 'every subdivision field survives');
+    assert.deepEqual(output.facts, output.nativeFacts, 'all retained subdivision fields survive');
     assert.equal(output.topBalance, output.nativeTopBalance, 'summary capacity is never replaced by inventory balance');
     assert.equal(output.unsafe, 0, 'outer document contains rebuilt passive content only');
     assert.equal(output.headlessRecent, 4, 'whole-contract recent sales retain four compact fields');
@@ -134,9 +137,10 @@ async function browserChecks() {
     const changed = forecastSummaryFixture({monthlyForecast: 20});
     const disclosure = await page.evaluate(({fixture, changed, reversed}) => {
       const host = document.getElementById('host');
+      host.querySelector('.fs-disclosure').open = false;
       host.querySelector('.fs-contract').open = true;
       ForecastSummary.render(changed, host);
-      const retained = host.querySelector('.fs-contract').open;
+      const retained = host.querySelector('.fs-contract').open && !host.querySelector('.fs-disclosure').open;
       const status = host.querySelector('.fs-month-status').textContent;
       ForecastSummary.render(reversed, host);
       const reset = !host.querySelector('.fs-contract').open;
