@@ -3,7 +3,7 @@
 Audit date: October 14, 2026. This covers all ten current widget source trees.
 Each entry represents a repeated numeric field family, including every row,
 phase, category, month or grouped copy of that family. Forecast Manager is
-implemented in 1.6.2; the remaining entries are implementation opportunities.
+implemented in 1.6.4; the remaining entries are implementation opportunities.
 
 Use the [Sliding push contract](../knowledge/design/number-transitions.md): 420ms,
 16px, real final values immediately, stable field/record/scope identity, no

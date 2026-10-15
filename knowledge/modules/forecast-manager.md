@@ -1,6 +1,6 @@
 # Forecast Manager widget contract
 
-## October 14, 2026 number transitions — 1.6.2
+## October 14, 2026 number transitions — 1.6.4
 
 Sliding push animates changed matrix totals/counts, read-only Sold/Scheduled
 cells and numeric summary/schedule fields. The old value exits left; the new

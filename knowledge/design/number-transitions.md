@@ -14,7 +14,7 @@ replaces any running transition with the newest real value. Reduced motion uses
 immediate final values. Editable inputs retain their native value/caret; animate
 their dependent displays instead.
 
-Forecast Manager 1.6.2 implements this in `number-transitions.js` and
+Forecast Manager 1.6.4 implements this in `number-transitions.js` and
 `number-transitions.css`: builder/year totals, selected month/year totals, matrix
 counts, subdivision/schedule balances, inventory counts, schedule progress text,
 monthly sold/forecast ratios, numeric terms and recent-sales counts. Read-only

@@ -24,6 +24,7 @@
     label.textContent = value;
     const motion = old !== undefined && old !== value && numeric(old) && numeric(value) && !global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     node.dataset.from = motion ? old : value;
+    node.style.minWidth = motion ? Math.max(old.length,value.length)+'ch' : '';
     if (!motion || !node.isConnected) return;
     // Restart from the last real value if a second response arrives mid-transition.
     void node.offsetWidth;

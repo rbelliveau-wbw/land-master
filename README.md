@@ -3,7 +3,7 @@
 
 Source, Creator metadata, knowledge, immutable widget releases, and deployment tooling for the Land Master Zoho Creator application.
 
-Forecast Manager 1.6.2 adds Sliding push for changing totals, balances and schedule
+Forecast Manager 1.6.4 adds Sliding push for changing totals, balances and schedule
 numbers while retaining compact inline icons. See the [module notes](knowledge/modules/forecast-manager.md)
 and the [all-widget transition inventory](docs/number-transition-opportunities-2026-10-14.md).
 No additional Creator deployment is needed.

@@ -1,6 +1,6 @@
 # Forecast matrices
 
-## Input-driven number changes — v1.6.2
+## Input-driven number changes — v1.6.4
 
 Apply the selected [Sliding push](number-transitions.md) to changed displayed
 matrix and summary numbers. Keep typing fields and their caret intact; totals
