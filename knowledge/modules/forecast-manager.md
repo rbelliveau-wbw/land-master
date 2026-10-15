@@ -1,5 +1,23 @@
 # Forecast Manager widget contract
 
+## October 14, 2026 compact rows — 1.6.1
+
+Builder names, contract status and the smaller note pencil now share one line.
+Remove initials and per-builder fiscal-year counts, with 48px matrix rows and
+22px note circles containing 12px pencils. Preserve empty/yellow note states and
+all existing note/assignment behavior. Contract hover text is exactly
+`Found lot contract` or `No lot contract.`; unknown status remains distinct.
+
+Changed frontend files: forecast-app.js, forecast-builder-actions.js, forecast.css
+and widget.html, plus release/configuration metadata and the desktop browser
+runner. No forms, fields, reports, Deluge functions or Custom APIs change; this
+presentation release needs no additional Creator deployment. The 1.6.0 backend
+promotion, if still pending, remains with the user. Desktop inert fixtures cover
+single-line geometry, compact row/pencil sizes, exact hover text, note editing,
+assignment, monthly saves, pending locks and write-free recovery. Required
+repository validation and Pages build accompany promotion to main/production.
+Rollback the Production mapping to 1.6.0; retain immutable releases and saved data.
+
 ## October 14, 2026 builder actions — 1.6.0
 
 The live Creator Development catalog identifies the placeholder as the Builder

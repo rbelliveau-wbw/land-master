@@ -3,6 +3,10 @@
 
 Source, Creator metadata, knowledge, immutable widget releases, and deployment tooling for the Land Master Zoho Creator application.
 
+Forecast Manager 1.6.1 uses compact builder rows with inline contract/note icons
+and a smaller pencil. See the [module notes](knowledge/modules/forecast-manager.md)
+for regression coverage and rollback; no additional Creator deployment is needed.
+
 ## Start here
 
 1. Read [AGENTS.md](AGENTS.md) and the applicable widget's `AGENTS.md` before making changes.

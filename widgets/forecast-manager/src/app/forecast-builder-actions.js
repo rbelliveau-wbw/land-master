@@ -13,7 +13,7 @@
     const title=ready?'Assign this placeholder to a builder':'Builder actions require the Creator update';
     const identity=isPlaceholder?'<button class="builder-name assign-name" data-assign-name="'+esc(id)+'" title="'+title+'" aria-label="Assign '+esc(text)+' to builder"'+(blocked()?' disabled':'')+'>'+esc(text)+'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>':'<span class="builder-name" title="'+esc(text)+'">'+esc(text)+'</span>';
     const known=ready&&entries.every(row=>typeof row.hasLotContract==='boolean'), hasContract=known&&entries.some(row=>row.hasLotContract), state=known?hasContract?'yes':'no':'unknown';
-    const contractTitle=known?(hasContract?'Yes — Lot contract exists':'No — no Lot contract')+' for '+text+' in '+H.S.snapshot.subdivision.name:'Lot contract status unavailable until the Creator update';
+    const contractTitle=known?(hasContract?'Found lot contract':'No lot contract.'):'Lot contract status unavailable until the Creator update';
     const noteTitle=hasNote?'View builder notes':ready?'Add builder note':'Builder notes require the Creator update';
     return identity+'<span class="builder-tools"><span class="contract-icon '+state+'" role="img" aria-label="'+esc(contractTitle)+'" title="'+esc(contractTitle)+'">'+contract+'</span>'+(isPlaceholder||hasNote?'<button class="note-icon'+(hasNote?' has-note':'')+'" data-builder-notes="'+esc(id)+'" aria-label="'+esc(noteTitle+' for '+text)+'" title="'+esc(noteTitle)+'"'+(blocked()?' disabled':'')+'>'+pencil+'</button>':'')+'</span>';
   }

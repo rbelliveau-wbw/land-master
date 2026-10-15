@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T16:00:51.004Z",
+  "generated_at": "2026-10-15T02:11:33.724Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.6.0",
-      "description": "Assign placeholder forecasts across all fiscal years, save builder notes by Forecast Year, and show subdivision-scoped Lot contract status.",
+      "version": "1.6.1",
+      "description": "Compact builder rows with inline Lot contract status, smaller note pencils and placeholder assignment across fiscal years.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "28c7bcf7987600c13d9e15ddf0ef427b5db0ea4a6b3883c060e98705b5b16cf4",
+      "source_sha256": "9ceecac205b0632d4ce22c66a45e468842f488a3cfc58e94bec60e05c29ce981",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",

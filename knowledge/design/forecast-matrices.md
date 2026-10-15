@@ -1,5 +1,16 @@
 # Forecast matrices
 
+## Compact builder identities — v1.6.1
+
+The user selected Inline icons on October 14, 2026. Keep the builder name,
+contract document and note pencil together on one line; omit the initials square
+and per-builder fiscal-year count. Keep rows at 48px, preserving month inputs and
+their inline save/recovery feedback. Truncate long names before the icons.
+Use a 22px note circle and 12px pencil, retaining pale-blue empty and yellow
+saved-note states. Contract tooltips read exactly **Found lot contract** or
+**No lot contract.**; retain a distinct unavailable state before backend promotion.
+Verify desktop geometry and action regressions with inert browser fixtures.
+
 ## Placeholder actions — v1.6
 
 Only the native Builder named Placeholder offers a clickable name. Its searchable
@@ -27,7 +38,7 @@ Keep each selected builder on one row. Pin its name on the left and group each f
 
 The October 7 redesign uses **Legal and Pro Forma as the explicit visual references**, replacing the rejected floating KPI-card layout. Reuse their actual tokens and system font, compact white Land Master topbar, navy page title, blue action button, shared navy pill switcher and white report surface. Combine subdivision identity and metrics in one Legal-style info strip: a navy identity block, followed by compact fields with clear scope labels. Use blue Sold, dark-yellow Scheduled and green balance values.
 
-Keep filters compact and searchable, including single-selection subdivision/year creation pickers. Use the shared report search strip, soft-red clear X, checkbox markers only for multi-selection, centered SVG checks, Clear/Select visible/Done controls, selection counts and keyboard navigation. Escape/outside click discard staged changes; Clear immediately resets the filter. Keep menus within the viewport. Use left-aligned WFY chips and calendar dates so year identity stays visible while scrolling. Builder identities have small initials and a pinned name. Keep past values quiet and readable, with the lock reason available to assistive technology and in a tooltip, rather than repeating Locked under every cell. Month inputs must show blank distinctly from zero. Missing combinations occupy the same builder row and offer Add year & months beside the year identity. Follow Legal/Pro Forma navy dialog styling and the existing progress behavior.
+Keep filters compact and searchable, including single-selection subdivision/year creation pickers. Use the shared report search strip, soft-red clear X, checkbox markers only for multi-selection, centered SVG checks, Clear/Select visible/Done controls, selection counts and keyboard navigation. Escape/outside click discard staged changes; Clear immediately resets the filter. Keep menus within the viewport. Use left-aligned WFY chips and calendar dates so year identity stays visible while scrolling. Builder identities use a pinned name with inline status/action icons. Keep past values quiet and readable, with the lock reason available to assistive technology and in a tooltip, rather than repeating Locked under every cell. Month inputs must show blank distinctly from zero. Missing combinations occupy the same builder row and offer Add year & months beside the year identity. Follow Legal/Pro Forma navy dialog styling and the existing progress behavior.
 
 The user selected **Compact cards** from the October 7 mockups. Release 1.2.0 puts the complete snapshot above the forecast matrix: navy identity/capacity header, six compact subdivision metrics plus Company/County, and responsive schedule cards. Each card retains progress, current-month meter, paired closing terms and four recent-sales counts in one row. Multi-phase cards preserve their all-phase contract section. Do not achieve density by dropping fields, equating blank with zero, merging repeated schedules or applying matrix filters to the whole-subdivision summary. The native iframe is a fallback for unsupported markup, not the primary summary.
 
