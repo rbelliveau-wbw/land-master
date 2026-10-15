@@ -191,7 +191,7 @@
     finally {S.loading=false;patch();}
   }
   function openDialog(title,kicker,body,action,actionText) {
-    closePicker(); $('modal').querySelector('.dialog').classList.remove('selection-dialog'); S.focus=document.activeElement; S.dialog={action};
+    closePicker(); $('modal').querySelector('.dialog').classList.remove('selection-dialog','assignment-success'); S.focus=document.activeElement; S.dialog={action};
     $('dialogTitle').textContent=title;$('dialogKicker').textContent=kicker;$('dialogContext').hidden=true;$('dialogContext').innerHTML='';$('dialogBody').innerHTML=body;
     $('dialogStatus').textContent='';$('dialogAction').textContent=actionText;$('dialogAction').hidden=!action;$('dialogAction').disabled=false;
     $('dialogClose').disabled=false;$('dialogCancel').hidden=false;$('dialogCancel').textContent='Cancel';$('dialogCancel').disabled=false;

@@ -170,3 +170,12 @@ one up/down chevron at the far right. Preserve disclosure choice on refresh for
 the same subdivision. Remove Company/series and Equiv LF of Street from this
 presentation. Use the same one-line recent-sales period labels in phase and
 whole-contract sections while preserving their distinct scopes and source values.
+
+Builder assignment success uses the compact confirmation approved October 15,
+2026: 440px maximum width, navy header with a centered SVG check and **Builder
+assigned**, destination builder, subdivision, one **N years · N forecasts updated**
+line and Close. Replace completed progress/stage/per-year lists and duplicate
+footer copy. Counts come from the completely acknowledged captured plan; first
+appearance stays still. Preserve existing matrix/summary numeric transitions,
+pending/error behavior and read-only recovery. Opening another dialog clears this
+success treatment. See the [transfer-progress exception](transfer-progress.md).

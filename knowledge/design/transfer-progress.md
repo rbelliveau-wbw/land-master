@@ -15,6 +15,16 @@ see [the system policy](../../docs/automatic-save-check-removal-2026-10-08.md).
 
 ## Appearance and interaction
 
+Forecast Manager builder assignment has the compact success exception approved
+October 15, 2026. After the existing acknowledgement and complete destination-ID
+checks pass, replace progress and per-year rows with a 440px confirmation:
+centered SVG check beside **Builder assigned**, destination builder, subdivision,
+one **N years · N forecasts updated** line, and Close. Hide the redundant kicker
+and footer status visually while retaining its live announcement. Apply the same
+result after read-only recovery. Pending and failed/unknown states retain their
+existing progress, close locks, captured ledger and Check status protection.
+Other batch transfers retain their detailed destination results.
+
 Pro Forma's ordinary Save uses a compact exception requested October 5, 2026:
 show the progress bar and one plain-language status (preparing, saving, checking,
 updating totals/schedule). Hide numbered technical stages, API/report names,

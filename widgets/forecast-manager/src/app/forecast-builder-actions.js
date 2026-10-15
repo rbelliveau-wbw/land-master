@@ -60,7 +60,12 @@
   }
   function finishAssignment(op,data) {
     H.applySnapshot(data);if(H.S.builders){H.S.builders=H.S.builders.filter(id=>id!==op.sourceBuilderId);if(!H.S.builders.includes(op.destinationBuilderId))H.S.builders.push(op.destinationBuilderId);}
-    op.phase='saved';progress(op,'done','Builder assigned.',data.assignment);H.S.rowPending=false;$('dialogCancel').hidden=false;H.render();terminal('Builder assigned to all forecasts.');
+    op.phase='saved';H.S.rowPending=false;$('dialogCancel').hidden=false;H.render();
+    $('modal').querySelector('.dialog').classList.add('assignment-success');
+    $('dialogTitle').innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="m5.5 10 3 3 6-6"/></svg><span>Builder assigned</span>';
+    const years=op.plan.parentIds.length,forecasts=op.plan.forecastIds.length;
+    $('dialogBody').innerHTML='<p class="assignment-success-builder">'+H.esc(H.name(op.destinationBuilderId))+'</p><p class="assignment-success-subdivision">'+H.esc(H.S.snapshot.subdivision.name)+'</p><p class="assignment-success-count">'+years+' year'+(years===1?'':'s')+' · '+forecasts+' forecast'+(forecasts===1?'':'s')+' updated</p>';
+    terminal('Builder assigned to all forecasts.');$('dialogCancel').focus();
   }
   function notes(builderId) {
     if(blocked())return;

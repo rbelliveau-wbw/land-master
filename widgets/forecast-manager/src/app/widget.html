@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Forecast Manager</title>
-  <link rel="stylesheet" href="forecast.css?v=1.7.2">
-  <link rel="stylesheet" href="number-transitions.css?v=1.7.2">
+  <link rel="stylesheet" href="forecast.css?v=1.7.3">
+  <link rel="stylesheet" href="number-transitions.css?v=1.7.3">
   <style>.segments{background:linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%)}.segments button:hover{transform:translateY(-1px)}</style>
   <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
-  <script src="runtime-context.js?v=1.7.2"></script>
-  <script src="critical-error-reporter.js?v=1.7.2"></script>
-  <script src="success-feedback.js?v=1.7.2"></script>
-  <script src="forecast-model.js?v=1.7.2"></script>
-  <script src="number-transitions.js?v=1.7.2"></script>
-  <script src="forecast-summary.js?v=1.7.2"></script>
-  <script src="forecast-builder-actions.js?v=1.7.2"></script>
+  <script src="runtime-context.js?v=1.7.3"></script>
+  <script src="critical-error-reporter.js?v=1.7.3"></script>
+  <script src="success-feedback.js?v=1.7.3"></script>
+  <script src="forecast-model.js?v=1.7.3"></script>
+  <script src="number-transitions.js?v=1.7.3"></script>
+  <script src="forecast-summary.js?v=1.7.3"></script>
+  <script src="forecast-builder-actions.js?v=1.7.3"></script>
 </head>
 <body>
 <main id="app">
@@ -51,16 +51,16 @@
       <details class="snapshot" id="summary" hidden><summary><svg class="summary-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V4h14v12H3M3 8h14M8 8v8"/></svg><span>Subdivision &amp; takedown schedules</span><span class="subtle">Native summary</span><svg class="summary-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></summary><iframe id="summaryFrame" title="Subdivision and builder takedown summary" sandbox="" loading="lazy"></iframe></details>
     </section>
     <section id="empty" class="empty"><span class="empty-grid" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="30" rx="5"/><path d="M6 19h36M18 19v20M30 19v20M6 29h36"/></svg></span><h2>Select a subdivision</h2></section>
-    <footer class="app-foot"><span>WFY runs from February through January</span><span>Forecast Manager · v1.7.2</span></footer>
+    <footer class="app-foot"><span>WFY runs from February through January</span><span>Forecast Manager · v1.7.3</span></footer>
   </div>
 </main>
 <div id="modal" class="modal" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><header class="dialog-head"><div><span id="dialogKicker" class="kicker">FORECAST YEAR</span><h2 id="dialogTitle">Add forecast year</h2><div id="dialogContext" class="dialog-context" hidden></div></div><button id="dialogClose" class="close-btn" aria-label="Close"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div class="dialog-body" id="dialogBody"></div><footer class="dialog-foot"><span id="dialogStatus" role="status" aria-live="polite"></span><div><button id="dialogCancel" class="btn">Cancel</button><button id="dialogAction" class="btn primary">Create forecast year</button></div></footer></section></div>
 <script>
-LMCriticalErrors.configure({widget:"Forecast Manager",version:"1.7.2",code:"FORECAST",getContext:function(){return window.LMRuntime?LMRuntime.current():{};}});
+LMCriticalErrors.configure({widget:"Forecast Manager",version:"1.7.3",code:"FORECAST",getContext:function(){return window.LMRuntime?LMRuntime.current():{};}});
 // Creator v2 UTIL handshake is shared with the permanent loader.
 // ZOHO.CREATOR.init is the legacy v1 equivalent; do not mix initialization versions.
 window.forecastReporterReady=function(){LMCriticalErrors.markReady();};
 </script>
-<script src="forecast-app.js?v=1.7.2"></script>
+<script src="forecast-app.js?v=1.7.3"></script>
 </body>
 </html>

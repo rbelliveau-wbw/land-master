@@ -286,3 +286,11 @@ hover labels preserve comparison. The full-width summary starts expanded, with
 a right-side up/down chevron and refresh-preserved collapse state. Company and
 street length are omitted. Summary status uses Subdivision.Projects_Status in
 the prepared Creator function; PMP leaves its deployment to the user.
+
+## Version 1.7.3 compact assignment success
+
+Use the approved compact success confirmation for acknowledged assignment and
+successful read-only recovery. Show the destination builder, subdivision and one
+year/forecast count line, retaining the existing operation safeguards. Counts
+appear once without animation; matrix/summary Sliding push coverage is unchanged.
+No Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.3-2026-10-15.md).
