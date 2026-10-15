@@ -77,23 +77,36 @@ try {
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'forecast','new sessions default to Forecast, including after refresh');
   assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'true');
   assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'false');
-  assert.equal(await page.locator('#matrixLegend').isVisible(),false,'color key is contextual to Sold + Forecast');
+  assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Forecast'],'default Forecast keeps its green key');
   assert.ok(await page.locator('.year-heading').evaluateAll(headings=>headings.every(node=>{const a=node.firstElementChild.getBoundingClientRect(),b=node.lastElementChild.getBoundingClientRect(),r=node.getBoundingClientRect();return Math.abs((a.left+b.right)/2-(r.left+r.right)/2)<1;})),'WFY chip and dates center together over each year');
   await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
-  assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span').allTextContents(),['Sold','Forecast']);
+  assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Sold','Forecast']);
   assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const title=host.querySelector('.matrix-title').getBoundingClientRect(),key=host.querySelector('#matrixLegend').getBoundingClientRect(),switcher=host.querySelector('.segments').getBoundingClientRect();return key.left>title.right&&key.right<switcher.left&&Math.abs((key.top+key.bottom)/2-(switcher.top+switcher.bottom)/2)<1;}),'legend occupies the marked toolbar space before the slider');
-  assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const bar=host.getBoundingClientRect(),group=host.querySelector('.matrix-view-controls').getBoundingClientRect();return Math.abs((group.left+group.right)/2-(bar.left+bar.right)/2)<1;}),'color key and slider center as one group within the full toolbar');
-  await page.setViewportSize({width:2308,height:1066});
-  assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const bar=host.getBoundingClientRect(),group=host.querySelector('.matrix-view-controls').getBoundingClientRect(),title=host.querySelector('.matrix-title').getBoundingClientRect(),actions=host.querySelector('.matrix-actions').getBoundingClientRect();return Math.abs((group.left+group.right)/2-(bar.left+bar.right)/2)<1&&title.right<group.left&&actions.left>group.right;}),'wide desktop preserves centered group, left title and right actions');
+  for(const width of [1440,2308,1280]){
+    await page.setViewportSize({width,height:1066});
+    let anchor;
+    for(const [view,legend] of [['outlook',['Sold','Forecast']],['forecast',['Forecast']],['actual',['Sold']],['scheduled',['Scheduled']]]){
+      await page.locator('button[data-view="'+view+'"]').click();
+      assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),legend);
+      const geometry=await page.locator('.matrix-tools').evaluate(host=>{const bar=host.getBoundingClientRect(),pill=host.querySelector('.segments').getBoundingClientRect(),key=host.querySelector('#matrixLegend').getBoundingClientRect(),title=host.querySelector('.matrix-title').getBoundingClientRect(),actions=host.querySelector('.matrix-actions').getBoundingClientRect();return {x:pill.x,width:pill.width,centered:Math.abs((pill.left+pill.right)/2-(bar.left+bar.right)/2)<1,clear:key.right<pill.left&&(title.bottom<=key.top||title.right<key.left)&&(actions.bottom<=pill.top||actions.left>pill.right)};});
+      assert.ok(geometry.centered&&geometry.clear,'slider alone stays centered with clear legend/title/actions at '+width+' '+view);
+      if(!anchor)anchor=geometry;
+      assert.equal(geometry.x,anchor.x,'selection never moves the slider');assert.equal(geometry.width,anchor.width,'selection never resizes the slider');
+      assert.ok(await page.locator('#matrix tbody td[data-month-start],#matrix tfoot td[data-month-start]').evaluateAll(nodes=>nodes.every(node=>{const isCurrent=node.classList.contains('current-month'),hasValue=node.hasAttribute('data-has-value'),basis=node.dataset.basis,fill={sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}[basis],actual=getComputedStyle(node).backgroundColor;if(isCurrent)return actual==='rgb(238, 229, 251)';return hasValue?actual===fill:!Object.values({sold:'rgb(220, 236, 255)',forecast:'rgb(223, 241, 230)',scheduled:'rgb(255, 237, 196)'}).includes(actual);})),view+' colors only nonzero values, with lavender current month');
+      assert.equal(await page.locator('#matrix .current-month-label:visible').count(),1,'current month has an explicit label');
+      if(width===2308)await page.screenshot({path:path.join(output,'value-colors-'+view+'-wide.png'),fullPage:true});
+    }
+  }
+  await page.setViewportSize({width:2308,height:1066});await page.locator('button[data-view="outlook"]').click();
   await page.screenshot({path:path.join(output,'centered-view-controls-wide.png'),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
   assert.equal(await page.locator('#matrix thead tr').count(),2,'retain existing WFY/month rows without Sold/Forecast group headings');
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
   assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
   assert.equal(await page.locator('#matrix col[data-month-start="2027-01-01"]').getAttribute('data-basis'),'forecast','fiscal January uses its calendar year');
-  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('strong')).color]),['rgb(237, 244, 255)','rgb(21, 91, 158)']);
-  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(237, 248, 241)');
+  assert.deepEqual(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-02-01"]').evaluate(node=>[getComputedStyle(node).backgroundColor,getComputedStyle(node.querySelector('strong')).color]),['rgb(220, 236, 255)','rgb(21, 91, 158)']);
+  assert.equal(await page.locator('#matrix tbody tr').first().locator('[data-month-start="2026-11-01"]').evaluate(node=>getComputedStyle(node).backgroundColor),'rgb(223, 241, 230)');
   assert.equal(await page.locator('#matrix tfoot [data-month-start="2026-02-01"]').getAttribute('data-basis'),'sold');
   await page.screenshot({path:path.join(output,'sold-forecast-colors.png'),fullPage:true});
   assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook');
@@ -107,6 +120,7 @@ try {
   const beforeZeros=await page.evaluate(()=>{const before=structuredClone(__snapshot.months);__snapshot.months.forEach(month=>{month.actual=0;month.forecast=0;});return before;});
   await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
   assert.equal(await past.locator('strong').textContent(),'','zero sold lots display blank in the mixed view');
+  assert.equal(await page.locator('#matrix td[data-has-value]').count(),0,'zero refresh removes all metric fills, preserving only current-month lavender');
   assert.equal(await page.locator('#matrix tfoot [data-foot="2026-0"]').textContent(),'','zero mixed month total is blank');
   assert.equal(await page.locator('#matrix tfoot [data-foot-total="2026"]').textContent(),'','zero mixed year total is blank');
   assert.match(await past.getAttribute('title'),/Actuals: 0 · Forecast: 0/,'hover retains actual zero values');
@@ -196,12 +210,15 @@ try {
   const zeroSave=page.getByRole('textbox',{name:'DR Horton WFY 2026 October forecasted lots',exact:true}),zeroSaveId=await zeroSave.getAttribute('data-forecast');
   await zeroSave.fill('0');await zeroSave.press('Tab');await page.waitForFunction(id=>__snapshot.months.find(row=>row.id===id).forecast===0,zeroSaveId);
   await page.waitForFunction(id=>document.querySelector('[data-cell="'+id+'"]').classList.contains('saved'),zeroSaveId);assert.equal(await zeroSave.inputValue(),'','acknowledged zero save is displayed blank');
+  assert.equal(await zeroSave.locator('..').getAttribute('data-has-value'),null,'saving zero removes the green value fill in place');
   await zeroSave.focus();assert.equal(await zeroSave.inputValue(),'0');await zeroSave.fill('');await zeroSave.press('Tab');await page.waitForFunction(id=>__snapshot.months.find(row=>row.id===id).forecast===null,zeroSaveId);
   assert.equal(await zeroSave.inputValue(),'','intentional clearing remains a true blank');assert.equal(await page.evaluate(()=>__sends.length),2,'zero save and intentional clear each dispatch once');
   await page.evaluate(()=>{__today='2026-11-01';});await page.locator('#refresh').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='All changes saved');
   assert.equal(await page.locator('#matrix col[data-month-start="2026-10-01"]').getAttribute('data-basis'),'sold','server month rollover moves October to Sold blue');
   assert.equal(await page.locator('#matrix col[data-month-start="2026-11-01"]').getAttribute('data-basis'),'forecast');
-  await page.locator('button[data-view="forecast"]').click();assert.equal(await page.locator('#matrixLegend').isVisible(),false);assert.equal(await page.locator('#matrix [data-basis]').count(),0,'other views retain their established styling');
+  assert.equal(await page.locator('#matrix thead th.current-month').getAttribute('data-month-start'),'2026-11-01','lavender follows the server month rollover');
+  assert.equal(await page.locator('#matrix thead th.current-month .current-month-label').isVisible(),true);
+  await page.locator('button[data-view="forecast"]').click();assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Forecast']);assert.equal(await page.locator('#matrix [data-basis]:not([data-basis="forecast"])').count(),0,'Forecast keeps only its green basis');
   assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));

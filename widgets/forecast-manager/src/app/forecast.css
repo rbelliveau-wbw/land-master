@@ -108,7 +108,6 @@ thead tr:first-child th{height:44px;background:#edf2f9;color:var(--navy);border-
 .year-heading strong{display:inline-flex;font-size:12px;font-weight:800;background:#fff;border:1px solid #ccdaed;padding:1px 7px;border-radius:5px;color:#214b81}
 .year-heading small{font-size:10px;font-weight:500;color:var(--muted)}
 thead tr:nth-child(2) th{height:29px;background:#f8fafc;font-size:9px;font-weight:800;letter-spacing:.045em;color:#6981a0}
-thead th.current-month{color:var(--green)!important;background:#edf9f2!important;box-shadow:inset 0 -2px var(--green)}
 .builder-column{position:sticky;left:0;z-index:3;width:205px;min-width:205px;max-width:205px;background:#fff;text-align:left!important;border-right:1px solid var(--line-strong);padding:8px 13px;box-shadow:3px 0 6px #173b6005}
 thead .builder-column{z-index:6;padding:12px 14px!important;font-size:10px;font-weight:800;letter-spacing:.04em;color:#5c7394!important;text-transform:uppercase;background:#edf2f9!important}
 .builder-identity{display:flex;align-items:center;gap:9px}
@@ -415,15 +414,8 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 #matrix tbody tr:nth-child(even) td{background:#e5edf6}
 #matrix tbody tr:hover td{background:#dae8f7}
 #matrix .year-total{background:#d9e6f4}
-#matrix col.current-month-column{background:#d4ebde}
-#matrix tbody td.current-month,#matrix tfoot td.current-month{background:#d4ebde;color:#176346}
-#matrix tbody tr:nth-child(even) td.current-month{background:#cbe5d7}
-#matrix tbody tr:hover td.current-month{background:#bee2cf}
-#matrix tbody td.current-month input{background:#e7f5ed;border-color:#95c6ad;color:#176346}
-#matrix tbody td.current-month input:focus{background:#f1fff7;border-color:#278360;box-shadow:0 0 0 2px #27836024}
 #matrix tbody td.missing-year{background:transparent!important}
 #matrix thead tr:nth-child(2) th,#matrix thead .builder-column{border-bottom:2px solid #7c99b8!important;box-shadow:none}
-#matrix thead th.current-month{background:#cbe9d8!important;color:#176346!important;box-shadow:none}
 .month-cell input:focus{background:#eaf4ff}
 .creation-status{padding:6px 12px;background:#dceaf6;color:#31577f;border-top:1px solid var(--line);font-size:11px}
 .creation-status.error{background:#f3e7d5;color:#80511f}
@@ -492,25 +484,38 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .assignment-success #dialogStatus{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .assignment-success #dialogCancel{padding:8px 16px;border:1px solid #102d50;border-radius:6px;background:#102d50;color:#fff;font-size:13px}
 
-/* Sold + Forecast: color the existing months; keep the two-row year/month header. */
+/* Contextual value colors; zero/empty months retain the neutral row surface. */
 .matrix-legend{display:flex;align-items:center;justify-content:center;gap:16px;margin:0;flex:none;color:#234766;font-size:11px;white-space:nowrap}
 .matrix-legend[hidden]{display:none}
 .matrix-legend>span{display:inline-flex;align-items:center;gap:6px}
+.matrix-legend>span[hidden]{display:none}
 .matrix-legend i{display:block;width:9px;height:9px;border-radius:3px;flex:none}
 .matrix-legend .sold-swatch{background:#155b9e}
 .matrix-legend .forecast-swatch{background:#246c4d}
+.matrix-legend .scheduled-swatch{background:#c78b17}
 .year-heading{justify-content:center}
-#matrix[data-view=outlook]{--basis-sold:#155b9e;--basis-sold-fill:#edf4ff;--basis-forecast:#246c4d;--basis-forecast-fill:#edf8f1}
-#matrix[data-view=outlook] [data-basis=sold]{color:var(--basis-sold);background:var(--basis-sold-fill)}
-#matrix[data-view=outlook] [data-basis=forecast]{color:var(--basis-forecast);background:var(--basis-forecast-fill)}
-#matrix[data-view=outlook] .month-cell[data-basis=sold]>strong{color:var(--basis-sold)}
-#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input{color:var(--basis-forecast)}
-#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input:not(:focus):not(:disabled){background:#f8fcfa;border-color:#b1d6bf}
-#matrix[data-view=outlook] .month-cell[data-basis=forecast]:not(.failed):not(.unknown) input:focus{background:#f4fff8;border-color:#278360;box-shadow:0 0 0 2px #27836024}
+#matrix [data-basis=sold]{--value-color:#155b9e;--value-fill:#dcecff;--value-line:#a8c9ec}
+#matrix [data-basis=forecast]{--value-color:#246c4d;--value-fill:#dff1e6;--value-line:#a7cfb8}
+#matrix [data-basis=scheduled]{--value-color:#986309;--value-fill:#ffedc4;--value-line:#dfbf75}
+#matrix td[data-basis][data-has-value]{color:var(--value-color);background:var(--value-fill)}
+#matrix .month-cell[data-has-value]>strong{color:var(--value-color)}
+#matrix .month-cell[data-has-value]:not(.failed):not(.unknown) input{color:var(--value-color);background:var(--value-fill);border-color:var(--value-line)}
+#matrix .month-cell:not(.failed):not(.unknown) input:focus{border-color:var(--value-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--value-color) 18%,transparent)}
 
-/* Center the legend and view switcher together within the complete toolbar. */
-.matrix-view-controls{display:flex;align-items:center;justify-content:center;justify-self:center;gap:20px;min-width:0}
+/* Lavender identifies the server's current calendar month independently of basis. */
+#matrix col.current-month-column{background:#eee5fb}
+#matrix td.current-month,#matrix thead th.current-month{background:#eee5fb!important;color:#76509f!important;border-left:2px solid #c3a8e4;border-right:2px solid #c3a8e4}
+#matrix thead th.current-month{box-shadow:inset 0 3px #c3a8e4}
+.current-month-label{display:none;font-size:9px;line-height:1.3;font-weight:500;letter-spacing:0}
+.current-month .current-month-label{display:block}
+#matrix td.current-month:not([data-has-value]):not(.failed):not(.unknown) input{background:#f5f0fc;border-color:#c3a8e4;color:#76509f}
+#matrix .month-cell.current-month[data-has-value]>strong,#matrix tfoot td.current-month[data-has-value]>[data-number-key]{display:inline-block;min-width:34px;line-height:28px;border-radius:4px;background:var(--value-fill);color:var(--value-color)}
+
+/* Only the fixed-width switcher participates in centering; its legend hangs left. */
+.matrix-view-controls{position:relative;display:flex;align-items:center;justify-content:center;justify-self:center;min-width:0}
+.matrix-view-controls .matrix-legend{position:absolute;right:calc(100% + 20px);top:50%;transform:translateY(-50%)}
 .matrix-view-controls .segments{margin:0}
 .matrix-tools .matrix-title{justify-self:start;flex-wrap:wrap}
 .matrix-tools .matrix-actions{justify-self:end;justify-content:flex-end;flex-wrap:wrap;min-width:0;max-width:100%;margin:0}
-@media(max-width:1250px){.matrix-tools{grid-template-columns:minmax(0,1fr) auto}.matrix-view-controls{grid-column:1/-1;grid-row:2;flex-wrap:wrap;gap:12px;max-width:100%}.matrix-tools .matrix-actions{grid-column:2;grid-row:1}}
+@media(max-width:1350px){.matrix-tools{grid-template-columns:minmax(0,1fr) auto}.matrix-view-controls{grid-column:1/-1;grid-row:2;max-width:100%}.matrix-tools .matrix-actions{grid-column:2;grid-row:1}}
+@media(max-width:700px){.matrix-view-controls{flex-direction:column;gap:8px}.matrix-view-controls .matrix-legend{position:static;transform:none;order:2}}

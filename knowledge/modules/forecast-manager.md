@@ -314,3 +314,14 @@ are unchanged. No Creator deployment is required. See [release and rollback deta
 The toolbar centers the color key and view slider as one group, with title/counts
 left and Export/recovery actions right. No data or numeric-transition changes;
 no Creator deployment is required. See [release and rollback details](../releases/forecast-manager-v1.7.7-2026-10-15.md).
+
+## Version 1.7.8 fixed slider and value colors
+
+Center the slider independently of its changing left-side legend. Each view
+shows only its relevant Sold/Forecast/Scheduled key. Nonzero month cells and
+selected-month totals use blue/green/amber; zero and unset cells stay neutral.
+The server's current month has a distinct lavender column with a Current label
+and metric-colored values inside it. Forecast remains the initial view; save,
+blank-zero, export and Sliding push behavior is preserved. No forms, fields,
+functions or Custom APIs change; no Creator deployment is required. See
+[release and rollback details](../releases/forecast-manager-v1.7.8-2026-10-15.md).

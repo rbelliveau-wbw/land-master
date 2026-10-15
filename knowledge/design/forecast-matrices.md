@@ -209,3 +209,27 @@ right, using equal flexible side tracks. The legend has no automatic side margin
 When desktop space is limited, put the group on its own centered row. Keep the
 legend contextual to Sold + Forecast and preserve centered WFY/date headings.
 Desktop geometry checks cover 1440px and the reported 2308px width.
+
+## Fixed view slider and value colors — v1.7.8
+
+User-approved October 15 mockup supersedes the v1.7.6–1.7.7 color/centering
+treatment. Center the pill slider itself within the full matrix toolbar. Its
+position and width stay identical in all four views. Place the legend independently
+to its left so changing its contents never moves the slider. Keep title/counts
+left and Export/recovery actions right; use a separate centered control row when
+the desktop window cannot fit these together.
+
+Show only Forecast (green) in Forecast, Sold (blue) in Sold, both in Sold +
+Forecast, and Scheduled (amber/yellow) in Scheduled. Keep month headings neutral.
+Highlight nonzero month values and selected-month totals with their basis:
+Sold #155b9e on #dcecff, Forecast #246c4d on #dff1e6, Scheduled #986309 on
+#ffedc4. Zero/unset cells retain neutral row backgrounds; preserve existing
+blank/zero input behavior and neutral year totals.
+
+Use lavender #eee5fb with #c3a8e4 side rules for the complete current-month
+column and a concise Current label beneath its month heading. Its values retain
+their metric-colored input/chip within that lavender column. Use the Creator
+server's exact month/year and refresh in place across rollover. Retain error,
+pending, unknown and keyboard-focus states, native saves/exports and Sliding push.
+Desktop fixtures cover all views at 1280/1440/2308px, fixed slider geometry,
+legend contents, nonzero/zero refreshes, zero saves and month rollover.

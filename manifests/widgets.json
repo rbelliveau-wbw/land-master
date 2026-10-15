@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-15T17:14:52.324Z",
+  "generated_at": "2026-10-15T21:23:16.180Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.7.7",
-      "description": "Center the color key and view slider as one group within the full forecast matrix toolbar.",
+      "version": "1.7.8",
+      "description": "Keep the view slider fixed at center, with contextual legends, colored nonzero cells and a lavender current month.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "3849334993f2e9fb2016880b1939ddaef3e6df83e5a3bdaaedfd1e781e31424e",
+      "source_sha256": "019a2325d29ffa87c98b92c93381977ddbb2aa22df66d9216634130751afca24",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",
