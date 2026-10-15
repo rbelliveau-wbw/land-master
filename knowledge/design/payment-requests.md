@@ -1,5 +1,7 @@
 # Request list
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 The phase Requests tab uses the selected Connected Rail layout: one newest-first
 list of Purchase Orders, Check requests, Wire requests and budget modifications.
 Keep one shared column grid so type pills, names/descriptions, approvers, dates,

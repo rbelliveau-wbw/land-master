@@ -1,5 +1,7 @@
 # Forecast matrices
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 ## Input-driven number changes — v1.6.4
 
 Apply the selected [Sliding push](number-transitions.md) to changed displayed

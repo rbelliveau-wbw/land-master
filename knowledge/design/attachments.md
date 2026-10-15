@@ -1,5 +1,7 @@
 # Attachments
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 This is the shared design contract for Legal, Budget and Pro Forma attachment
 actions and workspaces. Legal's `showAttachmentsModal` is the visual reference.
 The shared form is `Attachment` and the report is `All_Attachments`. Parent

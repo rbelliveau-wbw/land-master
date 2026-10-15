@@ -1,13 +1,16 @@
 # Land Master style guide
 
-This guide captures reusable visual preferences established in production work.
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
+This guide defines repository-wide visual rules for every applicable surface.
 Use the short [design index](README.md) to find a focused component guide.
 
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
 Input-driven numeric displays use the selected [Sliding push transition](number-transitions.md).
-Forecast Manager implements the pattern; other widgets await adoption.
+Forecast Manager, Data Insights and Pro Forma implement the pattern. The focused
+guide and module documentation record actual coverage and pending adoption.
 
 Data Insights keeps branding, connection status, Refresh and Diagnostics in the
 sidebar, reclaiming the full-width shell header for report height. Keep the

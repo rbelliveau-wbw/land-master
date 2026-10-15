@@ -1,5 +1,7 @@
 # Approval administration
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Use this pattern for approvers, approval rules and route testing. Keep
 role membership separate from ordered approval steps. The Settings Manager
 implementation is [approval-admin.js](../../widgets/settings-manager/src/app/approval-admin.js).

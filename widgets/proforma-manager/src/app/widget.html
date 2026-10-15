@@ -8,15 +8,18 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.112"></script>
-<script src="pf-save-audit.js?v=1.80.112"></script>
-<script src="pf-progress.js?v=1.80.112"></script>
+<script src="pf-save-verification.js?v=1.80.113"></script>
+<script src="pf-save-audit.js?v=1.80.113"></script>
+<script src="pf-progress.js?v=1.80.113"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
+<script src="number-transitions.js?v=1.80.113"></script>
+<script src="number-views.js?v=1.80.113"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.113">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.112"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.112">
-<script src="comments.js?v=1.80.112"></script>
+<script src="budget-transfer-ui.js?v=1.80.113"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.113">
+<script src="comments.js?v=1.80.113"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -1834,7 +1837,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.112"></script>
+<script src="success-feedback.js?v=1.80.113"></script>
 </head>
 <body>
 
@@ -2249,7 +2252,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.112";
+var PFW_VERSION="1.80.113";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -8494,6 +8497,7 @@ function refreshPhaseSalesFeedback(){
 }
 var recalcLive=debounce(function(){
   var m=S.ed.model; if(!m) return;
+  var numberBefore=typeof window!=="undefined"&&window.PFNumbers?window.PFNumbers.capture(document.getElementById("vEdit")):null;
   if(syncAllPerUnitAdditionalCosts(m)){
     document.querySelectorAll('tr[data-kind="item"]').forEach(function(tr){
       var row=m.items[+tr.getAttribute("data-i")],cost=tr.querySelector('input[data-ik="Add_l_Cost"]');
@@ -8545,6 +8549,7 @@ var recalcLive=debounce(function(){
   refreshLOICompleteness();
   if(S.ed.pane==="months") renderMonthsPane();
   updateTabWarnings();
+  if(typeof pfNumberViews!=="undefined"&&pfNumberViews)pfNumberViews.refresh("editor",numberBefore);
 },140);
 
 /* field helpers */
@@ -12495,7 +12500,7 @@ window.addEventListener("unhandledrejection", function(e){
   var r=e&&e.reason;
   auditLog("error","Unhandled promise rejection",{reason:errMeta(r)||safeStringify(r)});
 });
-document.getElementById("listSearch").addEventListener("input", debounce(renderList,120));
+document.getElementById("listSearch").addEventListener("input", debounce(function(){renderList();},120));
 document.getElementById("fltArchive").addEventListener("change", function(){ closeProFormaMenus(); renderList(); });
 document.querySelector("table.pf-list thead").addEventListener("click",function(e){
   var btn=e.target.closest&&e.target.closest("button[data-list-sort]");
@@ -12949,6 +12954,31 @@ function pfBootV2(){
  return PFTransport.start().then(function(context){S.liveSDK=true;S.useMock=false;S.currentUser=context.runtime.user;S.nativeParams=context.params;S.env={fragment:String(context.params.envUrlFragment||''),name:context.runtime.environment};return boot();}).catch(function(err){S.liveSDK=false;S.useMock=false;S.coreFailed=true;setStatus('Creator connection failed','err');pfConnectionRetry(true);toast(String(err&&err.message||err),'err');return {published:false,error:err};});
 }
 ['input','change','click','keydown','pointerdown'].forEach(function(type){document.addEventListener(type,function(event){var state=PFTransport.snapshot();if(S.useMock||S.coreReady&&!S.coreFailed&&!state.blocked&&!S.scenarioLoading)return;var target=event.target;if(target&&target.closest&&target.closest('#pfNativeProgress,#pfNativeRetry,#auditDrawer')||pfAttachmentInlineEvent(event,state))return;event.preventDefault();event.stopImmediatePropagation();},true);});
+/* Presentation frames keep renderers/calculation/save contracts independent of motion. */
+var pfNumberViews=window.PFNumbers&&window.PFNumberViews?window.PFNumberViews(function(){return S;},function(){return MOPICK.idx;}):null;
+if(pfNumberViews){
+  renderList=pfNumberViews.wrap(renderList,"list");
+  mselPaint=pfNumberViews.wrap(mselPaint,"list");
+  refreshApprovalBadge=pfNumberViews.wrap(refreshApprovalBadge,"list");
+  syncListCommentButtons=pfNumberViews.wrap(syncListCommentButtons,"badges");
+  syncPfCommentButton=pfNumberViews.wrap(syncPfCommentButton,"badges");
+  syncListAttachmentButtons=pfNumberViews.wrap(syncListAttachmentButtons,"badges");
+  renderDashboard=pfNumberViews.wrap(renderDashboard,"dashboard",true);
+  renderDealRoom=pfNumberViews.wrap(renderDealRoom,"dashboard",true);
+  renderFlowTable=pfNumberViews.wrap(renderFlowTable,"dashboard");
+  renderDealHeavy=pfNumberViews.wrap(renderDealHeavy,"heavy");
+  renderEdit=pfNumberViews.wrap(renderEdit,"editor");
+  rerenderPane=pfNumberViews.wrap(rerenderPane,"editor");
+  refreshComputedInputs=pfNumberViews.wrap(refreshComputedInputs,"editor");
+  refreshPhaseSalesFeedback=pfNumberViews.wrap(refreshPhaseSalesFeedback,"editor");
+  refreshPhaseLotPricePill=pfNumberViews.wrap(refreshPhaseLotPricePill,"editor");
+  renderBalanceChecks=pfNumberViews.wrap(renderBalanceChecks,"editor");
+  renderMonthsPane=pfNumberViews.wrap(renderMonthsPane,"editor");
+  refreshLoiAcreField=pfNumberViews.wrap(refreshLoiAcreField,"editor");
+  refreshLoiPriceField=pfNumberViews.wrap(refreshLoiPriceField,"editor");
+  refreshLOICompleteness=pfNumberViews.wrap(refreshLOICompleteness,"editor");
+  moUpdateSummary=pfNumberViews.wrap(moUpdateSummary,"months");
+}
 if(window.ZOHO&&window.ZOHO.CREATOR){window.__pfBoot=pfBootV2();}else{S.liveSDK=false;S.useMock=true;S.coreReady=true;window.__pfBoot=boot();}
 /* internals exposed for automated tests only — no UI or save-path code touches this */
 window.__PFW_TEST__={ensurePFReferences:ensurePFReferences,pfReferencesReady:pfReferencesReady,pfReferenceAction:pfReferenceAction,PFTransport:PFTransport,pfBootV2:pfBootV2,boot:boot,sdkGetAll:sdkGetAll,sdkAdd:sdkAdd,sdkUpdate:sdkUpdate,sdkDelete:sdkDelete,sdkInvoke:sdkInvoke,loadProformas:loadProformas,loadDetail:loadDetail,changeLockFromList:changeLockFromList,changeStageFromList:changeStageFromList,dealRefresh:dealRefresh,dealApplyDriver:dealApplyDriver,saveProforma:saveProforma,deleteAllByCriteria:deleteAllByCriteria,commentWrite:commentWrite,pfSdkUploadFile:pfSdkUploadFile,pfSdkReadFile:pfSdkReadFile,getPfAttachmentBlob:getPfAttachmentBlob,createPfAttachmentRecord:createPfAttachmentRecord,deletePfAttachmentRecord:deletePfAttachmentRecord,uploadPfAttachments:uploadPfAttachments,pfAttachmentActionContext:pfAttachmentActionContext,openPfAttachmentModal:openPfAttachmentModal,handlePfAttachmentClick:handlePfAttachmentClick,recordToModel:recordToModel,validateModel:validateModel,modelToCalc:modelToCalc,buildSavePayload:buildSavePayload,phaseData:phaseData,monthData:monthData,openEdit:openEdit,openDashboard:openDashboard,wireEditInputs:wireEditInputs,setPane:setPane,guardLeaveEdit:guardLeaveEdit,forkModel:forkModel,FORK_CHILD_LISTS:FORK_CHILD_LISTS,newModel:newModel,PFTransportUI:PFTransportUI, subformRow:subformRow, childData:childData, buildHeaderData:buildHeaderData,

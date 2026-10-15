@@ -1,4 +1,16 @@
-# Component design guides
+# Repository-wide design rules
+
+**Standing user direction, October 15, 2026:** every guide in this directory is
+a repository-wide rule for its applicable component or interaction, across all
+existing and new modules. Reference widgets show how to implement the rule;
+they do not restrict its scope. Apply the relevant guides together with the
+general style guide whenever creating or changing a surface. Keep explicit
+module exceptions and existing permissions, business rules and data contracts.
+
+The rules express the required design, not a claim that every existing screen
+already implements it. Record adoption gaps and release evidence in module
+documentation. Keep new reusable decisions here so future repository work
+inherits them through [AGENTS.md](../../AGENTS.md).
 
 Read the focused guide for the component being changed. Use this index to find
 it; unrelated guides do not need to be read for every small edit.
@@ -30,8 +42,9 @@ evidence in the module documentation.
 1. For a new standardized component, create its focused Markdown guide in
    `knowledge/design/` and add it to this index.
 2. For an existing component, read and update its current guide, then update
-   the affected implementations. Retain module permissions and business rules;
-   record any pending adoption explicitly.
+   the affected implementations. Apply it across the requested scope and follow
+   it in future work in every module. Retain module permissions and business
+   rules; record any pending adoption explicitly.
 3. Run focused implementation checks and `node scripts/test-design-docs.mjs`.
    Native Creator UI gates are required for SDK migrations that affect data
    flow; routine presentation edits use code checks unless requested otherwise.

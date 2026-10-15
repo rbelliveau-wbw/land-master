@@ -1,5 +1,7 @@
 # Approval progress pattern
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 This is Robby's preferred interaction for sending, advancing, rejecting, and completing approvals in Land Master. Read this document **before designing or changing an approval flow in any module**, including a new module. The module's business rules determine who approves and what is finalized; this document defines how the user sees and safely recovers from that work.
 
 ## The experience

@@ -1,5 +1,7 @@
 # Line notes
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Use Budget Manager's line-item note control for an existing single Notes or
 Description field. This differs from the multi-message conversation described
 in [Comments](comments.md). Reference: `.nbtn`, `.pop.notepop`, `openNotePop`

@@ -1,5 +1,7 @@
 # Record detail modals
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Data Insights lot-detail tables use the full modal body width, with no side
 margins around the scroller or reserved empty scrollbar gutter. Keep the title
 and pagination/export footer fixed while the lots scroll independently.

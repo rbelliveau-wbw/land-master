@@ -1,5 +1,7 @@
 # Lot lists and editing
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Lots defaults to a compact list, with Grid available in the same toolbar. Group
 by subdivision, then natural-sorted Block and Lot. Put each group identity in
 its header once. Row identity runs Select, Notes, Block, Lot, Lot code, Status,

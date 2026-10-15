@@ -1,5 +1,7 @@
 # Transfer progress modal
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Use this pattern when a committing action writes to several records. The reference is Contract Management's `lotRunStart`, `lotRunSet`, `lotRunMergeServer`, `renderLotRun`, and `lotRunEnd` in `widgets/contract-management/src/app/widget.html`. Pro Forma's Budget transfer implements the equivalent in `budget-transfer-ui.js` (`startRun`, `runUpdate`, `pumpRun`, `renderRun`). Approval flows retain the additional reconciliation rules in `approval-progress.md`.
 
 ## Save policy — October 8, 2026

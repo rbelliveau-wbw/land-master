@@ -1,5 +1,7 @@
 # Comments
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 This is the shared design contract for Legal, Budget and Pro Forma conversation
 surfaces. The existing `PFComments` component and `comments.css` are the source
 reference. Keep one conversation experience across main-list actions and

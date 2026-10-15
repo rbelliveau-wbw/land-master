@@ -1,9 +1,19 @@
 # Number transitions
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Robby selected **Sliding push** on October 14, 2026. When an input changes a
 displayed quantity, fade/slide the previous value left and bring the actual new
 value in from the right. Use 420ms, 16px travel and
 `cubic-bezier(.22,.7,.25,1)`. Animate the value, retaining its label and units.
+
+**Standing design direction, October 15, 2026:** this is the default design
+language in every module wherever keyed inputs update displayed numbers. Apply
+it to live derived values, financial summaries, counts, monthly matrices,
+measure/basis/scenario choices, filter changes and authoritative saved refreshes.
+It is not limited to Forecast Manager or Data Insights. New numeric surfaces
+should adopt it, and existing surfaces should adopt it when changed. Keep the
+adoption inventory truthful; this rule does not claim all modules are implemented.
 
 Use stable record/field/scope keys. Never animate first appearance, equal values,
 unknown values, dates, record IDs, years or unrelated records. Preserve the real
@@ -13,6 +23,35 @@ numbers or delay requests, acknowledgements, validation or focus. A new update
 replaces any running transition with the newest real value. Reduced motion uses
 immediate final values. Editable inputs retain their native value/caret; animate
 their dependent displays instead.
+
+Keep the stable key on the record/field/display slot. A selected measure, basis
+or scenario can be display context rather than a different identity: animate
+its replacement even when the rounded number happens to match. Both visuals
+retain their own complete sign, currency/percentage units and formatting, so a
+dollar value leaves as dollars and a count enters as a count. Never count through
+intermediate values between measures. Editable inputs keep their native value;
+use derived displays or a presentation layer for calculated read-only inputs.
+
+This guide is linked from root AGENTS.md so future repository work discovers the
+standing rule. Module documentation records actual coverage and pending adoption.
+
+## Pro Forma — 1.80.113, October 15, 2026
+
+Apply the same transition to live editor totals and calculated read-only prices,
+dashboard/scenario results, assumptions, headroom/sensitivity, monthly matrices
+and previews, phase pricing/takes/allocation, LOI quantities, list/filter/activity
+counts and Budget-transfer review totals. Scope by Pro Forma, field, child-row
+identity and actual month. A phase/record identity change starts still; refreshes
+of that same displayed quantity can animate. Draft identities live in a WeakMap,
+never in saved payloads. Native editable values and carets remain authoritative.
+Keep all currency signs, accounting parentheses and percentage units in each
+visual. Display replacement never changes financial math, exports, permissions,
+approval routes, transfer acknowledgements or API timing.
+
+Real desktop input events must be decorated after the original field handler;
+capture-listener microtasks can run before the target handler. The browser
+fixture covers native typing and LOI updates as well as scoped render refreshes.
+See [Pro Forma rollout evidence](../../docs/proforma-number-transitions-2026-10-15.md).
 
 ## Data Insights control changes — user direction October 15, 2026
 

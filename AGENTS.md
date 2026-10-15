@@ -84,6 +84,27 @@ Keep exact attachment ID/parent/scope confirmation and unknown-reply recovery.
 
 ## Visual style context
 
+- User direction October 15, 2026: **every guide in
+  [knowledge/design/](knowledge/design/README.md) is a repository-wide design
+  rule** for its applicable component or interaction in every existing and new
+  module. A guide's reference implementation or adoption history does not limit
+  its authority to that module. Follow all applicable guides together; preserve
+  explicitly documented module exceptions, permissions, data meaning and business
+  rules. Record any missing adoption honestly rather than claiming compliance.
+  New reusable design decisions belong in the relevant guide and index, so future
+  work inherits them. This does not authorize unrelated business-rule changes or
+  imply that every existing screen has already been updated.
+
+- User direction October 15, 2026: apply the **Sliding push** numeric transition
+  whenever keyed inputs update displayed numbers in any module. Read
+  [Number transitions](knowledge/design/number-transitions.md). This includes
+  derived calculations, measure/basis/scenario selections, filters and refreshed
+  saved values. Keep stable record/field/display identity; replace the old
+  formatted value with the new one over 420ms/16px without interpolating numbers.
+  Preserve immediate real values, editable inputs/caret, requests and reduced
+  motion. First/unknown values, dates and unrelated record identities stay still.
+  Record implementation coverage and regression evidence in the module guide.
+
 - Before adding or revising an established UI component, read its focused design
   guide: [attachments](knowledge/design/attachments.md) or
   [comments](knowledge/design/comments.md) for those surfaces. Find other guides

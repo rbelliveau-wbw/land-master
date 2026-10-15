@@ -1,5 +1,7 @@
 # Routine success notifications
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 Approved October 6, 2026. Use the black, compact success popup for routine
 confirmed actions across all nine modules. The reference implementation is
 [`shared/success-feedback.js`](../../shared/success-feedback.js), copied into

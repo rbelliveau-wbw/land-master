@@ -1,5 +1,7 @@
 # Takedown receipts
 
+Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
+
 The Lots and Takedowns creator uses a two-column workspace: compact numbered
 cards on the left and a sticky live receipt on the right. Keep the header and
 Save/Cancel footer pinned, with one scrolling body. On narrow screens stack

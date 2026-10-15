@@ -1,3 +1,14 @@
+## Repository number transitions (1.80.113, October 15, 2026)
+
+Keyed input changes now slide/push the actual formatted values throughout the
+editor, dashboard/scenarios, monthly tables/previews, phase pricing/allocation,
+LOI quantities, list/activity counts and Budget-transfer review. Native editable
+precision/focus, date/record identities, financial math, exports and all existing
+save/approval/transfer gates remain authoritative. Reduced motion is immediate.
+No Creator deployment is required. All design guides are repository-wide rules
+for their applicable surfaces. [Coverage, changed files, regressions, contracts
+and rollback to 1.80.112](../../docs/proforma-number-transitions-2026-10-15.md).
+
 ## Base and combined construction rates (1.80.112, October 15, 2026)
 
 The dark-blue pricing card shows Base and Base + Add’l under Const. Cost / LF.

@@ -222,5 +222,21 @@ async function open(api){
   var s={api:api,focus:document.activeElement,projects:[],projectId:"",mapping:{},automatic:{},edits:{},notes:{},collapsed:{},openNote:"",run:null,dirty:false,version:0,ctx:null,plan:null,token:"",busy:true,ready:false,activePhase:1};current=s;modal.hidden=false;modal.querySelector(".pfbt-source-name").textContent=api.name;modal.querySelector(".pfbt-status").classList.remove("complete");render();status("Loading Projects…",false);modal.querySelector(".pfbt-box").focus();
   try{var result=await Promise.all([api.getProjects(),api.capabilities()]);if(current!==s)return;s.projects=result[0];s.version=Number(result[1])||0;s.ready=s.version>=1;s.busy=false;render();var linked=s.projects.filter(function(p){return String(p.Proforma&&p.Proforma.ID||p.Proforma||"")===api.id;});if(linked.length===1){s.projectId=String(linked[0].ID);await loadProject(s);}else status(s.projects.length?"Choose a Project.":"No Projects available.",!s.projects.length);}catch(e){if(current===s){s.busy=false;render();status(e.message||"Could not load Projects.",true);}}
 }
+/* Animate only existing quantities; transfer stages and persisted-result gates stay authoritative. */
+function decorateNumbers(){
+  if(!current||!modal)return;
+  var n=root.PFNumbers,s=current,scope=n.key("budget-transfer",n.identity(s),s.api.id,s.projectId),phase=s.activePhase;
+  function mark(selector,key,mode){modal.querySelectorAll(selector).forEach(function(node,i){n.decorate(node,n.key(scope,key,i),mode);});}
+  mark(".pfbt-header-total strong","total");mark(".pfbt-header-total small","counts");
+  mark(".pfbt-footer-all strong","all-total");mark(".pfbt-footer-all small","budgets");
+  mark(".pfbt-footer-phase strong",[phase,"phase-total"]);mark(".pfbt-footer-phase small",[phase,"items"]);
+  mark(".pfbt-skipped","skipped");mark("[data-run-total]","run-total");mark("[data-run-count]","run-count");
+  modal.querySelectorAll(".pfbt-department,.pfbt-category,.pfbt-item").forEach(function(row){
+    var note=row.querySelector("[data-note]"),category=row.querySelector("[data-category]"),id=note?note.getAttribute("data-note"):category?category.getAttribute("data-category"):row.querySelector("th").textContent;
+    n.decorate(row.lastElementChild,n.key(scope,phase,row.classList[0],id,"amount"));
+    n.decorate(row.querySelector(".pfbt-pricing"),n.key(scope,phase,id,"rate"),"money");
+  });
+}
+if(root.PFNumbers){render=root.PFNumbers.wrap(render,function(){return modal;},decorateNumbers);runUpdate=root.PFNumbers.wrap(runUpdate,function(){return modal;},decorateNumbers);}
 root.PFBudgetTransferUI={open:open};
 })(window);
