@@ -7,6 +7,10 @@ from the row registry. The previous fixture only checked an Animation object
 after insertion and a row count after deletion; that did not establish visible
 boundary movement.
 
+The native PID/MUD Add handler also matched only the button itself; clicking its
+nested plus SVG/span did nothing. It now resolves the containing Add button,
+preserving the same existing permission, draft and focus checks.
+
 ## Change and scope
 
 The shared interaction engine supports opt-in list-boundary resize over 230ms,
@@ -64,7 +68,7 @@ follow publication; live Creator checks use an unsaved blank lot row only.
 | milestone-gantt | 1.1.16 | 1.1.15 |
 | settings-manager | 1.5.15 | 1.5.14 |
 | lot-sales-explorer | 1.5.58 | 1.5.57 |
-| proforma-manager | 1.80.119 | 1.80.118 |
+| proforma-manager | 1.80.120 | 1.80.118 |
 | forecast-manager | 1.7.15 | 1.7.14 |
 
 Rollback the relevant Development/Production mapping to the prior immutable

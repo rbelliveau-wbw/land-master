@@ -105,7 +105,11 @@ try{
   await page.locator('#edTabs [data-pane="gen"]').click();await page.waitForTimeout(220);await settled();
   const rowResize=async(selector,action,label)=>{
     const before=await page.locator(selector).evaluate(node=>({height:node.getBoundingClientRect().height,width:node.getBoundingClientRect().width}));
-    await action();await page.waitForTimeout(35);
+    const rowSelector=selector+' tbody>tr[data-kind],'+selector+' tbody>tr:has([data-loi-remove])';
+    const priorRows=await page.locator(rowSelector).count();
+    await action();
+    assert.equal(await page.locator(rowSelector).count(),priorRows+(/remove/.test(label)?-1:1),label+' changes the native row collection immediately');
+    await page.waitForTimeout(35);
     const actual=await page.locator(selector).evaluate(node=>({height:node.getBoundingClientRect().height,width:node.getBoundingClientRect().width,frames:node.getAnimations().flatMap(animation=>animation.effect.getKeyframes()).filter(frame=>frame.height)}));
     assert.ok(actual.frames.length>=2,label+' animates the actual list boundary, even without a following row');
     assert.ok(Math.abs(parseFloat(actual.frames[0].height)-before.height)<.5,label+' starts from the previously visible boundary');
@@ -120,14 +124,14 @@ try{
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),2);
   assert.equal(await page.locator('tr[data-kind="lotmix"]').last().locator('input').first().evaluate(node=>node===document.activeElement),true,'native Add still focuses the new lot-size editor');
   assert.ok(await page.locator('tr[data-kind="lotmix"]').last().locator('td').first().evaluate(node=>node.getAnimations().length)>0,'inserted cell highlight remains visible above opaque table fills');
-  await rowResize('.lotmix-wrap',()=>page.locator('tr[data-kind="lotmix"] .rowdel').last().click(),'lotmix-remove-last');
+  await rowResize('.lotmix-wrap',()=>page.locator('tr[data-kind="lotmix"] .rowdel svg').last().click(),'lotmix-remove-last');
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1,'original removal handler remains immediate');
   await rowResize('.lotmix-wrap',()=>page.locator('tr[data-kind="lotmix"] .rowdel').click(),'lotmix-remove-only');
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),0);
   await rowResize('.lotmix-wrap',()=>page.locator('#btnAddLotMix').click(),'lotmix-first');
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1);
   await page.evaluate(()=>__PFW_TEST__.setPane('pid'));await page.waitForTimeout(250);
-  await rowResize('.pid-wrap',()=>page.locator('#btnAddPid').click(),'pid-first');
+  await rowResize('.pid-wrap',()=>page.locator('#btnAddPid .pid-add-icon svg').click(),'pid-first');
   await rowResize('.pid-wrap',()=>page.locator('tr[data-kind="pid"] .rowdel').click(),'pid-remove-only');
   await page.evaluate(()=>{__PFW_TEST__.setPane('loi');});await page.waitForTimeout(250);
   await rowResize('[data-lm-row-list="loi-sellers"]',()=>page.locator('#btnLOIAddNewSellerRow').click(),'offer-seller-first');
