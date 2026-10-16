@@ -2,13 +2,13 @@
   "slug": "contract-management",
   "name": "Contract Management",
   "module": "contracts",
-  "version": "1.62.6",
+  "version": "1.62.7",
   "description": "Legal and Construction tasks with separate permissions, request fields, templates, and token-based LOI legal review.",
   "source_entry": "widgets/contract-management/src/app/widget.html",
   "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
   "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
   "html_title": "Land Master Contracts",
-  "source_sha256": "c543e7301b3acc027dfd5657cf0a664b7f56e2dfbc9f98e0e9b18a729144341f",
+  "source_sha256": "e8752d53892b01b8b6846c7fb742dfb6389f14f32a8214de2fc8db369fce7e06",
   "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
   "plugin_manifest": {
     "locale": [

@@ -57,6 +57,12 @@ try{
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto(url);await page.waitForFunction(()=>window.__sales?.state.historyReady);
   assert.equal(await page.locator('.is-changing').count(),0,'first appearance stays still');
+  assert.equal(await page.locator('.report-footer,.page-foot').count(),0,'bottom description/footer are removed');
+  assert.equal(await page.locator('#updated,#definition,#quality').evaluateAll(nodes=>nodes.every(n=>{const r=n.getBoundingClientRect();const host=n.closest('.sr-only')||n;const style=getComputedStyle(host);return style.position==='absolute'&&parseFloat(style.width)<=1&&parseFloat(style.height)<=1;})),true,'metadata is outside the visible table layout');
+  const bottom=await page.evaluate(()=>{const card=document.querySelector('#salesDashboard .report-card').getBoundingClientRect(),scroll=document.querySelector('#salesDashboard .matrix-scroll').getBoundingClientRect(),main=document.querySelector('main'),r=main.getBoundingClientRect();return {card:card.bottom,scroll:scroll.bottom,main:r.bottom-parseFloat(getComputedStyle(main).paddingBottom)};});
+  assert.ok(Math.abs(bottom.card-bottom.scroll)<=2,'matrix fills the report card to its bottom');
+  assert.ok(Math.abs(bottom.card-bottom.main)<=2,'report fills the space formerly used by the page footer');
+
   await keysUnique('#salesDashboard');
   const baseline=await page.locator('#matrix').textContent();
   assert.equal(await page.locator('#matrixBody tr:not(.territory) td:nth-child(2) [data-number-key]').count(),0,'first-sale dates never animate');

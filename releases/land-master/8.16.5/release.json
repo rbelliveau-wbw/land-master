@@ -1,0 +1,8 @@
+{
+  "widget": "land-master",
+  "version": "8.16.5",
+  "created_at": "2026-10-16T13:53:56.029Z",
+  "source": "widgets/land-master/src/app/widget.html",
+  "source_sha256": "7cd4b4ed9afb6eb3946aefb45f887d24dc46bb89317f2d088d5a9cdb70cf0946",
+  "status": "candidate"
+}

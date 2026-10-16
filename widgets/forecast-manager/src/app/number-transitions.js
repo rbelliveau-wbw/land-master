@@ -29,7 +29,7 @@
     if (gate?.hold(node,old,(target,before)=>update(target,target.dataset.numberValue,before))) return;
     const motion = old !== undefined && old !== value && numeric(old) && numeric(value) && !global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     node.dataset.from = motion ? old : value;
-    node.style.minWidth = motion ? Math.max(old.length,value.length)+'ch' : '';
+    node.style.minWidth = '';
     if (!motion || !node.isConnected) return;
     // Restart from the last real value if a second response arrives mid-transition.
     void node.offsetWidth;

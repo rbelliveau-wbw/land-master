@@ -31,6 +31,14 @@ latest calculated result with one Sliding push. A renderer must never hide a kno
 a blank. Capture the baseline before original field handlers run, retaining it
 through repeated and nested renders even when a comparison map is empty. New
 numeric slots without a prior value remain readable/static.
+**Layout rule, October 16, 2026:** while a value is held, its old formatted text
+alone determines the wrapper's width and baseline. The hidden incoming value
+must not move, widen or reflow that display. Do not estimate numeric widths with
+character counts or `ch`; currency signs, separators and proportional fonts
+make those estimates inaccurate. At commit, overlay the real old/new text in
+one grid cell so their natural sizes determine the transition area without
+per-cell layout reads. Preserve left/center/right alignment and read-only input
+overlays. [Layout and Insights footer correction](../../docs/number-layout-and-insights-footer-2026-10-16.md).
 This follows Budget's visible-old-value behavior; see the
 [blanking regression correction](../../docs/number-old-values-visible-2026-10-15.md).
 Repeated keystrokes never show intermediate calculated amounts. Reduced motion

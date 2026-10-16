@@ -1,3 +1,10 @@
+## Stable numeric layout — 8.16.5, October 16, 2026
+
+Held old numbers keep their natural width, baseline and position during typing;
+real text sizes the committed transition. Insights also removes its visible
+bottom description/page footer and fills that space with the matrix. No Creator
+contracts or deployment changes. [Verification, files and rollback](../../docs/number-layout-and-insights-footer-2026-10-16.md).
+
 ## Keep old numbers visible — 8.16.4, October 15, 2026
 
 Existing calculated numbers stay visible during typing, then transition on field

@@ -44,11 +44,14 @@ try{
   await page.locator('#driver').focus();await page.evaluate(()=>__render(2));
   assert.ok(await page.locator(changing).count()>0,engine+' focus alone never delays a response');await settle();
   await page.evaluate(()=>__render(1));await settle();
+  const beforeBounds=await page.locator('#derived > span').evaluate(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};});
   await page.evaluate(()=>{window.__emptyComparisons=true;});
   await page.locator('#driver').fill('12.3456789');
   assert.equal(await page.locator('#driver').inputValue(),'12.3456789');assert.equal(await page.evaluate(()=>__model),12.3456789);
   assert.equal(await page.locator(changing).count(),0,engine+' no transition while typing');
   assert.equal(await page.locator(held).count(),1,engine+' only presentation held');
+  const heldBounds=await page.locator(held).evaluate(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};});
+  for(const dimension of ['x','y','width','height'])assert.ok(Math.abs(heldBounds[dimension]-beforeBounds[dimension])<0.1,engine+' held '+dimension+' must not shift: '+JSON.stringify({beforeBounds,heldBounds}));
   assert.match(await page.locator('#derived').textContent(),/12,345.679/,'latest calculated DOM text stays available');
   const visual=await page.locator(held).evaluate(n=>({from:n.dataset.numberEditFrom,opacity:getComputedStyle(n.firstElementChild).opacity,before:getComputedStyle(n,'::before').content}));
   assert.match(visual.from,/1,000/);assert.equal(visual.opacity,'0');assert.match(visual.before,/1,000/);
@@ -68,6 +71,17 @@ try{
   assert.equal(await page.locator(changing).count(),0,engine+' unchanged committed result stays still');
   await page.evaluate(()=>{window.__emptyComparisons=false;});
   await page.locator('#choice').click();assert.ok(await page.locator(changing).count()>0,engine+' explicit choices remain immediate');await settle();
+  for(const align of ['left','center','right']){
+    await page.evaluate(align=>{const host=document.getElementById('derived');host.style.textAlign=align;host.style.width='320px';host.style.fontFamily=align==='center'?'monospace':'Arial';document.getElementById('driver').value='1';__render(1);},align);await settle();
+    const rect=()=>page.locator('#derived > span').evaluate(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};});
+    const before=await rect();
+    for(const value of ['123456789','0.001']){
+      await page.locator('#driver').fill(value);const during=await rect();
+      for(const dimension of ['x','y','width','height'])assert.ok(Math.abs(during[dimension]-before[dimension])<0.1,engine+' '+align+' holds exact '+dimension+' across longer/shorter incoming numbers');
+    }
+    await page.locator('#driver').press('Tab');await settle();
+  }
+
  }
  assert.deepEqual(errors,[]);
  console.log('PASS: all four engines hold typed derived visuals until Tab/blur, preserve exact native/model/DOM values, retain one baseline through repeated input and native-change node replacement, respect reduced motion and keep explicit choices immediate.');

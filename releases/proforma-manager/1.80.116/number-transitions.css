@@ -1,0 +1,17 @@
+.pf-number-push.pf-number-push,.pf-number-push>.pf-number-value{font:inherit;color:inherit;letter-spacing:inherit;margin:0;padding:0;line-height:inherit}
+.pf-number-push.pf-number-push{display:inline-grid;position:relative;vertical-align:baseline;clip-path:inset(0);text-align:inherit;font-variant-numeric:tabular-nums;pointer-events:none}
+.pf-number-push>.pf-number-value{display:inline-block;grid-area:1/1;white-space:pre}
+.pf-number-push::before{grid-area:1/1;content:attr(data-pf-number-from) / "";position:absolute;inset:0;white-space:pre;visibility:hidden;pointer-events:none}
+.pf-number-push.pf-number-changing::before{position:relative;visibility:visible;animation:pf-number-out 420ms cubic-bezier(.22,.7,.25,1) both}
+.pf-number-push.pf-number-changing>.pf-number-value{animation:pf-number-in 420ms cubic-bezier(.22,.7,.25,1) both}
+.pf-number-input{display:grid;min-width:0;position:relative}
+.pf-number-input>input,.pf-number-input-display{grid-area:1/1;min-width:0;width:100%;box-sizing:border-box}
+.pf-number-input>input{color:transparent!important;caret-color:transparent}
+.pf-number-input-display{align-self:center;pointer-events:none;overflow:hidden;white-space:nowrap;border:1px solid transparent}
+@keyframes pf-number-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-16px)}}
+@keyframes pf-number-in{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.pf-number-push.pf-number-changing::before{display:none}.pf-number-push.pf-number-changing>.pf-number-value{animation:none}}
+
+/* Old text alone sizes held displays; both actual texts size a committed transition. */
+.pf-number-push.number-edit-pending::before{content:attr(data-number-edit-from) / "";position:relative;visibility:visible;animation:none}
+.pf-number-push.number-edit-pending>.pf-number-value{position:absolute;inset:0;opacity:0;animation:none}

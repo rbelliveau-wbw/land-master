@@ -37,8 +37,8 @@
     // Resume the remaining visual time instead of cancelling or restarting it.
     const start=equal?old.start:now,until=start+420,from=equal?old.from:old.text;
     node.dataset.lmNumberFrom=from;node.style.setProperty('--lm-number-delay',Math.min(0,start-now)+'ms');
-    // Measure only changing values; untouched large reports never force a layout per cell.
-    node.style.minWidth=Math.max(from.length,text.length)+'ch';node.classList.add('lm-number-changing');
+    // CSS overlays real formatted text without estimated widths or per-cell layout reads.
+    node.classList.add('lm-number-changing');
     const job={start,until,from};job.timer=setTimeout(()=>{node.classList.remove('lm-number-changing');node.style.minWidth='';timers.delete(node);},Math.max(0,until-now));timers.set(node,job);return job;
   }
   function start(options){

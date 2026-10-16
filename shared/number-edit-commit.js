@@ -13,11 +13,11 @@
     if (!editable(event.target)) return;
     if(editing!==event.target)gates.forEach(gate=>gate.begin());
     editing = event.target;
-    queueMicrotask(()=>{if(editing&&!editing.isConnected)commit();});
+    setTimeout(()=>{if(editing&&!editing.isConnected)commit();},0);
   }, true);
   document.addEventListener('focusout', event => {
     const field=event.target;
-    queueMicrotask(()=>{if(field===editing)commit();});
+    setTimeout(()=>{if(field===editing)commit();},0);
   }, true);
   document.addEventListener('focusin',event=>{
     if(!editing||event.target===editing)return;
@@ -51,7 +51,7 @@
         // A genuinely new/unknown slot has no old visual. Leave it readable/static.
         if(from===undefined||from===null||from==='')return false;
         node.dataset.numberEditFrom = from;
-        node.style.minWidth = Math.max(String(from??'').length,node.textContent.length)+'ch';
+        node.style.minWidth = ''; // CSS sizes the held display from the old text alone.
         node.classList.remove(options.changing);
         node.classList.add('number-edit-pending');
         pending.set(id, {node, old:baseline, apply});

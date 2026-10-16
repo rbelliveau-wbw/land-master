@@ -493,7 +493,7 @@
   }
   $('allFilters').addEventListener('click', () => setPanel('allFilters', 'moreFilters', $('moreFilters').hidden));
   $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'count'; state.collapsed.clear(); applyPeriod(); update(); });
-  $('audit').addEventListener('click', () => { const version = document.querySelector('.page-foot .version')?.textContent.trim() || 'version unavailable'; $('auditText').textContent = 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
+  $('audit').addEventListener('click', () => { const version = document.querySelector('#diagnostics .version')?.textContent.trim() || 'version unavailable'; $('auditText').textContent = 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()!=='budgets'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });

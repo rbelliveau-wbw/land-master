@@ -29,7 +29,7 @@
     clearTimeout(active.get(node));active.delete(node);
     node.classList.remove('is-changing');node.style.minWidth='';
     if (!old || (old.text===node.dataset.numberText && old.context===node.dataset.numberContext) || !numeric(old.value) || !numeric(value) || reduced || !node.isConnected) return;
-    node.dataset.from=old.text;node.style.minWidth=Math.max(old.text.length,node.dataset.numberText.length)+'ch';
+    node.dataset.from=old.text;
     node.classList.toggle('number-push-alternate');node.classList.add('is-changing');
     active.set(node,setTimeout(()=>{node.classList.remove('is-changing');node.style.minWidth='';active.delete(node);},420));
   }

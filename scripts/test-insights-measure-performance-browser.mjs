@@ -48,6 +48,7 @@ try{
   for(const metric of ['avgPrice','count','totalPriceWithInterest','avgPriceFF']){
     results.push(await page.evaluate(metric=>{const t=performance.now();const el=document.getElementById('metric');el.value=metric;el.dispatchEvent(new Event('change',{bubbles:true}));return {metric,ms:performance.now()-t,cells:document.querySelectorAll('#matrix [data-number-key]').length};},metric));assert.equal(await page.evaluate(()=>__sales.state.report===__report),true,'measure changes reuse all authoritative aggregates');assert.equal(await page.evaluate(()=>document.querySelector('#matrixBody tr:not(.territory)')===__row),true,'measure changes preserve mounted rows');assert.equal(await page.evaluate(()=>__row.querySelector('[data-number-key]')===__number),true,'measure changes preserve numeric nodes');await page.waitForTimeout(700);
   }
+  await page.screenshot({path:path.join(output,'full-height-no-footer.png')});
   assert.deepEqual(errors,[]);console.log('PASS: Insights 26,000 lots / 50 subdivisions / 48 months; no reaggregation or row/number replacement. Handler timings: '+JSON.stringify(results));
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}
 

@@ -25,7 +25,7 @@
     node.classList.remove('pf-number-changing');node.style.minWidth='';
     if (!old || reduced || !node.isConnected || (old.text===text && old.context===node.dataset.pfNumberContext)) return;
     node.dataset.pfNumberFrom=old.text;
-    node.style.minWidth=Math.max(old.text.length,text.length)+'ch';
+
     node.classList.add('pf-number-changing');
     active.set(node,setTimeout(()=>{node.classList.remove('pf-number-changing');node.style.minWidth='';active.delete(node);},420));
   }

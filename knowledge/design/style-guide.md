@@ -18,6 +18,11 @@ timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All
 immediately after Hide Empty, before the space leading to Reset; its label describes the next action for visible
 groups. Lot Count is the initial and Reset measure.
+User direction October 16, 2026: the Insights matrix fills the remaining report
+height. Omit its visible bottom description bar and page update/version footer;
+retain the totals row and keep Diagnostics/version information in Diagnostics.
+Report descriptions, quality metadata and loading status may remain accessible
+outside the visible layout. Measure changes must not resize a bottom text strip.
 
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
 PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green

@@ -88,13 +88,13 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
   const source = fs.readFileSync(app + 'sales-app.js', 'utf8');
   const registration = source.split('\n').find(line => line.trim().startsWith("$('audit').addEventListener('click'"));
   assert.ok(registration, 'Execute the actual diagnostic action rather than reproducing its version logic.');
-  const footerVersion = html.match(/class="version">([^<]+)<\/span>/)?.[1];
-  assert.ok(footerVersion, 'Current widget must expose its release version in the footer.');
-  for (const version of [footerVersion, '  v99.88.77  ', '', null]) {
+  const diagnosticVersion = html.match(/class="version">([^<]+)<\/span>/)?.[1];
+  assert.ok(diagnosticVersion, 'Current widget must expose its release version in Diagnostics.');
+  for (const version of [diagnosticVersion, '  v99.88.77  ', '', null]) {
     const elements = {auditText: {}, diagnostics: {showModal() { this.shown = true; }}, audit: {addEventListener(event, handler) { assert.equal(event, 'click'); this.handler = handler; }}};
     const runtimeContext = {environment: 'DEVELOPMENT', appLinkName: 'fixture-app'};
     vm.runInNewContext(registration, {
-      document: {querySelector(selector) { assert.equal(selector, '.page-foot .version'); return version === null ? null : {textContent: version}; }},
+      document: {querySelector(selector) { assert.equal(selector, '#diagnostics .version'); return version === null ? null : {textContent: version}; }},
       $: id => elements[id], LMRuntime: {current: () => runtimeContext}, state: {log: ['fixture diagnostic']}
     });
     elements.audit.handler();
