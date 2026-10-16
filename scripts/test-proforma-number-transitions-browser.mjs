@@ -52,12 +52,62 @@ const unique=async(selector)=>{
   const duplicates=await page.locator(selector+' [data-pf-number-key]').evaluateAll(nodes=>{const seen=new Set();return nodes.map(n=>n.dataset.pfNumberKey).filter(k=>seen.has(k)||!seen.add(k));});
   assert.deepEqual(duplicates,[],selector+' has stable unique field keys');
 };
+async function typeOneKeyAtATime(input,value,label){
+  await input.click();await settled();
+  let sawUnknown=false;
+  const before=await page.locator('#lvNP,#lvROI,#lvIRR,#lvXIRR').evaluateAll(nodes=>Object.fromEntries(nodes.map(host=>{
+    const node=host.querySelector('[data-pf-number-key]'),r=node.getBoundingClientRect();
+    return [host.id,{text:host.textContent,color:getComputedStyle(node).color,x:r.x,y:r.y,width:r.width,height:r.height}];
+  })));
+  await input.press('Control+a');await input.press('Backspace');
+  for(const character of ['',...value]){
+    if(character)await input.press(character);
+    // Longer than recalcLive's debounce: every intermediate financial state
+    // actually renders, including a loss and unavailable IRR/XIRR.
+    await page.waitForTimeout(210);
+    const held=await page.locator('#lvNP,#lvROI,#lvIRR,#lvXIRR').evaluateAll(nodes=>nodes.map(host=>{
+      const node=host.querySelector('[data-pf-number-key]'),r=node?.getBoundingClientRect();
+      return {id:host.id,children:host.childNodes.length,held:node?.dataset.numberEditFrom,current:host.textContent,
+        color:node?getComputedStyle(node,'::before').color:null,pending:node?.classList.contains('number-edit-pending'),
+        x:r?.x,y:r?.y,width:r?.width,height:r?.height};
+    }));
+    for(const sample of held){
+      if(sample.current==='—'&&before[sample.id].text!=='—')sawUnknown=true;
+      assert.equal(sample.children,1,label+' retains one complete formatted scalar '+sample.id);
+      assert.equal(sample.pending,true,label+' holds even unknown results '+sample.id);
+      assert.equal(sample.held,before[sample.id].text,label+' retains old text '+sample.id);
+      assert.equal(sample.color,before[sample.id].color,label+' retains old sign color '+sample.id);
+      for(const dimension of ['x','y','width','height'])assert.ok(Math.abs(sample[dimension]-before[sample.id][dimension])<.1,label+' retains old '+dimension+' '+sample.id);
+    }
+    assert.equal(await page.locator('.pf-number-changing').count(),0,label+' never animates an intermediate keystroke');
+    assert.equal(await input.evaluate(node=>node===document.activeElement),true,label+' retains native editing focus');
+  }
+  assert.equal(await input.inputValue(),value,label+' preserves native text');
+  const changed=await page.locator('#lvNP').textContent();assert.notEqual(changed,before.lvNP.text,label+' calculates the current value immediately for accessible DOM/export');
+  await page.screenshot({path:path.join(output,label+'-typing.png')});
+  await input.press('Tab');await page.waitForFunction(()=>!document.querySelector('.number-edit-pending'));
+  assert.equal(await page.locator('#lvNP .pf-number-push').getAttribute('data-pf-number-from'),before.lvNP.text,label+' commits directly from the last displayed value');
+  assert.equal(await page.locator('#lvNP .pf-number-push').evaluate(node=>getComputedStyle(node,'::before').color),before.lvNP.color,label+' outgoing value retains its original sign color');
+  const unknown=await page.locator('#lvIRR,#lvXIRR').evaluateAll(nodes=>nodes.filter(node=>node.textContent==='—').map(node=>node.querySelector('.pf-number-changing')!==null));
+  assert.ok(unknown.every(changing=>!changing),label+' unknown final results stay still');await settled();
+  return {sawUnknown};
+}
 try{
   await setup();await settled();assert.equal(await page.locator('.pf-number-changing').count(),0);
   await unique('#vEdit');
   const plain=await browser.newPage({viewport:{width:1580,height:1020}});await plain.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));await plain.addInitScript(()=>{window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'/environment/development',loginUser:'fixture@example.test'})}}};});await setup(plain,true);
   const existingText=target=>target.locator('#vEdit').evaluate(node=>{const clone=node.cloneNode(true);clone.querySelectorAll('.pf-number-input-display').forEach(n=>n.remove());return clone.textContent;});
   assert.equal(await existingText(page),await existingText(plain),'formatted text matches the existing renderer exactly');await plain.close();
+  // The reported regression uses a number input in a subform, typed one key
+  // at a time. A bulk paste never exercised its transient loss/unknown states.
+  const lotPrice=page.locator('input[data-ik="Price_LF"]');
+  assert.equal((await typeOneKeyAtATime(lotPrice,'12','lot-price-loss')).sawUnknown,true,'lot price fixture actually passes through unavailable IRR/XIRR');
+  assert.equal(await page.locator('#lvNP').evaluate(node=>node.classList.contains('neg')),true,'a loss adopts its negative color only on committed display');
+  await typeOneKeyAtATime(lotPrice,'1000','lot-price-restored');
+  assert.equal(await page.locator('#lvNP').evaluate(node=>node.classList.contains('pos')),true);
+  await page.evaluate(()=>__PFW_TEST__.setPane('addl'));await settled();
+  await typeOneKeyAtATime(page.locator('input[data-ik="Per_Unit"]'),'125','additional-cost-per-unit');
+  await page.evaluate(()=>__PFW_TEST__.setPane('gen'));await settled();
   const input=page.locator('input[data-k="Land_Cost_Acre"]');await typeValue(input,'12345.67');
   await page.waitForFunction(()=>document.querySelector('#lvLC .pf-number-changing'));
   assert.equal(await page.locator('.number-edit-pending').count(),0,'Tab releases the final visual');assert.equal((await input.inputValue()).replace(/,/g,''),'12345.67','typing keeps exact editable precision');
@@ -72,6 +122,7 @@ try{
   assert.equal(await page.locator('.number-edit-pending').count(),0);assert.equal(await page.locator('[data-mixprice="0"]').getAttribute('readonly'),'');
   await settled();
   await page.evaluate(()=>__PFW_TEST__.setPane('lotsales'));await settled();
+  await typeOneKeyAtATime(page.locator('input[data-ps-k="Additional_Markup_Pct"]'),'12','phase-increase');
   const markup=page.locator('input[data-ps-k="Additional_Markup_Pct"]');await typeValue(markup,'10');
   await page.waitForFunction(()=>document.querySelector('[data-ps-marked-price] .pf-number-changing'));
   assert.equal(await page.locator('.number-edit-pending').count(),0);await page.waitForFunction(()=>document.querySelector('.ps-final-price .pf-number-changing'));
@@ -107,5 +158,5 @@ try{
   assert.ok(await page.locator('.pfbt .pf-number-changing').count()>0);assert.equal(await page.locator('.number-edit-pending').count(),0);assert.equal(await lots.inputValue(),'60');await unique('.pfbt');
   await page.screenshot({path:path.join(output,'budget-transfer.png')});
   assert.deepEqual(errors,[],'actual renderers have no browser/presentation errors');
-  console.log('PASS: desktop PF numbers: text parity, native typing/precision, live totals, read-only values, phase identity, monthly/scenario updates, signed rapid values, record scope, reduced motion and Budget transfer.');
+  console.log('PASS: desktop PF numbers: text parity, native repeated subform typing/precision, held complete text/sign color/unknown/layout, live totals, read-only values, phase identity, monthly/scenario updates, signed rapid values, record scope, reduced motion and Budget transfer.');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

@@ -18,6 +18,7 @@
     "test:forecast": "node scripts/test-forecast-manager.mjs",
     "test:forecast:browser": "node scripts/test-forecast-manager-browser.mjs",
     "test:insights:browser": "node scripts/test-insights-number-transitions-browser.mjs && node scripts/test-insights-measure-performance-browser.mjs",
+    "test:insights:geometry": "node scripts/test-insights-scroll-geometry-browser.mjs",
     "test:proforma:numbers:browser": "node scripts/test-proforma-number-transitions-browser.mjs",
     "test:numbers:browser": "node scripts/test-number-edit-commit-browser.mjs && node scripts/test-number-transition-rollout-browser.mjs"
   }

@@ -39,6 +39,16 @@ make those estimates inaccurate. At commit, overlay the real old/new text in
 one grid cell so their natural sizes determine the transition area without
 per-cell layout reads. Preserve left/center/right alignment and read-only input
 overlays. [Layout and Insights footer correction](../../docs/number-layout-and-insights-footer-2026-10-16.md).
+Hold the **complete formatted result**, including percentage/scientific suffixes,
+unknown-result placeholders and semantic sign color, in ordinary fields and
+subform rows alike. Do not split a scalar into numeric fragments that let its
+suffix or unknown state escape the hold. Keep the old sign color on the outgoing
+visual while the real new value inherits its current color. Clip overflow at
+each numeric wrapper (`overflow:clip`): paint clipping alone does not prevent
+translated children or hidden outgoing text from enlarging a table's scroll
+area. Fitting tables must keep identical viewport/totals geometry throughout a
+measure transition; genuine long-period overflow must remain scrollable.
+[Subform and scroll regression evidence](../../docs/number-subforms-and-scroll-2026-10-16.md).
 This follows Budget's visible-old-value behavior; see the
 [blanking regression correction](../../docs/number-old-values-visible-2026-10-15.md).
 Repeated keystrokes never show intermediate calculated amounts. Reduced motion

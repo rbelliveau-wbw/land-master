@@ -2,21 +2,25 @@
 (function (global) {
   'use strict';
   const active = new WeakMap();
-  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:node=>node.dataset.numberValue,text:old=>old,changing:'is-changing'});
+  const sample=node=>({text:node.dataset.numberValue,color:getComputedStyle(node).color});
+  const textOf=value=>value&&typeof value==='object'?value.text:value;
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:sample,text:textOf,changing:'is-changing',holdVisual:(node,old)=>{if(old?.color)node.style.setProperty('--number-edit-color',old.color);},releaseVisual:node=>node.style.removeProperty('--number-edit-color')});
   const numeric = value => /^-?\d[\d,]*(?:\.\d+)?$/.test(String(value));
+  const formatted = value => /^(?:\([−-]?\$\d[\d,]*(?:\.\d+)?(?:e[+\-]?\d+)?[KMB]?\)|[+\-−±]?\$?\d[\d,]*(?:\.\d+)?(?:e[+\-]?\d+)?(?:%|[KMB]|\+|\spts)?)$/i.test(String(value));
+  const unknown = value => /^(?:|[—–-]|n\/?a|not (?:available|set))$/i.test(String(value).trim());
   const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   function markup(value, key) {
     return '<span class="number-push" data-number-key="'+escape(key)+'" data-number-value="'+escape(value)+'"><span class="number-push-value">'+escape(value)+'</span></span>';
   }
   function capture(root) {
-    return new Map(root ? [...root.querySelectorAll('[data-number-key]')].map(node => [node.dataset.numberKey,node.dataset.numberValue]) : []);
+    return new Map(root ? [...root.querySelectorAll('[data-number-key]')].map(node => [node.dataset.numberKey,sample(node)]) : []);
   }
   function update(node, value, previous) {
     if (!node) return;
     value = String(value);
-    const old = previous === undefined ? node.dataset.numberValue : previous;
+    const before = previous === undefined ? sample(node) : previous,old=textOf(before);
     if (previous === undefined && old === value) {
-      gate?.hold(node,old,(target,before)=>update(target,target.dataset.numberValue,before));
+      gate?.hold(node,before,(target,prior)=>update(target,target.dataset.numberValue,prior));
       return;
     }
     const running = active.get(node);
@@ -26,9 +30,10 @@
     let label = node.querySelector('.number-push-value');
     if (!label) { label=node.ownerDocument.createElement('span');label.className='number-push-value';node.replaceChildren(label); }
     label.textContent = value;
-    if (gate?.hold(node,old,(target,before)=>update(target,target.dataset.numberValue,before))) return;
-    const motion = old !== undefined && old !== value && numeric(old) && numeric(value) && !global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (gate?.hold(node,before,(target,prior)=>update(target,target.dataset.numberValue,prior))) return;
+    const motion = old !== undefined && old !== value && formatted(old) && formatted(value) && !global.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     node.dataset.from = motion ? old : value;
+    if(before?.color)node.style.setProperty('--number-from-color',before.color);else node.style.removeProperty('--number-from-color');
     node.style.minWidth = '';
     if (!motion || !node.isConnected) return;
     // Restart from the last real value if a second response arrives mid-transition.
@@ -41,6 +46,7 @@
   }
   function tokens(node, key) {
     let index=0;
+    if([...node.childNodes].every(child=>child.nodeType===3)&&(formatted(node.textContent.trim())||unknown(node.textContent))){node.innerHTML=markup(node.textContent,key+'|0');return;}
     for (const text of [...node.childNodes].filter(child => child.nodeType===3)) {
       const fragment=node.ownerDocument.createDocumentFragment(), source=text.textContent;
       let cursor=0;
@@ -60,7 +66,7 @@
     function fields(host, prefix, selectors) {
       selectors.forEach(selector => host.querySelectorAll(selector).forEach((node,index) => {
         if (node.closest('.sr-only') || /date/i.test(node.dataset.nativeLabel||'')) return;
-        if (node.dataset.nativeValue && !numeric(node.dataset.nativeValue)) return;
+        if (node.dataset.nativeValue && !numeric(node.dataset.nativeValue)&&!unknown(node.dataset.nativeValue)) return;
         tokens(node,prefix+'|'+selector+'|'+index);
       }));
     }

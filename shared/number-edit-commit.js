@@ -38,7 +38,7 @@
         if(applying)return false;
         const id = options.key(node), prior = pending.get(id);
         if (!editing) {
-          if (prior) { pending.delete(id); node.classList.remove('number-edit-pending'); }
+          if (prior) { pending.delete(id); node.classList.remove('number-edit-pending'); if(options.releaseVisual)options.releaseVisual(node); }
           // Native change handlers can replace a held node just before focusout.
           // Carry its visual baseline into the observer's already-scheduled frame.
           if (committed.has(id)) { run(node,committed.get(id),apply); return true; }
@@ -54,17 +54,18 @@
         node.style.minWidth = ''; // CSS sizes the held display from the old text alone.
         node.classList.remove(options.changing);
         node.classList.add('number-edit-pending');
+        if(options.holdVisual)options.holdVisual(node,baseline);
         pending.set(id, {node, old:baseline, apply});
         return true;
       },
       commit() {
         const jobs = [...pending.entries()]; pending.clear();
         // Remove every hold first, then let the browser start the final replacements together.
-        jobs.forEach(([id,{node,old}]) => {committed.set(id,old);node.classList.remove('number-edit-pending');});
+        jobs.forEach(([id,{node,old}]) => {committed.set(id,old);node.classList.remove('number-edit-pending');if(options.releaseVisual)options.releaseVisual(node);});
         jobs.forEach(([, {node,old,apply}]) => { if (node.isConnected) run(node,old,apply); });
         requestAnimationFrame(()=>committed.clear());
       },
-      reset() { pending.forEach(({node}) => {node.classList.remove('number-edit-pending');node.style.minWidth='';}); pending.clear();committed.clear();baselineValues.clear(); },
+      reset() { pending.forEach(({node}) => {node.classList.remove('number-edit-pending');node.style.minWidth='';if(options.releaseVisual)options.releaseVisual(node);}); pending.clear();committed.clear();baselineValues.clear(); },
       stop() { gate.reset(); gates.delete(gate); }
     };
     gates.add(gate); return gate;

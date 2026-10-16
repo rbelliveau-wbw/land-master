@@ -2,25 +2,34 @@
 (function (global) {
   'use strict';
   const active = new WeakMap();
-  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:node=>({value:node.dataset.numberValue,text:node.dataset.numberText,context:node.dataset.numberContext}),text:old=>old?.text,changing:'is-changing'});
+  const sample=node=>({value:node.dataset.numberValue,text:node.dataset.numberText,context:node.dataset.numberContext,color:getComputedStyle(node).color});
+  const gate=global.NumberEditCommit?.create({key:node=>node.dataset.numberKey,selector:'[data-number-key]',read:sample,text:old=>old?.text,changing:'is-changing',
+    holdVisual:(node,old)=>node.style.setProperty('--number-edit-color',old.color||'inherit'),
+    releaseVisual:node=>node.style.removeProperty('--number-edit-color')});
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const numeric = value => /^-?\d[\d,]*(?:\.\d+)?$/.test(value);
   const key = (...parts) => JSON.stringify(parts);
+  function parsed(text) {
+    const match=text.match(/^(-?)(\$?)(\d[\d,]*(?:\.\d+)?)(%?)$/);
+    if(match)return {value:match[1]+match[3]};
+    // Preserve a scalar's identity when a calculation becomes unavailable or a
+    // zero-count cell becomes blank. It still never animates unknown amounts.
+    return /^(?:\s*|[—–-])$/.test(text)?{value:''}:null;
+  }
   function markup(value, identity, context = '') {
-    const text = String(value ?? ''), match = text.match(/^(-?)(\$?)(\d[\d,]*(?:\.\d+)?)(%?)$/);
-    if (!match) return escape(text);
-    const number = match[1] + match[3];
+    const text = String(value ?? ''), result=parsed(text);
+    if (!result) return escape(text);
     // Each visual retains its own sign and units when the selected measure changes.
-    return '<span class="number-push" data-number-key="' + escape(identity) + '" data-number-value="' + number + '" data-number-text="' + escape(text) + '" data-number-context="' + escape(context) + '"><span class="number-push-value">' + escape(text) + '</span></span>';
+    return '<span class="number-push" data-number-key="' + escape(identity) + '" data-number-value="' + result.value + '" data-number-text="' + escape(text) + '" data-number-context="' + escape(context) + '"><span class="number-push-value">' + escape(text) + '</span></span>';
   }
   function capture(root) {
-    return new Map(root ? [...root.querySelectorAll('[data-number-key]')].map(node => [node.dataset.numberKey, {value:node.dataset.numberValue, text:node.dataset.numberText, context:node.dataset.numberContext}]) : []);
+    return new Map(root ? [...root.querySelectorAll('[data-number-key]')].map(node => [node.dataset.numberKey,sample(node)]) : []);
   }
   function set(host, value, identity, context = '') {
-    const text=String(value??''),match=text.match(/^(-?)(\$?)(\d[\d,]*(?:\.\d+)?)(%?)$/),node=host.firstElementChild;
-    if (!match) { host.textContent=text; return; }
+    const text=String(value??''),result=parsed(text),node=host.firstElementChild;
+    if (!result) { host.textContent=text; return; }
     if (!node || node.dataset.numberKey!==identity) { host.innerHTML=markup(text,identity,context); return; }
-    node.dataset.numberValue=match[1]+match[3];node.dataset.numberText=text;node.dataset.numberContext=context;
+    node.dataset.numberValue=result.value;node.dataset.numberText=text;node.dataset.numberContext=context;
     if(node.firstElementChild.textContent!==text)node.firstElementChild.textContent=text;
   }
   function applyNode(node, old, reduced=global.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
@@ -30,6 +39,7 @@
     node.classList.remove('is-changing');node.style.minWidth='';
     if (!old || (old.text===node.dataset.numberText && old.context===node.dataset.numberContext) || !numeric(old.value) || !numeric(value) || reduced || !node.isConnected) return;
     node.dataset.from=old.text;
+    node.style.setProperty('--number-from-color',old.color||'inherit');
     node.classList.toggle('number-push-alternate');node.classList.add('is-changing');
     active.set(node,setTimeout(()=>{node.classList.remove('is-changing');node.style.minWidth='';active.delete(node);},420));
   }

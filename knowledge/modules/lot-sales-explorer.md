@@ -1,3 +1,11 @@
+## Complete held numbers and scroll containment — 1.5.56, October 16, 2026
+
+Numeric wrappers contain animation overflow so fitting tables do not acquire
+scrollbars. Field-exit holds retain complete scalar results and semantic sign
+color, including Pro Forma subforms. Native calculations/save timing and Creator
+contracts remain unchanged; no Creator deployment is required.
+[Changed files, desktop regressions and rollback](../../docs/number-subforms-and-scroll-2026-10-16.md).
+
 ## Stable numeric layout — 1.5.55, October 16, 2026
 
 Held old numbers keep their natural width, baseline and position during typing;

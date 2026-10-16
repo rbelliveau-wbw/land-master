@@ -1,0 +1,8 @@
+{
+  "widget": "manage-lots",
+  "version": "0.13.6",
+  "created_at": "2026-10-16T14:19:14.970Z",
+  "source": "widgets/manage-lots/src/app/widget.html",
+  "source_sha256": "7d0b3b4eb2189a69f5f9617d3af17d40a468437bbe97d84fa63c2bbc67445ce6",
+  "status": "candidate"
+}

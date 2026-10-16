@@ -6,6 +6,7 @@
     const scope = side => {const state = getState()[side]; return N.key(side, state?.id || N.identity(state?.model));};
     const each = (selector, visit, root = document) => root?.querySelectorAll(selector).forEach(visit);
     const text = (node, id, mode, context) => N.decorate(node, N.key(id), mode, context);
+    const value = (node, id, context) => N.display(node, N.key(id), context);
     function list() {
       ['pfCount','pfCount2','pfApprCount'].forEach(id => text($(id), ['list',id]));
       each('#listBody tr[data-id]', row => each('td.num.mono', (cell,i) => text(cell,['list',row.dataset.id,i]), row));
@@ -62,20 +63,22 @@
     function editor() {
       const state=getState().ed, m=state?.model; if(!m)return;
       const s=scope('ed'), phase=N.identity((m.phaseSales||[])[state.phaseSelected||0]);
-      each('#vEdit [id^="lv"]', node=>{if(node.id!=='lvPane')text(node,[s,'live',node.id]);});
-      each('#vEdit [data-calc]', node => {if(!/^(engineeringStart|constructionStart|lotSaleStart|estimatedCompletion)$/.test(node.dataset.calc)&&node.tagName!=='INPUT')text(node,[s,'calculated',node.closest('[data-pane]')?.dataset.pane||'header',node.dataset.calc]);});
-      ['curveTotal','purchPill','salePill','pidPill','loiTotalAcres','loiEstimatedPrice','loiAcreHint','loiPriceHint'].forEach(id=>text($(id),[s,id]));
+      each('#vEdit [id^="lv"]', node=>{if(node.id!=='lvPane')value(node,[s,'live',node.id]);});
+      each('#vEdit [data-calc]', node => {if(!/^(engineeringStart|constructionStart|lotSaleStart|estimatedCompletion)$/.test(node.dataset.calc)&&node.tagName!=='INPUT')value(node,[s,'calculated',node.closest('[data-pane]')?.dataset.pane||'header',node.dataset.calc]);});
+      ['curveTotal','purchPill','salePill','pidPill','loiTotalAcres','loiAcreHint','loiPriceHint'].forEach(id=>text($(id),[s,id]));
+      value($('loiEstimatedPrice'),[s,'loiEstimatedPrice']);
       text(document.querySelector('#loiStatusBox>b'),[s,'loi-status']);
       each('#vEdit .ps-nav [data-ps-select]', button => text(button.querySelector('small:not(.ps-card-window)'),[s,'phase-nav',N.identity((m.phaseSales||[])[Number(button.dataset.psSelect)])]));
       each('#vEdit .ps-balance', node=>text(node,[s,'phase-allocation']));
-      each('#vEdit .ps-phase-detail,#vEdit [data-ps-base-price],#vEdit [data-ps-marked-price]', (node,i)=>text(node,[s,phase,'phase-detail',i]));
+      each('#vEdit .ps-phase-detail', (node,i)=>text(node,[s,phase,'phase-detail',i]));
+      each('#vEdit [data-ps-base-price],#vEdit [data-ps-marked-price]', (node,i)=>value(node,[s,phase,'phase-price',i]));
       each('#vEdit .ps-milestone', row=>{
         const title=row.querySelector('.ps-milestone-title')?.textContent.split(' (')[0];
         each('b,small,.ps-delay-badge', (node,i)=>text(node,[s,phase,'milestone',title,i]),row);
       });
       each('#vEdit .ps-summary-total>span', (node,i)=>text(node,[s,phase,'sales-summary',i]));
       each('#vEdit .ps-summary-foot', node=>text(node,[s,phase,'escalator'],'ratio'));
-      each('#vEdit .ps-final-price-row', row=>text(row.querySelector('b'),[s,phase,'final-price',row.querySelector('span')?.textContent]));
+      each('#vEdit .ps-final-price-row', row=>value(row.querySelector('b'),[s,phase,'final-price',row.querySelector('span')?.textContent]));
       each('#vEdit .ps-final-price-change', (node,i)=>text(node,[s,phase,'price-change',i]));
       each('#vEdit .loi-need-chip:not(.ok)', node=>text(node,[s,'loi-missing',node.closest('[data-loi-sect]')?.dataset.loiSect]));
       each('#vEdit input[data-mixprice]', input=>N.readonly(input,N.key(s,'lotmix',N.identity(m.lotMix[Number(input.dataset.mixprice)]),'price')));

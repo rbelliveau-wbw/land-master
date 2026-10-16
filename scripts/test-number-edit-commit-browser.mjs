@@ -9,9 +9,9 @@ const engines={shared:'shared',pf:'widgets/proforma-manager/src/app',insights:'w
 const server=http.createServer((req,res)=>{
   const [engine,file]=new URL(req.url,'http://fixture').pathname.slice(1).split('/');
   if(!engines[engine]){res.writeHead(404).end();return;}
-  res.setHeader('Content-Type',file?.endsWith('.js')?'text/javascript':file?.endsWith('.css')?'text/css':'text/html');
+  res.setHeader('Content-Type',(file?.endsWith('.js')?'text/javascript':file?.endsWith('.css')?'text/css':'text/html')+'; charset=utf-8');
   if(file){res.end(fs.readFileSync(path.join(file==='number-edit-commit.js'?'shared':engines[engine],file),'utf8'));return;}
-  res.end(`<!doctype html><link rel="stylesheet" href="/${engine}/number-transitions.css"><script src="/${engine}/number-edit-commit.js"></script><script src="/${engine}/number-transitions.js"></script><style>body{font:20px Arial;padding:40px}input,button{font:inherit;margin:20px}#derived{margin:20px}</style><input id="driver" value="1"><input id="next" value="2"><button id="choice">Change measure</button><div id="derived"></div>`);
+  res.end(`<!doctype html><link rel="stylesheet" href="/${engine}/number-transitions.css"><script src="/${engine}/number-edit-commit.js"></script><script src="/${engine}/number-transitions.js"></script><style>body{font:20px Arial;padding:40px}input,button{font:inherit;margin:20px}#derived{margin:20px;color:rgb(0,100,0)}#requestBalance .request-balance-negative,.fs-balance.negative #derived,#derived.negative{color:rgb(180,0,0)}</style><input id="driver" value="1"><input id="next" value="2"><button id="choice">Change measure</button><div id="requestBalance" class="fs-balance"><div id="derived" class="rv"></div></div>`);
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:'chrome'}),page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
@@ -22,14 +22,15 @@ try{
   await page.goto(`http://127.0.0.1:${server.address().port}/${engine}`);
   await page.evaluate(engine=>{
     const host=document.getElementById('derived');window.__model=1;
-    const format=n=>(engine==='forecast'?'':'$')+(n*1000).toLocaleString('en-US');
+    const format=n=>window.__specialValue===undefined?(engine==='forecast'?'':'$')+(n*1000).toLocaleString('en-US'):window.__specialValue;
     let observer;
     window.__render=n=>{
       const value=format(n);
+      host.classList.toggle('request-balance-negative',!!window.__negative);host.classList.toggle('negative',!!window.__negative);host.parentElement.classList.toggle('negative',!!window.__negative);
       if(engine==='shared'){host.textContent=value;observer?.flush();}
-      if(engine==='pf'){const old=window.__emptyComparisons?new Map():PFNumbers.capture(host);host.textContent=value;PFNumbers.decorate(host,'derived');PFNumbers.apply(host,old);}
+      if(engine==='pf'){const old=window.__emptyComparisons?new Map():PFNumbers.capture(host);host.textContent=value;PFNumbers.display(host,'derived');PFNumbers.apply(host,old);}
       if(engine==='insights'){const old=window.__emptyComparisons?new Map():InsightsNumbers.capture(host);host.innerHTML=InsightsNumbers.markup(value,'derived');InsightsNumbers.apply(host,old);}
-      if(engine==='forecast'){const old=window.__emptyComparisons?new Map():ForecastNumbers.capture(host);host.innerHTML=ForecastNumbers.markup(value,'derived');ForecastNumbers.apply(host,old);}
+      if(engine==='forecast'){if(window.__scalarText)ForecastNumbers.text(host,value,'derived');else{const old=window.__emptyComparisons?new Map():ForecastNumbers.capture(host);host.innerHTML=ForecastNumbers.markup(value,'derived');ForecastNumbers.apply(host,old);}}
     };
     if(engine==='shared')observer=LMNumbers.start({module:'fixture',root:document.body,collect:api=>api.text(host,'derived')});
     __render(1);
@@ -82,7 +83,38 @@ try{
     await page.locator('#driver').press('Tab');await settle();
   }
 
+  // Budget's remaining-request amount and Forecast's balance are real host
+  // patterns: their semantic class changes synchronously in original handlers.
+  await page.evaluate(()=>{window.__scalarText=true;window.__specialValue='$1,000';window.__negative=false;__render(1);});await settle();
+  const scalarBefore=await page.locator('#derived > span').evaluate(n=>({color:getComputedStyle(n).color,x:n.getBoundingClientRect().x,width:n.getBoundingClientRect().width}));
+  for(const value of ['-$99,999','—','—','','']){
+    await page.evaluate(value=>{window.__specialValue=value;window.__negative=true;},value);
+    await page.locator('#driver').fill(String(11+(await page.locator('#driver').inputValue()).length));
+    assert.equal(await page.locator(held).count(),1,engine+' complete scalar survives intermediate '+JSON.stringify(value)+'; '+await page.locator('#derived').innerHTML());
+    const visual=await page.locator(held).evaluate(n=>({text:n.dataset.numberEditFrom,color:getComputedStyle(n,'::before').color,x:n.getBoundingClientRect().x,width:n.getBoundingClientRect().width}));
+    assert.equal(visual.text,'$1,000',engine+' original complete scalar is retained');assert.equal(visual.color,scalarBefore.color,engine+' old semantic color remains while typing');
+    assert.ok(Math.abs(visual.x-scalarBefore.x)<0.1&&Math.abs(visual.width-scalarBefore.width)<0.1,engine+' unknown and blank results do not change held geometry');
+    assert.equal(await page.locator('#derived').textContent(),value,engine+' authoritative scalar DOM text remains current');
+    assert.equal(await page.locator(changing).count(),0,engine+' intermediate scalar results never animate');
+  }
+  await page.locator('#driver').press('Tab');await page.waitForTimeout(35);
+  assert.equal(await page.locator(held).count(),0);assert.equal(await page.locator(changing).count(),0,engine+' unknown destinations remain static at commit');
+  await page.evaluate(()=>{window.__specialValue='$500';window.__negative=false;__render(1);});await settle();
+  await page.evaluate(()=>{window.__specialValue='-$900';window.__negative=true;});await page.locator('#driver').fill('14');
+  assert.equal(await page.locator(held).evaluate(n=>getComputedStyle(n,'::before').color),'rgb(0, 100, 0)',engine+' positive baseline retains its color');
+  await page.locator('#driver').press('Tab');await page.waitForFunction(selector=>!!document.querySelector(selector),changing);
+  const colorPair=await page.locator(changing).evaluate(n=>({from:getComputedStyle(n,'::before').color,to:getComputedStyle(n.firstElementChild).color}));
+  assert.deepEqual(colorPair,{from:'rgb(0, 100, 0)',to:'rgb(180, 0, 0)'},engine+' committed transition keeps each value in its own semantic color');await settle();
+  if(engine==='shared'||engine==='pf'){
+    await page.evaluate(()=>{window.__specialValue='31.2%';window.__negative=false;__render(1);});await settle();
+    await page.evaluate(()=>{window.__specialValue='1.2e+277%';});await page.locator('#driver').fill('15');
+    assert.equal(await page.locator(held).count(),1,engine+' scientific percentage remains one complete scalar');
+    assert.equal(await page.locator(held).getAttribute('data-number-edit-from'),'31.2%');
+    assert.equal(await page.locator('#derived').textContent(),'1.2e+277%');
+    await page.locator('#driver').press('Tab');await settle();
+  }
+
  }
  assert.deepEqual(errors,[]);
- console.log('PASS: all four engines hold typed derived visuals until Tab/blur, preserve exact native/model/DOM values, retain one baseline through repeated input and native-change node replacement, respect reduced motion and keep explicit choices immediate.');
+ console.log('PASS: all four engines hold complete typed scalar visuals and semantic colors through signed, unknown and blank results until Tab/blur; preserve exact native/model/DOM values, geometry and scientific percentage suffixes; retain one baseline through repeated input/native-change replacement; respect reduced motion and keep explicit choices immediate.');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

@@ -4,17 +4,26 @@
   const timers=new WeakMap(),identities=new WeakMap();let sequence=0;
   const key=(...parts)=>JSON.stringify(parts);
   const identity=value=>{if(!value||typeof value!=='object')return String(value||'');if(value.ID||value.id)return String(value.ID||value.id);if(!identities.has(value))identities.set(value,'draft-'+(++sequence));return identities.get(value);};
-  const pattern=/\([−-]?\$\d[\d,]*(?:\.\d+)?[KMB]?\)|[+\-−±]?\$?\d[\d,]*(?:\.\d+)?(?:%|[KMB]|\+|\spts)?/g;
+  const pattern=/\([−-]?\$\d[\d,]*(?:\.\d+)?(?:e[+\-]?\d+)?[KMB]?\)|[+\-−±]?\$?\d[\d,]*(?:\.\d+)?(?:e[+\-]?\d+)?(?:%|[KMB]|\+|\spts)?/gi;
+  const unknown=text=>/^(?:|[—–-]|n\/?a|not (?:available|set))$/i.test(text.trim());
   function matches(text,mode){return [...text.matchAll(pattern)].filter(m=>mode==='money'?m[0].includes('$'):mode==='percent'?/%|pts/.test(m[0]):mode==='counts'?/^\s*(?:\/\s*\d|of\s+\d|lots?\b|records?\b|rows?\b|items?\b|budgets?\b|milestones?\b|ranges?\b|completed\b|confirmed\b|saved\b|created\b|not (?:created|sent)\b|failed\b|skipped\b|selected\b|verified\b)/i.test(text.slice(m.index+m[0].length)):true);}
   function decorate(host,id,mode,context){
     if(!host||!host.isConnected)return [];
     const signature=key(id,mode,context,host.textContent);
     const own=()=>[...host.querySelectorAll('[data-lm-number-key]')].filter(node=>node.dataset.lmNumberOwner===id);
-    if(host.__lmNumberSignature===signature){const nodes=own();if(nodes.length||!matches(host.textContent,mode).length)return nodes;}
+    if(host.__lmNumberSignature===signature){const nodes=own();if(nodes.length||!matches(host.textContent,mode).length&&!unknown(host.textContent))return nodes;}
     own().forEach(node=>node.replaceWith(document.createTextNode(node.dataset.lmNumberText)));
     host.normalize();const walker=document.createTreeWalker(host,NodeFilter.SHOW_TEXT),texts=[];
     while(walker.nextNode()){const node=walker.currentNode;if(!node.parentElement.closest('input,textarea,select,option,script,style,[contenteditable="true"],[data-lm-number-key]'))texts.push(node);}
     let ordinal=0;const nodes=[];
+    // A scalar is one display slot even when a calculation becomes unknown.
+    // Keep its full formatted text; tokenizing a dash would remove the held slot.
+    const scalarText=host.textContent,scalarMatches=matches(scalarText,mode);
+    const scalar=[...host.childNodes].every(node=>node.nodeType===Node.TEXT_NODE)&&(unknown(scalarText)||scalarMatches.length===1&&scalarMatches[0][0]===scalarText.trim());
+    if(scalar){
+      const shell=document.createElement('span'),value=document.createElement('span');shell.className='lm-number-push';value.className='lm-number-value';
+      shell.dataset.lmNumberKey=key(id,0);shell.dataset.lmNumberOwner=id;shell.dataset.lmNumberText=scalarText;shell.dataset.lmNumberContext=context||'';shell.dataset.lmNumberKnown=String(!unknown(scalarText));value.textContent=scalarText;shell.appendChild(value);host.replaceChildren(shell);host.__lmNumberSignature=signature;return [shell];
+    }
     for(const node of texts){
       const found=matches(node.data,mode);if(!found.length)continue;
       const fragment=document.createDocumentFragment();let end=0;
@@ -32,19 +41,21 @@
     const equal=old?.text===text&&old.context===context;
     if(!reduced&&equal&&active)return active;
     clearTimeout(active?.timer);timers.delete(node);node.classList.remove('lm-number-changing');node.style.minWidth='';
-    if(!old||reduced||equal&&!(old.until>now))return null;
+    if(!old||old.known===false||node.dataset.lmNumberKnown==='false'||reduced||equal&&!(old.until>now))return null;
     // Input + change, or a saved refresh, may rebuild the same final text mid-push.
     // Resume the remaining visual time instead of cancelling or restarting it.
-    const start=equal?old.start:now,until=start+420,from=equal?old.from:old.text;
+    const start=equal?old.start:now,until=start+420,from=equal?old.from:old.text,fromColor=equal?old.fromColor||old.color:old.color;
     node.dataset.lmNumberFrom=from;node.style.setProperty('--lm-number-delay',Math.min(0,start-now)+'ms');
+    if(fromColor)node.style.setProperty('--lm-number-from-color',fromColor);else node.style.removeProperty('--lm-number-from-color');
     // CSS overlays real formatted text without estimated widths or per-cell layout reads.
     node.classList.add('lm-number-changing');
-    const job={start,until,from};job.timer=setTimeout(()=>{node.classList.remove('lm-number-changing');node.style.minWidth='';timers.delete(node);},Math.max(0,until-now));timers.set(node,job);return job;
+    const job={start,until,from,fromColor};job.timer=setTimeout(()=>{node.classList.remove('lm-number-changing');node.style.minWidth='';timers.delete(node);},Math.max(0,until-now));timers.set(node,job);return job;
   }
   function start(options){
     if(typeof MutationObserver!=='function')return null;
     let previous=new Map(),actor='',frame=0,stopped=false;const observer=new MutationObserver(schedule);
-    const gate=global.NumberEditCommit?.create({key:node=>node.dataset.lmNumberKey,selector:'[data-lm-number-key]',read:node=>({text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext}),text:old=>old?.text,changing:'lm-number-changing'});
+    const read=node=>({text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext,known:node.dataset.lmNumberKnown!=='false',color:getComputedStyle(node).color});
+    const gate=global.NumberEditCommit?.create({key:node=>node.dataset.lmNumberKey,selector:'[data-lm-number-key]',read,text:old=>old?.text,changing:'lm-number-changing',holdVisual:(node,old)=>{if(old?.color)node.style.setProperty('--lm-number-edit-color',old.color);},releaseVisual:node=>node.style.removeProperty('--lm-number-edit-color')});
     const root=options.root||document.body,media=global.matchMedia?.('(prefers-reduced-motion: reduce)');
     function watch(){if(!stopped)observer.observe(root,{subtree:true,childList:true,characterData:true});}
     function flush(){
@@ -71,7 +82,7 @@
           // Ambiguous legacy markup stays readable/static; never borrow another slot's old value.
           if(counts.get(id)>1){apply(node,null,!!media?.matches);continue;}
           const old=previous.get(id),job=gate?.hold(node,old,(target,before)=>apply(target,before,!!media?.matches))?null:apply(node,old,!!media?.matches);
-          next.set(id,{text:node.dataset.lmNumberText,context:node.dataset.lmNumberContext,from:job?.from,start:job?.start,until:job?.until});
+          next.set(id,{...read(node),from:job?.from,fromColor:job?.fromColor,start:job?.start,until:job?.until});
         }
         previous=next;
       }catch(error){previous.clear();console.warn('Number transitions:',options.module,error);}

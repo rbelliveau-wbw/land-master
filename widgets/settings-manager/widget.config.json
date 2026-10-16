@@ -2,13 +2,13 @@
   "slug": "settings-manager",
   "name": "Settings Manager",
   "module": "settings",
-  "version": "1.5.12",
+  "version": "1.5.13",
   "description": "Grouped editor for the single Land Master Settings record, with a duplicate-record guard.",
   "source_entry": "widgets/settings-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Settings",
-  "source_sha256": "b457ea34f0bc09229858d06ecb3ab07c62834829aca1e2748bf2cdcce78ca7e3",
+  "source_sha256": "816b4be4b3269521128fd714d5d3797e21aa78d4bd48c9b269071ba4046563c9",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [
