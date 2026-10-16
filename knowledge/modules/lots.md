@@ -1,3 +1,12 @@
+## Shared interaction motion — 0.13.7, October 16, 2026
+
+Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save
+feedback, overlays, changed rows and progress meters follow the approved
+[repository-wide interaction rule](../design/interaction-motion.md). Every new
+feature must use the shared layer and explicit registry. Native field-exit
+numbers, business timing and access guards remain. No Creator deployment is
+required. [Coverage, checks and rollback](../../docs/interaction-motion-rollout-2026-10-16.md).
+
 ## Complete held numbers and scroll containment — 0.13.6, October 16, 2026
 
 Numeric wrappers contain animation overflow so fitting tables do not acquire

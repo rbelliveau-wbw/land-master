@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:'chrome'}),page=await browser.newPage({viewport:{width:1580,height:1020}}),errors=[];
-page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='warning'&&m.text().includes('number presentation'))errors.push(m.text());});
+page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='warning'&&(m.text().includes('number presentation')||m.text().includes('Interaction motion unavailable')))errors.push(m.text());});
 await page.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));
 await page.addInitScript(()=>{window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'/environment/development',loginUser:'fixture@example.test'})}}};});
 const url='http://127.0.0.1:'+server.address().port;
@@ -98,6 +98,17 @@ try{
   const plain=await browser.newPage({viewport:{width:1580,height:1020}});await plain.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));await plain.addInitScript(()=>{window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'/environment/development',loginUser:'fixture@example.test'})}}};});await setup(plain,true);
   const existingText=target=>target.locator('#vEdit').evaluate(node=>{const clone=node.cloneNode(true);clone.querySelectorAll('.pf-number-input-display').forEach(n=>n.remove());return clone.textContent;});
   assert.equal(await existingText(page),await existingText(plain),'formatted text matches the existing renderer exactly');await plain.close();
+  // The actual editor adopts shared tab motion and stable draft-row identities.
+  await page.waitForFunction(()=>document.querySelector('#edTabs .lm-motion-rail'));
+  await page.locator('#edTabs [data-pane="sched"]').click();await page.waitForTimeout(35);
+  assert.ok(await page.locator('#edTabs .lm-motion-rail').evaluate(node=>node.getAnimations().length)>0,'actual PF selected tab slides');
+  await page.locator('#edTabs [data-pane="gen"]').click();await page.waitForTimeout(220);await settled();
+  await page.locator('#btnAddLotMix').click();await page.waitForTimeout(35);
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),2);
+  assert.ok(await page.locator('tr[data-kind="lotmix"]').last().evaluate(node=>node.getAnimations().length)>0,'new actual subform draft has an entry/highlight');
+  await page.locator('tr[data-kind="lotmix"] .rowdel').last().click();
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1,'original removal handler remains immediate');
+  await page.waitForTimeout(260);await settled();
   // The reported regression uses a number input in a subform, typed one key
   // at a time. A bulk paste never exercised its transient loss/unknown states.
   const lotPrice=page.locator('input[data-ik="Price_LF"]');

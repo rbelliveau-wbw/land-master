@@ -36,12 +36,12 @@ const server=http.createServer((req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:'chrome'}),errors=[];
 const page=await browser.newPage({viewport:{width:1540,height:1000}});page.setDefaultTimeout(10000);
-page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='warning'&&m.text().includes('Number transitions:'))errors.push(m.text());});
+page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='warning'&&(m.text().includes('Number transitions:')||m.text().includes('Interaction motion unavailable')))errors.push(m.text());});
 await page.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));
 const url='http://127.0.0.1:'+server.address().port;
 const settle=()=>page.waitForFunction(()=>!document.querySelector('.lm-number-changing'));
-const go=async widget=>{await page.goto(url+'/'+widget+'/');await page.waitForFunction(()=>window.__NUM_ALL__&&window.__numberTransitions);};
-const flush=()=>page.evaluate(()=>__numberTransitions.flush());
+const go=async widget=>{await page.goto(url+'/'+widget+'/');await page.waitForFunction(()=>window.__NUM_ALL__&&window.__numberTransitions&&window.__interactionMotion);};
+const flush=()=>page.evaluate(()=>{__numberTransitions.flush();__interactionMotion.flush();});
 async function changed(selector,message){await page.waitForFunction(selector=>!!document.querySelector(selector+' .lm-number-changing'),selector);assert.ok(await page.locator(selector+' [data-lm-number-key]').count()>0,message);}
 async function screenshot(widget,selector){await page.locator(selector).evaluate(node=>{for(let current=node;current&&current!==document.body;current=current.parentElement){current.hidden=false;if(getComputedStyle(current).display==='none')current.style.setProperty('display','block','important');}});await page.locator(selector).screenshot({path:path.join(output,widget+'.png')});}
 try{

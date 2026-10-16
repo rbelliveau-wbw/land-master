@@ -19,6 +19,7 @@
   function show(message, options) {
     if (!message) return;
     clear(); var el = mount(); el.querySelector('span').textContent = String(message); el.hidden = false;
+    if(root.LMMotion)root.LMMotion.animate(el,[{opacity:.4},{opacity:1}],160);
     timer = root.setTimeout(hide, options && options.durationMs || 3500);
   }
   function begin(key) {

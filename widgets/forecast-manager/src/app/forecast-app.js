@@ -343,7 +343,7 @@
   $('matrix').addEventListener('focusout',event=>{const input=event.target,entry=S.entries.get(input.dataset.forecast);if(S.view==='outlook'&&input.dataset.forecast&&input.value==='0'&&(!entry||entry.phase==='saved'))input.value='';});
   $('matrix').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('matrix').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...document.querySelectorAll('[data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
-  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',load);$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
+  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{const before=S.snapshot,sub=S.sub;return window.LMMotion?LMMotion.refresh($('workspace'),load,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before}):load();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
   $('dialogClose').addEventListener('click',closeDialog);$('dialogCancel').addEventListener('click',closeDialog);$('dialogAction').addEventListener('click',()=>{if(S.dialog&&S.dialog.action&&!$('dialogAction').disabled)S.dialog.action();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){if(S.picker){const anchor=S.picker.anchor;closePicker();anchor.focus();}else if(S.dialog){event.preventDefault();closeDialog();}return;}
@@ -366,5 +366,6 @@
   }
   window.ForecastApp=Object.freeze({decode});
   ForecastBuilderActions.connect({S,esc,name,busy,changed,creationReview,openDialog,closeDialog,openPicker,request,applySnapshot,render,controls,patch,notice});
+  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("forecast-manager",{state:()=>S,ready:()=>S.ready,actor:()=>({sub:S.sub,user:LMRuntime.current().user})});
   boot();
 })();

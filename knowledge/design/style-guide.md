@@ -12,6 +12,12 @@ Input-driven numeric displays use the selected [Sliding push transition](number-
 All ten widgets adopt the pattern for applicable displayed quantities. The
 focused guide, inventory and module documentation record coverage and exclusions.
 
+All new and revised interactive features also follow
+[Interaction motion](interaction-motion.md): moving tab selection, smooth
+disclosures and keyed rows, authorized refresh continuity, truthful inline
+save feedback, consistent overlays, changed-row highlights and actual progress
+meter transitions. Reuse the shared implementation across every module.
+
 Data Insights keeps branding, connection status, Refresh and Diagnostics in the
 sidebar, reclaiming the full-width shell header for report height. Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid

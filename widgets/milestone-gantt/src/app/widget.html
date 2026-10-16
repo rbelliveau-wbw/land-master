@@ -7,8 +7,8 @@
   <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
   <script src="runtime-context.js"></script>
   <script src="creator-data.js"></script>
-  <script src="gantt-controller.js?v=1.1.14"></script>
-  <link rel="stylesheet" href="gantt-save.css?v=1.1.14">
+  <script src="gantt-controller.js?v=1.1.15"></script>
+  <link rel="stylesheet" href="gantt-save.css?v=1.1.15">
   <script src="critical-error-reporter.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -661,11 +661,14 @@
       .status-pill{margin-top:10px;}
     }
   </style>
-<script src="success-feedback.js?v=1.1.14"></script>
-<script src="number-edit-commit.js?v=1.1.14"></script>
-<script src="number-transitions.js?v=1.1.14"></script>
-<script src="number-surfaces.js?v=1.1.14"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.1.14">
+<script src="success-feedback.js?v=1.1.15"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.1.15">
+<script src="interaction-motion.js?v=1.1.15"></script>
+<script src="interaction-surfaces.js?v=1.1.15"></script>
+<script src="number-edit-commit.js?v=1.1.15"></script>
+<script src="number-transitions.js?v=1.1.15"></script>
+<script src="number-surfaces.js?v=1.1.15"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.1.15">
 </head>
 <body>
 <div id="ganttApp">
@@ -747,7 +750,7 @@
   'use strict';
 
   var CONFIG = {
-    version: '1.1.14',
+    version: '1.1.15',
     customApis: { errorReport:'Report_Proforma_Widget_Error' },
     reports: {
       subdivisions: 'All_Subdivisions',
@@ -1603,6 +1606,7 @@
   start();
 /* Repository design: real keyed numeric values, presentation only. */
 if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("milestone-gantt",{state:function(){return state;},ready:function(){return !!(state.ready);},actor:function(){return state.perms||state.acc||null;}});
+if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("milestone-gantt",{state:function(){return state;},ready:function(){return !!(state.ready);},actor:function(){return state.perms||state.acc||null;}});
 
 })();
 </script>

@@ -325,6 +325,7 @@
     try {
       if (!host || !host.ownerDocument || typeof host.replaceChildren !== 'function') return false;
       const previous=global.ForecastNumbers ? ForecastNumbers.capture(host) : new Map();
+      const previousMeters=global.LMMotion ? LMMotion.captureMeters(host) : new Map();
       const model = parse(html), result = build(model, host.ownerDocument, inventory);
       const summaryScope=scope || model.name+'|'+(model.facts.find(row=>row.label==='Subdivision Code')?.value || '');
       const oldDisclosure=host.querySelector('.fs-disclosure');
@@ -342,8 +343,10 @@
       }
       const motionGroup=views.get(host)===signature ? motionGroups.get(host)||1 : (motionGroups.get(host)||0)+1;
       if(global.ForecastNumbers) ForecastNumbers.summary(result,scope,String(motionGroup));
+      result.querySelectorAll('.fs-month-fill,.fs-progress-track,.subdivision-card-progress-track>span').forEach((node,index)=>{node.dataset.lmMeterKey=JSON.stringify([summaryScope,motionGroup,index]);});
       host.replaceChildren(result);
       if(global.ForecastNumbers) ForecastNumbers.apply(host,previous);
+      if(global.LMMotion)LMMotion.applyMeters(host,previousMeters);
       views.set(host, signature);
       motionGroups.set(host,motionGroup);
       return true;

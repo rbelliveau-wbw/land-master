@@ -2,6 +2,11 @@
 
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
+Settings Manager 1.5.14 adopts [Interaction motion](interaction-motion.md) for
+its navigation, actual inline save feedback, curve rows and dialogs. Existing
+approval-step FLIP and pending/unknown-write controls remain authoritative.
+[Rollout and rollback](../../docs/interaction-motion-rollout-2026-10-16.md).
+
 Use this pattern for approvers, approval rules and route testing. Keep
 role membership separate from ordered approval steps. The Settings Manager
 implementation is [approval-admin.js](../../widgets/settings-manager/src/app/approval-admin.js).

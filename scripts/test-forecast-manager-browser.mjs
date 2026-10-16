@@ -14,7 +14,7 @@ const server=http.createServer((request,response)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:'chrome'}),page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];
-page.on('pageerror',error=>errors.push(error.message));page.setDefaultTimeout(15000);
+page.on('pageerror',error=>errors.push(error.message));page.on('console',message=>{if(message.type()==='warning'&&message.text().includes('Interaction motion unavailable'))errors.push(message.text());});page.setDefaultTimeout(15000);
 await page.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({contentType:'text/javascript',body:''}));
 await page.addInitScript(({summaryHtml})=>{
   const sub='90071992547409931',a='90071992547409961',b='90071992547409962';
@@ -225,6 +225,8 @@ try {
   assert.equal(await page.locator('#matrix thead th.current-month').getAttribute('data-month-start'),'2026-11-01','lavender follows the server month rollover');
   assert.equal(await page.locator('#matrix thead th.current-month .current-month-label').isVisible(),true);
   await page.locator('button[data-view="forecast"]').click();assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Forecast']);assert.equal(await page.locator('#matrix [data-basis]:not([data-basis="forecast"])').count(),0,'Forecast keeps only its green basis');
+  assert.equal(await page.locator('.segments .lm-motion-rail').count(),1,'actual Forecast view chooser adopts shared tab motion');
+  assert.ok(await page.locator('.fs-progress-track[data-lm-meter-key]').count()>0,'native schedule gradients have scoped motion identities');
   assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
   console.error(JSON.stringify({errors,notice:await page.locator('#notice').textContent(),status:await page.locator('#saveStatus').textContent(),state:await page.evaluate(()=>({init:window.__init,context:LMRuntime.current(),calls:window.__calls,app:typeof ForecastApp,model:typeof ForecastModel,runtime:typeof LMRuntime,creator:typeof ZOHO,promise:Promise.toString(),capture:LMRuntime.capture.toString(),initMethod:ZOHO.CREATOR.UTIL.getInitParams.toString()}))},null,2));

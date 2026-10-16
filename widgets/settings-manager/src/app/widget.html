@@ -8,8 +8,8 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="settings-controller.js"></script>
-<script src="approval-policy-domain.js?v=1.5.13"></script>
-<script src="approval-admin.js?v=1.5.13"></script>
+<script src="approval-policy-domain.js?v=1.5.14"></script>
+<script src="approval-admin.js?v=1.5.14"></script>
 <link rel="stylesheet" href="approval-admin.css">
 <script src="critical-error-reporter.js"></script>
 <style>
@@ -249,10 +249,13 @@ td input,td select{padding:5px 8px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
 <script src="success-feedback.js?v=1.4.2"></script>
-<script src="number-edit-commit.js?v=1.5.13"></script>
-<script src="number-transitions.js?v=1.5.13"></script>
-<script src="number-surfaces.js?v=1.5.13"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.5.13">
+<link rel="stylesheet" href="interaction-motion.css?v=1.5.14">
+<script src="interaction-motion.js?v=1.5.14"></script>
+<script src="interaction-surfaces.js?v=1.5.14"></script>
+<script src="number-edit-commit.js?v=1.5.14"></script>
+<script src="number-transitions.js?v=1.5.14"></script>
+<script src="number-surfaces.js?v=1.5.14"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.5.14">
 </head>
 <body>
 
@@ -286,7 +289,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.5.13";
+var SMW_VERSION = "1.5.14";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -1301,6 +1304,7 @@ boot();
 
 /* Repository design: real keyed numeric values, presentation only. */
 if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("settings-manager",{state:function(){return S;},ready:function(){return !!(S.ready);},actor:function(){return S.perms||S.acc||null;}});
+if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("settings-manager",{state:function(){return S;},ready:function(){return !!(S.ready);},actor:function(){return S.perms||S.acc||null;}});
 
 })();
 </script>

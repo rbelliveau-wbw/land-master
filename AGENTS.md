@@ -84,6 +84,14 @@ Keep exact attachment ID/parent/scope confirmation and unknown-reply recovery.
 
 ## Visual style context
 
+- User direction October 16, 2026: the approved eight-pattern
+  [Interaction motion](knowledge/design/interaction-motion.md) guide is mandatory
+  for all new features and applicable existing surfaces in every module. Use the
+  shared engine and explicit adoption registry; preserve native business timing,
+  permission/completeness gates, focus, field-exit numbers and reduced motion.
+  New tabs, disclosures, row editors, refreshes, save states, overlays and meters
+  must register the appropriate pattern rather than introduce another animation.
+
 - User direction October 15, 2026: **every guide in
   [knowledge/design/](knowledge/design/README.md) is a repository-wide design
   rule** for its applicable component or interaction in every existing and new

@@ -195,13 +195,13 @@
       const groupStats = closed ? M.stats(groupLots) : null;
       const groupMonths = closed ? bucketByMonth(groupLots, r.dateField) : null;
       const groupFirstSale = closed && state.historyReady ? rows.map(row => row.firstSale).filter(Boolean).sort()[0] || null : null;
-      html += '<tr class="territory' + (closed ? ' is-collapsed' : '') + '"><th scope="rowgroup" class="sticky"><button class="territory-toggle" data-group="' + esc(group) + '" aria-expanded="' + !closed + '"><span aria-hidden="true">' + (closed ? '▸' : '▾') + '</span>' + groupLabel + '</button>' + (closed ? '<small class="sales-group-count">' + groupCount + '</small>' : '') + '</th>' +
+      html += '<tr data-motion-row="' + esc('group:'+group) + '" class="territory' + (closed ? ' is-collapsed' : '') + '"><th scope="rowgroup" class="sticky"><button class="territory-toggle" data-group="' + esc(group) + '" aria-expanded="' + !closed + '"><span aria-hidden="true">' + (closed ? '▸' : '▾') + '</span>' + groupLabel + '</button>' + (closed ? '<small class="sales-group-count">' + groupCount + '</small>' : '') + '</th>' +
         (closed ? '<td class="identity">' + (state.historyReady ? dateLabel(groupFirstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(groupStats, ...groupScope) + '</td><td class="period-total">' + measure(groupStats, metric, ...groupScope) + '</td>' + months.map(month => '<td>' + measure(groupMonths.has(month) ? M.stats(groupMonths.get(month)) : null, metric, ...scope('group', r.groupBy, rows[0].groupId, month)) + '</td>').join('') : '<th colspan="' + (months.length + 3) + '">' + groupCount + '</th>') + '</tr>';
       if (!closed) rows.forEach(row => {
         const counts = allCounts?.get(row.id);
         const soldOut = counts && counts.total > 0 && counts.sold === counts.total;
         const badge = soldOut ? '<span class="sold-out-badge" title="Sold Out" aria-label="Sold Out"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '';
-        html += '<tr' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(row.stats, ...period('row', row.key)) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
+        html += '<tr data-motion-row="' + esc('row:'+row.key) + '"' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(row.stats, ...period('row', row.key)) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
       });
     });
     $('matrixBody').innerHTML = html;
@@ -551,5 +551,6 @@
     catch (error) { $('connection').textContent = 'Not connected'; log(error.message); InsightsShell.setAccess(null, 'Creator connection failed. Refresh to retry.'); notice(error.message, true); }
     finally { starting = false; $('refresh').disabled = false; }
   }
+  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("lot-sales-explorer",{state:()=>state,ready:()=>!!state.permissions?.lotSalesDashboard,actor:()=>state.permissions});
   start();
 })();

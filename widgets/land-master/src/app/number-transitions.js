@@ -11,7 +11,7 @@
     if(!host||!host.isConnected)return [];
     const signature=key(id,mode,context,host.textContent);
     const own=()=>[...host.querySelectorAll('[data-lm-number-key]')].filter(node=>node.dataset.lmNumberOwner===id);
-    if(host.__lmNumberSignature===signature){const nodes=own();if(nodes.length||!matches(host.textContent,mode).length)return nodes;}
+    if(host.__lmNumberSignature===signature){const nodes=own();if(nodes.length||!matches(host.textContent,mode).length&&!unknown(host.textContent))return nodes;}
     own().forEach(node=>node.replaceWith(document.createTextNode(node.dataset.lmNumberText)));
     host.normalize();const walker=document.createTreeWalker(host,NodeFilter.SHOW_TEXT),texts=[];
     while(walker.nextNode()){const node=walker.currentNode;if(!node.parentElement.closest('input,textarea,select,option,script,style,[contenteditable="true"],[data-lm-number-key]'))texts.push(node);}
