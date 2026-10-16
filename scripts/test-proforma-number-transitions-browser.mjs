@@ -103,12 +103,46 @@ try{
   await page.locator('#edTabs [data-pane="sched"]').click();await page.waitForTimeout(35);
   assert.ok(await page.locator('#edTabs .lm-motion-rail').evaluate(node=>node.getAnimations().length)>0,'actual PF selected tab slides');
   await page.locator('#edTabs [data-pane="gen"]').click();await page.waitForTimeout(220);await settled();
-  await page.locator('#btnAddLotMix').click();await page.waitForTimeout(35);
+  const rowResize=async(selector,action,label)=>{
+    const before=await page.locator(selector).evaluate(node=>({height:node.getBoundingClientRect().height,width:node.getBoundingClientRect().width}));
+    await action();await page.waitForTimeout(35);
+    const actual=await page.locator(selector).evaluate(node=>({height:node.getBoundingClientRect().height,width:node.getBoundingClientRect().width,frames:node.getAnimations().flatMap(animation=>animation.effect.getKeyframes()).filter(frame=>frame.height)}));
+    assert.ok(actual.frames.length>=2,label+' animates the actual list boundary, even without a following row');
+    assert.ok(Math.abs(parseFloat(actual.frames[0].height)-before.height)<.5,label+' starts from the previously visible boundary');
+    const target=parseFloat(actual.frames.at(-1).height);
+    assert.ok(Math.abs(actual.height-target)>.5,label+' has a visible intermediate height');
+    assert.ok(Math.abs(actual.width-before.width)<.5,label+' never shifts table width '+JSON.stringify({before,actual}));
+    await page.screenshot({path:path.join(output,label+'-motion.png')});
+    await page.waitForTimeout(280);
+    assert.ok(Math.abs((await page.locator(selector).evaluate(node=>node.getBoundingClientRect().height))-target)<.5,label+' releases to the natural final height');
+  };
+  await rowResize('.lotmix-wrap',()=>page.locator('#btnAddLotMix').click(),'lotmix-append');
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),2);
-  assert.ok(await page.locator('tr[data-kind="lotmix"]').last().evaluate(node=>node.getAnimations().length)>0,'new actual subform draft has an entry/highlight');
-  await page.locator('tr[data-kind="lotmix"] .rowdel').last().click();
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').last().locator('input').first().evaluate(node=>node===document.activeElement),true,'native Add still focuses the new lot-size editor');
+  assert.ok(await page.locator('tr[data-kind="lotmix"]').last().locator('td').first().evaluate(node=>node.getAnimations().length)>0,'inserted cell highlight remains visible above opaque table fills');
+  await rowResize('.lotmix-wrap',()=>page.locator('tr[data-kind="lotmix"] .rowdel').last().click(),'lotmix-remove-last');
   assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1,'original removal handler remains immediate');
-  await page.waitForTimeout(260);await settled();
+  await rowResize('.lotmix-wrap',()=>page.locator('tr[data-kind="lotmix"] .rowdel').click(),'lotmix-remove-only');
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),0);
+  await rowResize('.lotmix-wrap',()=>page.locator('#btnAddLotMix').click(),'lotmix-first');
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1);
+  await page.evaluate(()=>__PFW_TEST__.setPane('pid'));await page.waitForTimeout(250);
+  await rowResize('.pid-wrap',()=>page.locator('#btnAddPid').click(),'pid-first');
+  await rowResize('.pid-wrap',()=>page.locator('tr[data-kind="pid"] .rowdel').click(),'pid-remove-only');
+  await page.evaluate(()=>{__PFW_TEST__.setPane('loi');});await page.waitForTimeout(250);
+  await rowResize('[data-lm-row-list="loi-sellers"]',()=>page.locator('#btnLOIAddNewSellerRow').click(),'offer-seller-first');
+  await rowResize('[data-lm-row-list="loi-sellers"]',()=>page.locator('[data-loi-remove="new-seller"]').click(),'offer-seller-remove-only');
+  await rowResize('[data-lm-row-list="loi-properties"]',()=>page.locator('#btnLOIAddNewPropertyRow').click(),'offer-property-append');
+  await rowResize('[data-lm-row-list="loi-properties"]',()=>page.locator('[data-loi-remove="new-property"]').click(),'offer-property-remove-last');
+  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>__PFW_TEST__.setPane('gen'));await page.waitForTimeout(250);
+  await page.locator('tr[data-kind="lotmix"] .rowdel').click();await page.locator('#btnAddLotMix').click();await page.waitForTimeout(35);
+  assert.equal(await page.locator('.lotmix-wrap').evaluate(node=>node.getAnimations().length),0,'reduced motion applies the list boundary immediately');
+  await page.locator('#btnAddLotMix').click();
+  assert.equal(await page.locator('tr[data-kind="lotmix"]').count(),1,'native empty-draft duplicate guard remains intact');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  // Restart the inert fixture after destructive draft tests; do not fabricate
+  // derived model totals while preparing the financial field-exit scenarios.
+  await setup();await page.waitForTimeout(700);await settled();
   // The reported regression uses a number input in a subform, typed one key
   // at a time. A bulk paste never exercised its transient loss/unknown states.
   const lotPrice=page.locator('input[data-ik="Price_LF"]');

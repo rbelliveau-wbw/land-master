@@ -8,22 +8,22 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.118"></script>
-<script src="pf-save-audit.js?v=1.80.118"></script>
-<script src="pf-progress.js?v=1.80.118"></script>
+<script src="pf-save-verification.js?v=1.80.119"></script>
+<script src="pf-save-audit.js?v=1.80.119"></script>
+<script src="pf-progress.js?v=1.80.119"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.118">
-<script src="interaction-motion.js?v=1.80.118"></script>
-<script src="interaction-surfaces.js?v=1.80.118"></script>
-<script src="number-edit-commit.js?v=1.80.118"></script>
-<script src="number-transitions.js?v=1.80.118"></script>
-<script src="number-views.js?v=1.80.118"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.118">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.119">
+<script src="interaction-motion.js?v=1.80.119"></script>
+<script src="interaction-surfaces.js?v=1.80.119"></script>
+<script src="number-edit-commit.js?v=1.80.119"></script>
+<script src="number-transitions.js?v=1.80.119"></script>
+<script src="number-views.js?v=1.80.119"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.119">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.118"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.118">
-<script src="comments.js?v=1.80.118"></script>
+<script src="budget-transfer-ui.js?v=1.80.119"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.119">
+<script src="comments.js?v=1.80.119"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -1841,7 +1841,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.118"></script>
+<script src="success-feedback.js?v=1.80.119"></script>
 </head>
 <body>
 
@@ -2256,7 +2256,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.118";
+var PFW_VERSION="1.80.119";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -9620,13 +9620,13 @@ function paneLOI(){
     +head("sellers",2,"Sellers","",sellerMissing,(l.sellerIds.length+pendSellers.length)+" added","Sellers added")
     +'<div class="sect-body'+(st.sellers?' loi-collapsed':'')+'" data-loi-body="sellers">'
     +'<div class="loi-addbar"><input class="loi-pick" id="loiAddSellerSelect" data-combo="seller" placeholder="Search existing Sellers\u2026" autocomplete="off"'+loiDisabled+'/><button type="button" class="btn primary" id="btnLOIAddSeller" disabled>+ Add Existing Seller</button><button type="button" class="btn secondary-add" id="btnLOIAddNewSellerRow"'+loiDisabled+'>+ New Seller Row</button>'+(sellerAdd.length?'':'<span class="loi-addbar-hint">'+(sellers.length?'All existing Sellers are already on this LOI':'No Builder records have Type = Seller yet — use <b>+ New Seller Row</b>')+'</span>')+'</div>'
-    +'<div class="sub-wrap loi-table-wrap"><table class="sub loi-sellers loi-data-table"><thead><tr><th>Seller</th><th>Email</th><th>Phone</th><th>Street Address</th><th>City, State ZIP</th><th></th></tr></thead><tbody>'+sellerRows+'</tbody></table></div>'
+    +'<div class="sub-wrap loi-table-wrap" data-lm-row-list="loi-sellers"><table class="sub loi-sellers loi-data-table"><thead><tr><th>Seller</th><th>Email</th><th>Phone</th><th>Street Address</th><th>City, State ZIP</th><th></th></tr></thead><tbody>'+sellerRows+'</tbody></table></div>'
     +'</div>'
     +head("properties",3,"Properties","",propMissing,(l.propertyIds.length+pendProps.length)+" added","Properties added")
     +'<div class="sect-body'+(st.properties?' loi-collapsed':'')+'" data-loi-body="properties">'
     +'<div class="loi-note"><b>One parcel per row.</b> Enter a single CAD / Property ID on each Property row.</div>'
     +'<div class="loi-addbar"><input class="loi-pick" id="loiAddPropertySelect" data-combo="property" placeholder="Search existing Properties\u2026" autocomplete="off"'+loiDisabled+'/><button type="button" class="btn primary" id="btnLOIAddProperty" disabled>+ Add Existing Property</button><button type="button" class="btn secondary-add" id="btnLOIAddNewPropertyRow"'+loiDisabled+'>+ New Property Row</button>'+(propertyAdd.length?'':'<span class="loi-addbar-hint">'+(properties.length?'All existing Properties are already on this LOI':'No Property records found — use <b>+ New Property Row</b>')+'</span>')+'</div>'
-    +'<div class="sub-wrap loi-table-wrap"><table class="sub loi-props loi-data-table"><thead><tr><th>Property</th><th>CAD / Property ID</th><th>County</th><th>City</th><th>Acres</th><th>TerraVault URL</th><th>Seller</th><th></th></tr></thead><tbody>'+propertyRows+'</tbody></table></div>'
+    +'<div class="sub-wrap loi-table-wrap" data-lm-row-list="loi-properties"><table class="sub loi-props loi-data-table"><thead><tr><th>Property</th><th>CAD / Property ID</th><th>County</th><th>City</th><th>Acres</th><th>TerraVault URL</th><th>Seller</th><th></th></tr></thead><tbody>'+propertyRows+'</tbody></table></div>'
     +'</div>';
 }
 /* Sum of every Property on the LOI - saved rows and rows staged for creation alike -
@@ -10109,7 +10109,7 @@ function instGrid(kind){
       +'<td style="width:130px"><input class="num money editable-outline" data-ik="Cost" inputmode="decimal" value="'+esc(inFmt$(r.Cost))+'"/></td>'
       +'<td style="width:110px"><input readonly value="'+esc(ymShort(parseDateAny(r.Date1)))+'"/></td></tr>';
   }).join("");
-  return '<div class="sub-wrap fit"><table class="sub"><thead><tr><th>Month</th><th>%</th><th>Amount</th><th>Date</th></tr></thead><tbody>'
+  return '<div class="sub-wrap fit" data-lm-row-list="'+kind+'"><table class="sub"><thead><tr><th>Month</th><th>%</th><th>Amount</th><th>Date</th></tr></thead><tbody>'
     +(rows||'<tr><td colspan="4" style="color:var(--faint);padding:12px">No installments</td></tr>')+'</tbody></table></div>';
 }
 function refreshFinancialRowGuidance(tr,r,kind){
@@ -10132,7 +10132,7 @@ function lotMixGrid(){
       +'<td style="width:130px"><input readonly data-mixprice="'+i+'" aria-label="Calculated lot price, row '+(i+1)+'" value="'+esc(lotMixRowPrice(r))+'"/></td>'
       +'<td class="row-action-cell" style="width:38px"><button type="button" class="rowdel" data-del="1" title="Remove lot type" aria-label="Remove lot type, row '+(i+1)+'"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4l12 12M16 4L4 16"/></svg></button></td></tr>';
   }).join("");
-  return '<div class="sub-wrap fit lotmix-wrap"><table class="sub lotmix-table"><thead><tr><th>Lot Size (Ft)</th><th>Lot Count</th><th>Lot Price $/LF</th><th>Lot Price $</th><th></th></tr></thead><tbody id="lotMixBody">'
+  return '<div class="sub-wrap fit lotmix-wrap" data-lm-row-list="lotmix"><table class="sub lotmix-table"><colgroup><col style="width:110px"><col style="width:110px"><col style="width:130px"><col style="width:130px"><col style="width:38px"></colgroup><thead><tr><th>Lot Size (Ft)</th><th>Lot Count</th><th>Lot Price $/LF</th><th>Lot Price $</th><th></th></tr></thead><tbody id="lotMixBody">'
     +rows+'</tbody></table><div class="lotmix-toolbar"><button type="button" class="lotmix-add" id="btnAddLotMix" aria-label="Add lot type"><span class="lotmix-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add</button></div></div>';
 }
 function addLotMixRow(){
@@ -10183,7 +10183,7 @@ function panePid(){
       +'<td class="row-action-cell" style="width:38px"><button type="button" class="rowdel" data-del="1" title="Remove PID/MUD payment" aria-label="Remove PID/MUD payment, row '+(i+1)+'"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4l12 12M16 4L4 16"/></svg></button></td></tr>';
   }).join("");
   return '<div class="sect-head">PID / MUD Reimbursements</div><div class="sect-body">'
-    +'<div class="sub-wrap fit pid-wrap"><table class="sub pid-table"><thead><tr><th>Month</th><th>Amount</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody id="pidBody">'
+    +'<div class="sub-wrap fit pid-wrap" data-lm-row-list="pid"><table class="sub pid-table"><colgroup><col style="width:84px"><col style="width:140px"><col style="width:96px"><col style="width:110px"><col style="width:38px"></colgroup><thead><tr><th>Month</th><th>Amount</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody id="pidBody">'
     +(rows||'<tr><td colspan="5" style="color:var(--faint);padding:12px">No PID/MUD payments</td></tr>')+'</tbody></table>'
     +'<div class="pid-toolbar"><button type="button" class="pid-add" id="btnAddPid" aria-label="Add PID/MUD payment"><span class="pid-add-icon" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="M10 4v12M4 10h12"/></svg></span>Add</button></div></div>'
     +'<div class="hint" style="color:var(--muted)"></div></div>';
@@ -10308,7 +10308,7 @@ function paneAddl(){
     +'<div class="searchbox addl-search"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>'
     +'<input id="addlSearch" placeholder="Search items or cost codes…" value="'+esc(S.ed.addlSearch||"")+'"/></div>'
     +'<button type="button" class="addl-hide-empty'+(S.ed.addlHideEmpty?' on':'')+'" data-addl-hide-empty="1" role="switch" aria-checked="'+(S.ed.addlHideEmpty?'true':'false')+'" title="Show only items that already have an Add\'l Cost"><span class="tgl" aria-hidden="true"></span>Hide Empty</button></div>'
-    +'<div class="sub-wrap"><table class="sub items"><thead>'+head+'</thead>'
+    +'<div class="sub-wrap" data-lm-row-list="items"><table class="sub items"><thead>'+head+'</thead>'
     +'<tbody>'+(rowsHtml||'<tr><td colspan="'+nCols+'" style="color:var(--faint);padding:12px">No items</td></tr>')+'</tbody></table></div>'
     +'<div class="hint" style="color:var(--muted)">Enter an <b>Add\'l Cost</b> first — that unlocks Cost Application, which then reveals either the phase range or, for <b>Specific Months</b>, the month range. Impact Fees reimbursements spread evenly over lot-sale months automatically.</div></div>';
 }
@@ -10332,7 +10332,7 @@ function paneCurve(){
   var tot=m.curve.reduce(function(s,r){return s+num(r.Percent_Cost);},0);
   var ok=Math.abs(tot-100)<0.01;
   return '<div class="sect-head">Construction Curve</div><div class="sect-body">'
-    +'<div class="sub-wrap fit"><table class="sub"><thead><tr><th>Month #</th><th>% of Cost</th></tr></thead><tbody>'
+    +'<div class="sub-wrap fit" data-lm-row-list="curve"><table class="sub"><thead><tr><th>Month #</th><th>% of Cost</th></tr></thead><tbody>'
     +(rows||'<tr><td colspan="2" style="color:var(--faint);padding:12px">No curve rows</td></tr>')+'</tbody></table></div>'
     +'<div style="clear:both;height:0"></div><div class="curve-total '+(ok?"ok":"bad")+'" id="curveTotal" style="display:flex;width:max-content">Total: '+fmtPct(tot,2)+(ok?" ✓":" — must equal 100%")+'</div>'
     +'<div class="hint" style="color:var(--muted);margin-top:6px">Each construction phase spends its base + add\'l cost along this monthly curve. Changing Construction Length on the Project Schedule tab repopulates it from your saved templates.</div></div>';

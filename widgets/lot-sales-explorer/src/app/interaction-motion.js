@@ -87,7 +87,7 @@
     }
     function lists(config,index,next){
       for(const host of root.querySelectorAll(config.selector)){
-        const scope=typeof config.scope==='function'?config.scope(host):config.scope||'',id=key(index,scope,host.id||config.selector);
+        const scope=typeof config.scope==='function'?config.scope(host):config.scope||'',id=key(index,scope,config.hostKey?.(host)||host.id||config.selector);
         const rows=[...host.querySelectorAll(config.rows)].filter(node=>!config.accept||config.accept(node));
         // Large reports use a bounded surface fade, never thousands of layout reads.
         if(rows.length>(config.limit||100)){
@@ -104,16 +104,37 @@
           samples.set(rowKey,{node:row,top:rect.top,left:rect.left,height:rect.height});
         }
         for(const duplicate of duplicates)samples.delete(duplicate);
-        const old=previousLists.get(id);
+        const old=previousLists.get(id),open=visible(host);
+        const changed=!!old?.samples&&(old.samples.size!==samples.size||[...samples.keys()].some(rowKey=>!old.samples.has(rowKey)));
+        // A bottom-row removal has no following row to FLIP. Animate the real
+        // list boundary too, including first insertion and removal to empty.
+        // The native model/DOM change and focus happen immediately; no editor
+        // is cloned and no placeholder is inserted into the live collection.
+        if(config.resize&&changed&&open)cancel(host);
+        const height=config.resize&&open?host.getBoundingClientRect().height:null;
         // Only intentional navigation/structural edits move rows; typing calculations do not.
         if(primed&&intent>now()&&structural&&old?.samples){
           for(const [rowKey,sample] of samples){
             const before=old.samples.get(rowKey);
             if(before){const delta=before.top-sample.top;if(Math.abs(delta)>.5&&Math.abs(delta)<1200)run(sample.node,[{transform:'translateY('+delta+'px)'},{transform:'translateY(0)'}],230);}
-            else if(old.samples.size){run(sample.node,[{opacity:.6,backgroundColor:config.highlight===false?'transparent':'rgba(37,99,235,.12)'},{opacity:1,backgroundColor:'rgba(37,99,235,0)'}],300);}
+            else if(old.open){
+              const from={opacity:.35,transform:'translateY(-6px)'},to={opacity:1,transform:'translateY(0)'};
+              if(config.highlight!==false&&!sample.node.matches('tr')){from.backgroundColor='rgba(37,99,235,.16)';to.backgroundColor='rgba(37,99,235,0)';}
+              run(sample.node,[from,to],230);
+              if(config.highlight!==false){
+                // PF table cells have opaque fills; a TR background is hidden
+                // beneath them. Wash the actual cells without touching inputs.
+                const cells=sample.node.matches('tr')?[...sample.node.children]:[];
+                for(const cell of cells)run(cell,[{boxShadow:'inset 0 0 0 9999px rgba(37,99,235,.16)'},{boxShadow:'inset 0 0 0 9999px rgba(37,99,235,0)'}],650);
+              }
+            }
+          }
+          if(config.resize&&changed&&old.open&&height!==null&&Math.abs(old.height-height)>.5&&Math.abs(old.height-height)<1200){
+            const overflowX=host.scrollWidth>host.clientWidth+1?'scroll':'hidden';
+            run(host,[{height:old.height+'px',boxSizing:'border-box',overflowX,overflowY:'hidden'},{height:height+'px',boxSizing:'border-box',overflowX,overflowY:'hidden'}],230);
           }
         }
-        next.set(id,{samples});
+        next.set(id,{samples,open,height});
       }
     }
     function surfaces(config,index,next){
@@ -200,13 +221,17 @@
       }
     }
     function before(event){
+      if(event.type==='input'){
+        if(event.target.matches?.('textarea,[contenteditable="true"],input:not([type="checkbox"]):not([type="radio"]):not([type="range"])'))intent=0;
+        return;
+      }
       dismissCapture(event);
       if(event.type==='keydown'&&!['Enter',' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Delete'].includes(event.key))return;
       if(event.target.closest?.('textarea,[contenteditable="true"],input:not([type="checkbox"]):not([type="radio"]):not([type="range"])'))return;
       // Read before the original handler, without canceling or delaying it.
       intent=now()+15000;if(frame)cancelAnimationFrame(frame);flush();
     }
-    const events=['pointerdown','click','change','drop','keydown'];events.forEach(type=>root.addEventListener(type,before,true));
+    const events=['pointerdown','click','change','drop','keydown','input'];events.forEach(type=>root.addEventListener(type,before,true));
     function reduced(){if(media.matches)for(const node of tracked)cancel(node);schedule();}
     media?.addEventListener?.('change',reduced);watch();schedule();
     return Object.freeze({flush,reset,stop(){stopped=true;reset();observer.disconnect();resize?.disconnect();cancelAnimationFrame(frame);events.forEach(type=>root.removeEventListener(type,before,true));media?.removeEventListener?.('change',reduced);for(const [nav,rail]of rails){rail.node.remove();nav.classList.remove('lm-motion-tabs');nav.querySelectorAll('.lm-motion-tab-item').forEach(node=>node.classList.remove('lm-motion-tab-item','lm-motion-selected'));}rails.clear();}});

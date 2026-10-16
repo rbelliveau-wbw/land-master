@@ -26,7 +26,7 @@ try{
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!surface.hidden&&!lockClose)$('close').onclick();});
   refresh.onclick=()=>{window.reads=(window.reads||0)+1;LMMotion.refresh(frame,()=>new Promise(resolve=>{window.finishRefresh=()=>{paneA.textContent='Fresh complete report';resolve();};}));};
   nativeClose.onclick=()=>native.close();
-  window.motion=LMMotion.start({module:'fixture',ready:()=>ready,actor:()=>actor,tabs:[{selector:'#tabs',items:'button',panel:'#frame'}],panels:[{selector:'#paneA,#paneB'}],lists:[{selector:'#rows',rows:'[data-id]',key:node=>node.dataset.id}],surfaces:[{selector:'#surface,dialog'}],feedback:[{selector:'#feedback',state:node=>node.dataset.state,verified:node=>node.dataset.state==='verified',row:'[data-id]'}],meters:['#fill']});
+  window.motion=LMMotion.start({module:'fixture',ready:()=>ready,actor:()=>actor,tabs:[{selector:'#tabs',items:'button',panel:'#frame'}],panels:[{selector:'#paneA,#paneB'}],lists:[{selector:'#rows',rows:'[data-id]',key:node=>node.dataset.id,resize:true}],surfaces:[{selector:'#surface,dialog'}],feedback:[{selector:'#feedback',state:node=>node.dataset.state,verified:node=>node.dataset.state==='verified',row:'[data-id]'}],meters:['#fill']});
  });
  await page.waitForTimeout(80);
  assert.equal(await page.locator('.lm-motion-rail').count(),1);
@@ -43,10 +43,16 @@ try{
  assert.ok(await page.locator('#disclosure').evaluate(node=>node.offsetHeight)<expanded);
  await page.locator('#add').click();await page.waitForTimeout(35);assert.equal(await page.locator('[data-id]').count(),3);
  assert.ok(await page.locator('[data-id=a]').evaluate(node=>node.getAnimations().length)>0,'surviving row slides after insertion');
+ assert.ok(await page.locator('#rows').evaluate(node=>node.getAnimations().some(animation=>animation.effect.getKeyframes().some(frame=>frame.height))),'the inserted row also expands the real list boundary');
  await page.waitForTimeout(320);await page.locator('#reorder').click();await page.waitForTimeout(35);
  assert.ok(await page.locator('[data-id=a]').evaluate(node=>node.getAnimations().length)>0,'reordered row moves');
  assert.equal(await page.locator('[data-id=a] input').inputValue(),'1.23456789','precise native editor stays mounted');
- await page.waitForTimeout(260);await page.locator('#delete').click();assert.equal(await page.locator('[data-id]').count(),2,'native deletion happens immediately');await page.waitForTimeout(260);
+ await page.waitForTimeout(260);await page.locator('#delete').click();assert.equal(await page.locator('[data-id]').count(),2,'native deletion happens immediately');await page.waitForTimeout(35);
+ assert.ok(await page.locator('#rows').evaluate(node=>node.getAnimations().some(animation=>animation.effect.getKeyframes().some(frame=>frame.height))),'native deletion visibly contracts the real list boundary');await page.waitForTimeout(260);
+ // Interrupt an expansion with deletion: height must release to real layout,
+ // without retaining an inline height, extra row or delayed native mutation.
+ await page.locator('#add').click();await page.waitForTimeout(35);await page.locator('#delete').click();await page.waitForTimeout(280);
+ assert.equal(await page.locator('[data-id]').count(),2);assert.equal(await page.locator('#rows').evaluate(node=>node.style.height),'');
  await page.locator('#refresh').click();assert.equal(await page.locator('#paneA').textContent(),'Existing report');assert.equal(await page.locator('#frame').getAttribute('aria-busy'),'true');assert.equal(await page.evaluate(()=>reads),1);
  await page.evaluate(()=>finishRefresh());await page.waitForTimeout(35);assert.equal(await page.locator('#paneA').textContent(),'Fresh complete report');assert.equal(await page.locator('#frame').getAttribute('aria-busy'),null);
  await page.evaluate(async()=>{const host=document.getElementById('frame');let a,b;const one=LMMotion.refresh(host,()=>new Promise(resolve=>a=resolve)),two=LMMotion.refresh(host,()=>new Promise(resolve=>b=resolve));b();await two;if(host.getAttribute('aria-busy')!=='true')throw Error('earlier refresh is still pending');a();await one;if(host.hasAttribute('aria-busy'))throw Error('overlapping refresh left busy');});

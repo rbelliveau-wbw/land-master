@@ -12,7 +12,7 @@ their existing 420ms/16px Sliding push and field-exit contract.
 | --- | --- |
 | Tabs and view changes | A shared selection pill moves to the real active control in about 190ms. Pane content settles with a short fade; retain the frame, focus and intended scroll position. Preserve an existing moving slider rather than adding a second one. |
 | Expand/collapse | Native disclosures reveal and close smoothly in about 200ms; custom chevrons rotate. Table groups use keyed row movement/reveal inside their existing scroller. Labels and expanded state update immediately. |
-| Adding, removing or reordering rows | Surviving rows move into their real new positions in about 230ms. New rows ease in and receive a soft highlight. Key persisted rows by string record ID and drafts by stable object identity, never array position. Preserve existing Legal/Settings/takedown FLIP implementations. |
+| Adding, removing or reordering rows | Surviving rows move into their real new positions in about 230ms. Editable subform boundaries expand/contract over the same interval, including first insertion, bottom-row removal and removal to empty. New rows ease in and receive a soft highlight above their actual cell fills. An opacity-only insertion and instant last-row deletion do not satisfy this rule. Key persisted rows by string record ID and drafts by stable object identity, never array position. Preserve existing Legal/Settings/takedown FLIP implementations. |
 | Refresh without blanking | Keep the current complete, authorized report mounted while a refresh is pending wherever the existing access/identity guards permit it. Use the existing truthful loading state and settle the completed replacement in about 160ms. Never clear a view solely for a spinner. |
 | Inline save feedback | The actual pending, verified, error and unknown states transition in place in about 150ms. Keep existing inline checks and the shared black success popup. A save is successful only when its existing native success predicate says so. |
 | Dialogs, drawers and popovers | Open the real anchored surface with a short fade; dismiss it without delaying the handler or focus restoration. Native dialogs use discrete display/overlay transitions. A small authorized user-dismissed legacy surface may leave an inert, inaccessible 140ms exit visual. |
@@ -46,6 +46,13 @@ New feature registration:
   the adoption registry. Configure visible row identity from the actual model.
   Read the old layout before the original handler and play after it; do not
   intercept, clone or replace live editors. Keep originals mounted when possible.
+- For editable subforms register each actual table wrapper separately with a
+  stable `hostKey` and `resize:true`. PF uses `data-lm-row-list` to identify
+  lot pricing, PID/MUD, installments, curves, costs and Offer lists. Keep widths
+  stable when the list becomes empty, preserve real horizontal scrolling, and
+  release the animated height back to native layout. No spacer records, retained
+  removed inputs or delayed model/delete operations. Hidden/initial/unrelated
+  lists stay still; reduced motion applies the final boundary immediately.
 - `LMMotion.refresh(host, action, {allowed, completed})` starts `action`
   immediately, marks only the host busy and settles a real completed update.
   The action retains ownership of data, errors and access checks. It must not
@@ -85,5 +92,8 @@ module renderers. Cover repeated/rapid tabs, row add/remove/reorder and draft
 identity, expanded groups, retained refresh data and errors, pending/verified/
 unknown feedback, focus after dismissal, inaccessible sanitized exit visuals,
 actor resets, native progress stops, reduced motion and bounded large reports.
+Row checks must prove an intermediate boundary and settled natural layout for
+append, last/only-row removal, empty-to-first and rapid opposite actions. Merely
+finding an Animation object does not prove the interaction is visibly complete.
 Rerun the numeric, Pro Forma, Insights geometry/performance and Forecast suites.
 Release notes must record actual coverage, remaining native exceptions and rollback.

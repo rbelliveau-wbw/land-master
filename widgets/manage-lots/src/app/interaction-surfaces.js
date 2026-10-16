@@ -20,11 +20,12 @@
       tab('.ps-nav','[data-ps-select]',null,{rail:false});
       panels.push({selector:'#vList,#vEdit,#vDash,.ed-pane'});
       list('#listBody','tr[data-id]',row=>row.dataset.id,()=>state().view||'list');
-      list('#edPanes','tr[data-kind]',row=>{
+      list('#edPanes [data-lm-row-list]','tbody>tr',row=>{
         const kind=row.dataset.kind,index=Number(row.dataset.i),model=state().ed?.model;
+        if(!kind){const input=row.querySelector('[data-loi-seller],[data-loi-new-seller],[data-loi-property],[data-loi-new-property]');if(!input)return null;const data=input.dataset;return M.key('loi',data.loiSeller||data.loiNewSeller||data.loiProperty||data.loiNewProperty);}
         const source=kind==='lotmix'?model?.lotMix:kind==='item'?model?.items:kind==='pid'?model?.pidMud:kind==='curve'?model?.curve:kind==='purchase'?model?.purchaseInstallments:kind==='sale'?model?.saleInstallments:model?.[kind];
         return source?.[index]?M.key(kind,M.identity(source[index])):null;
-      },recordScope);
+      },()=>M.key(recordScope(),state().ed?.pane,state().ed?.addlTab),{hostKey:host=>host.dataset.lmRowList,resize:true});
       surfaceExtra.push('.mo-box,.air-box,.msel-pop,.pfm-month-popover,.addl-note-pop');
       status('.pf-appr-config-tile','.pf-appr-config-tile',node=>node.dataset.apprKey||node.id||M.identity(node));
       meters.push('#ovBar');

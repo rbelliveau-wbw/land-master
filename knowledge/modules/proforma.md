@@ -1,3 +1,12 @@
+## Visible subform row boundaries — 1.80.119, October 16, 2026
+
+Lot Pricing, PID/MUD and Offer lists now expand/contract their actual wrappers,
+including first insertion and last/only-row removal. Cell highlights remain
+visible above table fills; fixed column definitions keep empty lists the same
+width. Native draft changes, focus and field-exit calculations remain immediate
+and unchanged. Other keyed subforms share the wrapper registration.
+[Fix, regression checks, contracts and rollback](../../docs/proforma-row-motion-fix-2026-10-16.md).
+
 ## Shared interaction motion — 1.80.118, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save
