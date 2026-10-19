@@ -12,7 +12,7 @@ const fields = [
   ['Edit_All_Approvals', 'apprAll'], ['Edit_Owned_Approvals', 'apprOwned'],
   ['Send_for_Approvals', 'send'], ['Edit_Budget_Owners', 'editOwners'],
   ['View_Budget_Import_Items', 'viewImports'], ['Edit_Budget_Import_Items', 'editImports'],
-  ['Edit_Delete_All_Modifications', 'modAdmin'], ['Delete_Archive_Budgets', 'budgetDeleteArchive'],
+  ['Edit_All_Budgets', 'modAdmin'], ['Delete_Archive_Budgets', 'budgetDeleteArchive'],
   ['Lot_Sales_Dashboard', 'lotSalesDashboard'], ['View_Total_Lot_Revenue', 'viewTotalLotRevenue'],
   ['Edit_All_Proformas', 'pfEditAll'], ['Edit_Owned_Proformas', 'pfEditOwned'],
   ['Edit_Construction_Curve', 'pfEditCurve'], ['VP_Compensation_Tab', 'pfVpCompTab'],
@@ -97,7 +97,7 @@ assert.equal(assertParity(null).lean.value.myId, actor.ID, 'Null user preserves 
 for (const [field, flag] of fields) {
   const value = assertParity('fixture_owner', [{...actor, [field]: true}, roster[1]]).lean.value;
   assert.equal(value[flag], true, `${field} grants only its existing corresponding flag.`);
-  for (const [, other] of fields) if (other !== flag) assert.equal(value[other], false, `${field} must not grant ${other}.`);
+  for (const [otherField, other] of fields) if (otherField !== field) assert.equal(value[other], false, `${field} must not grant ${other}.`);
 }
 const nullable = {...actor};
 for (const [field] of fields) nullable[field] = null;
@@ -120,4 +120,5 @@ const manyForms = Array.from({length: 4000}, (_, i) => ({ID: `fixture-pf-${i}`, 
 const large = assertParity('fixture_owner', roster, 'fixture_owner', manyForms);
 assert.ok(large.lean.raw.length < large.full.raw.length / 10, 'Lean payload excludes the large PF owner inventory.');
 assert.deepEqual(large.lean.value, assertParity('fixture_owner').lean.value, 'Unrelated PF inventory cannot affect lean permission results.');
+assert.equal(assertParity('fixture_owner', [{...actor,Edit_Delete_All_Modifications:true,Edit_All_Budgets:false}]).lean.value.modAdmin,false,'Retired modification grant never authorizes admin access');
 console.log('PASS: lean/full flag and additive username/email/full-name roster parity; preserved legacy roster keys/order/duplicates; missing/null/blank/unicode names; exact DEV alias; string IDs; read-only execution; no PF scan regardless of inventory.');

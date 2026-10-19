@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.55"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.56"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.55"></script>
-<script src="po-grid.js?v=122.29.55"></script>
-<script src="po-controller.js?v=122.29.55"></script>
-<script src="po-progress.js?v=122.29.55"></script>
-<script src="po-ui.js?v=122.29.55"></script>
-<script src="request-attachments.js?v=122.29.55"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.55">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.55">
+<script src="po-domain.js?v=122.29.56"></script>
+<script src="po-grid.js?v=122.29.56"></script>
+<script src="po-controller.js?v=122.29.56"></script>
+<script src="po-progress.js?v=122.29.56"></script>
+<script src="po-ui.js?v=122.29.56"></script>
+<script src="request-attachments.js?v=122.29.56"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.56">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.56">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1826,15 +1826,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.55">
-<script src="success-feedback.js?v=122.29.55"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.55">
-<script src="interaction-motion.js?v=122.29.55"></script>
-<script src="interaction-surfaces.js?v=122.29.55"></script>
-<script src="number-edit-commit.js?v=122.29.55"></script>
-<script src="number-transitions.js?v=122.29.55"></script>
-<script src="number-surfaces.js?v=122.29.55"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.55">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.56">
+<script src="success-feedback.js?v=122.29.56"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.56">
+<script src="interaction-motion.js?v=122.29.56"></script>
+<script src="interaction-surfaces.js?v=122.29.56"></script>
+<script src="number-edit-commit.js?v=122.29.56"></script>
+<script src="number-transitions.js?v=122.29.56"></script>
+<script src="number-surfaces.js?v=122.29.56"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.56">
 </head>
 <body>
 
@@ -2461,7 +2461,7 @@ var CFG = {
       editOwners:   ["Edit_Budget_Owners", "Edit_Budget_Owner"],
       viewImports:  ["View_Budget_Import_Items", "View_Budget_Import_Item"],
       editImports:  ["Edit_Budget_Import_Items", "Edit_Budget_Import_Item"],
-      modAdmin:     ["Edit_Delete_All_Modifications", "Edit_Delete_All_Modification"],
+      modAdmin:     ["Edit_All_Budgets", "Edit_All_Budget"],
       deleteArchive:["Delete_Archive_Budgets", "Delete_Archive_Budget"]
     }
   },
@@ -2716,7 +2716,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.55", code:"BMW",
+  widget:"Budget Manager", version:"122.29.56", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -2978,7 +2978,7 @@ function sdkInvokeCustomApi(apiName, payload) {
         apprAll: accessTruthy(row.Edit_All_Approvals), apprOwned: accessTruthy(row.Edit_Owned_Approvals),
         send: accessTruthy(row.Send_for_Approvals), editOwners: accessTruthy(row.Edit_Budget_Owners),
         viewImports: accessTruthy(row.View_Budget_Import_Items), editImports: accessTruthy(row.Edit_Budget_Import_Items),
-        modAdmin: accessTruthy(row.Edit_Delete_All_Modifications), deleteArchive: accessTruthy(row.Delete_Archive_Budgets)
+        modAdmin: accessTruthy(row.Edit_All_Budgets), deleteArchive: accessTruthy(row.Delete_Archive_Budgets)
       } : { found:false, hasRow:false, editAll:false, editOwned:false, apprAll:false, apprOwned:false, send:false, editOwners:false, viewImports:false, editImports:false, modAdmin:false, deleteArchive:false };
       out.users = (MOCK.userAccess || []).map(function(r){ return { id: String(r.ID), label: accessUserKey(firstRaw(r, ["User"])) }; });
       out.myId = row ? String(row.ID) : "";
@@ -3934,7 +3934,7 @@ function applyHardcodedPerms() {
     apprAll: !!o.apprAll, apprOwned: !!o.apprOwned,
     send: !!o.send, editOwners: !!o.editOwners,
     viewImports: !!o.viewImports, editImports: !!o.editImports,
-    modAdmin: !!o.modAdmin, deleteArchive: !!o.deleteArchive
+    modAdmin: false, deleteArchive: !!o.deleteArchive
   };
   p.anyEdit = p.editAll || p.editOwned;
   p.anyAppr = p.apprAll || p.apprOwned;
@@ -4054,9 +4054,10 @@ function userOwnsBudget(b){
 function canEditBudget(b){ var p = perms(); return p.editAll || (p.editOwned && userOwnsBudget(b)); }
 function canEditBudgetOwners(){ return perms().editOwners; }
 // Modification admin: full control of every Modification and its approvals (CFO-style rights).
-function canAdminMods(){ return !!perms().modAdmin; }
+function canAdminMods(){ return !!perms().editAll && !!S.myAccessId; }
+function canDeleteBudgetRequest(b){ return !!b && canAdminMods(); }
 // Who may submit a modification on this budget: Edit Owned Budgets (via canEditBudget's
-// ownership scoping), trumped by Edit/Delete All Modifications.
+// ownership scoping), trumped by Edit/Delete All Budgets/Requests.
 function canSubmitMod(b){ return canAdminMods() || canEditBudget(b); }
 function canActApproval(b){ var p = perms(); return p.apprAll || (p.apprOwned && userOwnsBudget(b)); }
 // Per-APPROVAL-ROW permission. "Owned" for approvals = the logged-in user's email matches the
@@ -4081,7 +4082,7 @@ function canEditApprovalRow(a){
   var p = perms();
   if (p.apprAll || (p.apprOwned && userOwnsApproval(a))) return true;
   // Modification admins control Modification-type approval rows regardless of ownership.
-  return !!(p.modAdmin && cleanVal(firstRaw(a, ["Type1", "Type", "Track"])).toLowerCase() === "modification");
+  return !!(p.editAll && cleanVal(firstRaw(a, ["Type1", "Type", "Track"])).toLowerCase() === "modification");
 }
 function canSendApprovals(b){ return perms().send; }
 // Access gating is LIVE: the tab and assignment respect View_/Edit_Budget_Import_Items from
@@ -4395,7 +4396,7 @@ var MOCK = (function () {
     { ID: "em3", External_System: "Great Plains", External_Code: "GP-MW02", Subdivision1: { ID: "sub-2", display_value: "Phase 02" } }
   ];
   return { budgets: budgets, modifications: MODS, subdivisions: SUBS, projects:PROJECT_ROWS, proformas:PROFORMAS, proformaItems:PF_ITEMS, proformaPhases:PF_PHASES, externalMappings: EXTMAPS, categories: CATS, items: ITEMS, approvals: APPR, importItems: IMPORTS, budgetItems: BITEMS, userAccess: [
-    { ID: "ua1", User: "preview@wbdevelopment.com", Edit_All_Budgets: "true", Edit_Owned_Budgets: "true", Edit_All_Approvals: "true", Edit_Owned_Approvals: "true", Send_for_Approvals: "true", Edit_Budget_Owners: "true", View_Budget_Import_Items: "true", Edit_Budget_Import_Items: "true", Edit_Delete_All_Modifications: "true", Delete_Archive_Budgets: "true" },
+    { ID: "ua1", User: "preview@wbdevelopment.com", Edit_All_Budgets: "true", Edit_Owned_Budgets: "true", Edit_All_Approvals: "true", Edit_Owned_Approvals: "true", Send_for_Approvals: "true", Edit_Budget_Owners: "true", View_Budget_Import_Items: "true", Edit_Budget_Import_Items: "true", Delete_Archive_Budgets: "true" },
     { ID: "ua2", User: "jking@wbdevelopment.com", Edit_All_Budgets: "false", Edit_Owned_Budgets: "true", Edit_All_Approvals: "false", Edit_Owned_Approvals: "true", Send_for_Approvals: "false", Edit_Budget_Owners: "false", View_Budget_Import_Items: "true", Edit_Budget_Import_Items: "false" },
     { ID: "ua3", User: "dreinke@wbdevelopment.com", Edit_All_Budgets: "false", Edit_Owned_Budgets: "true", Edit_All_Approvals: "false", Edit_Owned_Approvals: "false", Send_for_Approvals: "false", Edit_Budget_Owners: "false", View_Budget_Import_Items: "false", Edit_Budget_Import_Items: "false" }
   ] };
@@ -12098,7 +12099,7 @@ function getPurchaseOrderUI(){
   if(!window.LMPOUI)throw new Error("Purchase Order editor could not be loaded. Reload Budget Manager.");
   if(!purchaseOrderUI)purchaseOrderUI = LMPOUI.create({
   scope:function(){return budgetCreateScope("po",S.edBudget&&S.edBudget.ID);}, userAccessId:function(){return String(S.myAccessId||"");},
-  canEdit:canEditBudget, phaseName:phaseName,
+  canEdit:canEditBudget, canDelete:canDeleteBudgetRequest, phaseName:phaseName,
   itemCategory:function(item){var category=modItemCategory(item);return {id:category?String(category.ID):'',name:category?cleanVal(category.Budget_Category_Name):'Uncategorized'};},
   openDate:function(input,onSelect,onClose){return openRequestDatePicker(input,{iso:true,container:input.closest('.po-overlay'),onSelect:onSelect,onClose:onClose});},
   closeDate:closeRequestDatePicker,
@@ -12933,7 +12934,7 @@ function savedPurchaseOrderRequest(request,budgetId) {
 function openSavedPurchaseOrder(id,source,intent) {
   if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
   var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});
-  if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid))return;
+  if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid)||intent==='delete'&&!canDeleteBudgetRequest(S.edBudget))return;
   try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent,intent==='delete'?{id:id,budgetId:bid,revision:cleanVal(request.PO_Revision),status:cleanVal(request.PO_Status),amount:cleanVal(request.Request_Amount),vendorName:lookupName(request.Vendor)}:null).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
 }
 function poApprovalRoleLabel(row){
@@ -13043,7 +13044,7 @@ function renderRequestRailPayment(b,request,children) {
   if(managed){
     status=status&&status!=="Not Configured"?status:savedStatus;
     var attrs="data-request-po-open='"+escAttr(request.ID)+"' ",editable=canEditBudget(b)&&(savedStatus==="Draft"||savedStatus==="Submitted"&&status==="Rejected");
-    acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):"")+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canEditBudget(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):"");
+    acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):"")+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canDeleteBudgetRequest(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):"");
   }
   if(!managed)acts=requestRailIcon('view','View saved request','data-request-payment-open="'+escAttr(request.ID)+'"');
   acts+=requestAttachmentButton(b,'payment',request.ID);
@@ -13487,7 +13488,7 @@ function applyPermsFromFlags(flags, source){
     editOwners: t(flags && (flags.editOwners != null ? flags.editOwners : flags.Edit_Budget_Owners)),
     viewImports: t(flags && (flags.viewImports != null ? flags.viewImports : flags.View_Budget_Import_Items)),
     editImports: t(flags && (flags.editImports != null ? flags.editImports : flags.Edit_Budget_Import_Items)),
-    modAdmin:  t(flags && (flags.modAdmin != null ? flags.modAdmin : flags.Edit_Delete_All_Modifications)),
+    modAdmin:  t(flags && (flags.editAll != null ? flags.editAll : flags.Edit_All_Budgets)),
     deleteArchive: t(flags && (flags.budgetDeleteArchive != null ? flags.budgetDeleteArchive : flags.Delete_Archive_Budgets))
   };
   p.anyEdit = p.editAll || p.editOwned;
@@ -13789,7 +13790,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.55",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.56",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

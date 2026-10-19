@@ -1,0 +1,32 @@
+{
+  "contract": "budget-request-permissions-v1",
+  "verified_on": "2026-10-19",
+  "metadata_source": "Authenticated Creator Development field and workflow editors; not a regenerated DS export",
+  "form": "User_Access",
+  "authoritative_field": "Edit_All_Budgets",
+  "display_name": "Edit/Delete All Budgets/Requests",
+  "retired_field": "Edit_Delete_All_Modifications",
+  "retired_field_policy": "Hidden on create/edit; stored values retained but ignored for authorization; do not copy into Edit_All_Budgets",
+  "compatibility_response_alias": {
+    "modAdmin": "Edit_All_Budgets"
+  },
+  "request_delete_permission": "One authenticated User Access record with Edit_All_Budgets true",
+  "native_functions": [
+    "getUserAccess",
+    "getUserAccessLean",
+    "modificationAdmin",
+    "managePurchaseOrder"
+  ],
+  "native_workflow": {
+    "name": "Retire Modification Permission",
+    "link_name": "Retire_Modification_Permi",
+    "form": "User_Access",
+    "record_event": "Created or Edited",
+    "form_event": "Load of the form",
+    "source": "creator/workflows/user-access/retire-modification-permission.dg"
+  },
+  "creator_promotion": "User promotes Development changes",
+  "custom_api_changes": "None; existing endpoint names and arguments remain unchanged",
+  "widget_release": "122.29.56",
+  "rollback_widget": "122.29.54"
+}

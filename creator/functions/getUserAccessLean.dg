@@ -58,7 +58,7 @@ string getUserAccessLean(string user)
 		editOwners = row.Edit_Budget_Owners == true;
 		viewImports = row.View_Budget_Import_Items == true;
 		editImports = row.Edit_Budget_Import_Items == true;
-		modAdmin = row.Edit_Delete_All_Modifications == true;
+		modAdmin = row.Edit_All_Budgets == true;
 		budgetDeleteArchive = row.Delete_Archive_Budgets == true;
 		// Data Insights permissions
 		lotSalesDashboard = row.Lot_Sales_Dashboard == true;

@@ -815,12 +815,12 @@ territory has no VP or that VP has no Approver_Email.
 
 ### Modification access model
 
-- Submitting a modification requires `Edit Owned Budgets` (ownership-scoped via `canEditBudget`),
-  trumped by `Edit/Delete All Modifications` (`canSubmitMod`).
-- `Edit/Delete All Modifications` (User_Access decision box, link name
-  `Edit_Delete_All_Modifications`; returned by `getUserAccess` as `modAdmin`) additionally grants:
-  edit/delete of ANY modification and approve/reject/recipient-edit on ANY Modification-type
-  approval row (`canAdminMods`, `canEditApprovalRow`).
+Submitting a modification requires owned-Budget edit access or the global
+Edit/Delete All Budgets/Requests grant (Edit_All_Budgets). The global grant,
+with an authenticated User Access identity, also permits standalone modification
+Edit/Delete and the existing admin approval/recipient override. The retired
+Edit_Delete_All_Modifications field is hidden and ignored; modAdmin remains only
+a response alias of editAll. See the 122.29.56 section and native promotion handoff.
 
 ### Report-layout gotcha (v2 API)
 
@@ -1407,3 +1407,21 @@ The user reports promoting the earlier native functions. Browser inspection of
 Microservices confirmed all required endpoints already exist and are enabled;
 no duplicate APIs were created. See [handoff and verification](../../docs/budget-mod-row-tools-2026-10-19.md).
 Rollback: Budget 122.29.54.
+
+## Single Budget/request admin permission (122.29.56)
+
+Edit_All_Budgets now displays Edit/Delete All Budgets/Requests. The retired
+Edit_Delete_All_Modifications control is hidden on native User Access create/edit
+and no longer grants widget or native admin access. Existing values are retained
+without copying or enabling any user's global grant. Owned Budget editing stays
+available; request deletion requires the authenticated global grant. PO row,
+modal and direct delete openers and native PreviewDelete/Delete/CheckDelete agree.
+Modification_Admin guards update/delete using the same authenticated permission.
+Both access functions keep modAdmin only as a compatibility alias of editAll.
+
+Development field/workflow and getUserAccess, getUserAccessLean, modificationAdmin,
+managePurchaseOrder changes are for the user to promote. Existing API names and
+arguments remain. Saved Check/Wire details retain viewing/attachments without a
+new deletion workflow. Other Budget archive and file deletion rules are unchanged.
+[Contract, tests and rollback](../../docs/budget-request-permissions-2026-10-19.md).
+Rollback: last live Budget 122.29.54; retain native authorization guards.

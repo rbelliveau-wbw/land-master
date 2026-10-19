@@ -242,7 +242,8 @@
       "matching_creator_function": "modificationAdmin",
       "confidence": "verified-2026-10-19",
       "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master.",
-      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md.",
+      "permission_contract": "manifests/budget-request-permissions.json"
     },
     {
       "name": "Proforma_Bulk_Save",
@@ -555,7 +556,8 @@
       ],
       "response_type": "Standard",
       "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration.",
-      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md.",
+      "permission_contract": "manifests/budget-request-permissions.json"
     },
     {
       "name": "Manage_Approval_Policies",

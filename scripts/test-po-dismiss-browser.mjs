@@ -96,6 +96,8 @@ try{
   assert.equal(await page.locator('.po-overlay').count(),1,'late old reads cannot close the current result');
   const done=page.locator('footer [data-po-finish]');await done.waitFor();await done.click();await closed('#approval');
   assert.equal(await page.locator('#writes').textContent(),'Writes: 1','only the explicit approval writes');
+  await page.evaluate(()=>fixtureDelete=false);await page.locator('#view').click();await page.waitForFunction(()=>document.querySelector('[data-po-status-badge]')?.textContent.trim()==='Draft');assert.equal(await page.locator('[data-po-delete]').count(),0,'Owned-budget editing never grants PO Delete');await page.keyboard.press('Escape');await closed('#view');
+  const denied=await page.evaluate(async()=>{try{await ui.open({ID:'1001'},document.querySelector('#view'),'2002','delete',{id:'2002',budgetId:'1001',revision:'saved-fixture',status:'Draft',amount:'100.00'});return '';}catch(e){return e.message;}});assert.match(denied,/Edit\/Delete All Budgets\/Requests/);assert.equal(await page.locator('.po-overlay').count(),0);assert.equal(await page.locator('#writes').textContent(),'Writes: 1');
   assert.deepEqual(errors,[]);
   console.log('PASS: actual desktop PO Close/X/Escape, loading cancellation, rapid reopen, no exit copies/layout flicker, immediate focus/inert restoration, reduced motion and pending approval close lock.');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

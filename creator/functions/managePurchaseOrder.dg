@@ -99,7 +99,7 @@ string managePurchaseOrder(string payload)
 		}
 		if(action == "PreviewDelete" || action == "Delete" || action == "CheckDelete")
 		{
-			if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
+			if(access.Edit_All_Budgets != true || budget.Archived == true) { result.put("error","Edit/Delete All Budgets/Requests on an active phase is required."); return result.toString(); }
 			idText = ifnull(p.get("id"),"").toString();
 			if(!idText.matches("[0-9]+")) { result.put("error","An exact PO identity is required."); return result.toString(); }
 			if(action == "CheckDelete")

@@ -177,3 +177,13 @@ under the Budget after request deletion. Recheck same-Budget identity, recorded
 pending ownership and existing admin permissions on click. PO-linked modifications
 retain their governing PO and own Attachments tab; never expose standalone tools
 for them. Reuse existing native functions and shared modal/tab motion.
+
+## Single request administration grant (122.29.56)
+
+Use User_Access.Edit_All_Budgets, labeled Edit/Delete All Budgets/Requests, for
+request deletion and standalone modification administration. Ignore the retired
+modification flag. Budget ownership alone allows editing, never PO/request
+deletion. Recheck the global grant and authenticated identity in row openers,
+modal controls and native delete APIs. The compatibility modAdmin response is
+an alias, not another permission. Check/Wire details retain their existing
+view/attachment-only actions; do not invent a payment deletion flow.

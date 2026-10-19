@@ -10,9 +10,17 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	//   it can be revised and resubmitted.
 	// - repair: build a missing Submitted modification chain from its published
 	//   Settings rule. Preserve existing/orphan history; never send or stamp mail.
-	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
+	// Admin update/delete use the single Edit_All_Budgets grant on the server.
 	// (repair is also invoked automatically on inconsistency detection).
 	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vAction == "update" || vAction == "delete")
+	{
+		adminAccess = User_Access[User == zoho.loginuser];
+		if(adminAccess.count() != 1 || adminAccess.Edit_All_Budgets != true)
+		{
+			return "ERROR: Edit/Delete All Budgets/Requests access is required.";
+		}
+	}
 	combinedMod = Budget_Modification[ID == modificationId.toLong()];
 	if(ifnull(combinedMod.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification belongs to a combined Purchase Order approval. Open the PO to edit or resubmit."; }
 	if(vAction == "check-reject" || vAction == "repair-reject")

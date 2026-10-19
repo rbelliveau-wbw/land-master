@@ -5,7 +5,7 @@ const source=fs.readFileSync('widgets/budget-manager/src/app/po-ui.js','utf8');
 const ctx=vm.createContext({vendorDialog:null});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),ctx);ctx.root=ctx;
 ctx.model={budgetId:'1001',vendorId:'9001',amount:'999.99',requestDate:'2026-10-09',dateNeeded:'2026-10-20',vendors:[{ID:'9001'}],lines:[{key:'one',budgetItemId:'2001',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'two',budgetItemId:'2001',description:'Testing',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'2.02'}]};
-ctx.options={userAccessId:()=> '8001'};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
+let deleteAllowed=true;ctx.options={userAccessId:()=> '8001',canDelete:()=>deleteAllowed};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
 const totals=source.slice(source.indexOf('    function totals()'),source.indexOf('    function itemRows('));
 vm.runInContext(totals,ctx);
 const save=source.slice(source.indexOf('    async function save(action)'),source.indexOf('    async function get('));
@@ -28,7 +28,7 @@ ctx.model.loadState='unavailable';ctx.model.error='Saved PO denied';ctx.render()
 ctx.model.loadState='loaded';ctx.render();assert.equal(loadingSummary.hidden,false);assert.equal(nodes.get('[data-po-title-vendor]').hidden,false);assert.match(nodes.get('.po-body').innerHTML,/data-po-field/);ctx.model.error='';
 console.log('Saved PO loading: explicit busy state, hidden zero/draft fields and Summary, recoverable failure, then atomic saved data reveal passed.');
 
-ctx.model.editable=true;ctx.model.loadState='loaded';ctx.model.id='5001';for(const status of ['Draft','Submitted']){ctx.model.status=status;assert.equal(ctx.canDelete(),true);}ctx.model.approvalState='Approved';assert.equal(ctx.canDelete(),true);ctx.model.editable=false;assert.equal(ctx.canDelete(),false);ctx.model.editable=true;ctx.model.loadState='unavailable';assert.equal(ctx.canDelete(),false);
+ctx.model.editable=true;ctx.model.loadState='loaded';ctx.model.id='5001';for(const status of ['Draft','Submitted']){ctx.model.status=status;assert.equal(ctx.canDelete(),true);}ctx.model.approvalState='Approved';assert.equal(ctx.canDelete(),true);deleteAllowed=false;assert.equal(ctx.canDelete(),false);deleteAllowed=true;ctx.model.loadState='unavailable';assert.equal(ctx.canDelete(),false);
 
 // Real confirmation preflight captures child counts; Escape/Cancel retains the
 // original PO and never sends Delete. No live records are mutated by this test.

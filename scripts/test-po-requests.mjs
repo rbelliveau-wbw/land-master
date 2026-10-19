@@ -18,7 +18,7 @@ const managedResponse={contract:'po-v1',success:true,rows:[managedPO]},vendorRes
 let scope='production-session',nav=1,editable=true,response=[{ID:poId,checkbox:'false'}],opens=[],reads=[],apiReads=[],renders=[],apiFailure='';
 const c=vm.createContext({prepareRequestAttachmentBadges(){},attachmentLinksReady:()=>false,attachmentLinkStates:{},S:{myAccessId:'900000000000000007',edBudget:{ID:budgetId},edPhaseIdx:0,globalMode:'modifications',checkWireRequestState:{},checkWireRequestsByBudget:{}},CFG:{reports:{checkWireRequests:'All_Wire_Requests'}},
   Promise,Set,Error,JSON,Number,cleanVal:value=>String(value??'').trim(),firstRaw:(row,keys)=>row[keys[0]],lookupId:value=>String(value?.ID||value||''),lookupName:value=>value?.display_value||'',lookupMatchesId:(value,id)=>value?.ID===id||value===id,
-  esc:value=>String(value??''),escAttr:value=>String(value??''),findItemById:()=>null,fmt:value=>'$'+value,v:value=>Number(value),modBadge:status=>'<span>'+status+'</span>',poDevelopment:()=>true,canEditBudget:()=>editable,
+  esc:value=>String(value??''),escAttr:value=>String(value??''),findItemById:()=>null,fmt:value=>'$'+value,v:value=>Number(value),modBadge:status=>'<span>'+status+'</span>',poDevelopment:()=>true,canEditBudget:()=>editable,canDeleteBudgetRequest:()=>editable,
   budgetNavigationToken:()=>nav,budgetNavigationCurrent:(token,view,id)=>token===nav&&c.S.edBudget?.ID===id,budgetCreateScope:()=>scope,renderModPhasePanel:budget=>renders.push(budget.ID),auditLog(){},toastShow(){},requireBudgetRequestDetail:()=>true,
   sdkGetAllRecords:(report,criteria,options)=>{reads.push({report,criteria,options});return typeof response==='function'?response():Promise.resolve(response);},
   unwrapBudgetManageResponse:value=>value,
