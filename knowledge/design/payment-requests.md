@@ -159,3 +159,21 @@ includes names and emails; no new fields or endpoints are needed.
 
 Budget 122.29.38 removes the PO approver preview footer sentence; the route, recipient cards and approval behavior are unchanged. Frontend only, with no Creator promotion required.
 
+
+## Budget Mod row tools (122.29.55)
+
+Standalone Budget Mod rows put View, Attachments, Resend Email, Edit and Delete
+in one compact icon group, in that order when available. Reserve room for all
+five controls and their badges; keep the shared request columns aligned. Use
+accessible action names, tooltips and the existing focus outlines. Omit unavailable
+actions without leaving empty slots. Submitted decisions stay in the detail
+modal: Approve, Reject and Close. Draft Submit and rejected Revise & Resubmit
+retain their existing lifecycle actions.
+
+Edit reuses the prefilled composer. Delete opens the exact modification's identity,
+amount and approval history with a consequence, Cancel and Delete modification;
+Cancel returns focus to the row trash control without writing. Budget files stay
+under the Budget after request deletion. Recheck same-Budget identity, recorded
+pending ownership and existing admin permissions on click. PO-linked modifications
+retain their governing PO and own Attachments tab; never expose standalone tools
+for them. Reuse existing native functions and shared modal/tab motion.

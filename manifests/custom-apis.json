@@ -8,8 +8,9 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "createBudgetAttachmentRecord",
-      "confidence": "inferred-name-match",
-      "implementation_contract": "manifests/budget-request-attachments.json"
+      "confidence": "verified-2026-10-19",
+      "implementation_contract": "manifests/budget-request-attachments.json",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "Create_Budget_Modification",
@@ -17,8 +18,9 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "createBudgetModification",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, key-value {itemId, modType, amount, reason, reference, effectiveDate, track}. Creates the modification + two approval rows (VP/CFO to rbelliveau) + first email atomically."
+      "confidence": "verified-2026-10-19",
+      "notes": "Existing key/value arguments {itemId, modType, amount, reason, reference, effectiveDate, track}; the promoted function uses published Settings policy for new standalone routes, preserving already captured history.",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "Create_Contract_Attachment_Record",
@@ -238,8 +240,9 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "modificationAdmin",
-      "confidence": "verified-2026-08-14",
-      "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master."
+      "confidence": "verified-2026-10-19",
+      "notes": "POST, OAuth2, All users, key-value {action:'update'|'delete'|'repair', modificationId, budgetId, modType, amount, reason, reference, effectiveDate}. Admin edit/delete (delete cascades to the approval chain, recalcs Revised_Final) and orphan-chain repair. Bound to production Land Master.",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "Proforma_Bulk_Save",
@@ -308,8 +311,9 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "sendModificationEmail",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, application/json key-value {modificationId, action:'created'|'approved'|'rejected'}. Created via Custom API builder bound to Land Master DEVELOPMENT environment; verify binding after production push."
+      "confidence": "verified-2026-10-19",
+      "notes": "Existing key/value {modificationId, action}; live Land Master function binding verified. No email sent during inspection.",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "Send_Proforma_Approval_Email",
@@ -357,8 +361,9 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "submitBudgetModification",
-      "confidence": "verified-2026-08-13",
-      "notes": "POST, OAuth2, All users, key-value {modificationId}. Promotes a Draft modification: builds the two-row chain if missing, marks Submitted, sends first email."
+      "confidence": "verified-2026-10-19",
+      "notes": "Existing key/value {modificationId}; the promoted function uses published Settings policy for new standalone routes; no new endpoint or arguments.",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "syncBudgetApprovalStatus",
@@ -534,7 +539,7 @@
         "widgets/budget-manager/src/app/po-controller.js"
       ],
       "matching_creator_function": "managePurchaseOrder",
-      "confidence": "verified-native-2026-10-08",
+      "confidence": "verified-2026-10-19",
       "environment": "Production",
       "enabled": true,
       "method": "POST",
@@ -549,7 +554,8 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration."
+      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration.",
+      "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md."
     },
     {
       "name": "Manage_Approval_Policies",

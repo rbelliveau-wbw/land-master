@@ -98,8 +98,9 @@ date, amount and description to distinguish same-vendor association choices.
 Roll back the repository Budget mapping to **122.29.51**; new optional fields can
 remain. Preserve all Attachment records and their Budget/file/provenance fields.
 
-The separate Budget Mod action cleanup is a **mockup only**. Existing Approve,
-Reject, Resend Email, Edit and Delete controls and their permissions stay in place.
+The separate Budget Mod action cleanup was mockup-only in 122.29.54.
+The approved Row tools layout is implemented in 122.29.55; see
+[the cleanup handoff](budget-mod-row-tools-2026-10-19.md).
 
 Final local verification passed: npm run validate, npm run build:pages, actual
 request attachment desktop fixture, PO dismissal, shared interaction motion,

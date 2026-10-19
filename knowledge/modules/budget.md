@@ -1390,4 +1390,20 @@ Rollback: Budget 122.29.41. See docs/po-cfo-child-visibility-2026-10-14.md.
 
 ## Request attachment tabs (122.29.54)
 
-PO, Budget Mod and saved Check/Wire Details / Attachments tabs reuse the Budget file workspace. One Attachment record keeps its Budget parent and at most one same-Budget Payment_Request or Budget_Modification lookup. Budget files show and can change the request association; linking an existing file makes no copy. Request deletion retains Budget files and clears its link. Native Development fields/reports, three functions and three workflows are saved for user promotion; the API registration is unchanged. Check/Wire creation remains Preview Draft. Existing approval and admin controls stay in place; their cleanup is mockup-only. See [contract, verification and rollback](../../docs/budget-request-attachments-2026-10-19.md). Rollback: Budget 122.29.51.
+PO, Budget Mod and saved Check/Wire Details / Attachments tabs reuse the Budget file workspace. One Attachment record keeps its Budget parent and at most one same-Budget Payment_Request or Budget_Modification lookup. Budget files show and can change the request association; linking an existing file makes no copy. Request deletion retains Budget files and clears its link. Native Development fields/reports, three functions and three workflows are saved for user promotion; the API registration is unchanged. Check/Wire creation remains Preview Draft. Approval/admin cleanup follows in 122.29.55 below. See [contract, verification and rollback](../../docs/budget-request-attachments-2026-10-19.md). Rollback: Budget 122.29.51.
+
+## Budget Mod row tools (122.29.55)
+
+The approved Row tools mockup is implemented: View, Attachments, Resend Email,
+Edit and Delete on standalone Budget Mod rows; Approve / Reject / Close in the
+detail modal. Draft Submit and rejected Revise & Resubmit remain available.
+Edit keeps its prefilled composer; Delete first opens an explicit confirmation
+with record identity and retained Budget-file consequence. Cancel restores the
+row opener. Same-Budget, current approver/admin and PO-child isolation guards
+are checked again at click time. Amounts and captured routes are unchanged.
+
+No forms, fields, Deluge functions or API contracts change in this release.
+The user reports promoting the earlier native functions. Browser inspection of
+Microservices confirmed all required endpoints already exist and are enabled;
+no duplicate APIs were created. See [handoff and verification](../../docs/budget-mod-row-tools-2026-10-19.md).
+Rollback: Budget 122.29.54.
