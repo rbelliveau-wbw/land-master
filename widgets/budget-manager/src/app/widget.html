@@ -4,16 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.51"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.53"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.51"></script>
-<script src="po-grid.js?v=122.29.51"></script>
-<script src="po-controller.js?v=122.29.51"></script>
-<script src="po-progress.js?v=122.29.51"></script>
-<script src="po-ui.js?v=122.29.51"></script>
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.51">
+<script src="po-domain.js?v=122.29.53"></script>
+<script src="po-grid.js?v=122.29.53"></script>
+<script src="po-controller.js?v=122.29.53"></script>
+<script src="po-progress.js?v=122.29.53"></script>
+<script src="po-ui.js?v=122.29.53"></script>
+<script src="request-attachments.js?v=122.29.53"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.53">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.53">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1823,15 +1825,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.51">
-<script src="success-feedback.js?v=122.29.51"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.51">
-<script src="interaction-motion.js?v=122.29.51"></script>
-<script src="interaction-surfaces.js?v=122.29.51"></script>
-<script src="number-edit-commit.js?v=122.29.51"></script>
-<script src="number-transitions.js?v=122.29.51"></script>
-<script src="number-surfaces.js?v=122.29.51"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.51">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.53">
+<script src="success-feedback.js?v=122.29.53"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.53">
+<script src="interaction-motion.js?v=122.29.53"></script>
+<script src="interaction-surfaces.js?v=122.29.53"></script>
+<script src="number-edit-commit.js?v=122.29.53"></script>
+<script src="number-transitions.js?v=122.29.53"></script>
+<script src="number-surfaces.js?v=122.29.53"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.53">
 </head>
 <body>
 
@@ -2713,7 +2715,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.51", code:"BMW",
+  widget:"Budget Manager", version:"122.29.53", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -6933,6 +6935,139 @@ function modCellHtml(agg, itemId, canAdd) {
   return parts.join("");
 }
 /* ── BUDGET ATTACHMENTS ── */
+var requestAttachmentUI=null,attachmentLinkStates=Object.create(null),attachmentAssociationReview=null;
+function attachmentLinkScope(bid){return budgetCreateScope('attachment',String(bid));}
+function attachmentLinksReady(bid){var state=attachmentLinkStates[String(bid)];return !!state&&state.scope===attachmentLinkScope(bid)&&state.status==='loaded';}
+function attachmentLinkResponse(resp){
+  var candidates=[resp,resp&&resp.result,resp&&resp.data,resp&&resp.details,resp&&resp.details&&resp.details.output];
+  for(var i=0;i<candidates.length;i++){var value=candidates[i];if(typeof value==='string'){try{value=JSON.parse(value);}catch(e){continue;}}if(value&&typeof value==='object'&&typeof value.ok==='boolean'&&value.contract==='budget-request-attachments-v1')return value;}
+  throw new Error('Request attachments are not available yet.');
+}
+function callAttachmentLink(b,payload){return sdkRunBudgetFunction('createBudgetAttachmentRecord',{budgetId:JSON.stringify(Object.assign({contract:'budget-request-attachments-v1',budgetId:String(b.ID),userAccessId:String(S.myAccessId||'')},payload))}).then(attachmentLinkResponse);}
+function ensureRequestAttachments(b){
+  var bid=String(b.ID),scope=attachmentLinkScope(bid),state=attachmentLinkStates[bid];
+  if(state&&state.scope===scope&&state.promise)return state.promise;
+  if(attachmentLinksReady(bid))return loadBudgetAttachments(bid,false);
+  state={scope:scope,status:'loading'};attachmentLinkStates[bid]=state;
+  state.promise=callAttachmentLink(b,{action:'Capabilities'}).then(function(result){
+    if(attachmentLinkScope(bid)!==scope)throw new Error('Attachment context changed.');
+    if(result.ok!==true||result.budgetId!==bid)throw new Error(result.message||'Request attachments unavailable.');
+    state.status='loaded';state.canWrite=result.canWrite===true;
+    return loadBudgetAttachments(bid,true);
+  }).then(function(rows){state.promise=null;syncRequestAttachmentCounts();return rows;},function(error){state.promise=null;state.status='error';throw error;});
+  return state.promise;
+}
+function requestAttachmentContextMatches(file,context){if(!context)return true;return context.kind==='modification'?file.modificationId===context.id&&!file.paymentRequestId:file.paymentRequestId===context.id&&!file.modificationId;}
+function requestAttachmentSurfaceCurrent(surface){return !!surface&&!!surface.requestContext&&typeof surface.current==='function'&&surface.current();}
+function attachmentSurfaceCurrent(surface){return surface&&surface.requestContext?requestAttachmentSurfaceCurrent(surface):budgetAttachmentModalCurrent(surface);}
+function renderAttachmentSurface(surface){if(surface&&surface.requestContext){if(requestAttachmentSurfaceCurrent(surface))surface.render();}else renderBudgetAttachmentModal();}
+function requestAttachmentSurface(node){return requestAttachmentUI&&requestAttachmentUI.find(node);}
+function requestAttachmentModifications(bid){
+  var rows=modsForBudget(String(bid)).slice(),seen=new Set(rows.map(function(row){return String(row.ID);}));
+  (S.checkWireRequestsByBudget[String(bid)]||[]).forEach(function(parent){if(parent._poModificationsState==='loaded'&&Array.isArray(parent._poModifications))parent._poModifications.forEach(function(row){if(typeof row.ID==='string'&&lookupMatchesId(row.Budget,bid)&&!seen.has(row.ID)){seen.add(row.ID);rows.push(row);}});});
+  return rows;
+}
+function requestAttachmentChoices(b){
+  var bid=String(b.ID),scope=attachmentLinkScope(bid);
+  return Promise.all([ensureBudgetModifications(false),loadCheckWireRequests(bid,false)]).then(function(){
+    if(scope!==attachmentLinkScope(bid)||!budgetModsReady()||S.checkWireRequestState[bid]!=='loaded'||S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid])throw new Error('Request associations unavailable for this profile.');
+    var rows=(S.checkWireRequestsByBudget[bid]||[]).filter(function(r){return lookupMatchesId(r.Budget,bid)&&['Purchase Order','Check','Wire'].includes(cleanVal(r.Request_Type));}).map(function(r){return {kind:'payment',id:String(r.ID),label:cleanVal(r.Request_Type)+(cleanVal(r.Request_Type)==='Purchase Order'?'':' Request'),detail:lookupName(r.Vendor)||lookupName(r.Budget_Item)||phaseName(b)};});
+    requestAttachmentModifications(bid).forEach(function(r){var info=requestRailModIdentity(r);rows.push({kind:'modification',id:String(r.ID),label:'Bud Mod · '+info.name,detail:[info.code,cleanVal(r.Reason)].filter(Boolean).join(' · ')});});
+    return rows;
+  });
+}
+function attachmentAssociationLabel(file,b){
+  if(file.paymentRequestId&&file.modificationId)return {label:'Association unavailable',unavailable:true};
+  if(file.modificationId){var mod=requestAttachmentModifications(b.ID).find(function(row){return String(row.ID)===file.modificationId;});return {kind:'modification',id:file.modificationId,label:mod?'Bud Mod · '+requestRailModIdentity(mod).name:'Budget Modification',available:!!mod};}
+  if(file.paymentRequestId){var row=(S.checkWireRequestsByBudget[String(b.ID)]||[]).find(function(r){return String(r.ID)===file.paymentRequestId&&lookupMatchesId(r.Budget,b.ID);});var type=row&&cleanVal(row.Request_Type);return {kind:'payment',id:file.paymentRequestId,label:row?(type==='Purchase Order'?'PO':type+' Request')+(lookupName(row.Vendor)?' · '+lookupName(row.Vendor):''):'Linked Request',available:!!row};}
+  return {label:'Budget only'};
+}
+function attachmentAssociationHtml(file,b,index){
+  if(!attachmentLinksReady(b.ID))return '';
+  var a=attachmentAssociationLabel(file,b);
+  return a.id?'<button type="button" class="request-attachment-link" data-attachment-open-request="'+index+'"'+(!a.available?' disabled':'')+' title="'+escAttr(a.label)+'"><span>'+esc(a.label)+'</span></button>':'<span class="request-attachment-unlinked">'+esc(a.label)+'</span>';
+}
+function syncRequestAttachmentCounts(){
+  if(requestAttachmentUI)requestAttachmentUI.refresh();
+  document.querySelectorAll('[data-request-attachments]').forEach(function(button){var bid=button.dataset.budgetId,known=attachmentLinksReady(bid)&&budgetFeature('attachments:'+bid).status==='loaded',context={kind:button.dataset.requestAttachmentKind,id:button.dataset.requestAttachments},count=known?budgetAttachments({ID:bid}).filter(function(f){return requestAttachmentContextMatches(f,context);}).length:null;var badge=button.querySelector('small');var state=attachmentLinkStates[String(bid)],loading=count==null&&state&&state.status==='loading';if(badge)badge.textContent=count==null?(loading?'…':'—'):String(count);button.title=loading?'Loading attachments':'Attachments'+(count==null?' unavailable':': '+count);});
+}
+function prepareRequestAttachmentBadges(bid){var b=(S.budgets||[]).find(function(row){return String(row.ID)===String(bid);})||S.edBudget;if(!b||String(b.ID)!==String(bid))return;var state=attachmentLinkStates[String(bid)];if(state&&state.scope===attachmentLinkScope(bid))return;var scope=attachmentLinkScope(bid);ensureRequestAttachments(b).then(function(){return Promise.all([ensureBudgetModifications(false),loadCheckWireRequests(String(bid),false)]);}).then(function(){if(scope!==attachmentLinkScope(bid))return;syncRequestAttachmentCounts();if(S.attachmentModal&&S.attachmentModal.budgetId===String(bid))renderBudgetAttachmentModal();else if(S.view==='vEditor'&&S.edBudget&&String(S.edBudget.ID)===String(bid)&&S.globalMode==='attachments')renderAttachmentPane(S.edBudget);},function(){syncRequestAttachmentCounts();});}
+function changeAttachmentAssociation(b,file,target){
+  if(S.attachmentBusy||S.attachmentUploadReview||attachmentAssociationReview)return Promise.reject(new Error('Finish or check the previous attachment action.'));
+  if(!canAddBudgetAttachment(b)||!attachmentLinksReady(b.ID))return Promise.reject(new Error('You cannot change this attachment association.'));
+  var review={budgetId:String(b.ID),attachmentId:String(file.recordId),scope:attachmentLinkScope(b.ID),paymentRequestId:target.kind==='payment'?target.id:'',modificationId:target.kind==='modification'?target.id:'',expectedPaymentRequestId:file.paymentRequestId||'',expectedModificationId:file.modificationId||''};
+  S.attachmentBusy=true;var acknowledged=false;
+  return callAttachmentLink(b,Object.assign({action:'Associate'},review)).then(function(result){
+    if(result.ok!==true){var error=new Error(result.message||'Association failed.');error.knownNoWrite=result.writeState==='not-started';throw error;}
+    if(result.budgetId!==review.budgetId||result.attachmentId!==review.attachmentId)throw new Error('The saved attachment identity was not confirmed.');
+    acknowledged=true;file.paymentRequestId=review.paymentRequestId;file.modificationId=review.modificationId;
+    if(review.scope!==attachmentLinkScope(b.ID))throw new Error('Attachment context changed.');
+    return refreshBudgetAttachmentRecord(b.ID).catch(function(error){S.attachmentStatus='Association saved. Refresh unavailable.';S.attachmentStatusError=true;auditLog('warn','Attachment association saved; display refresh failed',error);});
+  }).catch(function(error){if(!acknowledged&&!error.knownNoWrite)attachmentAssociationReview=review;throw error;}).finally(function(){S.attachmentBusy=false;renderAttachmentPane(b);});
+}
+function recheckAttachmentAssociation(){
+  var r=attachmentAssociationReview;if(!r||S.attachmentBusy)return Promise.reject(new Error('No association is ready to check.'));
+  if(r.scope!==attachmentLinkScope(r.budgetId))return Promise.reject(new Error('Return to the original Creator session to check this association.'));
+  S.attachmentBusy=true;
+  return sdkGetRecordById(CFG.reports.attachments,r.attachmentId).then(function(row){
+    if(!row||row.ID!==r.attachmentId||attachmentRecordBudgetId(row)!==r.budgetId||r.scope!==attachmentLinkScope(r.budgetId))throw new Error('Attachment identity could not be checked.');
+    if((lookupId(row.Payment_Request)||'')!==r.paymentRequestId||(lookupId(row.Budget_Modification)||'')!==r.modificationId)throw new Error('Association is still unverified. Review this file in Creator before another change.');
+    attachmentAssociationReview=null;return refreshBudgetAttachmentRecord(r.budgetId);
+  }).finally(function(){S.attachmentBusy=false;});
+}
+function getRequestAttachmentUI(){
+  if(!requestAttachmentUI)requestAttachmentUI=LMRequestAttachments.create({
+    scope:function(b){return attachmentLinkScope(b.ID)+'|'+budgetNavigationToken();},files:budgetAttachments,loaded:function(b){return attachmentLinksReady(b.ID)&&budgetFeature('attachments:'+b.ID).status==='loaded';},load:ensureRequestAttachments,renderFiles:renderAttachmentPage,choices:requestAttachmentChoices,associate:changeAttachmentAssociation,recheck:recheckAttachmentAssociation,review:function(){return attachmentAssociationReview;},busy:function(){return S.attachmentBusy||S.attachmentUploadReview;},isNested:function(){return !!requestAttachmentOverlay;},openBudget:function(){var button=document.querySelector('.mode-tsw button[data-mode="attachments"]');if(button)button.click();}
+  });
+  return requestAttachmentUI;
+}
+function mountModRequestAttachments(kind,id,title){
+  var m=S.modModal,b=S.edBudget;if(!m||!b)return;
+  getRequestAttachmentUI().mount({root:$('modModalBody').parentElement,details:$('modModalBody'),model:m,budget:b,kind:kind,id:id,title:title,trap:true,current:function(){return S.modModal===m&&S.edBudget===b;},close:closeModModal});
+}
+document.addEventListener('click',function(event){
+  if(!S.attachmentBusy||!requestAttachmentUI)return;
+  var surface=requestAttachmentUI.active();if(surface&&surface.root.contains(event.target)&&!surface.pane.contains(event.target)&&!surface.nav.contains(event.target)){event.preventDefault();event.stopImmediatePropagation();}
+},true);
+var requestAttachmentOverlay=null,requestAttachmentOverlayStack=[];
+function beginRequestAttachmentOverlay(id){
+  var surface=requestAttachmentUI&&requestAttachmentUI.active(),overlay=$(id);if(!surface||!overlay)return;
+  if(requestAttachmentOverlay&&requestAttachmentOverlay.node===overlay)return;
+  var parent=requestAttachmentOverlay?requestAttachmentOverlay.node:surface.root.closest('.po-overlay')||surface.root.closest('#modOverlay')||surface.root;
+  if(requestAttachmentOverlay)requestAttachmentOverlayStack.push(requestAttachmentOverlay);
+  requestAttachmentOverlay={node:overlay,inert:overlay.inert,parent:parent,parentInert:parent.inert,focus:document.activeElement,surface:surface};
+  overlay.inert=false;parent.inert=true;
+  var focus=overlay.querySelector('button:not(:disabled)');if(focus)focus.focus();
+}
+function endRequestAttachmentOverlay(){var context=requestAttachmentOverlay;if(!context)return;requestAttachmentOverlay=requestAttachmentOverlayStack.pop()||null;context.node.inert=context.inert;context.parent.inert=context.parentInert;if(context.focus&&context.focus.isConnected)context.focus.focus();else if(context.surface.current())context.surface.nav.querySelector('[aria-selected=true]').focus();}
+document.addEventListener('keydown',function(event){
+  var context=requestAttachmentOverlay;if(!context)return;
+  if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();if(S.attachmentBusy)return;if(context.node.id==='attachmentPreviewOverlay')closeAttachmentPreview();else closeAttachmentDeleteConfirm();return;}
+  if(event.key==='Tab'){var nodes=Array.from(context.node.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled)')).filter(function(node){return node.getClientRects().length;});var first=nodes[0],last=nodes[nodes.length-1];if(!first)return;if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
+},true);
+function openSavedPaymentRequest(id,tab){
+  if(!requireBudgetRequestDetail()||!S.edBudget)return;
+  var b=S.edBudget,row=(S.checkWireRequestsByBudget[String(b.ID)]||[]).find(function(r){return r.ID===id&&lookupMatchesId(r.Budget,b.ID);});
+  if(!row)return;
+  S.modModal={trigger:document.activeElement,paymentDetailId:id,attachmentTab:tab==='files'?'files':'details'};renderModModal();$('modOverlay').classList.add('show');
+}
+function openAttachmentRequest(b,file){
+  var association=attachmentAssociationLabel(file,b);if(!association.id)return Promise.resolve(false);
+  if(S.attachmentModal&&!closeBudgetAttachmentModal())return Promise.resolve(false);
+  var ready=S.view==='vEditor'&&S.edBudget&&String(S.edBudget.ID)===String(b.ID)?Promise.resolve():openPhaseEditor(String(b.ID),'modifications');
+  return Promise.resolve(ready).then(function(){return Promise.all([ensureBudgetModifications(false),loadCheckWireRequests(String(b.ID),false)]);}).then(function(){
+    if(!S.edBudget||String(S.edBudget.ID)!==String(b.ID))return false;
+    if(association.kind==='modification'){openModDetail(association.id,true);}
+    else{var row=(S.checkWireRequestsByBudget[String(b.ID)]||[]).find(function(r){return r.ID===association.id;});if(savedPurchaseOrderRequest(row,String(b.ID)))return openSavedPurchaseOrder(association.id,document.activeElement,'attachments');openSavedPaymentRequest(association.id,'files');}
+    return true;
+  }).catch(function(e){setMsg('Linked request unavailable: '+shortErr(e),'err');return false;});
+}
+function renderSavedPaymentRequest(b){
+  var m=S.modModal,row=(S.checkWireRequestsByBudget[String(b.ID)]||[]).find(function(r){return r.ID===m.paymentDetailId&&lookupMatchesId(r.Budget,b.ID);});if(!row){closeModModal();return;}
+  var type=cleanVal(row.Request_Type);$('modModalTitle').textContent=type==='Purchase Order'?type:type+' Request';$('modModalSub').textContent=phaseName(b);
+  $('modModalBody').innerHTML='<div class="mod-det-item"><span class="nm">'+esc(lookupName(row.Vendor)||lookupName(row.Budget_Item)||type)+'</span></div><div class="mod-det-amount">'+fmt(v(row.Request_Amount))+'</div><div class="mod-row-meta">Request date '+esc(poRequestCardDate(row.Request_Date))+' · Date needed '+esc(poRequestCardDate(row.Date_Needed))+'</div><div class="mod-actions"><span class="spacer"></span><button type="button" class="mbtn neutral" id="savedRequestClose">Close</button></div>';
+  $('savedRequestClose').addEventListener('click',closeModModal);mountModRequestAttachments('payment',String(row.ID),$('modModalTitle').textContent);
+}
 function canAddBudgetAttachment(b) {
   return !!b && (canEditBudget(b) || canActApproval(b));
 }
@@ -7065,6 +7200,8 @@ function normalizeBudgetAttachmentRecord(row, index) {
   file.budgetId = attachmentRecordBudgetId(row);
   file.addedTime = cleanVal(firstRaw(row, ["Date_field1", "Date_Field1", "Added_Time", "Modified_Time"]));
   file.addedUser = attachmentAuthorLabel(row.Added_User);
+  file.paymentRequestId = lookupId(row.Payment_Request) || "";
+  file.modificationId = lookupId(row.Budget_Modification) || "";
   file.rawRecord = row;
   return file;
 }
@@ -7077,6 +7214,7 @@ function loadBudgetAttachments(budgetId, force) {
   var criteria="("+CFG.attachmentBudgetField+" == "+bid+")";
   // Native system author fields can be absent from the report's default layouts.
   var detailFields=["ID",CFG.attachmentBudgetField,CFG.attachmentFileField,"Date_field1","Added_Time","Modified_Time","Added_User"];
+  if(attachmentLinksReady(bid))detailFields.push("Payment_Request","Budget_Modification");
   function normalize(rows){var out=(rows||[]).filter(function(row){return attachmentRecordBudgetId(row)===bid;}).map(normalizeBudgetAttachmentRecord).filter(Boolean);out.sort(function(a,b){return (Date.parse(b.addedTime||"")||0)-(Date.parse(a.addedTime||"")||0);});return out;}
   var request=loadBudgetFeature("attachments:"+bid,function(){return sdkGetAllRecords(CFG.reports.attachments,criteria,{fields:detailFields,fresh:!!force}).then(function(rows){
     if(rows.length)return normalize(rows);
@@ -7084,7 +7222,7 @@ function loadBudgetAttachments(budgetId, force) {
     return sdkGetAllRecords(CFG.reports.attachments,"",{fields:detailFields,fresh:!!force}).then(normalize);
   });},function(rows){S.attachmentsByBudget[bid]=rows;var state=budgetFeature("attachments:"+bid);state.badgeScope=budgetBadgeScope();state.badgeRevision=budgetFeature("attachment-badges").generation;},force);
   syncBudgetAttachmentButtons();
-  return request.then(function(rows){syncBudgetAttachmentButtons();return rows;},function(error){syncBudgetAttachmentButtons();throw error;});
+  return request.then(function(rows){syncBudgetAttachmentButtons();syncRequestAttachmentCounts();return rows;},function(error){syncBudgetAttachmentButtons();throw error;});
 }
 function attachmentIconSvg() {
   return "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.1'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z'/><path d='M14 2v6h6'/></svg>";
@@ -7163,6 +7301,7 @@ function budgetAttachmentActiveDialog() {
   return deletion&&deletion.classList.contains("show")?deletion:preview&&preview.classList.contains("show")?preview:$("budgetAttachmentModal");
 }
 function handleBudgetAttachmentModalKey(event) {
+  if(requestAttachmentUI&&requestAttachmentUI.isPickerOpen())return;
   if(!S.attachmentModal)return;
   var dialog=budgetAttachmentActiveDialog();
   if(event.key==="Escape"){
@@ -7179,6 +7318,7 @@ function handleBudgetAttachmentModalKey(event) {
   else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){event.preventDefault();first.focus();}
 }
 function handleBudgetAttachmentModalFocus(event) {
+  if(requestAttachmentUI&&requestAttachmentUI.isPickerOpen())return;
   if(!S.attachmentModal)return;
   var dialog=budgetAttachmentActiveDialog();
   if(dialog&&!dialog.contains(event.target)){
@@ -7195,7 +7335,8 @@ function handleBudgetAttachmentDrop(event) {
   zone.classList.toggle("dragover",event.type==="dragover" && allowed);
   if(event.type!=="drop" || !allowed)return;
   var files=Array.prototype.slice.call(event.dataTransfer && event.dataTransfer.files || []);
-  if(files.length)return uploadBudgetAttachments(files);
+  var surface=requestAttachmentSurface(zone);
+  if(files.length)return uploadBudgetAttachments(files,surface&&surface.requestContext);
 }
 function renderAttachmentPage(b, target, modal) {
   var pane = target || $("attachmentPhasePanel");
@@ -7208,39 +7349,42 @@ function renderAttachmentPage(b, target, modal) {
     pane.innerHTML = "<div class='attachment-page-panel'><div class='attachment-page-card'>" +
       attachmentInlineStateHtml("Loading attachments", "", true) + "</div></div>";
     loadBudgetAttachments(bid, false).then(function(){
-      if(modal){if(budgetAttachmentModalCurrent(modal))renderBudgetAttachmentModal();}
+      if(modal){if(attachmentSurfaceCurrent(modal))renderAttachmentSurface(modal);}
       else if (budgetNavigationCurrent(openToken,"vEditor",bid) && S.globalMode === "attachments") renderAttachmentPage(S.edBudget);
     }).catch(function(err){
-      if(modal&&!budgetAttachmentModalCurrent(modal))return;
+      if(modal&&!attachmentSurfaceCurrent(modal))return;
       S.attachmentStatusError = true;
       S.attachmentStatus = "Could not load attachments: " + shortErr(err);
-      if(modal){if(budgetAttachmentModalCurrent(modal))renderBudgetAttachmentModal();}
+      if(modal){if(attachmentSurfaceCurrent(modal))renderAttachmentSurface(modal);}
       else if (budgetNavigationCurrent(openToken,"vEditor",bid) && S.globalMode === "attachments") renderAttachmentPage(S.edBudget);
     });
     return;
   }
-  var files = budgetAttachments(b);
+  var allFiles = budgetAttachments(b), requestContext=modal&&modal.requestContext;
+  var files = requestContext ? allFiles.filter(function(file){return requestAttachmentContextMatches(file,requestContext);}) : allFiles;
   var canAdd = canAddBudgetAttachment(b);
   S.attachmentPageFileIndex = -1;
   S.attachmentPageExpanded = false;
-  var uploadBlocked=!!(S.attachmentBusy || S.attachmentUploadReview);
+  var uploadBlocked=!!(S.attachmentBusy || S.attachmentUploadReview || attachmentAssociationReview);
   var uploadArea = canAdd ? "<div class='attachment-page-drop" + (uploadBlocked ? " disabled" : "") + "' data-budget-attachment-drop aria-disabled='" + uploadBlocked + "'>" +
     "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7'><path d='M12 16V4m-4 4 4-4 4 4'/><path d='M4 15v5h16v-5'/></svg>" +
     "<div class='attachment-page-upload-hint' data-add-budget-attachment><b>Drop files here or click to upload</b>50 MB per file</div>" +
     "<button class='btn primary attachment-page-add' data-add-budget-attachment type='button'" + (uploadBlocked ? " disabled" : "") + ">" + (S.attachmentBusy ? "Uploading…" : "Choose Files") + "</button></div>" : "";
   var rows = "";
   if (files.length) {
-    rows = "<div class='attachment-page-list'>" + files.map(function(file, i){
+    rows = "<div class='attachment-page-list' data-lm-row-list='request-attachment-files'>" + files.map(function(file){
+      var i=allFiles.findIndex(function(row){return row.recordId===file.recordId;});
       var ext = attachmentExt(file.name).toUpperCase() || "FILE";
       var kind=ext==="PDF"?"pdf":/^(DOC|DOCX)$/.test(ext)?"doc":/^(XLS|XLSX|CSV)$/.test(ext)?"xls":"";
       var type=kind ? kind.toUpperCase() : /^(PNG|JPG|JPEG|GIF|WEBP|SVG)$/.test(ext) ? "IMG" : ext;
       var meta = esc(file.addedTime || "Added") + " · Added by <b>" + esc(file.addedUser || "—") + "</b>";
-      return "<div class='attachment-page-row'>" +
+      return "<div class='attachment-page-row' data-record-id='"+escAttr(file.recordId)+"'>" +
         "<div class='attachment-page-file-icon " + kind + "'>" + esc(type) + "</div>" +
-        "<div style='min-width:0'><button type='button' class='attachment-page-file-name' data-open-budget-attachment='" + i + "' title='Preview " + escAttr(file.name) + "'>" + esc(file.name) + "</button><div class='attachment-page-file-meta'>" + meta + "</div></div>" +
+        "<div style='min-width:0'><button type='button' class='attachment-page-file-name' data-open-budget-attachment='" + i + "' title='Preview " + escAttr(file.name) + "'>" + esc(file.name) + "</button><div class='attachment-page-file-meta'>" + meta + "</div>"+(!requestContext?attachmentAssociationHtml(file,b,i):"")+"</div>" +
         "<div class='attachment-page-row-actions'>" +
           "<button class='attachment-action' type='button' data-open-budget-attachment='" + i + "' title='Preview attachment' aria-label='Preview " + escAttr(file.name) + "'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/></svg></button>" +
           "<button class='attachment-action' type='button' data-download-budget-attachment='" + i + "' title='Download' aria-label='Download " + escAttr(file.name) + "'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M12 3v12M7 10l5 5 5-5'/><path d='M5 21h14'/></svg></button>" +
+          (canAdd&&!requestContext&&attachmentLinksReady(b.ID)?"<button type='button' class='attachment-action' data-attachment-associate='"+i+"' aria-label='Change attachment association' title='Associated with'"+(uploadBlocked?" disabled":"")+"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0'/></svg></button>":"")+
           (canAdd ? "<button class='attachment-action delete' type='button' data-delete-budget-attachment='" + i + "' title='Delete' aria-label='Delete " + escAttr(file.name) + "'" + (uploadBlocked ? " disabled" : "") + "><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14'/><path d='M10 11v6M14 11v6'/></svg></button>" : "") +
         "</div></div>";
     }).join("") + "</div>";
@@ -7250,12 +7394,15 @@ function renderAttachmentPage(b, target, modal) {
   var status = S.attachmentStatus ? "<div class='attachment-page-status" + (S.attachmentStatusError ? " error" : "") + "'>" +
     (S.attachmentBusy ? "<span class='spinner'></span>" : "") + esc(S.attachmentStatus) +
     (S.attachmentUploadReview ? " <button class='btn' data-recheck-budget-upload type='button'" + (S.attachmentBusy ? " disabled" : "") + ">Recheck</button>" : "") + "</div>" : "";
+  if(attachmentAssociationReview)status+="<div class='attachment-page-status error' role='status'>Association needs review. <button class='btn' type='button' data-recheck-request-association"+(S.attachmentBusy?" disabled":"")+">Check status</button></div>";
   pane.innerHTML = "<div class='attachment-page-panel'><div class='attachment-page-card'>" +
     "<div class='attachment-page-head'><div class='attachment-page-title-wrap'><div class='attachment-page-title'>" +
       "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7L9.2 18.2a2 2 0 0 1-2.8-2.8l8.5-8.5'/></svg>Attachments <span class='attachment-count'>" + files.length + "</span></div>" +
-      "<div class='attachment-page-sub'>" + esc(phaseName(b)) + "</div></div></div>" + uploadArea + rows + status + "</div></div>";
+      "<div class='attachment-page-sub'>" + esc(phaseName(b)) + "</div></div></div>" + uploadArea + (requestContext?"<div class='request-attachment-tools'>"+(canAdd?"<button type='button' data-ra-existing"+(uploadBlocked?" disabled":"")+">Link Budget File</button>":"")+"<button type='button' data-ra-budget>View in Budget Attachments</button></div>":"") + rows + status + "</div></div>";
+  if(!requestContext)prepareRequestAttachmentBadges(bid);
 }
 function renderAttachmentPane(b) {
+  if(requestAttachmentUI)requestAttachmentUI.refresh();
   ["attachmentPreviewDelete","attachmentDeleteGo"].forEach(function(id){var button=$(id);if(button)button.disabled=!!(S.attachmentBusy || S.attachmentUploadReview);});
   if(S.attachmentModal){if(String(b&&b.ID||"")===S.attachmentModal.budgetId)renderBudgetAttachmentModal();return;}
   // Attachments now live on their own editor page instead of the right rail.
@@ -7273,7 +7420,7 @@ function parseAttachmentCreateResponse(resp) {
       else continue;
     }
     if (typeof value === "object") {
-      if (value.ok === false) throw new Error(cleanVal(value.message) || "Attachment record creation failed.");
+      if (value.ok === false) {var createError=new Error(cleanVal(value.message) || "Attachment record creation failed.");if(value.writeState==='not-started')createError.definiteRejection=true;throw createError;}
       var id = value.attachmentId || value.attachment_id || value.ID || value.id;
       if (value.ok === true && typeof id === "string" && /^\d+$/.test(id)) return id;
     }
@@ -7301,6 +7448,7 @@ function inspectBudgetAttachment(attempt) {
   return sdkGetRecordById(CFG.reports.attachments,attempt.attachmentId).then(function(row){
     if(attempt.scope&&attempt.scope!==budgetCreateScope('attachment',attempt.budgetId))throw new Error('Attachment verification belongs to an older Creator session.');
     if(!row || typeof row.ID !== "string" || row.ID !== attempt.attachmentId || attachmentRecordBudgetId(row) !== attempt.budgetId)throw new Error("Creator did not return the expected attachment and parent.");
+    if(attempt.requestContext&&!requestAttachmentContextMatches({paymentRequestId:lookupId(row.Payment_Request)||'',modificationId:lookupId(row.Budget_Modification)||''},attempt.requestContext))throw new Error('The attachment request identity was not confirmed.');
     if(attempt.acknowledged)return {acknowledged:true,empty:false,files:[]};
     if(!Object.prototype.hasOwnProperty.call(row,CFG.attachmentFileField))throw new Error("Creator did not return the expected attachment file field.");
     var raw=row[CFG.attachmentFileField], entries=[];
@@ -7341,12 +7489,15 @@ function recheckBudgetAttachmentUpload() {
     return refreshBudgetAttachmentRecord(attempt.budgetId).then(function(){return true;});
   }).catch(function(error){S.attachmentStatusError=true;S.attachmentStatus="Upload needs review: "+shortErr(error);return false;}).then(function(result){S.attachmentBusy=false;if(S.attachmentModal||S.edBudget)renderAttachmentPane(S.attachmentModal?S.attachmentModal.budget:S.edBudget);return result;});
 }
-function uploadBudgetAttachments(fileList) {
+function uploadBudgetAttachments(fileList, requestContext) {
   var modal=S.attachmentModal;
   var b = modal?(budgetAttachmentModalCurrent(modal)&&!modal.loading?modal.budget:null):S.edBudget;
+  var uploadScope=b&&attachmentLinkScope(b.ID),uploadNavigation=budgetNavigationToken();
+  function uploadCurrent(){return !!b&&uploadScope===attachmentLinkScope(b.ID)&&(!modal||budgetAttachmentModalCurrent(modal))&&(!requestContext||uploadNavigation===budgetNavigationToken()&&S.edBudget===b);}
   var files = Array.prototype.slice.call(fileList || []);
   if (!b || !files.length) return;
-  if(S.attachmentBusy || S.attachmentUploadReview){setMsg("Recheck the previous attachment upload before starting another.","err");return Promise.resolve(false);}
+  if(S.attachmentBusy || S.attachmentUploadReview || attachmentAssociationReview){setMsg("Recheck the previous attachment action before starting another.","err");return Promise.resolve(false);}
+  if(requestContext&&(!attachmentLinksReady(b.ID)||requestContext.budgetId!==String(b.ID)||!/^\d+$/.test(requestContext.id)))return Promise.resolve(false);
   if (!canAddBudgetAttachment(b)) { setMsg("You don't have permission to add budget attachments.", "err"); return; }
   var tooLarge = files.find(function(f){ return f && f.size > 50 * 1024 * 1024; });
   if (tooLarge) { setMsg(tooLarge.name + " exceeds Zoho Creator's 50 MB file limit.", "err"); return; }
@@ -7359,31 +7510,32 @@ function uploadBudgetAttachments(fileList) {
   var chain = Promise.resolve();
   files.forEach(function(file, index){
     chain = chain.then(function(){
-      if(modal&&!budgetAttachmentModalCurrent(modal))throw new Error("Attachment context changed. Review the previous upload before another upload.");
+      if(!uploadCurrent())throw new Error("Attachment context changed. Review the previous upload before another upload.");
       S.attachmentStatus = "Uploading " + (index + 1) + " of " + files.length + ": " + file.name;
       renderAttachmentPane(b);
-      var attachmentId = "", attempt={budgetId:String(b.ID),attachmentId:"",filename:file.name,filepath:"",scope:budgetCreateScope('attachment',String(b.ID))};
-      return sdkRunBudgetFunction("createBudgetAttachmentRecord", { budgetId:String(b.ID) }).catch(function(err){throw budgetUploadError(err);})
+      var attachmentId = "", attempt={budgetId:String(b.ID),attachmentId:"",filename:file.name,filepath:"",scope:budgetCreateScope('attachment',String(b.ID)),requestContext:requestContext||null};
+      var createArgs={budgetId:requestContext||attachmentLinksReady(b.ID)?JSON.stringify({contract:'budget-request-attachments-v1',action:'Create',budgetId:String(b.ID),userAccessId:String(S.myAccessId||''),paymentRequestId:requestContext&&requestContext.kind==='payment'?requestContext.id:'',modificationId:requestContext&&requestContext.kind==='modification'?requestContext.id:''}):String(b.ID)};
+      return sdkRunBudgetFunction("createBudgetAttachmentRecord", createArgs).catch(function(err){throw budgetUploadError(err);})
         .then(function(resp){
           attachmentId = parseAttachmentCreateResponse(resp);
           attempt.attachmentId=attachmentId;
-          if(modal&&!budgetAttachmentModalCurrent(modal))throw new Error("Attachment context changed. Review the created attachment before another upload.");
+          if(!uploadCurrent())throw new Error("Attachment context changed. Review the created attachment before another upload.");
           return sdkUploadFile(CFG.reports.attachments, attachmentId, CFG.attachmentFileField, file);
         }).then(function(response){
           attempt.acknowledged=true;attempt.filepath=response.data.filepath;attempt.serverFilename=response.data.filename;
-          if(modal&&!budgetAttachmentModalCurrent(modal))throw new Error("Attachment context changed. Review the saved file before another upload.");
-          return inspectBudgetAttachment(attempt).then(function(snapshot){if(modal&&!budgetAttachmentModalCurrent(modal))throw new Error("Attachment context changed. Review the saved file before another upload.");if(!budgetAttachmentMatches(attempt,snapshot))throw new Error("Creator's saved file did not match the uploaded attachment.");});
+          if(!uploadCurrent())throw new Error("Attachment context changed. Review the saved file before another upload.");
+          return inspectBudgetAttachment(attempt).then(function(snapshot){if(!uploadCurrent())throw new Error("Attachment context changed. Review the saved file before another upload.");if(!budgetAttachmentMatches(attempt,snapshot))throw new Error("Creator's saved file did not match the uploaded attachment.");});
         })
         .catch(function(err){
-          if(err && err.definiteRejection&&(!modal||budgetAttachmentModalCurrent(modal)))return cleanupEmptyAttachmentRecord(b.ID,attachmentId,err).then(function(cleaned){
+          if(err && err.definiteRejection&&uploadCurrent())return cleanupEmptyAttachmentRecord(b.ID,attachmentId,err).then(function(cleaned){
             if(attachmentId && !cleaned){S.attachmentUploadReview=attempt;err.uncertain=true;err.noReplay=true;}
             throw err;
           });
           S.attachmentUploadReview=attempt;
           // A lost response may already have saved the file. Inspection never triggers a write or cleanup.
-          var inspect=attachmentId&&(!modal||budgetAttachmentModalCurrent(modal)) ? inspectBudgetAttachment(attempt).then(function(snapshot){attempt.observed=snapshot;},function(){}) : Promise.resolve();
+          var inspect=attachmentId&&uploadCurrent() ? inspectBudgetAttachment(attempt).then(function(snapshot){attempt.observed=snapshot;},function(){}) : Promise.resolve();
           return inspect.then(function(){
-            if(!attempt.filepath && !(err&&err.timedOut) && attempt.scope===budgetCreateScope('attachment',attempt.budgetId) && (!modal||budgetAttachmentModalCurrent(modal)) && budgetAttachmentMatches(attempt,attempt.observed)){
+            if(!attempt.filepath && !(err&&err.timedOut) && uploadCurrent() && budgetAttachmentMatches(attempt,attempt.observed)){
               attempt.filepath=attempt.observed.files[0].filePath;
               S.attachmentUploadReview=null;
               return;
@@ -7395,7 +7547,7 @@ function uploadBudgetAttachments(fileList) {
   });
 
   return chain.then(function(){
-    if(modal&&!budgetAttachmentModalCurrent(modal))throw new Error("Attachment context changed. Reopen its phase to review the saved files.");
+    if(!uploadCurrent())throw new Error("Attachment context changed. Reopen its phase to review the saved files.");
     S.attachmentPageExpanded = false;
     S.attachmentPageFileIndex = -1;
     S.attachmentBusy = false;
@@ -7705,6 +7857,7 @@ function closeAttachmentPreview() {
   S.attachmentPreviewFile = null;
   S.attachmentPageExpanded = false;
   S.attachmentPageFileIndex = -1;
+  endRequestAttachmentOverlay();
   if(S.attachmentModal){if($("budgetAttachmentModal"))$("budgetAttachmentModal").focus();}
   else if (S.view === "vEditor" && S.edBudget && S.globalMode === "attachments") renderAttachmentPage(S.edBudget);
 }
@@ -8259,6 +8412,7 @@ function openBudgetAttachmentPreview(index) {
   if (downloadButton) downloadButton.disabled = false;
   if (body) body.innerHTML = previewStateHtml("Loading preview", "", true);
   if (overlay) overlay.classList.add("show");
+  beginRequestAttachmentOverlay('attachmentPreviewOverlay');
   if(S.attachmentModal&&$("attachmentPreviewClose"))$("attachmentPreviewClose").focus();
 
   // Creator's stock report preview only works inside Creator's own preview shell.
@@ -8385,7 +8539,7 @@ function removeLocalBudgetAttachment(b, file) {
   });
 }
 function deleteBudgetAttachment(index) {
-  if(S.attachmentBusy || S.attachmentUploadReview){setMsg("Finish or recheck the current attachment operation before deleting.","err");return false;}
+  if(S.attachmentBusy || S.attachmentUploadReview || attachmentAssociationReview){setMsg("Finish or recheck the current attachment operation before deleting.","err");return false;}
   var b = S.attachmentModal?(budgetAttachmentModalCurrent(S.attachmentModal)&&!S.attachmentModal.loading?S.attachmentModal.budget:null):S.edBudget, files = budgetAttachments(b), file = files[Number(index)];
   if (!b || !file) return;
   if (!canAddBudgetAttachment(b)) { setMsg("You don't have permission to delete budget attachments.", "err"); return; }
@@ -8395,6 +8549,7 @@ function deleteBudgetAttachment(index) {
   $("attachmentDeleteTitle").textContent = "Delete attachment?";
   $("attachmentDeleteName").textContent = file.name;
   $("attachmentDeleteOverlay").classList.add("show");
+  beginRequestAttachmentOverlay('attachmentDeleteOverlay');
   if(S.attachmentModal)$("attachmentDeleteCancel").focus();
 }
 function closeAttachmentDeleteConfirm() {
@@ -8402,12 +8557,13 @@ function closeAttachmentDeleteConfirm() {
   if (ov) ov.classList.remove("show");
   S._attachmentDeleteIndex = null;
   S._attachmentDeleteTarget = null;
+  endRequestAttachmentOverlay();
   if(S.attachmentModal&&$("budgetAttachmentModal"))$("budgetAttachmentModal").focus();
 }
 function runDeleteBudgetAttachment(index) {
-  if(S.attachmentBusy || S.attachmentUploadReview){setMsg("Finish or recheck the current attachment operation before deleting.","err");return Promise.resolve(false);}
+  if(S.attachmentBusy || S.attachmentUploadReview || attachmentAssociationReview){setMsg("Finish or recheck the current attachment operation before deleting.","err");return Promise.resolve(false);}
   var modal=S.attachmentModal,b = modal?(budgetAttachmentModalCurrent(modal)&&!modal.loading?modal.budget:null):S.edBudget, files = budgetAttachments(b), file = files[Number(index)];
-  if (!b || !file) return;
+  if (!b || !file || !canAddBudgetAttachment(b)) return;
   if(modal&&(!canAddBudgetAttachment(b)||!S._attachmentDeleteTarget||S._attachmentDeleteTarget.modal!==modal||S._attachmentDeleteTarget.budgetId!==String(b.ID)||S._attachmentDeleteTarget.recordId!==String(file.recordId)))return Promise.resolve(false);
   S.attachmentBusy = true;
   S.attachmentStatusError = false;
@@ -8442,9 +8598,8 @@ $("attachmentDeleteOverlay").addEventListener("click", function(e){ if (e.target
 $("attachmentDeleteGo").addEventListener("click", function(){
   var index = S._attachmentDeleteIndex;
   if (index == null) return;
-  $("attachmentDeleteOverlay").classList.remove("show");
-  S._attachmentDeleteIndex = null;
   runDeleteBudgetAttachment(index);
+  closeAttachmentDeleteConfirm();
 });
 
 function renderApprovalPaneLite(b) {
@@ -11210,6 +11365,14 @@ document.addEventListener("click", function (e) {
 
 /* Budget attachment controls */
 document.addEventListener("click", function(e){
+  var association=e.target.closest('[data-attachment-associate],[data-attachment-open-request],[data-recheck-request-association]');
+  if(association){
+    e.preventDefault();if(association.hasAttribute('data-recheck-request-association')){recheckAttachmentAssociation().catch(function(error){setMsg(error.message,'err');});return;}var attachmentBudget=S.attachmentModal?S.attachmentModal.budget:S.edBudget;if(!attachmentBudget)return;
+    var attachmentIndex=Number(association.dataset.attachmentAssociate||association.dataset.attachmentOpenRequest||0),attachmentFile=budgetAttachments(attachmentBudget)[attachmentIndex];
+    if(association.hasAttribute('data-attachment-open-request')){if(attachmentFile)openAttachmentRequest(attachmentBudget,attachmentFile);}
+    else getRequestAttachmentUI().openPicker({budget:attachmentBudget,file:attachmentFile,mode:'associate',trigger:association});
+    return;
+  }
   if(e.target.closest("[data-close-budget-attachment-modal]")||e.target.id==="budgetAttachmentModalOverlay"){e.preventDefault();closeBudgetAttachmentModal();return;}
   if(e.target.closest("[data-retry-budget-attachment-modal]")){e.preventDefault();refreshBudgetAttachmentModal();return;}
   if(e.target.closest("[data-recheck-budget-upload]")){e.preventDefault();recheckBudgetAttachmentUpload();return;}
@@ -11218,10 +11381,11 @@ document.addEventListener("click", function(e){
     e.preventDefault();
     var modal=S.attachmentModal,b=modal?(budgetAttachmentModalCurrent(modal)&&!modal.loading?modal.budget:null):S.edBudget;
     var input = $(modal?"budgetAttachmentModalInput":"budgetAttachmentInput");
-    if (input && b && canAddBudgetAttachment(b) && !S.attachmentBusy && !S.attachmentUploadReview) {
+    if (input && b && canAddBudgetAttachment(b) && !S.attachmentBusy && !S.attachmentUploadReview && !attachmentAssociationReview) {
       // Clear before opening so choosing the same file twice still fires change.
       input.value = "";
       if(modal)input._budgetAttachmentModal=modal;
+      var surface=requestAttachmentSurface(add);input._requestAttachmentContext=surface?surface.requestContext:null;input._requestAttachmentSurface=surface;
       input.click();
     }
     return;
@@ -11273,7 +11437,9 @@ function handleBudgetAttachmentInput() {
     count:selected.length,
     files:selected.map(function(file){ return { name:file.name, size:file.size, type:file.type || "" }; })
   });
-  uploadBudgetAttachments(selected);
+  var surface=this._requestAttachmentSurface,context=this._requestAttachmentContext;this._requestAttachmentContext=null;this._requestAttachmentSurface=null;
+  if(surface&&!requestAttachmentSurfaceCurrent(surface))return;
+  uploadBudgetAttachments(selected,context);
 }
 ["budgetAttachmentInput","budgetAttachmentModalInput"].forEach(function(id){var input=$(id);if(input)input.addEventListener("change",handleBudgetAttachmentInput);});
 document.addEventListener("keydown",handleBudgetAttachmentModalKey,true);
@@ -11921,6 +12087,7 @@ function refreshPurchaseOrderRequestState(snapshot){
   delete S.checkWireRequestState[bid];
   if(S.edBudget&&String(S.edBudget.ID)===bid)reads.push(loadCheckWireRequests(bid,true));
   if(snapshot.deleted||snapshot.status==="Submitted")reads.push(refreshBudgetWorkflowState(bid,{requireModifications:true}));
+  if(snapshot.deleted&&attachmentLinksReady(bid))reads.push(refreshBudgetAttachmentRecord(bid));
   return Promise.allSettled(reads).then(function(results){
     results.forEach(function(result){if(result.status==="rejected")auditLog("error","PO saved; request display refresh needs retry",result.reason);});
     if(scope===budgetCreateScope("requests",bid)&&budgetNavigationCurrent(token,"vEditor",bid)&&S.globalMode==="modifications")renderModPhasePanel(S.edBudget);
@@ -11945,6 +12112,9 @@ function getPurchaseOrderUI(){
   },
   vendors:function(){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"Vendors",budgetId:String(S.edBudget.ID),userAccessId:String(S.myAccessId||"")})}).then(unwrapBudgetManageResponse).then(function(response){if(!response||response.contract!=="po-v1"||response.success!==true||!Array.isArray(response.vendors))throw new Error(response&&response.error||"PO vendors unavailable.");return response.vendors;});},
   modifications:function(){return (S.modifications||[]).filter(function(row){return lookupMatchesId(row.Budget,S.edBudget.ID);});},
+  attachments:function(config){config.budget=S.edBudget;getRequestAttachmentUI().mount(config);},
+  detachAttachments:function(card){if(requestAttachmentUI)requestAttachmentUI.unmount(card);},
+  attachmentBusy:function(){return S.attachmentBusy;},
   call:function(payload){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify(payload)}).then(unwrapBudgetManageResponse);},
   saved:refreshPurchaseOrderRequestState
 });
@@ -11960,7 +12130,9 @@ function openCheckWireRequest(type) {
   renderModModal();
 }
 function closeModModal() {
-  var trigger = S.modModal && S.modModal.requestFlow && S.modModal.trigger;
+  if(S.attachmentBusy)return false;
+  if(requestAttachmentUI)requestAttachmentUI.unmount($('modModalBody').parentElement);
+  var trigger = S.modModal && S.modModal.trigger;
   closeRequestDatePicker();
   $("modOverlay").classList.remove("show"); S.modModal = null;
   if (trigger && trigger.isConnected) trigger.focus();
@@ -11971,15 +12143,15 @@ function modBadge(st) {
   var cls = k === "approved" ? "appr" : (k === "submitted" || k === "pending") ? "pend" : k === "rejected" ? "rej" : "draft";
   return "<span class='mod-badge " + cls + "'>" + esc(st || "Draft") + "</span>";
 }
-function openModDetail(modId) {
+function openModDetail(modId, attachments) {
   if(!requireBudgetRequestDetail())return;
   if (!S.edBudget) return;
-  var linkedMod=(S.modifications||[]).find(function(row){return String(row.ID)===String(modId);});
+  var linkedMod=requestAttachmentModifications(S.edBudget.ID).find(function(row){return String(row.ID)===String(modId);});
   var linkedPO=linkedMod&&cleanVal(linkedMod.Reference_Number).match(/^PO:([0-9]+):/);
-  if(linkedPO&&poDevelopment()){
+  if(linkedPO&&poDevelopment()&&!attachments){
     getPurchaseOrderUI().open(S.edBudget,document.activeElement,linkedPO[1]).catch(function(error){setMsg(shortErr(error),"err");});return;
   }
-  S.modModal = { detailId: String(modId), rejectFor: null, deleteFor: null };
+  S.modModal = { trigger:document.activeElement,detailId: String(modId), rejectFor: null, deleteFor: null, attachmentReadOnly:!!linkedPO, attachmentTab:attachments?'files':'details' };
   renderModModal();
   $("modOverlay").classList.add("show");
 }
@@ -12064,7 +12236,7 @@ function deleteModification(modId) {
     toastShow("Modification deleted", "ok");
     auditLog("success", "Budget modification deleted", { modificationId: String(modId) });
     if(S.modModal===modal)closeModModal();
-    return refreshBudgetWorkflowState(b.ID,{requireModifications:true});
+    return Promise.all([refreshBudgetWorkflowState(b.ID,{requireModifications:true}),attachmentLinksReady(b.ID)?refreshBudgetAttachmentRecord(b.ID):Promise.resolve()]);
   }).then(function () {
     refreshModSurfaces();
   }).catch(function (err) {
@@ -12102,12 +12274,14 @@ function maybeRepairModChains(b) {
 }
 function renderModModal() {
   var m = S.modModal; if (!m) return;
+  if(requestAttachmentUI)requestAttachmentUI.unmount($("modModalBody").parentElement);
   if(!budgetModsReady())return;
   $("requestHeaderVendor").hidden = true;
   $("requestHeaderVendor").innerHTML = "";
   $("modOverlay").classList.toggle("request-vendor-picker",!!(m.requestFlow && m.requestStep==="vendor"));
   var b = S.edBudget;
   if (!b) { closeModModal(); return; }
+  if(m.paymentDetailId){renderSavedPaymentRequest(b);return;}
   if (m.requestFlow) {
     $("modModalTitle").textContent = m.requestType === "Purchase Order" ? m.requestType : m.requestType + " Request";
     if (m.requestStep === "picker") { renderModItemPicker(b); return; }
@@ -12194,6 +12368,7 @@ function renderModModal() {
   }
   $("modModalBody").innerHTML = html;
   if (canAdd) { wireModForm(fin, agg); }
+  mountModRequestAttachments('modification',m.editId||'','Budget Modification');
 }
 function requestModalScope(m) {
   return JSON.stringify([budgetCreateScope("request",m.budgetId),budgetNavigationToken(),!!S.startupReady,!!S.liveSDK]);
@@ -12364,6 +12539,7 @@ function renderCheckWireDetails(b) {
     $("modModalBody").querySelectorAll("[data-request-date-open]").forEach(function(button){button.disabled=true;});
     $("requestPreviewBtn").textContent="Edit Draft";$("requestPreviewBtn").disabled=false;
   }else amountInput.focus();
+  mountModRequestAttachments('payment','','Request');
 }
 function wireRequestVendorHover() {
   var host=$("requestHeaderVendor"),trigger=host.querySelector(".request-vendor-info-trigger"),tip=$("requestVendorTooltip");
@@ -12628,6 +12804,7 @@ document.addEventListener("click",function(event){var button=event.target.closes
 /* ── REQUESTS PAGE (pill-slider tab) ── */
 function loadCheckWireRequests(budgetId, fresh) {
   var bid = String(budgetId || "");
+  prepareRequestAttachmentBadges(bid);
   var token=budgetNavigationToken(),scope=budgetCreateScope("requests",bid);
   S.checkWireRequestLoads=S.checkWireRequestLoads||{};
   S.checkWireRequestGeneration=S.checkWireRequestGeneration||{};
@@ -12830,6 +13007,10 @@ function requestRailIcon(action,label,attrs,classes) {
 function requestRailIdentity(type,name,description) {
   return "<span class='po-request-kind'>"+esc(type)+"</span><div class='request-rail-primary'><strong class='po-request-vendor' title='"+escAttr(name)+"'>"+esc(name)+"</strong>"+(description?"<span class='request-rail-description' title='"+escAttr(description)+"'>"+esc(description)+"</span>":"")+"</div>";
 }
+function requestAttachmentButton(b,kind,id){
+  var known=attachmentLinksReady(b.ID)&&budgetFeature('attachments:'+b.ID).status==='loaded',context={kind:kind,id:String(id)},count=known?budgetAttachments(b).filter(function(file){return requestAttachmentContextMatches(file,context);}).length:null,state=attachmentLinkStates[String(b.ID)];
+  return '<button type="button" class="attachment-action request-rail-action request-attachment-count-badge" data-request-attachments="'+escAttr(String(id))+'" data-request-attachment-kind="'+kind+'" data-budget-id="'+escAttr(String(b.ID))+'" aria-label="View request attachments" title="Attachments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21 11-9 9a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8L15 6"/></svg><small>'+ (count==null?(state&&state.status==='error'?'—':'…'):count)+'</small></button>';
+}
 function renderRequestRailPayment(b,request,children) {
   var bid=String(b.ID),type=cleanVal(request.Request_Type)||"Request",managed=savedPurchaseOrderRequest(request,bid),kind=type==="Wire"?"wire":type==="Check"?"check":"po",item=firstRaw(request,["Budget_Item"]),itemId=lookupId(item),budgetItem=itemId?findItemById(itemId):null;
   var itemName=budgetItem?cleanVal(budgetItem.Item_Name):lookupName(item),code=budgetItem?cleanVal(budgetItem.Budget_Code||budgetItem.Cost_Code):"",vendorName=lookupName(request.Vendor),name=vendorName||itemName||type,description=cleanVal(request.PO_Description)||[itemName,code].filter(Boolean).join(" · ");
@@ -12841,6 +13022,8 @@ function renderRequestRailPayment(b,request,children) {
     var attrs="data-request-po-open='"+escAttr(request.ID)+"' ",editable=canEditBudget(b)&&(savedStatus==="Draft"||savedStatus==="Submitted"&&status==="Rejected");
     acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):"")+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canEditBudget(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):"");
   }
+  if(!managed)acts=requestRailIcon('view','View saved request','data-request-payment-open="'+escAttr(request.ID)+'"');
+  acts+=requestAttachmentButton(b,'payment',request.ID);
   return "<article class='po-request-ledger request-rail-row' data-kind='"+kind+"' aria-label='"+escAttr(managed?"Purchase order":type+" request")+"'><div class='po-request-values'>"+requestRailIdentity(type==="Purchase Order"?"PO":type.toUpperCase(),name,description)+"<div class='request-rail-route'>"+(managed?poApproverCircles(request):"<span class='request-rail-route-empty'>—</span>")+"</div><span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount' aria-label='Request amount'>"+(rawAmount?fmt(v(rawAmount)):"—")+"</strong><div class='po-request-status'>"+(status?modBadge(status):"<span class='request-rail-route-empty'>—</span>")+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
 }
 function requestRailModIdentity(mod) {
@@ -12868,6 +13051,7 @@ function renderRequestRailModification(b,mod,parent) {
     if(low==="rejected"&&canSubmitMod(b))pending=requestRailIcon("reopen","Revise and resubmit budget modification","data-modreopen='"+escAttr(String(mod.ID))+"'");
     acts=requestRailIcon("view","Preview budget modification","data-moddetail='"+escAttr(String(mod.ID))+"'")+pending;
   }
+  acts+=requestAttachmentButton(b,'modification',mod.ID);
   return "<article class='"+(parent?"request-rail-child":"po-request-ledger request-rail-row")+"' data-kind='modification' aria-label='"+(parent?"Budget modification linked to PO "+escAttr(parent.ID):"Budget modification")+"'><div class='po-request-values'>"+requestRailIdentity(parent?"BUD MOD":"MOD",identity.name,description)+"<div class='request-rail-route'>"+route+"</div><span class='po-request-date' title='Effective date'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount "+(signed<0?"neg":"")+"' aria-label='Budget change'>"+fmtModAmount(signed)+"</strong><div class='po-request-status'>"+modBadge(status)+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
 }
 function renderRequestRailList(b) {
@@ -12917,8 +13101,12 @@ function renderModPhasePanel(b) {
 /* Single-modification detail view — status, chain, recipients, approve/reject/resend. */
 function renderModDetailView(b) {
   var m = S.modModal; if (!m) return;
-  var mod = (S.modifications || []).find(function (x) { return String(x.ID) === String(m.detailId); });
+  var mod = requestAttachmentModifications(b.ID).find(function (x) { return String(x.ID) === String(m.detailId); });
   if (!mod) { closeModModal(); return; }
+  if(m.attachmentReadOnly){
+    var identity=requestRailModIdentity(mod);$('modModalBody').innerHTML='<div class="mod-det-item"><span class="nm">'+esc(identity.name)+'</span></div><div class="mod-det-amount">'+fmtModAmount(modSignedAmount(mod))+'</div><p>'+esc(cleanVal(mod.Reason))+'</p><div class="mod-row-meta">Approval handled with its Purchase Order</div><div class="mod-actions"><span class="spacer"></span><button type="button" class="mbtn neutral" id="linkedModAttachmentClose">Close</button></div>';
+    $('linkedModAttachmentClose').addEventListener('click',closeModModal);mountModRequestAttachments('modification',String(mod.ID),'Budget Modification');return;
+  }
   var itId = lookupId(firstRaw(mod, ["Budget_Item", "Item"]));
   var it = itId ? findItemById(itId) : null;
   var itemLabel = it ? cleanVal(it.Item_Name) : (lookupName(firstRaw(mod, ["Budget_Item", "Item"])) || "Item");
@@ -12992,6 +13180,7 @@ function renderModDetailView(b) {
     "<span class='spacer'></span><button class='mbtn neutral' id='modDetClose'>Close</button></div>";
   $("modModalBody").innerHTML = html;
   var c = $("modDetClose"); if (c) c.addEventListener("click", closeModModal);
+  mountModRequestAttachments('modification',String(mod.ID),'Budget Modification');
 }
 
 /* Searchable Budget Item picker inside the modification modal. */
@@ -13060,6 +13249,13 @@ document.addEventListener("click", function (e) {
   if(approvalPO){openPOApprovalDetails(approvalPO.dataset.requestPoApprovals,approvalPO);return;}
   var downloadPO=e.target.closest("[data-request-po-download]");
   if(downloadPO){downloadSavedPurchaseOrder(downloadPO.dataset.requestPoDownload,downloadPO);return;}
+  var requestFiles=e.target.closest('[data-request-attachments]');
+  if(requestFiles&&S.edBudget&&String(S.edBudget.ID)===requestFiles.dataset.budgetId){
+    if(requestFiles.dataset.requestAttachmentKind==='modification')openModDetail(requestFiles.dataset.requestAttachments,true);
+    else{var saved=(S.checkWireRequestsByBudget[String(S.edBudget.ID)]||[]).find(function(row){return row.ID===requestFiles.dataset.requestAttachments;});if(savedPurchaseOrderRequest(saved,String(S.edBudget.ID)))openSavedPurchaseOrder(saved.ID,requestFiles,'attachments');else openSavedPaymentRequest(requestFiles.dataset.requestAttachments,'files');}
+    return;
+  }
+  var savedPayment=e.target.closest('[data-request-payment-open]');if(savedPayment){openSavedPaymentRequest(savedPayment.dataset.requestPaymentOpen,'details');return;}
   var savedPO=e.target.closest("[data-request-po-open]");
   if(savedPO){openSavedPurchaseOrder(savedPO.dataset.requestPoOpen,savedPO,savedPO.dataset.requestPoIntent);return;}
   var retryPOChildren=e.target.closest("[data-request-po-children-retry]");
@@ -13569,7 +13765,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.51",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.53",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

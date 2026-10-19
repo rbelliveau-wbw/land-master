@@ -12,7 +12,10 @@ focus and action names.
 
 Keep the action column shared, but pack only available icons together at its right
 edge with 6px gaps. Do not reserve blank slots for an unavailable Edit or other
-action. A linked modification's single preview icon uses that same right edge.
+action. Linked modifications use that same right edge.
+Saved request paperclips open their Attachments tab and show scoped file counts.
+Saved Check/Wire rows also offer a read-only View action. Keep file associations
+separate from approval administration; see [Attachments](attachments.md).
 
 PO-created modifications sit immediately beneath their owning PO, with a fixed
 indent and branch connector. Match exact PO identity, current revision and phase

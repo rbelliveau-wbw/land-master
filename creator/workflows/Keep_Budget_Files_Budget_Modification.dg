@@ -1,0 +1,5 @@
+// Budget_Modification / Deleted / Successful record deletion.
+for each attachedFile in Attachment[Budget_Modification == input.ID]
+{
+	attachedFile.Budget_Modification=null;
+}

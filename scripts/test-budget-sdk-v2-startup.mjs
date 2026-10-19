@@ -337,6 +337,7 @@ function attachmentHarness(options={}) {
   const counts={create:0,upload:0,read:0,delete:0,refresh:0,invalidate:0,toasts:0};
   let row={ID:attachmentId,Budget:{ID:parentId},File_field1:''};
   const context=install({
+    attachmentAssociationReview:null,requestAttachmentUI:null,attachmentLinksReady:()=>false,attachmentAssociationHtml:()=>'',prepareRequestAttachmentBadges(){},budgetNavigationToken:()=>1,attachmentLinkScope:id=>context.budgetCreateScope('attachment',id),
     S:{liveSDK:true,useMock:false,edBudget:{ID:parentId},attachmentBusy:false,attachmentUploadReview:null},
     CFG:{forms:{},reports:{attachments:'All_Attachments'},reportCandidates:{All_Attachments:['All_Attachments']},attachmentFileField:'File_field1',attachmentBudgetField:'Budget',customApis:{createBudgetAttachmentRecord:'Create_Budget_Attachment_Record',deleteBudgetAttachment:'Delete_Budget_Attachment'}},
     ZOHO:{CREATOR:{DATA:{

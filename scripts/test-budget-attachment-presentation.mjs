@@ -12,12 +12,12 @@ function block(name){
 const clone=value=>JSON.parse(JSON.stringify(value));
 const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const BID='90071992547409931',RID='90071992547409991';
-const functions=['cleanVal','isObj','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','attachmentAuthorLabel','normalizeBudgetAttachmentRecord','attachmentExt','attachmentIconSvg','attachmentInlineStateHtml','renderAttachmentPage','handleBudgetAttachmentDrop'];
+const functions=['attachmentLinkScope','cleanVal','isObj','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','attachmentAuthorLabel','normalizeBudgetAttachmentRecord','attachmentExt','attachmentIconSvg','attachmentInlineStateHtml','renderAttachmentPage','handleBudgetAttachmentDrop'];
 function harness(){
   const pane={innerHTML:''},calls=[],features={},classes=new Set();
   const zone={classList:{toggle(name,on){if(on)classes.add(name);else classes.delete(name);}},classes};
   let allowed=true;
-  const context=vm.createContext({S:{edBudget:{ID:BID},edPhaseIdx:0,globalMode:'attachments',liveSDK:true,attachmentsByBudget:{},accessUsers:[]},
+  const context=vm.createContext({beginRequestAttachmentOverlay(){},endRequestAttachmentOverlay(){},attachmentAssociationReview:null,attachmentLinksReady:()=>false,attachmentAssociationHtml:()=>'',prepareRequestAttachmentBadges(){},requestAttachmentSurface:()=>null,syncRequestAttachmentCounts(){},requestAttachmentUI:null,S:{edBudget:{ID:BID},edPhaseIdx:0,globalMode:'attachments',liveSDK:true,attachmentsByBudget:{},accessUsers:[]},
     CFG:{attachmentBudgetField:'Budget',attachmentFileField:'File_field1',reports:{attachments:'All_Attachments'},reportCandidates:{}},Promise,Error,Date,URL,URLSearchParams,Number,
     $:()=>pane,esc,escAttr:esc,phaseName:()=>"Existing Phase",budgetNavigationToken:()=>({}),budgetNavigationCurrent:()=>true,
     budgetFeature:key=>features[key]||(features[key]={status:'loaded',generation:0}),budgetFeatureStateHtml:()=>'<div>Attachments unavailable · Retry</div>',

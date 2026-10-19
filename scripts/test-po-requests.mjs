@@ -16,7 +16,7 @@ const draft={ID:poId,Budget:{ID:budgetId},Request_Type:'Purchase Order',Request_
 const managedPO={id:poId,amount:'55.00',status:'Draft',revision:'draft-revision',vendorId};
 const managedResponse={contract:'po-v1',success:true,rows:[managedPO]},vendorResponse={contract:'po-v1',success:true,vendors:[{ID:vendorId,Vendor_Name:'2-C Equipment, LLC'}]};
 let scope='production-session',nav=1,editable=true,response=[{ID:poId,checkbox:'false'}],opens=[],reads=[],apiReads=[],renders=[],apiFailure='';
-const c=vm.createContext({S:{myAccessId:'900000000000000007',edBudget:{ID:budgetId},edPhaseIdx:0,globalMode:'modifications',checkWireRequestState:{},checkWireRequestsByBudget:{}},CFG:{reports:{checkWireRequests:'All_Wire_Requests'}},
+const c=vm.createContext({prepareRequestAttachmentBadges(){},attachmentLinksReady:()=>false,attachmentLinkStates:{},S:{myAccessId:'900000000000000007',edBudget:{ID:budgetId},edPhaseIdx:0,globalMode:'modifications',checkWireRequestState:{},checkWireRequestsByBudget:{}},CFG:{reports:{checkWireRequests:'All_Wire_Requests'}},
   Promise,Set,Error,JSON,Number,cleanVal:value=>String(value??'').trim(),firstRaw:(row,keys)=>row[keys[0]],lookupId:value=>String(value?.ID||value||''),lookupName:value=>value?.display_value||'',lookupMatchesId:(value,id)=>value?.ID===id||value===id,
   esc:value=>String(value??''),escAttr:value=>String(value??''),findItemById:()=>null,fmt:value=>'$'+value,v:value=>Number(value),modBadge:status=>'<span>'+status+'</span>',poDevelopment:()=>true,canEditBudget:()=>editable,
   budgetNavigationToken:()=>nav,budgetNavigationCurrent:(token,view,id)=>token===nav&&c.S.edBudget?.ID===id,budgetCreateScope:()=>scope,renderModPhasePanel:budget=>renders.push(budget.ID),auditLog(){},toastShow(){},requireBudgetRequestDetail:()=>true,
@@ -26,7 +26,7 @@ const c=vm.createContext({S:{myAccessId:'900000000000000007',edBudget:{ID:budget
   getPurchaseOrderUI:()=>({open:async(budget,trigger,id)=>opens.push({budget,trigger,id})})
 });c.window=c;
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),c);
-for(const name of ['purchaseOrderRequestChildren','loadPurchaseOrderRequestChildren','loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','requestDateParts','fmtDateUS','requestRailDateRank','requestRailDateValue','requestRailGroups','requestRailIcon','requestRailIdentity','renderRequestRailPayment','poRequestCardDate','rosterFullName','poApprovalRoleLabel','poApproverCircles','poApprovalDetailsHtml','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
+for(const name of ['purchaseOrderRequestChildren','loadPurchaseOrderRequestChildren','loadCheckWireRequests','mergeManagedPurchaseOrderRequests','savedPurchaseOrderRequest','openSavedPurchaseOrder','requestDateParts','fmtDateUS','requestRailDateRank','requestRailDateValue','requestRailGroups','requestRailIcon','requestRailIdentity','requestAttachmentButton','renderRequestRailPayment','poRequestCardDate','rosterFullName','poApprovalRoleLabel','poApproverCircles','poApprovalDetailsHtml','renderCheckWireRequestColumn'])vm.runInContext(block(widget,name),c);
 for(const [input,output]of [['2026-10-12','10/12/2026'],['1/2/2026','01/02/2026'],['2024-02-29','02/29/2024'],['2026-02-29','—'],['','—'],['bad-date','—']])assert.equal(c.poRequestCardDate(input),output);
 await c.loadCheckWireRequests(budgetId);
 assert.equal(c.S.checkWireRequestState[budgetId],'loaded');

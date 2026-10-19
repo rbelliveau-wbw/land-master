@@ -40,6 +40,7 @@
       status('[data-project-proforma-wrap]','.proj-card',node=>node.dataset.projectProformaWrap);
       status('#autosave');
       meters.push('.aq-progress-fill');
+      list('[data-lm-row-list="request-attachment-files"]','.attachment-page-row[data-record-id]',row=>row.dataset.recordId,()=>state().edBudget?.ID||'budget-files');
     }else if(module==='manage-lots'){
       tab('nav.tabs','[data-view]',null);
       panels.push({selector:'#lotsView,#takedownsView'});

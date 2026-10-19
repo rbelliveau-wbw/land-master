@@ -1,0 +1,47 @@
+{
+  "contract": "budget-request-attachments-v1",
+  "verified_on": "2026-10-19",
+  "metadata_source": "Authenticated Creator Development form/report/workflow editors; not a DS export",
+  "form": "Attachment",
+  "report": "All_Attachments",
+  "budget_field": "Budget",
+  "file_field": "File_field1",
+  "optional_single_lookups": {
+    "Payment_Request": "Payment_Request.ID",
+    "Budget_Modification": "Budget_Modification.ID"
+  },
+  "invariants": [
+    "One Attachment record per file, always retained under its Budget",
+    "At most one request lookup is populated",
+    "Request and Attachment share the exact Budget identity",
+    "Deleting a request removes its link and retains the Budget file"
+  ],
+  "report_projections": {
+    "All_Attachments": {
+      "quick_view_added": ["Payment_Request", "Budget_Modification"],
+      "detail_view_verified": ["Payment_Request", "Budget_Modification", "Added_User"]
+    },
+    "All_Wire_Requests": {
+      "form": "Payment_Request",
+      "quick_view_added": ["Request_Type", "Request_Date", "Date_Needed", "Budget", "Budget_Item", "Request_Amount", "Vendor", "Department"],
+      "detail_view_added": ["Request_Type", "Request_Date", "Date_Needed", "Budget", "Budget_Item", "Request_Amount", "Vendor"],
+      "existing_field_preserved": "PO_Description"
+    }
+  },
+  "custom_api": {
+    "name": "Create_Budget_Attachment_Record",
+    "function": "createBudgetAttachmentRecord",
+    "unchanged_argument": "string budgetId",
+    "plain_id_action": "Create Budget-only Attachment",
+    "json_envelope_actions": ["Capabilities", "Validate", "Create", "Associate"],
+    "json_exact_string_ids": ["budgetId", "userAccessId", "attachmentId", "paymentRequestId", "modificationId", "expectedPaymentRequestId", "expectedModificationId"]
+  },
+  "native_functions_saved_in_development": ["createBudgetAttachmentRecord", "modificationAdmin", "managePurchaseOrder"],
+  "native_workflows_saved_in_development": [
+    {"name": "Keep Budget Files - Payment Request", "link_name": "Keep_Budget_Files_Payment", "form": "Payment_Request", "record_event": "Deleted", "form_event": "Successful record deletion"},
+    {"name": "Keep Budget Files - Budget Modification", "link_name": "Keep_Budget_Files_Budget_", "form": "Budget_Modification", "record_event": "Deleted", "form_event": "Successful record deletion"},
+    {"name": "Validate Budget Request Attachment", "link_name": "Validate_Budget_Request_A", "form": "Attachment", "record_event": "Created or Edited", "form_event": "Validations on form submission"}
+  ],
+  "creator_production_promotion": "User performs promotion; not included in PMP",
+  "rollback_widget": "122.29.51"
+}

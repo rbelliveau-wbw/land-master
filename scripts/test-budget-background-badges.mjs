@@ -44,7 +44,7 @@ function harness(){
     const btn={dataset:kind==='comments'?{commentField:field,commentId:parent,commentLabel:'Fixture'}:{budgetAttachments:parent,attachmentLabel:'Fixture'},classList:{toggle(name,on){if(on)classes.add(name);else classes.delete(name);},contains:name=>classes.has(name)},title:'',querySelector:()=>count,setAttribute(name,value){this[name]=value;},count};
     buttons.push(btn);return btn;
   }
-  const context=vm.createContext({S:{liveSDK:true,useMock:false,currentUser:runtime.user,startupReady:false,budgets:[],projects:[],approvals:[],commentRowsByParent:{},attachmentsByBudget:{},landingCategories:{}},
+  const context=vm.createContext({attachmentLinksReady:()=>false,syncRequestAttachmentCounts(){},S:{liveSDK:true,useMock:false,currentUser:runtime.user,startupReady:false,budgets:[],projects:[],approvals:[],commentRowsByParent:{},attachmentsByBudget:{},landingCategories:{}},
     CFG:{reports,forms:{comment:'Comment_Log'},reportCandidates:{},landingCategoryFields:fields,attachmentBudgetField:'Budget',attachmentFileField:'File_field1'},Promise,Error,Date,Number,URL,URLSearchParams,console:{log(){},warn(){},error(){}},
     setTimeout(callback,delay){const id=++clock;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id),
     LMRuntime:{current:()=>runtime},ZOHO:{CREATOR:{DATA:{getRecordCount:config=>invoke('count',config),getRecords:config=>invoke('read',config)}}},

@@ -1387,3 +1387,7 @@ No Creator forms, fields, functions or Custom APIs change; no promotion required
 Tests cover restricted reports, duplicate/stale data, malformed identities,
 read failures, actor changes, bounded concurrency and connector geometry.
 Rollback: Budget 122.29.41. See docs/po-cfo-child-visibility-2026-10-14.md.
+
+## Request attachment tabs (122.29.53)
+
+PO, Budget Mod and saved Check/Wire Details / Attachments tabs reuse the Budget file workspace. One Attachment record keeps its Budget parent and at most one same-Budget Payment_Request or Budget_Modification lookup. Budget files show and can change the request association; linking an existing file makes no copy. Request deletion retains Budget files and clears its link. Native Development fields/reports, three functions and three workflows are saved for user promotion; the API registration is unchanged. Check/Wire creation remains Preview Draft. Existing approval and admin controls stay in place; their cleanup is mockup-only. See [contract, verification and rollback](../../docs/budget-request-attachments-2026-10-19.md). Rollback: Budget 122.29.51.

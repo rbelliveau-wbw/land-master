@@ -210,7 +210,13 @@ string managePurchaseOrder(string payload)
 			writeStarted = true;
 			for each childId in itemIds { delete from PO_Item[ID == childId.toLong() && Purchase_Order == po.ID]; }
 			for each childId in approvalIds { delete from Budget_Approvals[ID == childId.toLong()]; }
-			for each childId in modificationIds { delete from Budget_Modification[ID == childId.toLong() && Budget == budget.ID]; }
+			// Keep Budget attachments when this PO and its captured modifications go.
+			for each attachedFile in Attachment[Payment_Request == po.ID] { attachedFile.Payment_Request=null; }
+			for each childId in modificationIds
+			{
+				for each attachedFile in Attachment[Budget_Modification == childId.toLong()] { attachedFile.Budget_Modification=null; }
+				delete from Budget_Modification[ID == childId.toLong() && Budget == budget.ID];
+			}
 			for each childId in snapshotIds { delete from Approval_Route_Snapshot[ID == childId.toLong()]; }
 			for each childId in operationIds { delete from PO_Operation[ID == childId.toLong() && Purchase_Order == po.ID && Budget == budget.ID]; }
 			for each childId in approvalIds { if(Budget_Approvals[ID == childId.toLong()].count() > 0) { result.put("writeState","unknown"); result.put("error","A captured approval remains. Review deletion before continuing."); return result.toString(); } }

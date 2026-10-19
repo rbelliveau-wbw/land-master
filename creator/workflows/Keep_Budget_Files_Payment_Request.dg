@@ -1,0 +1,6 @@
+// Payment_Request / Deleted / Successful record deletion.
+// Keep the Attachment record, Budget parent, file bytes and original author.
+for each attachedFile in Attachment[Payment_Request == input.ID]
+{
+	attachedFile.Payment_Request=null;
+}

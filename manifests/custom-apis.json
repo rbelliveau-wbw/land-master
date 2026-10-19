@@ -8,7 +8,8 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "createBudgetAttachmentRecord",
-      "confidence": "inferred-name-match"
+      "confidence": "inferred-name-match",
+      "implementation_contract": "manifests/budget-request-attachments.json"
     },
     {
       "name": "Create_Budget_Modification",

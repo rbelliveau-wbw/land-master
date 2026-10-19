@@ -1,0 +1,36 @@
+// Attachment / Created or Edited / Validations on form submission.
+if(input.Payment_Request != null && input.Budget_Modification != null)
+{
+	alert "Choose one associated request.";
+	cancel submit;
+}
+requestBudget = null;
+if(input.Payment_Request != null)
+{
+	requestParent = Payment_Request[ID == input.Payment_Request];
+	if(requestParent.count() != 1)
+	{
+		alert "The associated request is unavailable.";
+		cancel submit;
+	}
+	requestBudget = requestParent.Budget;
+}
+if(input.Budget_Modification != null)
+{
+	modificationParent = Budget_Modification[ID == input.Budget_Modification];
+	if(modificationParent.count() != 1)
+	{
+		alert "The associated modification is unavailable.";
+		cancel submit;
+	}
+	requestBudget = modificationParent.Budget;
+}
+if(requestBudget != null)
+{
+	if(input.Budget == null) { input.Budget=requestBudget; }
+	if(input.Budget != requestBudget)
+	{
+		alert "The attachment and request must belong to the same Budget.";
+		cancel submit;
+	}
+}

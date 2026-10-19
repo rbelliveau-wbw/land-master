@@ -18,7 +18,7 @@ const reports=Object.fromEntries(['budgets','subdivisions','projects','categorie
 const common=['cleanVal','isObj','rawPath','firstRaw','lookupId','lookupName','lookupMatchesId','v','getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','budgetFeature','invalidateBudgetFeature','loadBudgetFeature','budgetBadgeScope','budgetModsReady','budgetDetailReady','requireBudgetRequestDetail','ensureBudgetModifications','ensureProjectProformaChoices','requireBudgetModsReady','budgetNavigationToken','budgetNavigationCurrent','budgetEditorHasDraft','invalidateBudgetReports','groupLandingCategories','validateLandingCategoryRows','modSignedAmount','modStatusOf','modsForBudget','modsForItem','modAgg','itemModAgg','findItemById'];
 function harness(){
   const calls=[],nodes={},badges=[],data={modifications:[],proformas:[],proformaDetails:[],proformaItems:[],proformaPhases:[],comments:[],attachments:[],importItems:[],budgets:[],approvals:[],categories:[],items:[]};
-  const context=vm.createContext({
+  const context=vm.createContext({attachmentLinksReady:()=>false,syncRequestAttachmentCounts(){},
     S:{liveSDK:true,useMock:false,view:'vBudgets',navigationGeneration:1,budgets:[],modifications:[],proformas:[],approvals:[],landingCategories:{},categories:{},items:{},detailLoads:{},detailGeneration:{},commentRowsByParent:{},attachmentsByBudget:{},saveTimers:{},startupReady:true},
     CFG:{reports,landingCategoryFields:fields,reportCandidates:{},attachmentBudgetField:'Budget'},Promise,Error,Date,setTimeout,clearTimeout,
     LMRuntime:{current:()=>({environment:'PRODUCTION',user:'authoritative-session',appLinkName:'land-master'})},

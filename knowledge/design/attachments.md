@@ -7,6 +7,9 @@ actions and workspaces. Legal's `showAttachmentsModal` is the visual reference.
 The shared form is `Attachment` and the report is `All_Attachments`. Parent
 fields remain `Contract1`, `Budget` and `Pro_Forma`; uploads use `File_field1`.
 The existing `Contract.Contract_Versions` lookup field retains its link name.
+Budget request files additionally use optional single lookups `Payment_Request`
+(PO, Check or Wire) or `Budget_Modification`, retaining their `Budget` parent.
+Only one request lookup may be populated and it must belong to the same Budget.
 See the [rename and deployment notes](../../docs/attachment-form-rename-2026-10-11.md).
 The required main-list flow is a paperclip action that opens an attachment
 modal for that record, retaining the list's filters, selection and scroll.
@@ -126,3 +129,24 @@ after the native request settles. See [Contract recovery regressions](../../docs
 Before release, check the main-list flow, long filenames, narrow screens,
 keyboard/focus/Close, loading/error/verified-zero counts, original author,
 read-only users, pending/unknown writes and returning from Preview/Delete.
+
+## Request file tabs
+
+For Budget requests, use Details / Attachments tabs inside the existing modal.
+Keep the original detail/grid mounted and hide its pane when files are selected.
+Reuse the Budget file list and Preview/Download/Delete paths. Unsaved parents
+show a short save-first state. A paperclip on each saved request row opens its
+file tab with a scoped count; unknown counts remain distinct from zero.
+
+Keep one file record linked to both Budget and request. Budget Attachments shows
+the request label and provides a searchable same-Budget association picker with
+Budget only. Link Budget File selects an unassociated file without uploading or
+copying it. Changing association preserves Budget, author, date and bytes.
+Deleting a request removes its link and keeps the Budget file. Native form
+validation and write APIs enforce the same parent rules. Unknown writes require
+read-only checking rather than another association/upload.
+
+Nested file dialogs make the request inert and return focus through the same
+Preview/Delete stack. Keep safe-close locks during native work and register
+keyed file rows with shared interaction motion. Budget 122.29.53 adopts this
+pattern; see [native handoff and evidence](../../docs/budget-request-attachments-2026-10-19.md).
