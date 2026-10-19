@@ -1,4 +1,4 @@
-# Budget request attachments — 122.29.53
+# Budget request attachments — 122.29.54
 
 Purchase Orders, Budget Modifications and saved Check/Wire requests have Details
 and Attachments tabs. A request file is one existing `Attachment` child linked
@@ -92,8 +92,9 @@ rail, attachment presentation and routing regressions remain required.
 Native compiler/editor saves and report projections were verified. Actual native
 file upload/delete on business records remains for the user's promoted test.
 Required repository validation and Pages build accompany the immutable release.
-122.29.52 is the preserved, unpromoted packaging candidate; 122.29.53 adds the
-final focus/count feedback and concise readiness message.
+122.29.52 is the preserved, unpromoted packaging candidate. 122.29.53 adds
+final focus/count feedback and concise readiness copy; 122.29.54 adds saved
+date, amount and description to distinguish same-vendor association choices.
 Roll back the repository Budget mapping to **122.29.51**; new optional fields can
 remain. Preserve all Attachment records and their Budget/file/provenance fields.
 

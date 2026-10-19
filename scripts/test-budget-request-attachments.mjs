@@ -79,3 +79,8 @@ console.log('Saved request uploads: exact parent envelope, original File bytes, 
  x.attachmentLinksReady=()=>true;x.budgetFeature=()=>({status:'loaded'});x.budgetAttachments=()=>[];x.requestAttachmentContextMatches=()=>true;
  assert.match(x.requestAttachmentButton(b,'payment',rid),/<small>0<\/small>/,'Only a complete request-file read can show zero');
 }
+{
+ const rows=[{ID:rid,Budget:{ID:bid},Request_Type:'Purchase Order',Vendor:{display_value:'Same vendor'},Request_Date:'10/18/2026',Request_Amount:'100.00',PO_Description:'First scope'},{ID:mid,Budget:{ID:bid},Request_Type:'Purchase Order',Vendor:{display_value:'Same vendor'},Request_Date:'10/19/2026',Request_Amount:'200.00',PO_Description:'Second scope'}];
+ const x=vm.createContext({S:{checkWireRequestsByBudget:{[bid]:rows},checkWireRequestState:{[bid]:'loaded'}},attachmentLinkScope:()=> 'actor',ensureBudgetModifications:async()=>{},loadCheckWireRequests:async()=>{},budgetModsReady:()=>true,lookupMatchesId:(v,id)=>v.ID===id,cleanVal:v=>String(v??''),lookupName:v=>v?.display_value||'',poRequestCardDate:v=>v,fmt:v=>'$'+v,v:Number,requestAttachmentModifications:()=>[],phaseName:()=> 'Phase'});
+ vm.runInContext(sourceOf('requestAttachmentChoices'),x);const choices=await x.requestAttachmentChoices(b);assert.match(choices[0].detail,/Same vendor · 10\/18\/2026 · \$100 · First scope/);assert.match(choices[1].detail,/Same vendor · 10\/19\/2026 · \$200 · Second scope/);assert.notEqual(choices[0].detail,choices[1].detail,'Same-vendor requests have identifying saved context');
+}

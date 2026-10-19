@@ -148,5 +148,5 @@ read-only checking rather than another association/upload.
 
 Nested file dialogs make the request inert and return focus through the same
 Preview/Delete stack. Keep safe-close locks during native work and register
-keyed file rows with shared interaction motion. Budget 122.29.53 adopts this
+keyed file rows with shared interaction motion. Budget 122.29.54 adopts this
 pattern; see [native handoff and evidence](../../docs/budget-request-attachments-2026-10-19.md).
