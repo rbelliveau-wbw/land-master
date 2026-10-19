@@ -47,16 +47,15 @@ map applySharedApprovalPolicy(map context)
 		}
 		if(matches == 0)
 		{
-			if(workflow == "Pro Forma") { result.put("error","Configure a published Pro Forma approval policy in Settings before sending approvals."); return result; }
+			if(workflow == "Pro Forma" || workflow == "Budget Modification") { result.put("error","Configure a published " + workflow + " approval policy in Settings before sending approvals."); return result; }
 			result.put("success",true); return result;
 		}
 		if(matches != 1) { result.put("error","Published policy is ambiguous at the highest applicable scope."); return result; }
 		selected = Approval_Policy[ID == selectedId];
-		// Budget migration gates retain their existing fallback. New Pro Formas
-		// require Settings routing rather than per-record approver configuration.
-		if(workflow != "Pro Forma" && selected.Adapter_Enabled != true)
+		// Only whole-Budget tracks retain the migration gate. New standalone
+		// modifications and Pro Formas require their published Settings policy.
+		if(workflow == "Budget" && selected.Adapter_Enabled != true)
 		{
-			if(workflow == "Pro Forma") { result.put("error","Enable the Pro Forma approval policy adapter in Settings before sending approvals."); return result; }
 			result.put("success",true); return result;
 		}
 		result.put("shared",true);

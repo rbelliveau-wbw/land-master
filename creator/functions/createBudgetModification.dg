@@ -5,8 +5,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	// Creates the Budget_Modification record and its approval chain, then attempts
 	// the first approval email. Always return the new ID when delivery fails so
 	// the widget can reconcile that record without creating a duplicate.
-	// Chain rules (current): two approvals, both to rbelliveau@wbdevelopment.com,
-	// as VP (Sort 1) then CFO (Sort 2). Recipients are editable from the widget.
+	// The published Settings Budget Modification policy supplies every approver.
 	vItemId = itemId.toLong();
 	if(vItemId == 0)
 	{
@@ -47,6 +46,17 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		vCatId = itemRec.Budget_Category.ID;
 	}
+	policyTerritory = "";
+	if(vBudgetId != 0)
+	{
+		policyBudget = Add_Budget[ID == vBudgetId];
+		if(policyBudget.Subdivision1 != null) { policyTerritory = ifnull(policyBudget.Subdivision1.Territory,""); }
+	}
+	policySubmitter = User_Access[User == zoho.loginuser];
+	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(vAmount.toString())};
+	// Validate the current Settings rule before creating the modification.
+	policyPreview = thisapp.resolveApprovalRoute(policyContext);
+	if(policyPreview.get("success") != true) { return "ERROR: Approval routing unavailable: " + policyPreview.get("error"); }
 	// Reference goes IN the insert — post-insert assignment on the fresh row was
 	// dropping it in production.
 	vRef = ifnull(reference,"").trim();
@@ -60,7 +70,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Amount=vAmount
 		Reason=vReason
 		Reference_Number=vRef
-		Status="Submitted"
+		Status="Draft"
 		Approval_Track=vTrack
 	];
 	if(newModId == null || newModId == 0)
@@ -71,7 +81,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	if(modRec != null)
 	{
 		// Re-assert: some environments have dropped choice values set during insert.
-		modRec.Status="Submitted";
+		modRec.Status="Draft";
 		if(vRef != "" && ifnull(modRec.Reference_Number,"") == "")
 		{
 			modRec.Reference_Number=vRef;
@@ -82,99 +92,13 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 			modRec.Effective_Date=vDate.toDate();
 		}
 	}
-	policyTerritory = "";
-	if(vBudgetId != 0)
-	{
-		policyBudget = Add_Budget[ID == vBudgetId];
-		if(policyBudget.Subdivision1 != null) { policyTerritory = ifnull(policyBudget.Subdivision1.Territory,""); }
-	}
-	policySubmitter = User_Access[User == zoho.loginuser];
-	policyContext = {"workflow":"Budget Modification","recordId":newModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+	policyContext.put("recordId",newModId.toString());
 	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
-	if(policyExecution.get("success") != true) { return "OK: Modification " + newModId + " recorded. Approval template failed: " + policyExecution.get("error"); }
-	if(policyExecution.get("shared") != true)
+	if(policyExecution.get("success") != true || policyExecution.get("shared") != true)
 	{
-	// ---- Approval chain ----
-	// VP defaults to the territory's VP (Territory.VP -> User_Access.Approver_Email);
-	// everything else falls back to the standing placeholder recipient.
-	approverEmail = "rbelliveau@wbdevelopment.com";
-	vTerritory = "";
-	if(vBudgetId != 0)
-	{
-		budgetRec = Add_Budget[ID == vBudgetId];
-		if(budgetRec != null && budgetRec.Subdivision1 != null)
-		{
-			vTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
-		}
+		return "OK: Modification " + newModId + " recorded as Draft. Approval template failed: " + ifnull(policyExecution.get("error"),"Promote the Settings-based Budget Modification approval functions.");
 	}
-	vpEmail = thisapp.territoryApproverEmail(vTerritory,"VP");
-	if(vpEmail == "")
-	{
-		vpEmail = approverEmail;
-	}
-	// Lookups are set IN the insert; a fetch-assign fallback below re-links the row
-	// if the in-insert value was dropped (assigning through the insert-returned ID
-	// variable alone proved unreliable in the past).
-	a1 = insert into Budget_Approvals
-	[
-		Added_User=zoho.loginuser
-		Approver=vpEmail
-		Title="VP"
-		Status="Not Sent"
-		Type1="Modification"
-		Sort_Order=1
-		Budget=vBudgetId
-		Budget_Modification=newModId
-	];
-	a1Rec = Budget_Approvals[ID == a1];
-	if(a1Rec != null && a1Rec.Budget_Modification == null)
-	{
-		a1Rec.Budget_Modification=newModId;
-	}
-	a2 = insert into Budget_Approvals
-	[
-		Added_User=zoho.loginuser
-		Approver=approverEmail
-		Title="CFO"
-		Status="Not Sent"
-		Type1="Modification"
-		Sort_Order=2
-		Budget=vBudgetId
-		Budget_Modification=newModId
-	];
-	a2Rec = Budget_Approvals[ID == a2];
-	if(a2Rec != null && a2Rec.Budget_Modification == null)
-	{
-		a2Rec.Budget_Modification=newModId;
-	}
-	// Route large modifications through the COO as well (Settings.COO_Approval_Threshold;
-	// 0/empty disables the extra step).
-	vThreshold = 0.0;
-	settingsRec = Settings[ID != 0];
-	if(settingsRec != null)
-	{
-		vThreshold = ifnull(settingsRec.COO_Approval_Threshold,0.0);
-	}
-	if(vThreshold > 0 && vAmount > vThreshold)
-	{
-		a3 = insert into Budget_Approvals
-		[
-			Added_User=zoho.loginuser
-			Approver=approverEmail
-			Title="COO"
-			Status="Not Sent"
-			Type1="Modification"
-			Sort_Order=3
-			Budget=vBudgetId
-			Budget_Modification=newModId
-		];
-		a3Rec = Budget_Approvals[ID == a3];
-		if(a3Rec != null && a3Rec.Budget_Modification == null)
-		{
-			a3Rec.Budget_Modification=newModId;
-		}
-	}
-	}
+	modRec.Status="Submitted";
 	// First approval email (marks the first row Pending + stamps Sent_Date).
 	emailMsg = "";
 	try

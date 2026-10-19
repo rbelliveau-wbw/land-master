@@ -26,10 +26,14 @@ const config={
   {key:'vp',roleId:'11',order:1,condition:'Budget modification attached',enabled:true},
   {key:'cfo',roleId:'12',order:2,condition:'Always',enabled:true},
   {key:'coo',roleId:'13',order:3,condition:'Budget modification attached',enabled:true}
+ ]},{id:'52',workflow:'Budget Modification',status:'Published',enabled:true,selfApproval:'Allow',territory:'',department:'',adapterEnabled:true,steps:[
+  {key:'mod-cfo',roleId:'12',order:1,condition:'Always',threshold:'',enabled:true},
+  {key:'mod-coo',roleId:'13',order:2,condition:'Above',threshold:'10000.00',enabled:true}
  ]}],audit:[]
 };
-const receipts=new Map();let count=200,writeCount=0;
+const receipts=new Map();let count=200,writeCount=0;window.fixtureRequests=[];
 const ui=LMApprovalAdmin.create({scope:()=> 'development-fixture',call:async p=>{
+ window.fixtureRequests.push(structuredClone(p));
  if(p.action==='List')return {contract:'approval-policy-v1',success:true,canAdmin:true,policyModel:document.querySelector('#legacy').checked?'ordered-cfo-v1':'territory-perpetual-v2',actorId:'34',configuration:structuredClone(config)};
  if(p.action==='Preview'){try{return {contract:'approval-policy-v1',success:true,snapshot:LMApprovalPolicy.resolve(config,p.context)};}catch(e){return {contract:'approval-policy-v1',success:false,error:e.message};}}
  if(p.action==='Check')return receipts.get(p.token);

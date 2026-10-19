@@ -8,10 +8,8 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	//   if the modification was Approved.
 	// - reopen: send a Rejected modification back to Draft with a cleared chain so
 	//   it can be revised and resubmitted.
-	// - repair: relink orphaned Modification-type approval rows on a budget to their
-	//   modifications (artifacts of the pre-6.4 linking bug), building fresh chains
-	//   where none can be claimed, then removing unreachable leftovers. Idempotent,
-	//   never sends email.
+	// - repair: build a missing Submitted modification chain from its published
+	//   Settings rule. Preserve existing/orphan history; never send or stamp mail.
 	// The widget gates all three behind User_Access.Edit_Delete_All_Modifications
 	// (repair is also invoked automatically on inconsistency detection).
 	vAction = ifnull(action,"").trim().toLowerCase();
@@ -274,7 +272,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			return "ERROR: This modification is already in approvals.";
 		}
 		// A fresh chain is rebuilt on submit, and rebuilding beats resetting: it
-		// picks up the current territory VP and the current COO threshold.
+		// picks up the current published Settings approval rule.
 		delete from Budget_Approvals[Budget_Modification == vModId];
 		modRec.Status="Draft";
 		modRec.Approved_On=null;
@@ -293,117 +291,29 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	if(vAction == "repair")
 	{
 		vBudgetId = budgetId.toLong();
-		if(vBudgetId == 0)
-		{
-			return "ERROR: No budget provided.";
-		}
-		approverEmail = "rbelliveau@wbdevelopment.com";
-		// Rebuilt chains use the territory VP too, so a repair matches a fresh create.
-		vTerritory = "";
+		if(vBudgetId == 0) { return "ERROR: No budget provided."; }
+		policyTerritory = "";
 		budgetRec = Add_Budget[ID == vBudgetId];
-		if(budgetRec != null && budgetRec.Subdivision1 != null)
-		{
-			vTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
-		}
-		vpEmail = thisapp.territoryApproverEmail(vTerritory,"VP");
-		if(vpEmail == "")
-		{
-			vpEmail = approverEmail;
-		}
-		relinked = 0;
-		rebuilt = 0;
-		// COO routing threshold applies to rebuilt chains too.
-		vThreshold = 0.0;
-		settingsRec = Settings[ID != 0];
-		if(settingsRec != null)
-		{
-			vThreshold = ifnull(settingsRec.COO_Approval_Threshold,0.0);
-		}
-		mods = Budget_Modification[Budget == vBudgetId];
-		for each  modRec in mods
+		if(budgetRec != null && budgetRec.Subdivision1 != null) { policyTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim(); }
+		policySubmitter = User_Access[User == zoho.loginuser];
+		rebuilt = 0; routingErrors = List();
+		for each modRec in Budget_Modification[Budget == vBudgetId]
 		{
 			if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { continue; }
 			linked = Budget_Approvals[Budget_Modification == modRec.ID && Type1 == "Modification"];
-			if(linked.count() == 0)
+			// A Draft has no submitted route to repair. Never rewrite existing rows
+			// or guess which modification owns a historical orphan approval.
+			if(linked.count() == 0 && ifnull(modRec.Status,"") == "Submitted")
 			{
-				vStatus = ifnull(modRec.Status,"");
-				if(vStatus == "Submitted" || vStatus == "Draft")
-				{
-					// Claim one orphaned VP + CFO pair if available, else build fresh rows.
-					orphanVP = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null && Sort_Order == 1];
-					orphanCFO = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null && Sort_Order == 2];
-					if(orphanVP != null && orphanCFO != null)
-					{
-						orphanVP.Budget_Modification=modRec.ID;
-						orphanCFO.Budget_Modification=modRec.ID;
-						if(vStatus == "Submitted" && ifnull(orphanVP.Status,"") == "Not Sent")
-						{
-							orphanVP.Status="Pending";
-							orphanVP.Sent_Date=zoho.currentdate;
-						}
-						relinked = relinked + 1;
-					}
-					else
-					{
-						vpStatus = "Not Sent";
-						if(vStatus == "Submitted")
-						{
-							vpStatus = "Pending";
-						}
-						a1 = insert into Budget_Approvals
-						[
-							Added_User=zoho.loginuser
-							Approver=vpEmail
-							Title="VP"
-							Status=vpStatus
-							Type1="Modification"
-							Sort_Order=1
-							Budget=vBudgetId
-							Budget_Modification=modRec.ID
-						];
-						if(vStatus == "Submitted")
-						{
-							a1Rec = Budget_Approvals[ID == a1];
-							if(a1Rec != null)
-							{
-								a1Rec.Sent_Date=zoho.currentdate;
-							}
-						}
-						a2 = insert into Budget_Approvals
-						[
-							Added_User=zoho.loginuser
-							Approver=approverEmail
-							Title="CFO"
-							Status="Not Sent"
-							Type1="Modification"
-							Sort_Order=2
-							Budget=vBudgetId
-							Budget_Modification=modRec.ID
-						];
-						if(vThreshold > 0 && ifnull(modRec.Amount,0.0) > vThreshold)
-						{
-							a3 = insert into Budget_Approvals
-							[
-								Added_User=zoho.loginuser
-								Approver=approverEmail
-								Title="COO"
-								Status="Not Sent"
-								Type1="Modification"
-								Sort_Order=3
-								Budget=vBudgetId
-								Budget_Modification=modRec.ID
-							];
-						}
-						rebuilt = rebuilt + 1;
-					}
-				}
+				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+				policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+				if(policyExecution.get("success") == true && policyExecution.get("shared") == true) { rebuilt = rebuilt+1; }
+				else { routingErrors.add(modRec.ID.toString() + ": " + ifnull(policyExecution.get("error"),"Settings approval routing is unavailable.")); }
 			}
 		}
-		// Any orphans still left are unreachable by the widget - remove them.
-		leftovers = Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
-		removed = leftovers.count();
-		delete from Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
-		return "OK: repair relinked=" + relinked.toString() + " rebuilt=" + rebuilt.toString() + " removed=" + removed.toString();
+		// Repair does not activate a recipient, stamp delivery or send mail.
+		if(routingErrors.size() > 0) { return "ERROR: Settings approval routing failed for " + routingErrors.toString("; ") + ". Rebuilt=" + rebuilt.toString(); }
+		return "OK: repair relinked=0 rebuilt=" + rebuilt.toString() + " removed=0";
 	}
 	return "ERROR: Unknown action.";
 }

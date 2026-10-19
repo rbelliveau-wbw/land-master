@@ -1,3 +1,24 @@
+## Settings-based modification routing — 122.29.51, October 19, 2026
+
+New standalone modifications and Draft submissions require the published
+Settings Budget Modification rule. For CFO Always and COO Above $10,000,
+$10,000 routes to CFO; $10,000.01 and $18,750 route CFO → COO. Configured
+approver assignments supply recipients. No hidden adapter flag or legacy
+VP/CFO/COO fallback may override the rule. Sent/decided chains remain captured;
+existing submitted records are not automatically rerouted. PO-linked
+modifications retain their PO approval path.
+
+Creation validates routing before inserting. If capture subsequently fails,
+the saved modification remains Draft and its exact ID appears in the terminal
+error without duplicate creation, polling or email. Success still requires
+Submitted, linked rows, exactly one first Pending recipient and a delivery stamp.
+Chainless Submitted repair uses Settings, creates only Not Sent rows, and sends
+no mail; Drafts, existing chains and orphan history remain untouched.
+
+Five Creator functions must be compiled and promoted together to activate this
+routing fix. PMP deploys Budget 122.29.51 and Settings 1.5.16 frontend assets;
+it does not deploy Creator. [Files, native handoff, regression checks and rollback](../../docs/budget-modification-settings-routing-2026-10-19.md).
+
 ## Stable Purchase Order dismissal — 122.29.50, October 19, 2026
 
 Close, X and Escape remove the real PO workspace, Summary and backdrop together,
@@ -743,14 +764,14 @@ persisted mirror, not the widget's source.
   Budgets page (`Budget_Management1`), and the widget opens the phase in Modifications mode with
   that modification's detail.
 
-### COO approval threshold (added 2026-08-14)
+### COO approval threshold (legacy, superseded October 19, 2026)
 
-`Settings.COO_Approval_Threshold` (currency, Budget Settings section of the single-record
-`Settings` form) gates a third approval step on Budget Modifications: when a modification's
-Amount exceeds the threshold, `createBudgetModification` / `submitBudgetModification` (and the
-`modificationAdmin` repair rebuild) append a COO row (Sort 3, placeholder recipient
-rbelliveau@wbdevelopment.com, editable in the widget) after VP and CFO. Empty/0 disables the
-extra step. The chain traversal in `sendModificationEmail` handles any chain length unchanged.
+The old `Settings.COO_Approval_Threshold` currency field controlled a fixed
+VP → CFO → optional COO chain. After the five-function Creator promotion above,
+standalone Budget Modifications instead evaluate the published Settings
+Budget Modification policy. Configure COO's Above or At or above condition and
+Threshold ($) there; changing the old global field does not change that rule.
+`sendModificationEmail` still traverses the resulting ordered chain unchanged.
 
 ### Approval reminders (added 2026-08-16)
 

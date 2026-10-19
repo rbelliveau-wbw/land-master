@@ -3,6 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 import './test-proforma-settings-routing-native.mjs';
+import './test-budget-modification-settings-routing.mjs';
 
 // Execute the actual Deluge adapter against explicit record fixtures. This is
 // an offline regression harness, not evidence of native Creator compilation.
@@ -56,7 +57,8 @@ for(const department of ['Development','Construction']){
   r=execute({workflow:'Budget',department,rows:[{...rows[0],Status:'Rejected'},rows[1]],policies:[conditional],resolved:false});assert.equal(r.result.retainedExistingRoute,true);assert.equal(r.writes,0,'existing rejected chain does not depend on new thresholds or role assignments');
 }
 r=execute({workflow:'Budget Modification',rows:[],policies:[{...basePolicy,Workflow:'Budget Modification'}]});assert.equal(r.result.success,true);assert.equal(r.rows.length,2);for(const row of r.rows){assert.equal(row.Budget,61);assert.equal(row.Budget_Modification,51);assert.equal(row.Type1,'Modification');}
-for(const policies of [[],[{...basePolicy,Workflow:'Budget Modification',Adapter_Enabled:false}]]){r=execute({workflow:'Budget Modification',rows:[],policies});assert.equal(r.result.success,true);assert.equal(r.result.shared,false);assert.equal(r.writes,0,'Budget Modification migration fallback remains unchanged');}
+r=execute({workflow:'Budget Modification',rows:[],policies:[]});assert.equal(r.result.success,false);assert.match(r.result.error,/published Budget Modification/);assert.equal(r.writes,0,'Missing modification policy cannot use legacy routing');
+r=execute({workflow:'Budget Modification',rows:[],policies:[{...basePolicy,Workflow:'Budget Modification',Adapter_Enabled:false}]});assert.equal(r.result.success,true);assert.equal(r.result.shared,true,'A published Budget Modification rule is authoritative without the hidden adapter flag');
 r=execute({expectedRoute:route});assert.equal(r.result.success,true,JSON.stringify(r.result));
 for(const field of ['order','key','roleId','role','userAccessId','email']){const expected=structuredClone(route);expected[0][field]=field==='order'?8:'changed';r=execute({expectedRoute:expected});assert.equal(r.result.success,false);assert.match(r.result.error,/route changed/);assert.equal(r.writes,0);assert.equal(r.captures.length,0);}
 r=execute({expectedRoute:route,expectedPolicyId:'42'});assert.equal(r.result.success,false);assert.equal(r.writes,0);assert.equal(r.captures.length,0);

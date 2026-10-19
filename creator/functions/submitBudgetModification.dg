@@ -2,8 +2,7 @@ string submitBudgetModification(int modificationId)
 {
 	/********* SUBMIT BUDGET MODIFICATION *********/
 	// Return Type: string ("OK: ..." or "ERROR: ...")
-	// Promotes a Draft modification into the approval flow: builds the standard
-	// two-row chain if none exists (covers records created outside the widget),
+	// Promotes a Draft modification using its published Settings approval rule,
 	// marks it Submitted, and sends the first approval email.
 	vModId = modificationId.toLong();
 	if(vModId == 0)
@@ -11,11 +10,11 @@ string submitBudgetModification(int modificationId)
 		return "ERROR: No modification provided.";
 	}
 	modRec = Budget_Modification[ID == vModId];
-	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit."; }
 	if(modRec == null)
 	{
 		return "ERROR: Modification not found.";
 	}
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit."; }
 	if(ifnull(modRec.Status,"") != "Draft" && ifnull(modRec.Status,"") != "Submitted")
 	{
 		return "ERROR: This modification cannot be submitted from its current status.";
@@ -55,13 +54,6 @@ string submitBudgetModification(int modificationId)
 	{
 		vBudgetId = modRec.Budget.ID;
 	}
-	// Hygiene: remove orphaned Modification rows on this budget that never got a
-	// Budget_Modification link (artifacts of an earlier linking bug) — they are
-	// unreachable by the widget and pollute the budget approval views.
-	if(vBudgetId != 0)
-	{
-		delete from Budget_Approvals[Budget == vBudgetId && Type1 == "Modification" && Budget_Modification == null];
-	}
 	policyTerritory = "";
 	if(vBudgetId != 0)
 	{
@@ -72,87 +64,9 @@ string submitBudgetModification(int modificationId)
 	policyContext = {"workflow":"Budget Modification","recordId":vModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
 	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 	if(policyExecution.get("success") != true) { return "ERROR: Approval template could not be loaded: " + policyExecution.get("error"); }
+	if(policyExecution.get("shared") != true && policyExecution.get("retainedExistingRoute") != true) { return "ERROR: Promote the Settings-based Budget Modification approval functions before submitting."; }
 	existing = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
-	if(existing.count() == 0)
-	{
-		approverEmail = "rbelliveau@wbdevelopment.com";
-		// VP defaults to the territory's VP; falls back to the placeholder recipient.
-		vTerritory = "";
-		if(vBudgetId != 0)
-		{
-			budgetRec = Add_Budget[ID == vBudgetId];
-			if(budgetRec != null && budgetRec.Subdivision1 != null)
-			{
-				vTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
-			}
-		}
-		vpEmail = thisapp.territoryApproverEmail(vTerritory,"VP");
-		if(vpEmail == "")
-		{
-			vpEmail = approverEmail;
-		}
-		// Lookups are set IN the insert; fetch-assign fallback re-links if dropped.
-		a1 = insert into Budget_Approvals
-		[
-			Added_User=zoho.loginuser
-			Approver=vpEmail
-			Title="VP"
-			Status="Not Sent"
-			Type1="Modification"
-			Sort_Order=1
-			Budget=vBudgetId
-			Budget_Modification=vModId
-		];
-		a1Rec = Budget_Approvals[ID == a1];
-		if(a1Rec != null && a1Rec.Budget_Modification == null)
-		{
-			a1Rec.Budget_Modification=vModId;
-		}
-		a2 = insert into Budget_Approvals
-		[
-			Added_User=zoho.loginuser
-			Approver=approverEmail
-			Title="CFO"
-			Status="Not Sent"
-			Type1="Modification"
-			Sort_Order=2
-			Budget=vBudgetId
-			Budget_Modification=vModId
-		];
-		a2Rec = Budget_Approvals[ID == a2];
-		if(a2Rec != null && a2Rec.Budget_Modification == null)
-		{
-			a2Rec.Budget_Modification=vModId;
-		}
-		// Route large modifications through the COO as well (Settings.COO_Approval_Threshold;
-		// 0/empty disables the extra step).
-		vThreshold = 0.0;
-		settingsRec = Settings[ID != 0];
-		if(settingsRec != null)
-		{
-			vThreshold = ifnull(settingsRec.COO_Approval_Threshold,0.0);
-		}
-		vAmount = ifnull(modRec.Amount,0.0);
-		if(vThreshold > 0 && vAmount > vThreshold)
-		{
-			a3 = insert into Budget_Approvals
-			[
-				Added_User=zoho.loginuser
-				Approver=approverEmail
-				Title="COO"
-				Status="Not Sent"
-				Type1="Modification"
-				Sort_Order=3
-				Budget=vBudgetId
-				Budget_Modification=vModId
-			];
-			a3Rec = Budget_Approvals[ID == a3];
-			if(a3Rec != null && a3Rec.Budget_Modification == null)
-			{
-				a3Rec.Budget_Modification=vModId;
-			}
-		}
-	}
+	if(existing.count() == 0) { return "ERROR: The Settings approval route did not create a chain. No approval email was sent."; }
 	modRec.Status="Submitted";
 	emailMsg = "";
 	try

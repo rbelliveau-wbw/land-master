@@ -33,6 +33,14 @@ Approval_Role_Assignment and Approval_Policy as part of the Creator handoff.
 Keep business Company fields and transaction dates elsewhere in Land Master.
 Thresholds retain exact decimal strings; show Above and At or above separately.
 
+Settings Manager 1.5.16 keeps Role and Condition in aligned columns across
+ordinary rule rows. Reserve a separate column for **Threshold ($)** and a fixed
+action area for Enabled and Delete; the threshold must never overlap either
+action. Keep field labels, controls and row tools aligned at their actual
+desktop size. Threshold inputs use text with a decimal keyboard hint so editing
+and inline saves preserve the exact decimal string. Workflow and Active align
+along their controls' lower edge. Keep the PO-specific row layout unchanged.
+
 Policies have no effective dates, versions or multiple-role setting. Edit a
 Published rule in place; Save applies to future submissions. Existing submitted
 routes retain their captured people and order. Show evaluated people, approval
@@ -133,6 +141,13 @@ route retains people after Territory edits. VP resolves exactly one unique
 Territory.VP person in every shared-policy workflow, including Pro Forma and
 Budget. Never fall back to a separate VP assignment.
 Native updates: approvalConfigurationSnapshot and resolveApprovalRoute.
+
+New standalone Budget Modifications use the published Budget Modification
+Settings rule, including its ordered roles and exact threshold conditions.
+Missing, disabled, ambiguous or unroutable configuration blocks submission;
+neither the hidden Adapter_Enabled flag nor the legacy global COO threshold may
+select a fallback chain. Existing sent/decided routes keep their captured people
+and order. See the [Creator handoff](../../docs/budget-modification-settings-routing-2026-10-19.md).
 
 Pro Forma's Approvals tab previews Settings rules without exposing a separate
 route editor. New submissions require a usable Settings policy; keep existing
