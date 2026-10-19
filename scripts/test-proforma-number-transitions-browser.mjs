@@ -95,6 +95,8 @@ async function typeOneKeyAtATime(input,value,label){
 try{
   await setup();await settled();assert.equal(await page.locator('.pf-number-changing').count(),0);
   await unique('#vEdit');
+  assert.equal(await page.locator('.ed-side .sh-label').textContent(),'Net Profit','editor profit label stays unchanged');
+  await page.locator('.ed-side').screenshot({path:path.join(output,'summary-sidebar.png')});
   const plain=await browser.newPage({viewport:{width:1580,height:1020}});await plain.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));await plain.addInitScript(()=>{window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'/environment/development',loginUser:'fixture@example.test'})}}};});await setup(plain,true);
   const existingText=target=>target.locator('#vEdit').evaluate(node=>{const clone=node.cloneNode(true);clone.querySelectorAll('.pf-number-input-display').forEach(n=>n.remove());return clone.textContent;});
   assert.equal(await existingText(page),await existingText(plain),'formatted text matches the existing renderer exactly');await plain.close();
@@ -185,11 +187,28 @@ try{
   await page.evaluate(()=>{const S=__PFW_TEST__.S;S.ed.model.Sale_Price_FF='1300';S.ed.calc=__PFW_TEST__.modelToCalc(S.ed.model);__NUMTEST__.renderMonthsPane();});
   assert.ok(await page.locator('#monthsPane .pf-number-changing').count()>0);assert.equal(await page.locator('#monthsPane table.mp td:nth-child(2) [data-pf-number-key]').count(),0);await settled();
   await page.evaluate(()=>{const W=__PFW_TEST__,S=W.S;S.dash={id:S.ed.id,model:structuredClone(S.ed.model),calc:null,tab:'cash',page:0,expanded:{},scenarioOpen:true,pins:[]};S.dash.calc=W.modelToCalc(S.dash.model);__NUMTEST__.showView('vDash');__NUMTEST__.renderDashboard();});await settled();await unique('#vDash');
+  const peakView=async()=>{
+    const expected=await page.evaluate(()=>{
+      let run=0,min=0,point=null;
+      for(const a of __PFW_TEST__.S.dash.calc.agg){run+=(a.totalIncome||0)-(a.totalExpenses||0);if(run<min){min=run;point=a;}}
+      return {amount:(min<0?'($':'$')+Math.abs(min).toLocaleString('en-US',{maximumFractionDigits:0})+(min<0?')':''),timing:point?'Mth '+point.m+' · '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][point.date.m-1]+' '+point.date.y:''};
+    });
+    assert.equal(await page.locator('#flowPeakCash').textContent(),expected.amount,'peak amount uses the same cumulative cash series and preserves its sign');
+    assert.equal(await page.locator('#flowPeakCashTiming').textContent(),expected.timing,'model/calendar timing identifies the actual deficit');
+    assert.equal(await page.locator('#flowPeakCashTiming [data-pf-number-key]').count(),1,'only the model month animates; the calendar month/year stays static');
+    assert.equal(await page.locator('.k-gross .k-label').textContent(),'Gross Profit','dashboard profit label stays unchanged');
+  };
+  await peakView();await page.locator('#kpis').screenshot({path:path.join(output,'summary-cards.png')});
   const before=await page.locator('#kpis').textContent();
   await page.evaluate(()=>__PFW_TEST__.dealApplyDriver('Sale_Price_FF',1500));
   assert.ok(await page.locator('#kpis .pf-number-changing').count()>0);assert.notEqual(await page.locator('#kpis').textContent(),before);assert.ok(await page.locator('#flowBody .pf-number-changing').count()>0);
   assert.equal(await page.locator('#flowBody .mth [data-pf-number-key],#flowHead [data-pf-number-key]').count(),0,'month/year identities stay static');
   await unique('#vDash');await page.screenshot({path:path.join(output,'dashboard-scenario.png')});await settled();
+  const peakMonthBefore=await page.locator('#flowPeakCashMonth').textContent();
+  await page.evaluate(()=>__PFW_TEST__.dealApplyDriver('Engineering_Length_Months',12));
+  assert.notEqual(await page.locator('#flowPeakCashMonth').textContent(),peakMonthBefore,'a real schedule change moves peak timing');
+  assert.ok(await page.locator('#flowPeakCashMonth .pf-number-changing').count()>0,'derived peak month adopts the existing Sliding push');
+  await peakView();await settled();
   await page.evaluate(()=>{const S=__PFW_TEST__.S;S.dash.model.ID='90071992547410002';S.dash.id=S.dash.model.ID;S.dash.model.Sale_Price_FF='1700';S.dash.calc=__PFW_TEST__.modelToCalc(S.dash.model);__NUMTEST__.renderDashboard();});
   assert.equal(await page.locator('#kpis .pf-number-changing').count(),0,'unrelated records never morph');await settled();
   await page.evaluate(()=>{__NUMTEST__.showView('vList');__NUMTEST__.renderList();});await settled();await unique('#listBody');
@@ -201,7 +220,7 @@ try{
   await page.evaluate(()=>{const N=PFNumbers,host=document.getElementById('numeric-regression'),old=N.capture(host);host.textContent='-$42';N.decorate(host,'signed');N.apply(host,old);});assert.equal(await page.locator('#numeric-regression').textContent(),'-$42');await settled();
   await page.evaluate(()=>{const N=PFNumbers,host=document.getElementById('numeric-regression'),old=N.capture(host);N.decorate(host,'signed');N.apply(host,old);});assert.equal(await page.locator('#numeric-regression .pf-number-changing').count(),0,'equal values stay still');
   await page.evaluate(()=>{const N=PFNumbers,host=document.getElementById('numeric-regression');host.textContent='—';N.decorate(host,'signed');const old=N.capture(host);host.textContent='$50';N.decorate(host,'signed');N.apply(host,old);});assert.equal(await page.locator('#numeric-regression .pf-number-changing').count(),0,'unknown values never become fabricated zeroes');
-  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>__PFW_TEST__.dealApplyDriver('Sale_Price_FF',1800));assert.equal(await page.locator('.pf-number-changing').count(),0,'reduced motion is immediate');await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>{__PFW_TEST__.dealApplyDriver('Sale_Price_FF',1800);__PFW_TEST__.dealApplyDriver('Engineering_Length_Months',6);});assert.equal(await page.locator('.pf-number-changing').count(),0,'reduced motion is immediate');await peakView();await page.emulateMedia({reducedMotion:'no-preference'});
   await page.evaluate(async context=>{window.__transferContext=context;await PFBudgetTransferUI.open({id:'pf-transfer',name:'Cedar Hollow',canSend:()=>true,getProjects:async()=>[{ID:'project-1',Project_Name:'Cedar',Proforma:'pf-transfer'}],capabilities:async()=>3,loadContext:async()=>structuredClone(context),preview:async()=>({plan:PFBudgetTransfer.build(context,{1:'s1',2:'s2',3:'s3',4:'s4'}),token:'fixture'}),apply:()=>{throw Error('Fixture must never send');}});},transferFixture());await settled();
   const lots=page.locator('.pfbt [data-metric="Lot_Total_Residential"]');await typeValue(lots,'60');
   assert.ok(await page.locator('.pfbt .pf-number-changing').count()>0);assert.equal(await page.locator('.number-edit-pending').count(),0);assert.equal(await lots.inputValue(),'60');await unique('.pfbt');

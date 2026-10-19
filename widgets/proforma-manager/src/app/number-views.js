@@ -43,6 +43,7 @@
         const first=positive.firstChild;
         if(first?.nodeType===3){const match=first.data.match(/^Mth (\d+)/); if(match){const span=document.createElement('span');span.textContent=match[1];first.replaceWith(document.createTextNode('Mth '),span,document.createTextNode(first.data.slice(match[0].length)));text(span,[s,'positive-cash-month']);}}
       }
+      text($('flowPeakCashMonth'),[s,'peak-cash-month']);
       each('#assump .a-row', row => {const label=row.querySelector('label')?.textContent;if(!/^(Project Start|Land Purchase|Engineering Start|Construction Start|Estimated Lot Sale Start|Estimated Completion)$/.test(label))text(row.querySelector('b'),[s,'assumption',label]);});
       each('#dealRoom .scenario-badge', node => text(node,[s,'scenario-count']));
       each('#dealRoom .ds-item', row => {const label=row.querySelector('span')?.textContent;text(row.querySelector('b'),[s,'delta',label,'value']);text(row.querySelector('.dd'),[s,'delta',label,'change']);});

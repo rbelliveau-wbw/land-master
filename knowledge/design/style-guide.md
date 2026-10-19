@@ -94,7 +94,12 @@ In Pro Forma Additional Costs, show the enabled Cost per Unit input with a persi
 Pro Forma cash-flow matrices keep Category and Total frozen during horizontal
 scroll, including expanded child labels and section bands. Keep both frozen
 headers above scrolling month headers. Label additional engineering/development
-items Dev Costs across widget summaries, timeline details and Excel exports.
+items Dev Costs in cash-flow matrices, timeline details and Excel exports.
+The dashboard top cards and Edit-mode sidebar instead use the approved concise
+labels: Lot Sales, PID/MUD Revenue, Land Sales, Land Purchase, Engineering and
+Development. The sidebar titles/totals are Inflows / Total Inflows and
+Outflows / Total Outflows. These are display names for the same existing fields
+and categories; retain the dashboard Gross Profit and sidebar Net Profit labels.
 The top record card shows Land Purchase using the existing first-installment
 summary. Cash Position keeps anniversary snapshots in its left column. A second
 column inside the same card uses the matching Positive Cash Flow title and shows
@@ -110,8 +115,14 @@ cost per street LF and sale price per lot front foot, retaining the dark-blue
 emphasis. Show Base and Base + Add’l construction rates side by side, using
 total base-plus-additional construction cost divided by street LF for the latter.
 Keep Peak Cash Out below Positive Cash Flow in the right-hand column
-of the top Cash Position card, showing the largest cumulative deficit as a
-positive funding amount. Cash Position, Positive Cash Flow and Peak Cash Out
+of the top Cash Position card, showing the largest cumulative deficit in
+parentheses and its model month/calendar month-year beneath the amount. Use
+`Mth N · Mon YYYY`, matching Positive Cash Flow; keep calendar dates static while
+the amount and model month use the existing numeric transitions. Preserve the
+same full-schedule cumulative-cash calculation; equal minima retain their first
+month. Complete schedules without a deficit show $0 without a peak date, and
+empty/incomplete schedules show — without a date.
+Cash Position, Positive Cash Flow and Peak Cash Out
 use matching heading styles and the same 12px value size. Changing the displayed
 period resets horizontal scroll in both the cash-flow matrix and phase timeline
 to January; expanding rows within the current period preserves scroll position.

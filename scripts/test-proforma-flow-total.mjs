@@ -186,7 +186,7 @@ context.renderFlowTable = () => {};
 context.phaseSalesDisplaySummary = () => null;
 context.ymLabel = () => "Jan 2030";
 context.landPurchaseLabel = () => "—";
-vm.runInContext(extractFunction("dealPeakCash") + "\n" + extractFunction("renderDashboard"), context);
+vm.runInContext(extractFunction("dealPeakCashPoint") + "\n" + extractFunction("dealPeakCash") + "\n" + extractFunction("renderDashboard"), context);
 const dashboardBefore = JSON.stringify(context.S.dash);
 context.renderDashboard();
 assert.match(elements.get("kpis").innerHTML,
@@ -235,18 +235,32 @@ assert.equal(combinedRate(), "—", "an incomplete schedule cannot present a com
 context.S.dash.calc.warnings = [];
 context.renderDashboard();
 assert.equal(elements.get("flowPeakCash").textContent, "—", "no schedule does not invent a funding result");
-context.S.dash.calc.agg = [{totalIncome: 0, totalExpenses: 60},
-  {totalIncome: 10, totalExpenses: 120}, {totalIncome: 250, totalExpenses: 0}];
+context.ymShort = date => `${context.MONTHS_S[date.m-1]} ${date.y}`;
+context.S.dash.calc.agg = [{m:1,date:{y:2027,m:12},totalIncome: 0, totalExpenses: 60},
+  {m:2,date:{y:2028,m:1},totalIncome: 10, totalExpenses: 120}, {m:3,date:{y:2028,m:2},totalIncome: 250, totalExpenses: 0}];
 const peakBefore = JSON.stringify(context.S.dash.calc);
 context.renderDashboard();
-assert.equal(elements.get("flowPeakCash").textContent, "$170", "peak funding is the magnitude of the lowest cumulative cash balance");
+assert.equal(elements.get("flowPeakCash").textContent, "($170)", "peak cash retains its negative cumulative balance in accounting format");
+assert.match(elements.get('kpis').innerHTML,/id="flowPeakCashTiming">Mth <span id="flowPeakCashMonth">2<\/span> · Jan 2028/,'peak timing uses the actual model month and crosses calendar years');
+assert.equal(context.dealPeakCash(context.S.dash.calc),-170,'scenario consumers retain their numeric peak-deficit contract');
 assert.equal(JSON.stringify(context.S.dash.calc), peakBefore, "peak display cannot mutate monthly cash flows");
+context.S.dash.calc.agg.push({m:4,date:{y:2028,m:3},totalIncome:0,totalExpenses:250});
+context.renderDashboard();
+assert.match(elements.get('kpis').innerHTML,/id="flowPeakCashTiming">Mth <span id="flowPeakCashMonth">2<\/span> · Jan 2028/,'equal later deficits keep the first peak month');
+context.S.dash.calc.agg=Array.from({length:60},(_,i)=>({m:i+1,date:{y:2027+Math.floor(i/12),m:i%12+1},totalIncome:0,totalExpenses:i===34?123.45:0}));
+context.S.dash.page=0;
+context.renderDashboard();
+assert.equal(elements.get('flowPeakCash').textContent,'($123)','round only the displayed deficit');
+assert.equal(context.dealPeakCash(context.S.dash.calc),-123.45,'peak calculation retains fractional precision');
+assert.match(elements.get('kpis').innerHTML,/id="flowPeakCashTiming">Mth <span id="flowPeakCashMonth">35<\/span> · Nov 2029/,'peak searches the entire schedule, beyond the visible 24-month page');
 context.S.dash.calc.agg = [{totalIncome: 250, totalExpenses: 60}];
 context.renderDashboard();
 assert.equal(elements.get("flowPeakCash").textContent, "$0", "no cash deficit requires no funding");
+assert.doesNotMatch(elements.get('kpis').innerHTML,/flowPeakCashTiming/,'no deficit has no invented peak date');
 context.S.dash.calc.warnings = ["Complete phase schedule"];
 context.renderDashboard();
 assert.equal(elements.get("flowPeakCash").textContent, "—", "incomplete schedules do not show a calculated peak");
+assert.doesNotMatch(elements.get('kpis').innerHTML,/flowPeakCashTiming/,'incomplete schedules hide peak timing too');
 context.S.dash.calc.warnings = [];
 context.ymShort = date => `${context.MONTHS_S[date.m-1]} ${date.y}`;
 context.S.dash.calc.agg = [

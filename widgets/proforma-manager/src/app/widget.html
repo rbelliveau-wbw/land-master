@@ -8,22 +8,22 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.120"></script>
-<script src="pf-save-audit.js?v=1.80.120"></script>
-<script src="pf-progress.js?v=1.80.120"></script>
+<script src="pf-save-verification.js?v=1.80.121"></script>
+<script src="pf-save-audit.js?v=1.80.121"></script>
+<script src="pf-progress.js?v=1.80.121"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.120">
-<script src="interaction-motion.js?v=1.80.120"></script>
-<script src="interaction-surfaces.js?v=1.80.120"></script>
-<script src="number-edit-commit.js?v=1.80.120"></script>
-<script src="number-transitions.js?v=1.80.120"></script>
-<script src="number-views.js?v=1.80.120"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.120">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.121">
+<script src="interaction-motion.js?v=1.80.121"></script>
+<script src="interaction-surfaces.js?v=1.80.121"></script>
+<script src="number-edit-commit.js?v=1.80.121"></script>
+<script src="number-transitions.js?v=1.80.121"></script>
+<script src="number-views.js?v=1.80.121"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.121">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.120"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.120">
-<script src="comments.js?v=1.80.120"></script>
+<script src="budget-transfer-ui.js?v=1.80.121"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.121">
+<script src="comments.js?v=1.80.121"></script>
 <link rel="stylesheet" href="comments.css?v=1.79.9">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
@@ -1841,7 +1841,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.120"></script>
+<script src="success-feedback.js?v=1.80.121"></script>
 </head>
 <body>
 
@@ -2007,19 +2007,19 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
           </div>
         </div>
         <div class="side-card">
-          <div class="sc-title">Income</div>
-          <div class="srow"><span>Gross Lot Sales</span><b id="lvGS">—</b></div>
+          <div class="sc-title">Inflows</div>
+          <div class="srow"><span>Lot Sales</span><b id="lvGS">—</b></div>
           <div class="srow"><span>PID/MUD Revenue</span><b id="lvMUD">—</b></div>
           <div class="srow"><span>Reimbursements</span><b id="lvReimb">—</b></div>
           <div class="srow"><span>Reimbursed Fees</span><b id="lvFees">—</b></div>
-          <div class="srow"><span>Land Sale</span><b id="lvLS">—</b></div>
-          <div class="srow total inc"><span>Total Income</span><b id="lvTI">—</b></div>
+          <div class="srow"><span>Land Sales</span><b id="lvLS">—</b></div>
+          <div class="srow total inc"><span>Total Inflows</span><b id="lvTI">—</b></div>
         </div>
         <div class="side-card">
-          <div class="sc-title">Expenses</div>
-          <div class="srow"><span>Land Cost</span><b id="lvLC">—</b></div>
-          <div class="srow"><span>Entitlement &amp; Eng</span><b id="lvEE">—</b></div>
-          <div class="srow"><span>Dev Costs</span><b id="lvEEA">—</b></div>
+          <div class="sc-title">Outflows</div>
+          <div class="srow"><span>Land Purchase</span><b id="lvLC">—</b></div>
+          <div class="srow"><span>Engineering</span><b id="lvEE">—</b></div>
+          <div class="srow"><span>Development</span><b id="lvEEA">—</b></div>
           <div class="srow"><span>Construction Base</span><b id="lvCCB">—</b></div>
           <div class="srow"><span>Construction Add'l</span><b id="lvCCA">—</b></div>
           <div class="srow vp-only"><span>G&amp;A Overhead</span><b id="lvOH">—</b></div>
@@ -2027,7 +2027,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
           <div class="srow vp-only"><span>Const Overhead</span><b id="lvCOH">—</b></div>
           <div class="srow vp-only"><span>Interest</span><b id="lvInt">—</b></div>
           <div class="srow vp-only"><span>Profit Share</span><b id="lvPS">—</b></div>
-          <div class="srow total exp"><span>Total Expenses</span><b id="lvTE">—</b></div>
+          <div class="srow total exp"><span>Total Outflows</span><b id="lvTE">—</b></div>
         </div>
         <div class="side-card">
           <div class="sc-title">Timeline</div>
@@ -2256,7 +2256,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.120";
+var PFW_VERSION="1.80.121";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -7373,11 +7373,12 @@ var DEAL_DRIVERS=[
   {k:"Construction_Length",      label:"Const Length (mo)",group:"Schedule", step:1,   min:1, int:true, deltaUnit:"mo",      goodWhenHigher:false},
   {k:"Construction_Delay_Months",label:"Const Delay (mo)", group:"Schedule", step:1,   min:0, int:true, deltaUnit:"mo",      goodWhenHigher:false}
 ];
-function dealPeakCash(c){
-  var run=0, min=0;
-  (c.agg||[]).forEach(function(a){ run+=(a.totalIncome||0)-(a.totalExpenses||0); if(run<min) min=run; });
-  return min;
+function dealPeakCashPoint(c){
+  var run=0, min=0, point=null;
+  (c.agg||[]).forEach(function(a){ run+=(a.totalIncome||0)-(a.totalExpenses||0); if(run<min){ min=run; point=a; } });
+  return {value:min,month:point&&point.m,date:point&&point.date};
 }
+function dealPeakCash(c){ return dealPeakCashPoint(c).value; }
 function dealKpis(c){
   return { np:c.totals.Net_Profit||0, roi:c.roi, irr:c.irr, xirr:c.xirr, peak:dealPeakCash(c), mud:c.totals.MUD_Revenue||0 };
 }
@@ -7955,8 +7956,8 @@ function renderDashboard(){
   renderDashboardOwners();
   /* KPI cards */
   var k=document.getElementById("kpis");
-  var inflowsRows=[["Gross Sales",T.Gross_Sales],["MUD Revenue",T.MUD_Revenue],["Reimbursements",T.Reimbursements],["Reimbursed Fees",T.Reimbursed_Fees],["Land Sales (Other)",T.Land_Sale]];
-  var outflowRows=[["Land Cost",T.Land_Cost],["Engineering Base",T.Entitlement_Cost],["Dev Costs",T.Entitlement_Engineering_Addl],["Construction Base",T.Construction_Cost_Base],["Construction Add'l",T.Construction_Cost_Addl]];
+  var inflowsRows=[["Lot Sales",T.Gross_Sales],["PID/MUD Revenue",T.MUD_Revenue],["Reimbursements",T.Reimbursements],["Reimbursed Fees",T.Reimbursed_Fees],["Land Sales",T.Land_Sale]];
+  var outflowRows=[["Land Purchase",T.Land_Cost],["Engineering",T.Entitlement_Cost],["Development",T.Entitlement_Engineering_Addl],["Construction Base",T.Construction_Cost_Base],["Construction Add'l",T.Construction_Cost_Addl]];
   function kRows(rows){ return rows.map(function(r){ return '<div><span>'+esc(r[0])+'</span><span>'+(incompleteSales?"—":r[1]?fmtWhole$(r[1]):"—")+'</span></div>'; }).join(""); }
   var cpHtml=c.cashPosition.length
     ? c.cashPosition.slice(0,4).map(function(cp){ return ymLabel(cp.date)+": "+fmtWhole$(cp.value); }).join("<br/>")
@@ -7964,6 +7965,9 @@ function renderDashboard(){
   var positiveCash=(c.agg||[]).find(function(a){return a.runCash>0;});
   var positiveCashHtml=incompleteSales?'—':positiveCash
     ?'Mth '+positiveCash.m+' · '+ymShort(positiveCash.date):'Not reached';
+  var peakCash=dealPeakCashPoint(c);
+  var peakCashTiming=!incompleteSales&&peakCash.value<0&&peakCash.month!=null&&peakCash.date
+    ?'Mth <span id="flowPeakCashMonth">'+esc(peakCash.month)+'</span> · '+esc(ymShort(peakCash.date)):'';
   var streetLF=num(m.Total_Street_LF);
   var constWithAddl=!incompleteSales&&streetLF>0
     ?(num(T.Construction_Cost_Base)+num(T.Construction_Cost_Addl))/streetLF:null;
@@ -7979,8 +7983,9 @@ function renderDashboard(){
       +'<div class="k-price"><div class="k-label">Sale Price / FF</div><div class="k-big">'+fmtWhole$(num(m.Sale_Price_FF))+'</div></div></div>'
     +'<div class="kpi violet"><div class="cash-position-columns"><div><div class="k-label">Cash Position</div><div class="k-list">'+cpHtml+'</div></div>'
       +'<div class="cash-position-secondary"><div><div class="k-label">Positive Cash Flow</div><div class="k-list">'+positiveCashHtml+'</div></div>'
-      +'<div><div class="k-label">Peak Cash Out</div><div class="k-list" id="flowPeakCash">—</div></div></div></div></div>';
-  document.getElementById("flowPeakCash").textContent=incompleteSales||!(c.agg||[]).length?"—":fmtWhole$(Math.abs(dealPeakCash(c)));
+      +'<div><div class="k-label">Peak Cash Out</div><div class="k-list" id="flowPeakCash">—</div>'
+        +(peakCashTiming?'<div class="k-list" id="flowPeakCashTiming">'+peakCashTiming+'</div>':'')+'</div></div></div></div>';
+  document.getElementById("flowPeakCash").textContent=incompleteSales||!(c.agg||[]).length?"—":fmtWhole$(peakCash.value);
   renderDealRoom();
   document.getElementById("vDash").classList.toggle("meeting", !!S.meetingMode);
   /* assumptions strip */

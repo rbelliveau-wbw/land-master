@@ -1,3 +1,34 @@
+## Summary labels and dated peak cash — 1.80.121, October 19, 2026
+
+Dashboard top cards and Edit sidebar use Lot Sales, PID/MUD Revenue, Land Sales,
+Land Purchase, Engineering and Development for the same existing values. The
+sidebar uses Inflows / Total Inflows and Outflows / Total Outflows. Dashboard
+Gross Profit and sidebar Net Profit labels, underlying values and calculations
+remain unchanged. Cash-flow matrices, assumptions, scenarios, exports, approval
+email and PDF labels are outside this naming change.
+
+Peak Cash Out keeps the existing minimum cumulative inflows-minus-outflows
+calculation across the full schedule, now displaying the negative amount in
+parentheses plus `Mth N · Mon YYYY` underneath. Equal minima use the first month.
+The numeric scenario helper still returns the same signed number. Complete
+schedules without a deficit show $0 without a date; empty/incomplete schedules
+show — without a date. Numeric amount/month transitions preserve stable record
+identity, field-exit behavior and reduced motion; calendar month/year stays still.
+
+Changed implementation: `widgets/proforma-manager/src/app/widget.html` and
+`number-views.js`; related style guidance, flow/scenario and desktop numeric
+regressions, version/hash metadata, immutable 1.80.121 release and environment
+mappings. No Creator forms, fields, functions or Custom APIs change, and no
+Creator deployment is required. Rollback: restore Pro Forma Development/Production
+mappings to 1.80.120 and rebuild Pages using the permanent widget URLs.
+Verification passed: full `npm run validate` and `npm run build:pages`, focused
+flow/scenario checks, and the actual-renderer desktop Pro Forma numeric fixture.
+Coverage includes signed peak formatting, real calendar/model timing, first equal
+minimum, full-schedule paging, fractional precision, empty/incomplete/no-deficit
+states, unchanged profit displays, schedule-driven amount/month transitions,
+static calendar dates, record identity and reduced motion. Dashboard and sidebar
+screenshots were reviewed; every immutable release asset matches source.
+
 ## Visible subform row boundaries and reliable Add icon — 1.80.120, October 16, 2026
 
 Lot Pricing, PID/MUD and Offer lists now expand/contract their actual wrappers,
