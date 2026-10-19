@@ -1,3 +1,27 @@
+## Stable Purchase Order dismissal — 122.29.50, October 19, 2026
+
+Close, X and Escape remove the real PO workspace, Summary and backdrop together,
+restoring focus immediately. The composite overlay opts out of detached motion
+exit copies: the old copy lost its ancestor CSS and shrank the 944px desktop card
+to 800px after closing, while losing status styling and backdrop context. The
+real opening fade, nested-picker Escape behavior and pending-write locks remain.
+
+Changed files: `po-ui.js`, the shared `interaction-motion.js` and synchronized
+widget source copies, Budget version/hash metadata, immutable 122.29.50 release,
+Development/Production mappings, design guides and the desktop regression script
+`scripts/test-po-dismiss-browser.mjs` (`npm run test:po:dismiss:browser`). Only
+Budget receives a new release; other widgets retain their current deployments.
+No forms, fields, Creator functions or Custom APIs change. No Creator deployment
+is required. Desktop regressions cover Close/X/Escape, loading cancellation,
+rapid reopen and geometry, nested picker dismissal, immediate focus/inert reset,
+reduced motion and approval-write close locks. The test fails on the previous
+code when a detached 800px card reappears. Rollback: restore the Budget environment
+mappings to 122.29.49 and rebuild Pages; keep the permanent widget URLs.
+Verification passed: `npm run validate`, `npm run build:pages`, the new PO fixture,
+the shared interaction-motion browser fixture, numeric field-exit and seven-module
+rollout fixtures, Pro Forma numbers, Insights numbers/desktop geometry/26,000-lot
+performance, and Forecast. Every immutable Budget release asset matches source.
+
 ## Shared interaction motion — 122.29.48, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

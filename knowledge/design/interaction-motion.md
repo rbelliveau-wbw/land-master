@@ -77,6 +77,12 @@ aria-hidden, disable pointer events, remove it within 140ms, and cancel it on
 context reset. Never create one for programmatic denial, a blocked close, a
 pending write, native dialogs, reduced motion or a large report (>600 elements).
 Large synchronous dismissals remain immediate rather than copying heavy content.
+Composite workspaces whose geometry or appearance depends on their surrounding
+overlay must set `data-lm-motion-exit="none"` on that overlay. It excludes the
+workspace and nested surfaces from detached exit copies while retaining the real
+opening fade and immediate original dismissal/focus handling. A sanitized clone
+cannot reliably preserve ancestor CSS, backdrop blur or data-driven styling;
+never redraw a different-looking surface after the real dialog has closed.
 
 Coalesce observations in one frame, ignore numeric animation mutations, and
 bound row geometry to small groups (100 rows by default). Bulk report changes

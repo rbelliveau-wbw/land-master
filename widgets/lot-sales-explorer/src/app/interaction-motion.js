@@ -194,7 +194,9 @@
       if(!event.isTrusted||media?.matches||!['click','pointerdown','keydown'].includes(event.type)||event.type==='keydown'&&event.key!=='Escape')return;
       const target=event.target,button=target.closest?.('button,a,[data-close]'),label=button&&(button.getAttribute('aria-label')||button.getAttribute('title')||button.textContent.trim());
       const explicit=event.key==='Escape'||button&&(/^(close|cancel|dismiss|done|keep editing)\b/i.test(label||'')||button.matches('.modal-x,.modal-close,[data-close]'));
-      const candidates=[...previousSurfaces.values()].filter(({node,open})=>open&&visible(node)&&node.tagName!=='DIALOG'&&!node.closest('dialog')&&!node.closest('.lm-motion-ghost'));
+      // Composite workspaces can depend on ancestor layout/backdrop and data
+      // selectors that a sanitized detached copy cannot preserve.
+      const candidates=[...previousSurfaces.values()].filter(({node,open})=>open&&visible(node)&&node.tagName!=='DIALOG'&&!node.closest('dialog')&&!node.closest('.lm-motion-ghost,[data-lm-motion-exit="none"]'));
       const selected=candidates.filter(({node})=>{
         const popover=node.matches('[role="listbox"],[role="menu"],[data-lm-motion="popover"]')||/(popover|picker|msel-pop|kmenu)/.test(node.className);
         return explicit&&node.contains(target)||event.key==='Escape'||target===node||popover&&!node.contains(target);

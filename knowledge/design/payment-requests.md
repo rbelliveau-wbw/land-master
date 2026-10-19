@@ -70,6 +70,10 @@ Body fields are Request date, Date needed and optional PO Description (1000
 characters). The viewport-bounded editor height stays stable after row changes,
 with internal scrolling. Keep 9px padding above ledger headers and below the last
 row, and 2px between rows. Omit the Line items/count heading. Retain 250-line guards.
+Closing the PO workspace must remove its card, Summary and backdrop together and
+restore focus immediately. Mark the composite overlay `data-lm-motion-exit="none"`
+so shared motion never redraws a detached, differently sized or styled copy on
+Close, X or Escape; retain the opening fade and pending-write close locks.
 
 Row / Spreadsheet mode supports validated TSV range copy/paste, fill-down, keyboard
 navigation and local range Undo. Shift-click/Shift-arrows select, Ctrl+C/V copies
