@@ -17,8 +17,8 @@ PMP publishes Budget Manager **122.29.51** and Settings Manager **1.5.16** throu
 the existing permanent URLs. Development and Production select these releases;
 Stage is unchanged. Pages does not deploy Creator functions.
 
-Compile/save these existing functions in Creator Development, in this order,
-then promote them together after native regression checks:
+These existing functions were saved through the Creator Development browser
+editor on October 19, 2026, in this dependency order. Promote them together:
 
 1. [snapshotApprovalRoute](../creator/functions/snapshotApprovalRoute.dg)
 2. [applySharedApprovalPolicy](../creator/functions/applySharedApprovalPolicy.dg)
@@ -30,8 +30,13 @@ Keep the existing `resolveApprovalRoute`, `poCurrencyString` and
 `sendModificationEmail` dependencies. No signatures, forms, fields or Custom
 API registrations are added or renamed. Existing create/submit/admin Custom
 APIs continue calling the same entry points. PMP leaves this Creator promotion
-to the user; the native routing fix is inactive until these functions are saved
-and promoted. Offline source tests do not establish Creator compilation.
+to the user; the Production routing fix is inactive until promotion. Offline
+source tests do not establish Creator compilation. Each native editor save was
+accepted, then the function was reopened or reloaded and copied through the
+editor's own text interface for verification. All five saved code bodies match
+the tested repository sources after removing only comments and formatting.
+No Execute action, business-record mutation, repair or email was run. This
+confirms native saved source, not an end-to-end Production approval test.
 
 Affected existing forms are `Budget_Modification` (Draft/Submitted and existing
 item, budget, amount, reason, reference, effective-date and track fields),
@@ -76,8 +81,8 @@ required PO CFO, centered X, focus/inert restoration and reduced motion.
 Required repository checks: `npm run validate`, `npm run build:pages`, and
 `node scripts/test-design-docs.mjs` all passed locally, along with the desktop
 browser fixture. Every asset in both immutable releases matches its source.
-Native Creator validation remains a separate
-handoff gate: compile all five functions; preview the configured route; test new
+The five-function native save/source verification is complete in Development.
+Behavioral validation remains a separate handoff gate: preview the configured route; test new
 standalone increase/decrease and Draft submission around the threshold in
 Development; confirm first-recipient delivery and existing-route preservation.
 After promotion, use an existing record's read-only targeted check to confirm
