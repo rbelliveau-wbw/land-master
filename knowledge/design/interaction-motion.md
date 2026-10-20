@@ -103,3 +103,11 @@ append, last/only-row removal, empty-to-first and rapid opposite actions. Merely
 finding an Animation object does not prove the interaction is visibly complete.
 Rerun the numeric, Pro Forma, Insights geometry/performance and Forecast suites.
 Release notes must record actual coverage, remaining native exceptions and rollback.
+
+### Budget Requests initial readiness
+
+The first Requests reveal waits for both payment/PO rows and modification data,
+including linked PO child reads. Never paint an intermediate orphan modification
+then insert its PO above it. Keep a same-scope complete list during refresh;
+actor/phase scope changes and failed authorization clear retained PO rows.
+The existing panel/row motion registry handles the final completed reveal.

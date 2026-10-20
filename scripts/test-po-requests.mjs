@@ -146,3 +146,27 @@ const queued=deferred();let childGets=0,currentChildScope=true;const staleChildr
 // Profile changes with the same runtime scope cannot publish another actor's Get.
 const lateGet=deferred();c.sdkRunBudgetFunction=async(name,args)=>{const p=JSON.parse(args.payload);if(p.action==='List')return {...managedResponse,rows:[submitted]};if(p.action==='Vendors')return vendorResponse;return lateGet.promise;};const staleActorRead=c.loadCheckWireRequests(budgetId,true);await new Promise(resolve=>setImmediate(resolve));c.S.myAccessId='900000000000000088';lateGet.resolve(childReply);await staleActorRead;assert.equal(c.S.checkWireRequestState[budgetId],'loading');c.S.myAccessId='900000000000000007';
 console.log('PO profile child reads: CFO own-only report, authorized foreign-submit children, immutable financial caches, exact identities/revisions, stale metadata, readable failures, bounded3 Get and stale actor cancellation passed.');
+
+// First entry must not display report mods before the slower PO and child reads.
+vm.runInContext(block(widget,'renderRequestRailList'),c);
+c.modsForBudget=()=>[{...linked,ID:modId,Budget:{ID:budgetId},Budget_Item:{ID:itemId},Reference_Number:linked.reference}];
+c.renderRequestRailModification=(b,mod)=>"<article data-mod='"+mod.ID+"'>Linked mod</article>";
+c.renderRequestRailPayment=(b,row)=>"<article data-po='"+row.ID+"'>PO</article>";
+c.S.checkWireRequestState={};c.S.checkWireRequestsByBudget={};c.S.checkWireRequestScopes={};scope='production-session';
+c.S.edBudget={ID:budgetId};c.S.edPhaseIdx=0;c.S.myAccessId='900000000000000007';response=[];
+const heldList=deferred(),heldChildren=deferred();
+c.sdkRunBudgetFunction=async(name,args)=>{const p=JSON.parse(args.payload);if(p.action==='List')return heldList.promise;if(p.action==='Vendors')return vendorResponse;return heldChildren.promise;};
+assert.match(c.renderRequestRailList(c.S.edBudget),/Loading requests/);
+assert.doesNotMatch(c.renderRequestRailList(c.S.edBudget),/data-mod=|data-po=/);
+const firstRailLoad=c.loadCheckWireRequests(budgetId,true);
+await new Promise(resolve=>setImmediate(resolve));
+assert.doesNotMatch(c.renderRequestRailList(c.S.edBudget),/data-mod=|data-po=/,'A fast mod report cannot expose a partial list');
+heldList.resolve({...managedResponse,rows:[submitted]});await new Promise(resolve=>setImmediate(resolve));
+assert.equal(c.S.checkWireRequestState[budgetId],'loading');
+assert.doesNotMatch(c.renderRequestRailList(c.S.edBudget),/data-mod=|data-po=/,'PO header and verified linked children reveal together');
+heldChildren.resolve(childReply);await firstRailLoad;
+let rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/data-po=/);assert.match(rail,/data-mod=/);assert.ok(rail.indexOf('data-po=')<rail.indexOf('data-mod='));
+c.S.checkWireRequestState[budgetId]='loading';rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/Refreshing requests/);assert.match(rail,/data-po=/);assert.match(rail,/data-mod=/,'A scoped complete list remains during refresh');
+scope='different-actor';rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/Loading requests/);assert.doesNotMatch(rail,/data-po=|data-mod=/,'Cached rows never survive a changed actor scope');
+c.S.checkWireRequestState[budgetId]='unavailable';rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/Payment requests unavailable/);assert.doesNotMatch(rail,/data-po=/,'Failed authorization/read never retains old POs');
+console.log('Requests first reveal: delayed List and child Get expose no orphan mods; complete rows reveal together; same-scope refresh retains rows and actor/error boundaries clear them.');

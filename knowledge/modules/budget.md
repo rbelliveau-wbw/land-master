@@ -1,3 +1,23 @@
+## Requests reveal together — 122.29.60, October 20, 2026
+
+First entry shows one Loading requests state until the scoped native payment
+report, managed PO List/Vendors and submitted PO child reads finish. Budget
+Mods cannot briefly appear alone before their parent PO. Same actor/phase
+refreshes retain the previous complete request rows; changed scope or failed
+reads cannot retain old PO data. Existing read concurrency, authorization,
+child-failure notices and action guards remain.
+
+managePurchaseOrder and poActorResponse were saved in Creator Development
+through the browser and reloaded to verify persistence. Creator formatting
+removed grouped boolean parentheses; explicit intermediate flags preserve the
+intended recovery, amendment permission/state and balance guards. The native
+source regression passed with the explicit guards. Promote both functions
+together to enable god-only Pending PO pencils. No new fields, reports or APIs.
+
+Changed widget.html, widget config/hash, Requests regression and immutable
+release/environment mappings. Full validation and Pages build required.
+Rollback frontend: 122.29.59. Native guards preserve the approved behavior.
+
 ## God-only Pending PO edits — 122.29.59, October 20, 2026
 
 Pending reserved POs gain Edit only with the exact global Budget/request grant
