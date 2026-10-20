@@ -72,7 +72,8 @@ Vendor. The vendor link opens the existing form in the current Creator environme
 Body fields are Request date, Date needed and optional PO Description (1000
 characters). The viewport-bounded editor height stays stable after row changes,
 with internal scrolling. Keep 9px padding above ledger headers and below the last
-row, and 2px between rows. Omit the Line items/count heading. Retain 250-line guards.
+row, 6px above the first editable row beneath the column titles, and 2px between
+subsequent rows. Omit the Line items/count heading. Retain 250-line guards.
 Closing the PO workspace must remove its card, Summary and backdrop together and
 restore focus immediately. Mark the composite overlay `data-lm-motion-exit="none"`
 so shared motion never redraws a detached, differently sized or styled copy on
@@ -187,3 +188,9 @@ deletion. Recheck the global grant and authenticated identity in row openers,
 modal controls and native delete APIs. The compatibility modAdmin response is
 an alias, not another permission. Check/Wire details retain their existing
 view/attachment-only actions; do not invent a payment deletion flow.
+
+Pending PO pencils require the exact global Edit/Delete All Budgets/Requests
+grant plus a native in-flight-edit capability. Save changes preserves the
+captured approval people and decisions; do not offer Submit or approval decisions
+inside an unsaved in-flight editor. Recheck the current grant at entry/save and
+in the native phase-locked write. Owned-budget access alone is insufficient.

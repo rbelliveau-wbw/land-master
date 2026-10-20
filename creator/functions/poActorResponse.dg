@@ -1,6 +1,13 @@
 map poActorResponse(map response, string userAccessId)
 {
 	 environmentType = thisapp.environment.type;
+	// All callers authenticate userAccessId before this private projection.
+	if(response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+"))
+	{
+		editActor = User_Access[ID == userAccessId.toLong()]; editSnapshot = response.get("snapshot"); editBudget = Add_Budget[ID == ifnull(editSnapshot.get("budgetId"),"0").toString().toLong()];
+		editSnapshot.put("canEditInFlight",editActor.count() == 1 && editActor.Edit_All_Budgets == true && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Submitted" && editSnapshot.get("approvalState") == "Pending");
+		response.put("snapshot",editSnapshot);
+	}
 	// Permission hints are projected only after the caller has authenticated the actor.
 	// This changes the Development preview display, never a Production grant.
 	if(environmentType == "Development" && zoho.loginuser == zoho.adminuser && response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+"))

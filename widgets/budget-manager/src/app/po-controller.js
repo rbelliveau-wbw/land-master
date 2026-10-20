@@ -2,12 +2,16 @@
   "use strict";
   function verify(snapshot,wanted,compareFields){
     if(!snapshot||typeof snapshot.id!=="string"||!/^\d+$/.test(snapshot.id)||snapshot.revision!==wanted.token)throw new Error("PO identity or revision was not verified.");
-    var status=wanted.action==="Submit"||wanted.preserveReservation?"Submitted":"Draft",commitment=status==="Submitted"?"Reserved":"None",approval=wanted.action==="Submit"?"Pending":wanted.preserveReservation?"Rejected":"Not Configured";
+    var status=wanted.action==="Submit"||wanted.preserveReservation||wanted.preserveApproval===true?"Submitted":"Draft",commitment=status==="Submitted"?"Reserved":"None",approval=wanted.action==="Submit"||wanted.preserveApproval===true?"Pending":wanted.preserveReservation?"Rejected":"Not Configured";
     if(snapshot.status!==status||snapshot.commitmentState!==commitment||snapshot.approvalState!==approval)throw new Error("PO state was not verified.");
     if(wanted.id&&snapshot.id!==wanted.id)throw new Error("Another PO was returned.");
     if(snapshot.budgetId!==wanted.budgetId)throw new Error("Another Budget was returned.");
     if(compareFields)for(var key of ["vendorId","amount","requestDate","dateNeeded"])if(snapshot[key]!==wanted[key])throw new Error("Header "+key+" was not verified.");
-    if(wanted.action==='Submit'&&wanted.automaticModifications===true){
+    if(wanted.preserveApproval===true){
+      var retained=snapshot.approvalBundle;
+      if(!retained||!Array.isArray(retained.rows)||!Array.isArray(wanted.retainedApprovalIds)||retained.rows.length!==wanted.retainedApprovalIds.length||retained.rows.some(function(row,i){return row.id!==wanted.retainedApprovalIds[i];})||retained.rows.filter(function(row){return row.status==='Pending';}).length!==1||retained.rows.some(function(row){return !['Approved','Pending','Not Sent'].includes(row.status);}))throw new Error('Retained approval identities were not verified.');
+      if(!Array.isArray(retained.modifications)||retained.modifications.some(function(mod){return typeof mod.id!=='string'||!/^\d+$/.test(mod.id)||mod.status!=='Submitted';})||(snapshot.budgetModificationId||null)!==(retained.modifications.length?retained.modifications[0].id:null))throw new Error('Retained PO modification identities were not verified.');
+    }else if(wanted.action==='Submit'&&wanted.automaticModifications===true){
       var bundle=snapshot.approvalBundle;
       if(!bundle||!Array.isArray(bundle.modifications)||!Array.isArray(bundle.rows)||!bundle.rows.length||bundle.rows[0].status!=='Pending'||bundle.rows.slice(1).some(function(row){return row.status!=='Not Sent';}))throw new Error('Combined PO approval chain was not verified.');
       var planned=root.LMPO.validate(wanted,true).grouped,expected={},seen=new Set();

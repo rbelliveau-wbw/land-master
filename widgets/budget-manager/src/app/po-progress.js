@@ -3,12 +3,12 @@
   var check='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l4 4L19 6"/></svg>';
   function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function describe(run){
-    var action=run.payload&&run.payload.action||'Save',snapshot=run.snapshot,bundle=snapshot&&snapshot.approvalBundle;
+    var action=run.payload&&run.payload.action||'Save',preserving=!!(run.payload&&run.payload.preserveApproval),snapshot=run.snapshot,bundle=snapshot&&snapshot.approvalBundle;
     var completed=!!(snapshot||run.deleted),warning=!!(snapshot&&snapshot.status==='Submitted'&&snapshot.approvalState==='Pending'&&!(bundle&&bundle.emailSent));
     var state=completed?(warning?'warning':'success'):run.rejected?'error':'unknown';
-    var title=run.deleted?'Purchase order deleted':!completed?'Purchase order needs review':action==='RetryEmail'?'Approval notification updated':action==='Reject'?'Purchase order rejected':action==='Approve'?(snapshot.approvalState==='Approved'?'Purchase order approved':'Approval recorded'):snapshot.status==='Submitted'?'Purchase order submitted':'Draft saved';
+    var title=run.deleted?'Purchase order deleted':!completed?'Purchase order needs review':preserving?'Purchase order updated':action==='RetryEmail'?'Approval notification updated':action==='Reject'?'Purchase order rejected':action==='Approve'?(snapshot.approvalState==='Approved'?'Purchase order approved':'Approval recorded'):snapshot.status==='Submitted'?'Purchase order submitted':'Draft saved';
     var active=bundle&&bundle.rows.find(function(row){return row.status==='Pending';});
-    var message=run.deleted?'PO and associated records removed.':!completed?'Check the saved status before trying again.':snapshot.approvalState==='Rejected'?'Budget reservation retained.':snapshot.approvalState==='Approved'?'Approval chain complete.':snapshot.status==='Submitted'?(active?'Awaiting '+active.role+' approval.':'Budget reserved.')+(warning?' Email needs attention.':bundle&&bundle.emailSent?' Approval email sent.':''):'No budget reserved.';
+    var message=run.deleted?'PO and associated records removed.':!completed?'Check the saved status before trying again.':preserving?'Current approval chain and decisions kept.':snapshot.approvalState==='Rejected'?'Budget reservation retained.':snapshot.approvalState==='Approved'?'Approval chain complete.':snapshot.status==='Submitted'?(active?'Awaiting '+active.role+' approval.':'Budget reserved.')+(warning?' Email needs attention.':bundle&&bundle.emailSent?' Approval email sent.':''):'No budget reserved.';
     if(run.attachmentResult&&(run.attachmentResult.total||!run.attachmentResult.complete)){message+=' '+(run.attachmentResult.message||'Attachments need review')+'.';if(!run.attachmentResult.complete){state='warning';title='PO saved · attachments need attention';message+=' Review PO to finish the remaining files.';warning=true;}}
     return {state:state,title:title,message:message,completed:completed,warning:warning};
   }

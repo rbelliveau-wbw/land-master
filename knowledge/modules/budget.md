@@ -1,3 +1,32 @@
+## God-only Pending PO edits — 122.29.59, October 20, 2026
+
+Pending reserved POs gain Edit only with the exact global Budget/request grant
+and fresh native canEditInFlight capability. Save changes preserves the existing
+chain and decisions, recalculates linked automatic modifications, and sends no
+mail. Draft/Rejected paths are retained; Approved stays read-only. Native phase
+lock, revision, actor and grant are checked before writes; retain receipts and
+read-only recovery for unknown writes. **Promote managePurchaseOrder and
+poActorResponse together** to enable the Pending pencil. The widget hides it
+against the old backend. No schema/report/API changes. See [implementation,
+Creator handoff, regressions and rollback](../../docs/budget-po-cleanup-and-inflight-edit-2026-10-20.md).
+
+## PO spacing, draft files and compact progress — 122.29.59, October 20, 2026
+
+The first PO line has 6px of top padding beneath its column titles (4px more).
+Subsequent rows retain compact 2px spacing. Draft file tabs now use the standard
+upload area, empty state and file-type/name/actions grid without the save-first
+paragraph. This fixes filenames squeezed into the 42px icon column across
+PO/Budget Mod/Check/Wire drafts and retained pending files. Progress stays 540px
+wide for Save, Submit, decisions, retry and deletion: the hidden-sidebar editor
+selector no longer overrides its width. Other routine Budget/Legal progress
+shells already cap at 540px; wider destination-table dialogs retain their columns.
+Changed purchase-orders.css, request-attachments.js/.css, design guides and
+widget version/release metadata; no forms, fields, reports, functions or Custom
+APIs changed for the visual fixes. The in-flight editing addition below needs
+two native function updates. Verify desktop Row/Spreadsheet
+geometry, existing attachment/PO browser regressions, full validation and Pages
+build. Rollback: Budget Production mapping 122.29.58.
+
 ## Link to Record select and Save — 122.29.58, October 20, 2026
 
 The association picker highlights one selected row and saves from that same

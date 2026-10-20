@@ -8,6 +8,7 @@ ctx.model={budgetId:'1001',vendorId:'9001',amount:'999.99',requestDate:'2026-10-
 let deleteAllowed=true;ctx.options={userAccessId:()=> '8001',canDelete:()=>deleteAllowed};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
 const totals=source.slice(source.indexOf('    function totals()'),source.indexOf('    function itemRows('));
 vm.runInContext(totals,ctx);
+vm.runInContext(source.slice(source.indexOf('    function canAmend('),source.indexOf('    function readOnly(')),ctx);
 const save=source.slice(source.indexOf('    async function save(action)'),source.indexOf('    async function get('));
 vm.runInContext(save,ctx);
 await ctx.save('Save');assert.equal(ctx.savedPayload.amount,'3.03','Saved PO total calculated from exact line cents, ignoring old header');

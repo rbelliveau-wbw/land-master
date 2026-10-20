@@ -160,3 +160,18 @@ row, then **Save** on the same screen. There is no second review screen. Selecti
 search and Cancel are local; only Save writes. Use the helper
 “Choose a request to link this attachment to.” for request choices. Budget only clears the request link
 without moving or copying the file. See [draft files and recovery](../../docs/budget-draft-attachments-2026-10-20.md).
+
+Draft request attachments use the same file header/count, upload icon/drop zone,
+Choose Files button, empty state and three-column file rows as saved attachments.
+Omit the “Files upload when you save this request” paragraph. Keep the file type
+in the first column, filename/status in a flexible middle column with min-width:0,
+and the remove action at the right. Never place filename/status into the icon's
+42px column. Apply this to PO, Budget Mod and Check/Wire draft tabs and retained
+pending-file rows; preserve actual upload timing and no-replay recovery.
+
+Attachment preview drawers opt out of detached exit visuals with
+`data-lm-motion-exit="none"`: remove the live preview/backdrop together and restore
+focus immediately; do not flash a differently styled empty copy on close. Keep
+opening motion, late-preview cancellation, nested inert/focus and upload locks.
+Budget association actions use the centered horizontal chain SVG with round
+caps/joins and explicit 16px view box geometry, matching the adjacent controls.

@@ -14,7 +14,8 @@
     function call(payload){return options.call(Object.assign({},payload,{budgetId:model.budgetId,userAccessId:options.userAccessId()}));}
     var chevron='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 10 5 5 5-5"/></svg>';
     var duplicateIcon='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-    function readOnly(){return model.preview||model.loadState==='loading'||model.loadState==='unavailable'||model.status==='Submitted'&&model.approvalState!=='Rejected'||!model.editable;}
+    function canAmend(){return model.status==='Submitted'&&model.approvalState==='Pending'&&model.canEditInFlight===true&&!!(options.canEditInFlight&&options.canEditInFlight({ID:model.budgetId}));}
+    function readOnly(){return model.preview||model.loadState==='loading'||model.loadState==='unavailable'||model.status==='Submitted'&&model.approvalState!=='Rejected'&&!canAmend()||!model.editable;}
     function canDelete(){return !!(options.canDelete&&options.canDelete({ID:model.budgetId}))&&model.loadState==='loaded'&&model.id&&['Draft','Submitted'].includes(model.status);}
     function recoveryEligible(){return model.editable&&model.loadState==='loaded'&&typeof model.id==='string'&&/^\d+$/.test(model.id)&&model.recoveryAvailable===true&&model.recoveryToken===model.revision&&!model.recoveryBusy;}
     function recoveryReady(){return recoveryEligible()&&!model.recoveryUnknown;}
@@ -86,13 +87,13 @@
       html+='<div class="po-total po-context-total"><div class="po-budget-context" data-po-context aria-live="polite"></div><div class="po-total-amount"><span>TOTAL</span><strong data-po-total></strong></div></div>';
       if(model.approvalBundle)html+=bundleHtml();
       card.querySelector('.po-body').innerHTML=html;
-      card.querySelector('footer').innerHTML='<span class="po-spacer"></span>'+(!locked?'<button class="mbtn neutral" data-po-save="Save">Save draft</button><button class="mbtn primary" data-po-save="Submit">'+(model.approvalState==='Rejected'?'Resubmit PO':'Submit PO')+'</button>':'<button class="mbtn neutral" data-po-close>Close</button>');
+      card.querySelector('footer').innerHTML='<span class="po-spacer"></span>'+(!locked?(canAmend()?'<button class="mbtn neutral" data-po-close>Close</button><button class="mbtn primary" data-po-save="Save">Save changes</button>':'<button class="mbtn neutral" data-po-save="Save">Save draft</button><button class="mbtn primary" data-po-save="Submit">'+(model.approvalState==='Rejected'?'Resubmit PO':'Submit PO')+'</button>'):'<button class="mbtn neutral" data-po-close>Close</button>');
       if(model.loadState==='loading')card.querySelector('footer').insertAdjacentHTML('afterbegin','<span role="status" aria-live="polite">Loading saved PO…</span>');
       if(model.loadState==='unavailable'&&model.loadId)card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-reload>Retry load</button>');
       if(recoveryReady())card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" type="button" data-po-recover>Recover PO</button>');
       if(model.recoveryUnknown&&recoveryEligible())card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" type="button" data-po-check-recovery>Check recovery</button>');
-      if(!model.recoveryAvailable&&model.approvalBundle&&model.approvalBundle.canApprove&&model.approvalState==='Pending'){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="Reject">Reject PO</button><button class="mbtn primary" data-po-decision="Approve">Approve PO &amp; mods</button>');}
-      if(!model.recoveryAvailable&&model.approvalBundle&&model.approvalBundle.canRetryEmail&&model.approvalState==='Pending'&&!model.approvalBundle.emailSent){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="RetryEmail">Retry email</button>');}
+      if((model.preview||!canAmend())&&!model.recoveryAvailable&&model.approvalBundle&&model.approvalBundle.canApprove&&model.approvalState==='Pending'){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="Reject">Reject PO</button><button class="mbtn primary" data-po-decision="Approve">Approve PO &amp; mods</button>');}
+      if((model.preview||!canAmend())&&!model.recoveryAvailable&&model.approvalBundle&&model.approvalBundle.canRetryEmail&&model.approvalState==='Pending'&&!model.approvalBundle.emailSent){card.querySelector('footer').insertAdjacentHTML('beforeend','<button class="mbtn neutral" data-po-decision="RetryEmail">Retry email</button>');}
       if(canDelete())card.querySelector('footer').insertAdjacentHTML('afterbegin','<button class="attachment-action delete po-delete" type="button" data-po-delete aria-label="Delete PO" title="Delete PO">'+trash+'</button>');
       patchBalances();
       patchTotal();
@@ -105,7 +106,7 @@
       if(!valid){patchApprovers(false,0n);node.innerHTML='<span class="po-context-muted">'+(selected.length?'Budget context unavailable':'Choose a budget item to see approvals')+'</span>';clearTimeout(previewTimer);previewGeneration++;model.previewKey='';return;}
       var available=0n,shortfall=0n,remaining=0n,pending=0n;allocations.forEach(function(row){available+=row.available;shortfall+=row.shortfall;remaining+=row.remaining;pending+=row.pending;});
       var bundle=model.approvalBundle,modification=shortfall;if(bundle&&readOnly())modification=bundle.modifications.reduce(function(sum,row){return sum+root.LMPO.money(row.amount);},0n);
-      var roles=bundle&&readOnly()?bundle.rows.map(function(row){return {role:row.role};}):model.previewRoles;
+      var roles=bundle&&(readOnly()||canAmend())?bundle.rows.map(function(row){return {role:row.role};}):model.previewRoles;
       node.innerHTML='<div class="po-context-metrics"><span>Available <strong>'+money(root.LMPO.currency(available))+'</strong></span>'+(modification>0n?'<span class="po-context-mod">Modification <strong>+'+money(root.LMPO.currency(modification))+'</strong></span>':'<span class="po-context-remaining'+(remaining<0n?' is-negative':'')+'">Remaining <strong>'+money(root.LMPO.currency(remaining))+'</strong></span>')+'</div>';
       patchApprovers(true,modification);
       if(bundle||!model.editable)return;
@@ -199,12 +200,13 @@
       }
     }
     async function save(action){if(progress||visualBusy||!current()||readOnly())return;try{
+      var preserving=canAmend();if(preserving&&action!=='Save')throw new Error('Save changes keeps the current approval chain.');
       if(!dateValid(model.requestDate)||!dateValid(model.dateNeeded))throw new Error('Both dates must be valid YYYY-MM-DD dates.');
       model.amount=root.LMPO.currency(totals());
-      var payload={action:action,id:model.id||'',expectedRevision:model.revision||'',budgetId:model.budgetId,vendorId:model.vendorId,budgetModificationId:model.budgetModificationId||null,amount:model.amount,description:model.description||'',requestDate:model.requestDate,dateNeeded:model.dateNeeded,lines:model.lines.map(function(line){return Object.assign({},line,{costCode:lineCode(line)});}),automaticModifications:true,preserveReservation:model.status==='Submitted'&&model.approvalState==='Rejected',token:uid(),userAccessId:options.userAccessId()};root.LMPO.validate(payload,action==='Submit'||payload.preserveReservation);
+      var payload={action:action,id:model.id||'',expectedRevision:model.revision||'',budgetId:model.budgetId,vendorId:model.vendorId,budgetModificationId:model.budgetModificationId||null,amount:model.amount,description:model.description||'',requestDate:model.requestDate,dateNeeded:model.dateNeeded,lines:model.lines.map(function(line){return Object.assign({},line,{costCode:lineCode(line)});}),automaticModifications:true,preserveReservation:model.status==='Submitted'&&model.approvalState==='Rejected',token:uid(),userAccessId:options.userAccessId()};if(preserving){payload.preserveApproval=true;payload.retainedApprovalIds=model.approvalBundle.rows.map(function(row){return row.id;});}root.LMPO.validate(payload,action==='Submit'||payload.preserveReservation||preserving);
       if(!model.vendors.some(function(v){return v.ID===model.vendorId;}))throw new Error('Select a verified Vendor.');
-      if(action==='Submit'){if(model.balanceState!=='loaded')throw new Error('Refresh and verify budget availability before submitting.');var v=root.LMPO.validate(payload,true);for(var key of Object.keys(v.grouped)){var b=model.balances.find(function(row){return row.budgetItemId===key;});if(!b)throw new Error('A selected item has no verified balance.');}}
-      if(action==='Submit'){payload.expectedBalances={};payload.expectedPendingModifications={};allocationRows().forEach(function(row){if(!row.verified)throw new Error('Item balance is unverified.');payload.expectedBalances[row.budgetItemId]=String(row.available);payload.expectedPendingModifications[row.budgetItemId]=String(row.pending);});}
+      if(action==='Submit'||preserving){if(model.balanceState!=='loaded')throw new Error('Refresh and verify budget availability before submitting.');var v=root.LMPO.validate(payload,true);for(var key of Object.keys(v.grouped)){var b=model.balances.find(function(row){return row.budgetItemId===key;});if(!b)throw new Error('A selected item has no verified balance.');}}
+      if(action==='Submit'||preserving){payload.expectedBalances={};payload.expectedPendingModifications={};allocationRows().forEach(function(row){if(!row.verified)throw new Error('Item balance is unverified.');payload.expectedBalances[row.budgetItemId]=String(row.available);payload.expectedPendingModifications[row.budgetItemId]=String(row.pending);});}
       mountProgress(action);await controller.begin(payload);
     }catch(e){error(e.message);}}
     function loadVendors(){var own=generation;return Promise.resolve().then(function(){return options.vendors();}).then(function(vendors){if(!current()||own!==generation)return;var seen=new Set();vendors.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=vendors;});}

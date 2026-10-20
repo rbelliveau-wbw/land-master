@@ -4,7 +4,7 @@ string managePurchaseOrder(string payload)
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
 	operationId = 0;
 	lockId = 0;
-	writeStarted = false; wasReserved = false; priorBundle = Map(); modificationPlan = List(); budgetExceeded = false;
+	writeStarted = false; amendPending = false; wasReserved = false; priorBundle = Map(); modificationPlan = List(); budgetExceeded = false;
 	p = Map();
 	try
 	{
@@ -261,7 +261,7 @@ string managePurchaseOrder(string payload)
 				if(po.Date_Needed != null) { neededDateText = po.Date_Needed.toString("yyyy-MM-dd"); }
 				summaryRows=List(); summaryAvailable=true;
 				if(ifnull(po.PO_Approval_State,"Not Configured") != "Not Configured") { summaryBundle=thisapp.poApprovalBundle(po.ID.toString()); if(summaryBundle.get("success") == true) { summaryRows=summaryBundle.get("bundle").get("rows"); } else { summaryAvailable=false; } }
-				rows.add({"approvals":summaryRows,"approvalSummaryAvailable":summaryAvailable,"id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
+				rows.add({"approvals":summaryRows,"approvalSummaryAvailable":summaryAvailable,"canEditInFlight":access.Edit_All_Budgets == true && budget.Archived != true && po.PO_Status == "Submitted" && po.PO_Approval_State == "Pending","id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
 			}
 			result.put("rows",rows); result.put("success",true); return result.toString();
 		}
@@ -329,6 +329,9 @@ string managePurchaseOrder(string payload)
 		// Owner approved Creator's Max Digits 16 / Places 2 on 2026-10-08.
 		// Currency boundary persisted exactly in the native Development test.
 		if(canEdit != true || budget.Archived == true) { result.put("error","Budget edit permission on an active phase is required."); return result.toString(); }
+		amendPending = p.get("preserveApproval") == true;
+		if(p.get("preserveApproval") != null && p.get("preserveApproval") != true && p.get("preserveApproval") != false) { result.put("error","Preserve approvals must be an explicit boolean."); return result.toString(); }
+		if(amendPending && (action != "Save" || access.Edit_All_Budgets != true)) { result.put("error","Edit/Delete All Budgets/Requests is required for in-flight edits."); return result.toString(); }
 		validated = thisapp.poValidatePayload(payload);
 		if(validated.get("success") != true) { validated.put("contract","po-v1"); return validated.toString(); }
 		p = validated.get("payload");
@@ -348,8 +351,9 @@ string managePurchaseOrder(string payload)
 		if(idText != "")
 		{
 			po = Payment_Request[ID == idText.toLong() && Budget == budget.ID];
-			if(po.ID == null || po.Request_Type != "Purchase Order" || (po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected")) || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != expected) { result.put("error","Only the current Draft or Rejected PO can be edited or submitted."); return result.toString(); }
+			if(po.ID == null || po.Request_Type != "Purchase Order" || (po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected") && !(amendPending && po.PO_Status == "Submitted" && po.PO_Approval_State == "Pending")) || ifnull(po.PO_Revision,"") == "" || po.PO_Revision != expected) { result.put("error","Only the current Draft, Rejected or explicitly authorized in-flight PO can be edited."); return result.toString(); }
 		}
+		if(amendPending && (idText == "" || po.PO_Status != "Submitted" || po.PO_Approval_State != "Pending" || po.PO_Commitment_State != "Reserved")) { result.put("error","Only a current Pending reserved PO can retain its approvals while editing."); return result.toString(); }
 		if(idText != "" && po.PO_Commitment_State == "Reserved")
 		{
 			wasReserved = true; beforePO = thisapp.poSnapshot(idText);
@@ -384,11 +388,18 @@ string managePurchaseOrder(string payload)
 		{
 			if(access.count() == 1 && access.ID.toString() == p.get("userAccessId") && owner.ID == access.ID && access.Edit_Owned_Budgets == true) { canEdit = true; }
 		}
-		if(canEdit != true || budget.Archived == true) { result.put("error","Phase edit permission changed before this write."); }
+		if(canEdit != true || budget.Archived == true || (amendPending && access.Edit_All_Budgets != true)) { result.put("error","Phase edit permission changed before this write."); }
 		if(idText != "")
 		{
 			po = Payment_Request[ID == idText.toLong() && Budget == budget.ID];
-			if((po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected")) || po.PO_Revision != expected) { result.put("error","The PO changed while this request was waiting."); }
+			if((po.PO_Status != "Draft" && !(po.PO_Status == "Submitted" && po.PO_Approval_State == "Rejected") && !(amendPending && po.PO_Status == "Submitted" && po.PO_Approval_State == "Pending" && po.PO_Commitment_State == "Reserved")) || po.PO_Revision != expected) { result.put("error","The PO changed while this request was waiting."); }
+		}
+		if(amendPending && result.get("error") == null)
+		{
+			// Capture the latest chain only after taking the shared phase lock.
+			beforePO = thisapp.poSnapshot(idText);
+			if(beforePO.get("success") != true) { result.put("error",beforePO.get("error")); }
+			else { priorBundle = beforePO.get("snapshot").get("approvalBundle"); if(priorBundle.get("poTestCFO") != null) { result.put("error","A scoped test approval cannot be amended."); } }
 		}
 		for each line in p.get("lines")
 		{
@@ -409,7 +420,7 @@ string managePurchaseOrder(string payload)
 			if(subdivisionCode == "" || minorCode == "0" || line.get("costCode") != generatedCode) { result.put("error","Generated cost code changed or is unavailable. Refresh the item balance."); }
 			if(item.ID == null || category.ID == null || track == "" || locked != true) { result.put("error","A selected Budget Item is no longer eligible in this phase."); }
 		}
-		if(action == "Submit" && result.get("error") == null)
+		if((action == "Submit" || amendPending) && result.get("error") == null)
 		{
 			balances = thisapp.poBudgetBalances(budgetId);
 			if(balances.get("success") != true) { result.put("error",balances.get("error")); }
@@ -443,6 +454,8 @@ string managePurchaseOrder(string payload)
 					}
 				}
 			}
+			if(amendPending != true)
+			{
 			territory = "";
 			if(budget.Subdivision1 != null) { territory = ifnull(budget.Subdivision1.Territory,""); }
 			context = {"workflow":"Purchase Order","budgetId":budgetId,"territory":territory,"department":"","submitterId":access.ID.toString(),"amount":p.get("amount"),"hasBudgetModification":modificationPlan.size() > 0,"hasBudgetOverrun":budgetExceeded};
@@ -455,6 +468,7 @@ string managePurchaseOrder(string payload)
 				for each step in resolvedSteps { if(!approvalTitles.contains(step.get("role"))) { result.put("error","PO template role must match an existing approval title: VP, Legal, CFO, COO or CEO."); } if(step.get("role") == "CFO") { cfoFound = true; } if(step.get("role") != "CFO") { additionalFound = true; } }
 				if(cfoFound != true) { result.put("error","Every PO must include CFO approval."); }
 				if(modificationPlan.size() > 0 && additionalFound != true) { result.put("error","Configure additional approvers for POs that create budget modifications."); }
+			}
 			}
 		}
 		operation = PO_Operation[ID == operationId];
@@ -524,11 +538,11 @@ string managePurchaseOrder(string payload)
 		po.Request_Amount=p.get("amount").toDecimal(); po.PO_Amount_Exact=p.get("amount");
 		po.Budget_Item=null; po.Accounting_Project_Code=null; po.Element=null; po.Final_Accounting_Code=null;
 		po.PO_Line_Count=order; po.PO_Status="Draft"; po.PO_Commitment_State="None"; po.PO_Approval_State="Not Configured";
-		if(wasReserved) { po.PO_Status="Submitted"; po.PO_Commitment_State="Reserved"; po.PO_Approval_State="Rejected"; }
+		if(wasReserved) { po.PO_Status="Submitted"; po.PO_Commitment_State="Reserved"; po.PO_Approval_State=if(amendPending,"Pending","Rejected"); }
 		if(action == "Submit") { po.PO_Status="Submitted"; po.PO_Commitment_State="Reserved"; }
 		// The pointer is last. Old revisions remain immutable evidence; writes are NOT transactional.
 		po.PO_Revision=token;
-		if(action == "Submit")
+		if(action == "Submit" || amendPending)
 		{
 			linkedModificationId = null; modifications = List();
 			for each plan in modificationPlan
@@ -557,6 +571,35 @@ string managePurchaseOrder(string payload)
 				modifications.add({"id":mod.ID.toString(),"budgetItemId":item.ID.toString(),"amount":plan.get("amount"),"reference":reference});
 			}
 			po.PO_Budget_Modification=linkedModificationId;
+			if(amendPending)
+			{
+				// Retire only previous auto-mods no longer needed; keep their records/files.
+				for each priorMod in priorBundle.get("modifications")
+				{
+					retained = false; for each intendedMod in modifications { if(intendedMod.get("id") == priorMod.get("id")) { retained = true; } }
+					if(retained != true) { obsoleteMod = Budget_Modification[ID == priorMod.get("id").toLong() && Budget == budget.ID]; obsoleteMod.Status="Rejected"; }
+				}
+				priorCapture = Approval_Route_Snapshot[ID == priorBundle.get("snapshotId").toLong()];
+				retainedContext = priorCapture.Context_JSON.toMap();
+				retainedContext.put("submissionRevision",token); retainedContext.put("amount",p.get("amount")); retainedContext.put("modifications",modifications);
+				retainedContext.put("hasBudgetModification",modifications.size() > 0); retainedContext.put("hasBudgetOverrun",budgetExceeded);
+				retainedRoute = priorCapture.Route_JSON.toMap(); retainedRoute.put("context",retainedContext);
+				// Copy the captured route and exact execution IDs. Never reset decisions or send mail.
+				retainedCaptureId = insert into Approval_Route_Snapshot
+				[
+					Added_User=zoho.loginuser
+					Submission_Key="Purchase Order:"+idText+":"+token
+					Workflow="Purchase Order"
+					Record_ID=idText
+					Submission_Revision=token
+					Policy=priorCapture.Policy
+					Context_JSON=retainedContext.toString()
+					Route_JSON=retainedRoute.toString()
+					Execution_JSON=priorCapture.Execution_JSON
+				];
+			}
+			else
+			{
 			context.put("recordId",idText); context.put("submissionRevision",token); context.put("modifications",modifications);
 			captured = thisapp.snapshotApprovalRoute(context);
 			if(captured.get("success") != true) { operation.Status="Unknown"; result.put("writeState","unknown"); result.put("error",captured.get("error")); return result.toString(); }
@@ -584,6 +627,7 @@ string managePurchaseOrder(string payload)
 			storedRoute = Approval_Route_Snapshot[ID == captured.get("snapshotId").toLong()]; storedRoute.Execution_JSON=executionIds.toString();
 			first = Budget_Approvals[ID == executionIds.get(0).toLong()]; first.Status="Pending"; po.PO_Approval_State="Pending";
 			mail = thisapp.sendPurchaseOrderEmail(idText);
+			}
 		}
 		actual = thisapp.poSnapshot(idText);
 		if(actual.get("success") != true) { result.put("error",actual.get("error")); }
@@ -591,11 +635,17 @@ string managePurchaseOrder(string payload)
 		{
 			saved = actual.get("snapshot");
 			wantedStatus = "Draft"; wantedCommitment = "None"; wantedApproval = "Not Configured";
-			if(wasReserved) { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Rejected"; }
+			if(wasReserved) { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = if(amendPending,"Pending","Rejected"); }
 			if(action == "Submit") { wantedStatus = "Submitted"; wantedCommitment = "Reserved"; wantedApproval = "Pending"; }
 			if(saved.get("status") != wantedStatus || saved.get("commitmentState") != wantedCommitment || saved.get("approvalState") != wantedApproval) { result.put("error","Submission, commitment or approval state differs from the intended write."); }
 			if(saved.get("id") != idText || saved.get("budgetId") != budgetId || saved.get("revision") != token || saved.get("lines").size() != p.get("lines").size()) { result.put("error","PO destination identity or line count was not verified."); }
 			if(saved.get("budgetModificationId") != if(linkedModificationId == null,null,linkedModificationId.toString())) { result.put("error","Linked budget modification readback differs from the intended write."); }
+			if(amendPending)
+			{
+				retainedRows = saved.get("approvalBundle").get("rows"); priorRows = priorBundle.get("rows");
+				if(retainedRows.size() != priorRows.size()) { result.put("error","Retained approval count changed."); }
+				else { for each index approvalIndex in priorRows { priorRow = priorRows.get(approvalIndex); retainedRow = retainedRows.get(approvalIndex); if(retainedRow.get("id") != priorRow.get("id") || retainedRow.get("status") != priorRow.get("status")) { result.put("error","Retained approval identity or decision changed."); } } }
+			}
 			if(result.get("error") == null)
 			{
 				proof = {"format":"sha256-v1","digest":zoho.encryption.sha256(saved.toString())};

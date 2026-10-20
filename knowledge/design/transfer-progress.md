@@ -158,3 +158,13 @@ Advance immediately from verified ledger events and allow terminal Close as soon
 as actual creation/checks settle. Keep the result visible until dismissed. Other
 multi-record operations retain their existing display pacing; network requests
 are never delayed for animation. See [creation speed evidence](../../docs/contracts-create-and-permission-recovery-2026-10-10.md).
+
+## Compact progress width — October 20, 2026
+
+Routine save/submission/approval progress should be about 540px wide, bounded by
+the viewport. It does not need the width of the originating worksheet. Scope
+editor-only width rules away from progress mode, including relational :has()
+selectors for a hidden sidebar. The same compact shell applies to pending,
+finished and recovery states. Wider destination tables may retain their existing
+width when their actual columns require it. Preserve progress, focus and pending
+Close/duplicate-write locks; this is a presentation rule, not a timing change.
