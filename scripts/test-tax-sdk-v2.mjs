@@ -269,4 +269,80 @@ const names=[...source.matchAll(/^function ([\w$]+)\(/gm)].map(match=>match[1]);
 {
  const h=await ready({count:(cfg,data)=>cfg.report_name==='All_Projects'?1:data[cfg.report_name].length,read:cfg=>cfg.report_name==='All_Projects'?Promise.reject(new Error('Denied')):undefined});assert.equal(h.widget.state.projectsAvailable,false);assert.equal(h.c.openAddProperty(),false);assert.equal(h.writes.length,0);
 }
-console.log('PASS actual whole Tax SDK2 app: native boot/Search/render/status+fields bulk, locks, counted cursors/exact IDs, partial ledger/read-only recovery, deadlines, and immutable baseline business/date/copy payloads. Native gates remain separate.');
+// Date deletion must reach the native payload and remain blank after a fresh search.
+const dateEditors=[['Notice_Received','noticeReceived','mNoticeReceived'],['Protest_Deadline','protestDeadline','mProtestDeadline'],['Protest_Hearing_Date','protestHearingDate','mProtestHearing'],['Arbitration_Notice_Received','arbNoticeReceived','mArbNoticeReceived'],['Arbitration_Hearing_Date','arbHearingDate','mArbHearing']];
+for(const [field,model] of dateEditors){
+ const h=await ready({rows:[{...parcel(ID),[field]:'09/28/2026'}]});await h.c.runParcelSearch();
+ await h.c.inlineSave(ID,{[field]:h.c.toZohoDate('')});
+ assert.deepEqual(h.writes[0].payload.data,{[field]:''},field+' explicit clear reaches Creator');
+ assert.equal(h.widget.state.data.parcelYears[0][model],'');
+ await h.c.runParcelSearch();assert.equal(h.widget.state.data.parcelYears[0][model],'',field+' stays clear on reload');
+ assert.equal(h.storage.All_Tax_Parcel_Years[0].Market_Value,'100');
+ await h.c.inlineSave(ID,{[field]:h.c.toZohoDate('2026-10-20')});
+ assert.equal(h.writes.at(-1).payload.data[field],'10/20/2026',field+' ordinary date edits still work');
+}
+{
+ const row={...parcel(ID),...Object.fromEntries(dateEditors.map(([field])=>[field,'09/28/2026']))};
+ const h=await ready({rows:[row]});await h.c.runParcelSearch();h.c.openModal(ID);
+ for(const [,,control] of dateEditors)h.node(control).value='';
+ const saving=h.c.saveModalRecord();await drain();h.tick(1000);await saving;assert.equal(h.writes.length,1);
+ for(const [field,model] of dateEditors){assert.equal(h.writes[0].payload.data[field],'');assert.equal(h.widget.state.data.parcelYears[0][model],'');}
+ h.c.closeModal();await h.c.runParcelSearch();
+ for(const [,model] of dateEditors)assert.equal(h.widget.state.data.parcelYears[0][model],'','modal clear stays cleared');
+}
+{
+ const h=await ready({rows:[{...parcel(ID),Arbitration_Notice_Received:'09/28/2026'}],update:()=>({code:2898,message:'Denied'})});await h.c.runParcelSearch();
+ await assert.rejects(h.c.inlineSave(ID,{Arbitration_Notice_Received:''}));
+ assert.equal(h.widget.state.data.parcelYears[0].arbNoticeReceived,'09/28/2026','rejected clear retains confirmed date');
+ assert.equal(Object.keys(h.widget.state.savingIds).length,0);
+ await assert.rejects(h.widget.Tax.update(ID,{}),/No captured Tax field changes/);
+ assert.equal(h.writes.length,1,'truly empty changes remain blocked');
+}
+// All other explicitly clearable parcel controls use the same inline sanitizer.
+{
+ const h=await ready({rows:[{...parcel(ID),Arbitration_Notice_Received:'09/28/2026'}]});await h.c.runParcelSearch();h.c.openModal(ID);h.nodes.delete('mArbNoticeReceived');
+ const saving=h.c.saveModalRecord();await drain();h.tick(1000);await saving;
+ assert.equal(Object.hasOwn(h.writes[0].payload.data,'Arbitration_Notice_Received'),false,'absent date control cannot clear a saved date');
+ assert.equal(h.storage.All_Tax_Parcel_Years[0].Arbitration_Notice_Received,'09/28/2026');
+}
+for(const [field,model,initial] of [['Acres','acres','12.5'],['County','county','Fixture'],['Company1','companyId','90071992548100004'],['Geo_ID','geoId','000099']]){
+ const h=await ready({rows:[{...parcel(ID),[field]:initial}]});await h.c.runParcelSearch();await h.c.inlineSave(ID,{[field]:''});
+ assert.deepEqual(h.writes[0].payload.data,{[field]:''});assert.equal(h.storage.All_Tax_Parcel_Years[0][field],'');assert.equal(h.widget.state.data.parcelYears[0][model],'');
+}
+{
+ const fields=[['Assessed_Value','mAppraised'],['Market_Value','mMarketValue'],['Protest_Value','mProtest'],['Arbitration_Value','mArbitration'],['Settlement_Offer_Value','mMarketOffer'],['Assessed_Offer','mAssessedOffer'],['Final_Value','mFinal'],['Assessed_Final','mAssessedFinal'],['Geo_ID','mGeoId']];
+ const h=await ready({rows:[{...parcel(ID),...Object.fromEntries(fields.map(([field])=>[field,'123']))}]});await h.c.runParcelSearch();h.c.openModal(ID);
+ for(const [,control] of fields)h.node(control).value='';
+ const saving=h.c.saveModalRecord();await drain();h.tick(1000);await saving;
+ for(const [field] of fields)assert.equal(h.writes[0].payload.data[field],'',field+' detail clear reaches Creator');
+ h.c.closeModal();await h.c.runParcelSearch();for(const [field] of fields)assert.equal(h.storage.All_Tax_Parcel_Years[0][field],'');
+}
+{
+ const P='90071992548100001',PROJECT='90071992548100002',CO='90071992548100004';
+ const fields=[['Property_ID','epPropId','propertyId'],['County','epCounty','county'],['Land_Type','epLandType','landType'],['Company1','epCompany','companyId'],['Legal_Description','epLegal','legalDesc'],['Acres','epAcres','acres'],['Original_Acres','epOrigAcres','originalAcres'],['Notes','epNotes','notes']];
+ const original={...property(P),...Object.fromEntries(fields.map(([field])=>[field,field==='Company1'?CO:field.includes('Acres')?'12.5':'Original'])),Projects:[{ID:PROJECT}]};
+ const h=await ready({storage:{All_Property:[original],All_Projects:[{ID:PROJECT,Project_Name:'Project'}]}});h.c.openPropertyEdit(P);
+ for(const [,control] of fields)h.node(control).value='';
+ for(const input of h.node('epProjectsList').querySelectorAll('input[type="checkbox"]'))input.checked=false;
+ const saving=h.c.savePropertyEdit();await drain();h.tick(900);await saving;
+ assert.equal(h.writes.length,1);assert.equal(h.writes[0].report_name,'All_Property');
+ for(const [field,,model] of fields){assert.equal(h.writes[0].payload.data[field],'');assert.equal(h.widget.state.data.rawLand[0][model],'');}
+ assert.deepEqual(h.writes[0].payload.data.Projects,[]);assert.equal(h.widget.state.data.rawLand[0].projects.length,0);
+ await h.widget.Tax.reloadReferences();for(const [, ,model] of fields)assert.equal(h.widget.state.data.rawLand[0][model],'');assert.equal(h.widget.state.data.rawLand[0].projects.length,0);
+ h.c.openPropertyEdit(P);h.node('epName').value='';const before=h.writes.length;assert.equal(h.c.savePropertyEdit(),undefined);assert.equal(h.writes.length,before,'required Common Name still blocks empty saves');
+}
+{
+ const P='90071992548100001',h=await ready({storage:{All_Property:[{...property(P),Notes:'Keep this note'}]}});h.c.openPropertyEdit(P);h.nodes.delete('epNotes');
+ const saving=h.c.savePropertyEdit();await drain();h.tick(900);await saving;
+ assert.equal(Object.hasOwn(h.writes[0].payload.data,'Notes'),false,'absent property control cannot clear its field');assert.equal(h.widget.state.data.rawLand[0].notes,'Keep this note');
+ const inline=await ready({storage:{All_Property:[{...property(P),Projects:[{ID:'90071992548100002'}]}]}});await inline.c.savePropInline(P,{Projects:[]});
+ assert.equal(inline.widget.state.data.rawLand[0].projects.length,0,'project popup clear updates its local mirror');assert.deepEqual(inline.writes[0].payload.data.Projects,[]);
+}
+{
+ const h=await ready({rows:[parcel(ID),parcel(OTHER,1)].map(row=>({...row,...Object.fromEntries(dateEditors.map(([field])=>[field,'09/28/2026']))}))});await h.c.runParcelSearch();h.widget.state.bulkSelectedIds={[ID]:true,[OTHER]:true};h.c.openBulkEdit();
+ for(const [,key] of dateEditors){h.c.document.querySelector('.be-toggle[data-key="'+key+'"]').checked=true;h.c.document.querySelector('.be-input[data-key="'+key+'"]').value='';}
+ const ledger=await h.c.applyBulkEdit();assert.ok(ledger.rows.every(row=>row.state==='verified'));assert.equal(h.writes.length,2);
+ for(const write of h.writes)for(const [field] of dateEditors)assert.equal(write.payload.data[field],'');h.widget.TaxUI.close();await h.c.runParcelSearch();
+ for(const row of h.widget.state.data.parcelYears)for(const [,key] of dateEditors)assert.equal(row[key],'');
+}
+console.log('PASS actual whole Tax SDK2 app: native boot/Search/render/status+fields bulk, locks, counted cursors/exact IDs, partial ledger/read-only recovery, deadlines, parcel/date/money/Property/project clears with reload/modal/rejection coverage, and immutable baseline business/date/copy payloads. Native gates remain separate.');

@@ -802,14 +802,14 @@ tr.bulk-on{background:var(--psoft)}
 .ss-item.ss-clear{color:var(--muted,#6b7280);font-style:italic}
 .ss-empty{padding:12px 10px;font-size:12px;color:var(--muted,#6b7280);text-align:center}
 </style>
-<script src="success-feedback.js?v=19.17.21"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.21">
-<script src="interaction-motion.js?v=19.17.21"></script>
-<script src="interaction-surfaces.js?v=19.17.21"></script>
-<script src="number-edit-commit.js?v=19.17.21"></script>
-<script src="number-transitions.js?v=19.17.21"></script>
-<script src="number-surfaces.js?v=19.17.21"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.21">
+<script src="success-feedback.js?v=19.17.23"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.23">
+<script src="interaction-motion.js?v=19.17.23"></script>
+<script src="interaction-surfaces.js?v=19.17.23"></script>
+<script src="number-edit-commit.js?v=19.17.23"></script>
+<script src="number-transitions.js?v=19.17.23"></script>
+<script src="number-surfaces.js?v=19.17.23"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.23">
 </head>
 <body>
 
@@ -1366,7 +1366,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.21',
+  version: '19.17.23',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -2040,7 +2040,7 @@ function inlineSave(id, fieldMap) {
   const numFields = ['Assessed_Value','Appraised_Value','Protest_Value','Arbitration_Value','Market_Value','Prior_Year_Market_Value','Prior_Year_Appraised_Value','Settlement_Offer_Value','Final_Value','Assessed_Offer','Assessed_Final'];
   // Same reasoning as the money fields: these are edited from the detail modal,
   // where blanking the box has to mean "clear it", not "leave it alone".
-  const clearableFields = ['Tax_Parcel_Year_Code','Property_ID','Property1','Arbitrate1'];
+  const clearableFields = ['Tax_Parcel_Year_Code','Property_ID','Property1','Arbitrate1','Company1','County','Acres','Geo_ID','Notice_Received','Protest_Deadline','Protest_Hearing_Date','Arbitration_Notice_Received','Arbitration_Hearing_Date'];
   return Promise.resolve().then(function(){Object.keys(fieldMap).forEach(k => {
     const v = fieldMap[k];
     if (v === '' || v == null) {
@@ -2073,7 +2073,7 @@ function inlineSave(id, fieldMap) {
     if (fieldMap.Assessed_Final !== undefined) lr.assessedFinal = numericValue(fieldMap.Assessed_Final);
     if (fieldMap.County !== undefined) lr.county = fieldMap.County;
     if (fieldMap.Acres !== undefined) lr.acres = fieldMap.Acres;
-    if (fieldMap.Company1 !== undefined) { var co=state.data.companies.find(function(c){return String(c.id||c.name)===String(fieldMap.Company1);}); lr.company=co?co.name:fieldMap.Company1; }
+    if (fieldMap.Company1 !== undefined) { var co=state.data.companies.find(function(c){return String(c.id||c.name)===String(fieldMap.Company1);}); lr.company=co?co.name:fieldMap.Company1; lr.companyId=fieldMap.Company1; }
     if (fieldMap.Property_ID !== undefined) lr.propertyId = fieldMap.Property_ID;
     applyCodeAndPropertyLink(lr, fieldMap);
     lr.modified = new Date().toISOString().replace('T',' ').slice(0,19);
@@ -2787,44 +2787,45 @@ function saveModalRecord(){
   const row=state.data.parcelYears.find(r=>String(r.id)===String(state.modalId));
   const fieldData={};
   const status=$('mStatus')?$('mStatus').value:'';
-  const appV=$('mAppraised')?$('mAppraised').value:'';
-  const mktV=$('mMarketValue')?$('mMarketValue').value:'';
-  const proV=$('mProtest')?$('mProtest').value:'';
-  const arbV=$('mArbitration')?$('mArbitration').value:'';
-  const mktOffer=$('mMarketOffer')?$('mMarketOffer').value:'';
-  const assOffer=$('mAssessedOffer')?$('mAssessedOffer').value:'';
-  const mktFinal=$('mFinal')?$('mFinal').value:'';
-  const assFinal=$('mAssessedFinal')?$('mAssessedFinal').value:'';
+  const appV=$('mAppraised')?$('mAppraised').value:null;
+  const mktV=$('mMarketValue')?$('mMarketValue').value:null;
+  const proV=$('mProtest')?$('mProtest').value:null;
+  const arbV=$('mArbitration')?$('mArbitration').value:null;
+  const mktOffer=$('mMarketOffer')?$('mMarketOffer').value:null;
+  const assOffer=$('mAssessedOffer')?$('mAssessedOffer').value:null;
+  const mktFinal=$('mFinal')?$('mFinal').value:null;
+  const assFinal=$('mAssessedFinal')?$('mAssessedFinal').value:null;
   const arbCb=$('mArb');
-  const geo=$('mGeoId')?$('mGeoId').value:'';
+  const geo=$('mGeoId')?$('mGeoId').value:null;
   const codeV=$('mCode')?$('mCode').value:null;
   const parcelIdV=$('mPropertyId')?$('mPropertyId').value:null;
-  const noticeRcvd=$('mNoticeReceived')?$('mNoticeReceived').value:'';
-  const protestDl=$('mProtestDeadline')?$('mProtestDeadline').value:'';
-  const protestHr=$('mProtestHearing')?$('mProtestHearing').value:'';
-  const arbNotice=$('mArbNoticeReceived')?$('mArbNoticeReceived').value:'';
-  const arbHr=$('mArbHearing')?$('mArbHearing').value:'';
+  const noticeRcvd=$('mNoticeReceived')?$('mNoticeReceived').value:null;
+  const protestDl=$('mProtestDeadline')?$('mProtestDeadline').value:null;
+  const protestHr=$('mProtestHearing')?$('mProtestHearing').value:null;
+  const arbNotice=$('mArbNoticeReceived')?$('mArbNoticeReceived').value:null;
+  const arbHr=$('mArbHearing')?$('mArbHearing').value:null;
   if(status)fieldData.Status=status;
-  if(appV)fieldData.Assessed_Value=appV;
-  if(mktV)fieldData.Market_Value=mktV;
-  if(proV)fieldData.Protest_Value=proV;
-  if(arbV)fieldData.Arbitration_Value=arbV;
-  if(mktOffer)fieldData.Settlement_Offer_Value=mktOffer;
-  if(assOffer)fieldData.Assessed_Offer=assOffer;
-  if(mktFinal)fieldData.Final_Value=mktFinal;
-  if(assFinal)fieldData.Assessed_Final=assFinal;
+  if(appV!==null&&(appV||row&&row.appraisedValue))fieldData.Assessed_Value=appV;
+  if(mktV!==null&&(mktV||row&&row.marketValue))fieldData.Market_Value=mktV;
+  if(proV!==null&&(proV||row&&row.protestValue))fieldData.Protest_Value=proV;
+  if(arbV!==null&&(arbV||row&&row.arbitrationValue))fieldData.Arbitration_Value=arbV;
+  if(mktOffer!==null&&(mktOffer||row&&row.settlementValue))fieldData.Settlement_Offer_Value=mktOffer;
+  if(assOffer!==null&&(assOffer||row&&row.assessedOffer))fieldData.Assessed_Offer=assOffer;
+  if(mktFinal!==null&&(mktFinal||row&&row.finalValue))fieldData.Final_Value=mktFinal;
+  if(assFinal!==null&&(assFinal||row&&row.assessedFinal))fieldData.Assessed_Final=assFinal;
   if(arbCb&&row&&arbCb.value!==String(row.arbitrate||''))fieldData.Arbitrate1=arbCb.value;
-  if(geo)fieldData.Geo_ID=geo;
+  if(geo!==null&&(geo||row&&row.geoId))fieldData.Geo_ID=geo;
   // Code / Parcel ID / Property go out whenever they DIFFER from the loaded row,
   // empty string included — a truthy check would make clearing them impossible.
   if(codeV!==null&&codeV!==String(row&&row.code||''))fieldData.Tax_Parcel_Year_Code=codeV;
   if(parcelIdV!==null&&parcelIdV!==String(row&&row.propertyId||''))fieldData.Property_ID=parcelIdV;
   if(state.modalPropertyPick)fieldData.Property1=state.modalPropertyPick.id;
-  if(noticeRcvd)fieldData.Notice_Received=toZohoDate(noticeRcvd);
-  if(protestDl)fieldData.Protest_Deadline=toZohoDate(protestDl);
-  if(protestHr)fieldData.Protest_Hearing_Date=toZohoDate(protestHr);
-  if(arbNotice)fieldData.Arbitration_Notice_Received=toZohoDate(arbNotice);
-  if(arbHr)fieldData.Arbitration_Hearing_Date=toZohoDate(arbHr);
+  // Present date inputs can explicitly clear a saved date; missing controls cannot.
+  if(noticeRcvd!==null&&(noticeRcvd||row&&row.noticeReceived))fieldData.Notice_Received=toZohoDate(noticeRcvd);
+  if(protestDl!==null&&(protestDl||row&&row.protestDeadline))fieldData.Protest_Deadline=toZohoDate(protestDl);
+  if(protestHr!==null&&(protestHr||row&&row.protestHearingDate))fieldData.Protest_Hearing_Date=toZohoDate(protestHr);
+  if(arbNotice!==null&&(arbNotice||row&&row.arbNoticeReceived))fieldData.Arbitration_Notice_Received=toZohoDate(arbNotice);
+  if(arbHr!==null&&(arbHr||row&&row.arbHearingDate))fieldData.Arbitration_Hearing_Date=toZohoDate(arbHr);
   if(!Object.keys(fieldData).length){setMessage('Nothing to save.','err');return;}
   var request=TaxUI.capture('saveModalRecord');
   var savePromise=inlineSave(state.modalId, fieldData)||Promise.resolve();
@@ -3321,7 +3322,8 @@ function savePropInline(id, fieldData){
     if(fieldData.County!==undefined) p.county=fieldData.County;
     if(fieldData.Land_Type!==undefined) p.landType=fieldData.Land_Type;
     if(fieldData.Acres!==undefined) p.acres=fieldData.Acres;
-    if(fieldData.Company1!==undefined){var co=state.data.companies.find(function(c){return String(c.id||c.name)===String(fieldData.Company1);});p.company=co?co.name:fieldData.Company1;}
+    if(fieldData.Company1!==undefined){var co=state.data.companies.find(function(c){return String(c.id||c.name)===String(fieldData.Company1);});p.company=co?co.name:fieldData.Company1;p.companyId=fieldData.Company1;}
+    if(fieldData.Projects!==undefined)p.projects=fieldData.Projects.slice();
     if(fieldData.Ag_Exempt!==undefined) p.agExempt=(fieldData.Ag_Exempt==='true'||fieldData.Ag_Exempt===true);
     if(fieldData.Deed_to_HOA!==undefined) p.deedToHoa=(fieldData.Deed_to_HOA==='true'||fieldData.Deed_to_HOA===true);
     if(fieldData.Insured!==undefined) p.insured=(fieldData.Insured==='true'||fieldData.Insured===true);
@@ -3679,26 +3681,22 @@ function savePropertyEdit(){
   if(!valid) return;
   var fieldData={};
   fieldData.Common_Name=name;
-  if(($('epPropId').value||'').trim())    fieldData.Property_ID=($('epPropId').value||'').trim();
-  if(county)                               fieldData.County=county;
-  if($('epLandType').value)                fieldData.Land_Type=$('epLandType').value;
-  var company=($('epCompany').value||'').trim(); if(company) fieldData.Company1=company;
-  if(($('epLegal').value||'').trim())     fieldData.Legal_Description=($('epLegal').value||'').trim();
-  if(($('epAcres').value||'').trim())     fieldData.Acres=($('epAcres').value||'').trim();
-  if(($('epOrigAcres').value||'').trim()) fieldData.Original_Acres=($('epOrigAcres').value||'').trim();
-  if(($('epNotes').value||'').trim())     fieldData.Notes=($('epNotes').value||'').trim();
+  // Existing records need explicit clears; absent controls leave their fields alone.
+  [['epPropId','Property_ID'],['epCounty','County'],['epLandType','Land_Type'],['epCompany','Company1'],['epLegal','Legal_Description'],['epAcres','Acres'],['epOrigAcres','Original_Acres'],['epNotes','Notes']].forEach(function(binding){
+    var input=$(binding[0]);if(input)fieldData[binding[1]]=(input.value||'').trim();
+  });
   if($('epAgExempt')) fieldData.Ag_Exempt=$('epAgExempt').checked?'true':'false';
-  var projIds=getSelectedProjects('epProjectsList'); if(projIds.length) fieldData.Projects=projIds;
+  if($('epProjectsList')&&state.projectsAvailable===true)fieldData.Projects=getSelectedProjects('epProjectsList');
   var btn=document.querySelector('#editPropOverlay .btn.primary');
   var request=TaxUI.capture('savePropertyEdit');
   var savePromise=updateRecord(id, fieldData, CONFIG.reports.rawLand).then(function(){
     // Patch local state
     var p=state.data.rawLand.find(function(x){return String(x.id||'')===String(id);});
     if(p){
-      p.commonName=name; p.propertyId=fieldData.Property_ID||p.propertyId;
-      p.county=county||p.county; p.landType=fieldData.Land_Type||p.landType;
-      p.acres=fieldData.Acres||p.acres; p.originalAcres=fieldData.Original_Acres||p.originalAcres;
-      p.legalDesc=fieldData.Legal_Description||p.legalDesc; p.notes=fieldData.Notes||p.notes;
+      p.commonName=name;
+      [['Property_ID','propertyId'],['County','county'],['Land_Type','landType'],['Acres','acres'],['Original_Acres','originalAcres'],['Legal_Description','legalDesc'],['Notes','notes']].forEach(function(binding){if(fieldData[binding[0]]!==undefined)p[binding[1]]=fieldData[binding[0]];});
+      if(fieldData.Company1!==undefined){var co=state.data.companies.find(function(c){return String(c.id||c.name)===String(fieldData.Company1);});p.company=co?co.name:fieldData.Company1;p.companyId=fieldData.Company1;}
+      if(fieldData.Projects!==undefined)p.projects=fieldData.Projects.slice();
       if(fieldData.Ag_Exempt!==undefined) p.agExempt=(fieldData.Ag_Exempt==='true');
     }
     renderPropertyTab();

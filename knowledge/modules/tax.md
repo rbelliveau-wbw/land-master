@@ -56,6 +56,37 @@ read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 # Tax Module
 
+## Explicit field clears — 19.17.23, October 20, 2026
+
+Parcel inline saves now retain explicit empty strings for `Notice_Received`,
+`Protest_Deadline`, `Protest_Hearing_Date`, `Arbitration_Notice_Received` and
+`Arbitration_Hearing_Date` on `Tax_Parcel_Year`. Previously deleting a date was
+filtered out and failed with "No captured Tax field changes are available."
+The detail modal also submits a cleared saved date when its input is present;
+missing controls cannot clear fields. Empty requests, loaded-field/scope checks,
+exact string IDs, acknowledgement handling and uncertain-write recovery remain.
+
+The same repair covers parcel `Company1`, `County`, `Acres` and `Geo_ID`, and
+the detail modal's eight money inputs. Property editing preserves explicit clears
+for `Property_ID`, `County`, `Land_Type`, `Company1`, `Legal_Description`, `Acres`,
+`Original_Acres`, `Notes` and an empty `Projects` selection. Confirmed local
+mirrors retain empty values rather than restoring the previous value with a
+truthy fallback. Company IDs and project selections update in both property
+edit paths. Required Common Name validation and missing-control protections
+remain. Bulk date/money clears already use literal payloads; placeholder Company
+or status selections still mean no bulk change. New-record default/inheritance
+rules are unchanged.
+
+Changed implementation: `widgets/tax-center/src/app/widget.html`; release,
+config, manifest and environment mappings accompany it. No Creator schema,
+function, Custom API or Creator deployment is required. Whole-app native-shaped
+regressions in `scripts/test-tax-sdk-v2.mjs` cover all five date clears, fresh
+search persistence, replacement dates, parcel/modal money clears, property and
+project clears with reference reload, bulk date clears, missing controls,
+required-name validation and rejected clears retaining the confirmed model.
+These tests do not write live Creator records. Production
+rollback: map Tax Center to `19.17.21` and rebuild Pages.
+
 ## Currency editor precision repair (2026-10-05)
 
 Tax currency formatting now retains cents and additional supplied fractional digits. Previously `utilitiesconvertIntegerToCurrency` rounded values to whole dollars before displaying editable inputs. The parcel table's unconditional blur save could consequently replace an unchanged saved amount with the rounded display. Render, focus and blur now preserve the amount for `Tax_Parcel_Year.Market_Value`, `Assessed_Value`, `Settlement_Offer_Value`, `Assessed_Offer`, `Final_Value` and `Assessed_Final`, as well as the existing detail money input formatter. Ordinary currency displays include two decimal places; compact K/M displays retain their abbreviation.
