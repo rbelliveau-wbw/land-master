@@ -18,13 +18,23 @@ if(existingComment.count() > 0)
 {
 	commentContractId = existingComment.Contract1;
 }
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+if(constructionBudgetingProfile)
+{
+ scopedCommentParent = Contract[ID == commentContractId];
+ if(commentContractId == null || scopedCommentParent.count() == 0 || ifnull(scopedCommentParent.Work_Module,"") != "Construction")
+ {
+  alert "This profile can only comment on Construction requests.";
+  cancel submit;
+ }
+}
 if(commentContractId != null)
 {
 	commentContract = Contract[ID == commentContractId];
 	if(commentContract.count() > 0 && ifnull(commentContract.Work_Module,"") == "Construction")
 	{
-		commentAccess = User_Access[User == zoho.loginuser];
-		if(commentAccess.count() == 0 || (commentAccess.Edit_All_Construction_Requests != true && commentAccess.Submit_Construction_Requests != true))
+		constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
+		if(constructionAllowed != true)
 		{
 			alert "Construction request access is required to add or change comments.";
 			cancel submit;

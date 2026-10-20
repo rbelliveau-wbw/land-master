@@ -16,10 +16,17 @@ string createContractAttachmentRecord(string contractId)
 		response.put("message","Contract not found.");
 		return response.toString();
 	}
+	constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+	if(constructionBudgetingProfile && ifnull(contractRows.Work_Module,"") != "Construction")
+	{
+		response.put("ok",false);
+		response.put("message","This profile can only manage Construction attachments.");
+		return response.toString();
+	}
 	if(ifnull(contractRows.Work_Module,"") == "Construction")
 	{
-		attachmentAccess = User_Access[User == zoho.loginuser];
-		if(attachmentAccess.count() == 0 || (attachmentAccess.Edit_All_Construction_Requests != true && attachmentAccess.Submit_Construction_Requests != true))
+		constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
+		if(constructionAllowed != true)
 		{
 			response.put("ok",false);
 			response.put("message","Construction request access is required to add attachments.");

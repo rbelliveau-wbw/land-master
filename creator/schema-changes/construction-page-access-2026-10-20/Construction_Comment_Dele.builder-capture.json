@@ -1,0 +1,9 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Construction_Comment_Dele",
+  "event": "Deleted / Validations on record deletion",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "// Comment_Log / Deleted / Validations on record deletion.\n// Construction comments use the module's author/time-checked soft-delete action.\nif(input.Contract1 != null)\n{\n\tdeleteCommentParent = Contract[ID == input.Contract1];\n\tif(deleteCommentParent.count() > 0 && ifnull(deleteCommentParent.Work_Module,\"\") == \"Construction\")\n\t{\n\t\talert \"Use the Construction page comment controls to remove a comment.\";\n\t\tcancel delete;\n\t}\n}\n"
+  ]
+}

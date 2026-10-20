@@ -90,6 +90,7 @@ assert.equal(Object.hasOwn(failedRequest, 'parameters'), false);
 // Execute the saved full function: the session username deliberately differs from
 // both the native email and its local part, matching the live regression trigger.
 const fullFunction = translate(fs.readFileSync('creator/functions/getUserAccess.dg', 'utf8')).js;
+const constructionPermission = translate(fs.readFileSync('creator/functions/hasConstructionPermission.dg', 'utf8')).js;
 function fullAccess(user) {
   const backend = vm.createContext({user});
   vm.runInContext(`
@@ -99,8 +100,15 @@ function fullAccess(user) {
     function List() { return []; }
     function Map() { return {put(key, value) { this[key] = value; }, toString() { return JSON.stringify(this); }}; }
     Array.prototype.add = function(value) { this.push(value); };
-    function query(form, predicate) { return (form === 'User_Access' ? rows : []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate); }
+    Array.prototype.count = function() { return this.length; };
+    function query(form, predicate) {
+      const selected = (form === 'User_Access' ? rows : []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
+      return new Proxy(selected,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;}});
+    }
     const zoho = {loginuser:'fixture_session_actor'};
+    const thisapp = {permissions:{profileForUser(){return '';}}};
+    ${constructionPermission}
+    thisapp.hasConstructionPermission = hasConstructionPermission;
     ${fullFunction}
     var response = getUserAccess(user);
   `, backend);

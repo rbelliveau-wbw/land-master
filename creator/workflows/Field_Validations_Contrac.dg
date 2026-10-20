@@ -1,5 +1,6 @@
 // Contract / on add or edit / on validate. New construction inputs stay optional
 // in Creator; required input checks are confined to the construction widget.
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
 storedRequest = Contract[ID == input.ID];
 requestMode = ifnull(input.Work_Module,"");
 if(requestMode == "")
@@ -27,9 +28,8 @@ if(storedRequest.count() > 0)
 constructionTypes = {"Internal","Offsite","Amenity","MUD Bid"};
 if(requestMode == "Construction")
 {
- constructionAccess = User_Access[User == zoho.loginuser];
- constructionEditor = constructionAccess.count() > 0 && constructionAccess.Edit_All_Construction_Requests == true;
- constructionSubmitter = constructionAccess.count() > 0 && constructionAccess.Submit_Construction_Requests == true;
+ constructionEditor = thisapp.hasConstructionPermission(zoho.loginuser,true);
+ constructionSubmitter = thisapp.hasConstructionPermission(zoho.loginuser,false);
  if(storedRequest.count() > 0)
  {
   if(constructionEditor != true)
@@ -113,6 +113,11 @@ if(requestMode == "Construction")
   constructionAction.Type_field = input.Contract_Type;
   constructionAction.Template_Action = false;
  }
+}
+else if(constructionBudgetingProfile)
+{
+ alert "This profile can only create or edit Construction requests.";
+ cancel submit;
 }
 else if(constructionTypes.contains(input.Contract_Type))
 {

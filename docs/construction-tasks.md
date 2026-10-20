@@ -2,8 +2,10 @@
 
 Construction requests share the Contract Management widget and the existing
 `Contract` request records, `Contract_Actions` checklists/templates, `Attachment`
-files, and comment system. This adds a second mode to the Legal workspace; the
-request form uses the Project sidebar mockup.
+files, and comment system. Legal and Construction are separate Creator pages;
+page variables select their shared widget's fixed module. The October 20
+[page/profile contract](construction-page-access-2026-10-20.md) supersedes the
+historical in-widget chooser below. The request form uses the Project sidebar.
 
 ## Access contract
 
@@ -69,10 +71,10 @@ submission, editing, attachment, and comment patterns. The template tab is
 **Manage Task Templates** in both modes. New-task buttons are **New Legal Task**
 and **New Construction Task**.
 
-The page variable selects the initial work mode. It is a navigation preference,
-not an access grant. A user with access to both modes can switch modes within
-the shared widget. Every mode-specific list, review queue, type/status picker,
-new-request flow, parent picker, and template editor must use the active mode.
+The page variable selects a fixed work module; access is checked independently.
+Users navigate to the separate Creator page to open the other module. There is
+no in-widget switch. Every list, review queue, type/status picker, new-request
+flow, parent picker and template editor stays within the page's module.
 
 `Contract.Work_Module` and `Contract_Actions.Work_Module` persist the
 Legal/Construction classification. Legacy blank classifications are Legal. Child actions inherit
@@ -94,6 +96,9 @@ Rejected, Feasibility, Awaiting Purchasing, Awaiting Development, Awaiting Other
 Approved, Complete, and Cancelled. Existing Legal choices remain unchanged.
 
 ## UI refinements for 1.62.1
+
+The chooser described in this historical release is superseded by the October
+20 separate-page contract linked above.
 
 Keep the Legal/Construction chooser in the persistent white header beside the
 breadcrumb, so it stays available across the request list, Review, templates,

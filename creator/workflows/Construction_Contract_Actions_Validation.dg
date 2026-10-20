@@ -1,6 +1,7 @@
 // Candidate new Contract_Actions / on add or edit / on validate action.
 // Install after Work_Module and the two construction User Access fields exist.
 // Blank legacy module values are Legal; linked actions always inherit the parent.
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
 existingTask = Contract_Actions[ID == input.ID];
 taskMode = ifnull(input.Work_Module,"");
 if(taskMode == "")
@@ -52,8 +53,8 @@ if(existingTask.count() > 0)
 constructionTaskTypes = {"Internal","Offsite","Amenity","MUD Bid"};
 if(taskMode == "Construction")
 {
- taskAccess = User_Access[User == zoho.loginuser];
- if(taskAccess.count() == 0 || taskAccess.Edit_All_Construction_Requests != true)
+ constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+ if(constructionAllowed != true)
  {
   alert "Edit All Construction Requests permission is required to change construction tasks or templates.";
   cancel submit;
@@ -68,6 +69,11 @@ if(taskMode == "Construction")
   alert "Choose a construction Budget Type.";
   cancel submit;
  }
+}
+else if(constructionBudgetingProfile)
+{
+ alert "This profile can only change Construction actions and templates.";
+ cancel submit;
 }
 else if(taskMode != "Legal" || constructionTaskTypes.contains(input.Type_field))
 {

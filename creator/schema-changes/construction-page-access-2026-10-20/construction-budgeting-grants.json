@@ -1,0 +1,250 @@
+[
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000000197013-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-edit"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-more"
+      }
+    ],
+    "name": "Add Contract",
+    "reports": [
+      {
+        "id": "4410926000000197013-view",
+        "text": "Construction Requests"
+      },
+      {
+        "id": "4410926000000197013-edit",
+        "text": "Construction Requests"
+      },
+      {
+        "id": "4410926000000197013-delete",
+        "text": "Construction Requests"
+      },
+      {
+        "id": "4410926000000197013-more",
+        "text": "View all, Modify all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": false,
+        "id": "4410926000000054031-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000054031-view"
+      },
+      {
+        "checked": false,
+        "id": "4410926000000054031-edit"
+      },
+      {
+        "checked": false,
+        "id": "4410926000000054031-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000054031-more"
+      }
+    ],
+    "name": "Add Project",
+    "reports": [
+      {
+        "id": "4410926000000054031-view",
+        "text": "All Projects"
+      },
+      {
+        "id": "4410926000000054031-more",
+        "text": "View all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": false,
+        "id": "4410926000000032019-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000032019-view"
+      },
+      {
+        "checked": false,
+        "id": "4410926000000032019-edit"
+      },
+      {
+        "checked": false,
+        "id": "4410926000000032019-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000032019-more"
+      }
+    ],
+    "name": "Add Subdivision",
+    "reports": [
+      {
+        "id": "4410926000000032019-view",
+        "text": "All Subdivisions"
+      },
+      {
+        "id": "4410926000000032019-more",
+        "text": "View all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000000964222-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-edit"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-more"
+      }
+    ],
+    "name": "Attachment",
+    "reports": [
+      {
+        "id": "4410926000000964222-view",
+        "text": "Construction Attachments"
+      },
+      {
+        "id": "4410926000000964222-edit",
+        "text": "Construction Attachments"
+      },
+      {
+        "id": "4410926000000964222-delete",
+        "text": "Construction Attachments"
+      },
+      {
+        "id": "4410926000000964222-more",
+        "text": "View all, Modify all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000004743010-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-edit"
+      },
+      {
+        "checked": false,
+        "id": "4410926000004743010-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-more"
+      }
+    ],
+    "name": "Comment Log",
+    "reports": [
+      {
+        "id": "4410926000004743010-view",
+        "text": "Construction Comments"
+      },
+      {
+        "id": "4410926000004743010-edit",
+        "text": "Construction Comments"
+      },
+      {
+        "id": "4410926000004743010-more",
+        "text": "View all, Modify all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000001136098-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-edit"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-more"
+      }
+    ],
+    "name": "Contract Actions",
+    "reports": [
+      {
+        "id": "4410926000001136098-view",
+        "text": "Construction Actions"
+      },
+      {
+        "id": "4410926000001136098-edit",
+        "text": "Construction Actions"
+      },
+      {
+        "id": "4410926000001136098-delete",
+        "text": "Construction Actions"
+      },
+      {
+        "id": "4410926000001136098-more",
+        "text": "View all, Modify all"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000005188138-tab"
+      }
+    ],
+    "name": "Construction",
+    "reports": []
+  }
+]

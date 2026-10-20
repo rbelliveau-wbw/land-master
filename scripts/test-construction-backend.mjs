@@ -6,8 +6,9 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // Execute the checked-in validation body against explicit record fixtures.
 // This is an offline behavior check; native compilation remains a release gate.
 const read = path => fs.readFileSync(path, 'utf8');
+const permissionBody=translate(read('creator/functions/hasConstructionPermission.dg')).js;
 function runValidation(path, input, tables = {}, rawSource = null) {
-  const source = (rawSource??read(path)).replace(/alert\s+([^;]+);/g, 'throw Error($1);').replace(/cancel submit;/g, '');
+  const source = (rawSource??read(path)).replace(/alert\s+([^;]+);/g, 'throw Error($1);').replace(/cancel (?:submit|delete);/g, '');
   const body = translate(`string validateConstruction()\n{\n${source}\nreturn "ok";\n}`).js.replace(/\.length\(\)/g, '.length');
   const context = vm.createContext({inputJson:JSON.stringify(input), tablesJson:JSON.stringify(tables)});
   vm.runInContext(`
@@ -19,12 +20,13 @@ function runValidation(path, input, tables = {}, rawSource = null) {
     String.prototype.toLong=function(){return Number(this);};
     Number.prototype.addDay=function(days){return this+days;};
     var zoho={loginuser:'signed-in-user',currentdate:100};
+    var thisapp={permissions:{profileForUser(user){if(tables.__profileError)throw Error('Denied profile');return user===zoho.loginuser?tables.__profile||'':'';},isUserInProfile(profile){return tables.__profile===profile;}}};
     function record(row){return new Proxy(row||{},{get(object,key){return object[key]??null;}});}
     function query(form,predicate){
       const rows=(tables[form]||[]).map(record).filter(predicate);
       return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;},set(array,key,value){if(key in array)array[key]=value;else if(array[0])array[0][key]=value;return true;}});
     }
-  `+body,context);
+  `+permissionBody+';thisapp.hasConstructionPermission=hasConstructionPermission;'+body,context);
   const result=vm.runInContext('validateConstruction()',context);
   return {input:context.input, tables:context.tables, result};
 }
@@ -129,24 +131,52 @@ const digestResult=runValidation(null,{}, {Settings:[{ID:1,Receive_Legal_Notific
 assert.equal(digestResult.createdCount,1,'Legal digest excludes Construction rows/templates and includes blank legacy Legal');
 assert.equal(digestResult.modifiedCount,1,'Legal digest excludes blank child mode when its parent is Construction and avoids duplicate created rows');
 
-for(const name of ['getUserAccess','getUserAccessLean']){
-  const source=read(`creator/functions/${name}.dg`);
-  for(const key of ['constructionEditAll','constructionSubmit'])assert.match(source,new RegExp(`${key} = false;`));
-  assert.match(source,/constructionEditAll = row\.Edit_All_Construction_Requests == true/);
-  assert.match(source,/constructionSubmit = row\.Submit_Construction_Requests == true/);
-  assert.match(source,/result\.put\("constructionEditAll",constructionEditAll\)/);
-  assert.match(source,/result\.put\("constructionSubmit",constructionSubmit\)/);
+for(const profile of ['Dev/Land Acq - Proforma & Budgets','CFO','Construction Budgeting']){
+ const tables={...scope,__profile:profile,Contract:[parent]},editor=profile==='Construction Budgeting';
+ assert.equal(runValidation(parentWorkflow,request(),tables).input.Status,'Proposed');
+ const update=()=>runValidation(parentWorkflow,request({...parent}),tables);
+ if(editor)assert.doesNotThrow(update);else assert.throws(update,/Edit All Construction/);
+ const template=()=>runValidation(taskWorkflow,{...task,Contract1:null,Work_Module:'Construction',Type_field:'Internal'},tables);
+ if(editor)assert.doesNotThrow(template);else assert.throws(template,/Edit All Construction/);
+ assert.doesNotThrow(()=>runValidation(attachmentWorkflow,{ID:null,Contract1:20},tables));
+ assert.equal(runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:null,Contract1:20,Comment:'Plan details'},tables).input.User,'signed-in-user');
+ if(editor){
+  assert.throws(()=>runValidation(parentWorkflow,request({Work_Module:'Legal',Contract_Type:'Issue'}),tables),/only create or edit Construction/);
+  assert.throws(()=>runValidation(taskWorkflow,{...task,Contract1:null,Work_Module:'Legal',Type_field:'Issue'},tables),/only change Construction/);
+  assert.throws(()=>runValidation(attachmentWorkflow,{ID:null,Contract1:21},{...tables,Contract:[{ID:21,Work_Module:'Legal'}]}),/only attach files to Construction/);
+  assert.throws(()=>runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:null,Contract1:21,Comment:'Denied'},{...tables,Contract:[{ID:21,Work_Module:'Legal'}]}),/only comment on Construction/);
+ }
 }
+assert.throws(()=>runValidation(parentWorkflow,request(),{...scope,__profileError:true}),/permission is required/);
+
+// Existing Legal profiles can delete from shared native reports. Construction
+// child deletion must still enforce its editor grant and completed-record lock.
+for(const name of ['Construction_Action_Delete_Validation','Construction_Attachment_Delete_Validation']){
+ const path='creator/workflows/'+name+'.dg';
+ for(const profile of ['Dev/Land Acq - Proforma & Budgets','CFO','Construction Budgeting']){
+  const tables={__profile:profile,Contract:[parent]},editor=profile==='Construction Budgeting';
+  const execute=()=>runValidation(path,{Contract1:20,Work_Module:'Legal'},tables);
+  if(editor)assert.doesNotThrow(execute);else assert.throws(execute,/Edit All Construction/);
+  assert.throws(()=>runValidation(path,{Contract1:20,Work_Module:'Construction'},{...tables,Contract:[{...parent,Status:'Complete'}]}),/open request/);
+  const legal=()=>runValidation(path,{Contract1:20,Work_Module:'Legal'},{...tables,Contract:[{...parent,Work_Module:'Legal'}]});
+  if(editor)assert.throws(legal,/only manage Construction/);else assert.doesNotThrow(legal);
+ }
+}
+assert.throws(()=>runValidation('creator/workflows/Construction_Comment_Delete_Validation.dg',{Contract1:20},{Contract:[parent]}),/comment controls/);
+assert.doesNotThrow(()=>runValidation('creator/workflows/Construction_Comment_Delete_Validation.dg',{Contract1:20},{Contract:[{...parent,Work_Module:'Legal'}]}));
+
 console.log('PASS construction backend: independent grants, enforced review intake, submit-only edits/tasks/templates denied, inferred scope, immutable mode, completion lock, Legal approval isolation and legacy Legal compatibility.');
 
 // Check the complete independently reloaded Workflow Builder capture, including
 // its action count. Comparing only the first body can conceal duplicate actions.
 const deployment=JSON.parse(read('creator/schema-changes/construction-backend-deployment.json'));
+const pageDeployment=JSON.parse(read('creator/schema-changes/construction-page-access-2026-10-20/deployment.json'));
+const currentWorkflows=new Map([...deployment.existingWorkflows,...deployment.newWorkflows,...pageDeployment.workflows].map(w=>[w.link,w]));
 function canonicalDeluge(source){
   const strings=[];
   return source.replace(/"(?:\\.|[^"\\])*"|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,token=>token.startsWith('"')?`STRING${strings.push(token)}TOKEN`:'').replace(/\s+/g,'')+'\n'+JSON.stringify(strings);
 }
-for(const workflow of [...deployment.existingWorkflows,...deployment.newWorkflows]){
+for(const workflow of currentWorkflows.values()){
   assert.equal(workflow.savedAndReloaded,true,`${workflow.link}: independently saved and reopened`);
   const capture=JSON.parse(read(workflow.capture));
   assert.equal(capture.nativeScriptActionCount,1,`${workflow.link}: one native script action`);
@@ -154,7 +184,11 @@ for(const workflow of [...deployment.existingWorkflows,...deployment.newWorkflow
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.source)),`${workflow.link}: complete body, literal content and parentheses match`);
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.evidence)),`${workflow.link}: authoritative after source`);
 }
-const nativeParent=read('creator/schema-changes/construction-backend-evidence/Field_Validations_Contrac.after.dg');
+for(const f of pageDeployment.functions){
+ assert.equal(f.savedAndReloaded,true,`${f.name}: independently reselected`);
+ assert.equal(canonicalDeluge(read(f.evidence)),canonicalDeluge(read(f.source)),`${f.name}: complete native body and literals match`);
+}
+const nativeParent=read(currentWorkflows.get('Field_Validations_Contrac').evidence);
 assert.doesNotThrow(()=>runValidation(null,request({Parent_Contract:21,Builder:101}),{...scope,Contract:[{ID:21,Work_Module:'Construction',Parent_Contract:null,Contract_Type:'Offsite',Builder:202,Project:404}],User_Access:[grants({edit:true})]},nativeParent),'native formatter preserved non-Lot parent semantics');
 for(const name of ['Send_for_Approvals','Send_for_Approvals_Contra1']){
   const source=read(`creator/workflows/${name}.dg`);
@@ -162,4 +196,4 @@ for(const name of ['Send_for_Approvals','Send_for_Approvals_Contra1']){
   assert.match(source,/sendmail\s*\[/);
   assert.doesNotMatch(source,/\bCost_Curve\b|\btype\s*=|\bas\s+"/,'report schema projections must never be extracted as Deluge');
 }
-console.log('PASS native Construction deployment gate: all 11 workflows have one independently reloaded, complete reviewed body; native parent semantics and report-action source are verified.');
+console.log(`PASS native Construction deployment gate: ${currentWorkflows.size} workflows each have one independently reloaded reviewed body; ${pageDeployment.functions.length} saved function bodies, native parent semantics and report-action source are verified.`);

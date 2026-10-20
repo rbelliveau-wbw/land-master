@@ -6,13 +6,24 @@ if(storedAttachment.count() > 0)
 {
  attachmentParentId = storedAttachment.Contract1;
 }
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+if(constructionBudgetingProfile)
+{
+ scopedAttachmentParent = Contract[ID == attachmentParentId];
+ if(attachmentParentId == null || scopedAttachmentParent.count() == 0 || ifnull(scopedAttachmentParent.Work_Module,"") != "Construction")
+ {
+  alert "This profile can only attach files to Construction requests.";
+  cancel submit;
+ }
+}
 if(attachmentParentId != null)
 {
  attachmentParent = Contract[ID == attachmentParentId];
  if(attachmentParent.count() > 0 && ifnull(attachmentParent.Work_Module,"") == "Construction")
  {
-  attachmentAccess = User_Access[User == zoho.loginuser];
-  if(attachmentAccess.count() == 0 || (attachmentAccess.Edit_All_Construction_Requests != true && attachmentAccess.Submit_Construction_Requests != true))
+  constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
+  constructionEditAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+  if(constructionAllowed != true)
   {
    alert "Construction request access is required to add attachments.";
    cancel submit;
@@ -29,7 +40,7 @@ if(attachmentParentId != null)
     alert "An attachment cannot be moved to another request.";
     cancel submit;
    }
-   if(attachmentAccess.Edit_All_Construction_Requests != true && storedAttachment.Added_User != zoho.loginuser)
+   if(constructionEditAllowed != true && storedAttachment.Added_User != zoho.loginuser)
    {
     alert "You can only upload files to your own construction attachments.";
     cancel submit;

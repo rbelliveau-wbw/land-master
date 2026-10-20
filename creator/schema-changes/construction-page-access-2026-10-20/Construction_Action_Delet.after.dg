@@ -1,0 +1,27 @@
+// Contract_Actions / Deleted / Validations on record deletion.
+deleteTaskMode = ifnull(input.Work_Module,"Legal");
+deleteTaskComplete = false;
+if(input.Contract1 != null)
+{
+	deleteTaskParent = Contract[ID == input.Contract1];
+	if(deleteTaskParent.count() > 0)
+	{
+		deleteTaskMode = ifnull(deleteTaskParent.Work_Module,"Legal");
+		deleteTaskComplete = ifnull(deleteTaskParent.Status,"") == "Complete";
+	}
+}
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+if(deleteTaskMode == "Construction")
+{
+	constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+	if(constructionAllowed != true || deleteTaskComplete)
+	{
+		alert "Edit All Construction Requests permission and an open request are required to delete Construction actions or templates.";
+		cancel delete;
+	}
+}
+else if(constructionBudgetingProfile)
+{
+	alert "This profile can only manage Construction actions or templates.";
+	cancel delete;
+}

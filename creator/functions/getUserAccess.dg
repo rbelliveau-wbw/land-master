@@ -39,8 +39,6 @@ string getUserAccess(string user)
 	ctTemplates = false;
 	ctDeleteArchive = false;
 	// Construction permissions are independent of Legal permissions.
-	constructionEditAll = false;
-	constructionSubmit = false;
 	foundRow = false;
 	myId = "";
 	rows = User_Access[User == requester];
@@ -85,8 +83,6 @@ string getUserAccess(string user)
 		ctApprove = row.Approve_Contracts == true;
 		ctTemplates = row.Manage_Action_Templates == true;
 		ctDeleteArchive = row.Delete_Archive_Contracts == true;
-		constructionEditAll = row.Edit_All_Construction_Requests == true;
-		constructionSubmit = row.Submit_Construction_Requests == true;
 		break;
 	}
 	// Preserve legacy roster keys; add authoritative identity and display name.
@@ -159,6 +155,8 @@ string getUserAccess(string user)
 	result.put("ctApprove",ctApprove);
 	result.put("ctTemplates",ctTemplates);
 	result.put("ctDeleteArchive",ctDeleteArchive);
+	constructionEditAll = thisapp.hasConstructionPermission(requester,true);
+	constructionSubmit = thisapp.hasConstructionPermission(requester,false);
 	result.put("constructionEditAll",constructionEditAll);
 	result.put("constructionSubmit",constructionSubmit);
 	result.put("users",userList);

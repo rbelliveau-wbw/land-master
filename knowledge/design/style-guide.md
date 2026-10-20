@@ -135,15 +135,23 @@ Lot contract reports use compact branch rows: pale blue on a Master with visible
 
 ## Legal and Construction workspaces
 
-Keep the Legal/Construction chooser in the persistent white header beside the
-breadcrumb. It remains visible while navigating the list, Review, templates,
-and full workspace; only authorized users see Construction.
+Legal and Construction are separate Creator pages. Reuse the same widget with
+page variables selecting a fixed module; never add an in-widget module chooser
+or switch modules while opening a record. A denied Construction page stays
+closed instead of displaying Legal. Scope lists, actions, reviews and templates
+to the page's module. Construction actions omit assignment dropdowns and do not
+require an assignee to save or complete; Legal retains its existing controls.
 
 In the Construction request form, pair half-width Subdivision and Date Needed
 on the first row, and pair Request Name with Parent request. Display Date Needed
 as `MM/dd/YYYY` using the existing floating custom picker. Retain ISO
 `yyyy-MM-dd` in the hidden value carrier and the existing save conversion. Scope
 numeric formatting to this field so Legal's compact action dates stay intact.
+
+Keep a compact Suggest action beside the Construction Request Name label. It
+rebuilds the draft name using the existing subdivision and budget-type format;
+normal field changes preserve manually entered names. Construction creation and
+its confirmation use the concise button label Submit.
 
 Expanded Construction rows have one compact facts rail, Parent control, and
 description on the left, capped at 280px on desktop. Give Actions the remaining

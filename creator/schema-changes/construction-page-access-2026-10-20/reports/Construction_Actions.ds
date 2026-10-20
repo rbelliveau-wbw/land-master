@@ -1,0 +1,105 @@
+list Construction_Actions
+{
+	displayName = "Construction Actions"
+	show all rows from Contract_Actions  [Work_Module == "Construction"]  
+	(
+		Complete as "Mark Complete"
+		Contract_Action as "Action"
+		Dev_Notes as "Dev Notes"
+		Dev_Mgr as "Dev Mgr"
+		Status
+		Start_Date as "Start Date"
+		Due_Date as "Due Date"
+		Complete_Date as "Complete Date"
+		Sort_Order as "Sort Order"
+		Current_Action as "Current Action"
+		Contract1 as "Contract"
+		Type_field as "Type"
+		Template_Action as "Template Action"
+		Work_Module as "Work Module"
+	)
+	quickview
+	(
+		layout
+		(
+			displaylayout = "classic"
+			datablock1
+			(
+				fields
+				(
+					Complete as "Mark Complete"
+					Contract_Action as "Action"
+					Dev_Notes as "Dev Notes"
+					Dev_Mgr as "Dev Mgr"
+					Status
+					Start_Date as "Start Date"
+					Due_Date as "Due Date"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					Complete as "Mark Complete"
+					Contract_Action as "Action"
+					Dev_Notes as "Dev Notes"
+					Dev_Mgr as "Dev Mgr"
+					Status
+					Start_Date as "Start Date"
+					Due_Date as "Due Date"
+					Complete_Date as "Complete Date"
+					Sort_Order as "Sort Order"
+					Current_Action as "Current Action"
+					Contract1 as "Contract"
+					Type_field as "Type"
+					Template_Action as "Template Action"
+					Work_Module as "Work Module"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

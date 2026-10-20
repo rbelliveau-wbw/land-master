@@ -1,0 +1,82 @@
+// Candidate new Contract_Actions / on add or edit / on validate action.
+// Install after Work_Module and the two construction User Access fields exist.
+// Blank legacy module values are Legal; linked actions always inherit the parent.
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+existingTask = Contract_Actions[ID == input.ID];
+taskMode = ifnull(input.Work_Module,"");
+if(taskMode == "")
+{
+	taskMode = "Legal";
+}
+if(input.Contract1 != null)
+{
+	taskParent = Contract[ID == input.Contract1];
+	if(taskParent.count() == 0)
+	{
+		alert "The linked request is unavailable.";
+		cancel submit;
+	}
+	taskMode = ifnull(taskParent.Work_Module,"");
+	if(taskMode == "")
+	{
+		taskMode = "Legal";
+	}
+	input.Work_Module = taskMode;
+	if(taskMode == "Construction")
+	{
+		input.Type_field = taskParent.Contract_Type;
+		input.Template_Action = false;
+	}
+}
+if(existingTask.count() > 0)
+{
+	existingTaskMode = ifnull(existingTask.Work_Module,"");
+	if(existingTask.Contract1 != null)
+	{
+		existingParent = Contract[ID == existingTask.Contract1];
+		existingTaskMode = ifnull(existingParent.Work_Module,"");
+	}
+	if(existingTaskMode == "")
+	{
+		existingTaskMode = "Legal";
+	}
+	isConstructionTask = taskMode == "Construction" || existingTaskMode == "Construction";
+	if(isConstructionTask)
+	{
+		if(taskMode != existingTaskMode || input.Contract1 != existingTask.Contract1)
+		{
+			alert "An existing task cannot be moved to another request or Work Module.";
+			cancel submit;
+		}
+	}
+}
+constructionTaskTypes = {"Internal","Offsite","Amenity","MUD Bid"};
+if(taskMode == "Construction")
+{
+	constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+	if(constructionAllowed != true)
+	{
+		alert "Edit All Construction Requests permission is required to change construction tasks or templates.";
+		cancel submit;
+	}
+	if(input.Contract1 != null && ifnull(taskParent.Status,"") == "Complete")
+	{
+		alert "This construction request is complete and read-only.";
+		cancel submit;
+	}
+	if(input.Type_field != null && !constructionTaskTypes.contains(input.Type_field))
+	{
+		alert "Choose a construction Budget Type.";
+		cancel submit;
+	}
+}
+else if(constructionBudgetingProfile)
+{
+	alert "This profile can only change Construction actions and templates.";
+	cancel submit;
+}
+else if(taskMode != "Legal" || constructionTaskTypes.contains(input.Type_field))
+{
+	alert "Construction task types require Construction Work Module.";
+	cancel submit;
+}

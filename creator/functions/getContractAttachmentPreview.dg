@@ -15,11 +15,32 @@ string getContractAttachmentPreview(string contractId, string attachmentId)
 	}
 	try
 	{
-		attachmentRows = Attachment[(ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong())];
+		attachmentRows = Attachment[ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong()];
 		if(attachmentRows.count() == 0)
 		{
 			response.put("ok",false);
 			response.put("message","Attachment record was not found for this Contract.");
+			return response.toString();
+		}
+		previewParent = Contract[ID == vContractId.toLong()];
+		constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+		previewDenied = previewParent.count() == 0;
+		if(!previewDenied)
+		{
+			if(ifnull(previewParent.Work_Module,"") == "Construction")
+			{
+				constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
+				previewDenied = constructionAllowed != true;
+			}
+			else if(constructionBudgetingProfile)
+			{
+				previewDenied = true;
+			}
+		}
+		if(previewDenied)
+		{
+			response.put("ok",false);
+			response.put("message","You do not have access to this attachment.");
 			return response.toString();
 		}
 		for each attachmentRow in attachmentRows

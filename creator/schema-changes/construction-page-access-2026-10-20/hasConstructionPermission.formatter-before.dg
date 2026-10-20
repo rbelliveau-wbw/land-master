@@ -1,0 +1,37 @@
+bool hasConstructionPermission(string user, bool editRequired)
+{
+	requester = ifnull(user,"").trim();
+	if(requester == "")
+	{
+		return false;
+	}
+	// Preserve explicit User Access grants; native profiles supply the requested defaults.
+	access = User_Access[User == requester];
+	if(access.count() > 0)
+	{
+		if(access.Edit_All_Construction_Requests == true)
+		{
+			return true;
+		}
+		if(editRequired != true && access.Submit_Construction_Requests == true)
+		{
+			return true;
+		}
+	}
+	try 
+	{
+		profile = thisapp.permissions.profileForUser(requester);
+		if(profile == "Construction Budgeting")
+		{
+			return true;
+		}
+		if(editRequired != true && profile == "Dev/Land Acq - Proforma & Budgets" || profile == "CFO")
+		{
+			return true;
+		}
+	}	catch (profileError)
+	{
+		// Unknown/failed profile lookup adds no access.
+	}
+	return false;
+}

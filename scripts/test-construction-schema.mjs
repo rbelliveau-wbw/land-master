@@ -57,14 +57,15 @@ for (const choice of legalTypeChoices) assert.ok(sourceForm('Contract').includes
 // permission implementation. This fixture is not a native Creator compiler.
 const names = schema.user_access_functions_requiring_update;
 const bodies = names.map(name => translate(read(`creator/functions/${name}.dg`)));
+const permissionBody=translate(read('creator/functions/hasConstructionPermission.dg')).js;
 const legalFields = {
   Edit_Contracts: 'ctEdit', Propose_Contract_Changes: 'ctPropose',
   Approve_Contracts: 'ctApprove', Manage_Action_Templates: 'ctTemplates',
   Delete_Archive_Contracts: 'ctDeleteArchive'
 };
-function access(name, fields = {}, known = true) {
+function access(name, fields = {}, known = true, profile = '') {
   const records = known ? [{ID: '4410926000004465004', User: 'fixture_requestor', Approver_Email: null, Full_Name: null, ...fields}] : [];
-  const fixture = {User_Access: records, Add_Pro_Forma: []};
+  const fixture = {User_Access: records, Add_Pro_Forma: [], profile};
   const context = vm.createContext({fixtureJSON: JSON.stringify(fixture)});
   vm.runInContext(`
     const tables = JSON.parse(fixtureJSON);
@@ -73,11 +74,14 @@ function access(name, fields = {}, known = true) {
     function List() { return []; }
     function Map() { return {put(key, value) { this[key] = value; }, toString() { return JSON.stringify(this); }}; }
     Array.prototype.add = function(value) { this.push(value); };
+    Array.prototype.count = function() { return this.length; };
     function query(form, predicate) {
-      return (tables[form] || []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
+      const rows=(tables[form] || []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
+      return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;}});
     }
     const zoho = {loginuser: 'fixture_requestor'};
-    const thisapp = {};
+    const thisapp = {permissions:{profileForUser(user){if(tables.profile==='__failure')throw Error('Profile unavailable');return user===zoho.loginuser?tables.profile:'';}}};
+    ${permissionBody};thisapp.hasConstructionPermission=hasConstructionPermission;
     ${bodies.map(body => `${body.js};thisapp.${body.name} = ${body.name};`).join('\n')}
     var raw = ${name}('fixture_requestor');
     var afterJSON = JSON.stringify(tables);
@@ -88,7 +92,7 @@ function access(name, fields = {}, known = true) {
 const scenarios = [
   {label: 'no grants', fields: {}, edit: false, submit: false},
   {label: 'submit only', fields: {Submit_Construction_Requests: true}, edit: false, submit: true},
-  {label: 'editor only', fields: {Edit_All_Construction_Requests: true}, edit: true, submit: false},
+  {label: 'editor only', fields: {Edit_All_Construction_Requests: true}, edit: true, submit: true},
   {label: 'both grants', fields: {Edit_All_Construction_Requests: true, Submit_Construction_Requests: true}, edit: true, submit: true},
   {label: 'Legal only', fields: Object.fromEntries(Object.keys(legalFields).map(field => [field, true])), edit: false, submit: false},
   {label: 'Legal and Construction', fields: {...Object.fromEntries(Object.keys(legalFields).map(field => [field, true])), Edit_All_Construction_Requests: true, Submit_Construction_Requests: true}, edit: true, submit: true},
@@ -103,5 +107,10 @@ for (const name of names) {
       assert.equal(reply[key], scenario.fields[field] === true, `${name}: ${scenario.label} preserves ${key}.`);
     }
   }
+  for(const [profile,edit,submit] of [['Dev/Land Acq - Proforma & Budgets',false,true],['CFO',false,true],['Construction Budgeting',true,true],['Contract Mgmt',false,false],['Write',false,false],['__failure',false,false]]){
+    const reply=access(name,{},false,profile);assert.equal(reply.constructionEditAll,edit,`${name}: ${profile} edit`);assert.equal(reply.constructionSubmit,submit,`${name}: ${profile} submit`);
+    for(const key of Object.values(legalFields))assert.equal(reply[key],false,'Construction profile cannot confer a Legal grant');
+  }
+  assert.equal(access(name,{Edit_All_Construction_Requests:true},true,'__failure').constructionEditAll,true,'Profile lookup failure preserves an existing explicit grant');
 }
 console.log('PASS Construction schema: nine optional native fields, unchecked access defaults, preserved Legal choices, one inferred Subdivision context, Proposed submission without seeds, acceptance-only Construction checklist setup; all four real permission bodies keep submit/editor/Legal grants independent.');

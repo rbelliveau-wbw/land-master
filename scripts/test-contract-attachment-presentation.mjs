@@ -19,7 +19,7 @@ let mounted='',uploads=[];
 const ctx={
   S:{contracts:[{ID:CID,Contract_Name:'Legal Fixture'}],versions:[],users:[],user:'Current Actor'},
   document:{querySelectorAll:()=>[],querySelector:()=>null},$:el,
-  mayEdit:()=>true,canAddContractAttachments:()=>true,constructionAccess:()=>false,openModal:html=>{mounted=html;},
+  mayEdit:()=>true,workVisible:()=>true,canAddContractAttachments:()=>true,constructionAccess:()=>false,openModal:html=>{mounted=html;},
   addVersionFiles:(cid,files)=>uploads.push({cid,files}),APR_ICON_CLIP:'',
 };
 vm.createContext(ctx);

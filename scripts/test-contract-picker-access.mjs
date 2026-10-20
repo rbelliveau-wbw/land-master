@@ -51,6 +51,7 @@ assert.equal(ctx.S.loiMine, false, 'normalized custom API key takes precedence o
 ctx.ncApplyAccess({found:true,ctDeleteArchive:true});
 let deleteRequest;const nativeDelete=h.api.deleteRecords;
 h.reports[ctx.CFG.reports.contracts]=[{ID:'999999999999999999',Status:'New'}];
+ctx.S.contracts=structuredClone(h.reports[ctx.CFG.reports.contracts]);
 h.api.deleteRecords=async args=>{deleteRequest=args;return nativeDelete(args);};
 await ctx.sdkDeleteById(ctx.CFG.reports.contracts,'999999999999999999');
 assert.equal(deleteRequest.payload.criteria, '(ID == 999999999999999999)');

@@ -1,0 +1,114 @@
+{
+  "environment": "DEVELOPMENT",
+  "productionPublished": false,
+  "creatorPromotion": "User promotes native changes under PMP.",
+  "verification": "All six functions independently reselected and copied; seven workflows independently reloaded with exactly one native script action and complete body; reports and native profiles separately reopened.",
+  "functions": [
+    {
+      "name": "hasConstructionPermission",
+      "source": "creator/functions/hasConstructionPermission.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/hasConstructionPermission.after.dg",
+      "savedAndReloaded": true
+    },
+    {
+      "name": "getUserAccess",
+      "source": "creator/functions/getUserAccess.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccess.after.dg",
+      "savedAndReloaded": true
+    },
+    {
+      "name": "getUserAccessLean",
+      "source": "creator/functions/getUserAccessLean.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccessLean.after.dg",
+      "savedAndReloaded": true
+    },
+    {
+      "name": "createContractAttachmentRecord",
+      "source": "creator/functions/createContractAttachmentRecord.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/createContractAttachmentRecord.after.dg",
+      "savedAndReloaded": true
+    },
+    {
+      "name": "deleteContractAttachment",
+      "source": "creator/functions/deleteContractAttachment.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/deleteContractAttachment.after.dg",
+      "savedAndReloaded": true
+    },
+    {
+      "name": "getContractAttachmentPreview",
+      "source": "creator/functions/getContractAttachmentPreview.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getContractAttachmentPreview.after.dg",
+      "savedAndReloaded": true
+    }
+  ],
+  "workflows": [
+    {
+      "link": "Field_Validations_Contrac",
+      "source": "creator/workflows/Field_Validations_Contrac.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Field_Validations_Contrac.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Field_Validations_Contrac.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Construction_Contract_Act",
+      "source": "creator/workflows/Construction_Contract_Actions_Validation.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Contract_Act.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Contract_Act.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Construction_Attachment_V",
+      "source": "creator/workflows/Construction_Attachment_Validation.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Validate_Comment_Log",
+      "source": "creator/workflows/Validate_Comment_Log.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Construction_Action_Delet",
+      "source": "creator/workflows/Construction_Action_Delete_Validation.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Action_Delet.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Action_Delet.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Construction_Attachment_D",
+      "source": "creator/workflows/Construction_Attachment_Delete_Validation.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_D.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_D.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Construction_Comment_Dele",
+      "source": "creator/workflows/Construction_Comment_Delete_Validation.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Comment_Dele.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Comment_Dele.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
+    }
+  ],
+  "profiles": [
+    "Dev/Land Acq - Proforma & Budgets",
+    "CFO",
+    "Construction Budgeting"
+  ],
+  "reports": [
+    "Construction_Requests",
+    "Construction_Actions",
+    "Construction_Attachments",
+    "Construction_Comments"
+  ],
+  "scheduledDeletesAdded": false
+}

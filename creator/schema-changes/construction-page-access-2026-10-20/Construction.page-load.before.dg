@@ -1,0 +1,4 @@
+if(ifnull(input.workMode,"") == "")
+{
+	input.workMode = "construction";
+}

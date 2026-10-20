@@ -1,0 +1,176 @@
+[
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000000197013-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-edit"
+      },
+      {
+        "checked": false,
+        "id": "4410926000000197013-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000197013-more"
+      }
+    ],
+    "reports": [
+      {
+        "id": "4410926000000197013-view",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000000197013-edit",
+        "text": "All Contracts"
+      },
+      {
+        "id": "4410926000000197013-more",
+        "text": "View all, Modify all"
+      }
+    ],
+    "text": "Add Contract\n\t\n\t\n2 Reports\n\t\nAll Contracts\n\t\n\t\nView all, Modify all"
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000000964222-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-edit"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000000964222-more"
+      }
+    ],
+    "reports": [
+      {
+        "id": "4410926000000964222-view",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000000964222-edit",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000000964222-delete",
+        "text": "All Attachments"
+      },
+      {
+        "id": "4410926000000964222-more",
+        "text": "View all, Modify all"
+      }
+    ],
+    "text": "Attachment\n\t\n\t\n2 Reports\n\t\n2 Reports\n\t\nAll Attachments\n\t\nView all, Modify all"
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000004743010-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-edit"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000004743010-more"
+      }
+    ],
+    "reports": [
+      {
+        "id": "4410926000004743010-view",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000004743010-edit",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000004743010-delete",
+        "text": "Comment Log Report"
+      },
+      {
+        "id": "4410926000004743010-more",
+        "text": "View all, Modify all"
+      }
+    ],
+    "text": "Comment Log\n\t\n\t\n2 Reports\n\t\n2 Reports\n\t\nComment Log Report\n\t\nView all, Modify all"
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000001136098-add"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-view"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-edit"
+      },
+      {
+        "checked": false,
+        "id": "4410926000001136098-delete"
+      },
+      {
+        "checked": true,
+        "id": "4410926000001136098-more"
+      }
+    ],
+    "reports": [
+      {
+        "id": "4410926000001136098-view",
+        "text": "2 Reports"
+      },
+      {
+        "id": "4410926000001136098-edit",
+        "text": "All Contract Actions"
+      },
+      {
+        "id": "4410926000001136098-more",
+        "text": "View all, Modify all"
+      }
+    ],
+    "text": "Contract Actions\n\t\n\t\n2 Reports\n\t\nAll Contract Actions\n\t\n\t\nView all, Modify all"
+  },
+  {
+    "inputs": [
+      {
+        "checked": true,
+        "id": "4410926000005188138-tab"
+      }
+    ],
+    "reports": [],
+    "text": "Construction\n\t\n\t-\t-\t-\t-"
+  }
+]

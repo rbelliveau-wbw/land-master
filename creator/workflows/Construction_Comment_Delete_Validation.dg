@@ -1,0 +1,11 @@
+// Comment_Log / Deleted / Validations on record deletion.
+// Construction comments use the module's author/time-checked soft-delete action.
+if(input.Contract1 != null)
+{
+ deleteCommentParent = Contract[ID == input.Contract1];
+ if(deleteCommentParent.count() > 0 && ifnull(deleteCommentParent.Work_Module,"") == "Construction")
+ {
+  alert "Use the Construction page comment controls to remove a comment.";
+  cancel delete;
+ }
+}

@@ -1,0 +1,27 @@
+// Attachment / Deleted / Validations on record deletion.
+deleteFileMode = "";
+deleteFileComplete = false;
+if(input.Contract1 != null)
+{
+	deleteFileParent = Contract[ID == input.Contract1];
+	if(deleteFileParent.count() > 0)
+	{
+		deleteFileMode = ifnull(deleteFileParent.Work_Module,"Legal");
+		deleteFileComplete = ifnull(deleteFileParent.Status,"") == "Complete";
+	}
+}
+constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+if(deleteFileMode == "Construction")
+{
+	constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+	if(constructionAllowed != true || deleteFileComplete)
+	{
+		alert "Edit All Construction Requests permission and an open request are required to delete Construction attachments.";
+		cancel delete;
+	}
+}
+else if(constructionBudgetingProfile)
+{
+	alert "This profile can only manage Construction attachments.";
+	cancel delete;
+}

@@ -1,0 +1,93 @@
+list Construction_Attachments
+{
+	displayName = "Construction Attachments"
+	show all rows from Attachment  [Contract1.Work_Module == "Construction"]  
+	(
+		Email_Attachment as "Attach to Email"
+		Contract1 as "Contract"
+		Budget
+		Pro_Forma as "Pro Forma"
+		Date_field1 as "Date"
+		File_field1 as "File"
+		Payment_Request as "Payment Request"
+		Budget_Modification as "Budget Modification"
+	)
+	quickview
+	(
+		layout
+		(
+			displaylayout = "classic"
+			datablock1
+			(
+				fields
+				(
+					Email_Attachment as "Attach to Email"
+					Contract1 as "Contract"
+					Budget
+					Pro_Forma as "Pro Forma"
+					Date_field1 as "Date"
+					File_field1 as "File"
+					Payment_Request as "Payment Request"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					Email_Attachment as "Attach to Email"
+					Contract1 as "Contract"
+					Budget
+					Pro_Forma as "Pro Forma"
+					Date_field1 as "Date"
+					File_field1 as "File"
+					Payment_Request as "Payment Request"
+					Budget_Modification as "Budget Modification"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

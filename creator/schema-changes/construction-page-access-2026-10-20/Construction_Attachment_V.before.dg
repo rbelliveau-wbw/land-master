@@ -1,0 +1,46 @@
+storedAttachment = Attachment[ID == input.ID];
+attachmentParentId = input.Contract1;
+if(storedAttachment.count() > 0)
+{
+	attachmentParentId = storedAttachment.Contract1;
+}
+if(attachmentParentId != null)
+{
+	attachmentParent = Contract[ID == attachmentParentId];
+	if(attachmentParent.count() > 0 && ifnull(attachmentParent.Work_Module,"") == "Construction")
+	{
+		attachmentAccess = User_Access[User == zoho.loginuser];
+		if(attachmentAccess.count() == 0 || (attachmentAccess.Edit_All_Construction_Requests != true && attachmentAccess.Submit_Construction_Requests != true))
+		{
+			alert "Construction request access is required to add attachments.";
+			cancel submit;
+		}
+		if(ifnull(attachmentParent.Status,"") == "Complete")
+		{
+			alert "This construction request is complete and read-only.";
+			cancel submit;
+		}
+		if(storedAttachment.count() > 0)
+		{
+			if(input.Contract1 != storedAttachment.Contract1)
+			{
+				alert "An attachment cannot be moved to another request.";
+				cancel submit;
+			}
+			if(attachmentAccess.Edit_All_Construction_Requests != true && storedAttachment.Added_User != zoho.loginuser)
+			{
+				alert "You can only upload files to your own construction attachments.";
+				cancel submit;
+			}
+		}
+	}
+}
+if(storedAttachment.count() > 0 && input.Contract1 != storedAttachment.Contract1 && input.Contract1 != null)
+{
+	newAttachmentParent = Contract[ID == input.Contract1];
+	if(newAttachmentParent.count() > 0 && ifnull(newAttachmentParent.Work_Module,"") == "Construction")
+	{
+		alert "An attachment cannot be moved to another request.";
+		cancel submit;
+	}
+}

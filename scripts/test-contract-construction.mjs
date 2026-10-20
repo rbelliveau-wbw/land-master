@@ -16,24 +16,39 @@ function fixture(h,{pending=false,children=true}={}){
  const template={ID:TEMPLATE,Template_Action:true,Type_field:'Internal',Work_Module:'Construction',Contract1:'',Contract_Action:'Prepare construction budget',Sort_Order:'1',Complete:false};
  const legalTemplate={...template,ID:(BigInt(TEMPLATE)+10n).toString(),Work_Module:'',Contract_Action:'Legal-only task'};
  h.reports.All_Contract_Actions.push(template,legalTemplate);h.c.S.actions.push({...template},{...legalTemplate});
- h.c.setWorkMode('construction');return values;
+ h.c.renderAll();return values;
 }
 function draft(h){h.c.newContract();h.c.constructionPick('sub',SUB);h.c.constructionPick('type','Internal');h.c.constructionPick('plans','First Round');h.c.constructionPick('mud','No');h.c.constructionPick('priority','High');Object.assign(h.c.S.nc,{needed:'2026-10-30',description:'Prepare the Phase grading budget.'});return h.c.S.nc;}
 function files(h){const base=h.api.invokeCustomApi;let creates=0,uploads=0;h.api.invokeCustomApi=async config=>{if(config.api_name!==h.c.CFG.customApis.createAttachment)return base(config);creates++;h.reports.All_Attachments.push({ID:FILE,Contract1:{ID:config.payload.contractId},Email_Attachment:false,File_field1:{},Added_User:'actual-actor'});return {code:3000,details:{output:JSON.stringify({ok:true,attachmentId:FILE})}};};h.c.ZOHO.CREATOR.FILE={uploadFile:async config=>{uploads++;const row=h.reports.All_Attachments.find(row=>row.ID===config.id);row.File_field1={filepath:'native_'+config.file.name};return {code:3000};}};return {creates:()=>creates,uploads:()=>uploads};}
 
+{
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.c.newContract();
+ assert.equal(h.node('nc_submit').textContent,'Submit');
+ assert.match(h.c.constructionFields(),/type="button"[^>]+onclick="constructionSuggestName\(\)"[^>]+>Suggest<\/button>/);
+ h.c.S.nc.name='Keep this draft';assert.equal(h.c.constructionSuggestName(),false);assert.equal(h.c.S.nc.name,'Keep this draft','missing subdivision cannot erase a typed name');
+ const v=draft(h);v.name='Custom request';const description=v.description,needed=v.needed;
+ assert.equal(h.c.constructionSuggestName(),true);assert.equal(v.name,'Fixture Phase · Internal budget');assert.equal(h.node('construction_name').value,v.name);
+ assert.equal(v.description,description);assert.equal(v.needed,needed);assert.equal(writes(h).length,0,'Suggest only changes the draft');
+ v.name='Manually named request';h.c.constructionPick('type','Amenity');assert.equal(v.name,'Manually named request','normal field changes preserve a manual name');
+ h.c.constructionSuggestName();assert.equal(v.name,'Fixture Phase · Amenity budget','explicit Suggest replaces the manual name');
+ let confirmation;h.c.confirmDialog=options=>{confirmation=options;};assert.equal(h.c.constructionConfirm(),true);assert.equal(confirmation.okLabel,'Submit');
+ assert.equal(h.c.constructionEditOpen(ID),true);const edit=h.c.S.constructionEdit.draft;h.c.constructionSuggestName();assert.equal(edit.name,'Fixture Phase · Internal budget');assert.equal(h.c.findContract(ID).Contract_Name,'Fixture construction request','editing suggestion waits for Save');
+ h.c.S.busy=true;edit.name='Busy draft';assert.equal(h.c.constructionSuggestName(),false);assert.equal(edit.name,'Busy draft');assert.equal(writes(h).length,0);
+}
+
 for(const options of [{},{accessFailure:true}]){
- const h=await ready({...options,realDOM:true});assert.equal(h.c.constructionAccess(),false);assert.equal(h.c.setWorkMode('construction'),false);assert.doesNotMatch(h.node('workModeHeader').innerHTML,/onclick="setWorkMode\('construction'\)"/);assert.match(h.node('view').innerHTML,/New Legal Task/);
- fixture(h);assert.equal(h.c.mayEdit(ID),false,'Legal edit/degraded grants never authorize construction');await assert.rejects(h.c.updateRecord(ID,{Description:'Cross-module'}),/Construction Requests/);assert.equal(writes(h).length,0);
+ const h=await ready({...options,realDOM:true});assert.equal(h.c.constructionAccess(),false);assert.equal(h.c.setWorkMode,undefined);assert.match(h.node('view').innerHTML,/New Legal Task/);
+ fixture(h);assert.equal(h.c.mayEdit(ID),false,'Legal edit/degraded grants never authorize construction');await assert.rejects(h.c.updateRecord(ID,{Description:'Cross-module'}),/module page/);assert.equal(writes(h).length,0);
 }
 {
- const h=harness({accessFlags:submit,realDOM:true});h.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'construction'});await drain();assert.equal(h.c.S.workMode,'construction','page variable selects construction after explicit grant');
- const token=harness({accessFlags:editor,realDOM:true});token.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'construction',tokenId:'private-fixture'});await drain();assert.equal(token.c.S.workMode,'legal','token links keep Legal mode');
- const native=harness({accessFlags:submit,realDOM:true});native.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Construction';await drain();assert.equal(native.c.S.workMode,'construction','native Construction page supplies a fallback when the SDK omits page variables');
- const explicit=harness({accessFlags:submit,realDOM:true});explicit.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Construction';explicit.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'legal'});await drain();assert.equal(explicit.c.S.workMode,'legal','explicit SDK mode takes precedence over referrer fallback');
+ const h=harness({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});h.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'construction'});await drain();assert.equal(h.c.S.workMode,'construction','page variable selects construction after explicit grant');
+ const token=harness({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});token.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'construction',tokenId:'private-fixture'});await drain();assert.equal(token.c.S.workMode,'construction','token links cannot switch a Construction page to Legal');
+ const native=harness({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});native.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Construction';await drain();assert.equal(native.c.S.workMode,'construction','native Construction page supplies a fallback when the SDK omits page variables');
+ const explicit=harness({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});explicit.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Construction';explicit.c.ZOHO.CREATOR.UTIL.getQueryParams=async()=>({workMode:'legal'});await drain();assert.equal(explicit.c.S.workMode,'construction','native page identity cannot be switched through a query parameter');
 }
 {
- const h=await ready({accessFlags:submit,realDOM:true});fixture(h,{pending:true});assert.equal(h.c.canPropose(),true);assert.equal(h.c.canEdit(),false);assert.equal(h.c.canApprove(),false);assert.equal(h.c.canTemplates(),false);
- assert.match(h.node('workModeHeader').innerHTML,/onclick="setWorkMode\('construction'\)"/);assert.match(h.node('workModeHeader').innerHTML,/aria-pressed="true"[^>]*onclick="setWorkMode\('construction'\)"/);
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h,{pending:true});assert.equal(h.c.canPropose(),true);assert.equal(h.c.canEdit(),false);assert.equal(h.c.canApprove(),false);assert.equal(h.c.canTemplates(),false);
+ assert.equal(h.c.setWorkMode,undefined);assert.doesNotMatch(h.node('view').innerHTML,/setWorkMode/);
  assert.match(h.node('view').innerHTML,/Pending Review/);assert.doesNotMatch(h.node('view').innerHTML,/showLOIReviews\(\)|showManageActions\(\)|Legal isolated fixture/);
  assert.deepEqual(Array.from(h.c.ncTypeChoices('')),['Internal','Offsite','Amenity','MUD Bid']);assert.equal(h.c.reviewCount(),1,'badge excludes the Legal pending request');assert.deepEqual(Array.from(h.c.templatesFor('Internal'),row=>row.Contract_Action),['Prepare construction budget']);
  const v=draft(h);await drain();const form=h.c.constructionFields();assert.match(form,/Project context|Fixture Project|Engineering/);assert.doesNotMatch(form,/nc_project_wrap|nc_territory|nc_builder_wrap|nc_owner_wrap/);assert.equal(v.sub.length,1);
@@ -50,7 +65,7 @@ for(const options of [{},{accessFailure:true}]){
  assert.doesNotMatch(h.c.attachmentModalRows(NEW,h.c.S.versions),/deleteVersion|toggleEmailAttach/);assert.equal(await h.c.doDeleteVersion(FILE,NEW),false);assert.equal(writes(h).length,2,'only header and comment used ordinary CRUD');
 }
 {
- const h=await ready({accessFlags:editor,realDOM:true});fixture(h,{pending:true,children:false});assert.equal(h.c.canEdit(),true);assert.equal(h.c.canTemplates(),true);assert.equal(h.c.canApprove(),true);assert.equal(h.c.canDeleteArchive(ID),false);assert.equal(h.c.canArchive(ID),true);
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h,{pending:true,children:false});assert.equal(h.c.canEdit(),true);assert.equal(h.c.canTemplates(),true);assert.equal(h.c.canApprove(),true);assert.equal(h.c.canDeleteArchive(ID),true);assert.equal(h.c.canArchive(ID),true);
  assert.deepEqual(Array.from(h.c.allTypes()),['Amenity','Internal','MUD Bid','Offsite']);assert.ok(!h.c.allContractStatuses().includes('Awaiting WBW'));assert.match(h.c.homeSwitch('actions'),/Manage Task Templates|New Construction Task/);
  assert.equal(h.c.constructionEditOpen(ID),true);h.c.S.constructionEdit.draft.priority='ASAP';assert.equal(await h.c.constructionEditSave(),true);assert.equal(h.reports.All_Contracts1[0].Priority,'ASAP');
  await assert.rejects(h.c.updateRecord(LEGAL,{Contract_Name:'Construction grant cannot edit Legal'}));await assert.rejects(h.c.updateRecord(ID,{Work_Module:'Legal'}),/between modules/);assert.equal(h.c.contractParentOptions({workMode:'construction',type:'Internal',sub:[SUB],builder:''},ID).some(row=>row.v===LEGAL),false);
@@ -58,7 +73,26 @@ for(const options of [{},{accessFailure:true}]){
  assert.equal(h.c.ContractSetupUI.close(),true);assert.equal(await h.c.pcRun(ID,true),false,'acceptance cannot seed a second time');
 }
 {
- const h=await ready({accessFlags:{...editor,ctEdit:true,ctTemplates:true},realDOM:true});fixture(h);h.c.S.fTypes=['Internal'];h.c.S.search='Construction search';assert.equal(h.c.setWorkMode('legal'),true);assert.deepEqual(Array.from(h.c.S.fTypes),[]);h.c.S.fTypes=['DA'];assert.equal(h.c.setWorkMode('construction'),true);assert.deepEqual(Array.from(h.c.S.fTypes),['Internal']);assert.equal(h.c.S.search,'Construction search');
- h.c.S.acc.constructionEditAll=false;h.c.S.acc.constructionSubmit=false;h.c.ncApplyAccess({...h.flags,constructionEditAll:false,constructionSubmit:false});h.c.renderAll();assert.equal(h.c.S.workMode,'legal');assert.doesNotMatch(h.node('workModeHeader').innerHTML,/onclick="setWorkMode\('construction'\)"/);
+ const h=await ready({accessFlags:{...editor,ctEdit:true,ctTemplates:true},pageParams:{workMode:'construction'},realDOM:true});fixture(h);
+ assert.equal(h.c.openContract(LEGAL),false);assert.equal(h.c.openContractTab(LEGAL,'edit'),false);assert.equal(await h.c.openLOIReview(LEGAL,''),false);assert.equal(h.c.S.workMode,'construction');assert.doesNotMatch(h.node('view').innerHTML,/Legal isolated fixture/);
+ h.c.openContract(ID);assert.match(h.node('view').innerHTML,/Fixture construction request/);assert.doesNotMatch(h.node('view').innerHTML,/f_dm_|data-f="Dev_Mgr"|Assignee/);
+ const action=h.c.findAction(ACTION);assert.doesNotMatch(h.c.actionRow(action),/f_dm_|Assignee/);assert.doesNotMatch(h.c.renderEditGrid(ID,[action]),/Dev_Mgr|Assignee/);assert.doesNotMatch(h.c.drillRow(h.c.findContract(ID)),/da_dm_|Assignee/);assert.equal(h.c.requireOwner(ACTION),true);
+ h.c.quickComplete(ACTION);await drain();assert.equal(h.reports.All_Contract_Actions[0].Complete,true,'Construction completion does not require an assignment');assert.ok(!writes(h).some(call=>Object.hasOwn(call.config.payload?.data||{},'Dev_Mgr')),'completion preserves any existing assignment');
+ h.c.ncApplyAccess({...h.flags,constructionEditAll:false,constructionSubmit:false});h.c.renderAll();assert.equal(h.c.S.workMode,'construction');assert.match(h.node('view').innerHTML,/Construction access required/);assert.doesNotMatch(h.node('view').innerHTML,/Legal isolated fixture|Fixture construction request/);
 }
-console.log('PASS construction requests: permission-gated modes/page variable/token precedence, Legal isolation and degraded fail-closed access, UI-required inferred subdivision context/native boolean MUD, submit-only single-header creation with pending visibility and zero edit/review/template/delete writes, actual attachment/comment flows, EditAll request editing and once-only scoped template seeding, and separate mode filters.');
+for(const options of [{accessFlags:{}},{accessFailure:true}]){
+ const h=await ready({...options,pageParams:{workMode:'construction'},realDOM:true});fixture(h);assert.equal(h.c.S.workMode,'construction');assert.match(h.node('view').innerHTML,/Construction access required/);assert.equal(h.c.filteredContracts().length,0);assert.equal(h.c.openContract(LEGAL),false);assert.equal(writes(h).length,0);
+}
+
+for(const flags of [submit,editor]){
+ const h=harness({accessFlags:flags,pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});
+ h.reports.All_Contracts1[0].Work_Module='Construction';h.reports.All_Contract_Actions[0].Work_Module='Construction';await drain();assert.equal(h.c.S.coreReady,true);fixture(h);
+ assert.equal(h.c.CFG.reports.contracts,'Construction_Requests');assert.equal(h.c.CFG.reports.actions,'Construction_Actions');assert.equal(h.c.CFG.reports.versions,'Construction_Attachments');assert.equal(h.c.CFG.reports.comments,'Construction_Comments');
+ assert.ok(!h.calls.some(call=>['All_Contracts1','All_Contract_Actions','All_Attachments','All_Contract_Approvals','Contract_Pricing_Report'].includes(call.config.report_name)),'scoped Construction boot never reads Legal reports or approvals/pricing');
+ draft(h);const result=await h.c.ncSubmit([],[]);assert.equal(result.error,null);assert.ok(h.reports.All_Contracts1.some(row=>row.ID===NEW&&row.Work_Module==='Construction'));
+}
+{
+ const h=harness({accessFlags:{...editor,ctEdit:true},pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Legal';await drain();assert.equal(h.c.S.workMode,'legal');assert.equal(h.c.CFG.reports.contracts,'All_Contracts1');assert.equal(h.c.setWorkMode,undefined);
+}
+
+console.log('PASS Construction page isolation, missing/revoked/degraded access, preserved Legal behavior, assignment-free Construction completion, and construction requests: permission-gated modes/page variable/token precedence, Legal isolation and degraded fail-closed access, UI-required inferred subdivision context/native boolean MUD, submit-only single-header creation with pending visibility and zero edit/review/template/delete writes, actual attachment/comment flows, EditAll request editing and once-only scoped template seeding, and fixed page modes.');

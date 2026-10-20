@@ -1,0 +1,8 @@
+<zml>
+  <layout>
+    <row>
+      <column width='100%'>
+        <widgets elementName='Widget' importedTemplate='false' heightType='auto' linkName='contract_management' bgColor='#FFFFFF' /> </column>
+    </row>
+  </layout>
+</zml>

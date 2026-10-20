@@ -1,0 +1,9 @@
+{
+  "environment": "DEVELOPMENT",
+  "workflowLink": "Construction_Attachment_D",
+  "event": "Deleted / Validations on record deletion",
+  "nativeScriptActionCount": 1,
+  "scripts": [
+    "// Attachment / Deleted / Validations on record deletion.\ndeleteFileMode = \"\";\ndeleteFileComplete = false;\nif(input.Contract1 != null)\n{\n\tdeleteFileParent = Contract[ID == input.Contract1];\n\tif(deleteFileParent.count() > 0)\n\t{\n\t\tdeleteFileMode = ifnull(deleteFileParent.Work_Module,\"Legal\");\n\t\tdeleteFileComplete = ifnull(deleteFileParent.Status,\"\") == \"Complete\";\n\t}\n}\nconstructionBudgetingProfile = thisapp.permissions.isUserInProfile(\"Construction Budgeting\");\nif(deleteFileMode == \"Construction\")\n{\n\tconstructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);\n\tif(constructionAllowed != true || deleteFileComplete)\n\t{\n\t\talert \"Edit All Construction Requests permission and an open request are required to delete Construction attachments.\";\n\t\tcancel delete;\n\t}\n}\nelse if(constructionBudgetingProfile)\n{\n\talert \"This profile can only manage Construction attachments.\";\n\tcancel delete;\n}\n"
+  ]
+}

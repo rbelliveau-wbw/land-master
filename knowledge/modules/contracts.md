@@ -1,3 +1,47 @@
+## Separate Construction page and profiles — October 20, 2026
+
+Legal and Construction share an implementation but remain separate Creator
+pages. Module selection is fixed by page context/variables, with no in-widget
+chooser or cross-module record navigation. Unknown/revoked Construction access
+does not fall back to Legal. Construction action forms, drill-downs and grids
+omit assignment pickers; save/completion preserves historical assignments and
+does not require one. Legal assignment behavior remains unchanged.
+
+Dev/Land Acq - Proforma & Budgets and CFO receive submission/read access through
+their native profiles. Construction Budgeting receives full Construction
+administration, including Review and templates, and only the Construction page.
+Existing individual grants remain. Submitters can add files/comments but cannot
+edit existing requests/actions/templates or accept/reject submissions.
+New reports are filtered to Construction. A Construction page variable opts
+into them, preserving compatibility with older published Creator pages.
+Construction boot does not request Legal approvals, pricing or LOI reviews.
+
+Native profile/backend installation and representative Development tests are
+separate from hosted release activation; see the exact
+[access contract and verification record](../../docs/construction-page-access-2026-10-20.md).
+No actual employee has been reassigned to the new profile for testing.
+
+## Construction request naming — 1.62.11 candidate, October 20, 2026
+
+New and editable Construction request forms include Suggest beside Request Name.
+The action fills the current draft with the existing `Subdivision · Budget Type
+budget` name and focuses the name field. It requires a selected subdivision,
+preserves the rest of the form, and performs no write. Manual names still survive
+ordinary subdivision/type changes; an explicit Suggest replaces the name.
+Both the new-request footer and confirmation button say Submit.
+
+Affected persisted field: existing `Contract.Contract_Name` through the normal
+create/save path. No Creator schema, function, Custom API or publication change.
+The shared field rendering covers both New and Edit; Legal naming, permissions,
+validation, confirmation and submission timing remain intact. The existing
+overlay/motion registration is retained; no new animated surface is introduced.
+
+Checks: whole-UI Construction regressions cover missing subdivision, draft and
+edit suggestions, manual-name preservation, other-field retention, busy guards,
+zero writes from Suggest and both Submit labels. Full repository validation and
+Pages build passed. Production rollback: 1.62.10 via
+`deploy/environments.json`.
+
 ## Shared interaction motion — 1.62.9, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

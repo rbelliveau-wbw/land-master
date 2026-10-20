@@ -1,0 +1,60 @@
+string deleteContractAttachment(string contractId, string attachmentId)
+{
+	/********* DELETE ONE CONTRACT ATTACHMENT CHILD RECORD *********/
+	response = Map();
+	vContractId = ifnull(contractId,"").trim();
+	vAttachmentId = ifnull(attachmentId,"").trim();
+	if(vContractId == "" || vAttachmentId == "")
+	{
+		response.put("ok",false);
+		response.put("message","Missing Contract ID or attachment ID.");
+		return response.toString();
+	}
+	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong()];
+	if(attachmentRows.count() == 0)
+	{
+		response.put("ok",false);
+		response.put("message","Attachment record was not found for this Contract.");
+		return response.toString();
+	}
+	contractRows = Contract[ID == vContractId.toLong()];
+	if(contractRows.count() == 0 || ifnull(contractRows.Status,"").toString() == "Complete")
+	{
+		response.put("ok",false);
+		response.put("message","This contract is unavailable or complete and read-only.");
+		return response.toString();
+	}
+	constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
+	if(constructionBudgetingProfile && ifnull(contractRows.Work_Module,"") != "Construction")
+	{
+		response.put("ok",false);
+		response.put("message","This profile can only manage Construction attachments.");
+		return response.toString();
+	}
+	if(ifnull(contractRows.Work_Module,"") == "Construction")
+	{
+		constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+		if(constructionAllowed != true)
+		{
+			response.put("ok",false);
+			response.put("message","Edit All Construction Requests permission is required to delete attachments.");
+			return response.toString();
+		}
+	}
+	try 
+	{
+		delete from Attachment[ID == vAttachmentId.toLong() && Contract1 == vContractId.toLong()];
+		response.put("ok",true);
+		response.put("attachmentId",vAttachmentId);
+		response.put("message","Attachment deleted.");
+		return response.toString();
+	}	catch (deleteError)
+	{
+		response.put("ok",false);
+		response.put("message","Attachment deletion failed: " + deleteError.toString());
+		return response.toString();
+	}
+	response.put("ok",false);
+	response.put("message","Attachment deletion ended without a response.");
+	return response.toString();
+}

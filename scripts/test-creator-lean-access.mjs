@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
-const names = ['getUserAccess', 'getUserAccessDev', 'getUserAccessLean', 'getUserAccessLeanDev'];
+const names = ['hasConstructionPermission', 'getUserAccess', 'getUserAccessDev', 'getUserAccessLean', 'getUserAccessLeanDev'];
 const bodies = names.map(name => translate(fs.readFileSync(new URL(`../creator/functions/${name}.dg`, import.meta.url), 'utf8')));
 const fields = [
   ['Edit_All_Budgets', 'editAll'], ['Edit_Owned_Budgets', 'editOwned'],
@@ -44,13 +44,15 @@ function run(name, user, rows = roster, login = 'fixture_owner', forms = proform
     function List() { return []; }
     function Map() { return {put(key, value) { this[key] = value; }, toString() { return JSON.stringify(this); }}; }
     Array.prototype.add = function(value) { this.push(value); };
+    Array.prototype.count = function() { return this.length; };
     function query(form, predicate) {
       queries.push(form);
       if (leanCall && form === 'Add_Pro_Forma') throw new Error('Lean permission reads must never scan Pro Formas.');
-      return (tables[form] || []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
+      const rows=(tables[form] || []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
+      return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;}});
     }
     const zoho = {loginuser: login};
-    const thisapp = {};
+    const thisapp = {permissions:{profileForUser(){return '';}}};
     ${bodies.map(body => body.js + `;thisapp.${body.name} = ${body.name};`).join('\n')}
     var rawResult = ${name}(user);
     var queryResult = queries.slice();
@@ -67,7 +69,7 @@ function assertParity(user, rows = roster, login = 'fixture_owner', forms = prof
   delete expected.proformaOwners;
   assert.deepEqual(lean.value, expected, 'Lean must preserve every full-endpoint flag, identity, and roster value.');
   assert.equal(Object.hasOwn(lean.value, 'proformaOwners'), false);
-  assert.deepEqual(lean.queries, ['User_Access', 'User_Access'], 'Lean query count is independent of Pro Forma inventory.');
+  assert.deepEqual(lean.queries, ['User_Access', 'User_Access', 'User_Access', 'User_Access'], 'Lean query count stays bounded, including Construction grants, independently of Pro Forma inventory.');
   assert.equal(full.queries.filter(form => form === 'Add_Pro_Forma').length, 1);
   return {full, lean};
 }
