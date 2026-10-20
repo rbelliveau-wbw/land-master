@@ -184,11 +184,16 @@
       if(stage==='verified'&&run.snapshot&&current()&&!run.reviewBalancesPromise){run.reviewBalancesPromise=readBalances().then(function(result){run.reviewBalances=result;return result;});}
       if(stage==='saving'||stage==='checking'){visualBusy=true;root.LMPOProgress.update({card:card,run:run,stage:stage,settled:false});}
       if(stage==='settled'){
+        if(run.snapshot&&!run.decision&&options.saveAttachments&&!run.filesSettled){
+          if(!run.filesPromise){visualBusy=true;var ownFiles=generation;card.querySelector('[data-po-status]').textContent='PO saved · uploading selected attachments…';run.filesPromise=Promise.resolve().then(function(){return options.saveAttachments(model,run.snapshot);}).then(function(result){run.attachmentResult=result;},function(error){run.attachmentResult={complete:false,message:error.message};}).finally(function(){run.filesSettled=true;if(overlay&&ownFiles===generation&&current())onState(run,'settled');});}
+          return;
+        }
         var own=generation,wait=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:Math.max(0,1120-(performance.now()-openedAt));
         setTimeout(function(){if(!overlay||own!==generation||!progress||controller.state()!==run)return;visualBusy=false;root.LMPOProgress.update({card:card,run:run,settled:true});error(run.error);
           var rows=[];
           if(run.deleted){unresolved[model.budgetId]=null;rows=Object.keys(deleteLabels).map(function(key){return '<li><strong>'+esc(deleteLabels[key])+'</strong><span>'+run.deleted[key].length+' removed</span></li>';});options.saved({id:run.deleted.id,budgetId:run.deleted.budgetId,deleted:true});}
           if(run.snapshot){unresolved[model.budgetId]=null;rows=run.snapshot.lines.map(function(line){return '<li><span>'+esc(line.description)+'</span><strong>'+money(line.finalAmount)+'</strong></li>';}).concat(run.snapshot.approvalBundle?run.snapshot.approvalBundle.modifications.map(function(mod){return '<li data-state="'+esc(mod.status)+'"><span>Budget modification <small>'+esc(mod.status)+'</small></span><strong>+'+money(mod.amount)+'</strong></li>';}).concat(run.snapshot.approvalBundle.rows.map(function(row){return '<li data-state="'+esc(row.status)+'"><strong>'+esc(row.role)+'</strong><span class="po-progress-record-state">'+esc(row.status)+'</span></li>';})):[]);options.saved(run.snapshot);}
+          if(model.attachmentDraft)rows=rows.concat(model.attachmentDraft.entries.map(function(entry){return '<li><strong>'+esc(entry.file.name)+'</strong><span>'+esc(entry.status==='saved'?'Attachment saved':entry.status==='unknown'?'Upload needs review':'Not uploaded')+'</span></li>';}));
           card.querySelector('[data-po-results]').innerHTML='<ul class="po-progress-records">'+rows.join('')+'</ul>';card.querySelector('.po-progress-details').hidden=!rows.length;(run.unknown?card.querySelector('[data-po-check]'):card.querySelector('[data-po-finish]')).focus();
         },wait);
       }

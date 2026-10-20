@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.56"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.57"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.56"></script>
-<script src="po-grid.js?v=122.29.56"></script>
-<script src="po-controller.js?v=122.29.56"></script>
-<script src="po-progress.js?v=122.29.56"></script>
-<script src="po-ui.js?v=122.29.56"></script>
-<script src="request-attachments.js?v=122.29.56"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.56">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.56">
+<script src="po-domain.js?v=122.29.57"></script>
+<script src="po-grid.js?v=122.29.57"></script>
+<script src="po-controller.js?v=122.29.57"></script>
+<script src="po-progress.js?v=122.29.57"></script>
+<script src="po-ui.js?v=122.29.57"></script>
+<script src="request-attachments.js?v=122.29.57"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.57">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.57">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
 <style>
@@ -1826,15 +1826,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.56">
-<script src="success-feedback.js?v=122.29.56"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.56">
-<script src="interaction-motion.js?v=122.29.56"></script>
-<script src="interaction-surfaces.js?v=122.29.56"></script>
-<script src="number-edit-commit.js?v=122.29.56"></script>
-<script src="number-transitions.js?v=122.29.56"></script>
-<script src="number-surfaces.js?v=122.29.56"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.56">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.57">
+<script src="success-feedback.js?v=122.29.57"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.57">
+<script src="interaction-motion.js?v=122.29.57"></script>
+<script src="interaction-surfaces.js?v=122.29.57"></script>
+<script src="number-edit-commit.js?v=122.29.57"></script>
+<script src="number-transitions.js?v=122.29.57"></script>
+<script src="number-surfaces.js?v=122.29.57"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.57">
 </head>
 <body>
 
@@ -2716,7 +2716,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.56", code:"BMW",
+  widget:"Budget Manager", version:"122.29.57", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -3385,7 +3385,7 @@ function renderApprovalProgress() {
     var row = steps.children[index];
     var state = "pending";
     if (p.terminal === "success") state = "done";
-    else if (p.terminal === "warning") state = index < 2 ? "done" : "warning";
+    else if (p.terminal === "warning") state = p.fileWarningOnly || index < 2 ? "done" : "warning";
     else if (p.terminal === "error") state = index < p.errorStep ? "done" : index === p.errorStep ? "failed" : "pending";
     else if (index < p.displayStep) state = "done";
     else if (index === p.displayStep) state = "run";
@@ -3396,6 +3396,7 @@ function renderApprovalProgress() {
     row.querySelector(".approval-progress-detail").textContent = state === "failed" ? "Verification did not complete." : state === "warning" ? "Delivery could not be verified." : "";
   });
   $("approvalProgressTitle").textContent = p.kind === "modification" ? (p.terminal === "success" ? "Modification submitted" : p.terminal === "warning" ? "Email needs attention" : p.terminal === "error" ? "Submission needs attention" : "Sending for approvals") : p.kind === "modreject" ? (p.terminal === "success" ? "Modification rejected" : p.terminal === "warning" ? "Notification needs attention" : p.terminal === "error" ? "Rejection needs attention" : "Rejecting modification") : p.kind === "start" ? (p.terminal === "success" ? "Approvals started" : p.terminal === "warning" ? "Email needs attention" : p.terminal === "error" ? "Submission needs attention" : "Sending for approvals") : p.kind === "reject" ? (p.terminal === "success" ? "Approval returned" : p.terminal === "warning" ? "Email needs attention" : p.terminal === "error" ? "Rejection needs attention" : "Returning approval") : (p.terminal === "success" ? "Approval complete" : p.terminal === "warning" ? "Email needs attention" : p.terminal === "error" ? "Approval needs attention" : "Approving budget");
+  if(p.fileWarningOnly)$("approvalProgressTitle").textContent="Attachments need attention";
   $("approvalProgressOverlay").querySelector(".approval-progress-kicker").textContent = p.kind === "modification" || p.kind === "modreject" ? "Budget modification" : "Budget approval";
   $("approvalProgressSub").textContent = [p.track, p.role].filter(Boolean).join(" · ");
   var bar = $("approvalProgressBar");
@@ -3403,9 +3404,9 @@ function renderApprovalProgress() {
   bar.querySelector("i").style.width = (p.terminal ? 100 : Math.round(p.displayStep * 100 / 3)) + "%";
   var status = $("approvalProgressStatus");
   status.className = "approval-progress-status" + (p.terminal ? " " + p.terminal : "");
-  status.textContent = p.terminal ? p.message : labels[Math.min(p.displayStep, 2)] + " — leave this open until it finishes.";
+  status.textContent = p.terminal ? p.message : p.fileModel && p.fileModel.attachmentDraft && p.fileModel.attachmentDraft.busy ? "Request saved · uploading selected attachments…" : labels[Math.min(p.displayStep, 2)] + " — leave this open until it finishes.";
   var retry = $("approvalProgressRetry");
-  retry.hidden = !p.terminal || p.terminal === "success";
+  retry.hidden = !p.terminal || p.terminal === "success" || !!p.fileWarningOnly;
   retry.textContent = p.terminal === "warning" && p.kind !== "modreject" ? "Retry email" : "Try again";
   var close = $("approvalProgressClose");
   close.disabled = !p.terminal;
@@ -3420,11 +3421,20 @@ function closeApprovalProgress() {
   approvalProgress = null;
   $("approvalProgressOverlay").hidden = true;
   approvalProgressButtons(false);
+  if(p.fileModel&&p.fileModel.attachmentDraft&&p.fileModel.attachmentDraft.entries.length&&p.fileBudget===S.edBudget&&p.fileModel.attachmentDraft.scope===attachmentLinkScope(p.budgetId)){
+    if(p.modificationId&&p.filesIdentified){openModDetail(p.modificationId,true);}
+    else if(!p.modificationId){p.fileModel.createUnknown=true;unverifiedModificationDrafts[p.budgetId]=p.fileModel;S.modModal=p.fileModel;renderModModal();$('modOverlay').classList.add('show');}
+  }
   if (p.trigger && p.trigger.isConnected && !p.trigger.disabled) p.trigger.focus();
   else if (p.kind === "modreject" && $("modOverlay").classList.contains("show")) $("modModalClose").focus();
 }
 function finishApprovalProgress(p, kind, message) {
   if (approvalProgress !== p || p.terminal) return;
+  if(p.filesPromise&&!p.filesSettled){
+    if(!p.fileFinish){p.fileFinish={kind:kind,message:message};clearTimeout(p.timer);clearTimeout(p.deadlineTimer);p.filesPromise.finally(function(){if(approvalProgress===p&&!p.terminal){p.filesSettled=true;finishApprovalProgress(p,p.fileFinish.kind,p.fileFinish.message);}});}
+    return;
+  }
+  if(p.fileResult&&p.fileResult.total){message+=' '+p.fileResult.message+'.';if(!p.fileResult.complete){p.fileWarningOnly=kind==='success';if(kind==='success')kind='warning';message+=' Open Attachments to finish the remaining files.';}}
   p.terminal = kind; p.message = message;
   p.errorStep = p.kind === "modification" ? (p.last && p.last.status === "Submitted" ? (p.last.firstStatus === "Pending" ? 2 : 1) : 0) : p.kind === "modreject" ? (p.last && p.last.currentStatus === "Rejected" ? 2 : 0) : p.kind === "start" ? (p.last && p.last.parentStatus === "Pending" ? (p.last.firstStatus === "Pending" && Number(p.last.pendingCount) === 1 ? 2 : 1) : 0) : p.kind === "reject" ? (p.last && p.last.currentStatus === "Rejected" ? (p.last.previousStatus === "Pending" && Number(p.last.pendingCount) === 1 ? 2 : 1) : 0) : (p.last && p.last.currentStatus === "Approved" ? ((p.final && p.last.allApproved) || (!p.final && p.last.nextStatus === "Pending" && Number(p.last.pendingCount) === 1) ? 2 : 1) : 0);
   if (kind === "success") p.displayStep = 3;
@@ -3620,11 +3630,12 @@ function openBudgetStartProgress(budgetId, track, trigger) {
   startApprovalProgressAttempt(p, true);
   return Promise.resolve();
 }
-function openModificationProgress(modificationId, budgetId, trigger, createRequest) {
+function openModificationProgress(modificationId, budgetId, trigger, createRequest, fileModel) {
   if(!requireBudgetModsReady())return;
   if (approvalProgress) return;
   var p = {kind:"modification", modificationId:String(modificationId || ""), budgetId:String(budgetId || ""), trigger:trigger, track:"Budget modification", role:"", final:false, displayStep:0, targetStep:0, terminal:"", timer:null, deadlineTimer:null, visualTimer:null, last:null, repairUsed:false, pendingFinish:null, knownIds:(S.modifications||[]).map(function(m){return String(m.ID);})};
   approvalProgress = p;
+  p.fileModel=fileModel||null;p.fileBudget=S.edBudget;
   $("approvalProgressOverlay").hidden = false;
   approvalProgressButtons(true);
   startApprovalProgressAttempt(p, false);
@@ -3633,6 +3644,7 @@ function openModificationProgress(modificationId, budgetId, trigger, createReque
     var result = budgetFunctionResultText(resp);
     var match = result.match(/Modification\s+(\d+)\s+(?:submitted|recorded)/i);
     if (match) p.modificationId = match[1];
+    if(match&&p.fileModel&&p.fileModel.attachmentDraft&&p.fileModel.attachmentDraft.entries.length){p.filesIdentified=true;p.filesPromise=flushRequestAttachmentDraft(p.fileModel,p.fileBudget,{kind:'modification',id:p.modificationId,budgetId:p.budgetId}).then(function(result){p.fileResult=result;return result;});}
     if (/Approval template failed:/i.test(result)) { finishApprovalProgress(p, "error", result); return; }
     if (/^ERROR/i.test(result)) { finishApprovalProgress(p, "error", result); return; }
     if (!p.modificationId) { finishApprovalProgress(p, "error", "The submission result did not identify the modification. Check the modification list before trying again."); return; }
@@ -6938,6 +6950,32 @@ function modCellHtml(agg, itemId, canAdd) {
 }
 /* ── BUDGET ATTACHMENTS ── */
 var requestAttachmentUI=null,attachmentLinkStates=Object.create(null),attachmentAssociationReview=null;
+var requestFileDrafts=Object.create(null),unverifiedModificationDrafts=Object.create(null);
+function requestFileDraftKey(b,kind,id){return String(b.ID)+'|'+kind+'|'+id;}
+function restoreRequestFileDraft(model,b,kind,id){
+  var saved=id&&requestFileDrafts[requestFileDraftKey(b,kind,id)];
+  if(saved&&saved.scope===attachmentLinkScope(b.ID))model.attachmentDraft=saved;
+}
+function flushRequestAttachmentDraft(model,b,context,recheck){
+  var q=model.attachmentDraft;if(!q||!q.entries.length)return Promise.resolve({complete:true,total:0,saved:0});
+  if(q.busy)return Promise.resolve(LMRequestAttachments.Draft.summary(q));
+  var navigation=budgetNavigationToken();
+  function current(){return S.edBudget===b&&navigation===budgetNavigationToken()&&q.scope===attachmentLinkScope(b.ID);}
+  if(!current()||!canAddBudgetAttachment(b))return Promise.resolve(Object.assign(LMRequestAttachments.Draft.summary(q),{complete:false,message:'Attachment access changed. Reopen the saved request.'}));
+  requestFileDrafts[requestFileDraftKey(b,context.kind,context.id)]=q;
+  function changed(){if(requestAttachmentUI)requestAttachmentUI.refresh();if(approvalProgress&&approvalProgress.fileModel===model)renderApprovalProgress();}
+  var unknown=q.entries.find(function(entry){return entry.status==='unknown';});
+  if(unknown){
+    var attempt=S.attachmentUploadReview;
+    if(!recheck||!attempt||!attempt.requestContext||attempt.requestContext.kind!==context.kind||attempt.requestContext.id!==context.id||attempt.budgetId!==context.budgetId||attempt.attachmentId!==unknown.attachmentId)return Promise.resolve(LMRequestAttachments.Draft.summary(q));
+    q.busy=true;changed();
+    return recheckBudgetAttachmentUpload().then(function(confirmed){if(confirmed&&current()){unknown.status='saved';unknown.error='';}return LMRequestAttachments.Draft.summary(q);}).finally(function(){q.busy=false;changed();});
+  }
+  return ensureRequestAttachments(b).then(function(){
+    if(!current())return Object.assign(LMRequestAttachments.Draft.summary(q),{complete:false,message:'Attachment context changed.'});
+    return LMRequestAttachments.Draft.flush(q,context,{current:current,allowed:function(){return canAddBudgetAttachment(b);},changed:changed,upload:async function(file,target){var ledger={started:false};var ok=await uploadBudgetAttachments([file],target,ledger);return {success:ok===true||ledger.saved===true,safeRetry:!ledger.started||ledger.safeRetry===true,unknown:!!S.attachmentUploadReview,attachmentId:ledger.attachmentId||'',message:ledger.message||S.attachmentStatus};}}).then(function(result){if(current()){S.attachmentStatus=result.message;S.attachmentStatusError=!result.complete;changed();}return result;});
+  }).catch(function(error){q.error=shortErr(error);changed();return Object.assign(LMRequestAttachments.Draft.summary(q),{complete:false,message:q.error});});
+}
 function attachmentLinkScope(bid){return budgetCreateScope('attachment',String(bid));}
 function attachmentLinksReady(bid){var state=attachmentLinkStates[String(bid)];return !!state&&state.scope===attachmentLinkScope(bid)&&state.status==='loaded';}
 function attachmentLinkResponse(resp){
@@ -7019,12 +7057,14 @@ function recheckAttachmentAssociation(){
 }
 function getRequestAttachmentUI(){
   if(!requestAttachmentUI)requestAttachmentUI=LMRequestAttachments.create({
-    scope:function(b){return attachmentLinkScope(b.ID)+'|'+budgetNavigationToken();},files:budgetAttachments,loaded:function(b){return attachmentLinksReady(b.ID)&&budgetFeature('attachments:'+b.ID).status==='loaded';},load:ensureRequestAttachments,renderFiles:renderAttachmentPage,choices:requestAttachmentChoices,associate:changeAttachmentAssociation,recheck:recheckAttachmentAssociation,review:function(){return attachmentAssociationReview;},busy:function(){return S.attachmentBusy||S.attachmentUploadReview;},isNested:function(){return !!requestAttachmentOverlay;},openBudget:function(){var button=document.querySelector('.mode-tsw button[data-mode="attachments"]');if(button)button.click();}
+    scope:function(b){return attachmentLinkScope(b.ID)+'|'+budgetNavigationToken();},draftScope:function(b){return attachmentLinkScope(b.ID);},budgetName:phaseName,canStage:canAddBudgetAttachment,flushDraft:flushRequestAttachmentDraft,files:budgetAttachments,loaded:function(b){return attachmentLinksReady(b.ID)&&budgetFeature('attachments:'+b.ID).status==='loaded';},load:ensureRequestAttachments,renderFiles:renderAttachmentPage,choices:requestAttachmentChoices,associate:changeAttachmentAssociation,recheck:recheckAttachmentAssociation,review:function(){return attachmentAssociationReview;},busy:function(){return S.attachmentBusy;},isNested:function(){return !!requestAttachmentOverlay;},openBudget:function(){var button=document.querySelector('.mode-tsw button[data-mode="attachments"]');if(button)button.click();}
   });
   return requestAttachmentUI;
 }
 function mountModRequestAttachments(kind,id,title){
   var m=S.modModal,b=S.edBudget;if(!m||!b)return;
+  restoreRequestFileDraft(m,b,kind,id);
+  if(kind==='modification'&&id){var mod=requestAttachmentModifications(String(b.ID)).find(function(row){return String(row.ID)===String(id);});var item=mod&&findItemById(lookupId(mod.Budget_Item));if(item)title='Budget Mod · '+cleanVal(item.Item_Name);}
   getRequestAttachmentUI().mount({root:$('modModalBody').parentElement,details:$('modModalBody'),model:m,budget:b,kind:kind,id:id,title:title,trap:true,current:function(){return S.modModal===m&&S.edBudget===b;},close:closeModModal});
 }
 document.addEventListener('click',function(event){
@@ -7386,7 +7426,7 @@ function renderAttachmentPage(b, target, modal) {
         "<div class='attachment-page-row-actions'>" +
           "<button class='attachment-action' type='button' data-open-budget-attachment='" + i + "' title='Preview attachment' aria-label='Preview " + escAttr(file.name) + "'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/></svg></button>" +
           "<button class='attachment-action' type='button' data-download-budget-attachment='" + i + "' title='Download' aria-label='Download " + escAttr(file.name) + "'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M12 3v12M7 10l5 5 5-5'/><path d='M5 21h14'/></svg></button>" +
-          (canAdd&&!requestContext&&attachmentLinksReady(b.ID)?"<button type='button' class='attachment-action' data-attachment-associate='"+i+"' aria-label='Change attachment association' title='Associated with'"+(uploadBlocked?" disabled":"")+"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0'/></svg></button>":"")+
+          (canAdd&&!requestContext&&attachmentLinksReady(b.ID)?"<button type='button' class='attachment-action' data-attachment-associate='"+i+"' aria-label='Change attachment association' title='Link to Record'"+(uploadBlocked?" disabled":"")+"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0'/></svg></button>":"")+
           (canAdd ? "<button class='attachment-action delete' type='button' data-delete-budget-attachment='" + i + "' title='Delete' aria-label='Delete " + escAttr(file.name) + "'" + (uploadBlocked ? " disabled" : "") + "><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2'><path d='M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14'/><path d='M10 11v6M14 11v6'/></svg></button>" : "") +
         "</div></div>";
     }).join("") + "</div>";
@@ -7491,7 +7531,7 @@ function recheckBudgetAttachmentUpload() {
     return refreshBudgetAttachmentRecord(attempt.budgetId).then(function(){return true;});
   }).catch(function(error){S.attachmentStatusError=true;S.attachmentStatus="Upload needs review: "+shortErr(error);return false;}).then(function(result){S.attachmentBusy=false;if(S.attachmentModal||S.edBudget)renderAttachmentPane(S.attachmentModal?S.attachmentModal.budget:S.edBudget);return result;});
 }
-function uploadBudgetAttachments(fileList, requestContext) {
+function uploadBudgetAttachments(fileList, requestContext, transfer) {
   var modal=S.attachmentModal;
   var b = modal?(budgetAttachmentModalCurrent(modal)&&!modal.loading?modal.budget:null):S.edBudget;
   var uploadScope=b&&attachmentLinkScope(b.ID),uploadNavigation=budgetNavigationToken();
@@ -7517,20 +7557,22 @@ function uploadBudgetAttachments(fileList, requestContext) {
       renderAttachmentPane(b);
       var attachmentId = "", attempt={budgetId:String(b.ID),attachmentId:"",filename:file.name,filepath:"",scope:budgetCreateScope('attachment',String(b.ID)),requestContext:requestContext||null};
       var createArgs={budgetId:requestContext||attachmentLinksReady(b.ID)?JSON.stringify({contract:'budget-request-attachments-v1',action:'Create',budgetId:String(b.ID),userAccessId:String(S.myAccessId||''),paymentRequestId:requestContext&&requestContext.kind==='payment'?requestContext.id:'',modificationId:requestContext&&requestContext.kind==='modification'?requestContext.id:''}):String(b.ID)};
+      if(transfer)transfer.started=true;
       return sdkRunBudgetFunction("createBudgetAttachmentRecord", createArgs).catch(function(err){throw budgetUploadError(err);})
         .then(function(resp){
           attachmentId = parseAttachmentCreateResponse(resp);
           attempt.attachmentId=attachmentId;
+          if(transfer)transfer.attachmentId=attachmentId;
           if(!uploadCurrent())throw new Error("Attachment context changed. Review the created attachment before another upload.");
           return sdkUploadFile(CFG.reports.attachments, attachmentId, CFG.attachmentFileField, file);
         }).then(function(response){
           attempt.acknowledged=true;attempt.filepath=response.data.filepath;attempt.serverFilename=response.data.filename;
           if(!uploadCurrent())throw new Error("Attachment context changed. Review the saved file before another upload.");
-          return inspectBudgetAttachment(attempt).then(function(snapshot){if(!uploadCurrent())throw new Error("Attachment context changed. Review the saved file before another upload.");if(!budgetAttachmentMatches(attempt,snapshot))throw new Error("Creator's saved file did not match the uploaded attachment.");});
+          return inspectBudgetAttachment(attempt).then(function(snapshot){if(!uploadCurrent())throw new Error("Attachment context changed. Review the saved file before another upload.");if(!budgetAttachmentMatches(attempt,snapshot))throw new Error("Creator's saved file did not match the uploaded attachment.");if(transfer)transfer.saved=true;});
         })
         .catch(function(err){
           if(err && err.definiteRejection&&uploadCurrent())return cleanupEmptyAttachmentRecord(b.ID,attachmentId,err).then(function(cleaned){
-            if(attachmentId && !cleaned){S.attachmentUploadReview=attempt;err.uncertain=true;err.noReplay=true;}
+            if(attachmentId && !cleaned){S.attachmentUploadReview=attempt;err.uncertain=true;err.noReplay=true;}else if(transfer)transfer.safeRetry=true;
             throw err;
           });
           S.attachmentUploadReview=attempt;
@@ -7538,8 +7580,9 @@ function uploadBudgetAttachments(fileList, requestContext) {
           var inspect=attachmentId&&uploadCurrent() ? inspectBudgetAttachment(attempt).then(function(snapshot){attempt.observed=snapshot;},function(){}) : Promise.resolve();
           return inspect.then(function(){
             if(!attempt.filepath && !(err&&err.timedOut) && uploadCurrent() && budgetAttachmentMatches(attempt,attempt.observed)){
-              attempt.filepath=attempt.observed.files[0].filePath;
+              if(attempt.observed.files&&attempt.observed.files[0])attempt.filepath=attempt.observed.files[0].filePath;
               S.attachmentUploadReview=null;
+              if(transfer)transfer.saved=true;
               return;
             }
             var failure=budgetUploadError(err);failure.uncertain=true;failure.noReplay=true;throw failure;
@@ -7554,13 +7597,14 @@ function uploadBudgetAttachments(fileList, requestContext) {
     S.attachmentPageFileIndex = -1;
     S.attachmentBusy = false;
     S.attachmentStatus = files.length + " attachment" + (files.length === 1 ? "" : "s") + " added.";
-    toastShow(files.length + " attachment" + (files.length === 1 ? "" : "s") + " added", "ok");
+    if(!transfer)toastShow(files.length + " attachment" + (files.length === 1 ? "" : "s") + " added", "ok");
     auditLog("success", "Budget attachment child records uploaded", { budgetId:String(b.ID), files:files.map(function(f){ return f.name; }) });
-    return refreshBudgetAttachmentRecord(b.ID);
+    return refreshBudgetAttachmentRecord(b.ID).catch(function(error){auditLog('warn','Attachment saved; display refresh needs retry',error);});
   }).then(function(){
     setTimeout(function(){
       if (!S.attachmentBusy && !S.attachmentUploadReview) { S.attachmentStatus = ""; S.attachmentStatusError = false; if (S.attachmentModal||S.edBudget) renderAttachmentPane(S.attachmentModal?S.attachmentModal.budget:S.edBudget); }
     }, 3500);
+    return true;
   }).catch(function(err){
     S.attachmentBusy = false;
     S.attachmentStatusError = true;
@@ -7568,6 +7612,7 @@ function uploadBudgetAttachments(fileList, requestContext) {
     renderAttachmentPane(b);
     setMsg("Could not upload attachment: " + shortErr(err), "err");
     auditLog("error", "Budget attachment upload failed", { budgetId:String(b.ID), error:err });
+    if(transfer)transfer.message=shortErr(err);
     return false;
   });
 }
@@ -12076,6 +12121,7 @@ function openModModal(itemId, mode) {
     var it = findItemById(itemId); if (!it) return;
   }
   S.modModal = { itemId: itemId ? String(itemId) : "", picker: !itemId, mode: mode || "view", type: "Increase", busy: false, rejectFor: null };
+  if(mode==='add'&&unverifiedModificationDrafts[String(b.ID)])S.modModal=unverifiedModificationDrafts[String(b.ID)];
   renderModModal();
   $("modOverlay").classList.add("show");
 }
@@ -12114,7 +12160,8 @@ function getPurchaseOrderUI(){
   },
   vendors:function(){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify({action:"Vendors",budgetId:String(S.edBudget.ID),userAccessId:String(S.myAccessId||"")})}).then(unwrapBudgetManageResponse).then(function(response){if(!response||response.contract!=="po-v1"||response.success!==true||!Array.isArray(response.vendors))throw new Error(response&&response.error||"PO vendors unavailable.");return response.vendors;});},
   modifications:function(){return (S.modifications||[]).filter(function(row){return lookupMatchesId(row.Budget,S.edBudget.ID);});},
-  attachments:function(config){config.budget=S.edBudget;getRequestAttachmentUI().mount(config);},
+  attachments:function(config){config.budget=S.edBudget;restoreRequestFileDraft(config.model,config.budget,config.kind,config.id);var vendor=(config.model.vendors||[]).find(function(row){return row.ID===config.model.vendorId;});if(vendor)config.title='Purchase Order · '+vendor.Vendor_Name;getRequestAttachmentUI().mount(config);},
+  saveAttachments:function(model,snapshot){if(model.attachmentDraft&&model.attachmentDraft.entries.length)model.attachmentTab='files';return flushRequestAttachmentDraft(model,S.edBudget,{kind:'payment',id:snapshot.id,budgetId:snapshot.budgetId});},
   detachAttachments:function(card){if(requestAttachmentUI)requestAttachmentUI.unmount(card);},
   attachmentBusy:function(){return S.attachmentBusy;},
   call:function(payload){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify(payload)}).then(unwrapBudgetManageResponse);},
@@ -12132,7 +12179,7 @@ function openCheckWireRequest(type) {
   renderModModal();
 }
 function closeModModal() {
-  if(S.attachmentBusy)return false;
+  if(S.attachmentBusy||S.modModal&&S.modModal.attachmentDraft&&S.modModal.attachmentDraft.busy)return false;
   if(requestAttachmentUI)requestAttachmentUI.unmount($('modModalBody').parentElement);
   var trigger = S.modModal && S.modModal.trigger;
   closeRequestDatePicker();
@@ -12776,6 +12823,7 @@ function wireModForm(fin, agg) {
 function submitModification() {
   if(!requireBudgetModsReady())return;
   var m = S.modModal, b = S.edBudget; if (!m || !b || m.busy || approvalProgress) return;
+  if(m.createUnknown){toastShow('Request creation is unverified. Check saved requests before creating another.');return;}
   var it = findItemById(m.itemId); if (!it) return;
   var amt = parseFloat(cleanVal($("modAmt").value).replace(/[^0-9.]/g, "")) || 0;
   var reason = cleanVal($("modReason").value);
@@ -12793,7 +12841,7 @@ function submitModification() {
     track: track
   };
   closeModModal();
-  openModificationProgress("", b.ID, trigger, function(){ return sdkRunBudgetFunction("createBudgetModification", args); });
+  openModificationProgress("", b.ID, trigger, function(){ return sdkRunBudgetFunction("createBudgetModification", args); }, m);
 }
 function renderPhaseMatrixSafe() {
   try { if (S.edBudget && S.view === "vEditor" && typeof renderPhaseMatrix === "function") renderPhaseMatrix(S.edBudget); } catch (e) { auditLog("error", "Matrix re-render after modification failed", e); }
@@ -13790,7 +13838,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.56",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.57",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

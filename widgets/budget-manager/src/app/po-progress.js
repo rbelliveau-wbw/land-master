@@ -9,6 +9,7 @@
     var title=run.deleted?'Purchase order deleted':!completed?'Purchase order needs review':action==='RetryEmail'?'Approval notification updated':action==='Reject'?'Purchase order rejected':action==='Approve'?(snapshot.approvalState==='Approved'?'Purchase order approved':'Approval recorded'):snapshot.status==='Submitted'?'Purchase order submitted':'Draft saved';
     var active=bundle&&bundle.rows.find(function(row){return row.status==='Pending';});
     var message=run.deleted?'PO and associated records removed.':!completed?'Check the saved status before trying again.':snapshot.approvalState==='Rejected'?'Budget reservation retained.':snapshot.approvalState==='Approved'?'Approval chain complete.':snapshot.status==='Submitted'?(active?'Awaiting '+active.role+' approval.':'Budget reserved.')+(warning?' Email needs attention.':bundle&&bundle.emailSent?' Approval email sent.':''):'No budget reserved.';
+    if(run.attachmentResult&&(run.attachmentResult.total||!run.attachmentResult.complete)){message+=' '+(run.attachmentResult.message||'Attachments need review')+'.';if(!run.attachmentResult.complete){state='warning';title='PO saved · attachments need attention';message+=' Review PO to finish the remaining files.';warning=true;}}
     return {state:state,title:title,message:message,completed:completed,warning:warning};
   }
   function mount(options){

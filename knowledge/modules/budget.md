@@ -1,3 +1,9 @@
+## Draft attachments and Link to Record — 122.29.57, October 20, 2026
+
+New Budget Mods and managed POs queue files before creation, then upload to the
+exact saved request and Budget. Link to Record uses choose → review → Save.
+No new Creator promotion is required. See [draft files, recovery and rollback](../../docs/budget-draft-attachments-2026-10-20.md).
+
 ## Settings-based modification routing — 122.29.51, October 19, 2026
 
 New standalone modifications and Draft submissions require the published

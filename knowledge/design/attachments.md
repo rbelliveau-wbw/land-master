@@ -134,8 +134,12 @@ read-only users, pending/unknown writes and returning from Preview/Delete.
 
 For Budget requests, use Details / Attachments tabs inside the existing modal.
 Keep the original detail/grid mounted and hide its pane when files are selected.
-Reuse the Budget file list and Preview/Download/Delete paths. Unsaved parents
-show a short save-first state. A paperclip on each saved request row opens its
+Reuse the Budget file list and Preview/Download/Delete paths. New Budget Mods
+and managed POs let users queue original files before creation; upload begins
+only after the exact saved parent ID is confirmed. Selecting/cancelling is local.
+Keep a per-file ledger, skip saved files on retry, and use read-only checking for
+unknown writes. Preserve remaining files on the saved request in the current page
+session. A paperclip on each saved request row opens its
 file tab with a scoped count; unknown counts remain distinct from zero.
 
 Keep one file record linked to both Budget and request. Budget Attachments shows
@@ -150,3 +154,8 @@ Nested file dialogs make the request inert and return focus through the same
 Preview/Delete stack. Keep safe-close locks during native work and register
 keyed file rows with shared interaction motion. Budget 122.29.54 adopts this
 pattern; see [native handoff and evidence](../../docs/budget-request-attachments-2026-10-19.md).
+
+Budget 122.29.57 uses **Link to Record** for file associations: choose, review
+the file and its Budget/request destinations, then **Save**. Selection, search,
+Back and Cancel are local; only Save writes. Budget only clears the request link
+without moving or copying the file. See [draft files and recovery](../../docs/budget-draft-attachments-2026-10-20.md).
