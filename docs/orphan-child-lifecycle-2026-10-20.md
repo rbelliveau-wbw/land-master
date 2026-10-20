@@ -11,10 +11,25 @@ counts alone. System-date URL filters were also inconclusive.
 
 The temporary owner-only inspector subsequently checked all 581 in Production,
 including reverse grids, explicit template exclusions, Added/Modified timestamps
-and saved approval/operation/configuration history. **579 passed; two recently
-changed Lot_Mix_Row records are retained.** No cleanup has yet been executed.
-The exact ID manifest and timestamps are kept locally with the audit evidence,
-not in this public repository. Recheck records immediately before deletion.
+and saved approval/operation/configuration history. After a fresh Production
+recheck and explicit approval of the exact batch, **579 records were deleted
+through the native reports and verified absent**. The two recently changed
+Lot_Mix_Row records remain intact.
+
+| Form | Deleted | Retained |
+| --- | ---: | ---: |
+| Attachment | 31 | 0 |
+| Proforma_Item | 424 | 0 |
+| Construction_Curve | 43 | 0 |
+| Land_Installments | 38 | 0 |
+| Lot_Mix_Row | 16 | 2 |
+| Additional_Items | 17 | 0 |
+| Contract_Pricing | 10 | 0 |
+
+Each native selection was matched to the certified IDs, including all virtualized
+cost-report rows. Each family's inspector result was checked after deletion.
+The exact ID manifest, timestamps, deletion ledger and screenshots are kept
+locally with the audit evidence, not in this public repository.
 
 Zoho documents that [parent deletion delinks existing-form subforms](https://www.zoho.com/deluge/help/data-access/delete-records.html)
 and [subform clear keeps the child records](https://www.zoho.com/deluge/help/miscellaneous/clear-subform-rows.html).
@@ -78,18 +93,23 @@ Failed reads fail the page closed. Recent, shared, referenced or uncertain rows
 remain intact. This is an inspection function: it contains no writes or deletes.
 
 The function was published alone in Creator 9.97; the read-only page was published
-alone in 9.99 after explicit user approval. Production checks are complete.
-Recheck exact IDs/references immediately before any approved deletion;
-the preview is not a transactional lock or an automatic delete authorization.
-Remove this temporary page and helper after the one-time cleanup. They are not
-part of the ongoing module deletion design.
+alone in 9.99 after explicit user approval. Production checks and the approved
+one-time cleanup are complete. The preview was not a transactional lock or an
+automatic delete authorization. The temporary page and helper were removed from
+Development after cleanup and their two-component deletion was promoted to
+Production in **9.101**. Production's fresh component inventory confirms both are
+absent; the function had no remaining references before deletion. Their source
+and fixture evidence are archived locally, outside the active Creator source
+directories.
 
 ## Native workflow handoff
 
 `creator/workflows/child-lifecycle/*.delete.dg` are action bodies for **Deleted →
-Validations on record deletion**. Add the Pro Forma, Contract, Subdivision,
-Builder Takedown and Takedown Template workflows; replace the action of the
-existing `Delete_Child_Items_Budget` with `Add_Budget.delete.dg`.
+Validations on record deletion**. The Pro Forma, Contract, Subdivision, Builder
+Takedown and Takedown Template workflows are installed, and the action of the
+existing `Delete_Child_Items_Budget` is replaced with `Add_Budget.delete.dg`.
+The request retention workflows were replaced at the pre-delete validation
+event; their obsolete after-delete versions were removed.
 
 No edit-time reconciler or field-input deletion is installed. Existing-form
 `.clear()` can detach child rows, but this audit does not prove the origin of every
@@ -101,18 +121,26 @@ Generation of the permanent parent-delete actions:
 Focused checks: `node scripts/test-child-lifecycle.mjs` (112 cases) and the
 temporary inspector's fixture checks. These execute the actual Deluge bodies
 against fixtures; they are not a native Creator compiler or transaction test.
-Full `npm run validate` and `npm run build:pages` passed. The temporary inspector
-also passed 147 fixture cases before its live Production execution.
+Full `npm run validate` and `npm run build:pages` passed; CI passed for
+`307abe3b27824e4a940839a60b067cfdba92417f`. Creator compiled the saved actions and
+functions, and their deployed sources/events were checked in Production. The
+temporary inspector also passed 147 fixture cases before its live execution.
+Live financial parent records were not deleted as test fixtures.
 
 ## Deployment and rollback
 
 PMP publishes repository changes to main. Creator delete workflows/functions are
 a separate deployment gate requiring explicit approval. Existing API
 names/signatures remain unchanged. The temporary inspector has no API.
-Widget assets/mappings do not change, so there is no new widget release.
+Widget assets/mappings do not change, so there is no new widget release or Pages
+deployment. The approved backend fixes are active in Creator Production 9.100.
+`manageBudget` and `modificationAdmin` were already current; the remaining
+13-component patch was staged and promoted after explicit authorization.
+Existing Custom API names, signatures, reports and database fields are unchanged.
 
 Publish only verified backend/validation/delete-workflow changes. Never select
 unrelated or scheduled changes. The preexisting daily cleanup was verified in
 Production and Development: it still contains only the original Contract
 Approvals/Actions rules. Preserve saved pre-change bodies for rollback.
-Rollback code cannot restore deleted data. No live cleanup has been executed.
+Rollback code cannot restore deleted data. The one-time deletion is complete;
+the private manifest and ledger document exactly which records were removed.
