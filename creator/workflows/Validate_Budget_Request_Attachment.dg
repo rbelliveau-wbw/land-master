@@ -25,6 +25,11 @@ if(input.Budget_Modification != null)
 	}
 	requestBudget = modificationParent.Budget;
 }
+if((input.Payment_Request != null || input.Budget_Modification != null) && requestBudget == null)
+{
+	alert "The associated request needs a Budget before a file can be linked to it.";
+	cancel submit;
+}
 if(requestBudget != null)
 {
 	if(input.Budget == null) { input.Budget=requestBudget; }

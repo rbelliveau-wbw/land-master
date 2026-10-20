@@ -61,6 +61,7 @@ assert.ok(events.some(e=>e.kind==='toast'&&e.message.includes('Could not check')
 const backend=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 const protectedAt=backend.indexOf('LOI_DELETE_BLOCKED'),commentsAt=backend.indexOf('deleteStage = "proforma_comments"'),parentAt=backend.indexOf('deleteStage = "parent_proforma"');
 assert.ok(protectedAt>=0&&protectedAt<commentsAt&&commentsAt<parentAt,'LOI protection precedes scoped comment cleanup and parent deletion');
-assert.match(backend,/Comment_Log\[Pro_Forma == pfKey\]/,'only the selected Pro Forma\'s comments are deleted');
+assert.match(backend,/Comment_Log\[Pro_Forma == pfKey && Budget == null && Project == null && Contract1 == null\]/,'only comments exclusively owned by the selected Pro Forma are deleted');
+assert.ok(backend.includes('deleteStage = "proforma_lot_mix"')&&backend.includes('deleteStage = "proforma_attachments"'),'lot mix and exclusive attachments are included in root deletion');
 assert.match(backend,/deleted\.put\("Comment_Log",deleteIds\.size\(\)\)/,'deleted child count includes comments');
 console.log('Pro Forma delete/archive confirmation, LOI block, and comment cleanup checks passed.');

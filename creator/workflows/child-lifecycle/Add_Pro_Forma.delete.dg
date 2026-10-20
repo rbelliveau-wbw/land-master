@@ -1,0 +1,117 @@
+// Add_Pro_Forma / Deleted / Validations on record deletion.
+// No global orphan sweep. Only this parent's saved children are eligible.
+if(input.ID != null && LOI_Worksheet[Proforma == input.ID].count() > 0)
+{
+	alert "This Pro Forma has LOI records. Archive it instead.";
+	cancel delete;
+}
+if(input.ID != null)
+{
+	for each storedRow1 in Land_Installments[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow1.Pro_Forma2 != null && storedRow1.Pro_Forma2 != input.ID) { sharedChild = true; }
+		if(storedRow1.Pro_Forma_PID_MUD != null && storedRow1.Pro_Forma_PID_MUD != input.ID) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Land_Installments[ID == storedRow1.ID && Pro_Forma == input.ID];
+		}
+	}
+	for each storedRow1 in Land_Installments[Pro_Forma2 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow1.Pro_Forma != null && storedRow1.Pro_Forma != input.ID) { sharedChild = true; }
+		if(storedRow1.Pro_Forma_PID_MUD != null && storedRow1.Pro_Forma_PID_MUD != input.ID) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Land_Installments[ID == storedRow1.ID && Pro_Forma2 == input.ID];
+		}
+	}
+	for each storedRow1 in Land_Installments[Pro_Forma_PID_MUD == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow1.Pro_Forma != null && storedRow1.Pro_Forma != input.ID) { sharedChild = true; }
+		if(storedRow1.Pro_Forma2 != null && storedRow1.Pro_Forma2 != input.ID) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Land_Installments[ID == storedRow1.ID && Pro_Forma_PID_MUD == input.ID];
+		}
+	}
+	for each storedRow2 in Proforma_Item[Pro_Forma_Const == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow2.Pro_Forma_Dev != null && storedRow2.Pro_Forma_Dev != input.ID) { sharedChild = true; }
+		if(storedRow2.Template_Item != false) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Proforma_Item[ID == storedRow2.ID && Pro_Forma_Const == input.ID];
+		}
+	}
+	for each storedRow2 in Proforma_Item[Pro_Forma_Dev == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow2.Pro_Forma_Const != null && storedRow2.Pro_Forma_Const != input.ID) { sharedChild = true; }
+		if(storedRow2.Template_Item != false) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Proforma_Item[ID == storedRow2.ID && Pro_Forma_Dev == input.ID];
+		}
+	}
+	for each storedRow3 in Construction_Curve[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow3.Settings != null) { sharedChild = true; }
+		if(storedRow3.Template_Item != false) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Construction_Curve[ID == storedRow3.ID && Pro_Forma == input.ID];
+		}
+	}
+	for each storedRow4 in Proforma_Phase[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(!sharedChild)
+		{
+			delete from Proforma_Phase[ID == storedRow4.ID && Pro_Forma == input.ID];
+		}
+	}
+	for each storedRow5 in Proforma_Months[Proforma == input.ID]
+	{
+		sharedChild = false;
+		if(!sharedChild)
+		{
+			delete from Proforma_Months[ID == storedRow5.ID && Proforma == input.ID];
+		}
+	}
+	for each storedRow6 in Lot_Mix_Row[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(!sharedChild)
+		{
+			delete from Lot_Mix_Row[ID == storedRow6.ID && Pro_Forma == input.ID];
+		}
+	}
+	for each storedRow7 in Attachment[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow7.Contract1 != null) { sharedChild = true; }
+		if(storedRow7.Budget != null) { sharedChild = true; }
+		if(storedRow7.Payment_Request != null) { sharedChild = true; }
+		if(storedRow7.Budget_Modification != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Attachment[ID == storedRow7.ID && Pro_Forma == input.ID];
+		}
+	}
+	for each storedRow8 in Comment_Log[Pro_Forma == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow8.Contract1 != null) { sharedChild = true; }
+		if(storedRow8.Budget != null) { sharedChild = true; }
+		if(storedRow8.Project != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Comment_Log[ID == storedRow8.ID && Pro_Forma == input.ID];
+		}
+	}
+}

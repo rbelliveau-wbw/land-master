@@ -1,6 +1,15 @@
-// Payment_Request / Deleted / Successful record deletion.
+// Payment_Request / Deleted / Validations on record deletion (before lookup clearing).
 // Keep the Attachment record, Budget parent, file bytes and original author.
+if(input.Budget == null && Attachment[Payment_Request == input.ID && Budget == null && Contract1 == null && Pro_Forma == null && Budget_Modification == null].count() > 0)
+{
+	alert "Restore the request's Budget link before deleting it so its files remain in Budget Attachments.";
+	cancel delete;
+}
 for each attachedFile in Attachment[Payment_Request == input.ID]
 {
+	if(attachedFile.Budget == null && input.Budget != null)
+	{
+		attachedFile.Budget=input.Budget;
+	}
 	attachedFile.Payment_Request=null;
 }

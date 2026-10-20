@@ -530,74 +530,134 @@
                  			// Delete each lookup path separately. Combining lookup fields with OR in a
                  			// collection fetch caused Creator's runtime "Invalid statement found" error.
                  			deleteStage = "land_purchase_installments";
-                 			landDeleteCount = 0;
+			landDeleteCount = 0;
+			deleteIds = List();
+			for each ownedChild0 in Land_Installments[Pro_Forma == pfKey]
+			{
+				sharedChild = false;
+				if(ownedChild0.Pro_Forma2 != null && ownedChild0.Pro_Forma2 != pfKey) { sharedChild = true; }
+				if(ownedChild0.Pro_Forma_PID_MUD != null && ownedChild0.Pro_Forma_PID_MUD != pfKey) { sharedChild = true; }
+				if(!sharedChild) { deleteIds.add(ownedChild0.ID); }
+			}
+			for each childId in deleteIds
+			{
+				for each currentChild0 in Land_Installments[ID == childId && Pro_Forma == pfKey]
+				{
+					sharedChild = false;
+					if(currentChild0.Pro_Forma2 != null && currentChild0.Pro_Forma2 != pfKey) { sharedChild = true; }
+					if(currentChild0.Pro_Forma_PID_MUD != null && currentChild0.Pro_Forma_PID_MUD != pfKey) { sharedChild = true; }
+					if(!sharedChild)
+					{
+						delete from Land_Installments[ID == currentChild0.ID && Pro_Forma == pfKey];
+						landDeleteCount = landDeleteCount + 1;
+					}
+				}
+			}
+			deleteStage = "land_sale_installments";
+			deleteIds = List();
+			for each ownedChild1 in Land_Installments[Pro_Forma2 == pfKey]
+			{
+				sharedChild = false;
+				if(ownedChild1.Pro_Forma != null && ownedChild1.Pro_Forma != pfKey) { sharedChild = true; }
+				if(ownedChild1.Pro_Forma_PID_MUD != null && ownedChild1.Pro_Forma_PID_MUD != pfKey) { sharedChild = true; }
+				if(!sharedChild) { deleteIds.add(ownedChild1.ID); }
+			}
+			for each childId in deleteIds
+			{
+				for each currentChild1 in Land_Installments[ID == childId && Pro_Forma2 == pfKey]
+				{
+					sharedChild = false;
+					if(currentChild1.Pro_Forma != null && currentChild1.Pro_Forma != pfKey) { sharedChild = true; }
+					if(currentChild1.Pro_Forma_PID_MUD != null && currentChild1.Pro_Forma_PID_MUD != pfKey) { sharedChild = true; }
+					if(!sharedChild)
+					{
+						delete from Land_Installments[ID == currentChild1.ID && Pro_Forma2 == pfKey];
+						landDeleteCount = landDeleteCount + 1;
+					}
+				}
+			}
+			deleteStage = "pid_mud_installments";
+			deleteIds = List();
+			for each ownedChild2 in Land_Installments[Pro_Forma_PID_MUD == pfKey]
+			{
+				sharedChild = false;
+				if(ownedChild2.Pro_Forma != null && ownedChild2.Pro_Forma != pfKey) { sharedChild = true; }
+				if(ownedChild2.Pro_Forma2 != null && ownedChild2.Pro_Forma2 != pfKey) { sharedChild = true; }
+				if(!sharedChild) { deleteIds.add(ownedChild2.ID); }
+			}
+			for each childId in deleteIds
+			{
+				for each currentChild2 in Land_Installments[ID == childId && Pro_Forma_PID_MUD == pfKey]
+				{
+					sharedChild = false;
+					if(currentChild2.Pro_Forma != null && currentChild2.Pro_Forma != pfKey) { sharedChild = true; }
+					if(currentChild2.Pro_Forma2 != null && currentChild2.Pro_Forma2 != pfKey) { sharedChild = true; }
+					if(!sharedChild)
+					{
+						delete from Land_Installments[ID == currentChild2.ID && Pro_Forma_PID_MUD == pfKey];
+						landDeleteCount = landDeleteCount + 1;
+					}
+				}
+			}
+			deleted.put("Land_Installments",landDeleteCount);
+			deleteStage = "construction_additional_items";
+			itemDeleteCount = 0;
+			deleteIds = List();
+			for each ownedChild3 in Proforma_Item[Pro_Forma_Const == pfKey]
+			{
+				sharedChild = false;
+				if(ownedChild3.Pro_Forma_Dev != null && ownedChild3.Pro_Forma_Dev != pfKey) { sharedChild = true; }
+				if(ownedChild3.Template_Item != false) { sharedChild = true; }
+				if(!sharedChild) { deleteIds.add(ownedChild3.ID); }
+			}
+			for each childId in deleteIds
+			{
+				for each currentChild3 in Proforma_Item[ID == childId && Pro_Forma_Const == pfKey]
+				{
+					sharedChild = false;
+					if(currentChild3.Pro_Forma_Dev != null && currentChild3.Pro_Forma_Dev != pfKey) { sharedChild = true; }
+					if(currentChild3.Template_Item != false) { sharedChild = true; }
+					if(!sharedChild)
+					{
+						delete from Proforma_Item[ID == currentChild3.ID && Pro_Forma_Const == pfKey];
+						itemDeleteCount = itemDeleteCount + 1;
+					}
+				}
+			}
+			deleteStage = "development_additional_items";
+			deleteIds = List();
+			for each ownedChild4 in Proforma_Item[Pro_Forma_Dev == pfKey]
+			{
+				sharedChild = false;
+				if(ownedChild4.Pro_Forma_Const != null && ownedChild4.Pro_Forma_Const != pfKey) { sharedChild = true; }
+				if(ownedChild4.Template_Item != false) { sharedChild = true; }
+				if(!sharedChild) { deleteIds.add(ownedChild4.ID); }
+			}
+			for each childId in deleteIds
+			{
+				for each currentChild4 in Proforma_Item[ID == childId && Pro_Forma_Dev == pfKey]
+				{
+					sharedChild = false;
+					if(currentChild4.Pro_Forma_Const != null && currentChild4.Pro_Forma_Const != pfKey) { sharedChild = true; }
+					if(currentChild4.Template_Item != false) { sharedChild = true; }
+					if(!sharedChild)
+					{
+						delete from Proforma_Item[ID == currentChild4.ID && Pro_Forma_Dev == pfKey];
+						itemDeleteCount = itemDeleteCount + 1;
+					}
+				}
+			}
+			deleted.put("Proforma_Item",itemDeleteCount);
+			deleteStage = "construction_curve";
                  			deleteIds = List();
-                 			for each  purchaseRec in Land_Installments[Pro_Forma == pfKey]
-                 			{
-                 				deleteIds.add(purchaseRec.ID);
-                 			}
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Land_Installments[ID == childId];
-                 				landDeleteCount = landDeleteCount + 1;
-                 			}
-                 			deleteStage = "land_sale_installments";
-                 			deleteIds = List();
-                 			for each  saleRec in Land_Installments[Pro_Forma2 == pfKey]
-                 			{
-                 				deleteIds.add(saleRec.ID);
-                 			}
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Land_Installments[ID == childId];
-                 				landDeleteCount = landDeleteCount + 1;
-                 			}
-                 			deleteStage = "pid_mud_installments";
-                 			deleteIds = List();
-                 			for each  pidRec in Land_Installments[Pro_Forma_PID_MUD == pfKey]
-                 			{
-                 				deleteIds.add(pidRec.ID);
-                 			}
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Land_Installments[ID == childId];
-                 				landDeleteCount = landDeleteCount + 1;
-                 			}
-                 			deleted.put("Land_Installments",landDeleteCount);
-                 			deleteStage = "construction_additional_items";
-                 			itemDeleteCount = 0;
-                 			deleteIds = List();
-                 			for each  constItemRec in Proforma_Item[Pro_Forma_Const == pfKey]
-                 			{
-                 				deleteIds.add(constItemRec.ID);
-                 			}
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Proforma_Item[ID == childId];
-                 				itemDeleteCount = itemDeleteCount + 1;
-                 			}
-                 			deleteStage = "development_additional_items";
-                 			deleteIds = List();
-                 			for each  devItemRec in Proforma_Item[Pro_Forma_Dev == pfKey]
-                 			{
-                 				deleteIds.add(devItemRec.ID);
-                 			}
-                 			for each  childId in deleteIds
-                 			{
-                 				delete from Proforma_Item[ID == childId];
-                 				itemDeleteCount = itemDeleteCount + 1;
-                 			}
-                 			deleted.put("Proforma_Item",itemDeleteCount);
-                 			deleteStage = "construction_curve";
-                 			deleteIds = List();
-                 			for each  curveRec in Construction_Curve[Pro_Forma == pfKey]
+			for each  curveRec in Construction_Curve[Pro_Forma == pfKey && Settings == null && Template_Item == false]
                  			{
                  				deleteIds.add(curveRec.ID);
                  			}
                  			deleted.put("Construction_Curve",deleteIds.size());
                  			for each  childId in deleteIds
                  			{
-                 				delete from Construction_Curve[ID == childId];
+				delete from Construction_Curve[ID == childId && Pro_Forma == pfKey && Settings == null && Template_Item == false];
                  			}
                  			deleteStage = "proforma_phases";
                  			deleteIds = List();
@@ -623,15 +683,40 @@
 			}
 			deleteStage = "proforma_comments";
 			deleteIds = List();
-			for each commentRec in Comment_Log[Pro_Forma == pfKey]
+			for each commentRec in Comment_Log[Pro_Forma == pfKey && Budget == null && Project == null && Contract1 == null]
 			{
 				deleteIds.add(commentRec.ID);
 			}
 			deleted.put("Comment_Log",deleteIds.size());
 			for each childId in deleteIds
 			{
-				delete from Comment_Log[ID == childId];
+				delete from Comment_Log[ID == childId && Pro_Forma == pfKey && Budget == null && Project == null && Contract1 == null];
 			}
+			// Lot mix rows are independent records, not a parent subform cascade.
+			deleteStage = "proforma_lot_mix";
+			deleteIds = List();
+			for each mixRec in Lot_Mix_Row[Pro_Forma == pfKey]
+			{
+				deleteIds.add(mixRec.ID);
+			}
+			deleted.put("Lot_Mix_Row",deleteIds.size());
+			for each childId in deleteIds
+			{
+				delete from Lot_Mix_Row[ID == childId && Pro_Forma == pfKey];
+			}
+			// A file shared with another object remains available there.
+			deleteStage = "proforma_attachments";
+			deleteIds = List();
+			for each fileRec in Attachment[Pro_Forma == pfKey && Budget == null && Contract1 == null && Payment_Request == null && Budget_Modification == null]
+			{
+				deleteIds.add(fileRec.ID);
+			}
+			deleted.put("Attachment",deleteIds.size());
+			for each childId in deleteIds
+			{
+				delete from Attachment[ID == childId && Pro_Forma == pfKey && Budget == null && Contract1 == null && Payment_Request == null && Budget_Modification == null];
+			}
+			// AI reviews and approval snapshots are retained history, not orphan garbage.
 			// Do not delete or modify LOI Worksheets, Companies, Builders/Sellers,
                  			// or Properties. The LOI protection check above prevents orphaning them.
                  			deleteStage = "parent_proforma";

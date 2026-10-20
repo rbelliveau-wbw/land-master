@@ -1,0 +1,63 @@
+// Contract / Deleted / Validations on record deletion.
+// No global orphan sweep. Only this parent's saved children are eligible.
+if(input.ID != null)
+{
+	for each storedRow1 in Contract_Pricing[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(!sharedChild)
+		{
+			delete from Contract_Pricing[ID == storedRow1.ID && Contract1 == input.ID];
+		}
+	}
+	for each storedRow2 in Contract_Actions[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow2.Type_field != null) { sharedChild = true; }
+		if(storedRow2.Template_Action != false) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Contract_Actions[ID == storedRow2.ID && Contract1 == input.ID];
+		}
+	}
+	for each storedRow3 in Contract_Approvals[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow3.Contract_Template != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Contract_Approvals[ID == storedRow3.ID && Contract1 == input.ID];
+		}
+	}
+	for each storedRow4 in Redline_Review[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(!sharedChild)
+		{
+			delete from Redline_Review[ID == storedRow4.ID && Contract1 == input.ID];
+		}
+	}
+	for each storedRow5 in Attachment[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow5.Budget != null) { sharedChild = true; }
+		if(storedRow5.Pro_Forma != null) { sharedChild = true; }
+		if(storedRow5.Payment_Request != null) { sharedChild = true; }
+		if(storedRow5.Budget_Modification != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Attachment[ID == storedRow5.ID && Contract1 == input.ID];
+		}
+	}
+	for each storedRow6 in Comment_Log[Contract1 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow6.Budget != null) { sharedChild = true; }
+		if(storedRow6.Pro_Forma != null) { sharedChild = true; }
+		if(storedRow6.Project != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Comment_Log[ID == storedRow6.ID && Contract1 == input.ID];
+		}
+	}
+}

@@ -1,3 +1,12 @@
+## Parent-scoped deletion — October 20, 2026
+
+Budget deletion requires Archive instead when any PO, Check/Wire request or PO
+operation history remains. Request deletion preserves its files in Budget
+Attachments, restoring a missing Budget link from the genuine request first.
+Parent deletion preserves shared files/comments and Subdivision month records.
+No new scheduled or global orphan delete is introduced. See the
+[Creator changes, verification and rollback](../../docs/orphan-child-lifecycle-2026-10-20.md).
+
 ## Requests reveal together — 122.29.60, October 20, 2026
 
 First entry shows one Loading requests state until the scoped native payment

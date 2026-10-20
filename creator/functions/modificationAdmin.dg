@@ -243,9 +243,17 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			vItemId = modRec.Budget_Item.ID;
 		}
 		wasApproved = ifnull(modRec.Status,"") == "Approved";
+		if(modRec.Budget == null && Attachment[Budget_Modification == vModId && Budget == null && Contract1 == null && Pro_Forma == null && Payment_Request == null].count() > 0)
+		{
+			return "ERROR: Restore this modification's Budget link before deleting it; its files must remain in Budget Attachments.";
+		}
 		// Request deletion retains the same Budget file and original provenance.
 		for each attachedFile in Attachment[Budget_Modification == vModId]
 		{
+			if(attachedFile.Budget == null && modRec.Budget != null)
+			{
+				attachedFile.Budget=modRec.Budget;
+			}
 			attachedFile.Budget_Modification=null;
 		}
 		// The approval chain goes with the modification.

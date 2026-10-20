@@ -1,5 +1,14 @@
-// Budget_Modification / Deleted / Successful record deletion.
+// Budget_Modification / Deleted / Validations on record deletion (before lookup clearing).
+if(input.Budget == null && Attachment[Budget_Modification == input.ID && Budget == null && Contract1 == null && Pro_Forma == null && Payment_Request == null].count() > 0)
+{
+	alert "Restore the modification's Budget link before deleting it so its files remain in Budget Attachments.";
+	cancel delete;
+}
 for each attachedFile in Attachment[Budget_Modification == input.ID]
 {
+	if(attachedFile.Budget == null && input.Budget != null)
+	{
+		attachedFile.Budget=input.Budget;
+	}
 	attachedFile.Budget_Modification=null;
 }

@@ -1,0 +1,15 @@
+// Builder_Takedown / Deleted / Validations on record deletion.
+// No global orphan sweep. Only this parent's saved children are eligible.
+if(input.ID != null)
+{
+	for each storedRow1 in Additional_Items[Builder_Takedown1 == input.ID]
+	{
+		sharedChild = false;
+		if(storedRow1.Subdivision1 != null) { sharedChild = true; }
+		if(storedRow1.Takedown_Template1 != null) { sharedChild = true; }
+		if(!sharedChild)
+		{
+			delete from Additional_Items[ID == storedRow1.ID && Builder_Takedown1 == input.ID];
+		}
+	}
+}

@@ -43,9 +43,9 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		result.put("archived",archiveValue);
 		return result.toString();
 	}
-	if(Payment_Request[Budget == budgetKey && Request_Type == "Purchase Order"].count() > 0 || PO_Operation[Budget == budgetKey].count() > 0 || PO_Phase_Lock[Phase_Key == budgetIdText].count() > 0)
+	if(Payment_Request[Budget == budgetKey].count() > 0 || PO_Operation[Budget == budgetKey].count() > 0 || PO_Phase_Lock[Phase_Key == budgetIdText].count() > 0)
 	{
-		result.put("error","This budget has Purchase Orders or PO operation history. Archive it; deletion would destroy financial references.");
+		result.put("error","This budget has requests or PO operation history. Archive it; deletion would destroy financial references.");
 		return result.toString();
 	}
 	deleted = Map();
@@ -53,6 +53,19 @@ string manageBudget(string budgetId, string action, string userAccessId)
 	for each approvalRow in Budget_Approvals[Budget == budgetKey]
 	{
 		deleteIds.add(approvalRow.ID);
+	}
+	for each modificationRow in Budget_Modification[Budget == budgetKey]
+	{
+		for each approvalRow in Budget_Approvals[Budget_Modification == modificationRow.ID && Budget == null]
+		{
+			deleteIds.add(approvalRow.ID);
+		}
+		// Recover the Budget owner before the request lookup is cleared.
+		for each attachedFile in Attachment[Budget_Modification == modificationRow.ID]
+		{
+			if(attachedFile.Budget == null) { attachedFile.Budget=budgetKey; }
+			attachedFile.Budget_Modification=null;
+		}
 	}
 	deleted.put("Budget_Approvals",deleteIds.size());
 	for each childId in deleteIds
@@ -100,7 +113,7 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		delete from Budget_Category[ID == childId];
 	}
 	deleteIds = List();
-	for each monthRow in Budget_Months[Budget == budgetKey]
+	for each monthRow in Budget_Months[Budget == budgetKey && Subdivision == null]
 	{
 		deleteIds.add(monthRow.ID);
 	}
@@ -110,24 +123,24 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		delete from Budget_Months[ID == childId];
 	}
 	deleteIds = List();
-	for each attachmentRow in Attachment[Budget == budgetKey]
+	for each attachmentRow in Attachment[Budget == budgetKey && Contract1 == null && Pro_Forma == null && Payment_Request == null && Budget_Modification == null]
 	{
 		deleteIds.add(attachmentRow.ID);
 	}
 	deleted.put("Attachment",deleteIds.size());
 	for each childId in deleteIds
 	{
-		delete from Attachment[ID == childId];
+		delete from Attachment[ID == childId && Budget == budgetKey && Contract1 == null && Pro_Forma == null && Payment_Request == null && Budget_Modification == null];
 	}
 	deleteIds = List();
-	for each commentRow in Comment_Log[Budget == budgetKey]
+	for each commentRow in Comment_Log[Budget == budgetKey && Project == null && Pro_Forma == null && Contract1 == null]
 	{
 		deleteIds.add(commentRow.ID);
 	}
 	deleted.put("Comment_Log",deleteIds.size());
 	for each childId in deleteIds
 	{
-		delete from Comment_Log[ID == childId];
+		delete from Comment_Log[ID == childId && Budget == budgetKey && Project == null && Pro_Forma == null && Contract1 == null];
 	}
 	delete from Add_Budget[ID == budgetKey];
 	result.put("success",true);

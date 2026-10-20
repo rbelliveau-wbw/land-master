@@ -1,0 +1,118 @@
+# Orphan records and child lifecycle — October 20, 2026
+
+## Findings
+
+Production report filters identified **581 candidates**:
+424 Proforma_Item, 43 Construction_Curve, 38 Land_Installments, 31 Attachment,
+18 Lot_Mix_Row, 17 Additional_Items and 10 Contract_Pricing.
+Some report URL filters are silently ignored: a known linked cost row did not
+filter its parent's subform membership. Do not authorize a purge from report
+counts alone. System-date URL filters were also inconclusive.
+
+The temporary owner-only inspector subsequently checked all 581 in Production,
+including reverse grids, explicit template exclusions, Added/Modified timestamps
+and saved approval/operation/configuration history. **579 passed; two recently
+changed Lot_Mix_Row records are retained.** No cleanup has yet been executed.
+The exact ID manifest and timestamps are kept locally with the audit evidence,
+not in this public repository. Recheck records immediately before deletion.
+
+Zoho documents that [parent deletion delinks existing-form subforms](https://www.zoho.com/deluge/help/data-access/delete-records.html)
+and [subform clear keeps the child records](https://www.zoho.com/deluge/help/miscellaneous/clear-subform-rows.html).
+These are supported leak mechanisms, not proof of which operation created each
+historical candidate. No per-record origin or creation-date conclusion is inferred
+from Creator ID order.
+
+Confirmed code gaps:
+
+- `proforma_save` omitted independently stored Lot Mix and Attachment rows when
+  deleting a Pro Forma. Its original child deletes did not protect shared rows.
+- Native Contract, Pro Forma and Additional Items parent deletion lacked complete
+  child cascades. The native Budget cascade covered only items, categories and
+  approvals. Deluge's parent delete does not provide the missing cascades.
+- Request delete paths cleared request links without restoring a missing Budget
+  parent on legacy files. Native retention actions ran after deletion, when the
+  request lookup can already be cleared.
+- `manageBudget` protected POs but allowed a Budget containing Check/Wire requests
+  to be deleted. It also deleted files/comments/month rows shared with other owners.
+
+## Changes
+
+There are **no new scheduled deletes and no global null-parent purge**. All
+permanent delete actions start from the exact saved parent being deleted.
+
+- `proforma_save`: delete owned lot mix and exclusive files before the parent;
+  retain template costs, Settings curves and children owned by another record.
+- `manageBudget`: require Archive while any request or PO history remains;
+  handle modification-only approvals and file ownership before modification
+  deletion; retain shared files, comments and Subdivision month rows. Keep import
+  history and clear its deleted item links.
+- `managePurchaseOrder`, `modificationAdmin`: restore a legacy file's missing
+  Budget link from the genuine request before removing its request link. Keep
+  original file/author and existing nonempty Budget associations.
+- Native request retention actions belong in **Deleted → Validations on record
+  deletion**, not Successful record deletion. A request with no recoverable Budget
+  and an exclusive file cannot be deleted until that link is repaired.
+- Attachment validation rejects a request association whose request has no Budget.
+- Creator rewrites grouped boolean criteria. Multi-owner installment/cost guards
+  therefore use separate typed row variables and explicit shared-owner flags,
+  followed by exact ID/parent deletion. No OR lookup criterion can widen deletion.
+- A regression gate flags new Attachment lookup fields in future schema exports
+  so their ownership and retention rules must be reviewed explicitly.
+
+AI review snapshots and approval/operation history are deliberately retained;
+they are not disposable merely because a live parent is gone. No financial
+recalculation, approval-routing or permission grant changes are included.
+
+## Read-only certification
+
+Temporary function: `previewOrphanedRecords(string formName, string afterId)`, return map.
+Temporary page: `Orphan_Record_Audit`, with text page variables `formName` and
+`afterId`. No Custom API, database field or report is added. Application owner only. Use `"0"` for
+the first cursor; follow `nextAfterId` until `complete=true`, including one final
+empty page when the preceding page has exactly 25 rows.
+
+The seven observed families are allowlisted. Each page checks all direct owners,
+explicit template flags, **every captured reverse grid**, Added/Modified timestamps
+older than seven days, and IDs embedded in approval/operation/configuration history.
+Failed reads fail the page closed. Recent, shared, referenced or uncertain rows
+remain intact. This is an inspection function: it contains no writes or deletes.
+
+The function was published alone in Creator 9.97; the read-only page was published
+alone in 9.99 after explicit user approval. Production checks are complete.
+Recheck exact IDs/references immediately before any approved deletion;
+the preview is not a transactional lock or an automatic delete authorization.
+Remove this temporary page and helper after the one-time cleanup. They are not
+part of the ongoing module deletion design.
+
+## Native workflow handoff
+
+`creator/workflows/child-lifecycle/*.delete.dg` are action bodies for **Deleted →
+Validations on record deletion**. Add the Pro Forma, Contract, Subdivision,
+Builder Takedown and Takedown Template workflows; replace the action of the
+existing `Delete_Child_Items_Budget` with `Add_Budget.delete.dg`.
+
+No edit-time reconciler or field-input deletion is installed. Existing-form
+`.clear()` can detach child rows, but this audit does not prove the origin of every
+historical candidate. Never introduce an unverified edit-validation cleanup to
+compensate: partial SDK updates and cancelled forms must preserve saved rows.
+
+Generation of the permanent parent-delete actions:
+`node scripts/build-child-lifecycle.mjs`.
+Focused checks: `node scripts/test-child-lifecycle.mjs` (112 cases) and the
+temporary inspector's fixture checks. These execute the actual Deluge bodies
+against fixtures; they are not a native Creator compiler or transaction test.
+Full `npm run validate` and `npm run build:pages` passed. The temporary inspector
+also passed 147 fixture cases before its live Production execution.
+
+## Deployment and rollback
+
+PMP publishes repository changes to main. Creator delete workflows/functions are
+a separate deployment gate requiring explicit approval. Existing API
+names/signatures remain unchanged. The temporary inspector has no API.
+Widget assets/mappings do not change, so there is no new widget release.
+
+Publish only verified backend/validation/delete-workflow changes. Never select
+unrelated or scheduled changes. The preexisting daily cleanup was verified in
+Production and Development: it still contains only the original Contract
+Approvals/Actions rules. Preserve saved pre-change bodies for rollback.
+Rollback code cannot restore deleted data. No live cleanup has been executed.

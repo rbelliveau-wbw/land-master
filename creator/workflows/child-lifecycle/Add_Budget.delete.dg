@@ -1,0 +1,35 @@
+// Add_Budget / Deleted / Validations on record deletion.
+// Replaces the action in Delete_Child_Items_Budget.
+if(input.ID == null)
+{
+	alert "A saved Budget is required for deletion.";
+	cancel delete;
+}
+if(Payment_Request[Budget == input.ID].count() > 0 || PO_Operation[Budget == input.ID].count() > 0 || PO_Phase_Lock[Phase_Key == input.ID.toString()].count() > 0)
+{
+	alert "This Budget has requests or PO operation history. Archive it instead.";
+	cancel delete;
+}
+for each modificationRow in Budget_Modification[Budget == input.ID]
+{
+	delete from Budget_Approvals[Budget_Modification == modificationRow.ID && Budget == null];
+	for each attachedFile in Attachment[Budget_Modification == modificationRow.ID]
+	{
+		if(attachedFile.Budget == null) { attachedFile.Budget=input.ID; }
+		attachedFile.Budget_Modification=null;
+	}
+}
+for each itemRow in Budget_Item[Budget == input.ID]
+{
+	for each importRow in Budget_Import_Item[Budget_Item == itemRow.ID]
+	{
+		importRow.Budget_Item=null;
+	}
+}
+delete from Budget_Approvals[Budget == input.ID];
+delete from Budget_Modification[Budget == input.ID];
+delete from Budget_Item[Budget == input.ID];
+delete from Budget_Category[Budget == input.ID];
+delete from Budget_Months[Budget == input.ID && Subdivision == null];
+delete from Attachment[Budget == input.ID && Contract1 == null && Pro_Forma == null && Payment_Request == null && Budget_Modification == null];
+delete from Comment_Log[Budget == input.ID && Project == null && Pro_Forma == null && Contract1 == null];
