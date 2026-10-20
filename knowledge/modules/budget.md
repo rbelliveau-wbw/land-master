@@ -1,3 +1,10 @@
+## Link to Record select and Save — 122.29.58, October 20, 2026
+
+The association picker highlights one selected row and saves from that same
+screen. Save remains disabled until a row is selected. No review screen; no
+write until Save. Helper: “Choose a request to link this attachment to.”
+No Creator changes. See [release and regression notes](../../docs/budget-link-select-save-2026-10-20.md).
+
 ## Draft attachments and Link to Record — 122.29.57, October 20, 2026
 
 New Budget Mods and managed POs queue files before creation, then upload to the

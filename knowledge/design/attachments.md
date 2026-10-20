@@ -155,7 +155,8 @@ Preview/Delete stack. Keep safe-close locks during native work and register
 keyed file rows with shared interaction motion. Budget 122.29.54 adopts this
 pattern; see [native handoff and evidence](../../docs/budget-request-attachments-2026-10-19.md).
 
-Budget 122.29.57 uses **Link to Record** for file associations: choose, review
-the file and its Budget/request destinations, then **Save**. Selection, search,
-Back and Cancel are local; only Save writes. Budget only clears the request link
+Budget 122.29.58 uses **Link to Record** for file associations: highlight one
+row, then **Save** on the same screen. There is no second review screen. Selection,
+search and Cancel are local; only Save writes. Use the helper
+“Choose a request to link this attachment to.” for request choices. Budget only clears the request link
 without moving or copying the file. See [draft files and recovery](../../docs/budget-draft-attachments-2026-10-20.md).
