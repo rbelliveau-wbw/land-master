@@ -87,6 +87,10 @@ never redraw a different-looking surface after the real dialog has closed.
 Coalesce observations in one frame, ignore numeric animation mutations, and
 bound row geometry to small groups (100 rows by default). Bulk report changes
 use one short surface settle rather than thousands of per-cell measurements.
+Keyed row snapshots must exclude the shared engine's active vertical translation.
+Numeric decoration or a rapid second action may resample a row during reveal;
+never retain that temporary visual offset as its next layout position. A reveal
+must settle within its original duration rather than restart on observer updates.
 Do not animate mounted inputs themselves or force layout for every numeric cell.
 Exports, date semantics, save acknowledgements, approval/progress locks and
 record identity remain under the existing component guides.

@@ -101,7 +101,13 @@
           const rowKey=String(record);if(samples.has(rowKey)){duplicates.add(rowKey);continue;}
           if(!visible(row))continue;
           const rect=row.getBoundingClientRect();
-          samples.set(rowKey,{node:row,top:rect.top,left:rect.left,height:rect.height});
+          // Snapshot layout, not our in-flight FLIP/reveal translation. Numeric
+          // decoration and other observers can resample a moving row; retaining
+          // that visual offset feeds it back into the next animation indefinitely.
+          const moving=animations.get(row)?.effect?.getKeyframes().some(frame=>frame.transform);
+          const transform=moving?getComputedStyle(row).transform:'none';
+          const offset=transform==='none'?0:new DOMMatrixReadOnly(transform).m42;
+          samples.set(rowKey,{node:row,top:rect.top-offset,left:rect.left,height:rect.height});
         }
         for(const duplicate of duplicates)samples.delete(duplicate);
         const old=previousLists.get(id),open=visible(host);

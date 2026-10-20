@@ -1,0 +1,64 @@
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+const {chromium}=createRequire(import.meta.url)('playwright');
+const root=path.resolve('widgets/land-master/src/app');
+const server=http.createServer((req,res)=>{
+  const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);
+  if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404).end();return;}
+  let body=fs.readFileSync(file);
+  if(file.endsWith('widget.html'))body=Buffer.from(body.toString().replace('initializeCreatorV2();','/* inert startup */'));
+  res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(body);
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const browser=await chromium.launch({headless:true,channel:'chrome'});
+const page=await browser.newPage({viewport:{width:1920,height:1032}}),errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+page.on('console',message=>{if(message.type()==='warning'&&message.text().includes('Interaction motion unavailable'))errors.push(message.text());});
+await page.route(/.*/,route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.fulfill({body:'',contentType:'text/javascript'}));
+try{
+  await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html');
+  await page.evaluate(()=>{
+    S.demo=true;S.scope='subs';S.search='';S.issuesOnly=false;
+    S.projects=Array.from({length:95},(_,i)=>({ID:String(9000+i),Project_Name:'Project '+String(i).padStart(2,'0'),Territory:'Fort Hood'}));
+    S.subdivisions=S.projects.flatMap((p,i)=>Array.from({length:i===4?6:4},(_,j)=>({ID:String(10000+i*10+j),Project:{ID:p.ID},Subdivision_Name:p.Project_Name+' - Phase '+(j+1),Subdivision_Code:'P'+i+'-'+j,Phase:j+1,County:'Bell',Total_Lots:0,Lots_Sold:0,Projects_Status:'Entitlements'})));
+    S.expandedGroups={9003:true};renderAll();
+    window.rowAnimations=[];const original=Element.prototype.animate;
+    Element.prototype.animate=function(frames,options){if(this.matches('tr.rec'))rowAnimations.push({id:this.dataset.id,frames,time:performance.now()});return original.call(this,frames,options);};
+  });
+  await page.waitForTimeout(350);
+  await page.locator('[data-group="9003"]').click();
+  await page.waitForTimeout(350);
+  await page.locator('[data-group="9004"]').click();
+  await page.waitForTimeout(450);
+  assert.equal(await page.locator('tr.rec').count(),6);
+  assert.deepEqual(await page.locator('tr.rec').evaluateAll(nodes=>nodes.map(row=>row.dataset.id)),['10040','10041','10042','10043','10044','10045']);
+  assert.equal(await page.locator('tr.rec').evaluateAll(nodes=>nodes.reduce((n,row)=>n+row.getAnimations().filter(a=>a.playState==='running').length,0)),0,'project reveal must settle without looping row translations');
+  assert.equal(await page.evaluate(()=>rowAnimations.length),6,'numeric decoration must not restart the six row reveals');
+  const head=await page.locator('[data-group="9004"]').boundingBox(),row=await page.locator('tr.rec').first().boundingBox();
+  assert.ok(Math.abs(row.y-(head.y+head.height))<2,'first subdivision stays directly beneath its project');
+  await page.locator('[data-group="9003"]').click();
+  await page.waitForTimeout(40);
+  await page.locator('[data-group="9003"]').click();
+  await page.waitForTimeout(450);
+  assert.equal(await page.locator('tr.rec').count(),6,'rapid expand/collapse retains exact rows');
+  assert.equal(await page.locator('tr.rec').evaluateAll(nodes=>nodes.reduce((n,row)=>n+row.getAnimations().length,0)),0,'surviving rows settle after rapid opposite actions');
+  await page.locator('#tableScroll').evaluate(node=>node.scrollTop=100);
+  await page.locator('[data-group="9004"]').click();
+  await page.waitForTimeout(260);
+  await page.locator('[data-group="9004"]').click();
+  await page.waitForTimeout(450);
+  assert.equal(await page.locator('tr.rec').evaluateAll(nodes=>nodes.every(row=>getComputedStyle(row).transform==='none')),true,'scrolling cannot leave rows translated');
+  fs.mkdirSync('tmp/land-project-motion',{recursive:true});
+  await page.screenshot({path:'tmp/land-project-motion/desktop.png'});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.locator('[data-group="9004"]').click();
+  await page.locator('[data-group="9004"]').click();
+  await page.waitForTimeout(50);
+  assert.equal(await page.locator('tr.rec').count(),6);
+  assert.equal(await page.locator('tr.rec').evaluateAll(nodes=>nodes.reduce((n,row)=>n+row.getAnimations().length,0)),0,'reduced motion applies final layout immediately');
+  assert.deepEqual(errors,[]);
+  console.log('PASS: actual Land project reveal with numeric decoration, rapid opposite actions, scrolling and reduced motion; exact row IDs and settled layout.');
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

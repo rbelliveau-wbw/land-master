@@ -56,6 +56,24 @@ read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 # Land Master Module
 
+## Project expansion drift — 8.16.9, October 20, 2026
+
+The actual Projects renderer reproduced the recording: numeric decoration
+resampled rows during their reveal, feeding animated screen positions back into
+the shared movement engine. Subdivisions repeatedly translated outside their
+project, leaving blank slots for the interaction's 15-second intent window.
+The shared engine now removes its active vertical translation from layout
+snapshots. Reveals settle normally and retain the real row layout.
+
+Changed: shared interaction engine and synchronized widget copies, Land version
+markers/config/manifest, focused browser regression, motion guide, immutable
+release and Development/Production mappings. Only Land is promoted in this
+release; other widgets inherit the shared repair in their next release. No
+Creator forms, fields, functions or Custom APIs change; no Creator deployment.
+Regression: actual renderer with numeric decoration, repeated/rapid group
+actions, surviving rows, scroll and reduced motion, plus shared motion and
+numeric/browser suites. Rollback: Production Land Master 8.16.8.
+
 ## Filter reset and project headers — 8.15.7, October 6, 2026
 
 Reproduced in native Production 8.15.6: after applying a Company filter, Clear showed 0 selected while the filter pill and table stayed filtered; the red X dismissed the draft without resetting the filter. Clear now resets both applied and draft values immediately, updates the pill/table, and returns pagination to page 1. The red X clears and closes the active filter. Apply retains selections hidden by popup search; Escape/outside dismissal preserves applied values. Other filters and the main search remain intact.

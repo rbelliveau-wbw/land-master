@@ -21,7 +21,7 @@
     "test:insights:geometry": "node scripts/test-insights-scroll-geometry-browser.mjs",
     "test:proforma:numbers:browser": "node scripts/test-proforma-number-transitions-browser.mjs",
     "test:numbers:browser": "node scripts/test-number-edit-commit-browser.mjs && node scripts/test-number-transition-rollout-browser.mjs",
-    "test:motion:browser": "node scripts/test-interaction-motion-browser.mjs",
+    "test:motion:browser": "node scripts/test-interaction-motion-browser.mjs && node scripts/test-land-project-motion-browser.mjs",
     "test:po:dismiss:browser": "node scripts/test-po-dismiss-browser.mjs",
     "test:approval:browser": "node scripts/test-approval-admin-browser.mjs"
   }

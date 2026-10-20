@@ -1,0 +1,21 @@
+/* Repository interaction motion. Business state, focus and requests are immediate. */
+.lm-motion-tabs{position:relative;isolation:isolate}
+.lm-motion-tab-item{position:relative;z-index:1}
+.lm-motion-tabs .lm-motion-tab-item.lm-motion-selected{background:transparent!important;box-shadow:none!important}
+.lm-motion-rail{position:absolute;z-index:0;pointer-events:none;transition:transform 190ms cubic-bezier(.22,.7,.25,1),width 190ms cubic-bezier(.22,.7,.25,1),height 190ms cubic-bezier(.22,.7,.25,1);contain:paint}
+.lm-motion-surface{animation:none!important}
+.lm-motion-ghost{pointer-events:none!important;user-select:none!important;z-index:2147483000!important;animation:none!important;contain:paint}
+.lm-motion-feedback{transition:color 160ms ease,background-color 160ms ease,border-color 160ms ease}
+.lm-motion-meter{transition:width 260ms cubic-bezier(.22,.7,.25,1)!important}
+progress.lm-motion-meter::-webkit-progress-value{transition:width 260ms cubic-bezier(.22,.7,.25,1)}
+dialog.lm-motion-dialog{opacity:0;transition:opacity 160ms ease,display 160ms allow-discrete,overlay 160ms allow-discrete}
+dialog.lm-motion-dialog[open]{opacity:1}
+dialog.lm-motion-dialog:not([open]){pointer-events:none}
+details.lm-motion-disclosure{interpolate-size:allow-keywords}
+details.lm-motion-disclosure::details-content{block-size:0;overflow:clip;transition:block-size 200ms cubic-bezier(.22,.7,.25,1),content-visibility 200ms allow-discrete}
+details.lm-motion-disclosure[open]::details-content{block-size:auto}
+details.lm-motion-disclosure>summary .summary-arrow,details.lm-motion-disclosure>summary [data-lm-disclosure-icon]{transition:transform 190ms cubic-bezier(.22,.7,.25,1)}
+details.lm-motion-disclosure[open]>summary [data-lm-disclosure-icon]{transform:rotate(90deg)}
+@starting-style{dialog.lm-motion-dialog[open]{opacity:0}}
+@media(prefers-reduced-motion:reduce){.lm-motion-rail,.lm-motion-feedback,.lm-motion-meter,dialog.lm-motion-dialog,details.lm-motion-disclosure::details-content,details.lm-motion-disclosure>summary [data-lm-disclosure-icon],details.lm-motion-disclosure>summary .summary-arrow{transition:none!important}}
+@media(prefers-reduced-motion:reduce){progress.lm-motion-meter::-webkit-progress-value{transition:none!important}}
