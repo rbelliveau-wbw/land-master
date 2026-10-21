@@ -104,6 +104,13 @@ outcomes retain the draft and block another Post through close/reopen or a
 second shortcut; offer read-only recheck only with a known safe record identity.
 Never blindly create the same comment again after a lost response.
 
+Post owns its shared `.pc-post` styling rather than inheriting generic module
+button classes. Keep its width/height, white label and solid contrasting surface
+stable through hover, focus, pending, terminal and disabled states. Do not fade
+the whole action or transition a gradient into a solid fill. Retain the pending
+spinner and existing Post/Posting/Posted labels, timing and inline delivery
+result; the thread status remains registered for shared feedback motion.
+
 Name the dialog, trap focus, make the background inert, restore focus to the
 originating action, and retain visible keyboard focus. Label the composer,
 toolbar and icon buttons, announce status politely, keep message actions
