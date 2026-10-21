@@ -116,7 +116,7 @@ for(const flags of [submit,editor]){
  const h=harness({accessFlags:{...editor,ctEdit:true},pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Legal';await drain();assert.equal(h.c.S.workMode,'legal');assert.equal(h.c.CFG.reports.contracts,'All_Contracts1');assert.equal(h.c.setWorkMode,undefined);
 }
 
-// Signal rail uses the actual scoped/native status save, including completion.
+// Signal rail uses the actual scoped/native priority/status saves, including completion.
 {
  const h=harness({accessFlags:editor,pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.reports.All_Contracts1[0].Work_Module='Construction';h.reports.All_Contract_Actions[0].Work_Module='Construction';await drain();fixture(h);
  const base=h.c.findContract(ID),cases=[['ASAP','New'],['High','Hold'],['Medium','Proposed'],['','New'],['Legacy <urgent>','Other <status>'],['constructor','New']];
@@ -128,16 +128,22 @@ for(const flags of [submit,editor]){
  assert.equal(h.c.document.querySelectorAll('.scope-count,.bcol-head .n,.review-n').length,0,'Construction board omits request counts');
  assert.ok(h.c.document.querySelector('.construction-board-cell[data-status="Hold"]'));
  assert.match(h.node('view').innerHTML,/Signal &lt;request&gt;|Legacy &lt;urgent&gt;/,'native strings are escaped');
+ assert.equal(h.c.document.querySelectorAll('.construction-board .bcard-builder,.construction-board .lot-parent-label,.construction-board .contract-master-note').length,0,'Construction cards omit subdivision and family metadata');
+ assert.match(h.node('view').textContent,/0\/1 actions/,'action counts use the saved checklist');
  const cell=(priority,status)=>h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')===priority&&node.getAttribute('data-status')===status);
  const drop=(priority,status,cid=ID)=>{h.c.S.bDrag=cid;h.c.bDrop({preventDefault(){},currentTarget:cell(priority,status)});};
- assert.equal(h.c.constructionBoardDropAllowed(cell('High','Hold'),ID),false);drop('High','Hold');await drain();assert.equal(writes(h).length,0,'cross-priority drag cannot write');
  drop('Medium','Proposed');await drain();assert.equal(writes(h).length,0,'Review status is not a manual drop destination');
- drop('Medium','Hold');await drain();assert.equal(h.c.findContract(ID).Status,'Hold');assert.equal(h.reports.All_Contracts1[0].Priority,'Medium');
- const statusWrite=writes(h).at(-1);assert.equal(statusWrite.config.report_name,'Construction_Requests');assert.deepEqual(statusWrite.config.payload.data,{Status:'Hold'},'existing adapter writes only status');
- let confirmation;h.c.confirmDialog=options=>{confirmation=options;};const before=writes(h).length;drop('Medium','Complete');assert.equal(writes(h).length,before);assert.equal(confirmation.okLabel,'Complete contract');confirmation.onConfirm();await drain();
+ drop('High','New');await drain();assert.equal(h.c.findContract(ID).Priority,'High');assert.equal(h.reports.All_Contracts1[0].Status,'New');assert.deepEqual(writes(h).at(-1).config.payload.data,{Priority:'High'},'vertical drag changes only Priority');
+ drop('ASAP','Hold');await drain();assert.equal(h.c.findContract(ID).Status,'Hold');assert.equal(h.reports.All_Contracts1[0].Priority,'ASAP');
+ const statusWrite=writes(h).at(-1);assert.equal(statusWrite.config.report_name,'Construction_Requests');assert.deepEqual(statusWrite.config.payload.data,{Status:'Hold',Priority:'ASAP'},'diagonal drop saves status and priority in one native update');
+ drop('ASAP','New');await drain();assert.deepEqual(writes(h).at(-1).config.payload.data,{Status:'New'},'horizontal drag preserves Priority');
+ let confirmation;h.c.confirmDialog=options=>{confirmation=options;};const before=writes(h).length;drop('High','Complete');assert.equal(writes(h).length,before);assert.equal(confirmation.okLabel,'Complete contract');confirmation.onConfirm();await drain();
  assert.equal(h.c.findContract(ID).Status,'Complete');assert.equal(h.c.findAction(ACTION).Complete,true,'board completion uses the existing action cascade');
+ assert.equal(h.reports.All_Contracts1[0].Priority,'High','completion retains the requested priority in its existing final header save');
  const doneWrites=writes(h).length;drop('Medium','New');await drain();assert.equal(writes(h).length,doneWrites,'completed requests remain locked');
- const pending=h.c.S.contracts.find(c=>c.Status==='Proposed'&&c.Work_Module==='Construction');drop('Medium','New',pending.ID);await drain();assert.equal(writes(h).length,doneWrites,'pending review cannot be dragged');
+ const pending=h.c.S.contracts.find(c=>c.Status==='Proposed'&&c.Work_Module==='Construction');drop('High','Proposed',pending.ID);await drain();assert.equal(pending.Priority,'High');assert.equal(pending.Status,'Proposed');assert.deepEqual(writes(h).at(-1).config.payload.data,{Priority:'High'},'Pending Review allows priority editing without acceptance');
+ const pendingWrites=writes(h).length;drop('High','New',pending.ID);drop('Legacy <urgent>','Proposed',pending.ID);await drain();assert.equal(writes(h).length,pendingWrites,'pending status and invalid legacy priority assignments remain guarded');
+ h.c.S.bDrag=pending.ID;h.c.bDrop({preventDefault(){},currentTarget:h.c.document.querySelectorAll('.construction-priority-rail').find(node=>node.getAttribute('data-priority')==='ASAP')});await drain();assert.equal(pending.Priority,'ASAP');assert.equal(pending.Status,'Proposed','dropping on the rail preserves status');
  h.c.S.mode='list';h.c.renderAll();assert.ok(h.c.document.querySelector('.scope-count'),'list count is preserved');
 }
 {
@@ -148,4 +154,9 @@ for(const flags of [submit,editor]){
  const legal=await ready({realDOM:true});legal.c.S.mode='board';legal.c.renderAll();assert.equal(legal.c.document.querySelectorAll('.construction-board').length,0);assert.ok(legal.c.document.querySelector('.bcol-head .n'),'Legal status counts are preserved');
 }
 
-console.log('PASS Construction page isolation, native request/action saves, permissions and Signal rail: complete priority/status grouping, legacy visibility/escaping, no board counts, status-only scoped drops, rejected cross-priority/read-only/pending/locked drops, existing completion cascade, and preserved Legal/list behavior.');
+{
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.c.S.mode='board';h.c.renderAll();
+ const native=h.api.updateRecordById;h.api.updateRecordById=async()=>{throw {code:2898,message:'Permission Denied'};};await h.c.setConstructionBoardPriority(ID,'High');await drain();assert.equal(h.c.findContract(ID).Priority,'Medium','failed priority save cannot optimistically move the request');assert.equal(h.c.S.busy,false);h.api.updateRecordById=native;
+}
+
+console.log('PASS Construction page isolation, native request/action saves, permissions and Signal rail: priority-only/pending/rail drops, atomic combined moves, preserved completion cascade, rejected read-only/locked/Review-status/invalid-priority moves, truthful failed saves, actual card facts and preserved Legal/list behavior.');

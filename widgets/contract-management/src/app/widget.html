@@ -1963,16 +1963,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.29"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.29">
-<script src="interaction-motion.js?v=1.62.29"></script>
-<script src="interaction-surfaces.js?v=1.62.29"></script>
-<script src="number-edit-commit.js?v=1.62.29"></script>
-<script src="number-transitions.js?v=1.62.29"></script>
-<script src="number-surfaces.js?v=1.62.29"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.29">
-<link rel="stylesheet" href="report-layout.css?v=1.62.29">
-<link rel="stylesheet" href="construction-board.css?v=1.62.29">
+<script src="success-feedback.js?v=1.62.30"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.30">
+<script src="interaction-motion.js?v=1.62.30"></script>
+<script src="interaction-surfaces.js?v=1.62.30"></script>
+<script src="number-edit-commit.js?v=1.62.30"></script>
+<script src="number-transitions.js?v=1.62.30"></script>
+<script src="number-surfaces.js?v=1.62.30"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.30">
+<link rel="stylesheet" href="report-layout.css?v=1.62.30">
+<link rel="stylesheet" href="construction-board.css?v=1.62.30">
 </head>
 <body>
 
@@ -2021,7 +2021,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.29", pageSize: 200, maxPages: 25,
+  version: "1.62.30", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -4124,19 +4124,20 @@ function lotMissingWrites(l,c,pr,buyerId,scheduleId){
   });
   return want;
 }
-function setContractStatus(id,status){
+function setContractStatus(id,status,priority){
   if(S.busy) return;
   var target=findContract(id);
   if(!target||!mayEdit(id)||String(target.Status||'')==='Proposed'){banner('err','Proposed status is read-only. Accept this contract in Review with Approval Queue access.');return;}
   if(target&&guardLotCompletion(target,status)) return;
   /* mirrors the "Set Completion Date - Contract" workflow, which a Data API write skips */
   var payload={Status:status};
+  if(priority!==undefined){if(!constructionMode()||workModule(target)!=='construction'||CONSTRUCTION_PRIORITIES.indexOf(priority)<0)return;payload.Priority=priority;}
   if(status==="Complete"&&target&&!toInput(target.Completion_Date)) payload.Completion_Date=toZoho(todayInput());
-  if(S.demo){ var dc=findContract(id); if(dc){ dc.Status=status; if(payload.Completion_Date) dc.Completion_Date=payload.Completion_Date; } banner("ok","Status updated."); renderAll(); return; }
+  if(S.demo){ var dc=findContract(id); if(dc)Object.assign(dc,payload); banner("ok","Status updated."); renderAll(); return; }
   S.busy=true; setStatus("warn","Saving…");
   updateRecord(String(id),payload,CFG.reports.contracts).then(function(){
-    var c=findContract(id); if(c){ c.Status=status; if(payload.Completion_Date) c.Completion_Date=payload.Completion_Date; }
-    contractReleaseBusy(); setStatus("ok","Connected"); banner("ok","Status updated to "+status+".");
+    var c=findContract(id); if(c)Object.assign(c,payload);
+    contractReleaseBusy(); setStatus("ok","Connected"); banner("ok",priority===undefined?"Status updated to "+status+".":"Request moved to "+priority+" · "+workStatusLabel(status)+".");
     auditLog("success","Contract status changed",{contractId:String(id),status:status});
     renderAll();
   }).catch(function(e){
@@ -9498,10 +9499,11 @@ function drillRow(c){
     +'</td></tr>';
 }
 /* inline status change from the list; completing with open actions cascades after a warning */
-function statusCellChange(cid,status){
+function statusCellChange(cid,status,priority){
   var c=findContract(cid); if(!c||S.busy){ renderAll(); return; }
   if(String(c.Status||'')==='Proposed'){banner('err','Proposed status is read-only. Accept this contract in Review with Approval Queue access.');renderAll();return;}
   if(!mayEdit(cid)){ banner("err",lockedById(cid)?"This contract is complete and locked.":"You do not have access to change contract status."); renderAll(); return; }
+  if(priority!==undefined&&(!constructionMode()||workModule(c)!=='construction'||CONSTRUCTION_PRIORITIES.indexOf(priority)<0))return;
   if(guardLotCompletion(c,status)) return;
   var openActs=actionsFor(cid).filter(function(a){ return !truthy(a.Complete); });
   if(status==="Complete"&&openActs.length){
@@ -9511,18 +9513,19 @@ function statusCellChange(cid,status){
       lead:"Completing the contract closes "+(openActs.length===1?"this action":"these actions")+" too — each is marked complete as of today. Reopening them afterwards is one click per action.",
       items:openActs.map(function(a){ return a.Contract_Action||"Untitled action"; }),
       okLabel:"Complete contract",
-      onConfirm:function(){ completeContractCascade(cid,c,openActs); },
+      onConfirm:function(){ completeContractCascade(cid,c,openActs,priority); },
       /* the select already shows Complete - put it back if they back out */
       onDismiss:function(){ renderAll(); }
     });
     return;
   }
-  setContractStatus(cid,status);
+  setContractStatus(cid,status,priority);
 }
 /* Close every open action as of today, then the contract itself. */
-function completeContractCascade(cid,c,openActs){
+function completeContractCascade(cid,c,openActs,priority){
   if(S.busy) return;
   if(!mayEdit(cid)||String(c.Status||'')==='Proposed')return;
+  if(priority!==undefined&&(!constructionMode()||workModule(c)!=='construction'||CONSTRUCTION_PRIORITIES.indexOf(priority)<0))return;
   var updates=openActs.map(function(a){
     return [String(a.ID),{Complete:true,Current_Action:false,Status:"Complete",Complete_Date:toZoho(todayInput())}];
   });
@@ -9530,9 +9533,10 @@ function completeContractCascade(cid,c,openActs){
   var p=Promise.resolve();
   updates.forEach(function(u){ p=p.then(function(){ return updateRecord(u[0],u[1],CFG.reports.actions).then(function(){ applyLocal(u[0],u[1]); }); }); });
   var cPayload={Status:"Complete"};
+  if(priority!==undefined)cPayload.Priority=priority;
   if(!toInput(c.Completion_Date)) cPayload.Completion_Date=toZoho(todayInput());
   p.then(function(){ return updateRecord(String(cid),cPayload,CFG.reports.contracts); })
-   .then(function(){ c.Status="Complete"; contractReleaseBusy(); setStatus("ok",S.demo?"Demo data":"Connected"); banner("ok","Contract completed — "+openActs.length+" open action"+(openActs.length===1?"":"s")+" closed out."); renderAll(); })
+   .then(function(){ Object.assign(c,cPayload); contractReleaseBusy(); setStatus("ok",S.demo?"Demo data":"Connected"); banner("ok","Contract completed — "+openActs.length+" open action"+(openActs.length===1?"":"s")+" closed out."); renderAll(); })
    .catch(function(e){ contractReleaseBusy(); setStatus("err","Save failed"); banner("err","Save failed: "+errText(e)); reloadActions(); });
 }
 function statusCell(c){
@@ -9672,9 +9676,10 @@ function renderTable(list){
 function bDragClear(){
   S.bDrag=null;
   Array.prototype.forEach.call(document.querySelectorAll(".bcard.dragging"),function(n){ n.classList.remove("dragging"); });
-  Array.prototype.forEach.call(document.querySelectorAll(".bcol.over"),function(n){ n.classList.remove("over"); });
+  Array.prototype.forEach.call(document.querySelectorAll(".bcol.over,.construction-priority-rail.over"),function(n){ n.classList.remove("over"); });
 }
 function bDragStart(e,cid){
+  if(constructionMode()&&(S.busy||!mayEdit(cid))){e.preventDefault();return;}
   S.bDrag=String(cid);
   try{ e.dataTransfer.setData("text/plain",String(cid)); e.dataTransfer.effectAllowed="move"; }catch(_){}
   if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.add("dragging");
@@ -9698,20 +9703,39 @@ function bDrop(e){
   var cid=S.bDrag;
   if(!cid){ try{ cid=e.dataTransfer.getData("text/plain"); }catch(_){} }
   bDragEnd();
-  if(!cid||!status) return;
+  if(!cid) return;
   var c=findContract(cid); if(!c) return;
+  if(constructionMode()&&!status)status=String(c.Status||'New');
+  if(!status)return;
   if(!constructionBoardDropAllowed(col,cid))return;
-  if(String(c.Status||"New")===status) return;
+  var priority=constructionMode()?col.getAttribute('data-priority'):undefined;
+  var priorityChanged=constructionMode()&&priority!==constructionBoardPriority(c);
+  var statusChanged=String(c.Status||'New')!==status;
+  if(!priorityChanged&&!statusChanged)return;
   if(constructionMode())queueFlip('board:'+String(cid));
-  statusCellChange(String(cid),status);
+  if(!statusChanged){setConstructionBoardPriority(String(cid),priority);return;}
+  statusCellChange(String(cid),status,priorityChanged?priority:undefined);
 }
-/* Priority lanes are read-only grouping. A status drop never changes Priority. */
+/* Vertical drops change Priority; horizontal drops keep the existing status path.
+   Review remains the only way to accept a proposed request. */
 function constructionBoardDropAllowed(cell,cid){
   if(!constructionMode())return true;
-  var c=findContract(cid);
-  return !!(cell&&c&&mayEdit(cid)&&String(c.Status||'')!=='Proposed'&&cell.getAttribute('data-status')!=='Proposed'&&cell.getAttribute('data-priority')===constructionBoardPriority(c));
+  var c=findContract(cid);if(!cell||!c||S.busy||!mayEdit(cid))return false;
+  var priority=cell.getAttribute('data-priority'),current=String(c.Status||'New'),status=cell.getAttribute('data-status')||current;
+  return priority!==null&&(priority===constructionBoardPriority(c)||CONSTRUCTION_PRIORITIES.indexOf(priority)>=0)&&(status===current||current!=='Proposed'&&status!=='Proposed');
 }
 function constructionBoardPriority(c){return String(c&&c.Priority||'').trim();}
+/* The full request editor also saves Priority through this native adapter.
+   A board-only patch avoids resubmitting its unrelated form fields. */
+function setConstructionBoardPriority(cid,priority){
+  var c=findContract(cid);if(S.busy||!constructionMode()||!mayEdit(cid)||CONSTRUCTION_PRIORITIES.indexOf(priority)<0)return;
+  var payload={Priority:priority};
+  if(S.demo){Object.assign(c,payload);renderAll();banner('ok','Priority updated.');return;}
+  S.busy=true;setStatus('warn','Saving…');
+  return updateRecord(String(cid),payload,CFG.reports.contracts).then(function(){
+    Object.assign(findContract(cid),payload);contractReleaseBusy();setStatus('ok','Connected');renderAll();banner('ok','Priority updated to '+priority+'.');
+  }).catch(function(error){contractReleaseBusy();setStatus('err','Save failed');renderAll();banner('err','Priority update failed: '+errText(error));});
+}
 /* a drag that ends on a card must not also read as a click into the contract */
 function bCardClick(cid){
   if(S.bDragEndedAt&&Date.now()-S.bDragEndedAt<250) return;
@@ -9720,20 +9744,23 @@ function bCardClick(cid){
 var COL_BARS={"Hold":"#a21c63","Proposed":"#7e22ce","New":"#8ea0bd","Approval Rejected":"#b91c1c","Feasibility":"#0369a1","Awaiting WBW":"#b45309","Awaiting WBW LEG":"#b45309","Awaiting Counterparty":"#1e40af","Awaiting Approvals":"#3730a3","Approved":"#0f766e","Complete":"#047857"};
 function boardCard(c){
       var st=statsFor(c.ID);
-      var movable=mayEdit(c.ID)&&(!constructionMode()||String(c.Status||'')!=='Proposed');
+      var construction=constructionMode(),movable=mayEdit(c.ID);
       var locked=contractLocked(c);
       return '<div class="bcard'+(locked?" locked":"")+'"'
         +' data-board-id="'+attr(String(c.ID))+'" role="button" tabindex="0" aria-label="'+attr(c.Contract_Name||('Contract '+c.ID))+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();bCardClick(\''+c.ID+'\')}"'
+        +(construction?' data-contract-id="'+attr(String(c.ID))+'"':'')
         +(movable?' draggable="true" ondragstart="bDragStart(event,\''+c.ID+'\')" ondragend="bDragEnd()"':'')
+        +(movable&&construction?' title="'+(String(c.Status||'')==='Proposed'?'Drag to change priority. Status changes require Review.':'Drag to change priority or status.')+'"':'')
         +' onclick="bCardClick(\''+c.ID+'\')"'
         +(locked?' title="Complete — read-only."':'')+'>'
         +'<div class="bcard-name">'+esc(c.Contract_Name||("Contract "+c.ID))+'</div>'
-        +lotHierarchyLabel(c)
+        +(construction?'':lotHierarchyLabel(c))
         +(currentActionText(c.ID)?'<div class="bcard-action">'+esc(currentActionText(c.ID))+'</div>':'')
-        +'<div class="bcard-foot"><span class="bcard-builder">'+esc(displayValue(c.Builder)||displayValue(c.Subdivision1)||"—")+'</span>'
+        +(construction?'<div class="bcard-foot"><span class="bcard-type">'+esc(c.Contract_Type||'')+'</span><span class="progress-n">'+st.done+'/'+st.total+' actions</span></div>':'<div class="bcard-foot"><span class="bcard-builder">'+esc(displayValue(c.Builder)||displayValue(c.Subdivision1)||"—")+'</span>'
         +(locked?'<span class="bcard-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>':'<span class="bcard-type">'+esc(c.Contract_Type||"")+'</span>')+'</div>'
-        +(st.total?'<div class="progress"><i style="width:'+st.pct+'%"></i></div>':'')
-        +(approvalsFor(c.ID).length?approvalStrip(c.ID):'')
+        )
+        +(st.total?'<div class="progress"><i'+(construction?' id="construction_progress_'+attr(String(c.ID))+'" data-lm-motion="meter"':'')+' style="width:'+st.pct+'%"></i></div>':'')
+        +(!construction&&approvalsFor(c.ID).length?approvalStrip(c.ID):'')
         +'</div>';
 }
 function constructionBoardLanes(list){
@@ -9755,7 +9782,7 @@ function renderConstructionBoard(list){
   var lanes=constructionBoardLanes(list).map(function(priority){
     var label=priority||'Unassigned',tone=priority==='ASAP'?'asap':priority==='High'?'high':priority==='Medium'?'medium':'unset';
     var cells=statuses.map(function(status){var cards=buckets[JSON.stringify([priority,status])]||[];return '<div class="bcol construction-board-cell" data-status="'+attr(status)+'" data-priority="'+attr(priority)+'" aria-label="'+attr(label+' — '+workStatusLabel(status))+'" ondragover="bDragOver(event)" ondragleave="bDragLeave(event)" ondrop="bDrop(event)"><div class="bcol-cards">'+cards.map(boardCard).join('')+'<div class="bcol-drop">Drop here</div></div></div>';}).join('');
-    return '<section class="construction-board-row construction-board-lane priority-'+tone+'" data-priority="'+attr(priority)+'" aria-label="'+attr(label+' priority')+'"><div class="construction-priority-rail" title="'+attr(label)+'"><span class="construction-priority-signal">'+constructionPrioritySignal(priority)+'</span><span class="construction-priority-label">'+esc(label)+'</span></div>'+cells+'</section>';
+    return '<section class="construction-board-row construction-board-lane priority-'+tone+'" data-priority="'+attr(priority)+'" aria-label="'+attr(label+' priority')+'"><div class="construction-priority-rail" data-priority="'+attr(priority)+'" ondragover="bDragOver(event)" ondragleave="bDragLeave(event)" ondrop="bDrop(event)" title="'+attr(label+' — drop to change priority')+'"><span class="construction-priority-signal">'+constructionPrioritySignal(priority)+'</span><span class="construction-priority-label">'+esc(label)+'</span></div>'+cells+'</section>';
   }).join('');
   return '<div class="boardwrap construction-board" aria-label="Construction requests by priority and status"><div class="construction-board-grid" style="--cb-columns:'+statuses.length+'">'+head+lanes+'</div></div>';
 }

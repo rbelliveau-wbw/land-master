@@ -1,3 +1,13 @@
+## Construction board correction — October 21, 2026
+
+Contract Management 1.62.30 sizes the Signal rail board to its actual cards,
+uses muted blue-gray lane backgrounds, and lets editors drag requests between
+priorities (including Pending Review). Diagonal moves save Priority and Status
+together through existing native saving; review acceptance and completion gates
+remain. Cards show real current action, budget type and checklist progress;
+subdivision duplication and family metadata are omitted on this board only.
+[Verification and rollback](../../docs/construction-board-correction-2026-10-21.md).
+
 ## Construction Signal rail — October 21, 2026
 
 Contract Management 1.62.29 groups Construction board cards by ASAP, High and
