@@ -110,5 +110,19 @@ sections no longer invite dragging, editing or proposing actions.
 
 The Construction Budgeting test assignment uses Development-only `demouser_4`;
 no employee or Production user was reassigned. CI and Pages for the initial
-Development candidate `b47a85d0` succeeded. Final native role evidence and hosted
-Production promotion are recorded after the follow-up checks.
+Development candidate `b47a85d0` succeeded. Follow-up candidate `255f88b6` also
+passed CI and Pages. Native Development checks confirmed two Dev/Land Acq users
+can submit and see each other's requests read-only; CFO can see both and submit
+without Review/templates; Construction Budgeting can save request edits,
+create/edit the first template, accept one request with exactly one seeded
+action, reject the other, and save/complete that action without an assignee.
+The submitter comment persisted. Browser file-selection testing was stopped at
+the user's request; real-shaped SDK upload/create/preview authorization tests
+passed locally, but a live byte upload is not claimed.
+
+Production frontend maps to 1.62.13. Creator Production is unchanged; the user
+must promote the saved profiles, four reports, Construction page variable/script,
+six functions and seven validations. Existing Custom APIs/wrappers are unchanged.
+Test fixtures and screenshots are in
+`reports/2026-10-20-construction-request-name` in the local workspace. The
+Development-only test records/template remain clearly named for inspection.
