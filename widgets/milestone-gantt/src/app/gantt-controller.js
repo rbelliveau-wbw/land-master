@@ -81,7 +81,7 @@
     function confirmation(response,id) {
       if(!response||typeof response!=='object'||Array.isArray(response)||String(response.code)!=='3000')throw response||new Error('Creator did not confirm this update.');
       function reject(cause,message) {
-        const error=new Error(cause&&(cause.message||cause.description)||message);
+        const detail=root.LMData.failureMessage?root.LMData.failureMessage(response):'';const label=cause&&(cause.message||cause.description)||message;const error=new Error(detail?label+' '+detail:label);
         const nativeCode=cause&&cause.code!=null&&String(cause.code)!=='3000'?cause.code:typeof root.LMData.failureCode==='function'?root.LMData.failureCode(cause):cause&&cause.code;
         error.code=nativeCode!=null&&nativeCode!==''&&String(nativeCode)!=='3000'?nativeCode:'MALFORMED_MUTATION_RESPONSE';
         error.raw=response;error.response=response;error.cause=cause;error.uncertain=true;throw error;

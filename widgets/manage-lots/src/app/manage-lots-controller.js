@@ -18,7 +18,7 @@
     return value;
   }
   function failure(response,cause,message,uncertain){
-    const error=new Error(cause&&cause.message||message);
+    const detail=root.LMData.failureMessage(response);const error=new Error(detail?(message||'Creator create failed.')+' '+detail:cause&&cause.message||message);
     error.code=cause&&cause.code!=null?String(cause.code):'UNVERIFIED_CREATE';
     error.raw=response;error.response=response;error.cause=cause;error.uncertain=!!uncertain;error.noReplay=!!uncertain;
     error.permissionDenied=error.code==='2898';return error;

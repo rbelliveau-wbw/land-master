@@ -801,15 +801,19 @@ tr.bulk-on{background:var(--psoft)}
 .ss-item.selected::after{content:'✓';margin-left:auto;color:var(--navy,#1e2a3a);font-weight:700}
 .ss-item.ss-clear{color:var(--muted,#6b7280);font-style:italic}
 .ss-empty{padding:12px 10px;font-size:12px;color:var(--muted,#6b7280);text-align:center}
+.unique-note{margin-top:7px;font-size:12px;line-height:1.4;color:var(--muted);display:flex;align-items:center;gap:6px}
+.unique-note[hidden]{display:none}
+.unique-note::before{content:"";width:5px;height:5px;flex:0 0 5px;border-radius:50%;background:currentColor}
+.unique-note[data-state="duplicate"],.unique-note[data-state="invalid"],.unique-note[data-state="error"]{color:#a35d10}
 </style>
-<script src="success-feedback.js?v=19.17.25"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.25">
-<script src="interaction-motion.js?v=19.17.25"></script>
-<script src="interaction-surfaces.js?v=19.17.25"></script>
-<script src="number-edit-commit.js?v=19.17.25"></script>
-<script src="number-transitions.js?v=19.17.25"></script>
-<script src="number-surfaces.js?v=19.17.25"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.25">
+<script src="success-feedback.js?v=19.17.26"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.26">
+<script src="interaction-motion.js?v=19.17.26"></script>
+<script src="interaction-surfaces.js?v=19.17.26"></script>
+<script src="number-edit-commit.js?v=19.17.26"></script>
+<script src="number-transitions.js?v=19.17.26"></script>
+<script src="number-surfaces.js?v=19.17.26"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.26">
 </head>
 <body>
 
@@ -1147,7 +1151,7 @@ tr.bulk-on{background:var(--psoft)}
       <div class="add-section">Year &amp; Status</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="fg"><span class="fl">Tax Year<span class="freq">*</span></span>
-          <select class="fi" id="atYear">
+          <select class="fi" id="atYear" onchange="validateAddTPYUnique()" aria-describedby="atUniqueStatus">
             <option value="">— Select year —</option>
             <option>2024</option><option>2025</option><option selected>2026</option>
             <option>2027</option><option>2028</option><option>2029</option><option>2030</option>
@@ -1171,17 +1175,18 @@ tr.bulk-on{background:var(--psoft)}
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Select an existing property <strong>or</strong> a subdivision. At least one is required.</div>
       <div class="fg"><span class="fl">Existing Property</span>
         <div class="prop-lookup-wrap">
-          <select class="fi searchable-select" id="atProperty" onchange="onAddTPYPropertyChange()">
+          <select class="fi searchable-select" id="atProperty" aria-describedby="atUniqueStatus" onchange="onAddTPYPropertyChange()">
             <option value="">— None / use subdivision below —</option>
           </select>
         </div>
       </div>
       <div class="or-divider">— OR —</div>
       <div class="fg"><span class="fl">Subdivision<span class="freq" id="atSubReq" style="display:none">*</span></span>
-        <select class="fi searchable-select" id="atSubdiv" onchange="onAddTPYSubdivChange()">
+        <select class="fi searchable-select" id="atSubdiv" aria-describedby="atUniqueStatus" onchange="onAddTPYSubdivChange()">
           <option value="">— None / use property above —</option>
         </select>
         <div class="ferr" id="atSubdivErr">Select a Subdivision or select a Property above.</div>
+        <div id="atUniqueStatus" class="unique-note" role="status" aria-live="polite" hidden></div>
       </div>
 
       <div class="add-section">Company, County &amp; Details</div>
@@ -1212,7 +1217,7 @@ tr.bulk-on{background:var(--psoft)}
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeAddTPY()">Cancel</button>
-      <button class="btn primary" onclick="submitAddTPY()">Save Parcel Year</button>
+      <button id="atSaveButton" class="btn primary" onclick="submitAddTPY()" disabled>Save Parcel Year</button>
     </div>
   </div>
 </div>
@@ -1366,7 +1371,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.25',
+  version: '19.17.26',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -3487,39 +3492,66 @@ function openAddTPY(propId, propName, propCounty){
   var errEl=$('addTPYErr'); if(errEl){errEl.style.display='none';errEl.textContent='';}
   [$('atYear'),$('atSubdiv')].forEach(function(el){if(el)el.classList.remove('invalid');});
   ['atYearErr','atSubdivErr'].forEach(function(id){if($(id))$(id).classList.remove('show');});
-  onAddTPYPropertyChange();
+  _addTPYUnique.sequence++;_addTPYUnique.key='';_addTPYUnique.state='idle';
   $('addTPYOverlay').classList.remove('hidden');
+  onAddTPYPropertyChange();
 }
 
+var _addTPYUnique={sequence:0,key:'',state:'idle',promise:null};
+function addTPYIdentity(){
+  var year=($('atYear').value||'').trim(),property=($('atProperty').value||'').trim(),subdiv=($('atSubdiv').value||'').trim();
+  var propRec=property?state.data.rawLand.find(function(p){return String(p.id||'')===property;}):null;
+  var codeBase=propRec?(propRec.propertyId||propRec.commonName||''):'';
+  if(!codeBase&&subdiv){var rec=state.data.subdivisions.find(function(s){return String(s.id||'')===subdiv;});codeBase=rec?rec.name:subdiv;}
+  return {year:year,property:property,subdiv:subdiv,propRec:propRec,code:(codeBase||'TPY')+'-'+year};
+}
+function validateAddTPYUnique(force){
+  var captured=addTPYIdentity(),key=JSON.stringify([captured.year,captured.property,captured.subdiv,captured.code]);
+  if(!force&&_addTPYUnique.key===key&&_addTPYUnique.state==='checking')return _addTPYUnique.promise;
+  var sequence=++_addTPYUnique.sequence,note=$('atUniqueStatus'),button=$('atSaveButton');
+  _addTPYUnique.key=key;_addTPYUnique.state='idle';_addTPYUnique.promise=null;
+  function show(status,text){_addTPYUnique.state=status;if(note){note.dataset.state=status;note.textContent=text;note.hidden=!text;}if(button)button.disabled=status!=='available'||!Tax.interactionAllowed();}
+  if(!captured.year||!captured.property&&!captured.subdiv){show('idle','');return Promise.resolve(false);}
+  show('checking','Checking…');
+  function current(){return sequence===_addTPYUnique.sequence&&key===JSON.stringify((function(v){return [v.year,v.property,v.subdiv,v.code];})(addTPYIdentity()));}
+  _addTPYUnique.promise=Tax.checkParcelYearCode(captured.code).then(function(result){
+    if(!current())return false;
+    show(result.available?'available':result.reason,result.available?'':result.reason==='invalid'?'Parcel-year code exceeds 50 characters.':result.message);
+    return result.available;
+  }).catch(function(){if(current())show('error','Couldn’t check. Change the selection to retry.');return false;});
+  return _addTPYUnique.promise;
+}
 function onAddTPYPropertyChange(){
   var sel=$('atProperty');
   var hasProperty=sel&&sel.value!=='';
   var reqBadge=$('atSubReq'); if(reqBadge) reqBadge.style.display=hasProperty?'none':'';
-  if(!hasProperty) return;
+  if(!hasProperty){validateAddTPYUnique();return;}
   var prop=state.data.rawLand.find(function(p){return String(p.id||'')===String(sel.value);});
-  if(!prop) return;
+  if(!prop){validateAddTPYUnique();return;}
   if(prop.county&&$('atCounty')&&!$('atCounty').value) $('atCounty').value=prop.county;
   populateCompanySelect('atCompany',prop.companyId||'');
+  validateAddTPYUnique();
 }
 
 function onAddTPYSubdivChange(){
-  var sel=$('atSubdiv'); if(!sel||!sel.value) return;
+  var sel=$('atSubdiv'); if(!sel||!sel.value){validateAddTPYUnique();return;}
   var opt=sel.options[sel.selectedIndex];
   var county=opt.getAttribute('data-county')||'';
   var company=opt.getAttribute('data-company')||'';
   if(county&&$('atCounty')&&!$('atCounty').value) $('atCounty').value=county;
   if(company) setSelectByText('atCompany',company);
+  validateAddTPYUnique();
 }
 
 function closeAddTPY(){
-  if(!Tax.interactionAllowed())return false;TaxUI.invalidate();Tax.discardDraft('create:'+CONFIG.forms.parcelYear);$('addTPYOverlay').classList.add('hidden'); _addTPYPrefilledPropertyId=null;}
+  if(!Tax.interactionAllowed())return false;_addTPYUnique.sequence++;_addTPYUnique.key='';_addTPYUnique.state='idle';TaxUI.invalidate();Tax.discardDraft('create:'+CONFIG.forms.parcelYear);$('addTPYOverlay').classList.add('hidden'); _addTPYPrefilledPropertyId=null;}
 
 function submitAddTPY(){
  if(Tax.snapshot().reviews.some(function(row){return row.key==='create:'+CONFIG.forms.parcelYear;}))return false;
   if(!Tax.interactionAllowed())return false;
-  var year=($('atYear').value||'').trim();
-  var property=($('atProperty').value||'').trim();
-  var subdiv=($('atSubdiv').value||'').trim();
+  var identity=addTPYIdentity(),key=JSON.stringify([identity.year,identity.property,identity.subdiv,identity.code]);
+  if(identity.year&&(identity.property||identity.subdiv)&&(_addTPYUnique.key!==key||_addTPYUnique.state!=='available'))return validateAddTPYUnique().then(function(available){return available?submitAddTPY():false;});
+  var year=identity.year,property=identity.property,subdiv=identity.subdiv;
   var valid=true;
   var errEl=$('addTPYErr'); errEl.style.display='none'; errEl.textContent='';
   $('atYear').classList.remove('invalid'); $('atYearErr').classList.remove('show');
@@ -3536,22 +3568,14 @@ function submitAddTPY(){
   fieldData.Status=$('atStatus').value||'Awaiting Assessment';
   if(property)  fieldData.Property1=property;
   if(subdiv)    fieldData.Subdivision1=subdiv;
-  // Auto-generate Tax_Parcel_Year_Code = ParcelID-Year
-  var codeBase='';
-  var propRec=property?state.data.rawLand.find(function(p){return String(p.id||'')===String(property);}):null;
+  // Keep the original ParcelID/name-Year code and property inheritance.
+  var propRec=identity.propRec;
   if(propRec){
-    codeBase=propRec.propertyId||propRec.commonName||'';
-    // Inherit fields from Property record
     if(propRec.propertyId) fieldData.Property_ID=propRec.propertyId;
     if(propRec.acres)      fieldData.Acres=propRec.acres;
     if(propRec.geoId)      fieldData.Geo_ID=propRec.geoId;
   }
-  if(!codeBase&&subdiv){
-    var subdivRec=state.data.subdivisions.find(function(s){return String(s.id||'')===String(subdiv);});
-    codeBase=subdivRec?subdivRec.name:subdiv;
-  }
-  if(!codeBase) codeBase='TPY';
-  fieldData.Tax_Parcel_Year_Code=codeBase+'-'+year;
+  fieldData.Tax_Parcel_Year_Code=identity.code;
   var company=($('atCompany').value||'').trim(); if(company) fieldData.Company1=company;
   var county=($('atCounty').value||'').trim();   if(county)  fieldData.County=county;
   var acres=($('atAcres').value||'').trim();     if(acres)   fieldData.Acres=acres;
@@ -3570,7 +3594,8 @@ function submitAddTPY(){
     if(btn){btn.disabled=false;btn.textContent='Save Parcel Year';}
     errEl.textContent='Error: '+(describeResp(err)||'Save failed');
     errEl.style.display='block';
-    diag('Add TPY error',err);
+    if(err.validation){errEl.style.display='none';validateAddTPYUnique(true);diag('Parcel year validation',{message:err.message,parcelYearCode:fieldData.Tax_Parcel_Year_Code});}
+    else diag('Add TPY error',{error:err,code:err.code,response:err.response||err.raw,form:CONFIG.forms.parcelYear,fields:Object.keys(fieldData),parcelYearCode:fieldData.Tax_Parcel_Year_Code});
   });
 }
 
@@ -3637,7 +3662,7 @@ function submitAddProperty(){
   }).catch(function(err){
     errEl.textContent='Error: '+(describeResp(err)||'Save failed');
     errEl.style.display='block';
-    diag('Add Property error',err);
+    diag('Add Property error',{error:err,code:err.code,response:err.response||err.raw,form:CONFIG.forms.property,fields:Object.keys(fieldData)});
   });
 }
 

@@ -20,7 +20,7 @@ const property=(id,index=0)=>Object.assign(Object.fromEntries(propertyMeta.map(f
 function harness(options={}){
  const {document,nodes,node,selectors,listeners,dispatch}=createTaxTestDOM(source),timers=new Map(),calls=[],writes=[];let timerId=0,handshakes=0,active=0,maxActive=0;
  const storage={All_Tax_Parcel_Years:clone(options.rows||[parcel(ID)]),All_Property:Array.from({length:options.propertyCount??1},(_,i)=>property((90071992547420000n+BigInt(i)).toString(),i)),All_Companies:[],All_Subdivisions:[],All_Taxing_Jurisdictions:[],All_Projects:[],...clone(options.storage||{})};
- const selected=config=>{const rows=storage[config.report_name]||[],id=String(config.criteria||'').match(/^\(ID == (\d+)\)$/);return id?rows.filter(row=>row.ID===id[1]):rows;};
+ const selected=config=>{const rows=storage[config.report_name]||[],id=String(config.criteria||'').match(/^\(ID == (\d+)\)$/);const code=String(config.criteria||'').match(/^\(Tax_Parcel_Year_Code == ("(?:[^"\\]|\\.)*")\)$/);return id?rows.filter(row=>row.ID===id[1]):code?rows.filter(row=>row.Tax_Parcel_Year_Code===JSON.parse(code[1])):rows;};
  async function native(method,config,action){calls.push({method,config:clone(config)});active++;maxActive=Math.max(maxActive,active);try{return await action();}finally{active--;}}
  const DATA={getRecordCount:config=>native('count',config,()=>({code:3000,result:{records_count:String(options.count?options.count(config,storage):selected(config).length)}})),
   getRecords:config=>native('records',config,async()=>{const override=options.read&&await options.read(config,storage);if(override!==undefined)return override;const rows=selected(config),offset=Number(config.record_cursor||0),size=options.pageSize||1000,next=offset+size;return{code:3000,data:clone(rows.slice(offset,next)),...(next<rows.length?{record_cursor:String(next)}:{})};}),
@@ -34,6 +34,63 @@ function harness(options={}){
  return {c,widget:c.__taxTest,nodes,node,selectors,storage,DATA,calls,writes,timers,dispatch,handshakes:()=>handshakes,maxActive:()=>maxActive,tick(ms){const entry=[...timers].find(([,v])=>v.ms===ms);assert.ok(entry);timers.delete(entry[0]);entry[1].fn();}};
 }
 async function ready(options){const h=harness(options),result=await h.c.__taxBoot;assert.equal(result.published,true);assert.equal(h.widget.state.referenceLoaded,true);assert.equal(h.widget.state.rowsLoaded,false);return h;}
+
+// Definite field-validation rejection retains an editable form, exposes Creator's
+// actual reason and allows only a deliberate corrected submit. Success still
+// requires the exact returned string ID and counted readback.
+for(const wrapped of [false,true]){
+ let reject=true;const native={code:3001,data:{Tax_Parcel_Year_Code:'This value already exists'}};
+ const h=await ready({create:(cfg,apply)=>reject?(wrapped?{code:3000,result:[native]}:native):{code:3000,result:[{code:3000,data:{ID:apply()}}]}});
+ h.c.openAddTPY(h.widget.state.data.rawLand[0].id);h.node('atYear').value='2026';await h.c.submitAddTPY();
+ assert.match(h.node('addTPYErr').textContent,/Creator 3001.*Tax_Parcel_Year_Code.*already exists/);
+ assert.equal(h.widget.Tax.snapshot().reviews.length,0);assert.equal(h.widget.Tax.interactionAllowed(),true);assert.equal(h.writes.length,1);
+ reject=false;h.node('atYear').value='2027';await h.c.submitAddTPY();assert.equal(h.writes.length,2);assert.equal(h.storage.All_Tax_Parcel_Years.at(-1).Tax_Year,'2027');assert.equal(h.widget.Tax.snapshot().reviews.length,0);
+}
+// The unique code count covers records outside the loaded year/scope. No POST,
+// no generated suffix/truncation, and no new unknown-write lock on a duplicate.
+{
+ const h=await ready({rows:[{...parcel(ID),Tax_Parcel_Year_Code:'000073-2026'}]});h.c.openAddTPY(h.widget.state.data.rawLand[0].id);h.node('atYear').value='2026';await h.c.submitAddTPY();
+ assert.match(h.node('atUniqueStatus').textContent,/000073-2026 already exists/);assert.equal(h.writes.length,0);assert.equal(h.widget.Tax.snapshot().reviews.length,0);assert.equal(h.c.closeAddTPY(),undefined);
+}
+{
+ const h=await ready({storage:{All_Property:[{...property('90071992547420000'),Property_ID:'x'.repeat(46)}]}});h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await h.c.submitAddTPY();
+ assert.match(h.node('atUniqueStatus').textContent,/exceeds 50 characters/);assert.equal(h.writes.length,0);assert.equal(h.widget.Tax.snapshot().reviews.length,0);
+}
+// A validation-looking reply beside an applied ID remains unknown: no automatic
+// retry, no second POST, and recovery can only read the exact candidate ID.
+{
+ const h=await ready({create:(cfg,apply)=>({code:3000,result:[{code:3001,data:{Tax_Parcel_Year_Code:'Duplicate'}},{code:3000,data:{ID:apply()}}]})});h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await h.c.submitAddTPY();
+ assert.equal(h.widget.Tax.snapshot().reviews.length,1);assert.equal(h.c.submitAddTPY(),false);assert.equal(h.writes.length,1);assert.equal(await h.c.taxRecheckReviews(),true);assert.equal(h.writes.length,1);
+}
+// A JSON transport rejection still displays native workflow details while
+// retaining the conservative unknown/no-replay policy for thrown envelopes.
+{
+ const h=await ready({create:()=>{throw {responseText:JSON.stringify({code:4590,error:[{alert_message:['County validation failed.']}]})};}});h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await h.c.submitAddTPY();
+ assert.match(h.node('addTPYErr').textContent,/4590.*County validation failed/);assert.equal(h.widget.Tax.snapshot().reviews.length,1);assert.equal(h.writes.length,1);
+}
+
+// Live identity changes check before Submit. An obsolete response cannot enable
+// Save or restore a duplicate warning for a newer year/selection; close/reopen
+// likewise prevents the previous dialog's response from touching the new draft.
+{
+ const h=await ready({rows:[{...parcel(ID),Tax_Parcel_Year_Code:'000073-2026'}]});
+ h.c.openAddTPY(h.widget.state.data.rawLand[0].id);assert.equal(h.node('atSaveButton').disabled,true);assert.equal(h.node('atUniqueStatus').textContent,'Checking…');await drain();
+ assert.equal(h.node('atUniqueStatus').textContent,'000073-2026 already exists.');assert.equal(h.node('atSaveButton').disabled,true);assert.equal(h.writes.length,0);
+ h.node('atYear').value='2027';assert.equal(h.node('atYear').getAttribute('onchange'),'validateAddTPYUnique()');await h.c.validateAddTPYUnique();await drain();assert.equal(h.node('atUniqueStatus').hidden,true);assert.equal(h.node('atSaveButton').disabled,false);assert.equal(h.writes.length,0);
+ h.node('atProperty').value='';h.c.onAddTPYPropertyChange();assert.equal(h.node('atSaveButton').disabled,true);assert.equal(h.node('atUniqueStatus').hidden,true);
+}
+{
+ const h=await ready(),native=h.DATA.getRecordCount,first=held(),second=held();let calls=0;
+ h.DATA.getRecordCount=cfg=>cfg.criteria&&cfg.criteria.includes('Tax_Parcel_Year_Code')?++calls===1?first.promise:second.promise:native(cfg);
+ h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await drain();h.node('atYear').value='2027';const newer=h.c.validateAddTPYUnique();first.resolve({code:3000,result:{records_count:'1'}});await drain();assert.equal(h.node('atUniqueStatus').textContent,'Checking…');assert.equal(h.node('atSaveButton').disabled,true);
+ second.resolve({code:3000,result:{records_count:'0'}});await newer;assert.equal(h.node('atSaveButton').disabled,false);assert.equal(h.node('atUniqueStatus').hidden,true);assert.equal(h.writes.length,0);
+}
+{
+ const h=await ready(),native=h.DATA.getRecordCount;let blocked=false;
+ h.DATA.getRecordCount=cfg=>blocked&&cfg.criteria&&cfg.criteria.includes('Tax_Parcel_Year_Code')?Promise.resolve({code:2898,error:'Denied uniqueness read'}):native(cfg);
+ blocked=true;h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await drain();assert.equal(h.node('atSaveButton').disabled,true);assert.match(h.node('atUniqueStatus').textContent,/Couldn’t check/);assert.equal(h.writes.length,0);
+ blocked=false;await h.c.validateAddTPYUnique(true);assert.equal(h.node('atSaveButton').disabled,false);assert.equal(h.node('atUniqueStatus').hidden,true);assert.equal(h.writes.length,0);
+}
 
 // Whole boot: real SDK2 actor and references, then actual Search→renderer. No SDK1 API exists in fixture.
 {

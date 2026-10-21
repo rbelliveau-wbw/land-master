@@ -80,6 +80,25 @@
   }
   function responseFailed(value){return !value||typeof value!=='object'||Array.isArray(value)||scanEnvelope(value,false).failed;}
   function failureCode(value){return scanEnvelope(value,true).code;}
+  // Diagnostics only. Never use text to decide whether a write succeeded or may replay.
+  function failureMessage(value){
+    const queue=[value],seen=new Set(),messages=[];
+    function add(text){if(typeof text==='string'&&text.trim()&&!messages.includes(text.trim()))messages.push(text.trim().slice(0,800));}
+    for(let index=0;index<queue.length&&index<64;index++){
+      let item=queue[index];
+      if(typeof item==='string'){try{item=JSON.parse(item);}catch(ignore){continue;}}
+      if(!item||typeof item!=='object'||seen.has(item))continue;seen.add(item);
+      if(Array.isArray(item)){queue.push(...item.slice(0,16));continue;}
+      const rejected=item.code!=null&&String(item.code)!=='3000'||item.error||item.success===false||/^(error|failed|failure)$/i.test(String(item.status||'').trim());
+      if(rejected){add(item.message);add(item.description);add(item.error);}
+      add(item.alert_message);if(Array.isArray(item.alert_message))item.alert_message.forEach(add);
+      // Validation maps are messages keyed by field link name, not saved record data.
+      if(rejected&&item.data&&typeof item.data==='object'&&!Array.isArray(item.data))for(const [field,text] of Object.entries(item.data))if(field!=='ID'&&typeof text==='string')add(field+': '+text);
+      for(const key of ['result','details','response','output','responseText','error','errors','cause'])if(Object.prototype.hasOwnProperty.call(item,key)&&queue.length<64)queue.push(item[key]);
+    }
+    const native=failureCode(value),text=messages.join(' | ').slice(0,1200);
+    return text?(native&&native!=='3000'?'Creator '+native+': ':'')+text:'';
+  }
   function failure(report,value,message){let native=value;try{if(value&&value.responseText)native=JSON.parse(value.responseText);}catch(ignore){}const error=new Error(message||report+': '+(native&&(native.message||native.description)||'Creator did not return a readable response.'));error.code=failureCode(value);error.permissionDenied=error.code==='2898'||!!(value&&value.permissionDenied);error.response=value;error.cause=value;return error;}
   function context(){const c=root.LMRuntime&&root.LMRuntime.current?root.LMRuntime.current():{};return String(c.environment||'UNKNOWN')+'|'+String(c.user||'')+'|'+String(c.appLinkName||'');}
   function invalidate(predicate){
@@ -160,6 +179,6 @@
     return promise;
   }
   root.LMPerf=Object.freeze({mark,start,end,timed,snapshot});
-  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,responseFailed,failureCode,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;if(options&&Number.isInteger(options.maxRequestsPerMinute)&&options.maxRequestsPerMinute>=0&&options.maxRequestsPerMinute<=50)maxRequestsPerMinute=options.maxRequestsPerMinute;if(options&&typeof options.readRetryOnThrottle==='boolean')readRetryOnThrottle=options.readRetryOnThrottle;pump();}});
+  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,responseFailed,failureCode,failureMessage,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;if(options&&Number.isInteger(options.maxRequestsPerMinute)&&options.maxRequestsPerMinute>=0&&options.maxRequestsPerMinute<=50)maxRequestsPerMinute=options.maxRequestsPerMinute;if(options&&typeof options.readRetryOnThrottle==='boolean')readRetryOnThrottle=options.readRetryOnThrottle;pump();}});
   mark('adapter:ready');
 })(typeof window==='undefined'?globalThis:window);

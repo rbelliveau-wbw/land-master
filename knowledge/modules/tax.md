@@ -56,6 +56,25 @@ read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 # Tax Module
 
+## Live parcel-year uniqueness — 19.17.26, October 21, 2026
+
+Year, Property and Subdivision changes check the unchanged generated
+`Tax_Parcel_Year_Code` against `All_Tax_Parcel_Years` immediately. A short amber
+notice appears beside the selection; Save is disabled while checking, when a
+duplicate exists, or when uniqueness cannot be checked. Success hides the notice.
+Stale/closed-dialog replies cannot repaint a newer selection. The final captured
+create rechecks the same unique code, including the Creator 50-character limit.
+No code suffix, truncation, alternate name matching or automatic update occurs.
+
+Tax's native code 3001 validation rejections retain editable drafts rather than
+creating a permanent unknown-write lock. Actual native field messages, failure
+codes and response context remain visible; ambiguous, competing, missing-ID and
+late replies still prevent replay and require read-only recovery. Native success
+still requires the exact string destination ID and fresh counted identity read.
+Property/parcel-year matching, payload inheritance and all workflow rules remain.
+No form, field, function, Custom API or Creator deployment changes are required.
+[Evidence, systemic diagnostics, regression and rollback](../../docs/tax-live-uniqueness-2026-10-21.md).
+
 ## Explicit field clears — 19.17.23, October 20, 2026
 
 Parcel inline saves now retain explicit empty strings for `Notice_Received`,

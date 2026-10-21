@@ -13,7 +13,7 @@ function harness({rows=[raw(ID)],propertyCount=1,countOverride,readHook,updateHo
   const h=actualHarness(['mapParcelYears','mapRawLand','mapCompanies','mapSubdivisions','mapJurisdictions','mapProjects','pruneBulkSelection','getFilteredRows','getPagedRows','renderLotRow','renderTable','getPropBulkIds','saveModalRecord']);const c=h.context;c.window=c;
   const storage={All_Tax_Parcel_Years:clone(rows),All_Property:Array.from({length:propertyCount},(_,index)=>({ID:(90071992547420000n+BigInt(index)).toString(),Common_Name:'Fixture Property '+index,Property_ID:'000073',Land_Type:'Original',County:'Fixture',Company1:'',Projects:[]})),All_Companies:[],All_Subdivisions:[],All_Taxing_Jurisdictions:[],All_Projects:[]};
   const calls=[],writes=[],progress=[],recoveries=[];let nativeActive=0,maxActive=0,handshakes=0;
-  const filtered=config=>{const match=String(config.criteria||'').match(/^\(ID == (\d+)\)$/);return match?(storage[config.report_name]||[]).filter(row=>row.ID===match[1]):storage[config.report_name]||[];};
+  const filtered=config=>{const match=String(config.criteria||'').match(/^\(ID == (\d+)\)$/);const code=String(config.criteria||'').match(/^\(Tax_Parcel_Year_Code == ("(?:[^"\\]|\\.)*")\)$/),rows=storage[config.report_name]||[];return match?rows.filter(row=>row.ID===match[1]):code?rows.filter(row=>row.Tax_Parcel_Year_Code===JSON.parse(code[1])):rows;};
   async function native(kind,config,invoke){calls.push({kind,config:clone(config)});nativeActive++;maxActive=Math.max(maxActive,nativeActive);try{return await invoke();}finally{nativeActive--;}}
   c.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>{handshakes++;return initHook?initHook(handshakes):{envUrlFragment:'/environment/development',loginUser:'fixture'};}},DATA:{
     getRecordCount:config=>native('count',config,async()=>({code:3000,result:{records_count:String(countOverride?countOverride(config,storage):filtered(config).length)}})),
@@ -35,7 +35,7 @@ function harness({rows=[raw(ID)],propertyCount=1,countOverride,readHook,updateHo
     c.matchMedia=()=>({matches:true});vm.runInContext(readTaxScript('tax-progress.js'),c);
     TaxUI=c.LMTaxUIPreparation.create({close:id=>c.Tax.closeProgress(id),pending:()=>{const value=c.Tax.snapshot();return value.pending||value.batchActive;},recheck:ledger=>Promise.all(ledger.rows.filter(row=>row.state==='unknown').map(row=>c.Tax.recheck('update:'+ledger.report+':'+row.id)))});
   }else{let epoch=0;TaxUI={controls(){},capture:kind=>({kind,epoch}),owns:request=>request.epoch===epoch,invalidate:()=>{epoch++;}};}
-  c.TaxUI=TaxUI;
+  c.TaxUI=TaxUI;c._addTPYUnique={sequence:0,key:'',state:'idle',promise:null};
   Object.assign(c.CONFIG,{forms:{property:'Property',parcelYear:'Tax_Parcel_Year'}});
   c.Tax=c.LMTaxPreparation.create({reports:c.CONFIG.reports,forms:c.CONFIG.forms,maxAutoRows:800,initTimeoutMs:timeout,fieldsByReport,
     onState:snapshot=>{c.state.loading=snapshot.referenceState==='loading'||snapshot.scopeState==='loading';c.state.referenceLoaded=snapshot.referenceState==='ready';c.state.rowsLoaded=snapshot.scopeState==='ready';TaxUI.controls(snapshot);},
@@ -45,7 +45,7 @@ function harness({rows=[raw(ID)],propertyCount=1,countOverride,readHook,updateHo
     ...(ui?{onBatchOpen:ledger=>TaxUI.open(ledger),onBatchProgress:ledger=>{progress.push(clone(ledger));TaxUI.patch(ledger);},onBatchFinish:ledger=>TaxUI.finish(ledger)}:{}),
     onRecovery:(operation,row)=>{recoveries.push(operation.id);const model=operation.report===c.CONFIG.reports.rawLand?c.state.data.rawLand:c.state.data.parcelYears,newModel=operation.report===c.CONFIG.reports.rawLand?c.mapRawLand([row])[0]:c.mapParcelYears([row])[0],current=model.find(item=>item.id===operation.id);if(current)Object.assign(current,newModel);else model.push(newModel);}
   });
-  for(const name of ['taxRunBatch','fetchRecordCount','updateRecord','createRecord','inlineSave','savePropInline','quickTriage','runParcelSearch','loadReferenceDataOnly','applyPropBulkFields','refreshFacetCounts','_refreshProductionCountsNow','facetCount','submitAddProperty','submitAddTPY','openAddProperty','closeAddProperty','closeAddTPY','saveModalRecord','setYear','toggleBulkRow','clearBulkSelection','switchTab','closeModal'])vm.runInContext(extract(source,name),c);
+  for(const name of ['taxRunBatch','fetchRecordCount','updateRecord','createRecord','inlineSave','savePropInline','quickTriage','runParcelSearch','loadReferenceDataOnly','applyPropBulkFields','refreshFacetCounts','_refreshProductionCountsNow','facetCount','submitAddProperty','addTPYIdentity','validateAddTPYUnique','submitAddTPY','openAddProperty','closeAddProperty','closeAddTPY','saveModalRecord','setYear','toggleBulkRow','clearBulkSelection','switchTab','closeModal'])vm.runInContext(extract(source,name),c);
   c.renderAll=()=>c.renderTable();c.toZohoDate=value=>value;c.animateSaveButton=(button,promise)=>promise;
   return{...h,c,storage,calls,writes,progress,recoveries,TaxUI,stats:()=>({nativeActive,maxActive,handshakes})};
 }

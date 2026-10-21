@@ -1963,16 +1963,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.31"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.31">
-<script src="interaction-motion.js?v=1.62.31"></script>
-<script src="interaction-surfaces.js?v=1.62.31"></script>
-<script src="number-edit-commit.js?v=1.62.31"></script>
-<script src="number-transitions.js?v=1.62.31"></script>
-<script src="number-surfaces.js?v=1.62.31"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.31">
-<link rel="stylesheet" href="report-layout.css?v=1.62.31">
-<link rel="stylesheet" href="construction-board.css?v=1.62.31">
+<script src="success-feedback.js?v=1.62.32"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.32">
+<script src="interaction-motion.js?v=1.62.32"></script>
+<script src="interaction-surfaces.js?v=1.62.32"></script>
+<script src="number-edit-commit.js?v=1.62.32"></script>
+<script src="number-transitions.js?v=1.62.32"></script>
+<script src="number-surfaces.js?v=1.62.32"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.32">
+<link rel="stylesheet" href="report-layout.css?v=1.62.32">
+<link rel="stylesheet" href="construction-board.css?v=1.62.32">
 </head>
 <body>
 
@@ -2021,7 +2021,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.31", pageSize: 200, maxPages: 25,
+  version: "1.62.32", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2877,7 +2877,7 @@ function contractFailureCause(value,seen,depth){
   for(var i=0;i<children.length;i++){var failure=contractFailureCause(children[i],seen,depth+1);if(failure)return failure;}
   return contractFailureFlag(value)?value:null;
 }
-function contractMutationError(response,message){var cause=contractFailureCause(response),error=new Error(message||cause&&cause.message||'Creator did not confirm the record change.');error.raw=response;error.response=response;error.cause=cause;error.noReplay=true;error.uncertain=true;var code=LMData.failureCode(response);if(code&&code!=='3000')error.code=String(code);return error;}
+function contractMutationError(response,message){var cause=contractFailureCause(response),detail=LMData.failureMessage?LMData.failureMessage(response):'',label=message||cause&&cause.message||'Creator did not confirm the record change.',error=new Error(detail&&!detail.endsWith(label)?label+' '+detail:label);error.raw=response;error.response=response;error.cause=cause;error.noReplay=true;error.uncertain=true;var code=LMData.failureCode(response);if(code&&code!=='3000')error.code=String(code);return error;}
 function contractProtocolMetadata(value){
   if(typeof value==='string'){try{value=JSON.parse(value);}catch(ignore){return true;}}
   if(!value||typeof value!=='object')return true;

@@ -466,3 +466,14 @@ Construction parent-request pickers use the shared searchable single-select,
 group eligible requests by subdivision and place the current subdivision first.
 Show request name and budget type within each group; search also includes project
 and territory. Preserve explicit unassigned and missing-subdivision states.
+
+## Live uniqueness feedback
+
+User direction October 21, 2026: check known unique values as their controlling
+inputs change, before enabling Submit. Keep the notice succinct and subtle but
+noticeable: one small amber dot and a short line beside the relevant fields.
+Show a muted checking state, disable Submit while checking/duplicate/unavailable,
+ignore stale replies, and hide the notice when available. Retain a final server
+check and native uniqueness enforcement for concurrent writers. Tax Center's
+parcel-year creation adopts this pattern; do not claim other forms have adopted
+live checking merely because they display native validation details.

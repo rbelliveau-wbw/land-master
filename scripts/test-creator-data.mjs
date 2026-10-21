@@ -440,3 +440,17 @@ for (const terminal of ['3100', '9280']) for (const thrown of [false, true]) {
   assert.equal(perf.snapshot().cachedReads, 0);
 }
 console.log(`PASS: Creator adapter exact IDs/pagination/errors, bounded concurrency, scoped/global invalidation, unrelated dedup/cache preservation, fresh ordering, actual-runtime actor isolation, partial writes, cancellation/retry, token cleanup, private telemetry${canonicalOnly ? ' (canonical only; widget copy sync pending)' : ', and identical widget copies'}.`);
+
+// Native failure diagnostics are bounded, cycle-safe and never interpret a
+// successful record's business text as an API error or success predicate.
+{
+ const {data}=harness();
+ for(const wrap of [x=>x,x=>({code:3000,result:[x]}),x=>({responseText:JSON.stringify(x)})]){
+   const message=data.failureMessage(wrap({code:3001,data:{Tax_Parcel_Year_Code:'This value already exists'}}));
+   assert.match(message,/Creator 3001.*Tax_Parcel_Year_Code: This value already exists/);
+ }
+ assert.match(data.failureMessage({code:4590,error:[{alert_message:['County is invalid.']}]}),/4590.*County is invalid/);
+ assert.equal(data.failureMessage({code:3000,data:{ID:'90071992547409941',Notes:'Error: should stay opaque',status:'failure'}}),'');
+ const cyclic={code:3001,message:'Invalid input'};cyclic.response=cyclic;assert.match(data.failureMessage(cyclic),/Invalid input/);
+ assert.ok(data.failureMessage({code:3001,message:'x'.repeat(10000)}).length<1300);
+}
