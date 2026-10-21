@@ -438,6 +438,8 @@ tr.drilled .drill-chev{transform:rotate(90deg);background:#eef4ff;color:var(--na
 .cname-extras .lot-count-warning{margin:0;flex:none}
 .cname-extras .tag{flex:none}
 .wtable tbody tr.drilled .bldr-pill{background:#fff;border-color:#c9dbf4;color:var(--navy)}
+/* Main-list status controls stay compact on wide desktop reports. */
+.wtable .contract-summary-status>.cbo,.wtable .contract-summary-status>.contract-status-readonly,.wtable .action-summary-status>.contract-status-readonly{box-sizing:border-box;width:100%;max-width:220px}
 .action-summary-title{white-space:normal;overflow-wrap:anywhere;line-height:1.4}.action-summary-meta{margin-top:5px;color:var(--muted);font-size:10.5px;font-weight:500;white-space:normal;line-height:1.35}.action-summary-overdue{color:#b91c1c}.action-summary-status .contract-status-readonly{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .cur-act{color:var(--navy);font-weight:750;max-width:none}
 .cur-act .ca-mark{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--primary);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 3px rgba(37,99,235,.16)}
@@ -1966,14 +1968,14 @@ select.apr-in{cursor:pointer}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
 <script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.18">
-<script src="interaction-motion.js?v=1.62.18"></script>
-<script src="interaction-surfaces.js?v=1.62.18"></script>
-<script src="number-edit-commit.js?v=1.62.18"></script>
-<script src="number-transitions.js?v=1.62.18"></script>
-<script src="number-surfaces.js?v=1.62.18"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.18">
-<link rel="stylesheet" href="report-layout.css?v=1.62.18">
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.20">
+<script src="interaction-motion.js?v=1.62.20"></script>
+<script src="interaction-surfaces.js?v=1.62.20"></script>
+<script src="number-edit-commit.js?v=1.62.20"></script>
+<script src="number-transitions.js?v=1.62.20"></script>
+<script src="number-surfaces.js?v=1.62.20"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.20">
+<link rel="stylesheet" href="report-layout.css?v=1.62.20">
 </head>
 <body>
 
@@ -2022,7 +2024,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.18", pageSize: 200, maxPages: 25,
+  version: "1.62.20", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -9592,7 +9594,7 @@ function contractRow(c,branch){
       +'<span class="cname-extras">'+(branch&&branch.context?'<span class="tag" title="Parent shown for matching children; this parent is outside the current filters.">Parent</span>':'')+contractTitleExtras(c,branch)+(truthy(c.Archive)?'<span class="tag" style="background:#eef2f7;color:#8ea0bd">Archived</span>':'')+'</span>'
     +'</span></div></td>'
     +ownerCell(c)
-    +'<td onclick="event.stopPropagation()">'+statusCell(c)+'</td>'
+    +'<td class="contract-summary-status" onclick="event.stopPropagation()">'+statusCell(c)+'</td>'
     +'<td class="subtle" title="'+attr(contractSubTitle(c))+'">'+esc(contractSubText(c)||"—")+'</td>'
     +currentActionSummaryCells(c)
     +'</tr>';

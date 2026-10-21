@@ -457,3 +457,7 @@ and labeled TOTAL in larger type; omit an editable header-amount control.
 
 Use Title Case on multiword tabs and action buttons, including Approval Rules
 and Add Rule. Keep explanatory headings out of compact approval rule lists.
+
+Legal and Construction main-list Status pickers and Current Action Status pills
+are capped at 220px on wide desktop reports. Keep their existing row height,
+colors, permissions and interaction; status controls must not fill wide columns.

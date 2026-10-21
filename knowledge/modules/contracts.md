@@ -1,3 +1,12 @@
+## Compact report statuses — October 21, 2026
+
+Release 1.62.20 caps main-list Status pickers, locked/read-only statuses and
+Current Action Status pills at 220px in Legal and Construction. Only CSS sizing
+and the status cell class change; choices, permissions, save handlers and table
+columns remain unchanged. No Creator deployment required. Verification: CSS
+scope review, existing Legal/Construction regressions, full validation and Pages
+build. Rollback: hosted 1.62.18 through the environment mapping.
+
 ## ACQ types, Hold and action summary — October 21, 2026
 
 Release 1.62.18 replaces the Acquisition choice with ACQ (PSA) and ACQ (LOI).

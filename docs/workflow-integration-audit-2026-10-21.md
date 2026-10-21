@@ -81,3 +81,17 @@ intact. Do not delete the form or disconnect the logger while audited callers
 still reference it. The OAuth grant has form-create/report-update scopes;
 application connection access is limited to Land Master, while helper endpoints
 are fixed to the audit form/report. OAuth itself is not scoped to one form.
+
+Deployment completed October 21: Creator Stage and Production 9.105, selecting
+only the 73 audit-related components. The user approved removing only the
+Construction Curve preview from All Settings to avoid an unrelated encryption
+change; the curve editor and data remain unchanged. Production Settings selects
+Robby Belliveau (User Access 4410926000004465004) for failure notifications.
+Production test run 4410926000005306002 finalized Failed with Failure Notified
+true and no Notification Error; Robby supplied the received test email, confirming
+inbox delivery. No business import was run for this notification test.
+
+Settings 1.5.17 native Development verification passed: authenticated SDK startup,
+complete three-run history, ascending date sorting, failures-only filtering and
+the User Access recipient picker. Production promotion uses the same permanent
+Creator widget URL. The prior source commit 177e1e87 passed CI and Pages deploy.

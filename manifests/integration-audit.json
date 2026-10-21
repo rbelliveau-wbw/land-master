@@ -40,6 +40,11 @@
     "Plat_AI_Ingest",
     "PF_Build_LOI_Document"
   ],
-  "creator_production_version": null,
-  "recipient_configured_in_production": false
+  "creator_production_version": "9.105",
+  "recipient_configured_in_production": true,
+  "production_notification_test": {
+    "run_id": "4410926000005306002",
+    "failure_notified": true,
+    "inbox_delivery_confirmed_by_user": true
+  }
 }
