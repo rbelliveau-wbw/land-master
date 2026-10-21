@@ -10,6 +10,7 @@ for(const name of names){
  const source=html+fs.readdirSync(root).filter(file=>file.endsWith('-app.js')).map(file=>fs.readFileSync(root+file,'utf8')).join('');
  assert.ok(source.includes('LMInteractionSurfaces.install("'+name+'"'),name+' installs its explicit registry');
 }
+assert.doesNotMatch(fs.readFileSync('shared/interaction-motion.js','utf8'),/cloneNode|function dismissCapture|appendChild\(clone\)/,'shared dismissal must never redraw a detached surface');
 assert.ok(fs.readFileSync('knowledge/design/README.md','utf8').includes('interaction-motion.md'));
 assert.ok(fs.readFileSync('AGENTS.md','utf8').includes('knowledge/design/interaction-motion.md'));
 console.log('PASS: all ten widgets load matching versioned interaction assets and scoped registries; the new-feature design rule is discoverable.');

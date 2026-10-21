@@ -63,9 +63,7 @@ try{
  await page.waitForTimeout(700);await page.locator('#open').click();assert.equal(await page.locator('#noteInput').evaluate(node=>node===document.activeElement),true);
  await page.waitForTimeout(180);await page.locator('#close').click();assert.equal(await page.locator('#surface').isVisible(),false,'original surface closes immediately');
  assert.equal(await page.locator('#open').evaluate(node=>node===document.activeElement),true,'original focus restoration is immediate');
- await page.waitForTimeout(25);assert.equal(await page.locator('.lm-motion-ghost').count(),1);
- const ghost=await page.locator('.lm-motion-ghost').evaluate(node=>({inert:node.inert,hidden:node.getAttribute('aria-hidden'),identities:node.querySelectorAll('[id],[name],[onclick],[data-id],iframe,script,img').length,pointers:getComputedStyle(node).pointerEvents}));
- assert.deepEqual(ghost,{inert:true,hidden:'true',identities:0,pointers:'none'});
+ await page.waitForTimeout(25);assert.equal(await page.locator('.lm-motion-ghost').count(),0,'dismissal never redraws a detached copy');
  await page.waitForTimeout(170);assert.equal(await page.locator('.lm-motion-ghost').count(),0);
  await page.locator('#open').click();await page.waitForTimeout(180);await page.evaluate(()=>lockClose=true);await page.locator('#close').click();await page.waitForTimeout(30);
  assert.equal(await page.locator('#surface').isVisible(),true);assert.equal(await page.locator('.lm-motion-ghost').count(),0,'pending-close lock cannot create an exit visual');
@@ -83,5 +81,5 @@ try{
  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#tabB').click();await page.waitForTimeout(20);
  assert.equal(await page.locator('.lm-motion-rail').evaluate(node=>node.getAnimations().length),0);
  assert.equal(await page.evaluate(()=>writes),0);assert.deepEqual(errors,[]);
- console.log('PASS: all eight shared patterns; native immediate handlers/precise editors, rapid tabs, keyed add/remove/reorder, authorized refresh continuity/overlap, real save states, inert sanitized exits/focus/close locks/actor resets, actual width/gradient progress, reduced motion and bounded 2,000-row geometry.');
+ console.log('PASS: all eight shared patterns; native immediate handlers/precise editors, rapid tabs, keyed add/remove/reorder, authorized refresh continuity/overlap, real save states, clone-free dismissal/focus/close locks/actor resets, actual width/gradient progress, reduced motion and bounded 2,000-row geometry.');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

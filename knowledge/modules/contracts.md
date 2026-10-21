@@ -1,3 +1,11 @@
+## Stable dialogs and Construction parents — October 21, 2026
+
+Release 1.62.21 keeps Construction fields mounted during selections, adds
+subdivision-grouped searchable parent requests, renames Assign Parent Request
+and removes the Construction Open in Creator menu action. The shared close
+fix removes detached exit copies across all widgets. Business rules and native
+save paths remain unchanged. [Checks and rollback](../../docs/modal-close-and-construction-picker-2026-10-21.md).
+
 ## Compact report statuses — October 21, 2026
 
 Release 1.62.20 caps main-list Status pickers, locked/read-only statuses and

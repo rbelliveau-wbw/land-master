@@ -175,3 +175,7 @@ focus immediately; do not flash a differently styled empty copy on close. Keep
 opening motion, late-preview cancellation, nested inert/focus and upload locks.
 Budget association actions use the centered horizontal chain SVG with round
 caps/joins and explicit 16px view box geometry, matching the adjacent controls.
+
+Closing the workspace must not redraw a detached copy of it. The shared motion
+engine retains the real opening fade and immediate host close/focus behavior;
+no exit clone may flash after Close, Escape or backdrop dismissal.

@@ -1,0 +1,8 @@
+{
+  "widget": "forecast-manager",
+  "version": "1.7.16",
+  "created_at": "2026-10-21T18:28:21.047Z",
+  "source": "widgets/forecast-manager/src/app/widget.html",
+  "source_sha256": "86309ccf79bf5cabd4e8aac584ca4c2269d1d87a12e92f8625ac72079afedf3d",
+  "status": "candidate"
+}

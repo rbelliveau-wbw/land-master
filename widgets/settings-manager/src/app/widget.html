@@ -10,9 +10,9 @@
 <script src="settings-controller.js"></script>
 <script src="workflow-log.js"></script>
 <link rel="stylesheet" href="workflow-log.css">
-<script src="approval-policy-domain.js?v=1.5.17"></script>
-<script src="approval-admin.js?v=1.5.17"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.5.17">
+<script src="approval-policy-domain.js?v=1.5.18"></script>
+<script src="approval-admin.js?v=1.5.18"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.5.18">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -251,13 +251,13 @@ td input,td select{padding:5px 8px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
 <script src="success-feedback.js?v=1.4.2"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.5.17">
-<script src="interaction-motion.js?v=1.5.17"></script>
-<script src="interaction-surfaces.js?v=1.5.17"></script>
-<script src="number-edit-commit.js?v=1.5.17"></script>
-<script src="number-transitions.js?v=1.5.17"></script>
-<script src="number-surfaces.js?v=1.5.17"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.5.17">
+<link rel="stylesheet" href="interaction-motion.css?v=1.5.18">
+<script src="interaction-motion.js?v=1.5.18"></script>
+<script src="interaction-surfaces.js?v=1.5.18"></script>
+<script src="number-edit-commit.js?v=1.5.18"></script>
+<script src="number-transitions.js?v=1.5.18"></script>
+<script src="number-surfaces.js?v=1.5.18"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.5.18">
 </head>
 <body>
 
@@ -291,7 +291,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.5.17";
+var SMW_VERSION = "1.5.18";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){

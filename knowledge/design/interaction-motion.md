@@ -15,7 +15,7 @@ their existing 420ms/16px Sliding push and field-exit contract.
 | Adding, removing or reordering rows | Surviving rows move into their real new positions in about 230ms. Editable subform boundaries expand/contract over the same interval, including first insertion, bottom-row removal and removal to empty. New rows ease in and receive a soft highlight above their actual cell fills. An opacity-only insertion and instant last-row deletion do not satisfy this rule. Key persisted rows by string record ID and drafts by stable object identity, never array position. Preserve existing Legal/Settings/takedown FLIP implementations. |
 | Refresh without blanking | Keep the current complete, authorized report mounted while a refresh is pending wherever the existing access/identity guards permit it. Use the existing truthful loading state and settle the completed replacement in about 160ms. Never clear a view solely for a spinner. |
 | Inline save feedback | The actual pending, verified, error and unknown states transition in place in about 150ms. Keep existing inline checks and the shared black success popup. A save is successful only when its existing native success predicate says so. |
-| Dialogs, drawers and popovers | Open the real anchored surface with a short fade; dismiss it without delaying the handler or focus restoration. Native dialogs use discrete display/overlay transitions. A small authorized user-dismissed legacy surface may leave an inert, inaccessible 140ms exit visual. |
+| Dialogs, drawers and popovers | Open the real anchored surface with a short fade; dismiss it without delaying the handler or focus restoration. Native dialogs use discrete display/overlay transitions. Legacy surfaces close immediately; never reinsert detached copies after dismissal. |
 | Changed-row highlight | Briefly wash the affected row in soft blue after a real insertion or verified save. Never flash an entire financial matrix, mark an unknown write saved, or highlight intermediate typed calculations. |
 | Progress meters | Move to actual new meter widths/stops in about 260ms. Numeric labels/ARIA retain their real new values. First appearance and unrelated schedule identities remain static. No invented completion or time-based progress. |
 
@@ -70,41 +70,20 @@ new records and unrelated schedules retain their existing clear/deny/static
 behavior. Refresh animation never bypasses an authorization or complete-history
 gate. Do not keep private data on screen after an access failure.
 
-Legacy exit visuals are only for actual user dismissal of a still-authorized
-surface after its original handler closes it. Remove record/data/DOM identities,
-inline handlers and media/network-loading nodes. Mark the visual inert and
-aria-hidden, disable pointer events, remove it within 140ms, and cancel it on
-context reset. Never create one for programmatic denial, a blocked close, a
-pending write, native dialogs, reduced motion or a large report (>600 elements).
-Large synchronous dismissals remain immediate rather than copying heavy content.
-Composite workspaces whose geometry or appearance depends on their surrounding
-overlay must set `data-lm-motion-exit="none"` on that overlay. It excludes the
-workspace and nested surfaces from detached exit copies while retaining the real
-opening fade and immediate original dismissal/focus handling. A sanitized clone
-cannot reliably preserve ancestor CSS, backdrop blur or data-driven styling;
-never redraw a different-looking surface after the real dialog has closed.
-
-Pro Forma AI Review applies this composite-overlay exception to `#aiReviewModal`.
-Verify repeated X/footer Close with normal and reduced motion; dismissal must
-not create detached dialog or backdrop copies.
-
-Coalesce observations in one frame, ignore numeric animation mutations, and
-bound row geometry to small groups (100 rows by default). Bulk report changes
-use one short surface settle rather than thousands of per-cell measurements.
-Keyed row snapshots must exclude the shared engine's active vertical translation.
-Numeric decoration or a rapid second action may resample a row during reveal;
-never retain that temporary visual offset as its next layout position. A reveal
-must settle within its original duration rather than restart on observer updates.
-Do not animate mounted inputs themselves or force layout for every numeric cell.
-Exports, date semantics, save acknowledgements, approval/progress locks and
-record identity remain under the existing component guides.
+Dismissed surfaces must never be cloned or appended again for an exit fade.
+The detached 140ms copies caused visible redraws of Legal attachments and
+comments when ancestor styles, IDs and backdrop context were removed. This rule
+applies to all widgets, dialogs, drawers and popovers. Preserve opening fades,
+native dialog transitions, immediate original close handlers, pending-write
+locks, mounted reports and focus restoration. Existing `data-lm-motion-exit`
+annotations remain harmless compatibility markers.
 
 ## Verification
 
 Run the adoption check and desktop motion/browser fixtures, including actual
 module renderers. Cover repeated/rapid tabs, row add/remove/reorder and draft
 identity, expanded groups, retained refresh data and errors, pending/verified/
-unknown feedback, focus after dismissal, inaccessible sanitized exit visuals,
+unknown feedback, focus after dismissal, no reinserted exit copies,
 actor resets, native progress stops, reduced motion and bounded large reports.
 Row checks must prove an intermediate boundary and settled natural layout for
 append, last/only-row removal, empty-to-first and rapid opposite actions. Merely

@@ -461,3 +461,8 @@ and Add Rule. Keep explanatory headings out of compact approval rule lists.
 Legal and Construction main-list Status pickers and Current Action Status pills
 are capped at 220px on wide desktop reports. Keep their existing row height,
 colors, permissions and interaction; status controls must not fill wide columns.
+
+Construction parent-request pickers use the shared searchable single-select,
+group eligible requests by subdivision and place the current subdivision first.
+Show request name and budget type within each group; search also includes project
+and territory. Preserve explicit unassigned and missing-subdivision states.

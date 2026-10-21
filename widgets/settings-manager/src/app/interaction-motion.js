@@ -1,4 +1,4 @@
-/* Shared presentation only. No business writes or delayed handlers. Exit visuals are inert. */
+/* Shared presentation only. Real surfaces close immediately; never redraw detached exit copies. */
 (function(global){
   'use strict';
   const ids=new WeakMap();let sequence=0;
@@ -45,7 +45,7 @@
     const root=options.root||document.body;
     let frame=0,stopped=false,actor='',primed=false,intent=0,structural=false;
     let previousLists=new Map(),previousPanels=new Map(),previousSurfaces=new Map(),previousFeedback=new Map();
-    const rails=new Map(),scrollers=new Map(),previousTabs=new Map(),tracked=new Set(),ghosts=new Set(),dismissals=new WeakMap();
+    const rails=new Map(),scrollers=new Map(),previousTabs=new Map(),tracked=new Set();
     let seenTabs=new Set();
     const observer=new MutationObserver(records=>{
       const relevant=records.filter(record=>!record.target.closest?.('[data-lm-number-key],[data-pf-number-key],[data-number-key],.lm-motion-rail'));
@@ -56,7 +56,7 @@
     const resize=typeof ResizeObserver==='function'?new ResizeObserver(schedule):null;
     const now=()=>performance.now();
     function watch(){if(!stopped)observer.observe(root,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','style','hidden','open','aria-hidden','aria-expanded','aria-selected','aria-pressed','aria-current','data-state']});}
-    function reset(){for(const node of tracked)cancel(node);for(const ghost of ghosts){cancel(ghost);ghost.remove();}ghosts.clear();tracked.clear();previousLists.clear();previousPanels.clear();previousSurfaces.clear();previousFeedback.clear();previousTabs.clear();scrollers.clear();primed=false;}
+    function reset(){for(const node of tracked)cancel(node);tracked.clear();previousLists.clear();previousPanels.clear();previousSurfaces.clear();previousFeedback.clear();previousTabs.clear();scrollers.clear();primed=false;}
     function run(node,frames,ms){tracked.add(node);animate(node,frames,ms);}
     function tabs(config,index){
       for(const [navIndex,nav] of [...root.querySelectorAll(config.selector)].entries()){
@@ -145,7 +145,6 @@
     }
     function surfaces(config,index,next){
       for(const node of root.querySelectorAll(config.selector)){
-        if(node.closest('.lm-motion-ghost'))continue;
         const id=key(index,node.id||identity(node)),open=visible(node),old=previousSurfaces.get(id);
         next.set(id,{open,node});
         if(node.tagName==='DIALOG'){node.classList.add('lm-motion-dialog');continue;}
@@ -158,7 +157,6 @@
     }
     function feedback(config,index,next){
       for(const node of root.querySelectorAll(config.selector)){
-        if(node.closest('.lm-motion-ghost'))continue;
         const id=key(index,config.key?config.key(node):node.id||identity(node)),state=config.state?config.state(node):node.dataset.state||String(node.className).replace(/\blm-motion-\S+/g,'').trim();
         node.classList.add('lm-motion-feedback');next.set(id,state);
         if(primed&&previousFeedback.has(id)&&previousFeedback.get(id)!==state&&visible(node)){
@@ -196,44 +194,11 @@
       }catch(error){reset();console.warn('Interaction motion unavailable:',options.module||'widget');}finally{observer.takeRecords();watch();}
     }
     function schedule(){if(!frame&&!stopped)frame=requestAnimationFrame(flush);}
-    function dismissCapture(event){
-      if(!event.isTrusted||media?.matches||!['click','pointerdown','keydown'].includes(event.type)||event.type==='keydown'&&event.key!=='Escape')return;
-      const target=event.target,button=target.closest?.('button,a,[data-close]'),label=button&&(button.getAttribute('aria-label')||button.getAttribute('title')||button.textContent.trim());
-      const explicit=event.key==='Escape'||button&&(/^(close|cancel|dismiss|done|keep editing)\b/i.test(label||'')||button.matches('.modal-x,.modal-close,[data-close]'));
-      // Composite workspaces can depend on ancestor layout/backdrop and data
-      // selectors that a sanitized detached copy cannot preserve.
-      const candidates=[...previousSurfaces.values()].filter(({node,open})=>open&&visible(node)&&node.tagName!=='DIALOG'&&!node.closest('dialog')&&!node.closest('.lm-motion-ghost,[data-lm-motion-exit="none"]'));
-      const selected=candidates.filter(({node})=>{
-        const popover=node.matches('[role="listbox"],[role="menu"],[data-lm-motion="popover"]')||/(popover|picker|msel-pop|kmenu)/.test(node.className);
-        return explicit&&node.contains(target)||event.key==='Escape'||target===node||popover&&!node.contains(target);
-      }).filter(({node},index,all)=>!all.some(other=>other.node!==node&&other.node.contains(node)));
-      for(const {node}of selected){
-        if(dismissals.has(node)||node.querySelectorAll('*').length>600)continue;
-        const dismissal={};dismissals.set(node,dismissal);
-        const rect=node.getBoundingClientRect(),style=getComputedStyle(node),clone=node.cloneNode(true),context=key(global.LMRuntime?.current?.()||'',options.actor?.()||'');
-        clone.querySelectorAll('script,style,link,iframe,object,embed,img,video,audio,source').forEach(child=>child.remove());
-        clone.querySelectorAll('[data-number-edit-from]').forEach(child=>{child.textContent=child.dataset.numberEditFrom;});
-        for(const child of [clone,...clone.querySelectorAll('*')]){
-          child.style.animation='none';child.style.transition='none';child.classList.remove('number-edit-pending','lm-number-changing','pf-number-changing','is-changing');
-          for(const attribute of [...child.attributes])if(/^(?:id|name|for|src|srcset|href|action|formaction|role|aria-|data-|on)/i.test(attribute.name))child.removeAttribute(attribute.name);
-        }
-        clone.classList.add('lm-motion-ghost');clone.setAttribute('aria-hidden','true');clone.inert=true;
-        Object.assign(clone.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',right:'auto',bottom:'auto',width:rect.width+'px',height:rect.height+'px',margin:'0',transform:'none',display:style.display,font:style.font,color:style.color,background:style.background,borderRadius:style.borderRadius,boxShadow:style.boxShadow,overflow:'clip'});
-        setTimeout(()=>{
-          if(dismissals.get(node)!==dismissal)return;dismissals.delete(node);
-          if(stopped||visible(node)||options.ready?.()===false||context!==key(global.LMRuntime?.current?.()||'',options.actor?.()||''))return;
-          document.body.appendChild(clone);ghosts.add(clone);
-          const animation=animate(clone,[{opacity:1},{opacity:0}],140);
-          if(animation)animation.finished.catch(()=>{}).finally(()=>{clone.remove();ghosts.delete(clone);});else{clone.remove();ghosts.delete(clone);}
-        },0);
-      }
-    }
     function before(event){
       if(event.type==='input'){
         if(event.target.matches?.('textarea,[contenteditable="true"],input:not([type="checkbox"]):not([type="radio"]):not([type="range"])'))intent=0;
         return;
       }
-      dismissCapture(event);
       if(event.type==='keydown'&&!['Enter',' ','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Delete'].includes(event.key))return;
       if(event.target.closest?.('textarea,[contenteditable="true"],input:not([type="checkbox"]):not([type="radio"]):not([type="range"])'))return;
       // Read before the original handler, without canceling or delaying it.

@@ -105,3 +105,7 @@ record and retained draft.
 Before release, check keyboard Post, formatting/preview, long content, date and
 author, count/loading/error states, read-only/expired edits, close/reopen drafts,
 pending/unknown writes, record-switch races and focus return.
+
+Closing the workspace must not redraw a detached copy of it. The shared motion
+engine retains the real opening fade and immediate host close/focus behavior;
+no exit clone may flash after Close, Escape or backdrop dismissal.

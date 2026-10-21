@@ -4,7 +4,6 @@
 .lm-motion-tabs .lm-motion-tab-item.lm-motion-selected{background:transparent!important;box-shadow:none!important}
 .lm-motion-rail{position:absolute;z-index:0;pointer-events:none;transition:transform 190ms cubic-bezier(.22,.7,.25,1),width 190ms cubic-bezier(.22,.7,.25,1),height 190ms cubic-bezier(.22,.7,.25,1);contain:paint}
 .lm-motion-surface{animation:none!important}
-.lm-motion-ghost{pointer-events:none!important;user-select:none!important;z-index:2147483000!important;animation:none!important;contain:paint}
 .lm-motion-feedback{transition:color 160ms ease,background-color 160ms ease,border-color 160ms ease}
 .lm-motion-meter{transition:width 260ms cubic-bezier(.22,.7,.25,1)!important}
 progress.lm-motion-meter::-webkit-progress-value{transition:width 260ms cubic-bezier(.22,.7,.25,1)}
