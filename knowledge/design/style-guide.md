@@ -8,10 +8,13 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
-Legal and Construction keep their module menu centered in the top header,
-between the brand/breadcrumb and connection controls. At narrower desktop widths,
-the menu occupies a centered second header row instead of overlapping either side.
-Keep New and Refresh in the page toolbar and preserve module-specific grants.
+Legal and Construction keep their module slider menu at the left of the page
+toolbar above the filters, with New and Refresh at the right. User direction
+October 20, 2026 supersedes the earlier centered-header placement. Use the exact
+Pro Forma main-report palette from its `report-layout.css`: `#e5ecf3` workspace,
+`#f4f7fb`/`#eaf1f7` alternating rows, `#d9e5f1` column headers and the
+`#dce8f5` → `#eaf1f8` group-heading gradient. Preserve the existing layout,
+hierarchy highlights, status colors and module-specific grants.
 Board cards and lane headings must not shrink vertically: wrap full request names
 and reserve a few pixels around cards for focus/hover edges. Workspace header
 fields wrap so tabs and the comment button never collide with metadata. Omit the

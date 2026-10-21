@@ -1,3 +1,15 @@
+## Pro Forma report palette and restored menus — October 20, 2026
+
+Release 1.62.15 applies Pro Forma's main-menu/report colors to Legal and
+Construction: matching workspace, alternating rows, column headings, group
+headings, borders and board surfaces. It returns the module slider menus to the
+page toolbar above the filters, with New and Refresh on the right. The layout,
+permissions, family/drill highlights, status colors and prior clipping fixes are
+preserved. This supersedes 1.62.14's centered-header menu. No Creator changes are
+required. Validation: Construction/Legal navigation and access regressions,
+desktop color comparison against Pro Forma, full validation and Pages build.
+Rollback: hosted release 1.62.14.
+
 ## Header navigation and clipping — October 20, 2026
 
 Release 1.62.14 centers the existing permission-filtered module navigation in the

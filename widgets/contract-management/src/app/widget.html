@@ -1604,15 +1604,7 @@ select.apr-in{cursor:pointer}
 .home-switch button:active{transform:translateY(0)}
 .home-switch button:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
 .topbar .crumb{min-width:0;max-width:min(45vw,600px);overflow:hidden}
-.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;height:auto;min-height:56px;padding-top:7px;padding-bottom:7px}
-.topbar-context,.topbar-status{display:flex;align-items:center;min-width:0}
-.topbar-status{justify-content:flex-end;gap:8px}
-.module-nav{justify-self:center;min-width:0;max-width:100%}
-.module-nav:empty{display:none}
-.module-nav .home-switch{margin:0;max-width:100%}
-.module-nav .home-switch button{padding:0 13px}
-.home-actions{padding:14px 18px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}
-@media(max-width:1100px){.topbar{grid-template-columns:minmax(0,1fr) auto}.module-nav{grid-column:1/-1;grid-row:2}.topbar-status{grid-column:2;grid-row:1}}
+.home-actions{padding:14px 18px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .construction-form{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
 .construction-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .construction-fields>.nc-f{grid-column:auto}
@@ -1971,29 +1963,26 @@ select.apr-in{cursor:pointer}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
 <script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.14">
-<script src="interaction-motion.js?v=1.62.14"></script>
-<script src="interaction-surfaces.js?v=1.62.14"></script>
-<script src="number-edit-commit.js?v=1.62.14"></script>
-<script src="number-transitions.js?v=1.62.14"></script>
-<script src="number-surfaces.js?v=1.62.14"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.14">
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.15">
+<script src="interaction-motion.js?v=1.62.15"></script>
+<script src="interaction-surfaces.js?v=1.62.15"></script>
+<script src="number-edit-commit.js?v=1.62.15"></script>
+<script src="number-transitions.js?v=1.62.15"></script>
+<script src="number-surfaces.js?v=1.62.15"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.15">
+<link rel="stylesheet" href="report-layout.css?v=1.62.15">
 </head>
 <body>
 
 <div class="topbar">
-  <div class="topbar-context">
   <div class="topbar-brand">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/><path d="M4 10h16"/></svg>
     Land Master
   </div>
   <div class="crumb" id="crumb"><a onclick="goHome()">Contracts</a></div>
-  </div>
-  <nav class="module-nav" id="moduleNav" aria-label="Module navigation" data-lm-motion="tabs"></nav>
-  <div class="topbar-status">
+  <div class="spacer"></div>
   <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading…</span></span>
   <button class="auditbtn" id="auditToggle" onclick="toggleAudit()" title="Open the audit log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span class="audit-n" id="auditCount"></span></button>
-  </div>
 </div>
 
 <div id="banners"></div>
@@ -2030,7 +2019,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.14", pageSize: 200, maxPages: 25,
+  version: "1.62.15", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -6515,14 +6504,14 @@ function refreshReviewCount(){
   });
 }
 function homeNavigation(active){
-  return '<div class="home-switch" role="tablist" aria-label="'+(constructionMode()?'Construction':'Legal')+' views">'
+  return '<div class="home-switch" role="tablist" aria-label="'+(constructionMode()?'Construction':'Legal')+' views" data-lm-motion="tabs">'
     +'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='contracts')+'" class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">'+(constructionMode()?'Requests':'Contracts')+'</button>'
     +(!constructionMode()||constructionEditAccess()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='loi')+'" class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span></button>':'')
     +(canTemplates()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='actions')+'" class="'+(active==="actions"?"active":"")+'" onclick="showManageActions()">Manage Task Templates</button>':'')
     +'</div>';
 }
 function homeSwitch(active){
-  return '<div class="home-actions">'+(canPropose()?'<button class="btn primary" onclick="newContract()">+ New '+workNoun()+'</button>':'')+'<button class="btn sm" onclick="loadData()" title="Reload all data">⟳ Refresh</button></div>';
+  return '<div class="home-actions">'+homeNavigation(active)+'<div class="spacer"></div>'+(canPropose()?'<button class="btn primary" onclick="newContract()">+ New '+workNoun()+'</button>':'')+'<button class="btn sm" onclick="loadData()" title="Reload all data">⟳ Refresh</button></div>';
 }
 /* ============================================================
    MANAGE ACTIONS - the action checklist a new contract of each type is seeded with.
@@ -10493,8 +10482,6 @@ function renderAll(){
   var same=(key===LAST_VIEW_KEY);
   var st=same?captureScroll():null;
   renderView();
-  var moduleNav=$("moduleNav");
-  if(moduleNav)moduleNav.innerHTML=S.locked||constructionMode()&&!constructionAccess()?'':homeNavigation(S.view==='detail'?'contracts':S.view==='loiReview'?'loi':S.homeSection);
   var backfill=$("contract_backfill_banner");
   if(!backfill){ backfill=document.createElement("div"); backfill.id="contract_backfill_banner"; document.body.insertBefore(backfill,document.body.firstChild); }
   backfill.innerHTML=contractBackfillBanner();
