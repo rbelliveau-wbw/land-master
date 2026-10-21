@@ -31,9 +31,10 @@ profile was separately inspected and left unchanged. The existing
 CFO does not gain an unconditional backend editor grant.
 
 [Native permission evidence](../creator/schema-changes/construction-report-permissions-2026-10-21.json).
-The user will promote the CFO permission change in Creator. No native business
-record was changed or real comment/email sent during this work. A CFO production
-save after that promotion remains the live confirmation step.
+After the user's subsequent instruction to publish all remaining changes, the
+CFO permission update was published to Stage and Production in Creator 9.112.
+No native business record was manually changed or real comment/email sent during
+this work. A CFO production save remains the live confirmation step.
 
 ## Release, verification and rollback
 

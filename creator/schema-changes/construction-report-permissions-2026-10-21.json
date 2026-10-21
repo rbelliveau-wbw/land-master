@@ -1,15 +1,16 @@
 {
-  "environment": "DEVELOPMENT",
+  "environment": "DEVELOPMENT, STAGE, PRODUCTION",
   "source": "Creator Settings > User Permissions; native editor independently reopened after Update",
-  "productionPromoted": false,
-  "promotion": "User will promote in Creator, per October 21 direction.",
+  "productionPromoted": true,
+  "promotion": "Published to Stage and Production in Creator 9.112 after the user's explicit instruction to publish all remaining changes; both environment cards showed 9.112 and no changes available.",
+  "creatorVersion": "9.112",
   "CFO": {
     "before": {
-      "Contract.editReports": ["All_Contracts"],
+      "Contract.editReports": ["All_Contracts1"],
       "Contract_Actions.editReports": ["All_Contract_Actions"]
     },
     "after": {
-      "Contract.editReports": ["All_Contracts", "Construction_Requests"],
+      "Contract.editReports": ["All_Contracts1", "Construction_Requests"],
       "Contract_Actions.editReports": ["All_Contract_Actions", "Construction_Actions"]
     },
     "savedAndReopened": true,
@@ -24,6 +25,12 @@
     "Comment_Log": {"add": true, "viewReports": ["Construction_Comments"], "editReports": ["Construction_Comments"], "delete": false, "viewAll": true, "modifyAll": true}
   },
   "preserved": ["Edit_All_Construction_Requests per-user grant", "hasConstructionPermission", "completed parent locks", "module validation", "comment author and 24-hour restrictions"],
+  "nativePublicationDiff": {
+    "createViewModifyModuleGrantsChanged": false,
+    "existingConstructionViewRoutesGainEdit": ["Construction_Requests", "Construction_Actions"],
+    "fieldDefaultsChangedOnModulesWithoutEnabledOrReportGrants": ["Crew", "Crew_Assignment", "Crew_Schedule_Lock", "Crew_Test_Record", "Schedule_Change_Log", "Task_Schedule", "Workflow_Run_Log"],
+    "tabFlagsOmittedInDevelopmentExport": true
+  },
   "nativeBusinessRecordsModified": false,
   "newFormsReportsFunctionsOrApis": false
 }
