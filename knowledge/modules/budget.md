@@ -1,3 +1,9 @@
+## Comment email and Post correction — October 21, 2026
+
+Budget 122.29.66 uses stable shared Post feedback; the existing native comment
+helper now follows the established typed owner lookup pattern and corrected email validation.
+[Native checks, regression coverage and rollback](../../docs/comment-email-post-correction-2026-10-21.md).
+
 ## October 21, 2026 follow-up
 
 Budget 122.29.65 adds shared owner-email comments for Budget and Project conversations and corresponding deep links.

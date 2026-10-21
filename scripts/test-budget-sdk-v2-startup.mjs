@@ -571,7 +571,7 @@ for(const response of [{code:3000},new Error('Mapping insert response lost'),{co
 }
 function commentNodes() {
   const listeners={},nodes={};
-  for(const key of ['.pc-input','[data-pc="send"]','.pc-status','.pc-compose-name','.pc-preview','.pc-messages','.pc-emoji'])nodes[key]={value:'',textContent:'',innerHTML:'',readOnly:false,disabled:false,hidden:false,classList:{toggle:() => {}},focus:() => {},matches:() => false};
+  for(const key of ['.pc-input','[data-pc="send"]','.pc-status','.pc-compose-name','.pc-preview','.pc-messages','.pc-emoji'])nodes[key]={dataset:{},value:'',textContent:'',innerHTML:'',readOnly:false,disabled:false,hidden:false,classList:{toggle:() => {}},focus:() => {},matches:() => false};
   const thread={innerHTML:'',querySelector:selector => nodes[selector] || null,querySelectorAll:selector => selector.split(',').map(part=>nodes[part.trim()]).filter(Boolean),addEventListener:(event,handler) => {listeners[event]=handler;},classList:{contains:() => true}};
   return {thread,nodes,listeners};
 }

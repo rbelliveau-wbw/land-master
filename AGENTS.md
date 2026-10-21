@@ -45,6 +45,20 @@ Chat history and model memory are not authoritative.
 
 ## Change rules
 
+- **Reuse proven functionality first — user direction October 21, 2026.** Before
+  implementing a behavior, search for existing working functions and callers
+  that already provide it. Reuse the existing function or adapter when its
+  contract fits. When a separate function is necessary, follow the established
+  native pattern for the shared behavior; do not invent a parallel version of
+  owner lookup resolution, identity matching, permissions, email recipients,
+  sending, environment routing, or save handling without a concrete reason.
+  Check actual Creator field/lookup shapes and preserve existing guards and
+  failure handling. Tests must represent those real native shapes; simplified
+  mocks alone do not establish that a new email or data path works in Creator.
+  Verify the affected native behavior before reporting it complete, and state
+  any remaining live verification limitation explicitly. Record why new code
+  was needed when existing functionality could not be reused.
+
 - Always ask clarifying questions before making a substantial assumption about scope, business rules, data meaning, or a consequential design choice. Continue independent work while waiting; do not treat silence as agreement to a major assumption. Use judgment for routine implementation details that do not materially change the requested outcome.
 
 1. Preserve unrelated functionality.

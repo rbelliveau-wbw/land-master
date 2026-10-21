@@ -1,3 +1,9 @@
+## Comment email and Post correction — October 21, 2026
+
+Pro Forma 1.80.130 uses stable shared Post feedback; the existing native comment
+helper now follows the established typed owner lookup pattern and corrected email validation.
+[Native checks, regression coverage and rollback](../../docs/comment-email-post-correction-2026-10-21.md).
+
 ## October 21, 2026 follow-up
 
 Pro Forma 1.80.129 adds the navy selected PSA/LOI pill and shared comment-owner email.

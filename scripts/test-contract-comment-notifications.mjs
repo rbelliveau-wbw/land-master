@@ -6,6 +6,7 @@ import {ready,harness,drain,ID} from './test-contract-sdk-v2-foundation.mjs';
 const source=fs.readFileSync('creator/functions/buildContractCommentNotification.dg','utf8');
 const postSource=fs.readFileSync('creator/functions/postRecordComment.dg','utf8');
 function runtime({field='Contract1',module='Legal',environment='Production',owners=['1','2','3','4','5'],deleted=false,extraParent=false,failMail=false,profile='CFO',constructionAllowed=true,complete=false}={}){
+ owners=owners.map(owner=>typeof owner==='object'?owner:{ID:String(owner)});
  const fixtures={Comment_Log:[],Contract:[{ID,Work_Module:module,Contract_Name:'Cedar <Grove>\nTract',Owner:owners,Status:complete?'Complete':'Hold'}],Add_Pro_Forma:[{ID,Name:'Pro Forma <one>',Owner:owners,Status:'Draft'}],Add_Budget:[{ID,Budget_Name:'Budget <one>',Budget_Owner:owners,Status:'Draft',Subdivision1:{Project:ID}}],Project:[{ID,Project_Name:'Project <one>'}],User_Access:[{ID:'1',Approver_Email:'Owner@Example.test',User:'owner'},{ID:'2',Approver_Email:'owner@example.test',User:'duplicate'},{ID:'3',Approver_Email:'',User:'second@example.test'},{ID:'4',Approver_Email:'',User:'unresolved'},{ID:'5',Approver_Email:'author@example.test',User:'author',Full_Name:'Stored <Author>'}],Contract_Actions:[{ID:'a2',Contract1:ID,Current_Action:true,Complete:false,Contract_Action:'Later action',Sort_Order:2},{ID:'a1',Contract1:ID,Current_Action:true,Complete:false,Contract_Action:'Review <terms>',Sort_Order:1}]};
  fixtures.Comment_Log.push({ID:'90071992547419991',Contract1:null,Pro_Forma:null,Budget:null,Project:extraParent?'other':null,[field]:ID,Comment:'Please review <script>x</script> & terms.\nSecond line.',Author_Name:'Stored <Author>',User:'author',Added_User:'author',Added_Time:{},Deleted:deleted});
  const context=vm.createContext({environment,failMail,profile,constructionAllowed,fixtures:JSON.stringify(fixtures)});
@@ -40,6 +41,17 @@ for(const bad of [['Unknown',ID,'x'],['Contract1','1 OR 1','x'],['Contract1',ID,
 const failed=runtime({failMail:true}),out=failed.post();assert.equal(out.ok,true);assert.equal(out.notificationState,'failed');assert.equal(failed.context.tables.Comment_Log.length,2,'email failure retains saved comment');
 assert.equal(runtime({owners:['5']}).post().notificationState,'skipped');
 assert.doesNotMatch(source,/sendmail|insert into|delete from/);
+// Test the actual Deluge literal without passing it through JS string parsing.
+// Double escaping in a source string must not be hidden by the offline translator.
+const nativeEmailPattern=source.match(/ownerEmail\.matches\("([^"\r\n]+)"\)/)[1];
+assert.ok(!nativeEmailPattern.includes('\\'),'email pattern has identical raw and translated semantics');
+for(const email of ['jking@wbdevelopment.com','rbelliveau@wbdevelopment.com','jswafford@wbdevelopment.com','owner+review@example.test'])assert.ok(new RegExp(nativeEmailPattern).test(email),email);
+for(const email of ['not-an-email','john smith@example.test','julie,other@example.test','a@example.test\r\nBcc: other@example.test'])assert.equal(new RegExp(nativeEmailPattern).test(email),false,email);
+for(const field of ['Budget','Project']){
+ const h=runtime({field,owners:[{ID:'4410926000003608012'},{ID:'4410926000004465004'}]});
+ vm.runInContext(`tables.User_Access=[{ID:'4410926000003608012',Approver_Email:'jking@wbdevelopment.com',User:'jking_wbdevelopment84'},{ID:'4410926000004465004',Approver_Email:'rbelliveau@wbdevelopment.com',User:'wbdevelopment'}];zoho.loginuser='wbdevelopment';zoho.loginuserid='rbelliveau@wbdevelopment.com';tables.Comment_Log[0].User='wbdevelopment';tables.Comment_Log[0].Added_User='wbdevelopment';if(${JSON.stringify(field)}==='Project')tables.Add_Budget.push({...tables.Add_Budget[0],ID:'duplicate-phase'});`,h.context);
+ const result=h.run();assert.equal(result.eligible,true,result.reason);assert.deepEqual(Array.from(result.to),['jking@wbdevelopment.com'],'native owner lookup rows email Julie once and exclude the posting Robby alias');
+}
 assert.ok(!fs.existsSync('creator/workflows/Notify_Contract_Comment_Owners.dg'));
 for(const mode of ['legal','construction'])for(const view of ['comments','list','']){
  const h=await ready({realDOM:true,pageParams:{workMode:mode},accessFlags:{ctEdit:true,constructionSubmit:true}}),c=h.c;

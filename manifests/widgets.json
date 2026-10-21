@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-10-21T19:14:09.608394+00:00",
+  "generated_at": "2026-10-21T19:33:24.365178+00:00",
   "widgets": [
     {
       "slug": "proforma-manager",
       "name": "Proforma Manager",
       "module": "proforma",
-      "version": "1.80.129",
+      "version": "1.80.130",
       "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and Settings-based approvals.",
       "source_entry": "widgets/proforma-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
       "html_title": "Pro Forma Manager",
-      "source_sha256": "b1e3a68c62599e033dccceb62866209b6706d01adc8f275a67a1aa002ecbf146",
+      "source_sha256": "ec809cc9a01d54a56da6de71476d154df48d6ad4693ef91a5dc546b763c22535",
       "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
       "plugin_manifest": {
         "locale": [
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.65",
+      "version": "122.29.66",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "33cec2a3e48930cbca4b21129bbbb9486b723cc18d37a6b90c69c1a841c1b2fe",
+      "source_sha256": "f2b714088d135fcddc29c1f2e706586b8e55586959bc34e7fbea4e085227ccc3",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.62.25",
+      "version": "1.62.26",
       "description": "Legal and Construction tasks with separate permissions, request fields, templates, and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "cff2a6b300adeb02d33a1dfc83336e598d38354851964678e2d962b99e2037c8",
+      "source_sha256": "df2e7a9be98af6d2e26becf1b601191834787e6cf2421a81b004ed75f1983d01",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

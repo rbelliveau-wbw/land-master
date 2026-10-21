@@ -22,7 +22,7 @@ map buildContractCommentNotification(string commentId)
    if(ifnull(parent.Work_Module,"") == "Construction") { moduleName = "Construction"; }
    else if(ifnull(parent.Work_Module,"") != "" && parent.Work_Module != "Legal") { return result; }
    pageName = moduleName; idParam = "contractId"; recordId = parent.ID.toString(); recordName = ifnull(parent.Contract_Name,"Record");
-   if(parent.Owner != null) { ownerIds.addAll(parent.Owner); }
+   for each contractOwner in parent.Owner { ownerIds.add(contractOwner.ID); }
    contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(parent.Status,"New"));
    currentActions = Contract_Actions[(Contract1 == parent.ID) && (Current_Action == true) && (Complete != true)] sort by Sort_Order;
    if(currentActions.count() > 0) { contextLine = contextLine + " · Current action: " + thisapp.PF_Packet_Escape(ifnull(currentActions.Contract_Action,"Untitled action")); }
@@ -31,14 +31,14 @@ map buildContractCommentNotification(string commentId)
   {
    pf = Add_Pro_Forma[ID == comment.Pro_Forma]; if(pf.count() == 0) { return result; }
    moduleName = "Pro Forma"; pageName = "Proforma_Management1"; idParam = "proformaId"; recordId = pf.ID.toString(); recordName = ifnull(pf.Name,"Pro Forma");
-   if(pf.Owner != null) { ownerIds.addAll(pf.Owner); }
+   for each proformaOwner in pf.Owner { ownerIds.add(proformaOwner.ID); }
    contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(pf.Status,"Draft"));
   }
   else if(comment.Budget != null)
   {
    budget = Add_Budget[ID == comment.Budget]; if(budget.count() == 0) { return result; }
    moduleName = "Budget"; pageName = "Budget_Management1"; idParam = "budgetId"; recordId = budget.ID.toString(); recordName = ifnull(budget.Budget_Name,"Budget");
-   if(budget.Budget_Owner != null) { ownerIds.addAll(budget.Budget_Owner); }
+   for each budgetOwner in budget.Budget_Owner { ownerIds.add(budgetOwner.ID); }
    contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(budget.Status,""));
   }
   else if(comment.Project != null)
@@ -46,7 +46,7 @@ map buildContractCommentNotification(string commentId)
    project = Project[ID == comment.Project]; if(project.count() == 0) { return result; }
    moduleName = "Project"; pageName = "Budget_Management1"; idParam = "projectId"; recordId = project.ID.toString(); recordName = ifnull(project.Project_Name,"Project");
    // Project owners are the union of phase Budget owners, matching the Project owner UI.
-   for each phase in Add_Budget[Subdivision1.Project == project.ID] { if(phase.Budget_Owner != null) { ownerIds.addAll(phase.Budget_Owner); } }
+   for each phase in Add_Budget[Subdivision1.Project == project.ID] { for each phaseOwner in phase.Budget_Owner { ownerIds.add(phaseOwner.ID); } }
    contextLine = "Project conversation";
   }
   authorUser = ifnull(comment.User,comment.Added_User).toString().trim().toLowerCase();
@@ -68,7 +68,7 @@ map buildContractCommentNotification(string commentId)
      ownerUser = ifnull(owner.User,"").toString().trim().toLowerCase();
      if(ownerEmail == "" && ownerUser.contains("@")) { ownerEmail = ownerUser; }
     }
-    if(ownerEmail != "" && ownerEmail.matches("^[^\\s@,;]+@[^\\s@,;]+\\.[^\\s@,;]+$"))
+    if(ownerEmail != "" && ownerEmail.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+([.][A-Za-z0-9-]+)+$"))
     {
      if(ownerUser != authorUser && ownerEmail != authorEmail && ownerEmail != authorUser && ownerEmails.contains(ownerEmail) == false) { ownerEmails.add(ownerEmail); }
     }

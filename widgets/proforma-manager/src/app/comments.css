@@ -12,3 +12,14 @@
 .modal-back.comment-confirm-back,#budgetCommentConfirm{z-index:10060}
 
 .pc-notify-note{font-size:11px;color:#617791;margin:0 0 7px}
+
+/* One mounted action, one pending label through save and refresh. */
+.pc-compose-footer [data-pc=send]{display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;min-width:112px;min-height:34px;padding:7px 12px;white-space:nowrap;transform:none!important}
+.pc-compose-footer [data-pc=send] svg{display:block;flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pc-compose-footer [data-pc=send][data-state=pending]{cursor:wait;opacity:1}
+.pc-compose-footer [data-pc=send][data-state=verified],.pc-compose-footer [data-pc=send][data-state=warning]{opacity:1;cursor:default}
+.pc-compose-footer [data-pc=send][data-state=verified]{background:#176247;border-color:#176247;box-shadow:none}
+.pc-compose-footer [data-pc=send][data-state=warning]{background:#785a20;border-color:#785a20;box-shadow:none}
+.pc-send-spinner{animation:pc-send-turn .9s linear infinite;stroke-dasharray:38 13}
+@keyframes pc-send-turn{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pc-send-spinner{animation:none}}

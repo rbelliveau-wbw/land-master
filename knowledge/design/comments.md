@@ -85,7 +85,13 @@ the composer and author edit/delete controls and checks current parent status
 before comment writes. Open-contract posting and author windows remain unchanged.
 
 Disable duplicate Post/keyboard submissions and conflicting actions during a
-write. Show concise live status in the mounted thread. Clear a draft and update
+write. Keep one fixed-width Posting state through the native write and required
+thread refresh. Its 650 ms minimum is display-only and skipped for reduced motion;
+requests start immediately. Show one Posted check for 1,400 ms after acknowledgement,
+then return to Post; starting a new draft may clear it sooner. Keep the post/email
+result in the same thread. An acknowledged post with a failed thread refresh stays
+saved and must not restore a duplicate draft. Scope pending/terminal timers to the
+current parent and actor, and cancel them on destroy. Clear a draft and update
 counts only after the intended persisted result is confirmed. Unknown create
 outcomes retain the draft and block another Post through close/reopen or a
 second shortcut; offer read-only recheck only with a known safe record identity.
