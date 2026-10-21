@@ -1,0 +1,45 @@
+{
+  "action": "apply",
+  "changes": [
+    {
+      "expected": {
+        "end": "2027-04-01",
+        "start": "2027-03-20"
+      },
+      "fields": {
+        "end": {
+          "after": "2027-04-07",
+          "before": "2027-04-01"
+        }
+      },
+      "recordId": "9007199254740130",
+      "stage": "Closeout",
+      "type": "M"
+    }
+  ],
+  "operationId": "17f53b24-2922-492c-b594-986827b55dd2",
+  "origin": "drag",
+  "result": {
+    "action": "apply",
+    "confirmed": [
+      {
+        "recordId": "9007199254740130",
+        "type": "M"
+      }
+    ],
+    "environment": "development",
+    "ok": true,
+    "operationId": "17f53b24-2922-492c-b594-986827b55dd2",
+    "records": [
+      {
+        "end": "2027-04-07",
+        "id": "9007199254740130",
+        "start": "2027-03-20",
+        "type": "M"
+      }
+    ],
+    "state": "saved",
+    "testingMode": true
+  },
+  "subdivisionId": "90071992547409932"
+}

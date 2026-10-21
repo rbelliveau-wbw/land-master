@@ -1,0 +1,7 @@
+// NEW Task_Schedule workflow: edited record → On Validate.
+validationMessage = thisapp.crewLocationsDirectValidate("T",input.ID.toString(),input.Start_Date,input.End_Date,false);
+if(validationMessage != "")
+{
+ alert validationMessage;
+ cancel submit;
+}

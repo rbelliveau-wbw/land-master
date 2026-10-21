@@ -1,0 +1,118 @@
+Update_Projects_Milestone as "Update Projects Milestones - Zoho Projects"
+{
+	type =  schedule
+		status = inactive
+	start = "2025-10-14 09:25:17"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Update Projects Milestones - Zoho Projects","system":"Zoho Projects"});
+				auditId = auditRun.get("id");
+				auditReceived = 0;
+				auditProcessed = 0;
+				auditCreated = 0;
+				auditUpdated = 0;
+				auditUpdatedIds = List();
+				auditSkipped = 0;
+				auditMissingMapping = 0;
+				auditNoBudget = 0;
+				auditNoEligible = false;
+				auditWriteAttempted = false;
+				auditRowChanged = false;
+				auditSourceKeys = Map();
+				auditRecordKey = "";
+				try 
+				{
+					portalId = "700737166";
+					orgId = "700732567";
+					for each  ms in Milestones[Push_Update == true]
+					{
+						auditProcessed = auditProcessed + 1;
+						auditRowChanged = false;
+						// === 4) Short delay to let the job initialize ===
+						getUrl("https://postman-echo.com/delay/3");
+						body = Map();
+						body.put("start_date",ms.Start_Date.toString("MM-dd-YYYY"));
+						body.put("end_date",ms.End_Date.toString("MM-dd-YYYY"));
+						auditWriteAttempted = true;
+						respHttp = invokeurl
+						[
+							url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + ms.Project_ID + "/milestones/" + ms.Milestone_ID
+							type :POST
+							parameters:body.toString()
+							detailed:true
+							connection:"zoho_projects_connection"
+						];
+						if(respHttp.get("responseCode") < 200 || respHttp.get("responseCode") >= 300)
+						{
+							throw "Zoho Projects HTTP " + respHttp.get("responseCode");
+						}
+						resp = respHttp.get("responseText");
+						responseText = resp.toString();
+						if(responseText.length() == 0)
+						{
+							throw "Zoho Projects returned an empty acknowledgement; verify the destination before retrying.";
+						}
+						if(responseText.left(1) == "{")
+						{
+							resp = responseText.toMap();
+							apiFailureStatuses = {"error","failed","failure"};
+							if(resp.get("error") != null || resp.get("errors") != null || apiFailureStatuses.contains(ifnull(resp.get("status"),"").toString().toLowerCase()))
+							{
+								throw "Zoho Projects returned an API error.";
+							}
+						}
+						else if(responseText.left(1) != "[")
+						{
+							throw "Zoho Projects returned a non-JSON response.";
+						}
+						auditUpdated = auditUpdated + 1;
+						auditRowChanged = true;
+						info resp;
+						if(resp.toString().contains(ms.Start_Date.toString("YYYY-MM-dd")) && resp.toString().contains(ms.End_Date.toString("YYYY-MM-dd")))
+						{
+							auditWriteAttempted = true;
+							ms.Push_Update=false;
+							info body;
+							info resp;
+							auditDestination = ms.ID.toString();
+							if(!auditUpdatedIds.contains(auditDestination))
+							{
+								auditUpdatedIds.add(auditDestination);
+								auditUpdated = auditUpdated + 1;
+							}
+							auditRowChanged = true;
+						}
+						if(!auditRowChanged)
+						{
+							auditSkipped = auditSkipped + 1;
+						}
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+					auditFinalStatus = "Success";
+					if(auditNoEligible)
+					{
+						auditFinalStatus = "Skipped";
+					}
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+				}catch (auditError)
+				{
+					auditStatus = "Failed";
+					if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+					{
+						auditStatus = "Partial";
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+					throw auditError;
+				}
+		)
+		}
+	}
+}
+

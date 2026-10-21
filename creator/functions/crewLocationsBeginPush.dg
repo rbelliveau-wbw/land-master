@@ -1,0 +1,28 @@
+string crewLocationsBeginPush(string milestoneRecordId)
+{
+	token = "";
+	try
+	{
+		if(!thisapp.crewLocationsMayPush(milestoneRecordId)) { return ""; }
+		ms = Milestones[ID == milestoneRecordId.toLong()];
+		if(ms.count() != 1 || ms.Push_Update != true) { return ""; }
+		phaseId = ms.Subdivision1.toString(); token = "push-" + milestoneRecordId + "-" + zoho.currenttime.toLong();
+		lockId = insert into Crew_Schedule_Lock
+		[
+			Phase_Key=phaseId
+			Subdivision1=ms.Subdivision1
+			Operation_ID=token
+			Actor=zoho.loginuser
+			Acquired_At=zoho.currenttime
+			Added_User=zoho.loginuser
+		];
+		if(Crew_Test_Record[Record_Key == "M:" + milestoneRecordId].count() > 0)
+		{
+			delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == token)];
+			return "";
+		}
+		return token;
+	}
+	catch(pushGuardError) { return ""; }
+	return "";
+}

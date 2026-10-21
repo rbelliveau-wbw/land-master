@@ -1,0 +1,73 @@
+// NEW form definition fragment. Install in Development; not a complete application export.
+form Crew_Schedule_Lock
+{
+Crew_Schedule_Lock_Details
+(
+ type = section
+ displayname = "Schedule Lock Details"
+ row = 1
+ column = 0
+ width = medium
+)
+must have unique Phase_Key
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+must have Subdivision1
+(
+ type = picklist
+ values = Subdivision.ID
+ displayformat = [Subdivision_Name]
+ row = 1
+ column = 1
+ width = medium
+)
+must have Operation_ID
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+must have Actor
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Acquired_At
+(
+ type = datetime
+ row = 1
+ column = 1
+ width = medium
+)
+actions
+{
+on add
+{
+submit
+(
+ type = submit
+ displayname = "Submit"
+)
+}
+on edit
+{
+update
+(
+ type = submit
+ displayname = "Update"
+)
+cancel
+(
+ type = cancel
+ displayname = "Cancel"
+)
+}
+}
+}

@@ -1,0 +1,11 @@
+// NEW Crew_Assignment: created/edited → On Validate.
+access = User_Access[User == zoho.loginuser];
+if(access.count() != 1 || access.Manage_Crew_Assignments != true || input.Assignment_Date == null || input.Source_Record_ID == null || input.Source_System == null)
+{
+ alert "Crew management permission and verified source identity/date are required.";
+ cancel submit;
+}
+else
+{
+ input.Source_Key = input.Source_System + ":" + input.Source_Record_ID;
+}

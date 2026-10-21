@@ -1,0 +1,52 @@
+  - generic: Added
+  - list:
+    - generic: Functions
+    - generic: /
+    - generic: Default
+    - generic: /
+    - generic: crewLocationsConfig
+  - paragraph:
+    - generic: Robert Belliveau |
+    - link "rbelliveau@wbdevelopment.com":
+      - /url: mailto:rbelliveau@wbdevelopment.com
+    - text: "|"
+    - generic: 21-Oct-2026, 11:14:22
+  - generic: "1"
+  - text: map crewLocationsConfig()
+  - generic: "2"
+  - text: "{"
+  - generic: "3"
+  - text: // Server configuration. Do not accept these values from a widget request.
+  - generic: "4"
+  - text: config = Map();
+  - generic: "5"
+  - text: config.put("enabled",false);
+  - generic: "6"
+  - text: config.put("environment","development");
+  - generic: "7"
+  - text: config.put("testingMode",true);
+  - generic: "8"
+  - text: config.put("crewsEnabled",false);
+  - generic: "9"
+  - text: config.put("tasksEnabled",false);
+  - generic: "10"
+  - text: config.put("taskWritesVerified",false);
+  - generic: "11"
+  - text: config.put("importActor","");
+  - generic: "12"
+  - text: config.put("crewSourceSystem","");
+  - generic: "13"
+  - text: config.put("taskSourceSystem","");
+  - generic: "14"
+  - text: config.put("baseUrl","https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/report/");
+  - generic: "15"
+  - text: return config;
+  - generic: "16"
+  - text: "}"
+  - paragraph:
+    - generic: "Selected Components:"
+    - generic: "78"
+  - button "Back":
+    - generic: Back
+  - button "Proceed":
+    - generic: Proceed

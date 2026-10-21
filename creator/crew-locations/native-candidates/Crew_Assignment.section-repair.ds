@@ -1,0 +1,92 @@
+form Crew_Assignment
+{
+	Crew_Assignment_Details
+	(
+		type = section
+		displayname = "Crew Assignment Details"
+		row = 1
+		column = 0
+		width = medium
+	)
+	must have Subdivision1
+	(
+		type = picklist	
+		values  = Subdivision.ID
+    	displayformat = [Subdivision_Name]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Crew
+	(
+		type = picklist	
+		values  = Crew.ID
+    	displayformat = [Crew_Code]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Assignment_Date
+	(
+    	type = date
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Source_System
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Source_Record_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have unique Source_Key
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Source_Updated_At
+	(
+    	type = datetime
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

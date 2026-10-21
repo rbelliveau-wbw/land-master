@@ -1,0 +1,107 @@
+map crewLocationsImportTasks(list sourceRows,string sourceSystem)
+{
+	result = {"ok":false,"imported":0,"unresolved":List()}; owned = false; datesStarted = false; phaseId = ""; token = "";
+	try
+	{
+		config = thisapp.crewLocationsConfig();
+		if(config.get("tasksEnabled") != true || config.get("importActor") == "" || zoho.loginuser != config.get("importActor") || config.get("taskSourceSystem") != sourceSystem) { result.put("message","A verified task adapter and controlled import actor must be configured."); return result; }
+		stageOrder = {"Entitlements","Engineering Design","Municipal Review","Pre-Construction","Rough Cut","Sewer","Water","Storm Drain","Road Prep","Dry Utilities","Punch List","Closeout"};
+		unresolved = List(); imported = 0; result.put("unresolved",unresolved);
+		for each row in sourceRows
+		{
+			sourceId = ifnull(row.get("sourceRecordId"),"").toString(); externalProject = ifnull(row.get("externalProjectId"),"").toString(); stage = ifnull(row.get("stageKey"),"").toString();
+			phase = Subdivision[Project_ID == externalProject];
+			if(sourceId == "" || externalProject == "" || phase.count() != 1 || !stageOrder.contains(stage)) { unresolved.add({"sourceRecordId":sourceId,"reason":"Unresolved external project or explicit stage key."}); }
+			else
+			{
+				phaseId = phase.ID.toString(); key = sourceSystem + ":" + sourceId;
+				existing = Task_Schedule[Source_Key == key];
+				if(existing.count() > 1 || (existing.count() == 1 && (existing.Subdivision1 != phase.ID || existing.Stage_Key != stage))) { unresolved.add({"sourceRecordId":sourceId,"reason":"Source lineage/stage changed; review is required."}); }
+				else
+				{
+					startText = ifnull(row.get("startDate"),"").toString(); endText = ifnull(row.get("endDate"),"").toString(); startDate = null; endDate = null;
+					if(startText != "") { startDate = startText.toDate("yyyy-MM-dd"); }
+					if(endText != "") { endDate = endText.toDate("yyyy-MM-dd"); }
+					token = "task-import-" + zoho.encryption.sha256(key + "|" + zoho.currenttime.toLong());
+					lockId = insert into Crew_Schedule_Lock
+					[
+						Phase_Key=phaseId
+						Subdivision1=phase.ID
+						Operation_ID=token
+						Actor=zoho.loginuser
+						Acquired_At=zoho.currenttime
+						Added_User=zoho.loginuser
+					];
+					owned = true;
+					if(existing.count() == 0)
+					{
+						taskId = insert into Task_Schedule
+						[
+							Subdivision1=phase.ID
+							Stage_Key=stage
+							Source_System=sourceSystem
+							Source_Record_ID=sourceId
+							Source_Key=key
+							Source_Task_ID=ifnull(row.get("sourceTaskId"),"")
+							Source_Milestone_ID=ifnull(row.get("sourceMilestoneId"),"")
+							Source_Modified_At=row.get("sourceModifiedAt")
+							Synced_At=zoho.currenttime
+							Write_Enabled=config.get("taskWritesVerified")
+							Added_User=zoho.loginuser
+						];
+						existing = Task_Schedule[ID == taskId];
+					}
+					if(existing.Source_Modified_At == null || (row.get("sourceModifiedAt") != null && row.get("sourceModifiedAt") >= existing.Source_Modified_At))
+					{
+						oldStart = null; oldEnd = null;
+						if(existing.Start_Date != null) { oldStart = existing.Start_Date.toString("yyyy-MM-dd"); }
+						if(existing.End_Date != null) { oldEnd = existing.End_Date.toString("yyyy-MM-dd"); }
+						afterStart = null; afterEnd = null;
+						if(startDate != null) { afterStart = startDate.toString("yyyy-MM-dd"); }
+						if(endDate != null) { afterEnd = endDate.toString("yyyy-MM-dd"); }
+						changes = List(); fields = Map();
+						if(oldStart != afterStart) { fields.put("start",{"before":oldStart,"after":afterStart}); }
+						if(oldEnd != afterEnd) { fields.put("end",{"before":oldEnd,"after":afterEnd}); }
+						if(fields.keys().size() > 0)
+						{
+							changes.add({"recordId":existing.ID.toString(),"type":"T","stage":stage,"expected":{"start":oldStart,"end":oldEnd},"fields":fields});
+							request = {"subdivisionId":phaseId,"origin":"import","changes":changes,"sourceSystem":sourceSystem,"sourceRecordId":sourceId};
+							logId = insert into Schedule_Change_Log
+							[
+								Operation_ID=token
+								Operation_Type="controlled_task_import"
+								Actor=zoho.loginuser
+								Timestamp=zoho.currenttime
+								Subdivision1=phase.ID
+								Origin="import"
+								Request_JSON=request.toString()
+								State="importing"
+								Execution_Finished=false
+								Added_User=zoho.loginuser
+							];
+						}
+						datesStarted = true;
+						existing.Start_Date=startDate; existing.End_Date=endDate; existing.Source_Modified_At=row.get("sourceModifiedAt"); existing.Synced_At=zoho.currenttime;
+						if(fields.keys().size() > 0)
+						{
+							log = Schedule_Change_Log[Operation_ID == token]; log.State="imported"; log.Execution_Finished=true;
+							log.Result_JSON={"ok":true,"state":"imported","confirmed":{{"type":"T","recordId":existing.ID.toString()}},"records":{{"type":"T","id":existing.ID.toString(),"start":afterStart,"end":afterEnd}}}.toString();
+						}
+						datesStarted = false; imported = imported + 1; result.put("imported",imported);
+					}
+					delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == token)]; owned = false;
+				}
+			}
+		}
+		result.put("ok",true); result.put("imported",imported); result.put("unresolved",unresolved);
+	}
+	catch(importError)
+	{
+		if(owned && !datesStarted) { delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == token)]; }
+		log = Schedule_Change_Log[Operation_ID == token];
+		if(log.count() == 1) { log.State="unknown"; log.Error=importError.toString(); log.Execution_Finished=true; }
+		result.put("unknown",datesStarted);
+		result.put("message",importError.toString());
+	}
+	return result;
+}

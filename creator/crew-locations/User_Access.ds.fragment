@@ -1,0 +1,42 @@
+// NEW section and decision boxes, default false. Merge into current User_Access; preserve unrelated fields.
+// Row 8 matches the verified installation snapshot; choose an available section row if the current layout changed, and keep every new field on that same row.
+Crew_Locations_Permissions
+(
+ type = section
+ displayname = "Crew Locations"
+ row = 8
+ column = 0
+ width = medium
+)
+View_Crew_Locations
+(
+ type = checkbox
+ initial value = false
+ row = 8
+ column = 1
+ width = medium
+)
+Edit_Crew_Milestones
+(
+ type = checkbox
+ initial value = false
+ row = 8
+ column = 1
+ width = medium
+)
+Edit_Crew_Task_Dates
+(
+ type = checkbox
+ initial value = false
+ row = 8
+ column = 1
+ width = medium
+)
+Manage_Crew_Assignments
+(
+ type = checkbox
+ initial value = false
+ row = 8
+ column = 1
+ width = medium
+)

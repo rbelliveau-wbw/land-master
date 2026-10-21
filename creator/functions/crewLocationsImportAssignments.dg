@@ -1,0 +1,56 @@
+map crewLocationsImportAssignments(list sourceRows,string sourceSystem)
+{
+	result = {"ok":false,"imported":0,"unresolved":List()};
+	try
+	{
+		config = thisapp.crewLocationsConfig();
+		// Internal adapter only. Never expose this function through a widget Custom API.
+		if(config.get("crewsEnabled") != true || config.get("importActor") == "" || zoho.loginuser != config.get("importActor") || config.get("crewSourceSystem") != sourceSystem) { result.put("message","A verified crew source and controlled import actor must be configured."); return result; }
+		imported = 0; unresolved = List(); result.put("unresolved",unresolved);
+		for each row in sourceRows
+		{
+			sourceId = ifnull(row.get("sourceRecordId"),"").toString(); jobCode = ifnull(row.get("externalJobCode"),"").toString(); crewCode = ifnull(row.get("crewCode"),"").toString(); dateText = ifnull(row.get("assignmentDate"),"").toString();
+			mapping = External_System_Mapping[(External_System == sourceSystem) && (External_Code == jobCode)];
+			crew = Crew[Crew_Code == crewCode];
+			if(sourceId == "" || jobCode == "" || mapping.count() != 1 || crew.count() != 1 || crew.Active != true || !dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) { unresolved.add({"sourceRecordId":sourceId,"reason":"Missing or ambiguous source identity, phase mapping, active crew, or actual assignment date."}); }
+			else
+			{
+				assignmentDate = dateText.toDate("yyyy-MM-dd");
+				if(assignmentDate.toString("yyyy-MM-dd") != dateText) { unresolved.add({"sourceRecordId":sourceId,"reason":"Invalid assignment date."}); }
+				else
+				{
+					key = sourceSystem + ":" + sourceId; existing = Crew_Assignment[Source_Key == key];
+					if(existing.count() > 1 || (existing.count() == 1 && existing.Subdivision1 != mapping.Subdivision1)) { unresolved.add({"sourceRecordId":sourceId,"reason":"Source phase mapping changed; review before reassignment."}); }
+					else
+					{
+						updatedAt = row.get("sourceUpdatedAt");
+						// Adapter contract: sourceUpdatedAt is a normalized Creator Date-Time,
+						// not the time this function imported the record.
+						if(existing.count() == 0)
+						{
+							assignmentId = insert into Crew_Assignment
+							[
+								Subdivision1=mapping.Subdivision1
+								Crew=crew.ID
+								Assignment_Date=assignmentDate
+								Source_System=sourceSystem
+								Source_Record_ID=sourceId
+								Source_Key=key
+								Source_Updated_At=updatedAt
+								Added_User=zoho.loginuser
+							];
+						}
+						else if(existing.Source_Updated_At == null || (updatedAt != null && updatedAt >= existing.Source_Updated_At))
+						{
+							existing.Crew=crew.ID; existing.Assignment_Date=assignmentDate; existing.Source_Updated_At=updatedAt;
+						}
+						imported = imported + 1; result.put("imported",imported);
+					}
+				}
+			}
+		}
+		result.put("imported",imported); result.put("unresolved",unresolved); result.put("ok",true);
+	}
+	catch(importError) { result.put("message",importError.toString()); }
+	return result;
+}

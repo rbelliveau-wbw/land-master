@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-21",
+  "version": "1.1.0",
+  "mode": "creator-only-scheduling",
+  "scheduling_rule_groups": {
+    "passed": 23,
+    "command": "node scripts/test-crew-locations.mjs"
+  },
+  "browser_integration_groups": {
+    "passed": 14,
+    "harness": "scripts/preview-crew-locations.mjs + scripts/fixtures/crew-browser-checks.js",
+    "environment": "actual Codex in-app browser; isolated SDK fixtures only"
+  },
+  "manual_drag": {
+    "passed": true,
+    "changed_type": "M",
+    "changed_stage": "Closeout",
+    "changed_field": "end",
+    "before": "2027-04-01",
+    "after": "2027-04-07",
+    "operation_count": 1,
+    "other_fields_changed": false,
+    "live_record": false
+  },
+  "repository_validate": "passed: npm run validate with local fixture subprocesses allowed",
+  "pages_build": "passed: npm run build:pages, 34 widget environment paths",
+  "creator_package": "passed: npm run package:creator -- crew-locations",
+  "deluge_native_compilation": {
+    "core_functions_compiled": [
+      "crewLocationsConfig",
+      "crewLocationsIso",
+      "crewLocationsRead",
+      "crewLocationsValidate",
+      "crewLocationsDirectValidate",
+      "crewLocationsMayPush",
+      "crewLocationsBeginPush",
+      "crewLocationsEndPush",
+      "crewLocationsStatus",
+      "crewLocationsWidget"
+    ],
+    "optional_adapters": "not installed or compiled",
+    "workflow_scripts": {
+      "confirmed": [
+        "Milestone_Bi_Directional_1",
+        "Sync_Milestones",
+        "Sync_Only_MS_End",
+        "Update_Projects_Milestone",
+        "Update_Projects_Milestone1",
+        "Milestones_on_validate_ed"
+      ],
+      "pending": [
+        "Crew_on_validate",
+        "Crew_Assignment_on_validate",
+        "Task_Schedule_on_validate_edit"
+      ]
+    }
+  },
+  "creator_installation": "Native Development Gantt, internal widget and admin-only DEV API installed; actual milestone reads verified; milestone editing gated after a native PATCH rejection and Creator lock/connection failures.",
+  "native_permissions_and_connection": "All eight existing profile restrictions and caller-scoped configuration verified. Native capabilities, delegated schedule validation and SDK report reads succeeded for existing administrator; page profile checks/restricted-user tests remain pending.",
+  "live_crew_source": "not-configured",
+  "live_task_source": "not-configured",
+  "live_record_writes": 0,
+  "production_promotion": true,
+  "long_horizon_readability": {
+    "passed": true,
+    "horizon_months": 24,
+    "month_label_width_px": 61.484375,
+    "font_size_px": 12,
+    "timeline_min_width_px": 1722
+  },
+  "preview_image": "../outputs/crew-locations-review/crew-locations-testing-preview.png",
+  "widget_zip_sha256": "62126f7382dfc69efc0f87cf26479ba40ffcc22d988e9aedf15eeb3bb259b54b",
+  "post_compiler_fix_rules": "22 groups passed after section dependency repair",
+  "installation_progress": "native-install-progress.json",
+  "last_manual_retry": {
+    "requested_by_user": true,
+    "checked_at_utc": "2026-10-21T18:59:16Z",
+    "result": "IDE briefly opened, then workflow save rejected by renewed publication maintenance",
+    "workflow": "Milestone_Bi_Directional_1",
+    "save_accepted": false,
+    "persistence": "Unconfirmed; re-read current live definition before the next attempt",
+    "native_compilation_confirmed": false,
+    "backup": "native-before/Milestone_Bi_Directional_1.ds",
+    "unsaved_candidate": "native-candidates/Milestone_Bi_Directional_1.ds",
+    "evidence": "../outputs/crew-locations-review/creator-retry-publication-error.png",
+    "resolution": {
+      "canonical_guard_confirmed": true,
+      "native_snapshot": "native-installed/Milestone_Bi_Directional_1.ds",
+      "note": "Later native read confirmed the complete guard despite the earlier maintenance/save error; do not infer rollback from that UI error."
+    }
+  },
+  "installation_bundle": "native2 archive is historical; current workspace contains additional native API/page/guard work",
+  "production_widget_promoted": false,
+  "native_creator_versions": {
+    "stage": "9.109",
+    "production": "9.109",
+    "verified_from": "Creator Environments UI",
+    "schema_prerequisite_version": "9.108"
+  },
+  "section_dependency_fix": {
+    "forms_repaired": 6,
+    "existing_fields_preserved": 48,
+    "native_dependency_validation": "78-component package passed",
+    "production_components_across_two_versions": 98,
+    "regression": "Every persisted field references an existing section row; generated and canonical native definitions checked"
+  },
+  "post_section_fix_repository_validation": "passed: node scripts/validate-repo.mjs; 11 widgets and 3 environment mappings",
+  "native_visible_gantt": {
+    "passed": true,
+    "page": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
+    "phases": [
+      "Cameron Ranch - Phase 01",
+      "Cottonwood Creek - Phase 01"
+    ],
+    "data": "Actual authenticated Creator reports; no fixtures",
+    "screenshot": "../outputs/crew-locations-review/creator-crew-locations-native.png"
+  },
+  "native_test_attempt": {
+    "operation_id": "549235cd-65d3-40fb-8b2e-7349cb14f45b",
+    "phase_id": "4410926000003378004",
+    "phase": "Cameron Ranch - Phase 01",
+    "milestone_record_id": "4410926000003819022",
+    "stage": "Rough Cut",
+    "changed_field": "end",
+    "before": "2027-03-17",
+    "requested": "2027-03-18",
+    "after_authoritative_reload": "2027-03-17",
+    "state": "partial",
+    "confirmed_destinations": [],
+    "message": "Creator rejected a schedule update.",
+    "native_write_ack_diagnostics": "Native error code/details were not returned by the current controller; investigate when the application editor is available.",
+    "test_marker_key": "M:4410926000003819022",
+    "test_marker_native_id": "not queried; marker may exist and must be reconciled before future removal",
+    "audit_entry_visible": true,
+    "phase_lock": "The completed known-rejection path releases its own phase lock; no manual deletion performed.",
+    "outbound_projects_calls_by_this_test": 0
+  },
+  "native_record_side_effects": {
+    "audit_entries_confirmed": 1,
+    "test_marker": "may exist for M:4410926000003819022",
+    "temporary_permission": "Edit_Crew_Milestones granted for one controlled attempt and restored false; View_Crew_Locations remains true"
+  },
+  "live_record_writes_note": "Confirmed milestone date writes only; one audit entry and possible test marker were created for the rejected Development attempt.",
+  "development_milestone_editing_enabled": false,
+  "current_blockers": [
+    "Creator application publication lock; no other publication cancelled",
+    "Creator editor subsequently could not connect / DNS error",
+    "A native future date PATCH returned a rejection with no detailed error in the existing response; save/undo not yet passed"
+  ],
+  "creator_only_upgrade": {
+    "native_config_execution_verified": true,
+    "native_config_environment": "development",
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "native_save_undo_verified": false,
+    "creator_promotion": "pending user promotion"
+  }
+}

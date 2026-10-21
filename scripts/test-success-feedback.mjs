@@ -116,10 +116,10 @@ for(const name of ['inlineSave','savePropInline']){
   c.updateRecord=async()=>{throw Error('Denied');};await assert.rejects(c[name](row.id,{Status:'Changed'}));c.LMSuccess.clear();h.advance(650);assert.equal(h.toast().hidden,true);
 }
 const widgets=JSON.parse(fs.readFileSync('manifests/widgets.json','utf8')).widgets;
-assert.equal(widgets.length,10,'every deployed widget receives the shared feedback fix');
+assert.equal(widgets.length,11,'every deployed widget receives the shared feedback fix');
 for(const widget of widgets){
   const dir='widgets/'+widget.slug+'/src/app/';assert.equal(fs.readFileSync(dir+'success-feedback.js','utf8'),shared);
   const stamp=fs.readFileSync(dir+'widget.html','utf8').match(/src="success-feedback\.js\?v=([^"&]+)"/)?.[1];
   assert.equal(stamp,widget.version,widget.slug+' must invalidate the old feedback asset cache for its current release');
 }
-console.log('Success feedback: native/legacy modal layering, detached host recovery, timers/top-layer cleanup, unsupported API fallback, safe text, nonblocking focus/scroll, grouping, stale revisions, actual Budget/Tax save callbacks, inline checks and ten-widget asset stamps passed.');
+console.log('Success feedback: native/legacy modal layering, detached host recovery, timers/top-layer cleanup, unsupported API fallback, safe text, nonblocking focus/scroll, grouping, stale revisions, actual Budget/Tax save callbacks, inline checks and eleven-widget asset stamps passed.');

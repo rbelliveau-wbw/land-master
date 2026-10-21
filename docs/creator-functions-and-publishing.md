@@ -105,6 +105,28 @@ skip Stage.
 - The app is **Locked** while a publish runs; the next publish must wait for the
   previous to finish.
 
+## Native form section dependencies — October 21, 2026
+
+Crew Locations exposed a publication failure that native compilation alone did
+not catch: 48 new fields existed in Development but had no valid section parents,
+so they were absent from the publication tree. Select All selected the visible
+components and still failed dependency validation. Publishing empty form/report
+prerequisites alone did not resolve the hidden field changes.
+
+In Creator form DSL, `row` identifies the section row. Define an explicit section
+at `row = 1`, `column = 0`, then place its data fields at `row = 1`, `column = 1`.
+Do not increment the section row for each vertically stacked field. After this
+repair, all 48 fields appeared and the 78-component fix passed validation.
+See `creator/crew-locations/native-installed/` and the section regression check
+in `scripts/test-crew-locations.mjs`.
+
+The IDE can create part of a component before reporting a generic save error.
+Preserve the original and draft, leave the unsaved editor through its normal
+confirmation, and re-read the canonical component before retrying creation.
+Otherwise a newly created section may be reported as already existing. Refresh
+the dashboard after a completed publication if a stale menu still says a publish
+process is being set up. Never cancel a different user's publication to clear it.
+
 ## Reference: how a ProForma save change ships end-to-end
 
 | Layer | Change | How it deploys |

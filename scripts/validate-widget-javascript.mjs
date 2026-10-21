@@ -31,6 +31,17 @@ verifyAttachmentLinkNames(path.join(root, 'creator/functions'), new Set(['.dg'])
 for (const widget of widgets) {
   const htmlPath = path.join(root, widget.source_entry);
   const html = fs.readFileSync(htmlPath, 'utf8');
+  // Standalone widgets may keep their styles and startup controller in local
+  // files. Validate the real loaded assets, rather than requiring inline copies.
+  const assetDirectory = path.dirname(htmlPath);
+  const localAsset = reference => {
+    const clean = reference.split(/[?#]/)[0];
+    if (/^(?:[a-z]+:|[/\\])/i.test(clean)) return '';
+    const target = path.resolve(assetDirectory, clean);
+    return target.startsWith(assetDirectory + path.sep) && fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+  };
+  const presentation = html + [...html.matchAll(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/gi)].map(match => localAsset(match[1])).join('\n');
+  const scripts = html + [...html.matchAll(/<script\b[^>]*src=["']([^"']+)["'][^>]*>/gi)].map(match => localAsset(match[1])).join('\n');
   if (widget.slug === 'lot-sales-explorer') {
     if (html.includes('class="metric-switch"')) errors.push('lot-sales-explorer: the retired metric pill switch must not return.');
   } else {
@@ -38,7 +49,7 @@ for (const widget of widgets) {
       'linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%)',
       'translateY(-1px)'
     ]) {
-      if (!html.includes(required)) errors.push(`${widget.slug}: modern segmented-control treatment is missing ${required}.`);
+      if (!presentation.includes(required)) errors.push(`${widget.slug}: modern segmented-control treatment is missing ${required}.`);
     }
   }
   const inlineScripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)];
@@ -69,7 +80,7 @@ for (const widget of widgets) {
       for (const required of ['LLM FIX REQUEST', 'Report_Proforma_Widget_Error', 'sessionSent', '600000']) {
         if (!reporter.includes(required)) errors.push(`${widget.slug}: critical-error reporter is missing ${required}.`);
       }
-      if (!html.includes('LMCriticalErrors.markReady')) errors.push(`${widget.slug}: reporter is never marked ready after Creator initialization.`);
+      if (!scripts.includes('LMCriticalErrors.markReady')) errors.push(`${widget.slug}: reporter is never marked ready after Creator initialization.`);
     }
   }
 }

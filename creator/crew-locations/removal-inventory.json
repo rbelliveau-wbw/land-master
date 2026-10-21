@@ -1,0 +1,637 @@
+{
+  "purpose": "User explicitly requested a durable inventory in case they later ask to delete this feature. This file is not deletion authorization.",
+  "recorded_date": "2026-10-21",
+  "environment": "Creator-only scheduling; Development updates pending user promotion",
+  "status": "creator-only-upgrade-awaiting-user-promotion",
+  "progress_file": "creator/crew-locations/native-install-progress.json",
+  "native_forms": [
+    {
+      "link_name": "Crew",
+      "development_form_id": "4410926000005295307",
+      "created": true,
+      "fields": [
+        "Crew_Code",
+        "Crew_Name",
+        "Badge_Color",
+        "Active",
+        "Source_System",
+        "Source_Record_ID"
+      ],
+      "automatically_created_report_display_name": "All Crews",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295346",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Active": "4410926000005295368",
+        "Source_System": "4410926000005295369",
+        "Source_Record_ID": "4410926000005295370",
+        "Crew_Code": "4410926000005295365",
+        "Crew_Name": "4410926000005295366",
+        "Badge_Color": "4410926000005295367"
+      },
+      "section": {
+        "link_name": "Crew_Details",
+        "development_id": "4410926000005295919",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    },
+    {
+      "link_name": "Crew_Assignment",
+      "development_form_id": "4410926000005295381",
+      "created": true,
+      "fields": [
+        "Subdivision1",
+        "Crew",
+        "Assignment_Date",
+        "Source_System",
+        "Source_Record_ID",
+        "Source_Key",
+        "Source_Updated_At"
+      ],
+      "automatically_created_report_display_name": "Crew Assignment Report",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295420",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Source_Updated_At": "4410926000005295444",
+        "Assignment_Date": "4410926000005295440",
+        "Source_System": "4410926000005295441",
+        "Source_Record_ID": "4410926000005295442",
+        "Source_Key": "4410926000005295443",
+        "Subdivision1": "4410926000005295438",
+        "Crew": "4410926000005295439"
+      },
+      "section": {
+        "link_name": "Crew_Assignment_Details",
+        "development_id": "4410926000005295920",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    },
+    {
+      "link_name": "Task_Schedule",
+      "development_form_id": "4410926000005295471",
+      "created": true,
+      "fields": [
+        "Subdivision1",
+        "Stage_Key",
+        "Start_Date",
+        "End_Date",
+        "Source_System",
+        "Source_Record_ID",
+        "Source_Key",
+        "Source_Task_ID",
+        "Source_Milestone_ID",
+        "Source_Modified_At",
+        "Synced_At",
+        "Write_Enabled"
+      ],
+      "automatically_created_report_display_name": "All Task Schedules",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295510",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Source_Modified_At": "4410926000005295536",
+        "Synced_At": "4410926000005295537",
+        "Write_Enabled": "4410926000005295538",
+        "Source_Record_ID": "4410926000005295532",
+        "Source_Key": "4410926000005295533",
+        "Source_Task_ID": "4410926000005295534",
+        "Source_Milestone_ID": "4410926000005295535",
+        "Stage_Key": "4410926000005295528",
+        "Start_Date": "4410926000005295529",
+        "End_Date": "4410926000005295530",
+        "Source_System": "4410926000005295531",
+        "Subdivision1": "4410926000005295527"
+      },
+      "section": {
+        "link_name": "Task_Schedule_Details",
+        "development_id": "4410926000005295924",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    },
+    {
+      "link_name": "Schedule_Change_Log",
+      "development_form_id": "4410926000005295561",
+      "created": true,
+      "fields": [
+        "Operation_ID",
+        "Operation_Type",
+        "Actor",
+        "Timestamp",
+        "Subdivision1",
+        "Origin",
+        "Request_JSON",
+        "Result_JSON",
+        "State",
+        "Error",
+        "Duration_Operation_ID",
+        "Reverses_Operation_ID",
+        "Inflight_Record_Key",
+        "Execution_Finished"
+      ],
+      "automatically_created_report_display_name": "Schedule Change Log Report",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295600",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Reverses_Operation_ID": "4410926000005295628",
+        "Inflight_Record_Key": "4410926000005295629",
+        "Execution_Finished": "4410926000005295630",
+        "Result_JSON": "4410926000005295624",
+        "State": "4410926000005295625",
+        "Error": "4410926000005295626",
+        "Duration_Operation_ID": "4410926000005295627",
+        "Timestamp": "4410926000005295620",
+        "Subdivision1": "4410926000005295621",
+        "Origin": "4410926000005295622",
+        "Request_JSON": "4410926000005295623",
+        "Operation_ID": "4410926000005295617",
+        "Operation_Type": "4410926000005295618",
+        "Actor": "4410926000005295619"
+      },
+      "section": {
+        "link_name": "Schedule_Change_Log_Details",
+        "development_id": "4410926000005295923",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    },
+    {
+      "link_name": "Crew_Schedule_Lock",
+      "development_form_id": "4410926000005295655",
+      "created": true,
+      "fields": [
+        "Phase_Key",
+        "Subdivision1",
+        "Operation_ID",
+        "Actor",
+        "Acquired_At"
+      ],
+      "automatically_created_report_display_name": "All Crew Schedule Locks",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295694",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Phase_Key": "4410926000005295711",
+        "Subdivision1": "4410926000005295712",
+        "Operation_ID": "4410926000005295713",
+        "Actor": "4410926000005295714",
+        "Acquired_At": "4410926000005295715"
+      },
+      "section": {
+        "link_name": "Crew_Schedule_Lock_Details",
+        "development_id": "4410926000005295921",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    },
+    {
+      "link_name": "Crew_Test_Record",
+      "development_form_id": "4410926000005295731",
+      "created": true,
+      "fields": [
+        "Record_Key",
+        "Subdivision1",
+        "First_Operation_ID",
+        "Created_At"
+      ],
+      "automatically_created_report_display_name": "Crew Test Record Report",
+      "report_link_name_verified": false,
+      "report_id": "4410926000005295770",
+      "records_created_by_this_installation": 0,
+      "current_record_count_not_queried": true,
+      "development_field_ids": {
+        "Subdivision1": "4410926000005295788",
+        "First_Operation_ID": "4410926000005295789",
+        "Created_At": "4410926000005295790",
+        "Record_Key": "4410926000005295787"
+      },
+      "section": {
+        "link_name": "Crew_Test_Record_Details",
+        "development_id": "4410926000005295922",
+        "row": 1,
+        "column": 0,
+        "data_field_column": 1
+      }
+    }
+  ],
+  "native_functions_created": [
+    "crewLocationsConfig",
+    "crewLocationsIso",
+    "crewLocationsRead",
+    "crewLocationsValidate",
+    "crewLocationsDirectValidate",
+    "crewLocationsMayPush",
+    "crewLocationsBeginPush",
+    "crewLocationsEndPush",
+    "crewLocationsStatus",
+    "crewLocationsWidget"
+  ],
+  "optional_functions_prepared_not_installed": [
+    "crewLocationsImportAssignments",
+    "crewLocationsImportTasks"
+  ],
+  "existing_form_additions": {
+    "form": "User_Access",
+    "fields": [
+      "View_Crew_Locations",
+      "Edit_Crew_Milestones",
+      "Edit_Crew_Task_Dates",
+      "Manage_Crew_Assignments"
+    ],
+    "default": false,
+    "section": "Crew_Locations_Permissions",
+    "per_user_flags_granted": 1,
+    "before_snapshot": "creator/crew-locations/native-before/User_Access.ds",
+    "after_reference": "creator/crew-locations/User_Access.native.ds",
+    "restore_note": "Remove only the listed additions after checking current dependencies; do not overwrite the entire live form from an old snapshot.",
+    "development_native_ids": {
+      "Crew_Locations_Permissions": "4410926000005295804",
+      "View_Crew_Locations": "4410926000005295805",
+      "Edit_Crew_Milestones": "4410926000005295806",
+      "Edit_Crew_Task_Dates": "4410926000005295807",
+      "Manage_Crew_Assignments": "4410926000005295808"
+    },
+    "tester": {
+      "user": "wbdevelopment",
+      "display_name": "Robby Belliveau",
+      "user_access_record_id": "4410926000003608006",
+      "view": true,
+      "milestones": false,
+      "tasks": false,
+      "assignments": false
+    }
+  },
+  "existing_permission_profile_changes": {
+    "Read": "Denied all 30 access/view/edit/delete/more permissions for these six new forms/reports only.",
+    "Write": "Denied all 30 permissions for these six new forms/reports only.",
+    "custom_profiles": "Six verified already denied all new components; no changes made.",
+    "new_profiles_created": 0,
+    "evidence": "creator/crew-locations/native-permissions.json"
+  },
+  "existing_components_to_preserve": [
+    "Milestones and all existing milestone records/date fields",
+    "Milestone_Gantt_View page and milestone-gantt widget",
+    "Subdivision and its records",
+    "User_Access and every pre-existing field/record",
+    "zoho_creator_connection: verified reused; not created or reauthorized by this feature",
+    "All eight existing permission profiles and all permissions for pre-existing modules",
+    "Milestone_Bi_Directional_1: phase-lock and controlled-import audit guard confirmed in Development; preserve newer analyticsExportRows/workflowRunLog instrumentation. Other four existing outbound routes remain unchanged.",
+    "Open_Close_Forecasting_Wi: existing pending notification correction was published unchanged; it was not implemented by Crew Locations. Do not revert it during feature removal.",
+    "buildContractCommentNotification: later unrelated edit left in Development; do not remove or overwrite."
+  ],
+  "planned_not_installed": {
+    "validation_workflows": [
+      "Crew_Assignment_on_validate",
+      "Task_Schedule_on_validate_edit"
+    ],
+    "validation_scripts_pending": [
+      "Crew_on_validate"
+    ]
+  },
+  "local_added_directories": [
+    "widgets/crew-locations",
+    "releases/crew-locations",
+    "creator/crew-locations"
+  ],
+  "local_added_functions": [
+    "creator/functions/crewLocationsBeginPush.dg",
+    "creator/functions/crewLocationsConfig.dg",
+    "creator/functions/crewLocationsDirectValidate.dg",
+    "creator/functions/crewLocationsEndPush.dg",
+    "creator/functions/crewLocationsImportAssignments.dg",
+    "creator/functions/crewLocationsImportTasks.dg",
+    "creator/functions/crewLocationsIso.dg",
+    "creator/functions/crewLocationsMayPush.dg",
+    "creator/functions/crewLocationsRead.dg",
+    "creator/functions/crewLocationsStatus.dg",
+    "creator/functions/crewLocationsValidate.dg",
+    "creator/functions/crewLocationsWidget.dg"
+  ],
+  "local_added_files": [
+    "scripts/prepare-crew-locations.mjs",
+    "scripts/package-crew-locations.mjs",
+    "scripts/preview-crew-locations.mjs",
+    "scripts/sync-crew-locations-shared.mjs",
+    "scripts/test-crew-locations.mjs",
+    "scripts/fixtures/crew-locations.mjs",
+    "scripts/fixtures/crew-browser-checks.js",
+    "manifests/crew-locations.json",
+    "knowledge/modules/crew-locations.md",
+    "knowledge/design/crew-scheduling.md"
+  ],
+  "shared_files_with_scoped_additions": [
+    "deploy/environments.json",
+    "manifests/widgets.json",
+    "manifests/widget-dependencies.json",
+    "manifests/custom-apis.json",
+    "knowledge/design/README.md",
+    "package.json",
+    "scripts/validate-widget-javascript.mjs",
+    "AGENTS.md",
+    "docs/creator-functions-and-publishing.md"
+  ],
+  "shared_removal_rule": "Remove only Crew Locations entries/changes after reviewing the current diff; preserve concurrent user and other-chat changes.",
+  "output_artifacts": [
+    "../outputs/crew-locations-1.0.6",
+    "../outputs/crew-locations-1.0.6-install.zip",
+    "../outputs/crew-locations-review",
+    "../outputs/crew-locations-1.0.6-native1",
+    "../outputs/crew-locations-1.0.6-native1-install.zip",
+    "../outputs/crew-locations-1.0.6-native2",
+    "../outputs/crew-locations-1.0.6-native2-install.zip"
+  ],
+  "automation": {
+    "id": "retry-crew-locations-installation",
+    "kind": "heartbeat",
+    "status": "PAUSED",
+    "single_retry_already_ran": true
+  },
+  "future_removal_checks": [
+    "Support components were explicitly promoted to Stage and Production in Creator versions 9.108/9.109. Inspect each environment; do not assume Development removal removes published components or data. Listed field/form IDs are verified Development identities and must be checked in the target environment.",
+    "Recheck current Creator metadata, object IDs, callers, data counts, environment and any later publication before removal.",
+    "Resolve in-flight operations, preserve needed audit/history and reconcile any marked test dates before dropping guards, fields or forms.",
+    "Unbind a created API/page and new validation workflows before removing their function dependencies.",
+    "Never delete the existing Milestones form, records or the reused Creator connection.",
+    "Update this inventory after each additional installation/removal step."
+  ],
+  "live_schedule_writes_by_this_work": 0,
+  "production_promotion_by_this_work": true,
+  "last_manual_retry": {
+    "requested_by_user": true,
+    "checked_at_utc": "2026-10-21T18:59:16Z",
+    "result": "IDE briefly opened, then workflow save rejected by renewed publication maintenance",
+    "workflow": "Milestone_Bi_Directional_1",
+    "save_accepted": false,
+    "persistence": "Unconfirmed; re-read current live definition before the next attempt",
+    "native_compilation_confirmed": false,
+    "backup": "native-before/Milestone_Bi_Directional_1.ds",
+    "unsaved_candidate": "native-candidates/Milestone_Bi_Directional_1.ds",
+    "evidence": "../outputs/crew-locations-review/creator-retry-publication-error.png",
+    "resolution": {
+      "canonical_guard_confirmed": true,
+      "native_snapshot": "native-installed/Milestone_Bi_Directional_1.ds",
+      "note": "Later native read confirmed the complete guard despite the earlier maintenance/save error; do not infer rollback from that UI error."
+    }
+  },
+  "existing_workflow_save_status": {
+    "Milestone_Bi_Directional_1": "Canonical Development importer guard confirmed from native publish diff; retains analyticsExportRows/workflowRunLog and original error rethrow."
+  },
+  "native_workflow_backups": [
+    "creator/crew-locations/native-before/Milestone_Bi_Directional_1.ds"
+  ],
+  "native_workflow_candidates_not_confirmed_installed": [],
+  "publication_authorization": {
+    "date": "2026-10-21",
+    "user_choice": "Publish to Stage and Production",
+    "testingMode": true,
+    "service_enabled": false
+  },
+  "publication_attempts": [
+    {
+      "environment": "stage",
+      "version": "9.108",
+      "title": "Crew Locations schema prerequisites",
+      "selected_components": 20,
+      "status": "published to Stage and Production",
+      "excluded": [
+        "all ten functions",
+        "both pending custom schedules"
+      ],
+      "reason": "Full selection rejected with missing-dependency warning; schema-only selection passed native validation"
+    },
+    {
+      "environment": "stage",
+      "version": "9.109",
+      "title": "Crew Locations field dependencies",
+      "selected_components": 78,
+      "status": "published to Stage and Production",
+      "native_dependency_validation": "passed for complete package",
+      "service_enabled": false,
+      "testingMode": true
+    },
+    {
+      "environment": "production",
+      "versions": [
+        "9.108",
+        "9.109"
+      ],
+      "package_ids": [
+        "4410926000005298389",
+        "4410926000005291390"
+      ],
+      "selected_components": 98,
+      "status": "published; Production 9.109 verified"
+    }
+  ],
+  "native_function_development_ids": {
+    "crewLocationsConfig": "4410926000005295813",
+    "crewLocationsIso": "4410926000005295816",
+    "crewLocationsRead": "4410926000005295826",
+    "crewLocationsValidate": "4410926000005295842",
+    "crewLocationsDirectValidate": "4410926000005295855",
+    "crewLocationsMayPush": "4410926000005295870",
+    "crewLocationsBeginPush": "4410926000005295877",
+    "crewLocationsEndPush": "4410926000005295884",
+    "crewLocationsStatus": "4410926000005295894",
+    "crewLocationsWidget": "4410926000005295903"
+  },
+  "native_installed_canonical_snapshots": [
+    "creator/crew-locations/native-installed/Crew.ds",
+    "creator/crew-locations/native-installed/Crew_Assignment.ds",
+    "creator/crew-locations/native-installed/Task_Schedule.ds",
+    "creator/crew-locations/native-installed/Schedule_Change_Log.ds",
+    "creator/crew-locations/native-installed/Crew_Schedule_Lock.ds",
+    "creator/crew-locations/native-installed/Crew_Test_Record.ds",
+    "creator/crew-locations/native-installed/Milestone_Bi_Directional_1.ds"
+  ],
+  "native_creator_versions": {
+    "stage": "9.109",
+    "production": "9.109",
+    "verified_from": "Creator Environments UI",
+    "schema_prerequisite_version": "9.108"
+  },
+  "unrelated_later_development_changes_preserved": [
+    "buildContractCommentNotification"
+  ],
+  "existing_workflow_guards": {
+    "Milestone_Bi_Directional_1": {
+      "development_workflow_id": "4410926000001776049",
+      "installed": true,
+      "scope": "phase lock plus controlled import history for marked test records",
+      "native_snapshot": "creator/crew-locations/native-installed/Milestone_Bi_Directional_1.ds",
+      "before_snapshot": "creator/crew-locations/native-before/Milestone_Bi_Directional_1.ds",
+      "native_sha256": "fb22b7483aae99dca1f47632db9b78ee6901304113278c1f9435a5f3082542e1",
+      "removal_rule": "Merge guard removal into current native body only after reconciling marked dates and locks; preserve analyticsExportRows/workflowRunLog and later changes."
+    },
+    "Sync_Milestones": {
+      "installed": true,
+      "scope": "Unique phase lock and test-marker exclusion; preserved current workflowRunLog and all existing response/error handling",
+      "native_snapshot": "creator/crew-locations/native-installed/Sync_Milestones.dg",
+      "before_snapshot": "creator/crew-locations/native-before/Sync_Milestones.current-audit.dg",
+      "kept_inactive": false
+    },
+    "Sync_Only_MS_End": {
+      "installed": true,
+      "scope": "Unique phase lock and test-marker exclusion; preserved current workflowRunLog and all existing response/error handling",
+      "native_snapshot": "creator/crew-locations/native-installed/Sync_Only_MS_End.dg",
+      "before_snapshot": "creator/crew-locations/native-before/Sync_Only_MS_End.current-audit.dg",
+      "kept_inactive": false
+    },
+    "Update_Projects_Milestone": {
+      "installed": true,
+      "scope": "Unique phase lock and test-marker exclusion; preserved current workflowRunLog and all existing response/error handling",
+      "native_snapshot": "creator/crew-locations/native-installed/Update_Projects_Milestone.ds",
+      "before_snapshot": "creator/crew-locations/native-before/Update_Projects_Milestone.current-audit.ds",
+      "kept_inactive": true
+    },
+    "Update_Projects_Milestone1": {
+      "installed": true,
+      "scope": "Unique phase lock and test-marker exclusion; preserved current workflowRunLog and all existing response/error handling",
+      "native_snapshot": "creator/crew-locations/native-installed/Update_Projects_Milestone1.ds",
+      "before_snapshot": "creator/crew-locations/native-before/Update_Projects_Milestone1.current-audit.ds",
+      "kept_inactive": true
+    }
+  },
+  "native_page": {
+    "link_name": "Crew_Management",
+    "display_name": "Crew Management",
+    "created": true,
+    "url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Management",
+    "native_id_pending": true,
+    "previous_link_name": "Crew_Locations"
+  },
+  "native_widget": {
+    "name": "Crew Management",
+    "hosting": "External",
+    "entry": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
+    "release": "1.1.0",
+    "cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1",
+    "previous_hosting": "Internal",
+    "previous_entry": "/app/widget.html",
+    "link_name": "crew_locations"
+  },
+  "native_custom_api": {
+    "name": "Crew_Locations_Widget_DEV",
+    "method": "POST",
+    "authentication": "OAuth2",
+    "scope": "Admin only",
+    "application": "Land Master DEVELOPMENT",
+    "argument": "payload",
+    "function": "crewLocationsWidget",
+    "status": "Enabled"
+  },
+  "new_validation_workflows": [
+    {
+      "name": "Milestones_on_validate_ed",
+      "planned_name": "Milestones_on_validate_edit",
+      "form": "Milestones",
+      "event": "edited on validate",
+      "script_saved": true
+    },
+    {
+      "name": "Crew_on_validate",
+      "form": "Crew",
+      "event": "created or edited on validate",
+      "script_saved": false,
+      "blocker": "Creator script service unavailable during publication lock"
+    }
+  ],
+  "existing_report_additions": [
+    {
+      "report": "All_Subdivisions",
+      "fields": [
+        "Lot_Total_Residential",
+        "Project_ID"
+      ],
+      "layouts": [
+        "list",
+        "quickview"
+      ],
+      "before_snapshot": "creator/crew-locations/native-before/All_Subdivisions.ds",
+      "note": "Needed for authenticated SDK field exposure; preserve all existing columns and actions."
+    }
+  ],
+  "native_runtime_activation": {
+    "environment": "Development",
+    "enabled": true,
+    "testingMode": true,
+    "crew_source_enabled": false,
+    "task_source_enabled": false,
+    "milestone_edit_permission": false,
+    "note": "Config activation is installed Development only; repository template remains disabled. Other publication detected at 9.110; not initiated by this step."
+  },
+  "native_test_attempts": [
+    {
+      "operation_id": "549235cd-65d3-40fb-8b2e-7349cb14f45b",
+      "phase_id": "4410926000003378004",
+      "phase": "Cameron Ranch - Phase 01",
+      "milestone_record_id": "4410926000003819022",
+      "stage": "Rough Cut",
+      "changed_field": "end",
+      "before": "2027-03-17",
+      "requested": "2027-03-18",
+      "after_authoritative_reload": "2027-03-17",
+      "state": "partial",
+      "confirmed_destinations": [],
+      "message": "Creator rejected a schedule update.",
+      "native_write_ack_diagnostics": "Native error code/details were not returned by the current controller; investigate when the application editor is available.",
+      "test_marker_key": "M:4410926000003819022",
+      "test_marker_native_id": "not queried; marker may exist and must be reconciled before future removal",
+      "audit_entry_visible": true,
+      "phase_lock": "The completed known-rejection path releases its own phase lock; no manual deletion performed.",
+      "outbound_projects_calls_by_this_test": 0
+    }
+  ],
+  "native_custom_apis": [
+    {
+      "name": "Crew_Locations_Widget_DEV",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "scope": "Admin only",
+      "application": "Land Master DEVELOPMENT",
+      "argument": "payload",
+      "function": "crewLocationsWidget",
+      "status": "Enabled"
+    },
+    {
+      "name": "Crew_Locations_Widget",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "scope": "Admin only",
+      "application": "Land Master Production",
+      "application_id": "4410926000000011439",
+      "function_id": "4410926000005297754",
+      "argument": "payload",
+      "function": "crewLocationsWidget",
+      "status": "Enabled"
+    }
+  ],
+  "milestone_embed_replacement": {
+    "page": "Milestone_Gantt_View",
+    "widget": "crew_locations",
+    "previous_widget": "milestone_ganntt",
+    "before_snapshot": "creator/crew-locations/native-before/Milestone_Gantt_View.zml",
+    "published_with": "9.113 by authorized coordinating chat"
+  },
+  "latest_mode": {
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "every_new_milestone_patch_Push_Update": false,
+    "creator_promotion": "user handles after PMP"
+  }
+}

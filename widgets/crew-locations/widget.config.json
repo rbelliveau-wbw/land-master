@@ -1,0 +1,28 @@
+{
+  "slug": "crew-locations",
+  "name": "Crew Management",
+  "module": "projects",
+  "version": "1.1.0",
+  "description": "Paired milestone/task scheduling with Creator-only date saves in the authenticated runtime environment.",
+  "source_entry": "widgets/crew-locations/src/app/widget.html",
+  "creator_package_manifest": "widgets/crew-locations/src/plugin-manifest.json",
+  "baseline_zip": null,
+  "html_title": "Crew Management",
+  "source_sha256": "73dc6cdc62bfeee81e450bc8157c77e8e6b6a513b3094e07cbf6f6a1d2ab7fc7",
+  "baseline_zip_sha256": null,
+  "plugin_manifest": {
+    "service": "CREATOR",
+    "locale": [
+      "en"
+    ],
+    "defaultLocale": "en",
+    "storage": false,
+    "cspDomains": {
+      "connect-src": []
+    },
+    "config": []
+  },
+  "dependency_inventory": "manifests/widget-dependencies.json#crew-locations",
+  "hosting_entry": "index.html (generated from app/widget.html)",
+  "trust": "Production Creator-only scheduling; outbound Projects writes are disabled. Native deployment and verification are recorded in creator/crew-locations/native-install-progress.json."
+}

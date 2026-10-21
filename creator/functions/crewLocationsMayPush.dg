@@ -1,0 +1,11 @@
+bool crewLocationsMayPush(string milestoneRecordId)
+{
+	// Apply this additional guard to every existing milestone outbound route.
+	// It affects only marked test records and phases currently being edited.
+	if(!milestoneRecordId.matches("[0-9]+")) { return false; }
+	if(Crew_Test_Record[Record_Key == "M:" + milestoneRecordId].count() > 0) { return false; }
+	ms = Milestones[ID == milestoneRecordId.toLong()];
+	if(ms.count() != 1) { return false; }
+	if(Crew_Schedule_Lock[Phase_Key == ms.Subdivision1.toString()].count() > 0) { return false; }
+	return true;
+}

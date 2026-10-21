@@ -1,0 +1,1 @@
+Historical editor drafts. The importer guard and six repaired form layouts were later confirmed through canonical native reads. Current verified snapshots are in ../native-installed/. The original sources are in ../native-before/. Read native-install-progress.json before further changes. Always merge against current live metadata rather than overwriting from a snapshot.

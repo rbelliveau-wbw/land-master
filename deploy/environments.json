@@ -12,7 +12,8 @@
       "manage-lots": "0.13.11",
       "settings-manager": "1.5.20",
       "lot-sales-explorer": "1.5.61",
-      "forecast-manager": "1.7.18"
+      "forecast-manager": "1.7.18",
+      "crew-locations": "1.1.0"
     },
     "stage": {
       "proforma-manager": "1.80.88",
@@ -22,7 +23,8 @@
       "tax-center": "19.0.0",
       "milestone-gantt": "1.0.0",
       "manage-lots": "0.1.0",
-      "lot-sales-explorer": "1.5.30"
+      "lot-sales-explorer": "1.5.30",
+      "crew-locations": "1.1.0"
     },
     "production": {
       "proforma-manager": "1.80.133",
@@ -34,7 +36,8 @@
       "manage-lots": "0.13.11",
       "settings-manager": "1.5.20",
       "lot-sales-explorer": "1.5.61",
-      "forecast-manager": "1.7.18"
+      "forecast-manager": "1.7.18",
+      "crew-locations": "1.1.0"
     }
   },
   "path_aliases": {
@@ -51,6 +54,7 @@
     "contract-management",
     "proforma-manager",
     "tax-center",
-    "forecast-manager"
+    "forecast-manager",
+    "crew-locations"
   ]
 }

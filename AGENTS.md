@@ -77,6 +77,16 @@ Chat history and model memory are not authoritative.
     overwrites the original Pro Forma's rows. `scripts/test-proforma-duplicate.mjs` enforces
     this — do not silence it.
 
+## Crew Locations removal inventory — user direction October 21, 2026
+
+The user requested an exact record of this feature in case they later ask to
+delete it. Before changing or removing Crew Locations components, read
+`creator/crew-locations/removal-inventory.json` and
+`creator/crew-locations/native-install-progress.json`. Keep the inventory current
+after further installation/removal. The inventory is not deletion authorization.
+Preserve existing Milestones data, the original milestone widget/page, the reused
+Creator connection, and unrelated permission/profile or repository changes.
+
 ## Automatic save comparisons — user direction October 8, 2026
 
 Do not reintroduce automatic editable/calculated-field equality checks after a

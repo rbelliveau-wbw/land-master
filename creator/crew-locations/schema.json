@@ -1,0 +1,375 @@
+{
+  "status": "PREPARED COMPONENT DEFINITIONS \u00e2\u20ac\u201d see native-install-progress.json for current Development installation state",
+  "authority": {
+    "path": "creator/exports/Land_Master_2026-10-21-development.ds",
+    "sha256": "66d911f24354bba2b17eee2dbd657bb03c4e8ba98fcf2706e02628f4f0601fc3"
+  },
+  "page": {
+    "name": "Crew_Management",
+    "display_name": "Crew Management",
+    "widget": "crew-locations",
+    "preserve": "Milestone_Gantt_View identity; replace its widget embed with crew_locations"
+  },
+  "forms": [
+    {
+      "name": "Crew",
+      "report": "All_Crews",
+      "fields": [
+        {
+          "name": "Crew_Code",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Crew_Name",
+          "type": "text"
+        },
+        {
+          "name": "Badge_Color",
+          "type": "text",
+          "pattern": "^#[A-Fa-f0-9]{6}$"
+        },
+        {
+          "name": "Active",
+          "type": "checkbox",
+          "default": false
+        },
+        {
+          "name": "Source_System",
+          "type": "text"
+        },
+        {
+          "name": "Source_Record_ID",
+          "type": "text"
+        }
+      ],
+      "section": {
+        "name": "Crew_Details",
+        "display_name": "Crew Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Crew_Assignment",
+      "report": "All_Crew_Assignments",
+      "fields": [
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision",
+          "required": true
+        },
+        {
+          "name": "Crew",
+          "type": "lookup",
+          "target": "Crew",
+          "required": true
+        },
+        {
+          "name": "Assignment_Date",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "Source_System",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Source_Record_ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Source_Key",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Source_Updated_At",
+          "type": "datetime"
+        }
+      ],
+      "section": {
+        "name": "Crew_Assignment_Details",
+        "display_name": "Crew Assignment Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Task_Schedule",
+      "report": "All_Task_Schedules",
+      "optional_source": true,
+      "fields": [
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision",
+          "required": true
+        },
+        {
+          "name": "Stage_Key",
+          "type": "text",
+          "required": true,
+          "choices": [
+            "Entitlements",
+            "Engineering Design",
+            "Municipal Review",
+            "Pre-Construction",
+            "Rough Cut",
+            "Sewer",
+            "Water",
+            "Storm Drain",
+            "Road Prep",
+            "Dry Utilities",
+            "Punch List",
+            "Closeout"
+          ]
+        },
+        {
+          "name": "Start_Date",
+          "type": "date"
+        },
+        {
+          "name": "End_Date",
+          "type": "date"
+        },
+        {
+          "name": "Source_System",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Source_Record_ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Source_Key",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Source_Task_ID",
+          "type": "text"
+        },
+        {
+          "name": "Source_Milestone_ID",
+          "type": "text"
+        },
+        {
+          "name": "Source_Modified_At",
+          "type": "datetime"
+        },
+        {
+          "name": "Synced_At",
+          "type": "datetime"
+        },
+        {
+          "name": "Write_Enabled",
+          "type": "checkbox",
+          "default": false
+        }
+      ],
+      "section": {
+        "name": "Task_Schedule_Details",
+        "display_name": "Task Schedule Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Schedule_Change_Log",
+      "admin_only": true,
+      "fields": [
+        {
+          "name": "Operation_ID",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Operation_Type",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Actor",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Timestamp",
+          "type": "datetime"
+        },
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision",
+          "required": true
+        },
+        {
+          "name": "Origin",
+          "type": "text"
+        },
+        {
+          "name": "Request_JSON",
+          "type": "multiline"
+        },
+        {
+          "name": "Result_JSON",
+          "type": "multiline"
+        },
+        {
+          "name": "State",
+          "type": "text"
+        },
+        {
+          "name": "Error",
+          "type": "multiline"
+        },
+        {
+          "name": "Duration_Operation_ID",
+          "type": "text"
+        },
+        {
+          "name": "Reverses_Operation_ID",
+          "type": "text"
+        },
+        {
+          "name": "Inflight_Record_Key",
+          "type": "text"
+        },
+        {
+          "name": "Execution_Finished",
+          "type": "checkbox",
+          "default": false
+        }
+      ],
+      "section": {
+        "name": "Schedule_Change_Log_Details",
+        "display_name": "Schedule Change Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Crew_Schedule_Lock",
+      "admin_only": true,
+      "fields": [
+        {
+          "name": "Phase_Key",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision",
+          "required": true
+        },
+        {
+          "name": "Operation_ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Actor",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Acquired_At",
+          "type": "datetime"
+        }
+      ],
+      "section": {
+        "name": "Crew_Schedule_Lock_Details",
+        "display_name": "Schedule Lock Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Crew_Test_Record",
+      "admin_only": true,
+      "fields": [
+        {
+          "name": "Record_Key",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision",
+          "required": true
+        },
+        {
+          "name": "First_Operation_ID",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "Created_At",
+          "type": "datetime"
+        }
+      ],
+      "section": {
+        "name": "Crew_Test_Record_Details",
+        "display_name": "Test Record Details",
+        "row": 1
+      }
+    }
+  ],
+  "add_to_User_Access": [
+    {
+      "name": "View_Crew_Locations",
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "name": "Edit_Crew_Milestones",
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "name": "Edit_Crew_Task_Dates",
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "name": "Manage_Crew_Assignments",
+      "type": "checkbox",
+      "default": false
+    }
+  ],
+  "custom_api": {
+    "name": "Crew_Locations_Widget_DEV",
+    "function": "crewLocationsWidget",
+    "argument": "payload",
+    "authentication": "OAuth2",
+    "method": "POST",
+    "content_type": "application/json",
+    "environment": "development",
+    "aliases": {
+      "development": "Crew_Locations_Widget_DEV",
+      "stage": "Crew_Locations_Widget_STAGE",
+      "production": "Crew_Locations_Widget"
+    }
+  },
+  "connection": {
+    "name": "zoho_creator_connection",
+    "type": "logged-in user",
+    "scopes": [
+      "ZohoCreator.report.READ",
+      "ZohoCreator.report.UPDATE"
+    ],
+    "environment_header": "thisapp.environment.linkname"
+  },
+  "testing_mode": false,
+  "creator_only": true,
+  "projects_push_enabled": false
+}

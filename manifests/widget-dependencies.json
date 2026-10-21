@@ -619,6 +619,51 @@
       "external_domains": [
         "static.zohocdn.com"
       ]
+    },
+    "crew-locations": {
+      "custom_apis": [
+        {
+          "name": "Crew_Locations_Widget_DEV",
+          "status": "verified-native",
+          "source": "crew-app.js"
+        },
+        {
+          "name": "Crew_Locations_Widget",
+          "status": "verified-native",
+          "source": "crew-app.js"
+        },
+        {
+          "name": "Crew_Locations_Widget_STAGE",
+          "status": "not-installed",
+          "source": "crew-app.js"
+        }
+      ],
+      "forms_referenced": [
+        "Subdivision",
+        "Milestones",
+        "Crew",
+        "Crew_Assignment",
+        "Task_Schedule",
+        "Schedule_Change_Log",
+        "Crew_Schedule_Lock",
+        "Crew_Test_Record",
+        "User_Access"
+      ],
+      "reports_referenced": [
+        "All_Subdivisions",
+        "All_Milestones",
+        "All_Crews",
+        "All_Crew_Assignments",
+        "All_Task_Schedules"
+      ],
+      "sdk_calls": [
+        "ZOHO.CREATOR.UTIL.getInitParams",
+        "ZOHO.CREATOR.DATA.invokeCustomApi"
+      ],
+      "external_domains": [
+        "static.zohocdn.com"
+      ],
+      "new_schema_contract": "manifests/crew-locations.json"
     }
   }
 }

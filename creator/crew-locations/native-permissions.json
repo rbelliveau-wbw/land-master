@@ -1,0 +1,44 @@
+[
+  {
+    "profile": "Write",
+    "count": 30,
+    "granted": [],
+    "changed": true
+  },
+  {
+    "profile": "Read",
+    "count": 30,
+    "granted": [],
+    "changed": true
+  },
+  {
+    "profile": "CFO",
+    "count": 30,
+    "granted": []
+  },
+  {
+    "profile": "Accounting - Lot Management",
+    "count": 30,
+    "granted": []
+  },
+  {
+    "profile": "Construction Budgeting",
+    "count": 30,
+    "granted": []
+  },
+  {
+    "profile": "Contract Mgmt",
+    "count": 30,
+    "granted": []
+  },
+  {
+    "profile": "Dev/Land Acq - Proforma & Budgets",
+    "count": 30,
+    "granted": []
+  },
+  {
+    "profile": "Project/Forecast Management",
+    "count": 30,
+    "granted": []
+  }
+]

@@ -1,0 +1,68 @@
+form Crew_Test_Record
+{
+	Crew_Test_Record_Details
+	(
+		type = section
+		displayname = "Test Record Details"
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have unique Record_Key
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Subdivision1
+	(
+		type = picklist	
+		values  = Subdivision.ID
+    	displayformat = [Subdivision_Name]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have First_Operation_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Created_At
+	(
+    	type = datetime
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

@@ -297,6 +297,34 @@
       "dependency_inventory": "manifests/widget-dependencies.json#forecast-manager",
       "hosting_entry": "index.html (generated from app/widget.html)",
       "trust": "Native backend compiled and deployed through Creator 9.59; selective Development/Production APIs verified. Version 1.3 adds a read-only Data Insights inventory breakdown; window/date/save/create guards remain unchanged. Version 1.4 exposes native Builder.Type1 in the read-only catalog and preserves verified save/create behavior."
+    },
+    {
+      "slug": "crew-locations",
+      "name": "Crew Management",
+      "module": "projects",
+      "version": "1.1.0",
+      "description": "Paired milestone/task scheduling with Creator-only date saves in the authenticated runtime environment.",
+      "source_entry": "widgets/crew-locations/src/app/widget.html",
+      "creator_package_manifest": "widgets/crew-locations/src/plugin-manifest.json",
+      "baseline_zip": null,
+      "html_title": "Crew Management",
+      "source_sha256": "73dc6cdc62bfeee81e450bc8157c77e8e6b6a513b3094e07cbf6f6a1d2ab7fc7",
+      "baseline_zip_sha256": null,
+      "plugin_manifest": {
+        "service": "CREATOR",
+        "locale": [
+          "en"
+        ],
+        "defaultLocale": "en",
+        "storage": false,
+        "cspDomains": {
+          "connect-src": []
+        },
+        "config": []
+      },
+      "dependency_inventory": "manifests/widget-dependencies.json#crew-locations",
+      "hosting_entry": "index.html (generated from app/widget.html)",
+      "trust": "Production Creator-only scheduling; outbound Projects writes are disabled. Native deployment and verification are recorded in creator/crew-locations/native-install-progress.json."
     }
   ]
 }

@@ -1,0 +1,135 @@
+{
+  "status": "creator-only-upgrade-awaiting-user-promotion",
+  "widget": "crew-locations",
+  "version": "1.1.0",
+  "mode": "creator-only-scheduling",
+  "schema": "creator/crew-locations/schema.json",
+  "existing_page_preserved": "Milestone_Gantt_View",
+  "new_page": "Crew_Management",
+  "new_api": "Crew_Locations_Widget_DEV",
+  "function": "crewLocationsWidget",
+  "existing_connection": "zoho_creator_connection",
+  "connection_kind": "logged-in-user",
+  "server_configuration": "creator/functions/crewLocationsConfig.dg",
+  "existing": {
+    "Subdivision": [
+      "ID",
+      "Project",
+      "Subdivision_Name",
+      "Subdivision_Code",
+      "Phase",
+      "Subphase",
+      "Territory",
+      "Status",
+      "Projects_Status",
+      "Project_ID",
+      "Total_Lots",
+      "Lot_Total_Residential"
+    ],
+    "Milestones": [
+      "ID",
+      "Subdivision1",
+      "Milestone_Name",
+      "Start_Date",
+      "End_Date",
+      "Milestone_ID",
+      "Project_ID",
+      "Sequence",
+      "Push_Update"
+    ],
+    "External_System_Mapping": [
+      "Subdivision1",
+      "External_System",
+      "External_Code"
+    ],
+    "User_Access": [
+      "User"
+    ],
+    "reports": [
+      "All_Subdivisions",
+      "All_Milestones",
+      "User_Access_Report"
+    ]
+  },
+  "new_components": [
+    "Crew",
+    "Crew_Assignment",
+    "Task_Schedule",
+    "Schedule_Change_Log",
+    "Crew_Schedule_Lock",
+    "Crew_Test_Record",
+    "All_Crews",
+    "All_Crew_Assignments",
+    "All_Task_Schedules",
+    "View_Crew_Locations",
+    "Edit_Crew_Milestones",
+    "Edit_Crew_Task_Dates",
+    "Manage_Crew_Assignments"
+  ],
+  "task_adapter": {
+    "status": "unverified-source-disabled",
+    "aggregation": "none",
+    "writes": "disabled until actual source semantics are verified; any enabled testing write is to the Creator mirror only",
+    "required_metadata": [
+      "source query or API",
+      "source record identity",
+      "external project/phase mapping",
+      "explicit stage mapping",
+      "actual start/end columns",
+      "source revision/timezone",
+      "write behavior"
+    ]
+  },
+  "crew_adapter": {
+    "status": "unverified-source-disabled",
+    "required_metadata": [
+      "source query or API",
+      "actual assignment date",
+      "stable source record identity",
+      "crew master codes/colors",
+      "explicit external job-to-Subdivision mapping"
+    ]
+  },
+  "testing_invariants": [
+    "No new outbound Projects endpoint or dispatcher",
+    "Every milestone date patch includes Push_Update false",
+    "Pre-existing Push_Update true is rejected, never cleared",
+    "Admin-only Crew_Test_Record marker protects every touched record against existing outbound routes",
+    "All prepared milestone import/export routes serialize on the same unique phase lock",
+    "Inbound sync may replace Creator-only dates after an operation releases its lock",
+    "Client requests cannot select or change the backend environment",
+    "LocalStorage contains view preferences only",
+    "Normal synchronization requires a separate future implementation and release"
+  ],
+  "deployment": {
+    "development_only": false,
+    "creator_install_required": true,
+    "native_compile_verified": false,
+    "live_record_tests_performed": true,
+    "production_promoted": true,
+    "core_functions_native_compiled": 10,
+    "installation_progress": "creator/crew-locations/native-install-progress.json",
+    "production_widget_promoted": false,
+    "native_components_published_to": [
+      "stage",
+      "production"
+    ],
+    "native_creator_versions": {
+      "stage": "9.109",
+      "production": "9.109",
+      "verified_from": "Creator Environments UI",
+      "schema_prerequisite_version": "9.108"
+    },
+    "native_importer_guard_confirmed": true,
+    "service_enabled": true,
+    "testingMode": false,
+    "native_api_page_verified": true,
+    "native_date_save_verified": false,
+    "milestone_editing_enabled": false,
+    "native_runtime_environment": "Development upgrade saved; Production API registered; user promotes pending native changes",
+    "native_runtime_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
+    "native_outbound_guards_installed": 5,
+    "validation_workflows_installed": 1,
+    "native_page_profile_check_pending": true
+  }
+}

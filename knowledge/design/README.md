@@ -33,6 +33,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Number transitions](number-transitions.md) | Sliding push for input-driven quantities, stable scope, immediate real values and reduced motion |
 | [Interaction motion](interaction-motion.md) | Required tabs, disclosures, row movement, refresh continuity, save feedback, overlays, row highlights and progress meters for all new features |
 | [General style](style-guide.md) | Shared palette, controls, responsive layout and remaining established patterns |
+| [Crew scheduling](crew-scheduling.md) | Paired milestone/task Gantt rows, synchronized filters, dates, propagation, locks and local testing mode |
 
 Keep one focused Markdown document per reusable component family. Put its
 related buttons, badges, loading states and dialog behavior together. Record

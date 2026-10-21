@@ -1,0 +1,172 @@
+list All_Subdivisions
+{
+	displayName = "All Subdivisions"
+	show all rows from Subdivision    
+	(
+		Subdivision_Name as "Subdivision Name"
+		(
+			width = 215px
+		)
+		Subdivision_Code as "Subdivision Code"
+		(
+			width = 135px
+		)
+		Project
+		(
+			width = 140px
+			view = All_Projects
+		)
+		Phase
+		(
+			width = 90px
+		)
+		County
+		(
+			width = 120px
+		)
+		City
+		(
+			width = 116px
+		)
+		Total_Lots as "Total Lots"
+		(
+			width = 110px
+		)
+		Lots_Sold as "Lots Sold"
+		(
+			width = 100px
+		)
+		Status
+		(
+			width = 261px
+		)
+		Last_Sold_Date as "Last Sold/Sold Out Date"
+		(
+			width = 141px
+		)
+		Eng_Sold_Out_Email_Sent as "Eng. Sold-Out Email Sent"
+		Company1 as "Development Company"
+		custom action "Create Budget"
+		(
+	  			workflow = Create_Budget_from_Subdiv
+				show action in edit record menu = true
+				column header = "Create Budget"
+				condition = (External_System_Mapping.External_Code is not null && External_System_Mapping.External_System == "HeavyJob")
+		)
+		Territory
+		Land_Company as "Land Company"
+		Projects_Status as "Projects Status"
+		Subphase
+		Final_Acceptance_Due_Date as "Final Acceptance Due Date"
+		Lot_Total_Residential as "Projects Residential Lots"
+		Project_ID as "Projects Project ID"
+	)
+	filters
+	(
+		Project
+	)
+	group by
+	(
+		Project ascending
+	)
+	sort by
+	(
+		Subdivision_Name ascending
+	)
+	custom actions
+	(
+		"Mass Create Forecasts"
+		(
+	  			workflow = Mass_Create_Forecasts
+				show action in view header = true
+				execute action for collection of records
+		)
+	)
+	quickview
+	(
+		layout
+		(
+			displaylayout = "classic"
+			datablock1
+			(
+				fields
+				(
+					"Create Budget"
+					Subdivision_Name as "Subdivision Name"
+					Subdivision_Code as "Subdivision Code"
+					Project
+					Phase
+					County
+					City
+					Total_Lots as "Total Lots"
+					Lots_Sold as "Lots Sold"
+					Last_Sold_Date as "Last Sold/Sold Out Date"
+					Status
+					Company1 as "Development Company"
+					Land_Company as "Land Company"
+					Eng_Sold_Out_Email_Sent as "Eng. Sold-Out Email Sent"
+					Territory
+					Projects_Status as "Projects Status"
+					Subphase
+					Final_Acceptance_Due_Date as "Final Acceptance Due Date"
+					Lot_Total_Residential as "Projects Residential Lots"
+					Project_ID as "Projects Project ID"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+					"Mass Create Forecasts" as "Create Forecasts"
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				Edit   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+		     	title = "Overview"
+				fields
+				(
+					Subdivision_Name as "Subdivision Name"
+					Subdivision_Code as "Subdivision Code"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

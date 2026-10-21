@@ -592,6 +592,52 @@
       "matching_creator_function": "postRecordComment",
       "confidence": "development-production-bindings-verified-2026-10-21",
       "notes": "Creator 9.107 published to Stage and Production. Post_Record_Comment and Post_Record_Comment_DEV independently verified enabled: OAuth2 POST, selective 18 existing comment users, JSON key/value parentField,parentId,commentText, Standard response, respective Production/Development bindings. No live owner email test. See docs/comment-owner-email-2026-10-21.md."
+    },
+    {
+      "name": "Crew_Locations_Widget_DEV",
+      "consumers": [
+        "widgets/crew-locations/src/app/crew-app.js"
+      ],
+      "matching_creator_function": "crewLocationsWidget",
+      "confidence": "verified-native-2026-10-21",
+      "implementation_contract": "manifests/crew-locations.json",
+      "environment": "Development",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard"
+    },
+    {
+      "name": "Crew_Locations_Widget",
+      "consumers": [
+        "widgets/crew-locations/src/app/crew-app.js"
+      ],
+      "matching_creator_function": "crewLocationsWidget",
+      "confidence": "verified-native-2026-10-21",
+      "implementation_contract": "manifests/crew-locations.json",
+      "environment": "Production",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard"
     }
   ]
 }

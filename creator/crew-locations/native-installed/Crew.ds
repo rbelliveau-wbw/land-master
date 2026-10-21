@@ -1,0 +1,79 @@
+form Crew
+{
+	Crew_Details
+	(
+		type = section
+		displayname = "Crew Details"
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have unique Crew_Code
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Crew_Name
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Badge_Color
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Active
+	(
+    	type = checkbox
+		initial value = false
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Source_System
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Source_Record_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

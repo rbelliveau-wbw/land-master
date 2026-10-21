@@ -1,0 +1,8 @@
+<zml isPdfEnabled='true' isPrintEnabled='true'>
+  <layout>
+    <row>
+      <column width='100%'>
+        <widgets elementName='Widget' importedTemplate='false' heightType='auto' linkName='milestone_ganntt' bgColor='#FFFFFF' /> </column>
+    </row>
+  </layout>
+</zml>

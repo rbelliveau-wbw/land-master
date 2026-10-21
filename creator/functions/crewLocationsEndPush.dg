@@ -1,0 +1,8 @@
+bool crewLocationsEndPush(string milestoneRecordId,string token)
+{
+	if(token == "" || !milestoneRecordId.matches("[0-9]+")) { return false; }
+	ms = Milestones[ID == milestoneRecordId.toLong()];
+	if(ms.count() != 1) { return false; }
+	delete from Crew_Schedule_Lock[(Phase_Key == ms.Subdivision1.toString()) && (Operation_ID == token)];
+	return true;
+}

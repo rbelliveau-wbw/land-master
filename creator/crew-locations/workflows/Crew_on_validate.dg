@@ -1,0 +1,7 @@
+// NEW Crew: created/edited → On Validate.
+access = User_Access[User == zoho.loginuser];
+if(access.count() != 1 || access.Manage_Crew_Assignments != true || !ifnull(input.Badge_Color,"").matches("#[a-fA-F0-9]{6}"))
+{
+ alert "Crew management permission and a #RRGGBB badge color are required.";
+ cancel submit;
+}

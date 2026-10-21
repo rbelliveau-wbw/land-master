@@ -1,0 +1,63 @@
+{
+  "version": "1.0.6",
+  "environment": "isolated SDK fixtures in actual Codex browser",
+  "checks": [
+    {
+      "name": "PASS Default rows, reporting window, monthly calendar and readable fonts",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Missing Closeout keeps exact Road Prep endpoint and section colors",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Search changes option labels only; selections remain stable",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Upcoming union, multi-select restrictions and empty project selection",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Section narrowing, Show all and sold-out explicit selection",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Hide and restore columns affects the chart and keeps filters",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Days saves one row in local-only mode; arrow reaches hidden next stage",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Save rejection retains error and lost response blocks edits until read-only recovery",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Task table remains independently editable and has no drag handles",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Durable History recovers an ambiguous operation without the temporary dialog",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Undo and redo are new independent audited operations",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Triple overlap tooltip and inspector expose all represented boundaries",
+      "result": "pass"
+    },
+    {
+      "name": "PASS All-future/cleared date options and unavailable-source state",
+      "result": "pass"
+    },
+    {
+      "name": "PASS Revoked access clears record names and dates",
+      "result": "pass"
+    }
+  ],
+  "state": "passed"
+}

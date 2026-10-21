@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-21",
+  "environment": "Land Master Development",
+  "version": "1.0.6",
+  "user_authorized": true,
+  "status": "blocked-by-existing-creator-publication-lock",
+  "observations": [
+    "Development editor reports the account is setting up to publish the application.",
+    "Creator Environments shows Land Master Locked.",
+    "Stage and Production both display version 9.104."
+  ],
+  "creator_changes_made": 0,
+  "live_schedule_writes": 0,
+  "compilation_performed": false,
+  "existing_publication_cancelled": false,
+  "evidence": "../outputs/crew-locations-review/creator-development-locked.png",
+  "next_step": "Finish or cancel the existing publication setup before retrying Development installation.",
+  "retry": {
+    "date": "2026-10-21",
+    "initial_environment_status": "Changes available",
+    "editor_opened": true,
+    "first_add_new_action": "blocked: application is under maintenance mode due to publishing process",
+    "after_recheck": "account is setting up to publish this application",
+    "creator_changes_made": 0,
+    "live_schedule_writes": 0,
+    "evidence": "../outputs/crew-locations-review/creator-development-maintenance.png"
+  }
+}

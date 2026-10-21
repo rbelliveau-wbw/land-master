@@ -1,0 +1,257 @@
+{
+  "date": "2026-10-21",
+  "environment": "development",
+  "status": "creator-only-upgrade-awaiting-user-promotion",
+  "forms_saved": [
+    "Crew",
+    "Crew_Assignment",
+    "Task_Schedule",
+    "Schedule_Change_Log",
+    "Crew_Schedule_Lock",
+    "Crew_Test_Record"
+  ],
+  "user_access_fields_added": [
+    "View_Crew_Locations",
+    "Edit_Crew_Milestones",
+    "Edit_Crew_Task_Dates",
+    "Manage_Crew_Assignments"
+  ],
+  "new_access_grants": 1,
+  "functions_compiled": [
+    "crewLocationsConfig",
+    "crewLocationsIso",
+    "crewLocationsRead",
+    "crewLocationsValidate",
+    "crewLocationsDirectValidate",
+    "crewLocationsMayPush",
+    "crewLocationsBeginPush",
+    "crewLocationsEndPush",
+    "crewLocationsStatus",
+    "crewLocationsWidget"
+  ],
+  "currently_creating": null,
+  "existing_connection_verified": {
+    "name": "zoho_creator_connection",
+    "authorization_owner": "Logged-in users",
+    "authorization": "Different for all the environments",
+    "land_master_access": true,
+    "needed_permissions": [
+      "Get All Records",
+      "Get Record",
+      "Update Record"
+    ]
+  },
+  "testingMode": false,
+  "service_enabled": true,
+  "live_schedule_writes": 0,
+  "production_promotion": true,
+  "existing_workflow_bodies_changed": true,
+  "new_api_created": true,
+  "page_created": true,
+  "next_steps": [
+    "Verify native live save and Undo before declaring editing operational",
+    "User promotes pending Creator functions, Crew Management page rename and widget hosting change",
+    "Stage API alias is not registered yet",
+    "Crew/task sources remain disabled until verified"
+  ],
+  "scheduled_retry_completed": true,
+  "retry_automation_status": "PAUSED",
+  "native_profiles": {
+    "new_components_admin_only": true,
+    "standard_profiles_restricted": [
+      "Read",
+      "Write"
+    ],
+    "custom_profiles_verified_denied": 6,
+    "evidence": "native-permissions.json"
+  },
+  "optional_adapters_installed": false,
+  "report_layouts_verified": true,
+  "report_link_names_verified": false,
+  "workflows_installed": false,
+  "native_end_to_end_verified": false,
+  "last_manual_retry": {
+    "requested_by_user": true,
+    "checked_at_utc": "2026-10-21T18:59:16Z",
+    "result": "IDE briefly opened, then workflow save rejected by renewed publication maintenance",
+    "workflow": "Milestone_Bi_Directional_1",
+    "save_accepted": false,
+    "persistence": "Unconfirmed; re-read current live definition before the next attempt",
+    "native_compilation_confirmed": false,
+    "backup": "native-before/Milestone_Bi_Directional_1.ds",
+    "unsaved_candidate": "native-candidates/Milestone_Bi_Directional_1.ds",
+    "evidence": "../outputs/crew-locations-review/creator-retry-publication-error.png",
+    "resolution": {
+      "canonical_guard_confirmed": true,
+      "native_snapshot": "native-installed/Milestone_Bi_Directional_1.ds",
+      "note": "Later native read confirmed the complete guard despite the earlier maintenance/save error; do not infer rollback from that UI error."
+    }
+  },
+  "existing_workflow_change_note": "Canonical Development importer guard confirmed from native publish diff; retains analyticsExportRows/workflowRunLog and original error rethrow.",
+  "publication_authorization": {
+    "date": "2026-10-21",
+    "user_choice": "Publish to Stage and Production",
+    "testingMode": true,
+    "service_enabled": false
+  },
+  "publication_attempts": [
+    {
+      "environment": "stage",
+      "version": "9.108",
+      "title": "Crew Locations schema prerequisites",
+      "selected_components": 20,
+      "status": "published to Stage and Production",
+      "excluded": [
+        "all ten functions",
+        "both pending custom schedules"
+      ],
+      "reason": "Full selection rejected with missing-dependency warning; schema-only selection passed native validation"
+    },
+    {
+      "environment": "stage",
+      "version": "9.109",
+      "title": "Crew Locations field dependencies",
+      "selected_components": 78,
+      "status": "published to Stage and Production",
+      "native_dependency_validation": "passed for complete package",
+      "service_enabled": false,
+      "testingMode": true
+    },
+    {
+      "environment": "production",
+      "versions": [
+        "9.108",
+        "9.109"
+      ],
+      "package_ids": [
+        "4410926000005298389",
+        "4410926000005291390"
+      ],
+      "selected_components": 98,
+      "status": "published; Production 9.109 verified"
+    }
+  ],
+  "existing_guarded_workflows_installed": [
+    "Milestone_Bi_Directional_1",
+    "Sync_Milestones",
+    "Sync_Only_MS_End",
+    "Update_Projects_Milestone",
+    "Update_Projects_Milestone1"
+  ],
+  "native_section_layouts_verified": true,
+  "data_field_identities_recorded": 48,
+  "native_creator_versions": {
+    "stage": "9.109",
+    "production": "9.109",
+    "verified_from": "Creator Environments UI",
+    "schema_prerequisite_version": "9.108"
+  },
+  "unrelated_later_development_changes_preserved": [
+    "buildContractCommentNotification"
+  ],
+  "widget_registered": true,
+  "report_layout_note": "All_Subdivisions list and quickview expose Lot_Total_Residential and Project_ID; SDK loaded native milestones successfully.",
+  "native_visible_gantt_verified": true,
+  "native_api": {
+    "name": "Crew_Locations_Widget_DEV",
+    "method": "POST",
+    "authentication": "OAuth2",
+    "scope": "Admin only",
+    "application": "Land Master DEVELOPMENT",
+    "argument": "payload",
+    "function": "crewLocationsWidget",
+    "status": "Enabled"
+  },
+  "native_page_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
+  "native_widget": {
+    "name": "Crew Locations",
+    "hosting": "Internal",
+    "entry": "/app/widget.html",
+    "release": "1.0.6",
+    "cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1"
+  },
+  "development_tester": {
+    "user": "wbdevelopment",
+    "display_name": "Robby Belliveau",
+    "user_access_record_id": "4410926000003608006",
+    "view": true,
+    "milestones": false,
+    "tasks": false,
+    "assignments": false
+  },
+  "validation_workflows": [
+    {
+      "name": "Milestones_on_validate_ed",
+      "planned_name": "Milestones_on_validate_edit",
+      "form": "Milestones",
+      "event": "edited on validate",
+      "script_saved": true
+    },
+    {
+      "name": "Crew_on_validate",
+      "form": "Crew",
+      "event": "created or edited on validate",
+      "script_saved": false,
+      "blocker": "Creator script service unavailable during publication lock"
+    }
+  ],
+  "live_schedule_write_attempts": 1,
+  "live_native_test": {
+    "operation_id": "549235cd-65d3-40fb-8b2e-7349cb14f45b",
+    "phase_id": "4410926000003378004",
+    "phase": "Cameron Ranch - Phase 01",
+    "milestone_record_id": "4410926000003819022",
+    "stage": "Rough Cut",
+    "changed_field": "end",
+    "before": "2027-03-17",
+    "requested": "2027-03-18",
+    "after_authoritative_reload": "2027-03-17",
+    "state": "partial",
+    "confirmed_destinations": [],
+    "message": "Creator rejected a schedule update.",
+    "native_write_ack_diagnostics": "Native error code/details were not returned by the current controller; investigate when the application editor is available.",
+    "test_marker_key": "M:4410926000003819022",
+    "test_marker_native_id": "not queried; marker may exist and must be reconciled before future removal",
+    "audit_entry_visible": true,
+    "phase_lock": "The completed known-rejection path releases its own phase lock; no manual deletion performed.",
+    "outbound_projects_calls_by_this_test": 0
+  },
+  "current_blockers": [
+    "Creator application publication lock; no other publication cancelled",
+    "Creator editor subsequently could not connect / DNS error",
+    "A native future date PATCH returned a rejection with no detailed error in the existing response; save/undo not yet passed"
+  ],
+  "native_record_side_effects": {
+    "audit_entries_confirmed": 1,
+    "test_marker": "may exist for M:4410926000003819022",
+    "temporary_permission": "Edit_Crew_Milestones granted for one controlled attempt and restored false; View_Crew_Locations remains true"
+  },
+  "creatorOnly": true,
+  "projectsPushEnabled": false,
+  "creator_only_upgrade": {
+    "version": "1.1.0",
+    "page": "Crew_Management",
+    "existing_milestone_page_embed": "crew_locations",
+    "widget_external_url": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
+    "functions_canonical_verified": [
+      "crewLocationsConfig",
+      "crewLocationsDirectValidate",
+      "crewLocationsValidate",
+      "crewLocationsWidget"
+    ],
+    "native_config_execute": {
+      "enabled": true,
+      "environment": "development",
+      "environmentLink": "development",
+      "testingMode": false,
+      "creatorOnly": true,
+      "projectsPushEnabled": false
+    },
+    "production_api": "Crew_Locations_Widget",
+    "production_api_target": "Production app 4410926000000011439, crewLocationsWidget 4410926000005297754",
+    "production_api_auth": "OAuth2 Admin only POST Key and Value payload JSON standard response",
+    "stage_api_created": false,
+    "creator_promotion": "left to user by latest PMP instruction",
+    "live_save_undo_verified": false
+  }
+}

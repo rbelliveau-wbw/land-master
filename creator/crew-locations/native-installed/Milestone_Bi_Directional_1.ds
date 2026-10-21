@@ -1,0 +1,235 @@
+Milestone_Bi_Directional_1 as "Milestone Bi-Directional Sync - Zoho Projects"
+{
+	type =  schedule
+	start = "2025-08-22 05:51:33"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Milestone Bi-Directional Sync - Zoho Projects","system":"Zoho Analytics"});
+				auditId = auditRun.get("id");
+				auditReceived = 0;
+				auditProcessed = 0;
+				auditCreated = 0;
+				auditUpdated = 0;
+				auditUpdatedIds = List();
+				auditSkipped = 0;
+				auditMissingMapping = 0;
+				auditNoBudget = 0;
+				auditNoEligible = false;
+				auditWriteAttempted = false;
+				auditRowChanged = false;
+				auditSourceKeys = Map();
+				auditRecordKey = "";
+				try 
+				{
+					// ================================================
+					// Script: Analytics → Creator Milestones Upsert
+					// What it does:
+					// - Exports milestone fields from a Zoho Analytics view.
+					// - For each row:
+					//     • If a Milestone exists (by Milestone_ID), update Name, Start_Date, End_Date.
+					//     • Else, if matching Subdivision (by Project Code) exists, insert a new Milestone linked to it.
+					// Notes:
+					// - Requires Analytics connection (zoho_analytics_connection).
+					// - Ensure date fields parse correctly in Creator.
+					// - Subdivision must exist for new milestone inserts.
+					// ================================================
+					portalId = "700737166";
+					orgId = "700732567";
+					workspaceId = "2107789000000003001";
+					viewId = "2107789000021880005";
+					// === 2) Analytics request setup ===
+					headers = Map();
+					headers.put("ZANALYTICS-ORGID",orgId);
+					config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("m.Milestone ID");
+					cols.add("m.Milestone Name");
+					cols.add("m.Start Date");
+					cols.add("m.End Date");
+					cols.add("p.Project Code");
+					cols.add("m.Project ID");
+					config.put("selectedColumns",cols);
+					// === 3) Kick off the async export job ===
+					rows = thisapp.analyticsExportRows(viewId,config,auditId,true);
+					auditReceived = rows.size();
+					// === 8) Loop through every analytics row and update each Milestone in Land Master ===
+					for each  rec in rows
+					{
+						auditProcessed = auditProcessed + 1;
+						auditRowChanged = false;
+						ms = Milestones[Milestone_ID == rec.get("m.Milestone ID")];
+						if(ms.count() > 1)
+						{
+							throw "Duplicate destination records: ms; source row=" + auditProcessed;
+						}
+						subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+						importPhase = "";
+						if(ms.count() == 1)
+						{
+							importPhase = ms.Subdivision1.toString();
+						}
+						else if(ms.count() == 0 && subdivId.count() == 1)
+						{
+							importPhase = subdivId.ID.toString();
+						}
+						if(importPhase != "")
+						{
+							importOwned = false;
+							importAuditId = null;
+							importFailed = false;
+							importToken = "analytics-" + auditId + "-" + importPhase;
+							try 
+							{
+								importLock = insert into Crew_Schedule_Lock
+								[
+									Phase_Key=importPhase
+									Subdivision1=importPhase.toLong()
+									Operation_ID=importToken
+									Actor=zoho.loginuser
+									Acquired_At=zoho.currenttime
+									Added_User=zoho.loginuser
+								];
+								importOwned = true;
+								if(ms.count() == 1 && Crew_Test_Record[Record_Key == "M:" + ms.ID.toString()].count() > 0)
+								{
+									importBeforeStart = null;
+									importBeforeEnd = null;
+									if(ms.Start_Date != null)
+									{
+										importBeforeStart = ms.Start_Date.toString("yyyy-MM-dd");
+									}
+									if(ms.End_Date != null)
+									{
+										importBeforeEnd = ms.End_Date.toString("yyyy-MM-dd");
+									}
+									importFields = {"start":{"before":importBeforeStart,"after":rec.get("m.Start Date")},"end":{"before":importBeforeEnd,"after":rec.get("m.End Date")}};
+									importChange = {"recordId":ms.ID.toString(),"type":"M","stage":ms.Milestone_Name,"expected":{"start":importBeforeStart,"end":importBeforeEnd},"fields":importFields};
+									importRequest = {"subdivisionId":importPhase,"origin":"import","changes":{importChange},"sourceRunId":auditId};
+									importRecordId = ms.ID;
+									importAuditId = insert into Schedule_Change_Log
+									[
+										Operation_ID=importToken + "-" + ms.ID.toString()
+										Operation_Type="controlled_analytics_import"
+										Actor="system:Milestone_Bi_Directional_1"
+										Timestamp=zoho.currenttime
+										Subdivision1=importPhase.toLong()
+										Origin="import"
+										Request_JSON=importRequest.toString()
+										State="importing"
+										Execution_Finished=false
+										Added_User=zoho.loginuser
+									];
+								}
+								if(ms.count() == 1 && ms.Push_Update == FALSE)
+								{
+									auditWriteAttempted = true;
+									ms.Milestone_Name=rec.get("m.Milestone Name");
+									auditWriteAttempted = true;
+									ms.Start_Date=rec.get("m.Start Date");
+									auditWriteAttempted = true;
+									ms.End_Date=rec.get("m.End Date");
+									auditWriteAttempted = true;
+									ms.Project_ID=rec.get("m.Project ID");
+									auditDestination = ms.ID.toString();
+									if(!auditUpdatedIds.contains(auditDestination))
+									{
+										auditUpdatedIds.add(auditDestination);
+										auditUpdated = auditUpdated + 1;
+									}
+									auditRowChanged = true;
+								}
+								if(ms.count() == 0 && subdivId.count() == 1)
+								{
+									subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+									milestone = insert into Milestones
+									[
+										Milestone_Name=rec.get("m.Milestone Name")
+										Start_Date=rec.get("m.Start Date")
+										End_Date=rec.get("m.End Date")
+										Milestone_ID=rec.get("m.Milestone ID")
+										Project_ID=rec.get("m.Project ID")
+										Subdivision1=subdivId
+										Added_User=zoho.loginuser
+									];
+									auditCreated = auditCreated + 1;
+									auditRowChanged = true;
+									//CREATE MILESTONE IN CREATOR
+								}
+								if(importAuditId != null)
+								{
+									importedRecord = Milestones[ID == importRecordId];
+									importAfterStart = null;
+									importAfterEnd = null;
+									if(importedRecord.Start_Date != null)
+									{
+										importAfterStart = importedRecord.Start_Date.toString("yyyy-MM-dd");
+									}
+									if(importedRecord.End_Date != null)
+									{
+										importAfterEnd = importedRecord.End_Date.toString("yyyy-MM-dd");
+									}
+									importFields.put("start",{"before":importBeforeStart,"after":importAfterStart});
+									importFields.put("end",{"before":importBeforeEnd,"after":importAfterEnd});
+									importChange.put("fields",importFields);
+									importRequest.put("changes",{importChange});
+									importLog = Schedule_Change_Log[ID == importAuditId.toLong()];
+									importLog.Request_JSON=importRequest.toString();
+									importLog.State="imported";
+									importLog.Execution_Finished=true;
+								}
+							}			catch (importError)
+							{
+								importFailed = importAuditId != null;
+								if(importAuditId != null)
+								{
+									importLog = Schedule_Change_Log[ID == importAuditId.toLong()];
+									importLog.State="unknown";
+									importLog.Error=importError.toString();
+									importLog.Execution_Finished=true;
+								}
+								info "Milestone import deferred/failed for phase " + importPhase + ": " + importError.toString();
+								if(importOwned)
+								{
+									throw importError;
+								}
+							}
+							if(importOwned && !importFailed)
+							{
+								delete from Crew_Schedule_Lock[Phase_Key == importPhase && Operation_ID == importToken];
+							}
+						}
+						if(!auditRowChanged)
+						{
+							auditSkipped = auditSkipped + 1;
+						}
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+					auditFinalStatus = "Success";
+					if(auditNoEligible)
+					{
+						auditFinalStatus = "Skipped";
+					}
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+				}catch (auditError)
+				{
+					auditStatus = "Failed";
+					if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+					{
+						auditStatus = "Partial";
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+					throw auditError;
+				}
+		)
+		}
+	}
+}
+

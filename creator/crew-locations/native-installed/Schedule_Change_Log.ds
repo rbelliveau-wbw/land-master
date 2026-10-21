@@ -1,0 +1,142 @@
+form Schedule_Change_Log
+{
+	Schedule_Change_Log_Details
+	(
+		type = section
+		displayname = "Schedule Change Details"
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have unique Operation_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Operation_Type
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Actor
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Timestamp
+	(
+    	type = datetime
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Subdivision1
+	(
+		type = picklist	
+		values  = Subdivision.ID
+    	displayformat = [Subdivision_Name]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Origin
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Request_JSON
+	(
+    	type = textarea
+		height = 13px
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Result_JSON
+	(
+    	type = textarea
+		height = 13px
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	State
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Error
+	(
+    	type = textarea
+		height = 13px
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Duration_Operation_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Reverses_Operation_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Inflight_Record_Key
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Execution_Finished
+	(
+    	type = checkbox
+		initial value = false
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}
