@@ -438,6 +438,7 @@ tr.drilled .drill-chev{transform:rotate(90deg);background:#eef4ff;color:var(--na
 .cname-extras .lot-count-warning{margin:0;flex:none}
 .cname-extras .tag{flex:none}
 .wtable tbody tr.drilled .bldr-pill{background:#fff;border-color:#c9dbf4;color:var(--navy)}
+.action-summary-title{white-space:normal;overflow-wrap:anywhere;line-height:1.4}.action-summary-meta{margin-top:5px;color:var(--muted);font-size:10.5px;font-weight:500;white-space:normal;line-height:1.35}.action-summary-overdue{color:#b91c1c}.action-summary-status .contract-status-readonly{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .cur-act{color:var(--navy);font-weight:750;max-width:none}
 .cur-act .ca-mark{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--primary);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 3px rgba(37,99,235,.16)}
 .wtable tbody tr.drillrow,.wtable tbody tr.drillrow:hover{background:#eef4fd;cursor:default}
@@ -1965,14 +1966,14 @@ select.apr-in{cursor:pointer}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
 <script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.16">
-<script src="interaction-motion.js?v=1.62.16"></script>
-<script src="interaction-surfaces.js?v=1.62.16"></script>
-<script src="number-edit-commit.js?v=1.62.16"></script>
-<script src="number-transitions.js?v=1.62.16"></script>
-<script src="number-surfaces.js?v=1.62.16"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.16">
-<link rel="stylesheet" href="report-layout.css?v=1.62.16">
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.18">
+<script src="interaction-motion.js?v=1.62.18"></script>
+<script src="interaction-surfaces.js?v=1.62.18"></script>
+<script src="number-edit-commit.js?v=1.62.18"></script>
+<script src="number-transitions.js?v=1.62.18"></script>
+<script src="number-surfaces.js?v=1.62.18"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.18">
+<link rel="stylesheet" href="report-layout.css?v=1.62.18">
 </head>
 <body>
 
@@ -2021,7 +2022,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.16", pageSize: 200, maxPages: 25,
+  version: "1.62.18", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2055,18 +2056,19 @@ var ACTION_STATUSES = ["New","Proposed","Approval Rejected","Feasibility","Await
    Create_LOI_Contract still writes it. allContractStatuses() appends any such stray value
    found in the data, so those contracts still get a board column, a filter entry and a
    dropdown option until the Deluge is corrected. */
-var CONTRACT_STATUSES = ["Proposed","New","Approval Rejected","Feasibility","Awaiting WBW","Awaiting Counterparty","Awaiting Approvals","Approved","Complete"];
+var CONTRACT_STATUSES = ["Proposed","New","Hold","Approval Rejected","Feasibility","Awaiting WBW","Awaiting Counterparty","Awaiting Approvals","Approved","Complete"];
 /* Alphabetical, matching the Contract form picklist. Every type list in the widget
    derives from this one, and allTypes() re-sorts once stray values from the data
    are folded in, so no list can come out in insertion order. */
-var TYPES = ["Acquisition","Amendment","CCR","Commercial Sale","DA","Issue","Lot (Amendment)","Lot (Master)","Master Services Agreement","NSSA","Service Agreement"];
+var TYPES = ["ACQ (PSA)","ACQ (LOI)","Amendment","CCR","Commercial Sale","DA","Issue","Lot (Amendment)","Lot (Master)","Master Services Agreement","NSSA","Service Agreement"];
 /* Manual Acquisitions use the same Proposed parent/review flow as other types. */
 var CONSTRUCTION_TYPES=["Internal","Offsite","Amenity","MUD Bid"];
-var CONSTRUCTION_STATUSES=["Proposed","New","Rejected","Feasibility","Awaiting Purchasing","Awaiting Development","Awaiting Other","Approved","Complete","Cancelled"];
+var CONSTRUCTION_STATUSES=["Proposed","New","Hold","Rejected","Feasibility","Awaiting Purchasing","Awaiting Development","Awaiting Other","Approved","Complete","Cancelled"];
 var CONSTRUCTION_PLANS=["Prelim","First Round","Final"],CONSTRUCTION_PRIORITIES=["ASAP","High","Medium"];
 function workModule(row){return String(row&&row.Work_Module||'').trim().toLowerCase()==='construction'?'construction':'legal';}
 function constructionMode(){return S.workMode==='construction';}
 function modeContracts(){return S.contracts.filter(workVisible);}
+function isAcqType(type){return type==="ACQ (PSA)"||type==="ACQ (LOI)";}
 function workTypes(mode){return (mode||S.workMode)==='construction'?CONSTRUCTION_TYPES.slice():TYPES.slice();}
 function workStatusLabel(status,row){return String(status)==='Proposed'&&(row?workModule(row)==='construction':constructionMode())?'Pending Review':String(status||'New');}
 function workNoun(row){return (row?workModule(row)==='construction':constructionMode())?'Construction Task':'Legal Task';}
@@ -2111,7 +2113,8 @@ var TYPE_COLORS = {
   "DA":["#ede9fe","#6d28d9"],
   "NSSA":["#cffafe","#0e7490"],
   "Amendment":["#fef3c7","#b45309"],
-  "Acquisition":["#d1fae5","#047857"],
+  "ACQ (PSA)":["#d1fae5","#047857"],
+  "ACQ (LOI)":["#d1fae5","#047857"],
   "CCR":["#fce7f3","#be185d"],
   "Master Services Agreement":["#e0e7ff","#4338ca"],
   "Service Agreement":["#e0f2fe","#0369a1"],
@@ -4173,6 +4176,7 @@ function allContractStatuses(){
 
 /* ---------------- chips ---------------- */
 var STATUS_COLORS={
+  "Hold":["#ffe4f1","#a21c63"],
   "New":["#eef2f7","#5c7394"],"Proposed":["#f3e8ff","#7e22ce"],
   "Feasibility":["#e0f2fe","#0369a1"],"Approval Rejected":["#fee2e2","#b91c1c"],
   "Awaiting WBW":["#fef3c7","#b45309"],"Awaiting WBW DEV":["#fef3c7","#b45309"],
@@ -4182,7 +4186,7 @@ var STATUS_COLORS={
   "Current":["#dbeafe","#1e40af"],"Overdue":["#fee2e2","#dc2626"],"Open":["#f1f5f9","#64748b"]
 };
 var CONSTRUCTION_STATUS_DOTS={
-  "Proposed":"#7e22ce","New":"#1d4ed8","Rejected":"#be123c","Feasibility":"#0e7490",
+  "Hold":"#a21c63","Proposed":"#7e22ce","New":"#1d4ed8","Rejected":"#be123c","Feasibility":"#0e7490",
   "Awaiting Purchasing":"#b45309","Awaiting Development":"#c2410c","Awaiting Other":"#a21caf",
   "Approved":"#0f766e","Complete":"#15803d","Cancelled":"#475569"
 };
@@ -5091,7 +5095,7 @@ function ncLoadTemplates(){
 function isTemplateRow(a){ return !!a&&contractOwn(a,'Template_Action')&&contractOwn(a,'Type_field')&&contractOwn(a,'Contract1')&&contractTemplateChecked(a.Template_Action)&&typeof a.Type_field==='string'&&!!a.Type_field.trim()&&!contractLookupIds(a.Contract1).length; }
 function templatesFor(type,rows){
   rows=rows||S.actions;var capability=contractTemplateCapability(rows);if(capability==='unavailable')throw new Error('Complete action template fields are unavailable.');if(capability==='legacy')return [];
-  return rows.filter(function(a){ return isTemplateRow(a)&&String(a.Type_field)===String(type)&&workModule(a)===(S.nc&&S.nc.workMode||S.workMode); })
+  return rows.filter(function(a){ return isTemplateRow(a)&&(String(a.Type_field)==="Acquisition"?"ACQ (LOI)":String(a.Type_field))===String(type)&&workModule(a)===(S.nc&&S.nc.workMode||S.workMode); })
     .sort(function(a,b){ return num(a.Sort_Order)-num(b.Sort_Order); });
 }
 function templatesSupported(rows){ return contractTemplateCapability(rows||S.actions)==='current'; }
@@ -6191,7 +6195,7 @@ function ncTypeChange(t){
     S.nc.totalLots=""; S.nc.emPerLot=""; S.nc.initLots=""; S.nc.initDays=""; S.nc.secondLots=""; S.nc.secondDays=""; S.nc.contLots=""; S.nc.contDays="";
   }
   if(ncUsesSubdivision(was)&&!ncUsesSubdivision(t)){ S.nc.sub=[]; S.lpSub=""; }
-  if(t==="Acquisition"){S.nc.project="";S.nc.sub=[];S.lpSub="";}
+  if(isAcqType(t)){S.nc.project="";S.nc.sub=[];S.lpSub="";}
   if(isLotType(was)&&!isLotType(t)){S.nc.project="";if(!ncInheritedParent(S.nc))S.nc.territory="";}
   ncSyncContext();
   ncSeedActs();
@@ -6304,7 +6308,7 @@ function ncPayload(){
   }
   var parentError=contractParentError(v,S.clp&&S.clp.cid)||ncParentContextError(v);if(parentError)throw new Error(parentError);
   if(v.parent) data.Parent_Contract=String(v.parent);
-  if(v.type!=="Acquisition"&&v.sub.length) data.Subdivision1=v.sub.map(String);
+  if(!isAcqType(v.type)&&v.sub.length) data.Subdivision1=v.sub.map(String);
   /* Pro Forma writes this lookup comma-joined and that is the proven shape for a
      multi-select over User_Access - do not switch it to an array */
   if((v.owners||[]).length) data.Owner=v.owners.map(String);
@@ -6318,7 +6322,7 @@ function ncPayload(){
     Object.keys(closingValues).forEach(function(field){if(closingValues[field]!==null)data[field]=closingValues[field];});
   }
   /* the native form derives these from the chosen subdivision rather than asking */
-  if(v.type!=="Acquisition"&&v.sub.length===1){
+  if(!isAcqType(v.type)&&v.sub.length===1){
     var sub=ncSubRecord(v.sub[0]);
     if(sub){
       var pid=lookupId(sub.Project); if(pid) data.Project=pid;
@@ -6366,7 +6370,7 @@ function ncLotsPending(){ return !!(S.nc&&isLotType(S.nc.type)&&S.nc.sub.length&
 function ncSubmit(acts,apps){
   if(S.nc&&S.nc.workMode==='construction')return constructionSubmitForm();
   if(S.busy||S.contractWorkflow||!canPropose()||!S.nc)return Promise.resolve(false);
-  if(S.nc.type==="Acquisition"){S.nc.project="";S.nc.sub=[];}
+  if(isAcqType(S.nc.type)){S.nc.project="";S.nc.sub=[];}
   var draft=S.nc,data,plan;try{data=ncPayload();plan={data:JSON.parse(JSON.stringify(data)),draft:JSON.parse(JSON.stringify(draft)),acts:JSON.parse(JSON.stringify(acts||[])),apps:JSON.parse(JSON.stringify(apps||[])),subIds:draft.sub.slice(),newActionStatus:ncNewActionStatus(),pricing:contractCapturedPricing(draft,isLotType(draft.type)?ncLotSizes():[],'')};}catch(error){banner('err',errText(error));return Promise.resolve(false);}
   if(S.demo){ncDemoCreate(data,acts,apps);return Promise.resolve(false);}
   closeOverlays();
@@ -6524,7 +6528,7 @@ function homeSwitch(active){
 function showManageActions(){
   if(!needs(canTemplates(),"manage action templates")){ showContracts(); return; }
   S.homeSection="actions"; S.view="home"; S.selId=null; S.loiSelId=null; S.detailFrom="";
-  if(workTypes().indexOf(S.maType)<0) S.maType=constructionMode()?CONSTRUCTION_TYPES[0]:"Acquisition";
+  if(workTypes().indexOf(S.maType)<0) S.maType=constructionMode()?CONSTRUCTION_TYPES[0]:"ACQ (LOI)";
   maLoadDraft();
   renderAll();
 }
@@ -8896,7 +8900,7 @@ function renderLOIReview(){
     +'<section class="loi-review-section"><h3>Property & Purchase</h3><div class="loi-field-grid">'+property+'</div></section>'
     +'<section class="loi-review-section"><h3>Feasibility & Closing</h3><div class="loi-field-grid">'+terms+'</div></section>'
     +'<section class="loi-review-section"><h3>Routing & Provisions</h3><div class="loi-field-grid">'+routing+'</div></section>'
-    +'</div><aside class="loi-review-side"><div class="loi-decision-card">'+warning+'<h3>Legal Decision</h3><p>Approval creates the Acquisition Contract and attaches the generated LOI. Rejection returns the LOI to the Proforma owner.</p>'
+    +'</div><aside class="loi-review-side"><div class="loi-decision-card">'+warning+'<h3>Legal Decision</h3><p>Approval creates the selected ACQ Contract and attaches the generated LOI. Rejection returns the LOI to the Proforma owner.</p>'
     +'<label class="fl" for="loiLegalNote">Legal note</label><textarea class="loi-note" id="loiLegalNote" placeholder="Optional approval note; required for rejection">'+esc(r.LOI_Legal_Note||"")+'</textarea>'
     +'<div class="loi-decision-actions"><button class="btn reject" onclick="submitLOIReview(\'REJECT\')">Reject</button><button class="btn green" onclick="submitLOIReview(\'APPROVE\')">Approve & Create Contract</button></div></div></aside></div></div>';
   $("view").innerHTML=h;
@@ -8922,7 +8926,7 @@ function submitLOIReview(decision){
   confirmDialog({
     kicker:"LOI review",
     title:approve?"Approve this LOI?":"Reject this LOI?",
-    lead:approve?"Legal approval creates the Acquisition Contract and moves the deal into the contracts pipeline."
+    lead:approve?"Legal approval creates the selected ACQ Contract and moves the deal into the contracts pipeline."
                 :"The LOI goes back to the Pro Forma owner with your Legal note attached.",
     detail:r.Name||("Pro Forma "+r.ID),
     okLabel:approve?"Approve and create contract":"Reject LOI",
@@ -9439,7 +9443,7 @@ function drillRow(c){
       +row+form+'</div>';
   }).join("");
   var st=statsFor(c.ID);
-  return '<tr class="drillrow'+(construction?' construction-drill':'')+'"><td colspan="8" style="padding:0;max-width:none;white-space:normal">'
+  return '<tr class="drillrow'+(construction?' construction-drill':'')+'"><td colspan="7" style="padding:0;max-width:none;white-space:normal">'
     +'<div class="drillbox">'
     +'<div class="drill-facts">'+(facts.join("")||'<div class="dfact"><span>Info</span><span>—</span></div>')
     +'<div class="drill-btns">'
@@ -9562,6 +9566,17 @@ function contractTitleExtras(c,branch){
   }
   return out;
 }
+function currentActionSummaryCells(c){
+  var id=currentIdFor(c.ID),a=id?findAction(id):null;
+  var title=a?String(a.Contract_Action||"Untitled action"):currentActionText(c.ID);
+  var meta=[];
+  if(a&&workModule(c)!=="construction"&&String(a.Dev_Mgr||"").trim())meta.push(esc(listDisplay(a.Dev_Mgr)));
+  if(a&&toInput(a.Due_Date))meta.push('<span class="'+(isOverdue(a)?'action-summary-overdue':'')+'">Due '+esc(fmtDate(a.Due_Date))+'</span>');
+  var label=a?String(a.Status||"New"):"",col=STATUS_COLORS[label]||["#eef2f7","#5c7394"];
+  return '<td class="cur-act"><div class="action-summary-title" title="'+attr(title||"")+'">'+(title?'<span class="ca-mark"></span>'+esc(title):'—')+'</div>'
+    +(meta.length?'<div class="action-summary-meta">'+meta.join(' · ')+'</div>':'')+'</td>'
+    +'<td class="action-summary-status">'+(label?'<span class="contract-status-readonly" title="Current action status — read only" style="background:'+col[0]+';color:'+col[1]+'">'+esc(workStatusLabel(label,c))+'</span>':'<span class="subtle">—</span>')+'</td>';
+}
 function contractRow(c,branch){
   var st=statsFor(c.ID);
   var open=!!S.drill[String(c.ID)];
@@ -9579,11 +9594,7 @@ function contractRow(c,branch){
     +ownerCell(c)
     +'<td onclick="event.stopPropagation()">'+statusCell(c)+'</td>'
     +'<td class="subtle" title="'+attr(contractSubTitle(c))+'">'+esc(contractSubText(c)||"—")+'</td>'
-    +(currentActionText(c.ID)
-      ?'<td class="cur-act" title="'+attr(currentActionText(c.ID))+'"><span class="ca-mark"></span>'+esc(currentActionText(c.ID))+'</td>'
-      :'<td class="subtle">—</td>')
-    +'<td onclick="event.stopPropagation();showApprovalsModal(\''+c.ID+'\')" style="cursor:pointer" title="Approvals">'+approvalStrip(c.ID)+'</td>'
-    +'<td><div class="progress-cell"><div class="progress"><i style="width:'+st.pct+'%"></i></div><span class="progress-n">'+st.done+'/'+st.total+'</span></div></td>'
+    +currentActionSummaryCells(c)
     +'</tr>';
   if(open) r+=drillRow(c);
   return r;
@@ -9603,18 +9614,18 @@ function renderTable(list){
   order.forEach(function(t){
     var group=rows.filter(function(row){return row.group===t;});
     if(!group.length) return;
-    body+='<tr class="tgroup"><td colspan="8"><span class="tgroup-bar" style="background:'+typeColor(t)[1]+'"></span>'
+    body+='<tr class="tgroup"><td colspan="7"><span class="tgroup-bar" style="background:'+typeColor(t)[1]+'"></span>'
       +'<span class="tgroup-name">'+esc(t)+'</span><span class="tgroup-n">'+allRows.filter(function(row){return row.group===t&&matched[String(row.contract.ID)];}).length+'</span></td></tr>';
     body+=group.map(function(row){return contractRow(row.contract,row);}).join("");
   });
   return '<div class="tablecard"><div class="tscroll"><table class="wtable ctable'+(focused?" focus":"")+'">'
-    +'<colgroup><col style="width:88px"/><col style="width:27%"/><col style="width:150px"/><col style="width:150px"/>'
-    +'<col style="width:14%"/><col/><col style="width:74px"/><col style="width:136px"/></colgroup>'
+    +'<colgroup><col style="width:88px"/><col style="width:27%"/><col style="width:150px"/><col style="width:calc(150px + 2.1%)"/>'
+    +'<col style="width:11.9%"/><col/><col style="width:calc(150px + 2.1%)"/></colgroup>'
     +'<thead><tr>'
     +'<th style="cursor:default"></th>'
     +th("Contract Name","Contract_Name")+'<th style="cursor:default">Owner</th>'+th("Status","Status")
     +th("Subdivision","Subdivision1")+"<th>Current Action</th>"
-    +'<th style="cursor:default">Approvals</th>'+th("Progress","pct")
+    +'<th style="cursor:default">Current Action Status</th>'
     +'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
 }
 /* Board drag-and-drop. The drop routes into statusCellChange - the same function
@@ -9659,7 +9670,7 @@ function bCardClick(cid){
   if(S.bDragEndedAt&&Date.now()-S.bDragEndedAt<250) return;
   openContract(cid);
 }
-var COL_BARS={"Proposed":"#7e22ce","New":"#8ea0bd","Approval Rejected":"#b91c1c","Feasibility":"#0369a1","Awaiting WBW":"#b45309","Awaiting WBW LEG":"#b45309","Awaiting Counterparty":"#1e40af","Awaiting Approvals":"#3730a3","Approved":"#0f766e","Complete":"#047857"};
+var COL_BARS={"Hold":"#a21c63","Proposed":"#7e22ce","New":"#8ea0bd","Approval Rejected":"#b91c1c","Feasibility":"#0369a1","Awaiting WBW":"#b45309","Awaiting WBW LEG":"#b45309","Awaiting Counterparty":"#1e40af","Awaiting Approvals":"#3730a3","Approved":"#0f766e","Complete":"#047857"};
 function renderBoard(list){
   /* the list is already free of Proposed, so its column would always be empty */
   var cols=allContractStatuses().filter(function(s){ return constructionMode()||s!=="Proposed"; }).map(function(s){

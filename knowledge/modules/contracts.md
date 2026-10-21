@@ -1,3 +1,13 @@
+## ACQ types, Hold and action summary — October 21, 2026
+
+Release 1.62.18 replaces the Acquisition choice with ACQ (PSA) and ACQ (LOI).
+The old action template belongs to LOI; PSA starts with its own empty category.
+Both Legal and Construction lists replace Progress/Approvals with a read-only
+Current Action Status pill, plus the action due date and (Legal) assignee.
+Subdivision gives 15% of its prior width to Status. Hold uses a rose treatment
+in dropdowns, filters and the board. See the [release and Creator
+notes](../../docs/acq-agreement-action-summary-2026-10-21.md). Rollback: 1.62.16.
+
 ## Inline Actions counts — October 21, 2026
 
 Release 1.62.16 keeps the Legal and Construction drill-down completed/total

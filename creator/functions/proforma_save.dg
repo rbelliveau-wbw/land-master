@@ -1013,6 +1013,12 @@
                  				return resp.toString();
                  			}
                  			loiRec.Proforma=pfKey;
+			if(ws.get("Agreement_Type") != null)
+			{
+				agreementType = ws.get("Agreement_Type").toString();
+				if(agreementType != "PSA" && agreementType != "LOI") { resp.put("success",false); resp.put("error","Agreement Type must be PSA or LOI."); return resp.toString(); }
+				loiRec.Agreement_Type=agreementType;
+			}
                  			if(ws.get("LOI_Name") != null)
                  			{
                  				loiRec.LOI_Name=ws.get("LOI_Name");

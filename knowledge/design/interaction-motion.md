@@ -84,6 +84,10 @@ opening fade and immediate original dismissal/focus handling. A sanitized clone
 cannot reliably preserve ancestor CSS, backdrop blur or data-driven styling;
 never redraw a different-looking surface after the real dialog has closed.
 
+Pro Forma AI Review applies this composite-overlay exception to `#aiReviewModal`.
+Verify repeated X/footer Close with normal and reduced motion; dismissal must
+not create detached dialog or backdrop copies.
+
 Coalesce observations in one frame, ignore numeric animation mutations, and
 bound row geometry to small groups (100 rows by default). Bulk report changes
 use one short surface settle rather than thousands of per-cell measurements.

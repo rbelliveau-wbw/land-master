@@ -72,22 +72,31 @@ string Create_LOI_Contract(string proformaId)
 		contractTerritory = document.get("contractTerritory");
 		wbwPointPerson = document.get("wbwPointPerson");
 		stage = "create_or_reuse_contract";
-		contractName = "Acquisition - " + ifnull(pf.Name,"Pro Forma");
+		agreementType = ifnull(loiRec.Agreement_Type,"PSA");
+        if(agreementType != "LOI") { agreementType = "PSA"; }
+        contractType = "ACQ (" + agreementType + ")";
+        contractName = contractType + " - " + ifnull(pf.Name,"Pro Forma");
+        priorContractName = "Acquisition - " + ifnull(pf.Name,"Pro Forma");
 		/* Contracts created before this rename are named "<Pro Forma> - LOI", and reuse is
 		   matched on the name alone - so without the legacy lookup a resubmit would miss the
-		   existing record and insert a duplicate. Old contracts keep their old name; only
-		   newly created ones use the new scheme. */
+		   existing record and insert a duplicate. Matching subtype records are renamed
+		   to the selected agreement scheme when reused. */
 		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
 		contractId = null;
-		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
 		if(existingContract.ID == null)
 		{
-			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+			existingContract = Contract[(Contract_Name == priorContractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		}
+		if(existingContract.ID == null)
+		{
+			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
 		}
 		if(existingContract.ID != null)
 		{
 			contractId = existingContract.ID;
-			existingContract.Contract_Type="Acquisition";
+			existingContract.Contract_Type=contractType;
+			existingContract.Contract_Name=contractName;
 			existingContract.Work_Module="Legal";
 			existingContract.Territory=contractTerritory;
 			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
@@ -98,7 +107,7 @@ string Create_LOI_Contract(string proformaId)
 			reuseEntry.put("level","info");
 			reuseEntry.put("stage",stage);
 			reuseEntry.put("message","Existing Acquisition LOI Contract reused and required values confirmed");
-			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":ifnull(existingContract.Contract_Name,contractName),"matchedLegacyName":ifnull(existingContract.Contract_Name,"") == legacyContractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
+			reuseEntry.put("meta",{"contractId":contractId.toString(),"contractName":ifnull(existingContract.Contract_Name,contractName),"matchedLegacyName":ifnull(existingContract.Contract_Name,"") == legacyContractName,"contractType":contractType,"territory":contractTerritory,"wbwPointPerson":ifnull(existingContract.WBW_Point_Person,"")});
 			trace.add(reuseEntry);
 		}
 		else
@@ -107,7 +116,7 @@ string Create_LOI_Contract(string proformaId)
 			[
 				Added_User=zoho.loginuser
 				Contract_Name=contractName
-				Contract_Type="Acquisition"
+				Contract_Type=contractType
 				Work_Module="Legal"
 				Territory=contractTerritory
 				WBW_Point_Person=wbwPointPerson
@@ -117,7 +126,7 @@ string Create_LOI_Contract(string proformaId)
 			createEntry.put("level","success");
 			createEntry.put("stage",stage);
 			createEntry.put("message","Acquisition Contract record created");
-			createEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":"Acquisition","territory":contractTerritory,"wbwPointPerson":wbwPointPerson,"status":"Proposed"});
+			createEntry.put("meta",{"contractId":contractId.toString(),"contractName":contractName,"contractType":contractType,"territory":contractTerritory,"wbwPointPerson":wbwPointPerson,"status":"Proposed"});
 			trace.add(createEntry);
 		}
 		stage = "seed_contract_actions";
@@ -133,7 +142,11 @@ string Create_LOI_Contract(string proformaId)
 		existingActionCount = Contract_Actions[Contract1 == contractId].count();
 		if(existingActionCount == 0)
 		{
-			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Template_Action == true) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")] sort by Sort_Order;
+			templateActions = Contract_Actions[(Contract1 == null) && (Type_field == contractType) && (Template_Action == true) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")] sort by Sort_Order;
+			if(templateActions.count() == 0 && agreementType == "LOI")
+            {
+                templateActions = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Template_Action == true) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")] sort by Sort_Order;
+            }
 			seededCount = 0;
 			seededTitles = List();
 			for each  templateAction in templateActions
@@ -178,12 +191,12 @@ string Create_LOI_Contract(string proformaId)
 				   nothing to work through. */
 				/* Distinguish "no template exists" from "the rows are there but not
 				   flagged", which is the one way the flag check can bite. */
-				untaggedCount = Contract_Actions[(Contract1 == null) && (Type_field == "Acquisition") && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")].count();
+				untaggedCount = Contract_Actions[(Contract1 == null) && (Type_field == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")].count();
 				noTemplateEntry = Map();
 				noTemplateEntry.put("level","warn");
 				noTemplateEntry.put("stage",stage);
-				noTemplateEntry.put("message","No Acquisition action template rows were found - the Contract has an empty checklist");
-				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":"Acquisition","typedButUnflaggedRows":untaggedCount});
+				noTemplateEntry.put("message","No matching ACQ action template rows were found - the Contract has an empty checklist");
+				noTemplateEntry.put("meta",{"contractId":contractId.toString(),"template":contractType,"typedButUnflaggedRows":untaggedCount});
 				trace.add(noTemplateEntry);
 			}
 		}

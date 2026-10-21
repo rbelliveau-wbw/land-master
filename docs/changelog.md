@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-21 — Acquisition agreement types and action summaries
+
+Proforma Manager 1.80.124 adds the PSA / LOI selector and fixes AI Review close
+flicker. Contract Management 1.62.18 adds ACQ (PSA), ACQ (LOI) and rose Hold
+status; Legal and Construction lists replace Progress/Approvals with current
+action status and due-date context. Creator field, report, template and function
+changes are recorded in the [release notes](acq-agreement-action-summary-2026-10-21.md).
+Deleted 79 matching Not Sent Legal PF approval rows after export; the active
+Settings PF route already excludes Legal. Email notifications remain a mockup.
+Rollback: PF 1.80.121 and Contracts 1.62.16.
+
 ## 2026-09-29 — Company EIN column label (Land Master 8.11.10)
 
 The Companies column header now reads `MGMT Co. EIN`. No data contract changed. Rollback: `8.11.9`.

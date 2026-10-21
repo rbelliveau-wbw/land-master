@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-06T14:25:00-05:00",
+  "generated_at": "2026-10-21",
   "form": "LOI_Worksheet",
   "display_name": "LOI Worksheet",
   "fields": [
@@ -326,6 +326,16 @@
       "display_format": null,
       "initial_value": null,
       "private": false
+    },
+    {
+      "link_name": "Agreement_Type",
+      "display_name": "Agreement Type",
+      "type": "picklist",
+      "values": "{\"PSA\",\"LOI\"}",
+      "display_format": null,
+      "initial_value": "PSA",
+      "private": false
     }
-  ]
+  ],
+  "live_metadata_note": "Agreement_Type added and verified in Creator Development form builder and LOI_Worksheet_Report on October 21, 2026."
 }

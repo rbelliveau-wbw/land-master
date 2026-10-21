@@ -15,6 +15,7 @@
     if(module==='proforma-manager'){
       tab('.topbar .tabs','a','#vList');
       tab('#edTabs','button[data-pane]','#edPanes',{scope:recordScope});
+      tab('#loiAgreement','button',null,{scope:recordScope});
       tab('#flowSeg','button','#flowBody',{rail:false}); // Existing native slider.
       
       tab('.ps-nav','[data-ps-select]',null,{rail:false});

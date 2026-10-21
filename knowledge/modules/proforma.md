@@ -1,3 +1,13 @@
+## Agreement type and AI Review close — 1.80.124, October 21, 2026
+
+Offer → Agreement now has a PSA / LOI pill, default PSA. It persists on
+`LOI_Worksheet.Agreement_Type`, exposed by `LOI_Worksheet_Report` and saved by
+`proforma_save`. `Create_LOI_Contract` uses the selection for the ACQ subtype,
+contract name and checklist. AI Review opts its composite overlay out of
+detached exit copies to prevent closing flicker. See the [release and Creator
+notes](../../docs/acq-agreement-action-summary-2026-10-21.md) for native changes,
+validation, approval cleanup and rollback to 1.80.121.
+
 ## Summary labels and dated peak cash — 1.80.121, October 19, 2026
 
 Dashboard top cards and Edit sidebar use Lot Sales, PID/MUD Revenue, Land Sales,

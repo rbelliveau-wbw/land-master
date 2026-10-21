@@ -6,7 +6,7 @@ function field(h,grid=false,name='Dev_Notes',value='Proposal user edit'){
  const el=h.node('proposal-field');el.value=value;el.isConnected=true;
  el.setAttribute(grid?'data-id':'data-aid',ACTION);el.setAttribute(grid?'data-f':'data-af',name);return el;
 }
-function draft(h,type='Acquisition'){
+function draft(h,type='ACQ (PSA)'){
  h.c.S.nc={type,project:'',parent:'',sub:[],wbw:[],builder:'',name:'Manual acquisition fixture',territory:'Austin',status:'Proposed',acts:[],owners:[ACCESS],lotIds:[],ppf:{},totalLots:'',emPerLot:'',initLots:'',initDays:'',secondLots:'',secondDays:'',contLots:'',contDays:''};
 }
 for(const grid of [false,true]){
@@ -41,20 +41,21 @@ for(const kind of ['complete','template']){
  assert.equal(h.calls.find(x=>x.method==='add').config.payload.data.Status,'Proposed','Proposal-only grid additions retain Legal review');
  assert.equal(h.c.canEdit(),false,'Adding proposed actions does not grant general editing');
 }
-{
- const h=await ready({accessFlags:proposer,realDOM:true});draft(h);
- assert.ok(h.c.ncTypeChoices('').includes('Acquisition'),'Acquisition is available before any type is chosen');
- assert.ok(h.c.ncTypeChoices('DA').includes('Acquisition'),'Acquisition stays available from other types');
+for(const type of ['ACQ (PSA)','ACQ (LOI)']){
+ const h=await ready({accessFlags:proposer,realDOM:true});draft(h,type);
+ assert.ok(h.c.ncTypeChoices('').includes(type),'Both acquisition agreements are available before any type is chosen');
+ assert.ok(h.c.ncTypeChoices('DA').includes(type),'Both acquisition agreements stay available from other types');
+ assert.ok(!h.c.ncTypeChoices('').includes('Acquisition'),'The retired Acquisition option is unavailable');
  const html=h.c.ncFields();assert.doesNotMatch(html,/nc_sub_wrap|nc_project_wrap|mselb_ncsub|mselb_ncproject/,'Acquisition has no Project or Subdivision fields');
  assert.match(html,/nc_territory/);assert.match(html,/nc_builder_wrap/);
- Object.assign(h.c.S.nc,{type:'Amendment',sub:[SUB],project:SUB});h.c.ncTintModal=()=>{};h.c.ncTypeChange('Acquisition');
+ Object.assign(h.c.S.nc,{type:'Amendment',sub:[SUB],project:SUB});h.c.ncTintModal=()=>{};h.c.ncTypeChange(type);
  assert.equal(h.c.S.nc.project,'');assert.equal(h.c.S.nc.sub.length,0,'Switching to Acquisition clears hidden location selections');
  Object.assign(h.c.S.nc,{sub:[SUB],project:SUB});const payload=h.c.ncPayload();
  assert.equal(payload.Project,undefined);assert.equal(payload.Subdivision1,undefined,'Stale Acquisition scope never enters the parent payload');
  const native=h.api.addRecords;h.api.addRecords=async config=>{const reply=await native(config);if(config.form_name==='Contract')h.reports.All_Contracts1.find(x=>x.ID===reply.result[0].data.ID).Subdivision1=[];return reply;};
  const result=await h.c.ncSubmit([{title:'Acquisition review action',sort:1}],[]);assert.equal(result.error,null);
  const sent=h.calls.find(x=>x.method==='add'&&x.config.form_name==='Contract').config.payload.data;
- assert.equal(sent.Contract_Type,'Acquisition');assert.equal(sent.Status,'Proposed');assert.equal(sent.Project,undefined);assert.equal(sent.Subdivision1,undefined);
+ assert.equal(sent.Contract_Type,type);assert.equal(sent.Status,'Proposed');assert.equal(sent.Project,undefined);assert.equal(sent.Subdivision1,undefined);
  assert.equal(h.reports.All_Contract_Actions.find(x=>x.Contract1===NEW).Status,'Proposed');assert.ok(h.c.proposedContracts().some(x=>x.ID===NEW));
  assert.equal(h.calls.filter(x=>x.method==='update'&&Object.hasOwn(x.config.payload.data,'Subdivision1')).length,0,'Acquisition setup cannot restore hidden subdivisions');
 }
