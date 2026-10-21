@@ -63,8 +63,15 @@ safe supported link schemes. Do not replace user text with a success label.
 ## Permissions and write feedback
 
 New posts email the other record owners through the global function and Custom
-API shared by all hosts. Show **Posting emails the other record owners.** in
-the composer. Exclude the posting actor, deduplicate owner addresses and keep
+API shared by all hosts. Use the **Delivery strip** composer approved October 21:
+a pale-blue mail strip reading **Posting also emails the other record owners.**
+above the author identity. Show the existing resolved author name, initials,
+**You**, and **Add a comment**, with the login identity available on focus/hover.
+Put the existing nine formatting/preview actions and input inside one rounded,
+bordered editor; keep the Post action below it. Reuse the shared component and
+author resolver in every host rather than creating a module-specific composer.
+The strip is explanatory, never a delivery-success indicator. Exclude the posting
+actor, deduplicate owner addresses and keep
 Post/email success or warning in the same modal. No additional result modal.
 Edits and soft deletes do not notify. See the [implementation, permission and
 promotion contract](../../docs/comment-owner-email-2026-10-21.md).

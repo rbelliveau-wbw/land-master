@@ -1,3 +1,9 @@
+## Delivery strip composer — October 21, 2026
+
+Budget 122.29.67 adopts the approved shared Delivery strip composer for Budget
+and Project conversations.
+[Release, regression coverage and rollback](../../docs/comment-delivery-strip-2026-10-21.md).
+
 ## Comment email and Post correction — October 21, 2026
 
 Budget 122.29.66 uses stable shared Post feedback; the existing native comment

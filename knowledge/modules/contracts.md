@@ -1,3 +1,11 @@
+## Delivery strip and Construction report edit access — October 21, 2026
+
+Contract Management 1.62.27 adopts the approved shared Delivery strip composer
+in Legal and Construction. CFO's native scoped request/action edit grants are
+saved in Creator Development for the user to promote; Construction Budgeting's
+existing scoped grants were independently verified.
+[Release, permission evidence and rollback](../../docs/comment-delivery-strip-2026-10-21.md).
+
 ## Comment email and Post correction — October 21, 2026
 
 Contract Management 1.62.26 uses stable shared Post feedback; the existing native comment

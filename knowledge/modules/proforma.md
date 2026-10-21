@@ -1,3 +1,8 @@
+## Delivery strip composer — October 21, 2026
+
+Pro Forma 1.80.131 adopts the approved shared Delivery strip composer.
+[Release, regression coverage and rollback](../../docs/comment-delivery-strip-2026-10-21.md).
+
 ## Comment email and Post correction — October 21, 2026
 
 Pro Forma 1.80.130 uses stable shared Post feedback; the existing native comment

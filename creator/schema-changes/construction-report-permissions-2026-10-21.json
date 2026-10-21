@@ -1,0 +1,29 @@
+{
+  "environment": "DEVELOPMENT",
+  "source": "Creator Settings > User Permissions; native editor independently reopened after Update",
+  "productionPromoted": false,
+  "promotion": "User will promote in Creator, per October 21 direction.",
+  "CFO": {
+    "before": {
+      "Contract.editReports": ["All_Contracts"],
+      "Contract_Actions.editReports": ["All_Contract_Actions"]
+    },
+    "after": {
+      "Contract.editReports": ["All_Contracts", "Construction_Requests"],
+      "Contract_Actions.editReports": ["All_Contract_Actions", "Construction_Actions"]
+    },
+    "savedAndReopened": true,
+    "deleteGrantsChanged": false,
+    "otherGrantsChanged": false
+  },
+  "Construction Budgeting": {
+    "verifiedUnchanged": true,
+    "Contract": {"add": true, "viewReports": ["Construction_Requests"], "editReports": ["Construction_Requests"], "deleteReports": ["Construction_Requests"], "viewAll": true, "modifyAll": true},
+    "Contract_Actions": {"add": true, "viewReports": ["Construction_Actions"], "editReports": ["Construction_Actions"], "deleteReports": ["Construction_Actions"], "viewAll": true, "modifyAll": true},
+    "Attachment": {"add": true, "viewReports": ["Construction_Attachments"], "editReports": ["Construction_Attachments"], "deleteReports": ["Construction_Attachments"], "viewAll": true, "modifyAll": true},
+    "Comment_Log": {"add": true, "viewReports": ["Construction_Comments"], "editReports": ["Construction_Comments"], "delete": false, "viewAll": true, "modifyAll": true}
+  },
+  "preserved": ["Edit_All_Construction_Requests per-user grant", "hasConstructionPermission", "completed parent locks", "module validation", "comment author and 24-hour restrictions"],
+  "nativeBusinessRecordsModified": false,
+  "newFormsReportsFunctionsOrApis": false
+}
