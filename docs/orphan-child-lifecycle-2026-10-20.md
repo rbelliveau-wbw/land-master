@@ -118,9 +118,17 @@ compensate: partial SDK updates and cancelled forms must preserve saved rows.
 
 Generation of the permanent parent-delete actions:
 `node scripts/build-child-lifecycle.mjs`.
-Focused checks: `node scripts/test-child-lifecycle.mjs` (112 cases) and the
+Focused checks: `node scripts/test-child-lifecycle.mjs` (118 cases) and the
 temporary inspector's fixture checks. These execute the actual Deluge bodies
 against fixtures; they are not a native Creator compiler or transaction test.
+
+Construction access follow-up: ordinary Construction actions inherit the
+parent's Budget Type in `Type_field`. When both parent and child are explicitly
+Construction and `Template_Action == false`, that classification no longer
+mistakes the owned child for a shared template during parent deletion. The
+original typed Legal-action protection remains. This narrow amendment is saved
+and independently reloaded in Development for the user to promote; no new live
+cleanup batch or scheduled deletion is added.
 Full `npm run validate` and `npm run build:pages` passed; CI passed for
 `307abe3b27824e4a940839a60b067cfdba92417f`. Creator compiled the saved actions and
 functions, and their deployed sources/events were checked in Production. The

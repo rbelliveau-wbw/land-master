@@ -13,7 +13,7 @@ if(input.ID != null)
 	for each storedRow2 in Contract_Actions[Contract1 == input.ID]
 	{
 		sharedChild = false;
-		if(storedRow2.Type_field != null) { sharedChild = true; }
+		if(storedRow2.Type_field != null) { if(input.Work_Module != "Construction" || storedRow2.Work_Module != "Construction") { sharedChild = true; } }
 		if(storedRow2.Template_Action != false) { sharedChild = true; }
 		if(!sharedChild)
 		{

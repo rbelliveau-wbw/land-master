@@ -17,7 +17,7 @@ export const rules=[
   ]},
   {parent:'Contract',groups:[
     {form:'Contract_Pricing',owners:['Contract1'],grids:['Pricing']},
-    {form:'Contract_Actions',owners:['Contract1'],grids:['Contract_Actions'],other:['Type_field'],flags:['Template_Action']},
+    {form:'Contract_Actions',owners:['Contract1'],grids:['Contract_Actions'],other:['Type_field'],flags:['Template_Action'],constructionTypeIsClassification:true},
     {form:'Contract_Approvals',owners:['Contract1'],grids:['Approvals1'],other:['Contract_Template']},
     {form:'Redline_Review',owners:['Contract1'],grids:['Redlines']},
     {form:'Attachment',owners:['Contract1'],grids:['Contract_Versions'],other:['Budget','Pro_Forma','Payment_Request','Budget_Modification']},
@@ -33,7 +33,9 @@ export const rules=[
 function sharedGuards(group,owner,alias,indent){
   return [indent+'sharedChild = false;',
     ...group.owners.filter(x=>x!==owner).map(x=>indent+`if(${alias}.${x} != null && ${alias}.${x} != input.ID) { sharedChild = true; }`),
-    ...(group.other||[]).map(x=>indent+`if(${alias}.${x} != null) { sharedChild = true; }`),
+    ...(group.other||[]).map(x=>group.constructionTypeIsClassification&&x==='Type_field'
+      ?indent+`if(${alias}.${x} != null) { if(input.Work_Module != "Construction" || ${alias}.Work_Module != "Construction") { sharedChild = true; } }`
+      :indent+`if(${alias}.${x} != null) { sharedChild = true; }`),
     ...(group.flags||[]).map(x=>indent+`if(${alias}.${x} != false) { sharedChild = true; }`)];
 }
 export function action(rule){

@@ -122,7 +122,16 @@ passed locally, but a live byte upload is not claimed.
 
 Production frontend maps to 1.62.13. Creator Production is unchanged; the user
 must promote the saved profiles, four reports, Construction page variable/script,
-six functions and seven validations. Existing Custom APIs/wrappers are unchanged.
+six functions and eight validations. Existing Custom APIs/wrappers are unchanged.
 Test fixtures and screenshots are in
 `reports/2026-10-20-construction-request-name` in the local workspace. The
 Development-only test records/template remain clearly named for inspection.
+
+The existing `Delete_Owned_Children_Con` validation also preserves its exact-parent
+cascade while recognizing a Construction action's Budget Type as classification.
+Only a Construction parent and Construction child with `Template_Action == false`
+use this exception. Actual/unknown templates, another parent/module and every
+shared file/comment remain protected; Legal typed-action behavior is unchanged.
+Creator compiled the amended Development action, and its independently reloaded
+single body matches source. Fixture coverage is 118 lifecycle cases; no live
+delete or new scheduled cleanup was used for this follow-up.

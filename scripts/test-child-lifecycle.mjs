@@ -70,6 +70,15 @@ for(const[form,field,other]of [['Payment_Request','Payment_Request','Budget_Modi
   assert.equal(result.tables.Attachment[0].Contract1,66,'other file owner survives');
   scenarios+=4;
 }
+{
+ const body=fs.readFileSync(directory+'/Contract.delete.dg','utf8');
+ const parent={ID:42,Work_Module:'Construction'},row={ID:101,Contract1:42,Work_Module:'Construction',Type_field:'Internal',Template_Action:false};
+ assert.deepEqual(run(body,{Contract_Actions:[row]},parent).writes,[{form:'Contract_Actions',id:101}],'an ordinary Construction action uses Type as classification, not a template reference');
+ for(const value of [true,null])assert.equal(run(body,{Contract_Actions:[{...row,Template_Action:value}]},parent).writes.length,0,'actual/unknown templates remain protected');
+ for(const fixture of [{...row,Work_Module:'Legal'},{...row,Contract1:99}])assert.equal(run(body,{Contract_Actions:[fixture]},parent).writes.length,0,'other modules and parents remain protected');
+ assert.equal(run(body,{Contract_Actions:[row]},{...parent,Work_Module:'Legal'}).writes.length,0,'the legacy Legal typed-action rule stays unchanged');
+ scenarios+=6;
+}
 const pf=fs.readFileSync('creator/functions/proforma_save.dg','utf8');
 const financialDelete=pf.slice(pf.indexOf('deleteStage = "land_purchase_installments"'),pf.indexOf('deleteStage = "construction_curve"'));
 assert.doesNotMatch(financialDelete,/\[[^\]\n]*\|\|/,'Creator strips boolean groups: no OR lookup criteria in root deletion');

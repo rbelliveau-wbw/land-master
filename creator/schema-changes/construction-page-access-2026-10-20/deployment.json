@@ -97,6 +97,14 @@
       "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Comment_Dele.builder-capture.json",
       "savedAndReloaded": true,
       "nativeScriptActionCount": 1
+    },
+    {
+      "link": "Delete_Owned_Children_Con",
+      "source": "creator/workflows/child-lifecycle/Contract.delete.dg",
+      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Delete_Owned_Children_Con.after.dg",
+      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Delete_Owned_Children_Con.builder-capture.json",
+      "savedAndReloaded": true,
+      "nativeScriptActionCount": 1
     }
   ],
   "profiles": [
