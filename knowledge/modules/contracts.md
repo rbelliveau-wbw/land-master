@@ -1,3 +1,15 @@
+## Header navigation and clipping — October 20, 2026
+
+Release 1.62.14 centers the existing permission-filtered module navigation in the
+Legal/Construction top header. New and Refresh stay in the page toolbar. Shared
+board cards grow with wrapped names instead of shrinking in crowded lanes; lane
+headings and card hover/focus edges have clearance. Workspace metadata wraps
+around the tabs/comment controls. The unsolicited Construction role explanation
+is removed; editing, file/comment grants and completed-record guards are unchanged.
+The softer page colors are a review mockup only. No Creator changes are required.
+Validation: Construction access/LOI regressions, desktop layout fixtures, full
+repository validation and Pages build. Rollback: hosted release 1.62.13.
+
 ## Separate Construction page and profiles — October 20, 2026
 
 Legal and Construction share an implementation but remain separate Creator

@@ -8,6 +8,16 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+Legal and Construction keep their module menu centered in the top header,
+between the brand/breadcrumb and connection controls. At narrower desktop widths,
+the menu occupies a centered second header row instead of overlapping either side.
+Keep New and Refresh in the page toolbar and preserve module-specific grants.
+Board cards and lane headings must not shrink vertically: wrap full request names
+and reserve a few pixels around cards for focus/hover edges. Workspace header
+fields wrap so tabs and the comment button never collide with metadata. Omit the
+routine Construction submit-access explanation from read-only workspaces; retain
+actual denied-action guards and completed-record notices.
+
 Input-driven numeric displays use the selected [Sliding push transition](number-transitions.md).
 All ten widgets adopt the pattern for applicable displayed quantities. The
 focused guide, inventory and module documentation record coverage and exclusions.

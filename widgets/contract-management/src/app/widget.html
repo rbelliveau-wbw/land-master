@@ -157,10 +157,10 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 .boardwrap{flex:1;min-height:0;overflow:auto;display:flex;gap:12px;align-items:stretch;padding-bottom:6px}
 .bcol{flex:0 0 264px;background:#e9edf3;border-radius:10px;padding:9px;display:flex;flex-direction:column;gap:8px;
   max-height:100%;min-height:180px}
-.bcol-head{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:850;letter-spacing:.05em;color:var(--navy);text-transform:uppercase;padding:2px 3px}
+.bcol-head{display:flex;flex:none;align-items:center;gap:7px;font-size:10.5px;font-weight:850;letter-spacing:.05em;color:var(--navy);text-transform:uppercase;padding:2px 3px}
 .bcol-head .bar{width:3px;height:13px;border-radius:2px;flex:none}
 .bcol-head .n{margin-left:auto;color:var(--faint);font-weight:800}
-.bcol-cards{display:flex;flex-direction:column;gap:8px;overflow:auto;flex:1 1 auto;min-height:40px}
+.bcol-cards{display:flex;flex-direction:column;gap:8px;overflow:auto;flex:1 1 auto;min-height:40px;padding:3px 2px 6px}
 .bcard[draggable="true"]{cursor:grab}
 .bcard[draggable="true"]:active{cursor:grabbing}
 .bcard.dragging{opacity:.45;box-shadow:none;transform:none}
@@ -175,9 +175,9 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 .bcard-lock{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);
   display:inline-flex;align-items:center;gap:4px}
 .bcard-lock svg{width:9px;height:9px}
-.bcard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:5px}
+.bcard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;transition:all .12s;display:flex;flex:none;flex-direction:column;gap:5px}
 .bcard:hover{border-color:var(--primary-2);box-shadow:0 3px 10px rgba(37,99,235,.12);transform:translateY(-1px)}
-.bcard-name{font-size:12.5px;font-weight:750;color:var(--navy);line-height:1.3}
+.bcard-name{flex:none;min-width:0;overflow-wrap:anywhere;font-size:12.5px;font-weight:750;color:var(--navy);line-height:1.3}
 .bcard-action{font-size:11px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bcard-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:2px}
 .bcard-builder{font-size:10.5px;color:var(--faint);font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1604,6 +1604,15 @@ select.apr-in{cursor:pointer}
 .home-switch button:active{transform:translateY(0)}
 .home-switch button:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
 .topbar .crumb{min-width:0;max-width:min(45vw,600px);overflow:hidden}
+.topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;height:auto;min-height:56px;padding-top:7px;padding-bottom:7px}
+.topbar-context,.topbar-status{display:flex;align-items:center;min-width:0}
+.topbar-status{justify-content:flex-end;gap:8px}
+.module-nav{justify-self:center;min-width:0;max-width:100%}
+.module-nav:empty{display:none}
+.module-nav .home-switch{margin:0;max-width:100%}
+.module-nav .home-switch button{padding:0 13px}
+.home-actions{padding:14px 18px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:1100px){.topbar{grid-template-columns:minmax(0,1fr) auto}.module-nav{grid-column:1/-1;grid-row:2}.topbar-status{grid-column:2;grid-row:1}}
 .construction-form{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
 .construction-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
 .construction-fields>.nc-f{grid-column:auto}
@@ -1711,11 +1720,11 @@ select.apr-in{cursor:pointer}
    ══════════════════════════════════════════════════════════════════════ */
 .detail-header{display:flex;align-items:center;gap:10px;padding:12px 0 14px;
   position:sticky;top:0;z-index:12;background:var(--bg);overflow-x:auto}
-.detail-header .info-strip{flex:1;min-width:max-content;flex-wrap:nowrap;margin:0}
+.detail-header .info-strip{flex:1;min-width:0;flex-wrap:wrap;margin:0}
 .detail-header .info-name-block{min-width:230px;max-width:650px;padding:12px 16px}
-.detail-header .info-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px}
+.detail-header .info-name{white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .detail-header .info-field{flex:none;min-width:90px;padding:10px}
-.detail-header .info-nav{display:flex;align-items:center;padding:0 10px;border-left:1px solid var(--line)}
+.detail-header .info-nav{display:flex;flex:none;flex-wrap:wrap;max-width:100%;align-items:center;gap:8px;padding:10px;border-left:1px solid var(--line)}
 .detail-header .detail-switch{width:auto;white-space:nowrap}
 .detail-header .detail-switch button{flex:none}
 .construction-detail-header .info-nav{gap:9px;padding:10px 12px}
@@ -1962,25 +1971,29 @@ select.apr-in{cursor:pointer}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
 <script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.13">
-<script src="interaction-motion.js?v=1.62.13"></script>
-<script src="interaction-surfaces.js?v=1.62.13"></script>
-<script src="number-edit-commit.js?v=1.62.13"></script>
-<script src="number-transitions.js?v=1.62.13"></script>
-<script src="number-surfaces.js?v=1.62.13"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.13">
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.14">
+<script src="interaction-motion.js?v=1.62.14"></script>
+<script src="interaction-surfaces.js?v=1.62.14"></script>
+<script src="number-edit-commit.js?v=1.62.14"></script>
+<script src="number-transitions.js?v=1.62.14"></script>
+<script src="number-surfaces.js?v=1.62.14"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.14">
 </head>
 <body>
 
 <div class="topbar">
+  <div class="topbar-context">
   <div class="topbar-brand">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/><path d="M4 10h16"/></svg>
     Land Master
   </div>
   <div class="crumb" id="crumb"><a onclick="goHome()">Contracts</a></div>
-  <div class="spacer"></div>
+  </div>
+  <nav class="module-nav" id="moduleNav" aria-label="Module navigation" data-lm-motion="tabs"></nav>
+  <div class="topbar-status">
   <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading…</span></span>
   <button class="auditbtn" id="auditToggle" onclick="toggleAudit()" title="Open the audit log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span class="audit-n" id="auditCount"></span></button>
+  </div>
 </div>
 
 <div id="banners"></div>
@@ -2017,7 +2030,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.13", pageSize: 200, maxPages: 25,
+  version: "1.62.14", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -4815,7 +4828,7 @@ function contractEditAccess(c){
 }
 function mayEdit(cid){ return contractReady()&&contractEditAccess(findContract(cid)); }
 function mayEditAction(id){var a=findAction(id);return !!a&&mayEdit(lookupId(a.Contract1));}
-function contractEditWarning(cid){return lockedById(cid)?'This contract is complete and read-only.':contractEditAccess(findContract(cid))?'Finish or review the pending save before editing.':workModule(findContract(cid))==='construction'?'Submit access allows new requests, attachments and comments. Edit All Construction Requests access is required to edit.':proposeOnly()?'You need to be added as an owner to edit this contract or its actions.':'You do not have access to edit this contract.';}
+function contractEditWarning(cid){return lockedById(cid)?'This contract is complete and read-only.':contractEditAccess(findContract(cid))?'Finish or review the pending save before editing.':workModule(findContract(cid))==='construction'?'You do not have access to edit this request.':proposeOnly()?'You need to be added as an owner to edit this contract or its actions.':'You do not have access to edit this contract.';}
 function needsContractEdit(cid){if(mayEdit(cid))return true;banner('err',contractEditWarning(cid));return false;}
 function contractReadOnlyHTML(html,cid){
   if(mayEdit(cid))return html;
@@ -6501,12 +6514,15 @@ function refreshReviewCount(){
     if(title)badge.setAttribute('title',title);else badge.removeAttribute('title');
   });
 }
+function homeNavigation(active){
+  return '<div class="home-switch" role="tablist" aria-label="'+(constructionMode()?'Construction':'Legal')+' views">'
+    +'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='contracts')+'" class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">'+(constructionMode()?'Requests':'Contracts')+'</button>'
+    +(!constructionMode()||constructionEditAccess()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='loi')+'" class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span></button>':'')
+    +(canTemplates()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='actions')+'" class="'+(active==="actions"?"active":"")+'" onclick="showManageActions()">Manage Task Templates</button>':'')
+    +'</div>';
+}
 function homeSwitch(active){
-  return '<div style="padding:14px 18px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="home-switch">'
-    +'<button class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">'+(constructionMode()?'Requests':'Contracts')+'</button>'
-    +(!constructionMode()||constructionEditAccess()?'<button class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span></button>':'')
-    +(canTemplates()?'<button class="'+(active==="actions"?"active":"")+'" onclick="showManageActions()">Manage Task Templates</button>':'')
-    +'</div><div class="spacer"></div>'+(canPropose()?'<button class="btn primary" onclick="newContract()">+ New '+workNoun()+'</button>':'')+'<button class="btn sm" onclick="loadData()" title="Reload all data">⟳ Refresh</button></div>';
+  return '<div class="home-actions">'+(canPropose()?'<button class="btn primary" onclick="newContract()">+ New '+workNoun()+'</button>':'')+'<button class="btn sm" onclick="loadData()" title="Reload all data">⟳ Refresh</button></div>';
 }
 /* ============================================================
    MANAGE ACTIONS - the action checklist a new contract of each type is seeded with.
@@ -9775,7 +9791,7 @@ function renderDetail(){
     +(toInput(c.Completion_Date)?'<div class="info-field"><div class="info-lbl">Completion</div><div class="info-val" style="color:var(--amber)">'+esc(fmtDate(c.Completion_Date))+'</div></div>':'')
     +'</div>';
 
-  if(!mayEdit(c.ID)&&(contractLocked(c)||proposeOnly()||workModule(c)==='construction'))strip+='<div class="apr-note warn" role="note">'+esc(contractEditWarning(c.ID))+'</div>';
+  if(!mayEdit(c.ID)&&(contractLocked(c)||!construction&&proposeOnly()))strip+='<div class="apr-note warn" role="note">'+esc(contractEditWarning(c.ID))+'</div>';
   var actionsCard="", side="";
   if(S.detailTab==="edit"){
   var modeSeg=workModule(c)==='construction'&&!mayEdit(c.ID)?'':'<div class="mode-seg">'
@@ -10477,6 +10493,8 @@ function renderAll(){
   var same=(key===LAST_VIEW_KEY);
   var st=same?captureScroll():null;
   renderView();
+  var moduleNav=$("moduleNav");
+  if(moduleNav)moduleNav.innerHTML=S.locked||constructionMode()&&!constructionAccess()?'':homeNavigation(S.view==='detail'?'contracts':S.view==='loiReview'?'loi':S.homeSection);
   var backfill=$("contract_backfill_banner");
   if(!backfill){ backfill=document.createElement("div"); backfill.id="contract_backfill_banner"; document.body.insertBefore(backfill,document.body.firstChild); }
   backfill.innerHTML=contractBackfillBanner();
