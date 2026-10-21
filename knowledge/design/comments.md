@@ -123,6 +123,8 @@ shared across hosts without granting rights to other users. Conflicting row
 actions stay disabled during a pending write.
 
 A Delete confirmation must appear above the conversation, preserve its current
-record and draft, and return focus to it on cancel. Routine success feedback
+record and draft, and return focus to it on cancel. Its layer selector must win
+over host modal rules even when those styles load later; verify the actual
+cascade, not only the presence of a z-index declaration. Routine success feedback
 uses the shared [success notification layer](success-feedback.md) and must not
 be blurred by the conversation backdrop.

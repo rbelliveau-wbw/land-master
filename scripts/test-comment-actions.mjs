@@ -7,6 +7,46 @@ const source=fs.readFileSync('widgets/proforma-manager/src/app/comments.js','utf
 const now=Date.parse('2026-10-21T18:00:00Z'),parent='4410926000000000001',comment='4410926000000000002';
 const drain=async()=>{for(let n=0;n<15;n++)await Promise.resolve();};
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
+// Evaluate the relevant z-index cascade from the real shared stylesheet and host
+// <style> tags in document order. A selector-presence assertion cannot catch a
+// later host rule with equal specificity overriding the shared modal layer.
+function hostStyles(html,sharedCss){
+  html=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+  return [...html.matchAll(/<link\b[^>]*>|<style\b[^>]*>[\s\S]*?<\/style>/gi)].flatMap(match=>{
+    if(/^<style\b/i.test(match[0]))return [match[0].replace(/^<style\b[^>]*>|<\/style>$/gi,'')];
+    return /href=["'][^"']*comments\.css(?:[?"'])/i.test(match[0])?[sharedCss]:[];
+  });
+}
+function matchesLayerSelector(selector,node){
+  // Layer rules use type, ID, class and descendant selectors. Ignore selectors
+  // for unrelated structural/pseudo states rather than pretending to render DOM.
+  if(!/^[\w.#*\s-]+$/.test(selector))return false;
+  const parts=selector.trim().split(/\s+/);
+  function compound(part,candidate){
+    if(!candidate)return false;
+    const tag=part.match(/^[\w-]+/)?.[0];
+    return (!tag||tag.toLowerCase()===candidate.tag)&&[...part.matchAll(/([.#])([\w-]+)/g)].every(([,kind,value])=>kind==='#'?candidate.id===value:candidate.classes.includes(value));
+  }
+  if(!compound(parts.pop(),node))return false;
+  let ancestor=node.parent;
+  while(parts.length){const part=parts.pop();while(ancestor&&!compound(part,ancestor))ancestor=ancestor.parent;if(!ancestor)return false;ancestor=ancestor.parent;}
+  return true;
+}
+function effectiveLayer(styles,node){
+  let winner=null,order=0;
+  for(const css of styles)for(const rule of css.replace(/\/\*[\s\S]*?\*\//g,'').matchAll(/([^{}]+)\{([^{}]*)\}/g)){
+    const declarations=[...rule[2].matchAll(/(?:^|;)\s*z-index\s*:\s*(-?\d+)\s*(!important)?\s*(?=;|$)/gi)];
+    if(!declarations.length)continue;
+    const value=declarations.at(-1);
+    for(const raw of rule[1].split(',')){
+      const selector=raw.trim();order++;if(!matchesLayerSelector(selector,node))continue;
+      const ids=(selector.match(/#/g)||[]).length,classes=(selector.match(/\./g)||[]).length,tags=selector.split(/\s+/).filter(part=>/^[\w-]+/.test(part)).length;
+      const rank=[Number(Boolean(value[2])),ids,classes,tags,order],entry={value:Number(value[1]),selector,rank};
+      if(!winner||rank.some((n,i)=>n!==winner.rank[i]&&rank.slice(0,i).every((prior,j)=>prior===winner.rank[j])&&n>winner.rank[i]))winner=entry;
+    }
+  }
+  assert.ok(winner,'a real stylesheet layer must match '+(node.id||node.classes.join('.')));return winner;
+}
 function fixture({field='Pro_Forma',user='rbelliveau@wbdevelopment.com',age=1000,owner='wbdevelopment',deleted=false,writeGate,confirmGate}={}){
   let actor=user,focus=null,buttons=[],inline=null,loads=0,confirms=0;
   const handlers={},writes=[],status={textContent:'',classList:{toggle(){}}},preview={hidden:true},name={textContent:''},send={dataset:{pc:'send'},disabled:false};
@@ -54,7 +94,22 @@ for(const options of [{user:'another-admin@wbdevelopment.com'},{age:86400000},{d
 {
   const budget=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8'),legal=fs.readFileSync('widgets/contract-management/src/app/widget.html','utf8'),css=fs.readFileSync('widgets/proforma-manager/src/app/comments.css','utf8');
   for(const slug of ['proforma-manager','budget-manager','contract-management'])assert.match(fs.readFileSync('widgets/'+slug+'/src/app/widget.html','utf8'),/ownerAliases:function\(\)\{return PFComments\.ownerAliases\(S\.currentUser\);\}/);
-  assert.match(css,/\.comment-confirm-back,#budgetCommentConfirm\{z-index:10060\}/);assert.match(css,/\.pc-inline-editor textarea\{/);assert.match(css,/\.pc-actions\{opacity:1!important\}/);
+  assert.match(css,/\.pc-inline-editor textarea\{/);assert.match(css,/\.pc-actions\{opacity:1!important\}/);
+  const body={tag:'body',classes:[]},overlays={tag:'div',id:'overlays',classes:[],parent:body};
+  const legalConfirm={tag:'div',classes:['modal-back','comment-confirm-back'],parent:overlays};
+  const legalDialog={tag:'div',id:'contractCommentModal',classes:['pf-comment-modal','show'],parent:body};
+  const legalStyles=hostStyles(legal,css),legalLayer=effectiveLayer(legalStyles,legalConfirm);
+  assert.equal(legalLayer.value,10060,'Legal confirmation must beat the later .modal-back host rule');
+  assert.ok(legalLayer.value>effectiveLayer(legalStyles,legalDialog).value,'Legal confirmation paints above the comment modal');
+  const oldStyles=hostStyles(legal,css.replace(/\.modal-back\.comment-confirm-back/g,'.comment-confirm-back'));
+  assert.equal(effectiveLayer(oldStyles,legalConfirm).value,80,'negative control reproduces the previous equal-specificity failure with actual host CSS order');
+  for(const [slug,html,confirmId,commentId,classes] of [
+    ['Budget',budget,'budgetCommentConfirm','budgetCommentModal',['kill-overlay','show']],
+    ['Pro Forma',fs.readFileSync('widgets/proforma-manager/src/app/widget.html','utf8'),'confirmModal','commentModal',['show','danger']]
+  ]){
+    const styles=hostStyles(html,css),confirmation={tag:'div',id:confirmId,classes,parent:body},dialog={tag:'div',id:commentId,classes:['pf-comment-modal','show'],parent:body};
+    assert.ok(effectiveLayer(styles,confirmation).value>effectiveLayer(styles,dialog).value,slug+' confirmation paints above the comment modal under the actual stylesheet order');
+  }
   const nodes={budgetCommentModal:{inert:false},budgetCommentConfirm:{hidden:true,classList:{add(){},remove(){}}},budgetCommentKeep:{focus(){this.focused=true;}}};let answer;
   const c=vm.createContext({$:id=>nodes[id],budgetCommentConfirm:ok=>{answer=ok;},budgetCommentConfirmInert:false});
   vm.runInContext(extract(budget,'openBudgetCommentConfirm')+'\n'+extract(budget,'finishBudgetCommentConfirm'),c);c.openBudgetCommentConfirm();assert.equal(nodes.budgetCommentModal.inert,true);assert.equal(nodes.budgetCommentKeep.focused,true);c.finishBudgetCommentConfirm(false);assert.equal(answer,false);assert.equal(nodes.budgetCommentModal.inert,false);assert.equal(nodes.budgetCommentConfirm.hidden,true);

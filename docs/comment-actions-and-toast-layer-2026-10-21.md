@@ -31,10 +31,12 @@ hosts explicitly request the updated Pro Forma component/style version. This
 prevents old stable-URL assets from remaining cached after promotion. The two
 component design guides record the repository-wide standard.
 
-New releases: proforma-manager 1.80.127, budget-manager 122.29.63, land-master 8.16.11, contract-management 1.62.23, tax-center 19.17.25, milestone-gantt 1.1.18, manage-lots 0.13.10, settings-manager 1.5.19, lot-sales-explorer 1.5.60, forecast-manager 1.7.17.
+New releases: proforma-manager 1.80.128, budget-manager 122.29.64, land-master 8.16.11, contract-management 1.62.24, tax-center 19.17.25, milestone-gantt 1.1.18, manage-lots 0.13.10, settings-manager 1.5.19, lot-sales-explorer 1.5.60, forecast-manager 1.7.17.
 Rollback each Development/Production mapping to its preceding version:
 proforma-manager 1.80.125, budget-manager 122.29.61, land-master 8.16.10, contract-management 1.62.21, tax-center 19.17.24, milestone-gantt 1.1.17, manage-lots 0.13.9, settings-manager 1.5.18, lot-sales-explorer 1.5.59, forecast-manager 1.7.16.
 No Creator publication is required for this PMP rollout.
 
 Final review also verified locked inline textareas during Save and scoped
 Pro Forma confirmation focus trapping/inert restoration on both terminal paths.
+
+Live Production verification caught the Legal host's later `.modal-back` rule overriding the one-class confirmation layer. The shared selector now uses `.modal-back.comment-confirm-back` so its specificity keeps the confirmation above the comment modal regardless of stylesheet order; a cascade regression includes the former failure as a negative control.
