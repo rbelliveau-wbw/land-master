@@ -82,6 +82,8 @@ try {
   await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
   assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Sold','Forecast']);
+  assert.equal(await page.locator('.matrix-title h2').textContent(),'Builder Forecasts');
+  assert.ok(await page.locator('#matrixScroll').evaluate(scroller=>{const table=scroller.querySelector('table');return scroller.clientHeight<=table.getBoundingClientRect().height+2;}),'matrix bottom hugs a short table');
   assert.ok(await page.locator('.matrix-tools').evaluate(host=>{const title=host.querySelector('.matrix-title').getBoundingClientRect(),key=host.querySelector('#matrixLegend').getBoundingClientRect(),switcher=host.querySelector('.segments').getBoundingClientRect();return key.left>title.right&&key.right<switcher.left&&Math.abs((key.top+key.bottom)/2-(switcher.top+switcher.bottom)/2)<1;}),'legend occupies the marked toolbar space before the slider');
   for(const width of [1440,2308,1280]){
     await page.setViewportSize({width,height:1066});

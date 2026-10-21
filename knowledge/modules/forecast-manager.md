@@ -1,3 +1,8 @@
+## October 21, 2026 follow-up
+
+Forecast 1.7.18 changes the heading to Builder Forecasts and makes the matrix border follow short tables.
+[Creator requirements, checks and rollback](../../docs/comment-owner-email-2026-10-21.md).
+
 ## Shared interaction motion — 1.7.14, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

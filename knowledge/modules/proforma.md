@@ -1,3 +1,8 @@
+## October 21, 2026 follow-up
+
+Pro Forma 1.80.129 adds the navy selected PSA/LOI pill and shared comment-owner email.
+[Creator requirements, checks and rollback](../../docs/comment-owner-email-2026-10-21.md).
+
 ## Agreement type and AI Review close — 1.80.124, October 21, 2026
 
 Offer → Agreement now has a PSA / LOI pill, default PSA. It persists on

@@ -62,6 +62,13 @@ safe supported link schemes. Do not replace user text with a success label.
 
 ## Permissions and write feedback
 
+New posts email the other record owners through the global function and Custom
+API shared by all hosts. Show **Posting emails the other record owners.** in
+the composer. Exclude the posting actor, deduplicate owner addresses and keep
+Post/email success or warning in the same modal. No additional result modal.
+Edits and soft deletes do not notify. See the [implementation, permission and
+promotion contract](../../docs/comment-owner-email-2026-10-21.md).
+
 Persisted parent lookups use the exact string ID inside Creator lookup objects;
 Legal uses `Contract1`, and Pro Forma uses `Pro_Forma`. Explicit native validation
 alerts display their text rather than a raw JSON envelope. Missing text or a
@@ -125,6 +132,7 @@ actions stay disabled during a pending write.
 A Delete confirmation must appear above the conversation, preserve its current
 record and draft, and return focus to it on cancel. Its layer selector must win
 over host modal rules even when those styles load later; verify the actual
-cascade, not only the presence of a z-index declaration. Routine success feedback
+cascade, not only the presence of a z-index declaration. Comment post/email and edit/delete results remain succinctly inline in the same
+conversation, per the October 21 user direction. Other routine success feedback
 uses the shared [success notification layer](success-feedback.md) and must not
 be blurred by the conversation backdrop.

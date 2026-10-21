@@ -1,0 +1,127 @@
+map buildContractCommentNotification(string commentId)
+{
+ result = Map();
+ result.put("eligible",false);
+ result.put("reason","Comment is unavailable.");
+ try
+ {
+  if(commentId == null || commentId.trim() == "") { return result; }
+  comment = Comment_Log[ID == commentId.toLong()];
+  if(comment.count() == 0 || comment.Deleted == true) { return result; }
+  commentText = ifnull(comment.Comment,"").trim();
+  if(commentText == "") { return result; }
+  parentCount = 0;
+  for each field in {comment.Contract1,comment.Pro_Forma,comment.Budget,comment.Project} { if(field != null) { parentCount = parentCount + 1; } }
+  if(parentCount != 1) { return result; }
+  ownerIds = List(); moduleName = ""; recordName = ""; pageName = ""; idParam = ""; recordId = ""; contextLine = "";
+  if(comment.Contract1 != null)
+  {
+   parent = Contract[ID == comment.Contract1];
+   if(parent.count() == 0) { return result; }
+   moduleName = "Legal";
+   if(ifnull(parent.Work_Module,"") == "Construction") { moduleName = "Construction"; }
+   else if(ifnull(parent.Work_Module,"") != "" && parent.Work_Module != "Legal") { return result; }
+   pageName = moduleName; idParam = "contractId"; recordId = parent.ID.toString(); recordName = ifnull(parent.Contract_Name,"Record");
+   if(parent.Owner != null) { ownerIds.addAll(parent.Owner); }
+   contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(parent.Status,"New"));
+   currentActions = Contract_Actions[(Contract1 == parent.ID) && (Current_Action == true) && (Complete != true)] sort by Sort_Order;
+   if(currentActions.count() > 0) { contextLine = contextLine + " · Current action: " + thisapp.PF_Packet_Escape(ifnull(currentActions.Contract_Action,"Untitled action")); }
+  }
+  else if(comment.Pro_Forma != null)
+  {
+   pf = Add_Pro_Forma[ID == comment.Pro_Forma]; if(pf.count() == 0) { return result; }
+   moduleName = "Pro Forma"; pageName = "Proforma_Management1"; idParam = "proformaId"; recordId = pf.ID.toString(); recordName = ifnull(pf.Name,"Pro Forma");
+   if(pf.Owner != null) { ownerIds.addAll(pf.Owner); }
+   contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(pf.Status,"Draft"));
+  }
+  else if(comment.Budget != null)
+  {
+   budget = Add_Budget[ID == comment.Budget]; if(budget.count() == 0) { return result; }
+   moduleName = "Budget"; pageName = "Budget_Management1"; idParam = "budgetId"; recordId = budget.ID.toString(); recordName = ifnull(budget.Budget_Name,"Budget");
+   if(budget.Budget_Owner != null) { ownerIds.addAll(budget.Budget_Owner); }
+   contextLine = "Status: " + thisapp.PF_Packet_Escape(ifnull(budget.Status,""));
+  }
+  else if(comment.Project != null)
+  {
+   project = Project[ID == comment.Project]; if(project.count() == 0) { return result; }
+   moduleName = "Project"; pageName = "Budget_Management1"; idParam = "projectId"; recordId = project.ID.toString(); recordName = ifnull(project.Project_Name,"Project");
+   // Project owners are the union of phase Budget owners, matching the Project owner UI.
+   for each phase in Add_Budget[Subdivision1.Project == project.ID] { if(phase.Budget_Owner != null) { ownerIds.addAll(phase.Budget_Owner); } }
+   contextLine = "Project conversation";
+  }
+  authorUser = ifnull(comment.User,comment.Added_User).toString().trim().toLowerCase();
+  authorAccess = User_Access[User == ifnull(comment.User,comment.Added_User)];
+  authorEmail = authorUser;
+  if(authorUser == zoho.loginuser.toString().trim().toLowerCase()) { authorEmail = zoho.loginuserid.toString().trim().toLowerCase(); }
+  if(authorAccess.count() == 1 && ifnull(authorAccess.Approver_Email,"").trim() != "") { authorEmail = authorAccess.Approver_Email.trim().toLowerCase(); }
+  ownerEmails = List();
+  missingOwners = 0;
+  if(ownerIds.size() > 0)
+  {
+   for each ownerId in ownerIds
+   {
+    owner = User_Access[ID == ownerId];
+    ownerEmail = ""; ownerUser = "";
+    if(owner.count() > 0)
+    {
+     ownerEmail = ifnull(owner.Approver_Email,"").toString().trim().toLowerCase();
+     ownerUser = ifnull(owner.User,"").toString().trim().toLowerCase();
+     if(ownerEmail == "" && ownerUser.contains("@")) { ownerEmail = ownerUser; }
+    }
+    if(ownerEmail != "" && ownerEmail.matches("^[^\\s@,;]+@[^\\s@,;]+\\.[^\\s@,;]+$"))
+    {
+     if(ownerUser != authorUser && ownerEmail != authorEmail && ownerEmail != authorUser && ownerEmails.contains(ownerEmail) == false) { ownerEmails.add(ownerEmail); }
+    }
+    else { missingOwners = missingOwners + 1; }
+   }
+  }
+  result.put("missingOwners",missingOwners);
+  if(ownerEmails.size() == 0) { result.put("reason","No other owner email is on file."); return result; }
+  environmentType = thisapp.environment.type;
+  environmentName = environmentType.toString().trim().toLowerCase();
+  appBase = "https://creatorapp.zoho.com/wbdevelopment";
+  if(environmentName != "production")
+  {
+   if(environmentName != "development" && environmentName != "stage") { result.put("reason","Creator environment is unavailable."); return result; }
+   appBase = appBase + "/environment/" + environmentName;
+  }
+  recordUrl = appBase + "/land-master/#Page:" + pageName + "?" + idParam + "=" + recordId + "&recordView=list";
+  commentsUrl = appBase + "/land-master/#Page:" + pageName + "?" + idParam + "=" + recordId + "&recordView=comments";
+  recordName = recordName.replaceAll("\r"," ").replaceAll("\n"," ");
+  authorName = ifnull(comment.Author_Name,"").trim();
+  if(authorName == "") { authorName = ifnull(comment.User,comment.Added_User).toString(); }
+  authorInitial = authorName.left(1).toUpperCase();
+  postedAt = "";
+  if(comment.Added_Time != null) { postedAt = comment.Added_Time.toString("MMM d, yyyy · h:mm a"); }
+  safeName = thisapp.PF_Packet_Escape(recordName);
+  safeAuthor = thisapp.PF_Packet_Escape(authorName);
+  safeInitial = thisapp.PF_Packet_Escape(authorInitial);
+  safeWhen = thisapp.PF_Packet_Escape(postedAt);
+  safeComment = thisapp.PF_Packet_Escape(commentText).replaceAll("\r\n","\n").replaceAll("\r","\n").replaceAll("\n","<br>");
+  safeRecordUrl = thisapp.PF_Packet_Escape(recordUrl);
+  safeCommentsUrl = thisapp.PF_Packet_Escape(commentsUrl);
+  body = "<div style='margin:0;padding:24px 12px;background:#f1f5fb;color:#1f3651;font-family:Arial,sans-serif;font-size:14px;line-height:1.55;'><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='590' style='width:100%;max-width:590px;margin:0 auto;background:#ffffff;border:1px solid #d9e4f1;border-radius:14px;'><tr><td style='padding:19px 26px;background:#173d6b;color:#ffffff;border-radius:14px 14px 0 0;'><table role='presentation' width='100%' cellpadding='0' cellspacing='0'><tr><td style='font-size:15px;font-weight:bold;letter-spacing:.3px;'>LAND MASTER</td><td align='right' style='font-size:12px;color:#d7e7ff;'>" + moduleName + "</td></tr></table></td></tr>";
+  body = body + "<tr><td style='padding:24px 26px 26px;'><h2 style='font-size:21px;line-height:1.25;margin:0 0 6px;color:#1f3651;'>New comment on your record</h2><p style='margin:0 0 23px;color:#426587;'>" + safeName + "</p>";
+  body = body + "<table role='presentation' cellpadding='0' cellspacing='0' style='margin-bottom:12px;'><tr><td width='37' align='center' style='width:37px;height:37px;background:#e3edfc;color:#28548c;border-radius:50%;font-size:12px;font-weight:bold;'>" + safeInitial + "</td><td style='padding-left:11px;'><strong>" + safeAuthor + "</strong><div style='font-size:12px;color:#617791;'>" + safeWhen + "</div></td></tr></table>";
+  body = body + "<div style='margin:0 0 20px;padding:17px 18px;background:#f0f5fd;border-left:3px solid #648bc0;border-radius:0 8px 8px 0;overflow-wrap:anywhere;'>" + safeComment + "</div><p style='font-size:12px;color:#617791;margin:0 0 21px;'>" + contextLine + "</p>";
+  body = body + "<table role='presentation' cellpadding='0' cellspacing='0'><tr><td align='center' bgcolor='#23558e' style='padding:10px 18px;background:#23558e;border-radius:8px;'><a href='" + safeCommentsUrl + "' style='display:inline-block;color:#ffffff;text-decoration:none;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;'>Open comments</a></td></tr></table><p style='margin:14px 0 0;'><a href='" + safeRecordUrl + "' style='color:#23558e;font-size:13px;'>View record in main list</a></p>";
+  body = body + "<div style='margin-top:23px;padding-top:16px;border-top:1px solid #d9e4f1;font-size:12px;color:#617791;'>You received this because you own this " + moduleName + " record.</div></td></tr></table></div>";
+  subjectLine = "New comment · " + recordName;
+  if(environmentName == "development") { subjectLine = "[DEV TEST] " + subjectLine; }
+  if(environmentName == "stage") { subjectLine = "[STAGE TEST] " + subjectLine; }
+  result.put("eligible",true);
+  result.put("reason","");
+  result.put("to",ownerEmails);
+  result.put("subject",subjectLine);
+  result.put("body",body);
+  result.put("commentsUrl",commentsUrl);
+  result.put("recordUrl",recordUrl);
+  return result;
+ }
+ catch(notificationError)
+ {
+  result.put("eligible",false);
+  result.put("reason","The comment notification could not be prepared.");
+ }
+ return result;
+}

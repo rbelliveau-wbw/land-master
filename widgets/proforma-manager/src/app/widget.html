@@ -8,23 +8,23 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.128"></script>
-<script src="pf-save-audit.js?v=1.80.128"></script>
-<script src="pf-progress.js?v=1.80.128"></script>
+<script src="pf-save-verification.js?v=1.80.129"></script>
+<script src="pf-save-audit.js?v=1.80.129"></script>
+<script src="pf-progress.js?v=1.80.129"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.128">
-<script src="interaction-motion.js?v=1.80.128"></script>
-<script src="interaction-surfaces.js?v=1.80.128"></script>
-<script src="number-edit-commit.js?v=1.80.128"></script>
-<script src="number-transitions.js?v=1.80.128"></script>
-<script src="number-views.js?v=1.80.128"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.128">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.129">
+<script src="interaction-motion.js?v=1.80.129"></script>
+<script src="interaction-surfaces.js?v=1.80.129"></script>
+<script src="number-edit-commit.js?v=1.80.129"></script>
+<script src="number-transitions.js?v=1.80.129"></script>
+<script src="number-views.js?v=1.80.129"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.129">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.128"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.128">
-<script src="comments.js?v=1.80.128"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.128">
+<script src="budget-transfer-ui.js?v=1.80.129"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.129">
+<script src="comments.js?v=1.80.129"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.129">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1659,7 +1659,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-appr-search:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 4px rgba(37,99,235,.14),0 6px 18px rgba(37,99,235,.15);transform:translateY(-1px)}
 .pf-appr-search svg{width:15px;height:15px;stroke:#7387a3;fill:none}
 .pf-appr-search input{border:0;outline:0;background:transparent;min-width:0;flex:1;font:inherit;font-size:12.5px;color:var(--text)}
-.loi-agreement-heading{display:flex;align-items:center;gap:14px}.loi-agreement{display:inline-flex;gap:2px;padding:3px;border:1px solid #d5e0ee;border-radius:999px;background:#eaf0f8}.loi-agreement button{position:relative;z-index:1;border:0;border-radius:999px;background:transparent;color:#536b8d;padding:5px 16px;font:inherit;font-size:11px;cursor:pointer}.loi-agreement button.on{background:#fff;color:var(--primary);box-shadow:0 1px 3px #17365b22}.loi-agreement button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}.loi-agreement button:disabled{cursor:default;opacity:.65}
+.loi-agreement-heading{display:flex;align-items:center;gap:14px}.loi-agreement{display:inline-flex;gap:2px;padding:3px;border:1px solid #d5e0ee;border-radius:999px;background:#eaf0f8}.loi-agreement button{position:relative;z-index:1;border:0;border-radius:999px;background:transparent;color:#536b8d;padding:5px 16px;font:inherit;font-size:11px;cursor:pointer}.loi-agreement button.on{background:#173d6b;color:#fff;box-shadow:0 1px 3px #17365b22}.loi-agreement button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}.loi-agreement button:disabled{cursor:default;opacity:.65}
 .pf-appr-toggle{display:flex;align-items:center;gap:3px;border:1px solid #dde5f0;border-radius:999px;background:#eef2f8;padding:3px}
 .pf-appr-toggle button{height:26px;border:0;border-radius:999px;background:transparent;color:#5a6b85;font:inherit;font-size:11px;font-weight:750;padding:0 13px;cursor:pointer;white-space:nowrap;transition:all .13s}
 .pf-appr-toggle button:hover:not(.on){color:var(--navy);background:rgba(255,255,255,.65)}
@@ -1837,7 +1837,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.128"></script>
+<script src="success-feedback.js?v=1.80.129"></script>
 </head>
 <body>
 
@@ -2252,7 +2252,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.128";
+var PFW_VERSION="1.80.129";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -12831,7 +12831,7 @@ function deepLinkHrefParams(){
   var out={};
   try{
     var href=String(window.location.href||"");
-    DEEP_LINK_ALL_KEYS.concat(["view"]).forEach(function(k){
+    DEEP_LINK_ALL_KEYS.concat(["view","recordView"]).forEach(function(k){
       if(out[k]!=null) return;
       var m=href.match(new RegExp("[?&#]"+k+"=([^&#]+)","i"));
       if(m){ try{ out[k]=decodeURIComponent(m[1]); }catch(e){ out[k]=m[1]; } }
@@ -12912,8 +12912,8 @@ function deepLinkProformaId(p){
    check keeps it from looping. A `view` parameter is honoured on the way in if one is
    ever declared on the page, but nothing writes it today. */
 var PAGE_LINK_NAME="Proforma_Management1";
-var RECORD_URL_VIEWS={dashboard:1,edit:1,approvals:1,attachments:1,comments:1};
-function deepLinkView(p){ p=p||{}; var v=String(p.view||p.View||p.VIEW||"").trim().toLowerCase(); return RECORD_URL_VIEWS[v]?v:"dashboard"; }
+var RECORD_URL_VIEWS={list:1,dashboard:1,edit:1,approvals:1,attachments:1,comments:1};
+function deepLinkView(p){ p=p||{}; var v=String(p.recordView||p.view||p.View||p.VIEW||"").trim().toLowerCase(); return RECORD_URL_VIEWS[v]?v:"dashboard"; }
 function recordUrlState(){ return {id:String(deepLinkProformaId(S.deepLink)||"")}; }
 function syncRecordUrl(pfId,view){
   var id=String(pfId||"");
@@ -12949,6 +12949,12 @@ function openDeepLinkProforma(){
   if(view==="edit"&&!canOpenPfEditor(rec)) view="dashboard";
   if(view==="approvals"&&!canViewProformaApprovals()) view="dashboard";
   auditLog("info","Opening Pro Forma from the page link",{proformaId:id, name:rec.Name||"", view:view});
+  if(view==="list"||view==="comments"){
+    S.fTerritories=[];S.fProbs=[];S.proformaAssignedToMe=false;document.getElementById("listSearch").value="";
+    var archive=document.getElementById("fltArchive");if(archive)archive.value=boolValue(rec.Archive)?"archived":"active";
+    showView("vList");renderList();var row=document.querySelector('tr[data-id="'+id+'"]');if(row){row.scrollIntoView({block:"center",behavior:"auto"});row.classList.add("linked-record");}
+    if(view==="comments")openPfComments(id,row&&row.querySelector('.pf-row-comments'));return true;
+  }
   if(view==="edit") openEdit(id);
   else if(view==="approvals") openEdit(id,"approvals");
   else if(view==="comments") openDashboard(id).then(function(loaded){if(loaded)openPfComments(id);});

@@ -1,0 +1,73 @@
+string postRecordComment(string parentField, string parentId, string commentText)
+{
+ response = Map(); response.put("ok",false); response.put("writeState","not-started"); response.put("contract","record-comments-v1");
+ try
+ {
+  field = ifnull(parentField,""); pid = ifnull(parentId,""); messageText = ifnull(commentText,"").trim();
+  validFields = {"Contract1","Pro_Forma","Budget","Project"};
+  if(!validFields.contains(field) || !pid.matches("[1-9][0-9]*")) { response.put("message","A valid comment parent is required."); return response.toString(); }
+  if(messageText == "" || messageText.len() > 60000) { response.put("message","Write a comment of at most 60,000 characters."); return response.toString(); }
+  actor = zoho.loginuser;
+  // Authentication/profile comes from Creator, never from a caller-supplied user.
+  profile = thisapp.permissions.profileForUser(actor);
+  allowedProfiles = {"Write","Administrator","Dev/Land Acq - Proforma & Budgets","Contract Mgmt","CFO","Construction Budgeting"};
+  canPost = allowedProfiles.contains(profile) || actor == zoho.adminuser;
+  if(!canPost) { response.put("message","Your profile does not have comment posting access."); return response.toString(); }
+  contractLink = null; pfLink = null; budgetLink = null; projectLink = null;
+  if(field == "Contract1")
+  {
+   parent = Contract[ID == pid.toLong()];
+   if(parent.count() != 1) { response.put("message","Contract is unavailable."); return response.toString(); }
+   construction = ifnull(parent.Work_Module,"") == "Construction";
+   if(profile == "Construction Budgeting" && !construction) { response.put("message","This profile can only comment on Construction requests."); return response.toString(); }
+   if(construction && thisapp.hasConstructionPermission(actor,false) != true) { response.put("message","Construction access is required."); return response.toString(); }
+   if(parent.Status == "Complete") { response.put("message","Completed contracts are read-only."); return response.toString(); }
+   contractLink = parent.ID;
+  }
+  else
+  {
+   if(profile == "Construction Budgeting") { response.put("message","This profile can only comment on Construction requests."); return response.toString(); }
+   if(field == "Pro_Forma") { pf = Add_Pro_Forma[ID == pid.toLong()]; if(pf.count() != 1) { response.put("message","Pro Forma is unavailable."); return response.toString(); } pfLink = pf.ID; }
+   if(field == "Budget") { budget = Add_Budget[ID == pid.toLong()]; if(budget.count() != 1) { response.put("message","Budget is unavailable."); return response.toString(); } budgetLink = budget.ID; }
+   if(field == "Project") { project = Project[ID == pid.toLong()]; if(project.count() != 1) { response.put("message","Project is unavailable."); return response.toString(); } projectLink = project.ID; }
+  }
+  authorName = actor; access = User_Access[User == actor];
+  if(access.count() == 1 && ifnull(access.Full_Name,"").trim() != "") { authorName = access.Full_Name.trim(); }
+  response.put("writeState","started");
+  commentId = insert into Comment_Log
+  [
+   Contract1=contractLink
+   Pro_Forma=pfLink
+   Budget=budgetLink
+   Project=projectLink
+   Comment=messageText
+   User=actor
+   Author_Name=authorName
+   Edited=false
+   Deleted=false
+   Added_User=zoho.loginuser
+  ];
+  response.put("ok",true); response.put("id",commentId.toString()); response.put("parentField",field); response.put("parentId",pid); response.put("writeState","acknowledged");
+  response.put("notificationState","skipped");
+  try
+  {
+   notification = thisapp.buildContractCommentNotification(commentId.toString());
+   if(notification.get("eligible") == true)
+   {
+    sendmail
+    [
+     from :"Notifications@wbdevelopment.com"
+     to :notification.get("to")
+     subject :notification.get("subject")
+     message :notification.get("body")
+    ]
+    response.put("notificationState","sent");
+   }
+   else { response.put("notificationReason",notification.get("reason")); if(notification.get("reason") != "No other owner email is on file." || notification.get("missingOwners") > 0) { response.put("notificationState","failed"); } }
+  }
+  catch(mailError) { response.put("notificationState","failed"); }
+  return response.toString();
+ }
+ catch(commentError) { response.put("message","The comment outcome could not be confirmed. Review the thread before posting again."); }
+ return response.toString();
+}

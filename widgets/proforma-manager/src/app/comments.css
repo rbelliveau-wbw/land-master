@@ -10,3 +10,5 @@
 
 .pc-actions button svg{display:block;width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.pc-actions button:disabled,.pc-inline-actions button:disabled{opacity:.5;cursor:default;pointer-events:none}
 .modal-back.comment-confirm-back,#budgetCommentConfirm{z-index:10060}
+
+.pc-notify-note{font-size:11px;color:#617791;margin:0 0 7px}

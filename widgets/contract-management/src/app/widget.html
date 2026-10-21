@@ -9,8 +9,8 @@
 <script src="creator-data.js"></script>
 <script src="contract-progress.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.128"></script>
-<link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.128">
+<script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.129"></script>
+<link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.129">
 <style>
 .contract-backfill-banner{padding:10px 18px;background:#fffbeb;border-bottom:1px solid #f2d58c;color:#854d0e;font-size:12px;line-height:1.5}
 .pc-cyan{--pc-tone:#167b9d;--pc-tint:#effaff;border-left-color:#87cee2}.pc-orange{--pc-tone:#b75a28;--pc-tint:#fff5ee;border-left-color:#edb185}
@@ -1944,10 +1944,6 @@ select.apr-in{cursor:pointer}
 .wtable tbody tr.lot-family-last:not(.drilled)>td{border-bottom-color:#bfd3f2}
 .lot-name-wrap{display:flex;align-items:center;gap:8px;min-width:0}
 .lot-name-wrap .cname-line{flex:1;min-width:0}
-.lot-family-toggle{width:24px;height:26px;flex:none;padding:0;border:1px solid #b9cfee;border-radius:6px;background:#f7faff;color:#285b97;display:inline-grid;place-items:center;cursor:pointer}
-.lot-family-toggle:hover{background:#dbeafe;border-color:#729cda}
-.lot-family-toggle svg{width:14px;height:14px;transition:transform .18s}
-.lot-family-toggle[aria-expanded="true"] svg{transform:rotate(90deg)}
 .lot-family-count{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:750;color:#285b97;white-space:nowrap}
 .lot-family-count b{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:5px;background:#cfe0f9;color:#1e40af}
 .lot-child .lot-name-wrap{padding-left:18px}
@@ -1967,15 +1963,15 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.24"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.24">
-<script src="interaction-motion.js?v=1.62.24"></script>
-<script src="interaction-surfaces.js?v=1.62.24"></script>
-<script src="number-edit-commit.js?v=1.62.24"></script>
-<script src="number-transitions.js?v=1.62.24"></script>
-<script src="number-surfaces.js?v=1.62.24"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.24">
-<link rel="stylesheet" href="report-layout.css?v=1.62.24">
+<script src="success-feedback.js?v=1.62.25"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.25">
+<script src="interaction-motion.js?v=1.62.25"></script>
+<script src="interaction-surfaces.js?v=1.62.25"></script>
+<script src="number-edit-commit.js?v=1.62.25"></script>
+<script src="number-transitions.js?v=1.62.25"></script>
+<script src="number-surfaces.js?v=1.62.25"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.25">
+<link rel="stylesheet" href="report-layout.css?v=1.62.25">
 </head>
 <body>
 
@@ -2024,7 +2020,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.24", pageSize: 200, maxPages: 25,
+  version: "1.62.25", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2155,7 +2151,7 @@ var S = {
   view:"home", mode:"list", homeSection:"contracts", workMode:"legal", constructionEdit:null,
   search:"", fTypes:[], fStatuses:[], loiSearch:"", loiMine:false, showArchived:false,
   sortKey:"Contract_Name", sortDir:1,
-  selId:null, showDone:true, expanded:{}, drill:{}, dexp:{}, drillDone:false, lotCollapsed:{},
+  selId:null, showDone:true, expanded:{}, drill:{}, dexp:{}, drillDone:false,
   actionsMode:"review", detailTab:"edit",
   contracts:[], actions:[], versions:[], loiReviews:[], approvals:[],
   loiDataStatus:"idle", loiDataError:"", loiDataPromise:null, loiDataRequest:0, loiDataGeneration:0, loiDataScope:"",
@@ -3085,6 +3081,7 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
     attempt.dispatched=true;
     if(attempt.startNativeDeadline)attempt.startNativeDeadline();
     var api=ZOHO.CREATOR.DATA;
+    if(kind==='add'&&target===CFG.forms.comment)return PFComments.create(payload,function(config){config.api_name=LMRuntime.apiName(config.api_name);return api.invokeCustomApi(config);},function(){return api.addRecords({form_name:target,payload:{data:payload}});});
     if(kind==='add')return api.addRecords({form_name:target,payload:{data:payload}});
     if(kind==='delete')return api.deleteRecords({report_name:target,payload:{criteria:'(ID == '+id+')'}});
     return api.updateRecordById({report_name:target,id:id,payload:{data:payload}});
@@ -3103,7 +3100,7 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
       },function(error){if(responseBad(outcome.response))throw contractMutationError(outcome.response);if(outcome.error)throw outcome.error;if(conflict)throw contractMutationError(outcome.response,'Creator returned a conflicting deletion record. Recheck before another write.');throw error;});
     }
     attempt.id=contractConfirmedId(outcome.response,id);return contractMutationDeadline(attempt,contractReadback(attempt),'verification');
-  }).then(function(row){delete store[key];return {code:3000,data:{ID:attempt.id},verifiedRow:row};}).catch(function(error){
+  }).then(function(row){delete store[key];return {code:3000,data:{ID:attempt.id},verifiedRow:row,notificationState:attempt.response&&attempt.response.notificationState};}).catch(function(error){
     if(!attempt.dispatched){delete store[key];throw error;}
     if(contractDefiniteRejection(error,attempt)&&(kind!=='delete'||attempt.deleteStillPresent)){delete store[key];throw error;}
     var failure=error&&error.noReplay?error:contractMutationError(error,error&&error.message);if(!attempt.response)attempt.response=error&&error.response||error;attempt.id=attempt.id||contractCandidateId(attempt.response);attempt.error=failure;attempt.status='unknown';throw failure;
@@ -3591,36 +3588,21 @@ function lotHierarchyOrder(list){
   list.forEach(function(c){var p=lookupId(c.Parent_Contract);if(!p||!children[p]||!byId[p])add(c);});
   list.forEach(add);return out;
 }
-function lotHierarchyRows(list,includeCollapsed){
+function lotHierarchyRows(list){
   var byId={},children={};
   list.forEach(function(c){byId[String(c.ID)]=c;});
   list.forEach(function(c){
     var parent=lookupId(c.Parent_Contract);
     if(parent&&byId[parent]&&parent!==String(c.ID)) (children[parent]=children[parent]||[]).push(String(c.ID));
   });
-  return lotHierarchyOrder(list).filter(function(c){
-    var parent=lookupId(c.Parent_Contract);
-    return includeCollapsed||!(parent&&children[parent]&&S.lotCollapsed&&S.lotCollapsed[parent]);
-  }).map(function(c){
+  return lotHierarchyOrder(list).map(function(c){
     var id=String(c.ID),parent=lookupId(c.Parent_Contract),siblings=parent&&children[parent],root=c,seen={};
     while(lookupId(root.Parent_Contract)&&byId[lookupId(root.Parent_Contract)]&&!seen[String(root.ID)]){seen[String(root.ID)]=true;root=byId[lookupId(root.Parent_Contract)];}
     return {contract:c,group:lotGroup(root),kind:children[id]?"master":siblings?"child":"",count:(children[id]||[]).length,last:!!(siblings&&siblings[siblings.length-1]===id)};
   });
 }
-function toggleLotFamily(id){
-  S.lotCollapsed=S.lotCollapsed||{};
-  if(S.lotCollapsed[String(id)]) delete S.lotCollapsed[String(id)]; else S.lotCollapsed[String(id)]=true;
-  renderAll();
-  Array.prototype.some.call(document.querySelectorAll(".lot-family-toggle"),function(button){
-    if(button.getAttribute("data-lot-family")!==String(id)) return false;
-    button.focus();return true;
-  });
-}
 function lotHierarchyControl(c,branch){
-  if(!branch||!branch.kind) return "";
-  if(branch.kind==="child") return '<span class="lot-branch" aria-hidden="true"></span>';
-  var collapsed=!!(S.lotCollapsed&&S.lotCollapsed[String(c.ID)]),label=(collapsed?"Expand":"Collapse")+" "+branch.count+" child contract"+(branch.count===1?'':'s');
-  return '<button type="button" class="lot-family-toggle" data-lot-family="'+attr(c.ID)+'" aria-expanded="'+(!collapsed)+'" aria-label="'+attr(label)+'" title="'+attr(label)+'" onclick="event.stopPropagation();toggleLotFamily(\''+c.ID+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>';
+  return branch&&branch.kind==="child"?'<span class="lot-branch" aria-hidden="true"></span>':"";
 }
 function lotCompletionBlockers(c){
   if(!isLotContract(c)) return [];
@@ -4200,7 +4182,29 @@ function chip(label){
 
 /* ============================================================ HOME ============================================================ */
 function goHome(){ S.view="home"; S.selId=null; S.loiSelId=null; S.detailFrom=""; renderAll(); }
-function showContracts(){ S.homeSection="contracts"; S.view="home"; S.selId=null; S.loiSelId=null; S.detailFrom=""; renderAll(); }
+function showContracts(){ S.homeSection="contracts"; S.view="home"; S.selId=null; S.loiSelId=null; S.linkedContractId=null; S.detailFrom=""; renderAll(); }
+/* Email links use only records in the authenticated, module-scoped snapshot. */
+function openContractDeepLink(params){
+  params=params||{};
+  var id=contractId(params.contractId),view=String(params.recordView||'').trim().toLowerCase();
+  if(!id)return Promise.resolve(false);
+  var key=id+'|'+view;
+  if(S.contractDeepLinkConsumed===key)return Promise.resolve(false);
+  var c=findContract(id);
+  if(!S.coreReady||S.locked||(constructionMode()&&!constructionAccess()))return Promise.resolve(false);
+  if(!workVisible(c)){banner('err','This record is unavailable in this module.');return Promise.resolve(false);}
+  S.contractDeepLinkConsumed=key;
+  if(view!=='comments'&&view!=='list')return Promise.resolve(openContract(id));
+  S.homeSection='contracts';S.view='home';S.selId=null;S.loiSelId=null;S.mode='list';
+  S.search='';S.fTypes=[];S.fStatuses=[];S.fSubs=[];S.fBuilders=[];S.fTerritories=[];
+  S.loiMine=false;S.showArchived=truthy(c.Archive);S.linkedContractId=id;S.drill[id]=true;
+  renderAll();
+  var row=document.querySelector('tr[data-contract-id="'+id+'"]'),trigger=row&&row.querySelector('[data-contract-comments]');
+  if(row&&row.scrollIntoView)row.scrollIntoView({block:'center',behavior:'auto'});
+  if(view==='comments')return Promise.resolve(openContractComments(id,trigger)).then(function(){return true;},function(error){banner('err','Could not open comments: '+errText(error));return true;});
+  if(trigger&&trigger.focus)trigger.focus();
+  return Promise.resolve(true);
+}
 function showLOIReviews(){ if(constructionMode()&&!constructionEditAccess())return false;S.homeSection="loi"; S.view="home"; S.selId=null; S.loiSelId=null; renderAll(); return constructionMode()?Promise.resolve(true):ensureLOIReviews(); }
 function openContract(id){var c=findContract(id);if(!workVisible(c))return false;S.homeSection="contracts"; S.view="detail"; S.selId=String(id); S.loiSelId=null; S.expanded={}; var list=actionsFor(id); list.forEach(function(a){ if(truthy(a.Current_Action)&&!truthy(a.Complete)) S.expanded[String(a.ID)]=true; }); renderAll(); return true; }
 function findLOI(id){ return contractLOIReady()?S.loiReviews.find(function(r){ return String(r.ID)===String(id); }):null; }
@@ -6494,7 +6498,7 @@ function filteredContracts(){
     if(!constructionMode() && S.loiMine && !reviewContractIsMine(c)) return false;
     /* Proposed contracts are not part of the pipeline yet - they live in Review
        until Legal accepts them. No toggle: the Review tab is where they belong. */
-    if(String(c.Status||"")==="Proposed"&&!constructionMode()) return false;
+    if(String(c.Status||"")==="Proposed"&&!constructionMode()&&String(c.ID)!==S.linkedContractId) return false;
     if(S.fTypes.length && S.fTypes.indexOf(lotTypeLabel(c.Contract_Type))<0) return false;
     if(S.fStatuses.length && S.fStatuses.indexOf(String(c.Status||""))<0) return false;
     if(S.fSubs.length && !asList(c.Subdivision1).filter(function(x){
@@ -10572,7 +10576,7 @@ function loadData(){
     auditLog('success','Complete Contracts snapshot loaded',{contracts:S.contracts.length,actions:S.actions.length,versions:S.versions.length,approvals:S.approvals.length});
     loadContractCommentSummaries();
     ensureLOIReviews();
-    return repairSingleCurrent().then(function(){if(options.isCancelled())return false;var params=S.deepLink||readPageParams();S.deepLink=params;if(params.loiReviewId&&!constructionMode())return openLOIReview(params.loiReviewId,params.token||params.tokenId||'').then(function(){return true;});else if(params.contractId&&findContract(params.contractId))openContract(params.contractId);if(S.homeSection==='loi')return ensureLOIReviews().then(function(){return true;});return true;});
+    return repairSingleCurrent().then(function(){if(options.isCancelled())return false;var params=S.deepLink||readPageParams();S.deepLink=params;if(params.loiReviewId&&!constructionMode())return openLOIReview(params.loiReviewId,params.token||params.tokenId||'').then(function(){return true;});if(params.contractId)return openContractDeepLink(params).then(function(){return true;});if(S.homeSection==='loi')return ensureLOIReviews().then(function(){return true;});return true;});
   }).catch(function(error){
     if(generation===S.contractDataGeneration){S.coreReady=false;S.coreRefreshing=false;if(isPermissionError(error)){S.locked=true;S.lockedReport=String(error.__report||'');}setStatus('err','Load failed');banner('err','Could not load complete Contracts data: '+errText(error));contractControls();}
     LMPerf.end('contracts:reports',{failed:true});throw error;

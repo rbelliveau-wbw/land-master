@@ -1,3 +1,8 @@
+## October 21, 2026 follow-up
+
+Budget 122.29.65 adds shared owner-email comments for Budget and Project conversations and corresponding deep links.
+[Creator requirements, checks and rollback](../../docs/comment-owner-email-2026-10-21.md).
+
 ## Parent-scoped deletion — October 20, 2026
 
 Budget deletion requires Archive instead when any PO, Check/Wire request or PO

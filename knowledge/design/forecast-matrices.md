@@ -46,6 +46,10 @@ the saved year's note and the scoped contract flag.
 
 ## Layout
 
+The matrix heading is **Builder Forecasts**. Its border hugs short tables;
+do not reserve a minimum table height beneath the selected-total row. Preserve
+the existing maximum-height internal scrolling for longer tables.
+
 Keep each selected builder on one row. Pin its name on the left and group each fiscal year's 12 months and total to the right. The Land Master fiscal year starts in February and ends in January of the following calendar year. Put both calendar dates beneath the WFY heading. Pin column headings and the totals footer within an internally scrolling table; the page itself must fit a mobile viewport.
 
 The October 7 redesign uses **Legal and Pro Forma as the explicit visual references**, replacing the rejected floating KPI-card layout. Reuse their actual tokens and system font, compact white Land Master topbar, navy page title, blue action button, shared navy pill switcher and white report surface. Combine subdivision identity and metrics in one Legal-style info strip: a navy identity block, followed by compact fields with clear scope labels. Use blue Sold, dark-yellow Scheduled and green balance values.

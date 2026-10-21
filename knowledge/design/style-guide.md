@@ -144,7 +144,7 @@ Lot picker hover cards show record details and relevant claim/hold warnings; omi
 
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.
 
-Lot contract reports use compact branch rows: pale blue on a Master with visible Amendments, a lighter tint on its children, and a shared blue rail and branch connector. Make connectors visibly bold with rounded elbows and a stronger blue rail. Keep status colors independent. Put a counted collapse control beside the Master; omit repeated parent names on nested children and retain them when filters leave a child on its own.
+Lot contract reports use compact branch rows: pale blue on a Master with visible Amendments, a lighter tint on its children, and a shared blue rail and branch connector. Make connectors visibly bold with rounded elbows and a stronger blue rail. Keep status colors independent. Keep matching child records visible beneath their parent, without a family-collapse button (user direction October 21, 2026). Retain counted child-type badges, branch connectors and the separate action/details expansion. Omit repeated parent names on nested children and retain them when filters leave a child on its own.
 
 ## Legal and Construction workspaces
 

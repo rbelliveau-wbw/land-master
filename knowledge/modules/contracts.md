@@ -1,3 +1,9 @@
+## October 21, 2026 follow-up
+
+Contract Management 1.62.25 adds shared owner-email comments and Legal/Construction list/comment deep links.
+The child-collapse button is removed; matching children stay visible beneath their parent.
+[Creator requirements, checks and rollback](../../docs/comment-owner-email-2026-10-21.md).
+
 ## Stable dialogs and Construction parents — October 21, 2026
 
 Release 1.62.21 keeps Construction fields mounted during selections, adds
