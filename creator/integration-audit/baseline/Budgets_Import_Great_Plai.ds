@@ -1,0 +1,133 @@
+Budgets_Import_Great_Plai as "Budgets - Import Great Plains Engineering Costs"
+{
+	type =  schedule
+	start = "2025-10-29 06:16:16"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Budget_Import_Item Upsert
+							// What it does:
+							// - Exports selected columns from a Zoho Analytics view.
+							// - Analytics view should return 2 possible rows per GP Job:
+							//     • Engineering = Cost_Code_Number_1 2101
+							//     • Surveying   = Cost_Code_Number_1 2150
+							// - For each exported row whose GP Job maps to a Land Master Subdivision:
+							//     • If a Budget_Import_Item exists by Code + Data_Source, update Cost + Updated_Date.
+							//     • Else insert a new Budget_Import_Item with mapped fields.
+							// Notes:
+							// - Existing Engineering rows with Code = GP Job + "-2101" will be reduced if the Analytics view
+							//   now only sums Cost_Code_Number_1 = 2101 for Engineering.
+							// - Surveying rows will be created/updated with Code = GP Job + "-2150".
+							// - Requires valid Analytics connection: zoho_analytics_connection.
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000023448031";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("GP Job");
+							cols.add("Cost_Code_Description");
+							cols.add("SUM_COST");
+							cols.add("SUM_COST_Rounded");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/8");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update/import each item ===
+							budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+							for each  rec in rows
+							{
+								gpJob = rec.get("GP Job");
+								costGroup = ifnull(rec.get("Cost_Code_Description"),"").trim();
+								sumCostRounded = rec.get("SUM_COST_Rounded");
+								if(gpJob != null && costGroup != "" && sumCostRounded != null)
+								{
+									subdivCode = External_System_Mapping[External_Code == gpJob && External_System == "Great Plains"];
+									if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+									{
+										majorCode = "";
+										minorCode = "";
+										costCodeDescription = "";
+										if(costGroup == "Surveying")
+										{
+											majorCode = "2100";
+											minorCode = "2150";
+											costCodeDescription = "Surveying";
+										}
+										else if(costGroup == "Engineering")
+										{
+											majorCode = "2100";
+											minorCode = "2101";
+											costCodeDescription = "Engineering";
+										}
+										if(minorCode != "")
+										{
+											codeBuild = gpJob + "-GP-" + minorCode;
+											budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+											if(budgimpItem.count() == 1)
+											{
+												budgimpItem.Cost=sumCostRounded;
+												budgimpItem.Updated_Date=zoho.currentdate;
+												budgimpItem.Data_Source="Great Plains";
+												budgimpItem.Cost_Code_Description=costCodeDescription;
+												budgimpItem.Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code;
+												budgimpItem.Major_Code=majorCode;
+												budgimpItem.Minor_Code=minorCode;
+											}
+											if(budgimpItem.count() == 0)
+											{
+												impItem = insert into Budget_Import_Item
+												[
+													Data_Source="Great Plains"
+													Cost=sumCostRounded
+													Cost_Code_Description=costCodeDescription
+													Code=codeBuild
+													Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+													Major_Code=majorCode
+													Minor_Code=minorCode
+													Added_User=zoho.loginuser
+													Cost_Code_ID=codeBuild
+													Updated_Date=zoho.currentdate
+												];
+											}
+										}
+									}
+								}
+							}
+		)
+		}
+	}
+}

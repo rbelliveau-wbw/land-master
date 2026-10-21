@@ -1,0 +1,35 @@
+list Workflow_Run_Log_Report
+{
+	displayName = "Workflow Log"
+	show all rows from Workflow_Run_Log
+	(
+		Started_At as "Started At"
+		Finished_At as "Finished At"
+		Workflow_Name as "Workflow"
+		External_System as "External System"
+		Run_Status as "Status"
+		Stage
+		Rows_Received as "Rows Received"
+		Rows_Processed as "Rows Processed"
+		Rows_Created as "Rows Created"
+		Rows_Updated as "Rows Updated"
+		Rows_Skipped as "Rows Skipped"
+		Rows_Failed as "Rows Failed"
+		Duration_Seconds as "Duration (Seconds)"
+		External_Reference as "External Reference"
+		Failure_Notified as "Failure Notified"
+		Message
+		Details
+		Notification_Error as "Notification Error"
+	)
+	filters
+	(
+		Workflow_Name
+		External_System
+		Run_Status
+	)
+	sort by
+	(
+		Started_At descending
+	)
+}

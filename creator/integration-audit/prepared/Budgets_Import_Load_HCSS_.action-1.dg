@@ -1,0 +1,122 @@
+auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Import/Load HCSS Job Cost Summary","system":"Zoho Analytics"});
+auditId = auditRun.get("id");
+auditReceived = 0;
+auditProcessed = 0;
+auditCreated = 0;
+auditUpdated = 0;
+auditUpdatedIds = List();
+auditSkipped = 0;
+auditMissingMapping = 0;
+auditNoBudget = 0;
+auditNoEligible = false;
+auditWriteAttempted = false;
+auditRowChanged = false;
+auditSourceKeys = Map();
+auditRecordKey = "";
+try
+{
+// ================================================
+// Script: Analytics → Budget_Import_Item Upsert
+// What it does:
+// - Exports selected columns from a Zoho Analytics view.
+// - Builds a list of Subdivision codes that have Budgets.
+// - For each exported row whose JobCode is in that list:
+//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+//     • Else insert a new Budget_Import_Item with mapped fields.
+// Notes:
+// - Ensure TotalActualCost is numeric (normalize if needed).
+// - Requires valid Analytics connection (zoho_analytics_connection).
+// ================================================
+portalId = "700737166";
+orgId = "700732567";
+workspaceId = "2107789000000003001";
+viewId = "2107789000023717814";
+// === 2) Analytics request setup ===
+headers = Map();
+headers.put("ZANALYTICS-ORGID",orgId);
+config = Map();
+config.put("responseFormat","json");
+cols = List();
+cols.add("Major Code");
+cols.add("H.Minor Code");
+cols.add("TotalActualCost");
+cols.add("J.JobCodeFinal");
+cols.add("H.JobCode");
+cols.add("CostCodeDescription");
+config.put("selectedColumns",cols);
+// === 3) Kick off the async export job ===
+rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
+auditReceived = rows.size();
+
+// === 8) Loop through every analytics row and update each project ===
+extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+for each  rec in rows
+{
+ auditProcessed = auditProcessed + 1;
+ auditRowChanged = false;
+
+	//get subdiv code
+	subdiv = External_System_Mapping[External_Code == rec.get("H.JobCode") && External_System == "HeavyJob"];
+if(subdiv.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
+if(subdiv.count() != 1 || subdiv.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
+	budgCheck = Add_Budget[Subdivision_Code == subdiv.Subdivision1.Subdivision_Code];
+if(budgCheck.count() == 0) { auditNoBudget = auditNoBudget + 1; auditSkipped = auditSkipped + 1; continue; }
+	//make item if budget exists
+	if(budgCheck.count() > 0)
+	{
+		if(rec.get("TotalActualCost") == null || rec.get("TotalActualCost").toString().trim() == "") { throw "Eligible Analytics row has no cost; source row=" + auditProcessed; }
+validatedCost = rec.get("TotalActualCost").toDecimal();
+codeBuild = rec.get("H.JobCode") + "-HJ-" + rec.get("H.Minor Code");
+if(auditSourceKeys.get(codeBuild) != null) { throw "Duplicate Analytics source key: " + codeBuild; }
+auditSourceKeys.put(codeBuild,true);
+auditRecordKey = codeBuild;
+		budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "HeavyJob"];
+if(budgimpItem.count() > 1) { throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed; }
+		if(budgimpItem.count() == 1 && budgimpItem.Cost != rec.get("TotalActualCost"))
+		{
+			auditWriteAttempted = true;
+			budgimpItem.Cost=rec.get("TotalActualCost");
+			auditWriteAttempted = true;
+			budgimpItem.Updated_Date=zoho.currentdate;
+			auditWriteAttempted = true;
+			budgimpItem.Data_Source="HeavyJob";
+		
+ auditDestination = budgimpItem.ID.toString();
+ if(!auditUpdatedIds.contains(auditDestination)) { auditUpdatedIds.add(auditDestination); auditUpdated = auditUpdated + 1; }
+ auditRowChanged = true;
+}
+		if(budgimpItem.count() == 0)
+		{
+			impItem = insert into Budget_Import_Item
+			[
+				Data_Source="HeavyJob"
+				Cost=rec.get("TotalActualCost")
+				Cost_Code_Description=rec.get("CostCodeDescription")
+				Code=codeBuild
+				Subdivision_Code=subdiv.Subdivision1.Subdivision_Code
+				Major_Code=rec.get("Major Code")
+				Minor_Code=rec.get("H.Minor Code")
+				Added_User=zoho.loginuser
+				Updated_Date=zoho.currentdate
+			];
+ auditCreated = auditCreated + 1;
+ auditRowChanged = true;
+			//CREATE MILESTONE IN CREATOR
+		}
+	}
+
+ if(!auditRowChanged) { auditSkipped = auditSkipped + 1; }
+}
+ auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+ auditFinalStatus = "Success";
+ if(auditNoEligible) { auditFinalStatus = "Skipped"; }
+ thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+}
+catch(auditError)
+{
+ auditStatus = "Failed";
+ if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0) { auditStatus = "Partial"; }
+ auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+ thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+ throw auditError;
+}

@@ -1,0 +1,39 @@
+Sync_Milestones as "Sync Milestones"
+{
+	type =  functions
+	form = Milestones
+	execution type = for each record	
+	on start
+	{
+		actions 
+		{
+		on click
+		(
+			portalId = "700737166";
+							orgId = "700732567";
+							if(input.Push_Update == TRUE)
+							{
+								// === 4) Short delay to let the job initialize ===
+								getUrl("https://postman-echo.com/delay/3");
+								body = Map();
+								body.put("end_date",input.End_Date.toString("MM-dd-yyyy"));
+								body.put("start_date",input.Start_Date.toString("MM-dd-yyyy"));
+								resp = invokeurl
+								[
+									url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + input.Project_ID + "/milestones/" + input.Milestone_ID
+									type :POST
+									parameters:body.toString()
+									connection:"zoho_projects_connection"
+								];
+								info resp;
+								if(resp.toString().contains(input.Start_Date.toString("yyyy-MM-dd")) && resp.toString().contains(input.End_Date.toString("yyyy-MM-dd")))
+								{
+									input.Push_Update = false;
+									info body;
+									info resp;
+								}
+							}
+		)
+		}
+	}
+}

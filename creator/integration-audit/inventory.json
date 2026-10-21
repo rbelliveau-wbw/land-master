@@ -1,0 +1,310 @@
+[
+  {
+    "link_name": "Update_Projects_Start_End",
+    "display_name": "Update Projects Start/End Date - Zoho Projects",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59279,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Update_Projects_Start_End.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "projects_view_only",
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Zoho_Projects_Query",
+    "display_name": "Zoho Projects Query",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59360,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Zoho_Projects_Query.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": [
+      "projects_view_only"
+    ]
+  },
+  {
+    "link_name": "Milestone_Bi_Directional_1",
+    "display_name": "Milestone Bi-Directional Sync - Zoho Projects",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59387,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Milestone_Bi_Directional_1.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Load_HCSS_",
+    "display_name": "Budgets - Import/Load HCSS Job Cost Summary",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59485,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Load_HCSS_.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Update_Projects_Milestone",
+    "display_name": "Update Projects Milestones - Zoho Projects",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59591,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Update_Projects_Milestone.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": [
+      "zoho_projects_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Great_Plai",
+    "display_name": "Budgets - Import Great Plains Engineering Costs",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59632,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Great_Plai.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Load_HCSS_1",
+    "display_name": "Budgets - Import/Load HCSS Budget Cost",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59765,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Load_HCSS_1.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Equipment_Sync_Create_Equ",
+    "display_name": "Equipment - Sync/Create Equipment from Analytics",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59871,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Equipment_Sync_Create_Equ.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Update_Projects_Milestone1",
+    "display_name": "Update Projects Milestones 2 - Zoho Projects",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 59978,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Update_Projects_Milestone1.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": [
+      "zoho_projects_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Great_Plai1",
+    "display_name": "Budgets - Import Great Plains Development Costs",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 60042,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Great_Plai1.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Load_CTC_C",
+    "display_name": "Budgets - Import/Load CTC & % Complete",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 60147,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Load_CTC_C.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Import_Load_GP_Co",
+    "display_name": "Budgets - Import/Load GP Const Costs",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 60446,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Import_Load_GP_Co.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Budgets_Check_HCSS_Budget",
+    "display_name": "Budgets - Check HCSS Budget Line Exists",
+    "type": "schedule",
+    "form": null,
+    "event": null,
+    "line_start": 60578,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Budgets_Check_HCSS_Budget.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Update_Budgets_w_Projects1",
+    "display_name": "Update Budgets w/ Projects Info - Budget",
+    "type": "schedule",
+    "form": "Settings",
+    "event": null,
+    "line_start": 61066,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Update_Budgets_w_Projects1.ds",
+    "analytics": true,
+    "async_export": false,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Sync_Final_Acceptance_Due",
+    "display_name": "Sync Final Acceptance Due Date - Subdivision",
+    "type": "schedule",
+    "form": "Settings",
+    "event": null,
+    "line_start": 61221,
+    "section": "workflow",
+    "source": "creator/integration-audit/baseline/Sync_Final_Acceptance_Due.ds",
+    "analytics": true,
+    "async_export": false,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "Send_Budget_Email",
+    "display_name": "Send Budget Email",
+    "type": "functions",
+    "form": "Add_Budget",
+    "event": null,
+    "line_start": 62829,
+    "section": "workflow_functions",
+    "source": "creator/integration-audit/baseline/Send_Budget_Email.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": []
+  },
+  {
+    "link_name": "Sync_Milestones",
+    "display_name": "Sync Milestones",
+    "type": "functions",
+    "form": "Milestones",
+    "event": null,
+    "line_start": 62860,
+    "section": "workflow_functions",
+    "source": "creator/integration-audit/baseline/Sync_Milestones.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": [
+      "zoho_projects_connection"
+    ]
+  },
+  {
+    "link_name": "Sync_Only_MS_End",
+    "display_name": "Sync Only MS End",
+    "type": "functions",
+    "form": "Milestones",
+    "event": null,
+    "line_start": 62979,
+    "section": "workflow_functions",
+    "source": "creator/integration-audit/baseline/Sync_Only_MS_End.ds",
+    "analytics": false,
+    "async_export": false,
+    "connections": [
+      "zoho_projects_connection"
+    ]
+  },
+  {
+    "link_name": "Diagnose_HeavyJob_Cost_Sy",
+    "display_name": "Diagnose_HeavyJob_Cost_Sync",
+    "type": "functions",
+    "form": "Add_Budget",
+    "event": null,
+    "line_start": 63197,
+    "section": "workflow_functions",
+    "source": "creator/integration-audit/baseline/Diagnose_HeavyJob_Cost_Sy.ds",
+    "analytics": true,
+    "async_export": true,
+    "connections": [
+      "zoho_analytics_connection"
+    ]
+  },
+  {
+    "link_name": "PF_AI_Review",
+    "type": "function",
+    "source": "creator/integration-audit/baseline/functions/PF_AI_Review.dg",
+    "connections": [
+      "openai"
+    ]
+  },
+  {
+    "link_name": "PF_Build_LOI_Document",
+    "type": "function",
+    "source": "creator/integration-audit/baseline/functions/PF_Build_LOI_Document.dg",
+    "connections": [
+      "zoho_writer"
+    ]
+  },
+  {
+    "link_name": "Plat_AI_Ingest",
+    "type": "function",
+    "source": "creator/integration-audit/baseline/functions/Plat_AI_Ingest.dg",
+    "connections": [
+      "openai"
+    ]
+  }
+]

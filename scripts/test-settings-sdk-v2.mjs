@@ -25,7 +25,7 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
   function node(id,tag='div'){
     if(id&&nodes.has(id))return nodes.get(id);
     const classes=new Set(),handlers=new Map();let text='',markup='';
-    const el={id,tagName:tag.toUpperCase(),attrs:{},style:{},children:[],disabled:false,hidden:false,inert:false,value:'',className:'',scrollHeight:50,
+    const el={id,tagName:tag.toUpperCase(),attrs:{},dataset:{},style:{},children:[],disabled:false,hidden:false,inert:false,value:'',className:'',scrollHeight:50,
       classList:{add(...values){values.forEach(value=>classes.add(value));},remove(...values){values.forEach(value=>classes.delete(value));},contains:value=>classes.has(value),toggle(value,force){if(force===undefined)force=!classes.has(value);if(force)classes.add(value);else classes.delete(value);}},
       getAttribute:key=>el.attrs[key]||'',hasAttribute:key=>Object.hasOwn(el.attrs,key),setAttribute(key,value){el.attrs[key]=String(value);},focus(){document.activeElement=el;},getBoundingClientRect:()=>({top:0}),scrollIntoView(){},appendChild(child){el.children.push(child);return child;},
       closest(selector){return selector==='[data-frow]'?node('row:'+(el.attrs['data-f']||el.attrs['data-chipinput'])):null;},
@@ -51,7 +51,7 @@ function harness({initialize=async()=>({envUrlFragment:'/environment/development
   };
   const context=vm.createContext({document,location:{href:'https://example.test/dev/settings-manager/'},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),console:{warn(message){warnings.push(String(message));}},ZOHO:creator?{CREATOR:{DATA:api,UTIL:{getInitParams(){handshakes++;return initialize();},navigateParentURL:config=>{calls.push({method:'navigate',config});}}}}:undefined});
   context.window=context;context.parent=embedded?{}:context;context.addEventListener=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn);};
-  for(const file of ['runtime-context.js','creator-data.js','settings-controller.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
+  for(const file of ['runtime-context.js','creator-data.js','settings-controller.js','workflow-log.js'])vm.runInContext(file==='settings-controller.js'&&controllerSource!==undefined?controllerSource:fs.readFileSync(app+file,'utf8'),context);
   const expose='window.__settingsTest={state:S,controller:Controller,boot:boot,load:loadData,queue:queue,flush:flush,value:curVal,render:render,wire:wire,other:otherCard,multi:multiSelect,curveRow:curveRow,curveEdit:curveEdit,add:addCurve,remove:deleteCurve,close:closeCurveDialog,money:fmtMoney,read:readControl};\n';
   // Expose immediately before the real top-level boot; presentation hooks may
   // follow it inside the same IIFE. Keep the complete source/startup unchanged.

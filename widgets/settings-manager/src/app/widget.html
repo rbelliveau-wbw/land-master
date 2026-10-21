@@ -8,9 +8,11 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="settings-controller.js"></script>
-<script src="approval-policy-domain.js?v=1.5.16"></script>
-<script src="approval-admin.js?v=1.5.16"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.5.16">
+<script src="workflow-log.js"></script>
+<link rel="stylesheet" href="workflow-log.css">
+<script src="approval-policy-domain.js?v=1.5.17"></script>
+<script src="approval-admin.js?v=1.5.17"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.5.17">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -249,13 +251,13 @@ td input,td select{padding:5px 8px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
 <script src="success-feedback.js?v=1.4.2"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.5.16">
-<script src="interaction-motion.js?v=1.5.16"></script>
-<script src="interaction-surfaces.js?v=1.5.16"></script>
-<script src="number-edit-commit.js?v=1.5.16"></script>
-<script src="number-transitions.js?v=1.5.16"></script>
-<script src="number-surfaces.js?v=1.5.16"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.5.16">
+<link rel="stylesheet" href="interaction-motion.css?v=1.5.17">
+<script src="interaction-motion.js?v=1.5.17"></script>
+<script src="interaction-surfaces.js?v=1.5.17"></script>
+<script src="number-edit-commit.js?v=1.5.17"></script>
+<script src="number-transitions.js?v=1.5.17"></script>
+<script src="number-surfaces.js?v=1.5.17"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.5.17">
 </head>
 <body>
 
@@ -289,7 +291,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.5.16";
+var SMW_VERSION = "1.5.17";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -332,6 +334,7 @@ var CFG = {
   approvalsReport: "All_Contract_Approvals",
   actionsReport: "All_Contract_Actions",
   proformaReport: "All_Pro_Formas",
+  usersReport: "User_Access_Report",
   pageSize: 200,
   maxPages: 25,
   saveDebounceMs: 700,
@@ -355,6 +358,8 @@ var GROUPS = [
   { key:"automation", title:"Automation & Scheduling",
     blurb:"Next Workflow Run is the anchor every nightly job starts from.",
     fields:[
+      { n:"Workflow_Log_Failure_Recipients", l:"Workflow Log Failure Recipients", t:"multi", src:"users",
+        hint:"Email every selected user when an external workflow fails, partially fails, or times out." },
       { n:"Next_Workflow_Run", l:"Next Workflow Run", t:"datetime", jobs:true,
         hint:"Start anchor for the daily scheduled workflows (America/Chicago)." },
       { n:"Approval_Reminder_Interval_Days", l:"Approval Reminder Interval", t:"int", suffix:"days",
@@ -442,7 +447,7 @@ var SYSTEM_FIELDS = {ID:1, Added_User:1, Modified_User:1, Added_Time:1, Modified
 var S = {
   live:false, demo:false, ready:false,
   rec:null, recId:null, recCount:0, extras:[],
-  curve:[], approvals:[], actions:[], proformas:[],
+  curve:[], approvals:[], actions:[], proformas:[], users:[],
   pending:{},          // field -> value awaiting flush
   inflight:false,
   saveTimer:null,
@@ -683,7 +688,7 @@ function render(){
         + esc(S.loadError)+'</div></div>';
   }
 
-  GROUPS.forEach(function(g){ html+=groupCard(g); });
+  GROUPS.forEach(function(g,index){ html+=groupCard(g);if(index===0)html+=LMWorkflowLog.card(); });
   html+=curveCard();
   html+=otherCard();
   html+='<div class="foot">Settings Manager v'+esc(CFG.version)
@@ -692,6 +697,7 @@ function render(){
 
   w.innerHTML=html;
   wire();
+  LMWorkflowLog.mount({state:S});
   growAll();
   Object.keys(S.drafts).forEach(patchFieldStatus);
   syncControls();
@@ -699,6 +705,7 @@ function render(){
 
 function renderNav(){
   var items=GROUPS.map(function(g){ return {k:g.key,t:g.title}; });
+  items.splice(1,0,{k:"workflow-log",t:"Workflow Log"});
   items.push({k:"curve",t:"Construction Curve"});
   if(otherFields().length) items.push({k:"other",t:"Other fields"});
   $("nav").innerHTML=items.map(function(i){
@@ -826,6 +833,9 @@ function emailChips(f,v){
 }
 
 function optionsFor(src){
+  if(src==="users") return S.users.map(function(r){
+    return {id:str(r.ID),label:str(r.Full_Name)||relLabel(r.User)||("#"+r.ID),meta:str(r.Approver_Email)||"No email configured"};
+  }).sort(function(a,b){return a.label.localeCompare(b.label);});
   if(src==="approvals") return S.approvals.map(function(r){
     var seq=str(r.Approval_Sequence);
     return { id:str(r.ID),
@@ -1019,6 +1029,7 @@ function wire(){
     var k=b.getAttribute("data-jump");
     S.section=k; renderNav();
     var el=$("sec-"+k); if(el) el.scrollIntoView({block:"start"});
+    if(k==="workflow-log")LMWorkflowLog.load();
   };
 
   /* Scroll-spy: keep the active tab in step with what is on screen. Assignment (not
@@ -1260,7 +1271,7 @@ function fallbackDemo(){
     PF_Review_Criteria:"",PF_Review_Provider:"openai",PF_Review_Model:"gpt-5.6-luna",
     PF_Review_Criteria_Updated:"",Plat_Review_Criteria:""};
   S.recId=S.rec.ID; S.recCount=1; S.extras=[S.rec];
-  S.curve=[]; S.approvals=[]; S.actions=[]; S.proformas=[];S.resources={curve:"ready",approvals:"ready",actions:"ready",proformas:"ready"};
+  S.curve=[]; S.approvals=[]; S.actions=[]; S.proformas=[];S.users=[];S.resources={curve:"ready",approvals:"ready",actions:"ready",proformas:"ready",users:"ready"};
   S.ready=true;
   setMode("Preview (no Creator SDK)","");
   render();

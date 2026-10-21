@@ -1,0 +1,41 @@
+Update_Projects_Milestone as "Update Projects Milestones - Zoho Projects"
+{
+	type =  schedule
+		status = inactive
+	start = "2025-10-14 09:25:17"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			portalId = "700737166";
+							orgId = "700732567";
+							for each  ms in Milestones[Push_Update == true]
+							{
+								// === 4) Short delay to let the job initialize ===
+								getUrl("https://postman-echo.com/delay/3");
+								body = Map();
+								body.put("start_date",ms.Start_Date.toString("MM-dd-YYYY"));
+								body.put("end_date",ms.End_Date.toString("MM-dd-YYYY"));
+								resp = invokeurl
+								[
+									url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + ms.Project_ID + "/milestones/" + ms.Milestone_ID
+									type :POST
+									parameters:body.toString()
+									connection:"zoho_projects_connection"
+								];
+								info resp;
+								if(resp.toString().contains(ms.Start_Date.toString("YYYY-MM-dd")) && resp.toString().contains(ms.End_Date.toString("YYYY-MM-dd")))
+								{
+									ms.Push_Update=false;
+									info body;
+									info resp;
+								}
+							}
+		)
+		}
+	}
+}

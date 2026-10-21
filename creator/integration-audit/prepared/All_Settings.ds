@@ -1,0 +1,32 @@
+		default list All_Settings
+		{
+			displayName = "All Settings"
+			show all rows from Settings    
+			(
+				Workflow_Log_Failure_Recipients as "Workflow Log Failure Recipients"
+				Unlock_All_Forecasts as "Unlock All Forecasts"
+				Open_Forecasting_Window as "Open Forecasting Window"
+				Builder_Approval_Template as "Builder Approval Template"
+				Builder_Contract_Action_Template as "Builder Contract Action Template"
+				Multi_Line as "Multi Line"
+				Capital_Cost as "Capital Cost"
+				Profit_Share as "Profit Share"
+				Construction_Sub_Markup as "Construction Sub Markup"
+				Points
+				Admin_Cost as "Admin Cost"
+				Engineering_Markup as "Engineering Markup"
+				Engineering_Sub_Markup as "Engineering Sub Markup"
+				Construction_Markup as "Construction Markup"
+				Receive_Legal_Notifications as "Legal Notification Recipients"
+				Next_Workflow_Run as "Next Workflow Run"
+				COO_Approval_Threshold as "COO Approval Threshold"
+				Approval_Reminder_Interval_Days as "Approval Reminder Interval (Days)"
+				Next_Approval_Reminder_Date as "Next Approval Reminder Date"
+				PF_Review_Criteria as "PF Review Criteria"
+				PF_Review_Model as "PF Review Model"
+				PF_Review_Provider as "PF Review Provider"
+				PF_Review_Criteria_Updated as "PF Review Criteria Updated"
+				Plat_Review_Criteria as "Plat Review Criteria"
+				Current_Batch as "Current Batch"
+			)
+		}

@@ -1,0 +1,267 @@
+Sync_Final_Acceptance_Due as "Sync Final Acceptance Due Date - Subdivision"
+{
+	type =  schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// Schedule: daily, Settings.Next_Workflow_Run, America/Chicago.
+							// Destination: Add Subdivision (internal form name: Subdivision).
+							// v2: one filtered subdivision fetch; match counts and date selection are in memory.
+							// Writes enabled after successful Dev preview; REVIEW preserves conflicting dates.
+							dryRun = false;
+							// REVIEW skips differing dates; LATEST, EARLIEST, or PREFER_FINAL resolve them.
+							conflictRule = "REVIEW";
+							updatedCount = 0;
+							unchangedCount = 0;
+							reviewCount = 0;
+							skippedCount = 0;
+							operationStage = "initializing";
+							currentProjectCode = "";
+							try 
+							{
+								orgId = "700732567";
+								workspaceId = "2107789000000003001";
+								headers = Map();
+								headers.put("ZANALYTICS-ORGID",orgId);
+								projectConfig = Map();
+								projectConfig.put("responseFormat","json");
+								projectConfig.put("keyValueFormat",true);
+								projectColumns = List();
+								projectColumns.add("Project ID");
+								projectColumns.add("Project Code");
+								projectConfig.put("selectedColumns",projectColumns);
+								projectParams = Map();
+								projectParams.put("CONFIG",projectConfig.toString());
+								operationStage = "exporting Projects";
+								info "Final Acceptance sync v2: " + operationStage;
+								projectsResponse = invokeurl
+								[
+									url :"https://analyticsapi.zoho.com/restapi/v2/workspaces/" + workspaceId + "/views/2107789000000012031/data"
+									type :GET
+									parameters:projectParams
+									headers:headers
+									connection:"zoho_analytics_connection"
+								];
+								taskConfig = Map();
+								taskConfig.put("responseFormat","json");
+								taskConfig.put("keyValueFormat",true);
+								taskColumns = List();
+								taskColumns.add("Task ID");
+								taskColumns.add("Task Name");
+								taskColumns.add("Project ID");
+								taskColumns.add("Due Date");
+								taskConfig.put("selectedColumns",taskColumns);
+								taskConfig.put("criteria","(\"Tasks (Zoho Projects)\".\"Task Name\" = 'Final Acceptance' OR \"Tasks (Zoho Projects)\".\"Task Name\" = 'Accept - Muni')");
+								taskParams = Map();
+								taskParams.put("CONFIG",taskConfig.toString());
+								operationStage = "exporting Tasks";
+								info "Final Acceptance sync v2: " + operationStage;
+								tasksResponse = invokeurl
+								[
+									url :"https://analyticsapi.zoho.com/restapi/v2/workspaces/" + workspaceId + "/views/2107789000000012088/data"
+									type :GET
+									parameters:taskParams
+									headers:headers
+									connection:"zoho_analytics_connection"
+								];
+								projectRows = projectsResponse.get("data");
+								taskRows = tasksResponse.get("data");
+								if(projectRows == null || taskRows == null)
+								{
+									info "Final Acceptance sync stopped: missing Analytics data. Projects=" + projectsResponse.toString() + "; Tasks=" + tasksResponse.toString();
+								}
+								else
+								{
+									operationStage = "joining Analytics rows";
+									info "Final Acceptance sync v2: projects=" + projectRows.size() + ", tasks=" + taskRows.size();
+									// Build the project ID -> project code join in memory (IDs stay text).
+									codeByProject = Map();
+									projectByCode = Map();
+									ambiguousCodes = List();
+									for each  projectRow in projectRows
+									{
+										projectId = ifnull(projectRow.get("Project ID"),"").toString().trim();
+										projectCode = ifnull(projectRow.get("Project Code"),"").toString().trim();
+										if(projectId != "" && projectCode != "")
+										{
+											priorProject = projectByCode.get(projectCode);
+											if(priorProject != null && priorProject != projectId)
+											{
+												if(!ambiguousCodes.contains(projectCode))
+												{
+													ambiguousCodes.add(projectCode);
+												}
+											}
+											codeByProject.put(projectId,projectCode);
+											projectByCode.put(projectCode,projectId);
+										}
+									}
+									latestByCode = Map();
+									earliestByCode = Map();
+									finalByCode = Map();
+									badDateCodes = List();
+									finalConflictCodes = List();
+									for each  taskRow in taskRows
+									{
+										taskName = ifnull(taskRow.get("Task Name"),"").toString();
+										projectId = ifnull(taskRow.get("Project ID"),"").toString().trim();
+										projectCode = codeByProject.get(projectId);
+										dateText = ifnull(taskRow.get("Due Date"),"").toString().trim();
+										if(taskName == "Final Acceptance" || taskName == "Accept - Muni" && projectCode != null && dateText != "")
+										{
+											try 
+											{
+												// Preserve the source calendar date; discard its time of day.
+												dueDate = null;
+												if(dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*"))
+												{
+													dueDate = dateText.subString(0,10).toDate("yyyy-MM-dd");
+												}
+												else if(dateText.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}.*"))
+												{
+													dueDate = dateText.subString(0,10).toDate("MM-dd-yyyy");
+												}
+												else if(dateText.matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*"))
+												{
+													dueDate = dateText.subString(0,10).toDate("MM/dd/yyyy");
+												}
+												if(dueDate == null)
+												{
+													badDateCodes.add(projectCode);
+													info "Review date format: " + projectCode + ", task " + taskRow.get("Task ID") + ", Due Date=" + dateText;
+												}
+												else
+												{
+													latest = latestByCode.get(projectCode);
+													earliest = earliestByCode.get(projectCode);
+													if(latest == null || dueDate > latest)
+													{
+														latestByCode.put(projectCode,dueDate);
+													}
+													if(earliest == null || dueDate < earliest)
+													{
+														earliestByCode.put(projectCode,dueDate);
+													}
+													if(taskName == "Final Acceptance")
+													{
+														priorFinal = finalByCode.get(projectCode);
+														if(priorFinal != null && priorFinal != dueDate)
+														{
+															finalConflictCodes.add(projectCode);
+														}
+														finalByCode.put(projectCode,dueDate);
+													}
+												}
+											}				catch (dateError)
+											{
+												badDateCodes.add(projectCode);
+												info "Invalid due date: " + projectCode + ", task " + taskRow.get("Task ID") + ": " + dateText;
+											}
+										}
+										else
+										{
+											skippedCount = skippedCount + 1;
+										}
+									}
+									candidateCodes = latestByCode.keys();
+									selectedByCode = Map();
+									if(candidateCodes.size() > 0)
+									{
+										operationStage = "fetching matching subdivisions";
+										info "Final Acceptance sync v2: " + operationStage + ", candidate codes=" + candidateCodes.size();
+										// Fetch once, then count exact code matches in memory before any writes.
+										subdivisions = Subdivision[Subdivision_Code in candidateCodes];
+										subdivisionCountByCode = Map();
+										fetchedCount = 0;
+										for each  subdiv in subdivisions
+										{
+											projectCode = ifnull(subdiv.Subdivision_Code,"").toString();
+											subdivisionCountByCode.put(projectCode,ifnull(subdivisionCountByCode.get(projectCode),0) + 1);
+											fetchedCount = fetchedCount + 1;
+										}
+										info "Final Acceptance sync v2: fetched subdivisions=" + fetchedCount;
+										operationStage = "selecting unambiguous dates";
+										for each  projectCode in candidateCodes
+										{
+											latest = latestByCode.get(projectCode);
+											earliest = earliestByCode.get(projectCode);
+											selectedDate = latest;
+											needsReview = ambiguousCodes.contains(projectCode) || badDateCodes.contains(projectCode);
+											if(conflictRule == "EARLIEST")
+											{
+												selectedDate = earliest;
+											}
+											else if(conflictRule == "PREFER_FINAL")
+											{
+												if(finalByCode.get(projectCode) != null)
+												{
+													selectedDate = finalByCode.get(projectCode);
+													needsReview = needsReview || finalConflictCodes.contains(projectCode);
+												}
+												else if(latest != earliest)
+												{
+													needsReview = true;
+												}
+											}
+											else if(conflictRule != "LATEST" && latest != earliest)
+											{
+												needsReview = true;
+											}
+											matchCount = ifnull(subdivisionCountByCode.get(projectCode),0);
+											if(needsReview || matchCount > 1)
+											{
+												reviewCount = reviewCount + 1;
+												info "Review mapping/dates: " + projectCode + ", earliest=" + earliest + ", latest=" + latest + ", subdivision matches=" + matchCount;
+											}
+											else if(matchCount == 0)
+											{
+												skippedCount = skippedCount + 1;
+												info "No subdivision for Project Code: " + projectCode;
+											}
+											else
+											{
+												selectedByCode.put(projectCode,selectedDate);
+											}
+										}
+										operationStage = "writing subdivision dates";
+										info "Final Acceptance sync v2: " + operationStage + ", selected codes=" + selectedByCode.size();
+										for each  subdiv in subdivisions
+										{
+											currentProjectCode = ifnull(subdiv.Subdivision_Code,"").toString();
+											selectedDate = selectedByCode.get(currentProjectCode);
+											if(selectedDate != null)
+											{
+												if(subdiv.Final_Acceptance_Due_Date == selectedDate)
+												{
+													unchangedCount = unchangedCount + 1;
+												}
+												else
+												{
+													info "Final Acceptance Due Date: " + currentProjectCode + ", " + subdiv.Final_Acceptance_Due_Date + " -> " + selectedDate;
+													if(!dryRun)
+													{
+														subdiv.Final_Acceptance_Due_Date=selectedDate;
+													}
+													updatedCount = updatedCount + 1;
+												}
+											}
+										}
+									}
+									operationStage = "complete";
+									info "Final Acceptance sync: dryRun=" + dryRun + ", changed/planned=" + updatedCount + ", unchanged=" + unchangedCount + ", review=" + reviewCount + ", skipped=" + skippedCount;
+								}
+							}catch (syncError)
+							{
+								info "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; changed/planned so far=" + updatedCount + "; " + syncError.toString();
+							}
+		)
+		}
+	}
+}

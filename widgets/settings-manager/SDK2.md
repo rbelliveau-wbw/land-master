@@ -1,5 +1,16 @@
 # Settings 1.3.3 SDK2 migration
 
+## Workflow Log extension — 1.5.17
+
+User choices come from a complete `User_Access_Report` read (ID, Full_Name,
+Approver_Email, User). A failed choices read disables that picker without losing
+persisted recipient IDs. Audit history uses `Workflow_Run_Log_Report` through
+the canonical counted SDK2 reader and the authenticated environment. It is lazy,
+read only, identity scoped, and clears retained rows on access denial. Current
+save policy remains native acknowledgement plus exact destination identity;
+the historical equality-readback text below does not override that policy.
+See [workflow audit contract](../../docs/workflow-integration-audit-2026-10-21.md).
+
 The migration changes transport and the save/refresh controller. It preserves the grouped
 full-field editor, generic Other fields, unknown selected lookup IDs, single selected
 Settings record, duplicate warning, existing workflows and 700 ms autosave batching.

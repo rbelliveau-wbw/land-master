@@ -1,0 +1,106 @@
+Budgets_Import_Load_HCSS_1 as "Budgets - Import/Load HCSS Budget Cost"
+{
+	type =  schedule
+	start = "2025-11-03 08:15:33"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Budget_Import_Item Upsert
+							// What it does:
+							// - Exports selected columns from a Zoho Analytics view.
+							// - Builds a list of Subdivision codes that have Budgets.
+							// - For each exported row whose JobCode is in that list:
+							//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+							//     • Else insert a new Budget_Import_Item with mapped fields.
+							// Notes:
+							// - Ensure TotalActualCost is numeric (normalize if needed).
+							// - Requires valid Analytics connection (zoho_analytics_connection).
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000023687048";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("H.zzz_CostCodeID_Guid");
+							cols.add("H.Major Code");
+							cols.add("H.Minor Code");
+							cols.add("H.Total Budget Decimal");
+							cols.add("J.JobCodeFinal");
+							cols.add("H.JobCode");
+							cols.add("H.CostCodeDescription");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/12");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update each project ===
+							//get all Subdiv codes that have a Budget
+							budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+							for each  rec in rows
+							{
+								subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode") && External_System == "HeavyJob"];
+								if(budgCodes.contains(subdiv.Subdivision1.Subdivision_Code))
+								{
+									codeBuild = rec.get("H.JobCode") + "-B-" + rec.get("H.Minor Code");
+									budgimpItem = Budget_Import_Item[Code = codeBuild && Data_Source == "HeavyJob Budget"];
+									if(budgimpItem.count() == 1)
+									{
+										budgimpItem.Cost=rec.get("H.Total Budget Decimal").toLong();
+										budgimpItem.Updated_Date=zoho.currentdate;
+										budgimpItem.Data_Source="HeavyJob Budget";
+									}
+									if(budgimpItem.count() == 0)
+									{
+										impItem = insert into Budget_Import_Item
+										[
+											Data_Source="HeavyJob Budget"
+											Cost=rec.get("H.Total Budget Decimal").toLong()
+											Cost_Code_Description=rec.get("H.CostCodeDescription")
+											Code=codeBuild
+											Subdivision_Code=subdiv.Subdivision1.Subdivision_Code
+											Major_Code=rec.get("H.Major Code")
+											Minor_Code=rec.get("H.Minor Code")
+											Added_User=zoho.loginuser
+											Cost_Code_ID=rec.get("H.zzz_CostCodeID_Guid")
+											Updated_Date=zoho.currentdate
+										];
+										//CREATE MILESTONE IN CREATOR
+									}
+								}
+							}
+		)
+		}
+	}
+}

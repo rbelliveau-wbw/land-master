@@ -304,9 +304,10 @@
           ['curve',C.curveReport,'('+C.curveParentField+' == '+parent+')'],
           ['approvals',C.approvalsReport,'Contract_Template == "Builder"'],
           ['actions',C.actionsReport,''],
-          ['proformas',C.proformaReport,'']
+          ['proformas',C.proformaReport,''],
+          ...(C.usersReport ? [['users',C.usersReport,'',{fields:['ID','Full_Name','Approver_Email','User']}]] : [])
         ];
-        const results = await Promise.allSettled(jobs.map(job => read(job[1], job[2], {isCancelled:cancelled}).then(rows => job[0] === 'curve' ? curveRows(rows, parent) : job[0] === 'actions' ? actionRows(rows) : rows)));
+        const results = await Promise.allSettled(jobs.map(job => read(job[1], job[2], {...job[3],isCancelled:cancelled}).then(rows => job[0] === 'curve' ? curveRows(rows, parent) : job[0] === 'actions' ? actionRows(rows) : rows)));
         assertSession(actor);
         if (cancelled() || S.editEpoch !== epoch || hasDrafts()) throw problem('Reload was superseded by a local edit. The existing record is retained.');
         const notes = [];

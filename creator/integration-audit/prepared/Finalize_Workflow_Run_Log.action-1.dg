@@ -1,0 +1,49 @@
+// Runs in the audit API transaction, independently of the importing script.
+runIdText = input.ID.toString();
+run = Workflow_Run_Log[ID == input.ID];
+status = input.Run_Status;
+if(status != "Running")
+{
+ if(run.Finished_At == null) { run.Finished_At=zoho.currenttime; }
+ run.Duration_Seconds=(run.Finished_At.toLong() - run.Started_At.toLong()) / 1000;
+		failureStatuses = {"Failed","Partial","Timed Out"};
+		if(failureStatuses.contains(status) && run.Failure_Notified != true)
+		{
+			try
+			{
+				settings = Settings[ID != 0];
+				if(settings.count() != 1) { throw "Failure email requires exactly one Settings record."; }
+				recipientIds = settings.Workflow_Log_Failure_Recipients;
+				recipients = List();
+				missingEmails = List();
+				if(recipientIds != null)
+				{
+					for each person in User_Access[ID in recipientIds]
+					{
+						email = ifnull(person.Approver_Email,"").toString().trim();
+						if(email == "") { missingEmails.add(person.Full_Name); }
+						else if(!recipients.contains(email)) { recipients.add(email); }
+					}
+				}
+				if(recipients.size() == 0) { throw "No Workflow Log Failure Recipients with an email are configured in Settings."; }
+				// Send only workflow identifiers/counts and a log link, never raw API bodies or credentials.
+				sendmail
+				[
+					from :"Notifications@wbdevelopment.com"
+					to :recipients
+					subject :"Land Master workflow " + status + ": " + run.Workflow_Name
+					message :"Workflow: " + run.Workflow_Name + "<br>System: " + run.External_System + "<br>Status: " + status + "<br>Stage: " + run.Stage + "<br>Run ID: " + runIdText + "<br>Received: " + run.Rows_Received + "; processed: " + run.Rows_Processed + "; skipped: " + run.Rows_Skipped + "; failed: " + run.Rows_Failed + "<br><br>Open Settings > Workflow Log for the full error and execution details."
+				]
+				run.Failure_Notified=true;
+				run.Notification_Error="";
+				if(missingEmails.size() > 0) { run.Notification_Error="Selected users without an email: " + missingEmails.toString(); }
+			}
+			catch(notificationError)
+			{
+				notificationMessage = notificationError.toString();
+				if(notificationMessage.length() > 5000) { notificationMessage=notificationMessage.left(5000); }
+				run.Notification_Error=notificationMessage;
+				info "WORKFLOW FAILURE EMAIL FAILED: run " + runIdText + "; " + notificationError.toString();
+			}
+		}
+}

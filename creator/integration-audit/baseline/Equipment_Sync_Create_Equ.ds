@@ -1,0 +1,107 @@
+Equipment_Sync_Create_Equ as "Equipment - Sync/Create Equipment from Analytics"
+{
+	type =  schedule
+	start = "2025-12-17 12:10:04"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Budget_Import_Item Upsert
+							// What it does:
+							// - Exports selected columns from a Zoho Analytics view.
+							// - Builds a list of Subdivision codes that have Budgets.
+							// - For each exported row whose JobCode is in that list:
+							//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+							//     • Else insert a new Budget_Import_Item with mapped fields.
+							// Notes:
+							// - Ensure TotalActualCost is numeric (normalize if needed).
+							// - Requires valid Analytics connection (zoho_analytics_connection).
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000023926003";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("Current_MeterHours");
+							cols.add("Name");
+							cols.add("Description");
+							cols.add("SerialNo");
+							cols.add("Description");
+							cols.add("EquipmentType");
+							cols.add("Year");
+							cols.add("PurchasePrice");
+							cols.add("PurchaseYear");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/8");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update each project ===
+							//get all Subdiv codes that have a Budget
+							for each  rec in rows
+							{
+								equip = Equipment[Equipment_Code = rec.get("Name")];
+								if(equip.count() == 1)
+								{
+									equip.Equipment_Code=rec.get("Name");
+									equip.Equipment_Accounting_Code="E_" + rec.get("Name");
+									equip.Current_Meter_Hours=rec.get("Current_MeterHours");
+									equip.Description=rec.get("Description");
+									equip.Serial_Number=rec.get("SerialNo");
+									equip.Type1=rec.get("EquipmentType");
+									equip.Year1=rec.get("Year");
+									equip.Purchase_Price=rec.get("PurchasePrice");
+									equip.Purchase_Date=rec.get("PurchaseYear");
+								}
+								if(equip.count() == 0)
+								{
+									equipIns = insert into Equipment
+									[
+										Added_User=zoho.loginuser
+										Equipment_Code=rec.get("Name")
+										Equipment_Accounting_Code="E_" + rec.get("Name")
+										Current_Meter_Hours=rec.get("Current_MeterHours")
+										Description=rec.get("Description")
+										Serial_Number=rec.get("SerialNo")
+										Type1=rec.get("EquipmentType")
+										Year1=rec.get("Year")
+										Purchase_Price=rec.get("PurchasePrice")
+										Purchase_Date=rec.get("PurchaseYear")
+									];
+								}
+							}
+		)
+		}
+	}
+}

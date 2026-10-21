@@ -1,0 +1,142 @@
+                 list analyticsExportRows(string viewId, map config, string auditId, bool allowEmpty)
+{
+    // A completion code, not elapsed time, authorizes the download.
+    stage = "Creating Analytics export";
+    jobId = "";
+    try
+    {
+        headers = Map();
+        headers.put("ZANALYTICS-ORGID","700732567");
+        config.put("responseFormat","json");
+        config.put("keyValueFormat",true);
+        params = Map();
+        params.put("CONFIG",config.toString());
+        startHttp = invokeurl
+        [
+            url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/views/" + viewId + "/data"
+            type :GET
+            parameters:params
+            headers:headers
+            detailed:true
+            connection:"zoho_analytics_connection"
+        ];
+        if(startHttp.get("responseCode") != 200)
+        {
+            throw "Analytics export creation HTTP " + startHttp.get("responseCode");
+        }
+        startBody = startHttp.get("responseText").toString().toMap();
+        if(startBody.get("status") != "success" || startBody.get("data") == null)
+        {
+            throw "Analytics rejected export creation; view=" + viewId + "; error=" + ifnull(startBody.get("message"),startBody.get("summary"));
+        }
+        jobId = ifnull(startBody.get("data").get("jobId"),"").toString();
+        if(jobId == "")
+        {
+            throw "Analytics returned no export job ID; view=" + viewId;
+        }
+        stage = "Waiting for Analytics export";
+        if(auditId != "")
+        {
+            thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"reference":jobId});
+        }
+        completed = false;
+        jobCode = "";
+        // Twelve checks, with a ten-second pause only between pending responses.
+        // Retains the app's existing delay service; no business data is sent to it.
+        for each  attempt in {1,2,3,4,5,6,7,8,9,10,11,12}
+        {
+            statusHttp = invokeurl
+            [
+                url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
+                type :GET
+                headers:headers
+                detailed:true
+                connection:"zoho_analytics_connection"
+            ];
+            if(statusHttp.get("responseCode") != 200)
+            {
+                throw "Analytics job-status HTTP " + statusHttp.get("responseCode") + "; job=" + jobId;
+            }
+            statusBody = statusHttp.get("responseText").toString().toMap();
+            if(statusBody.get("status") != "success" || statusBody.get("data") == null)
+            {
+                throw "Analytics returned an invalid job-status response; job=" + jobId;
+            }
+            job = statusBody.get("data");
+            if(ifnull(job.get("jobId"),"").toString() != jobId)
+            {
+                throw "Analytics job-status response did not identify the requested job " + jobId;
+            }
+            jobCode = ifnull(job.get("jobCode"),"").toString();
+            if(jobCode == "1004")
+            {
+                completed = true;
+                break;
+            }
+            if(jobCode != "1001" && jobCode != "1002")
+            {
+                throw "Analytics export failed; job=" + jobId + "; code=" + jobCode + "; status=" + job.get("jobStatus");
+            }
+            if(attempt < 12)
+            {
+                getUrl("https://postman-echo.com/delay/10");
+            }
+        }
+        if(!completed)
+        {
+            throw "Analytics export did not complete within twelve status checks; job=" + jobId + "; last code=" + jobCode + ". No source data was processed.";
+        }
+        stage = "Downloading completed Analytics export";
+        if(auditId != "")
+        {
+            thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"reference":jobId});
+        }
+        dataHttp = invokeurl
+        [
+            url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId + "/data?exportFormat=json"
+            type :GET
+            headers:headers
+            detailed:true
+            connection:"zoho_analytics_connection"
+        ];
+        if(dataHttp.get("responseCode") != 200)
+        {
+            throw "Analytics download HTTP " + dataHttp.get("responseCode") + "; job=" + jobId;
+        }
+        dataBody = dataHttp.get("responseText").toString().toMap();
+        if(dataBody.get("error") != null || (dataBody.get("status") != null && dataBody.get("status") != "success"))
+        {
+            throw "Analytics download contains an API error; job=" + jobId;
+        }
+        rows = dataBody.get("data");
+        if(rows == null)
+        {
+            throw "Analytics download has no data array; job=" + jobId;
+        }
+        if(rows.size() == 0 && !allowEmpty)
+        {
+            throw "Analytics returned an unexpectedly empty export; job=" + jobId + "; view=" + viewId;
+        }
+        if(rows.size() > 0)
+        {
+            keys = rows.get(0).keys();
+            for each  column in config.get("selectedColumns")
+            {
+                if(!keys.contains(column))
+                {
+                    throw "Analytics export is missing column " + column + "; job=" + jobId;
+                }
+            }
+        }
+        if(auditId != "")
+        {
+            thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Processing Analytics rows","counts":{"received":rows.size()}});
+        }
+        return rows;
+    }   catch (exportError)
+    {
+        // The caller owns final status/counts and rethrows; never downgrade a failure to success.
+        throw "Analytics failure; view=" + viewId + "; job=" + jobId + "; stage=" + stage + "; " + exportError.toString();
+    }
+    return List();
+}

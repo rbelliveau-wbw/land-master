@@ -1,0 +1,115 @@
+Update_Budgets_w_Projects1 as "Update Budgets w/ Projects Info - Budget"
+{
+	type =  schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// === 1) Analytics identifiers ===
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000000012031";
+							// === 2) Request setup ===
+							headers = Map();
+							// auth header
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							// query config
+							config.put("responseFormat","json");
+							// columns to return
+							cols = list();
+							cols.add("Project Code");
+							cols.add("Status");
+							cols.add("Gross Acres");
+							cols.add("Lot Total - Residential");
+							cols.add("Equiv. LF of Street");
+							config.put("selectedColumns",cols);
+							// === 3) Call Zoho Analytics ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Parse response ===
+							rows = resp.get("data");
+							// list of row-maps
+							info rows;
+							// === 5) Loop through rows and update matching Subdivisions ===
+							for each  proj in rows
+							{
+								projectCode = proj.get("Project Code").toString();
+								if(projectCode != "")
+								{
+									subdiv = Subdivision[Subdivision_Code == projectCode];
+									if(subdiv.count() > 0)
+									{
+										// pull values, default blanks to zero
+										acres = proj.get("Gross Acres");
+										status = proj.get("Status");
+										lotTotal = proj.get("Lot Total - Residential");
+										equivLF = proj.get("Equiv. LF of Street");
+										if(acres == "")
+										{
+											acres = 0;
+										}
+										if(lotTotal == "")
+										{
+											lotTotal = 0;
+										}
+										if(equivLF == "")
+										{
+											equivLF = 0;
+										}
+										// write back to Zoho Creator
+										subdiv.Projects_Status=status;
+										subdiv.Acres=acres;
+										subdiv.Lot_Total_Residential=lotTotal;
+										subdiv.Equiv_LF_of_Street=equivLF;
+									}
+								}
+							}
+		)
+		}
+		actions 
+		{
+		on load
+		(
+			//Iterates through every Budget Category and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
+							for each  budgCat in Budget_Category[ID != 0 && Budget.Subdivision1 != NULL]
+							{
+								subdiv = Subdivision[ID == budgCat.Budget.Subdivision1];
+								budgCat.Project=subdiv.Project.Project_Name.toUpperCase();
+								budgCat.Phase=if(subdiv.Subphase == "","PHASE " + subdiv.Phase,"PHASE " + subdiv.Phase + "-" + subdiv.Subphase);
+							}
+		)
+		}
+		actions 
+		{
+		on load
+		(
+			//Iterates through every Budget  and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
+							for each  budG in Add_Budget[ID != 0]
+							{
+								if(budG.Subdivision1 != null)
+								{
+									subdiv = Subdivision[ID == budG.Subdivision1.ID];
+									budG.Project=subdiv.Project.Project_Name.toUpperCase();
+									budG.Status=subdiv.Projects_Status;
+									budG.Phase=if(subdiv.Subphase == "","PHASE " + subdiv.Phase,"PHASE " + subdiv.Phase + "-" + subdiv.Subphase);
+								}
+							}
+		)
+		}
+	}
+}

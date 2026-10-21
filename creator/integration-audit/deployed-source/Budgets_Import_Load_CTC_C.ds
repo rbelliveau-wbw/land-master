@@ -1,0 +1,139 @@
+Budgets_Import_Load_CTC_C as "Budgets - Import/Load CTC & % Complete"
+{
+	type =  schedule
+	start = "2026-04-06 07:15:50"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Import/Load CTC & % Complete","system":"Zoho Analytics"});
+							auditId = auditRun.get("id");
+							auditReceived = 0;
+							auditProcessed = 0;
+							auditCreated = 0;
+							auditUpdated = 0;
+							auditUpdatedIds = List();
+							auditSkipped = 0;
+							auditMissingMapping = 0;
+							auditNoBudget = 0;
+							auditNoEligible = false;
+							auditWriteAttempted = false;
+							auditRowChanged = false;
+							auditSourceKeys = Map();
+							auditRecordKey = "";
+							try 
+							{
+								// ================================================
+								// Script: Analytics → Budget_Import_Item Upsert
+								// What it does:
+								// - Exports selected columns from a Zoho Analytics view.
+								// - Builds a list of Subdivision codes that have Budgets.
+								// - For each exported row whose JobCode is in that list:
+								//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+								//     • Else insert a new Budget_Import_Item with mapped fields.
+								// Notes:
+								// - Ensure TotalActualCost is numeric (normalize if needed).
+								// - Requires valid Analytics connection (zoho_analytics_connection).
+								// ================================================
+								portalId = "700737166";
+								orgId = "700732567";
+								workspaceId = "2107789000000003001";
+								viewId = "2107789000029519084";
+								// === 2) Analytics request setup ===
+								headers = Map();
+								headers.put("ZANALYTICS-ORGID",orgId);
+								config = Map();
+								config.put("responseFormat","json");
+								cols = List();
+								cols.add("H.Major Code");
+								cols.add("H.Minor Code");
+								cols.add("H.Percent Complete Display");
+								cols.add("H.JobCode");
+								cols.add("Projected Total");
+								config.put("selectedColumns",cols);
+								// === 3) Kick off the async export job ===
+								rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
+								auditReceived = rows.size();
+								// === 8) Loop through every analytics row and update each project ===
+								extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+								for each  rec in rows
+								{
+									auditProcessed = auditProcessed + 1;
+									auditRowChanged = false;
+									//get subdiv code
+									subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode")];
+									if(subdiv.count() == 0)
+									{
+										auditMissingMapping = auditMissingMapping + 1;
+										auditSkipped = auditSkipped + 1;
+										continue;
+									}
+									if(subdiv.count() != 1 || subdiv.Subdivision1 == null)
+									{
+										throw "Duplicate or broken external mapping; source row=" + auditProcessed;
+									}
+									budgCheck = Add_Budget[Subdivision_Code == subdiv.Subdivision1.Subdivision_Code];
+									if(budgCheck.count() == 0)
+									{
+										auditNoBudget = auditNoBudget + 1;
+										auditSkipped = auditSkipped + 1;
+										continue;
+									}
+									//make item if budget exists
+									if(budgCheck.count() > 0)
+									{
+										info subdiv.Subdivision1.Subdivision_Name;
+										budgimpItem = Budget_Import_Item[Code = subdiv.Subdivision1.Subdivision_Code + '-' + rec.get("H.Minor Code") && Data_Source == "HeavyJob"];
+										if(budgimpItem.count() > 1)
+										{
+											throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+										}
+										if(budgimpItem.count() == 1 && budgimpItem.Cost_to_Complete != rec.get("Projected Total"))
+										{
+											// Row payloads are omitted from execution logs.
+											auditWriteAttempted = true;
+											budgimpItem.Percent_Complete=rec.get("H.Percent Complete Display");
+											auditWriteAttempted = true;
+											budgimpItem.Cost_to_Complete=rec.get("Projected Total");
+											auditWriteAttempted = true;
+											budgimpItem.Updated_Date=zoho.currentdate;
+											auditDestination = budgimpItem.ID.toString();
+											if(!auditUpdatedIds.contains(auditDestination))
+											{
+												auditUpdatedIds.add(auditDestination);
+												auditUpdated = auditUpdated + 1;
+											}
+											auditRowChanged = true;
+										}
+									}
+									if(!auditRowChanged)
+									{
+										auditSkipped = auditSkipped + 1;
+									}
+								}
+								auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+								auditFinalStatus = "Success";
+								if(auditNoEligible)
+								{
+									auditFinalStatus = "Skipped";
+								}
+								thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+							}catch (auditError)
+							{
+								auditStatus = "Failed";
+								if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+								{
+									auditStatus = "Partial";
+								}
+								auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+								thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+								throw auditError;
+							}
+		)
+		}
+	}
+}

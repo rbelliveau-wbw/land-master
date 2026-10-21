@@ -1,0 +1,90 @@
+Budgets_Import_Load_CTC_C as "Budgets - Import/Load CTC & % Complete"
+{
+	type =  schedule
+	start = "2026-04-06 07:15:50"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Budget_Import_Item Upsert
+							// What it does:
+							// - Exports selected columns from a Zoho Analytics view.
+							// - Builds a list of Subdivision codes that have Budgets.
+							// - For each exported row whose JobCode is in that list:
+							//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+							//     • Else insert a new Budget_Import_Item with mapped fields.
+							// Notes:
+							// - Ensure TotalActualCost is numeric (normalize if needed).
+							// - Requires valid Analytics connection (zoho_analytics_connection).
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000029519084";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("H.Major Code");
+							cols.add("H.Minor Code");
+							cols.add("H.Percent Complete Display");
+							cols.add("H.JobCode");
+							cols.add("Projected Total");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/8");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update each project ===
+							extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+							for each  rec in rows
+							{
+								//get subdiv code
+								subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode")];
+								budgCheck = Add_Budget[Subdivision_Code == subdiv.Subdivision1.Subdivision_Code];
+								//make item if budget exists
+								if(budgCheck.count() > 0)
+								{
+									info subdiv.Subdivision1.Subdivision_Name;
+									budgimpItem = Budget_Import_Item[Code = subdiv.Subdivision1.Subdivision_Code + '-' + rec.get("H.Minor Code") && Data_Source == "HeavyJob"];
+									if(budgimpItem.count() == 1 && budgimpItem.Cost_to_Complete != rec.get("Projected Total"))
+									{
+										info rec;
+										budgimpItem.Percent_Complete=rec.get("H.Percent Complete Display");
+										budgimpItem.Cost_to_Complete=rec.get("Projected Total");
+										budgimpItem.Updated_Date=zoho.currentdate;
+									}
+								}
+							}
+		)
+		}
+	}
+}

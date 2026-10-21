@@ -1,0 +1,23 @@
+Workflow_Log_Timeout as "Workflow Log Timeout"
+{
+	type =  schedule
+	form = Workflow_Run_Log
+	start = after 30 minutes from Started_At
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// A hard Creator timeout cannot execute the importing script's catch block.
+							// The independently committed start record gives this schedule a durable target.
+							run = Workflow_Run_Log[ID == input.ID];
+							if(run.count() == 1 && run.Run_Status == "Running")
+							{
+								thisapp.workflowRunLog({"action":"finish","id":run.ID.toString(),"status":"Timed Out","stage":"Watchdog","message":"No terminal acknowledgement within 30 minutes of start.","details":"The workflow may have hit a Creator execution limit, been interrupted, or lost its final acknowledgement. Review the external reference and destination records before retrying; no automatic replay was performed.","counts":{"failed":1}});
+							}
+		)
+		}
+	}
+}

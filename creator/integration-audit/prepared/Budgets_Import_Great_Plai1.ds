@@ -1,0 +1,137 @@
+Budgets_Import_Great_Plai1 as "Budgets - Import Great Plains Development Costs"
+{
+	type =  schedule
+	start = "2026-03-31 05:16:24"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Import Great Plains Development Costs","system":"Zoho Analytics"});
+			auditId = auditRun.get("id");
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try
+			{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Builds a list of Subdivision codes that have Budgets.
+			// - For each exported row whose JobCode is in that list:
+			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Ensure TotalActualCost is numeric (normalize if needed).
+			// - Requires valid Analytics connection (zoho_analytics_connection).
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000029311186";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("WS_Job_Number_Trim");
+			cols.add("Cost_Code_Number_1");
+			cols.add("Cost_Code_Number_2");
+			cols.add("Cost_Code_Description");
+			cols.add("Total_Actuals");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+
+			// === 8) Loop through every analytics row and update each project ===
+			//get all Subdiv codes that have a Budget
+			budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+			for each  rec in rows
+			{
+			 auditProcessed = auditProcessed + 1;
+			 auditRowChanged = false;
+
+				subdivCode = External_System_Mapping[External_Code == rec.get("WS_Job_Number_Trim") && External_System == "Great Plains"];
+			if(subdivCode.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
+			if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
+				if(!budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code)) { auditNoBudget = auditNoBudget + 1; auditSkipped = auditSkipped + 1; continue; }
+			if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+				{
+					// Row payloads are omitted from execution logs.
+					jobCode = ifnull(rec.get("WS_Job_Number_Trim"),"").toString().trim();
+					if(ifnull(rec.get("Cost_Code_Number_2"),"").toString().trim() == "" || rec.get("Total_Actuals") == null || rec.get("Total_Actuals").toString().trim() == "") { throw "Eligible Analytics row has no cost code or cost; job=" + rec.get("WS_Job_Number_Trim"); }
+			validatedCost = rec.get("Total_Actuals").toDecimal();
+			codeBuild = rec.get("WS_Job_Number_Trim") + "-GP-" + rec.get("Cost_Code_Number_2");
+			if(auditSourceKeys.get(codeBuild) != null) { throw "Duplicate Analytics source key: " + codeBuild; }
+			auditSourceKeys.put(codeBuild,true);
+			auditRecordKey = codeBuild;
+					budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+			if(budgimpItem.count() > 1) { throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed; }
+					if(budgimpItem.count() == 1)
+					{
+						auditWriteAttempted = true;
+						budgimpItem.Cost=rec.get("Total_Actuals");
+						auditWriteAttempted = true;
+						budgimpItem.Updated_Date=zoho.currentdate;
+						auditWriteAttempted = true;
+						budgimpItem.Data_Source="Great Plains";
+		
+			 auditDestination = budgimpItem.ID.toString();
+			 if(!auditUpdatedIds.contains(auditDestination)) { auditUpdatedIds.add(auditDestination); auditUpdated = auditUpdated + 1; }
+			 auditRowChanged = true;
+			}
+					if(budgimpItem.count() == 0)
+					{
+						impItem = insert into Budget_Import_Item
+						[
+							Data_Source="Great Plains"
+							Cost=rec.get("Total_Actuals")
+							Cost_Code_Description=rec.get("Cost_Code_Description")
+							Code=codeBuild
+							Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+							Major_Code=rec.get("Cost_Code_Number_1")
+							Minor_Code=rec.get("Cost_Code_Number_2")
+							Added_User=zoho.loginuser
+							Cost_Code_ID=codeBuild
+							Updated_Date=zoho.currentdate
+						];
+			 auditCreated = auditCreated + 1;
+			 auditRowChanged = true;
+					}
+				}
+
+			 if(!auditRowChanged) { auditSkipped = auditSkipped + 1; }
+			}
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			 auditFinalStatus = "Success";
+			 if(auditNoEligible) { auditFinalStatus = "Skipped"; }
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}
+			catch(auditError)
+			{
+			 auditStatus = "Failed";
+			 if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0) { auditStatus = "Partial"; }
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			 throw auditError;
+			}
+		)
+		}
+	}
+}

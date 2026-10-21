@@ -1,0 +1,48 @@
+auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action 2/3)","system":"Zoho Analytics"});
+auditId = auditRun.get("id");
+auditReceived = 0;
+auditProcessed = 0;
+auditCreated = 0;
+auditUpdated = 0;
+auditUpdatedIds = List();
+auditSkipped = 0;
+auditMissingMapping = 0;
+auditNoBudget = 0;
+auditNoEligible = false;
+auditWriteAttempted = false;
+auditRowChanged = false;
+auditSourceKeys = Map();
+auditRecordKey = "";
+try
+{
+//Iterates through every Budget Category and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
+for each  budgCat in Budget_Category[ID != 0 && Budget.Subdivision1 != NULL]
+{
+ auditProcessed = auditProcessed + 1;
+ auditRowChanged = false;
+
+	subdiv = Subdivision[ID == budgCat.Budget.Subdivision1];
+	auditWriteAttempted = true;
+	budgCat.Project=subdiv.Project.Project_Name.toUpperCase();
+	auditWriteAttempted = true;
+	budgCat.Phase=if(subdiv.Subphase == "","PHASE " + subdiv.Phase,"PHASE " + subdiv.Phase + "-" + subdiv.Subphase);
+
+ auditDestination = budgCat.ID.toString();
+ if(!auditUpdatedIds.contains(auditDestination)) { auditUpdatedIds.add(auditDestination); auditUpdated = auditUpdated + 1; }
+ auditRowChanged = true;
+
+ if(!auditRowChanged) { auditSkipped = auditSkipped + 1; }
+}
+ auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+ auditFinalStatus = "Success";
+ if(auditNoEligible) { auditFinalStatus = "Skipped"; }
+ thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+}
+catch(auditError)
+{
+ auditStatus = "Failed";
+ if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0) { auditStatus = "Partial"; }
+ auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+ thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+ throw auditError;
+}

@@ -1,0 +1,61 @@
+Send_Budget_Email as "Send Budget Email"
+{
+	type =  functions
+	form = Add_Budget
+	execution type = for each record	
+	on start
+	{
+		actions 
+		{
+		on click
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Send Budget Email","system":"Zoho Projects"});
+			auditId = auditRun.get("id");
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try
+			{
+			//Download the Creator page as PDF file using the invokeurl task.
+			fileResp = invokeurl
+			[
+				url :"https://creatorapp.zohopublic.com/wbdevelopment/land-master/pdf/View_Budget/dh60eduWVq1ZGZ3BfUCsU1z7Jw3U8xXX2NWFDNYQ0d3fQB4hzjeZbyT7XRjtaD5GunSrOZMTjwHyEESnuMJxx6PnYtphXTT2qA4A?isc5page=true&budgetId=" + input.ID
+				type :GET
+			];
+			fileResp.setFileName(input.Subdivision_Code + " - Budget - " + zoho.currentdate.toString("MM-dd-YYYY") + ".pdf");
+			//Send mail to all email address in the list, including the downloaded PDF file as an attachment.
+			sendmail
+			[
+				from :"Notifications@wbdevelopment.com"
+				to :"rbelliveau@wbdevelopment.com"
+				subject :"Budget"
+				message :"hey33"
+				Attachments :file:fileResp
+			]
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			 auditFinalStatus = "Success";
+			 if(auditNoEligible) { auditFinalStatus = "Skipped"; }
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}
+			catch(auditError)
+			{
+			 auditStatus = "Failed";
+			 if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0) { auditStatus = "Partial"; }
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			 throw auditError;
+			}
+		)
+		}
+	}
+}

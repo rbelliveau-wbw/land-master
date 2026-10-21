@@ -1,0 +1,169 @@
+Budgets_Import_Great_Plai as "Budgets - Import Great Plains Engineering Costs"
+{
+	type =  schedule
+	start = "2025-10-29 06:16:16"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Import Great Plains Engineering Costs","system":"Zoho Analytics"});
+			auditId = auditRun.get("id");
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try
+			{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Analytics view should return 2 possible rows per GP Job:
+			//     • Engineering = Cost_Code_Number_1 2101
+			//     • Surveying   = Cost_Code_Number_1 2150
+			// - For each exported row whose GP Job maps to a Land Master Subdivision:
+			//     • If a Budget_Import_Item exists by Code + Data_Source, update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Existing Engineering rows with Code = GP Job + "-2101" will be reduced if the Analytics view
+			//   now only sums Cost_Code_Number_1 = 2101 for Engineering.
+			// - Surveying rows will be created/updated with Code = GP Job + "-2150".
+			// - Requires valid Analytics connection: zoho_analytics_connection.
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000023448031";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("GP Job");
+			cols.add("Cost_Code_Description");
+			cols.add("SUM_COST");
+			cols.add("SUM_COST_Rounded");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+
+			// === 8) Loop through every analytics row and update/import each item ===
+			budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+			for each  rec in rows
+			{
+			 auditProcessed = auditProcessed + 1;
+			 auditRowChanged = false;
+
+				gpJob = rec.get("GP Job");
+				costGroup = ifnull(rec.get("Cost_Code_Description"),"").trim();
+				sumCostRounded = rec.get("SUM_COST_Rounded");
+				if(gpJob != null && costGroup != "" && sumCostRounded != null)
+				{
+					subdivCode = External_System_Mapping[External_Code == gpJob && External_System == "Great Plains"];
+			if(subdivCode.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
+			if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
+					if(!budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code)) { auditNoBudget = auditNoBudget + 1; auditSkipped = auditSkipped + 1; continue; }
+			if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+					{
+						majorCode = "";
+						minorCode = "";
+						costCodeDescription = "";
+						if(costGroup == "Surveying")
+						{
+							majorCode = "2100";
+							minorCode = "2150";
+							costCodeDescription = "Surveying";
+						}
+						else if(costGroup == "Engineering")
+						{
+							majorCode = "2100";
+							minorCode = "2101";
+							costCodeDescription = "Engineering";
+						}
+						if(minorCode != "")
+						{
+							if(rec.get("SUM_COST_Rounded") == null || rec.get("SUM_COST_Rounded").toString().trim() == "") { throw "Eligible Analytics row has no cost; source row=" + auditProcessed; }
+			validatedCost = rec.get("SUM_COST_Rounded").toDecimal();
+			codeBuild = gpJob + "-GP-" + minorCode;
+			if(auditSourceKeys.get(codeBuild) != null) { throw "Duplicate Analytics source key: " + codeBuild; }
+			auditSourceKeys.put(codeBuild,true);
+			auditRecordKey = codeBuild;
+							budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+			if(budgimpItem.count() > 1) { throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed; }
+							if(budgimpItem.count() == 1)
+							{
+								auditWriteAttempted = true;
+								budgimpItem.Cost=sumCostRounded;
+								auditWriteAttempted = true;
+								budgimpItem.Updated_Date=zoho.currentdate;
+								auditWriteAttempted = true;
+								budgimpItem.Data_Source="Great Plains";
+								auditWriteAttempted = true;
+								budgimpItem.Cost_Code_Description=costCodeDescription;
+								auditWriteAttempted = true;
+								budgimpItem.Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code;
+								auditWriteAttempted = true;
+								budgimpItem.Major_Code=majorCode;
+								auditWriteAttempted = true;
+								budgimpItem.Minor_Code=minorCode;
+				
+			 auditDestination = budgimpItem.ID.toString();
+			 if(!auditUpdatedIds.contains(auditDestination)) { auditUpdatedIds.add(auditDestination); auditUpdated = auditUpdated + 1; }
+			 auditRowChanged = true;
+			}
+							if(budgimpItem.count() == 0)
+							{
+								impItem = insert into Budget_Import_Item
+								[
+									Data_Source="Great Plains"
+									Cost=sumCostRounded
+									Cost_Code_Description=costCodeDescription
+									Code=codeBuild
+									Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+									Major_Code=majorCode
+									Minor_Code=minorCode
+									Added_User=zoho.loginuser
+									Cost_Code_ID=codeBuild
+									Updated_Date=zoho.currentdate
+								];
+			 auditCreated = auditCreated + 1;
+			 auditRowChanged = true;
+							}
+						}
+					}
+				}
+
+			 if(!auditRowChanged) { auditSkipped = auditSkipped + 1; }
+			}
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			 auditFinalStatus = "Success";
+			 if(auditNoEligible) { auditFinalStatus = "Skipped"; }
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}
+			catch(auditError)
+			{
+			 auditStatus = "Failed";
+			 if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0) { auditStatus = "Partial"; }
+			 auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			 thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			 throw auditError;
+			}
+		)
+		}
+	}
+}

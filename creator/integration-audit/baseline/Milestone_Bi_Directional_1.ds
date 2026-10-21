@@ -1,0 +1,98 @@
+Milestone_Bi_Directional_1 as "Milestone Bi-Directional Sync - Zoho Projects"
+{
+	type =  schedule
+	start = "2025-08-22 05:51:33"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Creator Milestones Upsert
+							// What it does:
+							// - Exports milestone fields from a Zoho Analytics view.
+							// - For each row:
+							//     • If a Milestone exists (by Milestone_ID), update Name, Start_Date, End_Date.
+							//     • Else, if matching Subdivision (by Project Code) exists, insert a new Milestone linked to it.
+							// Notes:
+							// - Requires Analytics connection (zoho_analytics_connection).
+							// - Ensure date fields parse correctly in Creator.
+							// - Subdivision must exist for new milestone inserts.
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000021880005";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("m.Milestone ID");
+							cols.add("m.Milestone Name");
+							cols.add("m.Start Date");
+							cols.add("m.End Date");
+							cols.add("p.Project Code");
+							cols.add("m.Project ID");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/8");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update each Milestone in Land Master ===
+							for each  rec in rows
+							{
+								ms = Milestones[Milestone_ID == rec.get("m.Milestone ID")];
+								subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+								if(ms.count() == 1 && ms.Push_Update == FALSE)
+								{
+									ms.Milestone_Name=rec.get("m.Milestone Name");
+									ms.Start_Date=rec.get("m.Start Date");
+									ms.End_Date=rec.get("m.End Date");
+									ms.Project_ID=rec.get("m.Project ID");
+								}
+								if(ms.count() == 0 && subdivId.count() == 1)
+								{
+									subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+									milestone = insert into Milestones
+									[
+										Milestone_Name=rec.get("m.Milestone Name")
+										Start_Date=rec.get("m.Start Date")
+										End_Date=rec.get("m.End Date")
+										Milestone_ID=rec.get("m.Milestone ID")
+										Project_ID=rec.get("m.Project ID")
+										Subdivision1=subdivId
+										Added_User=zoho.loginuser
+									];
+									//CREATE MILESTONE IN CREATOR
+								}
+							}
+		)
+		}
+	}
+}

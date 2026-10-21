@@ -1,0 +1,45 @@
+{
+  "baseline_export": "creator/exports/Land_Master_2026-10-21-development.ds",
+  "compiled_export": "creator/exports/Land_Master_2026-10-21-workflow-audit.ds",
+  "schema": "creator/integration-audit/deployed-source/schema.json",
+  "form": "Workflow_Run_Log",
+  "report": "Workflow_Run_Log_Report",
+  "recipient_field": "Settings.Workflow_Log_Failure_Recipients",
+  "recipient_source": "User_Access_Report",
+  "email_field": "Approver_Email",
+  "connection": "workflow_audit_admin",
+  "workflows": [
+    "Update_Projects_Start_End",
+    "Zoho_Projects_Query",
+    "Milestone_Bi_Directional_1",
+    "Budgets_Import_Load_HCSS_",
+    "Update_Projects_Milestone",
+    "Budgets_Import_Great_Plai",
+    "Budgets_Import_Load_HCSS_1",
+    "Equipment_Sync_Create_Equ",
+    "Update_Projects_Milestone1",
+    "Budgets_Import_Great_Plai1",
+    "Budgets_Import_Load_CTC_C",
+    "Budgets_Import_Load_GP_Co",
+    "Budgets_Check_HCSS_Budget",
+    "Update_Budgets_w_Projects1",
+    "Sync_Final_Acceptance_Due",
+    "Send_Budget_Email",
+    "Sync_Milestones",
+    "Sync_Only_MS_End",
+    "Diagnose_HeavyJob_Cost_Sy"
+  ],
+  "audit_workflows": [
+    "Finalize_Workflow_Run_Log",
+    "Workflow_Log_Timeout"
+  ],
+  "functions": [
+    "workflowRunLog",
+    "analyticsExportRows",
+    "PF_AI_Review",
+    "Plat_AI_Ingest",
+    "PF_Build_LOI_Document"
+  ],
+  "creator_production_version": null,
+  "recipient_configured_in_production": false
+}

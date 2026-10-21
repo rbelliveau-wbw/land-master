@@ -1,0 +1,27 @@
+Zoho_Projects_Query as "Zoho Projects Query"
+{
+	type =  schedule
+		status = inactive
+	start = "2025-08-05 10:20:41"
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// Query to ZOHO PROJECTS to get custom and hidden field data
+							portalId = "700737166";
+							orgId = "700732567";
+							projId = "1496277000013961217";
+							proj = invokeurl
+							[
+								url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + projId
+								type :GET
+								connection:"projects_view_only"
+							];
+							info proj;
+		)
+		}
+	}
+}

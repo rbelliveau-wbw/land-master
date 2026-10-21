@@ -1,0 +1,105 @@
+Budgets_Import_Great_Plai1 as "Budgets - Import Great Plains Development Costs"
+{
+	type =  schedule
+	start = "2026-03-31 05:16:24"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			// ================================================
+							// Script: Analytics → Budget_Import_Item Upsert
+							// What it does:
+							// - Exports selected columns from a Zoho Analytics view.
+							// - Builds a list of Subdivision codes that have Budgets.
+							// - For each exported row whose JobCode is in that list:
+							//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+							//     • Else insert a new Budget_Import_Item with mapped fields.
+							// Notes:
+							// - Ensure TotalActualCost is numeric (normalize if needed).
+							// - Requires valid Analytics connection (zoho_analytics_connection).
+							// ================================================
+							portalId = "700737166";
+							orgId = "700732567";
+							workspaceId = "2107789000000003001";
+							viewId = "2107789000029311186";
+							// === 2) Analytics request setup ===
+							headers = Map();
+							headers.put("ZANALYTICS-ORGID",orgId);
+							config = Map();
+							config.put("responseFormat","json");
+							cols = List();
+							cols.add("WS_Job_Number_Trim");
+							cols.add("Cost_Code_Number_1");
+							cols.add("Cost_Code_Number_2");
+							cols.add("Cost_Code_Description");
+							cols.add("Total_Actuals");
+							config.put("selectedColumns",cols);
+							// === 3) Kick off the async export job ===
+							params = Map();
+							params.put("CONFIG",config.toString());
+							resp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/views/" + viewId + "/data"
+								type :GET
+								parameters:params
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 4) Short delay to let the job initialize ===
+							getUrl("https://postman-echo.com/delay/8");
+							// === 5) Grab the jobId ===
+							jobId = resp.get("data").get("jobId");
+							// === 6) Fetch the completed JSON export ===
+							dataResp = invokeurl
+							[
+								url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/" + workspaceId + "/exportjobs/" + jobId + "/data?exportFormat=json"
+								type :GET
+								headers:headers
+								connection:"zoho_analytics_connection"
+							];
+							// === 7) Parse the rows array ===
+							rows = dataResp.get("data");
+							// === 8) Loop through every analytics row and update each project ===
+							//get all Subdiv codes that have a Budget
+							budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+							for each  rec in rows
+							{
+								subdivCode = External_System_Mapping[External_Code == rec.get("WS_Job_Number_Trim") && External_System == "Great Plains"];
+								if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+								{
+									info subdivCode;
+									jobCode = ifnull(rec.get("WS_Job_Number_Trim"),"").toString().trim();
+									codeBuild = rec.get("WS_Job_Number_Trim") + "-GP-" + rec.get("Cost_Code_Number_2");
+									budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+									if(budgimpItem.count() == 1)
+									{
+										budgimpItem.Cost=rec.get("Total_Actuals");
+										budgimpItem.Updated_Date=zoho.currentdate;
+										budgimpItem.Data_Source="Great Plains";
+									}
+									if(budgimpItem.count() == 0)
+									{
+										impItem = insert into Budget_Import_Item
+										[
+											Data_Source="Great Plains"
+											Cost=rec.get("Total_Actuals")
+											Cost_Code_Description=rec.get("Cost_Code_Description")
+											Code=codeBuild
+											Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+											Major_Code=rec.get("Cost_Code_Number_1")
+											Minor_Code=rec.get("Cost_Code_Number_2")
+											Added_User=zoho.loginuser
+											Cost_Code_ID=codeBuild
+											Updated_Date=zoho.currentdate
+										];
+									}
+								}
+							}
+		)
+		}
+	}
+}

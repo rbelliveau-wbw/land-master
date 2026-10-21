@@ -1,0 +1,36 @@
+Sync_Only_MS_End as "Sync Only MS End"
+{
+	type =  functions
+	form = Milestones
+	execution type = for each record	
+	on start
+	{
+		actions 
+		{
+		on click
+		(
+			portalId = "700737166";
+							orgId = "700732567";
+							if(input.Push_Update == TRUE)
+							{
+								// === 4) Short delay to let the job initialize ===
+								getUrl("https://postman-echo.com/delay/3");
+								body = Map();
+								body.put("end_date",input.End_Date.toString("MM-dd-YYYY"));
+								resp = invokeurl
+								[
+									url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + input.Project_ID + "/milestones/" + input.Milestone_ID
+									type :POST
+									parameters:body.toString()
+									connection:"zoho_projects_connection"
+								];
+								info resp;
+								if(resp.toString().contains(input.End_Date.toString("YYYY-MM-dd")))
+								{
+									info "END DATE SUCCESSFULLY UPDATED.";
+								}
+							}
+		)
+		}
+	}
+}

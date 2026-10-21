@@ -1,0 +1,31 @@
+Send_Budget_Email as "Send Budget Email"
+{
+	type =  functions
+	form = Add_Budget
+	execution type = for each record	
+	on start
+	{
+		actions 
+		{
+		on click
+		(
+			//Download the Creator page as PDF file using the invokeurl task.
+							fileResp = invokeurl
+							[
+								url :"https://creatorapp.zohopublic.com/wbdevelopment/land-master/pdf/View_Budget/dh60eduWVq1ZGZ3BfUCsU1z7Jw3U8xXX2NWFDNYQ0d3fQB4hzjeZbyT7XRjtaD5GunSrOZMTjwHyEESnuMJxx6PnYtphXTT2qA4A?isc5page=true&budgetId=" + input.ID
+								type :GET
+							];
+							fileResp.setFileName(input.Subdivision_Code + " - Budget - " + zoho.currentdate.toString("MM-dd-YYYY") + ".pdf");
+							//Send mail to all email address in the list, including the downloaded PDF file as an attachment.
+							sendmail
+							[
+								from :"Notifications@wbdevelopment.com"
+								to :"rbelliveau@wbdevelopment.com"
+								subject :"Budget"
+								message :"hey33"
+								Attachments :file:fileResp
+							]
+		)
+		}
+	}
+}

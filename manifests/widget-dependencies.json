@@ -569,14 +569,18 @@
         "Forecast",
         "Lots",
         "Project",
-        "Settings"
+        "Settings",
+        "User_Access",
+        "Workflow_Run_Log"
       ],
       "reports_referenced": [
         "All_Construction_Curves",
         "All_Contract_Actions",
         "All_Contract_Approvals",
         "All_Pro_Formas",
-        "All_Settings"
+        "All_Settings",
+        "User_Access_Report",
+        "Workflow_Run_Log_Report"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.DATA.invokeCustomApi",

@@ -9,6 +9,17 @@ no Creator deployment is required. Production rollback: 1.5.8.
 
 # Settings Manager
 
+## Workflow Log — 1.5.17
+
+Automation includes a searchable User Access multi-select for failure recipients.
+Workflow Log shows complete selected date ranges, newest first, with time sort,
+failure/search filters and per-run stage, source reference, counts and errors.
+It loads only when opened. Creator deployment is required for the new audit
+form/report, Settings lookup and audited integration functions/workflows.
+See [contracts, verification and rollback](../../docs/workflow-integration-audit-2026-10-21.md).
+This release preserves the current native acknowledgement save policy; historical
+readback descriptions below do not reinstate editable-field equality checks.
+
 ## Territory approvers — October 14, 2026
 
 VP and Dev Mgr always resolve from the Territory assigned to the document,

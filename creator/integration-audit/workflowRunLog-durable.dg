@@ -1,0 +1,94 @@
+map workflowRunLog(map event)
+{
+	// Independent API transaction: an importer exception cannot roll this record back.
+	// Final timestamps and failure mail run in the log form's own on-success transaction.
+	result = Map();
+	action = ifnull(event.get("action"),"").toString();
+	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+	if(runtimeType != "development" && runtimeType != "stage" && runtimeType != "production") { throw "Unknown Creator environment: type=" + runtimeType + "; link=" + runtimeLink + ". Audit refused cross-environment write."; }
+	headers = {"Content-Type":"application/json"};
+	if(runtimeType != "production") { headers.put("environment",runtimeLink); }
+	fields = Map();
+	runIdText = "";
+	status = "Running";
+	if(action == "start")
+	{
+		workflowName = ifnull(event.get("workflow"),"").toString().trim();
+		systemName = ifnull(event.get("system"),"").toString().trim();
+		if(workflowName == "" || systemName == "") { throw "Workflow audit requires a workflow name and external system."; }
+		fields = {"Workflow_Name":workflowName,"External_System":systemName,"Run_Status":"Running","Started_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Stage":"Starting","Rows_Received":0,"Rows_Processed":0,"Rows_Created":0,"Rows_Updated":0,"Rows_Skipped":0,"Rows_Failed":0,"Failure_Notified":false};
+	}
+	else
+	{
+		if(action != "update" && action != "finish") { throw "Unknown workflow audit action: " + action; }
+		runIdText = ifnull(event.get("id"),"").toString();
+		if(!runIdText.matches("[0-9]+")) { throw "Workflow audit update requires its numeric run ID."; }
+		status = ifnull(event.get("status"),"Running").toString();
+		statuses = {"Running","Success","Failed","Partial","Skipped","Timed Out"};
+		if(!statuses.contains(status)) { throw "Unknown workflow audit status: " + status; }
+		fields.put("Run_Status",status);
+		textFields = {"stage":"Stage","reference":"External_Reference","message":"Message","details":"Details"};
+		for each key in textFields.keys()
+		{
+			if(event.get(key) != null)
+			{
+				value = event.get(key).toString();
+				limit = 255;
+				if(key == "message") { limit=5000; }
+				if(key == "details") { limit=30000; }
+				if(value.length() > limit) { value=value.left(limit); }
+				fields.put(textFields.get(key),value);
+			}
+		}
+		counts = event.get("counts");
+		countFields = {"received":"Rows_Received","processed":"Rows_Processed","created":"Rows_Created","updated":"Rows_Updated","skipped":"Rows_Skipped","failed":"Rows_Failed"};
+		if(counts != null)
+		{
+			for each key in countFields.keys()
+			{
+				if(counts.get(key) != null) { fields.put(countFields.get(key),counts.get(key)); }
+			}
+		}
+	}
+	payload = {"data":fields};
+	if(action == "start")
+	{
+		http = invokeurl
+		[
+			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Run_Log"
+			type :POST
+			parameters:payload.toString()
+			headers:headers
+			connection:"workflow_audit_admin"
+			detailed:true
+		];
+	}
+	else
+	{
+		http = invokeurl
+		[
+			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/report/Workflow_Run_Log_Report/" + runIdText
+			type :PATCH
+			parameters:payload.toString()
+			headers:headers
+			connection:"workflow_audit_admin"
+			detailed:true
+		];
+	}
+	if(http.get("responseCode") < 200 || http.get("responseCode") >= 300) { throw "Workflow audit HTTP " + http.get("responseCode") + "; environment=" + runtimeLink + ". Do not replay an unknown write."; }
+	body = http.get("responseText").toString().toMap();
+	if(ifnull(body.get("code"),"").toString() != "3000" || body.get("error") != null) { throw "Creator rejected workflow audit write; code=" + body.get("code") + "; " + body.get("message"); }
+	ack = body;
+	if(body.get("result") != null)
+	{
+		if(body.get("result").size() != 1 || body.get("data") != null) { throw "Creator returned ambiguous audit results. Do not replay."; }
+		ack=body.get("result").get(0);
+	}
+	if(ifnull(ack.get("code"),"").toString() != "3000" || ack.get("data") == null || ack.get("error") != null) { throw "Creator did not acknowledge the audit record. Do not replay."; }
+	ackId = ifnull(ack.get("data").get("ID"),"").toString();
+	if(!ackId.matches("[0-9]+") || (runIdText != "" && ackId != runIdText)) { throw "Creator did not acknowledge the intended audit record ID. Do not replay."; }
+	result.put("id",ackId);
+	result.put("status",status);
+	return result;
+}
