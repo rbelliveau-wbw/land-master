@@ -76,6 +76,15 @@ Post/email success or warning in the same modal. No additional result modal.
 Edits and soft deletes do not notify. See the [implementation, permission and
 promotion contract](../../docs/comment-owner-email-2026-10-21.md).
 
+Owner notification emails use the approved **Compact** layout: LAND MASTER and
+module header, New comment kicker, record name as the main heading, a fixed
+38px initials badge beside the author and time, then the comment in its own
+quoted block. Keep both **Open comments** and **View record in main list**.
+Omit status/current-action context and the ownership explanation footer. Use
+escaped persisted text and the existing environment-scoped links; presentation
+cannot change recipients or mail delivery. The badge has its own fixed nested
+table so a wrapped author or long message cannot stretch it.
+
 Persisted parent lookups use the exact string ID inside Creator lookup objects;
 Legal uses `Contract1`, and Pro Forma uses `Pro_Forma`. Explicit native validation
 alerts display their text rather than a raw JSON envelope. Missing text or a

@@ -5,17 +5,19 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 import {ready,harness,drain,ID} from './test-contract-sdk-v2-foundation.mjs';
 const source=fs.readFileSync('creator/functions/buildContractCommentNotification.dg','utf8');
 const postSource=fs.readFileSync('creator/functions/postRecordComment.dg','utf8');
-function runtime({field='Contract1',module='Legal',environment='Production',owners=['1','2','3','4','5'],deleted=false,extraParent=false,failMail=false,profile='CFO',constructionAllowed=true,complete=false}={}){
+function runtime({field='Contract1',module='Legal',environment='Production',owners=['1','2','3','4','5'],deleted=false,extraParent=false,failMail=false,profile='CFO',constructionAllowed=true,complete=false,authorName='Stored <Author>',recordName,commentText='Please review <script>x</script> & terms.\nSecond line.',postedAt='Oct 21, 2026 · 1:00 PM'}={}){
  owners=owners.map(owner=>typeof owner==='object'?owner:{ID:String(owner)});
  const fixtures={Comment_Log:[],Contract:[{ID,Work_Module:module,Contract_Name:'Cedar <Grove>\nTract',Owner:owners,Status:complete?'Complete':'Hold'}],Add_Pro_Forma:[{ID,Name:'Pro Forma <one>',Owner:owners,Status:'Draft'}],Add_Budget:[{ID,Budget_Name:'Budget <one>',Budget_Owner:owners,Status:'Draft',Subdivision1:{Project:ID}}],Project:[{ID,Project_Name:'Project <one>'}],User_Access:[{ID:'1',Approver_Email:'Owner@Example.test',User:'owner'},{ID:'2',Approver_Email:'owner@example.test',User:'duplicate'},{ID:'3',Approver_Email:'',User:'second@example.test'},{ID:'4',Approver_Email:'',User:'unresolved'},{ID:'5',Approver_Email:'author@example.test',User:'author',Full_Name:'Stored <Author>'}],Contract_Actions:[{ID:'a2',Contract1:ID,Current_Action:true,Complete:false,Contract_Action:'Later action',Sort_Order:2},{ID:'a1',Contract1:ID,Current_Action:true,Complete:false,Contract_Action:'Review <terms>',Sort_Order:1}]};
- fixtures.Comment_Log.push({ID:'90071992547419991',Contract1:null,Pro_Forma:null,Budget:null,Project:extraParent?'other':null,[field]:ID,Comment:'Please review <script>x</script> & terms.\nSecond line.',Author_Name:'Stored <Author>',User:'author',Added_User:'author',Added_Time:{},Deleted:deleted});
- const context=vm.createContext({environment,failMail,profile,constructionAllowed,fixtures:JSON.stringify(fixtures)});
+ if(recordName!=null){fixtures.Contract[0].Contract_Name=recordName;fixtures.Add_Pro_Forma[0].Name=recordName;fixtures.Add_Budget[0].Budget_Name=recordName;fixtures.Project[0].Project_Name=recordName;}
+ fixtures.User_Access.find(user=>user.ID==='5').Full_Name=authorName;
+ fixtures.Comment_Log.push({ID:'90071992547419991',Contract1:null,Pro_Forma:null,Budget:null,Project:extraParent?'other':null,[field]:ID,Comment:commentText,Author_Name:authorName,User:'author',Added_User:'author',Added_Time:{},Deleted:deleted});
+ const context=vm.createContext({environment,failMail,profile,constructionAllowed,postedAt,fixtures:JSON.stringify(fixtures)});
  vm.runInContext(`
  var tables=JSON.parse(fixtures),zoho={loginuser:'author',loginuserid:'author@example.test',adminuser:'admin'},thisapp={environment:{type:environment},permissions:{profileForUser(){return profile;}},hasConstructionPermission(){return constructionAllowed;}},mails=[];
  function ifnull(v,f){return v==null?f:v;}function List(){return [];}function Map(){return {put(k,v){this[k]=v;},get(k){return this[k]??null;},toString(){return JSON.stringify(this);}};}
- Array.prototype.add=function(v){this.push(v);};Array.prototype.addAll=function(v){this.push(...v);};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.size=Array.prototype.count=function(){return this.length;};
- String.prototype.toLong=function(){return this.toString();};String.prototype.len=function(){return this.length;};String.prototype.contains=function(v){return this.includes(v);};String.prototype.left=function(n){return this.slice(0,n);};String.prototype.matches=function(pattern){return new RegExp(pattern).test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};
- function stamp(){return {toString(){return 'Oct 21, 2026 · 1:00 PM';}};} tables.Comment_Log[0].Added_Time=stamp();
+ Array.prototype.add=function(v){this.push(v);};Array.prototype.addAll=function(v){this.push(...v);};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.size=Array.prototype.count=function(){return this.length;};Array.prototype.get=function(index){return this[index];};
+ String.prototype.toLong=function(){return this.toString();};String.prototype.toList=function(separator){return this.split(separator);};String.prototype.len=function(){return this.length;};String.prototype.contains=function(v){return this.includes(v);};String.prototype.left=function(n){return this.slice(0,n);};String.prototype.matches=function(pattern){return new RegExp(pattern).test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};
+ function stamp(){return {toString(){return postedAt;}};} tables.Comment_Log[0].Added_Time=stamp();
  function query(form,predicate,sort){let rows=Array.from(tables[form]||[]).filter(predicate);if(sort)rows.sort((a,b)=>a[sort]-b[sort]);return new Proxy(rows,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;}});}
  function sendMail(from,to,subject,message){if(failMail)throw Error('Mail failed');mails.push({from,to,subject,message});}
  function insertComment(contract,pf,budget,project,comment,actor,authorName){let row={ID:'90071992547419992',Contract1:contract,Pro_Forma:pf,Budget:budget,Project:project,Comment:comment,User:actor,Author_Name:authorName,Added_User:actor,Added_Time:stamp(),Deleted:false,Edited:false};tables.Comment_Log.push(row);return row.ID;}
@@ -27,9 +29,53 @@ function runtime({field='Contract1',module='Legal',environment='Production',owne
  }
  return {context,run:()=>vm.runInContext('buildContractCommentNotification("90071992547419991")',context),post:(f=field,p=ID,text='New comment')=>JSON.parse(vm.runInContext('postRecordComment('+JSON.stringify(f)+','+JSON.stringify(p)+','+JSON.stringify(text)+')',context))};
 }
+// Inspect the actual returned email HTML as a tree. This catches avatar cells
+// accidentally sharing the expanding author/date row instead of trusting a CSS
+// substring or a source-template snapshot.
+function emailTree(html){
+ const decode=value=>value.replace(/&(amp|lt|gt|quot|#39|#x27);/gi,entity=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'",'&#x27;':"'"})[entity.toLowerCase()]);
+ const root={tag:'#root',children:[]},stack=[root],nodes=[];
+ for(const token of html.match(/<!--[\s\S]*?-->|<\/?[a-z][^>]*>|[^<]+/gi)||[]){
+  if(token.startsWith('<!--'))continue;
+  const closing=token.match(/^<\/([\w-]+)/);if(closing){const at=stack.findLastIndex(node=>node.tag===closing[1].toLowerCase());assert.ok(at>0,'email closes a real '+closing[1]+' element');stack.length=at;continue;}
+  const opening=token.match(/^<([\w-]+)/);if(opening){
+   const tag=opening[1].toLowerCase(),attrs={};for(const match of token.slice(opening[0].length).matchAll(/([\w:-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g))attrs[match[1].toLowerCase()]=decode(match[2]??match[3]??match[4]??'');
+   const node={tag,attrs,children:[],parent:stack.at(-1),index:nodes.length};node.parent.children.push(node);nodes.push(node);if(!['br','hr','img','meta','link','input'].includes(tag)&&!token.endsWith('/>'))stack.push(node);
+  }else stack.at(-1).children.push(decode(token));
+ }
+ assert.equal(stack.length,1,'email HTML is structurally balanced');return {root,nodes,text:node=>{function content(item){return typeof item==='string'?item:item.tag==='br'?'\n':item.children.map(content).join('');}return content(node);}};
+}
+function inlineStyles(node){return Object.fromEntries((node.attrs.style||'').split(';').filter(Boolean).map(declaration=>{const colon=declaration.indexOf(':');return [declaration.slice(0,colon).trim().toLowerCase(),declaration.slice(colon+1).trim()];}));}
+for(const fixture of [
+ {authorName:'Robby Belliveau',initials:'RB',postedAt:'Oct 21, 2026 · 1:00 PM',commentText:'Please review <script>x</script> & terms.\nSecond line.'},
+ {authorName:'Alexandria Catherine Montgomery',initials:'AM',postedAt:'Wednesday, October 21, 2026 · 11:59 PM Central Daylight Time',commentText:'A long <comment> & quote "ready". '.repeat(120)+'\nLast line.'},
+ {authorName:'Cher',initials:'C',postedAt:'',commentText:'First\r\nSecond\rThird'},
+ {authorName:'  Robby   Belliveau  ',initials:'RB',postedAt:'<date> & "time"',commentText:'Keep the name, date and message outside the avatar.'},
+ {authorName:'<script>alert(1)</script>',initials:'<',postedAt:'Oct <21> & 2026',commentText:'<img src=x onerror=alert(1)>\n[bad](javascript:alert(1))'},
+ {authorName:'',initials:'A',postedAt:'Oct 21, 2026',commentText:'The stored user remains the fallback author.'}
+ ]){
+ const recordName='Arroyo <Ranch> & Phase 05\nMUD Bid budget',result=runtime({...fixture,recordName}).run();assert.equal(result.eligible,true,result.reason);
+ const tree=emailTree(result.body),text=tree.text(tree.root),headings=tree.nodes.filter(node=>/^h[1-6]$/.test(node.tag));
+ assert.equal(headings.length,1,'compact email has one main heading');assert.equal(tree.text(headings[0]),recordName.replace(/[\r\n]/g,' '),'the record name is the main heading');
+ const kicker=tree.nodes.find(node=>tree.text(node).toLowerCase()==='new comment');assert.ok(kicker&&kicker.index<headings[0].index,'New comment is a kicker before the record heading');
+ assert.doesNotMatch(text,/New comment on your record|Status:|Current action:|Project conversation|You received this because you own/,'compact notification removes context and ownership copy');
+ const links=tree.nodes.filter(node=>node.tag==='a');assert.equal(links.length,2);assert.deepEqual(links.map(node=>[tree.text(node),node.attrs.href]),[['Open comments',result.commentsUrl],['View record in main list',result.recordUrl]],'both existing action destinations and labels are retained');
+ assert.ok(!tree.nodes.some(node=>['script','img'].includes(node.tag)),'author/date/message HTML remains escaped text');
+ const avatar=tree.nodes.find(node=>node.tag==='td'&&node.attrs.width==='38'&&node.attrs.height==='38'&&tree.text(node)===fixture.initials);assert.ok(avatar,'avatar initials have an explicit 38px cell');
+ const avatarStyle=inlineStyles(avatar);assert.equal(avatarStyle.width,'38px');assert.equal(avatarStyle.height,'38px');assert.equal(avatarStyle['line-height'],'38px');assert.ok(['19px','50%'].includes(avatarStyle['border-radius']),'avatar is a true 38px circle');assert.equal(avatarStyle['white-space'],'nowrap');
+ const avatarTable=avatar.parent.parent;assert.equal(avatar.parent.tag,'tr');assert.equal(avatarTable.tag,'table');assert.equal(avatarTable.attrs.width,'38');assert.equal(tree.text(avatarTable),fixture.initials,'fixed nested avatar table contains only initials');
+ assert.equal(avatarTable.parent.tag,'td');assert.equal(inlineStyles(avatarTable)['table-layout'],'fixed');
+ const metadataRow=avatarTable.parent.parent,metadataCells=metadataRow.children.filter(node=>node.tag==='td');assert.equal(metadataRow.tag,'tr');assert.equal(metadataCells.length,3,'avatar, spacer and metadata occupy separate cells');assert.equal(metadataCells[1].attrs.width,'11');
+ const expectedAuthor=fixture.authorName.trim()||'author';assert.ok(text.includes(expectedAuthor),'the actual author remains visible outside the avatar');assert.ok(text.includes(fixture.postedAt));
+ assert.ok(tree.text(metadataCells[2]).includes(expectedAuthor));assert.ok(tree.text(metadataCells[2]).includes(fixture.postedAt),'author and date share only the metadata cell');
+ const message=fixture.commentText.trim().replace(/\r\n|\r/g,'\n');assert.ok(text.includes(message),'multiline/long comments keep their escaped text and line breaks');assert.ok(!tree.text(avatarTable).includes(message));
+ const quote=tree.nodes.find(node=>node.tag==='td'&&tree.text(node)===message);assert.ok(quote&&quote.parent.tag==='tr'&&quote.parent.parent.tag==='table','message has its own table row');assert.notEqual(quote.parent.parent,metadataRow.parent,'message does not stretch the avatar/metadata table');
+}
 for(const field of ['Contract1','Pro_Forma','Budget','Project'])for(const environment of ['Production','Development','Stage']){
  const h=runtime({field,environment}),r=h.run();assert.equal(r.eligible,true,r.reason);assert.deepEqual(Array.from(r.to),['owner@example.test','second@example.test']);assert.equal(r.missingOwners,1);assert.match(r.body,/Stored &lt;Author&gt;/);assert.doesNotMatch(r.body,/<script>/);assert.match(r.body,/&lt;script&gt;x&lt;\/script&gt; &amp; terms\.<br>Second line/);
- const page=field==='Contract1'?'Legal':field==='Pro_Forma'?'Proforma_Management1':'Budget_Management1',param={Contract1:'contractId',Pro_Forma:'proformaId',Budget:'budgetId',Project:'projectId'}[field];assert.ok(r.commentsUrl.endsWith('#Page:'+page+'?'+param+'='+ID+'&recordView=comments'));assert.ok(r.recordUrl.endsWith('&recordView=list'));assert.equal(r.commentsUrl.includes('/environment/'),environment!=='Production');
+ const page=field==='Contract1'?'Legal':field==='Pro_Forma'?'Proforma_Management1':'Budget_Management1',param={Contract1:'contractId',Pro_Forma:'proformaId',Budget:'budgetId',Project:'projectId'}[field],base='https://creatorapp.zoho.com/wbdevelopment'+(environment==='Production'?'':'/environment/'+environment.toLowerCase())+'/land-master/#Page:'+page+'?'+param+'='+ID;
+ assert.equal(r.commentsUrl,base+'&recordView=comments');assert.equal(r.recordUrl,base+'&recordView=list');assert.equal(r.commentsUrl.includes('/environment/'),environment!=='Production');
+ const rendered=emailTree(r.body),renderedText=rendered.text(rendered.root);assert.doesNotMatch(renderedText,/Status:|Current action:|Project conversation|You received this because you own/);assert.deepEqual(rendered.nodes.filter(node=>node.tag==='a').map(node=>node.attrs.href),[r.commentsUrl,r.recordUrl]);
  const out=h.post();assert.equal(out.ok,true,out.message);assert.equal(out.id,'90071992547419992');assert.equal(out.notificationState,'sent');assert.equal(h.context.tables.Comment_Log.length,2);assert.equal(h.context.mails.length,1);assert.equal(h.context.mails[0].from,'Notifications@wbdevelopment.com');assert.deepEqual(Array.from(h.context.mails[0].to),['owner@example.test','second@example.test']);
 }
 for(const options of [{owners:[]},{owners:['5']},{deleted:true},{extraParent:true},{module:'Other'},{environment:'Unknown'}]){const h=runtime(options);assert.equal(h.run().eligible,false);}
