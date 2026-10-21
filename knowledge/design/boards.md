@@ -8,6 +8,9 @@ Use the **Signal rail** selected October 21, 2026. A 54px left rail pairs the
 priority name with a small colored signal: double up for ASAP, up for High,
 and a dash for Medium. Keep the thin vertical track behind the signal and label.
 Priority names remain visible; color and icons are supplementary.
+Status column headings and priority rail labels use uppercase, 900-weight text
+(October 21 refinement). Keep card text in its normal case and preserve native
+status/priority values; casing is presentation only.
 
 Priority rows stay in ASAP, High, Medium order, with the existing status columns
 aligned across them. Retain every supported/legacy status. Missing priority

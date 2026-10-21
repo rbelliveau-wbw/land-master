@@ -1,3 +1,10 @@
+## Construction board headings — October 21, 2026
+
+Contract Management 1.62.31 makes Construction board status headings and priority
+rail labels uppercase with 900-weight text. CSS presentation only; saved values,
+cards, layout and drag/save behavior retain the 1.62.30 correction. No Creator
+deployment. Rollback Production to 1.62.30 if required.
+
 ## Construction board correction — October 21, 2026
 
 Contract Management 1.62.30 sizes the Signal rail board to its actual cards,
