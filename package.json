@@ -22,6 +22,7 @@
     "test:proforma:numbers:browser": "node scripts/test-proforma-number-transitions-browser.mjs",
     "test:numbers:browser": "node scripts/test-number-edit-commit-browser.mjs && node scripts/test-number-transition-rollout-browser.mjs",
     "test:motion:browser": "node scripts/test-interaction-motion-browser.mjs && node scripts/test-land-project-motion-browser.mjs",
+    "test:construction:board:browser": "node scripts/test-construction-signal-board-browser.mjs",
     "test:po:dismiss:browser": "node scripts/test-po-dismiss-browser.mjs",
     "test:approval:browser": "node scripts/test-approval-admin-browser.mjs",
     "test:workflow-audit": "node scripts/test-integration-audit.mjs && python scripts/test-integration-preparation.py && node scripts/test-workflow-log.mjs"

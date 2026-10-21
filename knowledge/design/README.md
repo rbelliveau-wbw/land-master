@@ -19,6 +19,7 @@ it; unrelated guides do not need to be read for every small edit.
 | --- | --- |
 | [Attachments](attachments.md) | Main-list paperclip actions, file counts, attachment modals, upload/preview/download/delete and Added by |
 | [Comments](comments.md) | Main-list comment actions, activity counts, conversation modals, composer and message actions |
+| [Boards](boards.md) | Construction priority swimlanes, Signal rail, status-only dragging, counts and Legal's existing board exception |
 | [Line notes](notes.md) | Budget's circular pencil, yellow note state, anchored textarea popover and single-field note saves |
 | [Approval progress](approval-progress.md) | Sending, approving, rejecting and reconciling approvals |
 | [Approval administration](approval-administration.md) | Approval rules, approvers, permanent territory/department scope, change history and route testing |

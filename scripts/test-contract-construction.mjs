@@ -116,4 +116,36 @@ for(const flags of [submit,editor]){
  const h=harness({accessFlags:{...editor,ctEdit:true},pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Legal';await drain();assert.equal(h.c.S.workMode,'legal');assert.equal(h.c.CFG.reports.contracts,'All_Contracts1');assert.equal(h.c.setWorkMode,undefined);
 }
 
-console.log('PASS Construction page isolation, missing/revoked/degraded access, preserved Legal behavior, assignment-free Construction completion, and construction requests: permission-gated modes/page variable/token precedence, Legal isolation and degraded fail-closed access, UI-required inferred subdivision context/native boolean MUD, submit-only single-header creation with pending visibility and zero edit/review/template/delete writes, actual attachment/comment flows, EditAll request editing and once-only scoped template seeding, and fixed page modes.');
+// Signal rail uses the actual scoped/native status save, including completion.
+{
+ const h=harness({accessFlags:editor,pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.reports.All_Contracts1[0].Work_Module='Construction';h.reports.All_Contract_Actions[0].Work_Module='Construction';await drain();fixture(h);
+ const base=h.c.findContract(ID),cases=[['ASAP','New'],['High','Hold'],['Medium','Proposed'],['','New'],['Legacy <urgent>','Other <status>'],['constructor','New']];
+ cases.forEach(([priority,status],i)=>{const row={...base,ID:(BigInt(NEW)+100n+BigInt(i)).toString(),Contract_Name:'Signal <request> '+i,Priority:priority,Status:status};h.c.S.contracts.push(row);h.reports.All_Contracts1.push({...row});});
+ h.c.S.mode='board';h.c.renderAll();
+ const lanes=h.c.document.querySelectorAll('.construction-board-lane');
+ assert.deepEqual(Array.from(lanes,node=>node.getAttribute('data-priority')),['ASAP','High','Medium','constructor','Legacy <urgent>','']);
+ assert.equal(h.c.document.querySelectorAll('.construction-board .bcard').length,cases.length+1,'every filtered Construction request appears once');
+ assert.equal(h.c.document.querySelectorAll('.scope-count,.bcol-head .n,.review-n').length,0,'Construction board omits request counts');
+ assert.ok(h.c.document.querySelector('.construction-board-cell[data-status="Hold"]'));
+ assert.match(h.node('view').innerHTML,/Signal &lt;request&gt;|Legacy &lt;urgent&gt;/,'native strings are escaped');
+ const cell=(priority,status)=>h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')===priority&&node.getAttribute('data-status')===status);
+ const drop=(priority,status,cid=ID)=>{h.c.S.bDrag=cid;h.c.bDrop({preventDefault(){},currentTarget:cell(priority,status)});};
+ assert.equal(h.c.constructionBoardDropAllowed(cell('High','Hold'),ID),false);drop('High','Hold');await drain();assert.equal(writes(h).length,0,'cross-priority drag cannot write');
+ drop('Medium','Proposed');await drain();assert.equal(writes(h).length,0,'Review status is not a manual drop destination');
+ drop('Medium','Hold');await drain();assert.equal(h.c.findContract(ID).Status,'Hold');assert.equal(h.reports.All_Contracts1[0].Priority,'Medium');
+ const statusWrite=writes(h).at(-1);assert.equal(statusWrite.config.report_name,'Construction_Requests');assert.deepEqual(statusWrite.config.payload.data,{Status:'Hold'},'existing adapter writes only status');
+ let confirmation;h.c.confirmDialog=options=>{confirmation=options;};const before=writes(h).length;drop('Medium','Complete');assert.equal(writes(h).length,before);assert.equal(confirmation.okLabel,'Complete contract');confirmation.onConfirm();await drain();
+ assert.equal(h.c.findContract(ID).Status,'Complete');assert.equal(h.c.findAction(ACTION).Complete,true,'board completion uses the existing action cascade');
+ const doneWrites=writes(h).length;drop('Medium','New');await drain();assert.equal(writes(h).length,doneWrites,'completed requests remain locked');
+ const pending=h.c.S.contracts.find(c=>c.Status==='Proposed'&&c.Work_Module==='Construction');drop('Medium','New',pending.ID);await drain();assert.equal(writes(h).length,doneWrites,'pending review cannot be dragged');
+ h.c.S.mode='list';h.c.renderAll();assert.ok(h.c.document.querySelector('.scope-count'),'list count is preserved');
+}
+{
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.c.S.mode='board';h.c.renderAll();
+ assert.equal(h.c.document.querySelectorAll('.construction-board .bcard[draggable]').length,0);
+ const cell=h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')==='Medium'&&node.getAttribute('data-status')==='Hold');
+ h.c.S.bDrag=ID;h.c.bDrop({preventDefault(){},currentTarget:cell});await drain();assert.equal(writes(h).length,0,'read-only forged drops are rejected');
+ const legal=await ready({realDOM:true});legal.c.S.mode='board';legal.c.renderAll();assert.equal(legal.c.document.querySelectorAll('.construction-board').length,0);assert.ok(legal.c.document.querySelector('.bcol-head .n'),'Legal status counts are preserved');
+}
+
+console.log('PASS Construction page isolation, native request/action saves, permissions and Signal rail: complete priority/status grouping, legacy visibility/escaping, no board counts, status-only scoped drops, rejected cross-priority/read-only/pending/locked drops, existing completion cascade, and preserved Legal/list behavior.');

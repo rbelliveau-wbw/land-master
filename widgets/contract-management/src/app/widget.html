@@ -1963,15 +1963,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.28"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.28">
-<script src="interaction-motion.js?v=1.62.28"></script>
-<script src="interaction-surfaces.js?v=1.62.28"></script>
-<script src="number-edit-commit.js?v=1.62.28"></script>
-<script src="number-transitions.js?v=1.62.28"></script>
-<script src="number-surfaces.js?v=1.62.28"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.28">
-<link rel="stylesheet" href="report-layout.css?v=1.62.28">
+<script src="success-feedback.js?v=1.62.29"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.29">
+<script src="interaction-motion.js?v=1.62.29"></script>
+<script src="interaction-surfaces.js?v=1.62.29"></script>
+<script src="number-edit-commit.js?v=1.62.29"></script>
+<script src="number-transitions.js?v=1.62.29"></script>
+<script src="number-surfaces.js?v=1.62.29"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.29">
+<link rel="stylesheet" href="report-layout.css?v=1.62.29">
+<link rel="stylesheet" href="construction-board.css?v=1.62.29">
 </head>
 <body>
 
@@ -2020,7 +2021,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.28", pageSize: 200, maxPages: 25,
+  version: "1.62.29", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -6538,7 +6539,7 @@ function refreshReviewCount(){
 function homeNavigation(active){
   return '<div class="home-switch" role="tablist" aria-label="'+(constructionMode()?'Construction':'Legal')+' views" data-lm-motion="tabs">'
     +'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='contracts')+'" class="'+(active==="contracts"?"active":"")+'" onclick="showContracts()">'+(constructionMode()?'Requests':'Contracts')+'</button>'
-    +(!constructionMode()||constructionEditAccess()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='loi')+'" class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span></button>':'')
+    +(!constructionMode()||constructionEditAccess()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='loi')+'" class="'+(active==="loi"?"active":"")+'" onclick="showLOIReviews()">Review'+(constructionMode()&&S.mode==='board'&&active==='contracts'?'':' <span class="review-n"'+(reviewCountTitle()?' title="'+reviewCountTitle()+'"':'')+'>'+reviewCountLabel()+'</span>')+'</button>':'')
     +(canTemplates()?'<button type="button" role="tab" aria-controls="view" aria-selected="'+(active==='actions')+'" class="'+(active==="actions"?"active":"")+'" onclick="showManageActions()">Manage Task Templates</button>':'')
     +'</div>';
 }
@@ -8986,7 +8987,7 @@ function runLOIReview(decision,r,note,trigger){
 function renderHome(){
   var list=sortContracts(filteredContracts());
   var h=homeSwitch("contracts")+'<div class="filterrow">'
-    +'<h1>'+(constructionMode()?'Construction Requests':'Contracts')+'</h1><span class="scope-count">'+list.length+'</span>'
+    +'<h1>'+(constructionMode()?'Construction Requests':'Contracts')+'</h1>'+(constructionMode()&&S.mode==='board'?'':'<span class="scope-count">'+list.length+'</span>')
     +'<div class="searchbox"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>'
     +'<input id="search" placeholder="Search contracts, subdivisions, builders…" value="'+attr(S.search)+'" autocomplete="off"/></div>'
     +mselBtn("type","types")
@@ -9681,6 +9682,7 @@ function bDragStart(e,cid){
 function bDragEnd(){ S.bDragEndedAt=Date.now(); bDragClear(); }
 function bDragOver(e){
   if(!S.bDrag) return;
+  if(!constructionBoardDropAllowed(e.currentTarget,S.bDrag))return;
   e.preventDefault();
   try{ e.dataTransfer.dropEffect="move"; }catch(_){}
   if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.add("over");
@@ -9698,24 +9700,30 @@ function bDrop(e){
   bDragEnd();
   if(!cid||!status) return;
   var c=findContract(cid); if(!c) return;
+  if(!constructionBoardDropAllowed(col,cid))return;
   if(String(c.Status||"New")===status) return;
+  if(constructionMode())queueFlip('board:'+String(cid));
   statusCellChange(String(cid),status);
 }
+/* Priority lanes are read-only grouping. A status drop never changes Priority. */
+function constructionBoardDropAllowed(cell,cid){
+  if(!constructionMode())return true;
+  var c=findContract(cid);
+  return !!(cell&&c&&mayEdit(cid)&&String(c.Status||'')!=='Proposed'&&cell.getAttribute('data-status')!=='Proposed'&&cell.getAttribute('data-priority')===constructionBoardPriority(c));
+}
+function constructionBoardPriority(c){return String(c&&c.Priority||'').trim();}
 /* a drag that ends on a card must not also read as a click into the contract */
 function bCardClick(cid){
   if(S.bDragEndedAt&&Date.now()-S.bDragEndedAt<250) return;
   openContract(cid);
 }
 var COL_BARS={"Hold":"#a21c63","Proposed":"#7e22ce","New":"#8ea0bd","Approval Rejected":"#b91c1c","Feasibility":"#0369a1","Awaiting WBW":"#b45309","Awaiting WBW LEG":"#b45309","Awaiting Counterparty":"#1e40af","Awaiting Approvals":"#3730a3","Approved":"#0f766e","Complete":"#047857"};
-function renderBoard(list){
-  /* the list is already free of Proposed, so its column would always be empty */
-  var cols=allContractStatuses().filter(function(s){ return constructionMode()||s!=="Proposed"; }).map(function(s){
-    var cards=list.filter(function(c){ return String(c.Status||"New")===s; });
-    var inner=cards.map(function(c){
+function boardCard(c){
       var st=statsFor(c.ID);
-      var movable=mayEdit(c.ID);
+      var movable=mayEdit(c.ID)&&(!constructionMode()||String(c.Status||'')!=='Proposed');
       var locked=contractLocked(c);
       return '<div class="bcard'+(locked?" locked":"")+'"'
+        +' data-board-id="'+attr(String(c.ID))+'" role="button" tabindex="0" aria-label="'+attr(c.Contract_Name||('Contract '+c.ID))+'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();bCardClick(\''+c.ID+'\')}"'
         +(movable?' draggable="true" ondragstart="bDragStart(event,\''+c.ID+'\')" ondragend="bDragEnd()"':'')
         +' onclick="bCardClick(\''+c.ID+'\')"'
         +(locked?' title="Complete — read-only."':'')+'>'
@@ -9727,7 +9735,35 @@ function renderBoard(list){
         +(st.total?'<div class="progress"><i style="width:'+st.pct+'%"></i></div>':'')
         +(approvalsFor(c.ID).length?approvalStrip(c.ID):'')
         +'</div>';
-    }).join("");
+}
+function constructionBoardLanes(list){
+  var lanes=CONSTRUCTION_PRIORITIES.slice(),extra=[];
+  list.forEach(function(c){var priority=constructionBoardPriority(c);if(priority&&lanes.indexOf(priority)<0&&extra.indexOf(priority)<0)extra.push(priority);});
+  lanes=lanes.concat(extra.sort(function(a,b){return a.localeCompare(b);}));
+  if(list.some(function(c){return !constructionBoardPriority(c);}))lanes.push('');
+  return lanes;
+}
+function constructionPrioritySignal(priority){
+  var path=priority==='ASAP'?'<path d="m7 13 5-5 5 5m-10 5 5-5 5 5"/>':priority==='High'?'<path d="m6 15 6-6 6 6"/>':priority==='Medium'?'<path d="M6 12h12"/>':'<circle cx="12" cy="12" r="7"/><path d="M12 8v4m0 4h.01"/>';
+  return '<svg viewBox="0 0 24 24" aria-hidden="true">'+path+'</svg>';
+}
+function renderConstructionBoard(list){
+  var buckets=Object.create(null);
+  list.forEach(function(c){var key=JSON.stringify([constructionBoardPriority(c),String(c.Status||'New')]);(buckets[key]||(buckets[key]=[])).push(c);});
+  var statuses=allContractStatuses(),head='<div class="construction-board-row construction-board-head"><div class="construction-board-heading construction-board-corner" title="Priority — highest first" aria-label="Priority — highest first"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16m-3-3 3 3 3-3M10 5h10M10 10h7M10 15h4"/></svg></div>';
+  head+=statuses.map(function(status){return '<div class="construction-board-heading"><span class="bar" style="background:'+(COL_BARS[status]||'#8ea0bd')+'"></span>'+esc(workStatusLabel(status))+'</div>';}).join('')+'</div>';
+  var lanes=constructionBoardLanes(list).map(function(priority){
+    var label=priority||'Unassigned',tone=priority==='ASAP'?'asap':priority==='High'?'high':priority==='Medium'?'medium':'unset';
+    var cells=statuses.map(function(status){var cards=buckets[JSON.stringify([priority,status])]||[];return '<div class="bcol construction-board-cell" data-status="'+attr(status)+'" data-priority="'+attr(priority)+'" aria-label="'+attr(label+' — '+workStatusLabel(status))+'" ondragover="bDragOver(event)" ondragleave="bDragLeave(event)" ondrop="bDrop(event)"><div class="bcol-cards">'+cards.map(boardCard).join('')+'<div class="bcol-drop">Drop here</div></div></div>';}).join('');
+    return '<section class="construction-board-row construction-board-lane priority-'+tone+'" data-priority="'+attr(priority)+'" aria-label="'+attr(label+' priority')+'"><div class="construction-priority-rail" title="'+attr(label)+'"><span class="construction-priority-signal">'+constructionPrioritySignal(priority)+'</span><span class="construction-priority-label">'+esc(label)+'</span></div>'+cells+'</section>';
+  }).join('');
+  return '<div class="boardwrap construction-board" aria-label="Construction requests by priority and status"><div class="construction-board-grid" style="--cb-columns:'+statuses.length+'">'+head+lanes+'</div></div>';
+}
+function renderBoard(list){
+  if(constructionMode())return renderConstructionBoard(list);
+  /* Proposed Legal contracts remain in Review. */
+  var cols=allContractStatuses().filter(function(s){return s!=="Proposed";}).map(function(s){
+    var cards=list.filter(function(c){return String(c.Status||"New")===s;}),inner=cards.map(boardCard).join('');
     return '<div class="bcol" data-status="'+attr(s)+'"'
       +' ondragover="bDragOver(event)" ondragleave="bDragLeave(event)" ondrop="bDrop(event)">'
       +'<div class="bcol-head"><span class="bar" style="background:'+(COL_BARS[s]||"#8ea0bd")+'"></span>'+esc(workStatusLabel(s))+'<span class="n">'+cards.length+'</span></div>'
@@ -10429,33 +10465,44 @@ function proposeAction(pfx){
 /* ---------------- render root ---------------- */
 /* ---------- reorder feedback: FLIP the rows, then flash the one that moved ---------- */
 var PENDING_FLIP=null;
-function flipCapture(){
+/* Construction board cards reuse this module's registered native FLIP path.
+   Large boards measure only the moved card instead of every request. */
+function flipNodes(movedId){
+  var nodes=Array.prototype.slice.call(document.querySelectorAll('.dact-wrap[data-drow],.arow[data-row],.ma-wrap[data-mkey]'));
+  var cards=Array.prototype.slice.call(document.querySelectorAll('.construction-board .bcard[data-board-id]'));
+  if(cards.length>100)cards=cards.filter(function(el){return 'board:'+el.getAttribute('data-board-id')===movedId;});
+  return nodes.concat(cards);
+}
+function flipCapture(movedId){
   var m={};
-  document.querySelectorAll(".dact-wrap[data-drow],.arow[data-row],.ma-wrap[data-mkey]").forEach(function(el){
-    var id=el.getAttribute("data-drow")||el.getAttribute("data-row")||el.getAttribute("data-mkey");
-    m[id]=el.getBoundingClientRect().top;
+  flipNodes(movedId).forEach(function(el){
+    var board=el.getAttribute('data-board-id'),id=board?'board:'+board:el.getAttribute("data-drow")||el.getAttribute("data-row")||el.getAttribute("data-mkey"),rect=el.getBoundingClientRect();
+    m[id]=board?{top:rect.top,left:rect.left}:rect.top;
   });
   return m;
 }
 function flipPlay(prev,movedId,flashClass){
-  document.querySelectorAll(".dact-wrap[data-drow],.arow[data-row],.ma-wrap[data-mkey]").forEach(function(el){
-    var id=el.getAttribute("data-drow")||el.getAttribute("data-row")||el.getAttribute("data-mkey");
+  flipNodes(movedId).forEach(function(el){
+    var board=el.getAttribute('data-board-id'),id=board?'board:'+board:el.getAttribute("data-drow")||el.getAttribute("data-row")||el.getAttribute("data-mkey");
     var before=prev[id];
     if(before==null) return;
-    var dy=before-el.getBoundingClientRect().top;
-    if(!dy) return;
+    if(board&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    var rect=el.getBoundingClientRect(),dy=(board?before.top:before)-rect.top,dx=board?before.left-rect.left:0;
+    if(!dy&&!dx) return;
     el.style.transition="none";
-    el.style.transform="translateY("+dy+"px)";
+    el.style.transform=board?'translate('+dx+'px,'+dy+'px)':"translateY("+dy+"px)";
+    if(board)el.getBoundingClientRect();
     /* next frame: release to the new position */
     requestAnimationFrame(function(){
-      el.style.transition="transform .3s cubic-bezier(.22,1,.36,1)";
+      el.style.transition=board?'transform .23s cubic-bezier(.22,.7,.25,1)':"transform .3s cubic-bezier(.22,1,.36,1)";
       el.style.transform="";
       setTimeout(function(){ el.style.transition=""; el.style.transform=""; },340);
     });
   });
   if(movedId){
     var t=document.querySelector('.dact-wrap[data-drow="'+movedId+'"]')
-      ||document.querySelector('.ma-wrap[data-mkey="'+movedId+'"]');
+      ||document.querySelector('.ma-wrap[data-mkey="'+movedId+'"]')
+      ||(String(movedId).indexOf('board:')===0?document.querySelector('.construction-board .bcard[data-board-id="'+String(movedId).slice(6)+'"]'):null);
     if(t){
       var cls=flashClass||"justmoved";
       t.classList.add(cls);
@@ -10464,7 +10511,7 @@ function flipPlay(prev,movedId,flashClass){
   }
 }
 function queueFlip(movedId,flashClass){
-  PENDING_FLIP={prev:flipCapture(),moved:movedId||null,cls:flashClass||"justmoved"};
+  PENDING_FLIP={prev:flipCapture(movedId),moved:movedId||null,cls:flashClass||"justmoved",scope:String(movedId).indexOf('board:')===0?contractMutationScope():null};
 }
 var SCROLL_SELECTORS=[".tscroll",".detailwrap",".loi-review-page",".construction-review-queue",".boardwrap",".workarea"];
 function viewKey(){
@@ -10476,6 +10523,7 @@ function viewKey(){
 var LAST_VIEW_KEY=null;
 function captureScroll(){
   var out={view:0,inner:{}};
+  var board=document.querySelector('.construction-board');if(board)out.boardLeft=board.scrollLeft;
   var v=$("view"); if(v) out.view=v.scrollTop;
   SCROLL_SELECTORS.forEach(function(sel){
     var el=document.querySelector(sel);
@@ -10484,6 +10532,7 @@ function captureScroll(){
   return out;
 }
 function restoreScroll(st){
+  var board=document.querySelector('.construction-board');if(board&&st.boardLeft!=null)board.scrollLeft=st.boardLeft;
   var v=$("view");
   if(v && st.view) v.scrollTop=st.view;
   Object.keys(st.inner).forEach(function(sel){
@@ -10541,7 +10590,7 @@ function renderAll(){
   }
   if(PENDING_FLIP){
     var f=PENDING_FLIP; PENDING_FLIP=null;
-    flipPlay(f.prev,f.moved,f.cls);
+    if(!f.scope||f.scope===contractMutationScope())flipPlay(f.prev,f.moved,f.cls);
   }
 }
 

@@ -1,3 +1,11 @@
+## Construction Signal rail — October 21, 2026
+
+Contract Management 1.62.29 groups Construction board cards by ASAP, High and
+Medium with the approved 54px Signal rail. Request counts are omitted on that
+board; the Legal board and other list/review counts retain their existing rules.
+Status drops reuse native saving and preserve Priority, guards and scroll.
+[Release, verification and rollback](../../docs/construction-signal-rail-2026-10-21.md).
+
 ## Delivery strip and Construction report edit access — October 21, 2026
 
 Contract Management 1.62.27 adopts the approved shared Delivery strip composer
