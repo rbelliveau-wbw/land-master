@@ -1,0 +1,149 @@
+list Construction_Requests
+{
+	displayName = "Construction Requests"
+	show all rows from Contract  [Work_Module == "Construction"]  
+	(
+		Contract_Type as "Type"
+		Subdivision1 as "Subdivision"
+		Builder as "Builder/Counterparty"
+		Earnest_Money_Per_Lot as "Earnest Money Per Lot"
+		Number_of_Lots as "Lot Total"
+		Initial_Takedown as "Initial Closing (Lots)"
+		Initial_Takedown_Days as "Initial Closing (Days)"
+		Second_Closing_Lots as "Second Closing (Lots)"
+		Second_Closing_Days as "Second Closing (Days)"
+		Subsequent_Takedown_Lots as "Subsequent Closings (Lots)"
+		Subsequent_Takedown_Days as "Subsequent Closings (Days)"
+		Contract_Name as "Contract Name"
+		Territory
+		Owner
+		WBW_Point_Person as "WBW Point Person"
+		Lots1 as "Lots"
+		Status
+		Current_Approver as "Current Approver"
+		Current_Action as "Current Action"
+		Lot_Block_Description as "Lot/Block Description"
+		Archive
+		Takedown_Schedule1 as "Takedown Schedule"
+		Company_Entity as "Company/Entity"
+		Project
+		County
+		City
+		Completion_Date as "Completion Date"
+		Earnest_Money as "Earnest Money"
+		Total_Contract_Price as "Total Contract Price"
+		Parent_Contract as "Parent Contract"
+		Work_Module as "Work Module"
+		Construction_Plans as "Construction Plans"
+		Priority
+		MUD
+		Date_Needed as "Date Needed"
+		Description
+	)
+	quickview
+	(
+		layout
+		(
+			displaylayout = "classic"
+			datablock1
+			(
+				fields
+				(
+					Contract_Type as "Type"
+					Subdivision1 as "Subdivision"
+					Builder as "Builder/Counterparty"
+					Earnest_Money_Per_Lot as "Earnest Money Per Lot"
+					Number_of_Lots as "Lot Total"
+					Initial_Takedown as "Initial Closing (Lots)"
+					Initial_Takedown_Days as "Initial Closing (Days)"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					Contract_Type as "Type"
+					Subdivision1 as "Subdivision"
+					Builder as "Builder/Counterparty"
+					Earnest_Money_Per_Lot as "Earnest Money Per Lot"
+					Number_of_Lots as "Lot Total"
+					Initial_Takedown as "Initial Closing (Lots)"
+					Initial_Takedown_Days as "Initial Closing (Days)"
+					Second_Closing_Lots as "Second Closing (Lots)"
+					Second_Closing_Days as "Second Closing (Days)"
+					Subsequent_Takedown_Lots as "Subsequent Closings (Lots)"
+					Subsequent_Takedown_Days as "Subsequent Closings (Days)"
+					Contract_Name as "Contract Name"
+					Territory
+					Owner
+					WBW_Point_Person as "WBW Point Person"
+					Lots1 as "Lots"
+					Status
+					Current_Approver as "Current Approver"
+					Current_Action as "Current Action"
+					Lot_Block_Description as "Lot/Block Description"
+					Archive
+					Takedown_Schedule1 as "Takedown Schedule"
+					Company_Entity as "Company/Entity"
+					Project
+					County
+					City
+					Completion_Date as "Completion Date"
+					Earnest_Money as "Earnest Money"
+					Total_Contract_Price as "Total Contract Price"
+					Parent_Contract as "Parent Contract"
+					Work_Module as "Work Module"
+					Construction_Plans as "Construction Plans"
+					Priority
+					MUD
+					Date_Needed as "Date Needed"
+					Description
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

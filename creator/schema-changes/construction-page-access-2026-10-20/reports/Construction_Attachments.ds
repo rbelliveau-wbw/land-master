@@ -11,6 +11,10 @@ list Construction_Attachments
 		File_field1 as "File"
 		Payment_Request as "Payment Request"
 		Budget_Modification as "Budget Modification"
+		Added_User
+		Added_Time
+		Modified_User
+		Modified_Time
 	)
 	quickview
 	(
@@ -21,6 +25,10 @@ list Construction_Attachments
 			(
 				fields
 				(
+					Added_User
+					Added_Time
+					Modified_User
+					Modified_Time
 					Email_Attachment as "Attach to Email"
 					Contract1 as "Contract"
 					Budget

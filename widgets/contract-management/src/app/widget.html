@@ -1962,13 +1962,13 @@ select.apr-in{cursor:pointer}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
 <script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.12">
-<script src="interaction-motion.js?v=1.62.12"></script>
-<script src="interaction-surfaces.js?v=1.62.12"></script>
-<script src="number-edit-commit.js?v=1.62.12"></script>
-<script src="number-transitions.js?v=1.62.12"></script>
-<script src="number-surfaces.js?v=1.62.12"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.12">
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.13">
+<script src="interaction-motion.js?v=1.62.13"></script>
+<script src="interaction-surfaces.js?v=1.62.13"></script>
+<script src="number-edit-commit.js?v=1.62.13"></script>
+<script src="number-transitions.js?v=1.62.13"></script>
+<script src="number-surfaces.js?v=1.62.13"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.13">
 </head>
 <body>
 
@@ -2017,7 +2017,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.12", pageSize: 200, maxPages: 25,
+  version: "1.62.13", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2606,6 +2606,9 @@ function contractTemplateChecked(value){
   throw new Error('An action template checkbox could not be verified.');
 }
 function contractTemplateCapability(rows){
+  // This page opts into the current scoped report; an authoritative zero count
+  // is a new template library, not evidence of a missing legacy schema.
+  if(Array.isArray(rows)&&!rows.length&&constructionMode()&&CFG.reports.actions==='Construction_Actions')return 'current';
   if(!Array.isArray(rows)||!rows.length)return 'unavailable';
   // A fully returned old schema is the only evidence for the captured legacy defaults.
   if(rows.every(function(row){return row&&contractId(row.ID)&&contractOwn(row,'Contract_Template')&&!contractOwn(row,'Type_field')&&!contractOwn(row,'Template_Action');}))return 'legacy';
@@ -9729,7 +9732,7 @@ function detailSwitch(cid){
     +'</div>';
 }
 function addFile(){
-  if(!needsContractEdit(S.selId))return;
+  if(!canAddContractAttachments(S.selId)){banner('err',contractEditWarning(S.selId));return;}
   if(S.demo){ banner("ok","Demo mode — inside Creator this opens the Attachment form.",{info:true}); return; }
   openParent("#Form:"+CFG.forms.version+"?Contract1="+S.selId);
 }
@@ -9791,13 +9794,13 @@ function renderDetail(){
       +'</section>';
   } else {
     var rowsHtml=shown.length?shown.map(function(a){ return actionRow(a); }).join("")
-      :'<div class="empty" style="background:#fff;border:1px dashed var(--line);border-radius:10px;"><b>'+(all.length?"No open actions":"No actions yet")+'</b>'+(all.length?"Toggle Show Completed to review completed actions.":"Propose the first action below.")+'</div>';
+      :'<div class="empty" style="background:#fff;border:1px dashed var(--line);border-radius:10px;"><b>'+(all.length?"No open actions":"No actions yet")+'</b>'+(all.length?"Toggle Show Completed to review completed actions.":construction&&!mayEdit(c.ID)?"":"Propose the first action below.")+'</div>';
     var addRow='<div class="add-row" id="addRow">'
       +'<div class="add-row-head" onclick="toggleAdd()"><span class="add-plus">+</span>Add a new proposed action…</div>'
       +'<div class="add-form">'+proposeFields("a_")+'<div class="form-actions"><button class="btn primary" onclick="proposeAction(\'a_\')">Propose Action</button><button class="btn ghost" onclick="toggleAdd()">Cancel</button></div></div>'
       +'</div>';
     actionsCard='<section class="acard-shell">'
-      +'<div class="ac-head"><div><h2 class="ac-title">Actions</h2><div class="ac-sub">Drag ⠿ or use arrows to reorder · click a row to edit</div></div>'
+      +'<div class="ac-head"><div><h2 class="ac-title">Actions</h2>'+(construction&&!mayEdit(c.ID)?'':'<div class="ac-sub">Drag ⠿ or use arrows to reorder · click a row to edit</div>')+'</div>'
       +'<div class="spacer"></div>'+modeSeg
       +'<button class="toggle-btn'+(S.showDone?" on":"")+'" onclick="toggleDone()"><span class="toggle-track"><span class="toggle-knob"></span></span>Show Completed</button>'
       +'</div>'

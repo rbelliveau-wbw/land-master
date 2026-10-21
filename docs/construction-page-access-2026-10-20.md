@@ -36,6 +36,10 @@ reopened native sources are in
 [`creator/schema-changes/construction-page-access-2026-10-20/reports/`](../creator/schema-changes/construction-page-access-2026-10-20/reports/).
 Requests/actions filter `Work_Module == "Construction"`; files/comments filter
 `Contract1.Work_Module == "Construction"`. No Legal reports are changed.
+All four reports expose Creator's Added/Modified User and Time system fields,
+including their quick views. This preserves requestor/date display and the
+comment author's existing edit window; the live Development test caught these
+fields missing from the initial scoped-report definitions.
 
 The Construction page will opt into these reports with a page variable so the
 hosted widget remains compatible with the previously published Creator page
@@ -92,3 +96,19 @@ isolated Development fixtures; Production business records are untouched.
 PMP publishes the hosted release/main and Production mapping. Native Creator
 changes remain in Development for the user to promote. Hosted rollback is
 Contract Management 1.62.10; additive reports/profile are handled separately.
+
+## Live Development follow-up — 1.62.13
+
+The Dev/Land Acq demo user submitted a named request and posted a comment while
+request/action controls stayed read-only. Testing Construction Budgeting found
+that a genuinely empty scoped action report blocked the first template. The
+known current `Construction_Actions` report now treats its complete zero count
+as an empty current library; incomplete/denied reads still fail, and the old
+Legal/legacy empty-schema guard is unchanged. The Tasks Add File shortcut uses
+the same attachment grant as its Attachments tab. Read-only Construction action
+sections no longer invite dragging, editing or proposing actions.
+
+The Construction Budgeting test assignment uses Development-only `demouser_4`;
+no employee or Production user was reassigned. CI and Pages for the initial
+Development candidate `b47a85d0` succeeded. Final native role evidence and hosted
+Production promotion are recorded after the follow-up checks.

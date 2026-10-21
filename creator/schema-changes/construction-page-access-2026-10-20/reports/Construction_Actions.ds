@@ -17,6 +17,10 @@ list Construction_Actions
 		Type_field as "Type"
 		Template_Action as "Template Action"
 		Work_Module as "Work Module"
+		Added_User
+		Added_Time
+		Modified_User
+		Modified_Time
 	)
 	quickview
 	(
@@ -27,6 +31,10 @@ list Construction_Actions
 			(
 				fields
 				(
+					Added_User
+					Added_Time
+					Modified_User
+					Modified_Time
 					Complete as "Mark Complete"
 					Contract_Action as "Action"
 					Dev_Notes as "Dev Notes"

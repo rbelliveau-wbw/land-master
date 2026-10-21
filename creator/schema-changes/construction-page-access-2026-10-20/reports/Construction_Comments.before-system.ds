@@ -1,0 +1,95 @@
+list Construction_Comments
+{
+	displayName = "Construction Comments"
+	show all rows from Comment_Log  [Contract1.Work_Module == "Construction"]  
+	(
+		Budget
+		Project
+		Pro_Forma as "Pro Forma"
+		Contract1 as "Contract"
+		Comment
+		User
+		Author_Name as "Author Name"
+		Edited
+		Deleted
+	)
+	quickview
+	(
+		layout
+		(
+			displaylayout = "classic"
+			datablock1
+			(
+				fields
+				(
+					Budget
+					Project
+					Pro_Forma as "Pro Forma"
+					Contract1 as "Contract"
+					Comment
+					User
+					Author_Name as "Author Name"
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					Budget
+					Project
+					Pro_Forma as "Pro Forma"
+					Contract1 as "Contract"
+					Comment
+					User
+					Author_Name as "Author Name"
+					Edited
+					Deleted
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

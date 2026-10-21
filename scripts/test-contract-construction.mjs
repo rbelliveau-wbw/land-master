@@ -60,6 +60,8 @@ for(const options of [{},{accessFailure:true}]){
  assert.equal(h.c.ContractSetupUI.close(),true);assert.equal(h.c.mayEdit(NEW),false,'request ownership does not grant submitters editing');assert.ok(h.c.filteredContracts().some(row=>row.ID===NEW),'pending submissions stay discoverable');
  for(const operation of [()=>h.c.updateRecord(NEW,{Description:'Denied'}),()=>h.c.updateRecord(NEW,{Status:'New'}),()=>h.c.createRecord(h.c.CFG.forms.action,{Contract1:NEW,Contract_Action:'Denied task'}),()=>h.c.updateRecord(TEMPLATE,{Contract_Action:'Denied template'},h.c.CFG.reports.actions),()=>h.c.sdkDeleteById(h.c.CFG.reports.contracts,NEW)])await assert.rejects(operation());
  assert.equal(writes(h).length,1);assert.equal(h.c.constructionEditOpen(NEW),false);
+ h.c.openContract(NEW);assert.doesNotMatch(h.node('view').innerHTML,/Drag ⠿|click a row to edit|Propose the first action/,'read-only Construction actions cannot advertise editing');
+ let attachmentForm='';h.c.openParent=target=>{attachmentForm=target;};h.c.addFile();assert.equal(attachmentForm,'#Form:Attachment?Contract1='+NEW,'the Tasks Add File shortcut also permits submitters');
  await h.c.createRecord(h.c.CFG.forms.comment,{Contract1:NEW,Comment:'Submission discussion',User:'actual-actor'});assert.equal(h.reports.Comment_Log_Report.length,1,'submitters can add comments');
  const f=files(h);h.c.showAttachmentsModal(NEW);assert.match(h.node('overlays').textContent,/Choose Files/);assert.equal(h.c.canAddContractAttachments(NEW),true);assert.equal(h.c.S.busy,false);assert.equal(h.c.S.contractWorkflow,null);const uploaded=await h.c.addVersionFiles(NEW,[{name:'construction-plans.pdf',size:12}]);assert.equal(uploaded.error,null);assert.equal(f.creates(),1);assert.equal(f.uploads(),1);assert.equal(h.c.S.versions[0].Contract1.ID,NEW);
  assert.doesNotMatch(h.c.attachmentModalRows(NEW,h.c.S.versions),/deleteVersion|toggleEmailAttach/);assert.equal(await h.c.doDeleteVersion(FILE,NEW),false);assert.equal(writes(h).length,2,'only header and comment used ordinary CRUD');
@@ -90,6 +92,13 @@ for(const flags of [submit,editor]){
  assert.equal(h.c.CFG.reports.contracts,'Construction_Requests');assert.equal(h.c.CFG.reports.actions,'Construction_Actions');assert.equal(h.c.CFG.reports.versions,'Construction_Attachments');assert.equal(h.c.CFG.reports.comments,'Construction_Comments');
  assert.ok(!h.calls.some(call=>['All_Contracts1','All_Contract_Actions','All_Attachments','All_Contract_Approvals','Contract_Pricing_Report'].includes(call.config.report_name)),'scoped Construction boot never reads Legal reports or approvals/pricing');
  draft(h);const result=await h.c.ncSubmit([],[]);assert.equal(result.error,null);assert.ok(h.reports.All_Contracts1.some(row=>row.ID===NEW&&row.Work_Module==='Construction'));
+}
+{
+ const h=await ready({actionsCount:0,accessFlags:editor,pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});
+ assert.equal(h.c.contractTemplateCapability(h.c.S.actions),'current','a counted empty current Construction report can start its first template');
+ h.c.showManageActions();assert.match(h.node('view').innerHTML,/No template actions|Add action/);assert.doesNotMatch(h.node('view').innerHTML,/Action templates unavailable/);
+ h.c.S.maType='Internal';h.c.S.maDraft=[{id:'',title:'First Construction template action'}];let confirmation;h.c.confirmDialog=options=>{confirmation=options;};h.c.maSave();assert.equal(confirmation.okLabel,'Save template');assert.equal(writes(h).length,0,'first template still waits for the normal save confirmation');
+ const legal=await ready({actionsCount:0,realDOM:true});assert.equal(legal.c.contractTemplateCapability([]),'unavailable','the existing empty legacy/Legal schema guard stays intact');
 }
 {
  const h=harness({accessFlags:{...editor,ctEdit:true},pageParams:{workMode:'construction',constructionReportScope:'construction'},realDOM:true});h.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Legal';await drain();assert.equal(h.c.S.workMode,'legal');assert.equal(h.c.CFG.reports.contracts,'All_Contracts1');assert.equal(h.c.setWorkMode,undefined);

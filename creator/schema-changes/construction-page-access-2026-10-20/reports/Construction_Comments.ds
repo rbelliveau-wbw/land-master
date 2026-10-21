@@ -12,6 +12,10 @@ list Construction_Comments
 		Author_Name as "Author Name"
 		Edited
 		Deleted
+		Added_User
+		Added_Time
+		Modified_User
+		Modified_Time
 	)
 	quickview
 	(
@@ -22,6 +26,10 @@ list Construction_Comments
 			(
 				fields
 				(
+					Added_User
+					Added_Time
+					Modified_User
+					Modified_Time
 					Budget
 					Project
 					Pro_Forma as "Pro Forma"

@@ -5,6 +5,10 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 const read = path => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const schema = JSON.parse(read('creator/schema-changes/construction-tasks.json'));
+for(const name of ['Construction_Requests','Construction_Actions','Construction_Attachments','Construction_Comments']){
+ const source=read('creator/schema-changes/construction-page-access-2026-10-20/reports/'+name+'.ds');
+ for(const field of ['Added_User','Added_Time','Modified_User','Modified_Time'])assert.match(source,new RegExp('\\b'+field+'\\b'),'scoped '+name+' returns native author/time metadata');
+}
 const expectedFields = {
   Contract: ['Work_Module', 'Construction_Plans', 'MUD', 'Priority', 'Date_Needed', 'Description'],
   Contract_Actions: ['Work_Module'],

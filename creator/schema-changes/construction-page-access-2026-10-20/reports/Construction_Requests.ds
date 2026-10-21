@@ -39,6 +39,10 @@ list Construction_Requests
 		MUD
 		Date_Needed as "Date Needed"
 		Description
+		Added_User
+		Added_Time
+		Modified_User
+		Modified_Time
 	)
 	quickview
 	(
@@ -49,6 +53,10 @@ list Construction_Requests
 			(
 				fields
 				(
+					Added_User
+					Added_Time
+					Modified_User
+					Modified_Time
 					Contract_Type as "Type"
 					Subdivision1 as "Subdivision"
 					Builder as "Builder/Counterparty"
