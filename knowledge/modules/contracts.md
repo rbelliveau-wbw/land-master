@@ -1,3 +1,13 @@
+## Inline Actions counts — October 21, 2026
+
+Release 1.62.16 keeps the Legal and Construction drill-down completed/total
+badge on one line after numeric animation decorates its values. The heading
+can wrap its controls without splitting the count. No forms, fields, functions,
+Custom APIs or Creator deployment changes. Desktop verification reproduces the
+old stacked count and checks 0/0, 2/12 and 12/123 in both modules, including
+reduced motion; full validation and Pages build are required before promotion.
+Rollback: hosted release 1.62.15 via `deploy/environments.json`.
+
 ## Pro Forma report palette and restored menus — October 20, 2026
 
 Release 1.62.15 applies Pro Forma's main-menu/report colors to Legal and

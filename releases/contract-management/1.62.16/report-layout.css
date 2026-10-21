@@ -1,0 +1,14 @@
+/* Pro Forma main-report palette; retain Legal/Construction layout and behavior.
+   Reference: proforma-manager/src/app/report-layout.css. */
+#view,.home-actions,.filterrow{background:#e5ecf3}
+.tablecard{border-color:#bdcfe1;background:#f4f7fb;box-shadow:0 2px 6px #203c600a}
+.wtable thead th{background:#d9e5f1;color:#496581;border-bottom-color:#c5d6e6}
+.wtable tbody tr:not(.tgroup):not(.drillrow):nth-child(odd){background:#f4f7fb}
+.wtable tbody tr:not(.tgroup):not(.drillrow):nth-child(even){background:#eaf1f7}
+.wtable tbody tr:not(.tgroup):not(.drillrow):hover{background:#dce9f6}
+.wtable tr.tgroup td{background:linear-gradient(110deg,#dce8f5,#eaf1f8)!important;color:#183c63;border-top:1px solid #bdcfe1;border-bottom-color:#c5d6e6}
+.wtable tr.tgroup td:first-child{box-shadow:inset 4px 0 0 #6d95c0}
+.bcol{background:#eaf1f7}
+.bcol-head{color:#496581}
+.bcard{background:#f4f7fb;border-color:#bdcfe1}
+.bcard:hover{background:#dce9f6}
