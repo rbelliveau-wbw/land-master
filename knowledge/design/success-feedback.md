@@ -3,7 +3,7 @@
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
 Approved October 6, 2026. Use the black, compact success popup for routine
-confirmed actions across all nine modules. The reference implementation is
+confirmed actions across all ten modules. The reference implementation is
 [`shared/success-feedback.js`](../../shared/success-feedback.js), copied into
 each widget by the shared-asset synchronization script.
 
@@ -19,6 +19,14 @@ Cap width at 560 px or the viewport minus 36 px, wrap long text and retain a dar
 shadow. The popup is nonblocking, has a polite atomic status announcement,
 never takes focus or changes scroll, and dismisses after about 3.5 seconds.
 An existing longer confirmation duration may be retained. No motion is needed.
+
+Success feedback must remain sharp above every currently open comment, file,
+approval or native dialog. The shared helper uses a nonmodal manual popover
+when supported and a reserved `2147483647` stacking layer otherwise. Keep its
+backdrop transparent, ignore pointer events, and never focus it. When a native
+modal is active, host the polite live region inside that modal so it remains
+available to assistive technology. Re-evaluate the host for each notification;
+release the popover on dismiss/clear. Preserve the approved dimensions.
 
 ## Scope: inline checks always stay
 

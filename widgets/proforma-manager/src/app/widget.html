@@ -8,30 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.125"></script>
-<script src="pf-save-audit.js?v=1.80.125"></script>
-<script src="pf-progress.js?v=1.80.125"></script>
+<script src="pf-save-verification.js?v=1.80.127"></script>
+<script src="pf-save-audit.js?v=1.80.127"></script>
+<script src="pf-progress.js?v=1.80.127"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.125">
-<script src="interaction-motion.js?v=1.80.125"></script>
-<script src="interaction-surfaces.js?v=1.80.125"></script>
-<script src="number-edit-commit.js?v=1.80.125"></script>
-<script src="number-transitions.js?v=1.80.125"></script>
-<script src="number-views.js?v=1.80.125"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.125">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.127">
+<script src="interaction-motion.js?v=1.80.127"></script>
+<script src="interaction-surfaces.js?v=1.80.127"></script>
+<script src="number-edit-commit.js?v=1.80.127"></script>
+<script src="number-transitions.js?v=1.80.127"></script>
+<script src="number-views.js?v=1.80.127"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.127">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.125"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.125">
-<script src="comments.js?v=1.80.125"></script>
-<link rel="stylesheet" href="comments.css?v=1.79.9">
+<script src="budget-transfer-ui.js?v=1.80.127"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.127">
+<script src="comments.js?v=1.80.127"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.127">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
-.pc-cyan{--pc-tone:#167b9d;--pc-tint:#effaff;border-left-color:#87cee2}.pc-orange{--pc-tone:#b75a28;--pc-tint:#fff5ee;border-left-color:#edb185}
-.pc-kicker,[data-pc="cancel"]{display:none!important}
-.pc-header h1{margin-top:0!important}
-.pc-actions{opacity:1!important}
-.pf-comment-modal-close{display:grid;place-items:center;padding:0;font-size:0;line-height:0}.pf-comment-modal-close svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}.pc-message.editing .pc-message-main{padding-right:0}.pc-inline-editor{margin-top:2px}.pc-inline-editor textarea{display:block;width:100%;min-height:96px;resize:vertical;border:1px solid #9ebcde;border-radius:9px;background:#fff;color:#243c58;font:inherit;font-size:13px;line-height:1.65;padding:10px 11px;outline:none;box-shadow:inset 0 1px 2px rgba(14,49,91,.06)}.pc-inline-editor textarea:focus{border-color:#3778bf;box-shadow:0 0 0 3px rgba(55,120,191,.14)}.pc-inline-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.pc-inline-actions button{border:1px solid #c4d5e8;border-radius:7px;background:#fff;color:#355676;font:700 11px inherit;padding:6px 11px;cursor:pointer}.pc-inline-actions [data-pc=inline-save]{border-color:#1f65ae;background:#1f65ae;color:#fff;box-shadow:0 3px 7px rgba(31,101,174,.19)}.pc-inline-actions [data-pc=inline-save]:hover{background:#174e89}.pc-inline-actions [data-pc=inline-cancel]:hover{background:#eef4fb}.pc-actions{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;gap:2px}.pc-actions button{border:0;background:transparent!important;box-shadow:none!important;font-family:inherit;font-size:10px;font-weight:800;padding:5px 7px}.pc-actions button:before{display:inline-block;margin-right:4px;font-size:12px;line-height:0}.pc-actions [data-pc=reply]{color:#2766ac}.pc-actions [data-pc=reply]:before{content:'↩'}.pc-actions [data-pc=edit]{color:#9a7019}.pc-actions [data-pc=edit]:before{content:'✎'}.pc-actions [data-pc=delete]{color:#b34a43}.pc-actions [data-pc=delete]:before{content:'×';font-size:15px;vertical-align:-1px}.pc-actions button:hover{transform:none;background:rgba(255,255,255,.78)!important;text-decoration:underline}
 /* ── TOKENS ── matches Budget Manager chrome ── */
 :root{
   --bg:#f0f3f7; --surface:#e8ecf1; --card:#fff;
@@ -1842,7 +1837,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.125"></script>
+<script src="success-feedback.js?v=1.80.127"></script>
 </head>
 <body>
 
@@ -2257,7 +2252,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.125";
+var PFW_VERSION="1.80.127";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -4993,6 +4988,21 @@ function closePfComments(){
   var returnFocus=S.commentModalFocus;S.commentModalFocus=null;
   if(returnFocus&&typeof returnFocus.focus==="function")returnFocus.focus();
 }
+function confirmPfCommentDelete(){
+  var modal=document.getElementById("commentModal"),confirm=document.getElementById("confirmModal"),wasInert=modal.inert;
+  function controls(){return Array.from(confirm.querySelectorAll("button")).filter(function(node){return !node.hidden&&!node.disabled&&node.getClientRects().length;});}
+  function key(e){
+    if(e.key!=="Tab"||!confirm.classList.contains("show"))return;
+    var nodes=controls(),first=nodes[0],last=nodes[nodes.length-1];if(!first)return;
+    if(!confirm.contains(document.activeElement)||e.shiftKey&&document.activeElement===first){e.preventDefault();(e.shiftKey?last:first).focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+  function focus(e){if(confirm.classList.contains("show")&&!confirm.contains(e.target)){var first=controls()[0];if(first)first.focus();}}
+  function restore(){modal.inert=wasInert;document.removeEventListener("keydown",key,true);document.removeEventListener("focusin",focus,true);}
+  modal.inert=true;document.addEventListener("keydown",key,true);document.addEventListener("focusin",focus,true);
+  try{return Promise.resolve(uiConfirm({title:"Delete comment?",message:"Your message will be replaced with “Deleted by user”.",okLabel:"Delete comment",cancelLabel:"Keep comment",tone:"danger"})).then(function(ok){restore();return ok;},function(error){restore();throw error;});}
+  catch(error){restore();return Promise.reject(error);}
+}
 function openPfComments(pfId,trigger){
   var id=String(pfId||"");if(!/^\d+$/.test(id)&&S.liveSDK){toast("Save the Pro Forma before adding comments.","err");return;}
   if(!pfCommentThread)pfCommentThread=PFComments.mount(document.getElementById("commentModalThread"),{
@@ -5000,10 +5010,10 @@ function openPfComments(pfId,trigger){
     /* Creator stores entries made by Robby's admin session as wbdevelopment,
        even though the widget SDK reports rbelliveau@wbdevelopment.com. This
        permits the matching UI controls; form validation remains authoritative. */
-    ownerAliases:function(){return String(S.currentUser||"").trim().toLowerCase()==="rbelliveau@wbdevelopment.com"?["wbdevelopment"]:[];},
+    ownerAliases:function(){return PFComments.ownerAliases(S.currentUser);},
     users:function(){return S.users;},
     error:function(e){return creatorErrorMessage(e)||String(e&&e.message||"Could not save comment.");},
-    confirm:function(){return uiConfirm({title:"Delete comment?",message:"Your message will be replaced with “Deleted by user”.",okLabel:"Delete comment",cancelLabel:"Keep comment",tone:"danger"});},
+    confirm:confirmPfCommentDelete,
     load:function(pf){return loadPfComments(pf,true);},
     onRows:function(pf,rows){rememberPfComments(pf,rows);},
     add:function(data){if(!S.liveSDK){var r=Object.assign({ID:uid(),Added_User:S.currentUser||"preview@local",User:S.currentUser||"preview@local",Added_Time:new Date().toISOString(),Modified_Time:new Date().toISOString(),Edited:false,Deleted:false},data);(pfMockComments[data.Pro_Forma]||(pfMockComments[data.Pro_Forma]=[])).push(r);return Promise.resolve(r);}

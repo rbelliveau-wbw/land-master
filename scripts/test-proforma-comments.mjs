@@ -56,8 +56,8 @@ assert.match(source,/loadPfCommentSummaries\(\);/,'list requests comment summari
 assert.match(source,/z-index:10060/);
 assert.doesNotMatch(source,/record\.Name\+" — Comments"/);
 assert.match(source,/commentWrite\("updateRecord"/);
-assert.match(source,/rbelliveau@wbdevelopment\.com"\?\["wbdevelopment"\]:\[\]/);
-assert.match(source,/\.pc-actions\{opacity:1!important\}/);
+assert.match(source,/ownerAliases:function\(\)\{return PFComments\.ownerAliases\(S\.currentUser\);\}/);
+assert.doesNotMatch(source,/\.pc-inline-editor\{/,'comment editor styling lives in the shared stylesheet');
 assert.ok(!/function commentWrite[\s\S]*?function openPfComments/.exec(source)[0].includes('skip_workflow'));
 const commentSource=fs.readFileSync('widgets/proforma-manager/src/app/comments.js','utf8');
 assert.match(commentSource,/onRows/);
@@ -101,3 +101,4 @@ assert.match(budgetSource,/\.project-comment:hover,\.phase-comment:hover,\.phase
 assert.match(commentCss,/\.comment-activity-btn\{[^}]*transition:background \.18s ease,border-color \.18s ease,box-shadow \.18s ease,color \.18s ease/,'activity controls avoid hover translation and animate smoothly');
 assert.match(commentCss,/\.pf-comment-modal-close svg\{[^}]*stroke:currentColor/,'modal close icon is explicitly drawn in the header color');
 console.log('Comment authors, 24-hour boundaries, timezone, safe formatting and SDK contract verified.');
+await import('./test-comment-actions.mjs');

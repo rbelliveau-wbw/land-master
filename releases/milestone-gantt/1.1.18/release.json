@@ -1,0 +1,8 @@
+{
+  "widget": "milestone-gantt",
+  "version": "1.1.18",
+  "created_at": "2026-10-21T18:51:32.618Z",
+  "source": "widgets/milestone-gantt/src/app/widget.html",
+  "source_sha256": "852ddf52b073233c17e098c47010d4ef6178cdd77e1d5890ba208c2acf481a3f",
+  "status": "candidate"
+}

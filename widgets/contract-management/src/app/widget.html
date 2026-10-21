@@ -9,8 +9,8 @@
 <script src="creator-data.js"></script>
 <script src="contract-progress.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.86"></script>
-<link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.79.9">
+<script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.127"></script>
+<link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.127">
 <style>
 .contract-backfill-banner{padding:10px 18px;background:#fffbeb;border-bottom:1px solid #f2d58c;color:#854d0e;font-size:12px;line-height:1.5}
 .pc-cyan{--pc-tone:#167b9d;--pc-tint:#effaff;border-left-color:#87cee2}.pc-orange{--pc-tone:#b75a28;--pc-tint:#fff5ee;border-left-color:#edb185}
@@ -1967,15 +1967,15 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.61.45"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.21">
-<script src="interaction-motion.js?v=1.62.21"></script>
-<script src="interaction-surfaces.js?v=1.62.21"></script>
-<script src="number-edit-commit.js?v=1.62.21"></script>
-<script src="number-transitions.js?v=1.62.21"></script>
-<script src="number-surfaces.js?v=1.62.21"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.21">
-<link rel="stylesheet" href="report-layout.css?v=1.62.21">
+<script src="success-feedback.js?v=1.62.23"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.23">
+<script src="interaction-motion.js?v=1.62.23"></script>
+<script src="interaction-surfaces.js?v=1.62.23"></script>
+<script src="number-edit-commit.js?v=1.62.23"></script>
+<script src="number-transitions.js?v=1.62.23"></script>
+<script src="number-surfaces.js?v=1.62.23"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.23">
+<link rel="stylesheet" href="report-layout.css?v=1.62.23">
 </head>
 <body>
 
@@ -2024,7 +2024,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.21", pageSize: 200, maxPages: 25,
+  version: "1.62.23", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -9577,7 +9577,17 @@ function contractCommentError(error){
   }
   visit(error);return messages.length?messages.join(' '):errText(error);
 }
-function openContractComments(id,trigger){var contract=findContract(id);if(!workVisible(contract))return;S.commentParentId=String(id);ensureContractCommentModal();var modal=$('contractCommentModal');if(!contractCommentThread)contractCommentThread=PFComments.mount($('contractCommentThread'),{parentField:'Contract1',currentUser:function(){return !canCommentContract(S.commentParentId)?'':S.currentUser||ncLoginUser()||'';},users:function(){return S.users||[];},error:function(err){return contractCommentError(err)||'Could not save comment.';},confirm:function(){return new Promise(function(resolve){confirmDialog({kicker:'Comment log',title:'Delete comment?',lead:'Your message will be replaced with “Deleted by user”.',okLabel:'Delete comment',cancelLabel:'Keep comment',danger:true,onConfirm:function(){resolve(true);},onDismiss:function(){resolve(false);}});});},load:function(parent){return loadContractComments(parent,true);},onRows:function(parent,rows){rememberContractComments(parent,rows);},add:function(data){return createRecord(CFG.forms.comment,data);},update:function(commentId,data){return updateRecord(commentId,data,CFG.reports.comments);}});S.commentModalFocus=trigger||document.activeElement;$('contractCommentTitle').textContent=contract.Contract_Name||'Contract';modal.hidden=false;modal.classList.add('show');setTimeout(function(){var close=$('contractCommentClose');if(close)close.focus();},0);return contractCommentThread.open(id).then(function(result){var thread=$('contractCommentThread'),compose=thread&&thread.querySelector('.pc-compose');if(compose)compose.hidden=!canCommentContract(id);return result;});}
+function confirmContractCommentDelete(){
+  return new Promise(function(resolve){
+    var modal=$('contractCommentModal'),wasInert=modal.inert;
+    function finish(ok){modal.inert=wasInert;resolve(ok);}
+    confirmDialog({kicker:'Comment log',title:'Delete comment?',lead:'Your message will be replaced with “Deleted by user”.',okLabel:'Delete comment',cancelLabel:'Keep comment',danger:true,onConfirm:function(){finish(true);},onDismiss:function(){finish(false);}});
+    var back=$('overlays').querySelector('.modal-back');
+    if(back){back.classList.add('comment-confirm-back');back.setAttribute('role','dialog');back.setAttribute('aria-modal','true');back.setAttribute('aria-label','Delete comment');modal.inert=true;}
+    else finish(false);
+  });
+}
+function openContractComments(id,trigger){var contract=findContract(id);if(!workVisible(contract))return;S.commentParentId=String(id);ensureContractCommentModal();var modal=$('contractCommentModal');if(!contractCommentThread)contractCommentThread=PFComments.mount($('contractCommentThread'),{parentField:'Contract1',currentUser:function(){return !canCommentContract(S.commentParentId)?'':S.currentUser||ncLoginUser()||'';},ownerAliases:function(){return PFComments.ownerAliases(S.currentUser);},users:function(){return S.users||[];},error:function(err){return contractCommentError(err)||'Could not save comment.';},confirm:confirmContractCommentDelete,load:function(parent){return loadContractComments(parent,true);},onRows:function(parent,rows){rememberContractComments(parent,rows);},add:function(data){return createRecord(CFG.forms.comment,data);},update:function(commentId,data){return updateRecord(commentId,data,CFG.reports.comments);}});S.commentModalFocus=trigger||document.activeElement;$('contractCommentTitle').textContent=contract.Contract_Name||'Contract';modal.hidden=false;modal.classList.add('show');setTimeout(function(){var close=$('contractCommentClose');if(close)close.focus();},0);return contractCommentThread.open(id).then(function(result){var thread=$('contractCommentThread'),compose=thread&&thread.querySelector('.pc-compose');if(compose)compose.hidden=!canCommentContract(id);return result;});}
 function contractTitleExtras(c,branch){
   var out=lotHierarchyLabel(c,branch)+contractAttachmentButton(c)+(typeof contractCommentButton==="function"?contractCommentButton(c):"");
   if(isLotContract(c)){

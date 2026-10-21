@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.5.59",
+  "version": "1.5.60",
   "description": "Full-height read-only Lot Sales matrix with stable numeric transitions and no bottom footer.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "089e499174260ac5651810af787b1ee53fdb19211aa69361c020c1429b429297",
+  "source_sha256": "bbf5b02e40e0fe39e9b2923142b67ac7297a17416e4c419dae683b877bf08990",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

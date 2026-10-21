@@ -40,15 +40,15 @@
     @media(max-width:760px){.topbar{padding:0 10px;gap:8px}.brand span:last-child{display:none}.tab{padding:0 10px}.status span:last-child{display:none}.toolbar{padding:11px}.toolbar .field,.sub-filter,.search{width:100%;min-width:100%}.sub-filter-menu{width:100%}.main{padding:12px 11px 96px}.blocks-grid{grid-template-columns:1fr}.grid,.interest{grid-template-columns:1fr}.span3{grid-column:auto}.selected-detail{display:none}.drag-tip{display:none}th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}th:nth-child(1){width:36%}th:nth-child(2){width:24%}th:nth-child(4){width:40%}}
   </style>
   <link rel="stylesheet" href="lots-grid.css"><script src="subdivision-counts.js"></script>
-<script src="success-feedback.js?v=0.13.9"></script>
+<script src="success-feedback.js?v=0.13.10"></script>
   <link rel="stylesheet" href="lots-list.css">
-<link rel="stylesheet" href="interaction-motion.css?v=0.13.9">
-<script src="interaction-motion.js?v=0.13.9"></script>
-<script src="interaction-surfaces.js?v=0.13.9"></script>
-<script src="number-edit-commit.js?v=0.13.9"></script>
-<script src="number-transitions.js?v=0.13.9"></script>
-<script src="number-surfaces.js?v=0.13.9"></script>
-<link rel="stylesheet" href="number-transitions.css?v=0.13.9">
+<link rel="stylesheet" href="interaction-motion.css?v=0.13.10">
+<script src="interaction-motion.js?v=0.13.10"></script>
+<script src="interaction-surfaces.js?v=0.13.10"></script>
+<script src="number-edit-commit.js?v=0.13.10"></script>
+<script src="number-transitions.js?v=0.13.10"></script>
+<script src="number-surfaces.js?v=0.13.10"></script>
+<link rel="stylesheet" href="number-transitions.css?v=0.13.10">
 </head>
 <body>
   <header class="topbar">
@@ -85,7 +85,7 @@
   <script>
   (function(){
     "use strict";
-    var CFG={version:"0.13.9",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
+    var CFG={version:"0.13.10",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
     var S={live:false,view:"lots",audit:[],auditSeq:0,auditErrs:0,subdivisions:[],builders:[],lots:[],takedowns:[],contracts:[],takedownLotIds:new Set(),selected:new Set(),subdivisionIds:[],takedownSubdivisionIds:[],takedownBuilderIds:[],busy:false,drag:{active:false,selecting:true,seen:new Set(),moved:false,pointerId:null}};
     var $=function(id){return document.getElementById(id)};
     var lotsList=null;

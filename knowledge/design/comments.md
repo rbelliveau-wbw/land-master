@@ -109,3 +109,20 @@ pending/unknown writes, record-switch races and focus return.
 Closing the workspace must not redraw a detached copy of it. The shared motion
 engine retains the real opening fade and immediate host close/focus behavior;
 no exit clone may flash after Close, Escape or backdrop dismissal.
+
+## Standard row actions across modules
+
+Every comment modal uses the shared Pro Forma `PFComments` component and shared
+comments stylesheet for Reply, Edit, Delete and the inline editor. Keep Reply
+blue, Edit amber and Delete red, with the same compact labels, spacing and
+keyboard access. Do not fork these styles inside a host widget. Reply quotes the
+selected message into the retained composer. Edit and soft Delete use the
+existing persisted-author matching and 24-hour window; completed/read-only
+parents remain read-only. The existing Robby/Creator-owner alias policy is
+shared across hosts without granting rights to other users. Conflicting row
+actions stay disabled during a pending write.
+
+A Delete confirmation must appear above the conversation, preserve its current
+record and draft, and return focus to it on cancel. Routine success feedback
+uses the shared [success notification layer](success-feedback.md) and must not
+be blurred by the conversation backdrop.
