@@ -108,8 +108,13 @@ map crewLocationsValidate(map request)
 				// Before-values alone cannot detect an away-and-back (ABA) edit.
 				// Refuse to compensate fields targeted by a newer recorded operation,
 				// even when its current date happens to equal the older saved date.
-				for each later in Schedule_Change_Log[(Subdivision1 == phaseId.toLong()) && (ID > original.ID) && ((State == "saved") || (State == "imported") || (State == "partial") || (State == "unknown"))]
+				// Creator allocates IDs across writers; they are not a reliable clock.
+				for each later in Schedule_Change_Log[(Subdivision1 == phaseId.toLong()) && (Timestamp >= original.Timestamp)]
 				{
+					if(later.Operation_ID == reverseId || later.Operation_ID == request.get("operationId")) { continue; }
+					recorded = false;
+					for each recordedState in {"saved","imported","partial","unknown"} { if(later.State == recordedState) { recorded = true; } }
+					if(!recorded) { continue; }
 					laterRequest = later.Request_JSON.toMap();
 					laterChanges = laterRequest.get("changes");
 					for each laterChange in laterChanges

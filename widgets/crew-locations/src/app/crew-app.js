@@ -101,7 +101,11 @@
       }}html+='</tr>';
     }
     if(!phases.length)html+='<tr><td colspan="99" class="empty">No phases match the table filters</td></tr>';
-    $('scheduleTable').innerHTML=html+'</tbody>';$('restoreChips').innerHTML=[...S.hidden].map(key=>'<button class="restore-chip" data-restore="'+esc(key)+'">Restore '+esc(key.replace(':',' '))+'</button>').join('');
+    $('scheduleTable').innerHTML=html+'</tbody>';
+    // Bind on the actual editor, before native host document handlers can consume
+    // its bubbling change event. This follows the existing native widget pattern.
+    $('scheduleTable').querySelectorAll('.stage-input').forEach(input=>input.onchange=()=>edit(input));
+    $('restoreChips').innerHTML=[...S.hidden].map(key=>'<button class="restore-chip" data-restore="'+esc(key)+'">Restore '+esc(key.replace(':',' '))+'</button>').join('');
     requestAnimationFrame(()=>{$('tableTopScroll').firstElementChild.style.width=$('scheduleTable').scrollWidth+'px';});
   }
   function render(filters=true){if(!S.model)return;windowLabel();if(filters)renderFilters();else document.querySelectorAll('[data-filter]').forEach(button=>{button.querySelector('span').innerHTML=selectionMarkup(button.dataset.filter,button.dataset.empty);});renderGantt();renderTable();const issues=[...S.model.issues,...(S.capabilities.dependencies||[])];$('issueList').innerHTML='<ul>'+issues.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>';controls();}
@@ -142,7 +146,7 @@
     $('picker').addEventListener('input',e=>{S.picker.query=e.target.value;paintOptions();});$('picker').addEventListener('keydown',e=>{if(e.key==='Escape'){const button=S.picker.button;closePicker();button.focus();return;}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();const opts=[...$('picker').querySelectorAll('[role=option]')],i=opts.indexOf(document.activeElement);opts[(i+(e.key==='ArrowDown'?1:-1)+opts.length)%opts.length]?.focus();}});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.drag){S.drag=null;$('dragPreview').hidden=true;renderGantt();}});
     $('showAll').addEventListener('change',e=>{S.filters.showAll=e.target.checked;storeView();render();});$('refresh').onclick=()=>root.LMMotion?LMMotion.refresh($('app'),load,{allowed:()=>!S.busy}):load();$('history').onclick=()=>history();$('closeHistory').onclick=()=>$('historyDialog').close();$('closeEndpoint').onclick=()=>$('endpointDialog').close();
-    document.addEventListener('change',e=>{if(e.target.matches('.stage-input'))edit(e.target);if(e.target.matches('.boundary-input')){$('endpointDialog').close();edit(e.target);}});
+    $('endpointContent').addEventListener('change',e=>{if(e.target.matches('.boundary-input')){$('endpointDialog').close();edit(e.target);}});
     document.addEventListener('pointerdown',beginDrag);document.addEventListener('pointermove',moveDrag);document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',endDrag);
     $('tableTopScroll').onscroll=()=>$('tableScroll').scrollLeft=$('tableTopScroll').scrollLeft;$('tableScroll').onscroll=()=>$('tableTopScroll').scrollLeft=$('tableScroll').scrollLeft;
     $('reviewSave').onclick=()=>{$('app').inert=true;$('operationDialog').showModal();};$('closeOperation').onclick=closeOperation;$('doneOperation').onclick=closeOperation;$('operationDialog').addEventListener('cancel',e=>{e.preventDefault();if(!S.busy)closeOperation();});

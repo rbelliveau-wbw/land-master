@@ -295,14 +295,37 @@
     "outbound_projects_calls": 0,
     "browser_fixture_cases_passed": 16,
     "creator_promotion": "User handles pending native changes after PMP",
-    "production_native_save_verified": false
+    "production_native_save_verified": false,
+    "widget_sdk_redo": {
+      "operationId": "26c7dac9-0d4e-473a-9404-c8463685ea82",
+      "native_acknowledged": true,
+      "end": "2027-03-18",
+      "source": "deployed widget History Redo"
+    },
+    "widget_sdk_undo": {
+      "operationId": "644b2bff-3f70-4f45-b654-201d200cd6cc",
+      "reversesOperationId": "26c7dac9-0d4e-473a-9404-c8463685ea82",
+      "native_acknowledged": true,
+      "restoredEnd": "2027-03-17",
+      "source": "deployed widget History Undo"
+    },
+    "chronology_guard": "Audit Timestamp, never Creator record-ID order. Same-timestamp other recorded operations conservatively block compensation.",
+    "both_development_pages_verified": [
+      "Crew_Management",
+      "Milestone_Gantt_View"
+    ],
+    "inline_editor_native_check": "1.1.3 verification pending"
   },
-  "current_release": "1.1.2",
+  "current_release": "1.1.3",
   "current_creator_promotion": "User promotes pending Creator changes",
   "latest_mode": {
     "testingMode": false,
     "creatorOnly": true,
     "projectsPushEnabled": false,
     "milestone_edit_permission": true
-  }
+  },
+  "native_updated_functions_1_1_3": [
+    "crewLocationsValidate",
+    "crewLocationsWidget"
+  ]
 }

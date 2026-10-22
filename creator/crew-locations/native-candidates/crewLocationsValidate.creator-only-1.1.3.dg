@@ -1,0 +1,215 @@
+map crewLocationsValidate(map request)
+{
+	lockedStatuses = {"completed","sold out","sold out (prev wfy)"};
+	allowedOrigins = {"table","duration","arrow","drag","undo","redo"};
+	result = {"ok":false,"message":"The schedule change was rejected."};
+	try
+	{
+		config = thisapp.crewLocationsConfig();
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1 || access.View_Crew_Locations != true) { return {"ok":false,"message":"Crew Locations access is required."}; }
+		phaseId = ifnull(request.get("subdivisionId"),"").toString();
+		if(!phaseId.matches("[0-9]+")) { return result; }
+		phaseRead = thisapp.crewLocationsRead("All_Subdivisions","ID == " + phaseId);
+		if(phaseRead.get("ok") != true || phaseRead.get("records").size() != 1) { return {"ok":false,"message":"This phase is unavailable to the current user."}; }
+		phase = phaseRead.get("records").get(0);
+		if(!phase.keys().contains("Status") || !phase.keys().contains("Projects_Status")) { return {"ok":false,"message":"Both phase status fields must be exposed in All_Subdivisions."}; }
+		for each statusValue in {phase.get("Status"),phase.get("Projects_Status")}
+		{
+			statusText = ifnull(statusValue,"").toString().trim().toLowerCase().replaceAll("\\s+"," ");
+			if(lockedStatuses.contains(statusText)) { return {"ok":false,"message":"This phase is locked by its current status."}; }
+		}
+		origin = ifnull(request.get("origin"),"").toString();
+		if(!allowedOrigins.contains(origin)) { return result; }
+		changes = request.get("changes");
+		if(changes == null || changes.size() < 1 || changes.size() > 12) { return {"ok":false,"message":"An operation requires one to twelve stage records."}; }
+		if((origin == "table" || origin == "duration" || origin == "drag") && changes.size() != 1) { return result; }
+		stageOrder = {"Entitlements","Engineering Design","Municipal Review","Pre-Construction","Rough Cut","Sewer","Water","Storm Drain","Road Prep","Dry Utilities","Punch List","Closeout"};
+		type = changes.get(0).get("type").toString();
+		reportName = "All_Milestones";
+		if(type == "T")
+		{
+			if(origin == "drag") { return {"ok":false,"message":"Task Gantt dragging is prohibited."}; }
+			if(access.Edit_Crew_Task_Dates != true || config.get("taskWritesVerified") != true) { return {"ok":false,"message":"Task source writes are not configured or permitted."}; }
+			reportName = "All_Task_Schedules";
+		}
+		else if(type != "M" || access.Edit_Crew_Milestones != true) { return {"ok":false,"message":"Milestone editing is not permitted."}; }
+		source = thisapp.crewLocationsRead(reportName,"Subdivision1 == " + phaseId);
+		if(source.get("ok") != true) { return source; }
+		actualCount = Milestones[Subdivision1 == phaseId.toLong()].count();
+		if(type == "T") { actualCount = Task_Schedule[Subdivision1 == phaseId.toLong()].count(); }
+		if(source.get("records").size() != actualCount) { return {"ok":false,"message":"The complete phase schedule is not visible to the current user; propagation and edits require complete source access."}; }
+		byId = Map(); stageCounts = Map();
+		for each sourceRecord in source.get("records")
+		{
+			name = ifnull(sourceRecord.get("Milestone_Name"),sourceRecord.get("Stage_Key"));
+			if(name != null && name.toString().contains("|")) { name = name.toString().getPrefix("|"); }
+			stageName = "";
+			for each canonical in stageOrder { if(ifnull(name,"").toString().trim().toLowerCase() == canonical.toLowerCase()) { stageName = canonical; } }
+			if(stageName != "")
+			{
+				sourceRecord.put("canonicalStage",stageName);
+				stageCounts.put(stageName,ifnull(stageCounts.get(stageName),0) + 1);
+				byId.put(sourceRecord.get("ID").toString(),sourceRecord);
+			}
+		}
+		payloads = List(); seen = List(); changedStages = List();
+		for each change in changes
+		{
+			recordId = ifnull(change.get("recordId"),"").toString();
+			if(!recordId.matches("[0-9]+") || seen.contains(recordId) || change.get("type") != type || byId.get(recordId) == null) { return result; }
+			seen.add(recordId);
+			current = byId.get(recordId); stageName = current.get("canonicalStage");
+			for each requiredField in {"Start_Date","End_Date","Subdivision1"} { if(!current.keys().contains(requiredField)) { return {"ok":false,"message":"Required schedule fields are not exposed in the source report."}; } }
+			if(type == "M" && !current.keys().contains("Push_Update")) { return {"ok":false,"message":"Push_Update must be exposed for Creator-only editing."}; }
+			if(stageName != change.get("stage") || stageCounts.get(stageName) != 1) { return {"ok":false,"message":"A source stage is ambiguous or unmapped."}; }
+			changedStages.add(stageName);
+			if(type == "M" && ifnull(current.get("Push_Update"),false).toString().toLowerCase() == "true") { return {"ok":false,"message":"A milestone has a pre-existing pending Projects push. Creator-only editing cannot clear it."}; }
+			if(type == "T" && (ifnull(current.get("Write_Enabled"),false).toString().toLowerCase() != "true" || ifnull(current.get("Source_System"),"") == "" || ifnull(current.get("Source_Record_ID"),"") == "")) { return result; }
+			start = thisapp.crewLocationsIso(ifnull(current.get("Start_Date"),"").toString());
+			end = thisapp.crewLocationsIso(ifnull(current.get("End_Date"),"").toString());
+			if(start != "" && end != "" && start.toDate("yyyy-MM-dd") > end.toDate("yyyy-MM-dd")) { return {"ok":false,"message":"Reversed source dates require source review."}; }
+			expected = change.get("expected");
+			if(expected == null || start != ifnull(expected.get("start"),"") || end != ifnull(expected.get("end"),"")) { return {"ok":false,"message":"Schedule dates changed. Refresh before saving.","conflict":true}; }
+			fields = change.get("fields");
+			if(fields == null || fields.keys().size() < 1 || fields.keys().size() > 2) { return result; }
+			patch = Map(); nextStart = start; nextEnd = end;
+			for each field in fields.keys()
+			{
+				if(field != "start" && field != "end") { return result; }
+				old = start; nativeField = "Start_Date";
+				if(field == "end") { old = end; nativeField = "End_Date"; }
+				entry = fields.get(field); newValue = ifnull(entry.get("after"),"").toString();
+				if(ifnull(entry.get("before"),"") != old || newValue == old) { return result; }
+				if(old != "" && old.toDate("yyyy-MM-dd") < zoho.currentdate) { return {"ok":false,"message":"Existing past dates are protected."}; }
+				if(newValue != "" && (!newValue.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || thisapp.crewLocationsIso(newValue) != newValue || newValue.toDate("yyyy-MM-dd") < zoho.currentdate)) { return {"ok":false,"message":"Dates must be valid and cannot move into the past."}; }
+				if(newValue == "") { patch.put(nativeField,""); }
+				else { patch.put(nativeField,newValue.toDate("yyyy-MM-dd").toString("MM/dd/yyyy")); }
+				if(field == "start") { nextStart = newValue; } else { nextEnd = newValue; }
+			}
+			if(nextStart != "" && nextEnd != "" && nextStart.toDate("yyyy-MM-dd") > nextEnd.toDate("yyyy-MM-dd")) { return {"ok":false,"message":"Start must be on or before End."}; }
+			if(origin == "drag" && fields.keys().size() != 1) { return result; }
+			if(origin == "duration")
+			{
+				if(fields.keys().size() != 1 || (start != "" && nextStart != start) || (start == "" && (end == "" || nextEnd != end))) { return result; }
+			}
+			if(type == "M") { patch.put("Push_Update",false); }
+			payloads.add({"recordId":recordId,"type":type,"stage":stageName,"report":reportName,"patch":patch,"start":nextStart,"end":nextEnd});
+		}
+		if(origin == "undo" || origin == "redo")
+		{
+			reverseId = ifnull(request.get("reversesOperationId"),"").toString();
+			original = Schedule_Change_Log[(Operation_ID == reverseId) && (Subdivision1 == phaseId.toLong())];
+			if(original.count() != 1 || original.State != "saved" || (origin == "redo" && original.Origin != "undo")) { return result; }
+			prior = original.Request_JSON.toMap().get("changes");
+			if(prior.size() != changes.size()) { return result; }
+			for each oldChange in prior
+			{
+				// Before-values alone cannot detect an away-and-back (ABA) edit.
+				// Refuse to compensate fields targeted by a newer recorded operation,
+				// even when its current date happens to equal the older saved date.
+				// Creator allocates IDs across writers; they are not a reliable clock.
+				for each later in Schedule_Change_Log[(Subdivision1 == phaseId.toLong()) && (Timestamp >= original.Timestamp)]
+				{
+					if(later.Operation_ID == reverseId || later.Operation_ID == request.get("operationId")) { continue; }
+					recorded = false;
+					for each recordedState in {"saved","imported","partial","unknown"} { if(later.State == recordedState) { recorded = true; } }
+					if(!recorded) { continue; }
+					laterRequest = later.Request_JSON.toMap();
+					laterChanges = laterRequest.get("changes");
+					for each laterChange in laterChanges
+					{
+						if(laterChange.get("recordId") == oldChange.get("recordId") && laterChange.get("type") == oldChange.get("type"))
+						{
+							oldChangeFields = oldChange.get("fields");
+							oldChangeFieldKeys = oldChangeFields.keys();
+							for each field in oldChangeFieldKeys
+							{
+								newerField = laterChange.get("fields").get(field);
+								if(newerField != null && newerField.get("before") != newerField.get("after")) { return {"ok":false,"message":"A newer schedule operation targeted these fields. Review the latest history before undo/redo."}; }
+							}
+						}
+					}
+				}
+				found = false;
+				for each newChange in changes
+				{
+					if(newChange.get("recordId") == oldChange.get("recordId") && newChange.get("type") == oldChange.get("type") && newChange.get("fields").keys().size() == oldChange.get("fields").keys().size())
+					{
+						found = true;
+						oldChangeFields = oldChange.get("fields");
+						oldChangeFieldKeys = oldChangeFields.keys();
+						for each field in oldChangeFieldKeys
+						{
+							if(newChange.get("fields").get(field) == null || newChange.get("fields").get(field).get("before") != oldChange.get("fields").get(field).get("after") || newChange.get("fields").get(field).get("after") != oldChange.get("fields").get(field).get("before")) { return result; }
+						}
+					}
+				}
+				if(!found) { return result; }
+			}
+		}
+		if(origin == "arrow")
+		{
+			durationId = ifnull(request.get("durationOperationId"),"").toString();
+			durationLog = Schedule_Change_Log[(Operation_ID == durationId) && (Subdivision1 == phaseId.toLong())];
+			if(durationLog.count() != 1 || durationLog.Origin != "duration" || durationLog.State != "saved") { return result; }
+			durationChange = durationLog.Request_JSON.toMap().get("changes").get(0);
+			if(durationChange.get("type") != type) { return result; }
+			durationSource = byId.get(durationChange.get("recordId"));
+			if(durationSource == null) { return result; }
+			for each durationField in {"start","end"}
+			{
+				durationNative = "Start_Date"; if(durationField == "end") { durationNative = "End_Date"; }
+				expectedDuration = ifnull(durationChange.get("expected").get(durationField),"");
+				if(durationChange.get("fields").get(durationField) != null) { expectedDuration = ifnull(durationChange.get("fields").get(durationField).get("after"),""); }
+				if(thisapp.crewLocationsIso(ifnull(durationSource.get(durationNative),"").toString()) != expectedDuration) { return {"ok":false,"message":"The originating duration changed after it was saved; this adjustment is no longer pending."}; }
+			}
+			anchorIndex = stageOrder.indexOf(durationChange.get("stage"));
+			direction = ifnull(request.get("direction"),0).toLong(); scopeAll = request.get("all") == true;
+			if(direction != 1 && direction != -1) { return result; }
+			deltaField = durationChange.get("fields").keys().get(0);
+			oldValue = ifnull(durationChange.get("fields").get(deltaField).get("before"),"");
+			newValue = ifnull(durationChange.get("fields").get(deltaField).get("after"),"");
+			if(oldValue == "" || newValue == "") { return {"ok":false,"message":"Propagation requires a known original duration."}; }
+			amount = oldValue.toDate("yyyy-MM-dd").daysBetween(newValue.toDate("yyyy-MM-dd")).abs();
+			if(amount == 0) { return result; }
+			expectedStages = List();
+			for each candidate in byId.keys()
+			{
+				row = byId.get(candidate); key = row.get("canonicalStage"); position = stageOrder.indexOf(key);
+				eligible = (direction == 1 && position > anchorIndex) || (direction == -1 && position < anchorIndex);
+				if(!scopeAll) { eligible = position == anchorIndex + direction; }
+				if(eligible && (ifnull(row.get("Start_Date"),"") != "" || ifnull(row.get("End_Date"),"") != "")) { expectedStages.add(key); }
+			}
+			if(expectedStages.size() != changedStages.size()) { return result; }
+			for each key in expectedStages { if(!changedStages.contains(key) || stageCounts.get(key) != 1) { return result; } }
+			for each previousArrow in Schedule_Change_Log[(Duration_Operation_ID == durationId) && (Origin == "arrow")]
+			{
+				if(previousArrow.State != "rejected" && previousArrow.Operation_ID != request.get("operationId"))
+				{
+					previousArrowRequest = previousArrow.Request_JSON.toMap();
+					previousArrowChanges = previousArrowRequest.get("changes");
+					for each previousTarget in previousArrowChanges { if(changedStages.contains(previousTarget.get("stage"))) { return {"ok":false,"message":"This duration adjustment has already targeted a requested stage."}; } }
+				}
+			}
+			for each proposed in changes
+			{
+				current = byId.get(proposed.get("recordId"));
+				for each field in {"start","end"}
+				{
+					nativeField = "Start_Date"; if(field == "end") { nativeField = "End_Date"; }
+					oldValue = thisapp.crewLocationsIso(ifnull(current.get(nativeField),"").toString());
+					entry = proposed.get("fields").get(field);
+					if(oldValue != "")
+					{
+						if(entry == null || ifnull(entry.get("after"),"") != oldValue.toDate("yyyy-MM-dd").addDay(amount * direction).toString("yyyy-MM-dd")) { return result; }
+					}
+					else if(entry != null) { return result; }
+				}
+			}
+		}
+		result.put("ok",true); result.put("payloads",payloads); result.put("phase",phase);
+	}
+	catch(validationError) { result.put("message","Validation failed: " + validationError.toString()); }
+	return result;
+}

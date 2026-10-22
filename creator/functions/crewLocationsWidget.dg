@@ -37,7 +37,7 @@ string crewLocationsWidget(string payload)
 				historyTasks = thisapp.crewLocationsRead("All_Task_Schedules","Subdivision1 == " + phaseId);
 				if(historyTasks.get("ok") == true) { for each historySource in historyTasks.get("records") { readable.add("T:" + historySource.get("ID").toString()); } }
 			}
-			for each entry in Schedule_Change_Log[Subdivision1 == phaseId.toLong()] sort by ID desc range from 0 to 49
+			for each entry in Schedule_Change_Log[Subdivision1 == phaseId.toLong()] sort by Timestamp desc range from 0 to 49
 			{
 				canRead = true; historyChanges = entry.Request_JSON.toMap().get("changes");
 				for each historyChange in historyChanges { if(!readable.contains(historyChange.get("type") + ":" + historyChange.get("recordId"))) { canRead = false; } }

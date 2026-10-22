@@ -1,4 +1,4 @@
-# Crew Management — Creator-only scheduling 1.1.2
+# Crew Management — Creator-only scheduling 1.1.3
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -27,7 +27,7 @@ and [removal-inventory.json](../../creator/crew-locations/removal-inventory.json
 They must be checked before recreating or deleting anything. The removal inventory
 is memory, not deletion authorization.
 
-Release 1.1.2 routes the frontend API alias by authenticated Creator environment:
+Release 1.1.3 routes the frontend API alias by authenticated Creator environment:
 `Crew_Locations_Widget_DEV`, `Crew_Locations_Widget_STAGE`, or
 `Crew_Locations_Widget`. The server independently derives its environment from
 `thisapp.environment.type` and `thisapp.environment.linkname`; client payloads
@@ -37,7 +37,7 @@ The latest PMP instruction leaves Creator promotion to the user.
 
 Development native save and audited Undo both succeeded on October 21.
 The earlier save failure was caused by uncommitted locks being invisible to
-delegated API validation. Release 1.1.2 commits preparation before applying. Crew/task source adapters
+delegated API validation. Release 1.1.3 commits preparation before applying. Crew/task source adapters
 remain disabled until their actual inputs and write semantics are verified.
 
 ## Data meaning and unavailable sources
@@ -134,6 +134,9 @@ user-writable reports. Native form validators check the staged operation and
 fresh statuses/dates. Undo/redo are compensating operations with the same checks.
 The server also rejects compensation when a newer recorded operation targeted
 the same fields, including dates changed away and back to the same value.
+Chronology uses audit Timestamp; Creator record IDs are allocated across writers
+and must not serve as a clock. Other recorded operations with the same timestamp
+conservatively block compensation. History sorts by Timestamp descending.
 
 Creator multi-record writes are not presented as atomic. All targets are
 prevalidated; confirmed destination IDs are recorded incrementally. Partial
@@ -165,7 +168,7 @@ into the current body and retain any integration-audit instrumentation.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,
-and `npm run build:pages`. The 1.1.2 rule suite has 23 groups. Browser checks
+and `npm run build:pages`. The 1.1.3 rule suite has 23 groups. Browser checks
 exercise actual rendered controls against isolated SDK fixtures; they do not
 compile Deluge or establish native connection/auth behavior. Native Creator
 compilation, restricted-user checks and live save/undo/import checks remain
@@ -177,3 +180,8 @@ Rollback restores the previous milestone embed from
 new Crew APIs/page. Preserve audit logs, markers and unresolved phase locks until
 records are reconciled. Keep outbound guards while markers remain. Version 1.0.6
 was Development-only and is not a functioning Production fallback.
+
+Native inline editors bind change on the rendered input; boundary editors bind
+on their owning content container. The isolated harness also simulates a host
+consuming document-level change events so native field-exit saves do not depend
+on document event propagation. Native widget verification remains separate.

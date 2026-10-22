@@ -3,6 +3,9 @@
 import fs from 'node:fs';import path from 'node:path';import http from 'node:http';import {crewFixture} from './fixtures/crew-locations.mjs';
 const root=path.resolve('widgets/crew-locations/src/app'),port=Number(process.argv[2]||4317);
 function fixtureSDK(data){
+ // Simulate a host consuming bubbling change events at document level. Editors
+ // must save at their own element/container before reaching that host listener.
+ document.addEventListener('change',event=>{if(event.target.matches('.stage-input,.boundary-input'))event.stopImmediatePropagation();});
  localStorage.removeItem('crew-locations:view:DEVELOPMENT:isolated-fixture@local.test');
  const NativeDate=Date;window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:['2026-10-21T17:00:00Z']));}static now(){return NativeDate.now();}};
  const fixture={requests:[],mode:'normal',operations:[],prepared:new Map(),data};
