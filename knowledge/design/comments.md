@@ -1,5 +1,27 @@
 # Comments
 
+## Approval decision comments
+
+Budget request approval comments use the existing `Budget_Approvals.Approval_Notes`
+on the exact captured approval row. They are distinct from record conversations
+in `Comment_Log`. Per user direction October 22, 2026, show the comment box with
+the decision controls and save its text with **Approve** or **Reject**; do not add
+a separate Add comment/Post action to this surface. Retain the existing optional
+approval note and required modification-rejection reason rules. Show stored
+notes with the captured approver, role, decision and response date. Never replace
+the historical approver with the current viewer.
+
+Modification detail, item history and approval cards share this presentation.
+Retain drafts per actor/environment and approval ID through re-rendering,
+close/reopen, reject confirmation/cancel and failed writes. Clear only the
+submitted draft after native acknowledgement; an older request cannot clear a
+newer edit. Existing Budget track and managed PO decisions keep their native
+note contracts. Check/Wire requests with no approval workflow do not gain a new
+approval chain from this UI change. The conversation rules below still apply
+to the separate record conversations.
+
+## Record conversations
+
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
 This is the shared design contract for Legal, Budget and Pro Forma conversation

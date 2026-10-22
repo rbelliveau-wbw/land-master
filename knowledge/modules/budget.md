@@ -1,3 +1,24 @@
+## Approval decision comments — October 22, 2026
+
+Budget 122.29.70 shows per-approval comments in standalone modification details,
+item history and modification approval cards. Approve and Reject save the note
+to the exact existing `Budget_Approvals.ID` in `Approval_Notes`, alongside Status
+and Responded_Date; the row remains linked through Budget_Modification/Budget.
+There is no separate Add comment button or Comment_Log write. Existing Budget
+track and managed PO decision comments already use the same native field.
+Check/Wire requests retain their existing workflow availability.
+
+Approved/rejected notes show their stored approver, role and response date.
+Drafts survive re-render, modal close/reopen and failed writes, and stay scoped
+to the authenticated actor/environment and approval ID. Existing ownership,
+modification-admin delegation, required rejection notes, routing, email,
+finalization and PO-linked modification handling remain. Duplicate modification
+Approve clicks are guarded while the write is active, and acknowledged rows
+are updated locally before the display refresh.
+
+No new forms/fields/reports/functions/Custom APIs or Creator promotion is needed.
+[Release verification and rollback](../../docs/budget-approval-comments-2026-10-22.md).
+
 ## Delivery strip composer — October 21, 2026
 
 Budget 122.29.67 adopts the approved shared Delivery strip composer for Budget
