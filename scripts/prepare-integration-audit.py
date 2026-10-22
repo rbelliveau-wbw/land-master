@@ -50,6 +50,14 @@ def patch_body(body, name, display, analytics):
     if name == 'Budgets_Import_Load_CTC_C':
         body = body.replace('subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode")];',
                             'subdiv = External_System_Mapping[(External_Code == rec.get("H.JobCode")) && (External_System == "HeavyJob")];')
+    if name == 'Budgets_Check_HCSS_Budget':
+        body = body.replace('subdiv = External_System_Mapping[External_Code == sourceJobCode];',
+                            'subdiv = External_System_Mapping[(External_Code == sourceJobCode) && (External_System == "HeavyJob")];')
+    if name == 'Equipment_Sync_Create_Equ':
+        # The live E360 table has PurchaseDate, not PurchaseYear. Description
+        # only needs to be exported once; retain its original first position.
+        body = re.sub(r'(cols.add\("SerialNo"\);\s*)cols.add\("Description"\);', r'\1', body)
+        body = body.replace('cols.add("PurchaseYear");', 'cols.add("PurchaseDate");')
     # All Analytics consumers share completion, HTTP, payload and selected-column checks.
     if "/bulk/" in body and "rows = dataResp.get(\"data\");" in body:
         begin=body.index("params = Map();")
@@ -147,8 +155,27 @@ else if(responseText.left(1) != "[") {{ throw "Zoho Projects returned a non-JSON
         body=body.replace('info "Final Acceptance sync stopped: missing Analytics data. Projects=" + projectsResponse.toString() + "; Tasks=" + tasksResponse.toString();','throw "Final Acceptance sync stopped: missing Analytics data.";')
         body+='\nif(reviewCount > 0) { throw "Final Acceptance requires review for " + reviewCount + " mapping/date conflicts; conflicting dates were preserved."; }\n'
     if name == 'Budgets_Check_HCSS_Budget':
+        body=body.replace('if(sourceJobCode != "" && sourceMinorCode != "")',
+                          'auditRecordKey = sourceJobCode + "-B-" + sourceMinorCode;\nif(sourceJobCode != "" && sourceMinorCode != "")')
         body=body.replace('if(sourceJobCode != "" && sourceMinorCode != "")','if(sourceJobCode == "" || sourceMinorCode == "" || sourceCostCodeId == "") { throw "Cleanup source contains incomplete cost-code identity. No cleanup writes were started."; }\nif(sourceJobCode != "" && sourceMinorCode != "")')
+        body=body.replace('throw "Duplicate or broken external mapping; source row=" + auditProcessed;',
+                          'throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + sourceJobCode + "; matching HeavyJob mappings=" + subdiv.count();')
         body=body.replace('info "Cleanup skipped because activeBudgetLineCodes was empty. No Budget_Import_Item records were changed.";','auditNoEligible = true;\ninfo "Cleanup skipped because no eligible stable codes remain after mapping/budget exclusions. No costs were zeroed.";')
+    if name == 'Equipment_Sync_Create_Equ':
+        body=body.replace('auditRowChanged = false;\n', '''auditRowChanged = false;
+ auditRecordKey = ifnull(rec.get("Name"),"").toString();
+ // E360 represents an unknown purchase date as year 0001. Do not write that
+ // placeholder or clear an existing Creator date when no real date is supplied.
+ purchaseDateText = ifnull(rec.get("PurchaseDate"),"").toString().trim();
+ purchaseDateValue = null;
+ if(purchaseDateText != "" && !purchaseDateText.startsWith("01/01/0001"))
+ {
+     purchaseDateValue = purchaseDateText.toDate("dd/MM/yyyy HH:mm:ss");
+ }
+''', 1)
+        body=body.replace('equip.Purchase_Date=rec.get("PurchaseYear");',
+                          'if(purchaseDateValue != null)\n\t\t{\n\t\t\tequip.Purchase_Date=purchaseDateValue;\n\t\t}')
+        body=body.replace('Purchase_Date=rec.get("PurchaseYear")', 'Purchase_Date=purchaseDateValue')
     # Include known native writes in Partial classification even if a later assignment fails.
     body=re.sub(r'(?m)^(\s*)(\w+\.\w+\s*=)',r'\1auditWriteAttempted = true;\n\1\2',body)
     system='Zoho Analytics' if analytics else 'Zoho Projects'

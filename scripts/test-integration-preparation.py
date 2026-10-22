@@ -20,6 +20,17 @@ for component in components:
     name=component['name']
     old=(BASE/f'{name}.ds').read_text(encoding='utf-8')
     new=(OUT/f'{name}.ds').read_text(encoding='utf-8')
+    if name=='Equipment_Sync_Create_Equ':
+        # Explicit October 22 repair exception: the live source has PurchaseDate,
+        # and the native destination is a date field. Every other assignment,
+        # insert field, selected column and schedule still compares unchanged.
+        old=old.replace('cols.add("PurchaseYear");','cols.add("PurchaseDate");')
+        old=re.sub(r'(cols.add\("SerialNo"\);\s*)cols.add\("Description"\);',r'\1',old)
+        old=old.replace('Purchase_Date=rec.get("PurchaseYear")','Purchase_Date=purchaseDateValue')
+        assert 'PurchaseYear' not in new
+        assert new.count('cols.add("Description");')==1
+        assert 'purchaseDateText.toDate("dd/MM/yyyy HH:mm:ss")' in new
+        assert 'if(purchaseDateValue != null)' in new
     assert native_assignments(old)==native_assignments(new),f'{name}: existing native field assignments changed'
     assert inserts(old)==inserts(new),f'{name}: existing insert payload changed'
     for pattern in [r'(?m)^\s*(?:type|start|frequency|time zone|status|form)\s*=\s*[^\n]+',r'\w+\.add\("[^"]+"\);']:
@@ -42,7 +53,7 @@ for name in ['PF_AI_Review','Plat_AI_Ingest','PF_Build_LOI_Document']:
     assert re.findall(r'\breturn\s+(?:resp\.toString\(\)|result);',old)==re.findall(r'\breturn\s+(?:resp\.toString\(\)|result);',new),name
     assert new.count('invokeurl')==old.count('invokeurl'),name
     assert 'thisapp.workflowRunLog(' in new,name
-print(f'PASS: {len(components)} workflow components and three functions preserve native field assignments, insert payloads, schedules, source columns, return contracts and external request counts.')
+print(f'PASS: {len(components)} workflow components and three functions preserve native assignments, inserts, schedules, source columns, returns and request counts, with only the explicit Equipment purchase-date/duplicate-column repair exception.')
 
 # Execute the exact Analytics SQL on the observed split-major shape, credits,
 # boundary exclusions and unmapped jobs. SQLite is a relational fixture here;

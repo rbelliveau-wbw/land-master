@@ -117,6 +117,38 @@ for(const operationStage of ['exporting Projects','exporting Tasks']){
 }
 console.log('PASS: CTC system-scoped mapping and Final Acceptance source error/stage preservation with an unset nested date error.');
 
+// HCSS cleanup must use the same system scope as the HCSS import, while true
+// duplicates and broken lookups still stop before the destination cleanup loop.
+const hcssCleanup=fs.readFileSync('creator/integration-audit/prepared/Budgets_Check_HCSS_Budget.action-1.dg','utf8');
+const hcssCriteria=hcssCleanup.match(/subdiv = External_System_Mapping\[([^\n]+)\];/)[1]
+  .replace(/\b(External_Code|External_System)\b/g,'mapping.$1');
+const selectHcss=vm.runInNewContext(`(mapping,sourceJobCode)=>${hcssCriteria}`);
+assert.deepEqual(mappings.filter(mapping=>selectHcss(mapping,'EXAMPLE_JOB')).map(mapping=>mapping.ID),['900000000000000302']);
+assert.equal([...mappings,{...mappings[1],ID:'900000000000000303'}].filter(mapping=>selectHcss(mapping,'EXAMPLE_JOB')).length,2);
+assert.match(hcssCleanup,/subdiv\.count\(\) != 1 \|\| subdiv\.Subdivision1 == null/);
+assert.ok(hcssCleanup.indexOf('auditRecordKey = sourceJobCode')<hcssCleanup.indexOf('subdiv = External_System_Mapping'));
+assert.match(hcssCleanup,/matching HeavyJob mappings=/);
+
+// Execute the actual date preparation and update guard with the live E360 text
+// shapes. This fixture checks the policy; native Save checks Deluge syntax.
+const equipment=fs.readFileSync('creator/integration-audit/prepared/Equipment_Sync_Create_Equ.action-1.dg','utf8');
+const datePreparation=equipment.slice(equipment.indexOf('purchaseDateText ='),equipment.indexOf('equip = Equipment['));
+const purchaseUpdate=equipment.match(/if\(purchaseDateValue != null\)\s*\{[^}]+equip\.Purchase_Date=purchaseDateValue;\s*\}/)[0];
+for(const [input,expected,shouldFail] of [[null,'existing',false],['','existing',false],['01/01/0001 00:00:00','existing',false],['24/02/2025 00:00:00','2025-02-24',false],['02/06/2025 00:00:00','2025-06-02',false],['bad-date','existing',true]]){
+  const c=vm.createContext({rec:{get:()=>input},ifnull:(value,fallback)=>value??fallback,equip:{Purchase_Date:'existing'},auditWriteAttempted:false});
+  vm.runInContext(`String.prototype.toDate=function(format){
+    if(format!=='dd/MM/yyyy HH:mm:ss')throw new Error('Unexpected date mapping');
+    const m=this.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4}) 00:00:00$/);
+    if(!m)throw new Error('Invalid source date');
+    return m[3]+'-'+m[2]+'-'+m[1];
+  };`,c);
+  if(shouldFail)assert.throws(()=>vm.runInContext(datePreparation+purchaseUpdate,c));
+  else vm.runInContext(datePreparation+purchaseUpdate,c);
+  assert.equal(c.equip.Purchase_Date,expected);
+  assert.equal(c.auditWriteAttempted,expected!=='existing');
+}
+console.log('PASS: HCSS system scope/duplicate guard and Equipment real dates, missing/placeholder preservation, unambiguous day/month parsing and malformed-date failure before the purchase-date write.');
+
 // Run the GP Construction mapping prefix with real collection/lookup shapes.
 // A mapping failure must identify this row, even after a different job succeeded.
 const gpConstruction=fs.readFileSync('creator/integration-audit/prepared/Budgets_Import_Load_GP_Co.action-1.dg','utf8');

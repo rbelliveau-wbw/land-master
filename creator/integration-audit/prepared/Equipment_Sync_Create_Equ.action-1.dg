@@ -41,11 +41,10 @@ cols.add("Current_MeterHours");
 cols.add("Name");
 cols.add("Description");
 cols.add("SerialNo");
-cols.add("Description");
 cols.add("EquipmentType");
 cols.add("Year");
 cols.add("PurchasePrice");
-cols.add("PurchaseYear");
+cols.add("PurchaseDate");
 config.put("selectedColumns",cols);
 // === 3) Kick off the async export job ===
 rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
@@ -57,6 +56,15 @@ for each  rec in rows
 {
  auditProcessed = auditProcessed + 1;
  auditRowChanged = false;
+ auditRecordKey = ifnull(rec.get("Name"),"").toString();
+ // E360 represents an unknown purchase date as year 0001. Do not write that
+ // placeholder or clear an existing Creator date when no real date is supplied.
+ purchaseDateText = ifnull(rec.get("PurchaseDate"),"").toString().trim();
+ purchaseDateValue = null;
+ if(purchaseDateText != "" && !purchaseDateText.startsWith("01/01/0001"))
+ {
+     purchaseDateValue = purchaseDateText.toDate("dd/MM/yyyy HH:mm:ss");
+ }
 
 	equip = Equipment[Equipment_Code = rec.get("Name")];
 if(equip.count() > 1) { throw "Duplicate destination records: equip; source row=" + auditProcessed; }
@@ -78,8 +86,11 @@ if(equip.count() > 1) { throw "Duplicate destination records: equip; source row=
 		equip.Year1=rec.get("Year");
 		auditWriteAttempted = true;
 		equip.Purchase_Price=rec.get("PurchasePrice");
-		auditWriteAttempted = true;
-		equip.Purchase_Date=rec.get("PurchaseYear");
+		if(purchaseDateValue != null)
+		{
+			auditWriteAttempted = true;
+			equip.Purchase_Date=purchaseDateValue;
+		}
 	
  auditDestination = equip.ID.toString();
  if(!auditUpdatedIds.contains(auditDestination)) { auditUpdatedIds.add(auditDestination); auditUpdated = auditUpdated + 1; }
@@ -98,7 +109,7 @@ if(equip.count() > 1) { throw "Duplicate destination records: equip; source row=
 			Type1=rec.get("EquipmentType")
 			Year1=rec.get("Year")
 			Purchase_Price=rec.get("PurchasePrice")
-			Purchase_Date=rec.get("PurchaseYear")
+			Purchase_Date=purchaseDateValue
 		];
  auditCreated = auditCreated + 1;
  auditRowChanged = true;

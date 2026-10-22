@@ -88,12 +88,13 @@ for each  rec in rows
 	sourceCostCodeId = ifnull(rec.get("H.zzz_CostCodeID_Guid"),"").toString();
 	sourceJobCode = ifnull(rec.get("H.JobCode"),"").toString();
 	sourceMinorCode = ifnull(rec.get("H.Minor Code"),"").toString();
-	if(sourceJobCode == "" || sourceMinorCode == "" || sourceCostCodeId == "") { throw "Cleanup source contains incomplete cost-code identity. No cleanup writes were started."; }
+	auditRecordKey = sourceJobCode + "-B-" + sourceMinorCode;
+if(sourceJobCode == "" || sourceMinorCode == "" || sourceCostCodeId == "") { throw "Cleanup source contains incomplete cost-code identity. No cleanup writes were started."; }
 if(sourceJobCode != "" && sourceMinorCode != "")
 	{
-		subdiv = External_System_Mapping[External_Code == sourceJobCode];
+		subdiv = External_System_Mapping[(External_Code == sourceJobCode) && (External_System == "HeavyJob")];
 if(subdiv.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
-if(subdiv.count() != 1 || subdiv.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
+if(subdiv.count() != 1 || subdiv.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + sourceJobCode + "; matching HeavyJob mappings=" + subdiv.count(); }
 		if(subdiv.count() > 0)
 		{
 			subdivCode = ifnull(subdiv.Subdivision1.Subdivision_Code,"").toString();
