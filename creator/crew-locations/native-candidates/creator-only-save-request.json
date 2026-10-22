@@ -1,0 +1,23 @@
+{
+  "action": "apply",
+  "operationId": "e04adcdc-18b0-4663-a984-d47aa8524ac6",
+  "subdivisionId": "4410926000003378004",
+  "origin": "table",
+  "changes": [
+    {
+      "type": "M",
+      "recordId": "4410926000003819022",
+      "stage": "Rough Cut",
+      "expected": {
+        "start": "2027-01-31",
+        "end": "2027-03-17"
+      },
+      "fields": {
+        "end": {
+          "before": "2027-03-17",
+          "after": "2027-03-18"
+        }
+      }
+    }
+  ]
+}

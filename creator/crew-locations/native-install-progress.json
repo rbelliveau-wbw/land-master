@@ -229,7 +229,7 @@
   "creatorOnly": true,
   "projectsPushEnabled": false,
   "creator_only_upgrade": {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "page": "Crew_Management",
     "existing_milestone_page_embed": "crew_locations",
     "widget_external_url": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
@@ -252,6 +252,21 @@
     "production_api_auth": "OAuth2 Admin only POST Key and Value payload JSON standard response",
     "stage_api_created": false,
     "creator_promotion": "left to user by latest PMP instruction",
-    "live_save_undo_verified": false
+    "live_save_undo_verified": false,
+    "administrator_access": {
+      "development": {
+        "record_id": "4410926000003608006",
+        "view": true,
+        "milestone_edit": true
+      },
+      "production": {
+        "record_id": "4410926000004465004",
+        "view": true,
+        "milestone_edit": true
+      },
+      "task_edit_and_assignments": false
+    },
+    "blocker": "creator/crew-locations/creator-only-save-blocker.json",
+    "stage_frontend_promoted": false
   }
 }

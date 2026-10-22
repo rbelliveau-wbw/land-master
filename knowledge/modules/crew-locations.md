@@ -1,4 +1,4 @@
-# Crew Management — Creator-only scheduling 1.1.0
+# Crew Management — Creator-only scheduling 1.1.1
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -27,7 +27,7 @@ and [removal-inventory.json](../../creator/crew-locations/removal-inventory.json
 They must be checked before recreating or deleting anything. The removal inventory
 is memory, not deletion authorization.
 
-Release 1.1.0 routes the frontend API alias by authenticated Creator environment:
+Release 1.1.1 routes the frontend API alias by authenticated Creator environment:
 `Crew_Locations_Widget_DEV`, `Crew_Locations_Widget_STAGE`, or
 `Crew_Locations_Widget`. The server independently derives its environment from
 `thisapp.environment.type` and `thisapp.environment.linkname`; client payloads
@@ -156,7 +156,7 @@ into the current body and retain any integration-audit instrumentation.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,
-and `npm run build:pages`. The 1.1.0 rule suite has 23 groups. Browser checks
+and `npm run build:pages`. The 1.1.1 rule suite has 23 groups. Browser checks
 exercise actual rendered controls against isolated SDK fixtures; they do not
 compile Deluge or establish native connection/auth behavior. Native Creator
 compilation, restricted-user checks and live save/undo/import checks remain

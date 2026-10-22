@@ -1,0 +1,23 @@
+{
+  "status": "blocked-native-save-rejected",
+  "operationId": "e04adcdc-18b0-4663-a984-d47aa8524ac6",
+  "environment": "development",
+  "nativeCode": 3001,
+  "confirmed": [],
+  "message": "Use the audited Crew Locations editor to change schedule dates.",
+  "before": {
+    "milestoneId": "4410926000003819022",
+    "start": "2027-01-31",
+    "end": "2027-03-17",
+    "Push_Update": false
+  },
+  "attemptedEnd": "2027-03-18",
+  "browser_connection": "Repeated CDP control timeouts followed by kernel resets; cannot continue native diagnosis",
+  "possible_causes": [
+    "caller representation differs between function and delegated API",
+    "pending lock/audit transaction is not visible in delegated API validation"
+  ],
+  "diagnosis_confirmed": false,
+  "no_projects_writes": true,
+  "no_date_save_acknowledged": true
+}

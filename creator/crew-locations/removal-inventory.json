@@ -518,7 +518,7 @@
     "name": "Crew Management",
     "hosting": "External",
     "entry": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
-    "release": "1.1.0",
+    "release": "1.1.1",
     "cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1",
     "previous_hosting": "Internal",
     "previous_entry": "/app/widget.html",
@@ -633,5 +633,17 @@
     "projectsPushEnabled": false,
     "every_new_milestone_patch_Push_Update": false,
     "creator_promotion": "user handles after PMP"
+  },
+  "administrator_access_current": {
+    "development": "4410926000003608006",
+    "production": "4410926000004465004",
+    "flags_true": [
+      "View_Crew_Locations",
+      "Edit_Crew_Milestones"
+    ],
+    "flags_false": [
+      "Edit_Crew_Task_Dates",
+      "Manage_Crew_Assignments"
+    ]
   }
 }

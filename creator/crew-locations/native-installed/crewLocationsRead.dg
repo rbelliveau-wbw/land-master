@@ -1,0 +1,45 @@
+map crewLocationsRead(string reportName, string criteria)
+{
+	result = {"ok":false,"message":"Creator record access was not confirmed."};
+	try 
+	{
+		config = thisapp.crewLocationsConfig();
+		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules"};
+		if(!allowed.contains(reportName) || zoho.loginuser == null || zoho.loginuser == "public")
+		{
+			return result;
+		}
+		headers = {"environment":config.get("environmentLink"),"Content-Type":"application/json"};
+		parameters = {"criteria":criteria,"max_records":1000,"field_config":"all"};
+		// Verified existing LOGGED-IN USER connection; never substitute an admin connection.
+		// These delegated report reads preserve native sharing and API/report access.
+		raw = invokeurl
+		[
+			url :config.get("baseUrl") + reportName
+			type :GET
+			parameters:parameters
+			headers:headers
+			connection:"zoho_creator_connection"
+		];
+		if(raw.get("code").toString() == "3100")
+		{
+			return {"ok":true,"records":List()};
+		}
+		if(raw.get("code").toString() != "3000" || raw.get("data") == null)
+		{
+			return result;
+		}
+		rows = raw.get("data");
+		// Scoped record/stage checks never silently truncate a report page.
+		if(rows.size() >= 1000)
+		{
+			return {"ok":false,"message":"The scoped source has 1000 or more records; narrow the configured report before editing."};
+		}
+		result.put("records",rows);
+		result.put("ok",true);
+	}	catch (readError)
+	{
+		result.put("message","Caller-scoped Creator access failed: " + readError.toString());
+	}
+	return result;
+}

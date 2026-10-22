@@ -1,6 +1,6 @@
 {
   "date": "2026-10-21",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "mode": "creator-only-scheduling",
   "scheduling_rule_groups": {
     "passed": 23,
@@ -154,6 +154,9 @@
     "creatorOnly": true,
     "projectsPushEnabled": false,
     "native_save_undo_verified": false,
-    "creator_promotion": "pending user promotion"
+    "creator_promotion": "pending user promotion",
+    "live_save_undo_verified": false,
+    "blocker": "creator/crew-locations/creator-only-save-blocker.json",
+    "stage_frontend_promoted": false
   }
 }

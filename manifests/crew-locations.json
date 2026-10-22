@@ -1,7 +1,7 @@
 {
   "status": "creator-only-upgrade-awaiting-user-promotion",
   "widget": "crew-locations",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "mode": "creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
