@@ -26,8 +26,11 @@ with the priority rail and status headings retained at its edges.
 Omit request totals, status-column counts, lane counts and the Review badge on
 the Construction Requests board. Other list/review surfaces keep their existing
 counts. Construction cards match the approved mockup's information: full request
-name, real current action when present, budget type, completed/total action count
-and checklist progress. Use the loaded native record/checklist, never preview
+name, real current action when present, budget type, Date Needed and checklist
+progress. Date Needed replaces the completed/total action text in the card footer
+(October 22, 2026); use the existing numeric date formatter and an em dash when
+the native date is absent. Keep its Date Needed tooltip/accessibility label and
+leave dates outside numeric transitions. Use the loaded native record/checklist, never preview
 data. Omit the repeated subdivision line and all parent/child badges or links
 on this board (October 21 correction). List/detail family information stays.
 Cards open with Enter/Space and have visible keyboard focus.

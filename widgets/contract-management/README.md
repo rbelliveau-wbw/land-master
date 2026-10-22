@@ -3,6 +3,11 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.33` shows Date Needed in Construction request card footers in place
+of the action count. It uses the saved request date and shows an em dash when
+absent. Checklist progress and Legal remain unchanged. Frontend only; rollback
+Production to `1.62.32`. See [the module notes](../../knowledge/modules/contracts.md#construction-card-date-needed--october-22-2026).
+
 Construction uses the shared widget with `workMode=construction` and either
 `Edit_All_Construction_Requests` or `Submit_Construction_Requests`. Submit-only
 users create requests and add files/comments; they do not edit existing fields

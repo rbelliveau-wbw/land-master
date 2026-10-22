@@ -129,7 +129,8 @@ for(const flags of [submit,editor]){
  assert.ok(h.c.document.querySelector('.construction-board-cell[data-status="Hold"]'));
  assert.match(h.node('view').innerHTML,/Signal &lt;request&gt;|Legacy &lt;urgent&gt;/,'native strings are escaped');
  assert.equal(h.c.document.querySelectorAll('.construction-board .bcard-builder,.construction-board .lot-parent-label,.construction-board .contract-master-note').length,0,'Construction cards omit subdivision and family metadata');
- assert.match(h.node('view').textContent,/0\/1 actions/,'action counts use the saved checklist');
+ assert.equal(h.c.document.querySelector('.construction-board .bcard-needed').textContent,'10/30/2026','request cards show the saved Date Needed');
+ assert.doesNotMatch(h.node('view').textContent,/\d+\/\d+ actions/,'request card footers replace action counts');
  const cell=(priority,status)=>h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')===priority&&node.getAttribute('data-status')===status);
  const drop=(priority,status,cid=ID)=>{h.c.S.bDrag=cid;h.c.bDrop({preventDefault(){},currentTarget:cell(priority,status)});};
  drop('Medium','Proposed');await drain();assert.equal(writes(h).length,0,'Review status is not a manual drop destination');

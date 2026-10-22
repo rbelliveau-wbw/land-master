@@ -1963,16 +1963,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.32"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.32">
-<script src="interaction-motion.js?v=1.62.32"></script>
-<script src="interaction-surfaces.js?v=1.62.32"></script>
-<script src="number-edit-commit.js?v=1.62.32"></script>
-<script src="number-transitions.js?v=1.62.32"></script>
-<script src="number-surfaces.js?v=1.62.32"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.32">
-<link rel="stylesheet" href="report-layout.css?v=1.62.32">
-<link rel="stylesheet" href="construction-board.css?v=1.62.32">
+<script src="success-feedback.js?v=1.62.33"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.33">
+<script src="interaction-motion.js?v=1.62.33"></script>
+<script src="interaction-surfaces.js?v=1.62.33"></script>
+<script src="number-edit-commit.js?v=1.62.33"></script>
+<script src="number-transitions.js?v=1.62.33"></script>
+<script src="number-surfaces.js?v=1.62.33"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.33">
+<link rel="stylesheet" href="report-layout.css?v=1.62.33">
+<link rel="stylesheet" href="construction-board.css?v=1.62.33">
 </head>
 <body>
 
@@ -2021,7 +2021,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.32", pageSize: 200, maxPages: 25,
+  version: "1.62.33", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -9756,7 +9756,7 @@ function boardCard(c){
         +'<div class="bcard-name">'+esc(c.Contract_Name||("Contract "+c.ID))+'</div>'
         +(construction?'':lotHierarchyLabel(c))
         +(currentActionText(c.ID)?'<div class="bcard-action">'+esc(currentActionText(c.ID))+'</div>':'')
-        +(construction?'<div class="bcard-foot"><span class="bcard-type">'+esc(c.Contract_Type||'')+'</span><span class="progress-n">'+st.done+'/'+st.total+' actions</span></div>':'<div class="bcard-foot"><span class="bcard-builder">'+esc(displayValue(c.Builder)||displayValue(c.Subdivision1)||"—")+'</span>'
+        +(construction?'<div class="bcard-foot"><span class="bcard-type">'+esc(c.Contract_Type||'')+'</span><span class="bcard-needed" title="Date Needed" aria-label="Date Needed: '+attr(fmtDate(c.Date_Needed)||'Not set')+'">'+esc(fmtDate(c.Date_Needed)||'—')+'</span></div>':'<div class="bcard-foot"><span class="bcard-builder">'+esc(displayValue(c.Builder)||displayValue(c.Subdivision1)||"—")+'</span>'
         +(locked?'<span class="bcard-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>':'<span class="bcard-type">'+esc(c.Contract_Type||"")+'</span>')+'</div>'
         )
         +(st.total?'<div class="progress"><i'+(construction?' id="construction_progress_'+attr(String(c.ID))+'" data-lm-motion="meter"':'')+' style="width:'+st.pct+'%"></i></div>':'')

@@ -27,9 +27,9 @@ try{
   Object.assign(S,{workMode:'construction',mode:'board',view:'home',homeSection:'contracts',coreReady:true,liveSDK:true,demo:false,contractCoreScope:contractMutationScope(),currentUser:'fixture@example.test',usersLoaded:true,optionsLoaded:true,projectsLoaded:true});
   Object.assign(S.acc,{known:true,constructionEditAll:true,constructionSubmit:false,edit:false,approve:false,templates:false});
   S.contracts=[
-   {ID:'90071992547410001',Priority:'ASAP',Status:'Proposed',Contract_Type:'Amenity',Contract_Name:'Arroyo Ranch - Phase 01 · Amenity budget',Parent_Contract:{ID:'90071992547410002'}},
+   {ID:'90071992547410001',Priority:'ASAP',Status:'Proposed',Contract_Type:'Amenity',Contract_Name:'Arroyo Ranch - Phase 01 · Amenity budget',Date_Needed:'10/30/2026',Parent_Contract:{ID:'90071992547410002'}},
    {ID:'90071992547410002',Priority:'High',Status:'Proposed',Contract_Type:'MUD Bid',Contract_Name:'Arroyo Ranch - Phase 05 · MUD Bid budget'},
-   {ID:'90071992547410003',Priority:'Medium',Status:'New',Contract_Name:'Arroyo Ranch - Phase 07 · Internal budget'},
+   {ID:'90071992547410003',Priority:'Medium',Status:'New',Contract_Name:'Arroyo Ranch - Phase 07 · Internal budget',Date_Needed:'2026-11-06'},
    {ID:'90071992547410004',Priority:'Medium',Status:'Approved',Contract_Name:'Alta Vista · Phase 01 · MUD bid'},
    {ID:'90071992547410005',Priority:'High',Status:'Proposed',Contract_Name:'Walker’s Landing · Submitted budget'},
    {ID:'90071992547410006',Priority:'Medium',Status:'Complete',Contract_Name:'Pecan Grove · Completed estimate'},
@@ -48,7 +48,9 @@ try{
  assert.ok(fit.height<500,'the screenshot-sized three-request board must not stretch into blank space');assert.ok(Math.abs(fit.height-fit.grid)<=3);assert.ok(fit.gap<=2,'bottom border hugs the final lane');assert.notEqual(fit.background,'rgb(255, 255, 255)','lanes have a muted background');
  assert.equal(await page.locator('.construction-board .bcard-builder,.construction-board .lot-parent-label,.construction-board .contract-master-note,.construction-board .lot-type-badge').count(),0);
  assert.doesNotMatch(await card('90071992547410001').textContent(),/Phase 05|Redundant subdivision/,'the child card omits its parent and duplicate subdivision');
- assert.match(await card('90071992547410003').textContent(),/prepare an imagination.*Internal.*0\/1 actions/,'card fields come from actual request/checklist values');
+ assert.match(await card('90071992547410003').textContent(),/prepare an imagination.*Internal.*11\/06\/2026/,'card fields include the actual request Date Needed');
+ assert.equal(await card('90071992547410001').locator('.bcard-needed').textContent(),'10/30/2026');
+ assert.equal(await card('90071992547410002').locator('.bcard-needed').textContent(),'—','legacy requests without Date Needed remain undated');
  await page.screenshot({path:path.join(output,'signal-rail-three-requests.png')});
  await page.evaluate(()=>{S.contracts=__allRequests;renderAll();});
  assert.deepEqual(await page.locator('.construction-board-lane').evaluateAll(nodes=>nodes.map(n=>n.dataset.priority)),['ASAP','High','Medium','Legacy <urgent>','']);

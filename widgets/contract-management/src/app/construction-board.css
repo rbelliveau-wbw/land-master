@@ -28,7 +28,7 @@
 .construction-board .bcard-builder{min-width:0;white-space:normal;overflow-wrap:anywhere}
 .construction-board .bcard-foot{flex-wrap:wrap}
 .construction-board .bcard-type{padding:2px 5px;border-radius:5px;background:#e5edf7;color:#205d9a}
-.construction-board .progress-n{font-size:10.5px;color:#5c7394;white-space:nowrap}
+.construction-board .bcard-needed{font-size:10.5px;color:#5c7394;white-space:nowrap;font-variant-numeric:tabular-nums}
 .construction-board .progress{flex:none;height:3px;min-height:3px;margin-top:3px;background:#dce6f2}
 .construction-board .progress i{background:#356b9e}
 .construction-board .bcol-drop{display:none}

@@ -13,8 +13,12 @@ requires the owner's business decision.
 
 The native Development action was saved and independently reopened to verify
 the complete script. Creator promotion remains with the user under PMP. The
-Production data conflict remains pending the owner's destination decision; no
-mapping or budget record was changed and no import was replayed.
+Production data conflict was subsequently resolved after the owner identified
+the intended subdivision and explicitly approved clearing the conflicting
+record's External Code. The conflicting record and its subdivision link were
+retained. Production readback confirmed exactly one Great Plains match for the
+job. No budget record was changed and no import was replayed. Other prefixed
+job-code conflicts remain unchanged pending their own business clarification.
 
 Regression checks execute the actual mapping prefix with duplicate Great Plains
 destinations, a valid same-code HeavyJob mapping, a broken subdivision lookup and

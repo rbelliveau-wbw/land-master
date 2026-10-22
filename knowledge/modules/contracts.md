@@ -1,3 +1,14 @@
+## Construction card Date Needed — October 22, 2026
+
+Contract Management 1.62.33 replaces the completed/total action text on
+Construction request cards with the request's existing Date Needed, formatted
+as MM/dd/yyyy. Missing dates show an em dash. Checklist bars, current action,
+request editing, board dragging and Legal cards retain their existing behavior.
+This is a frontend display change using Contract.Date_Needed; no Creator
+promotion or API change is required. Existing Construction checks now assert
+the date footer. Full repository validation and Pages build are required before
+promotion. Rollback Production to 1.62.32.
+
 ## Construction board headings — October 21, 2026
 
 Contract Management 1.62.31 makes Construction board status headings and priority
