@@ -56,6 +56,17 @@ read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 # Tax Module
 
+## Uniqueness warning by Save — 19.17.27, October 21, 2026
+
+The existing live uniqueness notice now sits in the Add Tax Parcel Year action
+footer beside Cancel and Save. Duplicate, invalid and unavailable states use
+bold red text and a matching dot; checking remains muted and valid results hide
+the notice. The existing asynchronous check, stale-response guards, disabled
+Save and final prewrite check are reused without changes. No Creator forms,
+fields, functions, Custom APIs or deployment changes. Desktop verification:
+duplicate notice beside disabled Save, available year clearing the notice and
+normal enabled Save. Production rollback: `19.17.26`.
+
 ## Live parcel-year uniqueness — 19.17.26, October 21, 2026
 
 Year, Property and Subdivision changes check the unchanged generated

@@ -470,8 +470,9 @@ and territory. Preserve explicit unassigned and missing-subdivision states.
 ## Live uniqueness feedback
 
 User direction October 21, 2026: check known unique values as their controlling
-inputs change, before enabling Submit. Keep the notice succinct and subtle but
-noticeable: one small amber dot and a short line beside the relevant fields.
+inputs change, before enabling Submit. Keep the notice succinct and noticeable.
+Updated user direction October 21, 2026 places a short red, bold line and a small
+matching dot beside Save in the action footer.
 Show a muted checking state, disable Submit while checking/duplicate/unavailable,
 ignore stale replies, and hide the notice when available. Retain a final server
 check and native uniqueness enforcement for concurrent writers. Tax Center's

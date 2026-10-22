@@ -93,3 +93,14 @@ source/runtime copies aligned; only the five identified native error builders
 and Tax's uniqueness flow change behavior. To roll back, restore the listed
 Production mappings and rebuild Pages; keep immutable releases. Development
 continues tracking its latest complete release.
+
+## Footer emphasis refinement — 19.17.27
+
+User follow-up October 21 moves the same status node beside Save and changes
+blocking states to bold red with a matching dot. Checking remains muted. The
+validation/controller/API logic is unchanged. Source change: Tax `widget.html`,
+widget config/version/hash, manifest, Development/Production mapping and new
+immutable release; design/module notes record the revised preference. No Creator
+deployment is required. Desktop regression checks cover duplicate/available
+states, footer placement and preserved Save gating. Roll back Production to
+`19.17.26` if necessary; preserve both immutable releases.
