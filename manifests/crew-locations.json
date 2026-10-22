@@ -109,7 +109,7 @@
     "production_promoted": true,
     "core_functions_native_compiled": 10,
     "installation_progress": "creator/crew-locations/native-install-progress.json",
-    "production_widget_promoted": false,
+    "production_widget_promoted": true,
     "native_components_published_to": [
       "stage",
       "production"
@@ -127,10 +127,11 @@
     "native_date_save_verified": true,
     "milestone_editing_enabled": true,
     "native_runtime_environment": "Development upgrade saved; Production API registered; user promotes pending native changes",
-    "native_runtime_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
+    "native_runtime_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Management",
     "native_outbound_guards_installed": 5,
     "validation_workflows_installed": 1,
-    "native_page_profile_check_pending": true
+    "native_page_profile_check_pending": true,
+    "release_outcome": "creator/crew-locations/pmp-outcome.json"
   },
   "save_protocol": {
     "actions": [

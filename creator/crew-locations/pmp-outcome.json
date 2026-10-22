@@ -1,0 +1,36 @@
+{
+  "status": "PMP complete; native Development verified; user Creator promotion pending",
+  "release": "1.1.3",
+  "asset_commit": "d8b5e5c206c574ee7c9e90c337b11c91427fb6e4",
+  "repository_environments": [
+    "development",
+    "production"
+  ],
+  "full_validation": "passed exit 0",
+  "pages_build": "passed; 33 paths",
+  "ci": {
+    "result": "success",
+    "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39712239381"
+  },
+  "pages": {
+    "result": "success",
+    "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39712239296"
+  },
+  "native_development": {
+    "pages": [
+      "Crew_Management",
+      "Milestone_Gantt_View"
+    ],
+    "version_dom_verified": "1.1.3",
+    "normal_date_cell_save": "acknowledged",
+    "audited_undo": "acknowledged; original End restored to 2027-03-17"
+  },
+  "testingMode": false,
+  "creatorOnly": true,
+  "projectsPushEnabled": false,
+  "outbound_projects_writes": 0,
+  "creator_publication": "Not performed under PMP; user promotes pending functions, page and widget registration.",
+  "crew_task_adapters": "disabled; real sources remain unverified",
+  "removal_inventory": "removal-inventory.json",
+  "save_evidence": "creator-only-save-verification.json"
+}

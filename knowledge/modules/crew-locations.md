@@ -185,3 +185,11 @@ Native inline editors bind change on the rendered input; boundary editors bind
 on their owning content container. The isolated harness also simulates a host
 consuming document-level change events so native field-exit saves do not depend
 on document event propagation. Native widget verification remains separate.
+
+Final 1.1.3 verification: both Development pages load the externally hosted
+release and display Creator-only mode. Normal date typing and Tab produced a
+complete native destination acknowledgement; audited Undo restored the original
+end date. Full repository validation, the 33-path build, CI and Pages passed.
+Evidence and exact operation IDs: [PMP outcome](../../creator/crew-locations/pmp-outcome.json).
+Pending Creator publication remains the user’s step under PMP; Production native
+save verification is therefore not claimed. Crew/task source adapters stay off.

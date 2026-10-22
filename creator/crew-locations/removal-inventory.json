@@ -2,7 +2,7 @@
   "purpose": "User explicitly requested a durable inventory in case they later ask to delete this feature. This file is not deletion authorization.",
   "recorded_date": "2026-10-21",
   "environment": "Creator-only scheduling; Development updates pending user promotion",
-  "status": "creator-only-upgrade-awaiting-user-promotion",
+  "status": "repository-deployed-native-development-verified-user-promotion-pending",
   "progress_file": "creator/crew-locations/native-install-progress.json",
   "native_forms": [
     {
@@ -368,7 +368,7 @@
     "Never delete the existing Milestones form, records or the reused Creator connection.",
     "Update this inventory after each additional installation/removal step."
   ],
-  "live_schedule_writes_by_this_work": 4,
+  "live_schedule_writes_by_this_work": 6,
   "production_promotion_by_this_work": true,
   "last_manual_retry": {
     "requested_by_user": true,
@@ -698,7 +698,20 @@
       "Crew_Management",
       "Milestone_Gantt_View"
     ],
-    "inline_editor_native_check": "1.1.3 verification pending"
+    "inline_editor_native_check": "passed in deployed 1.1.3 with normal typing and Tab",
+    "inline_editor_save": {
+      "operationId": "d9d6c0ab-9ae7-4d9d-89bd-4092e3495c72",
+      "native_acknowledged": true,
+      "field": "End_Date",
+      "before": "2027-03-17",
+      "after": "2027-03-18"
+    },
+    "inline_editor_undo": {
+      "operationId": "10e8078b-a255-4c74-9777-e4af9e55bcf2",
+      "reversesOperationId": "d9d6c0ab-9ae7-4d9d-89bd-4092e3495c72",
+      "native_acknowledged": true,
+      "restoredEnd": "2027-03-17"
+    }
   },
   "current_release": "1.1.3",
   "current_creator_promotion": "User promotes pending Creator changes",
@@ -710,5 +723,41 @@
   "native_updated_functions_1_1_3": [
     "crewLocationsValidate",
     "crewLocationsWidget"
-  ]
+  ],
+  "repository_release_outcome": {
+    "status": "PMP complete; native Development verified; user Creator promotion pending",
+    "release": "1.1.3",
+    "asset_commit": "d8b5e5c206c574ee7c9e90c337b11c91427fb6e4",
+    "repository_environments": [
+      "development",
+      "production"
+    ],
+    "full_validation": "passed exit 0",
+    "pages_build": "passed; 33 paths",
+    "ci": {
+      "result": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39712239381"
+    },
+    "pages": {
+      "result": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39712239296"
+    },
+    "native_development": {
+      "pages": [
+        "Crew_Management",
+        "Milestone_Gantt_View"
+      ],
+      "version_dom_verified": "1.1.3",
+      "normal_date_cell_save": "acknowledged",
+      "audited_undo": "acknowledged; original End restored to 2027-03-17"
+    },
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "outbound_projects_writes": 0,
+    "creator_publication": "Not performed under PMP; user promotes pending functions, page and widget registration.",
+    "crew_task_adapters": "disabled; real sources remain unverified",
+    "removal_inventory": "removal-inventory.json",
+    "save_evidence": "creator-only-save-verification.json"
+  }
 }

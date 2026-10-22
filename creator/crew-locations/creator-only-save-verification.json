@@ -43,5 +43,18 @@
     "Crew_Management",
     "Milestone_Gantt_View"
   ],
-  "inline_editor_native_check": "1.1.3 verification pending"
+  "inline_editor_native_check": "passed in deployed 1.1.3 with normal typing and Tab",
+  "inline_editor_save": {
+    "operationId": "d9d6c0ab-9ae7-4d9d-89bd-4092e3495c72",
+    "native_acknowledged": true,
+    "field": "End_Date",
+    "before": "2027-03-17",
+    "after": "2027-03-18"
+  },
+  "inline_editor_undo": {
+    "operationId": "10e8078b-a255-4c74-9777-e4af9e55bcf2",
+    "reversesOperationId": "d9d6c0ab-9ae7-4d9d-89bd-4092e3495c72",
+    "native_acknowledged": true,
+    "restoredEnd": "2027-03-17"
+  }
 }
