@@ -29,7 +29,7 @@ map crewLocationsStatus(string operationId,string phaseId)
 					cached.put("ok",true); cached.put("state",entry.State);
 					// A crash after writing the complete terminal ledger must not strand
 					// its phase lock. This cleanup never replays a date write.
-					delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId)];
+					delete from Crew_Schedule_Lock[Operation_ID == operationId];
 					return cached;
 				}
 			}
@@ -68,7 +68,7 @@ map crewLocationsStatus(string operationId,string phaseId)
 		{
 			result.put("state","saved"); result.put("unknown",false); result.put("message","Recovered saved dates; no writes replayed.");
 			entry.Result_JSON=result.toString(); entry.State="saved";
-			delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId)];
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
 		}
 	}
 	catch(statusError) { result.put("ok",false); result.put("unknown",true); result.put("message",statusError.toString()); }

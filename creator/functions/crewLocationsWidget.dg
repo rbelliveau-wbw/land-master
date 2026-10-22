@@ -51,13 +51,22 @@ string crewLocationsWidget(string payload)
 		{
 			response = thisapp.crewLocationsStatus(operationId,phaseId); response.put("action",action); response.put("testingMode",false); response.put("creatorOnly",true); response.put("projectsPushEnabled",false); response.put("environment",config.get("environment")); return response.toString();
 		}
-		if(action != "apply") { response.put("message","Unknown schedule action."); return response.toString(); }
+		if(action != "prepare" && action != "apply") { response.put("message","Unknown schedule action."); return response.toString(); }
+		// Both calls bind to the same canonical plan. Preparation commits the phase
+		// lock/audit before the delegated PATCH starts a separate Creator transaction.
+		request.put("action","apply"); payload = request.toString();
 		existing = Schedule_Change_Log[Operation_ID == operationId];
 		if(existing.count() > 0)
 		{
 			if(existing.Actor != zoho.loginuser || existing.Request_JSON != payload || existing.Subdivision1 != phaseId.toLong()) { response.put("message","Operation ID was already used for a different request."); return response.toString(); }
-			response = thisapp.crewLocationsStatus(operationId,phaseId); response.put("action",action); response.put("testingMode",false); response.put("creatorOnly",true); response.put("projectsPushEnabled",false); response.put("environment",config.get("environment")); return response.toString();
+			if(action == "prepare" || existing.State != "prepared")
+			{
+				response = thisapp.crewLocationsStatus(operationId,phaseId); response.put("action",action); response.put("testingMode",false); response.put("creatorOnly",true); response.put("projectsPushEnabled",false); response.put("environment",config.get("environment")); return response.toString();
+			}
 		}
+		if(action == "apply" && existing.count() != 1) { response.put("message","Prepare this operation before saving."); return response.toString(); }
+		if(action == "prepare")
+		{
 		// Unique Phase_Key gives one scheduling operation exclusive use of a phase.
 		// Every protected direct edit and the inbound importer must honor this lock.
 		lockId = insert into Crew_Schedule_Lock
@@ -94,6 +103,55 @@ string crewLocationsWidget(string payload)
 			delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId)];
 			return response.toString();
 		}
+		for each target in plan.get("payloads")
+		{
+			key = target.get("type") + ":" + target.get("recordId");
+			if(Crew_Test_Record[Record_Key == key].count() == 0)
+			{
+				markerId = insert into Crew_Test_Record
+				[
+					Record_Key=key
+					Subdivision1=phaseId.toLong()
+					First_Operation_ID=operationId
+					Created_At=zoho.currenttime
+					Added_User=zoho.loginuser
+				];
+			}
+		}
+		response.put("ok",true); response.put("state","prepared"); response.put("operationId",operationId);
+		log.Result_JSON=response.toString(); log.State="prepared";
+		return response.toString();
+		}
+		ownedLock = Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId) && (Actor == zoho.loginuser)];
+		if(ownedLock.count() != 1) { response.put("message","The prepared phase lock is unavailable."); return response.toString(); }
+		// A second unique key prevents two apply calls from executing the same plan.
+		// Do not reclaim a claim after an ambiguous response or an elapsed timeout.
+		try
+		{
+			claimId = insert into Crew_Schedule_Lock
+			[
+				Phase_Key=phaseId + ":apply"
+				Subdivision1=phaseId.toLong()
+				Operation_ID=operationId
+				Actor=zoho.loginuser
+				Acquired_At=zoho.currenttime
+				Added_User=zoho.loginuser
+			];
+		}
+		catch(claimError)
+		{
+			response.put("unknown",true); response.put("operationId",operationId); response.put("message","This prepared operation is already executing or needs recovery. Check status; do not replay it."); return response.toString();
+		}
+		acquired = true;
+		log = Schedule_Change_Log[Operation_ID == operationId];
+		plan = thisapp.crewLocationsValidate(request);
+		if(plan.get("ok") != true)
+		{
+			response.put("message",plan.get("message")); response.put("state","rejected"); response.put("operationId",operationId); response.put("confirmed",confirmed); response.put("records",savedRecords);
+			log.Result_JSON=response.toString(); log.Execution_Finished=true; log.State="rejected";
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
+			return response.toString();
+		}
 		log.State="saving";
 		for each target in plan.get("payloads")
 		{
@@ -108,17 +166,6 @@ string crewLocationsWidget(string payload)
 			fresh = thisapp.crewLocationsValidate(currentRequest);
 			if(fresh.get("ok") != true) { response.put("message",fresh.get("message")); break; }
 			key = target.get("type") + ":" + target.get("recordId");
-			if(Crew_Test_Record[Record_Key == key].count() == 0)
-			{
-				markerId = insert into Crew_Test_Record
-				[
-					Record_Key=key
-					Subdivision1=phaseId.toLong()
-					First_Operation_ID=operationId
-					Created_At=zoho.currenttime
-					Added_User=zoho.loginuser
-				];
-			}
 			log.Inflight_Record_Key=key;
 			fields = {"Start_Date","End_Date"};
 			body = {"data":target.get("patch"),"result":{"fields":fields}};
@@ -165,7 +212,7 @@ string crewLocationsWidget(string payload)
 		// Publish the complete result before the terminal state so read-only status
 		// recovery cannot observe a saved state with an older, incomplete ledger.
 		log.Result_JSON=response.toString(); log.Execution_Finished=true; log.State=state;
-		if(!writeUncertain) { delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId)]; }
+		if(!writeUncertain) { delete from Crew_Schedule_Lock[Operation_ID == operationId]; }
 	}
 	catch(scheduleError)
 	{
@@ -174,7 +221,7 @@ string crewLocationsWidget(string payload)
 		{
 			entry = Schedule_Change_Log[Operation_ID == operationId];
 			if(entry.count() == 1) { failureState = "partial"; if(writeUncertain) { failureState = "unknown"; } response.put("state",failureState); entry.Result_JSON=response.toString(); entry.Execution_Finished=true; entry.Error=scheduleError.toString(); entry.State=failureState; }
-			if(!writeUncertain) { delete from Crew_Schedule_Lock[(Phase_Key == phaseId) && (Operation_ID == operationId)]; }
+			if(!writeUncertain) { delete from Crew_Schedule_Lock[Operation_ID == operationId]; }
 		}
 	}
 	return response.toString();

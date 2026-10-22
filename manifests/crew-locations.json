@@ -1,7 +1,7 @@
 {
   "status": "creator-only-upgrade-awaiting-user-promotion",
   "widget": "crew-locations",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "mode": "creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -124,12 +124,22 @@
     "service_enabled": true,
     "testingMode": false,
     "native_api_page_verified": true,
-    "native_date_save_verified": false,
-    "milestone_editing_enabled": false,
+    "native_date_save_verified": true,
+    "milestone_editing_enabled": true,
     "native_runtime_environment": "Development upgrade saved; Production API registered; user promotes pending native changes",
     "native_runtime_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
     "native_outbound_guards_installed": 5,
     "validation_workflows_installed": 1,
     "native_page_profile_check_pending": true
+  },
+  "save_protocol": {
+    "actions": [
+      "prepare",
+      "apply",
+      "status"
+    ],
+    "phase_lock": "committed before delegated PATCH",
+    "execution_claim": "unique Phase_Key <phaseId>:apply",
+    "unknown_reply": "read-only status; no replay"
   }
 }

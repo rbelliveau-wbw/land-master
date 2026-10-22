@@ -1,4 +1,4 @@
-# Crew Management 1.1.1 installation
+# Crew Management 1.1.2 installation
 
 Latest user direction: enable real Creator milestone editing, including Production;
 never write to Zoho Projects. PMP pushes repository main/Production assets and
@@ -27,7 +27,10 @@ instructions in [historical installation notes](INSTALL-1.0.6-history.md) are su
    View_Crew_Locations and Edit_Crew_Milestones through the existing User_Access
    record. Keep task and crew management permissions false while adapters are off.
    Other users retain default denial and native report/sharing restrictions.
-7. Resolve the native save blocker recorded in creator-only-save-blocker.json.
+7. The native save blocker is resolved by the prepare/apply protocol. Development
+   save and audited Undo both returned complete destination acknowledgements;
+   see creator-only-save-verification.json. Promote the controller, direct
+   validator and status cleanup together with the Creator-only configuration.
    The user promotes pending Creator changes through Stage to Production after
    the native edit/save check. Do not infer native publication from Pages success.
 8. Verify actual native capability routing, real report data, a future milestone

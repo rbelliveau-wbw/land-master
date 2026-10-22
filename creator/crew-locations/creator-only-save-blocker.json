@@ -1,5 +1,5 @@
 {
-  "status": "blocked-native-save-rejected",
+  "status": "resolved-development-save-and-undo-acknowledged",
   "operationId": "e04adcdc-18b0-4663-a984-d47aa8524ac6",
   "environment": "development",
   "nativeCode": 3001,
@@ -14,10 +14,11 @@
   "attemptedEnd": "2027-03-18",
   "browser_connection": "Repeated CDP control timeouts followed by kernel resets; cannot continue native diagnosis",
   "possible_causes": [
-    "caller representation differs between function and delegated API",
-    "pending lock/audit transaction is not visible in delegated API validation"
+    "Confirmed: uncommitted phase lock was invisible to delegated PATCH validation (phase locks 0, caller locks 0)."
   ],
-  "diagnosis_confirmed": false,
+  "diagnosis_confirmed": true,
   "no_projects_writes": true,
-  "no_date_save_acknowledged": true
+  "no_date_save_acknowledged": true,
+  "resolution": "Separate prepare/apply calls commit locks and audit before delegated PATCH validation.",
+  "evidence": "creator/crew-locations/creator-only-save-verification.json"
 }

@@ -254,7 +254,7 @@
     ],
     "default": false,
     "section": "Crew_Locations_Permissions",
-    "per_user_flags_granted": 1,
+    "per_user_flags_granted": 2,
     "before_snapshot": "creator/crew-locations/native-before/User_Access.ds",
     "after_reference": "creator/crew-locations/User_Access.native.ds",
     "restore_note": "Remove only the listed additions after checking current dependencies; do not overwrite the entire live form from an old snapshot.",
@@ -270,7 +270,7 @@
       "display_name": "Robby Belliveau",
       "user_access_record_id": "4410926000003608006",
       "view": true,
-      "milestones": false,
+      "milestones": true,
       "tasks": false,
       "assignments": false
     }
@@ -368,7 +368,7 @@
     "Never delete the existing Milestones form, records or the reused Creator connection.",
     "Update this inventory after each additional installation/removal step."
   ],
-  "live_schedule_writes_by_this_work": 0,
+  "live_schedule_writes_by_this_work": 2,
   "production_promotion_by_this_work": true,
   "last_manual_retry": {
     "requested_by_user": true,
@@ -518,7 +518,7 @@
     "name": "Crew Management",
     "hosting": "External",
     "entry": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
-    "release": "1.1.1",
+    "release": "1.1.2",
     "cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1",
     "previous_hosting": "Internal",
     "previous_entry": "/app/widget.html",
@@ -568,11 +568,11 @@
   "native_runtime_activation": {
     "environment": "Development",
     "enabled": true,
-    "testingMode": true,
+    "testingMode": false,
     "crew_source_enabled": false,
     "task_source_enabled": false,
-    "milestone_edit_permission": false,
-    "note": "Config activation is installed Development only; repository template remains disabled. Other publication detected at 9.110; not initiated by this step."
+    "milestone_edit_permission": true,
+    "note": "Creator-only mode saved in Development; native save and Undo acknowledged; user promotes pending changes."
   },
   "native_test_attempts": [
     {
@@ -594,6 +594,14 @@
       "audit_entry_visible": true,
       "phase_lock": "The completed known-rejection path releases its own phase lock; no manual deletion performed.",
       "outbound_projects_calls_by_this_test": 0
+    },
+    {
+      "operation_id": "a5f19b63-7de3-44e9-9de3-dd0af340a428",
+      "state": "partial",
+      "confirmed_destinations": [],
+      "nativeCode": 3001,
+      "message": "Phase locks: 0; caller locks: 0",
+      "outbound_projects_calls": 0
     }
   ],
   "native_custom_apis": [
@@ -631,8 +639,7 @@
     "testingMode": false,
     "creatorOnly": true,
     "projectsPushEnabled": false,
-    "every_new_milestone_patch_Push_Update": false,
-    "creator_promotion": "user handles after PMP"
+    "milestone_edit_permission": true
   },
   "administrator_access_current": {
     "development": "4410926000003608006",
@@ -645,5 +652,40 @@
       "Edit_Crew_Task_Dates",
       "Manage_Crew_Assignments"
     ]
+  },
+  "latest_save_verification": {
+    "date": "2026-10-21",
+    "environment": "development",
+    "protocol": "prepare-then-apply",
+    "save": {
+      "operationId": "8065a20a-6728-43ab-bfe7-6e421e35f243",
+      "milestoneId": "4410926000003819022",
+      "phaseId": "4410926000003378004",
+      "native_acknowledged": true,
+      "start": "2027-01-31",
+      "beforeEnd": "2027-03-17",
+      "savedEnd": "2027-03-18"
+    },
+    "undo": {
+      "operationId": "bd797490-3ac4-41d7-8e78-018e05c9ae31",
+      "reversesOperationId": "8065a20a-6728-43ab-bfe7-6e421e35f243",
+      "native_acknowledged": true,
+      "restoredEnd": "2027-03-17"
+    },
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "all_milestone_patches_Push_Update": false,
+    "outbound_projects_calls": 0,
+    "browser_fixture_cases_passed": 16,
+    "creator_promotion": "User handles pending native changes after PMP",
+    "production_native_save_verified": false
+  },
+  "current_release": "1.1.2",
+  "current_creator_promotion": "User promotes pending Creator changes",
+  "execution_claim": {
+    "form": "Crew_Schedule_Lock",
+    "Phase_Key": "<phaseId>:apply",
+    "removal": "Reconcile both operation lock rows and preserve audit before removing."
   }
 }

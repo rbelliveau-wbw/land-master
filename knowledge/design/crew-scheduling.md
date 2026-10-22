@@ -43,6 +43,8 @@ feedback, meters, numeric day counts, local lot counts and selection quantities.
 Actor/permission epochs discard prior animation history. Native editable inputs retain their
 values/caret. Reduced motion is supported.
 
-The October 21 testing direction requires the compact visible testing-mode label.
-Do not advertise Projects synchronization success for a local-only test save.
+The latest October 21 direction removes testing mode and permits Creator-only
+Production edits. Keep the compact Creator only / Projects push off label.
+Prepare and apply use the same progress dialog; preparation is not a saved date.
+Do not advertise Projects synchronization success for a Creator-only save.
 Fixtures belong exclusively in the local browser harness, never widget releases.

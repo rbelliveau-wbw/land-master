@@ -1,4 +1,4 @@
-# Crew Management — Creator-only scheduling 1.1.1
+# Crew Management — Creator-only scheduling 1.1.2
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -27,7 +27,7 @@ and [removal-inventory.json](../../creator/crew-locations/removal-inventory.json
 They must be checked before recreating or deleting anything. The removal inventory
 is memory, not deletion authorization.
 
-Release 1.1.1 routes the frontend API alias by authenticated Creator environment:
+Release 1.1.2 routes the frontend API alias by authenticated Creator environment:
 `Crew_Locations_Widget_DEV`, `Crew_Locations_Widget_STAGE`, or
 `Crew_Locations_Widget`. The server independently derives its environment from
 `thisapp.environment.type` and `thisapp.environment.linkname`; client payloads
@@ -35,8 +35,9 @@ cannot select a backend. Preserve the existing logged-in-user Creator connection
 API registration, native installation and repository deployment are separate.
 The latest PMP instruction leaves Creator promotion to the user.
 
-The prior Development save was rejected and no milestone change was confirmed.
-Live save/undo remains a required native verification. Crew/task source adapters
+Development native save and audited Undo both succeeded on October 21.
+The earlier save failure was caused by uncommitted locks being invisible to
+delegated API validation. Release 1.1.2 commits preparation before applying. Crew/task source adapters
 remain disabled until their actual inputs and write semantics are verified.
 
 ## Data meaning and unavailable sources
@@ -119,6 +120,14 @@ it would broaden native sharing. Test both report and row restrictions using
 restricted users before enabling the service.
 
 Operations carry unique IDs, exact expected endpoints and field changes.
+The frontend first calls prepare; its successful acknowledgement commits the
+phase lock, complete validated audit request and Projects-exclusion markers.
+Only then does apply revalidate and acquire a second unique execution claim
+(<phaseId>:apply). This prevents duplicate apply execution. Both calls bind
+the same actor and canonical plan. A lost prepare reply never triggers apply.
+Prepared or unfinished operations retain their locks for administrator recovery;
+Check status never starts a write. The direct validator accepts only the exact
+committed prepared/saving operation and its allowed dates with Push_Update false.
 Schedule_Change_Log is durable. Unique Crew_Schedule_Lock.Phase_Key serializes
 prepared user/import/outbound paths. Markers/logs/locks are server-only, not
 user-writable reports. Native form validators check the staged operation and
@@ -156,7 +165,7 @@ into the current body and retain any integration-audit instrumentation.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,
-and `npm run build:pages`. The 1.1.1 rule suite has 23 groups. Browser checks
+and `npm run build:pages`. The 1.1.2 rule suite has 23 groups. Browser checks
 exercise actual rendered controls against isolated SDK fixtures; they do not
 compile Deluge or establish native connection/auth behavior. Native Creator
 compilation, restricted-user checks and live save/undo/import checks remain

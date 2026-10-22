@@ -268,5 +268,41 @@
     },
     "blocker": "creator/crew-locations/creator-only-save-blocker.json",
     "stage_frontend_promoted": false
+  },
+  "latest_save_verification": {
+    "date": "2026-10-21",
+    "environment": "development",
+    "protocol": "prepare-then-apply",
+    "save": {
+      "operationId": "8065a20a-6728-43ab-bfe7-6e421e35f243",
+      "milestoneId": "4410926000003819022",
+      "phaseId": "4410926000003378004",
+      "native_acknowledged": true,
+      "start": "2027-01-31",
+      "beforeEnd": "2027-03-17",
+      "savedEnd": "2027-03-18"
+    },
+    "undo": {
+      "operationId": "bd797490-3ac4-41d7-8e78-018e05c9ae31",
+      "reversesOperationId": "8065a20a-6728-43ab-bfe7-6e421e35f243",
+      "native_acknowledged": true,
+      "restoredEnd": "2027-03-17"
+    },
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "all_milestone_patches_Push_Update": false,
+    "outbound_projects_calls": 0,
+    "browser_fixture_cases_passed": 16,
+    "creator_promotion": "User handles pending native changes after PMP",
+    "production_native_save_verified": false
+  },
+  "current_release": "1.1.2",
+  "current_creator_promotion": "User promotes pending Creator changes",
+  "latest_mode": {
+    "testingMode": false,
+    "creatorOnly": true,
+    "projectsPushEnabled": false,
+    "milestone_edit_permission": true
   }
 }

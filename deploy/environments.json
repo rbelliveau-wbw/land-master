@@ -13,7 +13,7 @@
       "settings-manager": "1.5.20",
       "lot-sales-explorer": "1.5.61",
       "forecast-manager": "1.7.18",
-      "crew-locations": "1.1.1"
+      "crew-locations": "1.1.2"
     },
     "stage": {
       "proforma-manager": "1.80.88",
@@ -36,7 +36,7 @@
       "settings-manager": "1.5.20",
       "lot-sales-explorer": "1.5.61",
       "forecast-manager": "1.7.18",
-      "crew-locations": "1.1.1"
+      "crew-locations": "1.1.2"
     }
   },
   "path_aliases": {

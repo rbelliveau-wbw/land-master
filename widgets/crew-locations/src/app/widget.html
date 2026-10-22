@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Crew Management</title>
-<meta name="crew-locations-version" content="1.1.1">
+<meta name="crew-locations-version" content="1.1.2">
 <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 <script src="runtime-context.js"></script><script src="creator-data.js"></script><script src="critical-error-reporter.js"></script>
-<script src="success-feedback.js?v=1.1.1"></script>
-<link rel="stylesheet" href="crew-locations.css?v=1.1.1"><link rel="stylesheet" href="interaction-motion.css?v=1.1.1"><link rel="stylesheet" href="number-transitions.css?v=1.1.1">
+<script src="success-feedback.js?v=1.1.2"></script>
+<link rel="stylesheet" href="crew-locations.css?v=1.1.2"><link rel="stylesheet" href="interaction-motion.css?v=1.1.2"><link rel="stylesheet" href="number-transitions.css?v=1.1.2">
 </head><body>
 <main id="app">
   <header class="page-head"><div><h1>Crew Management</h1><p id="assignmentWindow"></p></div><div class="actions"><span class="mode" title="Dates save in Land Master only. Daily inbound sync may replace these dates.">Creator only · Projects push off</span><button id="refresh">Refresh</button><button id="history">History</button><button id="reviewSave" hidden>Review save</button></div></header>
@@ -27,11 +27,11 @@
 <dialog id="historyDialog" aria-labelledby="historyTitle"><header><h2 id="historyTitle">Schedule history</h2><button id="closeHistory" class="icon-button" aria-label="Close history"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="historyContent"></div></dialog>
 <dialog id="endpointDialog" aria-labelledby="endpointTitle"><header><h2 id="endpointTitle">Milestone boundary</h2><button id="closeEndpoint" class="icon-button" aria-label="Close boundary editor"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="endpointContent"></div></dialog>
 <div id="dragPreview" role="status" hidden></div>
-<script src="crew-model.js?v=1.1.1"></script><script src="crew-app.js?v=1.1.1"></script>
-<script src="number-edit-commit.js?v=1.1.1"></script><script src="number-transitions.js?v=1.1.1"></script><script src="interaction-motion.js?v=1.1.1"></script><script src="interaction-surfaces.js?v=1.1.1"></script>
-<script src="crew-surfaces.js?v=1.1.1"></script>
+<script src="crew-model.js?v=1.1.2"></script><script src="crew-app.js?v=1.1.2"></script>
+<script src="number-edit-commit.js?v=1.1.2"></script><script src="number-transitions.js?v=1.1.2"></script><script src="interaction-motion.js?v=1.1.2"></script><script src="interaction-surfaces.js?v=1.1.2"></script>
+<script src="crew-surfaces.js?v=1.1.2"></script>
 <script>
-LMCriticalErrors.configure({widget:"Crew Management",version:"1.1.1",code:"CREW",getContext:function(){return LMRuntime.current();}});
+LMCriticalErrors.configure({widget:"Crew Management",version:"1.1.2",code:"CREW",getContext:function(){return LMRuntime.current();}});
 CrewSurfaces.install();
 LMNumbers.start({module:'crew-locations',ready:()=>CrewApp.state.ready,actor:()=>LMRuntime.current().user+':'+CrewApp.state.epoch,collect:api=>api.each('[data-crew-number]',node=>api.text(node,node.dataset.crewNumber))});
 CrewApp.start();

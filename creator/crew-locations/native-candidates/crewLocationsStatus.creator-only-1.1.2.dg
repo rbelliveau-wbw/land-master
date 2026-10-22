@@ -1,0 +1,76 @@
+map crewLocationsStatus(string operationId,string phaseId)
+{
+	result = {"ok":false,"unknown":false,"message":"Operation unavailable."};
+	try
+	{
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1 || access.View_Crew_Locations != true || !phaseId.matches("[0-9]+")) { return result; }
+		phaseRead = thisapp.crewLocationsRead("All_Subdivisions","ID == " + phaseId);
+		if(phaseRead.get("ok") != true || phaseRead.get("records").size() != 1) { return result; }
+		entry = Schedule_Change_Log[(Operation_ID == operationId) && (Subdivision1 == phaseId.toLong())];
+		if(entry.count() != 1) { return result; }
+		// A phase grant must not reveal history for a now-inaccessible source record.
+		entryRequest = entry.Request_JSON.toMap();
+		entryChanges = entryRequest.get("changes");
+		for each protectedChange in entryChanges
+		{
+			protectedReport = "All_Milestones"; if(protectedChange.get("type") == "T") { protectedReport = "All_Task_Schedules"; }
+			protectedRead = thisapp.crewLocationsRead(protectedReport,"ID == " + protectedChange.get("recordId"));
+			if(protectedRead.get("ok") != true || protectedRead.get("records").size() != 1) { return result; }
+		}
+		result = {"ok":true,"operationId":operationId,"state":entry.State,"unknown":false};
+		if(entry.State == "saved" || entry.State == "partial" || entry.State == "rejected")
+		{
+			if(entry.Result_JSON != null && entry.Result_JSON != "")
+			{
+				cached = entry.Result_JSON.toMap();
+				if(cached.get("operationId") == operationId && entry.Execution_Finished == true)
+				{
+					cached.put("ok",true); cached.put("state",entry.State);
+					// A crash after writing the complete terminal ledger must not strand
+					// its phase lock. This cleanup never replays a date write.
+					delete from Crew_Schedule_Lock[Operation_ID == operationId];
+					return cached;
+				}
+			}
+		}
+		result.put("unknown",true);
+		result.put("message","This operation is pending or needs recovery; no writes were replayed.");
+		if(entry.Execution_Finished != true) { return result; }
+		confirmed = List(); records = List(); allMatched = true;
+		entryRequest = entry.Request_JSON.toMap();
+		entryChanges = entryRequest.get("changes");
+		for each change in entryChanges
+		{
+			reportName = "All_Milestones"; if(change.get("type") == "T") { reportName = "All_Task_Schedules"; }
+			read = thisapp.crewLocationsRead(reportName,"ID == " + change.get("recordId"));
+			if(read.get("ok") != true || read.get("records").size() != 1) { allMatched = false; }
+			else
+			{
+				current = read.get("records").get(0);
+				start = thisapp.crewLocationsIso(ifnull(current.get("Start_Date"),"").toString());
+				end = thisapp.crewLocationsIso(ifnull(current.get("End_Date"),"").toString());
+				matched = true;
+				changeFields = change.get("fields");
+				changeFieldKeys = changeFields.keys();
+				for each field in changeFieldKeys
+				{
+					value = start; if(field == "end") { value = end; }
+					if(value != ifnull(change.get("fields").get(field).get("after"),"")) { matched = false; }
+				}
+				if(matched) { confirmed.add({"type":change.get("type"),"recordId":change.get("recordId")}); records.add({"type":change.get("type"),"id":change.get("recordId"),"start":start,"end":end}); }
+				else { allMatched = false; }
+			}
+		}
+		result.put("confirmed",confirmed); result.put("records",records);
+		// Exact field comparisons are limited to this explicitly requested unknown-reply recovery.
+		if(allMatched)
+		{
+			result.put("state","saved"); result.put("unknown",false); result.put("message","Recovered saved dates; no writes replayed.");
+			entry.Result_JSON=result.toString(); entry.State="saved";
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
+		}
+	}
+	catch(statusError) { result.put("ok",false); result.put("unknown",true); result.put("message",statusError.toString()); }
+	return result;
+}

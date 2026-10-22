@@ -5,7 +5,7 @@ const root=path.resolve('widgets/crew-locations/src/app'),port=Number(process.ar
 function fixtureSDK(data){
  localStorage.removeItem('crew-locations:view:DEVELOPMENT:isolated-fixture@local.test');
  const NativeDate=Date;window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:['2026-10-21T17:00:00Z']));}static now(){return NativeDate.now();}};
- const fixture={requests:[],mode:'normal',operations:[],data};
+ const fixture={requests:[],mode:'normal',operations:[],prepared:new Map(),data};
  function expose(){const node=document.getElementById('fixture-audit');if(node)node.textContent=JSON.stringify({requests:fixture.requests,operations:fixture.operations,mode:fixture.mode});}
  const tables={All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,All_Crew_Assignments:data.assignments,All_Task_Schedules:data.tasks};
  const iso=s=>!s?null:/^\d{4}-/.test(s)?s:s.slice(6)+'-'+s.slice(0,2)+'-'+s.slice(3,5),us=s=>!s?'':s.slice(5,7)+'/'+s.slice(8)+'/'+s.slice(0,4);
@@ -19,7 +19,14 @@ function fixtureSDK(data){
    if(body.action==='capabilities'){if(fixture.mode==='denied')return {...base,ok:false,message:'Fixture access revoked'};return {...base,permissions:{view:true,milestones:true,tasks:true},sources:{crews:fixture.mode!=='unconfigured',tasks:fixture.mode!=='unconfigured'},dependencies:['Isolated browser fixture. No live Creator or Projects records are connected.']};}
    if(body.action==='history')return {...base,operations:fixture.operations.filter(o=>o.subdivisionId===body.subdivisionId).map(o=>({...o,origin:o.origin,state:o.result.state,actor:'Fixture user',timestamp:'10/21/2026 12:00:00'}))};
    if(body.action==='status'){const op=fixture.operations.find(o=>o.operationId===body.operationId);if(op?.recoveryResult)op.result=op.recoveryResult;expose();return {...op?.result,...base,state:op?'saved':'unknown',unknown:!op,operationId:body.operationId};}
+   if(body.action==='prepare'){
+    if(fixture.mode==='reject'){fixture.mode='normal';return {...base,ok:false,unknown:false,message:'Fixture save denied before writing',operationId:body.operationId,confirmed:[]};}
+    fixture.prepared.set(body.operationId,JSON.stringify({...body,action:'apply'}));
+    if(fixture.mode==='prepare-lost'){fixture.mode='normal';throw new Error('Fixture preparation response lost before any date write');}
+    return {...base,operationId:body.operationId,state:'prepared'};
+   }
    if(body.action==='apply'){
+    if(fixture.prepared.get(body.operationId)!==JSON.stringify(body))return {...base,ok:false,unknown:false,message:'Prepare this exact operation before saving'};
     if(fixture.mode==='reject'){fixture.mode='normal';return {...base,ok:false,unknown:false,message:'Fixture save denied before writing',operationId:body.operationId,confirmed:[]};}
     const existing=fixture.operations.find(o=>o.operationId===body.operationId);if(existing)return {...base,...existing.result};
     const confirmed=[],records=[];
@@ -35,7 +42,7 @@ function fixtureSDK(data){
  }}};
  window.addEventListener('DOMContentLoaded',()=>{
   document.title='Isolated preview — Crew Locations';const warning=document.createElement('aside');warning.id='fixture-warning';warning.setAttribute('role','note');warning.textContent='ISOLATED PREVIEW — sample records only; no Creator or Projects connection.';warning.style.cssText='background:#17355a;color:#fff;padding:8px 14px;border-radius:7px;font:13px Segoe UI,sans-serif;margin-bottom:16px';document.body.prepend(warning);
-  const panel=document.createElement('details');panel.id='fixture-tools';panel.innerHTML='<summary>Isolated preview controls</summary><p>No live records are connected. These controls are not in the widget package.</p>'+['normal','reject','lost','ambiguous','triple','denied','unconfigured'].map(mode=>'<button data-fixture-mode="'+mode+'">'+mode+'</button>').join(' ')+'<pre id="fixture-audit" hidden></pre><ol id="browser-checks" aria-label="Browser test results"></ol>';document.body.appendChild(panel);panel.addEventListener('click',e=>{if(e.target.dataset.fixtureMode){fixture.mode=e.target.dataset.fixtureMode;if(fixture.mode==='triple')for(const rows of [data.milestones,data.tasks])rows.filter(r=>r.Subdivision1.ID===data.subdivisions[1].ID&&(r.Stage_Key||r.Milestone_Name)==='Rough Cut').forEach(r=>r.End_Date='02/10/2027');expose();}});expose();
+  const panel=document.createElement('details');panel.id='fixture-tools';panel.innerHTML='<summary>Isolated preview controls</summary><p>No live records are connected. These controls are not in the widget package.</p>'+['normal','reject','lost','prepare-lost','ambiguous','triple','denied','unconfigured'].map(mode=>'<button data-fixture-mode="'+mode+'">'+mode+'</button>').join(' ')+'<pre id="fixture-audit" hidden></pre><ol id="browser-checks" aria-label="Browser test results"></ol>';document.body.appendChild(panel);panel.addEventListener('click',e=>{if(e.target.dataset.fixtureMode){fixture.mode=e.target.dataset.fixtureMode;if(fixture.mode==='triple')for(const rows of [data.milestones,data.tasks])rows.filter(r=>r.Subdivision1.ID===data.subdivisions[1].ID&&(r.Stage_Key||r.Milestone_Name)==='Rough Cut').forEach(r=>r.End_Date='02/10/2027');expose();}});expose();
  });
 }
 const sdk='('+fixtureSDK.toString()+')('+JSON.stringify(crewFixture())+');';
