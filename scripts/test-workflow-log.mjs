@@ -63,3 +63,30 @@ assert.match(markup,/Page 2 of 3/);
 settings.loadBlocked=true;log.mount({state:settings});assert.equal(log.visible().length,0);
 assert.equal(await log.load(),false);
 console.log('PASS: workflow history Chicago dates, newest-first order, filtering, escaped details, bounded pages, refresh continuity, identity/access guards and read-only loading.');
+
+// Execute the native retention action with a supplied native calendar cutoff.
+// The fixture adapts record criteria only; Creator Save validates Deluge syntax.
+const retention=fs.readFileSync('creator/integration-audit/prepared/Workflow_Log_Retention.action-1.dg','utf8');
+const schedule=fs.readFileSync('creator/integration-audit/prepared/Workflow_Log_Retention.ds','utf8');
+assert.match(schedule,/frequency\s*=\s*daily\b/);
+assert.match(schedule,/time zone\s*=\s*"America\/Chicago"/);
+const scheduleBody=schedule.match(/on load\s*\(([\s\S]*)\)\s*\}\s*\}\s*\}/)[1];
+const normalize=value=>value.replace(/\/\/[^\n]*|\s+/g,'');
+assert.equal(normalize(scheduleBody),normalize(retention),'The deployable schedule must contain the verified action');
+const executable=retention.replace(/\/\/[^\n]*/g,'')
+  .replace(/\bretentionCutoff\s*=/,'var retentionCutoff =')
+  .replace(/delete from (\w+)\[([^\]]+)\];/g,(_,form,criteria)=>`deleteRecords("${form}", row => ${criteria.replace(/\bStarted_At\b/g,'row.Started_At')});`);
+for(const cutoffText of ['2026-07-23T02:15:00-05:00','2026-10-23T02:15:00-05:00','2028-02-29T02:15:00-06:00']){
+  const cutoff=Date.parse(cutoffText);
+  const statuses=['Running','Success','Failed','Partial','Skipped','Timed Out'];
+  const fixtures=statuses.flatMap(Run_Status=>[-1,0,1].map(offset=>({ID:`${Run_Status}/${offset}`,Run_Status,Started_At:cutoff+offset})));
+  fixtures.push({ID:'unknown-start',Started_At:null});
+  let deleted,cutoffCalls=0;
+  vm.runInNewContext(executable,{
+    zoho:{currenttime:{subMonth(months){assert.equal(months,3,'Retention must use three calendar months');cutoffCalls++;return cutoff;}}},
+    deleteRecords(form,predicate){assert.equal(form,'Workflow_Run_Log','Retention must never delete business records');assert.equal(deleted,undefined,'Use one native criteria deletion');deleted=fixtures.filter(predicate).map(row=>row.ID);}
+  });
+  assert.equal(cutoffCalls,1);
+  assert.deepEqual(deleted,statuses.flatMap(status=>[`${status}/-1`,`${status}/0`]),'Delete expired logs in every status; preserve newer and missing-start records');
+}
+console.log('PASS: workflow log retention schedule, exact expiry boundary, every run status, null dates and log-only deletion.');

@@ -1,0 +1,20 @@
+Workflow_Log_Retention as "Workflow Log Retention"
+{
+	type = schedule
+	start = "2026-10-23 02:15:00"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions
+		{
+			on load
+			(
+				// Daily retention is independent of imports, notifications and the Settings UI.
+				// Use calendar months and retain records whose start timestamp is unknown.
+				retentionCutoff = zoho.currenttime.subMonth(3);
+				delete from Workflow_Run_Log[(Started_At != null) && (Started_At <= retentionCutoff)];
+			)
+		}
+	}
+}

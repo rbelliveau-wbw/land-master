@@ -280,7 +280,7 @@ Sync_Final_Acceptance_Due as "Sync Final Acceptance Due Date - Subdivision"
 			}catch (syncError)
 			{
 				info "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; changed/planned so far=" + updatedCount + "; " + syncError.toString();
-			throw dateError;
+			throw "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; " + syncError.toString();
 			}
 			if(reviewCount > 0) { throw "Final Acceptance requires review for " + reviewCount + " mapping/date conflicts; conflicting dates were preserved."; }
 

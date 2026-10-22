@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import re
+import sqlite3
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -42,3 +43,31 @@ for name in ['PF_AI_Review','Plat_AI_Ingest','PF_Build_LOI_Document']:
     assert new.count('invokeurl')==old.count('invokeurl'),name
     assert 'thisapp.workflowRunLog(' in new,name
 print(f'PASS: {len(components)} workflow components and three functions preserve native field assignments, insert payloads, schedules, source columns, return contracts and external request counts.')
+
+# Execute the exact Analytics SQL on the observed split-major shape, credits,
+# boundary exclusions and unmapped jobs. SQLite is a relational fixture here;
+# Analytics Execute/Save verifies the vendor dialect separately.
+db=sqlite3.connect(':memory:')
+db.execute('CREATE TABLE [GP - Job Cost Detail MSTR+HIST (JC00701+JC30101)] (WS_Job_Number_Trim TEXT, Cost_Code_Number_1 INTEGER, Cost_Code_Number_2 INTEGER, Cost_Code_Description TEXT, Cost_Code_Act_Cost_TTD NUMERIC)')
+db.execute('CREATE TABLE [External System Mapping (Zoho Creator)] ([External Code] TEXT)')
+db.execute('INSERT INTO [External System Mapping (Zoho Creator)] VALUES (?)', ('EXAMPLE_JOB',))
+db.executemany('INSERT INTO [GP - Job Cost Detail MSTR+HIST (JC00701+JC30101)] VALUES (?,?,?,?,?)', [
+    ('EXAMPLE_JOB',4900,4955,'Attorneys',100.25),
+    ('EXAMPLE_JOB',4950,4955,'Attorneys',4.75),
+    ('EXAMPLE_JOB',8000,8010,'Credit',-100),
+    ('EXAMPLE_JOB',8000,8010,'Credit',25),
+    ('EXAMPLE_JOB',4100,4000,'Lower boundary',2),
+    ('EXAMPLE_JOB',4100,5000,'Excluded upper boundary',10),
+    ('EXAMPLE_JOB',8000,9000,'Excluded upper boundary',20),
+    ('EXAMPLE_JOB',4100,4100,'Zero excluded',0),
+    ('UNMAPPED',4900,4955,'Attorneys',999),
+])
+query_root=BASE.parent/'analytics'
+before=db.execute((query_root/'baseline/gp-development-costs.sql').read_text()).fetchall()
+after=db.execute((query_root/'gp-development-costs.sql').read_text()).fetchall()
+assert len(before)==4 and len(after)==3, 'Only the split-major Attorneys rows should combine'
+assert [row for row in after if row[2]==4955]==[('EXAMPLE_JOB',4900,4955,'Attorneys',105)]
+assert sum(row[4] for row in before)==sum(row[4] for row in after), 'Grouping must preserve every included dollar'
+assert [row[4] for row in after if row[2]==8010]==[-75], 'Negative credits must retain their sign'
+db.close()
+print('PASS: GP split-major aggregation, total preservation, credits, ranges, zero exclusions and mapping scope.')

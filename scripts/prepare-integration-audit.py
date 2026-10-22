@@ -46,6 +46,10 @@ def insert_block_end(source, pattern, addition):
 
 def patch_body(body, name, display, analytics):
     original = body
+    # The same job code can validly exist in GP and HeavyJob. CTC is HeavyJob-only.
+    if name == 'Budgets_Import_Load_CTC_C':
+        body = body.replace('subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode")];',
+                            'subdiv = External_System_Mapping[(External_Code == rec.get("H.JobCode")) && (External_System == "HeavyJob")];')
     # All Analytics consumers share completion, HTTP, payload and selected-column checks.
     if "/bulk/" in body and "rows = dataResp.get(\"data\");" in body:
         begin=body.index("params = Map();")
@@ -130,7 +134,9 @@ else if(responseText.left(1) != "[") {{ throw "Zoho Projects returned a non-JSON
         body=body.replace('codeBuild = rec.get("WS_Job_Number_Trim")', 'if(ifnull(rec.get("Cost_Code_Number_2"),"").toString().trim() == "" || rec.get("Total_Actuals") == null || rec.get("Total_Actuals").toString().trim() == "") { throw "Eligible Analytics row has no cost code or cost; job=" + rec.get("WS_Job_Number_Trim"); }\nvalidatedCost = rec.get("Total_Actuals").toDecimal();\ncodeBuild = rec.get("WS_Job_Number_Trim")')
     # A catch that only logs a runtime exception must propagate to the permanent audit wrapper.
     if name == 'Sync_Final_Acceptance_Due':
-        body=re.sub(r'(catch\s*\((\w+)\)\s*\{)([\s\S]*?)(\n\s*\}\s*)$',lambda m:m[1]+m[3]+f'\nthrow {m[2]};'+m[4],body)
+        # Match the actual outer sync catch, not the earlier nested dateError catch.
+        body=insert_block_end(body,r'\bcatch\s*\(syncError\)',
+                              '\nthrow "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; " + syncError.toString();\n')
         body=body.replace('info "Final Acceptance sync stopped: missing Analytics data. Projects=" + projectsResponse.toString() + "; Tasks=" + tasksResponse.toString();','throw "Final Acceptance sync stopped: missing Analytics data.";')
         body+='\nif(reviewCount > 0) { throw "Final Acceptance requires review for " + reviewCount + " mapping/date conflicts; conflicting dates were preserved."; }\n'
     if name == 'Budgets_Check_HCSS_Budget':

@@ -55,7 +55,7 @@ for each  rec in rows
  auditRowChanged = false;
 
 	//get subdiv code
-	subdiv = External_System_Mapping[External_Code = rec.get("H.JobCode")];
+	subdiv = External_System_Mapping[(External_Code == rec.get("H.JobCode")) && (External_System == "HeavyJob")];
 if(subdiv.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
 if(subdiv.count() != 1 || subdiv.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
 	budgCheck = Add_Budget[Subdivision_Code == subdiv.Subdivision1.Subdivision_Code];

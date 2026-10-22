@@ -94,3 +94,25 @@ for(const reply of [{code:3001,message:'Rejected'},{code:3000,data:{ID:'999'}},{
   const h=runtime('workflowRunLog',()=>{throw new Error('Should not call');},'Unknown');assert.throws(()=>h.execute([{action:'start',workflow:'Fixture',system:'Analytics'}]));assert.equal(h.calls.length,0);
 }
 console.log('PASS: actual Deluge export polling/completion gates, bounded waits, HTTP/schema/error handling and independent audit writes with environment isolation, short text and exact native acknowledgement/no replay.');
+
+// A shared job code across systems is valid. CTC must resolve only HeavyJob.
+const ctc=fs.readFileSync('creator/integration-audit/prepared/Budgets_Import_Load_CTC_C.action-1.dg','utf8');
+const mappingCriteria=ctc.match(/subdiv = External_System_Mapping\[([^\n]+)\];/)[1]
+  .replace(/\b(External_Code|External_System)\b/g,'mapping.$1');
+const selectMapping=vm.runInNewContext(`(mapping,rec)=>${mappingCriteria}`);
+const mappedSubdivision={ID:'900000000000000201',Subdivision_Code:'EXAMPLE_PHASE'};
+const mappings=[{ID:'900000000000000301',External_Code:'EXAMPLE_JOB',External_System:'Great Plains',Subdivision1:mappedSubdivision},
+  {ID:'900000000000000302',External_Code:'EXAMPLE_JOB',External_System:'HeavyJob',Subdivision1:mappedSubdivision}];
+const sourceRow={get:key=>key==='H.JobCode'?'EXAMPLE_JOB':null};
+assert.deepEqual(mappings.filter(mapping=>selectMapping(mapping,sourceRow)).map(mapping=>mapping.ID),['900000000000000302']);
+assert.equal([...mappings,{...mappings[1],ID:'900000000000000303'}].filter(mapping=>selectMapping(mapping,sourceRow)).length,2,'True same-system duplicates must remain visible to the existing count guard');
+assert.match(ctc,/subdiv\.count\(\) != 1 \|\| subdiv\.Subdivision1 == null/);
+
+// Execute the actual outer catch with a failed export and no nested date error.
+const finalAcceptance=fs.readFileSync('creator/integration-audit/prepared/Sync_Final_Acceptance_Due.action-1.dg','utf8');
+const syncCatch=finalAcceptance.match(/catch\s*\(syncError\)\s*\{([\s\S]*?)\n\}/)[1].replace(/^\s*info .+;\s*$/gm,'');
+for(const operationStage of ['exporting Projects','exporting Tasks']){
+  assert.throws(()=>vm.runInNewContext(syncCatch,{operationStage,currentProjectCode:'',updatedCount:0,dateError:null,syncError:new Error('Analytics export did not complete; job=fixture')}),
+    error=>String(error).includes(operationStage)&&String(error).includes('Analytics export did not complete; job=fixture'));
+}
+console.log('PASS: CTC system-scoped mapping and Final Acceptance source error/stage preservation with an unset nested date error.');
