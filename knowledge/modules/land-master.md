@@ -1,4 +1,10 @@
-## External Property Transfers — 8.17.0, October 22, 2026
+## External Property Transfers — 8.17.1, October 22, 2026
+
+When Creator omits the new checkbox from the existing report layout, the widget
+uses one additional inactive-only Property query, under the same report access,
+to hydrate activity by exact IDs. Scoped saves keep that query scoped to their
+parent IDs. No transfer-report access or native report edits are required. The
+four core collections remain atomic.
 
 External is a transfer type and a real Company lookup option. Transfer statuses
 are Pending (default), Completed, CAD Verified and Cancelled; Draft is removed.

@@ -19,7 +19,7 @@ const subdivisions=Array.from({length:348},(_,index)=>({
 }));
 subdivisions[0].Project={ID:P1}; // The exact parent resolves even when native display text is absent.
 subdivisions[347].Project=[]; // A genuinely empty association remains Unlinked.
-const fixture={All_Property:[{ID:'90071992547409935',Common_Name:'Fixture property',Projects:[{ID:P1,zc_display_value:'Native North alias'},{ID:P2}],Company1:{ID:C2,zc_display_value:'Land entity'},Facility_ID:'000073'}],All_Projects:projects,All_Subdivisions:subdivisions,All_Companies:[{ID:C1,Company_Name:'Development entity'},{ID:C2,Company_Name:'Land entity'}],All_Milestones:[]};
+const fixture={All_Property:[{ID:'90071992547409935',Common_Name:'Fixture property',External_Transfer_Inactive:false,Projects:[{ID:P1,zc_display_value:'Native North alias'},{ID:P2}],Company1:{ID:C2,zc_display_value:'Land entity'},Facility_ID:'000073'}],All_Projects:projects,All_Subdivisions:subdivisions,All_Companies:[{ID:C1,Company_Name:'Development entity'},{ID:C2,Company_Name:'Land entity'}],All_Milestones:[]};
 const original=JSON.stringify(fixture),nodes=new Map(),nativeCalls=[],renders=[];
 const node=id=>{if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',value:'',style:{},disabled:false,classList:{add(){},remove(){},toggle(){}},setAttribute(){},querySelector(){return null;},querySelectorAll(){return [];}});return nodes.get(id);};
 const c=vm.createContext({document:{getElementById:node,querySelector:()=>null,querySelectorAll:()=>[]},CFG:{version:'test',tablePageSize:100,reportCandidates:{}},OPTS:{},FILTER_DEFS:{},

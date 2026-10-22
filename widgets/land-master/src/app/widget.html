@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.0"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.1"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.0"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.0">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.0">
-<script src="searchable-pickers.js?v=8.17.0" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.0">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.0">
-<script src="spreadsheet-import.js?v=8.17.0"></script>
-<script src="lot-import.js?v=8.17.0"></script>
+<script src="property-workspace.js?v=8.17.1"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.1">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.1">
+<script src="searchable-pickers.js?v=8.17.1" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.1">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.1">
+<script src="spreadsheet-import.js?v=8.17.1"></script>
+<script src="lot-import.js?v=8.17.1"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -426,14 +426,14 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.17.0"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.0">
-<script src="interaction-motion.js?v=8.17.0"></script>
-<script src="interaction-surfaces.js?v=8.17.0"></script>
-<script src="number-edit-commit.js?v=8.17.0"></script>
-<script src="number-transitions.js?v=8.17.0"></script>
-<script src="number-surfaces.js?v=8.17.0"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.0">
+<script src="success-feedback.js?v=8.17.1"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.1">
+<script src="interaction-motion.js?v=8.17.1"></script>
+<script src="interaction-surfaces.js?v=8.17.1"></script>
+<script src="number-edit-commit.js?v=8.17.1"></script>
+<script src="number-transitions.js?v=8.17.1"></script>
+<script src="number-surfaces.js?v=8.17.1"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.1">
 </head>
 <body>
 
@@ -597,7 +597,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.0-LAZY-CORE",
+  version: "8.17.1-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -646,11 +646,23 @@ var S = {
   errors:[], errorQueue:[], errorTimer:null, errorRetryTimer:null, errorSending:false, errorAttempts:0, errorLastFailure:null
 };
 
-var LandData=LMLandData.create({state:S,read:function(report,options){if(!S.liveSDK)return Promise.reject(new Error('Creator connection required.'));return sdkGetAll(report,null,options.onProgress,{isCancelled:options.isCancelled});},onReady:function(key,rows,generation){LMPerf.mark('land-resource-ready',{resource:key,rows:rows.length,generation:generation});}});
+var LandData=LMLandData.create({state:S,read:function(report,options){if(!S.liveSDK)return Promise.reject(new Error('Creator connection required.'));return sdkGetAll(report,null,options.onProgress,{isCancelled:options.isCancelled}).then(function(rows){return report==='All_Property'?readPropertyActivity(rows,null,options):rows;});},onReady:function(key,rows,generation){LMPerf.mark('land-resource-ready',{resource:key,rows:rows.length,generation:generation});}});
 function ensureLandData(keys,generation,onProgress){if(S.demo)return Promise.resolve(keys.map(function(key){return S[key]||[];}));return LandData.ensure(keys,{generation:generation,onProgress:onProgress});}
 function ensureEditorData(type,isNew,generation){var core=S.coreLoadPromise||Promise.resolve();return core.then(function(){if(generation!==LandData.generation())throw LMLandData.cancelled();if(!S.demo&&!LandData.coreReady())throw new Error('Core records are unavailable. Refresh to retry.');return ensureLandData(LMLandData.editorDependencies(type,isNew),generation).then(function(){return type==='propertyTransfer'?ensurePropertyTransferBackend(generation):null;});});}
 function knownLandCount(keys,compute){return S.demo?compute():LandData.knownCount(keys,compute);}
 
+function readPropertyActivity(rows,criteria,options){
+  options=options||{};if(!rows.length||rows.every(function(row){return Object.prototype.hasOwnProperty.call(row,'External_Transfer_Inactive');}))return Promise.resolve(rows);
+  // Creator omits form fields outside the report layout. Filter the same report
+  // server-side instead of requiring another report permission or field edits.
+  var inactiveCriteria='(External_Transfer_Inactive == true)'+(criteria?' && ('+criteria+')':'');
+  return sdkGetAll('All_Property',inactiveCriteria,null,{isCancelled:options.isCancelled}).then(function(inactiveRows){
+    if(options.isCancelled&&options.isCancelled())throw LMLandData.cancelled();
+    var known={},inactive={};rows.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||known[row.ID])throw new Error('Invalid Property activity identity.');known[row.ID]=true;});
+    inactiveRows.forEach(function(row){if(typeof row.ID!=='string'||!known[row.ID]||inactive[row.ID])throw new Error('Unexpected inactive Property identity.');inactive[row.ID]=true;});
+    return rows.map(function(row){return Object.assign({},row,{External_Transfer_Inactive:!!inactive[row.ID]});});
+  });
+}
 function $(id){return document.getElementById(id);}
 function esc(v){if(v===null||v===undefined)return "";return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 function unwrapPastedWebUrl(v){if(v&&typeof v==="object")v=v.url||v.href||v.value||v.display_value||"";var s=String(v==null?"":v).trim(),html=s.match(/href\s*=\s*["']([^"']+)["']/i),md;if(html)s=html[1].trim();md=s.match(/^\[[^\]]*\]\(\s*(https?:\/\/.+)\s*\)$/i);if(md)s=md[1].trim();if(/^<[^<>]+>$/.test(s))s=s.slice(1,-1).trim();return s.replace(/\\_/g,"_");}
@@ -1314,7 +1326,7 @@ function refreshTransferredProperties(ids,generation){
   if(!ids.length)return Promise.resolve();var scope=propertyTransferScope();
   if(S.demo){S.properties.forEach(function(property){property.External_Transfer_Inactive=S.propertyTransfers.some(function(transfer){return lookupId(transfer.Property)===property.ID&&LMPropertyWorkspace.makesInactive(transfer);});});renderTable();return Promise.resolve();}
   var criteria=ids.map(function(id){if(!/^\d+$/.test(id))throw new Error('Invalid Property identity.');return '(ID == '+id+')';}).join(' || ');
-  return sdkGetAll('All_Property',criteria,null,{fresh:true,isCancelled:function(){return generation!==LandData.generation()||scope!==propertyTransferScope();}}).then(function(rows){
+  return sdkGetAll('All_Property',criteria,null,{fresh:true,isCancelled:function(){return generation!==LandData.generation()||scope!==propertyTransferScope();}}).then(function(rows){return readPropertyActivity(rows,criteria,{isCancelled:function(){return generation!==LandData.generation()||scope!==propertyTransferScope();}});}).then(function(rows){
     if(generation!==LandData.generation()||scope!==propertyTransferScope())throw LMLandData.cancelled();
     var found={};rows.forEach(function(row){if(typeof row.ID!=='string'||ids.indexOf(row.ID)<0||found[row.ID])throw new Error('Unexpected Property refresh identity.');found[row.ID]=row;});
     if(Object.keys(found).length!==ids.length)throw new Error('Property activity refresh is incomplete.');

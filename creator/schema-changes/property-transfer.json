@@ -82,12 +82,16 @@
       "External / Partial / CAD Verified remains active",
       "External / Full / CAD Verified sets inactive",
       "Property Company remains unchanged in all live Development tests",
-      "Stage reopened with External type and Pending/Completed/CAD Verified/Cancelled statuses"
+      "Stage reopened with External type and Pending/Completed/CAD Verified/Cancelled statuses",
+      "Widget SDK cancellation saved and returned to Property history; native report experiment restored exactly, no report publication"
     ],
     "productionDependency": "Creator automatically requires version 9.115 (three earlier schedules) before 9.116; separate approval requested.",
     "excludedComponents": [
       "Existing Property Company field metadata",
       "Unrelated Property fields, field order and permissions"
-    ]
+    ],
+    "widgetVersion": "8.17.1",
+    "activityRead": "Read visible flag, otherwise query All_Property with External_Transfer_Inactive == true under the same permissions; scoped to affected IDs after saves.",
+    "reportLayoutUnchanged": true
   }
 }

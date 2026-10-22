@@ -9,7 +9,7 @@ function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{reso
 async function settle(){for(let i=0;i<15;i++)await Promise.resolve();}
 const L=(ID,display_value)=>({ID:String(ID),display_value});
 const fixture={
-  All_Property:[{ID:'101',Common_Name:'Belliveau',Property_ID:'P-1',County:'Bell',Company1:L('401','Land company'),Projects:[L('201','Belliveau Project')],Notes:'keep me'},{ID:'102',Common_Name:'Other',Property_ID:'P-2',County:'Harris',Company1:L('401','Land company'),Projects:[]}],
+  All_Property:[{ID:'101',Common_Name:'Belliveau',External_Transfer_Inactive:false,Property_ID:'P-1',County:'Bell',Company1:L('401','Land company'),Projects:[L('201','Belliveau Project')],Notes:'keep me'},{ID:'102',Common_Name:'Other',External_Transfer_Inactive:false,Property_ID:'P-2',County:'Harris',Company1:L('401','Land company'),Projects:[]}],
   All_Projects:[{ID:'201',Project_Name:'Belliveau Project',Properties:[L('101','Belliveau')]}],
   All_Subdivisions:[{ID:'301',Subdivision_Name:'Belliveau Phase',Subdivision_Code:'BP-1',Project:L('201','Belliveau Project'),Company1:L('402','Development company'),Land_Company:L('401','Land company'),Total_Lots:'12',Lots_Sold:'7'}],
   All_Companies:[{ID:'401',Company_Name:'Land company',Facility_ID:'000073'},{ID:'402',Company_Name:'Development company'}],

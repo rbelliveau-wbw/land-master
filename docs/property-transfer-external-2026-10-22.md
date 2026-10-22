@@ -25,7 +25,12 @@ repository main/Production publication and Creator environment publication.
 
 `Property.External_Transfer_Inactive` is a native checkbox, initially false.
 The widget displays it read-only and includes it in its existing full-field
-property reads, preserving the four-core startup and lazy transfer histories.
+property reads, preserving the four core collections and lazy transfer histories.
+Creator omits fields outside the report layout even with `field_config: all`.
+When the flag is absent, one additional inactive-only query of the same
+`All_Property` report identifies the inactive IDs. Existing access, exact IDs,
+complete native counts and cancellation guards apply; affected-parent refreshes
+retain their ID criteria. The report layout and permissions are unchanged.
 
 The new native `syncExternalTransferActivity(string propertyId)` function
 recalculates the current property and any previously inactive properties. That
@@ -75,4 +80,9 @@ dependencies were selected. Existing Company field metadata was excluded.
 Production publication is awaiting approval of Creator's required older **9.115**
 version, containing the three earlier HCSS budget-check, GP construction-cost
 and Equipment sync schedules. The Production widget remains **8.16.13** until
-the backend is published. Development is **8.17.0**.
+the backend is published. Development is **8.17.1**.
+
+The native Development report-layout experiment was fully restored to its
+original source and never published. Release **8.17.1** adds the scoped
+report-criteria fallback so this feature does not depend on publishing unrelated
+Company metadata. Native Creator Stage remains **9.116**.

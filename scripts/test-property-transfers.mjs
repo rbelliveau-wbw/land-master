@@ -137,8 +137,27 @@ const refresh=vm.createContext({S:{demo:false,modalOpen:false,properties:[{ID:P}
   LMLandData:{cancelled:()=>Object.assign(new Error('stale'),{cancelled:true})},propertyTransferScope:()=>scope,
   sdkGetAll:async(report,criteria)=>{activityReads++;assert.equal(report,'All_Property');assert.ok(criteria.includes(P)&&criteria.includes(C2));return activityReply;},
   recordFor:(type,id)=>refresh.S.properties.find(row=>row.ID===id),renderCounts(){},renderTable(){}});
+vm.runInContext(actual('readPropertyActivity'),refresh);
 vm.runInContext(actual('refreshTransferredProperties'),refresh);
 await refresh.refreshTransferredProperties([P,C2],1);assert.equal(activityReads,1);assert.equal(refresh.S.properties[0].External_Transfer_Inactive,true);
 activityReply=[{ID:P,External_Transfer_Inactive:false}];await assert.rejects(refresh.refreshTransferredProperties([P,C2],1));
 assert.equal(refresh.S.properties[0].External_Transfer_Inactive,true,'Incomplete reads cannot partially replace activity flags');
 console.log('PASS: External full/final activity, partial/pending/cancelled exclusions, corrected/deleted transfers, unchanged ownership, Active/Inactive/All filtering and scoped atomic parent refresh.');
+
+// Live Creator omits this new checkbox from the existing report layout. The
+// same report's native criteria still identifies inactive records, including a
+// scoped parent refresh, without access to anyone else's transfer history.
+let fallbackRows=[{ID:P}],fallbackReads=[];
+const fallback=vm.createContext({sdkGetAll:async(report,criteria,progress,options)=>{fallbackReads.push({report,criteria,options});return fallbackRows;},LMLandData:{cancelled:()=>Object.assign(new Error('stale'),{cancelled:true})}});
+vm.runInContext(actual('readPropertyActivity'),fallback);
+const hiddenRows=[{ID:P,Company1:{ID:C1}},{ID:C2}];
+let hydrated=await fallback.readPropertyActivity(hiddenRows,null,{});
+assert.equal(hydrated[0].External_Transfer_Inactive,true);assert.equal(hydrated[1].External_Transfer_Inactive,false);
+assert.equal(hiddenRows[0].External_Transfer_Inactive,undefined,'Hydration is atomic and leaves input rows unchanged');
+assert.equal(fallbackReads[0].report,'All_Property');assert.equal(fallbackReads[0].criteria,'(External_Transfer_Inactive == true)');
+const scoped='(ID == '+P+')';await fallback.readPropertyActivity([hiddenRows[0]],scoped,{});assert.equal(fallbackReads[1].criteria,'(External_Transfer_Inactive == true) && ('+scoped+')');
+fallbackRows=[{ID:T}];await assert.rejects(fallback.readPropertyActivity(hiddenRows,null,{}),/Unexpected inactive Property identity/);
+fallbackRows=[{ID:P},{ID:P}];await assert.rejects(fallback.readPropertyActivity(hiddenRows,null,{}),/Unexpected inactive Property identity/);
+fallbackRows=[{ID:P}];await assert.rejects(fallback.readPropertyActivity(hiddenRows,null,{isCancelled:()=>true}),error=>error.cancelled);
+const priorReadCount=fallbackReads.length;await fallback.readPropertyActivity([{ID:P,External_Transfer_Inactive:false}],null,{});assert.equal(fallbackReads.length,priorReadCount,'A report that already exposes the flag needs no extra query');
+console.log('PASS: Hidden native checkbox hydration uses the same permission-scoped Property report, exact identities, server-side criteria and stale guards.');
