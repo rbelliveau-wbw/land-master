@@ -57,7 +57,8 @@ for(const type of ['Lot (Master)','Lot (Amendment)']){
 for(const flags of [owned,{ctEdit:true,ctPropose:true,ctApprove:true,ctDeleteArchive:true}]){
  const h=await ready({accessFlags:flags,realDOM:true});h.c.findContract(ID).Status='Complete';h.reports.All_Contracts1[0].Status='Complete';h.c.S.lockBypass=true;h.c.S.clp={cid:ID};
  assert.equal(h.c.mayEdit(ID),false);
- for(const payload of [{Owner:[NEW]},{Status:'New'},{Archive:true},{Second_Closing_Lots:10},{Contract_Name:'changed'}])await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts),/read-only|permission to archive/);
+ for(const payload of [{Owner:[NEW]},{Status:'New'},{Archive:true,Contract_Name:'changed'},{Second_Closing_Lots:10},{Contract_Name:'changed'}])await assert.rejects(h.c.updateRecord(ID,payload,h.c.CFG.reports.contracts),/read-only|permission to archive/);
+ if(!flags.ctDeleteArchive)await assert.rejects(h.c.updateRecord(ID,{Archive:true}),/permission to archive/);
  await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'changed'},h.c.CFG.reports.actions),/read-only/);
  await assert.rejects(h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'child'}),/read-only/);
  await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION),/read-only/);

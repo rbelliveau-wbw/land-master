@@ -1,3 +1,24 @@
+## Archive completed Legal contracts — October 22, 2026
+
+Contract Management 1.62.34 restores Archive/Unarchive for completed Legal
+contracts when the signed-in user already has Delete & Archive Contracts.
+The menu previously required an open contract, and both local and native
+preflight locks rejected even Archive-only updates. Production access data
+confirmed the reported user's existing archive grant; the same missing menu
+was reproduced as the application administrator.
+
+The exception is limited to one existing parent field, Contract.Archive.
+Fresh native parent identity, module and archive permission checks remain.
+Completed edits, deletes and child writes stay locked; Construction behavior
+is unchanged. Creator native report/field permissions still apply. No access
+record, Creator workflow or Custom API changes are part of this widget fix.
+Archive string values, failed-save visibility and ambiguous-reply guards reuse
+the existing path. Existing tests cover completed archive/restore, denied access,
+fresh completion between reads, mixed payload rejection and retained locks.
+Read-only native Development inspection on October 22 found Archive visibility
+already set to Everyone; the older Admin Only finding below is historical.
+Rollback Production to 1.62.33.
+
 ## Construction card Date Needed — October 22, 2026
 
 Contract Management 1.62.33 replaces the completed/total action text on

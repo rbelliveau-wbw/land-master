@@ -1963,16 +1963,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.33"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.33">
-<script src="interaction-motion.js?v=1.62.33"></script>
-<script src="interaction-surfaces.js?v=1.62.33"></script>
-<script src="number-edit-commit.js?v=1.62.33"></script>
-<script src="number-transitions.js?v=1.62.33"></script>
-<script src="number-surfaces.js?v=1.62.33"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.33">
-<link rel="stylesheet" href="report-layout.css?v=1.62.33">
-<link rel="stylesheet" href="construction-board.css?v=1.62.33">
+<script src="success-feedback.js?v=1.62.34"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.34">
+<script src="interaction-motion.js?v=1.62.34"></script>
+<script src="interaction-surfaces.js?v=1.62.34"></script>
+<script src="number-edit-commit.js?v=1.62.34"></script>
+<script src="number-transitions.js?v=1.62.34"></script>
+<script src="number-surfaces.js?v=1.62.34"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.34">
+<link rel="stylesheet" href="report-layout.css?v=1.62.34">
+<link rel="stylesheet" href="construction-board.css?v=1.62.34">
 </head>
 <body>
 
@@ -2021,7 +2021,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.33", pageSize: 200, maxPages: 25,
+  version: "1.62.34", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -3039,7 +3039,9 @@ function contractParentWritePreflight(cid,reviewDecision,scope,generation,otherA
   scope=scope||contractMutationScope();generation=generation==null?S.contractDataGeneration:generation;
   return sdkGetAll(CFG.reports.contracts,'(ID == '+cid+')',contractReadOptions(generation,scope)).then(function(rows){
     if(scope!==contractMutationScope()||generation!==S.contractDataGeneration||rows.length!==1||rows[0].ID!==cid||!contractOwn(rows[0],'Status'))throw new Error('The current contract is unavailable. Refresh before editing.');
-    var current=rows[0];if(!workVisible(current))throw new Error('Open this request from its module page.');if(contractLocked(current))throw new Error('This contract is complete and read-only.');
+    var current=rows[0];if(!workVisible(current))throw new Error('Open this request from its module page.');
+    if(otherAccess==='archive'&&!canArchive(cid))throw new Error('You do not have permission to archive contracts.');
+    if(contractLocked(current)&&(otherAccess!=='archive'||workModule(current)==='construction'))throw new Error('This contract is complete and read-only.');
     if(reviewDecision){if(!workQueueAccess(current))throw new Error('Review access is required.');}
     else if(otherAccess==='attachment'){if(workModule(current)==='construction'?!constructionAccess():!contractEditAccess(current))throw new Error('You do not have access to add attachments.');}
     else if(otherAccess==='comment'){if(workModule(current)==='construction'&&!constructionAccess())throw new Error('You do not have access to comment on this request.');}
@@ -3051,8 +3053,9 @@ function contractWritePreflight(attempt,reviewDecision){
   var target=attempt.target,kind=attempt.kind,data=attempt.payload,report=attempt.reportName,children=[CFG.reports.actions,CFG.reports.approvals,CFG.reports.versions,CFG.reports.pricing];
   if(target===CFG.forms.contract&&kind==='add'){if(!workCreateAccess(workModule(data)))return Promise.reject(new Error('You do not have access to create this task.'));return Promise.resolve().then(function(){if(workModule(data)==='construction')constructionPayloadValidate(data);});}
   if(target===CFG.reports.contracts){
+    if(contractOwn(data,'Archive')&&!canArchive(attempt.id))return Promise.reject(new Error('You do not have permission to archive contracts.'));
     if(reviewDecision&&(kind!=='update'||Object.keys(data).length!==1||['New','Approval Rejected','Rejected'].indexOf(data.Status)<0))return Promise.reject(new Error('Only proposed status can be accepted or declined in Review.'));
-    return contractParentWritePreflight(attempt.id,reviewDecision,attempt.scope,null,(kind==='delete'||Object.keys(data).length===1&&contractOwn(data,'Archive'))&&(kind==='delete'?canDeleteArchive(attempt.id):canArchive(attempt.id))).then(function(parent){if(contractOwn(data,'Work_Module')&&workModule(data)!==workModule(parent))throw new Error('A task cannot be moved between modules.');if(contractOwn(data,'Parent_Contract')){var selected=findContract(lookupId(data.Parent_Contract));if(selected&&workModule(selected)!==workModule(parent))throw new Error('Choose a parent in the same module.');}return parent;});
+    return contractParentWritePreflight(attempt.id,reviewDecision,attempt.scope,null,kind==='update'&&contractArchiveWrite(target,attempt.id,data)?'archive':kind==='delete'&&canDeleteArchive(attempt.id)).then(function(parent){if(contractOwn(data,'Work_Module')&&workModule(data)!==workModule(parent))throw new Error('A task cannot be moved between modules.');if(contractOwn(data,'Parent_Contract')){var selected=findContract(lookupId(data.Parent_Contract));if(selected&&workModule(selected)!==workModule(parent))throw new Error('Choose a parent in the same module.');}return parent;});
   }
   if(report===CFG.reports.comments){
     var comment=kind==='add'?Promise.resolve(data):sdkGetAll(report,'(ID == '+attempt.id+')',contractReadOptions(S.contractDataGeneration,attempt.scope)).then(function(rows){if(rows.length!==1||rows[0].ID!==attempt.id)throw new Error('The current comment is unavailable.');return rows[0];});
@@ -4821,13 +4824,15 @@ window.setLegalAssignedToMe=setLegalAssignedToMe;
 function canEdit(){ return contractReady()&&(constructionMode()?constructionEditAccess():!S.acc.known||S.acc.edit); }
 function canDeleteArchive(cid){ if(cid&&!workVisible(findContract(cid)))return false;return constructionMode()?constructionEditAccess():S.acc.known===true&&S.acc.deleteArchive===true; }
 function canArchive(cid){return (cid?workModule(findContract(cid)):S.workMode)==='construction'?constructionEditAccess():canDeleteArchive(cid);}
+function contractArchiveWrite(reportOrForm,cid,data){return reportOrForm===CFG.reports.contracts&&workModule(findContract(cid))!=='construction'&&Object.keys(data||{}).length===1&&contractOwn(data,'Archive')&&canArchive(cid);}
 /* ============================================================
    COMPLETED = LOCKED
    A completed contract is a closed book: its lots carry its pricing, its takedown
    schedule exists, and its numbers feed reporting. Gating the ~30 write helpers one
    by one would leak the first time somebody adds a 31st, so the lock is enforced at
    the three calls every write already funnels through and mirrored in the UI.
-   There is no completed-contract edit exception.
+   Only an authorized, Archive-only Legal parent update may bypass the completed lock.
+   Editing, deleting and child writes remain locked.
    ============================================================ */
 function contractLocked(c){ return String(c&&c.Status||"")==="Complete"; }
 function lockedById(cid){ return contractLocked(findContract(cid)); }
@@ -4864,6 +4869,7 @@ function lockOwnerContract(reportOrForm,recordId,data){
   return "";
 }
 function lockBlocks(reportOrForm,recordId,data){
+  if(contractArchiveWrite(reportOrForm,recordId,data))return false;
   var cid=lockOwnerContract(reportOrForm,recordId,data),destination=data&&lookupId(data.Contract1);
   return !!(cid&&lockedById(cid)||destination&&lockedById(destination));
 }
@@ -6918,7 +6924,7 @@ function kebabMenu(ev,cid){
   m.innerHTML='<button onclick="contractParentOpen(\''+cid+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="6" rx="1"/><path d="M12 8v5M5 17v-4h14v4"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/></svg>'+(contractChildren(cid).length?'Master · '+contractChildren(cid).length+' children':constructionMode()?'Assign Parent Request':lookupId(kc.Parent_Contract)?'Change Parent Contract':'Assign Parent Contract')+'</button><div class="kmenu-sep"></div><button onclick="showApprovalsModal(\''+cid+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>View Approvals</button>'
     +'<button onclick="showAttachmentsModal(\''+cid+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>View Attachments</button>'
      +(isRobby()&&!constructionMode()?'<button onclick="var id=\''+cid+'\';document.querySelector(\'.kmenu\').remove();openRecord(CFG.forms.contract,CFG.reports.contracts,id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>Open in Creator</button>':'')
-    +(canArchive(cid)&&!contractLocked(kc)?'<div class="kmenu-sep"></div><button onclick="var id=\''+cid+'\';document.querySelector(\'.kmenu\').remove();toggleArchive(id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>'+(truthy(kc.Archive)?"Unarchive":"Archive")+'</button>':'')
+    +(canArchive(cid)&&(workModule(kc)!=='construction'||!contractLocked(kc))?'<div class="kmenu-sep"></div><button onclick="var id=\''+cid+'\';document.querySelector(\'.kmenu\').remove();toggleArchive(id)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>'+(truthy(kc.Archive)?"Unarchive":"Archive")+'</button>':'')
     +(canDeleteArchive(cid)&&!contractLocked(kc)?'<button class="danger" onclick="document.querySelector(\'.kmenu\').remove();deleteContract(\''+cid+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>Delete</button>':'');
   document.body.appendChild(m);
   var r=ev.currentTarget.getBoundingClientRect();
