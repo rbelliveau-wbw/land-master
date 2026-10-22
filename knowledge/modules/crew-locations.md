@@ -191,5 +191,5 @@ release and display Creator-only mode. Normal date typing and Tab produced a
 complete native destination acknowledgement; audited Undo restored the original
 end date. Full repository validation, the 33-path build, CI and Pages passed.
 Evidence and exact operation IDs: [PMP outcome](../../creator/crew-locations/pmp-outcome.json).
-Pending Creator publication remains the user’s step under PMP; Production native
+Pending Creator publication remains the user's step under PMP; Production native
 save verification is therefore not claimed. Crew/task source adapters stay off.
