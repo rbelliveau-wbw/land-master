@@ -130,6 +130,13 @@ else if(responseText.left(1) != "[") {{ throw "Zoho Projects returned a non-JSON
         brace=body.index('{',m.start()); end=matching(body,brace,'{','}')
         rowloops.extend([(brace+1,'\n auditProcessed = auditProcessed + 1;\n auditRowChanged = false;\n'),(end,'\n if(!auditRowChanged) { auditSkipped = auditSkipped + 1; }\n')])
     for pos,value in sorted(rowloops,reverse=True): body=body[:pos]+value+body[pos:]
+    if name == 'Budgets_Import_Load_GP_Co':
+        # Mapping guards run before codeBuild. Identify this row before resolving it,
+        # otherwise a failure reports the preceding successfully imported cost code.
+        body=body.replace('subdivCode = External_System_Mapping[',
+                          'auditRecordKey = ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "-GP-" + ifnull(rec.get("Cost_Code_Number_2"),"").toString();\n\tsubdivCode = External_System_Mapping[')
+        body=body.replace('throw "Duplicate or broken external mapping; source row=" + auditProcessed;',
+                          'throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "; matching Great Plains mappings=" + subdivCode.count();')
     if name in {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1"}:
         body=body.replace('codeBuild = rec.get("WS_Job_Number_Trim")', 'if(ifnull(rec.get("Cost_Code_Number_2"),"").toString().trim() == "" || rec.get("Total_Actuals") == null || rec.get("Total_Actuals").toString().trim() == "") { throw "Eligible Analytics row has no cost code or cost; job=" + rec.get("WS_Job_Number_Trim"); }\nvalidatedCost = rec.get("Total_Actuals").toDecimal();\ncodeBuild = rec.get("WS_Job_Number_Trim")')
     # A catch that only logs a runtime exception must propagate to the permanent audit wrapper.

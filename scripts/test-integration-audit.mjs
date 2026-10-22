@@ -116,3 +116,26 @@ for(const operationStage of ['exporting Projects','exporting Tasks']){
     error=>String(error).includes(operationStage)&&String(error).includes('Analytics export did not complete; job=fixture'));
 }
 console.log('PASS: CTC system-scoped mapping and Final Acceptance source error/stage preservation with an unset nested date error.');
+
+// Run the GP Construction mapping prefix with real collection/lookup shapes.
+// A mapping failure must identify this row, even after a different job succeeded.
+const gpConstruction=fs.readFileSync('creator/integration-audit/prepared/Budgets_Import_Load_GP_Co.action-1.dg','utf8');
+const gpMappingCriteria=gpConstruction.match(/subdivCode = External_System_Mapping\[([^\n]+)\];/)[1].replace(/\b(External_Code|External_System)\b/g,'mapping.$1');
+const selectGPMapping=vm.runInNewContext(`(mapping,rec)=>${gpMappingCriteria}`);
+const gpPrefix=gpConstruction.split('//check if Budget')[0].split(/for each\s+rec in rows\s*\{/)[1]
+  .replace(/subdivCode = External_System_Mapping\[[^\n]+\];/,'subdivCode = findMappings(rec);');
+function runGPMapping(records){
+  const context=vm.createContext({auditProcessed:565,auditRowChanged:true,auditRecordKey:'PREVIOUS_JOB-GP-3430',auditMissingMapping:0,auditSkipped:0,
+    rows:[{get:key=>({'WS_Job_Number_Trim':'EXAMPLE_JOB','Cost_Code_Number_2':3101}[key]??null)}],
+    ifnull:(value,fallback)=>value??fallback,
+    findMappings:rec=>{const found=records.filter(mapping=>selectGPMapping(mapping,rec));found.count=()=>found.length;found.Subdivision1=found[0]?.Subdivision1??null;return found;}});
+  let error;try{vm.runInContext(`for (const rec of rows) { ${gpPrefix} }`,context);}catch(failure){error=String(failure);}
+  return {context,error};
+}
+const conflict=runGPMapping([mappings[0],{...mappings[0],ID:'900000000000000303',Subdivision1:{ID:'900000000000000202',Subdivision_Code:'OTHER_PHASE'}}]);
+assert.match(conflict.error,/source row=566; job=EXAMPLE_JOB; matching Great Plains mappings=2/);
+assert.equal(conflict.context.auditRecordKey,'EXAMPLE_JOB-GP-3101','Never attribute this failure to the preceding source key');
+assert.equal(runGPMapping(mappings).error,undefined,'A HeavyJob mapping must not create a Great Plains conflict');
+assert.match(runGPMapping([{...mappings[0],Subdivision1:null}]).error,/matching Great Plains mappings=1/,'Broken lookup still fails');
+const unmapped=runGPMapping([]);assert.equal(unmapped.error,undefined);assert.equal(unmapped.context.auditSkipped,1);
+console.log('PASS: GP Construction mapping conflicts retain both destination guards and report the current source key/job/count.');

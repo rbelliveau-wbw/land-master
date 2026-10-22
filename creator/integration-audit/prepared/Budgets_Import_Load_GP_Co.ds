@@ -67,9 +67,10 @@ Budgets_Import_Load_GP_Co as "Budgets - Import/Load GP Const Costs"
 			 auditProcessed = auditProcessed + 1;
 			 auditRowChanged = false;
 
+				auditRecordKey = ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "-GP-" + ifnull(rec.get("Cost_Code_Number_2"),"").toString();
 				subdivCode = External_System_Mapping[External_Code == rec.get("WS_Job_Number_Trim") && External_System == "Great Plains"];
 			if(subdivCode.count() == 0) { auditMissingMapping = auditMissingMapping + 1; auditSkipped = auditSkipped + 1; continue; }
-			if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed; }
+			if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null) { throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "; matching Great Plains mappings=" + subdivCode.count(); }
 				//check if Budget exists for subdiv attached to matching External Code
 				if(!budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code)) { auditNoBudget = auditNoBudget + 1; auditSkipped = auditSkipped + 1; continue; }
 			if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
