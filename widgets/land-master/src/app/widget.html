@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.16.12"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.16.13"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.16.12"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.16.12">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.16.12">
-<script src="searchable-pickers.js?v=8.16.12" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.16.12">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.16.12">
-<script src="spreadsheet-import.js?v=8.16.12"></script>
-<script src="lot-import.js?v=8.16.12"></script>
+<script src="property-workspace.js?v=8.16.13"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.16.13">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.16.13">
+<script src="searchable-pickers.js?v=8.16.13" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.16.13">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.16.13">
+<script src="spreadsheet-import.js?v=8.16.13"></script>
+<script src="lot-import.js?v=8.16.13"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -426,14 +426,14 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.16.12"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.16.12">
-<script src="interaction-motion.js?v=8.16.12"></script>
-<script src="interaction-surfaces.js?v=8.16.12"></script>
-<script src="number-edit-commit.js?v=8.16.12"></script>
-<script src="number-transitions.js?v=8.16.12"></script>
-<script src="number-surfaces.js?v=8.16.12"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.16.12">
+<script src="success-feedback.js?v=8.16.13"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.16.13">
+<script src="interaction-motion.js?v=8.16.13"></script>
+<script src="interaction-surfaces.js?v=8.16.13"></script>
+<script src="number-edit-commit.js?v=8.16.13"></script>
+<script src="number-transitions.js?v=8.16.13"></script>
+<script src="number-surfaces.js?v=8.16.13"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.16.13">
 </head>
 <body>
 
@@ -596,7 +596,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.16.12-LAZY-CORE",
+  version: "8.16.13-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1017,6 +1017,7 @@ function filterActive(){return!!(S.search||(S.scope==="props"&&hasPropertyFilter
 function visibleList(){var list=currentList().slice(),q=S.search.toLowerCase(),cs=cols();if(q)list=list.filter(function(r){return cs.map(function(c){return String(colValue(r,c.key)||"");}).join(" ").toLowerCase().indexOf(q)>=0;});if(S.scope==="props")Object.keys(FILTER_DEFS).forEach(function(key){var chosen=S.filters[key]||[];if(chosen.length){var def=FILTER_DEFS[key];list=list.filter(function(r){return chosen.indexOf(String(def.value(r)))>=0;});}});if(S.issuesOnly)list=list.filter(function(r){return isIssue(S.scope,r);});if(S.sortKey){var k=S.sortKey,d=S.sortDir;list.sort(function(a,b){var va=colValue(a,k),vb=colValue(b,k),na=parseFloat(va),nb=parseFloat(vb);return !isNaN(na)&&!isNaN(nb)?(na-nb)*d:String(va||"").localeCompare(String(vb||""))*d;});}else if(S.scope==="cos")list.sort(function(a,b){return String(a.Company_Name||"").localeCompare(String(b.Company_Name||""));});return list;}
 function groupSubs(list){var by=Object.create(null),order=[],q=S.search.toLowerCase();function add(key,name,project){if(!by[key]){by[key]={key:key,name:name,project:project,items:[]};order.push(key);}return by[key];}S.projects.forEach(function(project){var pid=String(project.ID),name=String(project.Project_Name||project.Project_Code||pid);if(!filterActive()||(!S.issuesOnly&&[name,project.Project_Code,project.Territory].join(' ').toLowerCase().indexOf(q)>=0))add(pid,name,project);});list.forEach(function(row){var pid=lookupId(row.Project),project=pid?findIn(S.projects,pid):null;add(pid||'unlinked',project?String(project.Project_Name||project.Project_Code||pid):(displayValue(row.Project,'project')||'Unlinked'),project).items.push(row);});order.sort(function(a,b){if(a==='unlinked')return 1;if(b==='unlinked')return-1;return by[a].name.localeCompare(by[b].name);});return order.map(function(key){return by[key];});}
 function projectSummary(r){var names=asList(r.Projects).map(function(x){return displayValue(x,'project');}).filter(Boolean);if(!names.length)return"— assign —";return names.length<=2?names.join(", "):names.slice(0,2).join(", ")+" +"+(names.length-2);}
+
 function tableEditorHTML(r,c){var field=c.field||c.key,ftype=c.edit,raw="";if(ftype==="lookup"||ftype==="lookupsearch")raw=lookupId(r[field]);else if(ftype==="projects")raw=asList(r[field]).map(function(x){return String(x.ID||"");}).filter(Boolean).join(",");else if(ftype==="bool")raw=truthy(r[field])?"true":"false";else if(ftype==="url")raw=normalizeWebUrl(r[field])||"";else raw=r[field]==null?"":String(r[field]);if(ftype==="projects")return'<button type="button" class="table-project-btn'+(!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="projects" data-original="'+esc(raw)+'" aria-label="Edit '+esc(c.label)+'"><span class="project-label">'+esc(projectSummary(r))+'</span><span class="project-caret">▾</span></button>';if(ftype==="lookupsearch")return'<button type="button" class="table-lookup-btn'+(!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="lookup" data-lookup="'+esc(c.lookup||'')+'" data-original="'+esc(raw)+'" aria-label="Search and edit '+esc(c.label)+'"><span class="lookup-label">'+esc(displayValue(r[field])||"— search —")+'</span><span class="lookup-ok" aria-hidden="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg></span><span class="lookup-caret">▾</span></button>';if(ftype==="bool")return'<input type="checkbox" class="table-editor-check" data-field="'+esc(field)+'" data-ftype="bool" data-original="'+raw+'" aria-label="Edit '+esc(c.label)+'"'+(raw==="true"?' checked':'')+'/>';var attrs=' class="table-editor'+(ftype==="lookup"&&!raw?' warn':'')+'" data-field="'+esc(field)+'" data-ftype="'+esc(ftype)+'" data-lookup="'+esc(c.lookup||'')+'" data-original="'+esc(raw)+'" aria-label="Edit '+esc(c.label)+'"';if(ftype==="select"){var opts='<option value="">—</option>',list=(c.opts||[]).slice();if(raw&&list.indexOf(raw)<0)list.unshift(raw);list.forEach(function(o){opts+='<option value="'+esc(o)+'"'+(o===raw?' selected':'')+'>'+esc(o)+'</option>';});return'<select'+attrs+'>'+opts+'</select>';}if(ftype==="lookup")return'<select'+attrs+'>'+optionsHTML(lookupOptions(c.lookup),raw,false)+'</select>';if(ftype==="url")return'<div class="url-editor-wrap"><input'+attrs+' type="url" placeholder="https://…" value="'+esc(raw)+'"/>'+urlOpenHTML(raw,'Open '+c.label)+'</div>';return'<input'+attrs+(ftype==="number"?' type="number" step="any"':ftype==="ein"?' type="text" inputmode="numeric" placeholder="XX-XXXXXXX"':' type="text"')+' value="'+esc(raw)+'"/>';}
 function pageState(){var total=S.lastFiltered.length;if(S.scope!=="props"){S.page[S.scope]=1;return{total:total,size:Math.max(1,total),pages:1,page:1,start:0,end:total};}var size=Math.max(1,num(S.tablePageSize)||CFG.tablePageSize||100),pages=Math.max(1,Math.ceil(total/size)),page=Math.max(1,Math.min(pages,num(S.page[S.scope])||1));S.page[S.scope]=page;return{total:total,size:size,pages:pages,page:page,start:(page-1)*size,end:Math.min(total,page*size)};}
 function renderPager(st){var pager=$('tablePager');if(S.scope!=="props"){pager.style.display='none';return;}pager.style.display='flex';if(!st)st=pageState();var from=st.total?st.start+1:0,to=st.end;$('pageInfo').textContent=st.total?(fmt(from)+'–'+fmt(to)+' of '+fmt(st.total)+' matching'):'0 matching records';$('pageNumber').textContent='Page '+st.page+' of '+st.pages;$('pageFirst').disabled=st.page<=1;$('pagePrev').disabled=st.page<=1;$('pageNext').disabled=st.page>=st.pages;$('pageLast').disabled=st.page>=st.pages;if(String($('pageSize').value)!==String(st.size))$('pageSize').value=String(st.size);}
@@ -1387,6 +1388,20 @@ function loadData(){
 }
 
 var lotImport=LMLotImport.mount({version:CFG.version,subdivisions:function(){return S.subdivisions},selected:function(){return S.scope==='subs'?Object.keys(S.checked).filter(id=>S.checked[id]):[]},live:function(){return S.liveSDK&&!S.demo},prepare:function(){closeNewMenu();closeFilterPopup();closeLookupPopup();closeProjectPopup();if(window.LMPickers)LMPickers.close(false)},unavailable:function(){setStatus('warn','Open Import Lots inside Zoho Creator')},add:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('lot',data)},reload:loadData,log:function(level,label,details){auditOnly(label,details,level==='error');if(level==='error')queueErrorEmail(label,details)}});
+// Reuse Tax's native full-name title without changing any lookup/edit handler.
+function landLookupNameTitle(event){
+  var target=event.target,button=target&&target.closest?target.closest('.table-lookup-btn,.field-lookup-btn,.table-project-btn'):null;
+  if(!button)return;
+  var label=button.querySelector('.lookup-label,.project-label'),text=label?label.textContent.trim():'';
+  if(button.classList.contains('table-project-btn')){
+    var row=button.closest('tr.rec'),record=row?findIn(currentList(),row.getAttribute('data-id')):null;
+    if(record)text=asList(record.Projects).map(function(project){return displayValue(project,'project');}).filter(Boolean).join(', ');
+  }
+  button.title=/^— (?:assign|search) —$/.test(text)?'':text;
+}
+document.addEventListener('mouseover',landLookupNameTitle);
+document.addEventListener('focusin',landLookupNameTitle);
+
 function creatorFrameContext(){try{if(window.parent&&window.parent!==window)return true;}catch(ignore){return true;}var urls=String(window.location&&window.location.href||'')+' '+String(document.referrer||'');return /https:\/\/(?:creator|creatorapp|creatorexport)\.zoho\./i.test(urls);}
 function initializeCreatorV2(){
   var settled=false,timer=null,inCreator=creatorFrameContext(),z=window.ZOHO&&ZOHO.CREATOR;

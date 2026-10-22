@@ -8,6 +8,14 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+Lookup names that shorten within a control must remain available on hover.
+Reuse the existing native full-name title pattern where it is already proven,
+as in Tax's Company selector. Land & Projects table and record lookup controls
+also expose complete selected names; multi-value summaries include names omitted
+by +N. Refresh the title when the value changes or clears. Preserve the existing
+lookup click/edit behavior, native IDs and save paths. A title is presentation
+only and must never trigger a read or write.
+
 Legal and Construction keep their module slider menu at the left of the page
 toolbar above the filters, with New and Refresh at the right. User direction
 October 20, 2026 supersedes the earlier centered-header placement. Use the exact

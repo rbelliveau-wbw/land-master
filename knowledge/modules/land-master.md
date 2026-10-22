@@ -1,3 +1,19 @@
+## Full lookup names on hover — 8.16.13, October 22, 2026
+
+Properties table lookup buttons and Property record Company controls now expose
+their complete current name through native hover text, reusing Tax's existing
+Company title pattern. Searchable single/multi lookup triggers also carry every
+selected name, including Projects and Subdivisions. Project table summaries
+retain their compact display while hover includes names omitted by +N.
+Titles refresh from the current rendered label or selected options; clear values
+do not retain an old name. No lookup IDs, click/edit handlers, saves, permissions,
+Creator forms/fields, functions or Custom APIs change. No Creator promotion is
+required. Tax already had the reported Company hover and is unchanged.
+Existing Land/Tax regressions, full validation and Pages build passed. Read-only
+desktop Production inspection confirmed the missing Company title in both table
+and record dialog before publication; post-deployment verification checks both.
+Rollback Production Land Master to 8.16.12.
+
 ## Shared interaction motion — 8.16.7, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

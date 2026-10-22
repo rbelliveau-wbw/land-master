@@ -11,6 +11,7 @@
     var button = select._pickerButton;
     if (!button) return;
     var values = selected(select);
+    button.title = values.map(function (o) { return o.textContent; }).join(', ');
     button.querySelector('.lm-picker-label').textContent = values.length ? values.slice(0, 2).map(function (o) { return o.textContent; }).join(', ') + (values.length > 2 ? ' +'+(values.length-2) : '') : 'Select…';
     button.disabled = select.disabled;
     button.setAttribute('aria-label', label(select) + ': ' + (values.length ? values.map(function (o) { return o.textContent; }).join(', ') : 'Select'));
