@@ -34,3 +34,4 @@
 .pw-history-empty{display:grid;justify-items:center;gap:12px;padding:58px 20px;background:#fff;border:1px dashed #c6d8ee;border-radius:14px;color:#7289a3;font-size:12px}.pw-history-empty svg{height:36px;width:36px;fill:none;stroke:#7399c6;stroke-width:1.4}.pw-history-loading{padding:35px;color:#647e9d;text-align:center}
 .pw-card [aria-invalid="true"]{border-color:#d85c5c;box-shadow:0 0 0 2px rgba(185,28,28,.1)}
 @media(prefers-reduced-motion:reduce){.pw-calendar *{transition:none!important}}
+.pw-transfer-status.CAD.Verified{background:#e5f5ed;color:#24724e}

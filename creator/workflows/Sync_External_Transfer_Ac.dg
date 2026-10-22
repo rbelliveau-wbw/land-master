@@ -1,0 +1,2 @@
+// Property_Transfer: Created or Edited / Successful form submission.
+thisapp.syncExternalTransferActivity(input.Property.toString());

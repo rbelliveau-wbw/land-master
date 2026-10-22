@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.16.13"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.0"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.16.13"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.16.13">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.16.13">
-<script src="searchable-pickers.js?v=8.16.13" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.16.13">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.16.13">
-<script src="spreadsheet-import.js?v=8.16.13"></script>
-<script src="lot-import.js?v=8.16.13"></script>
+<script src="property-workspace.js?v=8.17.0"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.0">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.0">
+<script src="searchable-pickers.js?v=8.17.0" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.0">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.0">
+<script src="spreadsheet-import.js?v=8.17.0"></script>
+<script src="lot-import.js?v=8.17.0"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -426,14 +426,14 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.16.13"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.16.13">
-<script src="interaction-motion.js?v=8.16.13"></script>
-<script src="interaction-surfaces.js?v=8.16.13"></script>
-<script src="number-edit-commit.js?v=8.16.13"></script>
-<script src="number-transitions.js?v=8.16.13"></script>
-<script src="number-surfaces.js?v=8.16.13"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.16.13">
+<script src="success-feedback.js?v=8.17.0"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.0">
+<script src="interaction-motion.js?v=8.17.0"></script>
+<script src="interaction-surfaces.js?v=8.17.0"></script>
+<script src="number-edit-commit.js?v=8.17.0"></script>
+<script src="number-transitions.js?v=8.17.0"></script>
+<script src="number-surfaces.js?v=8.17.0"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.0">
 </head>
 <body>
 
@@ -478,6 +478,7 @@ tr.ghead:hover td{background:#edf2f9}
     <button class="multi-filter-btn" type="button" data-filter-key="subtype"></button>
     <button class="multi-filter-btn" type="button" data-filter-key="company"></button>
     <button class="multi-filter-btn" type="button" data-filter-key="deedTo"></button>
+    <button class="multi-filter-btn" type="button" data-filter-key="activity"></button>
   </div>
   <div class="spacer"></div>
   <span class="hint keyboard-hint">edit inline · pencil opens the full editor · select rows for mass update</span>
@@ -596,7 +597,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.16.13-LAZY-CORE",
+  version: "8.17.0-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -634,7 +635,7 @@ var OPTS = {
 };
 
 var S = {
-  liveSDK:false, demo:false, choicesReady:false, scope:"props", search:"", filters:{county:[],landType:[],subtype:[],company:[],deedTo:[]}, issuesOnly:false,
+  liveSDK:false, demo:false, choicesReady:false, scope:"props", search:"", filters:{county:[],landType:[],subtype:[],company:[],deedTo:[],activity:["Active"]}, issuesOnly:false,
   filterPopupKey:null, filterDraft:[], filterPopupButton:null, loadProgress:{}, loadStarted:false,
   sortKey:null, sortDir:1, page:{props:1,subs:1,cos:1}, tablePageSize:100, lastFiltered:[], lastPageRows:[], selected:{props:null,subs:null,cos:null}, checked:{}, expandedGroups:{},
   modalOpen:false, modalTab:"details", editorType:null, editorId:null, editorStack:[], editorNew:false, editorDraft:null, mappingDraft:null, subdivisionDraft:null, panelDirty:false, panelSaving:false, tableRefreshPending:false,
@@ -823,7 +824,7 @@ function landCreateFieldType(type,field){
   if(field==='ID')return'lookup';
   var fields={
     propertyTransfer:{lookup:'Property From_Company To_Company',date:'Transfer_Date',number:'Amount_Transferred'},
-    property:{currency:'Purchase_Price cost_per_acre_FT',date:'Purchase_Date',bool:'Deed_to_HOA Insured Ag_Exempt Is_1031',lookup:'Proforma Seller Company1',multilookup:'Projects Subdivisions',number:'Acres Original_Acres Construction_Acres'},
+    property:{currency:'Purchase_Price cost_per_acre_FT',date:'Purchase_Date',bool:'Deed_to_HOA Insured Ag_Exempt Is_1031 External_Transfer_Inactive',lookup:'Proforma Seller Company1',multilookup:'Projects Subdivisions',number:'Acres Original_Acres Construction_Acres'},
     project:{lookup:'Company1 Proforma',multilookup:'Properties',bool:'Unlock_Fields'},
     subdivision:{bool:'Generate_Forecasts Unlock Override Eng_Sold_Out_Email_Sent',lookup:'Land_Company External_System_Mapping Additional_Items Milestones Project Company1',multilookup:'Builders Property_Used',percentage:'Engineering_Markup Engineering_Sub_Markup Construction_Markup Construction_Sub_Markup Capital_Cost Points Admin_Cost Profit_Share',number:'Acres Lot_Total_Residential Equiv_LF_of_Street Total_Lots Lots_Sold Unforecasted_Lots Phase',date:'Last_Sold_Date'},
     company:{multilookup:'Proforma',lookup:'Property'},
@@ -902,7 +903,7 @@ function descriptor(type,rec){
   if(type==="propertyTransfer"){
     d.fields=LMPropertyWorkspace.transferFields(rec,F);
   } else if(type==="property"){
-    d.fields=[F("Common_Name","Common name","text",rec.Common_Name,{full:1}),F("Property_ID","Property ID","text",rec.Property_ID),F("Facility_ID","Facility ID","text",rec.Facility_ID),F("TerraVault_URL","TerraVault URL","url",rec.TerraVault_URL,{full:1}),F("County","County","select",rec.County,{opts:OPTS.propertyCounty}),F("Land_Type","Land type","select",rec.Land_Type,{opts:OPTS.landType}),F("Subtype","Subtype","select",rec.Subtype,{opts:OPTS.propertySubtype}),F("Company1","Company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Seller","Seller","lookup",lookupId(rec.Seller),{lookup:"builder"}),F("Projects","Projects","multilookup",asList(rec.Projects).map(function(x){return String(x.ID||"");}),{lookup:"project",full:1}),F("Subdivisions","Subdivisions","multilookup",asList(rec.Subdivisions).map(function(x){return String(x.ID||"");}),{lookup:"subdivision",full:1}),F("Acres","Acres","number",rec.Acres),F("Original_Acres","Original acres","number",rec.Original_Acres),F("Construction_Acres","Construction acres","number",rec.Construction_Acres),F("cost_per_acre_FT","Cost per acre","currency",rec.cost_per_acre_FT),F("Deed_To","Deed to","select",rec.Deed_To,{opts:OPTS.deedTo}),F("Insured","Insured","bool",rec.Insured),F("Is_1031","1031","bool",rec.Is_1031),F("Ag_Exempt","Ag exempt","bool",rec.Ag_Exempt),F("New_Owner","New owner","select",rec.New_Owner,{opts:OPTS.yesNo}),F("Agree_with_Designation","Agree with designation","select",rec.Agree_with_Designation,{opts:OPTS.yesNo}),F("Purchase_Price","Purchase price","currency",rec.Purchase_Price),F("Purchase_Date","Purchase date","date",rec.Purchase_Date),F("Location","Location","text",rec.Location,{full:1}),F("Legal_Description","Legal description","textarea",rec.Legal_Description,{full:1}),F("Bruce_s_Description","Bruce's description","textarea",rec.Bruce_s_Description,{full:1}),F("Notes","Notes","textarea",rec.Notes,{full:1}),F("Proforma","Proforma","lookup",lookupId(rec.Proforma),{lookup:"proforma"})];
+    d.fields=[F("Common_Name","Common name","text",rec.Common_Name,{full:1}),F("Property_ID","Property ID","text",rec.Property_ID),F("External_Transfer_Inactive","Activity","ro",truthy(rec.External_Transfer_Inactive)?"Inactive":"Active"),F("Facility_ID","Facility ID","text",rec.Facility_ID),F("TerraVault_URL","TerraVault URL","url",rec.TerraVault_URL,{full:1}),F("County","County","select",rec.County,{opts:OPTS.propertyCounty}),F("Land_Type","Land type","select",rec.Land_Type,{opts:OPTS.landType}),F("Subtype","Subtype","select",rec.Subtype,{opts:OPTS.propertySubtype}),F("Company1","Company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Seller","Seller","lookup",lookupId(rec.Seller),{lookup:"builder"}),F("Projects","Projects","multilookup",asList(rec.Projects).map(function(x){return String(x.ID||"");}),{lookup:"project",full:1}),F("Subdivisions","Subdivisions","multilookup",asList(rec.Subdivisions).map(function(x){return String(x.ID||"");}),{lookup:"subdivision",full:1}),F("Acres","Acres","number",rec.Acres),F("Original_Acres","Original acres","number",rec.Original_Acres),F("Construction_Acres","Construction acres","number",rec.Construction_Acres),F("cost_per_acre_FT","Cost per acre","currency",rec.cost_per_acre_FT),F("Deed_To","Deed to","select",rec.Deed_To,{opts:OPTS.deedTo}),F("Insured","Insured","bool",rec.Insured),F("Is_1031","1031","bool",rec.Is_1031),F("Ag_Exempt","Ag exempt","bool",rec.Ag_Exempt),F("New_Owner","New owner","select",rec.New_Owner,{opts:OPTS.yesNo}),F("Agree_with_Designation","Agree with designation","select",rec.Agree_with_Designation,{opts:OPTS.yesNo}),F("Purchase_Price","Purchase price","currency",rec.Purchase_Price),F("Purchase_Date","Purchase date","date",rec.Purchase_Date),F("Location","Location","text",rec.Location,{full:1}),F("Legal_Description","Legal description","textarea",rec.Legal_Description,{full:1}),F("Bruce_s_Description","Bruce's description","textarea",rec.Bruce_s_Description,{full:1}),F("Notes","Notes","textarea",rec.Notes,{full:1}),F("Proforma","Proforma","lookup",lookupId(rec.Proforma),{lookup:"proforma"})];
     d.tabs.push({id:"linked",label:"Linked Records",count:asList(rec.Projects).length+asList(rec.Subdivisions).length});
     if(!S.editorNew)d.tabs.push({id:"transfers",label:"Property Transfers",count:propertyTransferCount(rec.ID)});
     d.bulk=["County","Land_Type","Subtype","Company1","Seller","Insured","Is_1031","Ag_Exempt","Deed_To","New_Owner","Agree_with_Designation","Purchase_Price","Purchase_Date"];
@@ -961,6 +962,7 @@ function companyUsage(){var u={};S.subdivisions.forEach(function(r){var d=lookup
 
 /* searchable multi-select property filters */
 var FILTER_DEFS={
+  activity:{label:"Activity",value:function(r){return truthy(r.External_Transfer_Inactive)?"Inactive":"Active";},options:function(){return[{value:"Active",label:"Active"},{value:"Inactive",label:"Inactive"}];}},
   county:{label:"County",value:function(r){return String(r.County||"");},options:function(){return mergeFilterValues(OPTS.propertyCounty,uniqueValues(S.properties,"County"));}},
   landType:{label:"Land Type",value:function(r){return String(r.Land_Type||"");},options:function(){return mergeFilterValues(OPTS.landType,[]);}},
   subtype:{label:"Subtype",value:function(r){return String(r.Subtype||"");},options:function(){return mergeFilterValues(OPTS.propertySubtype,uniqueValues(S.properties,"Subtype"));}},
@@ -970,7 +972,7 @@ var FILTER_DEFS={
 function mergeFilterValues(base,extra){var seen={},out=[];(base||[]).concat(extra||[]).forEach(function(v){v=String(v||"").trim();if(v&&!seen[v]){seen[v]=1;out.push({value:v,label:v});}});return out.sort(function(a,b){return a.label.localeCompare(b.label);});}
 function filterSelections(key){return(S.filters[key]||[]).slice();}
 function hasPropertyFilters(){return Object.keys(S.filters).some(function(k){return(S.filters[k]||[]).length;});}
-function renderFilterButtons(){var wrap=$("propertyFilters");if(!wrap)return;wrap.style.display=S.scope==="props"?"flex":"none";wrap.querySelectorAll("[data-filter-key]").forEach(function(btn){var key=btn.getAttribute("data-filter-key"),def=FILTER_DEFS[key],vals=filterSelections(key),value=vals.length?String(vals.length)+" selected":"All";btn.classList.toggle("active",vals.length>0);btn.innerHTML='<span class="filter-name">'+esc(def.label)+'</span><span class="filter-value">'+esc(value)+'</span><span class="filter-caret">▾</span>';});}
+function renderFilterButtons(){var wrap=$("propertyFilters");if(!wrap)return;wrap.style.display=S.scope==="props"?"flex":"none";wrap.querySelectorAll("[data-filter-key]").forEach(function(btn){var key=btn.getAttribute("data-filter-key"),def=FILTER_DEFS[key],vals=filterSelections(key),value=key==="activity"?(vals.length===1?vals[0]:"All"):(vals.length?String(vals.length)+" selected":"All");btn.classList.toggle("active",vals.length>0);btn.innerHTML='<span class="filter-name">'+esc(def.label)+'</span><span class="filter-value">'+esc(value)+'</span><span class="filter-caret">▾</span>';});}
 function renderFilterPopupList(query){var key=S.filterPopupKey,def=FILTER_DEFS[key];if(!def)return;var q=String(query||"").trim().toLowerCase(),selected={};S.filterDraft.forEach(function(v){selected[String(v)]=1;});var opts=def.options().filter(function(o){return!q||String(o.label).toLowerCase().indexOf(q)>=0;});$("filterPopupList").innerHTML=opts.map(function(o){return'<label class="filter-option"><input type="checkbox" value="'+esc(o.value)+'"'+(selected[String(o.value)]?' checked':'')+'><span>'+esc(o.label)+'</span></label>';}).join("")||'<div class="filter-popup-empty">No matching values.</div>';$("filterPopupCount").textContent=S.filterDraft.length+" selected";}
 function syncFilterDraftFromList(){var visibleChecked={};document.querySelectorAll('#filterPopupList input[type="checkbox"]').forEach(function(cb){visibleChecked[String(cb.value)]=cb.checked;});var next=S.filterDraft.filter(function(v){return!(String(v) in visibleChecked);});Object.keys(visibleChecked).forEach(function(v){if(visibleChecked[v])next.push(v);});S.filterDraft=Array.from(new Set(next));$("filterPopupCount").textContent=S.filterDraft.length+" selected";}
 function openFilterPopup(btn){var key=btn.getAttribute("data-filter-key");if(!FILTER_DEFS[key])return;S.filterPopupKey=key;S.filterDraft=filterSelections(key);S.filterPopupButton=btn;$("filterPopupSearch").value="";$("filterPopupSearch").placeholder="Search "+FILTER_DEFS[key].label+"…";renderFilterPopupList("");var rect=btn.getBoundingClientRect(),width=330,left=Math.min(window.innerWidth-width-12,Math.max(12,rect.left)),top=rect.bottom+6;if(top+430>window.innerHeight-10)top=Math.max(10,rect.top-436);var popup=$("filterPopup");popup.style.left=left+"px";popup.style.top=top+"px";popup.classList.add("show");popup.setAttribute("aria-hidden","false");setTimeout(function(){$("filterPopupSearch").focus();},0);}
@@ -985,7 +987,7 @@ function isIssue(scope,r){if(scope==="props")return asList(r.Projects).length===
 function issueCount(){var n=0;S.properties.forEach(function(r){if(isIssue("props",r))n++;});S.subdivisions.forEach(function(r){if(isIssue("subs",r))n++;});return n;}
 function cols(){
   if(S.scope==="props")return[
-    {label:"Name",key:"Common_Name",edit:"text"},{label:"ID",key:"Property_ID",edit:"text"},{label:"TerraVault URL",key:"TerraVault_URL",edit:"url"},
+    {label:"Name",key:"Common_Name",edit:"text"},{label:"ID",key:"Property_ID",edit:"text"},{label:"Activity",key:"External_Transfer_Inactive"},{label:"TerraVault URL",key:"TerraVault_URL",edit:"url"},
     {label:"County",key:"County",edit:"select",opts:OPTS.propertyCounty},{label:"Land type",key:"Land_Type",edit:"select",opts:OPTS.landType},
     {label:"Subtype",key:"Subtype",edit:"select",opts:OPTS.propertySubtype},
     {label:"Company",key:"_company",edit:"lookupsearch",field:"Company1",lookup:"company"},{label:"Acres",key:"Acres",num:1,edit:"number"},
@@ -1005,14 +1007,14 @@ function cols(){
     {label:"Account #",key:"Account_Number",edit:"text"},{label:"MGMT Co. EIN",key:"EIN",edit:"ein"},{label:"Properties",key:"_properties",num:1},{label:"Subdivision links",key:"_use"}
   ];
 }
-function colValue(r,k){if(k==="_company")return displayValue(r.Company1);if(k==="_projects")return asList(r.Projects).map(function(x){return displayValue(x,'project');}).join(", ");if(k==="_project")return displayValue(r.Project,'project');if(k==="_dev")return displayValue(r.Company1);if(k==="_land")return displayValue(r.Land_Company);if(k==="_next"){var m=nextMilestone(milestonesForSub(r.ID));return m?(m.Milestone_Name||"")+" "+shortDate(m.Start_Date):"";}if(k==="_properties")return propertiesForCompany(r.ID).length;if(k==="_use"){var u=companyUsage()[String(r.ID)];return u?((u.dev||0)+" dev · "+(u.land||0)+" land"):"";}return r[k];}
+function colValue(r,k){if(k==="External_Transfer_Inactive")return truthy(r.External_Transfer_Inactive)?"Inactive":"Active";if(k==="_company")return displayValue(r.Company1);if(k==="_projects")return asList(r.Projects).map(function(x){return displayValue(x,'project');}).join(", ");if(k==="_project")return displayValue(r.Project,'project');if(k==="_dev")return displayValue(r.Company1);if(k==="_land")return displayValue(r.Land_Company);if(k==="_next"){var m=nextMilestone(milestonesForSub(r.ID));return m?(m.Milestone_Name||"")+" "+shortDate(m.Start_Date):"";}if(k==="_properties")return propertiesForCompany(r.ID).length;if(k==="_use"){var u=companyUsage()[String(r.ID)];return u?((u.dev||0)+" dev · "+(u.land||0)+" land"):"";}return r[k];}
 var PROJECT_STATUS_COLOR_MAP={"__blank__":["#e5e7eb","#64748b","#cbd5e1"],"feasibility":["#f1f5f9","#475569","#cbd5e1"],"awaiting feas":["#fdf2f8","#be185d","#fbcfe8"],"awaiting feasibility":["#fdf2f8","#be185d","#fbcfe8"],"entitlements":["#eff6ff","#1d4ed8","#bfdbfe"],"awaiting entitle":["#eff6ff","#2563eb","#bfdbfe"],"awaiting entitlements":["#eff6ff","#2563eb","#bfdbfe"],"awaiting eng":["#fefce8","#a16207","#fde68a"],"awaiting engineering":["#fefce8","#a16207","#fde68a"],"eng design":["#fef9c3","#a16207","#fde047"],"engineering design":["#fef9c3","#a16207","#fde047"],"municipal review":["#ecfdf5","#059669","#a7f3d0"],"awaiting const":["#fff7ed","#c2410c","#fed7aa"],"awaiting construction":["#fff7ed","#c2410c","#fed7aa"],"rough grading":["#f5f0e8","#8a6d3b","#e0d2bd"],"utility installation":["#e0f2fe","#0284c7","#bae6fd"],"road prep/pave":["#fff1e8","#c05621","#fdcdb0"],"road prep":["#fff1e8","#c05621","#fdcdb0"],"punch list":["#eef2ff","#6366f1","#c7d2fe"],"accepted - other":["#ecfdf5","#059669","#a7f3d0"],"accepted other":["#ecfdf5","#059669","#a7f3d0"],"accepted":["#ecfdf5","#059669","#a7f3d0"],"closeout":["#fdf4ff","#a21caf","#f5d0fe"],"completed":["#f7fee7","#65a30d","#d9f99d"],"sold out":["#fef2f2","#dc2626","#fecaca"],"sold out (prev wfy)":["#fef2f2","#dc2626","#fecaca"],"planned":["#f5f3ff","#7c3aed","#ddd6fe"]};
 var PROJECT_STATUS_PALETTE=[["#e0f2fe","#0369a1","#bae6fd"],["#dcfce7","#166534","#bbf7d0"],["#fef3c7","#92400e","#fde68a"],["#fae8ff","#86198f","#f5d0fe"],["#ffe4e6","#be123c","#fecdd3"],["#ede9fe","#5b21b6","#ddd6fe"],["#ccfbf1","#0f766e","#99f6e4"],["#f1f5f9","#334155","#cbd5e1"]];
 function projectStatusKey(s){var key=String(s||'').trim().toLowerCase().replace(/\s*\/\s*/g,'/');return key||'__blank__';}
 function projectStatusColors(s){var key=projectStatusKey(s);if(key.indexOf('sold out')>=0)return PROJECT_STATUS_COLOR_MAP['sold out'];if(key.indexOf('entitlement')>=0)return PROJECT_STATUS_COLOR_MAP.entitlements;if(PROJECT_STATUS_COLOR_MAP[key])return PROJECT_STATUS_COLOR_MAP[key];var h=0;for(var i=0;i<key.length;i++)h=((h<<5)-h+key.charCodeAt(i))|0;return PROJECT_STATUS_PALETTE[Math.abs(h)%PROJECT_STATUS_PALETTE.length];}
 function projectStatusTag(v){var s=String(v||'');if(!s)return'—';var c=projectStatusColors(s);return'<span class="tag sm" style="background:'+c[0]+';color:'+c[1]+';border:1px solid '+c[2]+'">'+esc(s)+'</span>';}
 function tableStatusTag(v){var s=String(v||"");if(!s)return"—";var cls=/active|planning/i.test(s)?"tag-accent":/behind|warning/i.test(s)?"tag-outline":"tag-neutral";return'<span class="tag sm '+cls+'">'+esc(s)+'</span>';}
-function cellHTML(r,c){var v=colValue(r,c.key);if(c.key==="Projects_Status")return projectStatusTag(v);if(c.key==="Status")return tableStatusTag(v);if(c.bool)return truthy(v)?'<span class="tag sm tag-accent">Yes</span>':'<span class="tag sm tag-neutral">No</span>';if(c.num)return v===""||v==null?"—":fmt(v);if(!v)return"—";return esc(String(v).replace(/<br\s*\/?>/gi," "));}
+function cellHTML(r,c){var v=colValue(r,c.key);if(c.key==="External_Transfer_Inactive")return '<span class="tag sm '+(truthy(r.External_Transfer_Inactive)?'tag-neutral':'tag-accent')+'">'+(truthy(r.External_Transfer_Inactive)?'Inactive':'Active')+'</span>';if(c.key==="Projects_Status")return projectStatusTag(v);if(c.key==="Status")return tableStatusTag(v);if(c.bool)return truthy(v)?'<span class="tag sm tag-accent">Yes</span>':'<span class="tag sm tag-neutral">No</span>';if(c.num)return v===""||v==null?"—":fmt(v);if(!v)return"—";return esc(String(v).replace(/<br\s*\/?>/gi," "));}
 function filterActive(){return!!(S.search||(S.scope==="props"&&hasPropertyFilters())||S.issuesOnly);}
 function visibleList(){var list=currentList().slice(),q=S.search.toLowerCase(),cs=cols();if(q)list=list.filter(function(r){return cs.map(function(c){return String(colValue(r,c.key)||"");}).join(" ").toLowerCase().indexOf(q)>=0;});if(S.scope==="props")Object.keys(FILTER_DEFS).forEach(function(key){var chosen=S.filters[key]||[];if(chosen.length){var def=FILTER_DEFS[key];list=list.filter(function(r){return chosen.indexOf(String(def.value(r)))>=0;});}});if(S.issuesOnly)list=list.filter(function(r){return isIssue(S.scope,r);});if(S.sortKey){var k=S.sortKey,d=S.sortDir;list.sort(function(a,b){var va=colValue(a,k),vb=colValue(b,k),na=parseFloat(va),nb=parseFloat(vb);return !isNaN(na)&&!isNaN(nb)?(na-nb)*d:String(va||"").localeCompare(String(vb||""))*d;});}else if(S.scope==="cos")list.sort(function(a,b){return String(a.Company_Name||"").localeCompare(String(b.Company_Name||""));});return list;}
 function groupSubs(list){var by=Object.create(null),order=[],q=S.search.toLowerCase();function add(key,name,project){if(!by[key]){by[key]={key:key,name:name,project:project,items:[]};order.push(key);}return by[key];}S.projects.forEach(function(project){var pid=String(project.ID),name=String(project.Project_Name||project.Project_Code||pid);if(!filterActive()||(!S.issuesOnly&&[name,project.Project_Code,project.Territory].join(' ').toLowerCase().indexOf(q)>=0))add(pid,name,project);});list.forEach(function(row){var pid=lookupId(row.Project),project=pid?findIn(S.projects,pid):null;add(pid||'unlinked',project?String(project.Project_Name||project.Project_Code||pid):(displayValue(row.Project,'project')||'Unlinked'),project).items.push(row);});order.sort(function(a,b){if(a==='unlinked')return 1;if(b==='unlinked')return-1;return by[a].name.localeCompare(by[b].name);});return order.map(function(key){return by[key];});}
@@ -1108,13 +1110,14 @@ function startEditorRequest(type,id,isNew,defaults,tab){
   showEditorWaiting(type,isNew,id);
   return ensureEditorData(type,isNew,request.generation).then(function(){
     if(!editorRequestCurrent(request))return false;if(!isNew&&!recordFor(type,id))throw new Error('The selected record is unavailable.');
+    if(type==='propertyTransfer')S.transferOriginalPropertyId=!isNew?lookupId(recordFor(type,id).Property):'';
     S.panelLoading=false;S.pendingEditor=null;S.panelDirty=!!isNew;renderPanel();LMPerf.mark('land-editor-ready',{type:type,generation:request.generation});return true;
   }).catch(function(error){if(!S.modalOpen||request.token!==S.navigationToken||request.generation!==LandData.generation()||error.cancelled)return false;S.panelLoading=true;S.pendingEditor=request;$("recordSubtitle").textContent='Records unavailable';$("panel").innerHTML='<div class="related-empty">Records are unavailable. Retry to open this editor.</div><div class="panel-actions"><button class="btn primary" data-editor-retry>Retry</button><button class="btn" id="btnPanelCancel">Close</button></div>';setStatus('err','Records unavailable');diag('Land editor data unavailable',{type:type,recordId:request.id,error:error});return false;});
 }
 function openEditor(type,id,push){if(push&&S.editorType&&S.editorId&&!S.editorNew&&!S.panelLoading)S.editorStack.push({type:S.editorType,id:S.editorId,tab:S.modalTab});return startEditorRequest(type,id,false);}
 function requestOpenEditor(type,id,push){withDiscardConfirm('Your changes will be lost before opening the selected record.',function(){openEditor(type,id,push);});}
 function openTopRecord(id){S.selected[S.scope]=String(id);var old=document.querySelector('tr.rec.sel');if(old)old.classList.remove('sel');var next=document.querySelector('tr.rec[data-id="'+String(id).replace(/"/g,'\"')+'"]');if(next)next.classList.add('sel');requestOpenEditor(currentType(),id,false);}
-function newDefaults(type){if(type==='propertyTransfer')return{Status:'Draft',Transfer_Scope:'Full'};if(type==='property')return{Deed_To:'No',Insured:true,Is_1031:false,Ag_Exempt:false,New_Owner:'No',Agree_with_Designation:'Yes'};return{};}
+function newDefaults(type){if(type==='propertyTransfer')return{Status:'Pending',Transfer_Scope:'Full'};if(type==='property')return{Deed_To:'No',Insured:true,Is_1031:false,Ag_Exempt:false,New_Owner:'No',Agree_with_Designation:'Yes'};return{};}
 function openNewEditor(type,defaults,preserveStack){withDiscardConfirm('Your changes will be lost before creating a new record.',function(){if(preserveStack&&S.editorType&&S.editorId&&!S.editorNew&&!S.panelLoading)S.editorStack.push({type:S.editorType,id:S.editorId,tab:S.modalTab});else S.editorStack=[];startEditorRequest(type,null,true,defaults);});}
 function addExternalMappingRow(){if(S.panelSaving||landCreateReviewForEditor())return false;if(S.editorType!=='subdivision'||S.editorNew)return;var d=ensureExternalMappingDraft(S.editorId),key='new-'+Date.now()+'-'+d.rows.length;d.rows.push({key:key,id:'',system:'',code:'',originalSystem:'',originalCode:'',isNew:true,editing:true,removed:false});renderPanel();}
 function editExternalMappingRow(key){if(S.panelSaving||landCreateReviewForEditor())return false;var r=externalMappingDraftRow(key);if(!r||r.removed)return;r.editing=!r.editing;renderPanel();}
@@ -1305,9 +1308,27 @@ function loadPropertyTransferHistory(propertyId,force){
   }).catch(function(error){if(!current())return false;history.status='error';if(mounted()){var node=$("propertyTransferHistory");if(node)node.innerHTML='<div class="pw-history-empty">Property transfers unavailable in this environment.<button class="btn sm" type="button" data-refresh-property-transfers>Retry</button></div>';}auditOnly('Property transfer history unavailable',{propertyId:id,error:errMeta(error)},false);return false;});return history.promise;
 }
 function openPropertyTransfer(){var rec=currentEditor();if(!rec||S.editorType!=='property'||S.editorNew)return;openNewEditor('propertyTransfer',{Property:rec,_propertyLocked:true,From_Company:rec.Company1||[]},true);}
-function propertyEditorSubtitle(rec){if(S.editorType==='propertyTransfer')return S.editorNew?'Record a property transfer':(rec.Transfer_Type||'Property Transfer')+' · '+(rec.Status||'Draft');if(S.editorNew)return 'Property details';return [rec.Property_ID?'Property '+rec.Property_ID:'',rec.County?rec.County+' County':'',rec.Acres?String(rec.Acres)+' acres':'',rec.Facility_ID?'Facility '+rec.Facility_ID:''].filter(Boolean).join(' · ');}
+function propertyEditorSubtitle(rec){if(S.editorType==='propertyTransfer')return S.editorNew?'Record a property transfer':(rec.Transfer_Type||'Property Transfer')+' · '+(rec.Status||'Pending');if(S.editorNew)return 'Property details';return [rec.Property_ID?'Property '+rec.Property_ID:'',rec.County?rec.County+' County':'',rec.Acres?String(rec.Acres)+' acres':'',rec.Facility_ID?'Facility '+rec.Facility_ID:''].filter(Boolean).join(' · ');}
 function validatePropertyTransferPanel(){var values={};document.querySelectorAll('#panel .pf[data-field]').forEach(function(el){values[el.getAttribute('data-field')]=el.value;el.removeAttribute('aria-invalid');});var error=LMPropertyWorkspace.validateTransfer(values,S.properties,S.demo);if(!error)return true;var field=$('f_'+error.field),focus=error.field==='Transfer_Date'?$('date_Transfer_Date'):field&&(field._pickerButton||document.querySelector('[data-lookup-target="'+field.id+'"]')||field);if(field)field.setAttribute('aria-invalid','true');if(focus)focus.focus();if($('panelMsg'))$('panelMsg').textContent=error.message;return false;}
-function finishPropertyTransferSave(rec){var id=lookupId(rec.Property);delete S.transferHistory[id];closeRecordModal(true);if(recordFor('property',id))startEditorRequest('property',id,false,null,'transfers');}
+function refreshTransferredProperties(ids,generation){
+  if(!ids.length)return Promise.resolve();var scope=propertyTransferScope();
+  if(S.demo){S.properties.forEach(function(property){property.External_Transfer_Inactive=S.propertyTransfers.some(function(transfer){return lookupId(transfer.Property)===property.ID&&LMPropertyWorkspace.makesInactive(transfer);});});renderTable();return Promise.resolve();}
+  var criteria=ids.map(function(id){if(!/^\d+$/.test(id))throw new Error('Invalid Property identity.');return '(ID == '+id+')';}).join(' || ');
+  return sdkGetAll('All_Property',criteria,null,{fresh:true,isCancelled:function(){return generation!==LandData.generation()||scope!==propertyTransferScope();}}).then(function(rows){
+    if(generation!==LandData.generation()||scope!==propertyTransferScope())throw LMLandData.cancelled();
+    var found={};rows.forEach(function(row){if(typeof row.ID!=='string'||ids.indexOf(row.ID)<0||found[row.ID])throw new Error('Unexpected Property refresh identity.');found[row.ID]=row;});
+    if(Object.keys(found).length!==ids.length)throw new Error('Property activity refresh is incomplete.');
+    ids.forEach(function(id){var property=recordFor('property',id);if(property)Object.assign(property,found[id]);});S.tableRefreshPending=true;renderCounts();if(!S.modalOpen)renderTable();
+  });
+}
+function finishPropertyTransferSave(rec){
+  var id=lookupId(rec.Property),previous=S.transferOriginalPropertyId,ids=Array.from(new Set([id,previous].filter(Boolean))),generation=LandData.generation();
+  ids.forEach(function(parent){delete S.transferHistory[parent];});closeRecordModal(true);var token=S.navigationToken;
+  return refreshTransferredProperties(ids,generation).catch(function(error){if(error.cancelled)return;setStatus('warn','Transfer saved; refresh property activity.');diag('Transfer saved; property activity refresh failed',{propertyIds:ids,error:error});}).then(function(){
+    if(generation===LandData.generation()&&token===S.navigationToken&&!S.modalOpen&&recordFor('property',id))return startEditorRequest('property',id,false,null,'transfers');
+  });
+}
+
 var propertyWorkspace=LMPropertyWorkspace.mount({panel:$('panel'),lookupLabel:lookupLabel,properties:function(){return S.properties;},busy:function(){return S.panelSaving||!!landCreateReviewForEditor();},isNewTransfer:function(){return S.editorNew&&S.editorType==='propertyTransfer';},error:function(message){if($('panelMsg'))$('panelMsg').textContent=message;}});
 var recordDialogFocus=(function(){var opener=null,inert=[];return{open:function(){if(opener)return;opener=document.activeElement;['.topbar','.filterrow','.workarea','.bulkbar'].forEach(function(selector){document.querySelectorAll(selector).forEach(function(el){if(!el.inert){el.inert=true;inert.push(el);}});});requestAnimationFrame(function(){if(S.modalOpen)$('recordClose').focus();});},close:function(){inert.forEach(function(el){el.inert=false;});inert=[];if(opener&&opener.isConnected)opener.focus();opener=null;}};})();
 document.addEventListener('keydown',function(event){if(event.key!=='Tab'||!S.modalOpen||$('confirmModal').classList.contains('show')||document.querySelector('.pw-calendar')||document.querySelector('.lm-picker-menu:not([hidden])')||$('lookupPopup').classList.contains('show'))return;var controls=Array.from($('recordModal').querySelectorAll('button,input,select,textarea,a[href]')).filter(function(el){return !el.disabled&&el.type!=='hidden'&&el.getClientRects().length;});if(!controls.length)return;var first=controls[0],last=controls[controls.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});

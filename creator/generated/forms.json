@@ -3753,7 +3753,7 @@
     {
       "link_name": "Property",
       "display_name": "Add Property",
-      "field_count": 32,
+      "field_count": 33,
       "fields": [
         {
           "link_name": "Land_Details",
@@ -3795,7 +3795,7 @@
           "link_name": "Land_Type",
           "display_name": "Land Type",
           "type": "picklist",
-          "values": "{\"Residential\",\"Commercial\",\"Other\"}",
+          "values": "{\"Residential\",\"Commercial\",\"Other\",\"LOI\"}",
           "display_format": null,
           "initial_value": null,
           "private": false
@@ -4041,6 +4041,15 @@
           "values": null,
           "display_format": null,
           "initial_value": null,
+          "private": false
+        },
+        {
+          "link_name": "External_Transfer_Inactive",
+          "display_name": "Inactive (External Transfer)",
+          "type": "checkbox",
+          "values": null,
+          "display_format": null,
+          "initial_value": "false",
           "private": false
         }
       ]
@@ -11887,7 +11896,7 @@
           "link_name": "Transfer_Type",
           "display_name": "Transfer Type",
           "type": "picklist",
-          "values": "{\"Land Investment\",\"Development Company\",\"Plat Recordation\"}",
+          "values": "{\"Land Investment\",\"Development Company\",\"Plat Recordation\",\"External\"}",
           "display_format": null,
           "initial_value": null,
           "private": false,
@@ -11897,9 +11906,9 @@
           "link_name": "Status",
           "display_name": "Status",
           "type": "picklist",
-          "values": "{\"Draft\",\"Pending\",\"Completed\",\"Cancelled\"}",
+          "values": "{\"Pending\",\"Completed\",\"CAD Verified\",\"Cancelled\"}",
           "display_format": null,
-          "initial_value": "\"Draft\"",
+          "initial_value": "Pending",
           "private": false,
           "mandatory": true
         },
@@ -11943,7 +11952,8 @@
           "private": false,
           "mandatory": false
         }
-      ]
+      ],
+      "field_count": 10
     }
   ]
 }

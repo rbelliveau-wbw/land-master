@@ -1,0 +1,2 @@
+// Property_Transfer: Deleted / Successful record deletion.
+thisapp.syncExternalTransferActivity(input.Property.toString());

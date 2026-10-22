@@ -7,7 +7,7 @@ const c=vm.createContext({Date});c.window=c;
 vm.runInContext(fs.readFileSync(app+'property-workspace.js','utf8'),c);
 const ui=c.LMPropertyWorkspace,P='90071992547409931',C1='90071992547409932',C2='90071992547409933',T='90071992547409934';
 const properties=[{ID:P,Company1:{ID:C1},Acres:'241.5000'}];
-const valid={Property:P,From_Company:C1,To_Company:C2,Transfer_Date:'2026-10-14',Transfer_Type:'Plat Recordation',Status:'Draft',Transfer_Scope:'Full'};
+const valid={Property:P,From_Company:C1,To_Company:C2,Transfer_Date:'2026-10-14',Transfer_Type:'Plat Recordation',Status:'Pending',Transfer_Scope:'Full'};
 for(const type of ui.types)for(const status of ui.statuses)assert.equal(ui.validateTransfer({...valid,Transfer_Type:type,Status:status},properties),null);
 for(const [patch,field] of [
   [{To_Company:C1},'To_Company'],[{Property:90071992547409930},'Property'],[{Transfer_Date:'2026-02-29'},'Transfer_Date'],[{Transfer_Type:'Other'},'Transfer_Type'],[{Status:'Complete'},'Status'],
@@ -20,7 +20,7 @@ assert.equal(ui.validateTransfer({...valid,Transfer_Scope:'Partial',Amount_Unit:
 assert.equal(ui.parseDate('02/29/2028'),'2028-02-29');assert.equal(ui.parseDate('02/29/2026'),'');assert.equal(ui.parseDate('10/14/2026'),'2026-10-14');
 assert.match(ui.dateField({k:'Transfer_Date',label:'Effective date',req:1},valid.Transfer_Date),/type="hidden".*data-ftype="date"/);
 assert.doesNotMatch(ui.dateField({k:'Transfer_Date',label:'Effective date'},valid.Transfer_Date),/\stype="date"/);
-const F=(k,label,type,v,extra)=>({k,label,type,v,...extra}),fields=ui.transferFields({Property:{ID:P},From_Company:{ID:C1},To_Company:{ID:C2},Status:'Draft'},F);
+const F=(k,label,type,v,extra)=>({k,label,type,v,...extra}),fields=ui.transferFields({Property:{ID:P},From_Company:{ID:C1},To_Company:{ID:C2},Status:'Pending'},F);
 assert.equal(fields.filter(f=>f.req).length,7);assert.ok(fields.every(f=>!f.k.includes('Attachment')));
 const propertyFields=JSON.parse(fs.readFileSync('creator/generated/fields/Property.json','utf8')).fields.filter(f=>!['section','submit','reset','cancel'].includes(f.type)).map(f=>({k:f.link_name}));
 const html=ui.propertyHTML(propertyFields,f=>`<input data-field="${f.k}">`);
@@ -65,3 +65,80 @@ assert.ok(create.landCreatePayloadMatches({...payload,Property:{ID:P},From_Compa
 create.ZOHO.CREATOR.DATA.addRecords=async config=>{writes.push(config);return{code:3000}};
 await assert.rejects(create.createRecord('propertyTransfer',payload));assert.ok(create.S.createReviews.propertyTransfer);const before=writes.length;await assert.rejects(create.createRecord('propertyTransfer',payload));assert.equal(writes.length,before,'Unknown transfer inserts cannot be replayed');
 console.log('PASS: Property transfer validation, scoped lazy history, stale guards, exact native create IDs/decimals, no ownership writes, unknown-create quarantine, and complete grouped property fields.');
+
+// Execute the actual native recalculation with native lookup objects and exact
+// string record identities. The adapter replaces Creator queries only.
+const activitySource=fs.readFileSync('creator/functions/syncExternalTransferActivity.dg','utf8');
+const candidateCriteria=activitySource.match(/propertyRows = Property\[([^\n]+)\];/)[1]
+  .replace(/\bID\b/g,'row.ID').replace(/\bExternal_Transfer_Inactive\b/g,'row.External_Transfer_Inactive');
+const transferCriteria=activitySource.match(/qualifyingCount = Property_Transfer\[([^\n]+)\]\.count\(\);/)[1]
+  .replace(/\bProperty\b/g,'fixtureLookup(transfer.Property)')
+  .replace(/\b(Transfer_Type|Transfer_Scope|Status)\b/g,'transfer.$1');
+const nativeProperties=[{ID:P,Company1:{ID:C1},External_Transfer_Inactive:false},{ID:C2,Company1:{ID:C2},External_Transfer_Inactive:true}];
+let nativeTransfers=[];
+const activity=vm.createContext({ifnull:(value,fallback)=>value??fallback,
+  fixtureLookup:value=>typeof value==='string'?value:value?.ID,
+  Map:()=>({put(key,value){this[key]=value;}})});
+const candidateMatch=vm.runInContext(`(row,propertyRecordId)=>${candidateCriteria}`,activity);
+const transferMatch=vm.runInContext(`(transfer,propertyRow)=>${transferCriteria}`,activity);
+activity.fixtureCandidates=id=>nativeProperties.filter(row=>candidateMatch(row,id));
+activity.fixtureCount=row=>nativeTransfers.filter(transfer=>transferMatch(transfer,row)).length;
+vm.runInContext('String.prototype.matches=function(pattern){return new RegExp("^(?:"+pattern+")$").test(this);};',activity);
+const executable=activitySource.replace(/^map syncExternalTransferActivity\(string propertyId\)\s*\{/,
+  'function syncExternalTransferActivity(propertyId){var propertyRecordId,updatedCount,propertyRows,propertyRow,qualifyingCount,inactive,result;')
+  .replace('propertyId.toLong()','propertyId')
+  .replace(/propertyRows = Property\[[^\n]+\];/,'propertyRows = fixtureCandidates(propertyRecordId);')
+  .replace(/qualifyingCount = Property_Transfer\[[^\n]+\]\.count\(\);/,'qualifyingCount = fixtureCount(propertyRow);')
+  .replace('for each propertyRow in propertyRows','for (propertyRow of propertyRows)');
+vm.runInContext(executable,activity);
+const ownershipBefore=JSON.stringify(nativeProperties.map(row=>row.Company1));
+for(const [type,scope,status,expected] of [
+  ['External','Full','Completed',true],['External','Full','CAD Verified',true],
+  ['External','Full','Pending',false],['External','Full','Cancelled',false],
+  ['External','Partial','Completed',false],['External','Partial','CAD Verified',false],
+  ['Land Investment','Full','Completed',false]
+]){
+  nativeTransfers=[{ID:T,Property:{ID:P},Transfer_Type:type,Transfer_Scope:scope,Status:status}];
+  activity.syncExternalTransferActivity(P);
+  assert.equal(nativeProperties[0].External_Transfer_Inactive,expected,[type,scope,status].join('/'));
+  assert.equal(nativeProperties[1].External_Transfer_Inactive,false,'An obsolete inactive flag is cleared');
+  assert.equal(ui.makesInactive(nativeTransfers[0]),expected,'Demo and native rules agree');
+}
+nativeTransfers=[{ID:T,Property:{ID:P},Transfer_Type:'External',Transfer_Scope:'Full',Status:'Completed'},
+  {ID:C1,Property:{ID:P},Transfer_Type:'External',Transfer_Scope:'Full',Status:'CAD Verified'}];
+activity.syncExternalTransferActivity(P);nativeTransfers[0].Status='Cancelled';activity.syncExternalTransferActivity(P);
+assert.equal(nativeProperties[0].External_Transfer_Inactive,true,'Another qualifying transfer keeps the property inactive');
+nativeTransfers=[{ID:T,Property:{ID:P},Transfer_Type:'External',Transfer_Scope:'Full',Status:'Completed'}];
+activity.syncExternalTransferActivity(P);nativeTransfers[0].Property={ID:C2};activity.syncExternalTransferActivity(C2);
+assert.equal(nativeProperties[0].External_Transfer_Inactive,false,'Correcting the Property lookup restores the former property');
+assert.equal(nativeProperties[1].External_Transfer_Inactive,true);
+nativeTransfers=[];activity.syncExternalTransferActivity(C2);
+assert.equal(nativeProperties[1].External_Transfer_Inactive,false,'Deleting the last qualifying transfer restores activity');
+assert.throws(()=>activity.syncExternalTransferActivity('wrong-id'));
+assert.equal(JSON.stringify(nativeProperties.map(row=>row.Company1)),ownershipBefore,'Activity never edits ownership');
+assert.deepEqual([...activitySource.matchAll(/^\s*propertyRow\.(\w+)\s*=/gm)].map(m=>m[1]),['External_Transfer_Inactive']);
+assert.equal(ui.statuses.includes('Draft'),false);assert.ok(ui.types.includes('External'));assert.ok(ui.statuses.includes('CAD Verified'));
+
+// Exercise the actual main-list filter using native boolean/string values.
+const filterContext=vm.createContext({S:{scope:'props',search:'',filters:{activity:['Active']},issuesOnly:false,sortKey:null},
+  currentList:()=>[{ID:P},{ID:C1,External_Transfer_Inactive:false},{ID:C2,External_Transfer_Inactive:'true'}],
+  cols:()=>[],colValue:(row,key)=>row[key],isIssue:()=>false});
+vm.runInContext(actual('truthy'),filterContext);
+vm.runInContext(source.slice(source.indexOf('var FILTER_DEFS='),source.indexOf('\nfunction mergeFilterValues')),filterContext);
+vm.runInContext(actual('visibleList'),filterContext);
+assert.deepEqual(Array.from(filterContext.visibleList(),row=>row.ID),[P,C1],'Active is the default, including legacy blank flags');
+filterContext.S.filters.activity=['Inactive'];assert.deepEqual(Array.from(filterContext.visibleList(),row=>row.ID),[C2]);
+filterContext.S.filters.activity=[];assert.equal(filterContext.visibleList().length,3,'Clearing Activity shows both');
+assert.match(source,/activity:\["Active"\]/);assert.match(source,/data-filter-key="activity"/);
+
+// Transfer success refreshes affected parents without replaying any write.
+let activityReply=[{ID:P,External_Transfer_Inactive:true},{ID:C2,External_Transfer_Inactive:false}],activityReads=0;
+const refresh=vm.createContext({S:{demo:false,modalOpen:false,properties:[{ID:P},{ID:C2}]},LandData:{generation:()=>1},
+  LMLandData:{cancelled:()=>Object.assign(new Error('stale'),{cancelled:true})},propertyTransferScope:()=>scope,
+  sdkGetAll:async(report,criteria)=>{activityReads++;assert.equal(report,'All_Property');assert.ok(criteria.includes(P)&&criteria.includes(C2));return activityReply;},
+  recordFor:(type,id)=>refresh.S.properties.find(row=>row.ID===id),renderCounts(){},renderTable(){}});
+vm.runInContext(actual('refreshTransferredProperties'),refresh);
+await refresh.refreshTransferredProperties([P,C2],1);assert.equal(activityReads,1);assert.equal(refresh.S.properties[0].External_Transfer_Inactive,true);
+activityReply=[{ID:P,External_Transfer_Inactive:false}];await assert.rejects(refresh.refreshTransferredProperties([P,C2],1));
+assert.equal(refresh.S.properties[0].External_Transfer_Inactive,true,'Incomplete reads cannot partially replace activity flags');
+console.log('PASS: External full/final activity, partial/pending/cancelled exclusions, corrected/deleted transfers, unchanged ownership, Active/Inactive/All filtering and scoped atomic parent refresh.');

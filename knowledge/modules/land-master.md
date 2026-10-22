@@ -1,3 +1,26 @@
+## External Property Transfers — 8.17.0, October 22, 2026
+
+External is a transfer type and a real Company lookup option. Transfer statuses
+are Pending (default), Completed, CAD Verified and Cancelled; Draft is removed.
+A native Property checkbox, `External_Transfer_Inactive`, is maintained by
+`syncExternalTransferActivity` after transfer save/deletion. Only full External
+transfers marked Completed or CAD Verified qualify. Cancellation, deletion or a
+corrected Property lookup recalculates the flag; ownership and acreage do not
+change. Property activity is read-only in the widget.
+
+The main Properties list defaults to Activity: Active. Its existing searchable
+multi-select can show Inactive or both; clearing Activity shows both. Keep the
+full inventory and transfer histories available, and retain the existing
+four-core startup without downloading every transfer. A successful transfer
+refreshes its affected property identities through a scoped, guarded read.
+The filter and activity values reuse the shared motion/number layers.
+
+Creator field/choice/function/workflow publication is explicitly user-authorized
+for this task and must precede the widget Production mapping. No permission,
+connection, global approval flow or Custom API changes are required.
+[Behavior, native components, verification and rollback](../../docs/property-transfer-external-2026-10-22.md).
+Rollback widget: 8.16.13; preserve all Company/transfer records and native fields.
+
 ## Full lookup names on hover — 8.16.13, October 22, 2026
 
 Properties table lookup buttons and Property record Company controls now expose

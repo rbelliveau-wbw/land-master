@@ -1,7 +1,8 @@
 (function (root) {
   'use strict';
-  var TYPES = ['Land Investment', 'Development Company', 'Plat Recordation'];
-  var STATUSES = ['Draft', 'Pending', 'Completed', 'Cancelled'];
+  var TYPES = ['Land Investment', 'Development Company', 'Plat Recordation', 'External'];
+  var STATUSES = ['Pending', 'Completed', 'CAD Verified', 'Cancelled'];
+  function makesInactive(transfer) { return transfer.Transfer_Type === 'External' && transfer.Transfer_Scope === 'Full' && ['Completed','CAD Verified'].includes(transfer.Status); }
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function id(v) { return typeof v === 'string' ? v : v && typeof v.ID === 'string' ? v.ID : Array.isArray(v) ? id(v[0]) : ''; }
   function parseDate(v) {
@@ -18,7 +19,7 @@
   function card(title, fields, render, cls) { return '<section class="pw-card '+(cls||'')+'"><h3>'+esc(title)+'</h3><div class="fgrid">'+fields.map(render).join('')+'</div></section>'; }
   function propertyHTML(fields, render) {
     var groups = [
-      ['Property & location', ['Common_Name','Property_ID','Facility_ID','County','Land_Type','Subtype','Location','TerraVault_URL']],
+      ['Property & location', ['Common_Name','Property_ID','Facility_ID','External_Transfer_Inactive','County','Land_Type','Subtype','Location','TerraVault_URL']],
       ['Ownership & relationships', ['Company1','Seller','Projects','Subdivisions','Proforma']],
       ['Acreage & financials', ['Acres','Original_Acres','Construction_Acres','cost_per_acre_FT','Purchase_Price','Purchase_Date']],
       ['Designation & coverage', ['Deed_To','New_Owner','Agree_with_Designation','Insured','Is_1031','Ag_Exempt']],
@@ -33,7 +34,7 @@
   }
   function transferHTML(fields, render, rec, audit) {
     var get = function (keys) { return keys.map(function (key) { return fields.find(function (f) { return f.k === key; }); }); };
-    return '<div class="pw-transfer-layout"><div class="pw-transfer-main">'+card('Property & companies',get(['Property','From_Company','To_Company']),render)+card('Transfer details',get(['Transfer_Date','Transfer_Type','Status','Transfer_Scope']),render)+'<section class="pw-card pw-partial" data-transfer-amount'+(rec.Transfer_Scope==='Partial'?'':' hidden')+'><h3>Partial transfer</h3><div class="fgrid">'+get(['Amount_Unit','Amount_Transferred']).map(render).join('')+'</div></section>'+card('Notes',get(['Notes']),render)+'</div><aside class="pw-transfer-aside"><div class="pw-route-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></div><span class="pw-eyebrow">TRANSFER SUMMARY</span><div class="pw-route"><span>From</span><strong data-transfer-from>—</strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg><span>To</span><strong data-transfer-to>—</strong></div><div class="pw-transfer-facts"><span>Scope</span><b data-transfer-scope>Full</b><span>Status</span><b data-transfer-status>Draft</b><span>Amount</span><b data-transfer-total>Full property</b></div>'+audit(rec)+'</aside></div>';
+    return '<div class="pw-transfer-layout"><div class="pw-transfer-main">'+card('Property & companies',get(['Property','From_Company','To_Company']),render)+card('Transfer details',get(['Transfer_Date','Transfer_Type','Status','Transfer_Scope']),render)+'<section class="pw-card pw-partial" data-transfer-amount'+(rec.Transfer_Scope==='Partial'?'':' hidden')+'><h3>Partial transfer</h3><div class="fgrid">'+get(['Amount_Unit','Amount_Transferred']).map(render).join('')+'</div></section>'+card('Notes',get(['Notes']),render)+'</div><aside class="pw-transfer-aside"><div class="pw-route-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></div><span class="pw-eyebrow">TRANSFER SUMMARY</span><div class="pw-route"><span>From</span><strong data-transfer-from>—</strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg><span>To</span><strong data-transfer-to>—</strong></div><div class="pw-transfer-facts"><span>Scope</span><b data-transfer-scope>Full</b><span>Status</span><b data-transfer-status>Pending</b><span>Amount</span><b data-transfer-total>Full property</b></div>'+audit(rec)+'</aside></div>';
   }
   function validateTransfer(values, properties, demo) {
     var required = ['Property','From_Company','To_Company','Transfer_Date','Transfer_Type','Status','Transfer_Scope'];
@@ -101,5 +102,5 @@
     document.addEventListener('mousedown',function(e){if(dateMenu&&!dateMenu.contains(e.target)&&!dateAnchor.contains(e.target))closeDate();});window.addEventListener('resize',closeDate);document.addEventListener('scroll',function(e){if(dateMenu&&!dateMenu.contains(e.target))closeDate();},true);
     return {afterRender:function(){closeDate();syncPartial(false);summary();},closeDate:closeDate,validateDates:function(){var texts=Array.from(panel.querySelectorAll('[data-date-text]'));for(var text of texts)if(text.value.trim()&&!parseDate(text.value)){text.setAttribute('aria-invalid','true');text.focus();host.error('Enter a valid date as MM/DD/YYYY.');return false;}return true;}};
   }
-  root.LMPropertyWorkspace=Object.freeze({types:TYPES,statuses:STATUSES,parseDate:parseDate,dateLabel:dateLabel,dateField:dateField,propertyHTML:propertyHTML,transferFields:transferFields,transferHTML:transferHTML,validateTransfer:validateTransfer,auditHTML:auditHTML,mount:mount});
+  root.LMPropertyWorkspace=Object.freeze({types:TYPES,statuses:STATUSES,makesInactive:makesInactive,parseDate:parseDate,dateLabel:dateLabel,dateField:dateField,propertyHTML:propertyHTML,transferFields:transferFields,transferHTML:transferHTML,validateTransfer:validateTransfer,auditHTML:auditHTML,mount:mount});
 })(window);

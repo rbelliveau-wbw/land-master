@@ -49,7 +49,7 @@
       "link_name": "Transfer_Type",
       "display_name": "Transfer Type",
       "type": "picklist",
-      "values": "{\"Land Investment\",\"Development Company\",\"Plat Recordation\"}",
+      "values": "{\"Land Investment\",\"Development Company\",\"Plat Recordation\",\"External\"}",
       "display_format": null,
       "initial_value": null,
       "private": false,
@@ -59,9 +59,9 @@
       "link_name": "Status",
       "display_name": "Status",
       "type": "picklist",
-      "values": "{\"Draft\",\"Pending\",\"Completed\",\"Cancelled\"}",
+      "values": "{\"Pending\",\"Completed\",\"CAD Verified\",\"Cancelled\"}",
       "display_format": null,
-      "initial_value": "\"Draft\"",
+      "initial_value": "Pending",
       "private": false,
       "mandatory": true
     },
@@ -105,5 +105,6 @@
       "private": false,
       "mandatory": false
     }
-  ]
+  ],
+  "source_note": "Choices/default verified in native Development IDE on 2026-10-22."
 }

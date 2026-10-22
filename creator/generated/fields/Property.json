@@ -290,6 +290,16 @@
       "display_format": null,
       "initial_value": null,
       "private": false
+    },
+    {
+      "link_name": "External_Transfer_Inactive",
+      "display_name": "Inactive (External Transfer)",
+      "type": "checkbox",
+      "values": null,
+      "display_format": null,
+      "initial_value": "false",
+      "private": false
     }
-  ]
+  ],
+  "source_note": "External_Transfer_Inactive added from native Development IDE capture on 2026-10-22; existing export fields retained."
 }

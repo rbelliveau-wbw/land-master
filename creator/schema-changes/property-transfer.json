@@ -42,5 +42,52 @@
       "All_Property",
       "All_Companies"
     ]
+  },
+  "externalTransferUpdate": {
+    "date": "2026-10-22",
+    "status": "stage-published-production-awaiting-version-dependency-approval",
+    "creatorPublicationAuthorized": true,
+    "newPropertyField": "External_Transfer_Inactive",
+    "propertySnapshot": "creator/schema-changes/property-transfer/property.ds",
+    "function": "syncExternalTransferActivity",
+    "saveWorkflow": "Sync_External_Transfer_Ac",
+    "deleteWorkflow": "Sync_External_Transfer_De",
+    "inactiveRule": {
+      "Transfer_Type": "External",
+      "Transfer_Scope": "Full",
+      "Status": [
+        "Completed",
+        "CAD Verified"
+      ]
+    },
+    "defaultStatus": "Pending",
+    "statuses": [
+      "Pending",
+      "Completed",
+      "CAD Verified",
+      "Cancelled"
+    ],
+    "existingDraftMigration": "Pending",
+    "productionTransfersBefore": 0,
+    "companyName": "External",
+    "documentation": "docs/property-transfer-external-2026-10-22.md",
+    "stageVersion": "9.116",
+    "productionPublished": false,
+    "stageTransfersBefore": 0,
+    "developmentDraftsToMigrate": 0,
+    "stageDraftsToMigrate": 0,
+    "productionDraftsToMigrate": 0,
+    "nativeVerification": [
+      "External / Full / Completed sets inactive",
+      "External / Partial / CAD Verified remains active",
+      "External / Full / CAD Verified sets inactive",
+      "Property Company remains unchanged in all live Development tests",
+      "Stage reopened with External type and Pending/Completed/CAD Verified/Cancelled statuses"
+    ],
+    "productionDependency": "Creator automatically requires version 9.115 (three earlier schedules) before 9.116; separate approval requested.",
+    "excludedComponents": [
+      "Existing Property Company field metadata",
+      "Unrelated Property fields, field order and permissions"
+    ]
   }
 }

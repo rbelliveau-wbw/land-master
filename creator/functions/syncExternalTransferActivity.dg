@@ -1,0 +1,26 @@
+map syncExternalTransferActivity(string propertyId)
+{
+	// This flag describes External transfer history only. Never change Company1.
+	if(propertyId == null || !propertyId.matches("[0-9]+"))
+	{
+		throw "A valid Property record ID is required.";
+	}
+	propertyRecordId = propertyId.toLong();
+	updatedCount = 0;
+	// Include previously inactive properties so a cancelled/deleted transfer or
+	// a corrected Property lookup cannot leave an obsolete flag behind.
+	propertyRows = Property[(ID == propertyRecordId) || (External_Transfer_Inactive == true)];
+	for each propertyRow in propertyRows
+	{
+		qualifyingCount = Property_Transfer[(Property == propertyRow.ID) && (Transfer_Type == "External") && (Transfer_Scope == "Full") && ((Status == "Completed") || (Status == "CAD Verified"))].count();
+		inactive = qualifyingCount > 0;
+		if(ifnull(propertyRow.External_Transfer_Inactive,false) != inactive)
+		{
+			propertyRow.External_Transfer_Inactive = inactive;
+			updatedCount = updatedCount + 1;
+		}
+	}
+	result = Map();
+	result.put("updated",updatedCount);
+	return result;
+}

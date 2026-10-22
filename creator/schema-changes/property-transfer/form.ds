@@ -54,7 +54,7 @@ form Property_Transfer
 	(
 		type = picklist
 		displayname = "Transfer Type"
-		values = {"Land Investment","Development Company","Plat Recordation"}
+		values = {"Land Investment","Development Company","Plat Recordation","External"}
 		row = 1
 		column = 1
 		width = medium
@@ -62,8 +62,8 @@ form Property_Transfer
 	must have Status
 	(
 		type = picklist
-		values = {"Draft","Pending","Completed","Cancelled"}
-		initial value = "Draft"
+		values = {"Pending","Completed","CAD Verified","Cancelled"}
+		initial value = "Pending"
 		row = 1
 		column = 1
 		width = medium

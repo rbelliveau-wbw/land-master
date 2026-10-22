@@ -1,0 +1,359 @@
+form Property
+{
+    title
+    {
+        displayname = "Add Property"
+        on add = "Create Property"
+        on edit = "Edit Property"
+    }
+    success message = "Data Added Successfully!"
+    Land_Details
+    (
+        type = section
+        displayname = "Land Details"
+        visibility = true
+        row = 1
+        column = 0
+        width = medium
+    )
+    Common_Name
+    (
+        type = text
+        displayname = "Common Name"
+        maxchar = 100
+        row = 1
+        column = 1
+        width = medium
+    )
+    LOI
+    (
+        type = checkbox
+        initial value = false
+        row = 1
+        column = 1
+        width = medium
+    )
+    unique Property_ID
+    (
+        type = text
+        displayname = "Property ID"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Facility_ID
+    (
+        type = text
+        displayname = "Facility ID"
+        maxchar = 50
+        row = 1
+        column = 1
+        width = medium
+    )
+    Land_Type
+    (
+        type = picklist
+        displayname = "Land Type"
+        values = {"Residential","Commercial","Other","LOI"}
+        sortorder = ascending
+        row = 1
+        column = 1
+        width = medium
+    )
+    Subtype
+    (
+        type = picklist
+        maxchar = 100
+        values = {"L&B Res","Tract","Unusable","Tract-Dev","Tract & Structure","L&B Drain/Det","MUD Duplicate","L&B Util/Gov","L&B Open Space","Tract-Undev","Retail","L&B Amenity","Personal Property","Condo","Oil & Gas","Office"}
+        sortorder = ascending
+        row = 1
+        column = 1
+        width = medium
+    )
+    must have County
+    (
+        type = picklist
+        values = {"Bell","Navarro","Terrell","Grant","Burleson","Matagorda","Val Verde","Bexar","Falls","Montrose","San Miguel","Williamson","McLennan","Comal","Brazos","Coryell","Guadalupe","Harris","Grayson","Collin","Tarrant","Johnson","Kaufman","Ellis","Denton","Hunt","Dallas","Cooke"}
+        sortorder = ascending
+        row = 1
+        column = 1
+        width = medium
+    )
+    City
+    (
+        type = picklist
+        maxchar = 100
+        values = {"Killeen","Granger","Caldwell","Austin","Temple","Waco","Bryan","Belton","Bruceville-Eddy","Copperas Cove","Seguin","Harker Heights","Taylor","New Braunfels","Jarrell","Troy","Nolanville","Robinson","Salado","Pflugerville","San Antonio","Georgetown","Lorena","Addison","Balch Springs","Carrollton","Cedar Hill","Cockrell Hill","Combine","Coppell","Dallas","DeSoto","Duncanville","Farmers Branch","Ferris","Garland","Glenn Heights","Grand Prairie","Grapevine","Highland Park","Hutchins","Irving","Lancaster","Lewisville","Mesquite","Ovilla","Richardson","Rowlett","Sachse","Seagoville","Sunnyvale","University Park","Wilmer","Wylie","League City","Pasadena","Pearland","Sugar Land","Conroe","Katy","Houston","Denton","Sherman","Westminster","Anna","Crandall","Midlothian","Celina","Van Alstyne","Greenville","Princeton","Corsicana","Waxahachie","Prosper","Cresson"}
+        row = 1
+        column = 1
+        width = medium
+    )
+    Purchase_Price
+    (
+        displayname = "Purchase Price"
+        type = USD
+        format = commadotwestern
+        row = 1
+        column = 1
+        width = medium
+    )
+    Purchase_Date
+    (
+        type = date
+        displayname = "Purchase Date"
+        alloweddays = 0,1,2,3,4,5,6
+        row = 1
+        column = 1
+        width = medium
+    )
+    Deed_to_HOA
+    (
+        type = checkbox
+        displayname = "Deed to HOA"
+        initial value = false
+        row = 1
+        column = 1
+        width = medium
+    )
+    Deed_To
+    (
+        type = picklist
+        displayname = "Deed To"
+        maxchar = 100
+        values = {"No","Deed to HOA-Now","Deed to HOA-Later","Deed to HOA-Hold","Deed to Other-Now","Deed to Other-Later","Deed to Other-Hold"}
+        initial value = "No"
+        row = 1
+        column = 1
+        width = medium
+    )
+    External_Transfer_Inactive
+    (
+        type = checkbox
+        displayname = "Inactive (External Transfer)"
+        initial value = false
+        row = 1
+        column = 1
+        width = medium
+    )
+    Insured
+    (
+        type = checkbox
+        initial value = true
+        row = 1
+        column = 1
+        width = medium
+    )
+    Is_1031
+    (
+        type = checkbox
+        displayname = "1031"
+        initial value = false
+        row = 1
+        column = 1
+        width = medium
+    )
+    Ag_Exempt
+    (
+        type = checkbox
+        displayname = "Ag Exempt"
+        initial value = false
+        row = 1
+        column = 1
+        width = medium
+    )
+    New_Owner
+    (
+        type = picklist
+        displayname = "New Owner"
+        maxchar = 100
+        values = {"No","Yes"}
+        initial value = "No"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Proforma
+    (
+        type = picklist
+        values  = Add_Pro_Forma.ID
+        displayformat = [Name]
+        sortorder = ascending
+        row = 1
+        column = 2
+        width = medium
+    )
+    Seller
+    (
+        type = picklist
+        values  = Builder.ID
+        displayformat = [Builder_Name]
+        sortorder = ascending
+        row = 1
+        column = 2
+        width = medium
+    )
+    Company1
+    (
+        type = picklist
+        displayname = "Company"
+        values  = Company.ID
+        bidirectional = Property
+        displayformat = [Company_Name]
+        sortorder = ascending
+        row = 1
+        column = 2
+        width = medium
+    )
+    Projects
+    (
+        type = list
+        values  = Project.ID
+        bidirectional = Properties
+        displayformat = [Project_Name]
+        sortorder = ascending
+        height = 60px
+        row = 1
+        column = 2
+        width = medium
+    )
+    Subdivisions
+    (
+        type = list
+        values  = Subdivision.ID
+        bidirectional = Property_Used
+        displayformat = [Subdivision_Name]
+        height = 60px
+        row = 1
+        column = 2
+        width = medium
+    )
+    Agree_with_Designation
+    (
+        type = picklist
+        displayname = "Agree with Designation"
+        maxchar = 100
+        values = {"Yes","No"}
+        initial value = "Yes"
+        row = 1
+        column = 2
+        width = medium
+    )
+    Location
+    (
+        type = text
+        row = 1
+        column = 2
+        width = medium
+    )
+    TerraVault_URL
+    (
+        type = url
+        displayname = "TerraVault URL"
+        row = 1
+        column = 2
+        width = medium
+    )
+    Legal_Description
+    (
+        type = textarea
+        displayname = "Legal Description"
+        height = 100px
+        row = 1
+        column = 2
+        width = 200px
+    )
+    Bruce_s_Description
+    (
+        type = textarea
+        displayname = "Bruce's Description"
+        height = 100px
+        row = 1
+        column = 2
+        width = medium
+    )
+    Notes
+    (
+        type = textarea
+        height = 100px
+        row = 1
+        column = 2
+        width = 200px
+    )
+    Acreage_Financials
+    (
+        type = section
+        displayname = "Acreage & Financials"
+        visibility = true
+        row = 2
+        column = 0
+        width = medium
+    )
+    Acres
+    (
+        type = decimal
+        maxchar = 16
+        decimalplace = 4
+        row = 2
+        column = 1
+        width = medium
+    )
+    Original_Acres
+    (
+        type = decimal
+        displayname = "Original Acres"
+        maxchar = 16
+        decimalplace = 4
+        row = 2
+        column = 1
+        width = medium
+    )
+    Construction_Acres
+    (
+        type = decimal
+        displayname = "Construction Acres"
+        decimalplace = 4
+        row = 2
+        column = 1
+        width = medium
+    )
+    cost_per_acre_FT
+    (
+        displayname = "cost per acre /FT"
+        type = USD
+        decimalplace = 15
+        maxchar = 16
+        row = 2
+        column = 1
+        width = medium
+    )
+
+    actions
+    {
+        on add
+        {
+            submit
+            (
+                type = submit
+                displayname = "Submit"
+            )
+            reset
+            (
+                type = reset
+                displayname = "Reset"
+            )
+        }
+        on edit
+        {
+            update
+            (
+                type = submit
+                displayname = "Update"
+            )
+            cancel
+            (
+                type = cancel
+                displayname = "Cancel"
+            )
+        }
+    }
+}
