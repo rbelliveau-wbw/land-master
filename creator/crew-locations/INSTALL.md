@@ -8,7 +8,7 @@ instructions in [historical installation notes](INSTALL-1.0.6-history.md) are su
 1. Read [native-install-progress.json](native-install-progress.json) and
    [removal-inventory.json](removal-inventory.json). Reuse the six existing forms,
    four access fields, ten core functions and `crew_locations` widget registration.
-2. Compile the updated Config, Read, Validate, DirectValidate and Widget functions
+2. Compile the updated Config, Read, Validate, DirectValidate, Status and Widget functions
    from `creator/functions/`. Config derives `thisapp.environment.type` and
    `.linkname`; mode is `testingMode=false`, `creatorOnly=true`,
    `projectsPushEnabled=false`. Do not replace the logged-in-user connection.
@@ -21,8 +21,9 @@ instructions in [historical installation notes](INSTALL-1.0.6-history.md) are su
    existing `Milestone_Gantt_View` embed on that same registered widget.
 5. Configure OAuth2, Admin-only POST JSON APIs, Key and Value argument
    `payload:string`, standard response: `Crew_Locations_Widget_DEV` targets
-   Development, `Crew_Locations_Widget_STAGE` targets Stage, and
-   `Crew_Locations_Widget` targets Production. Do not expose a public endpoint.
+   Development, the optional `Crew_Locations_Widget_STAGE` targets Stage, and
+   `Crew_Locations_Widget` targets Production. Development and Production aliases
+   are installed; Stage is not configured by this PMP. Do not expose a public endpoint.
 6. In each environment, grant the existing intended administrator
    View_Crew_Locations and Edit_Crew_Milestones through the existing User_Access
    record. Keep task and crew management permissions false while adapters are off.
