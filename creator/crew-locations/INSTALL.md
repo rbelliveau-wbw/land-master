@@ -13,13 +13,13 @@ The immutable 1.2.3 release reached main at
 `4db97430ff3fd8cbe337d497976dc6010cd85950`; CI
 [39982563857](https://github.com/rbelliveau-wbw/land-master/actions/runs/39982563857)
 and Pages [39982563667](https://github.com/rbelliveau-wbw/land-master/actions/runs/39982563667)
-passed. Production's exact `#Projects` page displays this version, but its
-management read fails with HTTP 404 / Creator 2930. The native Production
-`All_Crews` report itself displays all three QA crews and required fields.
+passed. Production's exact `#Projects` page displays this version. Its original
+management read failed with HTTP 404 / Creator 2930 even though the native
+Production `All_Crews` report displayed the three QA crews and required fields.
 
 ### Production routing correction, October 23
 
-Creator's Environments page shows Stage and Production at 9.120, so the earlier
+Creator's Environments page initially showed Stage and Production at 9.120, so the earlier
 blanket statement that all native changes still await promotion is superseded.
 Do not infer a working Production save from that version or from Pages success.
 
@@ -33,11 +33,30 @@ caller permissions, native save validation, report cursors and error rejection
 are unchanged. All twelve backend regression groups pass, including reopened
 native output. Development still loads its two crews and future assignment.
 
-This is a candidate correction for Production's 2930 response, not yet live proof.
-Publication scope is exactly these two functions. Native Stage/Production
-publication is awaiting the user's specific approval after automatic approval
-review enforced PMP's user-owned Creator promotion boundary. Verify the actual
-Production page and native CRUD after promotion. No new widget release is needed.
+The user explicitly approved publishing this correction to Stage and Production.
+Version **9.121**, titled **Fix crew Production API routing**, contains exactly
+these two functions and is now published in both environments. The exact
+Production `#Projects` page now loads its crews and assignments with management
+enabled. This confirms the environment header as the cause of that read failure.
+Repository correction `f3518f98319af4e355e18be69bc49e982d6a5f6f` passed
+[CI 39986469557](https://github.com/rbelliveau-wbw/land-master/actions/runs/39986469557).
+Full local validation, the 33-path Pages build and Creator packaging passed.
+No frontend release or Pages redeployment was required for this backend correction.
+
+Actual Production widget tests passed: created Crew `4410926000005393022`
+(`TEST-PROD-1023`), edited its name to `TEST Production QA Crew — verified`
+and badge to `#8054c7`, created assignment `4410926000005393024`, deactivated
+and reactivated the crew while retaining the assignment, and verified the
+inactive crew could not receive new work. The same assignment was moved from
+the new crew / Cameron Ranch Phase 01 / 10/24/2026 to TEST-B / Lakeside at
+Granger Phase 01 / 10/25/2026. Explicit widget Refresh and a fresh native report
+confirmed the final crew, phase, date, unchanged assignment ID and source key.
+The four test crews and four assignments remain for the user to remove later.
+
+Production milestones render and their keyboard boundary editor opens.
+A proposed temporary real milestone save/undo test was blocked by automatic
+approval review; no milestone date changed. Specific approval for that optional
+test is pending, so Production milestone saving is not claimed verified.
 Rollback restores the two `native-before/*.production-routing-20261023.dg`
 snapshots through the same native publication process; retain all test records.
 

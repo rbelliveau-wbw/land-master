@@ -34,7 +34,7 @@
     ],
     "native_task_mirror_workflow": "Task_Schedule_mirror_guar",
     "task_field_evidence": "creator/crew-locations/native-installed/Task_Schedule.field-evidence.json",
-    "status": "repository-1.2.3-deployed-production-native-read-failing-routing-correction-saved-in-development",
+    "status": "production-1.2.3-native-9.121-crew-crud-verified",
     "widget_function_final_refinements_pending_resave": false,
     "native_compiler_output_gate": {
       "passed": true,
@@ -1472,10 +1472,10 @@
       "production": "1.2.3"
     },
     "mapping_publication": "Development and Production 1.2.3 mappings are included with this publication.",
-    "publication_status": "repository-1.2.3-deployed-production-native-read-failing",
+    "publication_status": "production-1.2.3-native-9.121-crew-crud-verified",
     "ci_result": "success (39982563857)",
     "pages_result": "success (39982563667)",
-    "live_1_2_3_presentation_smoke": "Production #Projects renders the version, but management read fails; Development renders its two crews and upcoming assignment.",
+    "live_1_2_3_presentation_smoke": "Production verified with four crews, latest dated work and upcoming work; actual native CRUD and fresh reads passed.",
     "unused_local_immutable_drafts": [
       "1.2.1",
       "1.2.2"
@@ -1502,10 +1502,10 @@
       "session": "9637"
     }
   },
-  "current_release_state": "repository-1.2.3-deployed-production-native-routing-correction-awaiting-publication",
+  "current_release_state": "production-1.2.3-native-9.121-crew-crud-verified",
   "repository_release_outcome_1_2_3": {
     "release": "1.2.3",
-    "status": "repository-deployed-production-native-read-failing",
+    "status": "production-1.2.3-native-9.121-crew-crud-verified",
     "environment_mappings": {
       "development": "1.2.3",
       "production": "1.2.3"
@@ -1521,29 +1521,30 @@
       "result": "success",
       "run_id": "39982563667"
     },
-    "production_asset_smoke": "Exact Production #Projects displays Crew Management 1.2.3; management-list fails HTTP 404 / Creator 2930.",
+    "production_asset_smoke": "Exact #Projects renders the working crew roster, latest dated work and upcoming reassigned work at 1280x720.",
     "native_functional_crud": {
       "verified": true,
-      "environment": "development",
-      "actual_widget_version": "1.2.0"
+      "environment": "production",
+      "actual_widget_version": "1.2.3",
+      "evidence": "production_routing_repair_2026_10_23.production_verification"
     },
     "creator_application_promoted": true,
     "pending_native_steps": [
-      "Specific user approval or user-owned publication of the two-function Production routing correction, followed by actual Production CRUD verification.",
+      "Optional real Production milestone save/undo test requires the specific approval requested after automatic review blocked changing an existing date.",
       "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
     ],
     "creator_environment_versions_observed": {
-      "stage": "9.120",
-      "production": "9.120"
+      "stage": "9.121",
+      "production": "9.121"
     },
-    "creator_application_promotion_note": "Observed Stage and Production at 9.120, not published by this agent. Complete component parity is not inferred from the version."
+    "creator_application_promotion_note": "Specific user-authorized two-function routing correction published by this agent as 9.121; no other components selected."
   },
   "pending_native_steps": [
-    "Specific user approval or user-owned publication of the two-function Production routing correction, followed by actual Production CRUD verification.",
+    "Optional real Production milestone save/undo test requires the specific approval requested after automatic review blocked changing an existing date.",
     "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
   ],
   "production_routing_repair_2026_10_23": {
-    "status": "saved-and-reopened-in-development-awaiting-specific-native-publication-approval",
+    "status": "published-stage-and-production-9.121-production-crew-crud-verified",
     "exact_page": "https://creatorapp.zoho.com/wbdevelopment/land-master/#Projects",
     "production_failure": {
       "report": "All_Crews",
@@ -1570,7 +1571,7 @@
       "crewLocationsWidget"
     ],
     "change": "Omit environment header for server-derived production; retain exact environmentLink header for Development and Stage on all three delegated GET/PATCH sites.",
-    "root_cause_status": "Candidate based on official API routing contract; not confirmed by Production execution.",
+    "root_cause_status": "Confirmed by actual Production management reads succeeding immediately after the two-function routing correction.",
     "regression_groups_passed": 12,
     "native_capability_groups_passed": 5,
     "full_repository_validation": {
@@ -1586,17 +1587,79 @@
       "result": "passed"
     },
     "development_live_read": "Two active crews; Crew B future assignment AAA Springs Phase 01 on 10/24/2026 remains visible.",
-    "production_live_crud_verified": false,
+    "production_live_crud_verified": true,
     "widget_release_unchanged": "1.2.3",
     "publication_scope": [
       "crewLocationsRead",
       "crewLocationsWidget"
     ],
-    "publication_attempt": "Publish to Stage was blocked by automatic approval review because PMP reserves native publication to the user; specific approval requested, pending.",
+    "publication_attempt": "Initial automatic approval rejection was resolved by explicit user authorization. Published exactly the two functions to Stage, then the same version to Production.",
     "rollback_snapshots": [
       "creator/crew-locations/native-before/crewLocationsRead.production-routing-20261023.dg",
       "creator/crew-locations/native-before/crewLocationsWidget.production-routing-20261023.dg"
     ],
-    "records_deleted": false
+    "records_deleted": false,
+    "creator_environment_versions": {
+      "stage": "9.121",
+      "production": "9.121"
+    },
+    "publication_title": "Fix crew Production API routing",
+    "publication_component_count": 2,
+    "publication_authorization": "User explicitly answered Yes—publish this Creator fix to the Stage/Production publication question.",
+    "repository_commit": "f3518f98319af4e355e18be69bc49e982d6a5f6f",
+    "ci": {
+      "result": "success",
+      "run_id": "39986469557"
+    },
+    "production_verification": {
+      "environment": "production",
+      "widget_version": "1.2.3",
+      "creator_version": "9.121",
+      "exact_page": "https://creatorapp.zoho.com/wbdevelopment/land-master/#Projects",
+      "crew": {
+        "id": "4410926000005393022",
+        "code": "TEST-PROD-1023",
+        "name": "TEST Production QA Crew — verified",
+        "color": "#8054c7",
+        "active": true,
+        "source_system": "MANUAL_WIDGET",
+        "source_record_id": "afdebcf5-1b68-4cc2-b126-741d71a7ae71"
+      },
+      "assignment": {
+        "id": "4410926000005393024",
+        "source_key": "MANUAL_WIDGET:ec9fc2c4-f2c4-4db3-9a42-0bc66f85a033",
+        "before": {
+          "crew": "TEST-PROD-1023",
+          "phase": "Cameron Ranch - Phase 01",
+          "date": "10/24/2026"
+        },
+        "after": {
+          "crew": "TEST-B",
+          "crew_id": "4410926000005393004",
+          "phase": "Lakeside at Granger - Phase 01",
+          "date": "10/25/2026"
+        }
+      },
+      "passed": [
+        "Exact Production page populated and management enabled",
+        "Native crew creation and exact identity",
+        "Name and badge edits",
+        "Assignment creation",
+        "Deactivation preserves work and blocks Assign work",
+        "Reactivation retains work",
+        "Same-ID crew/phase/date reassignment",
+        "Explicit widget Refresh persists final work",
+        "Fresh native report confirms final assignment ID/source key and exactly four rows",
+        "Milestone schedule renders; keyboard boundary editor opens with original date"
+      ],
+      "production_milestone_save_verified": false,
+      "production_milestone_test": "Automatic approval review blocked a temporary real date change; specific approval requested. Original Lakeside Rough Cut End remains 02/15/2027.",
+      "records_deleted": false,
+      "screenshot": "crew-production-working.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      }
+    }
   }
 }
