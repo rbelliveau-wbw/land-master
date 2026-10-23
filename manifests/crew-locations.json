@@ -91,7 +91,7 @@
     ]
   },
   "native_crew_reads": {
-    "status": "prepared-creator-promotion-and-native-report-verification-pending",
+    "status": "development-empty-native-sdk-reads-verified-user-promotion-pending",
     "configuration_flag": "nativeCrewReadsEnabled",
     "enabled_in_repository_config": true,
     "reports": {
@@ -104,10 +104,13 @@
     "assignment_report_link": "Crew_Assignment_Report",
     "assignment_report_link_verified_from": "Development native builder component href and Access Dev Live URL on 2026-10-23",
     "development_assignment_layout_columns_verified": ["Subdivision1", "Crew", "Assignment_Date", "Source_System", "Source_Key", "Source_Updated_At", "ID", "Source_Record_ID"],
-    "development_assignment_sdk_read_verified": false,
+    "development_assignment_sdk_read_verified": true,
     "development_crew_layout_columns_verified": ["Crew_Code", "Crew_Name", "Badge_Color", "Active", "Source_System", "Source_Record_ID", "ID"],
     "development_crew_layout_verified": true,
-    "development_crew_sdk_read_verified": false,
+    "development_crew_sdk_read_verified": true,
+    "development_sdk_read_scope": "Owner's deployed Crew_Management 1.1.4 completed empty native Crew/Assignment reads; populated rows not exercised",
+    "production_populated_badges_verified": false,
+    "creator_pending_components": {"functions": ["crewLocationsConfig", "crewLocationsWidget"], "reports": ["All_Crews", "Crew_Assignment_Report"]},
     "native_function_save_status": "Development Config/Widget Saves persisted; reopened editor verification passed; user promotion pending",
     "external_import_enabled": false,
     "native_validators_verified": false,
@@ -154,7 +157,10 @@
     "native_outbound_guards_installed": 5,
     "validation_workflows_installed": 1,
     "native_page_profile_check_pending": true,
-    "release_outcome": "creator/crew-locations/pmp-outcome.json"
+    "release_outcome": "creator/crew-locations/pmp-outcome.json",
+    "current_release_outcome": "creator/crew-locations/desktop-qa-verification.json",
+    "current_asset_commit": "3141c9f84bbeb784de10940dc12021b3a898047d",
+    "production_version_dom_verified": "1.1.4"
   },
   "save_protocol": {
     "actions": [

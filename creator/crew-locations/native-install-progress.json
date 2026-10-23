@@ -5,51 +5,131 @@
   "desktop_qa_2026_10_23": {
     "source": "Root native Production UI inspection; repository backend preparation",
     "native_crew_reads": "nativeCrewReadsEnabled=true; Development Config/Widget save persistence confirmed by reopened native editors; user promotion pending",
-    "functions_saved_and_persistence_verified_in_development": ["crewLocationsConfig", "crewLocationsWidget"],
-    "native_saved_snapshots": ["creator/crew-locations/native-installed/crewLocationsConfig.dg", "creator/crew-locations/native-installed/crewLocationsWidget.dg"],
+    "functions_saved_and_persistence_verified_in_development": [
+      "crewLocationsConfig",
+      "crewLocationsWidget"
+    ],
+    "native_saved_snapshots": [
+      "creator/crew-locations/native-installed/crewLocationsConfig.dg",
+      "creator/crew-locations/native-installed/crewLocationsWidget.dg"
+    ],
     "native_before_widget_backup": "creator/crew-locations/native-before/crewLocationsWidget.desktop-qa-20261023.dg",
     "before_config_reference": "creator/crew-locations/native-before/crewLocationsConfig.desktop-qa-20261023.dg (prior installed snapshot)",
     "external_imports": "crewsEnabled=false; blank importActor and crewSourceSystem preserved",
     "tasks": "tasksEnabled=false and taskWritesVerified=false preserved",
     "production_All_Crews_link_verified": true,
     "production_All_Crews_fields": "No columns available in current live report; field exposure repair pending",
-    "production_assignment_report_verified": false,
+    "production_assignment_report_verified": true,
     "assignment_report_link": "Crew_Assignment_Report",
     "assignment_report_link_verified_from": "Development native builder href and Access Dev Live URL",
     "development_assignment_report_layout": {
       "status": "auto-saved native layout; final columns verified in rendered DOM delugename attributes",
-      "columns": ["Subdivision1", "Crew", "Assignment_Date", "Source_System", "Source_Key", "Source_Updated_At", "ID", "Source_Record_ID"],
+      "columns": [
+        "Subdivision1",
+        "Crew",
+        "Assignment_Date",
+        "Source_System",
+        "Source_Key",
+        "Source_Updated_At",
+        "ID",
+        "Source_Record_ID"
+      ],
       "related_field_cleanup": "Related Crew.Source_Record_ID was added accidentally and removed; final layout uses native assignment Source_Record_ID only",
       "production_promotion": "pending user Creator publication",
-      "native_sdk_read_verified": false
+      "native_sdk_read_verified": true,
+      "native_sdk_read_scope": "Owner's deployed Development 1.1.4 widget loaded with native crews enabled and empty assignment data; populated rows not exercised"
     },
     "development_crew_report_layout": {
       "status": "auto-saved native layout; final fieldnames verified in rendered DOM",
-      "columns": ["Crew_Code", "Crew_Name", "Badge_Color", "Active", "Source_System", "Source_Record_ID", "ID"],
+      "columns": [
+        "Crew_Code",
+        "Crew_Name",
+        "Badge_Color",
+        "Active",
+        "Source_System",
+        "Source_Record_ID",
+        "ID"
+      ],
       "production_promotion": "pending user Creator publication",
-      "native_sdk_read_verified": false
+      "native_sdk_read_verified": true,
+      "native_sdk_read_scope": "Owner's deployed Development 1.1.4 widget loaded with native crews enabled and empty Crew data; populated rows not exercised"
     },
     "native_mode_reopened_editor_verification": "nativeCrewReadsEnabled=true; crewsEnabled=false; blank importer actor/source; tasks disabled; projectsPushEnabled=false",
     "assignment_report_contract_correction": "Active repository callers/schema/preview now use existing Crew_Assignment_Report; no native rename. Former All_Crew_Assignments link returned Report not found.",
     "native_crew_end_to_end_verified": false,
+    "native_development_empty_crew_sdk_reads_verified": true,
+    "native_development_sdk_evidence": "Crew_Management meta 1.1.4 loaded as owner with crews enabled, no report error, and no native-crew-unconfigured dependency. Dependencies were tasks and Creator-only mode only.",
+    "restricted_user_test": "demouser3 was denied by the outer Creator Page gate; widget/report/row restrictions were not broadly exercised. Development preview identity restored to demouser3 after owner test.",
+    "production_populated_badges": "pending user promotion of two functions and two report layouts",
+    "creator_pending_components": {
+      "functions": [
+        "crewLocationsConfig",
+        "crewLocationsWidget"
+      ],
+      "reports": [
+        "All_Crews",
+        "Crew_Assignment_Report"
+      ]
+    },
     "native_validator_note": "Crew_on_validate script save unconfirmed; Crew_Assignment_on_validate not installed according to prior evidence",
     "test_crew_records": [
-      {"id": "4410926000005393002", "code": "TEST-A", "source_system": "MANUAL_QA", "source_record_id": "crew-qa-20261023-a"},
-      {"id": "4410926000005393004", "code": "TEST-B", "source_system": "MANUAL_QA", "source_record_id": "crew-qa-20261023-b"},
-      {"id": "4410926000005393006", "code": "TEST-C", "source_system": "MANUAL_QA", "source_record_id": "crew-qa-20261023-c"}
+      {
+        "id": "4410926000005393002",
+        "code": "TEST-A",
+        "source_system": "MANUAL_QA",
+        "source_record_id": "crew-qa-20261023-a"
+      },
+      {
+        "id": "4410926000005393004",
+        "code": "TEST-B",
+        "source_system": "MANUAL_QA",
+        "source_record_id": "crew-qa-20261023-b"
+      },
+      {
+        "id": "4410926000005393006",
+        "code": "TEST-C",
+        "source_system": "MANUAL_QA",
+        "source_record_id": "crew-qa-20261023-c"
+      }
     ],
     "test_crew_environment": "production",
     "test_assignment_records_created": [
-      {"native_id": null, "source_record_id": "assignment-qa-20261023-1", "source_key": "MANUAL_QA:assignment-qa-20261023-1", "crew_code": "TEST-A", "phase": "Cameron Ranch - Phase 01", "date": "2026-10-23"},
-      {"native_id": null, "source_record_id": "assignment-qa-20261023-2", "source_key": "MANUAL_QA:assignment-qa-20261023-2", "crew_code": "TEST-B", "phase": "Cameron Ranch - Phase 01", "date": "2026-10-22"},
-      {"native_id": null, "source_record_id": "assignment-qa-20261023-3", "source_key": "MANUAL_QA:assignment-qa-20261023-3", "crew_code": "TEST-C", "phase": "Lakeside at Granger - Phase 01", "date": "2026-10-16"}
+      {
+        "native_id": null,
+        "source_record_id": "assignment-qa-20261023-1",
+        "source_key": "MANUAL_QA:assignment-qa-20261023-1",
+        "crew_code": "TEST-A",
+        "phase": "Cameron Ranch - Phase 01",
+        "date": "2026-10-23"
+      },
+      {
+        "native_id": null,
+        "source_record_id": "assignment-qa-20261023-2",
+        "source_key": "MANUAL_QA:assignment-qa-20261023-2",
+        "crew_code": "TEST-B",
+        "phase": "Cameron Ranch - Phase 01",
+        "date": "2026-10-22"
+      },
+      {
+        "native_id": null,
+        "source_record_id": "assignment-qa-20261023-3",
+        "source_key": "MANUAL_QA:assignment-qa-20261023-3",
+        "crew_code": "TEST-C",
+        "phase": "Lakeside at Granger - Phase 01",
+        "date": "2026-10-16"
+      }
     ],
     "test_assignment_acknowledgements": "Production native Crew_Assignment form reported success for all three; native report confirms three record IDs, individual ID-to-row mapping not yet recorded",
-    "test_assignment_native_ids_confirmed_as_set": ["4410926000005393008", "4410926000005393010", "4410926000005393012"],
+    "test_assignment_native_ids_confirmed_as_set": [
+      "4410926000005393008",
+      "4410926000005393010",
+      "4410926000005393012"
+    ],
     "test_assignment_native_id_mapping_verified": false,
     "test_assignment_source_system": "MANUAL_QA",
     "test_crew_cleanup": "User said they will delete test crews later; no cleanup performed",
-    "kit": "docs/crew-desktop-qa-2026-10-23.md"
+    "kit": "docs/crew-desktop-qa-2026-10-23.md",
+    "production_assignment_report_verification": "Existing Crew_Assignment_Report loaded in Production and showed exactly three test record IDs; required column exposure awaits user promotion"
   },
   "forms_saved": [
     "Crew",
@@ -211,13 +291,16 @@
     "function": "crewLocationsWidget",
     "status": "Enabled"
   },
-  "native_page_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Locations",
+  "native_page_url": "https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Page:Crew_Management",
   "native_widget": {
-    "name": "Crew Locations",
-    "hosting": "Internal",
-    "entry": "/app/widget.html",
-    "release": "1.0.6",
-    "cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1"
+    "name": "Crew Management",
+    "hosting": "External",
+    "entry": "https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/",
+    "release": "1.1.4",
+    "link_name": "crew_locations",
+    "previous_hosting": "Internal",
+    "previous_entry": "/app/widget.html",
+    "previous_cdn_package": "a331a46b-99da-4a83-9bc5-e7cd4da2aaad-v1-r1"
   },
   "development_tester": {
     "user": "wbdevelopment",
@@ -378,8 +461,42 @@
       "restoredEnd": "2027-03-17"
     }
   },
-  "current_release": "1.1.3",
-  "current_creator_promotion": "User promotes pending Creator changes",
+  "current_release": "1.1.4",
+  "current_creator_promotion": "User promotes crewLocationsConfig, crewLocationsWidget, All_Crews and Crew_Assignment_Report; repository 1.1.4 already deployed",
+  "repository_release_outcome_1_1_4": {
+    "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
+    "release": "1.1.4",
+    "rollback_release": "1.1.3",
+    "asset_commit": "3141c9f84bbeb784de10940dc12021b3a898047d",
+    "ci": {
+      "result": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582034"
+    },
+    "pages": {
+      "result": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582041"
+    },
+    "normal_browser_cases_passed": 21,
+    "desktop_geometry_cases_passed": "23 at each of 1250x600, 1366x768, 1440x900 and 1920x1080",
+    "production_native": {
+      "page": "Milestone_Gantt_View",
+      "version_dom_verified": "1.1.4",
+      "reset_actual_upcoming_phases": 38,
+      "keyboard_endpoint": "Cameron Ranch Rough Cut Start 2027-01-01 opened as the exact single Start editor; Escape dismissed it",
+      "milestone_date_writes": 0,
+      "screenshot": "C:/Users/R/Desktop/claude/outputs/crew-desktop-qa/production-1.1.4.png"
+    },
+    "development_native": {
+      "page": "Crew_Management",
+      "version_dom_verified": "1.1.4",
+      "native_crew_reads_enabled": true,
+      "empty_crew_and_assignment_sdk_reads": "passed as owner; no report error or native-crew-unconfigured dependency",
+      "populated_badges_verified": false
+    },
+    "creator_publication": "Not performed; user promotes the two functions and two report layouts",
+    "outbound_projects_writes": 0,
+    "evidence": "creator/crew-locations/desktop-qa-verification.json"
+  },
   "latest_mode": {
     "testingMode": false,
     "creatorOnly": true,

@@ -1,9 +1,9 @@
 # Crew Management desktop QA kit — October 23, 2026
 
-Release candidate **1.1.4**; rollback **1.1.3**. Scope covers Crew Management and
+Deployed release **1.1.4**; rollback **1.1.3**. Scope covers Crew Management and
 the existing Milestones page that reuses its widget. The user approved test crews
 in the open Production app and will delete them later. Existing milestone data
-supplies schedule coverage. PMP publishes main/Production repository assets;
+supplies schedule coverage. PMP published main/Production repository assets;
 the user promotes the prepared Creator changes.
 
 ## Implemented changes
@@ -38,12 +38,24 @@ Both report layouts were auto-saved and final native columns verified from DOM:
 | All_Crews | Crew_Code, Crew_Name, Badge_Color, Active, Source_System, Source_Record_ID, ID |
 | Crew_Assignment_Report | Subdivision1, Crew, Assignment_Date, Source_System, Source_Key, Source_Updated_At, ID, Source_Record_ID |
 
-The reader reuses authenticated LMData.readAll, preserving native report/row
-access and required-field failure. Native form validators remain incomplete in
-the recorded installation (Crew_on_validate unconfirmed;
-Crew_Assignment_on_validate not installed). Restricted-user verification and
-the corrected frontend's live SDK crew read remain pending. No broader grants,
-external adapter, task source, or new Projects route is part of this release.
+The deployed Development widget completed native empty Crew/Assignment SDK reads
+as owner with crews enabled; no report error or native-crew-unconfigured warning
+appeared. Populated Production badges await user promotion. Native validators
+remain incomplete (Crew_on_validate unconfirmed; Crew_Assignment_on_validate not
+installed). demouser3 was denied by Creator's outer Page gate; broad widget/report/
+row restrictions were not tested. The original preview identity was restored.
+
+## Changed files and affected contracts
+
+| Area | Files / effect |
+| --- | --- |
+| Widget | crew-app.js, crew-locations.css, widget.html: desktop layout, controls, acknowledgement display, report contract |
+| Creator | crewLocationsConfig / crewLocationsWidget; saved snapshots, inventories, schema report-link contract |
+| Verification / release | Fixtures/tests, module/design docs, manifest/version, environment mapping, immutable releases/crew-locations/1.1.4 |
+
+Existing Custom API aliases Crew_Locations_Widget_DEV / _STAGE / Crew_Locations_Widget
+are unchanged; no APIs were created. Crew and Crew_Assignment received QA rows
+only. No form schema or milestone fields changed during this review.
 
 ## Production test data
 
@@ -76,15 +88,16 @@ October 16–23 in America/Chicago; the third assignment covers its lower bounda
 | Independent native-read/import/report contract checks | 5 groups passed |
 | Design-document checks | Passed; links/discovery only |
 | Normal browser integration suite | 21 cases passed |
-| Desktop geometry: 1250×600, 1366×768, 1440×900 | 23 cases at each size passed |
-| Desktop geometry: 1920×1080 | 23 cases passed |
+| Desktop geometry: 1250×600, 1366×768, 1440×900, 1920×1080 | 23 cases at each size passed |
 | Full repository validation / Pages build | Passed; 33 widget paths built |
-| Repository deployment | Publishing 1.1.4; final hosted verification pending |
-| Corrected live SDK crew read | Pending release; native layout inspection alone does not establish API reads |
+| Repository deployment | 1.1.4 asset commit 3141c9f84bbeb784de10940dc12021b3a898047d on main; CI and Pages successful |
+| Native Production Milestone_Gantt_View | 1.1.4 verified; Reset showed 38 actual upcoming phases; Enter opened exactly Cameron Rough Cut Start 01/01/2027, then Escape dismissed it without a date write |
+| Native Development Crew_Management | 1.1.4 verified as owner; empty native Crew/Assignment SDK reads completed |
 
-Promote the immutable 1.1.4 repository release through the existing permanent
-widget URLs. The user promotes Config/Widget and both report layouts in Creator;
-then verify real crew filters/badges and refresh in the target app. Preserve
+Deployment used the existing permanent widget URLs. The remaining Creator package
+is exactly two functions (crewLocationsConfig, crewLocationsWidget) and two report
+layouts (All_Crews, Crew_Assignment_Report), for the user to promote. Then verify
+populated Production crew filters/badges and refresh in the target app. Preserve
 milestones, connection/sharing, audit/history, markers, and locks. Repository
 rollback maps the widget to 1.1.3; reconcile native changes separately and retain
 Projects guards. Detailed identities/status:
@@ -93,3 +106,6 @@ Projects guards. Detailed identities/status:
 
 Full rendered check evidence: [desktop QA verification](../creator/crew-locations/desktop-qa-verification.json).
 Native source snapshots normalize trailing whitespace only.
+Deployment: [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582034),
+[Pages](https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582041).
+Production screenshot: C:/Users/R/Desktop/claude/outputs/crew-desktop-qa/production-1.1.4.png.

@@ -35,6 +35,16 @@ cannot select a backend. Preserve the existing logged-in-user Creator connection
 API registration, native installation and repository deployment are separate.
 The latest PMP instruction leaves Creator promotion to the user.
 
+Release 1.1.4 is deployed on main and Production (asset commit
+`3141c9f84bbeb784de10940dc12021b3a898047d`); CI and Pages succeeded. Production
+Milestone_Gantt_View displayed 1.1.4 and Reset showed 38 actual upcoming phases.
+Keyboard activation opened the exact Cameron Rough Cut Start 01/01/2027 editor;
+Escape dismissed it with no date write. The Development Crew_Management owner
+session completed empty native Crew/Assignment SDK reads with crews enabled.
+The remaining user Creator package is two functions (crewLocationsConfig,
+crewLocationsWidget) and two report layouts (All_Crews, Crew_Assignment_Report).
+Populated Production badges await that promotion.
+
 Development native save and audited Undo both succeeded on October 21.
 The earlier save failure was caused by uncommitted locks being invisible to
 delegated API validation. Release 1.1.3 commits preparation before applying. Crew/task source adapters
@@ -67,8 +77,8 @@ All active source/schema/preview contracts now use the native link with no nativ
 rename. Three assignments were successfully submitted through the native
 Crew_Assignment form. Both Development function Saves were confirmed after reopening
 their native editors; current native snapshots are stored in native-installed.
-Actual SDK reads and Creator promotion must be verified before native crew display
-is operational.
+Deployed 1.1.4 Development SDK reads completed with empty Crew/Assignment data.
+Populated Production crew display remains pending user Creator promotion.
 See [desktop QA kit](../../docs/crew-desktop-qa-2026-10-23.md).
 
 Development assignment report layout was auto-saved with native Subdivision1,
@@ -76,8 +86,10 @@ Crew, Assignment_Date, Source_System, Source_Key, Source_Updated_At, ID and
 Source_Record_ID columns verified from rendered DOM. The mistakenly selected
 related Crew.Source_Record_ID column was removed. Development All_Crews was
 auto-saved with Crew_Code, Crew_Name, Badge_Color, Active, Source_System,
-Source_Record_ID and ID columns verified from DOM. Actual SDK record reads remain
-pending; report layout inspection alone does not establish successful native API reads.
+Source_Record_ID and ID columns verified from DOM. The deployed owner widget then
+completed empty native SDK reads. demouser3 was denied by the outer Creator Page
+gate and the original preview identity was restored; broad widget/report/row
+restrictions and populated Production badges were not verified in this review.
 
 No external crew query/API or Analytics view has been verified. The separate
 external-ingestion flag `crewsEnabled` remains false, with blank import actor and
@@ -199,14 +211,17 @@ into the current body and retain any integration-audit instrumentation.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,
-and `npm run build:pages`. The 1.1.3 rule suite has 23 groups. Browser checks
+and `npm run build:pages`. The 1.1.4 rule suite has 24 groups plus five independent
+native-read/import/report contract groups. All 21 normal browser cases and all
+23 desktop geometry checks at each of four sizes passed (1250×600, 1366×768,
+1440×900, 1920×1080). Browser checks
 exercise actual rendered controls against isolated SDK fixtures; they do not
 compile Deluge or establish native connection/auth behavior. Native Creator
 compilation, restricted-user checks and live save/undo/import checks remain
 installation gates. Detailed evidence is in
 [verification.json](../../creator/crew-locations/verification.json).
 
-Rollback restores the previous milestone embed from
+Release rollback maps the widget to 1.1.3. Full feature rollback restores the previous milestone embed from
 `creator/crew-locations/native-before/Milestone_Gantt_View.zml` and disables the
 new Crew APIs/page. Preserve audit logs, markers and unresolved phase locks until
 records are reconciled. Keep outbound guards while markers remain. Version 1.0.6

@@ -1,9 +1,16 @@
-# Crew Management 1.1.3 installation
+# Crew Management 1.1.4 installation
 
 Latest user direction: enable real Creator milestone editing, including Production;
 never write to Zoho Projects. PMP pushes repository main/Production assets and
 leaves pending Creator promotion to the user. Earlier Development-only testing
 instructions in [historical installation notes](INSTALL-1.0.6-history.md) are superseded.
+
+Repository 1.1.4 is deployed; CI and Pages passed. Production Milestone_Gantt_View
+and Development Crew_Management displayed version 1.1.4. The owner Development
+session completed empty native crew/assignment SDK reads. Remaining Creator
+promotion is exactly **crewLocationsConfig**, **crewLocationsWidget**,
+**All_Crews** and **Crew_Assignment_Report**. Populated Production badges await
+the user's promotion; no native milestone dates were written in this review.
 
 1. Read [native-install-progress.json](native-install-progress.json) and
    [removal-inventory.json](removal-inventory.json). Reuse the six existing forms,
@@ -25,13 +32,13 @@ instructions in [historical installation notes](INSTALL-1.0.6-history.md) are su
    confirmed `Crew_Assignment_Report`; do not rename it or recreate a report named
    All_Crew_Assignments. Config/Widget save persistence is confirmed by reopened
    native editors, and both native report layouts are auto-saved/DOM verified.
-   Actual SDK reads and user Creator publication remain pending.
+   Development empty SDK reads passed as owner; user Creator publication remains pending.
    Required-field failure must stay closed.
    The Development assignment layout is now auto-saved with its native columns
    verified from DOM; the required assignment Source_Record_ID is the field on
    Crew_Assignment, not the related Crew.Source_Record_ID field. All_Crews layout
    now exposes Crew_Code, Crew_Name, Badge_Color, Active, Source_System,
-   Source_Record_ID, ID. Actual SDK reads and user Production promotion remain pending.
+   Source_Record_ID, ID. Populated Production reads await user promotion.
 4. Bind the existing `crew_locations` widget to the permanent external URL
    `https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/`.
    Keep the new page identity `Crew_Management` (display Crew Management) and the

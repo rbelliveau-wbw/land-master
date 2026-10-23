@@ -497,5 +497,42 @@
     }
   ],
   "nativeMilestoneWritesDuringThisReview": 0,
-  "productionCreatorPromotion": false
+  "productionCreatorPromotion": false,
+  "repository": {
+    "commit": "3141c9f84bbeb784de10940dc12021b3a898047d",
+    "development": "1.1.4",
+    "production": "1.1.4",
+    "validation": "passed",
+    "pagesBuild": "passed; 33 paths",
+    "ci": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582034",
+    "ciResult": "success",
+    "pages": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39965582041",
+    "pagesResult": "success",
+    "rollback": "1.1.3"
+  },
+  "nativeChecks": {
+    "production": {
+      "page": "Milestone_Gantt_View",
+      "version": "1.1.4",
+      "resetUpcomingPhases": 38,
+      "keyboardBoundary": {
+        "phase": "Cameron Ranch - Phase 01",
+        "stage": "Rough Cut",
+        "field": "start",
+        "displayedDate": "01/01/2027",
+        "openedBy": "Enter",
+        "dismissedWithoutEditing": true
+      },
+      "screenshot": "C:/Users/R/Desktop/claude/outputs/crew-desktop-qa/production-1.1.4.png",
+      "crewBadges": "Pending user Creator promotion"
+    },
+    "development": {
+      "page": "Crew_Management",
+      "version": "1.1.4",
+      "ownerLoad": "complete; empty native crew and assignment reports; no report errors",
+      "dependencies": "Task-source and Creator-only notices; no native-crew-unconfigured notice",
+      "restrictedPersona": "demouser_3 Creator Page inaccessible; original persona restored after owner check",
+      "scope": "No populated crew lookup roundtrip or restricted native report/row access verification claimed"
+    }
+  }
 }
