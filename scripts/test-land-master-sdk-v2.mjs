@@ -119,29 +119,41 @@ await import('./test-land-master-lookup-labels.mjs');
   vm.runInContext(fs.readFileSync('widgets/land-master/src/app/land-data.js','utf8'),c);
   vm.runInContext(section('var S =','function $(id)'),c);
   function actual(name){return section('function '+name+'(','\nfunction ');}
-  for(const name of ['$', 'esc','asList','lookupId','findIn','toDateInput','toZohoDate','dateText','valText','truthy','brToNl','nlToBr',
+  for(const name of ['$', 'esc','num','asList','lookupId','relHasId','findIn','toDateInput','toZohoDate','dateText','valText','truthy','brToNl','nlToBr',
     'typeLabel','F','listForType','recordFor','reportForType','descriptor','lookupOptions','lookupLabel','optionsHTML','fieldHTML','currentEditor','recordTitle',
-    'subdivisionZohoProjectsHTML','tabHTML','panelActionsHTML','renderPanel','panelHasChanges','updatePanelActionState','withDiscardConfirm',
+    'milestonesForSub','relatedTable','subdivisionMilestonesTasksHTML','tabHTML','panelActionsHTML','renderPanel','panelHasChanges','updatePanelActionState','withDiscardConfirm',
     'switchRecordTab','inputRaw','normalizedRaw','savePanelRoute','savePanel','inheritSubdivisionTerritory','payloadValue','applyLocalField','landSuccessLabel','errMeta'])vm.runInContext(actual(name),c);
   const SUB='900719925474099391',OTHER='900719925474099392';
   const schedule={CP_Release_Goal:'10/26/2026',CP_Release_Estimate:'2026-10-28',Construction_Start_Goal:'03-Nov-2026',Construction_Start_Estimate:'11/05/2026',Final_Acceptance_Due_Date:'2027-03-15'};
   const row={ID:SUB,Subdivision_Name:'Schedule phase',Subdivision_Code:'S01',Status:'Active',Phase:'1',...schedule};
-  Object.assign(c.S,{subdivisions:[row,{ID:OTHER,Subdivision_Name:'Blank phase'}],editorType:'subdivision',editorId:SUB,editorNew:false,modalOpen:true,modalTab:'zohoProjects'});
-  assert.deepEqual(Array.from(c.descriptor('subdivision',row).tabs,t=>t.label),['Details','Zoho Projects','Milestones','Forecasts','Takedown Schedules','Builder Takedowns','Additional Items','External Mappings']);
+  Object.assign(c.S,{subdivisions:[row,{ID:OTHER,Subdivision_Name:'Blank phase'}],milestones:[
+    {ID:'900719925474099401',Subdivision1:[{ID:SUB}],Milestone_Name:'Rough Cut',Start_Date:'11/03/2026',End_Date:'2026-12-15',Sequence:'3'},
+    {ID:'900719925474099402',Subdivision1:[{ID:SUB}],Milestone_Name:'Municipal Review',Start_Date:'2026-09-01',End_Date:'10/26/2026',Sequence:'1'},
+    {ID:'900719925474099403',Subdivision1:[{ID:SUB}],Milestone_Name:'Plans <release> & start',Start_Date:'10/26/2026',End_Date:'11/03/2026',Sequence:'2'},
+    {ID:'900719925474099404',Subdivision1:[{ID:'another-subdivision'}],Milestone_Name:'Unrelated milestone',Start_Date:'2026-01-01'}
+  ],editorType:'subdivision',editorId:SUB,editorNew:false,modalOpen:true,modalTab:'milestones'});
+  assert.deepEqual(Array.from(c.descriptor('subdivision',row).tabs,t=>t.label),['Details','Milestones & Tasks','Forecasts','Takedown Schedules','Builder Takedowns','Additional Items','External Mappings']);
   c.renderPanel();
-  assert.match(dom.node('recordTabs').innerHTML,/data-record-tab="zohoProjects"/);
-  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.fl'),n=>n.textContent),['CP Release Goal','CP Release Estimate','Construction Start Goal','Construction Start Estimate','Final Acceptance Due Date']);
-  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.readonly-value'),n=>n.textContent),['10/26/2026','10/28/2026','11/03/2026','11/05/2026','03/15/2027']);
+  assert.match(dom.node('recordTabs').innerHTML,/data-record-tab="milestones"/);
+  assert.doesNotMatch(dom.node('recordTabs').innerHTML,/zohoProjects/,'The two previous tabs are combined');
+  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('[data-schedule-field]'),n=>n.getAttribute('data-schedule-field')),Object.keys(schedule));
+  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('[data-schedule-field]'),n=>n.textContent),['10/26/2026','10/28/2026','11/03/2026','11/05/2026','03/15/2027']);
+  const milestoneRows=dom.node('panel').querySelectorAll('.related-table tbody tr');
+  assert.deepEqual(Array.from(milestoneRows,n=>n.querySelector('td').textContent),['Municipal Review','Plans <release> & start','Rough Cut'],'All linked milestones remain sorted and scoped by exact Subdivision ID');
+  assert.match(dom.node('panel').innerHTML,/Plans &lt;release&gt; &amp; start/);
+  assert.ok(dom.node('panel').innerHTML.indexOf('schedule-dates')<dom.node('panel').innerHTML.indexOf('related-table'),'Summary first retains the full milestone table below the date summary');
+  assert.equal(dom.node('panel').querySelectorAll('[data-open-type="milestone"],.related-remove').length,0,'Milestones remain read-only');
   assert.equal(dom.node('panel').querySelectorAll('input,select,textarea,.pf').length,0,'Zoho dates have no input carriers or serialized field controls');
   assert.equal(c.panelHasChanges(),false);assert.equal(dom.node('btnPanelSave').disabled,true);c.savePanelRoute();assert.equal(writes.length,0,'Invoking Save from the read-only source tab performs no write');
-  c.S.editorId=OTHER;c.renderPanel();assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.readonly-value'),n=>n.textContent),Array(5).fill('—'),'A different record with missing fields cannot retain prior dates');
+  c.S.editorId=OTHER;c.renderPanel();assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('[data-schedule-field]'),n=>n.textContent),Array(5).fill('—'),'A different record with missing fields cannot retain prior dates');
+  assert.equal(dom.node('panel').querySelectorAll('.related-table tbody tr').length,0,'A different Subdivision cannot retain milestone rows');
   c.S.editorId=SUB;c.renderPanel();c.switchRecordTab('details');
   const phase=dom.node('f_Phase');phase.value='2';c.updatePanelActionState();assert.equal(c.S.panelDirty,true);
-  c.switchRecordTab('zohoProjects');assert.equal(confirmations.length,1);assert.equal(c.S.modalTab,'details','Switching to the source tab retains the existing unsaved-change guard');assert.equal(phase.value,'2');
+  c.switchRecordTab('milestones');assert.equal(confirmations.length,1);assert.equal(c.S.modalTab,'details','Switching to the combined tab retains the existing unsaved-change guard');assert.equal(phase.value,'2');
   c.savePanelRoute();for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));
   assert.deepEqual(writes,[{id:SUB,data:{Phase:'2'},report:'All_Subdivisions'}],'An ordinary Details save sends only the changed editable field');
   for(const [field,value]of Object.entries(schedule))assert.equal(row[field],value,'Details save preserves '+field);
-  c.S.editorNew=true;assert.equal(c.descriptor('subdivision',row).tabs.some(t=>t.id==='zohoProjects'),false,'New records do not display synced dates');
-  assert.doesNotMatch(c.tabHTML('project',{},'zohoProjects'),/readonly-value|Read only/,'The source tab is scoped to Subdivision');
-  console.log('PASS Subdivision Zoho Projects: five exact read-only dates, native formats/blanks, record isolation, existing tab/discard behavior, disabled/no-op source Save and unchanged Details-only payload.');
+  c.S.editorNew=true;assert.equal(c.descriptor('subdivision',row).tabs.some(t=>t.id==='milestones'),false,'New records do not display the combined tab');
+  assert.doesNotMatch(c.tabHTML('project',{},'milestones'),/schedule-dates|Read only/,'The combined tab is scoped to Subdivision');
+  console.log('PASS Subdivision Milestones & Tasks: summary-first five read-only dates and complete scoped/sorted milestones, native formats/blanks, record isolation, existing tab/discard behavior, no source Save and unchanged Details-only payload.');
 }

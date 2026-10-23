@@ -160,6 +160,21 @@ for(const flags of [submit,editor]){
  assert.equal(h.c.document.querySelectorAll('.construction-board .bcard-builder,.construction-board .lot-parent-label,.construction-board .contract-master-note').length,0,'Construction cards omit subdivision and family metadata');
  assert.equal(h.c.document.querySelector('.construction-board .bcard-needed').textContent,'10/30/2026','request cards show the saved Date Needed');
  assert.doesNotMatch(h.node('view').textContent,/\d+\/\d+ actions/,'request card footers replace action counts');
+ const boardCard=h.c.document.querySelector('[data-board-id="'+ID+'"]'),pencil=boardCard.querySelector('.bcard-edit');
+ assert.ok(pencil,'An editable Construction request has its compact pencil');
+ assert.ok(!boardCard.getAttribute('onclick'),'Card bodies are reserved for dragging');
+ assert.ok(!boardCard.getAttribute('onkeydown'),'The body is not a second keyboard editor trigger');
+ assert.equal(pencil.getAttribute('draggable'),'false');assert.equal(pencil.getAttribute('type'),'button');
+ assert.match(pencil.getAttribute('aria-label'),/Edit request: Fixture construction request/);
+ assert.match(pencil.getAttribute('onclick'),/constructionBoardEdit/);
+ let stopped=0,prevented=0;h.c.S.bDrag=null;
+ h.c.bDragStart({target:pencil.querySelector('svg'),preventDefault(){prevented++;}},ID);
+ assert.equal(prevented,1);assert.equal(h.c.S.bDrag,null,'Pencil presses never start a card drag');
+ assert.equal(h.c.constructionBoardEdit({stopPropagation(){stopped++;}},ID),true);
+ assert.equal(stopped,1);assert.equal(h.c.S.constructionEdit.cid,ID);assert.equal(h.c.S.view,'home','Pencil opens the existing request editor while retaining the board');assert.equal(writes(h).length,0,'Opening edit mode never writes');
+ h.c.constructionEditClose();h.c.S.bDragEndedAt=Date.now();
+ assert.equal(h.c.constructionBoardEdit({stopPropagation(){}},ID),false,'A finished drag cannot immediately trigger edit');
+ h.c.S.bDragEndedAt=0;h.c.S.busy=true;assert.equal(h.c.constructionBoardEdit({stopPropagation(){}},ID),false);h.c.S.busy=false;
  const cell=(priority,status)=>h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')===priority&&node.getAttribute('data-status')===status);
  const drop=(priority,status,cid=ID)=>{h.c.S.bDrag=cid;h.c.bDrop({preventDefault(){},currentTarget:cell(priority,status)});};
  drop('Medium','Proposed');await drain();assert.equal(writes(h).length,0,'Review status is not a manual drop destination');
@@ -179,9 +194,10 @@ for(const flags of [submit,editor]){
 {
  const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.c.S.mode='board';h.c.renderAll();
  assert.equal(h.c.document.querySelectorAll('.construction-board .bcard[draggable]').length,0);
+ assert.equal(h.c.document.querySelectorAll('.construction-board .bcard-edit').length,0,'Read-only users gain no editor action');
  const cell=h.c.document.querySelectorAll('.construction-board-cell').find(node=>node.getAttribute('data-priority')==='Medium'&&node.getAttribute('data-status')==='Hold');
  h.c.S.bDrag=ID;h.c.bDrop({preventDefault(){},currentTarget:cell});await drain();assert.equal(writes(h).length,0,'read-only forged drops are rejected');
- const legal=await ready({realDOM:true});legal.c.S.mode='board';legal.c.renderAll();assert.equal(legal.c.document.querySelectorAll('.construction-board').length,0);assert.ok(legal.c.document.querySelector('.bcol-head .n'),'Legal status counts are preserved');
+ const legal=await ready({realDOM:true});legal.c.S.mode='board';legal.c.renderAll();assert.equal(legal.c.document.querySelectorAll('.construction-board').length,0);assert.ok(legal.c.document.querySelector('.bcol-head .n'),'Legal status counts are preserved');assert.match(legal.c.document.querySelector('.bcard').getAttribute('onclick'),/bCardClick/,'Legal keeps its existing card click behavior');
 }
 
 {

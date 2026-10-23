@@ -9,6 +9,15 @@ and pagination/export footer fixed while the lots scroll independently.
 Use this guide for read-only record detail dialogs opened from a main report.
 The first implementation is Manage Lots' Builder Takedowns report.
 
+Subdivision View/Edit dialogs combine synced dates and the linked milestone list
+under **Milestones & Tasks**. Use the approved **Summary first** layout: a compact
+CP Release / Construction Start table with Goal and Estimate columns, one Final
+Acceptance Due line, then the complete linked milestone table. Retain its Start,
+End and Sequence values, native date formatting, empty states and exact Subdivision
+scope. These sections stay read-only in edit mode. Keep the existing staged Details
+saves, tab/discard behavior and shared motion; the summary adds no API request or
+write. Label only the key-date summary as synced daily from Zoho Projects.
+
 Land Master Property edit/view dialogs also use the navy title and pale-blue
 body. Group fields in white, finely bordered cards rather than one long flat
 form: Property & location, Ownership & relationships, Acreage & financials,

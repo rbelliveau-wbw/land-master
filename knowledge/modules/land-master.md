@@ -1,3 +1,21 @@
+## Milestones & Tasks summary first — 8.17.3, October 23, 2026
+
+Subdivision View/Edit combines the former Zoho Projects and Milestones tabs into
+**Milestones & Tasks**. Key dates appear first as Stage / Goal / Estimate for CP
+Release and Construction Start, followed by Final Acceptance Due. The full
+existing milestone list follows, retaining its native Start, End and Sequence
+values, linked-record filtering and ordering. All displayed dates and milestones
+remain read-only; Details saves and new-record forms keep their existing paths.
+The existing lazy milestone collection and record-tab motion registration are
+reused. No extra requests, Creator fields, functions or Custom APIs are added.
+
+The source fields are the same five persisted Subdivision schedule dates used
+in 8.17.2. The daily Zoho Projects sync and its Analytics source are unchanged.
+No Creator deployment is required. Actual panel/save regressions cover native
+lookup shapes, ordering, escaping, blanks, record switching and zero date writes.
+[Release and rollback](../../docs/milestones-tasks-and-board-pencil-2026-10-23.md).
+Rollback Land Master to 8.17.2 to restore the two separate tabs.
+
 ## Subdivision Zoho Projects dates — 8.17.2, October 23, 2026
 
 Existing Subdivision View/Edit dialogs include a **Zoho Projects** tab immediately

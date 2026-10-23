@@ -95,13 +95,15 @@ try{
  assert.deepEqual(await page.evaluate(()=>__writes[1].payload),{Priority:'High'});assert.equal(await card('90071992547410001').evaluate(n=>n.closest('.construction-board-lane').dataset.priority),'ASAP','priority waits for the native acknowledgement');
  await page.evaluate(async()=>{__ack();await Promise.resolve();await Promise.resolve();});await page.waitForTimeout(350);
  assert.equal(await card('90071992547410001').evaluate(n=>n.closest('.construction-board-lane').dataset.priority),'High');assert.equal(await page.evaluate(()=>findContract('90071992547410001').Status),'Proposed','rail drop never accepts Pending Review');
- // Rerenders retain both scroll axes and user focus can open a card with Enter.
+ // Rerenders retain scroll; only the native pencil button opens edit mode.
  const restored=await page.evaluate(async()=>{const b=document.querySelector('.construction-board');b.scrollLeft=400;b.scrollTop=100;const before=[b.scrollLeft,b.scrollTop];renderAll();await new Promise(requestAnimationFrame);const next=document.querySelector('.construction-board');return {before,after:[next.scrollLeft,next.scrollTop]};});
  assert.deepEqual(restored.after,restored.before);
  await page.evaluate(()=>{const b=document.querySelector('.construction-board');b.scrollLeft=0;b.scrollTop=0;S.bDragEndedAt=0;});
- await card('90071992547410001').focus();await page.keyboard.press('Enter');
- assert.equal(await page.evaluate(()=>S.selId),'90071992547410001');assert.equal(await page.evaluate(()=>S.view),'detail');
- await page.evaluate(()=>{S.view='home';S.selId=null;S.homeSection='contracts';renderAll();});
+ await card('90071992547410001').locator('.bcard-name').click();
+ assert.equal(await page.evaluate(()=>S.view),'home');assert.equal(await page.evaluate(()=>S.constructionEdit),null);
+ await card('90071992547410001').locator('.bcard-edit').focus();await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>S.constructionEdit.cid),'90071992547410001');assert.equal(await page.evaluate(()=>S.view),'home');
+ await page.evaluate(()=>constructionEditClose());
  await page.emulateMedia({reducedMotion:'reduce'});
  const reduced=await page.evaluate(async()=>{queueFlip('board:90071992547410003');findContract('90071992547410003').Status='New';renderAll();await new Promise(requestAnimationFrame);return getComputedStyle(document.querySelector('[data-board-id="90071992547410003"]')).transform;});
  assert.equal(reduced,'none','reduced motion skips travel');

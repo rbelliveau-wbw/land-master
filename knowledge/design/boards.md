@@ -33,7 +33,12 @@ the native date is absent. Keep its Date Needed tooltip/accessibility label and
 leave dates outside numeric transitions. Use the loaded native record/checklist, never preview
 data. Omit the repeated subdivision line and all parent/child badges or links
 on this board (October 21 correction). List/detail family information stays.
-Cards open with Enter/Space and have visible keyboard focus.
+Construction cards use a compact, visible pencil button to open the existing
+request editor. The pencil supports native button keyboard activation and visible
+focus. Card bodies only drag; clicking or pressing Enter/Space on the body never
+opens a request. Pencil presses do not start a drag or bubble into card actions.
+Keep the existing edit/locked/busy gates; read-only and completed cards gain no
+edit action. Legal retains its existing card click and keyboard behavior.
 
 Drag between priority lanes to change Priority; drag between status columns to
 change Status. A diagonal move commits both fields in one native header update.

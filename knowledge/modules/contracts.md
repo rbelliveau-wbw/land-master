@@ -1,3 +1,20 @@
+## Construction board pencil editing — 1.62.36, October 23, 2026
+
+Editable Construction board cards have a compact pencil button using the existing
+owner-edit SVG. The pencil opens the existing request editor over the board;
+card-body clicks and Enter/Space no longer open a record. The body keeps existing
+drag/drop handlers and native save routing. The pencil is a keyboard button,
+cannot initiate dragging, and respects busy, interaction, post-drag and existing
+request-edit guards. Completed/read-only requests have no pencil. Legal board
+card behavior is unchanged.
+
+No Creator fields, forms, functions, permissions or Custom APIs change; no Creator
+deployment is required. Focused regressions cover editor routing, zero opening
+writes, busy/post-drag behavior, denied edit, Legal clicks and existing native
+acknowledged status/priority moves. Existing overlay and FLIP motion are reused.
+[Release and rollback](../../docs/milestones-tasks-and-board-pencil-2026-10-23.md).
+Rollback Contract Management to 1.62.35 to restore body-click record opening.
+
 ## Construction schedule context — October 23, 2026
 
 The New and Edit Construction request sidebar shows a compact date matrix:
