@@ -70,19 +70,25 @@ Widget rollback: Land Master **8.16.13**. Retain Company/transfer history and th
 new native field. Restoring the old form choices or workflows is a separate
 deliberate Creator rollback; reverting a widget never deletes transfer records.
 
-## Deployment checkpoint
+## Deployment checkpoint — October 23, 2026
 
-Creator Development saved and live-tested. Stage **9.116** is published; its
-reopened native form confirms the new choices and Pending default. Only the
-inactive field, transfer choices, function, two workflows and native section
-dependencies were selected. Existing Company field metadata was excluded.
+Creator Production and Stage are **9.117**, published by the user. This includes
+9.115's three earlier schedule fixes and the property-transfer components from
+9.116. The Production widget mapping is promoted to **8.17.1**, matching the
+verified Development release. Stable Creator widget URLs remain unchanged.
 
-Production publication is awaiting approval of Creator's required older **9.115**
-version, containing the three earlier HCSS budget-check, GP construction-cost
-and Equipment sync schedules. The Production widget remains **8.16.13** until
-the backend is published. Development is **8.17.1**.
+The agent's 9.116 Stage package contained only the inactive field, transfer
+choices, function, two workflows and native section dependencies. Existing
+Company field metadata was excluded from that package. The user subsequently
+published the remaining Property metadata through 9.117.
 
 The native Development report-layout experiment was fully restored to its
-original source and never published. Release **8.17.1** adds the scoped
-report-criteria fallback so this feature does not depend on publishing unrelated
-Company metadata. Native Creator Stage remains **9.116**.
+original source before the user publication. Release **8.17.1** uses the scoped
+report-criteria fallback, so it does not require report layout changes or
+additional transfer-report permissions to filter inactive properties.
+
+Live 8.17.1 Development testing confirmed 9 active / 1 inactive property while
+the full External transfer was CAD Verified. Cancelling through the widget
+restored 10 active / 0 inactive without a page reload; the native checkbox was
+false and Company remained unchanged. The clearly labeled test transfer remains
+Cancelled. Production verification uses read-only form, filter and option checks.

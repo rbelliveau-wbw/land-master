@@ -1,8 +1,8 @@
 {
   "change": "property-transfer",
-  "environment": "DEVELOPMENT",
-  "status": "development-native-saved-and-reopened",
-  "productionPublished": false,
+  "environment": "PRODUCTION",
+  "status": "production-published-and-reopened",
+  "productionPublished": true,
   "promotionOwner": "user",
   "form": "Property_Transfer",
   "report": "Property_Transfer_Report",
@@ -26,7 +26,7 @@
     "Validate Property Transfer workflow",
     "CFO permission changes"
   ],
-  "verification": "Native form builder and fresh IDE reselect confirmed all ten fields. Report columns and workflow script saved in Development. No Creator environment publication performed.",
+  "verification": "The user published through Creator 9.117 on October 23, 2026. Production environment status and native Property Transfer form are rechecked during widget promotion. Earlier Development evidence is retained below.",
   "cfoPermissions": {
     "profile": "CFO",
     "environment": "DEVELOPMENT",
@@ -45,7 +45,7 @@
   },
   "externalTransferUpdate": {
     "date": "2026-10-22",
-    "status": "stage-published-production-awaiting-version-dependency-approval",
+    "status": "production-backend-published-widget-promoted",
     "creatorPublicationAuthorized": true,
     "newPropertyField": "External_Transfer_Inactive",
     "propertySnapshot": "creator/schema-changes/property-transfer/property.ds",
@@ -71,8 +71,8 @@
     "productionTransfersBefore": 0,
     "companyName": "External",
     "documentation": "docs/property-transfer-external-2026-10-22.md",
-    "stageVersion": "9.116",
-    "productionPublished": false,
+    "stageVersion": "9.117",
+    "productionPublished": true,
     "stageTransfersBefore": 0,
     "developmentDraftsToMigrate": 0,
     "stageDraftsToMigrate": 0,
@@ -83,15 +83,21 @@
       "External / Full / CAD Verified sets inactive",
       "Property Company remains unchanged in all live Development tests",
       "Stage reopened with External type and Pending/Completed/CAD Verified/Cancelled statuses",
-      "Widget SDK cancellation saved and returned to Property history; native report experiment restored exactly, no report publication"
+      "Widget SDK cancellation saved and returned to Property history; native report experiment restored exactly, no report publication",
+      "Final 8.17.1 Development SDK test: 9 active / 1 inactive; cancelling the test transfer restored 10 active / 0 inactive, native flag false, Company unchanged.",
+      "Production 9.117 reopened: Pending default, Pending/Completed/CAD Verified/Cancelled choices, External type and External Company lookup option; no Production records created or edited."
     ],
-    "productionDependency": "Creator automatically requires version 9.115 (three earlier schedules) before 9.116; separate approval requested.",
+    "productionDependency": "The user published the earlier schedule fixes and property-transfer components through Creator 9.117. Production publication is no longer blocked.",
     "excludedComponents": [
       "Existing Property Company field metadata",
       "Unrelated Property fields, field order and permissions"
     ],
     "widgetVersion": "8.17.1",
     "activityRead": "Read visible flag, otherwise query All_Property with External_Transfer_Inactive == true under the same permissions; scoped to affected IDs after saves.",
-    "reportLayoutUnchanged": true
+    "reportLayoutUnchanged": true,
+    "productionVersion": "9.117",
+    "productionPublicationDate": "2026-10-23",
+    "productionPublisher": "user",
+    "excludedComponentsNote": "Excluded from agent-published Stage 9.116. The user subsequently published all remaining Property metadata in 9.117; the agent did not publish that additional package."
   }
 }
