@@ -102,6 +102,13 @@ management is unavailable. Never expose a partial paginated roster as complete.
 Retain the last complete authorized view during a refresh; access and required
 field failures clear private records.
 
+In a short Creator frame, tighten crew header and section spacing and hide the
+redundant roster subtitle. Keep text and controls at their normal readable
+sizes. Verify a crew with both latest and upcoming work at the actual content
+height: the first upcoming row must be visible at 1250 × 564. Loading and saving
+tooltips describe that current operation; they must not suggest Creator
+promotion during a normal refresh.
+
 Keep a failed draft in its editor. Block duplicate commits while saving and
 show success only for the matching request, kind and native destination ID.
 An unknown reply locks further writes and offers a read-only status recheck;

@@ -44,7 +44,20 @@ map crewLocationsValidate(map request)
 		{
 			return {"ok":false,"message":"An operation requires one to twelve stage records."};
 		}
-		if(origin == "table" || origin == "duration" || origin == "drag" && changes.size() != 1)
+		singleRecordOrigin = false;
+		if(origin == "table")
+		{
+			singleRecordOrigin = true;
+		}
+		if(origin == "duration")
+		{
+			singleRecordOrigin = true;
+		}
+		if(origin == "drag")
+		{
+			singleRecordOrigin = true;
+		}
+		if(singleRecordOrigin && changes.size() != 1)
 		{
 			return result;
 		}
@@ -138,9 +151,12 @@ map crewLocationsValidate(map request)
 			{
 				return {"ok":false,"message":"A milestone has a pre-existing pending Projects push. Creator-only editing cannot clear it."};
 			}
-			if(type == "T" && ifnull(current.get("Write_Enabled"),false).toString().toLowerCase() != "true" || ifnull(current.get("Source_System"),"") == "" || ifnull(current.get("Source_Record_ID"),"") == "")
+			if(type == "T")
 			{
-				return result;
+				if(ifnull(current.get("Write_Enabled"),false).toString().toLowerCase() != "true" || ifnull(current.get("Source_System"),"") == "" || ifnull(current.get("Source_Record_ID"),"") == "")
+				{
+					return result;
+				}
 			}
 			start = thisapp.crewLocationsIso(ifnull(current.get("Start_Date"),"").toString());
 			end = thisapp.crewLocationsIso(ifnull(current.get("End_Date"),"").toString());
@@ -184,9 +200,16 @@ map crewLocationsValidate(map request)
 				{
 					return {"ok":false,"message":"Existing past dates are protected."};
 				}
-				if(newValue != "" && !newValue.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}") || thisapp.crewLocationsIso(newValue) != newValue || newValue.toDate("yyyy-MM-dd") < zoho.currentdate)
+				if(newValue != "")
 				{
-					return {"ok":false,"message":"Dates must be valid and cannot move into the past."};
+					if(!newValue.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))
+					{
+						return {"ok":false,"message":"Dates must be valid and cannot move into the past."};
+					}
+					if(thisapp.crewLocationsIso(newValue) != newValue || newValue.toDate("yyyy-MM-dd") < zoho.currentdate)
+					{
+						return {"ok":false,"message":"Dates must be valid and cannot move into the past."};
+					}
 				}
 				if(newValue == "")
 				{
@@ -215,9 +238,23 @@ map crewLocationsValidate(map request)
 			}
 			if(origin == "duration")
 			{
-				if(fields.keys().size() != 1 || (start != "" && nextStart != start) || (start == "" && end == "" || nextEnd != end))
+				if(fields.keys().size() != 1)
 				{
 					return result;
+				}
+				if(start != "")
+				{
+					if(nextStart != start)
+					{
+						return result;
+					}
+				}
+				else
+				{
+					if(end == "" || nextEnd != end)
+					{
+						return result;
+					}
 				}
 			}
 			if(type == "M")
@@ -230,9 +267,16 @@ map crewLocationsValidate(map request)
 		{
 			reverseId = ifnull(request.get("reversesOperationId"),"").toString();
 			original = Schedule_Change_Log[Operation_ID == reverseId && Subdivision1 == phaseId.toLong()];
-			if(original.count() != 1 || original.State != "saved" || (origin == "redo" && original.Origin != "undo"))
+			if(original.count() != 1 || original.State != "saved")
 			{
 				return result;
+			}
+			if(origin == "redo")
+			{
+				if(original.Origin != "undo")
+				{
+					return result;
+				}
 			}
 			prior = original.Request_JSON.toMap().get("changes");
 			if(prior.size() != changes.size())
@@ -244,8 +288,25 @@ map crewLocationsValidate(map request)
 				// Before-values alone cannot detect an away-and-back (ABA) edit.
 				// Refuse to compensate fields targeted by a newer recorded operation,
 				// even when its current date happens to equal the older saved date.
-				for each  later in Schedule_Change_Log[Subdivision1 == phaseId.toLong() && ID > original.ID && State == "saved" || State == "imported" || State == "partial" || State == "unknown"]
+				// Creator allocates IDs across writers; they are not a reliable clock.
+				for each  later in Schedule_Change_Log[Subdivision1 == phaseId.toLong() && Timestamp >= original.Timestamp]
 				{
+					if(later.Operation_ID == reverseId || later.Operation_ID == request.get("operationId"))
+					{
+						continue;
+					}
+					recorded = false;
+					for each  recordedState in {"saved","imported","partial","unknown"}
+					{
+						if(later.State == recordedState)
+						{
+							recorded = true;
+						}
+					}
+					if(!recorded)
+					{
+						continue;
+					}
 					laterRequest = later.Request_JSON.toMap();
 					laterChanges = laterRequest.get("changes");
 					for each  laterChange in laterChanges
@@ -348,12 +409,29 @@ map crewLocationsValidate(map request)
 				row = byId.get(candidate);
 				key = row.get("canonicalStage");
 				position = stageOrder.indexOf(key);
-				eligible = (direction == 1 && position > anchorIndex) || (direction == -1 && position < anchorIndex);
+				eligible = false;
+				if(direction == 1 && position > anchorIndex)
+				{
+					eligible = true;
+				}
+				if(direction == -1 && position < anchorIndex)
+				{
+					eligible = true;
+				}
 				if(!scopeAll)
 				{
 					eligible = position == anchorIndex + direction;
 				}
-				if(eligible && ifnull(row.get("Start_Date"),"") != "" || ifnull(row.get("End_Date"),"") != "")
+				hasEndpoint = false;
+				if(ifnull(row.get("Start_Date"),"") != "")
+				{
+					hasEndpoint = true;
+				}
+				if(ifnull(row.get("End_Date"),"") != "")
+				{
+					hasEndpoint = true;
+				}
+				if(eligible && hasEndpoint)
 				{
 					expectedStages.add(key);
 				}

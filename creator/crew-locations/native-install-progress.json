@@ -1,11 +1,14 @@
 {
   "date": "2026-10-21",
   "management_2026_10_23": {
-    "release": "1.2.0",
-    "status": "native-development-components-verified-live-crud-unverified",
+    "release": "1.2.3",
+    "status": "1.2.3-publication-ready-development-native-verified-user-creator-promotion-pending",
     "functions_saved_and_reopened": [
       "crewLocationsRead",
-      "crewLocationsWidget"
+      "crewLocationsWidget",
+      "crewLocationsConfig",
+      "crewLocationsValidate",
+      "crewLocationsDirectValidate"
     ],
     "widget_function_final_refinements_pending_resave": false,
     "workflows_saved_and_reopened": [
@@ -73,17 +76,21 @@
       "automatic_projects_ingestion_verified": false,
       "source_setup": "Native lightweight mirror schema/report/workflow prepared and verified in Development. Source portal/query, explicit stage mapping and automated ingestion remain unconfigured; crewLocationsImportTasks is not installed."
     },
-    "native_management_crud_verified": false,
+    "native_management_crud_verified": true,
     "creator_promotion": "User-owned under PMP",
     "native_compiler_output_gate": {
       "passed": true,
-      "backend_test_groups_passed": 9,
+      "backend_test_groups_passed": 11,
       "test": "scripts/test-crew-management-backend.mjs",
       "reopened_native_snapshots": [
+        "creator/crew-locations/native-installed/Crew_on_validate.dg",
+        "creator/crew-locations/native-installed/Crew_Assignment_on_validate.dg",
         "creator/crew-locations/native-installed/crewLocationsWidget.dg",
-        "creator/crew-locations/native-installed/Crew_Assignment_on_validate.dg"
+        "creator/crew-locations/native-installed/crewLocationsRead.dg",
+        "creator/crew-locations/native-installed/crewLocationsValidate.dg",
+        "creator/crew-locations/native-installed/crewLocationsDirectValidate.dg"
       ],
-      "scope": "Staged management HTTP/empty-page and active-crew guards preserved by actual Creator formatting; no mixed AND/OR management or Assignment guards."
+      "scope": "Actual reopened native management, empty-report/scoped-criteria and schedule guards passed; seven mixed schedule guards staged without changing canonical timestamp ABA protection."
     },
     "owner_permission_change": {
       "environment": "development",
@@ -96,15 +103,355 @@
       "other_permissions_changed": false
     },
     "native_management_crud_gate": {
-      "verified": false,
-      "state": "native-access-investigation",
-      "observed": "Direct Crew form and All_Crews report remain inaccessible in Development even for the owner with preview identity MySelf.",
-      "consequence": "Native create/edit/reactivate/assignment save verification is pending; isolated browser passes do not establish native CRUD.",
-      "profile_or_connection_scope_changes_performed": false
+      "verified": true,
+      "environment": "development",
+      "widget_version": "1.2.0",
+      "actor": "wbdevelopment",
+      "state": "actual-widget-functional-crud-verified",
+      "observed": "Actual deployed widget owner session created two native crews, edited name and white badge color, deactivated/reactivated, created a dated assignment and reassigned that same native row; Refresh retained the corrected data.",
+      "profile_or_connection_scope_changes_performed": false,
+      "real_phase_picker_locks_visible": true,
+      "real_milestone_date_changes": 0
     },
     "repository_validation": {
-      "full_validate": "passed",
-      "reported_by": "Root agent after final validation run"
+      "full_validate": "passed final full merged validation exit 0 (63957); 11 focused backend groups",
+      "final_1_2_3_full_merged_validation": {
+        "result": "passed",
+        "exit_code": 0,
+        "session": "63957"
+      },
+      "build_pages": {
+        "result": "passed",
+        "paths": 33
+      },
+      "package_creator": "passed",
+      "native_backend_groups_passed": 11,
+      "management_browser_groups_passed": 17,
+      "scheduling_browser_groups_passed": 21,
+      "desktop_geometry": {
+        "management": {
+          "groups_per_size": 24,
+          "sizes": [
+            "1250x564",
+            "1250x600",
+            "1366x768",
+            "1440x900",
+            "1920x1080"
+          ],
+          "passed": true,
+          "first_upcoming_assignment_fully_visible": true,
+          "fixture_selection": "Actual synthetic crew with both latest and future work",
+          "fixture_banner": "Only the artificial inner geometry banner is hidden; the outer harness remains clearly labeled isolated"
+        },
+        "schedule": {
+          "groups_per_size": 23,
+          "sizes": [
+            "1250x600",
+            "1366x768",
+            "1440x900",
+            "1920x1080"
+          ],
+          "passed": true
+        },
+        "style": "Short-height spacing and subtitle changes; font and control sizes retained."
+      },
+      "live_1_2_3_presentation_smoke": "pending live assets",
+      "scheduling_groups_passed": 24,
+      "prior_full_merged_validation": {
+        "result": "passed",
+        "exit_code": 0,
+        "session": "9637"
+      }
+    },
+    "native_create_rejection_check": {
+      "environment": "development",
+      "path": "Native Crew form",
+      "test_kind": "negative source-identity validation",
+      "source_system": "MANUAL_QA",
+      "source_record_id_shape": "non-UUID",
+      "expected_rejection": "Create crews through Crew Management with a stable manual request identity.",
+      "native_rejection_verified": true,
+      "native_row_created": false,
+      "positive_widget_crud_verified": true,
+      "note": "This earlier negative test created no row; later positive widget CRUD succeeded independently."
+    },
+    "pending_schedule_validation_guard": {
+      "function": "crewLocationsValidate",
+      "status": "saved-reopened-and-native-guard-checks-passed",
+      "native_capture_verified": true,
+      "corrected_guard_test_pass_claimed": true,
+      "mixed_guards_rewritten": 7,
+      "scope": [
+        "Milestone edits do not require task source fields",
+        "table/duration/drag single-record counts",
+        "duration anchor protection",
+        "arrow eligibility and source endpoints",
+        "existing canonical timestamp ABA protection retained"
+      ],
+      "native_snapshot": "creator/crew-locations/native-installed/crewLocationsValidate.dg"
+    },
+    "repository_release_outcome": {
+      "release": "1.2.3",
+      "status": "ready-mappings-included-awaiting-ci-pages",
+      "environment_mappings": {
+        "development": "1.2.3",
+        "production": "1.2.3"
+      },
+      "full_merged_validation": "passed exit 0 (63957), including 11 focused backend groups",
+      "build_pages": "passed; 33 paths",
+      "package_creator": "passed",
+      "ci_result": null,
+      "pages_result": null,
+      "production_asset_smoke": "pending live 1.2.3 assets",
+      "native_functional_crud": {
+        "verified": true,
+        "environment": "development",
+        "actual_widget_version": "1.2.0"
+      },
+      "creator_application_promoted": false,
+      "pending_native_steps": [
+        "User-owned Creator application promotion of the verified Development package.",
+        "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
+      ]
+    },
+    "native_empty_read_contract": {
+      "official_reference": "https://www.zoho.com/creator/help/api/v2.1/status-codes.html",
+      "empty_report": {
+        "code": "9220",
+        "allowed_http": [
+          200,
+          400
+        ],
+        "native_http_400_observed": true
+      },
+      "scoped_empty_criteria": {
+        "code": "9280",
+        "allowed_http": [
+          400
+        ],
+        "nonblank_criteria_required": true
+      },
+      "contradictions_rejected": [
+        "nonempty data with empty code",
+        "error field",
+        "success false",
+        "permission and unrelated HTTP statuses"
+      ],
+      "note": "Only known empty response envelopes are accepted; report/row permission failures remain failures."
+    },
+    "development_widget_crud_records": {
+      "environment": "development",
+      "source_system": "MANUAL_WIDGET",
+      "cleanup_performed": false,
+      "crews": [
+        {
+          "id": "4410926000005393014",
+          "code": "TEST-DEV-1023",
+          "final_name": "TEST Development Crew — edited",
+          "final_badge_color": "#FFFFFF",
+          "deactivated_and_reactivated": true,
+          "final_active": true
+        },
+        {
+          "id": "4410926000005393018",
+          "code": "TEST-DEV-B-1023"
+        }
+      ],
+      "assignments": [
+        {
+          "id": "4410926000005393016",
+          "created": {
+            "crew_id": "4410926000005393014",
+            "phase_label": "Cameron01",
+            "date": "2026-10-23"
+          },
+          "reassigned": {
+            "crew_id": "4410926000005393018",
+            "phase_label": "AAA Springs01",
+            "date": "2026-10-24"
+          },
+          "same_native_record_id_preserved": true,
+          "refresh_persistence_verified": true
+        }
+      ],
+      "inactive_policy_verified": "Dated work remains visible; Assign work is disabled while inactive.",
+      "prior_failed_attempts": {
+        "native_invalid_qa_create_rejected": true,
+        "prepare_failures": 2,
+        "rows_created_by_failed_attempts": 0
+      },
+      "earlier_production_test_records": "The three previously created Production QA crews and assignments remain; no cleanup performed."
+    },
+    "creator_pending_components": {
+      "functions": [
+        "crewLocationsRead",
+        "crewLocationsWidget",
+        "crewLocationsConfig",
+        "crewLocationsValidate",
+        "crewLocationsDirectValidate"
+      ],
+      "native_validation_workflows": [
+        "Crew_on_validate",
+        "Crew_Assignment_on_valida",
+        "Task_Schedule_mirror_guar"
+      ],
+      "task_form": "Task_Schedule: six new fields and optional Subdivision1/Stage_Key",
+      "reports": [
+        "All_Crews",
+        "Crew_Assignment_Report",
+        "All_Task_Schedules"
+      ],
+      "page_and_widget": [
+        "Crew_Management",
+        "crew_locations"
+      ],
+      "rule": "User promotes all pending native changes under PMP; repository publication is separate."
+    },
+    "release_plan": {
+      "historical_verified_asset_release": "1.2.0",
+      "historical_asset_commit": "b64591c4eabbc94934b6a26837b8d1b451032103",
+      "target_release": "1.2.3",
+      "target_created": true,
+      "release_ready": true,
+      "environment_mappings": {
+        "development": "1.2.3",
+        "production": "1.2.3"
+      },
+      "mapping_publication": "Development and Production 1.2.3 mappings are included with this publication.",
+      "publication_status": "mapped-1.2.3-awaiting-workflow-completion",
+      "ci_result": null,
+      "pages_result": null,
+      "live_1_2_3_presentation_smoke": "pending live assets",
+      "unused_local_immutable_drafts": [
+        "1.2.1",
+        "1.2.2"
+      ],
+      "unused_drafts_will_not_publish": true,
+      "final_full_merged_validation": {
+        "result": "passed",
+        "exit_code": 0,
+        "session": "63957",
+        "reason": "Final full merged validation after bounded DirectValidate refinement"
+      },
+      "build_pages": {
+        "result": "passed",
+        "paths": 33
+      },
+      "package_creator": {
+        "result": "passed"
+      },
+      "concurrent_main_preserved": "21ef0b75 (Land Master 8.17.3 / Contracts 1.62.36)",
+      "final_validation": "passed exit 0 (63957)",
+      "prior_full_merged_validation": {
+        "result": "passed",
+        "exit_code": 0,
+        "session": "9637"
+      }
+    },
+    "native_live_widget_version": "1.2.0",
+    "desktop_geometry": {
+      "management": {
+        "groups_per_size": 24,
+        "sizes": [
+          "1250x564",
+          "1250x600",
+          "1366x768",
+          "1440x900",
+          "1920x1080"
+        ],
+        "passed": true,
+        "first_upcoming_assignment_fully_visible": true,
+        "fixture_selection": "Actual synthetic crew with both latest and future work",
+        "fixture_banner": "Only the artificial inner geometry banner is hidden; the outer harness remains clearly labeled isolated"
+      },
+      "schedule": {
+        "groups_per_size": 23,
+        "sizes": [
+          "1250x600",
+          "1366x768",
+          "1440x900",
+          "1920x1080"
+        ],
+        "passed": true
+      },
+      "style": "Short-height spacing and subtitle changes; font and control sizes retained."
+    },
+    "owner_permission_changes": [
+      {
+        "environment": "development",
+        "user": "wbdevelopment",
+        "user_access_record_id": "4410926000003608006",
+        "field": "Manage_Crew_Assignments",
+        "before": false,
+        "after": true,
+        "save_method": "Existing native User_Access form; success toast verified",
+        "other_permissions_changed": false
+      },
+      {
+        "environment": "production",
+        "user": "wbdevelopment",
+        "display_name": "Robby Belliveau",
+        "user_access_record_id": "4410926000004465004",
+        "field": "Manage_Crew_Assignments",
+        "before": false,
+        "after": true,
+        "save_method": "Existing native User_Access form Update; reopened form confirmed",
+        "reopened_checkbox_state": {
+          "View_Crew_Locations": true,
+          "Edit_Crew_Milestones": true,
+          "Edit_Crew_Task_Dates": false,
+          "Manage_Crew_Assignments": true
+        },
+        "other_permissions_changed": false,
+        "profile_or_connection_changes": false,
+        "creator_application_promotion_performed": false
+      }
+    ],
+    "production_owner_permission_change": {
+      "environment": "production",
+      "user": "wbdevelopment",
+      "display_name": "Robby Belliveau",
+      "user_access_record_id": "4410926000004465004",
+      "field": "Manage_Crew_Assignments",
+      "before": false,
+      "after": true,
+      "save_method": "Existing native User_Access form Update; reopened form confirmed",
+      "reopened_checkbox_state": {
+        "View_Crew_Locations": true,
+        "Edit_Crew_Milestones": true,
+        "Edit_Crew_Task_Dates": false,
+        "Manage_Crew_Assignments": true
+      },
+      "other_permissions_changed": false,
+      "profile_or_connection_changes": false,
+      "creator_application_promotion_performed": false
+    },
+    "pending_native_steps": [
+      "User-owned Creator application promotion of the verified Development package.",
+      "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
+    ],
+    "repository_full_validation": "passed final full merged validation exit 0 (63957); prior 9637 retained as history",
+    "direct_validation_audit": {
+      "function": "crewLocationsDirectValidate",
+      "fresh_native_before": "creator/crew-locations/native-before/crewLocationsDirectValidate.management-20261023.dg",
+      "native_snapshot": "creator/crew-locations/native-installed/crewLocationsDirectValidate.dg",
+      "prior_live_core_already_canonical": true,
+      "stale_local_snapshot_replaced": true,
+      "live_bypass_claimed": false,
+      "staged_mixed_guard_families": 3,
+      "business_rules_changed": false,
+      "native_saved_and_reopened": true,
+      "native_character_count": 5199,
+      "native_mixed_boolean_lines": 0,
+      "backend_group_passed": true,
+      "checks": [
+        "exact nested target",
+        "Push_Update false",
+        "prepared/saving state",
+        "row permissions",
+        "past-date protection"
+      ],
+      "scope_note": "Fresh live capture already had correct exact-target and prepared/saving behavior; only three remaining mixed permission/past-date guard families were staged for formatter resilience."
     }
   },
   "environment": "development",
@@ -285,10 +632,8 @@
   "new_api_created": true,
   "page_created": true,
   "next_steps": [
-    "Verify native live save and Undo before declaring editing operational",
-    "User promotes pending Creator functions, Crew Management page rename and widget hosting change",
-    "Stage API alias is not registered yet",
-    "Crew/task sources remain disabled until verified"
+    "User-owned Creator application promotion of the verified Development package.",
+    "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
   ],
   "scheduled_retry_completed": true,
   "retry_automation_status": "PAUSED",
@@ -474,11 +819,7 @@
     "phase_lock": "The completed known-rejection path releases its own phase lock; no manual deletion performed.",
     "outbound_projects_calls_by_this_test": 0
   },
-  "current_blockers": [
-    "Creator application publication lock; no other publication cancelled",
-    "Creator editor subsequently could not connect / DNS error",
-    "A native future date PATCH returned a rejection with no detailed error in the existing response; save/undo not yet passed"
-  ],
+  "current_blockers": [],
   "native_record_side_effects": {
     "audit_entries_confirmed": 1,
     "test_marker": "may exist for M:4410926000003819022",
@@ -587,8 +928,8 @@
       "restoredEnd": "2027-03-17"
     }
   },
-  "current_release": "1.1.4",
-  "current_creator_promotion": "User promotes crewLocationsConfig, crewLocationsWidget, All_Crews and Crew_Assignment_Report; repository 1.1.4 already deployed",
+  "current_release": "1.2.3",
+  "current_creator_promotion": "User promotes verified Development Crew Management functions/workflows, Task_Schedule schema/report layout, existing Crew reports and registered page/widget changes under PMP. Task importer and external/task writes remain disabled.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
     "release": "1.1.4",
@@ -668,5 +1009,104 @@
     "crew_task_adapters": "disabled; real sources remain unverified",
     "removal_inventory": "removal-inventory.json",
     "save_evidence": "creator-only-save-verification.json"
-  }
+  },
+  "repository_release_outcome_1_2_0": {
+    "status": "main-production-assets-live-development-crud-verified-user-creator-promotion-pending",
+    "release": "1.2.0",
+    "asset_commit": "b64591c4eabbc94934b6a26837b8d1b451032103",
+    "merged_main_base": "e4b740ff",
+    "concurrent_main_changes_preserved": true,
+    "full_merged_validation": "passed",
+    "production_assets_live": true,
+    "ci": {
+      "result": "success",
+      "run_id": "39977572496",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39977572496"
+    },
+    "pages": {
+      "result": "success",
+      "run_id": "39977572515",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/39977572515"
+    },
+    "normal_scheduling_browser_groups_passed": 21,
+    "fixture_correction": "The nested unavailable-source regression opens the schedule workspace before exercising Clear/Reset.",
+    "creator_publication": "Not performed under PMP; user promotes Creator changes.",
+    "native_widget_crud_verified": true,
+    "native_widget_crud_environment": "development"
+  },
+  "release_plan": {
+    "historical_verified_asset_release": "1.2.0",
+    "historical_asset_commit": "b64591c4eabbc94934b6a26837b8d1b451032103",
+    "target_release": "1.2.3",
+    "target_created": true,
+    "release_ready": true,
+    "environment_mappings": {
+      "development": "1.2.3",
+      "production": "1.2.3"
+    },
+    "mapping_publication": "Development and Production 1.2.3 mappings are included with this publication.",
+    "publication_status": "mapped-1.2.3-awaiting-workflow-completion",
+    "ci_result": null,
+    "pages_result": null,
+    "live_1_2_3_presentation_smoke": "pending live assets",
+    "unused_local_immutable_drafts": [
+      "1.2.1",
+      "1.2.2"
+    ],
+    "unused_drafts_will_not_publish": true,
+    "final_full_merged_validation": {
+      "result": "passed",
+      "exit_code": 0,
+      "session": "63957",
+      "reason": "Final full merged validation after bounded DirectValidate refinement"
+    },
+    "build_pages": {
+      "result": "passed",
+      "paths": 33
+    },
+    "package_creator": {
+      "result": "passed"
+    },
+    "concurrent_main_preserved": "21ef0b75 (Land Master 8.17.3 / Contracts 1.62.36)",
+    "final_validation": "passed exit 0 (63957)",
+    "prior_full_merged_validation": {
+      "result": "passed",
+      "exit_code": 0,
+      "session": "9637"
+    }
+  },
+  "current_release_state": "mapped-1.2.3-awaiting-workflow-completion",
+  "repository_release_outcome_1_2_3": {
+    "release": "1.2.3",
+    "status": "ready-mappings-included-awaiting-ci-pages",
+    "environment_mappings": {
+      "development": "1.2.3",
+      "production": "1.2.3"
+    },
+    "full_merged_validation": "passed exit 0 (63957), including 11 focused backend groups",
+    "build_pages": "passed; 33 paths",
+    "package_creator": "passed",
+    "ci_result": null,
+    "pages_result": null,
+    "production_asset_smoke": "pending live 1.2.3 assets",
+    "native_functional_crud": {
+      "verified": true,
+      "environment": "development",
+      "actual_widget_version": "1.2.0"
+    },
+    "creator_application_promoted": false,
+    "pending_native_steps": [
+      "User-owned Creator application promotion of the verified Development package.",
+      "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
+    ]
+  },
+  "pending_native_steps": [
+    "User-owned Creator application promotion of the verified Development package.",
+    "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
+  ],
+  "historical_blockers_2026_10_21": [
+    "Creator application publication lock; no other publication cancelled",
+    "Creator editor subsequently could not connect / DNS error",
+    "A native future date PATCH returned a rejection with no detailed error in the existing response; save/undo not yet passed"
+  ]
 }

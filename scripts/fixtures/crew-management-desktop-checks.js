@@ -6,7 +6,12 @@
  const assert=(condition,name,detail)=>checks.push({name,ok:!!condition,...(condition?{}:{detail})});
  const fits=node=>{const box=node.getBoundingClientRect();return box.left>=-1&&box.top>=-1&&box.right<=innerWidth+1&&box.bottom<=innerHeight+1;};
  try{
-  await wait(()=>window.CrewManager?.state.ready&&!CrewManager.state.loading&&$('#fixture-audit'));await frame();window.scrollTo(0,0);
+  await wait(()=>window.CrewManager?.state.ready&&!CrewManager.state.loading&&$('#fixture-audit'));
+  // The outer harness identifies this as isolated; its extra in-frame banner
+  // does not exist inside Creator and must not consume measured content height.
+  if($('#fixture-warning'))$('#fixture-warning').hidden=true;
+  await frame();window.scrollTo(0,0);
+  $('[data-cm-crew="90071992547408001"]').click();await frame();
   assert($('#app').dataset.workspace==='crews','Crews workspace opens first');
   assert(document.documentElement.scrollWidth<=innerWidth+1,'No horizontal page overflow',document.documentElement.scrollWidth);
   const roster=$('.cm-roster-panel').getBoundingClientRect(),detail=$('#cmDetail').getBoundingClientRect();
@@ -15,6 +20,7 @@
   assert(all('[data-cm-crew] strong').every(node=>parseFloat(getComputedStyle(node).fontSize)>=13),'Crew codes remain readable');
   assert(all('.cm-actions').every(node=>node.scrollWidth<=node.clientWidth+1),'Crew actions fit their containers');
   assert(all('#cmDetail .cm-assignment-table').every(node=>node.parentElement.scrollWidth>=node.parentElement.clientWidth),'Assignment tables retain their horizontal contents');
+  const firstUpcoming=$('#cmDetail .cm-assignment-table tbody tr');assert(firstUpcoming&&fits(firstUpcoming),'First upcoming assignment is visible at desktop content height',firstUpcoming?.getBoundingClientRect().toJSON());
   $('#crewSearch').value='U2';$('#crewSearch').dispatchEvent(new Event('input',{bubbles:true}));await frame();assert(all('[data-cm-crew]').length===1,'Roster search keeps selection reachable');$('#crewSearch').value='';$('#crewSearch').dispatchEvent(new Event('input',{bubbles:true}));
   $('#crewsTab').focus();$('#crewsTab').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await frame();assert(document.activeElement===$('#scheduleTab')&&$('#app').dataset.workspace==='schedule','Arrow keys move workspace focus and panel together');$('#scheduleTab').dispatchEvent(new KeyboardEvent('keydown',{key:'Home',bubbles:true}));await frame();assert(document.activeElement===$('#crewsTab')&&$('#app').dataset.workspace==='crews','Home restores Crews tab focus');
   $('#cmNewCrew').click();await frame();assert($('#cmEditorDialog').open&&fits($('#cmEditorDialog')),'Crew editor fits desktop viewport',$('#cmEditorDialog').getBoundingClientRect().toJSON());assert(document.activeElement===$('#cmCode'),'New crew editor focuses its required code');assert(fits($('#cmSave'))&&fits($('#cmCancel')),'Crew editor committing controls remain visible');

@@ -61,3 +61,16 @@ button{border-radius:7px}.cm-editor header{background:linear-gradient(110deg,#dc
 .cm-count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;padding:2px 7px;border:1px solid #c5d6e8;border-radius:20px;background:#e2ecf7;font-size:11px;font-weight:600;line-height:1.3}
 .cm-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 #app[data-workspace=crews] #assignmentWindow,#app[data-workspace=crews] .page-head #refresh,#app[data-workspace=crews] .page-head #history,#app[data-workspace=schedule] .cm-workspace-subtitle{display:none}
+/* Creator's desktop frame can be much shorter than the outer browser window. */
+@media(max-height:700px){
+ #app[data-workspace=crews] .cm-workspace-subtitle{display:none}
+ #app[data-workspace=crews]>.page-head{padding-top:13px;padding-bottom:13px;margin-bottom:8px}
+ #app[data-workspace=crews]>.cm-workspace-tabs{margin-top:8px}
+ #app[data-workspace=crews]>.cm-manager{margin-top:10px}
+ #app[data-workspace=crews] .cm-section-head{padding-top:12px;padding-bottom:12px}
+ #app[data-workspace=crews] .cm-detail{padding-top:15px;padding-bottom:15px}
+ #app[data-workspace=crews] .cm-crew-head{margin-bottom:12px}
+ #app[data-workspace=crews] .cm-detail-section+.cm-detail-section{margin-top:14px}
+ #app[data-workspace=crews] .cm-subhead{margin-bottom:7px}
+ #app[data-workspace=crews] .cm-latest{padding-top:11px;padding-bottom:11px}
+}

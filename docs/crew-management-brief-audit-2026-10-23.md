@@ -1,6 +1,6 @@
 # Crew Management — implementation and acceptance kit
 
-Candidate release: **1.2.0**. Scope: usable manual crew management, the existing
+Publication release: **1.2.3**. Scope: usable manual crew management, the existing
 milestone editor, and the newly requested lightweight Projects task mirror.
 Repository publication and Creator installation are separate. **PMP leaves
 Creator promotion to the user.** Native outcomes are recorded by the installer in
@@ -9,11 +9,32 @@ Creator promotion to the user.** Native outcomes are recorded by the installer i
 release verification material. This document does not infer native success from
 isolated tests.
 
+Historical verified release 1.2.0, commit
+`b64591c4eabbc94934b6a26837b8d1b451032103`, reached main and Production. That merge
+preserved concurrent main changes from
+`e4b740ff`, and full merged validation passed.
+[CI succeeded](https://github.com/rbelliveau-wbw/land-master/actions/runs/39977572496)
+and [Pages deployment succeeded](https://github.com/rbelliveau-wbw/land-master/actions/runs/39977572515).
+This publishes widget assets; it does not publish Creator changes or prove live
+new-widget CRUD.
+
+The final immutable **1.2.3** release is ready for publication.
+Local 1.2.1 and 1.2.2 drafts will not be published. The final candidate includes
+the refresh hint and short-height spacing/subtitle correction; fonts and control
+sizes stay readable. It preserves concurrent main changes from `21ef0b75`
+(Land Master 8.17.3 / Contracts 1.62.36). Final full merged validation passed with
+exit 0, the Pages build passed for 33 paths, and Creator packaging passed.
+Final full merged validation 63957 passed after the bounded DirectValidate
+refinement; the earlier 9637 pass remains history. The 1.2.3 widget is unchanged.
+Development and Production mappings are 1.2.3 in this publication. CI, Pages and
+the presentation smoke check still await live 1.2.3 assets; their future success
+is not claimed here.
+
 ## Current native evidence
 
 Development `crewLocationsRead` and `crewLocationsWidget` were saved and reopened.
 The final reopened Widget and Crew_Assignment validation snapshots now pass all
-**9 backend groups**, including the native formatter guard checks. The Widget's
+**11 focused backend groups**, including the native formatter and schedule guard checks. The Widget's
 final-refinement resave is complete. Native validation workflow names are
 `Crew_on_validate`, `Crew_Assignment_on_valida` and
 `Task_Schedule_mirror_guar`; the longer repository source names are retained in
@@ -32,11 +53,53 @@ unconfigured.
 The existing owner's Development `User_Access` record
 `4410926000003608006` now has `Manage_Crew_Assignments=true`, saved through the
 native form with a success toast. No other permission was changed in this step.
-**Live crew CRUD is still unverified:** the direct Crew form and All_Crews report
-remain inaccessible even to the owner with preview identity MySelf. That access
-problem is under investigation. No native create/edit/reactivate/assignment-save
-pass or broader profile-rights change is claimed. Full repository validation
-passed; Creator promotion remains the user's step under PMP.
+The distinct Production owner record `4410926000004465004` also had only
+Manage_Crew_Assignments enabled. Its reopened form confirms View Crew and Edit
+Milestones true, Edit Task Dates false, and Manage Crew true. These are data
+permission changes; the Creator application has not been promoted.
+The earlier owner-preview access problem resolved after a full owner Development
+reload. **Actual 1.2.0 Development widget CRUD passed:** create, edit name/color,
+deactivate/reactivate, add dated work, reassign the same assignment and Refresh.
+Inactive crews retained dated work and disabled Assign work. The actual phase
+picker visibly locked protected phases. No broader profile-rights change was
+needed and no real milestone dates were changed during these checks.
+
+| Development native test record | Verified result |
+| --- | --- |
+| Crew `4410926000005393014` / `TEST-DEV-1023` | Name changed to `TEST Development Crew — edited`; badge `#FFFFFF`; deactivated and reactivated |
+| Crew `4410926000005393018` / `TEST-DEV-B-1023` | Created through the actual widget |
+| Assignment `4410926000005393016` | Created for Crew A / Cameron01 / 10/23/2026, then reassigned to Crew B / AAA Springs01 / 10/24/2026; same ID and exact corrected values remained after Refresh |
+
+These Development test records remain. The earlier three Production QA crews
+also remain. The intentionally invalid native `MANUAL_QA` / non-UUID create was
+rejected with no row created; two earlier preparation failures likewise created
+no rows. Positive widget verification is separate from that negative guard test.
+Production native behavior still awaits the user's Creator promotion under PMP.
+
+`crewLocationsValidate` was saved and reopened with all seven formatter-sensitive
+mixed guards rewritten. The captured checks now cover milestones without task
+source fields, single-record table/duration/drag changes, duration anchors and
+arrow eligibility. The existing canonical timestamp ABA protection is retained.
+The captured management/schedule checks test actual reopened Crew, Assignment, Widget, Read
+and Validate snapshots as well as source behavior.
+
+A final bounded DirectValidate audit replaced a stale local snapshot with a fresh
+live capture. The actual live function already had canonical prepared/saving and
+exact nested-target checks; no live bypass is claimed. Three remaining mixed
+permission/past-date guard families were staged for formatter resilience without
+changing rules. The reopened 5,199-character snapshot has zero mixed lines. The
+eleventh focused backend group passes against it, and 24 scheduling groups pass.
+Include `crewLocationsDirectValidate` in Creator promotion; fresh native-before
+and installed snapshots preserve this distinction.
+
+Native empty-report handling was also corrected: the app returned `9220` with
+HTTP 400 for an empty report and `9280` with HTTP 400 for a scoped lookup with no
+match. Only their known empty envelopes are accepted; nonempty data, error flags,
+`success:false`, permission failures and unrelated statuses remain failures.
+`9280` requires an actual nonblank criterion. The official
+[Creator API v2.1 status codes](https://www.zoho.com/creator/help/api/v2.1/status-codes.html)
+define the two empty outcomes; the observed HTTP 400 variant for `9220` was
+verified in the native application.
 
 ## Daily workflow
 
@@ -70,6 +133,7 @@ The installed forms and verified reports are reused:
 | `User_Access` | Existing installed `View_Crew_Locations` and `Manage_Crew_Assignments` checks; no implicit rights from another module |
 | `crewLocationsWidget` | Paginated management reads; validate and prepare one record; explicit read-only recovery |
 | `crewLocationsRead` | Extend caller-scoped report allowlist to the two verified Crew reports |
+| `crewLocationsValidate` | Preserve milestone/task separation and staged single-record, duration, arrow and canonical timestamp conflict guards through native formatting |
 | `Crew_on_validate` | Created/edited On Validate: rights, native target scope, code/source immutability, color and source validation |
 | `Crew_Assignment_on_validate` | Created/edited On Validate: rights, exact manual lineage, source immutability, active target crew, scoped old/new phases and both status locks |
 
@@ -105,6 +169,13 @@ booleans and nested conditions. The backend checks also inspect the reopened
 native snapshots and evaluate their recorded guard predicates against empty,
 denied and contradictory native responses. A repository-source pass alone is
 insufficient evidence that the native formatter preserved those guards.
+
+The user promotes the complete pending Creator package: `crewLocationsRead`,
+`crewLocationsWidget`, `crewLocationsConfig`, `crewLocationsValidate`,
+`crewLocationsDirectValidate`, the native
+Crew/Assignment validation workflows, Task_Schedule fields and mirror guard,
+All_Task_Schedules web layout, existing Crew report exposure and the registered
+Crew page/widget changes. Task source ingestion and task writes stay disabled.
 
 ## Original brief acceptance matrix
 
@@ -199,17 +270,27 @@ The final rendered management run passed **17 groups** in the root-controlled
 browser, including native acknowledgement-envelope ambiguity, plain returned and
 thrown native 2897 denial, caller-scope/field failures, independent pagination,
 legacy-service promotion gating and visible white crew badges. The scheduling
-geometry run passed **23 checks at each of the four desktop sizes**. Management
-geometry is recorded separately after its four-size rerun; the first 1250×600
-pass found an outdated test expectation for the new-crew initial focus, which was
-corrected to the required code field. No geometry check writes native records.
+geometry passed **23 checks at four sizes**. Final management geometry passed
+**24 checks at five sizes**: 1250×564, 1250×600, 1366×768, 1440×900 and 1920×1080.
+The new compact case selects a crew with actual fixture latest/future work and
+requires its first upcoming assignment row to be fully visible. The artificial
+inner fixture warning is hidden only for geometry; the outer harness remains
+clearly isolated. No geometry check writes native records.
+The existing scheduling browser suite also passed **21 groups** after its nested
+unavailable-source fixture was changed to open the schedule workspace before
+exercising Clear and Reset. The widget source and immutable release were not
+changed by that fixture correction.
 
-The final `npm run validate` passed, including all nine backend groups. Required
-release gates remain `npm run validate` and `npm run build:pages`, then
-immutable release creation, main/Production environment mapping, CI and Pages
-monitoring under PMP. Use actual native Development compile/save evidence for
-Creator changes and leave their promotion to the user. Native create/edit and
-restricted-user tests must be reported separately from isolated browser checks.
+Final full merged `npm run validate` passed with exit 0 (63957) after the native
+fixes, including all eleven focused backend groups. `npm run build:pages` passed for 33
+paths and Creator packaging passed. The latest source management browser run
+passed 17 groups; the schedule run passed 21. Main/Production publication maps
+1.2.3; CI/Pages confirmation and its presentation smoke check remain pending.
+Native Development CRUD was proven in the actual 1.2.0 widget and is recorded
+separately from the presentation follow-up. Remaining native steps are the user's
+Creator application promotion and optional verified external task-source setup.
+The previous 9637 pass remains historical; final 63957 includes the completed
+DirectValidate hardening and its eleventh focused backend group.
 
 Rollback maps the widget to **1.1.4**. Retain crew and assignment records rather
 than delete them during rollback. Keep the exact removal inventory, existing

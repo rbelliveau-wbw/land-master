@@ -54,22 +54,29 @@ string crewLocationsWidget(string payload)
 						detailed:true
 						connection:"zoho_creator_connection"
 					];
-					pageBody = page.get("responseText").toString().toMap(); pageCode = ifnull(pageBody.get("code"),"").toString(); pageRows = List();
-					pageHttp = page.get("responseCode"); pageData = pageBody.get("data");
-					// Creator returns native 3100 No Records as HTTP 404. Only that
-					// exact empty response is an empty report; other failures stay closed.
+					pageHttp = page.get("responseCode"); safeHttp = "missing"; safeCode = "missing";
+					if(ifnull(pageHttp,"").toString().matches("[0-9]{3}")) { safeHttp = pageHttp.toString(); }
+					try { pageBody = page.get("responseText").toString().toMap(); }
+					catch(pageParseError) { response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ")."); return response.toString(); }
+					pageCode = ifnull(pageBody.get("code"),"").toString(); pageRows = List();
+					if(pageCode.matches("[0-9]+")) { safeCode = pageCode; }
+					pageData = pageBody.get("data");
+					// Native empty reports use 3100/404 or v2.1 9220/200 or 400.
+					// Accept only the exact empty envelope/status pair, never an error
+					// contradiction or populated response. All other failures stay closed.
 					emptyData = false;
 					if(pageData == null) { emptyData = true; }
 					else if(pageData.toString() == "[]") { emptyData = true; }
 					validHttp = false;
 					if(pageHttp >= 200 && pageHttp < 300) { validHttp = true; }
-					emptyHttp = validHttp;
-					if(pageHttp == 404) { emptyHttp = true; }
-					emptyPage = pageCode == "3100" && emptyData && pageBody.get("error") == null && emptyHttp;
+					emptyHttp = false;
+					if(pageCode == "3100") { emptyHttp = validHttp; if(pageHttp == 404) { emptyHttp = true; } }
+					if(pageCode == "9220") { if(pageHttp == 200) { emptyHttp = true; } if(pageHttp == 400) { emptyHttp = true; } }
+					emptyPage = emptyData && pageBody.get("error") == null && pageBody.get("success") != false && emptyHttp;
 					invalidHttp = !validHttp;
-					if(invalidHttp && !emptyPage) { response.put("message","Native report access was not confirmed for " + reportName + "."); return response.toString(); }
+					if(invalidHttp && !emptyPage) { response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ")."); return response.toString(); }
 					if(pageCode == "3000" && pageData != null && pageBody.get("error") == null && pageBody.get("success") != false) { pageRows = pageData; }
-					else if(!emptyPage) { response.put("message","Creator did not return readable " + reportName + " records."); return response.toString(); }
+					else if(!emptyPage) { response.put("message","Creator did not return readable " + reportName + " records (HTTP " + safeHttp + ", Creator " + safeCode + ")."); return response.toString(); }
 					pageHeaders = page.get("responseHeader"); nextToken = "";
 					if(pageHeaders != null) { for each headerName in pageHeaders.keys() { if(headerName.toLowerCase() == "record_cursor") { nextToken = ifnull(pageHeaders.get(headerName),"").toString(); } } }
 					if(nextToken != "") { if(nextToken == token) { response.put("message","Creator repeated a crew report cursor."); return response.toString(); } nextCursor.put(source,nextToken); complete = false; }

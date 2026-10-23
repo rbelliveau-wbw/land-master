@@ -121,13 +121,31 @@ string crewLocationsWidget(string payload)
 						detailed:true
 						connection:"zoho_creator_connection"
 					];
-					pageBody = page.get("responseText").toString().toMap();
+					pageHttp = page.get("responseCode");
+					safeHttp = "missing";
+					safeCode = "missing";
+					if(ifnull(pageHttp,"").toString().matches("[0-9]{3}"))
+					{
+						safeHttp = pageHttp.toString();
+					}
+					try
+					{
+						pageBody = page.get("responseText").toString().toMap();
+					}					catch (pageParseError)
+					{
+						response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+						return response.toString();
+					}
 					pageCode = ifnull(pageBody.get("code"),"").toString();
 					pageRows = List();
-					pageHttp = page.get("responseCode");
+					if(pageCode.matches("[0-9]+"))
+					{
+						safeCode = pageCode;
+					}
 					pageData = pageBody.get("data");
-					// Creator returns native 3100 No Records as HTTP 404. Only that
-					// exact empty response is an empty report; other failures stay closed.
+					// Native empty reports use 3100/404 or v2.1 9220/200 or 400.
+					// Accept only the exact empty envelope/status pair, never an error
+					// contradiction or populated response. All other failures stay closed.
 					emptyData = false;
 					if(pageData == null)
 					{
@@ -142,16 +160,31 @@ string crewLocationsWidget(string payload)
 					{
 						validHttp = true;
 					}
-					emptyHttp = validHttp;
-					if(pageHttp == 404)
+					emptyHttp = false;
+					if(pageCode == "3100")
 					{
-						emptyHttp = true;
+						emptyHttp = validHttp;
+						if(pageHttp == 404)
+						{
+							emptyHttp = true;
+						}
 					}
-					emptyPage = pageCode == "3100" && emptyData && pageBody.get("error") == null && emptyHttp;
+					if(pageCode == "9220")
+					{
+						if(pageHttp == 200)
+						{
+							emptyHttp = true;
+						}
+						if(pageHttp == 400)
+						{
+							emptyHttp = true;
+						}
+					}
+					emptyPage = emptyData && pageBody.get("error") == null && pageBody.get("success") != false && emptyHttp;
 					invalidHttp = !validHttp;
 					if(invalidHttp && !emptyPage)
 					{
-						response.put("message","Native report access was not confirmed for " + reportName + ".");
+						response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ").");
 						return response.toString();
 					}
 					if(pageCode == "3000" && pageData != null && pageBody.get("error") == null && pageBody.get("success") != false)
@@ -160,7 +193,7 @@ string crewLocationsWidget(string payload)
 					}
 					else if(!emptyPage)
 					{
-						response.put("message","Creator did not return readable " + reportName + " records.");
+						response.put("message","Creator did not return readable " + reportName + " records (HTTP " + safeHttp + ", Creator " + safeCode + ").");
 						return response.toString();
 					}
 					pageHeaders = page.get("responseHeader");
@@ -676,6 +709,8 @@ string crewLocationsWidget(string payload)
 			response.put("message","Unknown schedule action.");
 			return response.toString();
 		}
+		// Both calls bind to the same canonical plan. Preparation commits the phase
+		// lock/audit before the delegated PATCH starts a separate Creator transaction.
 		request.put("action","apply");
 		payload = request.toString();
 		existing = Schedule_Change_Log[Operation_ID == operationId];
@@ -743,7 +778,7 @@ string crewLocationsWidget(string payload)
 				log.Result_JSON=response.toString();
 				log.Execution_Finished=true;
 				log.State="rejected";
-				delete from Crew_Schedule_Lock[Operation_ID == operationId];
+				delete from Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId];
 				return response.toString();
 			}
 			for each  target in plan.get("payloads")
@@ -774,6 +809,8 @@ string crewLocationsWidget(string payload)
 			response.put("message","The prepared phase lock is unavailable.");
 			return response.toString();
 		}
+		// A second unique key prevents two apply calls from executing the same plan.
+		// Do not reclaim a claim after an ambiguous response or an elapsed timeout.
 		try
 		{
 			claimId = insert into Crew_Schedule_Lock

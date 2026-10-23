@@ -14,8 +14,9 @@
   const phase=id=>S.phases.find(p=>p.id===id);
   const crew=id=>S.crews.find(c=>c.id===id);
   const canManage=()=>S.ready&&S.management.enabled===true&&S.permissions.assignments===true;
-  const reason=()=>S.management.reason||(!S.ready?S.unavailableReason||'Crew management is connecting.':S.permissions.assignments!==true?'Crew management is read-only for your account.':'Crew management setup requires Creator promotion.');
+  const reason=()=>S.management.reason||(!S.ready?S.unavailableReason||'Crew management is connecting.':S.permissions.assignments!==true?'Crew management is read-only for your account.':S.management.enabled!==true?'Crew management setup requires Creator promotion.':'');
   const blocked=()=>!canManage()||S.loading||S.saving||!!S.pending;
+  const disabledReason=()=>S.pending?'Check the previous save before making another change.':S.saving?'Saving crew changes…':S.loading?(S.ready?'Refreshing crews…':'Loading crews…'):reason();
   const supportsManagement=cap=>cap?.management?.enabled===true&&cap.management.nativeWrites===true&&cap.management.protocol==='native-validated-v1';
   const safeColor=value=>/^#[a-f\d]{6}$/i.test(value||'')?value:'#49688c';
   function status(text,state='ready'){const node=$('cmStatus');node.textContent=text;node.dataset.state=state;}
@@ -35,8 +36,8 @@
   function clearPrivate(){S.ready=false;S.loading=false;S.crews=[];S.assignments=[];S.phases=[];S.selected='';S.permissions={};S.management={enabled:false};closePicker();if($('cmEditorDialog').open)$('cmEditorDialog').close();S.editor=null;S.pending=null;render();}
   function updateControls(){
     $('cmRefresh').disabled=S.loading||S.saving;
-    $('cmNewCrew').disabled=blocked();$('cmNewCrew').title=blocked()?(S.pending?'Check the previous save before making another change.':reason()):'';
-    document.querySelectorAll('#cmDetail [data-cm-write]').forEach(node=>{const locked=node.dataset.cmLocked||'';node.disabled=blocked()||!!locked;node.title=locked||(blocked()?(S.pending?'Check the previous save first.':reason()):'');});
+    $('cmNewCrew').disabled=blocked();$('cmNewCrew').title=blocked()?disabledReason():'';
+    document.querySelectorAll('#cmDetail [data-cm-write]').forEach(node=>{const locked=node.dataset.cmLocked||'';node.disabled=blocked()||!!locked;node.title=locked||(blocked()?disabledReason():'');});
     if(S.editor){const locked=S.saving||!!S.pending||!canManage();$('cmEditorFields').querySelectorAll('input,button').forEach(node=>{node.disabled=locked;});$('cmSave').disabled=locked;$('cmCancel').disabled=S.saving;$('cmClose').disabled=S.saving;$('cmCheckStatus').hidden=!S.pending;$('cmCheckStatus').disabled=S.saving;}
   }
   function normalizePage(data,all){

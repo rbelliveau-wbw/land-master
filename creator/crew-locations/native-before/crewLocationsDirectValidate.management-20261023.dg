@@ -1,0 +1,157 @@
+string crewLocationsDirectValidate(string rowType, string recordId, date newStart, date newEnd, bool pushUpdate)
+{
+	lockedStatuses = {"completed","sold out","sold out (prev wfy)"};
+	allowedOrigins = {"table","duration","arrow","drag","undo","redo"};
+	try
+	{
+		if(!recordId.matches("[0-9]+"))
+		{
+			return "Invalid source identity.";
+		}
+		if(rowType == "M")
+		{
+			current = Milestones[ID == recordId.toLong()];
+			if(current.count() != 1)
+			{
+				return "Milestone unavailable.";
+			}
+			phaseId = current.Subdivision1.toString();
+			oldStart = current.Start_Date;
+			oldEnd = current.End_Date;
+			if(newStart == oldStart && newEnd == oldEnd && pushUpdate == current.Push_Update)
+			{
+				return "";
+			}
+			if(pushUpdate == true && Crew_Test_Record[Record_Key == "M:" + recordId].count() > 0)
+			{
+				return "Creator-only records cannot be queued for a Projects push.";
+			}
+			if(newStart == oldStart && newEnd == oldEnd)
+			{
+				// Preserve native flag-only administration of untouched records.
+				// A test marker or an active phase operation still blocks unsafe queueing.
+				if(Crew_Schedule_Lock[Phase_Key == phaseId].count() > 0)
+				{
+					return "A scheduling operation is active for this phase.";
+				}
+				return "";
+			}
+		}
+		else if(rowType == "T")
+		{
+			currentTask = Task_Schedule[ID == recordId.toLong()];
+			if(currentTask.count() != 1)
+			{
+				return "Task source unavailable.";
+			}
+			phaseId = currentTask.Subdivision1.toString();
+			oldStart = currentTask.Start_Date;
+			oldEnd = currentTask.End_Date;
+			if(newStart == oldStart && newEnd == oldEnd)
+			{
+				return "";
+			}
+		}
+		else
+		{
+			return "Unknown schedule source.";
+		}
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1 || access.View_Crew_Locations != true || (rowType == "M" && access.Edit_Crew_Milestones != true) || (rowType == "T" && access.Edit_Crew_Task_Dates != true))
+		{
+			return "Schedule editing is not permitted.";
+		}
+		phase = Subdivision[ID == phaseId.toLong()];
+		for each  rawStatus in {phase.Status,phase.Projects_Status}
+		{
+			status = ifnull(rawStatus,"").trim().toLowerCase().replaceAll("\\s+"," ");
+			if(lockedStatuses.contains(status))
+			{
+				return "This phase is locked.";
+			}
+		}
+		if((oldStart != null && oldStart < zoho.currentdate && newStart != oldStart) || (oldEnd != null && oldEnd < zoho.currentdate && newEnd != oldEnd))
+		{
+			return "Existing past dates are protected.";
+		}
+		if((newStart != oldStart && newStart != null && newStart < zoho.currentdate) || (newEnd != oldEnd && newEnd != null && newEnd < zoho.currentdate))
+		{
+			return "Dates cannot move into the past.";
+		}
+		if(newStart != null && newEnd != null && newStart > newEnd)
+		{
+			return "Start must be on or before End.";
+		}
+		lock = Crew_Schedule_Lock[Phase_Key == phaseId && Actor == zoho.loginuser];
+		if(lock.count() != 1)
+		{
+			return "Use the audited Crew Locations editor to change schedule dates.";
+		}
+		entry = Schedule_Change_Log[Operation_ID == lock.Operation_ID];
+		if(entry.State != "prepared" && entry.State != "saving")
+		{
+			return "No active audited change was found.";
+		}
+		if(entry.count() != 1 || entry.Actor != zoho.loginuser)
+		{
+			return "No active audited change was found.";
+		}
+		entryRequest = entry.Request_JSON.toMap();
+		entryChanges = entryRequest.get("changes");
+		for each  change in entryChanges
+		{
+			if(change.get("recordId") == recordId && change.get("type") == rowType)
+			{
+				currentStart = "";
+				currentEnd = "";
+				proposedStart = "";
+				proposedEnd = "";
+				if(oldStart != null)
+				{
+					currentStart = oldStart.toString("yyyy-MM-dd");
+				}
+				if(oldEnd != null)
+				{
+					currentEnd = oldEnd.toString("yyyy-MM-dd");
+				}
+				if(newStart != null)
+				{
+					proposedStart = newStart.toString("yyyy-MM-dd");
+				}
+				if(newEnd != null)
+				{
+					proposedEnd = newEnd.toString("yyyy-MM-dd");
+				}
+				if(currentStart != ifnull(change.get("expected").get("start"),"") || currentEnd != ifnull(change.get("expected").get("end"),""))
+				{
+					return "The schedule changed after validation.";
+				}
+				targetStart = currentStart;
+				targetEnd = currentEnd;
+				if(change.get("fields").get("start") != null)
+				{
+					targetStart = ifnull(change.get("fields").get("start").get("after"),"");
+				}
+				if(change.get("fields").get("end") != null)
+				{
+					targetEnd = ifnull(change.get("fields").get("end").get("after"),"");
+				}
+				if(targetStart == proposedStart && targetEnd == proposedEnd)
+				{
+					if(rowType != "M")
+					{
+						return "";
+					}
+					if(pushUpdate == false)
+					{
+						return "";
+					}
+				}
+			}
+		}
+	}	catch (directError)
+	{
+		return "Schedule validation failed: " + directError.toString();
+	}
+	return "The requested fields do not match an authorized audited operation.";
+}

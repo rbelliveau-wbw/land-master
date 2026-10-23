@@ -29,15 +29,19 @@ string crewLocationsDirectValidate(string rowType,string recordId,date newStart,
 		}
 		else { return "Unknown schedule source."; }
 		access = User_Access[User == zoho.loginuser];
-		if(access.count() != 1 || access.View_Crew_Locations != true || (rowType == "M" && access.Edit_Crew_Milestones != true) || (rowType == "T" && access.Edit_Crew_Task_Dates != true)) { return "Schedule editing is not permitted."; }
+		if(access.count() != 1 || access.View_Crew_Locations != true) { return "Schedule editing is not permitted."; }
+		if(rowType == "M") { if(access.Edit_Crew_Milestones != true) { return "Schedule editing is not permitted."; } }
+		if(rowType == "T") { if(access.Edit_Crew_Task_Dates != true) { return "Schedule editing is not permitted."; } }
 		phase = Subdivision[ID == phaseId.toLong()];
 		for each rawStatus in {phase.Status,phase.Projects_Status}
 		{
 			status = ifnull(rawStatus,"").trim().toLowerCase().replaceAll("\\s+"," ");
 			if(lockedStatuses.contains(status)) { return "This phase is locked."; }
 		}
-		if((oldStart != null && oldStart < zoho.currentdate && newStart != oldStart) || (oldEnd != null && oldEnd < zoho.currentdate && newEnd != oldEnd)) { return "Existing past dates are protected."; }
-		if((newStart != oldStart && newStart != null && newStart < zoho.currentdate) || (newEnd != oldEnd && newEnd != null && newEnd < zoho.currentdate)) { return "Dates cannot move into the past."; }
+		if(oldStart != null && oldStart < zoho.currentdate && newStart != oldStart) { return "Existing past dates are protected."; }
+		if(oldEnd != null && oldEnd < zoho.currentdate && newEnd != oldEnd) { return "Existing past dates are protected."; }
+		if(newStart != oldStart && newStart != null && newStart < zoho.currentdate) { return "Dates cannot move into the past."; }
+		if(newEnd != oldEnd && newEnd != null && newEnd < zoho.currentdate) { return "Dates cannot move into the past."; }
 		if(newStart != null && newEnd != null && newStart > newEnd) { return "Start must be on or before End."; }
 		lock = Crew_Schedule_Lock[(Phase_Key == phaseId) && (Actor == zoho.loginuser)];
 		if(lock.count() != 1) { return "Use the audited Crew Locations editor to change schedule dates."; }

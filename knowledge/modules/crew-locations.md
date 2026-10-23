@@ -1,4 +1,4 @@
-# Crew Management — manual crews and Creator-only scheduling 1.2.0
+# Crew Management — 1.2.3 publication ready
 
 The 1.2.0 change adds actual manual crew management: create a crew, edit its
 optional name/color, deactivate/reactivate it, add dated phase work and correct
@@ -19,6 +19,28 @@ The [implementation and brief audit kit](../../docs/crew-management-brief-audit-
 records the complete acceptance matrix, pending native gates, test entry points
 and rollback to 1.1.4. New Creator source is not a native install or publication
 claim. The installer updates the native evidence files separately.
+
+Historical verified 1.2.0 assets used main commit
+`b64591c4eabbc94934b6a26837b8d1b451032103`; CI/Pages passed. Actual 1.2.0 owner
+Development widget create/edit/color/deactivate/reactivate and dated assignment
+create/reassign/Refresh passed. Records are crews `4410926000005393014`
+(`TEST-DEV-1023`) and `4410926000005393018` (`TEST-DEV-B-1023`), plus assignment
+`4410926000005393016`. The same assignment ID moved from Cameron01 / Crew A /
+10/23/2026 to AAA Springs01 / Crew B / 10/24/2026 and persisted after Refresh.
+Inactive work history, disabled Assign work and visible phase locks passed.
+No real milestone dates changed in this review; these test records remain.
+
+The final immutable 1.2.3 release is ready for publication.
+Unused local 1.2.1/1.2.2 drafts will not publish. Refresh-hint and short-height
+spacing/subtitle changes retain readable fonts/control sizes and pass the final
+geometry checks below. Final full merged validation passed exit 0, Pages build
+passed for 33 paths and Creator packaging passed. This publication includes
+Development/Production 1.2.3 mappings; CI/Pages and live presentation smoke
+confirmation remain pending.
+Concurrent main `21ef0b75` changes are preserved. Creator promotion remains user-owned.
+The complete native package includes Read/Widget/Config/Validate/DirectValidate, Crew/Assignment
+validation workflows, Task_Schedule schema/mirror guard, All_Task_Schedules web
+layout, existing Crew report exposure and the registered Crew page/widget changes.
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -55,15 +77,15 @@ cannot select a backend. Preserve the existing logged-in-user Creator connection
 API registration, native installation and repository deployment are separate.
 The latest PMP instruction leaves Creator promotion to the user.
 
-Release 1.1.4 is deployed on main and Production (asset commit
-`3141c9f84bbeb784de10940dc12021b3a898047d`); CI and Pages succeeded. Production
+Historical 1.1.4 verification used main/Production asset commit
+`3141c9f84bbeb784de10940dc12021b3a898047d`; CI and Pages succeeded. Production
 Milestone_Gantt_View displayed 1.1.4 and Reset showed 38 actual upcoming phases.
 Keyboard activation opened the exact Cameron Rough Cut Start 01/01/2027 editor;
 Escape dismissed it with no date write. The Development Crew_Management owner
 session completed empty native Crew/Assignment SDK reads with crews enabled.
-The remaining user Creator package is two functions (crewLocationsConfig,
-crewLocationsWidget) and two report layouts (All_Crews, Crew_Assignment_Report).
-Populated Production badges await that promotion.
+That earlier package contained two functions and two report layouts. The current
+larger Creator promotion package is listed above; populated Production native
+behavior still depends on the user's promotion.
 
 Development native save and audited Undo both succeeded on October 21.
 The earlier save failure was caused by uncommitted locks being invisible to
@@ -86,7 +108,7 @@ Therefore tasksEnabled/taskWritesVerified remain false. There are no min/max
 rollups, copied milestone dates or arbitrary-task selection.
 
 Native Crew/Crew_Assignment report reads now have their own server configuration
-flag, `nativeCrewReadsEnabled`, prepared true in repository source. It controls
+flag, `nativeCrewReadsEnabled`, enabled and verified in Development. It controls
 capabilities.sources.crews and reuses authenticated client `LMData.readAll`;
 native report/row access and required-field checks remain in force. The open
 Production `All_Crews` report and three clearly labeled QA crew records were
@@ -126,11 +148,30 @@ record ID and actual endpoints. It does not discover a provider endpoint or
 aggregate tasks. Source timestamps must be normalized by the verified adapter.
 These ingestion functions have not been run against live records.
 
-Crew native form validators remain incomplete in the recorded installation:
-`Crew_on_validate` script save was unconfirmed and `Crew_Assignment_on_validate`
-was not installed. Do not infer permission/color/source-key workflow protection
-from the prepared scripts. Native form required/unique fields and existing
-profile/report access remain distinct from these pending custom checks.
+Crew native validators are now saved/reopened in Development as Crew_on_validate
+and Crew_Assignment_on_valida. The task mirror guard is Task_Schedule_mirror_guar.
+All eleven focused backend groups pass against source and actual reopened native snapshots.
+All seven mixed scheduling guards in crewLocationsValidate were staged and
+verified, preserving milestone/task separation, single-record counts, duration
+anchors, arrow eligibility and the existing canonical timestamp ABA guard.
+Fresh DirectValidate capture confirmed the live prepared/saving and exact nested
+target core was already correct; the old local capture was stale. Three mixed
+permission/past-date guard families were staged without rule changes, then saved
+and reopened with zero mixed lines. This is formatter hardening, not a claimed
+live-bypass repair. Final full merged validation 63957 passed with exit 0 after
+this refinement; 9637 remains history. The 1.2.3 widget/release is unchanged.
+Native form/profile/report access and User_Access rights remain independent.
+Only the owner's Manage_Crew_Assignments checkbox was enabled in each environment:
+Development record 4410926000003608006 and distinct Production record
+4410926000004465004. Reopened Production flags are View/Edit Milestones/Manage
+true and Edit Task Dates false. No other checkbox/profile or connection changed;
+these data updates do not promote Creator application changes.
+
+Native empty reads now recognize the observed 9220/HTTP400 report-empty case and
+9280/HTTP400 scoped no-match case. 9280 requires nonblank criteria. Nonempty data,
+error flags, success:false and denied/unrelated HTTP statuses remain failures.
+The [official status-code reference](https://www.zoho.com/creator/help/api/v2.1/status-codes.html)
+defines the two empty outcomes; the 9220 HTTP400 variant was verified natively.
 
 ## Scheduling and UI contract
 
@@ -280,20 +321,32 @@ a verified portal/query or an automated import. Native schema installation,
 data ingestion and reliable stage-date write behavior remain separate evidence
 gates. Blank Start/Due values must remain blank; Completion date is not an endpoint
 substitute. Task source/write flags remain disabled until those inputs are known.
+Six new fields and optional Subdivision1/Stage_Key are installed/reopened in
+Development, and All_Task_Schedules exposes 19 web-layout columns including ID.
+The mirror importer is uninstalled; taskMirrorEnabled/tasksEnabled/taskWritesVerified
+remain false. Schema/report readiness is not a verified source ingestion path.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,
-and `npm run build:pages`. The 1.1.4 rule suite has 24 groups plus five independent
-native-read/import/report contract groups. All 21 normal browser cases and all
-23 desktop geometry checks at each of four sizes passed (1250×600, 1366×768,
-1440×900, 1920×1080). Browser checks
+and `npm run build:pages`. The current suites pass 24 scheduling groups, five
+native-read groups and eleven focused backend groups. Full validation passed after the native
+fixes. The latest management browser run passed 17 groups; the schedule browser
+run passed 21. Schedule geometry passed 23 checks at four sizes. Final management
+geometry passed 24 checks at 1250×564, 1250×600, 1366×768, 1440×900 and 1920×1080.
+The compact check selects actual fixture latest/future work and requires the first
+upcoming assignment row to fit completely. Final 1.2.3 validation, Pages build
+and Creator packaging passed; CI/Pages publication and live presentation smoke
+confirmation are separate pending gates. Browser checks
 exercise actual rendered controls against isolated SDK fixtures; they do not
 compile Deluge or establish native connection/auth behavior. Native Creator
-compilation, restricted-user checks and live save/undo/import checks remain
-installation gates. Detailed evidence is in
+compilation and owner Development crew CRUD are now verified separately.
+Restricted-user breadth is not claimed. Remaining native steps are the user's
+Creator application promotion and optional verified external task-source setup.
+Detailed evidence is in
 [verification.json](../../creator/crew-locations/verification.json).
 
-Release rollback maps the widget to 1.1.3. Full feature rollback restores the previous milestone embed from
+Release rollback maps the widget to 1.1.4 and retains manual crew/assignment records.
+Full feature rollback restores the previous milestone embed from
 `creator/crew-locations/native-before/Milestone_Gantt_View.zml` and disables the
 new Crew APIs/page. Preserve audit logs, markers and unresolved phase locks until
 records are reconciled. Keep outbound guards while markers remain. Version 1.0.6
