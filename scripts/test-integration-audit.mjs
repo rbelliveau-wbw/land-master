@@ -110,7 +110,7 @@ assert.match(ctc,/subdiv\.count\(\) != 1 \|\| subdiv\.Subdivision1 == null/);
 
 // Execute the actual outer catch with a failed export and no nested date error.
 const finalAcceptance=fs.readFileSync('creator/integration-audit/prepared/Sync_Final_Acceptance_Due.action-1.dg','utf8');
-const syncCatch=finalAcceptance.match(/catch\s*\(syncError\)\s*\{([\s\S]*?)\n\}/)[1].replace(/^\s*info .+;\s*$/gm,'');
+const syncCatch=finalAcceptance.match(/catch\s*\(syncError\)\s*\{([\s\S]*?)\n\s*\}/)[1].replace(/^\s*info .+;\s*$/gm,'');
 for(const operationStage of ['exporting Projects','exporting Tasks']){
   assert.throws(()=>vm.runInNewContext(syncCatch,{operationStage,currentProjectCode:'',updatedCount:0,dateError:null,syncError:new Error('Analytics export did not complete; job=fixture')}),
     error=>String(error).includes(operationStage)&&String(error).includes('Analytics export did not complete; job=fixture'));

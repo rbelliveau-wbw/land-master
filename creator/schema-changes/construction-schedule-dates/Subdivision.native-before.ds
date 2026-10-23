@@ -1,0 +1,489 @@
+form Subdivision
+{
+	title 
+    {
+		displayname = "Add Subdivision"
+    	on add = "Create Subdivision"
+   	 	on edit = "Edit Subdivision"
+	}
+	success message = "Subdivision Added Successfully"
+	Section
+	(
+		type = section
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have Project
+	(
+		type = picklist	
+		values  = Project.ID
+    	displayformat = [Project_Name]
+		sortorder = ascending
+	 	row = 1
+	 	column = 1   
+		width = 170px
+	)
+	must have Phase
+	(
+		type = number
+		maxchar = 3
+	 	row = 1
+	 	column = 1   
+		width = small
+	)
+	Subphase
+	(
+    	type = text
+		maxchar = 2
+	 	row = 1
+	 	column = 1   
+		width = small
+	)
+	Generate_Forecasts
+	(
+    	type = checkbox
+		displayname = "Generate Forecasts"
+		initial value = false
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Checking this box will generate 10 years of planning forecasts for this Subdivision, starting with the current year."
+    	]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	must have Company1
+	(
+		type = picklist	
+		displayname = "Development Company"
+		values  = Company.ID
+    	displayformat = [Company_Name + " - " + Account_Number]
+		allow new entries
+		[
+			displayname = "Add Company"
+		]
+		sortorder = ascending
+	 	row = 1
+	 	column = 2   
+		width = 350px
+	)
+	Land_Company
+	(
+		type = picklist	
+		displayname = "Land Company"
+		values  = Company.ID
+    	displayformat = [Facility_ID + " - " + Company_Name + " - " + Account_Number]
+		sortorder = ascending
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	must have Status
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Active","Sold Out","Forecast Placeholder"}
+		initial value = "Active"
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	Division
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Choice 1","Choice 2","Choice 3"}
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	must have Territory
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Bryan/College Station","Corpus Christi","Dallas/Fort Worth","Fort Hood","Houston","North Austin","San Antonio","South Austin","Temple/Belton","Waco"}
+		sortorder = ascending
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	must have City
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Bartlett","Killeen","Granger","Caldwell","Austin","Temple","Waco","Bryan","Belton","Bruceville-Eddy","Copperas Cove","Seguin","Harker Heights","Taylor","New Braunfels","Jarrell","Troy","Nolanville","Robinson","Salado","Pflugerville","San Antonio","Georgetown","Lorena","Addison","Balch Springs","Carrollton","Cedar Hill","Cockrell Hill","Combine","Coppell","Dallas","DeSoto","Duncanville","Farmers Branch","Ferris","Garland","Glenn Heights","Grand Prairie","Grapevine","Highland Park","Hutchins","Irving","Lancaster","Lewisville","Mesquite","Ovilla","Richardson","Rowlett","Sachse","Seagoville","Sunnyvale","University Park","Wilmer","Wylie","League City","Pasadena","Pearland","Sugar Land","Conroe","Katy","Houston","Denton","Sherman","Westminster","Anna","Crandall","Midlothian","Celina","Van Alstyne","Greenville","Princeton","Corsicana","Waxahachie","Prosper","Cresson"}
+		sortorder = ascending
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	must have County
+	(
+		type = picklist
+		maxchar = 100
+		values = {"Bell","Navarro","Bexar","Burleson","McLennan","Falls","Brazos","Williamson","Coryell","Guadalupe","Comal","Travis","Harris","Grayson","Collin","Tarrant","Johnson","Kaufman","Ellis","Denton","Hunt","Dallas","Cooke"}
+		sortorder = ascending
+	 	row = 1
+	 	column = 2   
+		width = medium
+	)
+	Builders
+	(
+		type = list	
+		values  = Builder.ID
+    	displayformat = [Builder_Name]
+		sortorder = ascending
+		height = 60px
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Select all Builders with contractual agreements within this Subdivision. Upon saving, Takedown Schedules will be created for the Builders selected for this Subdivision."
+    	]
+	 	row = 1
+	 	column = 3   
+		width = large
+	)
+	Property_Used
+	(
+		type = list	
+		displayname = "Property Used"
+		values  = Property.ID
+    	bidirectional = Subdivisions
+    	displayformat = [Common_Name]
+		sortorder = ascending
+		height = 60px
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Select the Properties this Subdivision was created from."
+    	]
+	 	row = 1
+	 	column = 3   
+		width = medium
+	)
+	Unlock
+	(
+    	type = checkbox
+		initial value = false
+		private = true
+	 	row = 1
+	 	column = 3   
+		width = medium
+	)
+	External_System_Mapping
+	(
+		type = grid
+		displayname = "External System Mapping"
+		values  = External_System_Mapping.ID
+    	bidirectional = Subdivision1
+		auto width = false
+	 	row = 2
+	 	column = 1   
+		width = medium
+	)
+	Additional_Items
+	(
+		type = grid
+		displayname = "Additional Items"
+		values  = Additional_Items.ID
+    	bidirectional = Subdivision1
+	 	row = 3
+	 	column = 1   
+		width = medium
+	)
+	Milestones
+	(
+		type = grid
+		values  = Milestones.ID
+    	bidirectional = Subdivision1
+		sorttype = fieldbased
+		sort by
+		(
+			Start_Date ascending
+		)
+	 	row = 4
+	 	column = 1   
+		width = medium
+	)
+	Budget_Data
+	(
+		type = section
+		displayname = "Budget Data"
+		visibility = true
+	 	row = 5
+	 	column = 0   
+		width = medium
+	)
+	plain2
+	(
+    	type = plaintext
+		value = "<div style=\"border-bottom: 1px dashed black; background-color: rgb(244, 246, 249); text-align: center\"><b><span class=\"size\" style=\"font-size: 18px\">Markups </span> </b> <br /></div>"
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Engineering_Markup
+	(
+    	type = percentage
+		displayname = "Engineering Markup"
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Engineering_Sub_Markup
+	(
+    	type = percentage
+		displayname = "Engineering Sub Markup"
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Construction_Markup
+	(
+    	type = percentage
+		displayname = "Construction Markup"
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Construction_Sub_Markup
+	(
+    	type = percentage
+		displayname = "Construction Sub Markup"
+	 	row = 5
+	 	column = 1   
+		width = medium
+	)
+	Override
+	(
+    	type = checkbox
+		initial value = false
+	 	row = 5
+	 	column = 2   
+		width = medium
+	)
+	Capital_Cost
+	(
+    	type = percentage
+		displayname = "Capital Cost"
+	 	row = 5
+	 	column = 2   
+		width = medium
+	)
+	Points
+	(
+    	type = percentage
+	 	row = 5
+	 	column = 2   
+		width = medium
+	)
+	Admin_Cost
+	(
+    	type = percentage
+		displayname = "Admin Cost"
+	 	row = 5
+	 	column = 2   
+		width = medium
+	)
+	Profit_Share
+	(
+    	type = percentage
+		displayname = "Profit Share"
+	 	row = 5
+	 	column = 2   
+		width = medium
+	)
+	Zoho_Projects_Data
+	(
+		type = section
+		displayname = "Zoho Projects Data"
+		visibility = true
+	 	row = 6
+	 	column = 0   
+		width = medium
+	)
+	Projects_Status
+	(
+    	type = text
+		displayname = "Projects Status"
+	 	row = 6
+	 	column = 1   
+		width = medium
+	)
+	Acres
+	(
+		type = decimal
+	 	row = 6
+	 	column = 1   
+		width = medium
+	)
+	Lot_Total_Residential
+	(
+		type = number
+		displayname = "Lot Total - Residential"
+	 	row = 6
+	 	column = 2   
+		width = medium
+	)
+	Project_ID
+	(
+    	type = text
+		displayname = "Project ID"
+	 	row = 6
+	 	column = 2   
+		width = medium
+	)
+	Equiv_LF_of_Street
+	(
+		type = decimal
+		displayname = "Equiv. LF of Street"
+	 	row = 6
+	 	column = 3   
+		width = medium
+	)
+	Final_Acceptance_Due_Date
+	(
+    	type = date
+		displayname = "Final Acceptance Due Date"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 6
+	 	column = 3   
+		width = medium
+	)
+	Auto_Generated_Fields
+	(
+		type = section
+		displayname = "Auto-Generated Fields"
+		visibility = true
+	 	row = 7
+	 	column = 0   
+		width = medium
+	)
+	must have unique Subdivision_Code
+	(
+    	type = text
+		displayname = "Subdivision Code"
+		maxchar = 10
+	 	row = 7
+	 	column = 1   
+		width = medium
+	)
+	Total_Lots
+	(
+		type = number
+		displayname = "Total Lots"
+		maxchar = 5
+    	description
+    	[
+    		type = tooltip
+    	 	message = "This field sums all Lot records that belong to this subdivision record, any value manually placed here will be overwritten."
+    	]
+	 	row = 7
+	 	column = 1   
+		width = medium
+	)
+	Lots_Sold
+	(
+		type = number
+		displayname = "Lots Sold"
+		maxchar = 5
+    	description
+    	[
+    		type = tooltip
+    	 	message = "This field sums all Lot records that belong to this subdivision record that are in status Sold, any value manually placed here will be overwritten."
+    	]
+	 	row = 7
+	 	column = 1   
+		width = medium
+	)
+	Unforecasted_Lots
+	(
+		type = number
+		displayname = "Unforecasted Lots"
+    	description
+    	[
+    		type = tooltip
+    	 	message = "Totals Lots - Sold Lots - (Current + Future forecasted Lots)"
+    	]
+	 	row = 7
+	 	column = 1   
+		width = medium
+	)
+	must have unique Subdivision_Name
+	(
+    	type = text
+		displayname = "Subdivision Name"
+		maxchar = 50
+	 	row = 7
+	 	column = 2   
+		width = medium
+	)
+	Eng_Sold_Out_Email_Sent
+	(
+    	type = checkbox
+		displayname = "Eng. Sold-Out Email Sent"
+		initial value = false
+	 	row = 7
+	 	column = 2   
+		width = medium
+	)
+	Last_Sold_Date
+	(
+    	type = date
+		displayname = "Last Sold/Sold Out Date"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 7
+	 	column = 2   
+		width = medium
+	)
+	Company_Name
+	(
+    	type = text
+		displayname = "Company Name"
+		maxchar = 150
+	 	row = 7
+	 	column = 3   
+		width = medium
+	)
+	Account_Number
+	(
+    	type = text
+		displayname = "Account Number"
+		maxchar = 50
+	 	row = 7
+	 	column = 3   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Add"
+			)
+			reset
+			(
+   				type = reset
+   				displayname = "Reset"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

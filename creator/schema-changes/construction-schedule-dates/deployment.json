@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-23",
+  "form": "Subdivision",
+  "report": "All_Subdivisions",
+  "fields": [
+    {
+      "link_name": "CP_Release_Goal",
+      "display_name": "CP Release Goal",
+      "type": "date",
+      "mandatory": false,
+      "section": "Zoho Projects Data"
+    },
+    {
+      "link_name": "CP_Release_Estimate",
+      "display_name": "CP Release Estimate",
+      "type": "date",
+      "mandatory": false,
+      "section": "Zoho Projects Data"
+    },
+    {
+      "link_name": "Construction_Start_Goal",
+      "display_name": "Construction Start Goal",
+      "type": "date",
+      "mandatory": false,
+      "section": "Zoho Projects Data"
+    },
+    {
+      "link_name": "Construction_Start_Estimate",
+      "display_name": "Construction Start Estimate",
+      "type": "date",
+      "mandatory": false,
+      "section": "Zoho Projects Data"
+    }
+  ],
+  "workflow": {
+    "link_name": "Sync_Final_Acceptance_Due",
+    "display_name": "Zoho Projects - Sync Subdivision Schedule Dates",
+    "frequency": "daily",
+    "start": "Settings.Next_Workflow_Run",
+    "time_zone": "America/Chicago",
+    "url": "https://creator.zoho.com/appbuilder/wbdevelopment/land-master/workflowbuilder/Sync_Final_Acceptance_Due/edit"
+  },
+  "development": {
+    "form": "Saved and reopened after reload",
+    "report": "Saved; four fields exposed in columns and quickview",
+    "workflow": "Optimized revision saved, compiled, reopened and executed successfully; 17 Projects / 17 acceptance Tasks / 14 matched Subdivisions; zero conflicts",
+    "automatic_schedules": "Suspended by existing Development environment setting",
+    "manual_checks": {
+      "initial": "Failed: captured month-name format and statement limit; replaced",
+      "scoped": "Failed: M filtered export timeout; replaced",
+      "optimized": "Executed Successfully"
+    },
+    "final_source": "Reopened workflow action and Stage Development-side publication preview confirmed final native distinct, dryRun=false, no diagnostic scope or long Tasks ID criteria",
+    "full_source_diagnostic": {
+      "status": "Executed Successfully",
+      "project_codes": 325,
+      "projects": 325,
+      "acceptance_tasks": 250,
+      "business_writes": false,
+      "audit_writes": false,
+      "destination_scope": "Native Development only"
+    }
+  },
+  "stage": {
+    "status": "Published",
+    "version": "9.119",
+    "components": [
+      "Sync_Final_Acceptance_Due"
+    ]
+  },
+  "production": {
+    "status": "Published",
+    "version": "9.119",
+    "components": [
+      "Sync_Final_Acceptance_Due"
+    ],
+    "manual_data_sync": "Not run; daily schedule retained"
+  },
+  "widget": {
+    "contracts": {
+      "previous": "1.62.34",
+      "candidate": "1.62.35"
+    },
+    "land_master": {
+      "previous": "8.17.1",
+      "candidate": "8.17.2"
+    },
+    "status": "Main and Production mappings pushed; CI and Pages passed; desktop Production matrix and read-only Zoho Projects tab inspected"
+  },
+  "production_fields": "All four new fields visible in native Production All_Subdivisions report before final workflow promotion; 346 records",
+  "native_deduplication": {
+    "fixture_maps": 8,
+    "distinct_fixture_maps": 6,
+    "task_query_raw_rows": 30131,
+    "task_query_distinct_projected_rows": 262
+  }
+}

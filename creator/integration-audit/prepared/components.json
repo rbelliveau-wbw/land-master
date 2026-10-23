@@ -85,7 +85,7 @@
   },
   {
     "name": "Sync_Final_Acceptance_Due",
-    "display": "Sync Final Acceptance Due Date - Subdivision",
+    "display": "Zoho Projects - Sync Subdivision Schedule Dates",
     "actions": 1,
     "source": "creator/integration-audit/prepared/Sync_Final_Acceptance_Due.ds"
   },

@@ -224,15 +224,20 @@ for item in inventory:
     for i,(start,end,body) in enumerate(actions):
         # All actions of an external-dependent workflow receive their own truthful execution entry.
         display=item['display_name']+(f' (action {i+1}/{len(actions)})' if len(actions)>1 else '')
-        updated=patch_body(body,item['link_name'],display,item.get('analytics',False))
+        # Reviewed native replacements stay canonical across audit regeneration.
+        override=BASE.parent/'overrides'/f"{item['link_name']}.action-{i+1}.dg"
+        updated=override.read_text(encoding='utf-8') if override.exists() else patch_body(body,item['link_name'],display,item.get('analytics',False))
         target=OUT/f"{item['link_name']}.action-{i+1}.dg"
         target.write_text(updated,encoding='utf-8')
         patches.append((start,end,'\n'+textwrap.indent(updated,'\t\t\t')+'\t\t'))
     if actions:
         for start,end,value in reversed(patches): source=source[:start]+value+source[end:]
+    if item['link_name'] == 'Sync_Final_Acceptance_Due':
+        source=source.replace('as "Sync Final Acceptance Due Date - Subdivision"','as "Zoho Projects - Sync Subdivision Schedule Dates"',1)
+        source='\n'.join(line.rstrip() for line in source.splitlines())+'\n'
     target=OUT/f"{item['link_name']}.ds"
     target.write_text(source,encoding='utf-8')
-    prepared.append({'name':item['link_name'],'display':item['display_name'],'actions':len(patches),'source':target.relative_to(ROOT).as_posix()})
+    prepared.append({'name':item['link_name'],'display':'Zoho Projects - Sync Subdivision Schedule Dates' if item['link_name']=='Sync_Final_Acceptance_Due' else item['display_name'],'actions':len(patches),'source':target.relative_to(ROOT).as_posix()})
 (OUT/'components.json').write_text(json.dumps(prepared,indent=2)+'\n')
 for name,system,response in [('PF_AI_Review','OpenAI','resp'),('Plat_AI_Ingest','OpenAI','resp'),('PF_Build_LOI_Document','Zoho Writer','result')]:
     source=(BASE/'functions'/f'{name}.dg').read_text(encoding='utf-8')

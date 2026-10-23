@@ -10,7 +10,7 @@ BASE=ROOT/'creator/integration-audit/baseline'
 OUT=ROOT/'creator/integration-audit/prepared'
 def tokens(source):
     return ''.join(token for token in re.findall(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|//[^\n]*|/\*[\s\S]*?\*/|\s+|.',source) if not token.isspace() and not token.startswith(('//','/*')))
-record_names='budgimpItem|equip|ms|subdiv|existingItem|budgCat|budG|input'
+record_names='budgimpItem|equip|ms|subdiv|scheduleSubdivision|existingItem|budgCat|budG|input'
 def native_assignments(source):
     return [tokens(m[0]) for m in re.finditer(rf'(?m)^\s*(?:{record_names})\.\w+\s*=(?!=)[^\n]*;',source)]
 def inserts(source):
@@ -20,6 +20,20 @@ for component in components:
     name=component['name']
     old=(BASE/f'{name}.ds').read_text(encoding='utf-8')
     new=(OUT/f'{name}.ds').read_text(encoding='utf-8')
+    preservation_new=new
+    if name=='Sync_Final_Acceptance_Due':
+        # October 23: only the four requested schedule fields and their two query
+        # identity columns are additive. Existing acceptance assignments/columns
+        # and the native schedule must still compare exactly to the baseline.
+        fields={'CP_Release_Goal','CP_Release_Estimate','Construction_Start_Goal','Construction_Start_Estimate'}
+        update=re.search(r'update scheduleSubdivision\s*\[([\s\S]*?)\];',new)
+        assert update, 'Construction dates use one native multi-field update task per eligible subdivision'
+        added=re.findall(r'(?m)^\s*(\w+)\s*=(?!=)',update[1])
+        assert set(added)==fields and len(added)==4
+        preservation_new=new
+        preservation_new=re.sub(r'(?m)^\s*scheduleColumns\.add\("Projects \(Zoho Projects\)\.Project (?:ID|Code)"\);','',preservation_new)
+        assert (BASE.parent/'overrides/Sync_Final_Acceptance_Due.action-1.dg').read_text()==(OUT/'Sync_Final_Acceptance_Due.action-1.dg').read_text()
+        assert 'as "Zoho Projects - Sync Subdivision Schedule Dates"' in new
     if name=='Equipment_Sync_Create_Equ':
         # Explicit October 22 repair exception: the live source has PurchaseDate,
         # and the native destination is a date field. Every other assignment,
@@ -31,11 +45,11 @@ for component in components:
         assert new.count('cols.add("Description");')==1
         assert 'purchaseDateText.toDate("dd/MM/yyyy HH:mm:ss")' in new
         assert 'if(purchaseDateValue != null)' in new
-    assert native_assignments(old)==native_assignments(new),f'{name}: existing native field assignments changed'
+    assert native_assignments(old)==native_assignments(preservation_new),f'{name}: existing native field assignments changed'
     assert inserts(old)==inserts(new),f'{name}: existing insert payload changed'
     for pattern in [r'(?m)^\s*(?:type|start|frequency|time zone|status|form)\s*=\s*[^\n]+',r'\w+\.add\("[^"]+"\);']:
-        assert [tokens(m[0]) for m in re.finditer(pattern,old)]==[tokens(m[0]) for m in re.finditer(pattern,new)],f'{name}: existing scope/schedule/selected columns changed'
-    assert 'thisapp.workflowRunLog(' in new and 'catch(auditError)' in new and 'throw auditError;' in new,name
+        assert [tokens(m[0]) for m in re.finditer(pattern,old)]==[tokens(m[0]) for m in re.finditer(pattern,preservation_new)],f'{name}: existing scope/schedule/selected columns changed'
+    assert 'thisapp.workflowRunLog(' in new and re.search(r'catch\s*\(auditError\)',new) and 'throw auditError;' in new,name
     assert not re.search(r'\}\s*\.contains\(',new), f'{name}: literal method chaining rejected by native compiler'
     if name=='Budgets_Check_HCSS_Budget':
         assert 'if(ms.count()' not in new, 'Destination variable matching must respect identifier boundaries'
@@ -53,7 +67,7 @@ for name in ['PF_AI_Review','Plat_AI_Ingest','PF_Build_LOI_Document']:
     assert re.findall(r'\breturn\s+(?:resp\.toString\(\)|result);',old)==re.findall(r'\breturn\s+(?:resp\.toString\(\)|result);',new),name
     assert new.count('invokeurl')==old.count('invokeurl'),name
     assert 'thisapp.workflowRunLog(' in new,name
-print(f'PASS: {len(components)} workflow components and three functions preserve native assignments, inserts, schedules, source columns, returns and request counts, with only the explicit Equipment purchase-date/duplicate-column repair exception.')
+print(f'PASS: {len(components)} workflow components and three functions preserve native assignments, inserts, schedules, source columns, returns and request counts, with explicit Equipment purchase-date/duplicate-column and four Subdivision schedule-field exceptions.')
 
 # Execute the exact Analytics SQL on the observed split-major shape, credits,
 # boundary exclusions and unmapped jobs. SQLite is a relational fixture here;

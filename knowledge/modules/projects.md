@@ -54,6 +54,16 @@ Project and subdivision schedules, milestone synchronization, forecasts, and the
 
 Known milestone rollups include development/engineering start and submittal, construction plan release/start, HMAC milestones, final acceptance, and estimated completion dates. Verify exact Creator and Zoho Projects field names before modifying integrations.
 
+## Daily Subdivision construction dates — October 23, 2026
+
+The daily `Sync_Final_Acceptance_Due` workflow is displayed as **Zoho Projects -
+Sync Subdivision Schedule Dates**. It retains acceptance date conflict selection
+and adds `CP_Release_Goal`, `CP_Release_Estimate`, `Construction_Start_Goal` and
+`Construction_Start_Estimate` to Subdivision. Construction Request reads those
+persisted fields. The construction start estimate uses the `Excavate & Rough
+Grade` task's Start Date through `Rough Start Date`, matching Budget Module-JK.
+See [sources, missing values, review handling, deployment and rollback](../../docs/subdivision-schedule-dates-2026-10-23.md).
+
 ## Routine success feedback — October 6, 2026
 
 Milestone Gantt retains explicit saves and the complete verified date-range progress/result dialog. Dismissing a fully verified result adds a contextual black confirmation with the actual range count. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
