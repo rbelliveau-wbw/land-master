@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {createContractTestDOM} from './contract-sdk-v2-test-dom.mjs';
 
 const source=fs.readFileSync('widgets/land-master/src/app/widget.html','utf8');
 function section(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);}
@@ -105,3 +106,42 @@ await import('./test-land-master-lazy-data.mjs');
 await import('./test-land-master-create-safety.mjs');
 
 await import('./test-land-master-lookup-labels.mjs');
+
+// Actual Subdivision panel/tab/save functions: synced dates are display-only.
+{
+  const dom=createContractTestDOM(source),writes=[],confirmations=[];
+  const c=vm.createContext({document:dom.document,CFG:{version:'test',tablePageSize:100},OPTS:{},
+    knownLandCount:()=>null,propertyWorkspace:{afterRender(){}},landCreateReviewForEditor:()=>null,
+    allowTableEdit:()=>true,setStatus(){},diag(){},renderCounts(){},showToast(){},closeRecordModal(){},
+    showAppConfirm:(...args)=>confirmations.push(args),
+    updateRecord:async(id,data,report)=>{writes.push({id,data:JSON.parse(JSON.stringify(data)),report});return{code:3000,data:{ID:id}};}
+  });c.window=c;
+  vm.runInContext(fs.readFileSync('widgets/land-master/src/app/land-data.js','utf8'),c);
+  vm.runInContext(section('var S =','function $(id)'),c);
+  function actual(name){return section('function '+name+'(','\nfunction ');}
+  for(const name of ['$', 'esc','asList','lookupId','findIn','toDateInput','toZohoDate','dateText','valText','truthy','brToNl','nlToBr',
+    'typeLabel','F','listForType','recordFor','reportForType','descriptor','lookupOptions','lookupLabel','optionsHTML','fieldHTML','currentEditor','recordTitle',
+    'subdivisionZohoProjectsHTML','tabHTML','panelActionsHTML','renderPanel','panelHasChanges','updatePanelActionState','withDiscardConfirm',
+    'switchRecordTab','inputRaw','normalizedRaw','savePanelRoute','savePanel','inheritSubdivisionTerritory','payloadValue','applyLocalField','landSuccessLabel','errMeta'])vm.runInContext(actual(name),c);
+  const SUB='900719925474099391',OTHER='900719925474099392';
+  const schedule={CP_Release_Goal:'10/26/2026',CP_Release_Estimate:'2026-10-28',Construction_Start_Goal:'03-Nov-2026',Construction_Start_Estimate:'11/05/2026',Final_Acceptance_Due_Date:'2027-03-15'};
+  const row={ID:SUB,Subdivision_Name:'Schedule phase',Subdivision_Code:'S01',Status:'Active',Phase:'1',...schedule};
+  Object.assign(c.S,{subdivisions:[row,{ID:OTHER,Subdivision_Name:'Blank phase'}],editorType:'subdivision',editorId:SUB,editorNew:false,modalOpen:true,modalTab:'zohoProjects'});
+  assert.deepEqual(Array.from(c.descriptor('subdivision',row).tabs,t=>t.label),['Details','Zoho Projects','Milestones','Forecasts','Takedown Schedules','Builder Takedowns','Additional Items','External Mappings']);
+  c.renderPanel();
+  assert.match(dom.node('recordTabs').innerHTML,/data-record-tab="zohoProjects"/);
+  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.fl'),n=>n.textContent),['CP Release Goal','CP Release Estimate','Construction Start Goal','Construction Start Estimate','Final Acceptance Due Date']);
+  assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.readonly-value'),n=>n.textContent),['10/26/2026','10/28/2026','11/03/2026','11/05/2026','03/15/2027']);
+  assert.equal(dom.node('panel').querySelectorAll('input,select,textarea,.pf').length,0,'Zoho dates have no input carriers or serialized field controls');
+  assert.equal(c.panelHasChanges(),false);assert.equal(dom.node('btnPanelSave').disabled,true);c.savePanelRoute();assert.equal(writes.length,0,'Invoking Save from the read-only source tab performs no write');
+  c.S.editorId=OTHER;c.renderPanel();assert.deepEqual(Array.from(dom.node('panel').querySelectorAll('.readonly-value'),n=>n.textContent),Array(5).fill('—'),'A different record with missing fields cannot retain prior dates');
+  c.S.editorId=SUB;c.renderPanel();c.switchRecordTab('details');
+  const phase=dom.node('f_Phase');phase.value='2';c.updatePanelActionState();assert.equal(c.S.panelDirty,true);
+  c.switchRecordTab('zohoProjects');assert.equal(confirmations.length,1);assert.equal(c.S.modalTab,'details','Switching to the source tab retains the existing unsaved-change guard');assert.equal(phase.value,'2');
+  c.savePanelRoute();for(let i=0;i<8;i++)await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(writes,[{id:SUB,data:{Phase:'2'},report:'All_Subdivisions'}],'An ordinary Details save sends only the changed editable field');
+  for(const [field,value]of Object.entries(schedule))assert.equal(row[field],value,'Details save preserves '+field);
+  c.S.editorNew=true;assert.equal(c.descriptor('subdivision',row).tabs.some(t=>t.id==='zohoProjects'),false,'New records do not display synced dates');
+  assert.doesNotMatch(c.tabHTML('project',{},'zohoProjects'),/readonly-value|Read only/,'The source tab is scoped to Subdivision');
+  console.log('PASS Subdivision Zoho Projects: five exact read-only dates, native formats/blanks, record isolation, existing tab/discard behavior, disabled/no-op source Save and unchanged Details-only payload.');
+}

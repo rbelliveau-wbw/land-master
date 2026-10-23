@@ -1,3 +1,23 @@
+## Construction schedule context — October 23, 2026
+
+The New and Edit Construction request sidebar shows a compact date matrix:
+CP Release and Const Start rows, with Goal and Estimate columns. It reads only
+the selected Subdivision's `CP_Release_Goal`, `CP_Release_Estimate`,
+`Construction_Start_Goal` and `Construction_Start_Estimate` Date fields, which
+the daily schedule sync populates. These are read-only context, not copied
+Contract fields or request inputs. Existing date formatting displays MM/dd/yyyy;
+missing values show Unavailable. Subdivision selection refreshes the matrix
+without replacing the request's mounted inputs or draft. The existing complete
+`All_Subdivisions` reads include all fields on startup and Refresh.
+
+Regression coverage in `scripts/test-contract-construction.mjs` checks the native
+all-field read, correct field/cell mapping, switched/cleared subdivisions,
+independent blank cells, request Edit and zero context writes. Existing sidebar,
+overlay and form interaction behavior is reused; dates remain static under the
+shared number-transition policy. Creator deployment must include the new
+Subdivision fields, report exposure and daily sync before dates populate in
+Production. Rollback the hosted widget to 1.62.34 to restore the old sidebar.
+
 ## Archive completed Legal contracts — October 22, 2026
 
 Contract Management 1.62.34 restores Archive/Unarchive for completed Legal
@@ -358,8 +378,9 @@ Task. No new Custom API registration is required: full/lean access functions
 add `constructionEditAll` and `constructionSubmit` to their existing responses.
 
 Creator schema/report/backend publication is separate from the immutable hosted
-widget release. The four CP Release/Construction Start Estimate/Goal source
-fields remain unverified and must not display fabricated dates. See the
+widget release. CP Release/Const Start Goal and Estimate now read the four
+Subdivision date fields documented in the October 23 schedule context above.
+Missing dates remain Unavailable. See the
 [implementation and deployment contract](../../docs/construction-tasks.md),
 [native schema state](../../creator/schema-changes/construction-tasks.json), and
 [schema/permission regression](../../scripts/test-construction-schema.mjs).

@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.1"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.2"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.1"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.1">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.1">
-<script src="searchable-pickers.js?v=8.17.1" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.1">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.1">
-<script src="spreadsheet-import.js?v=8.17.1"></script>
-<script src="lot-import.js?v=8.17.1"></script>
+<script src="property-workspace.js?v=8.17.2"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.2">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.2">
+<script src="searchable-pickers.js?v=8.17.2" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.2">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.2">
+<script src="spreadsheet-import.js?v=8.17.2"></script>
+<script src="lot-import.js?v=8.17.2"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -426,14 +426,14 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.17.1"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.1">
-<script src="interaction-motion.js?v=8.17.1"></script>
-<script src="interaction-surfaces.js?v=8.17.1"></script>
-<script src="number-edit-commit.js?v=8.17.1"></script>
-<script src="number-transitions.js?v=8.17.1"></script>
-<script src="number-surfaces.js?v=8.17.1"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.1">
+<script src="success-feedback.js?v=8.17.2"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.2">
+<script src="interaction-motion.js?v=8.17.2"></script>
+<script src="interaction-surfaces.js?v=8.17.2"></script>
+<script src="number-edit-commit.js?v=8.17.2"></script>
+<script src="number-transitions.js?v=8.17.2"></script>
+<script src="number-surfaces.js?v=8.17.2"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.2">
 </head>
 <body>
 
@@ -597,7 +597,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.1-LAZY-CORE",
+  version: "8.17.2-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -921,7 +921,7 @@ function descriptor(type,rec){
     d.bulk=["County","Land_Type","Subtype","Company1","Seller","Insured","Is_1031","Ag_Exempt","Deed_To","New_Owner","Agree_with_Designation","Purchase_Price","Purchase_Date"];
   } else if(type==="subdivision"){
     d.fields=[F("Subdivision_Name","Subdivision name","ro",rec.Subdivision_Name,{full:1}),F("Subdivision_Code","Subdivision code","ro",rec.Subdivision_Code),F("Status","Status","ro",rec.Status),F("Projects_Status","Projects Status","ro",rec.Projects_Status),F("Project","Project","lookup",lookupId(rec.Project),{lookup:"project"}),F("Phase","Phase","number",rec.Phase),F("Subphase","Subphase","text",rec.Subphase),F("County","County","select",rec.County,{opts:OPTS.subCounty}),F("City","City","select",rec.City,{opts:OPTS.subCity}),F("Division","Division","select",rec.Division,{opts:OPTS.subDivision}),F("Company1","Development company","lookup",lookupId(rec.Company1),{lookup:"company"}),F("Land_Company","Land company","lookup",lookupId(rec.Land_Company),{lookup:"company"}),F("Builders","Builders","multilookup",asList(rec.Builders).map(function(x){return String(x.ID||"");}),{lookup:"builder",full:1}),F("Property_Used","Properties used","multilookup",asList(rec.Property_Used).map(function(x){return String(x.ID||"");}),{lookup:"property",full:1}),F("Generate_Forecasts","Generate forecasts","bool",rec.Generate_Forecasts),F("Acres","Acres (auto)","ro",rec.Acres),F("Lot_Total_Residential","Residential lots (auto)","ro",rec.Lot_Total_Residential),F("Total_Lots","Total lots (auto)","ro",rec.Total_Lots),F("Lots_Sold","Lots sold (auto)","ro",rec.Lots_Sold),F("Unforecasted_Lots","Unforecasted lots (auto)","ro",rec.Unforecasted_Lots),F("Equiv_LF_of_Street","Equivalent LF street","number",rec.Equiv_LF_of_Street),F("Engineering_Markup","Engineering markup","percentage",rec.Engineering_Markup),F("Engineering_Sub_Markup","Engineering subcontract markup","percentage",rec.Engineering_Sub_Markup),F("Construction_Markup","Construction markup","percentage",rec.Construction_Markup),F("Construction_Sub_Markup","Construction subcontract markup","percentage",rec.Construction_Sub_Markup),F("Capital_Cost","Capital cost","percentage",rec.Capital_Cost),F("Points","Points","percentage",rec.Points),F("Admin_Cost","Admin cost","percentage",rec.Admin_Cost),F("Profit_Share","Profit share","percentage",rec.Profit_Share),F("Override","Override","bool",rec.Override),F("Project_ID","Project ID (auto)","ro",rec.Project_ID),F("Company_Name","Company name (auto)","ro",rec.Company_Name),F("Account_Number","Account number (auto)","ro",rec.Account_Number),F("Last_Sold_Date","Last sold date","ro",rec.Last_Sold_Date)];
-    if(!S.editorNew)d.tabs=d.tabs.concat([{id:"milestones",label:"Milestones",count:knownLandCount(['milestones'],function(){return milestonesForSub(rec.ID).length;})},{id:"forecasts",label:"Forecasts",count:knownLandCount(['forecastYears','forecasts'],function(){return forecastYearsForSub(rec.ID).length+forecastsForSub(rec.ID).length;})},{id:"takedowns",label:"Takedown Schedules",count:knownLandCount(['takedownSchedules'],function(){return takedownsForSub(rec.ID).length;})},{id:"builderTakedowns",label:"Builder Takedowns",count:knownLandCount(['builderTakedowns'],function(){return builderTakedownsForSub(rec.ID).length;})},{id:"additionalItems",label:"Additional Items",count:knownLandCount(['additionalItems'],function(){return additionalItemsFor("subdivision",rec.ID).length;})},{id:"externalMappings",label:"External Mappings",count:knownLandCount(['externalMappings'],function(){return externalMappingsForSub(rec.ID).length;})}]);
+    if(!S.editorNew)d.tabs=d.tabs.concat([{id:"zohoProjects",label:"Zoho Projects"},{id:"milestones",label:"Milestones",count:knownLandCount(['milestones'],function(){return milestonesForSub(rec.ID).length;})},{id:"forecasts",label:"Forecasts",count:knownLandCount(['forecastYears','forecasts'],function(){return forecastYearsForSub(rec.ID).length+forecastsForSub(rec.ID).length;})},{id:"takedowns",label:"Takedown Schedules",count:knownLandCount(['takedownSchedules'],function(){return takedownsForSub(rec.ID).length;})},{id:"builderTakedowns",label:"Builder Takedowns",count:knownLandCount(['builderTakedowns'],function(){return builderTakedownsForSub(rec.ID).length;})},{id:"additionalItems",label:"Additional Items",count:knownLandCount(['additionalItems'],function(){return additionalItemsFor("subdivision",rec.ID).length;})},{id:"externalMappings",label:"External Mappings",count:knownLandCount(['externalMappings'],function(){return externalMappingsForSub(rec.ID).length;})}]);
     d.bulk=["Project","Phase","Subphase","County","City","Division","Company1","Land_Company","Generate_Forecasts","Equiv_LF_of_Street","Engineering_Markup","Engineering_Sub_Markup","Construction_Markup","Construction_Sub_Markup","Capital_Cost","Points","Admin_Cost","Profit_Share","Override"];
   } else if(type==="company"){
     d.fields=[F("Company_Name","Company name","text",rec.Company_Name,{full:1}),F("Facility_ID","Facility ID","text",rec.Facility_ID),F("Account_Number","Account number","text",rec.Account_Number),F("EIN","EIN","ein",rec.EIN),F("Proforma","Proforma IDs","ro",asList(rec.Proforma).map(function(x){return x.display_value||x.ID;}).join(", "),{full:1})];
@@ -1086,11 +1086,16 @@ function externalMappingDraftRow(key){var d=S.mappingDraft;if(!d)return null;for
 function externalMappingDraftHasChanges(){var d=S.mappingDraft;if(!d)return false;return d.rows.some(function(r){return r.isNew?!r.removed:r.removed||r.system!==r.originalSystem||r.code!==r.originalCode;});}
 function externalMappingSystemOptions(selected){var h='<option value="">—</option>';OPTS.externalSystem.forEach(function(v){h+='<option value="'+esc(v)+'"'+(v===selected?' selected':'')+'>'+esc(v)+'</option>';});return h;}
 function externalMappingsEditor(subdivisionId){var d=ensureExternalMappingDraft(subdivisionId),visible=d.rows.filter(function(r){return!r.removed||!r.isNew;}),count=d.rows.filter(function(r){return!r.removed;}).length,h='<div class="tab-intro"><h3>External System Mappings</h3><span class="readonly-pill">'+count+' record'+(count===1?'':'s')+'</span><button class="btn primary sm" type="button" data-mapping-add>+ Add</button></div><div class="related-table-wrap"><table class="related-table mapping-editor-table"><thead><tr><th>System</th><th>External Code</th><th>State</th><th>Actions</th></tr></thead><tbody>';if(!visible.length)h+='<tr><td colspan="4"><div class="related-empty">No mapping rows yet. Add a row, then press Save changes.</div></td></tr>';visible.forEach(function(r){var changed=!r.isNew&&(r.system!==r.originalSystem||r.code!==r.originalCode),editing=r.editing||r.isNew;h+='<tr class="'+(r.removed?'mapping-removed':r.isNew?'mapping-new':'')+'" data-mapping-key="'+esc(r.key)+'"><td>'+(editing?'<select class="mapping-draft-input" data-mapping-field="system">'+externalMappingSystemOptions(r.system)+'</select>':esc(valText(r.system)))+'</td><td>'+(editing?'<input class="mapping-draft-input" maxlength="25" data-mapping-field="code" value="'+esc(r.code)+'">':esc(valText(r.code)))+'</td><td><span class="mapping-row-state'+(r.removed?' remove':'')+'">'+(r.removed?'Removed':r.isNew?'New':changed?'Modified':'Saved')+'</span></td><td><div class="related-actions">';if(r.removed)h+='<button class="related-open" type="button" data-mapping-undo>Undo</button>';else{h+='<button class="related-open" type="button" data-mapping-edit>'+(editing&&!r.isNew?'Done':'Edit')+'</button><button class="related-remove" type="button" data-mapping-remove>Remove</button>';}h+='</div></td></tr>';});return h+'</tbody></table></div>';}
+function subdivisionZohoProjectsHTML(rec){
+  var fields=[F('CP_Release_Goal','CP Release Goal','ro',dateText(rec.CP_Release_Goal)),F('CP_Release_Estimate','CP Release Estimate','ro',dateText(rec.CP_Release_Estimate)),F('Construction_Start_Goal','Construction Start Goal','ro',dateText(rec.Construction_Start_Goal)),F('Construction_Start_Estimate','Construction Start Estimate','ro',dateText(rec.Construction_Start_Estimate)),F('Final_Acceptance_Due_Date','Final Acceptance Due Date','ro',dateText(rec.Final_Acceptance_Due_Date),{full:1})];
+  return'<div class="tab-intro"><h3>Zoho Projects</h3><span class="readonly-pill">Read only</span></div><div class="fgrid">'+fields.map(fieldHTML).join('')+'</div>';
+}
 function tabHTML(type,rec,tab){
   if(type==='property'&&tab==='transfers')return propertyTransferHistoryHTML(rec.ID);
   if(tab==='details'&&type==='property')return LMPropertyWorkspace.propertyHTML(descriptor(type,rec).fields,fieldHTML);
   if(tab==='details'&&type==='propertyTransfer')return LMPropertyWorkspace.transferHTML(descriptor(type,rec).fields,fieldHTML,rec,LMPropertyWorkspace.auditHTML);
   if(tab==='details'){var d=descriptor(type,rec),h='<div class="fgrid">';d.fields.forEach(function(f){h+=fieldHTML(f);});return h+'</div>'+(type==='project'?subdivisionSubformHTML():'');}
+  if(type==='subdivision'&&tab==='zohoProjects')return subdivisionZohoProjectsHTML(rec);
   if(type==='subdivision'&&tab==='milestones')return relatedTable('Milestones','milestone',milestonesForSub(rec.ID),[{label:'Milestone',key:'Milestone_Name'},{label:'Start',value:function(r){return dateText(r.Start_Date);}},{label:'End',value:function(r){return dateText(r.End_Date);}},{label:'Sequence',key:'Sequence',num:1}],{showActions:false});
   if(type==='subdivision'&&tab==='forecasts'){var h=relatedTable('Forecast Years','forecastYear',forecastYearsForSub(rec.ID),[{label:'Name',key:'Forecast_Name'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'WFY',key:'Forecast_Year'},{label:'Status',key:'Status'},{label:'Full Year',key:'Full_Year_Forecast',num:1}],{showActions:false});return h+relatedTable('Monthly Forecasts','forecast',forecastsForSub(rec.ID),[{label:'WFY',key:'Forecast_Year'},{label:'Month',key:'Forecast_Month'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'Forecasted',key:'Forecasted_Lots',num:1},{label:'Scheduled',key:'Scheduled_Lots',num:1},{label:'Actual',key:'Actual_Lots',num:1}],{showActions:false});}
   if(type==='subdivision'&&tab==='takedowns')return relatedTable('Takedown Schedules','takedown',takedownsForSub(rec.ID),[{label:'Schedule',key:'Takedown_Schedule_Code'},{label:'Builder',value:function(r){return displayValue(r.Builder1);}},{label:'Status',key:'Status'},{label:'Obligation',key:'Total_Lot_Obligation',num:1},{label:'Sold',key:'Lots_Sold',num:1},{label:'Complete',value:function(r){return pctText(r.Completion_Percent);}}],{showActions:false});

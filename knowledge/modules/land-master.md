@@ -1,3 +1,26 @@
+## Subdivision Zoho Projects dates — 8.17.2, October 23, 2026
+
+Existing Subdivision View/Edit dialogs include a **Zoho Projects** tab immediately
+after Details. It shows CP Release Goal, CP Release Estimate, Construction Start
+Goal, Construction Start Estimate and Final Acceptance Due Date from the current
+Subdivision's persisted schedule fields. The existing daily sync maintains these
+values; this tab performs no extra reads or writes. Existing MM/dd/yyyy formatting
+and em-dash missing values are reused. All five values use the established
+read-only field renderer, without editable inputs or save serialization.
+
+The Details editor, its save payload and discard guard retain their existing
+behavior. New-record forms do not gain the tab. The shared `#recordTabs` / `#panel`
+motion registration covers selection and reveal; dates stay static under the
+number-transition policy. The focused SDK2 regression executes the actual tab,
+panel and save functions to check field mapping, record switching, blanks,
+read-only controls, unchanged ordinary edits and zero schedule writes.
+
+This widget requires the Subdivision fields and daily workflow from the
+[schedule-date change](../../docs/subdivision-schedule-dates-2026-10-23.md) to be
+published for new dates to populate. No additional Creator form, function, API or
+permission changes are introduced by the tab. Rollback the Land Master hosted
+mapping to 8.17.1 to remove the tab while preserving all Subdivision data.
+
 ## External Property Transfers — 8.17.1, October 22, 2026
 
 When Creator omits the new checkbox from the existing report layout, the widget

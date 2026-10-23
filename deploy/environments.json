@@ -5,8 +5,8 @@
     "development": {
       "proforma-manager": "1.80.133",
       "budget-manager": "122.29.70",
-      "land-master": "8.17.1",
-      "contract-management": "1.62.34",
+      "land-master": "8.17.2",
+      "contract-management": "1.62.35",
       "tax-center": "19.17.27",
       "milestone-gantt": "1.1.19",
       "manage-lots": "0.13.11",
@@ -28,8 +28,8 @@
     "production": {
       "proforma-manager": "1.80.133",
       "budget-manager": "122.29.70",
-      "land-master": "8.17.1",
-      "contract-management": "1.62.34",
+      "land-master": "8.17.2",
+      "contract-management": "1.62.35",
       "tax-center": "19.17.27",
       "milestone-gantt": "1.1.19",
       "manage-lots": "0.13.11",

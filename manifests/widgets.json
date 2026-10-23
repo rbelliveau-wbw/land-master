@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-23T13:51:51.494Z",
+  "generated_at": "2026-10-23T14:38:17.846Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.17.1",
+      "version": "8.17.2",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "cc2f8abb83925c152f626130272af24fb48811284179a4359f508a95b0f511ef",
+      "source_sha256": "4c25b278927f11247ca091932303700b427653f484d050722ef3a3e8c9bf953a",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
@@ -104,13 +104,13 @@
       "slug": "contract-management",
       "name": "Contract Management",
       "module": "contracts",
-      "version": "1.62.34",
+      "version": "1.62.35",
       "description": "Legal and Construction tasks with separate permissions, request fields, templates, and token-based LOI legal review.",
       "source_entry": "widgets/contract-management/src/app/widget.html",
       "creator_package_manifest": "widgets/contract-management/src/plugin-manifest.json",
       "baseline_zip": "widgets/contract-management/baseline/Contract_Management_Widget_LOI_Review_tokenId (1).zip",
       "html_title": "Land Master Contracts",
-      "source_sha256": "e3ff213f0b173787eb578c504db10266182a4e5bfcac36a3ab22abca4740ef83",
+      "source_sha256": "e94fc566babd78a684681fca9ae34abf5e01ec3bec3ad0e96421d3e7d655d2bd",
       "baseline_zip_sha256": "cc0af9797cdead2e0efbfca26aac8420b5c841f2c23355db717ce5986f2a3d32",
       "plugin_manifest": {
         "locale": [

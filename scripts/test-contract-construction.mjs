@@ -22,6 +22,35 @@ function draft(h){h.c.newContract();h.c.constructionPick('sub',SUB);h.c.construc
 function files(h){const base=h.api.invokeCustomApi;let creates=0,uploads=0;h.api.invokeCustomApi=async config=>{if(config.api_name!==h.c.CFG.customApis.createAttachment)return base(config);creates++;h.reports.All_Attachments.push({ID:FILE,Contract1:{ID:config.payload.contractId},Email_Attachment:false,File_field1:{},Added_User:'actual-actor'});return {code:3000,details:{output:JSON.stringify({ok:true,attachmentId:FILE})}};};h.c.ZOHO.CREATOR.FILE={uploadFile:async config=>{uploads++;const row=h.reports.All_Attachments.find(row=>row.ID===config.id);row.File_field1={filepath:'native_'+config.file.name};return {code:3000};}};return {creates:()=>creates,uploads:()=>uploads};}
 
 {
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);
+ const otherSub=(BigInt(SUB)+89n).toString();
+ const dates={CP_Release_Goal:'10/26/2026',CP_Release_Estimate:'2026-10-28',Construction_Start_Goal:'11/03/2026',Construction_Start_Estimate:'2026-11-05'};
+ Object.assign(h.reports.All_Subdivisions[0],dates);
+ h.reports.All_Subdivisions.push({...h.reports.All_Subdivisions[0],ID:otherSub,Subdivision_Name:'Other schedule phase',CP_Release_Goal:'',CP_Release_Estimate:'02/03/2027',Construction_Start_Goal:null,Construction_Start_Estimate:'not a date'});
+ Object.assign(h.reports.All_Contracts1[0],{CP_Release_Goal:'01/01/2040',CP_Release_Estimate:'01/02/2040',Construction_Start_Goal:'01/03/2040',Construction_Start_Estimate:'01/04/2040'});
+ assert.equal(await h.c.loadData(),true);
+ const reads=h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Subdivisions');
+ assert.ok(reads.length>=2);assert.ok(reads.every(call=>call.config.field_config==='all'),'native startup and Refresh retain all persisted Subdivision dates');
+ for(const [field,value]of Object.entries(dates))assert.equal(h.c.ncSubRecord(SUB)[field],value);
+ function matrix(markup){const host=h.c.document.createElement('div');host.innerHTML=markup;return host.querySelector('.construction-dates table');}
+ function cells(table){return Array.from(table.querySelectorAll('tbody tr'),row=>Array.from(row.querySelectorAll('th,td'),cell=>cell.textContent));}
+ function checkHeaders(table){assert.equal(table.getAttribute('aria-label'),'Subdivision dates');assert.deepEqual(Array.from(table.querySelectorAll('thead th'),cell=>cell.textContent),['','Goal','Estimate']);assert.ok(table.querySelectorAll('tbody th').every(cell=>cell.getAttribute('scope')==='row'));}
+ h.c.newContract();await drain();const draft=h.c.S.nc,subInput=h.node('construction_sub'),nameInput=h.node('construction_name');
+ const context=h.node('nc_form').querySelector('.construction-context');
+ assert.deepEqual(cells(matrix(h.c.constructionContextHTML(draft))),[['CP Release','Unavailable','Unavailable'],['Const Start','Unavailable','Unavailable']]);
+ h.c.constructionPick('sub',SUB);checkHeaders(matrix(context.outerHTML));
+ assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','10/26/2026','10/28/2026'],['Const Start','11/03/2026','11/05/2026']],'Goal/Estimate cells read their selected Subdivision field, never similarly named Contract fields');
+ assert.equal(h.node('construction_sub'),subInput);assert.equal(h.node('construction_name'),nameInput);
+ h.c.constructionPick('sub',otherSub);
+ assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','Unavailable','02/03/2027'],['Const Start','Unavailable','Unavailable']],'selection replacement clears unavailable cells independently and cannot retain another phase\'s dates');
+ h.c.constructionPick('sub','');assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','Unavailable','Unavailable'],['Const Start','Unavailable','Unavailable']]);
+ assert.equal(h.c.constructionCancelNew(),true);assert.equal(h.c.constructionEditOpen(ID),true);
+ const editMatrix=h.node('construction_edit_form').querySelector('.construction-dates table');checkHeaders(editMatrix);
+ assert.deepEqual(cells(editMatrix),[['CP Release','10/26/2026','10/28/2026'],['Const Start','11/03/2026','11/05/2026']],'Edit renders the request\'s current selected Subdivision dates');
+ assert.doesNotMatch(editMatrix.textContent,/Milestone|Task|2040/);assert.equal(writes(h).length,0,'reading and changing schedule context never writes a Subdivision or request');
+}
+
+{
  const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.c.newContract();
  assert.equal(h.node('nc_submit').textContent,'Submit');
  assert.match(h.c.constructionFields(),/type="button"[^>]+onclick="constructionSuggestName\(\)"[^>]+>Suggest<\/button>/);

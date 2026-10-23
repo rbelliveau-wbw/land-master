@@ -1619,6 +1619,10 @@ select.apr-in{cursor:pointer}
 .construction-context h3{margin:0;padding:14px 15px;border-bottom:1px solid #dce6f1;font-size:12px;color:var(--navy)}
 .construction-context dl{margin:0;padding:14px 15px;display:grid;grid-template-columns:1fr;gap:5px}.construction-context dt{font-size:10px;font-weight:800;color:var(--muted)}
 .construction-context dd{margin:0 0 8px;font-size:12px;font-weight:800;color:var(--navy)}.construction-context .context-section{border-top:1px solid #dce6f1}
+.construction-dates{padding:12px 10px 14px}.construction-dates table{width:100%;table-layout:fixed;border-collapse:collapse}
+.construction-dates th,.construction-dates td{padding:6px 3px;text-align:center;vertical-align:middle}
+.construction-dates th{font-size:10px;font-weight:800;color:var(--muted)}.construction-dates thead th:first-child{width:34%}
+.construction-dates tbody th{text-align:left}.construction-dates td{font-size:11px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;white-space:nowrap}
 .construction-meta{display:flex;gap:18px;flex-wrap:wrap;padding:10px 0 16px;color:var(--muted);font-size:11px}.construction-meta b{color:var(--navy)}
 .construction-request-summary{padding:14px 16px;margin:0 0 16px;border:1px solid var(--line);border-radius:12px;background:#fff;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .construction-request-summary .wide{grid-column:1/-1}.construction-request-summary .fl{display:block;margin-bottom:5px}.construction-request-summary p{margin:0;white-space:pre-wrap;color:var(--navy);font-size:12px}
@@ -1963,16 +1967,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.34"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.34">
-<script src="interaction-motion.js?v=1.62.34"></script>
-<script src="interaction-surfaces.js?v=1.62.34"></script>
-<script src="number-edit-commit.js?v=1.62.34"></script>
-<script src="number-transitions.js?v=1.62.34"></script>
-<script src="number-surfaces.js?v=1.62.34"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.34">
-<link rel="stylesheet" href="report-layout.css?v=1.62.34">
-<link rel="stylesheet" href="construction-board.css?v=1.62.34">
+<script src="success-feedback.js?v=1.62.35"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.35">
+<script src="interaction-motion.js?v=1.62.35"></script>
+<script src="interaction-surfaces.js?v=1.62.35"></script>
+<script src="number-edit-commit.js?v=1.62.35"></script>
+<script src="number-transitions.js?v=1.62.35"></script>
+<script src="number-surfaces.js?v=1.62.35"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.35">
+<link rel="stylesheet" href="report-layout.css?v=1.62.35">
+<link rel="stylesheet" href="construction-board.css?v=1.62.35">
 </head>
 <body>
 
@@ -2021,7 +2025,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.34", pageSize: 200, maxPages: 25,
+  version: "1.62.35", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -6075,7 +6079,15 @@ function ncLotFields(){
 }
 function constructionDraft(){return S.constructionEdit?S.constructionEdit.draft:S.nc;}
 function constructionDraftContext(v){var sub=v&&v.sub&&v.sub.length===1?ncSubRecord(v.sub[0]):null,pid=sub&&lookupId(sub.Project),project=pid&&ncProjectRecord(pid);return {sub:sub,project:project,id:pid||'',territory:String(sub&&sub.Territory||project&&project.Territory||'').trim(),projectName:project&&project.Project_Name||displayValue(sub&&sub.Project)||'',status:String(sub&&sub.Projects_Status||'').trim()};}
-function constructionContextHTML(v){var ctx=constructionDraftContext(v);return '<aside class="construction-context"><h3>Project context</h3><dl><dt>Project</dt><dd>'+esc(ctx.projectName||'—')+'</dd><dt>Subdivision</dt><dd>'+esc(ctx.sub&&ctx.sub.Subdivision_Name||'—')+'</dd><dt>Territory</dt><dd>'+esc(ctx.territory||'—')+'</dd><dt>Project status</dt><dd>'+esc(ctx.status||'—')+'</dd></dl><dl class="context-section"><dt>CP Release</dt><dd>Unavailable</dd><dt>Construction Start</dt><dd>Unavailable</dd></dl></aside>';}
+function constructionContextHTML(v){
+  var ctx=constructionDraftContext(v),sub=ctx.sub;
+  function date(field){return esc(fmtDate(sub&&sub[field])||'Unavailable');}
+  return '<aside class="construction-context"><h3>Project context</h3><dl><dt>Project</dt><dd>'+esc(ctx.projectName||'—')+'</dd><dt>Subdivision</dt><dd>'+esc(sub&&sub.Subdivision_Name||'—')+'</dd><dt>Territory</dt><dd>'+esc(ctx.territory||'—')+'</dd><dt>Project status</dt><dd>'+esc(ctx.status||'—')+'</dd></dl>'
+    +'<div class="construction-dates context-section"><table aria-label="Subdivision dates"><thead><tr><th scope="col" aria-label="Schedule"></th><th scope="col">Goal</th><th scope="col">Estimate</th></tr></thead><tbody>'
+    +'<tr><th scope="row">CP Release</th><td>'+date('CP_Release_Goal')+'</td><td>'+date('CP_Release_Estimate')+'</td></tr>'
+    +'<tr><th scope="row">Const Start</th><td>'+date('Construction_Start_Goal')+'</td><td>'+date('Construction_Start_Estimate')+'</td></tr>'
+    +'</tbody></table></div></aside>';
+}
 function constructionPick(key,value){var v=constructionDraft();if(!v||contractInteractionHeld())return false;value=String(value||'');if(key==='sub'){v.sub=value?[value]:[];var ctx=constructionDraftContext(v);v.project=ctx.id;v.territory=ctx.territory;if(!v.name||v.name===v.nameAuto){v.nameAuto=(ctx.sub&&ctx.sub.Subdivision_Name||'')+(v.type?' · '+v.type+' budget':'');v.name=v.nameAuto;}}else{v[key]=value;if(key==='type'&&(!v.name||v.name===v.nameAuto)){var context=constructionDraftContext(v);v.nameAuto=(context.sub&&context.sub.Subdivision_Name||'')+(value?' · '+value+' budget':'');v.name=v.nameAuto;}}constructionRepaintForm(key);}
 function constructionSuggestName(){
   var v=constructionDraft();if(!v||S.busy||contractInteractionHeld())return false;
