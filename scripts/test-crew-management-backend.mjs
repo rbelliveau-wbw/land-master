@@ -10,6 +10,32 @@ const nativeTask = read('creator/crew-locations/workflows/Task_Schedule_on_valid
 const prepare = controller.slice(controller.indexOf('if(action == "save-crew"'), controller.indexOf('phaseId = ifnull(request.get("subdivisionId")'));
 const list = controller.slice(controller.indexOf('if(action == "management-list")'), controller.indexOf('if(action == "save-crew"'));
 
+test('Production uses the native API default while Development and Stage retain explicit runtime routing', () => {
+  for (const [path, count] of [
+    ['creator/functions/crewLocationsRead.dg', 1],
+    ['creator/functions/crewLocationsWidget.dg', 2],
+    ['creator/crew-locations/native-installed/crewLocationsRead.dg', 1],
+    ['creator/crew-locations/native-installed/crewLocationsWidget.dg', 2],
+  ]) {
+    const code = read(path);
+    const blocks = [...code.matchAll(/(readHeaders|headers)\s*=\s*\{"Content-Type":"application\/json"\};\s*if\((config\.get\("environment"\) != "production")\)\s*\{\s*\1\.put\("environment",config\.get\("environmentLink"\)\);\s*\}/g)];
+    assert.equal(blocks.length, count, `${path}: every delegated GET/PATCH has environment-aware headers`);
+    assert.doesNotMatch(code, /\{"environment":config\.get\("environmentLink"\)/, 'never send production as an explicit header');
+    for (const block of blocks) {
+      const routes = (environment, environmentLink) => {
+        const headers = {'Content-Type': 'application/json'};
+        const config = {get: key => key === 'environment' ? environment : environmentLink};
+        if (Function('config', `return (${block[2]});`)(config)) headers.environment = config.get('environmentLink');
+        return headers;
+      };
+      assert.deepEqual(routes('production', 'production'), {'Content-Type': 'application/json'});
+      assert.equal(routes('development', 'development').environment, 'development');
+      assert.equal(routes('stage', 'stage').environment, 'stage');
+      assert.equal(routes('stage', 'staging_2').environment, 'staging_2');
+    }
+  }
+});
+
 test('management preparation cannot bypass native form/profile rights or mutate scheduling data', () => {
   assert.ok(prepare.length > 1000);
   assert.doesNotMatch(prepare + list, /insert into|delete from|type\s*:\s*(?:POST|PATCH|DELETE)|\.Push_Update\s*=/i);
@@ -60,6 +86,7 @@ test('native empty 404/3100 and 400/9220 pages load while denied and contradicto
     [500, {code: 3100}],
     [404, {code: 3100, error: 'Permission denied'}],
     [404, {code: 2892, message: 'No permission to view records'}],
+    [404, {code: 2930, message: 'Error occurred'}],
     [200, {code: 3000, data: [], error: 'Read failed'}],
     [200, {code: 3000, data: [], success: false}],
     [200, {code: 3000}],

@@ -2,7 +2,7 @@
   "date": "2026-10-21",
   "management_2026_10_23": {
     "release": "1.2.3",
-    "status": "1.2.3-publication-ready-development-native-verified-user-creator-promotion-pending",
+    "status": "repository-1.2.3-deployed-production-native-read-failing-routing-correction-saved-in-development",
     "functions_saved_and_reopened": [
       "crewLocationsRead",
       "crewLocationsWidget",
@@ -1045,10 +1045,10 @@
       "production": "1.2.3"
     },
     "mapping_publication": "Development and Production 1.2.3 mappings are included with this publication.",
-    "publication_status": "mapped-1.2.3-awaiting-workflow-completion",
-    "ci_result": null,
-    "pages_result": null,
-    "live_1_2_3_presentation_smoke": "pending live assets",
+    "publication_status": "repository-1.2.3-deployed-production-native-read-failing",
+    "ci_result": "success (39982563857)",
+    "pages_result": "success (39982563667)",
+    "live_1_2_3_presentation_smoke": "Production #Projects renders the version, but management read fails; Development renders its two crews and upcoming assignment.",
     "unused_local_immutable_drafts": [
       "1.2.1",
       "1.2.2"
@@ -1075,10 +1075,10 @@
       "session": "9637"
     }
   },
-  "current_release_state": "mapped-1.2.3-awaiting-workflow-completion",
+  "current_release_state": "repository-1.2.3-deployed-production-native-routing-correction-awaiting-publication",
   "repository_release_outcome_1_2_3": {
     "release": "1.2.3",
-    "status": "ready-mappings-included-awaiting-ci-pages",
+    "status": "repository-deployed-production-native-read-failing",
     "environment_mappings": {
       "development": "1.2.3",
       "production": "1.2.3"
@@ -1086,27 +1086,95 @@
     "full_merged_validation": "passed exit 0 (63957), including 11 focused backend groups",
     "build_pages": "passed; 33 paths",
     "package_creator": "passed",
-    "ci_result": null,
-    "pages_result": null,
-    "production_asset_smoke": "pending live 1.2.3 assets",
+    "ci_result": {
+      "result": "success",
+      "run_id": "39982563857"
+    },
+    "pages_result": {
+      "result": "success",
+      "run_id": "39982563667"
+    },
+    "production_asset_smoke": "Exact Production #Projects displays Crew Management 1.2.3; management-list fails HTTP 404 / Creator 2930.",
     "native_functional_crud": {
       "verified": true,
       "environment": "development",
       "actual_widget_version": "1.2.0"
     },
-    "creator_application_promoted": false,
+    "creator_application_promoted": true,
     "pending_native_steps": [
-      "User-owned Creator application promotion of the verified Development package.",
+      "Specific user approval or user-owned publication of the two-function Production routing correction, followed by actual Production CRUD verification.",
       "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
-    ]
+    ],
+    "creator_environment_versions_observed": {
+      "stage": "9.120",
+      "production": "9.120"
+    },
+    "creator_application_promotion_note": "Observed Stage and Production at 9.120, not published by this agent. Complete component parity is not inferred from the version."
   },
   "pending_native_steps": [
-    "User-owned Creator application promotion of the verified Development package.",
+    "Specific user approval or user-owned publication of the two-function Production routing correction, followed by actual Production CRUD verification.",
     "Optional external task source/adapter configuration; importer, source and writes remain disabled until verified."
   ],
   "historical_blockers_2026_10_21": [
     "Creator application publication lock; no other publication cancelled",
     "Creator editor subsequently could not connect / DNS error",
     "A native future date PATCH returned a rejection with no detailed error in the existing response; save/undo not yet passed"
-  ]
+  ],
+  "production_routing_repair_2026_10_23": {
+    "status": "saved-and-reopened-in-development-awaiting-specific-native-publication-approval",
+    "exact_page": "https://creatorapp.zoho.com/wbdevelopment/land-master/#Projects",
+    "production_failure": {
+      "report": "All_Crews",
+      "http": 404,
+      "creator_code": 2930
+    },
+    "native_production_report_verified": true,
+    "native_production_report_fields": [
+      "Crew_Code",
+      "Crew_Name",
+      "Badge_Color",
+      "Active",
+      "Source_System",
+      "Source_Record_ID",
+      "ID"
+    ],
+    "production_qa_crews_observed": [
+      "4410926000005393002",
+      "4410926000005393004",
+      "4410926000005393006"
+    ],
+    "functions_saved_and_reopened": [
+      "crewLocationsRead",
+      "crewLocationsWidget"
+    ],
+    "change": "Omit environment header for server-derived production; retain exact environmentLink header for Development and Stage on all three delegated GET/PATCH sites.",
+    "root_cause_status": "Candidate based on official API routing contract; not confirmed by Production execution.",
+    "regression_groups_passed": 12,
+    "native_capability_groups_passed": 5,
+    "full_repository_validation": {
+      "result": "passed",
+      "exit_code": 0,
+      "session": "5219"
+    },
+    "pages_build": {
+      "result": "passed",
+      "paths": 33
+    },
+    "creator_package": {
+      "result": "passed"
+    },
+    "development_live_read": "Two active crews; Crew B future assignment AAA Springs Phase 01 on 10/24/2026 remains visible.",
+    "production_live_crud_verified": false,
+    "widget_release_unchanged": "1.2.3",
+    "publication_scope": [
+      "crewLocationsRead",
+      "crewLocationsWidget"
+    ],
+    "publication_attempt": "Publish to Stage was blocked by automatic approval review because PMP reserves native publication to the user; specific approval requested, pending.",
+    "rollback_snapshots": [
+      "creator/crew-locations/native-before/crewLocationsRead.production-routing-20261023.dg",
+      "creator/crew-locations/native-before/crewLocationsWidget.production-routing-20261023.dg"
+    ],
+    "records_deleted": false
+  }
 }

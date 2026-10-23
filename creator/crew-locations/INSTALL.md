@@ -9,15 +9,49 @@ Historical verified 1.2.0 assets reached main/Production at
 `b64591c4eabbc94934b6a26837b8d1b451032103`; CI and Pages passed. Actual 1.2.0
 Development owner widget CRUD passed, including same-record reassignment and
 Refresh persistence. No real milestone dates were changed in this review.
-The final immutable 1.2.3 release is ready for publication;
+The immutable 1.2.3 release reached main at
+`4db97430ff3fd8cbe337d497976dc6010cd85950`; CI
+[39982563857](https://github.com/rbelliveau-wbw/land-master/actions/runs/39982563857)
+and Pages [39982563667](https://github.com/rbelliveau-wbw/land-master/actions/runs/39982563667)
+passed. Production's exact `#Projects` page displays this version, but its
+management read fails with HTTP 404 / Creator 2930. The native Production
+`All_Crews` report itself displays all three QA crews and required fields.
+
+### Production routing correction, October 23
+
+Creator's Environments page shows Stage and Production at 9.120, so the earlier
+blanket statement that all native changes still await promotion is superseded.
+Do not infer a working Production save from that version or from Pages success.
+
+`crewLocationsRead` and `crewLocationsWidget` are saved and reopened in
+Development with the Production environment header omitted. Production is the
+default for the official [Get Records](https://www.zoho.com/creator/help/api/v2.1/get-records.html)
+and [Update Record](https://www.zoho.com/creator/help/api/v2.1/update-specific-record.html)
+APIs; Development and Stage still send the server-derived environment link.
+This applies to delegated report reads and the milestone PATCH. Connection,
+caller permissions, native save validation, report cursors and error rejection
+are unchanged. All twelve backend regression groups pass, including reopened
+native output. Development still loads its two crews and future assignment.
+
+This is a candidate correction for Production's 2930 response, not yet live proof.
+Publication scope is exactly these two functions. Native Stage/Production
+publication is awaiting the user's specific approval after automatic approval
+review enforced PMP's user-owned Creator promotion boundary. Verify the actual
+Production page and native CRUD after promotion. No new widget release is needed.
+Rollback restores the two `native-before/*.production-routing-20261023.dg`
+snapshots through the same native publication process; retain all test records.
+
+### Earlier desktop release verification
+
+The final immutable 1.2.3 release was prepared with the following evidence;
 unused local 1.2.1/1.2.2 drafts will not publish. Short-height management geometry
 now passes 24 checks at five sizes, including 1250×564 with the first upcoming
 assignment fully visible. Final full merged validation passed exit 0, Pages
 build passed for 33 paths and Creator packaging passed. This publication includes
-Development/Production mappings to 1.2.3. Await CI/Pages and live presentation
-smoke confirmation; no future deployment result is claimed.
+Development/Production mappings to 1.2.3. Subsequent deployment results and the
+remaining Production native blocker are recorded above.
 
-The user promotes the complete native Development package: **crewLocationsRead**,
+The earlier native package comprised **crewLocationsRead**,
 **crewLocationsWidget**, **crewLocationsConfig**, **crewLocationsValidate**,
 **crewLocationsDirectValidate**,
 **Crew_on_validate**, **Crew_Assignment_on_valida**, Task_Schedule's six new fields
@@ -25,9 +59,9 @@ and optional mappings, **Task_Schedule_mirror_guar**, **All_Task_Schedules** web
 layout, existing **All_Crews** / **Crew_Assignment_Report** exposure and registered
 Crew page/widget changes. Do not infer Creator publication from Pages success.
 The task importer/source and all task writes remain disabled.
-The only remaining native steps are the user's Creator application promotion
-and optional verified external task-source configuration. CRUD, compiled guards,
-native fields and layout verification are complete in Development.
+CRUD, compiled guards, native fields and layout verification were complete in
+Development. The current native correction and its remaining verification are
+recorded above; optional external task-source configuration remains disabled.
 
 1. Read [native-install-progress.json](native-install-progress.json) and
    [removal-inventory.json](removal-inventory.json). Reuse the six existing forms,
@@ -49,7 +83,7 @@ native fields and layout verification are complete in Development.
    Source_Key. This is the verified existing report link; do not recreate the
    former unverified All_Crew_Assignments alias. Required-field failures stay
    closed. Native Development report/layout and actual widget data behavior are
-   verified; Production native changes still await user promotion.
+   verified. The actual Production report and current read error are recorded above.
 4. Bind the existing `crew_locations` widget to the permanent external URL
    `https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/`.
    Keep the new page identity `Crew_Management` (display Crew Management) and the

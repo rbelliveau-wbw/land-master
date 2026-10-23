@@ -7,7 +7,9 @@ map crewLocationsRead(string reportName,string criteria)
 		config = thisapp.crewLocationsConfig();
 		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules","All_Crews","Crew_Assignment_Report"};
 		if(!allowed.contains(reportName) || zoho.loginuser == null || zoho.loginuser == "public") { return result; }
-		headers = {"environment":config.get("environmentLink"),"Content-Type":"application/json"};
+		// Production is the native API default; only non-production sends an environment header.
+		headers = {"Content-Type":"application/json"};
+		if(config.get("environment") != "production") { headers.put("environment",config.get("environmentLink")); }
 		parameters = {"criteria":criteria,"max_records":1000,"field_config":"all"};
 		// Verified existing LOGGED-IN USER connection; never substitute an admin connection.
 		// These delegated report reads preserve native sharing and API/report access.

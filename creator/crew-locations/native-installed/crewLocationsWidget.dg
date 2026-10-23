@@ -107,7 +107,11 @@ string crewLocationsWidget(string payload)
 						response.put("message","The crew report cursor is invalid.");
 						return response.toString();
 					}
-					readHeaders = {"environment":config.get("environmentLink"),"Content-Type":"application/json"};
+					readHeaders = {"Content-Type":"application/json"};
+					if(config.get("environment") != "production")
+					{
+						readHeaders.put("environment",config.get("environmentLink"));
+					}
 					if(token != "")
 					{
 						readHeaders.put("record_cursor",token);
@@ -874,7 +878,11 @@ string crewLocationsWidget(string payload)
 			log.Inflight_Record_Key=key;
 			fields = {"Start_Date","End_Date"};
 			body = {"data":target.get("patch"),"result":{"fields":fields}};
-			headers = {"environment":config.get("environmentLink"),"Content-Type":"application/json"};
+			headers = {"Content-Type":"application/json"};
+			if(config.get("environment") != "production")
+			{
+				headers.put("environment",config.get("environmentLink"));
+			}
 			writeUncertain = true;
 			ack = invokeurl
 			[
