@@ -1,0 +1,298 @@
+auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Check HCSS Budget Line Exists","system":"Zoho Analytics"});
+auditId = auditRun.get("id");
+auditReceived = 0;
+auditProcessed = 0;
+auditCreated = 0;
+auditUpdated = 0;
+auditUpdatedIds = List();
+auditSkipped = 0;
+auditMissingMapping = 0;
+auditNoBudget = 0;
+auditNoEligible = false;
+auditWriteAttempted = false;
+auditRowChanged = false;
+auditSourceKeys = Map();
+auditRecordKey = "";
+try 
+{
+	// ================================================
+	// Script: HeavyJob Budget Deleted Line Cleanup + CostCodeID Refresh
+	//
+	// Scope:
+	// - Read Analytics source report.
+	// - Build active CostCodeID list.
+	// - Build active stable budget line Code list.
+	// - Build a map of stable Code -> current Analytics CostCodeID.
+	// - Check existing Budget_Import_Item records.
+	//
+	// Logic:
+	// - If old Cost_Code_ID still exists in Analytics:
+	//     • Do nothing.
+	// - If old Cost_Code_ID is gone, but stable Code still exists:
+	//     • Update Budget_Import_Item.Cost_Code_ID to the new CostCodeID.
+	// - If old Cost_Code_ID is gone and stable Code is gone:
+	//     • Set Budget_Import_Item.Cost = 0.
+	//
+	// IMPORTANT:
+	// - This script does NOT insert records.
+	// - This script does NOT update existing costs from Analytics.
+	// - This script does NOT update Updated_Date.
+	// - This script does NOT update descriptions, codes, data source, or IDs other than Cost_Code_ID.
+	// - The ONLY database writes allowed in this script are:
+	//
+	//     existingItem.Cost_Code_ID = newCostCodeId;
+	//     existingItem.Cost = 0;
+	//
+	// ================================================
+	portalId = "700737166";
+	orgId = "700732567";
+	workspaceId = "2107789000000003001";
+	viewId = "2107789000023687048";
+	// === 1) Analytics request setup ===
+	headers = Map();
+	headers.put("ZANALYTICS-ORGID",orgId);
+	config = Map();
+	config.put("responseFormat","json");
+	cols = List();
+	cols.add("H.zzz_CostCodeID_Guid");
+	cols.add("H.JobCode");
+	cols.add("H.Minor Code");
+	config.put("selectedColumns",cols);
+	// === 2) Kick off the async export job ===
+	rows = thisapp.analyticsExportRows(viewId,config,auditId,false);
+	auditReceived = rows.size();
+	// === 7) Build list of subdivision codes that currently have budgets ===
+	budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+	// === 8) Build active source lists ===
+	//
+	// activeCostCodeIDs:
+	// - Current CostCodeIDs that exist in Analytics.
+	//
+	// activeBudgetLineCodes:
+	// - Stable Budget_Import_Item.Code values that exist in Analytics.
+	// - Format: Subdivision_Code + "-B-" + Minor_Code
+	//
+	// sourceCostCodeIdByBudgetLineCode:
+	// - Map from stable Code to current Analytics CostCodeID.
+	// - Used to refresh Budget_Import_Item.Cost_Code_ID when HeavyJob recreates a line.
+	activeCostCodeIDs = List();
+	activeBudgetLineCodes = List();
+	duplicateBudgetLineCodes = List();
+	sourceCostCodeIdByBudgetLineCode = Map();
+	for each  rec in rows
+	{
+		auditProcessed = auditProcessed + 1;
+		auditRowChanged = false;
+		sourceCostCodeId = ifnull(rec.get("H.zzz_CostCodeID_Guid"),"").toString();
+		sourceJobCode = ifnull(rec.get("H.JobCode"),"").toString();
+		sourceMinorCode = ifnull(rec.get("H.Minor Code"),"").toString();
+		auditRecordKey = sourceJobCode + "-B-" + sourceMinorCode;
+		if(sourceJobCode == "" || sourceMinorCode == "" || sourceCostCodeId == "")
+		{
+			throw "Cleanup source contains incomplete cost-code identity. No cleanup writes were started.";
+		}
+		if(sourceJobCode != "" && sourceMinorCode != "")
+		{
+			subdiv = External_System_Mapping[External_Code == sourceJobCode && External_System == "HeavyJob"];
+			if(subdiv.count() == 0)
+			{
+				auditMissingMapping = auditMissingMapping + 1;
+				auditSkipped = auditSkipped + 1;
+				continue;
+			}
+			if(subdiv.count() != 1 || subdiv.Subdivision1 == null)
+			{
+				throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + sourceJobCode + "; matching HeavyJob mappings=" + subdiv.count();
+			}
+			if(subdiv.count() > 0)
+			{
+				subdivCode = ifnull(subdiv.Subdivision1.Subdivision_Code,"").toString();
+				// Only consider source rows for subdivisions that actually have budgets
+				if(subdivCode != "" && budgCodes.contains(subdivCode))
+				{
+					sourceBudgetLineCode = subdivCode + "-B-" + sourceMinorCode;
+					if(activeBudgetLineCodes.contains(sourceBudgetLineCode) == false)
+					{
+						activeBudgetLineCodes.add(sourceBudgetLineCode);
+						if(sourceCostCodeId != "")
+						{
+							sourceCostCodeIdByBudgetLineCode.put(sourceBudgetLineCode,sourceCostCodeId);
+						}
+					}
+					else
+					{
+						// If the same stable Code appears more than once with different CostCodeIDs,
+						// do not auto-refresh Cost_Code_ID later. Protect it from zeroing,
+						// but avoid guessing which CostCodeID is correct.
+						existingMappedCostCodeId = ifnull(sourceCostCodeIdByBudgetLineCode.get(sourceBudgetLineCode),"").toString();
+						if(existingMappedCostCodeId != "" && sourceCostCodeId != "" && existingMappedCostCodeId != sourceCostCodeId)
+						{
+							if(duplicateBudgetLineCodes.contains(sourceBudgetLineCode) == false)
+							{
+								duplicateBudgetLineCodes.add(sourceBudgetLineCode);
+							}
+						}
+						if(existingMappedCostCodeId == "" && sourceCostCodeId != "")
+						{
+							sourceCostCodeIdByBudgetLineCode.put(sourceBudgetLineCode,sourceCostCodeId);
+						}
+					}
+					if(sourceCostCodeId != "" && activeCostCodeIDs.contains(sourceCostCodeId) == false)
+					{
+						activeCostCodeIDs.add(sourceCostCodeId);
+					}
+				}
+			}
+		}
+		if(!auditRowChanged)
+		{
+			auditSkipped = auditSkipped + 1;
+		}
+	}
+	// === 9) Cleanup deleted budget lines and refresh recreated CostCodeIDs ===
+	//
+	// A line should be zeroed only if:
+	// - Its old Cost_Code_ID is not in the active source report
+	// AND
+	// - Its stable Code is not in the active source report
+	//
+	// A line should have Cost_Code_ID refreshed if:
+	// - Its old Cost_Code_ID is not in the active source report
+	// AND
+	// - Its stable Code is still in the active source report
+	// AND
+	// - The source report has a non-blank new CostCodeID for that stable Code
+	zeroedCount = 0;
+	checkedCount = 0;
+	refreshedCostCodeIdCount = 0;
+	protectedByCostCodeIdCount = 0;
+	protectedByStableCodeCount = 0;
+	skippedDuplicateStableCodeCount = 0;
+	skippedBlankCodeCount = 0;
+	skippedBlankCostCodeIdCount = 0;
+	// Safety guard:
+	// If Analytics returns no active stable budget line codes, do NOT change anything.
+	// This prevents wiping out costs if the export fails or comes back empty.
+	if(activeBudgetLineCodes.size() > 0)
+	{
+		existingBudgetImportItems = Budget_Import_Item[Data_Source == "HeavyJob Budget" && Cost != 0];
+		for each  existingItem in existingBudgetImportItems
+		{
+			auditProcessed = auditProcessed + 1;
+			auditRowChanged = false;
+			existingCostCodeId = ifnull(existingItem.Cost_Code_ID,"").toString();
+			existingBudgetLineCode = ifnull(existingItem.Code,"").toString();
+			existingSubdivCode = ifnull(existingItem.Subdivision_Code,"").toString();
+			if(existingCostCodeId == "")
+			{
+				skippedBlankCostCodeIdCount = skippedBlankCostCodeIdCount + 1;
+			}
+			if(existingBudgetLineCode == "")
+			{
+				skippedBlankCodeCount = skippedBlankCodeCount + 1;
+			}
+			if(existingSubdivCode != "" && budgCodes.contains(existingSubdivCode))
+			{
+				checkedCount = checkedCount + 1;
+				costCodeIdStillExists = false;
+				stableCodeStillExists = false;
+				if(existingCostCodeId != "" && activeCostCodeIDs.contains(existingCostCodeId))
+				{
+					costCodeIdStillExists = true;
+				}
+				if(existingBudgetLineCode != "" && activeBudgetLineCodes.contains(existingBudgetLineCode))
+				{
+					stableCodeStillExists = true;
+				}
+				if(costCodeIdStillExists)
+				{
+					protectedByCostCodeIdCount = protectedByCostCodeIdCount + 1;
+				}
+				else if(stableCodeStillExists)
+				{
+					protectedByStableCodeCount = protectedByStableCodeCount + 1;
+					if(duplicateBudgetLineCodes.contains(existingBudgetLineCode))
+					{
+						// Stable line exists, so do not zero it.
+						// But because the source has duplicate stable codes with different CostCodeIDs,
+						// do not guess which CostCodeID to write.
+						skippedDuplicateStableCodeCount = skippedDuplicateStableCodeCount + 1;
+					}
+					else
+					{
+						newCostCodeId = ifnull(sourceCostCodeIdByBudgetLineCode.get(existingBudgetLineCode),"").toString();
+						if(newCostCodeId != "" && newCostCodeId != existingCostCodeId)
+						{
+							// DATABASE WRITE 1 OF 2:
+							// Refresh recreated HeavyJob line to the new current CostCodeID.
+							auditWriteAttempted = true;
+							existingItem.Cost_Code_ID=newCostCodeId;
+							refreshedCostCodeIdCount = refreshedCostCodeIdCount + 1;
+							auditDestination = existingItem.ID.toString();
+							if(!auditUpdatedIds.contains(auditDestination))
+							{
+								auditUpdatedIds.add(auditDestination);
+								auditUpdated = auditUpdated + 1;
+							}
+							auditRowChanged = true;
+						}
+					}
+				}
+				else
+				{
+					// DATABASE WRITE 2 OF 2:
+					// The CostCodeID is gone and the stable line Code is also gone.
+					// This appears to be a truly deleted HeavyJob budget line.
+					auditWriteAttempted = true;
+					existingItem.Cost=0;
+					zeroedCount = zeroedCount + 1;
+					auditDestination = existingItem.ID.toString();
+					if(!auditUpdatedIds.contains(auditDestination))
+					{
+						auditUpdatedIds.add(auditDestination);
+						auditUpdated = auditUpdated + 1;
+					}
+					auditRowChanged = true;
+				}
+			}
+			if(!auditRowChanged)
+			{
+				auditSkipped = auditSkipped + 1;
+			}
+		}
+	}
+	else
+	{
+		auditNoEligible = true;
+		info "Cleanup skipped because no eligible stable codes remain after mapping/budget exclusions. No costs were zeroed.";
+	}
+	info "HeavyJob Budget Deleted Line Cleanup Complete";
+	info "Active Source CostCodeIDs: " + activeCostCodeIDs.size();
+	info "Active Source Budget Line Codes: " + activeBudgetLineCodes.size();
+	info "Duplicate Stable Budget Line Codes: " + duplicateBudgetLineCodes.size();
+	info "Existing Budget Import Items Checked: " + checkedCount;
+	info "Protected By Same CostCodeID: " + protectedByCostCodeIdCount;
+	info "Protected By Stable Code Match: " + protectedByStableCodeCount;
+	info "Refreshed Cost_Code_ID Count: " + refreshedCostCodeIdCount;
+	info "Skipped Duplicate Stable Code Count: " + skippedDuplicateStableCodeCount;
+	info "Skipped Blank Cost_Code_ID Records: " + skippedBlankCostCodeIdCount;
+	info "Skipped Blank Code Records: " + skippedBlankCodeCount;
+	info "Zeroed Deleted Lines: " + zeroedCount;
+	auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+	auditFinalStatus = "Success";
+	if(auditNoEligible)
+	{
+		auditFinalStatus = "Skipped";
+	}
+	thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+}catch (auditError)
+{
+	auditStatus = "Failed";
+	if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+	{
+		auditStatus = "Partial";
+	}
+	auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+	thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+	throw auditError;
+}

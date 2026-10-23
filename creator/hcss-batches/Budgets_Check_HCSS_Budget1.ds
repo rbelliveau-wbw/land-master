@@ -1,0 +1,172 @@
+Budgets_Check_HCSS_Budget1 as "Budgets - Check HCSS Budget Lines - 5 Batches"
+{
+	type =  schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions
+		{
+		on load
+		(
+			// Settings.Next_Workflow_Run schedule. Stable bucket: native Subdivision.ID % 5.
+			// Preview changes neither business records, workflow logs, nor Settings.
+			dryRun = false;
+			previewBatch = 0;
+			auditId = "";
+			auditReceived = 0;
+			checkedCount = 0;
+			refreshedCount = 0;
+			zeroedCount = 0;
+			unchangedCount = 0;
+			duplicateCount = 0;
+			auditWriteAttempted = false;
+			batch = 0;
+			try
+			{
+				settings = Settings[ID != 0];
+				if(settings.count() != 1) { throw "Expected exactly one Settings record. No cleanup started."; }
+				capturedCursor = settings.Current_Batch;
+				if(capturedCursor != null && capturedCursor >= 0 && capturedCursor <= 4) { batch = capturedCursor; }
+				if(dryRun) { batch = previewBatch; }
+				if(batch < 0 || batch > 4) { throw "Batch must be 0 through 4."; }
+				if(!dryRun)
+				{
+					auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Check HCSS Budget Lines - 5 Batches","system":"Zoho Analytics"});
+					auditId = auditRun.get("id");
+					thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Selecting batch " + batch,"details":"Five stable subdivision buckets; only this run advances Current Batch after success."});
+				}
+				// Fetch each native collection once; do not query mappings per Analytics row.
+				budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
+				batchCodes = List();
+				codeCounts = Map();
+				for each subdivision in Subdivision[Subdivision_Code in budgetCodes]
+				{
+					code = ifnull(subdivision.Subdivision_Code,"").toString();
+					if(code != "")
+					{
+						codeCounts.put(code,ifnull(codeCounts.get(code),0) + 1);
+						if(subdivision.ID % 5 == batch) { batchCodes.add(code); }
+					}
+				}
+				jobCounts = Map();
+				jobCodes = Map();
+				selectedJobs = List();
+				for each mapping in External_System_Mapping[External_System == "HeavyJob"]
+				{
+					job = ifnull(mapping.External_Code,"").toString();
+					if(job != "")
+					{
+						jobCounts.put(job,ifnull(jobCounts.get(job),0) + 1);
+						mappedCode = "";
+						if(mapping.Subdivision1 != null) { mappedCode = ifnull(mapping.Subdivision1.Subdivision_Code,"").toString(); }
+						jobCodes.put(job,mappedCode);
+						if(batchCodes.contains(mappedCode)) { selectedJobs.add(job); }
+					}
+				}
+				selectedJobs = selectedJobs.distinct();
+				eligibleCodes = List();
+				jobSql = "";
+				for each job in selectedJobs
+				{
+					mappedCode = ifnull(jobCodes.get(job),"").toString();
+					if(jobCounts.get(job) != 1 || mappedCode == "" || codeCounts.get(mappedCode) != 1)
+					{
+						throw "Duplicate or broken HeavyJob/subdivision mapping; job=" + job + "; batch=" + batch + ". No cleanup writes started.";
+					}
+					eligibleCodes.add(mappedCode);
+					if(jobSql != "") { jobSql = jobSql + ","; }
+					jobSql = jobSql + "'" + job.replaceAll("'","''",true) + "'";
+				}
+				eligibleCodes = eligibleCodes.distinct();
+				activeIds = Map();
+				activeCodes = Map();
+				duplicateCodes = Map();
+				rows = List();
+				if(selectedJobs.size() > 0)
+				{
+					config = Map();
+					config.put("selectedColumns",{"H.zzz_CostCodeID_Guid","H.JobCode","H.Minor Code"});
+					config.put("criteria","(\"HeavyJob Budget Costs joined w/ Subdivs\".\"H.JobCode\" IN (" + jobSql + "))");
+					// A filtered bucket may legitimately be empty. It is a protected no-op,
+					// never permission to zero costs; HTTP/schema/export failures still throw.
+					rows = thisapp.analyticsExportRows("2107789000023687048",config,auditId,true);
+					auditReceived = rows.size();
+					// Validate every source identity before the first destination write.
+					for each rec in rows
+					{
+						guid = ifnull(rec.get("H.zzz_CostCodeID_Guid"),"").toString();
+						job = ifnull(rec.get("H.JobCode"),"").toString();
+						minor = ifnull(rec.get("H.Minor Code"),"").toString();
+						if(guid == "" || job == "" || minor == "") { throw "Incomplete source identity. No cleanup writes started."; }
+						if(!selectedJobs.contains(job)) { throw "Analytics returned a job outside the requested batch. No cleanup writes started."; }
+						stableCode = jobCodes.get(job) + "-B-" + minor;
+						previousGuid = activeCodes.get(stableCode);
+						if(previousGuid != null && previousGuid != guid) { duplicateCodes.put(stableCode,true); }
+						activeCodes.put(stableCode,guid);
+						activeIds.put(guid,true);
+					}
+				}
+				if(!dryRun && settings.Current_Batch != capturedCursor) { throw "Current Batch changed during the export. No cleanup writes started."; }
+				// Empty/no-eligible source protects all costs. No unmapped subdivision is queried.
+				if(activeCodes.size() > 0)
+				{
+					for each existingItem in Budget_Import_Item[(Data_Source == "HeavyJob Budget") && (Cost != 0) && (Subdivision_Code in eligibleCodes)]
+					{
+						checkedCount = checkedCount + 1;
+						existingId = ifnull(existingItem.Cost_Code_ID,"").toString();
+						existingCode = ifnull(existingItem.Code,"").toString();
+						if(activeIds.get(existingId) != null) { unchangedCount = unchangedCount + 1; }
+						else if(activeCodes.get(existingCode) != null)
+						{
+							if(duplicateCodes.get(existingCode) != null) { duplicateCount = duplicateCount + 1; }
+							else
+							{
+								newCostCodeId = activeCodes.get(existingCode);
+								if(!dryRun)
+								{
+									auditWriteAttempted = true;
+									existingItem.Cost_Code_ID = newCostCodeId;
+								}
+								refreshedCount = refreshedCount + 1;
+							}
+						}
+						else
+						{
+							if(!dryRun)
+							{
+								auditWriteAttempted = true;
+								existingItem.Cost = 0;
+							}
+							zeroedCount = zeroedCount + 1;
+						}
+					}
+				}
+				summary = "batch=" + batch + "; buckets=5; subdivisions=" + batchCodes.distinct().size() + "; mapped subdivisions=" + eligibleCodes.size() + "; jobs=" + selectedJobs.size() + "; source rows=" + auditReceived + "; checked=" + checkedCount + "; refreshed IDs=" + refreshedCount + "; zeroed costs=" + zeroedCount + "; unchanged=" + unchangedCount + "; duplicate protections=" + duplicateCount;
+				info summary;
+				if(!dryRun)
+				{
+					finalStatus = "Success";
+					if(activeCodes.size() == 0) { finalStatus = "Skipped"; }
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":finalStatus,"stage":"Completed batch " + batch,"message":summary,"counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"skipped":unchangedCount + duplicateCount,"failed":0}});
+					// HCSS is the only batch-cursor writer; Test Add Hours changes only the date.
+					if(settings.Current_Batch != capturedCursor) { throw "Current Batch changed before completion; cursor preserved."; }
+					settings.Current_Batch = (batch + 1) % 5;
+				}
+			}
+			catch(batchError)
+			{
+				if(!dryRun && auditId != "")
+				{
+					failureStatus = "Failed";
+					if(auditWriteAttempted) { failureStatus = "Partial"; }
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"message":batchError.toString(),"details":"Batch=" + batch + "; cursor not advanced. Check any completed writes before retrying.","counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"failed":1}});
+				}
+				throw batchError;
+			}
+		)
+		}
+	}
+}

@@ -215,9 +215,11 @@ catch(auditError)
     return header+body+footer
 
 inventory=json.loads((BASE.parent/'inventory.json').read_text())
+retired=json.loads((BASE.parent/'retired-components.json').read_text())
 prepared=[]
 for item in inventory:
     if item['type'] not in {'schedule','functions'}: continue
+    if item['link_name'] in retired: continue
     source=(ROOT/item['source']).read_text(encoding='utf-8')
     patches=[]
     actions=blocks(source)

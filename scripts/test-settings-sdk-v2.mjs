@@ -287,4 +287,22 @@ for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
  h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);assert.equal(cfg.payload.data[field],field==='Engineering_Markup'?1e-7:'0.0000001');h.records[0][field]=1e-7;return{code:3000,data:{ID}};};
  assert.equal(h.widget.queue(field,1e-7),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],1e-7);assert.equal(writes,1,'Finite Number exponent readback verifies without accepting exponent text input');
 }
+// The native batch cursor belongs in Automation and cannot save outside 0-4.
+{
+  const h=await ready();h.records[0].Current_Batch='6';await h.widget.load();
+  h.widget.render();
+  assert.doesNotMatch(h.widget.other(),/data-f="Current_Batch"/,'Modeled batch is omitted from Additional Fields');
+  assert.match(inline,/n:"Current_Batch", l:"Current Batch", t:"int", min:0, max:4/);
+  for(const value of ['',-1,5,1.5]){
+    assert.equal(h.widget.queue('Current_Batch',value),false);
+    await h.widget.flush();
+  }
+  assert.equal(h.calls.filter(call=>call.method==='update').length,0,'Invalid batch drafts never write');
+  for(const value of [0,4]){
+    assert.equal(h.widget.queue('Current_Batch',value),true);await h.widget.flush();
+    assert.equal(h.records[0].Current_Batch,value);
+  }
+  assert.equal(h.widget.queue('Approval_Reminder_Interval_Days',12),false,'Unavailable fields remain blocked');
+}
+
 console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID/currency verification, strict Curve CRUD/parent verification, no mutation replay and guarded native handshake.');

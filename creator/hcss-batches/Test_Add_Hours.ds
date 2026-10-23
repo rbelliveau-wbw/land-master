@@ -1,0 +1,24 @@
+Test_Add_Hours as "Test Add Hours"
+{
+	type =  schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions
+		{
+		on load
+		(
+			// Preserve the shared three-hour anchor. HCSS owns Current_Batch exclusively.
+			settings = Settings[ID != 0];
+			if(settings.count() != 1 || settings.Next_Workflow_Run == null)
+			{
+				throw "Expected one Settings record with Next Workflow Run.";
+			}
+			settings.Next_Workflow_Run = settings.Next_Workflow_Run.addHour(3);
+		)
+		}
+	}
+}

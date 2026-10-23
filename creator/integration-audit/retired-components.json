@@ -1,0 +1,7 @@
+{
+  "Budgets_Check_HCSS_Budget": {
+    "replacement": "Budgets_Check_HCSS_Budget1",
+    "source": "creator/hcss-batches/Budgets_Check_HCSS_Budget1.action-1.dg",
+    "reason": "October 23 approved Settings-based five-batch replacement. Never regenerate the old fixed-time schedule as an active install candidate."
+  }
+}

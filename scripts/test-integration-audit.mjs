@@ -119,7 +119,7 @@ console.log('PASS: CTC system-scoped mapping and Final Acceptance source error/s
 
 // HCSS cleanup must use the same system scope as the HCSS import, while true
 // duplicates and broken lookups still stop before the destination cleanup loop.
-const hcssCleanup=fs.readFileSync('creator/integration-audit/prepared/Budgets_Check_HCSS_Budget.action-1.dg','utf8');
+const hcssCleanup=fs.readFileSync('creator/hcss-batches/rollback/Budgets_Check_HCSS_Budget.action-1.dg','utf8');
 const hcssCriteria=hcssCleanup.match(/subdiv = External_System_Mapping\[([^\n]+)\];/)[1]
   .replace(/\b(External_Code|External_System)\b/g,'mapping.$1');
 const selectHcss=vm.runInNewContext(`(mapping,sourceJobCode)=>${hcssCriteria}`);

@@ -1,5 +1,15 @@
 # Settings Manager
 
+## 1.6.2 — Automation batch control
+
+The existing `Current_Batch` field now appears in Automation beside Next Workflow
+Run, with whole-number validation from 0 through 4. It is omitted from Additional
+Fields. Loading Settings never normalizes the stored value. The schedule impact
+disclosure lists the eight confirmed existing schedules and the new HCSS batch
+check; its Creator replacement requires separate publication. See the
+[HCSS rollout](../../docs/hcss-five-batches-2026-10-23.md). Frontend rollback is
+**1.6.1**; keep the permanent widget URL.
+
 ## 1.6.1 — sidebar workspace
 
 Settings has a persistent left menu and one visible screen at a time. Approval
@@ -19,7 +29,7 @@ widget URL unchanged. Repository-wide validation and Pages build are required be
 
 | Menu group | Screen | Existing configuration or behavior |
 | --- | --- | --- |
-| General | Automation | Workflow failure recipients, workflow run anchor and approval reminders |
+| General | Automation | Workflow failure recipients, workflow run anchor, Current Batch and approval reminders |
 | General | Workflow Log | Lazy read-only execution history, date range, search and failure filter |
 | Approvals | Approval Rules | Workflow scope, ordered roles and applicable conditions |
 | Approvals | Approvers | Role-to-person assignments, approval email and enabled state |
@@ -35,7 +45,7 @@ widget URL unchanged. Repository-wide validation and Pages build are required be
 | AI & Data | Spreadsheet Lot Import | CSV/XLSX interpretation instructions |
 | Advanced | Additional Fields | Unmodeled Settings fields, only when present |
 
-Automation retains `Next_Workflow_Run`, `Approval_Reminder_Interval_Days` and
+Automation retains `Current_Batch`, `Next_Workflow_Run`, `Approval_Reminder_Interval_Days` and
 `Next_Approval_Reminder_Date`, including the scheduled jobs affected by the run
 anchor. `Workflow_Log_Failure_Recipients` remains a User Access multi-select.
 Workflow Log loads only when opened and keeps the complete selected date range,

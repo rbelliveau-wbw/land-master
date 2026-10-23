@@ -1,0 +1,27 @@
+Test_Add_Hours as "Test Add Hours"
+{
+	type =  schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions
+		{
+		on load
+		(
+			settings = Settings[ID != 0];
+			settings.Next_Workflow_Run=settings.Next_Workflow_Run.addHour(3);
+			if(settings.Current_Batch == 9 || settings.Current_Batch == null)
+			{
+				settings.Current_Batch=0;
+			}
+			else
+			{
+				settings.Current_Batch=settings.Current_Batch + 1;
+			}
+		)
+		}
+	}
+}

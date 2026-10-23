@@ -13,7 +13,7 @@ Preserve field nodes, drafts, selection/caret, each screen's scroll position,
 and loaded Workflow Log filters when switching screens. Load workflow history
 on first entry; further reads use its explicit Refresh or date filters.
 
-Use short field help and tooltips. Put the daily-workflow impact list behind a
+Use short field help and tooltips. Put the scheduled-workflow impact list behind a
 counted disclosure. Show duplicate-record and unavailable-data warnings above
 every screen; a healthy singleton does not need a persistent success banner.
 Keep connection, pending, failed and unknown-save states truthful and visible.
@@ -36,6 +36,14 @@ threshold and point to Approval Rules for current budget modification routing.
 Do not reinterpret the native Multi_Line field. Preserve AI instructions,
 provider and model values. Additional Fields keeps unknown record fields
 available without pretending their purpose is known.
+
+User direction October 23, 2026: place the existing `Current_Batch` field in
+Automation beside `Next_Workflow_Run`, and omit it from Additional Fields.
+Accept whole numbers 0–4 only; retain rejected drafts and the existing native
+save/access protections. The HCSS check owns cursor advancement after success;
+the three-hour timer owns only the next run date. Do not silently change an
+existing out-of-range value while displaying Settings. Keep the affected-job
+disclosure accurate when native schedules change.
 
 Curve dropdowns use searchable single-value pickers. The hidden original
 select owns the exact value and original change handler; preserve unresolved

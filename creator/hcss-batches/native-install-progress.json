@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-23",
+  "environment": "development",
+  "creatorPublication": "User promotes Creator changes; PMP does not publish Creator",
+  "newWorkflow": {
+    "link": "Budgets_Check_HCSS_Budget1",
+    "display": "Budgets - Check HCSS Budget Lines - 5 Batches",
+    "form": "Settings",
+    "start": "Next_Workflow_Run",
+    "frequency": "daily",
+    "timeZone": "America/Chicago",
+    "savedLiveMode": true,
+    "reopenedMatchesCanonical": true,
+    "nativeFormatterDifference": "Redundant parentheses removed around three pure-AND destination terms.",
+    "nativeSourceSha256": "6e618847cdc4e81efcf033047b0693c8d04d2b681dd5f6698e5fcef5e3d117cf"
+  },
+  "timer": {
+    "link": "Test_Add_Hours",
+    "savedAndReopened": true,
+    "dateAdvanceHours": 3,
+    "writesBatch": false
+  },
+  "retiredWorkflow": {
+    "link": "Budgets_Check_HCSS_Budget",
+    "deletedInDevelopment": true,
+    "remainingRowsAfterReload": 0,
+    "rollback": "rollback/Budgets_Check_HCSS_Budget.ds"
+  },
+  "currentBatch": {
+    "developmentInitialized": 0,
+    "productionNotEdited": true,
+    "normalization": "Null/out-of-range cursor uses 0; success advances to next modulo 5"
+  },
+  "developmentScheduleExecutions": "suspended; unchanged",
+  "readOnlyPreviews": [
+    {
+      "batch": 0,
+      "subdivisions": 1,
+      "mappedSubdivisions": 1,
+      "jobs": 1,
+      "sourceRows": 0,
+      "checked": 0
+    },
+    {
+      "batch": 1,
+      "subdivisions": 0,
+      "mappedSubdivisions": 0,
+      "jobs": 0,
+      "sourceRows": 0,
+      "checked": 0
+    },
+    {
+      "batch": 2,
+      "subdivisions": 1,
+      "mappedSubdivisions": 1,
+      "jobs": 1,
+      "sourceRows": 0,
+      "checked": 0
+    },
+    {
+      "batch": 3,
+      "subdivisions": 2,
+      "mappedSubdivisions": 2,
+      "jobs": 2,
+      "sourceRows": 75,
+      "checked": 75
+    },
+    {
+      "batch": 4,
+      "subdivisions": 1,
+      "mappedSubdivisions": 1,
+      "jobs": 1,
+      "sourceRows": 0,
+      "checked": 0
+    }
+  ],
+  "previewChanges": {
+    "businessRecords": 0,
+    "workflowLogs": 0,
+    "settings": 0
+  },
+  "productionCleanupExecuted": false,
+  "limitations": [
+    "Development has five budget subdivisions; Production batch sizes and write-path performance were not exercised.",
+    "Production cursor normalizes on first successful batch; no Production Settings value was edited."
+  ],
+  "frontend": {
+    "widget": "settings-manager",
+    "version": "1.6.2",
+    "productionRequested": true,
+    "stageChanged": false
+  },
+  "validation": [
+    "npm run validate passed",
+    "npm run build:pages passed",
+    "actual Deluge source/decision-block tests passed",
+    "all five native read-only previews passed"
+  ]
+}

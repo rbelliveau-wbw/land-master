@@ -142,6 +142,7 @@
         try { proposed = moneyText(proposed); } catch (error) { invalid = error; }
       }
       if (definition && definition.t === 'int' && proposed !== '' && !Number.isSafeInteger(Number(proposed))) invalid = problem('Enter a whole number. The draft is retained.', null, 'rejected');
+      if (definition && definition.n === 'Current_Batch' && (proposed === '' || !Number.isInteger(Number(proposed)) || Number(proposed) < definition.min || Number(proposed) > definition.max)) invalid = problem('Current Batch must be a whole number from 0 to 4. The draft is retained.', null, 'rejected');
       const revision = (S.revisions[field] || 0) + 1;
       S.revisions[field] = revision; S.editEpoch++;
       S.drafts[field] = {value:copy(proposed), revision, status:'queued'};
