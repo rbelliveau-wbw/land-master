@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-23",
+  "environment": "development",
+  "report": "All_Task_Schedules",
+  "source": "Saved native Configure Fields for Web; rendered fieldname attributes.",
+  "columns": [
+    "Task_Code",
+    "Source_Project_ID",
+    "Task_Status",
+    "Task_Name",
+    "Completion_Date",
+    "Milestone_Task",
+    "Subdivision1",
+    "Stage_Key",
+    "Start_Date",
+    "End_Date",
+    "Source_System",
+    "Source_Record_ID",
+    "Source_Key",
+    "Source_Task_ID",
+    "Source_Milestone_ID",
+    "Source_Modified_At",
+    "Synced_At",
+    "Write_Enabled",
+    "ID"
+  ]
+}

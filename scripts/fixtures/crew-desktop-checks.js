@@ -8,7 +8,7 @@
   parent.postMessage({crewDesktopQA:{status:'running',...metrics,stage:'Waiting for schedule data'}},location.origin);
   $('#browser-checks').innerHTML='<li>Running desktop checks…</li>';
   try{
-   await wait(()=>{if($('#connection')?.dataset.state==='error'&&!CrewApp.state.loading)throw new Error($('#connection').textContent);return CrewApp.state.ready&&!CrewApp.state.loading;});await frame();
+   await wait(()=>{if($('#connection')?.dataset.state==='error'&&!CrewApp.state.loading)throw new Error($('#connection').textContent);return CrewApp.state.ready&&!CrewApp.state.loading;});window.CrewManager?.switchWorkspace('schedule');await frame();
    const gantt=$('.gantt-scroll'),table=$('#tableScroll');
    assert(all('.gantt-row.milestone').length===38,'38 synthetic phases rendered');
    assert(document.documentElement.scrollWidth<=innerWidth+1,'No horizontal page overflow',document.documentElement.scrollWidth);

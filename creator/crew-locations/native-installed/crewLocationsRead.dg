@@ -4,7 +4,7 @@ map crewLocationsRead(string reportName, string criteria)
 	try 
 	{
 		config = thisapp.crewLocationsConfig();
-		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules"};
+		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules","All_Crews","Crew_Assignment_Report"};
 		if(!allowed.contains(reportName) || zoho.loginuser == null || zoho.loginuser == "public")
 		{
 			return result;

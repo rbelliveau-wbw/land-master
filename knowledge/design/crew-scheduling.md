@@ -4,7 +4,9 @@ Repository-wide rules for Crew Locations and equivalent scheduling surfaces.
 The implementation and installation contract are in
 [Crew Locations](../modules/crew-locations.md).
 
-Use a full-width timeline above the schedule grid. Keep each phase's Milestones
+Open **Crews** by default, beside the **Milestones & tasks** workspace. Keep
+the schedule mounted while switching workspaces. In the schedule workspace,
+use a full-width timeline above the schedule grid. Keep each phase's Milestones
 row directly above Tasks. Put crew badges beneath Tasks in the left title column.
 Keep phase IDs stable, readable text, normal page scrolling, and a real calendar
 axis starting today in America/Chicago. Month and year labels must remain readable
@@ -59,6 +61,61 @@ It registers keyed paired rows and uses the existing shared engines for surfaces
 feedback, meters, numeric day counts, local lot counts and selection quantities.
 Actor/permission epochs discard prior animation history. Native editable inputs retain their
 values/caret. Reduced motion is supported.
+
+## Crew roster and dated work
+
+Use the Pro Forma workspace palette, compact record header and readable desktop
+cards. Put the searchable Active / Inactive / All roster on the left and the
+selected crew's detail on the right. Bound the roster and work tables with their
+own vertical scrolling while retaining normal page scrolling. New crew, Edit
+crew, Deactivate / Reactivate and Assign work remain visible at ordinary desktop
+sizes. Keep Milestones & tasks available as a separate full-width workspace;
+do not insert a roster above or beside its Gantt.
+
+Crew_Code is the stable identity and cannot change after creation. Crew_Name is
+optional; fall back to the code without repeating the same text on two roster
+lines. Show active state and the validated badge color consistently. Choose
+black or white badge text with sufficient contrast. Deactivation retains the
+crew and its recorded work; reactivation permits new assignments again.
+
+An assignment is one crew, one exact phase identity and one calendar **Work
+date**. Use plain MM/DD/YYYY text and the established searchable single-select
+pickers for crew and phase. Do not invent assignment end dates, staffing spans,
+capacity, or exclusivity rules. **Latest Dated Work** shows every assignment on
+the most recent date through today, rather than claiming those crews remain
+onsite. **Upcoming Work** lists future occurrences; earlier recorded work stays
+available separately. This complete work history is independent of the
+schedule's seven-day crew-badge reporting window, which is shown only in the
+schedule workspace.
+
+Permit correction or reassignment only for editable manual records. Preserve
+native record IDs, immutable crew codes, source system, source record ID and
+assignment source key. Imported assignment rows explain their source lock.
+Inactive crews cannot receive new work; an existing assignment may retain its
+same inactive crew during a permitted correction. Both the current and target
+phase remain subject to native permission and phase-status locks.
+
+Use the authenticated user's native Creator SDK for the single-record write,
+after server preparation; native form validation and Creator permissions remain
+authoritative. Show a precise permission or Creator-promotion dependency when
+management is unavailable. Never expose a partial paginated roster as complete.
+Retain the last complete authorized view during a refresh; access and required
+field failures clear private records.
+
+Keep a failed draft in its editor. Block duplicate commits while saving and
+show success only for the matching request, kind and native destination ID.
+An unknown reply locks further writes and offers a read-only status recheck;
+never replay it automatically. Keep recovery memory scoped to the authenticated
+user and environment across reloads. That memory is a draft and request
+identity, not proof that a record was saved.
+
+The existing [crew-surfaces.js](../../widgets/crew-locations/src/app/crew-surfaces.js)
+registry owns the shared tab rail, pane/disclosure, dialog and save-feedback
+patterns and keyed roster/work-row movement. Reuse that ownership rather than
+installing a second observer for the same surfaces. Active/inactive counts,
+upcoming-work counts and earlier-work counts use the existing keyed Sliding
+push numeric engine. Dates and record identities remain static; initial values,
+permission changes and reduced motion retain the shared guards.
 
 The latest October 21 direction removes testing mode and permits Creator-only
 Production edits. Keep the compact Creator only / Projects push off label.

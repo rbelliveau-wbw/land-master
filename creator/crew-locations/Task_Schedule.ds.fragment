@@ -9,7 +9,7 @@ Task_Schedule_Details
  column = 0
  width = medium
 )
-must have Subdivision1
+Subdivision1
 (
  type = picklist
  values = Subdivision.ID
@@ -18,7 +18,7 @@ must have Subdivision1
  column = 1
  width = medium
 )
-must have Stage_Key
+Stage_Key
 (
  type = text
  row = 1
@@ -70,6 +70,49 @@ Source_Task_ID
 Source_Milestone_ID
 (
  type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Task_Name
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Task_Code
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Source_Project_ID
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Task_Status
+(
+ type = text
+ row = 1
+ column = 1
+ width = medium
+)
+Completion_Date
+(
+ type = date
+ row = 1
+ column = 1
+ width = medium
+)
+Milestone_Task
+(
+ type = checkbox
+ initial value = false
  row = 1
  column = 1
  width = medium

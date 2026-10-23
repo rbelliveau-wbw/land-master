@@ -38,6 +38,10 @@ test('Deployable assets, typed function fallbacks and test guards remain reviewa
 });
 test('Every new persisted field belongs to a valid Creator section for publication',()=>{
  const schema=JSON.parse(fs.readFileSync('creator/crew-locations/schema.json','utf8'));
+ const progress=JSON.parse(fs.readFileSync('creator/crew-locations/native-install-progress.json','utf8'));
+ const pendingTaskFields=progress.management_2026_10_23?.task_mirror?.pending_fields??[],taskAdditions=['Task_Name','Task_Code','Source_Project_ID','Task_Status','Completion_Date','Milestone_Task'];
+ assert.ok(Array.isArray(pendingTaskFields)&&pendingTaskFields.every(name=>typeof name==='string'&&taskAdditions.includes(name))&&new Set(pendingTaskFields).size===pendingTaskFields.length,'native pending field evidence contains only exact, distinct new task-mirror field names');
+ if(pendingTaskFields.length){const config=fs.readFileSync('creator/functions/crewLocationsConfig.dg','utf8');for(const flag of ['taskMirrorEnabled','tasksEnabled','taskWritesVerified'])assert.match(config,new RegExp('config\\.put\\("'+flag+'",false\\)'),'pending native task fields require '+flag+' disabled');}
  function verifyLayout(code,expected,label){
   const blocks=[...code.matchAll(/^\s*(?:(?:must have|unique)\s+)*(\w+)\s*\n\s*\(([\s\S]*?)\n\s*\)/gm)].map(m=>({name:m[1],body:m[2]}));
   const sections=blocks.filter(b=>/\btype\s*=\s*section\b/.test(b.body));
@@ -45,14 +49,23 @@ test('Every new persisted field belongs to a valid Creator section for publicati
   const rows=new Set(sections.map(b=>Number(b.body.match(/\brow\s*=\s*(\d+)/)?.[1])));
   for(const name of expected){const field=blocks.find(b=>b.name===name);assert.ok(field,label+'.'+name+' exists');assert.ok(rows.has(Number(field.body.match(/\brow\s*=\s*(\d+)/)?.[1])),label+'.'+name+' belongs to a section row');assert.ok(Number(field.body.match(/\bcolumn\s*=\s*(\d+)/)?.[1])>0,label+'.'+name+' uses a field column');}
  }
- for(const form of schema.forms){verifyLayout(fs.readFileSync('creator/crew-locations/'+form.name+'.ds.fragment','utf8'),form.fields.map(f=>f.name),form.name);const native='creator/crew-locations/native-installed/'+form.name+'.ds';if(fs.existsSync(native))verifyLayout(fs.readFileSync(native,'utf8'),form.fields.map(f=>f.name),'native '+form.name);}
+ for(const form of schema.forms){
+  const expected=form.fields.map(field=>field.name);verifyLayout(fs.readFileSync('creator/crew-locations/'+form.name+'.ds.fragment','utf8'),expected,form.name);
+  const native='creator/crew-locations/native-installed/'+form.name+'.ds';
+  if(fs.existsSync(native)){
+   const installed=fs.readFileSync(native,'utf8'),pending=form.name==='Task_Schedule'?pendingTaskFields:[];
+   for(const name of pending){assert.ok(expected.includes(name),'pending native field '+name+' is in the candidate schema');assert.ok(!new RegExp('^\\s*(?:(?:must have|unique)\\s+)*'+name+'\\s*\\n\\s*\\(','m').test(installed),'pending native '+name+' must not also be claimed in the installed snapshot');}
+   verifyLayout(installed,expected.filter(name=>!pending.includes(name)),'native '+form.name);
+  }
+ }
  verifyLayout(fs.readFileSync('creator/crew-locations/User_Access.ds.fragment','utf8'),schema.add_to_User_Access.map(f=>f.name),'User_Access additions');
 });
 test('Controller defaults and native identity-only acknowledgements preserve real schedules',()=>{
  // Expose private pure helpers only inside this isolated VM; production keeps
  // its existing public API. This exercises the actual controller implementation.
  const app=fs.readFileSync('widgets/crew-locations/src/app/crew-app.js','utf8'),scope=vm.createContext({Date,Intl,Map,Set,Number,String,Object,Math,document:{getElementById:()=>null}});scope.window=scope;
- vm.runInContext(source,scope);vm.runInContext(app.replace('root.CrewApp=Object.freeze({start,state:S});','root.CrewApp=Object.freeze({start,state:S,defaultFilters,requireDestinations,applyConfirmedValues,focusOption});'),scope);
+ assert.ok(app.includes('root.CrewApp=Object.freeze({start,state:S,'),'controller public export remains available to the isolated helper harness');
+ vm.runInContext(source,scope);vm.runInContext(app.replace('root.CrewApp=Object.freeze({start,state:S,','root.CrewApp=Object.freeze({start,state:S,defaultFilters,requireDestinations,applyConfirmedValues,focusOption,badgeInk,'),scope);
  const api=scope.CrewApp,state=api.state;state.model=scope.CrewModel.normalize(crewFixture());state.day=day;state.capabilities={sources:{crews:false,tasks:false}};
  const defaults=api.defaultFilters(),upcoming=scope.CrewModel.upcoming(state.model,defaults,day);assert.ok(defaults.phases.length>0);assert.deepEqual([...defaults.phases],upcoming.map(p=>p.id));assert.ok(!defaults.phases.includes('assigned'));
  state.capabilities.sources.crews=true;assert.deepEqual([...api.defaultFilters().phases],['assigned']);
@@ -61,5 +74,8 @@ test('Controller defaults and native identity-only acknowledgements preserve rea
  api.requireDestinations(ack,operationId,[change]);api.applyConfirmedValues(ack,[change]);assert.equal(record.end,oldEnd+3,'optional native display metadata is not required for a confirmed duration');
  const unrelated=state.model.phases[0].records.M['Road Prep'],unrelatedEnd=unrelated.end;api.applyConfirmedValues({...ack,records:[{type:'M',id:unrelated.id,start:'2090-01-01',end:'2090-02-01'},{type:'M',id:record.id,end:scope.CrewModel.iso(oldEnd+4)}]},[change]);assert.equal(unrelated.end,unrelatedEnd,'returned metadata cannot mutate an unrelated source record');assert.equal(record.end,oldEnd+4,'provided authoritative fields override display fallback');
  let focusOptions;const list={scrollTop:10,getBoundingClientRect:()=>({top:100,bottom:200})},option={parentElement:list,focus:options=>{focusOptions=options;},getBoundingClientRect:()=>({top:215,bottom:245})};api.focusOption(option);assert.equal(focusOptions.preventScroll,true,'keyboard option focus cannot scroll the underlying page');assert.equal(list.scrollTop,55,'only the option list scrolls enough to reveal the keyboard target');
+ const luminance=color=>{const channels=color.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return .2126*channels[0]+.7152*channels[1]+.0722*channels[2];};
+ for(const background of ['#ffffff','#ffff00','#000000','#102a46']){const ink=api.badgeInk(background),light=Math.max(luminance(background),luminance(ink)),dark=Math.min(luminance(background),luminance(ink));assert.ok((light+.05)/(dark+.05)>=4.5,'badge code is readable on '+background);}
+ assert.notEqual(api.badgeInk('#ffffff').toLowerCase(),'#ffffff','white crew colors retain visible badge text');
 });
 console.log('Passed '+checks+' Crew Locations scheduling and contract groups. Deluge compilation/live installation are separate checks.');

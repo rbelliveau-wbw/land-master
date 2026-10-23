@@ -1,7 +1,55 @@
-// NEW Crew: created/edited → On Validate.
-access = User_Access[User == zoho.loginuser];
-if(access.count() != 1 || access.Manage_Crew_Assignments != true || !ifnull(input.Badge_Color,"").matches("#[a-fA-F0-9]{6}"))
+// Crew: created/edited -> On Validate. Required for native SDK and form writes.
+crewValidationError = "";
+try
 {
- alert "Crew management permission and a #RRGGBB badge color are required.";
- cancel submit;
+	access = User_Access[User == zoho.loginuser];
+	if(zoho.loginuser == null || zoho.loginuser == "public" || access.count() != 1 || access.View_Crew_Locations != true || access.Manage_Crew_Assignments != true)
+	{
+		crewValidationError = "Crew management permission has not been granted.";
+	}
+	code = ifnull(input.Crew_Code,"").trim(); name = ifnull(input.Crew_Name,"").trim(); color = ifnull(input.Badge_Color,"").trim();
+	if(code == "" || code.length() > 64 || name.length() > 255 || !color.matches("#[a-fA-F0-9]{6}"))
+	{
+		crewValidationError = "Enter a crew code and a valid #RRGGBB badge color.";
+	}
+	if(input.ID != null)
+	{
+		// Caller-scoped report access is required in addition to native form rights.
+		read = thisapp.crewLocationsRead("All_Crews","ID == " + input.ID.toString());
+		if(read.get("ok") != true || read.get("records").size() != 1)
+		{
+			crewValidationError = "This crew is unavailable to the current user.";
+		}
+		else
+		{
+			current = read.get("records").get(0);
+			for each fieldName in {"ID","Crew_Code","Source_System","Source_Record_ID"}
+			{
+				if(!current.keys().contains(fieldName)) { crewValidationError = "All_Crews must expose native field " + fieldName + "."; }
+			}
+			if(ifnull(current.get("Crew_Code"),"").toString() != code || ifnull(current.get("Source_System"),"").toString() != ifnull(input.Source_System,"") || ifnull(current.get("Source_Record_ID"),"").toString() != ifnull(input.Source_Record_ID,""))
+			{
+				crewValidationError = "Crew code and source identity are immutable.";
+			}
+		}
+	}
+	else
+	{
+		if(!code.matches("[a-zA-Z0-9][a-zA-Z0-9 _-]{0,63}") || input.Source_System != "MANUAL_WIDGET" || !ifnull(input.Source_Record_ID,"").matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"))
+		{
+			crewValidationError = "Create crews through Crew Management with a stable manual request identity.";
+		}
+	}
+	input.Crew_Code = code;
+	input.Crew_Name = name;
+	input.Badge_Color = color;
+}
+catch(crewValidationFailure)
+{
+	crewValidationError = "Crew validation could not confirm native access. No change was saved.";
+}
+if(crewValidationError != "")
+{
+	alert crewValidationError;
+	cancel submit;
 }

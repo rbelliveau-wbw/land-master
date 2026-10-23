@@ -1,11 +1,101 @@
-// NEW Crew_Assignment: created/edited → On Validate.
-access = User_Access[User == zoho.loginuser];
-if(access.count() != 1 || access.Manage_Crew_Assignments != true || input.Assignment_Date == null || input.Source_Record_ID == null || input.Source_System == null)
+// Crew_Assignment: created/edited -> On Validate. Required for all native writes.
+assignmentValidationError = ""; lockedStatuses = {"completed","sold out","sold out (prev wfy)"};
+try
 {
- alert "Crew management permission and verified source identity/date are required.";
- cancel submit;
+	access = User_Access[User == zoho.loginuser];
+	if(zoho.loginuser == null || zoho.loginuser == "public" || access.count() != 1 || access.View_Crew_Locations != true || access.Manage_Crew_Assignments != true)
+	{
+		assignmentValidationError = "Crew management permission has not been granted.";
+	}
+	if(input.Subdivision1 == null || input.Crew == null || input.Assignment_Date == null)
+	{
+		assignmentValidationError = "A phase, crew and work date are required.";
+	}
+	else
+	{
+		oldCrewId = ""; oldPhaseId = "";
+		if(input.ID != null)
+		{
+			read = thisapp.crewLocationsRead("Crew_Assignment_Report","ID == " + input.ID.toString());
+			if(read.get("ok") != true || read.get("records").size() != 1)
+			{
+				assignmentValidationError = "This assignment is unavailable to the current user.";
+			}
+			else
+			{
+				current = read.get("records").get(0);
+				for each fieldName in {"ID","Subdivision1","Crew","Source_System","Source_Record_ID","Source_Key"}
+				{
+					if(!current.keys().contains(fieldName)) { assignmentValidationError = "Crew_Assignment_Report must expose native field " + fieldName + "."; }
+				}
+				system = ifnull(current.get("Source_System"),"").toString(); sourceId = ifnull(current.get("Source_Record_ID"),"").toString(); sourceKey = ifnull(current.get("Source_Key"),"").toString();
+				manualSource = false;
+				if(system == "MANUAL_WIDGET") { manualSource = true; }
+				if(system == "MANUAL_QA") { manualSource = true; }
+				validIdentity = manualSource && sourceId != "" && sourceKey == system + ":" + sourceId;
+				if(!validIdentity)
+				{
+					assignmentValidationError = "Imported assignment editing is unavailable.";
+				}
+				if(system != ifnull(input.Source_System,"") || sourceId != ifnull(input.Source_Record_ID,"") || sourceKey != ifnull(input.Source_Key,""))
+				{
+					assignmentValidationError = "Assignment source identity is immutable.";
+				}
+				oldCrewId = current.get("Crew").get("ID").toString(); oldPhaseId = current.get("Subdivision1").get("ID").toString();
+			}
+		}
+		else if(input.Source_System != "MANUAL_WIDGET" || !ifnull(input.Source_Record_ID,"").matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}") || input.Source_Key != "MANUAL_WIDGET:" + input.Source_Record_ID)
+		{
+			assignmentValidationError = "Create assignments through Crew Management with a stable manual request identity.";
+		}
+		crewId = input.Crew.toString(); phaseId = input.Subdivision1.toString();
+		crewRead = thisapp.crewLocationsRead("All_Crews","ID == " + crewId);
+		if(crewRead.get("ok") != true || crewRead.get("records").size() != 1)
+		{
+			assignmentValidationError = "This crew is unavailable to the current user.";
+		}
+		else
+		{
+			crew = crewRead.get("records").get(0);
+			if(!crew.keys().contains("Active")) { assignmentValidationError = "All_Crews must expose native field Active."; }
+			requiresActiveCrew = false;
+			if(input.ID == null) { requiresActiveCrew = true; }
+			if(oldCrewId != crewId) { requiresActiveCrew = true; }
+			if(ifnull(crew.get("Active"),false).toString().toLowerCase() != "true" && requiresActiveCrew)
+			{
+				assignmentValidationError = "Choose an active crew.";
+			}
+		}
+		phaseIds = {phaseId}; if(oldPhaseId != "" && oldPhaseId != phaseId) { phaseIds.add(oldPhaseId); }
+		for each currentPhaseId in phaseIds
+		{
+			phaseRead = thisapp.crewLocationsRead("All_Subdivisions","ID == " + currentPhaseId);
+			if(phaseRead.get("ok") != true || phaseRead.get("records").size() != 1)
+			{
+				assignmentValidationError = "This phase is unavailable to the current user.";
+			}
+			else
+			{
+				phase = phaseRead.get("records").get(0);
+				for each fieldName in {"Status","Projects_Status"}
+				{
+					if(!phase.keys().contains(fieldName)) { assignmentValidationError = "All_Subdivisions must expose native field " + fieldName + "."; }
+				}
+				for each rawStatus in {phase.get("Status"),phase.get("Projects_Status")}
+					{
+						status = ifnull(rawStatus,"").toString().trim().toLowerCase().replaceAll("\\s+"," ");
+						if(lockedStatuses.contains(status)) { assignmentValidationError = "This phase is locked."; }
+					}
+				}
+			}
+	}
 }
-else
+catch(assignmentValidationFailure)
 {
- input.Source_Key = input.Source_System + ":" + input.Source_Record_ID;
+	assignmentValidationError = "Assignment validation could not confirm native access. No change was saved.";
+}
+if(assignmentValidationError != "")
+{
+	alert assignmentValidationError;
+	cancel submit;
 }

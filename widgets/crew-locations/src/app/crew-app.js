@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
   const M=root.CrewModel,$=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const S={ready:false,loading:false,busy:false,model:null,filters:M.defaults(),hidden:new Set(),day:M.today(),permissions:{},capabilities:null,picker:null,operation:null,deltas:new Map(),drag:null,generation:0,epoch:0,preferencesLoaded:false,initialSelectionDone:false};
+  const S={ready:false,loading:false,busy:false,managementBusy:false,managementUnknown:false,model:null,filters:M.defaults(),hidden:new Set(),day:M.today(),permissions:{},capabilities:null,picker:null,operation:null,deltas:new Map(),drag:null,generation:0,epoch:0,preferencesLoaded:false,initialSelectionDone:false};
   const checkSvg='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>',chevron='<svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg>';
   // The exported Phase workflow already writes "Project - Phase NN" into the
   // subdivision name. Avoid repeating that display suffix; identity stays ID-based.
@@ -16,13 +16,41 @@
       if(data.action!==body.action||data.creatorOnly!==true||data.projectsPushEnabled!==false||data.environment!==c.environment.toLowerCase())throw new Error('The scheduling service did not confirm Creator-only saving in this environment');return data;
     }catch(e){if(write&&e.unknown==null)e.unknown=true;throw e;}finally{clearTimeout(timer);}
   }
+  const managementScope=()=>{const c=LMRuntime.current();return [c.user,c.environment,S.epoch].join('|');};
+  function managementReady(){document.dispatchEvent(new CustomEvent('crew:management-ready'));}
+  // Follow the existing Land Master one-record SDK save pattern: native identity
+  // acknowledgement establishes success; field comparisons are recovery-only.
+  function managementMutationItem(raw){if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;const hasResult=Object.prototype.hasOwnProperty.call(raw,'result'),item=hasResult&&String(raw.code)==='3000'&&!Object.prototype.hasOwnProperty.call(raw,'data')&&Array.isArray(raw.result)&&raw.result.length===1?raw.result[0]:!hasResult?raw:null;return item&&typeof item==='object'&&!Array.isArray(item)&&!Object.prototype.hasOwnProperty.call(item,'result')?item:null;}
+  function managementMutationEvidence(raw,item,id){
+    const seen=new Set();function visit(value,depth){if(depth>32)return false;if(typeof value==='string'){if(/^[{[]/.test(value.trim())){try{return visit(JSON.parse(value),depth+1);}catch{return false;}}return true;}if(!value||typeof value!=='object')return true;if(seen.has(value))return false;seen.add(value);const canonical=value===raw||value===item||value===item.data;return Object.keys(value).every(key=>{if(key==='ID'||key==='id')return !!id&&value===item.data&&key==='ID'&&value[key]===id;if(key==='code'&&value!==raw&&value!==item)return false;if(!canonical&&(key==='result'||key==='success'||key==='status'))return false;if(!id&&(key==='success'&&value[key]===true||key==='status'&&/^(success|ok|saved|created|added|updated)(\b|_)/i.test(String(value[key]||'').trim())))return false;return visit(value[key],depth+1);});}return !!item&&visit(raw,0);
+  }
+  function managementAcknowledgement(raw,expected){const item=managementMutationItem(raw),id=item?.data?.ID;if(!item||String(item.code)!=='3000'||LMData.responseFailed(raw)||LMData.responseFailed(item)||typeof id!=='string'||!/^\d+$/.test(id)||expected&&id!==expected||!managementMutationEvidence(raw,item,id)){const e=new Error(LMData.failureMessage(raw)||'Creator did not confirm the saved record identity. Check save status.');e.raw=raw;throw e;}return id;}
+  function managementRejected(error){const raw=error?.response||error?.raw||error,item=managementMutationItem(raw);return !!item&&/^(1000|1030|1040|1060|1080|1100|1130|2892|2893|2894|2897|2898|2899|2902|2933|2945|2955|2965|3001|3002|3020|3050|3090|3190|3710|4000|8011|8012)$/.test(String(item.code||''))&&managementMutationEvidence(raw,item,'');}
+  async function managementApi(body){
+    // The manager releases an unknown-save lock only after matching the exact
+    // request, kind and destination returned by an explicit read-only recheck.
+    if(!['save-crew','save-assignment'].includes(body.action)){const data=await api(body);controls();return data;}
+    if(S.managementBusy||S.managementUnknown||S.busy||S.loading||S.operation?.unknown||S.drag)throw new Error('Finish the current save or review before making another change.');
+    const scope=managementScope();let dispatched=false,cancelled=false,timer;S.managementBusy=true;controls();
+    try{
+      const prepared=await api(body),kind=body.action==='save-crew'?'crew':'assignment';
+      if(prepared.requestId!==body.requestId)throw new Error('Creator prepared a different save request.');
+      if(prepared.state==='saved'){if(prepared.kind!==kind||typeof prepared.recordId!=='string'||!/^\d+$/.test(prepared.recordId))throw new Error('Creator did not confirm the existing saved identity.');return prepared;}
+      const w=prepared.write,expected=body[kind]?.id||'',fields=kind==='crew'?['Crew_Code','Crew_Name','Badge_Color','Active','Source_System','Source_Record_ID']:['Crew','Subdivision1','Assignment_Date','Source_System','Source_Record_ID','Source_Key'];
+      if(prepared.state!=='ready'||w?.kind!==kind||w.formName!==(kind==='crew'?'Crew':'Crew_Assignment')||w.reportName!==(kind==='crew'?'All_Crews':'Crew_Assignment_Report')||w.recordId!==expected||expected&&!/^\d+$/.test(expected)||!w.data||Array.isArray(w.data)||Object.keys(w.data).some(field=>!fields.includes(field)))throw new Error('Creator did not prepare a valid native save.');
+      const raw=await Promise.race([LMData.request('crew-management:'+kind,()=>{if(cancelled||scope!==managementScope())throw new Error('The Creator session changed or the queued save expired before saving.');dispatched=true;return expected?ZOHO.CREATOR.DATA.updateRecordById({report_name:w.reportName,id:expected,payload:{data:w.data}}):ZOHO.CREATOR.DATA.addRecords({form_name:w.formName,payload:{data:w.data}});},{readOnly:false}),new Promise((_,reject)=>{timer=setTimeout(()=>{cancelled=true;reject(new Error(dispatched?'The save response is unknown. Check save status before continuing.':'The save timed out before it was sent.'));},90000);})]);
+      const recordId=managementAcknowledgement(raw,expected);if(scope!==managementScope())throw new Error('The Creator session changed while saving. Recheck from the original account.');
+      LMData.invalidate();return {...prepared,kind,state:'saved',recordId,unknown:false};
+    }catch(e){e.unknown=e.unknown===true||dispatched&&!managementRejected(e);if(e.unknown)S.managementUnknown=true;throw e;}
+    finally{clearTimeout(timer);S.managementBusy=false;controls();}
+  }
   function windowLabel(){const f=n=>new Date(n*86400000).toLocaleDateString('en-US',{timeZone:'UTC',month:'long',day:'numeric',year:'numeric'});$('assignmentWindow').textContent='Subdivision assignments · '+f(S.day-7)+'–'+f(S.day);}
   function preferenceKey(){const c=LMRuntime.current();return 'crew-locations:view:'+c.environment+':'+c.user;}
   function storeView(){try{localStorage.setItem(preferenceKey(),JSON.stringify({filters:S.filters,hidden:[...S.hidden]}));}catch{}}
   function defaultFilters(){const filters=M.defaults();if(S.model&&S.capabilities?.sources?.crews===false)filters.phases=M.upcoming(S.model,filters,S.day).map(p=>p.id);return filters;}
   function restoreView(){try{const x=JSON.parse(localStorage.getItem(preferenceKey()));if(!x)return;const f=M.defaults();for(const key of ['crews','phases','territories','sections','horizons'])if(Array.isArray(x.filters?.[key]))f[key]=x.filters[key].filter(v=>typeof v==='string'||typeof v==='number');for(const key of Object.keys(f.table))if(Array.isArray(x.filters?.table?.[key]))f.table[key]=x.filters.table[key].filter(v=>typeof v==='string');f.sections=f.sections.filter(v=>M.SECTIONS.some(s=>s.key===v));f.horizons=f.horizons.filter(v=>[6,12,24,'all'].includes(v));f.showAll=x.filters.showAll===true;S.preferencesLoaded=true;S.filters=f;S.hidden=new Set((x.hidden||[]).filter(v=>M.STAGES.some(s=>['start','days','end'].includes(v.slice(s.length+1))&&v.startsWith(s+':'))));}catch{}}
   async function load(){
-    if(S.busy||S.operation?.unknown||S.drag)return;
+    if(S.busy||S.managementBusy||S.managementUnknown||S.operation?.unknown||S.drag)return;
     const generation=++S.generation;S.loading=true;controls();message('Loading schedule…','busy');
     try{
       const cap=await api({action:'capabilities'});if(cap.permissions?.view!==true)throw new Error('Crew Locations access has not been granted');if(['view','milestones','tasks','assignments'].some(key=>S.permissions[key]!==cap.permissions[key]))S.epoch++;S.permissions=cap.permissions;S.capabilities=cap;
@@ -30,9 +58,9 @@
       const values=await Promise.all(reports.map(async([key,reportName,fields])=>{const rows=await LMData.readAll({reportName,fields,criteria:key==='assignments'?"(Assignment_Date >= '"+M.us(S.day-7)+"' && Assignment_Date <= '"+M.us(S.day)+"')":undefined,fresh:true,isCancelled:()=>generation!==S.generation});for(const row of rows)for(const field of fields)if(!Object.prototype.hasOwnProperty.call(row,field))throw new Error(reportName+' must expose '+field+' to this user');return [key,rows];}));if(generation!==S.generation)return;
       const data=Object.fromEntries(values);S.model=M.normalize(data);M.assignments(S.model,S.day);if(!S.initialSelectionDone){if(!S.preferencesLoaded)S.filters=defaultFilters();S.initialSelectionDone=true;}for(const [key,delta] of S.deltas){const r=S.model.records.get(key);if(!r||r.start!==delta.after.start||r.end!==delta.after.end)S.deltas.delete(key);}S.ready=true;message('');render();
     }catch(e){if(generation!==S.generation)return;S.epoch++;S.ready=false;S.model=null;S.deltas.clear();closePicker();for(const id of ['ganttFilters','tableFilters','scheduleTable','restoreChips','issueList','historyContent','endpointContent'])$(id).innerHTML='';$('gantt').innerHTML='<p class="empty">'+esc(e.message)+'. Check the Development installation and module permissions.</p>';message(e.message,'error');}
-    finally{if(generation===S.generation){S.loading=false;controls();}}
+    finally{if(generation===S.generation){S.loading=false;controls();managementReady();}}
   }
-  function controls(){const disabled=!S.ready||S.loading||S.busy||!!S.operation?.unknown;document.querySelectorAll('[data-filter],#showAll,#showColumns,[data-restore],#reset').forEach(n=>n.disabled=disabled);$('refresh').disabled=S.loading||S.busy||!!S.operation?.unknown;$('history').disabled=!S.ready||S.busy;$('reviewSave').hidden=!S.operation?.unknown;document.querySelectorAll('.stage-input,.arrow,.handle').forEach(n=>{n.disabled=disabled||n.dataset.sourceLocked==='true';});}
+  function controls(){const disabled=!S.ready||S.loading||S.busy||S.managementBusy||S.managementUnknown||!!S.operation?.unknown;document.querySelectorAll('[data-filter],#showAll,#showColumns,[data-restore],#reset').forEach(n=>n.disabled=disabled);$('refresh').disabled=S.loading||S.busy||S.managementBusy||S.managementUnknown||!!S.operation?.unknown;$('history').disabled=!S.ready||S.busy||S.managementBusy||S.managementUnknown;$('reviewSave').hidden=!S.operation?.unknown;document.querySelectorAll('.stage-input,.arrow,.handle').forEach(n=>{n.disabled=disabled||n.dataset.sourceLocked==='true';});}
   const allOptions=key=>{
     const model=S.model;if(!model)return [];const f=S.filters,opts=[];
     if(key==='stageJump')return M.tableStages(f).filter(stage=>['start','days','end'].some(field=>M.visible(S.hidden,stage,field))).map(stage=>({id:stage,label:stage}));
@@ -70,7 +98,8 @@
   function focusOption(node){if(!node)return;node.focus({preventScroll:true});const list=node.parentElement,option=node.getBoundingClientRect(),viewport=list.getBoundingClientRect();if(option.top<viewport.top)list.scrollTop-=viewport.top-option.top;else if(option.bottom>viewport.bottom)list.scrollTop+=option.bottom-viewport.bottom;}
   function paintOptions(){const {key,query}=S.picker,selected=selections(key),focused=document.activeElement?.closest('#picker [data-option]')?.dataset.option,options=allOptions(key).filter(o=>M.norm(o.label+' '+(o.detail||'')).includes(M.norm(query)));$('picker').querySelector('[role=listbox]').innerHTML=options.map(o=>'<button role="option" class="picker-option" data-option="'+esc(String(o.id))+'" aria-selected="'+selected.includes(o.id)+'">'+checkSvg+'<span>'+esc(o.label)+(o.detail?'<small>'+esc(o.detail)+'</small>':'')+'</span></button>').join('')||'<p class="empty">No matching options</p>';if(focused!==undefined)focusOption([...$('picker').querySelectorAll('[data-option]')].find(node=>node.dataset.option===focused));}
   function pickerChange(value,clear=false){const key=S.picker.key;if(key==='stageJump'){const heading=[...$('scheduleTable').querySelectorAll('th[data-stage]')].find(node=>node.dataset.stage===value),button=S.picker.button;if(heading){const scroll=$('tableScroll'),fixed=$('scheduleTable').querySelector('.phase-column'),left=scroll.scrollLeft+heading.getBoundingClientRect().left-scroll.getBoundingClientRect().left-fixed.getBoundingClientRect().width;scroll.scrollLeft=Math.max(0,left);$('tableTopScroll').scrollLeft=scroll.scrollLeft;}closePicker();button.focus();return;}const arr=selections(key);if(clear)arr.splice(0);else{const option=allOptions(key).find(o=>String(o.id)===value);if(!option)return;const index=arr.indexOf(option.id);if(index<0)arr.push(option.id);else arr.splice(index,1);}storeView();paintOptions();render(false);positionPicker();}
-  const badges=p=>'<div class="badges">'+p.crews.map(c=>'<span class="crew-badge" style="background:'+c.color+'">'+esc(c.code)+'</span>').join('')+'</div>';
+  function badgeInk(color){const safe=/^#[a-f\d]{6}$/i.test(color||'')?color:'#49688c',rgb=safe.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4),luminance=.2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];return luminance>.179?'#000000':'#ffffff';}
+  const badges=p=>'<div class="badges">'+p.crews.map(c=>'<span class="crew-badge" style="background:'+c.color+';color:'+badgeInk(c.color)+'">'+esc(c.code)+'</span>').join('')+'</div>';
   const recordKey=r=>r.type+':'+r.id;
   const numeric=(n,key)=>n==null?'':'<span data-crew-number="'+esc(key)+'">'+esc(n)+'</span>';
   function tooltip(x){const name=M.SECTIONS.find(s=>s.key===x.section).name;return name+' · '+x.startRecord.type+' · '+x.startRecord.stage+' Start '+(M.us(x.start)||'missing')+' → '+x.endRecord.stage+' End '+(M.us(x.end)||'missing')+(x.start!=null&&x.end!=null?' · '+(x.end-x.start)+' days':'');}
@@ -134,7 +163,7 @@
   }
   function closeOperation(){if(S.busy)return;const saved=S.operation?.result?.state==='saved';$('operationDialog').close();$('app').inert=false;if(!S.operation?.unknown){S.operation=null;if(saved&&root.LMSuccess)LMSuccess.show('Schedule saved locally · no Projects push');load();}controls();}
   async function commit(p,changes,origin,extra={}){
-    changes=changes.filter(c=>Object.keys(c.fields).length);if(!changes.length)return null;if(S.busy||S.loading||S.operation?.unknown)throw new Error('Finish reviewing the current operation first');
+    changes=changes.filter(c=>Object.keys(c.fields).length);if(!changes.length)return null;if(S.busy||S.loading||S.managementBusy||S.managementUnknown||S.operation?.unknown)throw new Error('Finish reviewing the current operation first');
     const op={action:'apply',operationId:crypto.randomUUID(),subdivisionId:p.id,origin,changes,...extra};openOperation(op);
     try{
       const prepared=await api({...op,action:'prepare'},true);
@@ -176,5 +205,5 @@
   async function start(){bind();windowLabel();try{const params=await ZOHO.CREATOR.UTIL.getInitParams();const ctx=LMRuntime.apply(params);if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(ctx.environment))throw new Error('Creator did not identify a supported environment');LMCriticalErrors.markReady();restoreView();await load();}catch(e){message(e.message,'error');$('gantt').innerHTML='<p class="empty">Development setup required</p>';controls();}
     setInterval(()=>{const day=M.today();if(day!==S.day&&!S.busy&&!S.operation?.unknown&&!S.drag){S.day=day;if(S.model){M.assignments(S.model,day);render();}load();}},30000);
   }
-  root.CrewApp=Object.freeze({start,state:S});
+  root.CrewApp=Object.freeze({start,state:S,management:Object.freeze({api:managementApi,reload:load,context:()=>({...LMRuntime.current(),epoch:S.epoch,ready:S.ready,loading:S.loading,busy:S.busy||S.managementBusy,unknown:S.managementUnknown}),model:()=>S.model,permissions:()=>S.permissions,capabilities:()=>S.capabilities,setPending:value=>{S.managementUnknown=value===true;controls();}})});
 })(window);

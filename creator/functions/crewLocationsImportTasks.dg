@@ -1,27 +1,94 @@
 map crewLocationsImportTasks(list sourceRows,string sourceSystem)
 {
-	result = {"ok":false,"imported":0,"unresolved":List()}; owned = false; datesStarted = false; phaseId = ""; token = "";
+	result = {"ok":false,"imported":0,"mirrored":0,"unresolved":List()}; owned = false; datesStarted = false; phaseId = ""; token = "";
 	try
 	{
 		config = thisapp.crewLocationsConfig();
-		if(config.get("tasksEnabled") != true || config.get("importActor") == "" || zoho.loginuser != config.get("importActor") || config.get("taskSourceSystem") != sourceSystem) { result.put("message","A verified task adapter and controlled import actor must be configured."); return result; }
+		taskSourceEnabled = false;
+		if(config.get("tasksEnabled") == true) { taskSourceEnabled = true; }
+		if(config.get("taskMirrorEnabled") == true) { taskSourceEnabled = true; }
+		if(!taskSourceEnabled || config.get("importActor") == "" || zoho.loginuser != config.get("importActor") || config.get("taskSourceSystem") != sourceSystem) { result.put("message","A verified task adapter and controlled import actor must be configured."); return result; }
 		stageOrder = {"Entitlements","Engineering Design","Municipal Review","Pre-Construction","Rough Cut","Sewer","Water","Storm Drain","Road Prep","Dry Utilities","Punch List","Closeout"};
-		unresolved = List(); imported = 0; result.put("unresolved",unresolved);
+		unresolved = List(); imported = 0; mirrored = 0; result.put("unresolved",unresolved);
 		for each row in sourceRows
 		{
 			sourceId = ifnull(row.get("sourceRecordId"),"").toString(); externalProject = ifnull(row.get("externalProjectId"),"").toString(); stage = ifnull(row.get("stageKey"),"").toString();
+			sourceTaskId = ifnull(row.get("sourceTaskId"),"").toString();
+			startText = ifnull(row.get("startDate"),"").toString(); endText = ifnull(row.get("dueDate"),ifnull(row.get("endDate"),"")).toString(); completionText = ifnull(row.get("completionDate"),"").toString(); startDate = null; endDate = null; completionDate = null;
+			if(startText != "") { startDate = startText.toDate("yyyy-MM-dd"); if(startDate.toString("yyyy-MM-dd") != startText) { throw "Invalid source task start date."; } }
+			if(endText != "") { endDate = endText.toDate("yyyy-MM-dd"); if(endDate.toString("yyyy-MM-dd") != endText) { throw "Invalid source task due date."; } }
+			if(completionText != "") { completionDate = completionText.toDate("yyyy-MM-dd"); if(completionDate.toString("yyyy-MM-dd") != completionText) { throw "Invalid source task completion date."; } }
 			phase = Subdivision[Project_ID == externalProject];
-			if(sourceId == "" || externalProject == "" || phase.count() != 1 || !stageOrder.contains(stage)) { unresolved.add({"sourceRecordId":sourceId,"reason":"Unresolved external project or explicit stage key."}); }
+			if(sourceId == "" || externalProject == "" || sourceTaskId == "" || row.get("sourceModifiedAt") == null) { unresolved.add({"sourceRecordId":sourceId,"reason":"Stable task identity, external project ID and source revision are required."}); }
+			else if(phase.count() != 1 || !stageOrder.contains(stage))
+			{
+				// Preserve a real individual task without inventing a phase/stage join.
+				// Unmapped rows are excluded from the schedule and have no date editor.
+				if(config.get("taskMirrorEnabled") != true) { unresolved.add({"sourceRecordId":sourceId,"reason":"Unresolved external project or explicit stage key."}); }
+				else
+				{
+					key = sourceSystem + ":" + sourceId; rawTask = Task_Schedule[Source_Key == key];
+					lineageError = rawTask.count() > 1;
+					if(rawTask.count() == 1)
+					{
+						if(rawTask.Subdivision1 != null || ifnull(rawTask.Stage_Key,"") != "" || rawTask.Source_System != sourceSystem || rawTask.Source_Record_ID != sourceId || rawTask.Source_Project_ID != externalProject || rawTask.Source_Task_ID != sourceTaskId) { lineageError = true; }
+					}
+					if(lineageError)
+					{
+						unresolved.add({"sourceRecordId":sourceId,"reason":"Source lineage or mapped stage changed; review is required."});
+					}
+					else
+					{
+						if(rawTask.count() == 0)
+						{
+							rawTaskId = insert into Task_Schedule
+							[
+								Source_System=sourceSystem
+								Source_Record_ID=sourceId
+								Source_Key=key
+								Source_Task_ID=sourceTaskId
+								Source_Milestone_ID=ifnull(row.get("sourceMilestoneId"),"")
+								Source_Project_ID=externalProject
+								Task_Name=ifnull(row.get("taskName"),"")
+								Task_Code=ifnull(row.get("taskCode"),"")
+								Task_Status=ifnull(row.get("taskStatus"),"")
+								Start_Date=startDate
+								End_Date=endDate
+								Completion_Date=completionDate
+								Milestone_Task=row.get("milestoneTask") == true
+								Source_Modified_At=row.get("sourceModifiedAt")
+								Synced_At=zoho.currenttime
+								Write_Enabled=false
+								Added_User=zoho.loginuser
+							];
+							rawTask = Task_Schedule[ID == rawTaskId];
+						}
+						freshSource = rawTask.Source_Modified_At == null;
+						if(rawTask.Source_Modified_At != null) { if(row.get("sourceModifiedAt") >= rawTask.Source_Modified_At) { freshSource = true; } }
+						if(freshSource)
+						{
+							rawTask.Task_Name=ifnull(row.get("taskName"),""); rawTask.Task_Code=ifnull(row.get("taskCode"),""); rawTask.Task_Status=ifnull(row.get("taskStatus"),""); rawTask.Completion_Date=completionDate; rawTask.Milestone_Task=row.get("milestoneTask") == true;
+							rawTask.Start_Date=startDate; rawTask.End_Date=endDate; rawTask.Source_Modified_At=row.get("sourceModifiedAt"); rawTask.Synced_At=zoho.currenttime; rawTask.Write_Enabled=false;
+							mirrored = mirrored + 1; result.put("mirrored",mirrored);
+						}
+						unresolved.add({"sourceRecordId":sourceId,"recordId":rawTask.ID.toString(),"reason":"Task mirrored; phase/stage mapping is unresolved."});
+					}
+				}
+			}
 			else
 			{
 				phaseId = phase.ID.toString(); key = sourceSystem + ":" + sourceId;
 				existing = Task_Schedule[Source_Key == key];
-				if(existing.count() > 1 || (existing.count() == 1 && (existing.Subdivision1 != phase.ID || existing.Stage_Key != stage))) { unresolved.add({"sourceRecordId":sourceId,"reason":"Source lineage/stage changed; review is required."}); }
+				lineageError = existing.count() > 1;
+				if(existing.count() == 1)
+				{
+					if(existing.Subdivision1 != phase.ID || existing.Stage_Key != stage || existing.Source_System != sourceSystem || existing.Source_Record_ID != sourceId) { lineageError = true; }
+					if(ifnull(existing.Source_Project_ID,"") != "") { if(existing.Source_Project_ID != externalProject) { lineageError = true; } }
+					if(ifnull(existing.Source_Task_ID,"") != "") { if(existing.Source_Task_ID != sourceTaskId) { lineageError = true; } }
+				}
+				if(lineageError) { unresolved.add({"sourceRecordId":sourceId,"reason":"Source lineage/stage changed; review is required."}); }
 				else
 				{
-					startText = ifnull(row.get("startDate"),"").toString(); endText = ifnull(row.get("endDate"),"").toString(); startDate = null; endDate = null;
-					if(startText != "") { startDate = startText.toDate("yyyy-MM-dd"); }
-					if(endText != "") { endDate = endText.toDate("yyyy-MM-dd"); }
 					token = "task-import-" + zoho.encryption.sha256(key + "|" + zoho.currenttime.toLong());
 					lockId = insert into Crew_Schedule_Lock
 					[
@@ -42,16 +109,24 @@ map crewLocationsImportTasks(list sourceRows,string sourceSystem)
 							Source_System=sourceSystem
 							Source_Record_ID=sourceId
 							Source_Key=key
-							Source_Task_ID=ifnull(row.get("sourceTaskId"),"")
+							Source_Task_ID=sourceTaskId
 							Source_Milestone_ID=ifnull(row.get("sourceMilestoneId"),"")
+							Source_Project_ID=externalProject
+							Task_Name=ifnull(row.get("taskName"),"")
+							Task_Code=ifnull(row.get("taskCode"),"")
+							Task_Status=ifnull(row.get("taskStatus"),"")
+							Completion_Date=completionDate
+							Milestone_Task=row.get("milestoneTask") == true
 							Source_Modified_At=row.get("sourceModifiedAt")
 							Synced_At=zoho.currenttime
-							Write_Enabled=config.get("taskWritesVerified")
+							Write_Enabled=config.get("taskWritesVerified") == true && config.get("tasksEnabled") == true
 							Added_User=zoho.loginuser
 						];
 						existing = Task_Schedule[ID == taskId];
 					}
-					if(existing.Source_Modified_At == null || (row.get("sourceModifiedAt") != null && row.get("sourceModifiedAt") >= existing.Source_Modified_At))
+					freshSource = existing.Source_Modified_At == null;
+					if(existing.Source_Modified_At != null) { if(row.get("sourceModifiedAt") >= existing.Source_Modified_At) { freshSource = true; } }
+					if(freshSource)
 					{
 						oldStart = null; oldEnd = null;
 						if(existing.Start_Date != null) { oldStart = existing.Start_Date.toString("yyyy-MM-dd"); }
@@ -82,6 +157,7 @@ map crewLocationsImportTasks(list sourceRows,string sourceSystem)
 						}
 						datesStarted = true;
 						existing.Start_Date=startDate; existing.End_Date=endDate; existing.Source_Modified_At=row.get("sourceModifiedAt"); existing.Synced_At=zoho.currenttime;
+						existing.Source_Task_ID=sourceTaskId; existing.Source_Project_ID=externalProject; existing.Task_Name=ifnull(row.get("taskName"),""); existing.Task_Code=ifnull(row.get("taskCode"),""); existing.Task_Status=ifnull(row.get("taskStatus"),""); existing.Completion_Date=completionDate; existing.Milestone_Task=row.get("milestoneTask") == true; existing.Write_Enabled=config.get("taskWritesVerified") == true && config.get("tasksEnabled") == true;
 						if(fields.keys().size() > 0)
 						{
 							log = Schedule_Change_Log[Operation_ID == token]; log.State="imported"; log.Execution_Finished=true;

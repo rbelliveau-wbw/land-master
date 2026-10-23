@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-23",
+  "environment": "development",
+  "source": "Reopened native form-builder rendered fields; type1 text,10 date,9 decision box; native mandatory asterisk and mapping properties verified.",
+  "fields": [
+    {
+      "field": "Task_Schedule_Details",
+      "mandatory": false,
+      "name": "",
+      "sequence": "1",
+      "type": "35"
+    },
+    {
+      "field": "Subdivision1",
+      "mandatory": false,
+      "name": "Subdivision1",
+      "sequence": "2",
+      "type": "12"
+    },
+    {
+      "field": "Task_Name",
+      "mandatory": false,
+      "name": "Task Name",
+      "sequence": "3",
+      "type": "1"
+    },
+    {
+      "field": "Task_Status",
+      "mandatory": false,
+      "name": "Task Status",
+      "sequence": "4",
+      "type": "1"
+    },
+    {
+      "field": "Source_Project_ID",
+      "mandatory": false,
+      "name": "Source Project ID",
+      "sequence": "5",
+      "type": "1"
+    },
+    {
+      "field": "Stage_Key",
+      "mandatory": false,
+      "name": "Stage_Key",
+      "sequence": "6",
+      "type": "1"
+    },
+    {
+      "field": "Start_Date",
+      "mandatory": false,
+      "name": "Start_Date",
+      "sequence": "7",
+      "type": "10"
+    },
+    {
+      "field": "End_Date",
+      "mandatory": false,
+      "name": "End_Date",
+      "sequence": "8",
+      "type": "10"
+    },
+    {
+      "field": "Source_System",
+      "mandatory": true,
+      "name": "Source_System",
+      "sequence": "9",
+      "type": "1"
+    },
+    {
+      "field": "Source_Record_ID",
+      "mandatory": true,
+      "name": "Source_Record_ID",
+      "sequence": "10",
+      "type": "1"
+    },
+    {
+      "field": "Source_Key",
+      "mandatory": true,
+      "name": "Source_Key",
+      "sequence": "11",
+      "type": "1"
+    },
+    {
+      "field": "Source_Task_ID",
+      "mandatory": false,
+      "name": "Source_Task_ID",
+      "sequence": "12",
+      "type": "1"
+    },
+    {
+      "field": "Task_Code",
+      "mandatory": false,
+      "name": "Task Code",
+      "sequence": "13",
+      "type": "1"
+    },
+    {
+      "field": "Source_Milestone_ID",
+      "mandatory": false,
+      "name": "Source_Milestone_ID",
+      "sequence": "14",
+      "type": "1"
+    },
+    {
+      "field": "Source_Modified_At",
+      "mandatory": false,
+      "name": "Source_Modified_At",
+      "sequence": "15",
+      "type": "22"
+    },
+    {
+      "field": "Synced_At",
+      "mandatory": false,
+      "name": "Synced_At",
+      "sequence": "16",
+      "type": "22"
+    },
+    {
+      "field": "Milestone_Task",
+      "mandatory": false,
+      "name": "Milestone Task",
+      "sequence": "17",
+      "type": "9"
+    },
+    {
+      "field": "Write_Enabled",
+      "mandatory": false,
+      "name": "Write_Enabled",
+      "sequence": "18",
+      "type": "9"
+    },
+    {
+      "field": "Completion_Date",
+      "mandatory": false,
+      "name": "Completion Date",
+      "sequence": "19",
+      "type": "10"
+    }
+  ]
+}

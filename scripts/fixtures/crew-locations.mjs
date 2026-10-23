@@ -37,3 +37,22 @@ export function crewDesktopFixture(count=38){
  }
  return {subdivisions,milestones,tasks,crews:original.crews,assignments};
 }
+
+// Management has deliberately native-shaped strings, lookups and checkbox data.
+// Fixture records are private to one served document and never enter a release.
+export function crewManagementFixture(){
+ const data=crewFixture();
+ data.crews=[
+  {ID:'90071992547408001',Crew_Code:'U2',Crew_Name:'Utility Two',Badge_Color:'#ffffff',Active:'true',Source_System:'MANUAL_QA',Source_Record_ID:'fixture-crew-u2'},
+  {ID:'90071992547408002',Crew_Code:'U1',Crew_Name:'Utility One',Badge_Color:'#398375',Active:true,Source_System:'MANUAL_QA',Source_Record_ID:'fixture-crew-u1'},
+  {ID:'90071992547408003',Crew_Code:'RC',Crew_Name:'Road Crew',Badge_Color:'#8054c7',Active:'false',Source_System:'MANUAL_WIDGET',Source_Record_ID:'fixture-crew-rc'},
+  {ID:'90071992547408004',Crew_Code:'IMP',Crew_Name:'Imported Crew',Badge_Color:'#a16c2e',Active:true,Source_System:'EXTERNAL',Source_Record_ID:'upstream-crew-imp'}
+ ];
+ data.assignments.forEach((row,index)=>Object.assign(row,{Crew:{...row.Crew,display_value:data.crews.find(crew=>crew.ID===row.Crew.ID).Crew_Code},Subdivision1:{...row.Subdivision1,display_value:data.subdivisions.find(phase=>phase.ID===row.Subdivision1.ID).Subdivision_Name},Source_System:'MANUAL_QA',Source_Record_ID:'fixture-assignment-'+index,Source_Key:'MANUAL_QA:fixture-assignment-'+index}));
+ data.assignments.push(
+  {ID:'90071992547407011',Subdivision1:{ID:data.subdivisions[1].ID,display_value:data.subdivisions[1].Subdivision_Name},Crew:{ID:data.crews[0].ID,display_value:'U2'},Assignment_Date:'11/04/2026',Source_System:'MANUAL_WIDGET',Source_Record_ID:'fixture-future-1',Source_Key:'MANUAL_WIDGET:fixture-future-1'},
+  {ID:'90071992547407012',Subdivision1:{ID:data.subdivisions[2].ID,display_value:data.subdivisions[2].Subdivision_Name},Crew:{ID:data.crews[0].ID,display_value:'U2'},Assignment_Date:'12/01/2026',Source_System:'EXTERNAL',Source_Record_ID:'fixture-imported-1',Source_Key:'EXTERNAL:fixture-imported-1'},
+  {ID:'90071992547407013',Subdivision1:{ID:data.subdivisions[3].ID,display_value:data.subdivisions[3].Subdivision_Name},Crew:{ID:data.crews[1].ID,display_value:'U1'},Assignment_Date:'10/19/2026',Source_System:'MANUAL_QA',Source_Record_ID:'fixture-sold-1',Source_Key:'MANUAL_QA:fixture-sold-1'}
+ );
+ return data;
+}

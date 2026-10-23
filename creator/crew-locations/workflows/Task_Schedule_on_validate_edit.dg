@@ -1,5 +1,49 @@
-// NEW Task_Schedule workflow: edited record → On Validate.
-validationMessage = thisapp.crewLocationsDirectValidate("T",input.ID.toString(),input.Start_Date,input.End_Date,false);
+// Task_Schedule: created/edited -> On Validate. Mirror remains native read-only
+// until an actual source/write adapter is verified. The controlled internal
+// importer owns creation; form/API writes cannot impersonate a source snapshot.
+validationMessage = "";
+try
+{
+	config = thisapp.crewLocationsConfig();
+	access = User_Access[User == zoho.loginuser];
+	if(input.ID == null)
+	{
+		validationMessage = "Tasks are created by the configured source mirror.";
+	}
+	else if(config.get("tasksEnabled") != true || config.get("taskWritesVerified") != true || input.Write_Enabled != true)
+	{
+		validationMessage = "The task mirror is read-only until source writes are verified.";
+	}
+	else if(access.count() != 1 || access.View_Crew_Locations != true || access.Edit_Crew_Task_Dates != true)
+	{
+		validationMessage = "Task editing permission has not been granted.";
+	}
+	else
+	{
+		read = thisapp.crewLocationsRead("All_Task_Schedules","ID == " + input.ID.toString());
+		if(read.get("ok") != true || read.get("records").size() != 1)
+		{
+			validationMessage = "This task is unavailable to the current user.";
+		}
+		else
+		{
+			current = read.get("records").get(0);
+			for each fieldName in {"Subdivision1","Stage_Key","Source_System","Source_Record_ID","Source_Key","Source_Task_ID","Source_Milestone_ID","Source_Project_ID","Write_Enabled"}
+			{
+				if(!current.keys().contains(fieldName)) { validationMessage = "All_Task_Schedules must expose native field " + fieldName + "."; }
+			}
+			if(current.get("Subdivision1") == null || current.get("Subdivision1").get("ID").toString() != input.Subdivision1.toString() || ifnull(current.get("Stage_Key"),"").toString() != ifnull(input.Stage_Key,"") || ifnull(current.get("Source_System"),"").toString() != ifnull(input.Source_System,"") || ifnull(current.get("Source_Record_ID"),"").toString() != ifnull(input.Source_Record_ID,"") || ifnull(current.get("Source_Key"),"").toString() != ifnull(input.Source_Key,"") || ifnull(current.get("Source_Task_ID"),"").toString() != ifnull(input.Source_Task_ID,"") || ifnull(current.get("Source_Milestone_ID"),"").toString() != ifnull(input.Source_Milestone_ID,"") || ifnull(current.get("Source_Project_ID"),"").toString() != ifnull(input.Source_Project_ID,"") || ifnull(current.get("Write_Enabled"),false).toString().toLowerCase() != "true")
+			{
+				validationMessage = "Task source identity and mapping are immutable in the schedule editor.";
+			}
+			if(validationMessage == "") { validationMessage = thisapp.crewLocationsDirectValidate("T",input.ID.toString(),input.Start_Date,input.End_Date,false); }
+		}
+	}
+}
+catch(taskValidationFailure)
+{
+	validationMessage = "Task validation could not confirm native access. No change was saved.";
+}
 if(validationMessage != "")
 {
  alert validationMessage;

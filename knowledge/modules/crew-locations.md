@@ -1,4 +1,24 @@
-# Crew Management — Creator-only scheduling 1.1.4
+# Crew Management — manual crews and Creator-only scheduling 1.2.0
+
+The 1.2.0 change adds actual manual crew management: create a crew, edit its
+optional name/color, deactivate/reactivate it, add dated phase work and correct
+manual assignment crew/phase/date. The opening Crews workspace uses a searchable
+active/inactive roster beside the selected crew's latest dated work, upcoming
+work and earlier history. The Milestones & tasks tab retains the schedule editor.
+The interface follows the existing Proforma Manager styling and readable desktop
+dimensions. The original mockup could not be retrieved during this review; no
+claim of new visual comparison to its live page is made.
+
+Management reads all permitted assignment dates; the scheduling badge window
+remains today minus seven days through today. A dated assignment does not imply
+an ongoing placement, end date or crew capacity. Imported assignment records are
+read-only. Inactive crews retain history and cannot receive new assignments;
+an existing record may keep its inactive crew when correcting its other fields.
+
+The [implementation and brief audit kit](../../docs/crew-management-brief-audit-2026-10-23.md)
+records the complete acceptance matrix, pending native gates, test entry points
+and rollback to 1.1.4. New Creator source is not a native install or publication
+claim. The installer updates the native evidence files separately.
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -152,6 +172,38 @@ cannot change and new dates cannot enter the past. Valid overlap is allowed.
 
 ## Persistence, access and recovery
 
+Manual management reuses `Crew`, `Crew_Assignment`, `All_Crews` and
+`Crew_Assignment_Report`. Its paginated `management-list` action returns complete
+caller-scoped crews, all-date assignments and phase identities/statuses. The
+report contract includes Crew_Name, both source fields and assignment Source_Key;
+missing native field exposure fails closed. Independent report cursors are
+carried until every source finishes; a partial roster is not presented as complete.
+
+`save-crew` and `save-assignment` prepare one validated native write descriptor.
+The authenticated widget performs the native SDK v2 `addRecords` or
+`updateRecordById` call. The `Crew_on_validate` and
+`Crew_Assignment_on_validate` created/edited workflows are mandatory: they repeat
+rights, caller scope, source identity and current phase/crew checks for direct
+native form/report paths too. No workflow is skipped. New manual source identity
+is `MANUAL_WIDGET:<requestId>`; native-source fields and crew codes are immutable
+on updates. Existing exact `MANUAL_QA` assignment lineage is editable; imported
+assignments remain source locked. No owner-level Deluge insert replaces a
+denied native create or edit permission.
+
+Native code:3000 success must identify the single intended destination record.
+After that acknowledgement, requested values may display immediately and an
+ordinary reload refreshes the lists. No editable-value equality comparison gates
+normal success. Lost/identity-free replies retain the draft, disable another
+write and expose `management-status`, which performs reads only and permits
+explicit recovery comparisons. Unresolved request metadata may be retained in
+sessionStorage for that actor/environment to reopen recovery after reload. It is
+not an authoritative crew database or completed operation log. LocalStorage
+continues to contain view preferences only.
+
+Manage_Crew_Assignments, View_Crew_Locations, native create/edit profile rights,
+the actual Custom API profile scope and delegated report/row access are separate
+gates. Their native outcomes must be verified independently of fixture tests.
+
 The v2 widget uses the existing shared authenticated runtime/data adapter.
 Native report reads are paginated and limited to required exposed fields. A
 permission failure clears private data and labels. View preferences alone use
@@ -208,6 +260,26 @@ overwrite newer live workflow edits with an older exported body; merge the guard
 into the current body and retain any integration-audit instrumentation.
 
 ## Verification and rollback
+
+The management browser entry point is `/widget.html?managementChecks=1` on the
+local preview server. It exercises actual rendered create/edit/active-state and
+assignment controls, native validation rejection, duplicate committing clicks,
+lost/ambiguous native acknowledgement and no-replay recovery, native-shaped IDs,
+lookups and checkbox forms, denied scopes/field omissions, report pagination and
+desktop dialog/picker geometry. `/widget.html?management=1` supports visual review.
+These fixtures are injected only in served local previews and never included in
+releases. Actual result evidence is recorded after the checks run.
+`/desktop.html?workspace=crews` runs geometry and keyboard checks at the four
+desktop sizes without repeating CRUD; it verifies both editors, picker bounds,
+focus return, a centered close SVG, readable side-by-side panes and page overflow.
+
+The user has additionally authorized a lightweight individual Projects task
+mirror. Reuse/extend `Task_Schedule`; preserve source task/project/phase identity,
+raw dates/status and explicit stage mapping. A task screenshot does not establish
+a verified portal/query or an automated import. Native schema installation,
+data ingestion and reliable stage-date write behavior remain separate evidence
+gates. Blank Start/Due values must remain blank; Completion date is not an endpoint
+substitute. Task source/write flags remain disabled until those inputs are known.
 
 Run `node scripts/test-crew-locations.mjs`, the isolated browser harness described
 in [installation](../../creator/crew-locations/INSTALL.md), `npm run validate`,

@@ -1,8 +1,8 @@
 {
   "status": "creator-only-upgrade-awaiting-user-promotion",
   "widget": "crew-locations",
-  "version": "1.1.4",
-  "mode": "creator-only-scheduling",
+  "version": "1.2.0",
+  "mode": "manual-crew-management-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
   "new_page": "Crew_Management",
@@ -68,6 +68,12 @@
   ],
   "task_adapter": {
     "status": "unverified-source-disabled",
+    "lightweight_mirror_authorized": "2026-10-23 user direction: reuse or extend Task_Schedule for individual Zoho Projects task records",
+    "lightweight_mirror_scope": "task/project/phase identity, raw status/dates, completion and milestone-task metadata; explicit stage mapping; no fabricated date endpoints or task rollups",
+    "automatic_projects_ingestion_verified": false,
+    "lightweight_mirror_flag": "taskMirrorEnabled (default false)",
+    "lightweight_mirror_new_fields": ["Task_Name", "Task_Code", "Source_Project_ID", "Task_Status", "Completion_Date", "Milestone_Task"],
+    "lightweight_mirror_optional_mapping": "Subdivision1 optional; blank Stage_Key preserves unresolved individual tasks without inventing phase/stage joins",
     "aggregation": "none",
     "writes": "disabled until actual source semantics are verified; any enabled testing write is to the Creator mirror only",
     "required_metadata": [
@@ -115,6 +121,44 @@
     "external_import_enabled": false,
     "native_validators_verified": false,
     "handoff": "docs/crew-desktop-qa-2026-10-23.md"
+  },
+  "native_manual_management": {
+    "status": "repository-candidate-native-install-and-user-promotion-separate",
+    "release": "1.2.0",
+    "opening_workspace": "Crews",
+    "schedule_workspace": "Milestones & tasks",
+    "operations": ["create crew", "edit optional name/color", "deactivate/reactivate crew", "add dated assignment", "correct assignment crew/phase/date"],
+    "data_meaning": "dated work records; latest dated work is not an inferred ongoing location or staffing span",
+    "actions": ["management-list", "save-crew", "save-assignment", "management-status"],
+    "reports": {
+      "All_Crews": ["ID", "Crew_Code", "Crew_Name", "Badge_Color", "Active", "Source_System", "Source_Record_ID"],
+      "Crew_Assignment_Report": ["ID", "Subdivision1", "Crew", "Assignment_Date", "Source_System", "Source_Record_ID", "Source_Key"],
+      "All_Subdivisions": ["ID", "Subdivision_Name", "Subdivision_Code", "Phase", "Subphase", "Territory", "Status", "Projects_Status"]
+    },
+    "read_protocol": "caller-scoped report pages; independent source cursors; no seven-day limit in management; all sources must complete",
+    "write_protocol": "server validates and returns native one-record descriptor; authenticated SDK v2 addRecords/updateRecordById; native On Validate workflows repeat guards; no workflow skipping",
+    "native_success": "code 3000 plus exact single destination identity; no post-success editable-value equality gate",
+    "unknown_reply": "retain draft and actor/environment request metadata in sessionStorage; block further writes; explicit read-only management-status; never replay",
+    "new_source_system": "MANUAL_WIDGET",
+    "new_source_record_id": "UUID requestId",
+    "new_assignment_source_key": "MANUAL_WIDGET:<requestId>",
+    "editable_assignment_sources": ["MANUAL_WIDGET", "MANUAL_QA"],
+    "source_identity_validation": "Source_Key exactly equals Source_System + ':' + Source_Record_ID; preserve all source fields on edit",
+    "inactive_policy": "retain history; disallow new assignment; an existing assignment may keep its inactive crew during correction",
+    "phase_locks": "both raw Creator Status and Projects_Status; check scoped old/new phases",
+    "permissions": ["View_Crew_Locations", "Manage_Crew_Assignments", "native form create/edit rights", "native report/row scope", "actual Custom API profile scope"],
+    "creator_pending_source_components": {
+      "functions": ["crewLocationsWidget", "crewLocationsRead"],
+      "created_edited_on_validate_workflows": ["Crew_on_validate", "Crew_Assignment_on_validate"]
+    },
+    "new_forms_apis_connections": false,
+    "native_live_write_verification": "installer-owned evidence; isolated fixture success does not prove native installation or profile scope",
+    "isolated_browser_entry": "/widget.html?managementChecks=1",
+    "isolated_fixture_files": ["scripts/fixtures/crew-locations.mjs", "scripts/fixtures/crew-management-browser-checks.js", "scripts/fixtures/crew-management-desktop-checks.js", "scripts/preview-crew-locations.mjs"],
+    "isolated_desktop_geometry_entry": "/desktop.html?workspace=crews",
+    "fixtures_in_release": false,
+    "brief_audit": "docs/crew-management-brief-audit-2026-10-23.md",
+    "rollback_release": "1.1.4"
   },
   "testing_invariants": [
     "No new outbound Projects endpoint or dispatcher",

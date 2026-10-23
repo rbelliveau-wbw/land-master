@@ -13,6 +13,8 @@ map crewLocationsConfig()
 	config.put("nativeCrewReadsEnabled",true);
 	config.put("crewsEnabled",false);
 	config.put("tasksEnabled",false);
+	// Individual source-task mirror remains disabled until configured.
+	config.put("taskMirrorEnabled",false);
 	config.put("taskWritesVerified",false);
 	config.put("importActor","");
 	config.put("crewSourceSystem","");
