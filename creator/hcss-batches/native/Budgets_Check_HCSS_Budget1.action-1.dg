@@ -35,7 +35,7 @@ try
 	{
 		auditRun = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Check HCSS Budget Lines - 5 Batches","system":"Zoho Analytics"});
 		auditId = auditRun.get("id");
-		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Selecting batch " + batch,"details":"Five stable subdivision buckets; only this run advances Current Batch after success."});
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Selecting batch " + batch,"details":"Five stable subdivision buckets; batch captured at startup. Next Workflow Run/Next Batch owns the cursor."});
 	}
 	// Fetch each native collection once; do not query mappings per Analytics row.
 	budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
@@ -129,10 +129,8 @@ try
 			activeIds.put(guid,true);
 		}
 	}
-	if(!dryRun && settings.Current_Batch != capturedCursor)
-	{
-		throw "Current Batch changed during the export. No cleanup writes started.";
-	}
+	// The timer may advance the shared cursor during this run. Keep using the
+	// captured batch and never overwrite the timer's newer value.
 	// Empty/no-eligible source protects all costs. No unmapped subdivision is queried.
 	if(activeCodes.size() > 0)
 	{
@@ -183,12 +181,6 @@ try
 			finalStatus = "Skipped";
 		}
 		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":finalStatus,"stage":"Completed batch " + batch,"message":summary,"counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"skipped":unchangedCount + duplicateCount,"failed":0}});
-		// HCSS is the only batch-cursor writer; Test Add Hours changes only the date.
-		if(settings.Current_Batch != capturedCursor)
-		{
-			throw "Current Batch changed before completion; cursor preserved.";
-		}
-		settings.Current_Batch=(batch + 1) % 5;
 	}
 }catch (batchError)
 {
@@ -199,7 +191,7 @@ try
 		{
 			failureStatus = "Partial";
 		}
-		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"message":batchError.toString(),"details":"Batch=" + batch + "; cursor not advanced. Check any completed writes before retrying.","counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"failed":1}});
+		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"message":batchError.toString(),"details":"Batch=" + batch + "; cursor controlled by Next Workflow Run/Next Batch. Check any completed writes before retrying.","counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"failed":1}});
 	}
 	throw batchError;
 }

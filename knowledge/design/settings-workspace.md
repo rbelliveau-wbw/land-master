@@ -40,8 +40,9 @@ available without pretending their purpose is known.
 User direction October 23, 2026: place the existing `Current_Batch` field in
 Automation beside `Next_Workflow_Run`, and omit it from Additional Fields.
 Accept whole numbers 0–4 only; retain rejected drafts and the existing native
-save/access protections. The HCSS check owns cursor advancement after success;
-the three-hour timer owns only the next run date. Do not silently change an
+save/access protections. **Next Workflow Run/Next Batch** owns both the cursor
+rotation and the three-hour next run date. HCSS captures the cursor once and
+never writes it. Do not silently change an
 existing out-of-range value while displaying Settings. Keep the affected-job
 disclosure accurate when native schedules change.
 

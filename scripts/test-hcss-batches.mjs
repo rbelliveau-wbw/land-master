@@ -3,14 +3,13 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source=fs.readFileSync('creator/hcss-batches/Budgets_Check_HCSS_Budget1.action-1.dg','utf8');
-const timer=fs.readFileSync('creator/hcss-batches/Test_Add_Hours.action-1.dg','utf8');
+const timer=fs.readFileSync('creator/hcss-batches/Next_Workflow_Run_Next_Ba.action-1.dg','utf8');
 // Execute the actual source classification/decision blocks, with native-style
 // map/list/record adapters. Native previews separately verify Deluge and exports.
-const map=()=>new Map();
 const collection=(values=[])=>Object.assign(values,{size(){return this.length;},contains(value){return this.includes(value);},add(value){this.push(value);}});
 const nativeMap=()=>Object.assign(new Map(),{put(key,value){this.set(key,value);},get(key){return Map.prototype.get.call(this,key)??null;}});
 const transform=text=>text.replace(/\/\/[^\n]*/g,'').replace(/\bfor each (\w+) in (\w+)/g,'for (const $1 of $2)').replace(/\bifnull\(/g,'coalesce(');
-const build=source.slice(source.indexOf('\t\tfor each rec in rows'),source.indexOf('\n\t}\n\tif(!dryRun && settings.Current_Batch'));
+const build=source.slice(source.indexOf('\t\tfor each rec in rows'),source.indexOf('\n\t}\n\t// The timer may advance'));
 const decide=source.slice(source.indexOf('\t\t\tcheckedCount ='),source.indexOf('\n\t\t}\n\t}\n\tsummary ='));
 function run(rows,items,{jobs=['J0'],codes=new Map([['J0','S0']]),dryRun=false}={}){
   const context=vm.createContext({rows:rows.map(row=>({get:key=>row[key]??null})),selectedJobs:collection(jobs),jobCodes:codes,
@@ -60,14 +59,23 @@ assert.ok(source.indexOf('config.put("criteria"')<source.indexOf('thisapp.analyt
 assert.ok(source.indexOf('throw "Incomplete source')<source.indexOf('existingItem.Cost_Code_ID ='));
 assert.equal(source.match(/existingItem\.\w+\s*=(?!=)/g).length,2,'Only the two legacy business assignments remain');
 assert.doesNotMatch(source,/insert into|Updated_Date\s*=/);
-assert.match(source,/settings.Current_Batch = \(batch \+ 1\) % 5/);
-assert.doesNotMatch(source.slice(source.indexOf('catch(batchError)')),/settings\.Current_Batch\s*=/,'Failure never advances cursor');
-assert.doesNotMatch(timer,/settings\.Current_Batch\s*=/,'Three-hour timer cannot race the HCSS cursor');
+assert.doesNotMatch(source,/settings\.Current_Batch\s*=|\bCurrent_Batch\s*=/,'HCSS never writes the shared cursor');
+assert.equal(source.match(/settings\.Current_Batch/g).length,1,'HCSS reads the shared cursor only once at startup');
+const capture=source.slice(source.indexOf('\tcapturedCursor ='),source.indexOf('\tif(!dryRun)'));
+const captured=vm.createContext({settings:{Current_Batch:4},batch:0,dryRun:false,previewBatch:0});
+vm.runInContext(capture,captured);captured.settings.Current_Batch=0;
+assert.equal(captured.batch,4,'A concurrent timer change cannot switch an in-flight HCSS scope');
+const rotation=timer.slice(timer.indexOf('currentBatch ='),timer.indexOf('// Publish both'));
+for(const [before,after] of [[null,0],[-1,0],[0,1],[1,2],[2,3],[3,4],[4,0],[5,0],[6,0],[9,0]]){
+  const c=vm.createContext({settings:{Current_Batch:before}});vm.runInContext(rotation,c);
+  assert.equal(c.nextBatch,after,'Actual timer rotation for '+before);
+}
+assert.match(timer,/update settings\s*\[\s*Current_Batch=nextBatch\s*Next_Workflow_Run=settings.Next_Workflow_Run.addHour\(3\)\s*\];/,'Timer writes the next batch and three-hour anchor together');
 assert.match(timer,/Next_Workflow_Run\.addHour\(3\)/);
 const tokens=text=>(text.match(/"(?:\\.|[^"\\])*"|\/\/[^\n]*|\s+|./g)||[]).filter(t=>t.trim()&&!t.startsWith('//')).join('');
 const native=fs.readFileSync('creator/hcss-batches/native/Budgets_Check_HCSS_Budget1.action-1.dg','utf8');
 assert.equal(tokens(source).replace('[(Data_Source=="HeavyJob Budget")&&(Cost!=0)&&(Subdivision_CodeineligibleCodes)]','[Data_Source=="HeavyJob Budget"&&Cost!=0&&Subdivision_CodeineligibleCodes]'),tokens(native),'Reopened native source differs only in redundant pure-AND criteria parentheses');
-assert.equal(tokens(timer),tokens(fs.readFileSync('creator/hcss-batches/native/Test_Add_Hours.action-1.dg','utf8')),'Saved/reopened timer matches the reviewed date-only source');
+assert.equal(tokens(timer),tokens(fs.readFileSync('creator/hcss-batches/native/Next_Workflow_Run_Next_Ba.action-1.dg','utf8')),'Saved/reopened renamed timer matches the reviewed cursor/date source');
 const retired=JSON.parse(fs.readFileSync('creator/integration-audit/retired-components.json'));
 assert.equal(retired.Budgets_Check_HCSS_Budget.replacement,'Budgets_Check_HCSS_Budget1');
 assert.ok(!JSON.parse(fs.readFileSync('creator/integration-audit/prepared/components.json')).some(c=>c.name==='Budgets_Check_HCSS_Budget'));

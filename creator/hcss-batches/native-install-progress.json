@@ -12,13 +12,30 @@
     "savedLiveMode": true,
     "reopenedMatchesCanonical": true,
     "nativeFormatterDifference": "Redundant parentheses removed around three pure-AND destination terms.",
-    "nativeSourceSha256": "6e618847cdc4e81efcf033047b0693c8d04d2b681dd5f6698e5fcef5e3d117cf"
+    "nativeSourceSha256": "550d3185bff79c2b9072d114b0c2a18a9c8e6bbb372c18cdeac5619233864f1e",
+    "writesBatch": false
   },
   "timer": {
-    "link": "Test_Add_Hours",
+    "link": "Next_Workflow_Run_Next_Ba",
     "savedAndReopened": true,
     "dateAdvanceHours": 3,
-    "writesBatch": false
+    "writesBatch": true,
+    "display": "Next Workflow Run/Next Batch",
+    "formerLink": "Test_Add_Hours",
+    "rotation": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      0
+    ],
+    "invalidValueResetsTo": 0,
+    "settingsFieldsWrittenTogether": [
+      "Current_Batch",
+      "Next_Workflow_Run"
+    ],
+    "nativeSourceSha256": "3c14a5d3e3acca1009dc83a95d12fe82ac383401cdf7b950c754e7fc4bb726f2"
   },
   "retiredWorkflow": {
     "link": "Budgets_Check_HCSS_Budget",
@@ -29,7 +46,7 @@
   "currentBatch": {
     "developmentInitialized": 0,
     "productionNotEdited": true,
-    "normalization": "Null/out-of-range cursor uses 0; success advances to next modulo 5"
+    "normalization": "Timer resets null/out-of-range to 0; 0 through 3 increment; 4 wraps to 0. HCSS captures once and never writes."
   },
   "developmentScheduleExecutions": "suspended; unchanged",
   "readOnlyPreviews": [
@@ -82,11 +99,12 @@
   "productionCleanupExecuted": false,
   "limitations": [
     "Development has five budget subdivisions; Production batch sizes and write-path performance were not exercised.",
-    "Production cursor normalizes on first successful batch; no Production Settings value was edited."
+    "No Production Settings value edited; timer normalizes the legacy cursor after Creator publication.",
+    "List position does not establish execution order between separate schedules."
   ],
   "frontend": {
     "widget": "settings-manager",
-    "version": "1.6.2",
+    "version": "1.6.3",
     "productionRequested": true,
     "stageChanged": false
   },
@@ -95,5 +113,15 @@
     "npm run build:pages passed",
     "actual Deluge source/decision-block tests passed",
     "all five native read-only previews passed"
-  ]
+  ],
+  "ownershipMoveChecks": {
+    "bothActionsSavedAndIndependentlyReopened": true,
+    "hcssCurrentBatchReads": 1,
+    "hcssCurrentBatchWrites": 0,
+    "timerIsSoleCursorWriter": true,
+    "liveActionsExecuted": false,
+    "settingsValuesChanged": false,
+    "priorFiveBatchPreviewScopeAndDecisionLogicUnchanged": true,
+    "scheduleListOrderGuaranteed": false
+  }
 }

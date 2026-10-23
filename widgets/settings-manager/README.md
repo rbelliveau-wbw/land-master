@@ -1,5 +1,12 @@
 # Settings Manager
 
+## 1.6.3 — renamed batch timer
+
+The Automation impact list uses **Next Workflow Run/Next Batch** and the Current
+Batch hint reflects three-hour rotation. This workflow owns both Settings
+updates; HCSS captures the selected batch once and does not advance it. Creator
+publication is separate from the frontend. Frontend rollback: **1.6.2**.
+
 ## 1.6.2 — Automation batch control
 
 The existing `Current_Batch` field now appears in Automation beside Next Workflow
