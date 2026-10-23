@@ -30,6 +30,17 @@ company direction, transfer type, status, amount, and View / Edit. Date entry
 accepts MM/DD/YYYY and offers a floating custom calendar with keyboard controls.
 Keep modal controls centered, trap focus, make the report background inert,
 and return focus to the opener. No ownership update accompanies transfer saves.
+Property Transfers history has only the + Property Transfer header action;
+omit the routine Refresh button. Keep the error-state Retry action and existing
+automatic history loading and post-save updates.
+
+Land & Projects modal footers put the primary committing action at the bottom
+right, with Cancel/Close immediately before it and status text on the left.
+Use Title Case on multiword actions: Save Changes, Save Mass Update, Create
+Record and Record Transfer. Apply this shared footer to all record types and
+their related editors; keep existing save handlers, guards, focus and keyboard
+order. Property and transfer footers stay at the bottom even on short tabs.
+Import and confirmation dialogs retain their existing right-aligned actions.
 
 Transfer type, status, scope, and amount-unit choices use compact text-only
 single-select popovers with no search bar or checkbox markers. Retain the modern

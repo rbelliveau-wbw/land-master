@@ -1,3 +1,30 @@
+## Modal footer actions — 8.17.5, October 23, 2026
+
+Land & Projects uses the shared record footer for Property, Project, Subdivision,
+Company and related editors, with status on the left and Close/Cancel then the
+primary action at the right. Action labels use Title Case: Save Changes, Create
+Record and Record Transfer. Mass update similarly uses Cancel then Save Mass
+Update at the right. Property/transfer short tabs keep the footer at the bottom.
+Import and confirmation actions already use this placement and are unchanged.
+
+This extends 8.17.4's removal of the Property Transfers Refresh header button.
+Only footer markup/styles and action copy change. Existing handlers, IDs,
+disabled/dirty states, report loading, permission checks and writes are reused.
+No forms/fields, backend functions or Custom APIs change; no Creator deployment
+is required. Existing Land regressions and full release checks verify the code;
+read-only desktop Production inspection checks the footer and transfer header.
+Rollback the hosted Land Master mapping to 8.17.3 to undo both presentation edits.
+
+## Property Transfers header — 8.17.4, October 23, 2026
+
+The Property Transfers pane no longer shows the routine Refresh button. The
+**+ Property Transfer** action, error-state Retry, initial scoped loading and
+automatic post-save history updates keep their existing behavior. Only the
+header markup in propertyTransferHistoryHTML changes; no form/field, save,
+function or Custom API contract changes and no Creator deployment is required.
+Existing Property transfer regressions, full validation and the Pages build
+verify the release. Rollback the hosted Land Master mapping to 8.17.3.
+
 ## Milestones & Tasks summary first — 8.17.3, October 23, 2026
 
 Subdivision View/Edit combines the former Zoho Projects and Milestones tabs into

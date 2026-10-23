@@ -7,7 +7,7 @@
 #recordModal[data-editor-type="property"] .record-subtitle,#recordModal[data-editor-type="propertyTransfer"] .record-subtitle{margin-top:8px;font-weight:500;color:#c2d5ee;font-size:12px}
 #recordModal[data-editor-type="property"] .record-tabs,#recordModal[data-editor-type="propertyTransfer"] .record-tabs{padding:10px 24px;gap:8px;background:#fff}
 #recordModal[data-editor-type="property"] .record-close:hover,#recordModal[data-editor-type="propertyTransfer"] .record-close:hover{color:#fecaca;border-color:#fca5a5;background:rgba(185,28,28,.3)}
-#recordModal[data-editor-type="property"] .panel>.panel-actions,#recordModal[data-editor-type="propertyTransfer"] .panel>.panel-actions{margin:24px -24px 0;padding:15px 24px;flex-shrink:0;min-height:66px}
+#recordModal[data-editor-type="property"] .panel>.panel-actions,#recordModal[data-editor-type="propertyTransfer"] .panel>.panel-actions{margin:auto -24px 0;padding:15px 24px;flex-shrink:0;min-height:66px}
 .pw-property-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;padding-bottom:4px;align-items:start}
 .pw-card{padding:20px;border:1px solid #dbe5f2;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(20,53,97,.035);min-width:0}
 .pw-card h3{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:850;color:#14365f;margin:0 0 18px;letter-spacing:-.01em}

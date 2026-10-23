@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.3"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.5"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.3"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.3">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.3">
-<script src="searchable-pickers.js?v=8.17.3" defer></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.3">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.3">
-<script src="spreadsheet-import.js?v=8.17.3"></script>
-<script src="lot-import.js?v=8.17.3"></script>
+<script src="property-workspace.js?v=8.17.5"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.5">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.5">
+<script src="searchable-pickers.js?v=8.17.5" defer></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.5">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.5">
+<script src="spreadsheet-import.js?v=8.17.5"></script>
+<script src="lot-import.js?v=8.17.5"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -270,7 +270,7 @@ tr.ghead:hover td{background:#edf2f9}
 .msvalue{width:100%;min-height:29px;display:flex;align-items:center;border:1px solid var(--line);background:#f6f8fc;font-size:11.25px;font-weight:650;padding:4px 7px;font-variant-numeric:tabular-nums;border-radius:7px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .msrow.done .msvalue{color:var(--faint);background:#fafbfd}
 .msvalue.date{justify-content:center}
-.panel-actions{position:sticky;z-index:4;bottom:-16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px -17px -16px;padding:12px 17px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -5px 16px rgba(15,39,68,.06)}
+.panel-actions{position:sticky;z-index:4;bottom:-16px;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:20px -17px -16px;padding:12px 17px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);box-shadow:0 -5px 16px rgba(15,39,68,.06)}
 .panel-actions .action-spacer{flex:1}
 .dirty-note{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:750;color:var(--muted)}
 .dirty-note::before{content:"";width:7px;height:7px;border-radius:50%;background:#a8b5c7}
@@ -326,7 +326,7 @@ tr.ghead:hover td{background:#edf2f9}
 .record-head-actions{display:flex;align-items:center;gap:7px;flex:none}.record-head-btn{height:31px;border:1px solid rgba(255,255,255,.30);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;padding:0 10px;font-size:10.5px;font-weight:800;cursor:pointer}.record-head-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.55)}.record-close{display:grid;place-items:center;width:34px;height:34px;padding:0;line-height:1}.record-close svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.7;stroke-linecap:round}
 .record-tabs{display:flex;align-items:center;gap:4px;min-height:47px;padding:8px 16px;background:#f7f9fc;border-bottom:1px solid var(--line);overflow-x:auto;flex:none}
 .record-tabs:empty{display:none}.record-tab{display:inline-flex;align-items:center;gap:7px;height:31px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--muted);padding:0 13px;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap}.record-tab:hover{background:#eef3fa;color:var(--navy)}.record-tab.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 2px 5px rgba(11,35,69,.18)}.record-tab-count{display:inline-grid;place-items:center;min-width:18px;height:17px;padding:0 5px;border-radius:999px;background:rgba(255,255,255,.16);font-size:9.5px}.record-tab:not(.active) .record-tab-count{background:#e6edf7;color:var(--primary)}
-.record-body{flex:1;min-height:0;overflow:auto;background:#fff}.record-body .panel{box-shadow:none;border:0;border-radius:0;display:flex;flex-direction:column}.record-body .panel>.panel-actions{position:sticky;bottom:0;margin:24px -20px 0;padding:12px 20px 14px;min-height:58px;flex-wrap:nowrap;background:#fff;backdrop-filter:none;box-shadow:0 -6px 18px rgba(15,39,68,.08);margin-top:auto}.record-body .panel>.panel-actions .btn{flex:none}.record-body .panel>.panel-actions .dirty-note{white-space:nowrap}.record-body .panel>.panel-actions .hint{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.record-body{flex:1;min-height:0;overflow:auto;background:#fff}.record-body .panel{box-shadow:none;border:0;border-radius:0;display:flex;flex-direction:column}.record-body .panel>.panel-actions{position:sticky;bottom:0;margin:24px -20px 0;padding:12px 20px 14px;min-height:58px;flex-wrap:nowrap;background:#fff;backdrop-filter:none;box-shadow:0 -6px 18px rgba(15,39,68,.08);margin-top:auto}.record-body .panel>.panel-actions .btn{flex:none}.record-body .panel>.panel-actions .dirty-note{white-space:nowrap}.record-body .panel>.panel-actions .hint{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-intro{display:flex;align-items:center;gap:9px;margin-bottom:13px}.tab-intro h3{margin:0;color:var(--navy);font-size:15px}.readonly-pill{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;background:#eef2f7;color:var(--muted);font-size:9.5px;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
 .related-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:15px}.related-card{border:1px solid var(--line);border-radius:10px;background:#fbfcfe;padding:11px 12px;min-width:0}.related-card-title{display:flex;align-items:center;gap:7px;color:var(--navy);font-size:12px;font-weight:850}.related-card-sub{margin-top:2px;color:var(--muted);font-size:10.5px;font-weight:650}.related-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.related-metric{min-width:0;padding:7px;border-radius:7px;background:#eef3f9}.related-metric b{display:block;color:var(--navy);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.related-metric span{display:block;margin-top:1px;color:var(--muted);font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
 .related-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}.related-table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:780px}.related-table th{position:sticky;top:0;z-index:1;text-align:left;padding:8px 10px;background:#f5f8fc;border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.055em;white-space:nowrap}.related-table td{padding:8px 10px;border-bottom:1px solid #edf1f6;color:var(--text);white-space:nowrap;vertical-align:middle}.related-table tbody tr:last-child td{border-bottom:0}.related-table tbody tr:hover{background:var(--ptint)}.related-table td.num{text-align:right;font-variant-numeric:tabular-nums}.related-open{border:0;background:transparent;color:var(--primary);font-size:10.5px;font-weight:800;cursor:pointer;padding:3px 5px}.related-open:hover{text-decoration:underline}
@@ -403,7 +403,7 @@ tr.ghead:hover td{background:#edf2f9}
 .bulkbar>span{font-size:11px;opacity:.82}
 .bulk-dialog{width:min(680px,calc(100vw - 36px));max-height:min(620px,calc(100vh - 36px));display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 70px rgba(15,39,68,.28);overflow:hidden}
 .bulk-body{padding:20px;overflow:auto}.bulk-body>.fg{margin-bottom:16px}.bulk-warning{margin:16px 0 0;padding:10px 12px;border:1px solid #f6d48b;border-radius:8px;background:var(--amber-bg);color:var(--amber);font-size:11px;font-weight:700}
-.bulk-actions{position:static;margin:20px -20px -20px;padding:13px 20px}.bulk-actions #bulkMsgModal{margin-left:auto}
+.bulk-actions{position:static;margin:20px -20px -20px;padding:13px 20px}.bulk-actions #bulkMsgModal{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .related-table+.tab-intro{margin-top:20px}.related-table-wrap+.tab-intro{margin-top:22px}
 .wtable tr.rec{cursor:pointer}.wtable tr.rec:hover{background:#f7faff}
 .project-subform{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
@@ -427,14 +427,14 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.17.3"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.3">
-<script src="interaction-motion.js?v=8.17.3"></script>
-<script src="interaction-surfaces.js?v=8.17.3"></script>
-<script src="number-edit-commit.js?v=8.17.3"></script>
-<script src="number-transitions.js?v=8.17.3"></script>
-<script src="number-surfaces.js?v=8.17.3"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.3">
+<script src="success-feedback.js?v=8.17.5"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.5">
+<script src="interaction-motion.js?v=8.17.5"></script>
+<script src="interaction-surfaces.js?v=8.17.5"></script>
+<script src="number-edit-commit.js?v=8.17.5"></script>
+<script src="number-transitions.js?v=8.17.5"></script>
+<script src="number-surfaces.js?v=8.17.5"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.5">
 </head>
 <body>
 
@@ -537,7 +537,7 @@ tr.ghead:hover td{background:#edf2f9}
       <div class="fg full"><div class="fl">Field to update</div><select class="input" id="bulkField"></select></div>
       <div id="bulkValueWrap"></div>
       <div class="bulk-warning">This saves each selected record separately. Records that fail validation will be listed in the audit log and emailed automatically.</div>
-      <div class="panel-actions bulk-actions"><button class="btn primary" id="bulkApplyBtn" disabled>Save mass update</button><button class="btn" id="bulkCancelBtn">Cancel</button><span class="hint" id="bulkMsgModal"></span></div>
+      <div class="panel-actions bulk-actions"><span class="hint" id="bulkMsgModal"></span><span class="action-spacer"></span><button class="btn" id="bulkCancelBtn">Cancel</button><button class="btn primary" id="bulkApplyBtn" disabled>Save Mass Update</button></div>
     </div>
   </div>
 </div>
@@ -598,7 +598,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.3-LAZY-CORE",
+  version: "8.17.5-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1086,7 +1086,7 @@ function ensureExternalMappingDraft(subdivisionId){if(S.mappingDraft&&String(S.m
 function externalMappingDraftRow(key){var d=S.mappingDraft;if(!d)return null;for(var i=0;i<d.rows.length;i++)if(d.rows[i].key===key)return d.rows[i];return null;}
 function externalMappingDraftHasChanges(){var d=S.mappingDraft;if(!d)return false;return d.rows.some(function(r){return r.isNew?!r.removed:r.removed||r.system!==r.originalSystem||r.code!==r.originalCode;});}
 function externalMappingSystemOptions(selected){var h='<option value="">—</option>';OPTS.externalSystem.forEach(function(v){h+='<option value="'+esc(v)+'"'+(v===selected?' selected':'')+'>'+esc(v)+'</option>';});return h;}
-function externalMappingsEditor(subdivisionId){var d=ensureExternalMappingDraft(subdivisionId),visible=d.rows.filter(function(r){return!r.removed||!r.isNew;}),count=d.rows.filter(function(r){return!r.removed;}).length,h='<div class="tab-intro"><h3>External System Mappings</h3><span class="readonly-pill">'+count+' record'+(count===1?'':'s')+'</span><button class="btn primary sm" type="button" data-mapping-add>+ Add</button></div><div class="related-table-wrap"><table class="related-table mapping-editor-table"><thead><tr><th>System</th><th>External Code</th><th>State</th><th>Actions</th></tr></thead><tbody>';if(!visible.length)h+='<tr><td colspan="4"><div class="related-empty">No mapping rows yet. Add a row, then press Save changes.</div></td></tr>';visible.forEach(function(r){var changed=!r.isNew&&(r.system!==r.originalSystem||r.code!==r.originalCode),editing=r.editing||r.isNew;h+='<tr class="'+(r.removed?'mapping-removed':r.isNew?'mapping-new':'')+'" data-mapping-key="'+esc(r.key)+'"><td>'+(editing?'<select class="mapping-draft-input" data-mapping-field="system">'+externalMappingSystemOptions(r.system)+'</select>':esc(valText(r.system)))+'</td><td>'+(editing?'<input class="mapping-draft-input" maxlength="25" data-mapping-field="code" value="'+esc(r.code)+'">':esc(valText(r.code)))+'</td><td><span class="mapping-row-state'+(r.removed?' remove':'')+'">'+(r.removed?'Removed':r.isNew?'New':changed?'Modified':'Saved')+'</span></td><td><div class="related-actions">';if(r.removed)h+='<button class="related-open" type="button" data-mapping-undo>Undo</button>';else{h+='<button class="related-open" type="button" data-mapping-edit>'+(editing&&!r.isNew?'Done':'Edit')+'</button><button class="related-remove" type="button" data-mapping-remove>Remove</button>';}h+='</div></td></tr>';});return h+'</tbody></table></div>';}
+function externalMappingsEditor(subdivisionId){var d=ensureExternalMappingDraft(subdivisionId),visible=d.rows.filter(function(r){return!r.removed||!r.isNew;}),count=d.rows.filter(function(r){return!r.removed;}).length,h='<div class="tab-intro"><h3>External System Mappings</h3><span class="readonly-pill">'+count+' record'+(count===1?'':'s')+'</span><button class="btn primary sm" type="button" data-mapping-add>+ Add</button></div><div class="related-table-wrap"><table class="related-table mapping-editor-table"><thead><tr><th>System</th><th>External Code</th><th>State</th><th>Actions</th></tr></thead><tbody>';if(!visible.length)h+='<tr><td colspan="4"><div class="related-empty">No mapping rows yet. Add a row, then press Save Changes.</div></td></tr>';visible.forEach(function(r){var changed=!r.isNew&&(r.system!==r.originalSystem||r.code!==r.originalCode),editing=r.editing||r.isNew;h+='<tr class="'+(r.removed?'mapping-removed':r.isNew?'mapping-new':'')+'" data-mapping-key="'+esc(r.key)+'"><td>'+(editing?'<select class="mapping-draft-input" data-mapping-field="system">'+externalMappingSystemOptions(r.system)+'</select>':esc(valText(r.system)))+'</td><td>'+(editing?'<input class="mapping-draft-input" maxlength="25" data-mapping-field="code" value="'+esc(r.code)+'">':esc(valText(r.code)))+'</td><td><span class="mapping-row-state'+(r.removed?' remove':'')+'">'+(r.removed?'Removed':r.isNew?'New':changed?'Modified':'Saved')+'</span></td><td><div class="related-actions">';if(r.removed)h+='<button class="related-open" type="button" data-mapping-undo>Undo</button>';else{h+='<button class="related-open" type="button" data-mapping-edit>'+(editing&&!r.isNew?'Done':'Edit')+'</button><button class="related-remove" type="button" data-mapping-remove>Remove</button>';}h+='</div></td></tr>';});return h+'</tbody></table></div>';}
 function subdivisionMilestonesTasksHTML(rec){
   function dateCell(field){return'<span class="schedule-date" data-schedule-field="'+field+'">'+esc(dateText(rec[field]))+'</span>';}
   var h='<section class="subdivision-schedule" aria-label="Milestones and Tasks"><div class="tab-intro schedule-head"><h3>Key dates</h3><span class="readonly-pill">Read only</span></div>';
@@ -1118,7 +1118,7 @@ function tabHTML(type,rec,tab){
   if(type==='builderTakedown'&&tab==='additionalItems')return relatedTable('Additional Items','additionalItem',additionalItemsFor('builderTakedown',rec.ID),[{label:'Type',key:'Item_Type'},{label:'Name',key:'Name'},{label:'Amount',value:function(r){return moneyText(r.Amount);}},{label:'Quantity',key:'Quantity',num:1},{label:'Total',value:function(r){return moneyText(r.Total);}}]);
   return'<div class="related-empty">No records in this section.</div>';
 }
-function panelActionsHTML(){return'<div class="panel-actions"><button class="btn primary" id="btnPanelSave" disabled>'+(S.editorNew?(S.editorType==='propertyTransfer'?'Record transfer':'Create record'):'Save changes')+'</button><button class="btn" id="btnPanelCancel">'+(S.editorNew?'Cancel':'Close')+'</button><span class="dirty-note" id="panelDirtyNote">'+(S.editorNew?'New record':'No unsaved changes')+'</span><span class="action-spacer"></span><span class="hint" id="panelMsg"></span></div>';}
+function panelActionsHTML(){return'<div class="panel-actions"><span class="dirty-note" id="panelDirtyNote">'+(S.editorNew?'New record':'No unsaved changes')+'</span><span class="hint" id="panelMsg"></span><span class="action-spacer"></span><button class="btn" id="btnPanelCancel">'+(S.editorNew?'Cancel':'Close')+'</button><button class="btn primary" id="btnPanelSave" disabled>'+(S.editorNew?(S.editorType==='propertyTransfer'?'Record Transfer':'Create Record'):'Save Changes')+'</button></div>';}
 function renderPanel(){if(S.panelLoading||S.panelSaving)return;var rec=currentEditor();if(!rec)return;var d=descriptor(S.editorType,rec);$("recordModal").setAttribute("data-editor-type",S.editorType);if(S.editorNew)d.tabs=[{id:'details',label:'Details'}];var valid=d.tabs.some(function(t){return t.id===S.modalTab;});if(!valid)S.modalTab='details';var kicker=$("recordKicker");kicker.style.display=S.editorNew?'none':'';kicker.textContent=S.editorNew?'':(S.editorType==='property'||S.editorType==='propertyTransfer')?d.label.toUpperCase():d.label.toUpperCase()+' · '+String(rec.ID||'');$("recordTitle").textContent=S.editorNew?'New '+d.label:recordTitle(S.editorType,rec);var propertySurface=S.editorType==='property'||S.editorType==='propertyTransfer';var hideSubtitle=!S.editorNew&&S.editorType==='subdivision';$("recordSubtitle").style.display=hideSubtitle?'none':'';$("recordSubtitle").textContent=propertySurface?propertyEditorSubtitle(rec):hideSubtitle?'':S.editorNew?'Create a new record':reportForType(S.editorType)+' · all visible fields and linked records';$("recordTabs").style.display=S.editorType==='propertyTransfer'&&S.editorNew?'none':'';$("recordTabs").innerHTML=d.tabs.map(function(t){return'<button class="record-tab'+(t.id===S.modalTab?' active':'')+'" type="button" data-record-tab="'+esc(t.id)+'">'+esc(t.label)+(t.count==null?'':' <span class="record-tab-count">'+t.count+'</span>')+'</button>';}).join('');$("btnOpenLots").style.display=!S.editorNew&&S.editorType==='subdivision'?'':'none';$("btnEditorBack").style.display=!S.editorNew&&S.editorStack.length?'':'none';$("panel").innerHTML=tabHTML(S.editorType,rec,S.modalTab)+panelActionsHTML();updatePanelActionState();propertyWorkspace.afterRender();if(S.editorType==='property'&&S.modalTab==='transfers')loadPropertyTransferHistory(rec.ID,false);if(S.editorType==='propertyTransfer')$("recordClose").focus();}
 function showAppConfirm(title,message,confirmText,action){S.confirmAction=action||null;$("confirmTitle").textContent=title;$("confirmMessage").textContent=message;$("confirmAccept").textContent=confirmText||'Continue';$("confirmModal").classList.add('show');$("confirmModal").setAttribute('aria-hidden','false');}
 function closeAppConfirm(){S.confirmAction=null;$("confirmModal").classList.remove('show');$("confirmModal").setAttribute('aria-hidden','true');}
@@ -1309,7 +1309,7 @@ function ensurePropertyTransferBackend(generation){
 }
 function propertyTransferCount(propertyId){var history=S.transferHistory[String(propertyId)];return history&&history.scope===propertyTransferScope()&&history.status==='ready'?history.rows.length:null;}
 function propertyTransferHistoryHTML(propertyId){
-  var history=S.transferHistory[String(propertyId)],current=history&&history.scope===propertyTransferScope(),html='<div class="pw-history-head"><h3>Property Transfers</h3><div class="pw-history-actions"><button class="btn sm" type="button" data-refresh-property-transfers>Refresh</button><button class="btn primary sm" type="button" data-new-property-transfer>+ Property Transfer</button></div></div><div id="propertyTransferHistory" aria-live="polite">';
+  var history=S.transferHistory[String(propertyId)],current=history&&history.scope===propertyTransferScope(),html='<div class="pw-history-head"><h3>Property Transfers</h3><div class="pw-history-actions"><button class="btn primary sm" type="button" data-new-property-transfer>+ Property Transfer</button></div></div><div id="propertyTransferHistory" aria-live="polite">';
   if(!current||history.status==='loading')return html+'<div class="pw-history-loading">Loading transfers…</div></div>';
   if(history.status==='error')return html+'<div class="pw-history-empty">Property transfers unavailable in this environment.<button class="btn sm" type="button" data-refresh-property-transfers>Retry</button></div></div>';
   return html+propertyTransferRowsHTML(history.rows)+'</div>';
