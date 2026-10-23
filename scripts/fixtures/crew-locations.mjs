@@ -25,3 +25,15 @@ export function crewFixture(){
  {ID:'90071992547407006',Subdivision1:{ID:phases[2].ID},Crew:{ID:crews[1].ID},Assignment_Date:'10/13/2026'}];
  return {subdivisions:phases,milestones,tasks,crews,assignments};
 }
+
+// Large desktop-only preview. Every row is synthetic and stays in the harness.
+export function crewDesktopFixture(count=38){
+ const original=crewFixture(),base=original.subdivisions[1],subdivisions=[],milestones=[],tasks=[],assignments=[];
+ for(let i=0;i<count;i++){
+  const phaseId='990719925474'+String(i+1).padStart(4,'0'),code='DQ'+String(i+1).padStart(2,'0');
+  subdivisions.push({...base,ID:phaseId,Subdivision_Name:(i%3===0?'Long Meadow Crossing at the River':'Desktop QA Development')+' - Phase '+String(i+1).padStart(2,'0'),Subdivision_Code:code,Phase:String(i+1),Subphase:'',Project_ID:'8800000000'+String(i).padStart(4,'0'),Territory:i%2?'Fort Hood':'Waco'});
+  for(const [type,rows,target] of [['M',original.milestones,milestones],['T',original.tasks,tasks]])for(const [j,row] of rows.filter(r=>r.Subdivision1.ID===base.ID).entries())target.push({...row,ID:(type==='M'?'9807199254':'9707199254')+String(i*100+j).padStart(6,'0'),Subdivision1:{ID:phaseId},Project_ID:subdivisions.at(-1).Project_ID,Source_Record_ID:'desktop-'+type+'-'+i+'-'+j});
+  assignments.push({ID:'960719925474'+String(i).padStart(4,'0'),Subdivision1:{ID:phaseId},Crew:{ID:original.crews[i%2].ID},Assignment_Date:'10/21/2026'});
+ }
+ return {subdivisions,milestones,tasks,crews:original.crews,assignments};
+}

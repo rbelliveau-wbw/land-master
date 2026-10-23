@@ -1,7 +1,7 @@
 {
   "status": "creator-only-upgrade-awaiting-user-promotion",
   "widget": "crew-locations",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "mode": "creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -59,7 +59,7 @@
     "Crew_Schedule_Lock",
     "Crew_Test_Record",
     "All_Crews",
-    "All_Crew_Assignments",
+    "Crew_Assignment_Report",
     "All_Task_Schedules",
     "View_Crew_Locations",
     "Edit_Crew_Milestones",
@@ -89,6 +89,29 @@
       "crew master codes/colors",
       "explicit external job-to-Subdivision mapping"
     ]
+  },
+  "native_crew_reads": {
+    "status": "prepared-creator-promotion-and-native-report-verification-pending",
+    "configuration_flag": "nativeCrewReadsEnabled",
+    "enabled_in_repository_config": true,
+    "reports": {
+      "All_Crews": ["ID", "Crew_Code", "Badge_Color", "Active"],
+      "Crew_Assignment_Report": ["ID", "Subdivision1", "Crew", "Assignment_Date", "Source_System", "Source_Record_ID"]
+    },
+    "connection": "existing authenticated client LMData.readAll; native report and row permissions preserved",
+    "production_All_Crews_link_verified": true,
+    "production_report_fields_verified": false,
+    "assignment_report_link": "Crew_Assignment_Report",
+    "assignment_report_link_verified_from": "Development native builder component href and Access Dev Live URL on 2026-10-23",
+    "development_assignment_layout_columns_verified": ["Subdivision1", "Crew", "Assignment_Date", "Source_System", "Source_Key", "Source_Updated_At", "ID", "Source_Record_ID"],
+    "development_assignment_sdk_read_verified": false,
+    "development_crew_layout_columns_verified": ["Crew_Code", "Crew_Name", "Badge_Color", "Active", "Source_System", "Source_Record_ID", "ID"],
+    "development_crew_layout_verified": true,
+    "development_crew_sdk_read_verified": false,
+    "native_function_save_status": "Development Config/Widget Saves persisted; reopened editor verification passed; user promotion pending",
+    "external_import_enabled": false,
+    "native_validators_verified": false,
+    "handoff": "docs/crew-desktop-qa-2026-10-23.md"
   },
   "testing_invariants": [
     "No new outbound Projects endpoint or dispatcher",

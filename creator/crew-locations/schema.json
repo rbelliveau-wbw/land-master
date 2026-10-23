@@ -52,7 +52,7 @@
     },
     {
       "name": "Crew_Assignment",
-      "report": "All_Crew_Assignments",
+      "report": "Crew_Assignment_Report",
       "fields": [
         {
           "name": "Subdivision1",

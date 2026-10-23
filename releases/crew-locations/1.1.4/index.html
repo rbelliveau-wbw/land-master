@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Crew Management</title>
+<meta name="crew-locations-version" content="1.1.4">
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+<script src="runtime-context.js"></script><script src="creator-data.js"></script><script src="critical-error-reporter.js"></script>
+<script src="success-feedback.js?v=1.1.4"></script>
+<link rel="stylesheet" href="crew-locations.css?v=1.1.4"><link rel="stylesheet" href="interaction-motion.css?v=1.1.4"><link rel="stylesheet" href="number-transitions.css?v=1.1.4">
+</head><body>
+<main id="app">
+  <header class="page-head"><div><h1>Crew Management</h1><p id="assignmentWindow"></p></div><div class="actions"><a class="workspace-link" href="#schedule">Edit Schedule <span aria-hidden="true">↓</span></a><span class="mode" title="Dates save in Land Master only. Daily inbound sync may replace these dates.">Creator only · Projects push off</span><button id="refresh">Refresh</button><button id="history">History</button><button id="reviewSave" hidden>Review save</button></div></header>
+  <p id="connection" role="status" data-lm-motion="feedback">Connecting to Creator…</p>
+  <section id="timeline" class="card timeline" aria-label="Crew location timeline">
+    <div id="ganttFilters" class="filters"></div>
+    <div id="gantt" aria-label="Milestones and tasks Gantt"></div>
+  </section>
+  <section id="schedule" class="card schedule" aria-labelledby="scheduleTitle">
+    <div class="table-heading"><h2 id="scheduleTitle">Project milestones and tasks</h2><div class="table-actions"><a class="workspace-link" href="#timeline">Back to Timeline <span aria-hidden="true">↑</span></a><label class="check-label"><input id="showAll" type="checkbox">Show all projects</label></div></div>
+    <div id="tableFilters" class="filters"></div>
+    <div id="tableTopScroll" class="top-scroll" tabindex="0" aria-label="Scroll schedule horizontally"><div></div></div>
+    <div class="column-controls"><button id="jumpStage" class="stage-jump" data-filter="stageJump" data-empty="Jump to stage" aria-label="Jump to stage" aria-haspopup="dialog" aria-expanded="false"><span>Jump to stage</span><svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button><div id="restoreChips"></div><button id="showColumns">Show All Columns</button></div>
+    <div id="tableScroll" class="table-scroll" tabindex="0" role="region" aria-label="Scroll milestone and task schedule"><table id="scheduleTable"></table></div>
+  </section>
+  <details id="issues" class="data-issues"><summary>Data and integration details</summary><div id="issueList"></div></details>
+</main>
+<div id="picker" class="picker-pop" role="dialog" aria-modal="false" aria-label="Filter options" data-lm-motion="popover" hidden></div>
+<dialog id="operationDialog" aria-labelledby="operationTitle" data-lm-motion="popover"><header class="dialog-head"><div><small>Schedule changes → Creator milestones</small><h2 id="operationTitle">Saving schedule</h2></div><button id="closeOperation" class="icon-button" aria-label="Close save result"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div class="dialog-body"><div id="operationStages"></div><div class="progress" role="progressbar" aria-label="Confirmed schedule records" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="operationProgress" data-lm-motion="meter"></i></div><p id="operationStatus" role="status"></p><ol id="operationResults"></ol></div><footer><button id="checkOperation" hidden>Check status</button><button id="doneOperation">Close</button></footer></dialog>
+<dialog id="historyDialog" aria-labelledby="historyTitle"><header><h2 id="historyTitle">Schedule history</h2><button id="closeHistory" class="icon-button" aria-label="Close history"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="historyContent"></div></dialog>
+<dialog id="endpointDialog" aria-labelledby="endpointTitle"><header><h2 id="endpointTitle">Milestone boundary</h2><button id="closeEndpoint" class="icon-button" aria-label="Close boundary editor"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="endpointContent"></div></dialog>
+<div id="dragPreview" role="status" hidden></div>
+<script src="crew-model.js?v=1.1.4"></script><script src="crew-app.js?v=1.1.4"></script>
+<script src="number-edit-commit.js?v=1.1.4"></script><script src="number-transitions.js?v=1.1.4"></script><script src="interaction-motion.js?v=1.1.4"></script><script src="interaction-surfaces.js?v=1.1.4"></script>
+<script src="crew-surfaces.js?v=1.1.4"></script>
+<script>
+LMCriticalErrors.configure({widget:"Crew Management",version:"1.1.4",code:"CREW",getContext:function(){return LMRuntime.current();}});
+CrewSurfaces.install();
+LMNumbers.start({module:'crew-locations',ready:()=>CrewApp.state.ready,actor:()=>LMRuntime.current().user+':'+CrewApp.state.epoch,collect:api=>api.each('[data-crew-number]',node=>api.text(node,node.dataset.crewNumber))});
+CrewApp.start();
+</script></body></html>

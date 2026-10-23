@@ -1,4 +1,4 @@
-# Crew Management — Creator-only scheduling 1.1.3
+# Crew Management — Creator-only scheduling 1.1.4
 
 The latest October 21 user instruction enables real milestone date edits in
 Creator, including Production, while prohibiting every outbound Zoho Projects
@@ -55,9 +55,34 @@ not establish their actual API/query, stage assignments or reliable write rules.
 Therefore tasksEnabled/taskWritesVerified remain false. There are no min/max
 rollups, copied milestone dates or arbitrary-task selection.
 
-No crew query/API or Analytics view has been verified. crewsEnabled remains false.
-Crew and Crew_Assignment supply an authenticated adapter contract once an actual
-source is identified. `crewLocationsImportAssignments` is an INTERNAL function,
+Native Crew/Crew_Assignment report reads now have their own server configuration
+flag, `nativeCrewReadsEnabled`, prepared true in repository source. It controls
+capabilities.sources.crews and reuses authenticated client `LMData.readAll`;
+native report/row access and required-field checks remain in force. The open
+Production `All_Crews` report and three clearly labeled QA crew records were
+confirmed October 23. That Production report initially exposed no columns. Native builder
+and Access Dev Live confirmed the actual assignment report link is
+`Crew_Assignment_Report`; the earlier `All_Crew_Assignments` contract was incorrect.
+All active source/schema/preview contracts now use the native link with no native
+rename. Three assignments were successfully submitted through the native
+Crew_Assignment form. Both Development function Saves were confirmed after reopening
+their native editors; current native snapshots are stored in native-installed.
+Actual SDK reads and Creator promotion must be verified before native crew display
+is operational.
+See [desktop QA kit](../../docs/crew-desktop-qa-2026-10-23.md).
+
+Development assignment report layout was auto-saved with native Subdivision1,
+Crew, Assignment_Date, Source_System, Source_Key, Source_Updated_At, ID and
+Source_Record_ID columns verified from rendered DOM. The mistakenly selected
+related Crew.Source_Record_ID column was removed. Development All_Crews was
+auto-saved with Crew_Code, Crew_Name, Badge_Color, Active, Source_System,
+Source_Record_ID and ID columns verified from DOM. Actual SDK record reads remain
+pending; report layout inspection alone does not establish successful native API reads.
+
+No external crew query/API or Analytics view has been verified. The separate
+external-ingestion flag `crewsEnabled` remains false, with blank import actor and
+source system. Native manual records do not enable or configure an external
+adapter. `crewLocationsImportAssignments` is an INTERNAL function,
 not a browser API. It requires the server-configured source system/import actor,
 exact External_System_Mapping joins, unique crew codes, stable source IDs and
 actual assignment dates. Repeated activity does not duplicate badges. Unresolved
@@ -68,6 +93,12 @@ verified adapter's explicit external project ID, canonical stage key, source
 record ID and actual endpoints. It does not discover a provider endpoint or
 aggregate tasks. Source timestamps must be normalized by the verified adapter.
 These ingestion functions have not been run against live records.
+
+Crew native form validators remain incomplete in the recorded installation:
+`Crew_on_validate` script save was unconfirmed and `Crew_Assignment_on_validate`
+was not installed. Do not infer permission/color/source-key workflow protection
+from the prepared scripts. Native form required/unique fields and existing
+profile/report access remain distinct from these pending custom checks.
 
 ## Scheduling and UI contract
 

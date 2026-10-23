@@ -9,6 +9,8 @@ map crewLocationsConfig()
 	config.put("testingMode",false);
 	config.put("creatorOnly",true);
 	config.put("projectsPushEnabled",false);
+	// Read native Crew/Crew_Assignment reports; this does not enable ingestion.
+	config.put("nativeCrewReadsEnabled",true);
 	config.put("crewsEnabled",false);
 	config.put("tasksEnabled",false);
 	config.put("taskWritesVerified",false);

@@ -15,9 +15,9 @@ string crewLocationsWidget(string payload)
 		if(action == "capabilities")
 		{
 			response.put("permissions",{"view":true,"milestones":access.Edit_Crew_Milestones == true,"tasks":access.Edit_Crew_Task_Dates == true && config.get("taskWritesVerified") == true,"assignments":access.Manage_Crew_Assignments == true});
-			response.put("sources",{"crews":config.get("crewsEnabled") == true,"tasks":config.get("tasksEnabled") == true});
+			response.put("sources",{"crews":config.get("nativeCrewReadsEnabled") == true,"tasks":config.get("tasksEnabled") == true});
 			dependencies = List();
-			if(config.get("crewsEnabled") != true) { dependencies.add("Crew source: configure verified assignment dates and explicit external job-to-Subdivision mappings before enabling crew imports."); }
+			if(config.get("nativeCrewReadsEnabled") != true) { dependencies.add("Native crew reports are not configured."); }
 			if(config.get("tasksEnabled") != true) { dependencies.add("Task source: verify the T-row source, stage mapping and date columns before enabling the task mirror."); }
 			if(config.get("taskWritesVerified") != true) { dependencies.add("Task editing is unavailable until its local/source write semantics are verified."); }
 			dependencies.add("Dates save to Creator only with Push_Update false. Daily inbound Analytics sync may replace them.");

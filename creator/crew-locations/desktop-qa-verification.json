@@ -1,0 +1,501 @@
+{
+  "date": "2026-10-23",
+  "release": "1.1.4",
+  "normalBrowser": {
+    "checks": [
+      {
+        "result": "pass",
+        "text": "PASS Fixture startup reaches a complete rendered schedule"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Default rows, reporting window, monthly calendar and readable fonts"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Missing Closeout keeps exact Road Prep endpoint and section colors"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Search changes option labels only; selections remain stable"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Picker keyboard navigation starts at the first or last actual option"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Keyboard timeline activation edits only the represented source endpoint"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Fresh unavailable-source load and Reset show the same real upcoming phases"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Native identity-only acknowledgements preserve duration display and propagation"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Upcoming union, multi-select restrictions and empty project selection"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Section narrowing, Show all and sold-out explicit selection"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Hide and restore columns affects the chart and keeps filters"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Days saves one row in local-only mode; arrow reaches hidden next stage"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Save rejection retains error and lost response blocks edits until read-only recovery"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Task table remains independently editable and has no drag handles"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Durable History recovers an ambiguous operation without the temporary dialog"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Undo and redo are new independent audited operations"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Triple overlap tooltip and inspector expose all represented boundaries"
+      },
+      {
+        "result": "pass",
+        "text": "PASS All-future/cleared date options and unavailable-source state"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Revoked access clears record names and dates"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Every applied schedule was prepared with the same identity and plan"
+      },
+      {
+        "result": "pass",
+        "text": "PASS Lost preparation response never starts a date write or replays on status"
+      }
+    ],
+    "finished": "passed"
+  },
+  "desktopGeometry": [
+    {
+      "passed": true,
+      "viewport": "1920 × 1080",
+      "timelineHeight": 480,
+      "scheduleHeight": 626,
+      "unavailableTaskHeight": 36.1875,
+      "checks": [
+        {
+          "name": "38 synthetic phases rendered",
+          "ok": true
+        },
+        {
+          "name": "No horizontal page overflow",
+          "ok": true
+        },
+        {
+          "name": "Filters stay inside their cards",
+          "ok": true
+        },
+        {
+          "name": "Timeline has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Editor has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Both workspaces retain all phases through vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks preserve every phase pair",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks omit disabled empty inputs",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks carry explicit source labels",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Task rows stay compact",
+          "ok": true
+        },
+        {
+          "name": "Timeline scrolls when its calendar exceeds the viewport",
+          "ok": true
+        },
+        {
+          "name": "Calendar axis stays visible while scrolling",
+          "ok": true
+        },
+        {
+          "name": "Timeline phase labels stay frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Frozen phase names stay above focused timeline bars",
+          "ok": true
+        },
+        {
+          "name": "Edit Schedule navigation brings the editor heading into view",
+          "ok": true
+        },
+        {
+          "name": "Both table heading levels remain pinned during vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Schedule phase column stays frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Stage picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Choosing a stage dismisses its picker",
+          "ok": true
+        },
+        {
+          "name": "Jump to stage exposes the intended heading",
+          "ok": true
+        },
+        {
+          "name": "Long phase picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Long picker options scroll inside the fixed search and footer",
+          "ok": true
+        },
+        {
+          "name": "Desktop checks perform no schedule writes",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "viewport": "1250 × 600",
+      "timelineHeight": 288,
+      "scheduleHeight": 348,
+      "unavailableTaskHeight": 36.1875,
+      "checks": [
+        {
+          "name": "38 synthetic phases rendered",
+          "ok": true
+        },
+        {
+          "name": "No horizontal page overflow",
+          "ok": true
+        },
+        {
+          "name": "Filters stay inside their cards",
+          "ok": true
+        },
+        {
+          "name": "Timeline has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Editor has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Both workspaces retain all phases through vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks preserve every phase pair",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks omit disabled empty inputs",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks carry explicit source labels",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Task rows stay compact",
+          "ok": true
+        },
+        {
+          "name": "Timeline scrolls when its calendar exceeds the viewport",
+          "ok": true
+        },
+        {
+          "name": "Calendar axis stays visible while scrolling",
+          "ok": true
+        },
+        {
+          "name": "Timeline phase labels stay frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Frozen phase names stay above focused timeline bars",
+          "ok": true
+        },
+        {
+          "name": "Edit Schedule navigation brings the editor heading into view",
+          "ok": true
+        },
+        {
+          "name": "Both table heading levels remain pinned during vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Schedule phase column stays frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Stage picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Choosing a stage dismisses its picker",
+          "ok": true
+        },
+        {
+          "name": "Jump to stage exposes the intended heading",
+          "ok": true
+        },
+        {
+          "name": "Long phase picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Long picker options scroll inside the fixed search and footer",
+          "ok": true
+        },
+        {
+          "name": "Desktop checks perform no schedule writes",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "viewport": "1366 × 768",
+      "timelineHeight": 369,
+      "scheduleHeight": 445,
+      "unavailableTaskHeight": 36.1875,
+      "checks": [
+        {
+          "name": "38 synthetic phases rendered",
+          "ok": true
+        },
+        {
+          "name": "No horizontal page overflow",
+          "ok": true
+        },
+        {
+          "name": "Filters stay inside their cards",
+          "ok": true
+        },
+        {
+          "name": "Timeline has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Editor has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Both workspaces retain all phases through vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks preserve every phase pair",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks omit disabled empty inputs",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks carry explicit source labels",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Task rows stay compact",
+          "ok": true
+        },
+        {
+          "name": "Timeline scrolls when its calendar exceeds the viewport",
+          "ok": true
+        },
+        {
+          "name": "Calendar axis stays visible while scrolling",
+          "ok": true
+        },
+        {
+          "name": "Timeline phase labels stay frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Frozen phase names stay above focused timeline bars",
+          "ok": true
+        },
+        {
+          "name": "Edit Schedule navigation brings the editor heading into view",
+          "ok": true
+        },
+        {
+          "name": "Both table heading levels remain pinned during vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Schedule phase column stays frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Stage picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Choosing a stage dismisses its picker",
+          "ok": true
+        },
+        {
+          "name": "Jump to stage exposes the intended heading",
+          "ok": true
+        },
+        {
+          "name": "Long phase picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Long picker options scroll inside the fixed search and footer",
+          "ok": true
+        },
+        {
+          "name": "Desktop checks perform no schedule writes",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "viewport": "1440 × 900",
+      "timelineHeight": 432,
+      "scheduleHeight": 522,
+      "unavailableTaskHeight": 36.1875,
+      "checks": [
+        {
+          "name": "38 synthetic phases rendered",
+          "ok": true
+        },
+        {
+          "name": "No horizontal page overflow",
+          "ok": true
+        },
+        {
+          "name": "Filters stay inside their cards",
+          "ok": true
+        },
+        {
+          "name": "Timeline has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Editor has a bounded desktop height",
+          "ok": true
+        },
+        {
+          "name": "Both workspaces retain all phases through vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks preserve every phase pair",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks omit disabled empty inputs",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Tasks carry explicit source labels",
+          "ok": true
+        },
+        {
+          "name": "Unavailable Task rows stay compact",
+          "ok": true
+        },
+        {
+          "name": "Timeline scrolls when its calendar exceeds the viewport",
+          "ok": true
+        },
+        {
+          "name": "Calendar axis stays visible while scrolling",
+          "ok": true
+        },
+        {
+          "name": "Timeline phase labels stay frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Frozen phase names stay above focused timeline bars",
+          "ok": true
+        },
+        {
+          "name": "Edit Schedule navigation brings the editor heading into view",
+          "ok": true
+        },
+        {
+          "name": "Both table heading levels remain pinned during vertical scrolling",
+          "ok": true
+        },
+        {
+          "name": "Schedule phase column stays frozen horizontally",
+          "ok": true
+        },
+        {
+          "name": "Stage picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Choosing a stage dismisses its picker",
+          "ok": true
+        },
+        {
+          "name": "Jump to stage exposes the intended heading",
+          "ok": true
+        },
+        {
+          "name": "Long phase picker fits the viewport",
+          "ok": true
+        },
+        {
+          "name": "Long picker options scroll inside the fixed search and footer",
+          "ok": true
+        },
+        {
+          "name": "Desktop checks perform no schedule writes",
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "nativeMilestoneWritesDuringThisReview": 0,
+  "productionCreatorPromotion": false
+}

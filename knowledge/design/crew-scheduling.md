@@ -10,6 +10,23 @@ Keep phase IDs stable, readable text, normal page scrolling, and a real calendar
 axis starting today in America/Chicago. Month and year labels must remain readable
 for partial months. Sections share the same band within each row type.
 
+On desktop, bound the timeline and editing table to readable scrolling workspaces
+while retaining normal page scrolling. Freeze phase labels horizontally and keep
+the calendar axis and both table heading rows visible during vertical scrolling.
+Provide direct Timeline / Edit Schedule navigation and a searchable Jump to stage
+action so editing does not require traversing every phase or dragging a long
+horizontal scrollbar. Keep all stage columns available through the existing
+hide/restore controls. Let filter controls wrap within the card when needed;
+never make the filter strip or the page itself scroll horizontally.
+
+When the Task source is unavailable, preserve each phase's paired Tasks row and
+crew badges in a compact row labeled Task source unavailable. Do not display a
+matrix of disabled empty date fields or imply that blank task data is available.
+Configured sources with legitimately missing dates retain their normal row and
+missing-boundary presentation. Editable schedule cells keep a visible pale-blue
+outline, including prefilled values; permission and date guards still determine
+whether each cell is editable.
+
 Keep Crew, Next Rough Cut Starts, Territory, Section and Dates in one filter row.
 Use searchable checkbox multi-selects with stable IDs, clear actions, keyboard
 navigation and preserved selected options. The lower grid follows these filters;

@@ -7,7 +7,7 @@ string crewLocationsWidget(string payload)
 	writeUncertain = false;
 	confirmed = List();
 	savedRecords = List();
-	try 
+	try
 	{
 		config = thisapp.crewLocationsConfig();
 		response.put("testingMode",false);
@@ -42,11 +42,11 @@ string crewLocationsWidget(string payload)
 		if(action == "capabilities")
 		{
 			response.put("permissions",{"view":true,"milestones":access.Edit_Crew_Milestones == true,"tasks":access.Edit_Crew_Task_Dates == true && config.get("taskWritesVerified") == true,"assignments":access.Manage_Crew_Assignments == true});
-			response.put("sources",{"crews":config.get("crewsEnabled") == true,"tasks":config.get("tasksEnabled") == true});
+			response.put("sources",{"crews":config.get("nativeCrewReadsEnabled") == true,"tasks":config.get("tasksEnabled") == true});
 			dependencies = List();
-			if(config.get("crewsEnabled") != true)
+			if(config.get("nativeCrewReadsEnabled") != true)
 			{
-				dependencies.add("Crew source: configure verified assignment dates and explicit external job-to-Subdivision mappings before enabling crew imports.");
+				dependencies.add("Native crew reports are not configured.");
 			}
 			if(config.get("tasksEnabled") != true)
 			{
@@ -96,7 +96,7 @@ string crewLocationsWidget(string payload)
 					}
 				}
 			}
-			for each  entry in Schedule_Change_Log[Subdivision1 == phaseId.toLong()] sort by ID desc range from 0 to 49
+			for each  entry in Schedule_Change_Log[Subdivision1 == phaseId.toLong()] sort by Timestamp desc range from 0 to 49
 			{
 				canRead = true;
 				historyChanges = entry.Request_JSON.toMap().get("changes");
@@ -132,11 +132,13 @@ string crewLocationsWidget(string payload)
 			response.put("environment",config.get("environment"));
 			return response.toString();
 		}
-		if(action != "apply")
+		if(action != "prepare" && action != "apply")
 		{
 			response.put("message","Unknown schedule action.");
 			return response.toString();
 		}
+		request.put("action","apply");
+		payload = request.toString();
 		existing = Schedule_Change_Log[Operation_ID == operationId];
 		if(existing.count() > 0)
 		{
@@ -145,42 +147,114 @@ string crewLocationsWidget(string payload)
 				response.put("message","Operation ID was already used for a different request.");
 				return response.toString();
 			}
-			response = thisapp.crewLocationsStatus(operationId,phaseId);
-			response.put("action",action);
-			response.put("testingMode",false);
-			response.put("creatorOnly",true);
-			response.put("projectsPushEnabled",false);
-			response.put("environment",config.get("environment"));
+			if(action == "prepare" || existing.State != "prepared")
+			{
+				response = thisapp.crewLocationsStatus(operationId,phaseId);
+				response.put("action",action);
+				response.put("testingMode",false);
+				response.put("creatorOnly",true);
+				response.put("projectsPushEnabled",false);
+				response.put("environment",config.get("environment"));
+				return response.toString();
+			}
+		}
+		if(action == "apply" && existing.count() != 1)
+		{
+			response.put("message","Prepare this operation before saving.");
 			return response.toString();
 		}
-		// Unique Phase_Key gives one scheduling operation exclusive use of a phase.
-		// Every protected direct edit and the inbound importer must honor this lock.
-		lockId = insert into Crew_Schedule_Lock
-		[
-			Phase_Key=phaseId
-			Subdivision1=phaseId.toLong()
-			Operation_ID=operationId
-			Actor=zoho.loginuser
-			Acquired_At=zoho.currenttime
-			Added_User=zoho.loginuser
-		];
+		if(action == "prepare")
+		{
+			// Unique Phase_Key gives one scheduling operation exclusive use of a phase.
+			// Every protected direct edit and the inbound importer must honor this lock.
+			lockId = insert into Crew_Schedule_Lock
+			[
+				Phase_Key=phaseId
+				Subdivision1=phaseId.toLong()
+				Operation_ID=operationId
+				Actor=zoho.loginuser
+				Acquired_At=zoho.currenttime
+				Added_User=zoho.loginuser
+			];
+			acquired = true;
+			logId = insert into Schedule_Change_Log
+			[
+				Operation_ID=operationId
+				Operation_Type="creator_only_schedule"
+				Actor=zoho.loginuser
+				Timestamp=zoho.currenttime
+				Subdivision1=phaseId.toLong()
+				Origin=request.get("origin")
+				Request_JSON=payload
+				State="validating"
+				Execution_Finished=false
+				Duration_Operation_ID=ifnull(request.get("durationOperationId"),"")
+				Reverses_Operation_ID=ifnull(request.get("reversesOperationId"),"")
+				Added_User=zoho.loginuser
+			];
+			log = Schedule_Change_Log[ID == logId];
+			plan = thisapp.crewLocationsValidate(request);
+			if(plan.get("ok") != true)
+			{
+				response.put("message",plan.get("message"));
+				response.put("state","rejected");
+				response.put("operationId",operationId);
+				response.put("confirmed",confirmed);
+				response.put("records",savedRecords);
+				log.Result_JSON=response.toString();
+				log.Execution_Finished=true;
+				log.State="rejected";
+				delete from Crew_Schedule_Lock[Operation_ID == operationId];
+				return response.toString();
+			}
+			for each  target in plan.get("payloads")
+			{
+				key = target.get("type") + ":" + target.get("recordId");
+				if(Crew_Test_Record[Record_Key == key].count() == 0)
+				{
+					markerId = insert into Crew_Test_Record
+					[
+						Record_Key=key
+						Subdivision1=phaseId.toLong()
+						First_Operation_ID=operationId
+						Created_At=zoho.currenttime
+						Added_User=zoho.loginuser
+					];
+				}
+			}
+			response.put("ok",true);
+			response.put("state","prepared");
+			response.put("operationId",operationId);
+			log.Result_JSON=response.toString();
+			log.State="prepared";
+			return response.toString();
+		}
+		ownedLock = Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId && Actor == zoho.loginuser];
+		if(ownedLock.count() != 1)
+		{
+			response.put("message","The prepared phase lock is unavailable.");
+			return response.toString();
+		}
+		try
+		{
+			claimId = insert into Crew_Schedule_Lock
+			[
+				Phase_Key=phaseId + ":apply"
+				Subdivision1=phaseId.toLong()
+				Operation_ID=operationId
+				Actor=zoho.loginuser
+				Acquired_At=zoho.currenttime
+				Added_User=zoho.loginuser
+			];
+		}		catch (claimError)
+		{
+			response.put("unknown",true);
+			response.put("operationId",operationId);
+			response.put("message","This prepared operation is already executing or needs recovery. Check status; do not replay it.");
+			return response.toString();
+		}
 		acquired = true;
-		logId = insert into Schedule_Change_Log
-		[
-			Operation_ID=operationId
-			Operation_Type="creator_only_schedule"
-			Actor=zoho.loginuser
-			Timestamp=zoho.currenttime
-			Subdivision1=phaseId.toLong()
-			Origin=request.get("origin")
-			Request_JSON=payload
-			State="validating"
-			Execution_Finished=false
-			Duration_Operation_ID=ifnull(request.get("durationOperationId"),"")
-			Reverses_Operation_ID=ifnull(request.get("reversesOperationId"),"")
-			Added_User=zoho.loginuser
-		];
-		log = Schedule_Change_Log[ID == logId];
+		log = Schedule_Change_Log[Operation_ID == operationId];
 		plan = thisapp.crewLocationsValidate(request);
 		if(plan.get("ok") != true)
 		{
@@ -192,7 +266,7 @@ string crewLocationsWidget(string payload)
 			log.Result_JSON=response.toString();
 			log.Execution_Finished=true;
 			log.State="rejected";
-			delete from Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId];
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
 			return response.toString();
 		}
 		log.State="saving";
@@ -221,17 +295,6 @@ string crewLocationsWidget(string payload)
 				break;
 			}
 			key = target.get("type") + ":" + target.get("recordId");
-			if(Crew_Test_Record[Record_Key == key].count() == 0)
-			{
-				markerId = insert into Crew_Test_Record
-				[
-					Record_Key=key
-					Subdivision1=phaseId.toLong()
-					First_Operation_ID=operationId
-					Created_At=zoho.currenttime
-					Added_User=zoho.loginuser
-				];
-			}
 			log.Inflight_Record_Key=key;
 			fields = {"Start_Date","End_Date"};
 			body = {"data":target.get("patch"),"result":{"fields":fields}};
@@ -265,7 +328,7 @@ string crewLocationsWidget(string payload)
 			returned = ack.get("data");
 			if(returned.keys().contains("Start_Date") && returned.keys().contains("End_Date"))
 			{
-				try 
+				try
 				{
 					savedRecords.add({"type":target.get("type"),"id":target.get("recordId"),"start":thisapp.crewLocationsIso(ifnull(returned.get("Start_Date"),"").toString()),"end":thisapp.crewLocationsIso(ifnull(returned.get("End_Date"),"").toString())});
 				}				catch (displayRefreshError)
@@ -300,7 +363,7 @@ string crewLocationsWidget(string payload)
 		log.State=state;
 		if(!writeUncertain)
 		{
-			delete from Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId];
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
 		}
 	}	catch (scheduleError)
 	{
@@ -327,7 +390,7 @@ string crewLocationsWidget(string payload)
 			}
 			if(!writeUncertain)
 			{
-				delete from Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId];
+				delete from Crew_Schedule_Lock[Operation_ID == operationId];
 			}
 		}
 	}

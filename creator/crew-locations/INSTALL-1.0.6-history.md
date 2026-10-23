@@ -1,5 +1,10 @@
 # Crew Locations Development installation
 
+Historical note corrected October 23: the planned assignment report alias in this
+snapshot was not the native link. Active contracts now reuse the existing
+`Crew_Assignment_Report`, verified in the native builder and Access Dev Live.
+See [current installation](INSTALL.md); do not create the historical alias.
+
 This package implements the user-approved **local-only testing mode**. It does
 not enable an outbound Projects dispatcher or production scheduling. Native
 installation is partial; ten core functions have compiled. Do all steps in Land

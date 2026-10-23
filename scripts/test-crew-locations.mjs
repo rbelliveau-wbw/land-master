@@ -48,4 +48,18 @@ test('Every new persisted field belongs to a valid Creator section for publicati
  for(const form of schema.forms){verifyLayout(fs.readFileSync('creator/crew-locations/'+form.name+'.ds.fragment','utf8'),form.fields.map(f=>f.name),form.name);const native='creator/crew-locations/native-installed/'+form.name+'.ds';if(fs.existsSync(native))verifyLayout(fs.readFileSync(native,'utf8'),form.fields.map(f=>f.name),'native '+form.name);}
  verifyLayout(fs.readFileSync('creator/crew-locations/User_Access.ds.fragment','utf8'),schema.add_to_User_Access.map(f=>f.name),'User_Access additions');
 });
+test('Controller defaults and native identity-only acknowledgements preserve real schedules',()=>{
+ // Expose private pure helpers only inside this isolated VM; production keeps
+ // its existing public API. This exercises the actual controller implementation.
+ const app=fs.readFileSync('widgets/crew-locations/src/app/crew-app.js','utf8'),scope=vm.createContext({Date,Intl,Map,Set,Number,String,Object,Math,document:{getElementById:()=>null}});scope.window=scope;
+ vm.runInContext(source,scope);vm.runInContext(app.replace('root.CrewApp=Object.freeze({start,state:S});','root.CrewApp=Object.freeze({start,state:S,defaultFilters,requireDestinations,applyConfirmedValues,focusOption});'),scope);
+ const api=scope.CrewApp,state=api.state;state.model=scope.CrewModel.normalize(crewFixture());state.day=day;state.capabilities={sources:{crews:false,tasks:false}};
+ const defaults=api.defaultFilters(),upcoming=scope.CrewModel.upcoming(state.model,defaults,day);assert.ok(defaults.phases.length>0);assert.deepEqual([...defaults.phases],upcoming.map(p=>p.id));assert.ok(!defaults.phases.includes('assigned'));
+ state.capabilities.sources.crews=true;assert.deepEqual([...api.defaultFilters().phases],['assigned']);
+ const record=state.model.phases[1].records.M['Rough Cut'],oldEnd=record.end,change=scope.CrewModel.change(record,{end:oldEnd+3}),operationId='00000000-0000-0000-0000-000000000001',ack={operationId,confirmed:[{type:'M',recordId:record.id}]};
+ assert.throws(()=>api.requireDestinations({...ack,confirmed:[]},operationId,[change]),/identities/);assert.equal(record.end,oldEnd,'unconfirmed destinations never reach display mutation');
+ api.requireDestinations(ack,operationId,[change]);api.applyConfirmedValues(ack,[change]);assert.equal(record.end,oldEnd+3,'optional native display metadata is not required for a confirmed duration');
+ const unrelated=state.model.phases[0].records.M['Road Prep'],unrelatedEnd=unrelated.end;api.applyConfirmedValues({...ack,records:[{type:'M',id:unrelated.id,start:'2090-01-01',end:'2090-02-01'},{type:'M',id:record.id,end:scope.CrewModel.iso(oldEnd+4)}]},[change]);assert.equal(unrelated.end,unrelatedEnd,'returned metadata cannot mutate an unrelated source record');assert.equal(record.end,oldEnd+4,'provided authoritative fields override display fallback');
+ let focusOptions;const list={scrollTop:10,getBoundingClientRect:()=>({top:100,bottom:200})},option={parentElement:list,focus:options=>{focusOptions=options;},getBoundingClientRect:()=>({top:215,bottom:245})};api.focusOption(option);assert.equal(focusOptions.preventScroll,true,'keyboard option focus cannot scroll the underlying page');assert.equal(list.scrollTop,55,'only the option list scrolls enough to reveal the keyboard target');
+});
 console.log('Passed '+checks+' Crew Locations scheduling and contract groups. Deluge compilation/live installation are separate checks.');

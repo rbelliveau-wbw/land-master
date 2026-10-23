@@ -14,7 +14,24 @@ instructions in [historical installation notes](INSTALL-1.0.6-history.md) are su
    `projectsPushEnabled=false`. Do not replace the logged-in-user connection.
 3. Keep all five existing importer/push guards and the milestone On Validate
    workflow. Preserve newer workflow audit/error handling. Both outbound schedules
-   remain inactive. Crew/task adapters stay disabled until verified.
+   remain inactive. External crew/task adapters stay disabled until verified.
+   The independent `nativeCrewReadsEnabled=true` capability permits authenticated
+   native Crew/Crew_Assignment reads only. Keep `crewsEnabled=false`, blank
+   `importActor`/`crewSourceSystem`, and tasks/write verification false. Compile
+   Config and Widget together after verifying `All_Crews` exposes ID, Crew_Code,
+   Badge_Color, Active and `Crew_Assignment_Report` exposes ID, Subdivision1,
+   Crew, Assignment_Date, Source_System, Source_Record_ID. Production All_Crews
+   exists but currently has no exposed columns. Native builder/Access Dev Live
+   confirmed `Crew_Assignment_Report`; do not rename it or recreate a report named
+   All_Crew_Assignments. Config/Widget save persistence is confirmed by reopened
+   native editors, and both native report layouts are auto-saved/DOM verified.
+   Actual SDK reads and user Creator publication remain pending.
+   Required-field failure must stay closed.
+   The Development assignment layout is now auto-saved with its native columns
+   verified from DOM; the required assignment Source_Record_ID is the field on
+   Crew_Assignment, not the related Crew.Source_Record_ID field. All_Crews layout
+   now exposes Crew_Code, Crew_Name, Badge_Color, Active, Source_System,
+   Source_Record_ID, ID. Actual SDK reads and user Production promotion remain pending.
 4. Bind the existing `crew_locations` widget to the permanent external URL
    `https://rbelliveau-wbw.github.io/land-master/prod/crew-locations/`.
    Keep the new page identity `Crew_Management` (display Crew Management) and the
@@ -44,7 +61,8 @@ The controlled earlier failed save was operation
 Preserve its audit and any marker until deliberately reconciled. Completed/closed
 phase and historical endpoint protections remain active.
 
-Run `node scripts/test-crew-locations.mjs`, `npm run validate`, and
+Run `node scripts/test-crew-locations.mjs`,
+`node scripts/test-crew-native-capabilities.mjs`, `npm run validate`, and
 `npm run build:pages`. Use `npm run package:creator -- crew-locations` if an internal
 ZIP is needed. Fixtures are isolated and do not establish live save behavior.
 
