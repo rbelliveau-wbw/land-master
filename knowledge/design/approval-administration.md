@@ -11,20 +11,60 @@ Use this pattern for approvers, approval rules and route testing. Keep
 role membership separate from ordered approval steps. The Settings Manager
 implementation is [approval-admin.js](../../widgets/settings-manager/src/app/approval-admin.js).
 
+## Embedded Settings workspace — 1.6.1
+
+Approval Rules, Approvers, Roles, Test Route and Change History are separate
+Settings screens reached from the persistent left menu. Keep the existing
+editor/controller mounted in a stable host outside the ordinary Settings field
+renderer. Hide its duplicate modal header, internal tabs and header Close while
+embedded. Normal screens are named regions: they do not inert the Settings
+menu or trap keyboard focus. Place Add Rule, Add Approver and Add Role above
+their respective lists. Omit routine Refresh buttons per the user's October 23
+cleanup. Do not repeat list actions in a footer below the records. Editor and
+progress footers remain, including specific read-only recovery actions.
+
+The controller exposes `mount(host, tab, onState)`, `navigate(tab)`, `canLeave()`
+and `state()`. Its internal tab keys remain `Policies`, `Assignments`, `Roles`,
+`Preview` and `Audit`. `mount` returns false when a requested change is unsafe.
+The parent must call `canLeave()` before leaving an approval screen or reloading;
+it requests the existing inline flush when dirty. New incomplete editors,
+pending writes and unknown replies retain their exact draft/operation and block
+navigation. The callback exposes the actual tab, busy/pending/unknown/dirty
+state and `canLeave`; the parent reflects those locks without replacing the
+embedded host. Check Status remains read-only and retains its operation token.
+
+Explicit configuration writes retain a true compact progress modal. Portal the
+same mounted panel to the widget body, keep its existing focus trap, inert
+background and duplicate/dismissal guards, and hold the terminal result. Done
+restores the panel to its stable host and returns to the relevant list or saved
+Draft. An unknown reply stays in recovery; parent navigation cannot hide or
+discard it. Existing `open()` callers retain the original modal experience.
+
+This frontend release has no backend/API/routing changes. The rollback frontend
+is Settings Manager **1.5.20**.
+Focused desktop coverage includes the actual embedded controller, inline saves,
+lost-response Check, new drafts, modal portal, inert/focus restoration and
+ancestor/result-list scrolling. Full repository validation and Pages build are
+separate release gates. See the
+[module notes](../../widgets/settings-manager/README.md).
+
 Start on **Approval Rules**. Use **Approvers**, **Roles**, **Test Route** and
 **Change History** as the other navigation labels. A rule card shows its workflow,
 scope, publication state and ordered roles. An approver card shows the role,
 person's full name, approval email, scope and enabled state. Avoid internal
 record terminology in headings and button labels.
 
-Use the navy modal, compact tabs, custom searchable single-value pickers and
-centered SVG close button. Trap focus and make the underlying widget inert.
-Mount the open picker beside the scrollable card inside the modal overlay, then
-position it within the viewport. Flip above its trigger when space below is
-limited; scroll its own results. Keep the picker within the focus trap. First
-Escape closes it and restores its trigger; subsequent Escape closes the modal.
-Dismiss or reposition it on editor scroll, resize and navigation so it cannot
-be clipped by the card or footer.
+Use custom searchable single-value pickers and centered SVG close buttons.
+Modal compatibility and configuration progress use the navy shell, focus trap
+and inert background; embedded ordinary screens use the workspace frame.
+Mount an open picker beside the scrollable card in the same approval surface,
+then position it within the viewport. Flip above its trigger when space below
+is limited; scroll its own results without dismissing it. Keep modal pickers
+within the focus trap. First Escape closes the picker and restores its trigger;
+subsequent Escape follows the editor's existing safe-close behavior. Dismiss or
+reposition on editor/ancestor scroll, resize and navigation. In embedded mode
+the ancestor includes Settings' `#view` scroller, so the picker cannot drift
+away from its trigger or be clipped by a card/footer.
 
 Approvers and rules persist until changed or disabled. There are no Company
 selectors, effective-date controls or date-based route testing. The approval-only
@@ -62,7 +102,7 @@ receipt recovery, not the normal editor. In every shared-policy workflow, VP
 resolves directly from the document's Territory.VP, and Dev Mgr resolves every
 selected Territory.Dev_Mgr person. Other roles use approver assignments.
 Identify those Territory sources in the UI. Reject
-ambiguous or unroutable recipients and ordinary submitter approval. The user
+ambiguous or unroutable recipients. Self-approval follows the rule below. The user
 guarantees distinct people in each policy, so no
 duplicate-person mode, merging or repeated-role machinery is provided. Preview
 uses the same configuration as the server and one PO creates modifications
@@ -79,8 +119,8 @@ from dates, Company, enabled state or record order.
 
 Audit details show before/after values and the actor's User Access identity.
 Follow [transfer progress](transfer-progress.md) for configuration writes.
-Keep unknown writes locked in the dialog's recovery state and offer read-only
-Check. Do not replay a configuration mutation or activate an adapter to recover
+Keep unknown writes locked in the mounted editor or modal recovery state and
+offer read-only Check. Do not replay a configuration mutation or activate an adapter to recover
 from a lost response. Execution migrations and approved recipients have their
 own native gates described in the module handoff.
 
@@ -105,7 +145,7 @@ be disabled or removed. Removing a row animates the remaining rows.
 
 New rules are active by default. Hide the activation checkbox during creation;
 Save Rule first saves the native Draft and then publishes its verified record
-using a distinct operation token. Existing rules show Active and Save Changes.
+using a distinct operation token. Existing rules show Active and save inline.
 Never publish after an ambiguous save or as a side effect of read-only Check.
 A recovered Draft offers an explicit Activate Rule action. Lost publish replies
 retain the exact activation token for read-only recovery.
@@ -127,8 +167,8 @@ Known not-started failures allow explicit retry; unknown replies keep the exact
 operation token and allow read-only Check Status, without replay.
 
 New Approval Rules retain an explicit Save Rule button and native Draft then
-Publish sequence. Done returns to the rules list within the mounted Approvals
-pane. Existing rules expose Active but have no Save Changes button.
+Publish sequence. Done returns to the rules list within the mounted approval
+surface. Existing rules expose Active but have no Save Changes button.
 
 Dev Mgr resolves from the Territory.Dev_Mgr multi-select User_Access lookup
 for shared approval-policy workflows. Expand unique selected users, preserving

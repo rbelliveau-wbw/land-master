@@ -6,6 +6,7 @@ const app = 'widgets/settings-manager/src/app/';
 const html = fs.readFileSync(app+'widget.html','utf8');
 const inline = html.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
 assert.match(html,/widgets\/version\/2\.0\/widgetsdk-min\.js/);
+assert.doesNotMatch(html,/id="(?:reload|openrec|screen-tag)"|class="nav-caption"/,'Settings omits the removed header actions and configuration labels');
 assert.doesNotMatch(inline,/CREATOR\.API|CREATOR\.init\(|window\.(?:confirm|alert|prompt)\(|beforeunload|ENC_MODES|tryUpdate/);
 assert.doesNotMatch(inline,/function (?:apiUpdate|apiAdd|apiDelete|getAll)\(/,'Unused transport entry points cannot bypass controller readiness');
 assert.equal(fs.readFileSync(app+'creator-data.js','utf8'),fs.readFileSync('shared/creator-data.js','utf8'));
@@ -119,20 +120,20 @@ for(const response of [{code:3000,status:'failure',result:{records_count:'1'}},{
 }
 
 {
-  const h=await ready({count:2});assert.equal(h.handshakes(),1);assert.equal(h.widget.state.recCount,2);assert.equal(h.widget.state.recId,ID);assert.match(h.node('wrap').innerHTML,/2 Settings records exist/);assert.equal(h.widget.controller.canEdit('Multi_Line'),true,'Existing duplicate warning preserves selected-row editing');
+  const h=await ready({count:2});assert.equal(h.handshakes(),1);assert.equal(h.widget.state.recCount,2);assert.equal(h.widget.state.recId,ID);assert.match(h.node('settings-alerts').innerHTML,/2 Settings records exist/);assert.equal(h.widget.controller.canEdit('Multi_Line'),true,'Existing duplicate warning preserves selected-row editing');
   assert.ok(h.calls.filter(call=>call.method==='records').every(call=>call.config.field_config==='all'&&call.config.max_records===1000));assert.ok(h.maxActive()<=3);
   assert.match(h.widget.other(),/Future Field/);assert.match(h.widget.multi({n:'Builder_Approval_Template',src:'approvals'},h.records[0].Builder_Approval_Template),new RegExp(A));assert.match(h.widget.multi({n:'Builder_Approval_Template',src:'approvals'},h.records[0].Builder_Approval_Template),/not in list/);assert.match(h.widget.curveRow(h.curves[0]),/Unresolved PF/);
   const handlers=h.node('wrap').handlers;h.widget.render();h.widget.render();assert.equal(handlers.get('change').length,1);assert.equal(handlers.get('input').length,2);assert.equal(h.listeners.get('click').length,1,'Repeated rendering does not multiply document handlers');
   assert.equal(h.widget.queue('Missing_Field','invented'),false);assert.equal(h.calls.filter(call=>call.method==='add').length,0);assert.equal(h.widget.controller.mutate,undefined,'Native mutation stays private to guarded captured operations');
 }
 {
-  const h=await ready();assert.equal(h.widget.queue('Multi_Line','draft'),true);assert.equal(h.widget.queue('Future_Field','new future'),true);assert.equal(h.node('reload').disabled,true);assert.equal(await h.widget.load(),false);h.tick(700);await drain();
+  const h=await ready();assert.equal(h.widget.queue('Multi_Line','draft'),true);assert.equal(h.widget.queue('Future_Field','new future'),true);assert.equal(h.widget.controller.hasDrafts(),true);assert.equal(await h.widget.load(),false);h.tick(700);await drain();
   const writes=h.calls.filter(call=>call.method==='update');assert.equal(writes.length,1);assert.deepEqual(writes[0].config,{report_name:'All_Settings',id:ID,payload:{data:{Multi_Line:'draft',Future_Field:'new future'}}});assert.equal(h.widget.state.drafts.Multi_Line,undefined);assert.equal(h.records[0].Future_Field,'new future');assert.match(h.node('row:Multi_Line:.tick').innerHTML,/Verified saved/);assert.ok(h.calls.some(call=>call.method==='count'&&call.config.criteria==='(ID == '+ID+')'));
 }
 {
   const h=await ready(),held=deferred(),native=h.api.updateRecordById;
   h.api.updateRecordById=config=>held.promise.then(()=>native(config));h.widget.queue('Multi_Line','older');const saving=h.widget.flush();await drain();
-  assert.equal(h.widget.value('Multi_Line'),'older');assert.equal(Object.isFrozen(h.widget.state.inflight.values),true);assert.equal(h.node('openrec').disabled,true);assert.equal(await h.widget.load(),false);
+  assert.equal(h.widget.value('Multi_Line'),'older');assert.equal(Object.isFrozen(h.widget.state.inflight.values),true);assert.equal(await h.widget.load(),false);
   h.widget.queue('Multi_Line','newer');h.widget.render();assert.match(h.node('wrap').innerHTML,/newer/);held.resolve();await saving;
   assert.equal(h.widget.value('Multi_Line'),'newer');assert.equal(h.widget.state.rec.Multi_Line,'older');assert.doesNotMatch(h.node('row:Multi_Line:.tick').innerHTML,/Verified saved/);assert.equal(h.widget.state.drafts.Multi_Line.status,'queued');await h.widget.flush();assert.equal(h.widget.value('Multi_Line'),'newer');assert.equal(h.widget.state.drafts.Multi_Line,undefined);
 }
@@ -167,7 +168,7 @@ for(const response of [
   h.widget.queue('Future_Multi',[]);await h.widget.flush();h.widget.queue('Future_Multi',A+','+B);await h.widget.flush();assert.deepEqual(h.calls.filter(call=>call.method==='update').at(-1).config.payload.data.Future_Multi,[A,B]);
 }
 {
-  const h=await ready();h.records[0].Approval_Reminder_Interval_Days='3';await h.widget.load();assert.equal(h.widget.queue('Approval_Reminder_Interval_Days','1.5'),false);assert.equal(h.widget.value('Approval_Reminder_Interval_Days'),'1.5');assert.equal(h.calls.filter(call=>call.method==='update').length,0);assert.equal(h.node('reload').disabled,true);h.widget.queue('Approval_Reminder_Interval_Days','4');await h.widget.flush();assert.equal(h.widget.value('Approval_Reminder_Interval_Days'),'4');
+  const h=await ready();h.records[0].Approval_Reminder_Interval_Days='3';await h.widget.load();assert.equal(h.widget.queue('Approval_Reminder_Interval_Days','1.5'),false);assert.equal(h.widget.value('Approval_Reminder_Interval_Days'),'1.5');assert.equal(h.calls.filter(call=>call.method==='update').length,0);assert.equal(h.widget.controller.hasDrafts(),true);h.widget.queue('Approval_Reminder_Interval_Days','4');await h.widget.flush();assert.equal(h.widget.value('Approval_Reminder_Interval_Days'),'4');
   const count=h.calls.filter(call=>call.method==='update').length;await assert.rejects(h.widget.controller.curveOperation('edit',B,{Month_Number:'1.5'}),/whole month/);assert.equal(h.calls.filter(call=>call.method==='update').length,count);assert.equal(h.widget.state.curveDrafts[B].values.Month_Number,'1.5');
   assert.equal(h.widget.controller.discardRejected(),true);await h.widget.controller.curveOperation('edit',B,{Month_Number:'2'});assert.equal(h.widget.state.curve[0].Month_Number,'2');assert.equal(h.calls.filter(call=>call.method==='update').length,count+1,'Discarded local rejection cannot retain a stale failed promise');
 }
@@ -228,10 +229,10 @@ for(const action of ['edit','delete','add']){
   const h=await ready(),held=deferred(),native=h.api.deleteRecords;h.widget.remove(B);const host=h.node('curve-dialog'),commit=host.querySelector('[data-curve-delete]');h.api.deleteRecords=config=>held.promise.then(()=>native(config));commit.onclick();await drain();assert.equal(h.node('view').inert,true);assert.equal(host.querySelector('[data-curve-cancel]').disabled,true);h.widget.close();assert.equal(host.hidden,false);host.onkeydown({key:'Escape',preventDefault(){}});assert.equal(host.hidden,false);held.resolve();await drain();assert.match(host.querySelector('[data-curve-status]').textContent,/verified/);assert.equal(host.querySelector('[data-curve-delete]').disabled,true);h.widget.close();assert.equal(host.hidden,true);assert.equal(h.node('view').inert,false);assert.equal(h.calls.filter(call=>call.method==='delete').length,1);
 }
 {
-  const stalled=deferred(),h=harness({initialize:()=>stalled.promise});await drain();h.tick(5000);await drain();assert.equal(h.widget.state.live,false);assert.equal(h.calls.length,0);assert.equal(h.node('reload').disabled,false);stalled.resolve({envUrlFragment:'',loginUser:'late'});await drain();assert.equal(h.calls.length,0,'Late initialization cannot start business reads');h.context.ZOHO.CREATOR.UTIL.getInitParams=async()=>({envUrlFragment:'',loginUser:'retry'});await h.widget.boot();assert.equal(h.widget.state.live,true);assert.equal(h.widget.state.ready,true);
+  const stalled=deferred(),h=harness({initialize:()=>stalled.promise});await drain();h.tick(5000);await drain();assert.equal(h.widget.state.live,false);assert.equal(h.calls.length,0);stalled.resolve({envUrlFragment:'',loginUser:'late'});await drain();assert.equal(h.calls.length,0,'Late initialization cannot start business reads');h.context.ZOHO.CREATOR.UTIL.getInitParams=async()=>({envUrlFragment:'',loginUser:'retry'});await h.widget.boot();assert.equal(h.widget.state.live,true);assert.equal(h.widget.state.ready,true);
 }
 {
-  const h=harness(),native=h.api.getRecords;h.api.getRecords=config=>config.report_name==='All_Pro_Formas'?Promise.resolve({code:3000,data:[]}):native(config);await drain();h.widget.queue('Multi_Line','retained after boot');assert.equal(h.node('reload').disabled,true);assert.equal(await h.widget.boot(),false);assert.equal(h.widget.value('Multi_Line'),'retained after boot');assert.equal(h.handshakes(),1);
+  const h=harness(),native=h.api.getRecords;h.api.getRecords=config=>config.report_name==='All_Pro_Formas'?Promise.resolve({code:3000,data:[]}):native(config);await drain();h.widget.queue('Multi_Line','retained after boot');assert.equal(h.widget.controller.hasDrafts(),true);assert.equal(await h.widget.boot(),false);assert.equal(h.widget.value('Multi_Line'),'retained after boot');assert.equal(h.handshakes(),1);
 }
 for(const params of [{envUrlFragment:'',loginUser:{}},{envUrlFragment:'',loginUser:' '},{envUrlFragment:'/wrong/environment',loginUser:'actor'},null]){
   const h=harness({initialize:async()=>params});await drain();assert.equal(h.widget.state.live,false);assert.equal(h.calls.length,0,'Invalid native actor/environment cannot start data reads');assert.equal(h.widget.controller.canEdit(),false);

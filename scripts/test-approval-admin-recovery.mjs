@@ -23,8 +23,8 @@ let scope='same-admin-session',answer=()=>receipt;
 const context=vm.createContext({JSON,Promise,Error,crypto:{randomUUID:()=>token},performance:{now:()=>0},window:{matchMedia:()=>({matches:true})},setTimeout:(fn,ms)=>ms===650?650:ms===90000?90000:setTimeout(fn,ms),clearTimeout:id=>{if(id!==90000&&id!==650)clearTimeout(id);}});
 vm.runInContext(await readFile(new URL('../widgets/settings-manager/src/app/approval-policy-domain.js',import.meta.url),'utf8'),context);
 // Export the real closure handlers into this fixture without changing production code.
-assert.equal(source.split('return {open:open};').length,2);
-vm.runInContext(source.replace('return {open:open};',`return {open:open,click:click,load:load,send:send,close:close,listing:listing,reconcileAudit:reconcileAudit,
+assert.equal(source.split('return {open:open,mount:mount,navigate:navigate,canLeave:canLeave,state:state};').length,2);
+vm.runInContext(source.replace('return {open:open,mount:mount,navigate:navigate,canLeave:canLeave,state:state};',`return {open:open,click:click,load:load,send:send,close:close,listing:listing,reconcileAudit:reconcileAudit,
   fixture:function(value){panel=value.panel;card=value.card;config=value.config;policyReady=value.policyReady!==false;actorId='9007199254740994';tab=value.tab||'Audit';draft=value.draft||null;editing=value.editing||'';pending=null;busy=false;scope=value.scope;epoch=1;inert=[];resetInline();},
   state:function(){return {pending:pending,busy:busy,draft:draft,tab:tab,editing:editing,config:config,panel:panel,policyReady:policyReady};}};`),context);
 const admin=context.LMApprovalAdmin;

@@ -1,182 +1,187 @@
-## Settings Manager number transitions — 1.5.9, October 15, 2026
-
-Sliding push now covers construction-curve totals and blank-default counts.
-Real values update immediately; native editable precision/caret, identities, dates,
-financial math, permissions and existing save/approval/recovery gates are retained.
-Reduced motion is immediate. No Creator forms, fields, functions or APIs change;
-no Creator deployment is required. Production rollback: 1.5.8.
-[Changed files, complete coverage and regression evidence](../../docs/number-transition-rollout-2026-10-15.md).
-
 # Settings Manager
 
-## Workflow Log — 1.5.17
+## 1.6.1 — sidebar workspace
 
-Automation includes a searchable User Access multi-select for failure recipients.
-Workflow Log shows complete selected date ranges, newest first, with time sort,
-failure/search filters and per-run stage, source reference, counts and errors.
-It loads only when opened. Creator deployment is required for the new audit
-form/report, Settings lookup and audited integration functions/workflows.
-See [contracts, verification and rollback](../../docs/workflow-integration-audit-2026-10-21.md).
-This release preserves the current native acknowledgement save policy; historical
-readback descriptions below do not reinstate editable-field equality checks.
+Settings has a persistent left menu and one visible screen at a time. Approval
+Rules, Approvers, Roles, Test Route and Change History are first-class screens
+in the same workspace. Screen changes retain mounted controls, drafts, screen
+scroll positions and Workflow Log filters. Healthy singleton/record details
+no longer dominate the page; actual load, duplicate and recovery warnings remain.
 
-## Territory approvers — October 14, 2026
+The 1.6.1 release implements the approved mockups and removes the Configuration
+caption/badge, Open in Creator and routine Refresh buttons. It adds no Creator
+forms, fields, functions, Custom APIs or approval-routing rules. Existing backend availability and permissions still
+determine which operations can run. Frontend rollback is Settings Manager
+**1.5.20** through the existing permanent environment mapping; keep the Creator
+widget URL unchanged. Repository-wide validation and Pages build are required before promotion.
 
-VP and Dev Mgr always resolve from the Territory assigned to the document,
-across every shared-policy workflow. Each unique selected Dev Mgr has an
-individual sequential approval before the next role; VP requires one unique
-person. Global/scoped assignments cannot override these Territory recipients.
-Other roles retain Settings assignment precedence. Pro Forma's old per-record
-approver setup is retired. See [deployment and regressions](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+## Screens
 
-## Shared approval administration (1.4.4)
+| Menu group | Screen | Existing configuration or behavior |
+| --- | --- | --- |
+| General | Automation | Workflow failure recipients, workflow run anchor and approval reminders |
+| General | Workflow Log | Lazy read-only execution history, date range, search and failure filter |
+| Approvals | Approval Rules | Workflow scope, ordered roles and applicable conditions |
+| Approvals | Approvers | Role-to-person assignments, approval email and enabled state |
+| Approvals | Roles | Available approval roles |
+| Approvals | Test Route | Evaluated people, order and inclusion/exclusion reasons; no emails or writes |
+| Approvals | Change History | Configuration actor, before/after evidence and retained receipts |
+| Modules | Forecasting | Forecasting window and global unlock switches |
+| Modules | Contracts & Legal | Legal notification recipients and builder contract templates |
+| Modules | Budget | Retained legacy COO threshold and `Multi_Line` free text |
+| Modules | Pro Forma Defaults | Eight percentage defaults and current blank-default count |
+| Modules | Construction Curves | Monthly cost distribution grouped by curve length |
+| AI & Data | AI Review | Pro Forma criteria, provider, model and criteria timestamp |
+| AI & Data | Spreadsheet Lot Import | CSV/XLSX interpretation instructions |
+| Advanced | Additional Fields | Unmodeled Settings fields, only when present |
 
-Settings → Approvals contains Roles, Assignments, versioned Policies, Preview
-and Audit in authenticated Development and Production sessions. The existing
-owner-only APIs and backend authorization remain in force. PO VP steps resolve
-from the selected Territory record's VP lookup rather than a separate role
-assignment. CFO is required on every PO; COO and territory VP are required if
-any item's allocation exceeds its available budget after other POs.
-One All companies PO template and CFO/COO assignments cover every company;
-existing company-specific overrides take priority. Other workflows retain
-company-specific templates. Production identity uses the existing authenticated
-GET endpoint; Development uses its existing POST endpoint.
+Automation retains `Next_Workflow_Run`, `Approval_Reminder_Interval_Days` and
+`Next_Approval_Reminder_Date`, including the scheduled jobs affected by the run
+anchor. `Workflow_Log_Failure_Recipients` remains a User Access multi-select.
+Workflow Log loads only when opened and keeps the complete selected date range,
+time sorting, failures/search filters and per-run details. Its existing native
+audit components require their own deployment; this redesign does not install
+them. See [Workflow Log contracts and handoff](../../docs/workflow-integration-audit-2026-10-21.md).
 
-Pro Forma and Budget templates initialize their existing linked Budget_Approvals
-records only when their workflow adapter is enabled. Existing decisions, notes,
-recipients and in-progress chains retain the original execution flow.
+Forecasting switches retain their amber active treatment. Contracts & Legal
+preserves validated email chips and searchable builder template multi-selects.
+The Budget screen identifies `COO_Approval_Threshold` as legacy and links to
+Approval Rules: after the existing routing handoff, standalone Budget
+Modifications use their published rule's Above/At or above condition and exact
+threshold. Changing the global legacy field does not change that rule.
+`Multi_Line` stays free text; no new business meaning is assigned. See the
+[Budget routing handoff](../../docs/budget-modification-settings-routing-2026-10-19.md).
 
-A grouped, autosaving editor for the **single** Land Master `Settings` record.
-
-Before this widget, `page Settings1` was a bare iframe hardcoded to
-`.../Settings/record-edit/All_Settings/4410926000000769023/` — the raw Creator form, with the
-record id baked into the page source.
+AI Review retains `PF_Review_Criteria`, `PF_Review_Provider`, `PF_Review_Model`
+and the automatically stamped `PF_Review_Criteria_Updated`. `openai` remains
+the supported provider; configured model IDs pass through unchanged.
+Spreadsheet Lot Import reuses `Plat_Review_Criteria` for CSV/XLSX column mapping
+and subdivision matching. Empty instructions keep the backend default. Use
+Starter Instructions fills and autosaves this field only when explicitly
+chosen; stored instructions are never replaced automatically. Both AI features
+continue sharing the existing provider/model settings.
 
 ## Creator contracts
 
 | Kind | Link name | Use |
-|---|---|---|
-| Form | `Settings` | The singleton record |
-| Report | `All_Settings` | Read + update target |
-| Form | `Construction_Curve` | Child rows of the curve grid |
-| Report | `All_Construction_Curves` | Read/update/delete curve rows |
-| Report | `All_Contract_Approvals` | Options for `Builder_Approval_Template` |
-| Report | `All_Contract_Actions` | Options for `Builder_Contract_Action_Template` |
-| Report | `All_Pro_Formas` | Options for the curve row `Pro_Forma` lookup |
+| --- | --- | --- |
+| Form | `Settings` | Singleton configuration record |
+| Report | `All_Settings` | Read and update target |
+| Form | `Construction_Curve` | Curve child records |
+| Report | `All_Construction_Curves` | Read, update and delete curve rows |
+| Report | `All_Contract_Approvals` | `Builder_Approval_Template` choices |
+| Report | `All_Contract_Actions` | `Builder_Contract_Action_Template` choices |
+| Report | `All_Pro_Formas` | Curve-row `Pro_Forma` choices |
+| Form | `User_Access` | Approval identities and workflow failure recipients |
+| Report | `Workflow_Run_Log_Report` | Read-only Workflow Log |
 
-Existing Settings and curve data use native `ZOHO.CREATOR.DATA` SDK2 methods.
-Approval administration uses the existing owner-only `Manage_Approval_Policies`
-or `Manage_Approval_Policies_DEV` Custom API selected by Creator environment.
-The existing critical-error reporter retains its separately configured Custom API.
+Settings and curves use native `ZOHO.CREATOR.DATA` SDK2 methods. Approval
+administration reuses owner-only `Manage_Approval_Policies` or
+`Manage_Approval_Policies_DEV`, selected by authenticated Creator environment.
+Production identity uses the existing authenticated GET endpoint; Development
+uses its existing POST endpoint. Server authorization and `canAdmin` remain
+required. The critical-error reporter keeps its separately configured API.
 
-## Sections
+The widget reads `All_Settings` unfiltered and never creates a Settings record.
+Multiple records retain the duplicate warning and selected-record identity
+protection. Curves are child records with the existing `Settings` back-pointer,
+rather than a nested Settings subform payload. A missing parent link can cause
+`Delete_Orphaned_Objects` to reap a curve row.
 
-- **Automation & Scheduling** — `Next_Workflow_Run`, `Approval_Reminder_Interval_Days`,
-  `Next_Approval_Reminder_Date`. The six daily schedules anchored on `Next_Workflow_Run` are
-  listed inline next to the field, because changing it reschedules all of them.
-- **Forecasting** — `Open_Forecasting_Window`, `Unlock_All_Forecasts` as toggles. Both are
-  treated as danger switches: the row highlights amber while on.
-- **Contracts & Legal** — `Receive_Legal_Notifications` as validated email chips;
-  the two template lookups as searchable multi-selects.
-- **Budget** — `COO_Approval_Threshold` (money), `Multi_Line`.
-- **Pro Forma Defaults** — the eight percentage fields in a grid, with a banner counting how many
-  are blank (all 8 were blank as of 2026-08-27).
-- **AI Review** — `PF_Review_Criteria` (auto-growing textarea, sent verbatim to the model by
-  `PF_AI_Review`), `PF_Review_Provider` (`openai` only), `PF_Review_Model` (an OpenAI model id,
-  passed through as-is), `PF_Review_Criteria_Updated` (stamped by the widget whenever the criteria
-  change, so each review can record which version it judged against).
-- **AI Plat Import** — `Plat_Review_Criteria` (auto-growing textarea). When filled in it replaces the
-  built-in transcription instructions inside `Plat_AI_Ingest` for every plat tile; empty keeps the
-  default. Shares the AI Review provider and model.
-- **Construction Curve** — the `Construction_Curve` grid, grouped by `Cost_Curve` with a
-  per-curve **% total** badge that flags any curve not summing to 100%.
-- **Other fields** — anything on the record this widget does not explicitly model, rendered as
-  plain text inputs so a newly added Creator field is never silently hidden.
+## Current approval configuration
 
-## Behaviour worth knowing
+Rules and assignments persist until edited or disabled. Scope precedence is
+**Territory + Department → Territory → Department → All**. Company and effective
+dates do not participate. Rules have no editable version, date window or
+duplicate-person mode. Published rules are edited in place and apply to future
+submissions; submitted routes retain captured people, order, decisions, notes
+and timestamps. A disabled specific match blocks routing instead of falling
+back to a broader match. Same-precedence ambiguity fails.
 
-- **Batched autosave.** Controls retain revisioned drafts and schedule a flush 700 ms later;
-  one `updateRecordById` carries every valid field touched in that window. Saved means a
-  fresh full-field readback matched the captured record and every submitted value.
-- **Singleton tripwire.** The widget reads `All_Settings` unfiltered. One record → green banner.
-  More than one → red banner listing the extras, because a second record makes all six nightly
-  schedules fire twice a day and makes the app's 24 `Settings[ID != 0]` reads ambiguous. See
-  `creator/SETTINGS_SINGLETON_HANDOFF_2026-08-27.md`.
-- **Exact lookup verification.** SDK2 writes lookup ID arrays once. Fresh readback must
-  contain exactly the intended unique IDs; missing, extra or same-count wrong IDs retain
-  the draft. Unresolved selected IDs remain visible. No alternative-envelope retries occur.
-- **Complete Actions choices (authorized 2026-10-05).** Count and read the same Actions
-  report completely, then offer only rows whose `Template_Action` checkbox is checked.
-  The current native form confirms this checkbox and the `Contract_Action` text field;
-  the removed `Contract_Template` field does not determine Actions eligibility. Failed,
-  incomplete, missing-checkbox or malformed-checkbox reads keep the picker unavailable
-  and preserve every saved ID, including unchecked or unavailable selections. Existing
-  report permissions, scalar editing grants and the separate Builder approval rule remain
-  unchanged. Native successor verification is a release gate.
-- **Curve rows are child records, not a nested subform array.** They are written to the
-  `Construction_Curve` form with the `Settings` back-pointer set — matching how
-  `proforma-manager` handles the same grid. A row written without that link gets reaped by
-  `Delete_Orphaned_Objects`.
-- **`Builder_Contract_Action_Template` display.** The widget shows `Contract_Action` text
-  with the existing type and sort order. It does not use the obsolete lookup display format
-  `[Contract_Template + " - " + Contract_Template]`.
-- **No add path.** The widget can create `Construction_Curve` rows but never a `Settings` record.
-- **Safe reload.** Reload retains the selected singleton ID, publishes a staged snapshot,
-  and is blocked by drafts or active writes. Failed lookup/curve reads keep their last
-  complete data with unavailable controls. No browser navigation prompts are used.
-- **Uncertain writes.** A lost or malformed response retains the draft and pauses further
-  writes. Recheck saved values performs only fresh reads. Definitively rejected edits can
-  be discarded explicitly; unknown creates require record review when no ID was confirmed.
+VP resolves exactly one unique person from the document's `Territory.VP`.
+Dev Mgr expands unique selected `Territory.Dev_Mgr` people, preserving lookup
+order, into individual sequential approvals before the next role. Neither uses
+a fallback Settings assignment. Other roles use scoped approver assignments.
+Recipients retain their login, routing-enabled and approval-email requirements.
+Self-approval is always allowed for shared workflows; every configured recipient
+still approves their own step. No override or reassignment authority is added.
 
-See [SDK2 controller and validation gates](SDK2.md) for the 1.3.3 contract and test command.
+Purchase Orders retain two scenarios: CFO alone without new budget
+modifications, and the configured ordered route with mandatory CFO when the
+server creates attached budget modifications. The requested route is
+VP → CFO → COO. Existing pending modifications that cover an overrun do not add
+roles. PO rows have no amount thresholds; CFO may move but cannot be disabled
+or removed. Other workflows preserve exact Above/At or above conditions; Pro
+Forma and Contract use straight chains.
 
-## Local preview
+List must advertise `policyModel: territory-perpetual-v2` before configuration
+Save, Publish or Test Route can run. Older native functions retain read-only
+inspection and historical token Check. The frontend does not enable adapters
+or prove an unpromoted execution migration. See the
+[approval administration guide](../../knowledge/design/approval-administration.md),
+[scope-removal handoff](../../knowledge/releases/approval-territory-perpetual-v2-2026-10-13.md)
+and [Pro Forma/Territory routing handoff](../../docs/proforma-settings-approval-routing-2026-10-14.md).
 
-Serve `src/app/` over http and open `widget.html`. With no Creator SDK the widget falls back to a
-read-only demo record so layout can be checked offline.
+Approvers, roles and existing rules autosave after a 650 ms pause with their
+editor mounted. New Approval Rules use Save Rule: save a native Draft, then
+publish its verified identity with a distinct operation token. Inline list
+actions sit above the list. Configuration progress still uses the compact navy
+modal with trapped focus, inert background and a result held until Done. Done
+returns to the embedded list. New drafts, pending writes and unknown outcomes
+cannot be discarded through parent navigation or Reload. Unknown replies retain
+the exact operation and expose read-only Check Status; Check never replays a
+mutation or automatically activates a recovered Draft. The existing modal
+`open()` API remains compatible.
 
-## Spreadsheet import instructions (1.3.0)
+## Save, precision and recovery
 
-AI Spreadsheet Import reuses Settings.Plat_Review_Criteria for CSV/XLSX column mapping and subdivision matching. Use starter instructions fills the editable field and saves through the usual autosave path; stored instructions are never replaced automatically. Publish the updated Plat_AI_Ingest function before promoting this version alongside manage-lots 0.9.3.
+Settings fields keep revisioned drafts and batch valid edits after 700 ms.
+Successful native acknowledgements retain exact record identity, required
+destination/parent checks, actual API errors and duplicate-send guards. They do
+**not** require automatic editable/calculated-field equality with the submitted
+payload. Explicit unknown-reply recovery may compare captured values against
+fresh reads. This acknowledgement policy also applies to template, curve and
+approval configuration writes. See the
+[system save policy](../../docs/automatic-save-check-removal-2026-10-08.md).
 
-## Spreadsheet wording (1.3.1)
+Lookup writes send exact ID arrays once. Unknown/unavailable selected IDs remain
+visible; incomplete option reads keep their picker unavailable. Builder action
+choices count/read the complete report and include checked `Template_Action`
+rows. `Contract_Action` supplies display text with the existing type/sort order;
+the removed `Contract_Template` field is not an eligibility rule. No
+alternate-envelope write retries are introduced.
 
-The section is Spreadsheet Lot Import and the field is AI Import Instructions. Help text describes CSV/XLSX column mapping, selected subdivision matching, and uncertain rows. Existing Plat_Review_Criteria values and autosave behavior are preserved. This wording update can deploy independently of the importer backend.
+Money inputs preserve entered fractional digits and use the shared strict
+decimal parser, including signed-dollar, accounting and Unicode-minus credits.
+They display at least two decimal places without rounding through `Number`.
+Malformed currency fails before writing. Exact unknown-reply recovery uses
+canonical decimal strings; percentage recovery validates grouping and an
+optional trailing percent sign. Integer-count validation and Creator field
+precision remain unchanged.
 
-## Money input precision (2026-10-05)
+Reload retains the selected singleton ID and waits for drafts/active operations.
+Failed lookup/curve reads keep the last complete data with unavailable controls.
+Lost/malformed replies retain drafts and pause further writes. Recheck Saved
+Values reads only; definite rejections may be explicitly discarded. Unknown
+curve creates without a confirmed ID require record review, never another blind
+create. No native browser dialogs or navigation prompts are used. See the
+[SDK2 controller notes](SDK2.md).
 
-The COO Approval Threshold money control displays at least two decimal places
-and preserves every entered fractional digit on render, verified reload and
-blur. Grouping formats the decimal text without converting it through Number or
-rounding it. Money controls and the autosave controller share the same strict
-currency parser, including signed-dollar, accounting and Unicode-minus credits.
-`readControl` sends the cleaned decimal text; exact persisted verification uses
-canonical decimal strings without Number conversion or tolerance. Blank and
-invalid input retain their text, and malformed currency is rejected before a
-native write. Count/percentage fields, lookup IDs and Creator field precision
-retain their existing rules.
+Shared [success feedback](../../knowledge/design/success-feedback.md),
+[interaction motion](../../knowledge/design/interaction-motion.md) and
+[number transitions](../../knowledge/design/number-transitions.md) remain in use.
+Curve totals/blank-default counts use Sliding push; editable values, carets,
+request timing and reduced motion retain their existing contracts.
 
-`scripts/test-systemic-currency-display.mjs` verifies repeated formatting and the
-actual money control's autosave value, including high-precision amounts and
-credits. The whole Settings SDK2 fixture verifies equivalent credit readbacks,
-rejects changed signs/fractional digits and malformed grouping, preserves exact
-record IDs and proves recovery performs only fresh reads. No Creator deployment
-is required. Rollback uses the prior Production widget.
+## Preview and focused checks
 
-Percentage readback also compares exact decimal strings after validating grouped
-numbers and an optional trailing percent sign. Neighboring high-precision rates
-and malformed grouping remain unverified. Percentage controls, rate values,
-calculations and integer-count validation retain their existing behavior.
-Finite typed Number exponent representations expand exactly into decimal text
-for currency and percentage verification; entered exponent strings remain invalid.
+Serve `src/app/` over HTTP and open `widget.html` outside Creator for the read-only
+demo. Embedded widgets without a working SDK fail closed. Approval fixtures use
+local fake services and `.invalid` email addresses; they make no Creator writes
+or outbound notifications.
 
-## Routine success feedback (1.3.11)
-
-Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
-
-## Save policy — October 8, 2026
-
-Acknowledged successful Settings/template/curve saves and Development-only
-configuration receipts do not require field equality with the submitted payload.
-Exact record identity, native API failures, duplicate-send guards and explicit
-unknown-reply recovery remain. See [system policy and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
+Focused checks are `scripts/test-settings-sdk-v2.mjs`,
+`scripts/test-approval-admin.mjs`, `scripts/test-approval-admin-browser.mjs` and
+`scripts/test-settings-approval-workspace-browser.mjs`. The workspace fixture
+covers parent navigation, dirty/unknown writes, same-token recovery, new-draft
+retention, modal progress, focus/inert restoration and picker scroll behavior.

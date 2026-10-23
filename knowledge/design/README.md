@@ -23,6 +23,7 @@ it; unrelated guides do not need to be read for every small edit.
 | [Line notes](notes.md) | Budget's circular pencil, yellow note state, anchored textarea popover and single-field note saves |
 | [Approval progress](approval-progress.md) | Sending, approving, rejecting and reconciling approvals |
 | [Approval administration](approval-administration.md) | Approval rules, approvers, permanent territory/department scope, change history and route testing |
+| [Settings workspace](settings-workspace.md) | Left navigation, separate settings screens, embedded approvals and retained drafts |
 | [Transfer progress](transfer-progress.md) | A committing action that writes to several records |
 | [Record details](record-details.md) | Read-only main-report details, identity/date pills, compact previews and complete detail modals |
 | [Payment requests](payment-requests.md) | Budget Requests cards, PO vendor/amount/status columns and Edit/View actions |

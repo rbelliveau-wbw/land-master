@@ -1,0 +1,82 @@
+/* Settings workspace: one mounted screen at a time, shared Land Master palette. */
+.hdr{padding:14px 22px;gap:12px;min-height:65px;flex-wrap:nowrap}
+.hdr h1{font-size:20px;font-weight:650;letter-spacing:-.35px}
+.hdr .sub{padding-left:12px;border-left:1px solid #ffffff35;font-size:12px}
+#approval-admin{display:none!important}
+.mode{margin-right:5px;white-space:nowrap}
+.hbtn{white-space:nowrap;min-height:32px}
+.settings-workspace{display:grid;grid-template-columns:222px minmax(0,1fr);min-height:0;flex:1;overflow:hidden}
+.navbar{padding:14px 10px 0;overflow:auto;background:#eaf0f7;border-right:1px solid #d5dfeb;border-bottom:0;white-space:normal;display:flex;flex-direction:column;gap:0;scrollbar-width:thin}
+.nav-caption{padding:0 12px 7px;font-size:11px;color:#607896;font-weight:600}
+.tabs{display:flex;flex-direction:column;gap:3px;border:0;background:none;border-radius:0;box-shadow:none;padding:0;width:100%;flex:none;position:relative}
+.nav-group{padding:16px 12px 4px;font-size:9px;font-weight:750;letter-spacing:1.1px;text-transform:uppercase;color:#6a819d}
+.nav-group:first-child{padding-top:4px}
+.tab{position:relative;display:flex;align-items:center;gap:10px;padding:8px 11px;min-height:36px;width:100%;text-align:left;font-size:12px;font-weight:550;color:#4d6786;border-radius:7px;line-height:1.3;transition:background .18s,color .18s,box-shadow .18s;white-space:normal}
+.tab>svg{flex:none;color:#6885a6}
+.tab>span:not(.nav-pending){flex:1;min-width:0}
+.tab:hover{color:#173f78;background:#f5f8fc;box-shadow:none;transform:none}
+.tab.active{color:#fff;background:#173f78;box-shadow:0 3px 9px #173f781b;text-shadow:none;transform:none;font-weight:650}
+.tab.active>svg{color:#d6e6fc}
+.tab:active{transform:none}
+.tab:disabled{opacity:.5;cursor:default}
+.nav-pending{width:6px;height:6px;border-radius:50%;background:#c47b16;display:none;flex:none}
+.tab.has-draft .nav-pending{display:block}.tab.has-error .nav-pending{background:#ba4052}.tab.active.has-draft .nav-pending{box-shadow:0 0 0 2px #ffffff20}
+.nav-footer{margin-top:auto;padding:20px 10px 14px;display:flex;align-items:center;gap:7px;color:#56718b;font-size:10px;white-space:nowrap}
+.nav-save-icon{display:grid;place-items:center;color:#12816a}
+#view{padding:25px 30px 12px;display:block;overflow:auto;scroll-behavior:auto;background:#f3f6fa}
+.screen-heading,.settings-alerts,.wrap,#approval-screen,.foot{width:100%;max-width:1120px;margin-left:auto;margin-right:auto}
+.settings-alerts:empty{display:none}
+.settings-alerts .banner{margin-bottom:18px}
+.screen-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:0 0 23px}
+.screen-heading h2{color:#102d50;font-size:25px;line-height:1.25;font-weight:650;letter-spacing:-.65px;margin:4px 0 8px}
+.screen-heading p{color:#667e99;font-size:12px;margin:0;line-height:1.5}
+.screen-eyebrow{color:#547392;font-size:10px;text-transform:uppercase;letter-spacing:1.15px;font-weight:700}
+.screen-tag{font-size:10px;border:1px solid #d9e3ee;border-radius:5px;padding:5px 8px;white-space:nowrap;color:#5f7895;background:#edf2f8}
+.wrap{gap:18px}
+[data-settings-screen][hidden],#wrap[hidden]{display:none!important}
+.settings-screen{overflow:visible;border-color:#dbe4ef;border-radius:11px;box-shadow:0 2px 8px #12356005}
+.settings-screen>.body{padding:6px 24px}
+.frow{padding:22px 0;border-bottom:1px solid #eaf0f6;grid-template-columns:minmax(190px,240px) minmax(0,1fr) 22px;gap:20px}
+.frow .lab .name{font-size:12.5px;font-weight:650;color:#203e60}
+.frow .lab .hint{font-size:11px;color:#6d829b;line-height:1.5;max-width:245px;margin-top:5px}
+.frow>.lab{padding-top:7px}
+.frow input,.frow textarea,.msel{border-color:#ccd9e8}
+.frow input[type=text],.frow textarea{padding:9px 11px;min-height:37px;border-radius:6px}
+.frow input[type=time]{padding:8px 10px;min-height:37px;border:1px solid #ccd9e8;border-radius:6px;background:#fff;line-height:1.5}
+.frow .affix>input{padding-left:26px}.frow .affix.suf>input{padding-left:11px;padding-right:32px}
+.frow .tick{padding-top:10px}
+.frow.hot{margin:0 -24px;padding-left:24px;padding-right:24px;background:#fffbef}
+.frow textarea{min-height:105px}
+.frow textarea.tall{min-height:280px;line-height:1.65}
+#sec-aireview .frow:first-child,#sec-plat .frow:first-child{grid-template-columns:minmax(160px,200px) minmax(0,1fr) 22px}
+.settings-screen .grid2{padding:20px 0;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 30px}
+.pcell .name{font-size:12px;color:#365575}
+.pcell .affix input{min-height:40px}
+.settings-screen .banner{margin-top:17px;padding:10px 12px;font-size:11px}
+.settings-screen .banner b{font-size:12px}
+.settings-inline-note{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:14px 0 3px;color:#5a738f;font-size:11px}
+.text-link{border:0;padding:0;background:none;color:#205a9a;font-size:inherit;font-weight:650;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.text-link svg{width:13px;height:13px}
+.jobs-disclosure{margin-top:9px;color:#657e99;font-size:11px}
+.jobs-disclosure summary{cursor:pointer;color:#345c89;width:fit-content}
+.jobs{columns:1;margin:8px 0 3px;line-height:1.65}
+.card>header{padding:14px 20px;background:#f8fafd}
+.card>header .blurb{display:none}
+#sec-workflow-log>header,#sec-other>header{display:none}
+#sec-workflow-log{overflow:hidden}
+#sec-curve .body{padding:18px 20px}
+.foot{text-align:right;color:#8a9bb1;font-size:10px;padding:17px 0 5px}
+.chip button,.iconbtn,.stick{padding:0;box-sizing:border-box;display:inline-grid;place-items:center}
+.chip button svg,.iconbtn svg,.stick svg{display:block;flex:none}
+.msel .selbar{outline-offset:2px;padding:8px 10px;gap:5px}
+.msel .msel-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1 0 90px;min-height:25px;text-align:left;background:none;border:0;padding:2px 1px;color:#5c7897;font-size:11px;cursor:pointer}
+.msel .msel-toggle:focus-visible{outline:2px solid #6298d8;outline-offset:2px;border-radius:3px}
+.msel[aria-disabled=true] .msel-toggle{cursor:default}
+.msel .box svg{width:12px;height:12px;display:block}
+.msel .caret{display:grid;place-items:center}.msel .caret svg{width:13px;height:13px}
+.msel .opts{padding:4px}.msel .opt{border:0;border-radius:4px;margin:1px 0}.msel .opt:focus-visible{outline:2px solid #6c9bd4;outline-offset:-2px}
+.help-label{display:block;font-size:10px;color:#7188a2;margin:5px 0 0}
+@media(min-width:1450px){#view{padding:30px 45px 14px}.screen-heading{padding-bottom:26px}.settings-screen>.body{padding-left:30px;padding-right:30px}}
+@media(max-width:1050px){.settings-workspace{grid-template-columns:200px minmax(0,1fr)}#view{padding:22px 20px 10px}.screen-tag{display:none}.frow{grid-template-columns:minmax(155px,190px) minmax(0,1fr) 18px;gap:14px}.tab{font-size:11.5px;gap:8px}.settings-screen>.body{padding-left:18px;padding-right:18px}}
+@media(max-width:760px){.hdr{padding:12px 15px;flex-wrap:wrap;min-height:0;gap:9px}.hdr h1{font-size:18px}.hdr .sub{font-size:11px}.hbtn{font-size:11px;padding:4px 8px}.hdr .mode{margin-left:auto;font-size:10px}.hdr .spacer{display:none}.settings-workspace{display:flex;flex-direction:column}.navbar{display:block;flex:none;padding:8px;border-right:0;border-bottom:1px solid #d5dfeb;overflow-x:auto}.nav-caption,.nav-group,.nav-footer{display:none}.tabs{width:max-content;flex-direction:row;gap:4px}.tab{width:auto;white-space:nowrap;padding:8px 12px}.tab>svg{width:15px;height:15px}#view{padding:20px 16px 10px;flex:1;min-height:0}.screen-heading{padding-bottom:17px}.screen-heading h2{font-size:22px}.frow{grid-template-columns:minmax(0,1fr) 22px;gap:8px;padding:17px 0}.frow>.lab,.frow .ctl{grid-column:1}.frow>.lab{padding:0}.frow .tick{grid-column:2;grid-row:1;padding-top:0}.frow .lab .hint{max-width:none}.frow .ctl{padding-top:2px}.frow.hot{margin:0 -18px;padding-left:18px;padding-right:18px}#sec-aireview .frow:first-child,#sec-plat .frow:first-child{grid-template-columns:minmax(0,1fr) 22px}.frow textarea.tall{min-height:220px}.settings-screen .grid2{gap:20px}.screen-description{max-width:300px}}
+@media(max-width:420px){.hdr .sub{display:none}.mode{font-size:9px}.settings-screen>.body{padding:4px 14px}#view{padding:18px 12px 8px}.settings-screen .grid2{grid-template-columns:1fr}.screen-heading h2{font-size:21px}.screen-heading p{font-size:11px}.frow.hot{margin:0 -14px;padding-left:14px;padding-right:14px}}

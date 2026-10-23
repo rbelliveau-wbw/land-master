@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Land Master Settings</title>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+<script src="runtime-context.js"></script>
+<script src="creator-data.js"></script>
+<script src="settings-controller.js"></script>
+<script src="workflow-log.js"></script>
+<link rel="stylesheet" href="workflow-log.css">
+<script src="approval-policy-domain.js?v=1.6.0"></script>
+<script src="approval-admin.js?v=1.6.0"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.6.0">
+<script src="critical-error-reporter.js"></script>
+<style>
+/* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
+:root{
+  --bg:#f0f3f7; --surface:#e8ecf1; --card:#fff;
+  --line:#dde4ef; --line-strong:#c8d4e5;
+  --text:#0f2744; --muted:#5c7394; --faint:#8ea0bd;
+  --navy:#0b2345; --navy-soft:rgba(11,35,69,.08);
+  --primary:#1e40af; --primary-2:#2563eb; --ptint:#eef4ff; --psoft:#e8f0fb;
+  --green:#047857; --green-bg:#ecfdf5;
+  --amber:#b45309; --amber-bg:#fffbeb;
+  --red:#b91c1c; --red-bg:#fef2f2;
+  --violet:#3730a3; --violet-bg:#e0e7ff;
+  --r:10px; --rsm:6px;
+  --shadow:0 2px 8px rgba(30,64,175,.06),0 1px 2px rgba(0,0,0,.03);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+/* ── HEADER ── */
+.hdr{flex:0 0 auto;background:var(--navy);color:#fff;padding:12px 18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hdr h1{margin:0;font-size:15px;font-weight:650;letter-spacing:.2px}
+.hdr .sub{font-size:11.5px;color:#a9bcd6;font-weight:400}
+.spacer{flex:1 1 auto}
+.dot{width:8px;height:8px;border-radius:50%;background:#64748b;display:inline-block;flex:0 0 auto}
+.dot.live{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.2)}
+.dot.error{background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.2)}
+.dot.saving{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.2)}
+.mode{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#c9d8ea}
+.hbtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;
+  padding:5px 11px;border-radius:var(--rsm);cursor:pointer;font-size:12px;
+  display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+.hbtn:hover{background:rgba(255,255,255,.2)}
+.hbtn:disabled{opacity:.45;cursor:default}
+
+/* ── SECTION TABS ── segmented control, house style (docs/widget-ui-style.md) ── */
+.navbar{flex:0 0 auto;background:var(--card);border-bottom:1px solid var(--line);
+  padding:9px 18px;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+.tabs{display:inline-flex;border:1px solid;border-radius:9px;gap:3px;padding:4px;background:linear-gradient(180deg,#f7f9fc 0%,#e9eef6 100%);border-color:#d4deeb;box-shadow:inset 0 1px 0 rgba(255,255,255,.96),0 3px 10px rgba(15,39,68,.07)}
+.tab{border:0;background:none;border-radius:6px;padding:6px 13px;cursor:pointer;color:var(--muted);
+  font-size:12.5px;white-space:nowrap;font-weight:750;transition:background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}
+.tab:hover{color:var(--navy);background:rgba(255,255,255,.88);box-shadow:0 2px 5px rgba(15,39,68,.08);transform:translateY(-1px)}
+.tab.active{color:#fff;background:linear-gradient(145deg,#163f77,#0b2345);box-shadow:0 4px 10px rgba(11,35,69,.25),inset 0 1px 0 rgba(255,255,255,.18);text-shadow:0 1px 1px rgba(0,0,0,.12);transform:translateY(-1px)}
+.tab:active{transform:translateY(0)}
+.tab:focus-visible{outline:2px solid var(--primary-2);outline-offset:2px}
+
+/* ── SCROLL CONTAINER (must be a sized flex column with its own overflow) ── */
+#view{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px;
+  display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.wrap{max-width:1080px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+
+/* ── BANNERS ── */
+.banner{border-radius:var(--r);padding:12px 15px;display:flex;gap:11px;align-items:flex-start;
+  font-size:12.5px;border:1px solid}
+.banner .ico{flex:0 0 auto;font-size:15px;line-height:1.25}
+.banner b{display:block;margin-bottom:2px;font-size:13px}
+.banner.ok{background:var(--green-bg);border-color:#a7f3d0;color:var(--green)}
+.banner.warn{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}
+.banner.bad{background:var(--red-bg);border-color:#fecaca;color:var(--red)}
+.banner.info{background:var(--ptint);border-color:#c7d9f5;color:var(--primary)}
+.banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;font-size:11.5px}
+.banner ul{margin:6px 0 0;padding-left:18px}
+.banner a{color:inherit}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden}
+.card>header{padding:13px 16px;border-bottom:1px solid var(--line);background:#fbfcfe;
+  display:flex;align-items:center;gap:10px}
+.card>header h2{margin:0;font-size:13.5px;font-weight:650;color:var(--navy)}
+.card>header .blurb{font-size:11.5px;color:var(--muted);font-weight:400}
+.card .body{padding:16px}
+
+/* ── FIELD ROWS ── */
+.frow{display:grid;grid-template-columns:230px 1fr 26px;gap:14px;align-items:start;
+  padding:11px 0;border-bottom:1px dashed var(--line)}
+.frow:last-child{border-bottom:0}
+.frow>.lab{padding-top:6px}
+.frow .lab .name{font-weight:600;font-size:12.5px;color:var(--text);display:flex;align-items:center;gap:6px}
+.frow .lab .hint{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.45}
+.frow .ctl{min-width:0}
+.frow .tick{padding-top:8px;text-align:center}
+
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--rsm);
+  background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--primary-2);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input:disabled,select:disabled,textarea:disabled{background:var(--surface);color:var(--faint)}
+textarea{resize:vertical;min-height:70px}
+textarea.tall{min-height:320px;line-height:1.55;overflow:hidden;resize:none}
+.affix{position:relative;display:block}
+.affix>input{padding-left:26px}
+.affix.suf>input{padding-left:10px;padding-right:28px}
+.affix>.sym{position:absolute;top:50%;transform:translateY(-50%);left:10px;
+  color:var(--faint);font-size:12px;pointer-events:none}
+.affix.suf>.sym{left:auto;right:11px}
+.narrow{max-width:210px}
+.mid{max-width:340px}
+
+/* ── TOGGLE ── */
+.tog{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.tog input{position:absolute;opacity:0;width:0;height:0}
+.tog .track{width:40px;height:22px;border-radius:11px;background:#cbd5e1;position:relative;
+  transition:background .18s;flex:0 0 auto}
+.tog .track::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.tog input:checked+.track{background:var(--primary-2)}
+.tog input:checked+.track::after{transform:translateX(18px)}
+.tog input:focus-visible+.track{box-shadow:0 0 0 3px rgba(37,99,235,.25)}
+.tog .txt{font-size:12.5px;color:var(--muted)}
+.tog.danger input:checked+.track{background:var(--amber)}
+.frow.hot{background:var(--amber-bg);margin:0 -16px;padding-left:16px;padding-right:16px}
+
+/* ── EMAIL CHIPS ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:6px;border:1px solid var(--line-strong);
+  border-radius:var(--rsm);background:#fff;min-height:38px;align-items:center}
+.chips:focus-within{border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--psoft);color:var(--primary);
+  border:1px solid #c7d9f5;border-radius:20px;padding:3px 5px 3px 10px;font-size:11.5px;max-width:100%}
+.chip.bad{background:var(--red-bg);border-color:#fecaca;color:var(--red)}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip button{background:rgba(0,0,0,.08);border:0;border-radius:50%;width:16px;height:16px;
+  cursor:pointer;line-height:1;font-size:11px;color:inherit;flex:0 0 auto;padding:0}
+.chip button:hover{background:rgba(0,0,0,.18)}
+.chips input{border:0;flex:1 1 120px;min-width:120px;padding:4px 6px;background:none}
+.chips input:focus{outline:0;box-shadow:none}
+
+/* ── MULTI-SELECT (searchable) ── */
+.msel{border:1px solid var(--line-strong);border-radius:var(--rsm);background:#fff;overflow:hidden}
+.msel .selbar{display:flex;flex-wrap:wrap;gap:6px;padding:7px 9px;cursor:pointer;
+  align-items:center;min-height:38px}
+.msel .selbar:hover{background:#fbfcfe}
+.msel .ph{color:var(--faint);font-size:12px}
+.msel .caret{margin-left:auto;color:var(--faint);font-size:10px;transition:transform .18s}
+.msel.open .caret{transform:rotate(180deg)}
+.msel .pop{display:none;border-top:1px solid var(--line);background:#fff}
+.msel.open .pop{display:block}
+.msel .pop .search{padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfcfe}
+.msel .pop .search input{padding:6px 9px}
+.msel .opts{max-height:240px;overflow-y:auto}
+.msel .opt{display:flex;gap:9px;align-items:flex-start;padding:8px 11px;cursor:pointer;
+  border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.msel .opt:last-child{border-bottom:0}
+.msel .opt:hover,.msel .opt.cur{background:var(--ptint)}
+.msel .opt .box{width:15px;height:15px;border:1.5px solid var(--line-strong);border-radius:4px;
+  flex:0 0 auto;margin-top:1px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;line-height:1}
+.msel .opt.on .box{background:var(--primary-2);border-color:var(--primary-2)}
+.msel .opt .meta{font-size:11px;color:var(--muted);margin-top:1px}
+.msel .empty{padding:14px;text-align:center;color:var(--faint);font-size:12px}
+
+/* ── TABLE (Construction Curve) ── */
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--rsm)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:12.5px}
+th{background:#f6f8fb;text-align:left;padding:8px 10px;font-weight:600;color:var(--muted);
+  font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);
+  white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:6px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fbfcfe}
+td input,td select{padding:5px 8px}
+.grp td{background:var(--surface);font-weight:600;color:var(--navy);font-size:11.5px;
+  border-top:1px solid var(--line-strong)}
+.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10.5px;font-weight:600;
+  border:1px solid}
+.pill.ok{background:var(--green-bg);border-color:#a7f3d0;color:var(--green)}
+.pill.off{background:var(--amber-bg);border-color:#fde68a;color:var(--amber)}
+.iconbtn{background:none;border:1px solid transparent;border-radius:var(--rsm);width:26px;height:26px;
+  cursor:pointer;color:var(--faint);line-height:1;font-size:13px;padding:0}
+.iconbtn:hover{background:var(--red-bg);color:var(--red);border-color:#fecaca}
+
+/* ── BUTTONS ── */
+.btn{background:var(--card);border:1px solid var(--line-strong);border-radius:var(--rsm);
+  padding:6px 13px;cursor:pointer;font-size:12.5px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--ptint);border-color:var(--primary-2);color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:disabled:hover{background:var(--card);border-color:var(--line-strong);color:inherit}
+
+/* ── SAVE TICK ── distinct names: `.ok` is already a banner/pill modifier ── */
+.stick{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--green);
+  color:#fff;text-align:center;line-height:18px;font-size:11px;
+  opacity:0;transform:scale(.5);transition:opacity .2s,transform .2s}
+.stick.show{opacity:1;transform:scale(1);animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.5)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.sfail{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--red);
+  color:#fff;text-align:center;line-height:18px;font-size:11px}
+.frow.failed input,.frow.failed select,.frow.failed textarea,
+.frow.failed .chips,.frow.failed .msel{border-color:var(--red)}
+
+/* ── TOAST ── */
+#toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);
+  background:var(--navy);color:#fff;padding:10px 18px;border-radius:22px;font-size:12.5px;
+  box-shadow:0 8px 24px rgba(11,35,69,.28);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;max-width:80%;text-align:center;z-index:60}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.bad{background:var(--red)}
+
+/* ── MISC ── */
+.skel{background:linear-gradient(90deg,#e9eef5 25%,#f3f6fa 50%,#e9eef5 75%);
+  background-size:200% 100%;animation:sh 1.3s infinite;border-radius:var(--rsm);height:14px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.muted{color:var(--muted)}
+.tiny{font-size:11px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
+.jobs{margin:8px 0 0;padding-left:16px;columns:2;column-gap:22px}
+.jobs li{margin-bottom:2px;break-inside:avoid}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px 20px}
+.pcell .name{font-weight:600;font-size:12px;margin-bottom:4px;display:flex;align-items:center;
+  justify-content:space-between;gap:6px}
+.foot{padding:4px 2px 20px;text-align:center;color:var(--faint);font-size:11px}
+@media(max-width:760px){
+  .frow{grid-template-columns:1fr 26px;gap:6px}
+  .frow>.lab{padding-top:0;grid-column:1/2}
+  .frow .ctl{grid-column:1/2}
+  .frow .tick{grid-column:2/3;grid-row:1/2}
+  .jobs{columns:1}
+}
+
+#settings-recovery{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:8px 18px;background:var(--amber-bg);border-top:1px solid #fde68a;color:var(--amber)}
+#settings-recovery[hidden],#curve-dialog[hidden]{display:none}
+.chip button,.iconbtn,.stick{display:inline-flex;align-items:center;justify-content:center}
+.chip button svg{width:11px;height:11px}.stick svg{width:12px;height:12px}.iconbtn svg{width:16px;height:16px}
+.msel[aria-disabled=true]{opacity:.6}.msel[aria-disabled=true] .selbar,.msel[aria-disabled=true] .opt{cursor:default}
+.settings-overlay{position:fixed;inset:0;background:rgba(11,35,69,.4);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
+.settings-dialog{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 60px rgba(11,35,69,.24);width:min(450px,100%);padding:20px}
+.settings-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-dialog h2{font-size:16px;margin:0}.settings-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.settings-dialog .iconbtn{color:var(--muted)}
+</style>
+<script src="success-feedback.js?v=1.6.0"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.6.0">
+<script src="interaction-motion.js?v=1.6.0"></script>
+<script src="interaction-surfaces.js?v=1.6.0"></script>
+<script src="number-edit-commit.js?v=1.6.0"></script>
+<script src="number-transitions.js?v=1.6.0"></script>
+<script src="number-surfaces.js?v=1.6.0"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.6.0">
+<link rel="stylesheet" href="settings-workspace.css?v=1.6.0">
+<link rel="stylesheet" href="settings-pickers.css?v=1.6.0">
+<script src="settings-pickers.js?v=1.6.0"></script>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Settings</h1>
+  <span class="sub" id="hsub">Land Master</span>
+  <span class="spacer"></span>
+  <button class="hbtn" id="approval-admin" hidden>Approval Rules</button>
+  <span class="mode"><span class="dot" id="dot"></span><span id="mode">Starting…</span></span>
+  <button class="hbtn" id="reload" title="Refresh Settings after pending edits finish">↻ Refresh</button>
+  <button class="hbtn" id="openrec" title="Open this record in Creator's native form">↗ Open in Creator</button>
+</div>
+
+<div class="settings-workspace">
+<aside class="navbar" aria-label="Settings navigation">
+  <div class="nav-caption">Configuration</div>
+  <nav class="tabs" id="nav" aria-label="Settings sections"></nav>
+  <div class="nav-footer"><span class="nav-save-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg></span><span>Changes save automatically</span></div>
+</aside>
+<main id="view">
+  <div id="settings-alerts" class="settings-alerts" aria-live="polite"></div>
+  <header class="screen-heading"><div><div class="screen-eyebrow" id="screen-category">General</div><h2 id="screen-title">Automation &amp; Scheduling</h2><p id="screen-description">Daily workflows and approval reminders.</p></div><span class="screen-tag" id="screen-tag">Application Settings</span></header>
+  <div class="wrap" id="wrap">
+    <div class="card"><div class="body">
+      <div class="skel" style="width:40%;margin-bottom:10px"></div>
+      <div class="skel" style="width:75%;margin-bottom:10px"></div>
+      <div class="skel" style="width:60%"></div>
+    </div></div>
+  </div>
+  <section id="approval-screen" data-settings-screen="approvals" data-lm-motion="panel" aria-label="Approval configuration" hidden></section>
+  <div class="foot" id="settings-foot"></div>
+</main>
+</div>
+
+<div id="toast"></div>
+<div id="settings-recovery" role="status" aria-live="polite" hidden></div>
+<div id="curve-dialog" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+var SMW_VERSION = "1.6.0";
+
+function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
+function unwrapApprovalApi(response){
+  var queue=[response],seen=0;
+  while(queue.length&&seen++<20){var value=queue.shift();if(typeof value==='string'){try{value=JSON.parse(value);}catch(ignore){continue;}}
+    if(!value||typeof value!=='object')continue;
+    if(value.contract==='approval-policy-v1'||Object.prototype.hasOwnProperty.call(value,'found'))return value;
+    ['details','output','result','response','data'].forEach(function(key){if(value[key]!=null)queue.push(value[key]);});
+  }
+  throw new Error('Creator returned an unsupported approval response.');
+}
+var approvalIdentity=null;
+var approvalAdmin=null;
+function getApprovalAdmin(){
+if(!window.LMApprovalAdmin)throw new Error('Approval editor could not be loaded. Reload Settings.');
+if(!approvalAdmin)approvalAdmin=LMApprovalAdmin.create({scope:approvalScope,call:async function(payload){
+  var runtime=LMRuntime.current(),scope=approvalScope();
+  if(!S.live||!['DEVELOPMENT','PRODUCTION'].includes(runtime.environment))throw new Error('Approval configuration requires a live Development or Production session.');
+  function valid(){if(approvalScope()!==scope)throw new Error('Creator session changed. Reopen Approvals.');}
+  async function invoke(name,body,method){valid();var request={api_name:name,http_method:method||'POST'};if(request.http_method==='POST'){request.content_type='application/json';request.payload=body;}var response=await LMData.request('approvals:'+name,function(){valid();return ZOHO.CREATOR.DATA.invokeCustomApi(request);});valid();return unwrapApprovalApi(response);}
+  if(!approvalIdentity||approvalIdentity.scope!==scope){
+    var access=await invoke(LMRuntime.apiName('Get_User_Access_Lean'),runtime.environment==='DEVELOPMENT'?{user:runtime.user.toLowerCase().split('@')[0]}:null,runtime.environment==='DEVELOPMENT'?'POST':'GET');
+    if(access.found!==true||typeof access.myId!=='string'||!/^\d+$/.test(access.myId))throw new Error('User Access identity could not be verified.');
+    approvalIdentity={scope:scope,id:access.myId};
+  }
+  return invoke(LMRuntime.apiName('Manage_Approval_Policies'),{payload:JSON.stringify(Object.assign({},payload,{userAccessId:approvalIdentity.id}))});
+}});
+return approvalAdmin;
+}
+document.getElementById('approval-admin').onclick=function(){navigateSection('approval-rules');};
+
+/* ══════════════ CONFIG ══════════════ */
+var CFG = {
+  version: SMW_VERSION,
+  form: "Settings",
+  report: "All_Settings",
+  curveForm: "Construction_Curve",
+  curveReport: "All_Construction_Curves",
+  curveParentField: "Settings",
+  approvalsReport: "All_Contract_Approvals",
+  actionsReport: "All_Contract_Actions",
+  proformaReport: "All_Pro_Formas",
+  usersReport: "User_Access_Report",
+  pageSize: 200,
+  maxPages: 25,
+  saveDebounceMs: 700,
+  /* Scheduled workflows anchored on Settings.Next_Workflow_Run — surfaced in the UI so
+     nobody edits that field without knowing what it reschedules. */
+  jobs: [
+    "Test Add Hours",
+    "Set Close Date - Lots",
+    "Update Sold/Contracted - Forecast Year",
+    "Update Actual Lots - Forecast",
+    "Check for Stuck Budget Approvals",
+    "Update Budgets w/ Projects Info - Budget"
+  ]
+};
+
+/* ══════════════ FIELD SCHEMA ══════════════
+   Verified live 2026-08-27 against the Settings record-edit DOM. Anything on the record
+   that is NOT listed here still renders, under "Other fields" — so a field added to the
+   Creator form later is never silently hidden by this widget.                            */
+var GROUPS = [
+  { key:"automation", title:"Automation & Scheduling",
+    blurb:"Next Workflow Run is the anchor every nightly job starts from.",
+    fields:[
+      { n:"Workflow_Log_Failure_Recipients", l:"Workflow Log Failure Recipients", t:"multi", src:"users",
+        hint:"Notify these people about failed or incomplete workflow runs." },
+      { n:"Next_Workflow_Run", l:"Next Workflow Run", t:"datetime", jobs:true,
+        hint:"Daily workflow start time · America/Chicago." },
+      { n:"Approval_Reminder_Interval_Days", l:"Approval Reminder Interval", t:"int", suffix:"days",
+        hint:"Days between reminder emails; blank or 0 uses 3 days." },
+      { n:"Next_Approval_Reminder_Date", l:"Next Approval Reminder Date", t:"date",
+        hint:"The next date the daily reminder job may send emails." }
+    ]},
+  { key:"forecasting", title:"Forecasting",
+    blurb:"Global unlock switches. Both are off in normal operation.",
+    fields:[
+      { n:"Open_Forecasting_Window", l:"Open Forecasting Window", t:"bool", danger:true,
+        hint:"Allows editing for current and future month forecasting." },
+      { n:"Unlock_All_Forecasts", l:"Unlock All Forecasts", t:"bool", danger:true,
+        hint:"Unlocks all the fields in Forecasts and Forecast Years, also prevents hiding." }
+    ]},
+  { key:"contracts", title:"Contracts & Legal",
+    blurb:"Who gets legal mail, and which rows seed a new builder contract.",
+    fields:[
+      { n:"Receive_Legal_Notifications", l:"Legal Notification Recipients", t:"emails",
+        hint:"Type an email address and press Enter." },
+      { n:"Builder_Approval_Template", l:"Builder Approval Template", t:"multi", src:"approvals",
+        hint:"Approval templates copied to new builder contracts." },
+      { n:"Builder_Contract_Action_Template", l:"Builder Contract Action Template", t:"multi", src:"actions",
+        hint:"Template actions copied to new builder contracts." }
+    ]},
+  { key:"budget", title:"Budget",
+    fields:[
+      { n:"COO_Approval_Threshold", l:"Legacy COO Threshold", t:"money",
+        hint:"Legacy setting. Current budget modification routing uses Approval Rules." },
+      { n:"Multi_Line", l:"Multi Line", t:"text",
+        hint:"Additional text retained from the native Budget settings." }
+    ]},
+  { key:"defaults", title:"Pro Forma Defaults", percentGrid:true,
+    blurb:"Percentage defaults applied to new pro formas.",
+    fields:[
+      { n:"Capital_Cost",           l:"Capital Cost",           t:"pct" },
+      { n:"Points",                 l:"Points",                 t:"pct" },
+      { n:"Admin_Cost",             l:"Admin Cost",             t:"pct" },
+      { n:"Engineering_Markup",     l:"Engineering Markup",     t:"pct" },
+      { n:"Engineering_Sub_Markup", l:"Engineering Sub Markup", t:"pct" },
+      { n:"Construction_Markup",    l:"Construction Markup",    t:"pct" },
+      { n:"Construction_Sub_Markup",l:"Construction Sub Markup",t:"pct" },
+      { n:"Profit_Share",           l:"Profit Share",           t:"pct" }
+    ]},
+  { key:"aireview", title:"AI Review",
+    blurb:"What the AI Check button on a pro forma measures against.",
+    fields:[
+      { n:"PF_Review_Criteria", l:"Review Criteria", t:"text", tall:true,
+        placeholder:"Deal killers. Must-haves. Thresholds. The questions you always ask.",
+        hint:"Instructions used for every pro forma AI check." },
+      { n:"PF_Review_Provider", l:"Provider", t:"line", placeholder:"openai",
+        hint:"Currently supports openai." },
+      { n:"PF_Review_Model", l:"Model", t:"line", placeholder:"gpt-5.6-luna",
+        hint:"The model ID used by AI review and spreadsheet import." },
+      { n:"PF_Review_Criteria_Updated", l:"Criteria Updated", t:"datetime",
+        hint:"Updated automatically when review criteria change." }
+    ]},
+  { key:"plat", title:"Spreadsheet Lot Import",
+    blurb:"Instructions used to read CSV/XLSX files and stage lots for review before import.",
+    fields:[
+      { n:"Plat_Review_Criteria", l:"AI Import Instructions", t:"text", tall:true,
+        placeholder:"Leave empty to use the built-in instructions.",
+        hint:"Identify lot columns, match subdivisions and flag uncertain rows; uses the AI Review model." }
+    ]}
+];
+
+var SPREADSHEET_IMPORT_STARTER="Read only the uploaded spreadsheet and the selected subdivisions. Identify Block, Lot, and Size/Width columns; Size means lot width in feet, never area. Use Project, subdivision name, and Phase metadata to match each row to a selected subdivision. If the phase or subdivision conflicts or is ambiguous, leave the subdivision unresolved for review. Copy only explicitly listed lots; never fill gaps, extend sequences, or invent values. Skip blank rows, headings, notes, and totals. Preserve each sheet name, original row number, and source column indexes. Flag duplicates and uncertain mappings for review. Nothing is imported until the user confirms the staged rows.";
+/* Editing the criteria restamps its timestamp, so the version recorded on a review means something. */
+var CRITERIA_FIELD="PF_Review_Criteria", CRITERIA_STAMP="PF_Review_Criteria_Updated";
+
+var CURVE_COLS = [
+  { n:"Cost_Curve",   l:"No. Months", t:"pick", opts:["7","8","9","10","11","12","13","14","15","16","17","18"], w:"110px" },
+  { n:"Month_Number", l:"Month No.",  t:"int",  w:"95px" },
+  { n:"Percent_Cost", l:"% Cost",     t:"pct",  w:"110px" },
+  { n:"Pro_Forma",    l:"Pro Forma",  t:"look", src:"proformas", w:"240px" },
+  { n:"Template_Item",l:"Template",   t:"bool", w:"90px" }
+];
+
+/* Fields that exist on the record but should never be shown as editable "other" fields. */
+var SYSTEM_FIELDS = {ID:1, Added_User:1, Modified_User:1, Added_Time:1, Modified_Time:1,
+  Construction_Curve:1, Forecast_Settings:1, General_Settings:1, Contracts_Settings:1,
+  Budget_Settings:1, plain:1, plain1:1, plain2:1, Section:1, Email:1, zc_display_value:1};
+
+/* ══════════════ STATE ══════════════ */
+var S = {
+  live:false, demo:false, ready:false,
+  rec:null, recId:null, recCount:0, extras:[],
+  curve:[], approvals:[], actions:[], proformas:[], users:[],
+  pending:{},          // field -> value awaiting flush
+  inflight:false,
+  saveTimer:null,
+  failed:{},           // field -> error message
+  section:"automation",
+  openMsel:null,
+  loadError:""
+};
+
+/* Screen changes retain the mounted fields, drafts and log filters. */
+var SETTINGS_SCREENS=[
+  {key:'automation',title:'Automation & Scheduling',menu:'Automation',group:'General',icon:'clock',description:'Daily workflows, notifications and approval reminders.'},
+  {key:'workflow-log',title:'Workflow Log',group:'General',icon:'activity',description:'Run history, failures and external workflow details.'},
+  {key:'approval-rules',title:'Approval Rules',group:'Approvals',icon:'route',approval:'Policies',description:'Workflow routes, conditions and approval order.'},
+  {key:'approvers',title:'Approvers',group:'Approvals',icon:'users',approval:'Assignments',description:'People, approval emails and role assignments.'},
+  {key:'roles',title:'Roles',group:'Approvals',icon:'shield',approval:'Roles',description:'The roles available to your approval rules.'},
+  {key:'test-route',title:'Test Route',group:'Approvals',icon:'play',approval:'Preview',description:'Check who will approve a new submission.'},
+  {key:'approval-history',title:'Change History',group:'Approvals',icon:'history',approval:'Audit',description:'Approval configuration changes and saved receipts.'},
+  {key:'forecasting',title:'Forecasting',group:'Modules',icon:'chart',description:'Control the forecasting window and global unlocks.'},
+  {key:'contracts',title:'Contracts & Legal',group:'Modules',icon:'document',description:'Legal notifications and new builder contract templates.'},
+  {key:'budget',title:'Budget',group:'Modules',icon:'wallet',description:'Budget configuration and retained legacy settings.'},
+  {key:'defaults',title:'Pro Forma Defaults',group:'Modules',icon:'sliders',description:'Starting percentages for new pro formas.'},
+  {key:'curve',title:'Construction Curves',group:'Modules',icon:'curve',description:'Distribute construction cost across each month.'},
+  {key:'aireview',title:'AI Review',group:'AI & Data',icon:'spark',description:'Pro forma review criteria, provider and model.'},
+  {key:'plat',title:'Spreadsheet Lot Import',group:'AI & Data',icon:'table',description:'Instructions for CSV and Excel lot imports.'},
+  {key:'other',title:'Additional Fields',group:'Advanced',icon:'settings',description:'Additional fields available on the Settings record.'}
+];
+var navSignature='',screenScroll={},approvalWorkspaceState=null;
+function screenInfo(key){return SETTINGS_SCREENS.filter(function(item){return item.key===key;})[0];}
+function menuIcon(name){
+  var paths={clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',activity:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',route:'<circle cx="5" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 5h7a4 4 0 0 1 0 8h-4a3 3 0 0 0 0 6h7"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/>',shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM9 12l2 2 4-4"/>',play:'<path d="m9 5 10 7-10 7z"/>',history:'<path d="M3 11a9 9 0 1 1 3 8M3 4v7h7M12 7v5l3 2"/>',chart:'<path d="M4 4v16h16M8 15l4-5 4 2 4-7"/>',document:'<path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/>',wallet:'<path d="M20 8H5a2 2 0 0 1 0-4h13v4M4 8v12h16V8M15 12h5v5h-5z"/>',sliders:'<path d="M4 7h7M15 7h5M4 17h3M11 17h9M11 4v6M7 14v6"/>',curve:'<path d="M4 4v16h16M7 16c7 0 2-10 11-10"/>',spark:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>',table:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M10 9v11M4 14h16"/>',settings:'<path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="17" r="2"/>'};
+  return '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.settings)+'</svg>';
+}
+function approvalChanged(state){
+  approvalWorkspaceState=state;
+  var current=screenInfo(S.section);
+  if(current&&current.approval&&state.tab){var next=SETTINGS_SCREENS.filter(function(item){return item.approval===state.tab;})[0];if(next&&next.key!==S.section){S.section=next.key;paintScreen();}}
+  syncControls();
+}
+function approvalCanLeave(){return !approvalAdmin||approvalAdmin.canLeave();}
+function navigateSection(key){
+  var next=screenInfo(key);if(!next||S.refreshing||S.curveBusy)return false;
+  if(key===S.section)return true;
+  if(!approvalCanLeave()){toast('Finish or check the current approval change before leaving.',true);return false;}
+  var view=$('view');screenScroll[S.section]=view.scrollTop||0;
+  if(window.LMSettingsPickers)LMSettingsPickers.close();closeMsels();
+  if(next.approval){
+    try{var admin=getApprovalAdmin();if(!admin.mount($('approval-screen'),next.approval,approvalChanged))return false;}
+    catch(error){toast(error.message,true);return false;}
+  }
+  S.section=key;paintScreen();view.scrollTop=screenScroll[key]||0;
+  if(key==='workflow-log')LMWorkflowLog.ensureLoaded();
+  return true;
+}
+function paintScreen(){
+  var active=screenInfo(S.section)||SETTINGS_SCREENS[0];
+  $('wrap').hidden=!!active.approval;
+  Array.prototype.forEach.call($('wrap').querySelectorAll('[data-settings-screen]'),function(panel){panel.hidden=panel.getAttribute('data-settings-screen')!==active.key;});
+  $('approval-screen').hidden=!active.approval;
+  $('screen-title').textContent=active.title;$('screen-category').textContent=active.group;$('screen-description').textContent=active.description;
+  $('screen-tag').textContent=active.approval?'Approval Configuration':'Application Settings';
+  Array.prototype.forEach.call($('nav').querySelectorAll('[data-jump]'),function(button){var selected=button.getAttribute('data-jump')===active.key;button.classList.toggle('active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+  growAll();
+}
+
+/* ══════════════ SMALL HELPERS ══════════════ */
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?"":v).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function str(v){ return v==null?"":String(v); }
+function diag(){ if(window.console&&console.warn) console.warn.apply(console,arguments); }
+function errText(e){
+  if(!e) return "Unknown error";
+  if(typeof e==="string") return e;
+  return e.message||e.responseText||(function(){ try{ return JSON.stringify(e).slice(0,300); }catch(x){ return "Unknown error"; } })();
+}
+function setMode(text,kind){ $("mode").textContent=text; $("dot").className="dot "+(kind||""); }
+function toast(msg,bad){
+  if(window.LMSuccess){if(!bad){var old=$("toast");clearTimeout(toast._t);old.className='';LMSuccess.show(msg,{durationMs:3200});return;}LMSuccess.clear();}
+  var t=$("toast"); t.textContent=msg; t.className=(bad?"bad ":"")+"show";
+  clearTimeout(toast._t); toast._t=setTimeout(function(){ t.className=""; },3200);
+}
+
+/* ══════════════ VALUE COERCION ══════════════ */
+function relId(v){
+  /* A Creator lookup arrives as {ID,zc_display_value}, a bare id, or a display string. */
+  if(v==null||v==="") return "";
+  if(typeof v==="object"){ return str(v.ID||v.id||""); }
+  return str(v);
+}
+function relLabel(v){
+  if(v&&typeof v==="object") return str(v.zc_display_value||v.display_value||v.ID||"");
+  return str(v);
+}
+function multiIds(v){
+  /* Multi-select lookups come back as an array, or a @#zoho-comma#@ / comma delimited string. */
+  if(v==null||v==="") return [];
+  if(Array.isArray(v)) return v.map(relId).filter(Boolean);
+  var s=String(v);
+  var parts = s.indexOf("@#zoho-comma#@")>=0 ? s.split("@#zoho-comma#@") : s.split(",");
+  return parts.map(function(x){ return x.trim(); }).filter(Boolean);
+}
+function numStr(v){
+  /* Strip currency/percent formatting so Creator gets a clean number. */
+  var s=str(v).replace(/[,$%\s]/g,"");
+  return s;
+}
+function moneyStr(v){try{return LMSettings.moneyText(v);}catch(ignore){return str(v);}}
+function boolOf(v){
+  if(v===true||v===false) return v;
+  var s=str(v).trim().toLowerCase();
+  return s==="true"||s==="yes"||s==="1";
+}
+function fmtMoney(v){
+  var s=moneyStr(v);
+  if(s==="") return "";
+  if(!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(s)) return str(v);
+  /* Money controls retain all entered decimal digits through blur and reload. */
+  var negative=s.charAt(0)==='-',parts=s.replace(/^[+-]/,'').split('.'),whole=(parts[0]||'0').replace(/^0+(?=\d)/,''),fraction=parts[1]||'';
+  return(negative?'-':'')+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+'.'+fraction.padEnd(2,'0');
+}
+/* Creator's date inputs use MM/dd/yyyy; <input type=date> needs yyyy-MM-dd. */
+function toIsoDate(v){
+  var s=str(v).trim(); if(!s) return "";
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return m[3]+"-"+("0"+m[1]).slice(-2)+"-"+("0"+m[2]).slice(-2);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m?m[0]:"";
+}
+function fromIsoDate(v){
+  var s=str(v).trim(); if(!s) return "";
+  var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m?(m[2]+"/"+m[3]+"/"+m[1]):s;
+}
+/* Datetime round-trip: Creator stores "MM/dd/yyyy hh:mm:ss AM/PM". */
+function splitDateTime(v){
+  var s=str(v).trim();
+  var m=s.match(/^(\d{1,2}\/\d{1,2}\/\d{4})\s+(.*)$/);
+  if(m) return {d:m[1], t:m[2]};
+  return {d:s, t:""};
+}
+function to24(t){
+  var m=str(t).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AaPp][Mm])?$/);
+  if(!m) return "";
+  var h=parseInt(m[1],10), mi=m[2], ap=m[4]?m[4].toUpperCase():"";
+  if(ap==="PM"&&h<12) h+=12;
+  if(ap==="AM"&&h===12) h=0;
+  return ("0"+h).slice(-2)+":"+mi;
+}
+function to12(hhmm,secs){
+  var m=str(hhmm).match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return "";
+  var h=parseInt(m[1],10), mi=m[2], ap=h>=12?"PM":"AM";
+  var h12=h%12; if(h12===0) h12=12;
+  return h12+":"+mi+":"+(secs||"00")+" "+ap;
+}
+
+/* Creator stores datetimes as "MM/dd/yyyy hh:mm:ss AM/PM" — build one for right now. */
+function nowStamp(){
+  var d=new Date(), p=function(n){ return ("0"+n).slice(-2); };
+  var h=d.getHours(), ap=h>=12?"PM":"AM", h12=h%12||12;
+  return p(d.getMonth()+1)+"/"+p(d.getDate())+"/"+d.getFullYear()
+    + " "+h12+":"+p(d.getMinutes())+":"+p(d.getSeconds())+" "+ap;
+}
+/* Tall textareas grow with their content (a criteria list can run to dozens of bullets),
+   so nothing is ever hidden behind a scrollbar. Height is re-measured on every keystroke,
+   paste, render and window resize. */
+function grow(el){
+  if(!el) return;
+  el.style.height="auto";
+  el.style.height=(el.scrollHeight+2)+"px";
+}
+function growAll(){
+  Array.prototype.forEach.call(document.querySelectorAll("textarea.tall"),function(el){if(el.getClientRects&&el.getClientRects().length)grow(el);});
+}
+window.addEventListener("resize",growAll);
+
+/* queue() does not re-render, so push the new stamp into its own two inputs by hand. */
+function syncStampRow(field,val){
+  var row=document.querySelector('[data-frow="'+field+'"]'); if(!row) return;
+  var p=splitDateTime(val);
+  var d=row.querySelector('[data-t="dt-d"]'), t=row.querySelector('[data-t="dt-t"]');
+  if(d) d.value=toIsoDate(p.d);
+  if(t) t.value=to24(p.t);
+}
+
+/* Durable drafts retain their values and revisions until an exact fresh readback. */
+var CHECK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>';
+var CLOSE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+var inferredFields={};
+var Controller=LMSettings.create({state:S,config:CFG,field:findField,date:toIsoDate,
+  curveField:function(n){return CURVE_COLS.filter(function(c){return c.n===n;})[0];},
+  onChange:function(event,detail){
+    if(event==="resource-error")console.warn("Settings resource unavailable "+JSON.stringify(detail));
+    if(event==="saved"){showTick(detail);if(window.LMSuccess)LMSuccess.inline('settings:'+detail,((findField(detail)||{}).l||'Setting')+' saved.','settings changes',function(){return !S.drafts[detail];});}
+    if(event==="queued"){if(window.LMSuccess)LMSuccess.begin('settings:'+detail);patchFieldStatus(detail);}
+    if(event==="save-error"){
+      Object.keys(S.drafts).forEach(patchFieldStatus);
+      toast(detail.message,true);
+      if(window.LMCriticalErrors&&!detail.validation)LMCriticalErrors.breadcrumb("error","Settings save unverified",{error:detail.message,code:detail.code,recordId:detail.recordId,fields:detail.fields},true);
+    }
+    if(event==="blocked") toast(detail,true);
+    if(event==="loaded"){
+      $("hsub").textContent="Land Master";$("hsub").title="Settings record "+S.recId;
+      var missing=missingFields();if(missing.length)S.loadError+=(S.loadError?" · ":"")+"Unavailable fields: "+missing.join(", ");
+      LMPerf.mark("settings:data-ready",{records:S.recCount,curves:S.curve.length});
+      render();LMPerf.mark("first-usable");
+      if(S.recCount>1&&window.LMCriticalErrors)LMCriticalErrors.breadcrumb("error","Multiple Settings records detected",{count:S.recCount},true);
+    }
+    if(event==="load-error"){
+      if(S.rec)render();else $("wrap").innerHTML='<div class="banner bad"><div><b>Could not load Settings</b>'+esc(detail.message)+'</div></div>';
+      diag("Settings load failed",detail);
+    }
+    if(event==="curve-error")toast(detail.message,true);
+    if(event==="curve-saved"){render();toast(detail.kind==="delete"?"Construction curve row deleted.":detail.kind==="add"?"Construction curve row added.":"Construction curve row saved.");}
+    if(event==="discarded"){
+      if(!Controller.hasDrafts())render();
+      else detail.forEach(patchPersistedField);
+    }
+    syncControls();syncRecovery();syncMode();
+  }
+});
+function queue(field,value){return Controller.queue(field,value);}
+function flush(){return Controller.flush();}
+function patchFieldStatus(field){
+  var row=document.querySelector('[data-frow="'+field+'"]');if(!row)return;
+  var draft=S.drafts[field],t=row.querySelector(".tick");
+  row.classList.toggle("failed",!!(draft&&draft.error));
+  if(t)t.innerHTML=draft?'<span class="'+(draft.error?'sfail':'muted')+'" title="'+esc(draft.error||"Unsaved")+'">'+(draft.error?'!':'…')+'</span>':"";
+}
+function showTick(field){
+  var row=document.querySelector('[data-frow="'+field+'"]');if(!row)return;
+  row.classList.remove("failed");var t=row.querySelector(".tick");if(!t)return;
+  t.innerHTML='<span class="stick show" title="Verified saved">'+CHECK_SVG+'</span>';
+  setTimeout(function(){var s=t.querySelector(".stick");if(s)s.classList.remove("show");},1900);
+}
+function patchPersistedField(field){
+  var row=document.querySelector('[data-frow="'+field+'"]');if(!row)return;
+  var definition=findField(field)||{},value=curVal(field),control=row.querySelector('[data-f]');
+  if(definition.t==="multi"&&definition.src)row.querySelector(".ctl").innerHTML=multiSelect(definition,value);
+  else if(definition.t==="emails")row.querySelector(".ctl").innerHTML=emailChips(definition,value);
+  else if(definition.t==="datetime")syncStampRow(field,value);
+  else if(control){
+    if(definition.t==="bool")control.checked=boolOf(value);
+    else control.value=definition.t==="money"?fmtMoney(value):definition.t==="date"?toIsoDate(value):Array.isArray(value)?multiIds(value).join(","):value&&typeof value==="object"?relId(value):str(value);
+  }
+  patchFieldStatus(field);
+}
+function syncMode(){
+  if(S.refreshing){setMode("Loading…","");return;}
+  if(S.curveBusy||S.inflight){setMode("Saving…","saving");return;}
+  if(S.uncertain||S.curveUncertain){setMode("Needs recheck","error");return;}
+  if(Object.keys(S.failed).length){setMode("Save failed","error");return;}
+  if(Object.keys(S.drafts).length){setMode("Unsaved changes","saving");return;}
+  if(S.demo){setMode("Preview (read only)","");return;}
+  if(!S.live||S.loadBlocked){setMode("Unavailable","error");return;}
+  setMode(S.recCount>1?"Duplicate records":"Connected",S.recCount>1?"error":"live");
+}
+function syncControls(){
+  var editable=Controller.canEdit();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-f],[data-chipinput]'),function(el){
+    var field=el.getAttribute("data-f")||el.getAttribute("data-chipinput");el.disabled=!Controller.canEdit(field);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-msel]'),function(el){var disabled=!Controller.canEdit(el.getAttribute("data-msel"));el.setAttribute("aria-disabled",String(disabled));var trigger=el.querySelector('[data-toggle]');if(trigger)trigger.disabled=disabled;if(disabled){el.classList.remove("open");if(trigger)trigger.setAttribute('aria-expanded','false');}});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-unpick],[data-rmchip]'),function(el){var row=el.closest('[data-frow]');el.disabled=!row||!Controller.canEdit(row.getAttribute("data-frow"));});
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cf],[data-delcurve],#addCurve'),function(el){
+    var field=el.getAttribute("data-cf"),definition=CURVE_COLS.filter(function(c){return c.n===field;})[0];
+    el.disabled=!Controller.curveAllowed()||!!(definition&&definition.t==="look"&&S.resources[definition.src]!=="ready");
+  });
+  var starter=document.querySelector('[data-import-starter]');if(starter)starter.disabled=!Controller.canEdit("Plat_Review_Criteria");
+  $("reload").disabled=S.refreshing||!!S.inflight||!!S.curveBusy||Controller.hasDrafts();
+  var approvalLocked=!!(approvalWorkspaceState&&(approvalWorkspaceState.busy||approvalWorkspaceState.pending||approvalWorkspaceState.dirty));
+  $("reload").disabled=$("reload").disabled||approvalLocked;
+  $("openrec").disabled=!editable||!!S.inflight||Controller.hasDrafts()||approvalLocked;
+  Array.prototype.forEach.call($("nav").querySelectorAll("button"),function(button){button.disabled=S.refreshing||!!S.curveBusy||!!(approvalWorkspaceState&&(approvalWorkspaceState.busy||approvalWorkspaceState.pending));});
+  Array.prototype.forEach.call($('nav').querySelectorAll('[data-jump]'),function(button){var key=button.getAttribute('data-jump'),group=GROUPS.filter(function(g){return g.key===key;})[0],fields=group?group.fields.map(function(f){return f.n;}):key==='other'?otherFields():[],drafts=fields.filter(function(f){return !!S.drafts[f];}),error=drafts.some(function(f){return !!S.drafts[f].error;});button.classList.toggle('has-draft',!!drafts.length);button.classList.toggle('has-error',error);var info=screenInfo(key);button.setAttribute('aria-label',(info.menu||info.title)+(drafts.length?(error?' · Save needs attention':' · Unsaved changes'):''));});
+  if(window.LMSettingsPickers)LMSettingsPickers.sync();
+}
+function syncRecovery(){
+  var host=$("settings-recovery"),needs=!!(S.uncertain||S.curveUncertain||Object.keys(S.failed).length);
+  host.hidden=!needs;if(!needs)return;
+  var discard=!S.uncertain&&(!S.curveUncertain||S.curveUncertain.outcome==="rejected");
+  host.innerHTML='<span>Unverified edits are retained.</span><button class="btn" data-recheck '+((S.inflight||S.curveBusy)?'disabled':'')+'>Recheck saved values</button>'+(discard?'<button class="btn" data-discard-rejected '+((S.inflight||S.curveBusy)?'disabled':'')+'>Discard rejected edits</button>':'');
+  host.querySelector('[data-recheck]').onclick=function(){var task=S.curveUncertain?Controller.recheckCurve():Controller.recheck();task.catch(function(e){toast(e.message,true);});};
+  if(discard)host.querySelector('[data-discard-rejected]').onclick=function(){Controller.discardRejected();};
+}
+
+/* ══════════════ RENDER ══════════════ */
+function render(){
+  if(!S.ready) return;
+  renderNav();
+  var w=$("wrap");
+  var html="";
+
+  var alerts=guardBanner();
+  if(S.loadError){
+    alerts+='<div class="banner bad"><div><b>Some data could not be loaded</b>'
+        + esc(S.loadError)+'</div></div>';
+  }
+  $('settings-alerts').innerHTML=alerts;
+
+  GROUPS.forEach(function(g,index){ html+=groupCard(g);if(index===0)html+=LMWorkflowLog.card().replace('id="sec-workflow-log"','id="sec-workflow-log" data-settings-screen="workflow-log"'+(S.section==='workflow-log'?'':' hidden')); });
+  html+=curveCard();
+  html+=otherCard();
+  $('settings-foot').textContent='Settings Manager '+CFG.version;
+
+  w.innerHTML=html;
+  wire();
+  LMWorkflowLog.mount({state:S});
+  if(window.LMSettingsPickers)LMSettingsPickers.enhance(w);
+  paintScreen();
+  Object.keys(S.drafts).forEach(patchFieldStatus);
+  syncControls();
+}
+
+function renderNav(){
+  var items=SETTINGS_SCREENS.filter(function(item){return item.key!=='other'||otherFields().length;});
+  var signature=items.map(function(item){return item.key;}).join('|');if(signature===navSignature)return;navSignature=signature;
+  var group='';$('nav').innerHTML=items.map(function(item){var heading='';if(item.group!==group){group=item.group;heading='<div class="nav-group">'+esc(group)+'</div>';}
+    return heading+'<button class="tab'+(S.section===item.key?' active':'')+'" type="button" data-jump="'+esc(item.key)+'"'+(S.section===item.key?' aria-current="page"':'')+' aria-controls="'+(item.approval?'approval-screen':'sec-'+item.key)+'">'+menuIcon(item.icon)+'<span>'+esc(item.menu||item.title)+'</span><span class="nav-pending" aria-hidden="true"></span></button>';
+  }).join('');
+}
+
+function guardBanner(){
+  if(S.recCount>1){
+    return '<div class="banner bad"><span class="ico">⛔</span><div>'
+      + '<b>'+S.recCount+' Settings records exist — only one is allowed</b>'
+      + 'Every nightly scheduled workflow is anchored on this form, so duplicates make each job run '
+      + S.recCount+'× per day. Deluge across the app reads <code>Settings[ID != 0]</code> as a single '
+      + 'record and will now pick one arbitrarily.'
+      + '<ul>'+S.extras.map(function(r){
+          return '<li><span class="mono">'+esc(r.ID)+'</span>'+(String(r.ID)===String(S.recId)?' — being edited here':' — <b>delete this one</b>')+'</li>';
+        }).join("")+'</ul>'
+      + 'Delete the extras in Creator, then install the <i>Block Second Settings Record</i> validation so it cannot recur.'
+      + '</div></div>';
+  }
+  return '';
+}
+
+function groupCard(g){
+  var h='<section class="card settings-screen" id="sec-'+esc(g.key)+'" data-settings-screen="'+esc(g.key)+'" data-lm-motion="panel" aria-label="'+esc(g.title)+'"'+(S.section===g.key?'':' hidden')+'><div class="body">';
+  if(g.key==='budget')h+='<div class="settings-inline-note">Approval routing is managed in <button type="button" class="text-link" data-settings-link="approval-rules">Approval Rules '+menuIcon('route')+'</button></div>';
+  if(g.percentGrid){
+    var blank=g.fields.filter(function(f){ return numStr(curVal(f.n))===""; }).length;
+    if(blank) h+='<div class="banner warn" style="margin-bottom:14px"><span class="ico">•</span><div>'
+      + '<b>'+blank+' of '+g.fields.length+' defaults are blank</b>'
+      + 'Blank defaults fall back to zero.</div></div>';
+    h+='<div class="grid2">'+g.fields.map(pctCell).join("")+'</div>';
+  } else {
+    h+=g.fields.map(fieldRow).join("");
+  }
+  return h+'</div></section>';
+}
+
+function curVal(name){ return Controller.value(name); }
+
+function pctCell(f){
+  var v=numStr(curVal(f.n));
+  return '<div class="pcell" data-frow="'+esc(f.n)+'">'
+    + '<div class="name"><span>'+esc(f.l)+'</span><span class="tick"></span></div>'
+    + '<label class="affix suf"><input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="pct"'
+    + ' value="'+esc(v)+'" placeholder="0"/><span class="sym">%</span></label>'
+    + '</div>';
+}
+
+function fieldRow(f){
+  var ctl="";
+  var v=curVal(f.n);
+  switch(f.t){
+    case "bool":{
+      var on=boolOf(v);
+      ctl='<label class="tog'+(f.danger?" danger":"")+'"><input type="checkbox" data-f="'+esc(f.n)+'" data-t="bool"'
+        + (on?" checked":"")+'/><span class="track"></span>'
+        + '<span class="txt">'+(on?(f.danger?"On — unlocked":"On"):"Off")+'</span></label>';
+      break; }
+    case "date":
+      ctl='<input class="narrow" type="date" data-f="'+esc(f.n)+'" data-t="date" value="'+esc(toIsoDate(v))+'"/>';
+      break;
+    case "datetime":{
+      var p=splitDateTime(v);
+      ctl='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        + '<input class="narrow" type="date" data-f="'+esc(f.n)+'" data-t="dt-d" value="'+esc(toIsoDate(p.d))+'" style="max-width:170px"/>'
+        + '<input class="narrow" type="time" data-f="'+esc(f.n)+'" data-t="dt-t" value="'+esc(to24(p.t))+'" style="max-width:130px"/>'
+        + '</div>';
+      if(f.jobs) ctl+='<details class="jobs-disclosure"><summary>Reschedules '+CFG.jobs.length+' daily workflows</summary>'
+        + '<ul class="jobs">'+CFG.jobs.map(function(j){ return '<li>'+esc(j)+'</li>'; }).join("")+'</ul></details>';
+      break; }
+    case "int":
+      ctl='<label class="affix suf" style="max-width:170px"><input type="text" inputmode="numeric" data-f="'+esc(f.n)+'" data-t="int" value="'+esc(numStr(v))+'"/>'
+        + '<span class="sym tiny">'+esc(f.suffix||"")+'</span></label>';
+      break;
+    case "money":
+      ctl='<label class="affix" style="max-width:210px"><span class="sym">$</span>'
+        + '<input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="money" value="'+esc(fmtMoney(v))+'"/></label>';
+      break;
+    case "pct":
+      ctl='<label class="affix suf narrow"><input type="text" inputmode="decimal" data-f="'+esc(f.n)+'" data-t="pct" value="'+esc(numStr(v))+'"/><span class="sym">%</span></label>';
+      break;
+    case "text":
+      ctl='<textarea'+(f.tall?' class="tall"':"")+' data-f="'+esc(f.n)+'" data-t="text"'
+        + (f.placeholder?' placeholder="'+esc(f.placeholder)+'"':"")+'>'+esc(v)+'</textarea>';
+      if(f.n==="Plat_Review_Criteria") ctl+='<button type="button" class="btn" data-import-starter>Use starter instructions</button>';
+      break;
+    case "line":
+      ctl='<input type="text" data-f="'+esc(f.n)+'" data-t="raw" value="'+esc(v)+'"'
+        + (f.placeholder?' placeholder="'+esc(f.placeholder)+'"':"")+'/>';
+      break;
+    case "emails":
+      ctl=emailChips(f,v);
+      break;
+    case "multi":
+      ctl=multiSelect(f,v);
+      break;
+    default:
+      ctl='<input type="text" data-f="'+esc(f.n)+'" data-t="raw" value="'+esc(v)+'"/>';
+  }
+  return '<div class="frow'+(f.danger&&boolOf(v)?" hot":"")+'" data-frow="'+esc(f.n)+'">'
+    + '<div class="lab"><div class="name">'+esc(f.l)+'</div>'
+    + (f.hint?'<div class="hint">'+esc(f.hint)+'</div>':'')+'</div>'
+    + '<div class="ctl">'+ctl+'</div><div class="tick"></div></div>';
+}
+
+function emailList(v){
+  return str(v).split(/[,;]/).map(function(x){ return x.trim(); }).filter(Boolean);
+}
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+function emailChips(f,v){
+  var list=emailList(v);
+  return '<div class="chips" data-chips="'+esc(f.n)+'">'
+    + list.map(function(e,i){
+        return '<span class="chip'+(validEmail(e)?"":" bad")+'" title="'+esc(validEmail(e)?e:"Not a valid address")+'">'
+          + '<span>'+esc(e)+'</span><button type="button" data-rmchip="'+i+'" aria-label="Remove '+esc(e)+'">'+CLOSE_SVG+'</button></span>';
+      }).join("")
+    + '<input type="text" data-chipinput="'+esc(f.n)+'" placeholder="'+(list.length?"Add another…":"name@wbdevelopment.com")+'"/>'
+    + '</div>';
+}
+
+function optionsFor(src){
+  if(src==="users") return S.users.map(function(r){
+    return {id:str(r.ID),label:str(r.Full_Name)||relLabel(r.User)||("#"+r.ID),meta:str(r.Approver_Email)||"No email configured"};
+  }).sort(function(a,b){return a.label.localeCompare(b.label);});
+  if(src==="approvals") return S.approvals.map(function(r){
+    var seq=str(r.Approval_Sequence);
+    return { id:str(r.ID),
+             label:str(r.Approver)||"(no approver)",
+             meta:[seq?("#"+seq):"", str(r.Type1)].filter(Boolean).join(" · ") };
+  }).sort(function(a,b){ return (a.meta>b.meta?1:a.meta<b.meta?-1:0); });
+  if(src==="actions") return S.actions.map(function(r){
+    // Display the current Actions field, retaining every selected record ID.
+    var so=str(r.Sort_Order);
+    return { id:str(r.ID),
+             label:str(r.Contract_Action)||"(no action text)",
+             meta:[str(r.Type_field), so?("sort "+so):""].filter(Boolean).join(" · ") };
+  }).sort(function(a,b){ return (Number(a.meta.replace(/\D/g,""))||0)-(Number(b.meta.replace(/\D/g,""))||0); });
+  if(src==="proformas") return S.proformas.map(function(r){
+    return { id:str(r.ID), label:str(r.Name)||("#"+r.ID), meta:"" };
+  });
+  return [];
+}
+function multiSelect(f,v){
+  var sel=multiIds(v), opts=optionsFor(f.src);
+  var byId={}; opts.forEach(function(o){ byId[o.id]=o; });
+  var picked=sel.map(function(id){ return byId[id]||{id:id,label:"#"+id+" (not in list)",meta:""}; });
+  return '<div class="msel" data-msel="'+esc(f.n)+'" data-src="'+esc(f.src)+'">'
+    + '<div class="selbar">'
+    + (picked.length
+        ? picked.map(function(o){ return '<span class="chip"><span>'+esc(o.label)+'</span>'
+            + '<button type="button" data-unpick="'+esc(o.id)+'" aria-label="Remove '+esc(o.label)+'">'+CLOSE_SVG+'</button></span>'; }).join("")
+        : '')
+    + '<button type="button" class="msel-toggle" data-toggle="1" aria-label="'+esc(f.l||f.n)+'" aria-expanded="false" aria-haspopup="listbox"><span>'+ (picked.length?'Edit Selection':'Choose…')+'</span><span class="caret" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 10 5 5 5-5"/></svg></span></button></div>'
+    + '<div class="pop">'
+    + '<div class="search"><input type="text" data-msearch="1" placeholder="Search '+esc(opts.length)+' options…"/></div>'
+    + '<div class="opts" role="listbox" aria-label="'+esc(f.l||f.n)+' options" aria-multiselectable="true" data-opts="1">'+msOptions(opts,sel,"")+'</div>'
+    + '</div></div>';
+}
+function msOptions(opts,sel,q){
+  q=String(q||"").trim().toLowerCase();
+  var rows=opts.filter(function(o){
+    return !q || (o.label+" "+o.meta).toLowerCase().indexOf(q)>=0;
+  });
+  if(!rows.length) return '<div class="empty">No matches</div>';
+  return rows.map(function(o){
+    var on=sel.indexOf(o.id)>=0;
+    return '<div class="opt'+(on?" on":"")+'" role="option" aria-selected="'+on+'" tabindex="0" data-pick="'+esc(o.id)+'">'
+      + '<span class="box" aria-hidden="true">'+(on?CHECK_SVG:"")+'</span>'
+      + '<span><span>'+esc(o.label)+'</span>'+(o.meta?'<div class="meta">'+esc(o.meta)+'</div>':'')+'</span></div>';
+  }).join("");
+}
+
+/* ── Construction Curve ─────────────────────────────────────────── */
+function curveCard(){
+  var h='<div class="card" id="sec-curve" data-settings-screen="curve" data-lm-motion="panel"'+(S.section==='curve'?'':' hidden')+'><header><h2>Monthly Cost Distribution</h2>'
+      + '<span class="blurb">Cost spread by month. Each curve should total 100%.</span>'
+      + '<span class="spacer"></span>'
+      + '<button class="btn" id="addCurve">+ Add row</button>'
+      + '</header><div class="body">';
+  if(S.resources.curve!=="ready"){
+    h+='<div class="banner warn"><div><b>Curve rows unavailable</b>Reload to retry a complete snapshot.</div></div>';
+    if(!S.curve.length)return h+'</div></div>';
+  }
+  if(!S.curve.length){
+    h+='<div class="banner info" style="margin:0"><span class="ico">•</span><div>'
+      + '<b>No curve rows yet</b>Add a row to define how construction cost spreads across months.'
+      + '</div></div>';
+    return h+'</div></div>';
+  }
+  /* Group by Cost_Curve so each curve's total is checkable at a glance. */
+  var groups={}, order=[];
+  S.curve.forEach(function(r){
+    var k=str(r.Cost_Curve)||"(unset)";
+    if(!groups[k]){ groups[k]=[]; order.push(k); }
+    groups[k].push(r);
+  });
+  order.sort(function(a,b){ return (Number(a)||999)-(Number(b)||999); });
+
+  h+='<div class="tblwrap"><table><thead><tr>'
+    + CURVE_COLS.map(function(c){ return '<th style="width:'+c.w+'">'+esc(c.l)+'</th>'; }).join("")
+    + '<th style="width:44px"></th></tr></thead><tbody>';
+  order.forEach(function(k){
+    var rows=groups[k];
+    var sum=rows.reduce(function(a,r){ var n=Number(numStr(r.Percent_Cost)); return a+(isFinite(n)?n:0); },0);
+    var okSum=Math.abs(sum-100)<0.01;
+    h+='<tr class="grp"><td colspan="'+(CURVE_COLS.length+1)+'">'
+      + esc(k==="(unset)"?"No month count set":(k+"-month curve"))
+      + ' · '+rows.length+' row'+(rows.length===1?"":"s")
+      + ' <span class="pill '+(okSum?"ok":"off")+'">'+(Math.round(sum*1000)/1000)+'%</span>'
+      + (okSum?"":' <span class="tiny muted">should total 100%</span>')
+      + '</td></tr>';
+    rows.sort(function(a,b){ return (Number(a.Month_Number)||0)-(Number(b.Month_Number)||0); });
+    rows.forEach(function(r){ h+=curveRow(r); });
+  });
+  return h+'</tbody></table></div></div></div>';
+}
+function curveRow(r){
+  var id=str(r.ID);
+  var h='<tr data-crow="'+esc(id)+'">';
+  CURVE_COLS.forEach(function(c){
+    var draft=S.curveDrafts[id];
+    var v=draft&&Object.prototype.hasOwnProperty.call(draft.values,c.n)?draft.values[c.n]:r[c.n];
+    h+='<td>';
+    if(c.t==="pick"){
+      h+='<select data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"><option value=""></option>'
+        + c.opts.map(function(o){ return '<option value="'+esc(o)+'"'+(str(v)===o?" selected":"")+'>'+esc(o)+'</option>'; }).join("")
+        + '</select>';
+    } else if(c.t==="bool"){
+      h+='<label class="tog"><input type="checkbox" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"'
+        + (boolOf(v)?" checked":"")+'/><span class="track"></span></label>';
+    } else if(c.t==="look"){
+      var opts=optionsFor(c.src), cur=relId(v);
+      var known=opts.some(function(o){ return o.id===cur; });
+      h+='<select class="searchable-select" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'"><option value=""></option>'
+        + (cur&&!known?'<option value="'+esc(cur)+'" selected>'+esc(relLabel(v)||("#"+cur))+'</option>':'')
+        + opts.map(function(o){ return '<option value="'+esc(o.id)+'"'+(o.id===cur?" selected":"")+'>'+esc(o.label)+'</option>'; }).join("")
+        + '</select>';
+    } else {
+      h+='<input type="text" inputmode="decimal" data-cf="'+esc(c.n)+'" data-cid="'+esc(id)+'" value="'+esc(numStr(v))+'"/>';
+    }
+    h+='</td>';
+  });
+  return h+'<td><button class="iconbtn" data-delcurve="'+esc(id)+'" title="Delete row">🗑</button></td></tr>';
+}
+
+/* ── Schema fields the report never sent back (not on the layout, or unpublished) ──
+   Those inputs render blank and every keystroke saves to a column the widget cannot read
+   back, so we call them out instead of letting them read as "empty on purpose".        */
+function missingFields(){
+  if(!S.rec) return [];
+  var out=[];
+  GROUPS.forEach(function(g){ g.fields.forEach(function(f){
+    if(!S.rec.hasOwnProperty(f.n)) out.push(f.l);
+  }); });
+  return out;
+}
+
+/* ── Fields on the record that this widget does not explicitly model ── */
+function otherFields(){
+  if(!S.rec) return [];
+  var known={};
+  GROUPS.forEach(function(g){ g.fields.forEach(function(f){ known[f.n]=1; }); });
+  return Object.keys(S.rec).filter(function(k){
+    if(known[k]||SYSTEM_FIELDS[k]) return false;
+    var v=S.rec[k];
+    if(v&&typeof v==="object"&&!Array.isArray(v)&&!v.ID) return false;
+    return true;
+  }).sort();
+}
+function otherCard(){
+  var list=otherFields();
+  if(!list.length) return "";
+  return '<div class="card" id="sec-other" data-settings-screen="other" data-lm-motion="panel"'+(S.section==='other'?'':' hidden')+'><header><h2>Additional Fields</h2>'
+    + '<span class="blurb">Additional fields on this Settings record.</span>'
+    + '</header><div class="body">'
+    + list.map(function(k){
+        var v=curVal(k);
+        var shown=Array.isArray(v)?multiIds(v).join(","):(v&&typeof v==="object")?relId(v):str(v);
+        return '<div class="frow" data-frow="'+esc(k)+'">'
+          + '<div class="lab"><div class="name">'+esc(k.replace(/_/g," "))+'</div>'
+          + '<div class="hint mono">'+esc(k)+'</div></div>'
+          + '<div class="ctl"><input type="text" data-f="'+esc(k)+'" data-t="raw" value="'+esc(shown)+'"/></div>'
+          + '<div class="tick"></div></div>';
+      }).join("")
+    + '</div></div>';
+}
+
+/* ══════════════ EVENT WIRING ══════════════ */
+function readControl(el){
+  var t=el.getAttribute("data-t"), f=el.getAttribute("data-f");
+  switch(t){
+    case "bool":  return {f:f, v:el.checked};
+    case "date":  return {f:f, v:fromIsoDate(el.value)};
+    case "dt-d":
+    case "dt-t":{
+      var row=el.closest("[data-frow]");
+      var d=row.querySelector('[data-t="dt-d"]').value;
+      var tm=row.querySelector('[data-t="dt-t"]').value;
+      if(!d) return {f:f, v:""};
+      var prev=splitDateTime(curVal(f));
+      var secs=(prev.t.match(/:(\d{2})\s*[AaPp]/)||[])[1]||"00";
+      return {f:f, v:fromIsoDate(d)+(tm?(" "+to12(tm,secs)):" 12:00:00 AM")};
+    }
+    case "int":   return {f:f, v:numStr(el.value)};
+    case "money": return {f:f, v:moneyStr(el.value)};
+    case "pct":   return {f:f, v:numStr(el.value)};
+    default:      return {f:f, v:el.value};
+  }
+}
+var wired=false;
+function wire(){
+  /* Screen navigation does not replace any mounted field. */
+  $("nav").onclick=function(e){
+    var b=e.target.closest("[data-jump]"); if(!b) return;
+    navigateSection(b.getAttribute("data-jump"));
+  };
+  $('nav').onkeydown=function(e){
+    if(!['ArrowDown','ArrowUp','Home','End'].includes(e.key))return;
+    var buttons=Array.prototype.slice.call($('nav').querySelectorAll('[data-jump]:not(:disabled)')),index=buttons.indexOf(document.activeElement);if(index<0)return;
+    e.preventDefault();var next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;
+    buttons[next].focus();
+  };
+
+  var wrap=$("wrap");
+  Array.prototype.forEach.call(wrap.querySelectorAll('[data-frow]'),function(row){var name=row.querySelector('.name'),label=name?name.textContent:'';Array.prototype.forEach.call(row.querySelectorAll('input,textarea,select'),function(input){if(!input.getAttribute('aria-label'))input.setAttribute('aria-label',label+(input.getAttribute('data-t')==='dt-d'?' date':input.getAttribute('data-t')==='dt-t'?' time':''));});});
+  var starterButton=wrap.querySelector("[data-import-starter]");
+  if(starterButton)starterButton.onclick=function(){if(!Controller.canEdit("Plat_Review_Criteria"))return;var el=wrap.querySelector('textarea[data-f="Plat_Review_Criteria"]');el.value=SPREADSHEET_IMPORT_STARTER;grow(el);queue("Plat_Review_Criteria",el.value);};
+
+  if(wired)return;wired=true;
+
+  /* Plain controls — commit on change (and on input for text so typing feels live) */
+  wrap.addEventListener("change",function(e){
+    var el=e.target;
+    if(el.hasAttribute("data-f")){
+      var r=readControl(el);
+      queue(r.f,r.v);
+      if(el.getAttribute("data-t")==="bool"){
+        var row=el.closest("[data-frow]");
+        var lab=el.parentNode.querySelector(".txt");
+        var fdef=findField(r.f);
+        if(lab) lab.textContent=r.v?(fdef&&fdef.danger?"On — unlocked":"On"):"Off";
+        if(row&&fdef&&fdef.danger) row.classList.toggle("hot",!!r.v);
+      }
+      return;
+    }
+    if(el.hasAttribute("data-cf")) curveEdit(el);
+  });
+  wrap.addEventListener("input",function(e){
+    var el=e.target;
+    if(!el.hasAttribute("data-f")) return;
+    var t=el.getAttribute("data-t");
+    if(t==="pct"||t==="money"||t==="int"||t==="raw"||t==="text"){
+      if(el.classList.contains("tall")) grow(el);
+      var r=readControl(el); queue(r.f,r.v);
+      if(r.f===CRITERIA_FIELD&&S.rec&&S.rec.hasOwnProperty(CRITERIA_STAMP)){
+        var stamp=nowStamp();
+        queue(CRITERIA_STAMP,stamp);
+        syncStampRow(CRITERIA_STAMP,stamp);
+      }
+    }
+  });
+  /* Re-format money only once the user leaves the box, so typing isn't fought. */
+  wrap.addEventListener("blur",function(e){
+    var el=e.target;
+    if(el.getAttribute&&el.getAttribute("data-t")==="money") el.value=fmtMoney(el.value);
+  },true);
+
+  /* Email chips */
+  wrap.addEventListener("keydown",function(e){
+    var picker=e.target.closest?e.target.closest('[data-msel]'):null;
+    if(picker){
+      var trigger=picker.querySelector('[data-toggle]');
+      if(e.key==='Escape'){e.preventDefault();closeMsels();trigger.focus();return;}
+      if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-toggle],[data-pick]')){e.preventDefault();e.target.click();return;}
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+        e.preventDefault();if(!picker.classList.contains('open')){trigger.click();return;}
+        var choices=Array.prototype.slice.call(picker.querySelectorAll('[data-pick]')),index=choices.indexOf(document.activeElement);if(choices.length)choices[(index+(e.key==='ArrowDown'?1:-1)+choices.length)%choices.length].focus();return;
+      }
+    }
+    var inp=e.target.closest?e.target.closest("[data-chipinput]"):null;
+    if(!inp||!Controller.canEdit(inp.getAttribute("data-chipinput"))) return;
+    var f=inp.getAttribute("data-chipinput");
+    if(e.key==="Enter"||e.key===","||e.key===";"||e.key==="Tab"){
+      var val=inp.value.trim().replace(/[,;]$/,"");
+      if(!val){ if(e.key!=="Tab") e.preventDefault(); return; }
+      e.preventDefault();
+      var list=emailList(curVal(f)); list.push(val);
+      commitEmails(f,list);
+    } else if(e.key==="Backspace"&&!inp.value){
+      var l2=emailList(curVal(f));
+      if(l2.length){ l2.pop(); commitEmails(f,l2); }
+    }
+  });
+  wrap.addEventListener("click",function(e){
+    var screenLink=e.target.closest('[data-settings-link]');if(screenLink){navigateSection(screenLink.getAttribute('data-settings-link'));return;}
+    var targetField=e.target.closest("[data-frow]");
+    if(targetField&&!Controller.canEdit(targetField.getAttribute("data-frow")))return;
+    if(e.target.closest("[data-crow]")&&!Controller.curveAllowed())return;
+    var rm=e.target.closest("[data-rmchip]");
+    if(rm){
+      var box=rm.closest("[data-chips]"), f=box.getAttribute("data-chips");
+      var list=emailList(curVal(f));
+      list.splice(Number(rm.getAttribute("data-rmchip")),1);
+      commitEmails(f,list);
+      return;
+    }
+    var un=e.target.closest("[data-unpick]");
+    if(un){
+      e.stopPropagation();
+      var ms=un.closest("[data-msel]");
+      togglePick(ms.getAttribute("data-msel"),un.getAttribute("data-unpick"));
+      return;
+    }
+    var tg=e.target.closest("[data-toggle]");
+    if(tg){
+      var m=tg.closest("[data-msel]");
+      var wasOpen=m.classList.contains("open");
+      closeMsels();
+      if(!wasOpen){ m.classList.add("open");tg.setAttribute('aria-expanded','true'); var s=m.querySelector("[data-msearch]"); if(s){ s.value=""; s.focus(); } }
+      return;
+    }
+    var pk=e.target.closest("[data-pick]");
+    if(pk){
+      var m2=pk.closest("[data-msel]");
+      togglePick(m2.getAttribute("data-msel"),pk.getAttribute("data-pick"));
+      return;
+    }
+    var del=e.target.closest("[data-delcurve]");
+    if(del){ deleteCurve(del.getAttribute("data-delcurve")); return; }
+    if($("addCurve")&&e.target.closest("#addCurve")){ addCurve(); return; }
+    if(!e.target.closest("[data-msel]")) closeMsels();
+  });
+  wrap.addEventListener("input",function(e){
+    var s=e.target.closest?e.target.closest("[data-msearch]"):null;
+    if(!s) return;
+    var m=s.closest("[data-msel]");
+    var f=m.getAttribute("data-msel"), src=m.getAttribute("data-src");
+    m.querySelector("[data-opts]").innerHTML=msOptions(optionsFor(src),multiIds(curVal(f)),s.value);
+  });
+
+  document.addEventListener("click",function(e){
+    if(!e.target.closest("[data-msel]")) closeMsels();
+  },{capture:false});
+}
+function findField(n){
+  for(var i=0;i<GROUPS.length;i++){
+    for(var j=0;j<GROUPS[i].fields.length;j++) if(GROUPS[i].fields[j].n===n) return GROUPS[i].fields[j];
+  }
+  if(inferredFields[n])return inferredFields[n];
+  if(S.rec&&Object.prototype.hasOwnProperty.call(S.rec,n)){
+    var value=S.rec[n];
+    if(Array.isArray(value)&&value.length&&value.every(function(v){return /^\d+$/.test(relId(v));}))return inferredFields[n]={n:n,t:"multi"};
+    if(value&&typeof value==="object"&&!Array.isArray(value)&&/^\d+$/.test(relId(value)))return inferredFields[n]={n:n,t:"look"};
+  }
+  return null;
+}
+function closeMsels(){
+  Array.prototype.forEach.call(document.querySelectorAll(".msel.open"),function(m){ m.classList.remove("open");var trigger=m.querySelector('[data-toggle]');if(trigger)trigger.setAttribute('aria-expanded','false'); });
+}
+function commitEmails(f,list){
+  var clean=[],seen={};
+  list.forEach(function(e){ var v=e.trim(); if(v&&!seen[v.toLowerCase()]){ seen[v.toLowerCase()]=1; clean.push(v); } });
+  var joined=clean.join(",");
+  if(!queue(f,joined))return;
+  var row=document.querySelector('[data-frow="'+f+'"]');
+  if(row){
+    var host=row.querySelector(".ctl");
+    host.innerHTML=emailChips(findField(f)||{n:f},joined);
+    var inp=host.querySelector("[data-chipinput]"); if(inp) inp.focus();
+  }
+}
+function togglePick(f,id){
+  var sel=multiIds(curVal(f));
+  var at=sel.indexOf(id);
+  if(at>=0) sel.splice(at,1); else sel.push(id);
+  /* Creator accepts an array of ids for a multi-select lookup. */
+  if(!queue(f,sel.slice()))return;
+  var m=document.querySelector('[data-msel="'+f+'"]');
+  if(!m) return;
+  var wasOpen=m.classList.contains("open");
+  var q=(m.querySelector("[data-msearch]")||{}).value||"";
+  var row=m.closest("[data-frow]");
+  row.querySelector(".ctl").innerHTML=multiSelect(findField(f),sel);
+  var m2=row.querySelector("[data-msel]");
+  if(wasOpen){
+    m2.classList.add("open");
+    m2.querySelector('[data-toggle]').setAttribute('aria-expanded','true');
+    var s=m2.querySelector("[data-msearch]");
+    if(s){ s.value=q; s.focus(); }
+    m2.querySelector("[data-opts]").innerHTML=msOptions(optionsFor(m2.getAttribute("data-src")),sel,q);
+  }else{m2.querySelector('[data-toggle]').focus();}
+}
+
+/* Curve writes are captured, confirmed once and verified from the selected parent. */
+function curveEdit(el){
+  var id=el.getAttribute("data-cid"),field=el.getAttribute("data-cf"),col=CURVE_COLS.filter(function(c){return c.n===field;})[0]||{};
+  var value=col.t==="bool"?el.checked:(col.t==="pct"||col.t==="int"?numStr(el.value):el.value);
+  var values={};values[field]=value;
+  return Controller.curveOperation("edit",id,values).catch(function(e){toast(e.message,true);return false;});
+}
+function addCurve(){return Controller.curveOperation("add","",{}).catch(function(e){toast(e.message,true);return false;});}
+var curveDialog=null;
+function closeCurveDialog(){
+  if(S.curveBusy)return;
+  var dialog=curveDialog;curveDialog=null;$("curve-dialog").hidden=true;$("curve-dialog").innerHTML="";
+  [$("view"),$("nav"),document.querySelector(".hdr")].forEach(function(el){if(el)el.inert=false;});
+  if(dialog&&dialog.focus&&dialog.focus.focus)dialog.focus.focus();
+}
+function deleteCurve(id){
+  if(!Controller.curveAllowed()||curveDialog)return;
+  if(!S.curve.some(function(row){return row.ID===id;}))return;
+  curveDialog={id:id,parent:S.recId,generation:S.generation,focus:document.activeElement};
+  var host=$("curve-dialog");host.hidden=false;
+  host.innerHTML='<div class="settings-overlay"><section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="curve-delete-title"><header><h2 id="curve-delete-title">Delete curve row?</h2><button class="iconbtn" data-curve-close aria-label="Close">'+CLOSE_SVG+'</button></header><p>Construction curve row <span class="mono">'+esc(id)+'</span></p><div data-curve-status role="status" aria-live="polite">This removes the selected row.</div><footer><button class="btn" data-curve-cancel>Cancel</button><button class="btn primary" data-curve-delete>Delete row</button></footer></section></div>';
+  [$("view"),$("nav"),document.querySelector(".hdr")].forEach(function(el){if(el)el.inert=true;});
+  host.querySelector('[data-curve-close]').onclick=closeCurveDialog;host.querySelector('[data-curve-cancel]').onclick=closeCurveDialog;
+  host.querySelector('[data-curve-delete]').onclick=function(){
+    var captured=curveDialog;if(!captured||S.curveBusy||captured.parent!==S.recId||captured.generation!==S.generation)return;
+    Array.prototype.forEach.call(host.querySelectorAll("button"),function(button){button.disabled=true;});
+    host.querySelector('[data-curve-status]').textContent="Deleting and checking fresh data…";
+    Controller.curveOperation("delete",captured.id,{}).then(function(){
+      if(curveDialog!==captured)return;
+      host.querySelector('[data-curve-status]').textContent="Deletion verified.";
+    },function(error){if(curveDialog===captured)host.querySelector('[data-curve-status]').textContent=error.message;}).finally(function(){
+      if(curveDialog!==captured)return;
+      host.querySelector('[data-curve-close]').disabled=false;host.querySelector('[data-curve-cancel]').disabled=false;
+      host.querySelector('[data-curve-cancel]').textContent="Close";
+    });
+  };
+  host.onkeydown=function(e){
+    if(e.key==="Escape"){e.preventDefault();closeCurveDialog();return;}
+    if(e.key!=="Tab")return;
+    var buttons=Array.prototype.filter.call(host.querySelectorAll("button"),function(button){return !button.disabled;});
+    if(!buttons.length){e.preventDefault();return;}
+    var first=buttons[0],last=buttons[buttons.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  };
+  host.querySelector('[data-curve-cancel]').focus();
+}
+function loadData(){return LMPerf.timed("settings:reports",function(){return Controller.load();}).catch(function(e){diag(e);return false;});}
+$("reload").onclick=function(){if(!approvalCanLeave()){toast('Finish or check the current approval change before refreshing.',true);return;}if(!S.live)return boot();return loadData();};
+$("openrec").onclick=function(){
+  if(!Controller.canEdit()||S.inflight||Controller.hasDrafts())return;
+  var util=window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.UTIL;
+  if(util&&typeof util.navigateParentURL==="function")return util.navigateParentURL({action:"open",url:"#Form:"+CFG.form+"?recLinkID="+S.recId});
+  toast("Creator navigation is unavailable.",true);
+};
+
+
+/* ══════════════ DEMO FALLBACK (no SDK — local preview only) ══════════════ */
+function fallbackDemo(){
+  if(S.ready) return;
+  S.demo=true; S.live=false;
+  S.rec={ID:"0000000000000000000",Next_Workflow_Run:"08/27/2026 12:32:20 PM",
+    Approval_Reminder_Interval_Days:"3",Next_Approval_Reminder_Date:"08/29/2026",
+    Open_Forecasting_Window:false,Unlock_All_Forecasts:false,
+    Receive_Legal_Notifications:"rbelliveau@wbdevelopment.com,rharris@wbdevelopment.com",
+    Builder_Approval_Template:[],Builder_Contract_Action_Template:[],
+    COO_Approval_Threshold:"10000",Multi_Line:"",
+    Capital_Cost:"",Points:"",Admin_Cost:"",Engineering_Markup:"",Engineering_Sub_Markup:"",
+    Construction_Markup:"",Construction_Sub_Markup:"",Profit_Share:"",
+    PF_Review_Criteria:"",PF_Review_Provider:"openai",PF_Review_Model:"gpt-5.6-luna",
+    PF_Review_Criteria_Updated:"",Plat_Review_Criteria:""};
+  S.recId=S.rec.ID; S.recCount=1; S.extras=[S.rec];
+  S.curve=[]; S.approvals=[]; S.actions=[]; S.proformas=[];S.users=[];S.resources={curve:"ready",approvals:"ready",actions:"ready",proformas:"ready",users:"ready"};
+  S.ready=true;
+  setMode("Preview (no Creator SDK)","");
+  render();
+}
+
+/* Native handshake deadline: a stalled/late bridge cannot start business reads. */
+var bootGeneration=0,booting=false;
+function nativeContext(generation){
+  return new Promise(function(resolve,reject){
+    var finished=false,timer=setTimeout(function(){finish(new Error("Creator connection timed out. Reload to retry."));},5000);
+    function finish(error,value){if(finished)return;finished=true;clearTimeout(timer);if(generation!==bootGeneration){reject(new Error("Connection was superseded."));return;}if(error)reject(error);else resolve(value);}
+    Promise.resolve().then(function(){return ZOHO.CREATOR.UTIL.getInitParams();}).then(function(params){
+      if(finished||generation!==bootGeneration)return;
+      try{var runtime=LMRuntime.apply(params);Controller.bind(runtime);finish(null,runtime);}catch(error){finish(error);}
+    },function(error){finish(error);});
+  });
+}
+function boot(){
+  if(booting)return Promise.resolve(false);
+  if(S.ready&&(S.inflight||S.curveBusy||Controller.hasDrafts())){toast("Local edits are retained. Finish or recheck them before reconnecting.",true);return Promise.resolve(false);}
+  var creator=window.ZOHO&&ZOHO.CREATOR;
+  if(!creator||!creator.DATA||!creator.UTIL||typeof creator.UTIL.getInitParams!=="function"){
+    var embedded=false;try{embedded=window.parent!==window;}catch(error){embedded=true;}
+    if(!embedded){fallbackDemo();return Promise.resolve(false);}
+    S.live=false;S.loadBlocked=true;setMode("Connection unavailable","error");$("wrap").innerHTML='<div class="banner bad"><div><b>Creator connection unavailable</b>Reload to retry.</div></div>';return Promise.resolve(false);
+  }
+  booting=true;var generation=++bootGeneration;S.live=false;setMode("Connecting…","");$("reload").disabled=true;LMPerf.start("settings:startup");LMPerf.start("settings:init");
+  return nativeContext(generation).then(function(){
+    if(generation!==bootGeneration)return false;
+    LMPerf.end("settings:init",{ok:true});S.live=true;S.demo=false;
+    document.getElementById('approval-admin').hidden=!S.live||!['DEVELOPMENT','PRODUCTION'].includes(LMRuntime.current().environment);
+    if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Settings Manager",version:CFG.version,code:"SMW",getContext:function(){var runtime=LMRuntime.current();return {environment:runtime.environment,user:runtime.user,sdkMode:S.live?"LIVE":"NO-SDK",records:S.recCount};}});LMCriticalErrors.markReady();}
+    return loadData();
+  }).catch(function(error){
+    if(generation!==bootGeneration)return false;
+    S.live=false;S.loadBlocked=true;LMPerf.end("settings:init",{ok:false});setMode("Connection failed","error");$("wrap").innerHTML='<div class="banner bad"><div><b>Could not connect to Creator</b>'+esc(errText(error))+'</div></div>';diag("Creator init error",error);return false;
+  }).finally(function(){if(generation===bootGeneration){booting=false;syncControls();syncMode();LMPerf.end("settings:startup",{ok:S.live&&S.ready&&!S.loadBlocked});}});
+}
+boot();
+
+
+/* Repository design: real keyed numeric values, presentation only. */
+if(window.LMNumberSurfaces)window.__numberTransitions=LMNumberSurfaces.install("settings-manager",{state:function(){return S;},ready:function(){return !!(S.ready);},actor:function(){return S.perms||S.acc||null;}});
+if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("settings-manager",{state:function(){return S;},ready:function(){return !!(S.ready);},actor:function(){return S.perms||S.acc||null;}});
+
+})();
+</script>
+</body>
+</html>

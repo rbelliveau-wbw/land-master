@@ -31,8 +31,8 @@ next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com'
 // Historical routes retain their captured safeguards; new configuration has no
 // budget test controls, marker, amount cap or self-approval exception.
 assert.throws(()=>api.assertPublish(config.policies[0],[]),/no longer supported/);
-assert.equal(admin.split('return {open:open};').length,2);
-vm.runInContext(admin.replace('return {open:open};',`return {open:open,editor:editor,policyData:policyData,preview:preview,
+assert.equal(admin.split('return {open:open,mount:mount,navigate:navigate,canLeave:canLeave,state:state};').length,2);
+vm.runInContext(admin.replace('return {open:open,mount:mount,navigate:navigate,canLeave:canLeave,state:state};',`return {open:open,editor:editor,policyData:policyData,preview:preview,
  fixture:function(value){config=value.config;editing=value.editing;draft=value.draft;card=value.card||null;panel=value.panel||null;policyReady=value.policyReady!==false;scope='frontend-fixture';busy=false;actorId='12';},
  state:function(){return {draft:draft,config:config};}};`),c);
 let sent;const nodes={};const uiCard={querySelector:selector=>nodes[selector]||(nodes[selector]={disabled:false,innerHTML:'',textContent:''})};
