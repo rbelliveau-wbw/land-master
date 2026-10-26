@@ -123,7 +123,7 @@
 #mx tbody tr.catr td,#mx tbody.approval-track-locked tr.catr td{background:#f0f5fb;border-color:#dce6f1}
 #mx tbody tr.catr:hover td{background:#eaf1fa}#mx tr.catr td.unap-ro{background:#f7f9fc!important}
 .cat-toolbar-row{display:flex;align-items:center;flex-wrap:wrap;gap:11px;width:100%;min-width:0}.cat-filter-bar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;flex:1 1 420px;min-width:0}
-.cat-toolbar-search{flex:1 1 240px;min-width:180px;max-width:none}.cat-toolbar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto;flex-wrap:wrap}
+.cat-toolbar-search{display:flex;align-items:center;gap:10px;flex:1 1 350px;min-width:300px;max-width:none}.cat-toolbar-search #itemSearch{flex:1;min-width:0}.cat-toolbar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto;flex-wrap:wrap}
 .cat-tsw{max-width:100%;flex-wrap:wrap}.cat-tsw>*{font-size:11px}.cfl{font-size:9px}
 .cat-toolbar-actions .expand-toggle,.cat-toolbar-actions .project-rates-toggle{height:33px;font-size:10.5px;box-shadow:none;padding:0 11px}
 .cat-toolbar-search #itemSearch{height:33px!important;font-size:11px!important;border-radius:8px!important;background-color:#f7f9fc!important}

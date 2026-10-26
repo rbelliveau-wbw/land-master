@@ -35,4 +35,5 @@ assert.equal(elements.budgetHideEmpty['aria-checked'],'false');
 context.S.hideEmptyItems=true;context.budgetModsReady=()=>false;context.applyBudgetItemFilters();
 assert.equal(hidden(rows[0]),false,'incomplete modification data cannot hide a row');
 assert.match(source,/data-budget-item-ids/,'all-phase rows retain native item identities');
+assert.match(source,/<div class="cat-toolbar-search">\s*<input[^>]+>\s*<button class="budget-hide-empty"/,'the switch stays inside the same wrapping group as Search');
 console.log('Budget Hide Empty: phase/all-phase values, credits, actuals, cancelling modifications, drafts, unknown data, search, categories and restoration passed.');

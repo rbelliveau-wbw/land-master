@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.79"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.80"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.79"></script>
-<script src="po-grid.js?v=122.29.79"></script>
-<script src="po-controller.js?v=122.29.79"></script>
-<script src="po-progress.js?v=122.29.79"></script>
-<script src="po-ui.js?v=122.29.79"></script>
-<script src="request-attachments.js?v=122.29.79"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.79">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.79">
+<script src="po-domain.js?v=122.29.80"></script>
+<script src="po-grid.js?v=122.29.80"></script>
+<script src="po-controller.js?v=122.29.80"></script>
+<script src="po-progress.js?v=122.29.80"></script>
+<script src="po-ui.js?v=122.29.80"></script>
+<script src="request-attachments.js?v=122.29.80"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.80">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.80">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1836,15 +1836,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.79">
-<script src="success-feedback.js?v=122.29.79"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.79">
-<script src="interaction-motion.js?v=122.29.79"></script>
-<script src="interaction-surfaces.js?v=122.29.79"></script>
-<script src="number-edit-commit.js?v=122.29.79"></script>
-<script src="number-transitions.js?v=122.29.79"></script>
-<script src="number-surfaces.js?v=122.29.79"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.79">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.80">
+<script src="success-feedback.js?v=122.29.80"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.80">
+<script src="interaction-motion.js?v=122.29.80"></script>
+<script src="interaction-surfaces.js?v=122.29.80"></script>
+<script src="number-edit-commit.js?v=122.29.80"></script>
+<script src="number-transitions.js?v=122.29.80"></script>
+<script src="number-surfaces.js?v=122.29.80"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.80">
 </head>
 <body>
 
@@ -2134,9 +2134,9 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
             <div class="tier-filter-bar" id="tierFilterBar"></div>
             <div class="cat-toolbar-search">
               <input type="text" id="itemSearch" placeholder="Search line items by name, code, or description…" style="width:100%;height:38px;border:1px solid var(--line);border-radius:999px;padding:0 14px 0 36px;font-size:13px;color:var(--text);outline:none;background:var(--card) url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E&quot;) no-repeat 12px center">
+              <button class="budget-hide-empty" id="budgetHideEmpty" type="button" role="switch" aria-checked="false" title="Hide line items with no budget, modification or actual amounts"><span class="tgl" aria-hidden="true"></span>Hide Empty</button>
             </div>
             <div class="cat-toolbar-actions">
-              <button class="budget-hide-empty" id="budgetHideEmpty" type="button" role="switch" aria-checked="false" title="Hide line items with no budget, modification or actual amounts"><span class="tgl" aria-hidden="true"></span>Hide Empty</button>
               <button class="expand-toggle" id="expandToggle" type="button" title="Expand or collapse all categories">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
                 <span id="expandToggleText">Expand all</span>
@@ -2734,7 +2734,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.79", code:"BMW",
+  widget:"Budget Manager", version:"122.29.80", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -14067,7 +14067,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.79",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.80",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;
