@@ -71,9 +71,27 @@ scope/count changes, timeouts and late replies, no replay, filtered-field edits,
 partial retries and read-only recovery. UI checks use the actual progress source
 at normal and short desktop heights with 135 rows and a long actual error.
 
-Required full validation/build, deployment and live elapsed-time evidence are
-recorded on completion. Native testing uses the already-authorized empty ARB
-Notice column for the same 135 Series 125 records, without introducing dates.
+Full validation and the Pages build passed locally and in CI. Production release
+commit `ccc7abaf9c8d40466a953216feaf8175437cb141` passed CI run
+`40346697870` and Pages deployment `40346698158`.
+
+The native .30 test used the already-authorized empty ARB Notice column for all
+135 Series 125 records. All 135 were confirmed saved by the first complete
+observation, 19.765 seconds after Apply. This is an observed upper bound, not a
+server processing duration. The modal showed all three stages Done, 135 Saved
+rows, and "135 of 135 records saved." The 800-record timing remains unmeasured
+in production; its four-write/16-call result is a regression fixture.
+
+A subsequent full production reload returned all 135 unique records with ARB
+Notice dates blank. The other four date columns matched the earlier baseline
+exactly. The loaded asset version was 19.17.30 with HTML fingerprint
+`6nf8-e25cbcd5`.
+
+Local evidence is in `reports/2026-10-26-tax-date-clear/`: native result and
+timing (`live-fast-30-result.txt`, `live-fast-30-timing.json`), screenshot
+`production-compact-saved-135.jpg`, full validation/build logs, the release
+patch and final reload evidence. The screenshot includes the surrounding
+production application and the compact internally scrolling results list.
 
 The 19.17.29 native test acknowledged all 135 updates, then failed during the
 long OR-ID confirmation GET with "Creator did not return a readable response."
