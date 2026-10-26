@@ -16,6 +16,13 @@ by +N. Refresh the title when the value changes or clears. Preserve the existing
 lookup click/edit behavior, native IDs and save paths. A title is presentation
 only and must never trigger a read or write.
 
+Tax Parcel Management keeps selection actions in the existing pagination row,
+to the left of the page controls. Reserve the row height when no records are
+selected so selecting or clearing records never pushes the report down. Keep
+Clear beside Select All with the selection group. On tighter desktop widths,
+scroll that action group internally instead of wrapping it into another row.
+Selecting records changes presentation only; retain the existing write guards.
+
 Legal and Construction keep their module slider menu at the left of the page
 toolbar above the filters, with New and Refresh at the right. User direction
 October 20, 2026 supersedes the earlier centered-header placement. Use the exact

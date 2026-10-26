@@ -162,6 +162,24 @@ tfoot#tableFooter td{background:var(--surface);border-top:2px solid var(--line-s
   flex-shrink:0;
 }
 .top-pagination-wrap.hidden{display:none}
+.report-controls{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 12px;background:linear-gradient(180deg,#fff 0%,#f7f9fc 100%);border-bottom:1px solid var(--line);flex-shrink:0;min-width:0}
+.selection-slot{display:flex;align-items:center;flex:1 1 0;min-width:0;height:44px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:thin}
+.selection-slot:has(#bulkBar.hidden){overflow-x:hidden}
+.selection-slot::-webkit-scrollbar,.report-controls>.top-pagination-wrap::-webkit-scrollbar{height:6px}
+#bulkBar{flex:0 0 auto;flex-wrap:nowrap;gap:5px;margin:0;padding:3px 8px;background:var(--navy);border-radius:8px;white-space:nowrap}
+#bulkBar.hidden{display:flex!important;visibility:hidden;pointer-events:none}
+#bulkBar .fbulk-count{white-space:nowrap;font-variant-numeric:tabular-nums}
+#bulkBar .fbulk-btn{padding:0 8px;font-size:11px}
+#bulkBar .fbulk-select{height:28px}
+#bulkBar .bulk-clear svg{display:block;flex-shrink:0;box-sizing:border-box;padding:0}
+.report-controls>.top-pagination-wrap{flex:0 0 auto;max-width:60%;min-width:0;height:44px;padding:0;background:none;border:0;overflow-x:auto;overflow-y:hidden;justify-content:flex-start;scrollbar-width:thin}
+.report-controls>.top-pagination-wrap:has(.loading-card){height:auto}
+.report-controls .top-pagination-card{flex:0 0 auto;flex-wrap:nowrap}
+@media(min-width:2400px){
+  .report-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:12px}
+  .selection-slot{grid-column:1}
+  .report-controls>.top-pagination-wrap{grid-column:2;max-width:none}
+}
 .top-pagination-card{
   display:flex;
   align-items:center;
@@ -808,14 +826,14 @@ tr.bulk-on{background:var(--psoft)}
 .unique-note::before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor}
 .unique-note[data-state="duplicate"],.unique-note[data-state="invalid"],.unique-note[data-state="error"]{color:#b42318;font-weight:700}
 </style>
-<script src="success-feedback.js?v=19.17.30"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.30">
-<script src="interaction-motion.js?v=19.17.30"></script>
-<script src="interaction-surfaces.js?v=19.17.30"></script>
-<script src="number-edit-commit.js?v=19.17.30"></script>
-<script src="number-transitions.js?v=19.17.30"></script>
-<script src="number-surfaces.js?v=19.17.30"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.30">
+<script src="success-feedback.js?v=19.17.31"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.31">
+<script src="interaction-motion.js?v=19.17.31"></script>
+<script src="interaction-surfaces.js?v=19.17.31"></script>
+<script src="number-edit-commit.js?v=19.17.31"></script>
+<script src="number-transitions.js?v=19.17.31"></script>
+<script src="number-surfaces.js?v=19.17.31"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.31">
 </head>
 <body>
 
@@ -976,8 +994,14 @@ tr.bulk-on{background:var(--psoft)}
       <div class="toolbar-row" id="toolbarRow2" style="display:none;margin-top:6px">
         <div id="activeChips" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
       </div>
-      <!-- Bulk action row (visible when rows selected) -->
-      <div class="toolbar-row hidden" id="bulkBar" style="margin-top:6px;background:var(--navy);border-radius:8px;padding:5px 10px;gap:6px;flex-wrap:wrap">
+      <div class="bulk-progress hidden" id="bulkProgressWrap"><i id="bulkProgress"></i></div>
+    </div>
+
+    <!-- Stable report controls: selection at left, pagination beside it. -->
+    <div class="report-controls" id="reportControls">
+      <div class="selection-slot">
+      <!-- Selected-record actions retain their space when empty. -->
+      <div class="toolbar-row hidden" id="bulkBar" role="toolbar" aria-label="Selected parcel actions">
         <span class="fbulk-count" id="fbulkCount" style="font-size:12px;font-weight:700;color:#fff;margin-right:2px">0 selected</span>
         <div class="fbulk-sep"></div>
         <button class="fbulk-btn copper" onclick="bulkQuickSet('Protest Recommended')">✓ Protest</button>
@@ -996,16 +1020,14 @@ tr.bulk-on{background:var(--psoft)}
         </select>
         <button class="fbulk-btn primary" id="bulkApplyBtn" onclick="applyBulkStatus()">Apply</button>
         <div class="fbulk-sep"></div>
-        <button class="fbulk-btn" onclick="openBulkEdit()" style="background:rgba(255,255,255,.22);font-weight:700;border-color:rgba(255,255,255,.4)">✎ Bulk Edit</button>
+        <button class="fbulk-btn" id="bulkEditBtn" onclick="openBulkEdit()" style="background:rgba(255,255,255,.22);font-weight:700;border-color:rgba(255,255,255,.4)">✎ Bulk Edit</button>
         <div class="fbulk-sep"></div>
         <button class="fbulk-btn" onclick="selectAllVisible()">Select All</button>
-        <button class="fbulk-btn" onclick="clearBulkSelection()" style="padding:0 8px;margin-left:auto">✕ Clear</button>
+        <button class="fbulk-btn bulk-clear" onclick="clearBulkSelection()"><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Clear</button>
       </div>
-      <div class="bulk-progress hidden" id="bulkProgressWrap"><i id="bulkProgress"></i></div>
+      </div>
+      <div class="top-pagination-wrap hidden" id="topPager"></div>
     </div>
-
-    <!-- Top centered pagination -->
-    <div class="top-pagination-wrap hidden" id="topPager"></div>
 
     <!-- Table -->
     <div class="table-wrap" id="tableWrap">
@@ -1373,7 +1395,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.30',
+  version: '19.17.31',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -1480,7 +1502,7 @@ const Tax=LMTaxPreparation.create({reports:CONFIG.reports,forms:CONFIG.forms,max
  publishReferences:function(rows){state.data.rawLand=mapRawLand(rows.rawLand);state.data.companies=mapCompanies(rows.companies);state.data.subdivisions=mapSubdivisions(rows.subdivisions);state.data.jurisdictions=mapJurisdictions(rows.jurisdictions);state.projectsAvailable=Array.isArray(rows.projects);state.data.projects=state.projectsAvailable?mapProjects(rows.projects):[];},
  publishScope:function(rows,expected,criteria){state.data.parcelYears=mapParcelYears(rows);enrichAndResolveDisplayNames();state.searchResultExpectedCount=expected;state.lastSearchCriteria=criteria;state.loading=false;state.rowsLoaded=true;state.rowsDirty=false;pruneBulkSelection();renderAll();},
  onRecovery:function(op,raw){var list=op.report===CONFIG.reports.rawLand?state.data.rawLand:state.data.parcelYears,mapped=op.report===CONFIG.reports.rawLand?mapRawLand([raw])[0]:mapParcelYears([raw])[0],current=list.find(function(row){return row.id===op.id;});if(current)Object.assign(current,mapped);enrichAndResolveDisplayNames();},
- onBatchOpen:function(ledger){state.taxLedgerId=ledger.id;TaxUI.open(ledger);},onBatchProgress:function(ledger){ledger.rows.forEach(function(row){if(row.state==='verified'){delete state.bulkSelectedIds[row.id];delete state.propBulkSelectedIds[row.id];}});TaxUI.patch(ledger);},onBatchFinish:function(ledger){return TaxUI.finish(ledger);}
+ onBatchOpen:function(ledger){state.taxLedgerId=ledger.id;var editor=$('bulkEditOverlay'),fromEditor=editor&&!editor.classList.contains('hidden');if(fromEditor)editor.classList.add('hidden');TaxUI.open(ledger,fromEditor?$('bulkEditBtn'):null);},onBatchProgress:function(ledger){ledger.rows.forEach(function(row){if(row.state==='verified'){delete state.bulkSelectedIds[row.id];delete state.propBulkSelectedIds[row.id];}});TaxUI.patch(ledger);},onBatchFinish:function(ledger){return TaxUI.finish(ledger);}
 });
 async function taxRecheckReviews(){
  var snapshot=Tax.snapshot();if(snapshot.pending||snapshot.nativeWrites||snapshot.verificationReads||snapshot.batchActive)return false;var created=[];
@@ -2000,7 +2022,7 @@ function describeResp(resp){
 
 
 
-function fetchRecordCount(reportName,criteria){return Tax.count(reportName,criteria);}
+function fetchRecordCount(reportName,criteria,isCancelled){return Tax.count(reportName,criteria,isCancelled);}
 
 
 
@@ -2948,7 +2970,7 @@ function renderToolbarRow2(){
     state.companyFilters.forEach(function(c){
     chips+='<span class="achip" style="background:#2e4a6e">'+esc(c)+'<span class="x" onclick="toggleCompanyFilter(\''+jsArg(c)+'\')">×</span></span>';
   });
-  if(state.search)chips+='<span class="achip" style="background:var(--slate)">“'+esc(state.search)+'”<span class="x" onclick="document.getElementById(\'mainSearch\').value=\'\';state.search=\'\';markParcelRowsDirty(\'Search cleared. Counts are refreshing; click Search to load rows.\');renderAll();refreshProductionCounts()">×</span></span>';
+  if(state.search)chips+='<span class="achip" style="background:var(--slate)">“'+esc(state.search)+'”<span class="x" onclick="document.getElementById(\'mainSearch\').value=\'\';state.search=\'\';markParcelRowsDirty(\'Search cleared. Click Search to load rows and counts.\');renderAll();refreshProductionCounts()">×</span></span>';
   if(hasFilters)chips+='<button class="btn sm" onclick="clearAllFilters()" style="margin-left:2px">Clear all</button>';
   if(chipsEl){chipsEl.innerHTML=chips;chipsEl.style.display=hasFilters?'flex':'none';}
 }
@@ -3312,6 +3334,8 @@ function switchTab(tab){
   $('tableWrap').style.display=isParcels?'':'none';
   var topPager=$('topPager');
   if(topPager) topPager.style.display=isParcels?'':'none';
+  var reportControls=$('reportControls');
+  if(reportControls)reportControls.style.display=isParcels?'':'none';
   var pp=$('propPanel');
   if(pp){pp.className='prop-panel'+(isParcels?'':' active');}
   if(!isParcels) renderPropertyTab();
@@ -4029,6 +4053,7 @@ function buildParcelCriteria(opts){
 }
 
 function markParcelRowsDirty(message){
+  refreshProductionCounts();
   state.rowsLoaded=false;
   state.rowsDirty=true;
   state.data.parcelYears=[];
@@ -4038,21 +4063,17 @@ function markParcelRowsDirty(message){
   if(message)setMessage(message);
 }
 
-// Public entry point — DEBOUNCED. Rapid filter toggles (clicking several companies/
-// counties in a row) would otherwise each fire ~11 server count calls and trip Zoho's
-// per-minute API limit (error 2955 / HTTP 429). We collapse them into a single refresh
-// once the user pauses. The countToken inside still cancels any stale in-flight refresh.
+// Filters and writes invalidate counts. Only Search starts a new count cycle.
 var _countsDebounceTimer=null;
 function refreshProductionCounts(){
-  // Show the loading state immediately so the UI feels responsive…
-  state.countsLoading=true;
-  // …but defer the actual network calls until clicks settle.
-  ++state.countToken; // cancel any in-flight refresh right away
+  ++state.countToken;
   if(_countsDebounceTimer)clearTimeout(_countsDebounceTimer);
-  _countsDebounceTimer=setTimeout(function(){
-    _countsDebounceTimer=null;
-    _refreshProductionCountsNow();
-  }, CONFIG.countDebounceMs||450);
+  _countsDebounceTimer=null;
+  state.countsLoading=false;
+  state.lastCountCriteria='';
+  state.serverCounts.currentTotal=null;state.serverCounts.status={};state.serverCounts.untriaged=null;state.serverCounts.activeProtests=null;state.serverCounts.paid=null;state.serverCounts.ag=null;
+  clearFacetCounts();
+  if(!state.loading)clearLoadProgress();
   return Promise.resolve();
 }
 
@@ -4070,6 +4091,9 @@ function _refreshProductionCountsNow(){
 
   var baseNoStatus=buildParcelCriteria({ignoreStatus:true});
   var exactCurrent=buildParcelCriteria({});
+  var statusCriteria={};STATUS_LIST.forEach(function(s){statusCriteria[s]=buildParcelCriteria({ignoreStatus:true,statusOverride:s});});
+  var agCrit=andCriteria([baseNoStatus, '(Ag_Exempt == true)']);
+  var facetRequest={token:token,current:exactCurrent,bases:{arb:buildParcelCriteria({ignoreArb:true}),county:buildParcelCriteria({ignoreCounty:true})}};
   state.lastCountCriteria=exactCurrent;
   var statusCounts={};
   state.serverCounts.currentTotal=null;state.serverCounts.status={};state.serverCounts.untriaged=null;state.serverCounts.activeProtests=null;state.serverCounts.paid=null;state.serverCounts.ag=null;
@@ -4084,7 +4108,7 @@ function _refreshProductionCountsNow(){
     return delay(CONFIG.countDelayMs||0).then(function(){
       assertCountsOwner();countStep++;
       setLoadProgress('Loading counts', countStep+' of '+countTotal+' · '+label, (countStep/countTotal)*100);
-      return fetchRecordCount(CONFIG.reports.parcelYears, criteria).then(function(n){
+      return fetchRecordCount(CONFIG.reports.parcelYears, criteria, function(){return !ownsCounts();}).then(function(n){
         assertCountsOwner();diag('Production count '+label, {criteria:criteria||'(none)', count:n});
         return n;
       });
@@ -4117,7 +4141,7 @@ function _refreshProductionCountsNow(){
         // rapid filter toggling ran several chains at once (audit trail showed
         // status counts landing 3-8ms apart) and blew Zoho's per-minute limit.
         assertCountsOwner();
-        var c=buildParcelCriteria({ignoreStatus:true,statusOverride:s});
+        var c=statusCriteria[s];
         return countOne('status '+s, c).then(function(n){
           assertCountsOwner();statusCounts[s]=n;
           // Fill the status list one row at a time so it visibly progresses.
@@ -4133,7 +4157,6 @@ function _refreshProductionCountsNow(){
     state.serverCounts.untriaged=sumKnown(['Awaiting Assessment','Assessment Received']);
     state.serverCounts.activeProtests=sumKnown(['Protest Recommended','Under Protest']);
     state.serverCounts.paid=sumKnown(['Paid (Protested)','Paid (Arbitration)','Paid (No Protest)']);
-    var agCrit=andCriteria([baseNoStatus, '(Ag_Exempt == true)']);
     return countOne('AG', agCrit);
   }).then(function(ag){
     assertCountsOwner();
@@ -4141,12 +4164,9 @@ function _refreshProductionCountsNow(){
     state.countsLoading=false;
     clearLoadProgress();
     renderAll();
-    // Preload County (~12) and Arbitrate (3) ONCE, so the first open of either
-    // dropdown already has its numbers. After that they refresh lazily when the
-    // dropdown is opened — re-running all 15 on every filter toggle was a burst
-    // on top of this chain's own 11 and is exactly what tripped the rate limit.
-    if(!_didPreloadFacets){_didPreloadFacets=true;preloadSmallFacetCounts();}
-    return state.serverCounts;
+    // Finish this explicit Search cycle in sequence. Opening or changing a
+    // dropdown only displays these captured counts and never starts requests.
+    return Promise.resolve(preloadSmallFacetCounts(facetRequest)).then(function(){return state.serverCounts;});
   }).catch(function(err){
     // A silent reject means a newer chain superseded this one — it owns the
     // loading state now, so don't clear the chrome out from under it.
@@ -4159,7 +4179,7 @@ function _refreshProductionCountsNow(){
   });
 }
 
-function loadReferenceDataOnly(){return Tax.reloadReferences().then(function(result){if(result.published){populateCountyDatalist();populateCompanySelect('atCompany');renderAll();refreshProductionCounts();}return result;}).catch(function(err){setMessage('Failed loading lookup data: '+describeResp(err),'err');throw err;});}
+function loadReferenceDataOnly(){refreshProductionCounts();return Tax.reloadReferences().then(function(result){if(result.published){populateCountyDatalist();populateCompanySelect('atCompany');renderAll();}return result;}).catch(function(err){setMessage('Failed loading lookup data: '+describeResp(err),'err');throw err;});}
 
 function reloadAllData(){
   return loadReferenceDataOnly();
@@ -4174,11 +4194,12 @@ function runParcelSearch(){
  if(!Tax.navigationAllowed())return Promise.resolve({published:false,blocked:true});
     if($('mainSearch'))state.search=normalizeSearchInput($('mainSearch').value);
     const criteria=buildParcelCriteria({});
-    return Tax.search(criteria).then(function(result){if(result.published)setMessage('Loaded '+result.rows.length+' matching parcel rows.','ok');return result;}).catch(function(err){setMessage('Search failed: '+describeResp(err),'err');throw err;});
+    refreshProductionCounts();
+    return Tax.search(criteria).then(function(result){if(result.published){setMessage('Loaded '+result.rows.length+' matching parcel rows.','ok');_refreshProductionCountsNow();}return result;}).catch(function(err){setMessage('Search failed: '+describeResp(err),'err');if(err.recordLimit&&criteria===buildParcelCriteria({}))_refreshProductionCountsNow();throw err;});
   }
 
 function setYear(y){
-  if(!Tax.navigationAllowed())return false;state.yearFilter=y;markParcelRowsDirty('Filter changed. Counts are refreshing; click Search to load rows.');clearFacetCounts();renderAll();refreshProductionCounts();}
+  if(!Tax.navigationAllowed())return false;state.yearFilter=y;markParcelRowsDirty('Filter changed. Click Search to load rows and counts.');clearFacetCounts();renderAll();refreshProductionCounts();}
 // MULTI-select: the pills this replaced were effectively single-select (each
 // click replaced the array). The facet dropdown is a checklist, so a second
 // pick adds rather than swaps.
@@ -4254,7 +4275,7 @@ function renderSubdivFacetDrop(){
 }
 
 function clearAllFilters(){
-  if(!Tax.navigationAllowed())return false;state.statusFilters=[];state.arbFilters=[];state.agOnly=false;state.search='';state.yearFilter='2026';state.countyFilters=[];state.companyFilters=[];state.subdivisionFilters=[];if($('mainSearch'))$('mainSearch').value='';markParcelRowsDirty('Filters cleared. Counts are refreshing; click Search to load rows.');clearFacetCounts();renderAll();refreshProductionCounts();}
+  if(!Tax.navigationAllowed())return false;state.statusFilters=[];state.arbFilters=[];state.agOnly=false;state.search='';state.yearFilter='2026';state.countyFilters=[];state.companyFilters=[];state.subdivisionFilters=[];if($('mainSearch'))$('mainSearch').value='';markParcelRowsDirty('Filters cleared. Click Search to load rows and counts.');clearFacetCounts();renderAll();refreshProductionCounts();}
 
 function getCompanyOptions(searchQ){
   var opts=state.data.companies.map(function(c){return {name:c.name,id:c.id,count:null,key:canonicalKey(c.name)};}).filter(function(o){return !!o.name;});
@@ -4343,18 +4364,19 @@ var FACET_RENDER={status:renderStatusFacetDrop,county:renderCountyFacetDrop,comp
 // County and Arbitrate are short enough for exact per-option server counts, and
 // preloading them means their numbers are on screen the moment the dropdown opens.
 // (Status already gets its per-status counts from the production count chain.)
-var _didPreloadFacets=false;
-function preloadSmallFacetCounts(){
+function preloadSmallFacetCounts(request){
   var seen={};
   [].concat(state.data.rawLand,state.data.subdivisions,state.data.parcelYears).forEach(function(x){if(x.county)seen[x.county]=1;});
   var counties=Object.keys(seen).sort();
-  return refreshFacetCounts('arb', ARB_LIST.map(function(a){return {value:a,key:arbCountKey(a)};}))
-    .then(function(){return refreshFacetCounts('county', counties.map(function(c){return {value:c,key:canonicalKey(c)};}));});
+  return refreshFacetCounts('arb', ARB_LIST.map(function(a){return {value:a,key:arbCountKey(a)};}),request)
+    .then(function(){return refreshFacetCounts('county', counties.map(function(c){return {value:c,key:canonicalKey(c)};}),request);});
 }
 
-function refreshFacetCounts(dim, options){
+function refreshFacetCounts(dim, options, request){
+  if(!request||request.token!==state.countToken||request.current!==buildParcelCriteria({}))return Promise.resolve();
   var ig={}; ig[FACET_IGNORE[dim]]=true;
-  var base=buildParcelCriteria(ig);
+  var base=request.bases[dim];
+  if(typeof base!=='string'||base!==buildParcelCriteria(ig))return Promise.resolve();
   var cached=state.facetCounts[dim];
   if(cached&&cached.key===base&&(cached.settled||!cached.partial))return Promise.resolve();
   // A chain already running for THESE criteria is fine — let it finish. One
@@ -4375,7 +4397,7 @@ function refreshFacetCounts(dim, options){
   state.facetCountsInflight[dim]=base;
   var token=state.facetCountTokens[dim]=(state.facetCountTokens[dim]||0)+1;
   var vals={};
-  function ownsFacet(){return token===state.facetCountTokens[dim]&&state.facetCountsInflight[dim]===base&&buildParcelCriteria(ig)===base;}
+  function ownsFacet(){return request.token===state.countToken&&request.current===buildParcelCriteria({})&&token===state.facetCountTokens[dim]&&state.facetCountsInflight[dim]===base&&buildParcelCriteria(ig)===base;}
   function assertFacetOwner(){if(!ownsFacet())throw {silent:true};}
   // repaint() re-runs the dropdown renderer, which calls back into
   // refreshFacetCounts. The guards below stop that becoming a new chain, but the
@@ -4398,7 +4420,7 @@ function refreshFacetCounts(dim, options){
       // unspaced burst on top of that chain, which is how the 2955 rate limit
       // got hit before.
       return delay(CONFIG.countDelayMs||0).then(function(){assertFacetOwner();
-        return fetchRecordCount(CONFIG.reports.parcelYears, andCriteria([base, clause])).then(function(n){
+        return fetchRecordCount(CONFIG.reports.parcelYears, andCriteria([base, clause]),function(){return !ownsFacet();}).then(function(n){
           assertFacetOwner();vals[opt.key]=n; publish(true); repaint();
         });
       });

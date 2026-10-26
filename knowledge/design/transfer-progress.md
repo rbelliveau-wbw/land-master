@@ -178,6 +178,12 @@ Use flex shrink with `min-height:0` through the body and results region so short
 desktop windows retain their Done/Close actions. Keep the same compact shell
 for pending, successful and review states.
 
+Place Tax's save dialog near the top of the widget viewport, with 32px top
+spacing. Close its Bulk Edit form when a validated batch starts so the progress
+dialog is the only open overlay. Keep precommit validation errors in the form.
+Restore focus to a visible report action without scrolling the page; closing
+the result must release its background locks and retain normal page scrolling.
+
 Use ordinary labels: **Saving changes**, **N selected records**, **N of M records
 saved**, and the stages **Checking records**, **Saving changes**, **Confirming
 updates**. Result rows say Saved, Checking…, Waiting, Saving…, Needs review or

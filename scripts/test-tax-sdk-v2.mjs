@@ -43,6 +43,20 @@ function harness(options={}){
 }
 async function ready(options){const h=harness(options),result=await h.c.__taxBoot;assert.equal(result.published,true);assert.equal(h.widget.state.referenceLoaded,true);assert.equal(h.widget.state.rowsLoaded,false);return h;}
 
+// Opening, refreshing references, changing filters and opening dropdowns never
+// queue parcel counts. Search publishes its complete rows before aggregate work.
+{
+ const h=await ready(),parcelCalls=()=>h.calls.filter(call=>call.config.report_name==='All_Tax_Parcel_Years');assert.equal(parcelCalls().length,0);assert.ok(h.calls.some(call=>call.method==='count'&&call.config.report_name==='All_Property'),'reference completeness counts stay enabled');
+ h.c.setYear('2025');h.c.toggleCompanyFilter('Fixture Company');h.c.renderCountyFacetDrop();h.c.renderArbFacetDrop();h.c.clearAllFilters();await h.c.reloadAllData();await drain();assert.equal(parcelCalls().length,0);assert.equal(h.widget.state.serverCounts.currentTotal,null);assert.equal(h.widget.state.countsLoading,false);assert.equal([...h.timers.values()].some(timer=>timer.ms===450),false);
+ const result=await h.c.runParcelSearch();assert.equal(result.published,true);assert.equal(h.widget.state.data.parcelYears.length,1);assert.equal(parcelCalls().filter(call=>call.method==='records').length,1);assert.equal(parcelCalls().filter(call=>call.method==='count').length,2,'only counted complete Search reads precede row publication');
+ h.tick(125);await drain();assert.equal(parcelCalls().filter(call=>call.method==='count').length,3,'the explicit aggregate cycle follows row publication');assert.equal(h.widget.state.serverCounts.currentTotal,1);h.c.toggleCompanyFilter('Fixture Company');h.tick(125);await drain();assert.equal(parcelCalls().filter(call=>call.method==='count').length,3,'a changed filter cancels the remaining captured count chain');assert.equal(h.widget.state.serverCounts.currentTotal,null);assert.equal(h.widget.state.countsLoading,false);
+}
+// A broad explicit Search retains the800-row guard but still computes the
+// authoritative matching count; no report rows are fetched over the cap.
+{
+ const h=await ready({count:(config,storage)=>config.report_name==='All_Tax_Parcel_Years'?801:storage[config.report_name].length});await assert.rejects(h.c.runParcelSearch(),error=>error.recordLimit===800&&error.recordsCount===801);assert.equal(h.calls.filter(call=>call.method==='records'&&call.config.report_name==='All_Tax_Parcel_Years').length,0);assert.equal(h.widget.Tax.snapshot().expected,801);h.tick(125);await drain();assert.equal(h.widget.state.serverCounts.currentTotal,801);assert.match(h.nodes.get('messageBar').textContent,/Narrow the search below 800/);
+}
+
 // Definite field-validation rejection retains an editable form, exposes Creator's
 // actual reason and allows only a deliberate corrected submit. Success still
 // requires the exact returned string ID and counted readback.
@@ -159,7 +173,7 @@ for(const kind of ['missing','duplicate','numeric','cursor']){
 }
 // Starting a captured write invalidates pending old headline/facet counts instead of retaining apparent numeric totals.
 {
- const pause=held(),h=await ready({update:(cfg,apply)=>pause.promise.then(()=>{apply();return{code:3000,data:{ID:cfg.id}};})});await h.c.runParcelSearch();h.widget.state.serverCounts.currentTotal=17;h.widget.state.serverCounts.paid=17;h.widget.state.facetCounts.status={vals:{old:17}};const oldToken=h.widget.state.countToken;const saving=h.c.inlineSave(ID,{Market_Value:'999'});await drain();assert.ok(h.widget.state.countToken>oldToken);assert.equal(h.widget.state.serverCounts.currentTotal,null);assert.equal(h.widget.state.serverCounts.paid,null);assert.equal(Object.keys(h.widget.state.facetCounts).length,0);pause.resolve();await saving;assert.ok([...h.timers.values()].some(timer=>timer.ms===450));
+ const pause=held(),h=await ready({update:(cfg,apply)=>pause.promise.then(()=>{apply();return{code:3000,data:{ID:cfg.id}};})});await h.c.runParcelSearch();h.widget.state.serverCounts.currentTotal=17;h.widget.state.serverCounts.paid=17;h.widget.state.facetCounts.status={vals:{old:17}};const oldToken=h.widget.state.countToken;const saving=h.c.inlineSave(ID,{Market_Value:'999'});await drain();assert.ok(h.widget.state.countToken>oldToken);assert.equal(h.widget.state.serverCounts.currentTotal,null);assert.equal(h.widget.state.serverCounts.paid,null);assert.equal(Object.keys(h.widget.state.facetCounts).length,0);pause.resolve();await saving;assert.equal([...h.timers.values()].some(timer=>timer.ms===450),false,'write settlement never restarts automatic counts');assert.equal(h.widget.state.countsLoading,false);
 }
 // Unknown native destination halts queued sends; per-ID verified/rejected/unknown/not-sent ledger survives close/recheck/retry.
 {
