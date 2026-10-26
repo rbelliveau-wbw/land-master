@@ -1,4 +1,4 @@
-# Tax Center native bulk saves and compact progress — 19.17.29
+# Tax Center native bulk saves and compact progress — 19.17.30
 
 ## Problem and change
 
@@ -19,13 +19,14 @@ Every result must identify the exact unique destination set with valid native
 codes. Partial rejections and unknown responses retain their per-record results.
 Writes are never automatically replayed. Confirmed, rejected and not-sent rows
 remain distinct, and explicit recovery remains read-only. Fresh confirmation
-reads use exact acknowledged ID chunks rather than editable filter criteria;
-Company/Status edits can legitimately move successful rows out of those filters.
+reads refresh the complete captured scope and validate its ID set. Only records
+that legitimately leave a Company/Status filter need exact acknowledged-ID
+queries, using the existing Contracts pattern of 25 IDs with outer parentheses.
 No automatic editable-field comparison is added after native acknowledgement.
 
 135 identical edits now use one native update plus the counted preflight and
 counted confirmation read, seven calls in the focused fixture. The 800-record
-fixture uses four updates and 22 total calls when reads page at 200 rows.
+fixture uses four updates and 16 total calls when reads page at 200 rows.
 These request counts replace the earlier per-record timing estimate; live
 elapsed time is measured after deployment rather than promised from a mock.
 
@@ -57,7 +58,7 @@ rows, focus restoration, inert background and reduced motion remain intact.
   fields; the authorized live scenario clears only `Arbitration_Notice_Received`
   for Company Series 125, Tax Year 2026.
 - Creator functions, Custom APIs, schema and permissions: unchanged.
-- Frontend deployment: immutable 19.17.29, Development and Production mappings.
+- Frontend deployment: immutable 19.17.30, Development and Production mappings.
 - Creator backend publication: not required.
 - Rollback: map Tax Center Production to 19.17.28 and rebuild Pages.
 
@@ -73,6 +74,17 @@ at normal and short desktop heights with 135 rows and a long actual error.
 Required full validation/build, deployment and live elapsed-time evidence are
 recorded on completion. Native testing uses the already-authorized empty ARB
 Notice column for the same 135 Series 125 records, without introducing dates.
+
+The 19.17.29 native test acknowledged all 135 updates, then failed during the
+long OR-ID confirmation GET with "Creator did not return a readable response."
+It retained all records for review and did not resend the writes. The precise
+transport failure was not established; query size is a hypothesis. 19.17.30
+avoids that query for ordinary edits by reusing the proven complete scope read.
+It rejects foreign IDs or unrelated missing records and confirms only captured
+acknowledgements. Filter-changing edits use the proven short-query fallback.
+Regression fixtures reproduce rejected long queries, changed scope, missing
+records, 135/800 ordinary edits and filter-changing edits. Opaque native errors
+retain safe status/shape information while excluding response bodies.
 
 ## Primary SDK contract
 

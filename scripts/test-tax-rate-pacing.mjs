@@ -11,8 +11,8 @@ import {clone,REPORT,FIELD,ID,OTHER,row,rawThrottle,drain,held,ready,idsOf} from
  assert.ok(h.storage[REPORT].every(value=>value[FIELD]===''));assert.equal(h.tax.snapshot().reviews.length,0);assert.equal(h.tax.snapshot().verificationReads,0);assert.ok(h.now()<61000);
  for(const call of h.calls)assert.ok(h.calls.filter(value=>value.at>call.at-61000&&value.at<=call.at).length<=45,'all Tax native reads and writes share the45-request sliding budget');
  assert.equal(h.calls.filter(value=>value.method==='batch').length,1);assert.equal(h.calls.length-before,7,'three preflight reads + one batch write + three confirmation reads');
- assert.equal(h.calls.filter(value=>value.method==='records'&&/^\(ID ==/.test(value.config.criteria||'')).length,1,'one exact-selection row read replaces135 per-record reads');
- assert.equal(h.calls.filter(value=>value.method==='count'&&/^\(ID ==/.test(value.config.criteria||'')).length,2,'both counts confirm the full135-ID selection');
+ assert.equal(h.calls.filter(value=>value.method==='records'&&/^\(ID ==/.test(value.config.criteria||'')).length,0,'the complete original search read replaces135 per-record reads');
+ assert.equal(h.calls.filter(value=>value.method==='count'&&/^\(ID ==/.test(value.config.criteria||'')).length,0,'the complete original scope retains both counts');
  assert.equal(h.tax.closeProgress(ledger.id),true);
  const fresh=await h.finish(h.tax.search('(Tax_Year == 2026)'));assert.ok(fresh.rows.every(value=>value[FIELD]===''),'a fresh scope retains the persisted clears');
 }

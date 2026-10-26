@@ -16,6 +16,17 @@
     function protocolNodes(value){const nodes=[],seen=new Set();function visit(current,structured){if(structured&&typeof current==='string'&&/^[{[]/.test(current.trim())){try{current=JSON.parse(current);}catch(ignore){return;}}if(!current||typeof current!=='object'||seen.has(current))return;seen.add(current);if(Array.isArray(current)){current.forEach(item=>visit(item,false));return;}nodes.push(current);['result','details','response','output'].forEach(key=>{if(own(current,key))visit(current[key],true);});if(current.data&&typeof current.data==='object'&&!Array.isArray(current.data))visit(current.data,false);}visit(value,false);return nodes;}
     function nativeFailureCode(value){const node=protocolNodes(value).find(item=>item.code!=null&&String(item.code)!=='3000');return node&&node.code;}
     function error(message,raw,cause){const detail=root.LMData.failureMessage(raw||cause);const failure=new Error(detail?message+' '+detail:message);failure.raw=raw;failure.response=raw;failure.cause=cause||raw;const native=nativeFailureCode(raw||cause)||root.LMData.failureCode(raw||cause);if(native!=null&&native!=='')failure.code=native;return failure;}
+    function readFailureSummary(value){
+      const queue=[value],seen=new Set(),parts=new Set();
+      for(let index=0;index<queue.length&&index<24;index++){
+        const item=queue[index];if(!item||typeof item!=='object'||seen.has(item))continue;seen.add(item);
+        if(/^\d{3}$/.test(String(item.status||'')))parts.add('HTTP '+item.status);
+        if(/^\d+$/.test(String(item.code||'')))parts.add('Creator '+item.code);
+        if(typeof item.responseText==='string'){const body=item.responseText.trim();parts.add((body[0]==='<'?'HTML':/^[{[]/.test(body)?'JSON':'Text')+' reply, '+item.responseText.length+' characters');}
+        for(const key of ['cause','response','raw'])if(item[key]&&typeof item[key]==='object')queue.push(item[key]);
+      }
+      return Array.from(parts).slice(0,4).join('; ');
+    }
     function failed(value){return !value||typeof value!=='object'||Array.isArray(value)||!!value.error||value.success===false||/^(error|failed|failure)$/i.test(String(value.status||'').trim())||value.code!=null&&String(value.code)!=='3000';}
     function firstFailure(value){return protocolNodes(value).find(failed)||null;}
     function competingProtocol(value){return protocolNodes(value).some(item=>['details','response','output'].some(key=>own(item,key))||item!==value&&own(item,'result'));}
@@ -103,11 +114,13 @@
     async function read(report,criteria,check,progress,max){
       session();let readExpected=null;
       const bridge={getRecordCount:async config=>{const answer=await nativeCount(report,criteria,check,max);readExpected=answer.value;return answer.result;},getRecords:config=>{cancelled(check);return api().getRecords(config);}};
+      try{
       const rows=await root.LMData.readAll({reportName:report,criteria,fresh:true,api:bridge,isCancelled:check,onProgress:info=>{cancelled(check);if(progress)progress(info);}});
       cancelled(check);if(rows.some(row=>!row||!safeId(row.ID)))throw new Error('Creator returned a non-string record ID.');
       const after=await root.LMData.request(report+':tax-count-final',()=>nativeCount(report,criteria,check,max),{readOnly:true});
       if(after.value!==readExpected)throw new Error('The Creator record count changed during the complete read.');
       cancelled(check);return {rows,expected:readExpected};
+      }catch(failure){const summary=readFailureSummary(failure);if(summary)failure.message=(failure.message||'Creator read failed.')+' ['+summary+']';throw failure;}
     }
     async function start(){
       if(pending||nativeWrites||verificationReads||batchActive||progressOpen||reviews.size||drafts.size||options.isDirty&&options.isDirty()||options.navigationDirty&&options.navigationDirty())throw new Error('Finish or recheck the captured Tax operation before reconnecting.');const generation=++initGeneration;connected=false;referenceGeneration++;scopeGeneration++;referenceState='idle';scopeState='idle';propertyIds=new Set();scopeIds=new Set();notify();let timer,settled=false;
@@ -231,14 +244,20 @@
             if(nativeWrites)throw error('A native batch is still pending. Confirmed destinations need a read-only recheck.');
             ledger.stage='verifying';progress();
             const loaded=await verifyBounded(verification,false,async expired=>{
-              const rows=[];
-              // A saved Company/Status can leave its old filter. Confirm only
-              // captured acknowledged IDs, independent of editable criteria.
-              for(let offset=0;offset<acknowledged.length;offset+=200){
-                const ids=acknowledged.slice(offset,offset+200).map(entry=>entry.id),loaded=await read(ledger.report,ids.map(id=>'(ID == '+id+')').join(' || '),()=>check()||expired(),null,ids.length),returned=new Set(loaded.rows.map(row=>row.ID));
-                if(returned.size!==ids.length||ids.some(id=>!returned.has(id)))throw new Error('Creator did not return the exact acknowledged batch destinations.');rows.push(...loaded.rows);
+              // Reuse the complete search read rather than sending a long ID
+              // query through Creator's GET transport. Native acknowledgements
+              // already contain the exact captured ID set for every write.
+              const refreshed=await read(ledger.report,criteria,()=>check()||expired(),null,max),byId=new Map(refreshed.rows.map(row=>[row.ID,row]));
+              const mayLeave=new Set(acknowledged.map(entry=>entry.id).concat(ledger.entries.filter(entry=>entry.state==='unknown').map(entry=>entry.id)));
+              if(refreshed.rows.some(row=>!freshIds.has(row.ID))||fresh.rows.some(row=>!byId.has(row.ID)&&!mayLeave.has(row.ID)))throw new Error('The complete Tax scope changed while confirming batch destinations.');
+              // Status/Company edits can leave their old filter. Reuse the
+              // proven Contracts25-ID read pattern only for those missing IDs.
+              const missing=acknowledged.filter(entry=>!byId.has(entry.id));
+              for(let offset=0;offset<missing.length;offset+=25){
+                const ids=missing.slice(offset,offset+25).map(entry=>entry.id),loaded=await read(ledger.report,'('+ids.map(id=>'(ID == '+id+')').join(' || ')+')',()=>check()||expired(),null,ids.length),returned=new Set(loaded.rows.map(row=>row.ID));
+                if(returned.size!==ids.length||ids.some(id=>!returned.has(id)))throw new Error('Creator did not return the exact acknowledged batch destinations.');for(const row of loaded.rows)byId.set(row.ID,row);
               }
-              cancelled(()=>check()||expired());return {rows};
+              cancelled(()=>check()||expired());return {rows:acknowledged.map(entry=>byId.get(entry.id))};
             });
             cancelled(check);const rows=new Map(loaded.rows.map(row=>[row.ID,row]));
             for(const entry of acknowledged){const row=rows.get(entry.id);publishVerified(entry.operation,row);drafts.delete(entry.operation.key);entry.error=null;entry.state='verified';entry.phase='verified';entry.verifiedRow=row;}progress();

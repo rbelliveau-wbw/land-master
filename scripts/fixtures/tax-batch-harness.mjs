@@ -22,7 +22,7 @@ export function harness(options={}){
  const timers=new Map(),calls=[],writes=[],published=[],hooks={},progress=[];
  const runtime={user:'fixture',environment:'PRODUCTION',appLinkName:'land-master'},scope={value:'(Tax_Year == 2026)'};
  const storage={[REPORT]:clone(options.rows||[row(ID)]),[reports.rawLand]:clone(options.properties||[{ID:'90071992547420000',Property_ID:'000073',Land_Type:'Original'}])};
- const selected=config=>{const rows=storage[config.report_name]||[],criteria=String(config.criteria||'');if(/^\(ID == \d+\)(?: \|\| \(ID == \d+\))*$/.test(criteria)){const ids=new Set([...criteria.matchAll(/ID == (\d+)/g)].map(match=>match[1]));return rows.filter(value=>ids.has(value.ID));}return rows;};
+ const selected=config=>{const rows=storage[config.report_name]||[];let criteria=String(config.criteria||'');if(criteria.startsWith('((')&&criteria.endsWith('))'))criteria=criteria.slice(1,-1);if(/^\(ID == \d+\)(?: \|\| \(ID == \d+\))*$/.test(criteria)){const ids=new Set([...criteria.matchAll(/ID == (\d+)/g)].map(match=>match[1]));return rows.filter(value=>ids.has(value.ID));}return rows;};
  async function native(method,config,action){calls.push({method,config:clone(config),at:now});return action();}
  const DATA={
   getRecordCount:config=>native('count',config,async()=>{const value=hooks.count?await hooks.count(config):undefined;return value===undefined?{code:3000,result:{records_count:String(selected(config).length)}}:value;}),

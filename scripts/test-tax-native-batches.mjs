@@ -5,7 +5,7 @@ import {clone,REPORT,FIELD,ID,OTHER,row,drain,held,ready,idsOf,acknowledged,rawT
 const rowsFor=count=>Array.from({length:count},(_,index)=>row((90071992547409941n+BigInt(index)).toString()));
 const intents=rows=>rows.map(value=>({id:value.ID,payload:{[FIELD]:''}}));
 const states=result=>Array.from(result.rows,value=>value.state);
-const exact=config=>/^\(ID ==/.test(config.criteria||'');
+const exact=config=>/^\(+ID ==/.test(config.criteria||'');
 const reviewKey=id=>'update:'+REPORT+':'+id;
 
 //135 records take one native write;800 take four. All native calls, including
@@ -15,8 +15,8 @@ for(const count of [135,800]){
  const result=await h.finish(saving);assert.ok(result.rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,Math.ceil(count/200));assert.equal(h.calls.filter(call=>call.method==='update').length,0);
  const sent=h.writes.flatMap(idsOf);assert.equal(sent.length,count);assert.equal(new Set(sent).size,count);assert.deepEqual([...sent].sort(),rows.map(value=>value.ID).sort());assert.ok(h.writes.every(value=>value.payload.data[FIELD]===''));
  assert.ok(h.writes.every(value=>!Object.hasOwn(value,'skip_workflow')&&!Object.hasOwn(value.payload,'skip_workflow')&&!Object.hasOwn(value.payload,'process_until_limit')),'default native workflows stay enabled and oversized writes never truncate');
- assert.equal(h.calls.length-before,count===135?7:22);assert.equal(h.published.length,count);assert.equal(h.tax.snapshot().reviews.length,0);assert.equal(h.tax.snapshot().nativeWrites,0);assert.equal(h.tax.snapshot().verificationReads,0);assert.ok(h.now()<61000);
- const readCalls=h.calls.slice(before).filter(call=>call.method==='records');assert.equal(readCalls.filter(call=>exact(call.config)).length,Math.ceil(count/200));
+ assert.equal(h.calls.length-before,count===135?7:16);assert.equal(h.published.length,count);assert.equal(h.tax.snapshot().reviews.length,0);assert.equal(h.tax.snapshot().nativeWrites,0);assert.equal(h.tax.snapshot().verificationReads,0);assert.ok(h.now()<61000);
+ const readCalls=h.calls.slice(before).filter(call=>call.method==='records');assert.equal(readCalls.filter(call=>exact(call.config)).length,0,'ordinary edits reuse the complete original search read, without long GET ID lists');assert.ok(readCalls.every(call=>String(call.config.criteria||'').length<1000));
  for(const call of h.calls)assert.ok(h.calls.filter(value=>value.at>call.at-61000&&value.at<=call.at).length<=45);
  assert.equal(h.tax.closeProgress(result.id),true);const fresh=await h.finish(h.tax.search(h.scope.value));assert.ok(fresh.rows.every(value=>value[FIELD]===''));
 }
@@ -27,8 +27,8 @@ for(const count of [135,800]){
 {
  const rows=rowsFor(6),h=await ready({rows});
  h.hooks.batch=(config,apply,ids)=>{apply();for(const id of ids)h.storage[REPORT].find(value=>value.ID===id).Status='Native workflow result';return acknowledged(ids);};
- h.hooks.count=config=>!exact(config)&&h.writes.length?{code:3000,result:{records_count:'0'}}:undefined;
- h.hooks.records=config=>!exact(config)&&h.writes.length?{code:3000,data:[]}:undefined;
+ h.hooks.count=config=>config.report_name===REPORT&&!exact(config)&&h.writes.length?{code:3000,result:{records_count:String(h.storage[REPORT].filter(value=>value.Status==='Under Protest').length)}}:undefined;
+ h.hooks.records=config=>config.report_name===REPORT&&!exact(config)&&h.writes.length?{code:3000,data:clone(h.storage[REPORT].filter(value=>value.Status==='Under Protest'))}:undefined;
  const selected=[rows[1],rows[4]],result=await h.finish(h.tax.batch(REPORT,selected.map(value=>({id:value.ID,payload:{Status:'No Protest'}}))));
  assert.deepEqual(states(result),['verified','verified']);assert.deepEqual(idsOf(h.writes[0]),selected.map(value=>value.ID));assert.deepEqual(h.published.map(value=>value.Status),['Native workflow result','Native workflow result']);assert.equal(h.storage[REPORT].filter(value=>value.Status==='Under Protest').length,4);
  assert.equal(h.calls.filter(call=>call.method==='records'&&exact(call.config)).length,1);assert.equal(h.tax.snapshot().reviews.length,0);
@@ -40,6 +40,35 @@ for(const count of [135,800]){
  const rows=rowsFor(9),h=await ready({rows}),captured=rows.map((value,index)=>({id:value.ID,payload:index%2?{Property_ID:'copy-'+index%3,Status:'No Protest'}:{Status:'No Protest',Property_ID:'copy-'+index%3}}));
  const result=await h.finish(h.tax.batch(REPORT,captured));assert.ok(result.rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,3);
  for(const write of h.writes)for(const id of idsOf(write)){const index=rows.findIndex(value=>value.ID===id);assert.equal(write.payload.data.Property_ID,'copy-'+index%3);}
+}
+
+// Native GET transport can reject a large OR list even after updateRecords
+// accepts its POST payload. Ordinary135 clears never issue that long query;
+//135 rows leaving their filter use the established25-ID outer-wrapped reads.
+{
+ const rows=rowsFor(135),h=await ready({rows});h.hooks.records=config=>{if(String(config.criteria||'').length>1000)throw {status:414,responseText:'<html>opaque private native reply</html>'};};
+ const result=await h.finish(h.tax.batch(REPORT,intents(rows)));assert.ok(result.rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,1);assert.equal(h.calls.filter(call=>call.method==='records'&&exact(call.config)).length,0);
+}
+{
+ const rows=rowsFor(135),h=await ready({rows}),before=h.calls.length,current=()=>h.storage[REPORT].filter(value=>value.Status==='Under Protest');
+ h.hooks.count=config=>config.report_name===REPORT&&!exact(config)?{code:3000,result:{records_count:String(current().length)}}:undefined;
+ h.hooks.records=config=>{if(config.report_name!==REPORT)return;if(String(config.criteria||'').length>1000)throw {status:414,responseText:'<html>opaque private native reply</html>'};if(!exact(config))return {code:3000,data:clone(current())};};
+ const result=await h.finish(h.tax.batch(REPORT,rows.map(value=>({id:value.ID,payload:{Status:'No Protest'}}))));assert.ok(result.rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,1);assert.equal(h.calls.length-before,24);assert.equal(h.published.length,135);
+ const reads=h.calls.filter(call=>call.method==='records'&&exact(call.config));assert.equal(reads.length,6);assert.ok(reads.every(call=>call.config.criteria.startsWith('((')&&[...call.config.criteria.matchAll(/ID == (\d+)/g)].length<=25));
+}
+
+// Opaque native failures retain status and response-kind diagnostics, without
+// copying the HTML/body contents into user-visible or critical-error messages.
+{
+ const h=await ready({rows:rowsFor(2)});h.hooks.records=config=>{if(config.report_name===REPORT&&h.writes.length)throw {status:414,responseText:'<html>private transport response details</html>'};};
+ const result=await h.finish(h.tax.batch(REPORT,intents(h.storage[REPORT])));assert.deepEqual(states(result),['unknown','unknown']);assert.match(result.error,/HTTP 414/);assert.match(result.error,/HTML reply, \d+ characters/);assert.doesNotMatch(result.error,/private transport|<html>/);assert.equal(h.writes.length,1);
+}
+
+// A fresh scope may lose a captured written ID, but unrelated disappeared or
+// newly matching records are never silently accepted as a complete refresh.
+for(const changed of ['unselected-missing','foreign-added']){
+ const rows=rowsFor(3),h=await ready({rows});h.hooks.batch=(config,apply,ids)=>{apply();if(changed==='unselected-missing')h.storage[REPORT].pop();else h.storage[REPORT].push(row('999'));return acknowledged(ids);};
+ const result=await h.finish(h.tax.batch(REPORT,intents(rows.slice(0,2))));assert.deepEqual(states(result),['unknown','unknown']);assert.match(result.error,/scope changed/);assert.equal(h.writes.length,1);assert.equal(h.published.length,0);
 }
 
 // Many genuinely distinct copy values still share the45-request scheduler;
@@ -131,12 +160,12 @@ for(const returned of [false,true]){
 // cannot mark any destination saved. A held read deadline never publishes late.
 for(const fault of ['missing','foreign','duplicate','count','denied','actor']){
  const rows=rowsFor(2),h=await ready({rows});let counts=0;
- h.hooks.count=config=>exact(config)&&fault==='count'?{code:3000,result:{records_count:String(++counts===1?2:3)}}:undefined;
- h.hooks.records=config=>{if(!exact(config))return;if(fault==='missing')return{code:3000,data:[clone(h.storage[REPORT][0])]};if(fault==='foreign')return{code:3000,data:[clone(h.storage[REPORT][0]),row('999')]};if(fault==='duplicate')return{code:3000,data:[clone(h.storage[REPORT][0]),clone(h.storage[REPORT][0])]};if(fault==='denied')return{code:2898,message:'No read permission'};if(fault==='actor')h.runtime.user='another-user';};
+ h.hooks.count=config=>config.report_name===REPORT&&h.writes.length&&fault==='count'?{code:3000,result:{records_count:String(++counts===1?2:3)}}:undefined;
+ h.hooks.records=config=>{if(config.report_name!==REPORT||!h.writes.length)return;if(fault==='missing')return{code:3000,data:[clone(h.storage[REPORT][0])]};if(fault==='foreign')return{code:3000,data:[clone(h.storage[REPORT][0]),row('999')]};if(fault==='duplicate')return{code:3000,data:[clone(h.storage[REPORT][0]),clone(h.storage[REPORT][0])]};if(fault==='denied')return{code:2898,message:'No read permission'};if(fault==='actor')h.runtime.user='another-user';};
  const result=await h.finish(h.tax.batch(REPORT,intents(rows)));assert.deepEqual(states(result),['unknown','unknown'],fault);assert.equal(h.writes.length,1);assert.equal(h.published.length,0);await assert.rejects(h.tax.retryBatch(result.id));
 }
 {
- const rows=rowsFor(2),h=await ready({rows}),pause=held();h.hooks.records=config=>exact(config)?pause.promise:undefined;
+ const rows=rowsFor(2),h=await ready({rows}),pause=held();h.hooks.records=config=>config.report_name===REPORT&&h.writes.length?pause.promise:undefined;
  const saving=h.tax.batch(REPORT,intents(rows));await drain();await h.advance(30000);const result=await saving;assert.deepEqual(states(result),['unknown','unknown']);assert.equal(h.tax.snapshot().verificationReads,1);assert.equal(h.tax.closeProgress(result.id),false);assert.equal(await h.tax.recheck(reviewKey(ID)),false);
  pause.resolve({code:3000,data:clone(h.storage[REPORT])});await drain();assert.equal(h.published.length,0);assert.equal(h.tax.snapshot().verificationReads,0);assert.equal(h.writes.length,1);h.hooks.records=null;assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),true);assert.equal(h.writes.length,1);
 }
@@ -146,4 +175,4 @@ for(const fault of ['missing','foreign','duplicate','count','denied','actor']){
 {
  const h=await ready();h.hooks.batch=()=>({code:3000});const result=await h.finish(h.tax.batch(REPORT,intents([row(ID)])));assert.equal(result.rows[0].state,'unknown');assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),false);assert.equal(h.writes.length,1);h.storage[REPORT][0][FIELD]='';assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),true);assert.equal(h.writes.length,1);
 }
-console.log('PASS native Tax batches:135 one write/7calls,800 four200-ID writes/22calls; exact selections and returned rows, distinct copy payloads/shared45budget, default workflows, native per-ID receipts, malformed/partial/unknown retention, no replay, physical pending deadlines and read-only recovery.');
+console.log('PASS native Tax batches:135 one write/7calls,800 four200-ID writes/16calls; original-scope confirmation and short25-ID fallback, exact selections and returned rows, distinct copy payloads/shared45budget, default workflows, native per-ID receipts, malformed/partial/unknown retention, no replay, physical pending deadlines and read-only recovery.');

@@ -1,12 +1,15 @@
-## Native bulk saves and compact progress — 19.17.29, October 26, 2026
+## Native bulk saves and compact progress — 19.17.30, October 26, 2026
 
 Bulk edits now group identical captured payloads into native SDK2 updates of up
-to 200 exact selected IDs, followed by counted ID-scoped confirmation reads.
+to 200 exact selected IDs, followed by a fresh complete-scope confirmation read.
 135 identical edits require one update and seven total calls in the fixture,
 replacing the former per-record update plus three reads. Different copied values,
 full preflight, identity/count checks, workflow execution, partial results,
 read-only recovery and no-replay guards remain. Filter-changing Company/Status
-edits are confirmed by captured ID. The 800-record selection cap is unchanged.
+edits that leave the original filter are confirmed by captured ID in short
+25-ID queries. Ordinary 800-record edits use four writes and 16 fixture calls.
+The 800-record selection cap is unchanged. The .29 live test exposed a failed
+135-ID confirmation GET after acknowledged writes; .30 avoids that long query.
 
 Progress is a compact 540px dialog capped at 620px or viewport minus 48px, with
 an internally scrolling results/error list and pinned summary/actions. Human
