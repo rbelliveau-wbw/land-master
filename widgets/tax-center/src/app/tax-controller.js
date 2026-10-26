@@ -175,7 +175,8 @@
         root.LMData.request('tax:'+operation.key,()=>{
           cancelled(operation.isCancelled);if(operation.actor!==actor)throw new Error('Creator session changed before writing.');
           onDispatch();operation.nativePending=true;nativeWrites++;notify();
-          timer=root.setTimeout(()=>{const failure=error('Creator did not settle this write before the deadline. The captured fields need review.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);},options.mutationTimeoutMs||30000);
+          const timeout=kind==='batch'?(options.batchMutationTimeoutMs||options.mutationTimeoutMs||120000):(options.mutationTimeoutMs||30000);
+          timer=root.setTimeout(()=>{const failure=error('Creator is taking longer than expected. Retry to check which changes saved.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);},timeout);
           const native=Promise.resolve().then(()=>kind==='batch'?api().updateRecords({report_name:operation.report,payload:{criteria:operation.ids.map(id=>'(ID == '+id+')').join(' || '),data:operation.payload}}):kind==='update'?api().updateRecordById({report_name:operation.report,id:operation.id,payload:{data:operation.payload}}):api().addRecords({form_name:operation.form,payload:{data:operation.payload}}));
           const completed=native.then(value=>{operation.nativePending=false;nativeWrites--;notify();return value;},failure=>{operation.nativePending=false;nativeWrites--;notify();throw failure;});
           // Return the original completion, not the deadline, to the bounded queue.
@@ -204,6 +205,33 @@
         const response=await send(operation,kind,()=>{dispatched=true;if(entry){entry.phase='sending';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}});operation.id=acknowledge(response,kind==='update'?id:null);acknowledged=true;if(entry){entry.phase='verifying';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}const row=await verifyBounded(operation);if(operation.generation!==referenceGeneration||operation.scope!==scopeGeneration)throw new Error('The Tax data generation changed.');publishVerified(operation,row);drafts.delete(key);return {code:3000,data:{ID:operation.id},verifiedRow:row};}catch(failure){const raw=failure.response||failure.raw||failure,detail=root.LMData.failureMessage(raw);if(detail&&!String(failure.message||'').includes(detail))failure.message=(failure.message||'Creator write failed.')+' '+detail;if(dispatched&&(acknowledged||!definiteRejection(raw))){operation.id=operation.id||candidateId(raw);operation.error=failure;reviews.set(key,operation);failure.noReplay=true;failure.uncertain=true;}throw failure;}finally{pending--;pendingKeys.delete(key);notify();}
     }
     async function recheck(key){const operation=reviews.get(key);if(!operation||pending||nativeWrites||verificationReads||batchActive)return false;pending++;notify();try{const row=await verifyBounded(operation,true);publishVerified(operation,row);for(const ledger of ledgers.values())if(ledger.report===operation.report)for(const entry of ledger.entries)if(entry.state==='unknown'&&entry.id===operation.id&&matches(row,entry.payload,operation.report)){entry.state='verified';entry.phase='verified';entry.verifiedRow=row;if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}reviews.delete(key);drafts.delete(key);return true;}catch(failure){operation.error=failure;return false;}finally{pending--;notify();}}
+    async function recheckBatch(id){
+      session();const ledger=ledgers.get(id);if(!ledger)throw new Error('Tax batch is unavailable.');
+      if(pending||nativeWrites||verificationReads||batchActive)return ledgerView(ledger);
+      const entries=ledger.entries.filter(entry=>entry.state==='unknown'&&entry.operation&&reviews.get(entry.operation.key)===entry.operation);
+      if(!entries.length)return ledgerView(ledger);
+      const check=()=>ledger.actor!==identity()||ledger.referenceGeneration!==referenceGeneration||ledger.scopeGeneration!==scopeGeneration;
+      pending++;notify();
+      const progress=()=>{if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));};
+      try{
+        const loaded=await verifyBounded({actor:ledger.actor,report:ledger.report},true,async expired=>{
+          const cancel=()=>check()||expired(),fresh=await read(ledger.report,ledger.criteria,cancel,null,ledger.report===reports.parcelYears?options.maxAutoRows||800:null),rows=new Map(fresh.rows.map(row=>[row.ID,row]));
+          // Reuse one counted scope read. Only selected records that left their
+          // filter require the proven short, exact-ID query fallback.
+          const missing=entries.filter(entry=>!rows.has(entry.id));
+          for(let offset=0;offset<missing.length;offset+=25){
+            const ids=missing.slice(offset,offset+25).map(entry=>entry.id),found=await read(ledger.report,'('+ids.map(id=>'(ID == '+id+')').join(' || ')+')',cancel,null,ids.length);
+            if(found.rows.some(row=>!ids.includes(row.ID)))throw new Error('Creator returned an unexpected recovery destination.');
+            for(const row of found.rows)rows.set(row.ID,row);
+          }
+          cancelled(cancel);return rows;
+        });
+        cancelled(check);
+        for(const entry of entries){const row=loaded.get(entry.id);if(row&&matches(row,entry.payload,ledger.report)){publishVerified(entry.operation,row);reviews.delete(entry.operation.key);drafts.delete(entry.operation.key);entry.operation.error=null;entry.error=null;entry.state='verified';entry.phase='verified';entry.verifiedRow=row;}else{entry.error=new Error('This record does not match the requested change yet.');entry.operation.error=entry.error;}}
+        ledger.error=ledger.entries.find(entry=>entry.state==='unknown')?.error||null;progress();
+      }catch(failure){ledger.error=failure;for(const entry of entries)if(entry.state==='unknown'){entry.error=failure;entry.operation.error=failure;}progress();}
+      finally{pending--;notify();}return ledgerView(ledger);
+    }
     async function runLedger(ledger,entries){
       if(pending||nativeWrites||verificationReads||batchActive||progressOpen||reviews.size)throw new Error('Finish or recheck the previous Tax operation.');const token={id:ledger.id};batchActive=token;ledger.finished=false;ledger.error=null;ledger.stage='preflight';if(options.onBatchOpen){progressOpen=ledger;options.onBatchOpen(ledgerView(ledger));}pending++;notify();
       const check=()=>ledger.actor!==identity()||ledger.referenceGeneration!==referenceGeneration||ledger.scopeGeneration!==scopeGeneration||ledger.report===reports.parcelYears&&options.scopeKey&&options.scopeKey()!==scopeCriteria;
@@ -270,10 +298,10 @@
     async function batch(report,intents){
       session();if(pending||batchActive||progressOpen||reviews.size||referenceState!=='ready'||scopeState==='loading'||options.isDirty&&options.isDirty())throw new Error('The full Tax scope is not ready for a batch.');const ids=new Set(),collection=report===reports.rawLand?propertyIds:report===reports.parcelYears&&scopeState==='ready'?scopeIds:null,baseline=report===reports.rawLand?referenceRows.rawLand:scopeRows;
       if(!collection||!Array.isArray(intents)||!intents.length)throw new Error('No complete Tax selection is available.');const entries=intents.map(intent=>{if(!intent||!safeId(intent.id)||ids.has(intent.id)||!collection.has(intent.id))throw new Error('A batch destination is missing, duplicated or outside the complete scope.');const row=baseline.find(value=>value.ID===intent.id);if(!row||!intent.payload||!Object.keys(intent.payload).length||!Object.keys(intent.payload).every(field=>own(row,field)))throw new Error('The full batch selection did not include every requested field.');Object.keys(intent.payload).forEach(field=>comparable(report,field,intent.payload[field]));ids.add(intent.id);return {id:intent.id,payload:freeze(copy(intent.payload)),state:'not-sent',phase:'not-sent'};});
-      const ledger={id:'tax-batch-'+(++batchSequence),report,actor,referenceGeneration,scopeGeneration,entries};ledgers.set(ledger.id,ledger);return runLedger(ledger,entries);
+      const ledger={id:'tax-batch-'+(++batchSequence),report,actor,referenceGeneration,scopeGeneration,criteria:report===reports.rawLand?'':scopeCriteria,entries};ledgers.set(ledger.id,ledger);return runLedger(ledger,entries);
     }
     async function retryBatch(id){const ledger=ledgers.get(id);if(!ledger)throw new Error('Tax batch is unavailable.');if(ledger.entries.some(entry=>entry.state==='unknown'))throw new Error('Recheck uncertain destinations before a retry.');const entries=ledger.entries.filter(entry=>entry.state==='rejected'||entry.state==='not-sent');return entries.length?runLedger(ledger,entries):ledgerView(ledger);}
-    return Object.freeze({start,reloadReferences,search,count,snapshot,canEdit,interactionAllowed,checkParcelYearCode,currencyText:value=>decimal(value,true,false),navigationAllowed:()=>interactionAllowed()&&!changing(),update:(id,data,report)=>mutate('update',id,data,report||reports.parcelYears),create:(form,data)=>mutate('create','',data,form===forms.property?reports.rawLand:reports.parcelYears,form),recheck,batch,retryBatch,ledger:id=>ledgers.has(id)?ledgerView(ledgers.get(id)):null,closeProgress(id){if(!progressOpen||progressOpen.id!==id||!progressOpen.finished||pending||nativeWrites||verificationReads||batchActive)return false;const ledger=progressOpen;progressOpen=null;if(options.onBatchClose)options.onBatchClose(ledgerView(ledger));notify();return true;},discardDraft(key){if(reviews.has(key)||pending)return false;drafts.delete(key);notify();return true;},noteDraft(){editEpoch++;notify();}});
+    return Object.freeze({start,reloadReferences,search,count,snapshot,canEdit,interactionAllowed,checkParcelYearCode,currencyText:value=>decimal(value,true,false),navigationAllowed:()=>interactionAllowed()&&!changing(),update:(id,data,report)=>mutate('update',id,data,report||reports.parcelYears),create:(form,data)=>mutate('create','',data,form===forms.property?reports.rawLand:reports.parcelYears,form),recheck,recheckBatch,batch,retryBatch,ledger:id=>ledgers.has(id)?ledgerView(ledgers.get(id)):null,closeProgress(id){if(!progressOpen||progressOpen.id!==id||!progressOpen.finished||pending||nativeWrites||verificationReads||batchActive)return false;const ledger=progressOpen;progressOpen=null;if(options.onBatchClose)options.onBatchClose(ledgerView(ledger));notify();return true;},discardDraft(key){if(reviews.has(key)||pending)return false;drafts.delete(key);notify();return true;},noteDraft(){editEpoch++;notify();}});
   }
   root.LMTaxPreparation=Object.freeze({create});
 })(typeof window==='undefined'?globalThis:window);

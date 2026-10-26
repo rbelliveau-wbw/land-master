@@ -192,3 +192,10 @@ keep report/API link names and raw field keys out of ordinary progress copy.
 Retain authentic failure diagnostics inside the scrolling results area. This
 presentation change preserves confirmed-only progress, mounted rows, display
 pacing, pending close locks, focus/inert behavior and read-only recovery.
+
+An active Tax stage shows a rotating ring during native waits; the saved count
+remains based on confirmed records. Respect reduced motion with a static ring
+and the existing Running label. The user-facing recovery action is **Retry**,
+including when it only checks captured writes. Show a spinner and **Checking
+saved changes…** while that read-only recovery runs. Never replay an uncertain
+write, invent a percentage, or allow duplicate recovery/dismissal during it.

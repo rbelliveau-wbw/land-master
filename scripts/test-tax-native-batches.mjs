@@ -148,7 +148,7 @@ for(const field of ['Status','Company1'])for(const scopeChange of ['own-only','u
 // keeps its shared slot and blocks Close/recheck/retry even after the deadline.
 {
  const rows=rowsFor(201),h=await ready({rows}),pause=held();h.hooks.batch=(config,apply,ids)=>pause.promise.then(()=>{apply();return acknowledged(ids);});
- const saving=h.tax.batch(REPORT,intents(rows));await drain();assert.equal(h.writes.length,1);await h.advance(30000);const result=await saving;assert.equal(result.rows.slice(0,200).every(value=>value.state==='unknown'),true);assert.equal(result.rows[200].state,'not-sent');assert.equal(h.tax.snapshot().nativeWrites,1);assert.ok(h.tax.snapshot().reviews.every(value=>value.pending));assert.equal(h.tax.closeProgress(result.id),false);assert.equal(await h.tax.recheck(reviewKey(ID)),false);await assert.rejects(h.tax.retryBatch(result.id));assert.equal(h.c.LMPerf.snapshot().active,1);
+ const saving=h.tax.batch(REPORT,intents(rows));await drain();assert.equal(h.writes.length,1);await h.advance(120000);const result=await saving;assert.equal(result.rows.slice(0,200).every(value=>value.state==='unknown'),true);assert.equal(result.rows[200].state,'not-sent');assert.equal(h.tax.snapshot().nativeWrites,1);assert.ok(h.tax.snapshot().reviews.every(value=>value.pending));assert.equal(h.tax.closeProgress(result.id),false);assert.equal(await h.tax.recheck(reviewKey(ID)),false);await assert.rejects(h.tax.retryBatch(result.id));assert.equal(h.c.LMPerf.snapshot().active,1);
  pause.resolve();await drain();assert.equal(h.tax.snapshot().nativeWrites,0);assert.equal(h.writes.length,1);assert.equal(h.published.length,0);assert.equal(h.tax.ledger(result.id).rows[0].state,'unknown');assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),true);assert.equal(h.writes.length,1);
 }
 for(const returned of [false,true]){
@@ -174,5 +174,45 @@ for(const fault of ['missing','foreign','duplicate','count','denied','actor']){
 // explicitly reconciling an unknown reply retains exact captured-value checks.
 {
  const h=await ready();h.hooks.batch=()=>({code:3000});const result=await h.finish(h.tax.batch(REPORT,intents([row(ID)])));assert.equal(result.rows[0].state,'unknown');assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),false);assert.equal(h.writes.length,1);h.storage[REPORT][0][FIELD]='';assert.equal(await h.finish(h.tax.recheck(reviewKey(ID))),true);assert.equal(h.writes.length,1);
+}
+
+// A native bulk write has its own bound: slow valid replies beyond the inline
+// 30-second deadline still settle normally, without any second write.
+{
+ const rows=rowsFor(135),h=await ready({rows}),pause=held();h.hooks.batch=(config,apply,ids)=>pause.promise.then(()=>{apply();return acknowledged(ids);});
+ const saving=h.tax.batch(REPORT,rows.map(value=>({id:value.ID,payload:{[FIELD]:'26-Dec-2030'}})));await drain();await h.advance(45000);
+ assert.equal(h.tax.ledger('tax-batch-1').finished,false);assert.ok(h.tax.ledger('tax-batch-1').rows.every(value=>value.state==='pending'));assert.equal(h.tax.snapshot().reviews.length,0);
+ pause.resolve();const result=await h.finish(saving);assert.ok(result.rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,1);
+}
+// Retry is read-only recovery of the captured entered date.135 unknown rows
+// use one complete counted read (three calls), rather than405 singleton calls.
+{
+ const rows=rowsFor(135),h=await ready({rows});h.hooks.batch=(config,apply)=>{apply();return {code:3000};};
+ const result=await h.finish(h.tax.batch(REPORT,rows.map(value=>({id:value.ID,payload:{[FIELD]:'26-Dec-2030'}}))));assert.ok(result.rows.every(value=>value.state==='unknown'));
+ h.storage[REPORT].slice(15).forEach(value=>value[FIELD]='28-Sep-2026');const before=h.calls.length,partial=await h.finish(h.tax.recheckBatch(result.id));
+ assert.equal(h.calls.length-before,3);assert.equal(partial.rows.filter(value=>value.state==='verified').length,15);assert.ok(partial.rows.slice(0,15).every(value=>!value.message));assert.equal(h.writes.length,1);assert.equal(h.tax.snapshot().reviews.length,120);
+ h.storage[REPORT].forEach(value=>value[FIELD]='26-Dec-2030');const recovered=await h.finish(h.tax.recheckBatch(result.id));assert.ok(recovered.rows.every(value=>value.state==='verified'&&!value.message));assert.equal(recovered.error,null);assert.equal(h.tax.snapshot().reviews.length,0);assert.equal(h.writes.length,1);
+}
+// Recovery cannot run alongside a physically pending write, and a stale actor
+// never receives recovered rows or a replay.
+{
+ const rows=rowsFor(2),h=await ready({rows}),pause=held();h.hooks.batch=(config,apply,ids)=>pause.promise.then(()=>{apply();return acknowledged(ids);});
+ const saving=h.tax.batch(REPORT,intents(rows));await drain();await h.advance(120000);const result=await saving,before=h.calls.length;await h.tax.recheckBatch(result.id);assert.equal(h.calls.length,before);pause.resolve();await drain();h.runtime.user='different-user';await assert.rejects(h.tax.recheckBatch(result.id));assert.equal(h.writes.length,1);assert.equal(h.published.length,0);
+}
+
+// Recovery follows selected records that left their filter through short ID
+// reads, and real read failures retain unknown outcomes without publishing.
+{
+ const rows=rowsFor(26),h=await ready({rows});h.hooks.batch=(config,apply)=>{apply();return {code:3000};};
+ const result=await h.finish(h.tax.batch(REPORT,rows.map(value=>({id:value.ID,payload:{Status:'No Protest'}}))));
+ h.hooks.count=config=>config.report_name===REPORT&&!exact(config)?{code:3000,result:{records_count:'0'}}:undefined;
+ h.hooks.records=config=>config.report_name===REPORT&&!exact(config)?{code:3000,data:[]}:undefined;
+ const before=h.calls.length,recovered=await h.finish(h.tax.recheckBatch(result.id));assert.ok(recovered.rows.every(value=>value.state==='verified'));assert.equal(h.calls.length-before,8);assert.equal(h.calls.slice(before).filter(value=>value.method==='records'&&exact(value.config)).length,2);assert.equal(h.writes.length,1);
+}
+{
+ const rows=rowsFor(2),h=await ready({rows});h.hooks.batch=(config,apply)=>{apply();return {code:3000};};const result=await h.finish(h.tax.batch(REPORT,intents(rows)));
+ h.hooks.records=config=>config.report_name===REPORT?{code:2898,message:'No read permission'}:undefined;
+ const failed=await h.finish(h.tax.recheckBatch(result.id));assert.ok(failed.rows.every(value=>value.state==='unknown'));assert.equal(h.published.length,0);assert.equal(h.writes.length,1);
+ h.hooks.records=null;assert.ok((await h.finish(h.tax.recheckBatch(result.id))).rows.every(value=>value.state==='verified'));assert.equal(h.writes.length,1);
 }
 console.log('PASS native Tax batches:135 one write/7calls,800 four200-ID writes/16calls; original-scope confirmation and short25-ID fallback, exact selections and returned rows, distinct copy payloads/shared45budget, default workflows, native per-ID receipts, malformed/partial/unknown retention, no replay, physical pending deadlines and read-only recovery.');

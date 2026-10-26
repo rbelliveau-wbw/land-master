@@ -64,7 +64,7 @@ async function wholeWidgetIntegration(){
   window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({envUrlFragment:'/environment/development',loginUser:'fixture'}),setIframeHeight(){}},DATA:{
    getRecordCount:async config=>{calls.push({kind:'count',config:clone(config)});return {code:3000,result:{records_count:String(selected(config).length)}};},
    getRecords:async config=>{calls.push({kind:'records',config:clone(config)});return {code:3000,data:clone(selected(config))};},
-   updateRecords:config=>new Promise(resolve=>{calls.push({kind:'batch',config:clone(config)});state.writes++;state.release=()=>{state.release=null;if(state.mode==='rejected'){resolve({code:2897,message:'Fixture update permission denied.'});return;}const ids=Array.from(config.payload.criteria.matchAll(/\(ID == (\d+)\)/g),match=>match[1]);ids.forEach(id=>Object.assign(storage[config.report_name].find(row=>row.ID===id),clone(config.payload.data)));resolve({code:3000,result:ids.map(ID=>({code:3000,data:{ID}}))});};}),
+   updateRecords:config=>new Promise(resolve=>{calls.push({kind:'batch',config:clone(config)});state.writes++;state.release=()=>{state.release=null;if(state.mode==='rejected'){resolve({code:2897,message:'Fixture update permission denied.'});return;}const ids=Array.from(config.payload.criteria.matchAll(/\(ID == (\d+)\)/g),match=>match[1]);ids.forEach(id=>Object.assign(storage[config.report_name].find(row=>row.ID===id),clone(config.payload.data)));resolve(state.mode==='unknown'?{code:3000}:{code:3000,result:ids.map(ID=>({code:3000,data:{ID}}))});};}),
    invokeCustomApi:async()=>({code:3000,details:{output:JSON.stringify({success:true})}})
   }}};
  },fixture);
@@ -114,12 +114,19 @@ async function wholeWidgetIntegration(){
   assert.equal(await app.locator('#taxSaveTitle').textContent(),'Changes need review');assert.match(await app.locator('#taxSaveResults small').first().textContent(),/Fixture update permission denied/);
   await app.locator('#taxSaveClose').click();assert.equal(await app.locator('#bulkEditBtn').evaluate(node=>node===document.activeElement),true,'retained rejected selections restore focus to the visible Bulk Edit opener');
   assert.equal(await app.locator('#bulkEditOverlay').isVisible(),false);assert.equal(await app.evaluate(()=>__taxFixture.writes),2,'closing or reviewing never replays a write');
+  await selectAndOpen();await app.locator('.be-input[data-key="arbNoticeReceived"]').fill('2030-12-26');await app.evaluate(()=>__taxFixture.mode='unknown');
+  await app.locator('#bulkEditApplyBtn').click();await app.waitForFunction(()=>__taxFixture.release!==null);await app.evaluate(()=>__taxFixture.release());await app.waitForFunction(()=>TaxUI.progress().displayDone);
+  assert.equal(await app.locator('#taxSaveRecheck').textContent(),'Retry');const beforeRetry=await app.evaluate(()=>__taxFixture.calls.length);
+  await app.locator('#taxSaveRecheck').click();await app.waitForFunction(()=>document.getElementById('taxSaveTitle').textContent==='Changes saved');
+  assert.equal(await app.evaluate(()=>__taxFixture.calls.length),beforeRetry+3,'the actual Retry button uses one complete counted scope read');assert.equal(await app.evaluate(()=>__taxFixture.writes),3,'Retry never repeats the captured write');
+  assert.doesNotMatch(await app.locator('#taxSaveDialog').textContent(),/did not confirm|need review/i);
+  await app.locator('#taxSaveClose').click();assert.equal(await app.locator('#tableBody tr[data-lm-record="'+ids[0]+'"] input[type="date"]').nth(3).inputValue(),'2030-12-26','recovery refreshes the visible report to the entered date');
  }finally{await app.close();}
 }
 async function open(count=135){
  await page.evaluate(count=>{
   window.ledger={id:'fixture-'+count,report:'All_Tax_Parcel_Years',stage:'sending',finished:false,error:null,rows:Array.from({length:count},(_,index)=>({id:String(90071992547410000n+BigInt(index)),state:index<9?'verified':'not-sent',phase:index<9?'verified':index===9?'verifying':index===10?'sending':'not-sent',payload:{Arbitration_Notice_Received:''}}))};
-  if(!window.ui)window.ui=LMTaxUIPreparation.create({label:(_,id)=>'Parcel '+id.slice(-6)+'-2026',close:()=>true,recheck:()=>window.rechecks++,pending:()=>false});
+  if(!window.ui)window.ui=LMTaxUIPreparation.create({label:(_,id)=>'Parcel '+id.slice(-6)+'-2026',close:()=>true,recheck:()=>{window.rechecks++;return window.retryHold;},pending:()=>false});
   window.rechecks=0;document.getElementById('open').focus();ui.open(ledger);
   window.firstResult=document.querySelector('#taxSaveResults li');
   window.motion=LMMotion.start({module:'tax-progress-fixture',ready:()=>true,actor:()=>LMRuntime.current().user,surfaces:[{selector:'#taxSaveDialog'}],meters:['#taxSaveBarFill']});
@@ -155,7 +162,15 @@ try{
  assert.deepEqual(await page.locator('#taxSaveResults li b').allTextContents().then(rows=>rows.slice(8,12)),['Saved','Checking…','Saving…','Waiting']);
  assert.doesNotMatch(await page.locator('#taxSaveDialog').textContent(),/All_Tax_Parcel_Years|Arbitration_Notice_Received|persisted|destination|Creator|Captured/);
  assert.equal(await page.locator('#taxSaveBar').getAttribute('aria-valuenow'),'9');
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ const spinBefore=await page.locator('#taxSaveStageIcon1').evaluate(node=>getComputedStyle(node,'::after').transform);
+ await page.waitForFunction(before=>getComputedStyle(document.getElementById('taxSaveStageIcon1'),'::after').transform!==before,spinBefore);
+ assert.equal(await page.locator('#taxSaveBar').getAttribute('aria-valuenow'),'9','activity animation never invents saved records');
+ assert.equal(await page.locator('#taxSaveDialog').getAttribute('aria-busy'),'true');
+ await page.screenshot({path:path.join(output,'desktop-spinning.png')});
+ await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('#taxSaveStageIcon1').evaluate(node=>getComputedStyle(node,'::after').animationName),'none');
  assert.equal(await page.locator('#taxSaveStageChip1').textContent(),'Running');assert.equal(await page.locator('#taxSaveStageChip2').textContent(),'Up next','an acknowledged group does not mark all remaining sends complete');
+ assert.equal(await page.locator('#taxSaveRecheck').isVisible(),false,'Retry stays hidden during the original save');
  assert.equal(await page.locator('#taxSaveClose').isDisabled(),true);assert.equal(await page.locator('#taxSaveX').isDisabled(),true);
  assert.equal(await page.locator('#toolbar').evaluate(node=>node.inert),true);
  await page.keyboard.press('Escape');assert.equal(await page.locator('#taxSaveOverlay').isVisible(),true,'Escape cannot dismiss active work');
@@ -173,7 +188,13 @@ try{
  assert.equal(await page.locator('#taxSaveResults li').nth(9).locator('b').textContent(),'Needs review');assert.equal(await page.locator('#taxSaveResults li').nth(10).locator('b').textContent(),'Not saved');assert.equal(await page.locator('#taxSaveResults li').nth(11).locator('b').textContent(),'Not saved');
  assert.match(await page.locator('#taxSaveError').textContent(),/Creator 2955/);await geometry(800);
  await page.locator('#taxSaveRecheck').focus();await page.keyboard.press('Tab');assert.equal(await page.locator('#taxSaveClose').evaluate(node=>node===document.activeElement),true);await page.keyboard.press('Tab');assert.equal(await page.locator('#taxSaveX').evaluate(node=>node===document.activeElement),true,'terminal focus remains trapped');
- await page.locator('#taxSaveRecheck').click();assert.equal(await page.evaluate(()=>rechecks),1);await page.screenshot({path:path.join(output,'desktop-review.png')});
+ assert.equal(await page.locator('#taxSaveRecheck').textContent(),'Retry');
+ await page.evaluate(()=>{window.retryHold=new Promise(resolve=>window.releaseRetry=resolve);});
+ await page.locator('#taxSaveRecheck').click();assert.equal(await page.evaluate(()=>rechecks),1);
+ assert.equal(await page.locator('#taxSaveRecheck').isDisabled(),true);assert.equal(await page.locator('#taxSaveStatus').textContent(),'Checking saved changes…');
+ assert.equal(await page.locator('#taxSaveDialog').getAttribute('aria-busy'),'true');await page.keyboard.press('Escape');assert.equal(await page.locator('#taxSaveOverlay').isVisible(),true);
+ await page.evaluate(()=>window.releaseRetry());await page.waitForFunction(()=>!document.getElementById('taxSaveRecheck').disabled);
+await page.screenshot({path:path.join(output,'desktop-review.png')});
  await page.keyboard.press('Escape');assert.equal(await page.locator('#taxSaveOverlay').isVisible(),false);
  await page.emulateMedia({reducedMotion:'no-preference'});await open(32);
  await page.evaluate(async()=>{ledger.rows.forEach(row=>{row.state='verified';row.phase='verified';});ledger.stage='verifying';ledger.finished=true;window.settlement=ui.finish(ledger);});

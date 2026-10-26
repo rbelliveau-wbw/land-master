@@ -1,3 +1,21 @@
+## Save activity and batch Retry — 19.17.32, October 26, 2026
+
+Active save stages show a spinner; confirmed record counts remain truthful.
+The recovery button reads Retry and shows its own activity state. It checks
+unknown writes using one counted complete-scope read, with short 25-ID reads
+only for selected records that left their filter. A 135-record same-scope
+recovery needs three calls rather than 405 singleton calls. Explicit recovery
+compares the captured entered values, clears old errors on success and refreshes
+the visible report. It never resends a write. Actor, identity/count, pending
+native operation, timeout and duplicate guards remain.
+
+Native bulk writes have a 120-second default deadline; individual writes retain
+30 seconds. A slow valid bulk acknowledgement is no longer rejected at the
+individual-record deadline. A genuine timeout still retains unknown results and
+the physical native slot until settlement. No Creator schema, workflow, Custom
+API or permission changes. Rollback: 19.17.31. See
+[release and verification](../../docs/tax-save-activity-retry-2026-10-26.md).
+
 ## Report controls and Search-only counts — 19.17.31, October 26, 2026
 
 Selection actions now occupy the left side of the existing pagination row.
