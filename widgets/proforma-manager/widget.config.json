@@ -2,13 +2,13 @@
   "slug": "proforma-manager",
   "name": "Proforma Manager",
   "module": "proforma",
-  "version": "1.80.133",
+  "version": "1.80.134",
   "description": "Pro forma input, duplicate/fork, attachments, LOI workflow, comparison, and Settings-based approvals.",
   "source_entry": "widgets/proforma-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/proforma-manager/src/plugin-manifest.json",
   "baseline_zip": "widgets/proforma-manager/baseline/proforma-widget-v1.44.6-approval-route-builder.zip",
   "html_title": "Pro Forma Manager",
-  "source_sha256": "38456ff35bf4225ed20996a0682740c862aafc5137e18dcba929933866070a8c",
+  "source_sha256": "043e3331cf672f3636509e90d4b54fb58cdadc9026219e8efa9a5d91127e6b72",
   "baseline_zip_sha256": "94c3a256f89d3f4af08ead1348b0a321d511ce71eac4945088c7ac93a3aa34e0",
   "plugin_manifest": {
     "locale": [

@@ -10,9 +10,9 @@
 <script src="settings-controller.js"></script>
 <script src="workflow-log.js"></script>
 <link rel="stylesheet" href="workflow-log.css">
-<script src="approval-policy-domain.js?v=1.6.3"></script>
-<script src="approval-admin.js?v=1.6.3"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.6.3">
+<script src="approval-policy-domain.js?v=1.6.4"></script>
+<script src="approval-admin.js?v=1.6.4"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.6.4">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -250,17 +250,17 @@ td input,td select{padding:5px 8px}
 .settings-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-dialog h2{font-size:16px;margin:0}.settings-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
-<script src="success-feedback.js?v=1.6.3"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.6.3">
-<script src="interaction-motion.js?v=1.6.3"></script>
-<script src="interaction-surfaces.js?v=1.6.3"></script>
-<script src="number-edit-commit.js?v=1.6.3"></script>
-<script src="number-transitions.js?v=1.6.3"></script>
-<script src="number-surfaces.js?v=1.6.3"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.6.3">
-<link rel="stylesheet" href="settings-workspace.css?v=1.6.3">
-<link rel="stylesheet" href="settings-pickers.css?v=1.6.3">
-<script src="settings-pickers.js?v=1.6.3"></script>
+<script src="success-feedback.js?v=1.6.4"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.6.4">
+<script src="interaction-motion.js?v=1.6.4"></script>
+<script src="interaction-surfaces.js?v=1.6.4"></script>
+<script src="number-edit-commit.js?v=1.6.4"></script>
+<script src="number-transitions.js?v=1.6.4"></script>
+<script src="number-surfaces.js?v=1.6.4"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.6.4">
+<link rel="stylesheet" href="settings-workspace.css?v=1.6.4">
+<link rel="stylesheet" href="settings-pickers.css?v=1.6.4">
+<script src="settings-pickers.js?v=1.6.4"></script>
 </head>
 <body>
 
@@ -300,7 +300,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.6.3";
+var SMW_VERSION = "1.6.4";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){

@@ -45,6 +45,7 @@ assert.equal(calls.length, 1, 'one critical error should produce one API call');
 assert.equal(calls[0].api_name, 'Report_Proforma_Widget_Error');
 const report = JSON.parse(calls[0].payload.payload);
 assert.match(report.body, /LLM FIX REQUEST/);
+assert.match(report.body, /THE MOST ROBUST AND CORRECT FUCKING PATCH/);
 assert.match(report.body, /Synthetic critical failure/);
 assert.match(report.body, /Before failure/);
 assert.match(report.body, /\[redacted\]/);
