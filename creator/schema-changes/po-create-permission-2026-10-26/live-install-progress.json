@@ -1,9 +1,9 @@
 {
   "environment": "DEVELOPMENT",
   "productionPublished": false,
-  "updated_at": "2026-10-26T15:19:46.862Z",
-  "status": "partial-native-installation",
-  "verification": "Only entries explicitly marked savedAndReloaded match current reviewed source. Two native validation workflow actions and actual signed-in use-case tests are separate installation gates.",
+  "updated_at": "2026-10-26T15:37:33.544Z",
+  "status": "native-development-saved-live-testing-pending",
+  "verification": "All 21 function bodies and both existing workflow validation actions were saved in Creator Development and independently reloaded against current reviewed source. Complete workflow captures each show exactly one script action. Final signed-in application tests are tracked separately after Development frontend deployment.",
   "functions": [
     {
       "name": "getUserAccess",
@@ -176,9 +176,11 @@
     {
       "name": "createBudgetFromSubdivision",
       "source": "creator/functions/createBudgetFromSubdivision.dg",
-      "savedAndReloaded": false,
-      "nativeUpdateRequired": true,
-      "verification": "No independently reloaded current native after capture has been recorded."
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/createBudgetFromSubdivision.after.dg",
+      "capture_sha256": "35a979292270990d837811ede8f35e9cb961f3e00e0ec3f3fedb248fd60cadda"
     },
     {
       "name": "createBudgetAttachmentRecord",
@@ -204,23 +206,29 @@
     {
       "link": "Construction_Attachment_V",
       "source": "creator/workflows/Construction_Attachment_Validation.dg",
-      "savedAndReloaded": false,
-      "nativeUpdateRequired": true,
-      "verification": "Updated dual-parent validation source has not yet been saved and independently reloaded as a complete native action; prior October20 evidence does not verify the current body."
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development; independently reopened complete native Workflow Builder body with exactly one script action. Source, after capture and sole action token streams match, preserving literals, operators and grouping.",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/Construction_Attachment_V.after.dg",
+      "capture": "creator/schema-changes/po-create-permission-2026-10-26/Construction_Attachment_V.builder-capture.json",
+      "nativeScriptActionCount": 1,
+      "capture_sha256": "ec9765726bb46eb2c4c301d1247d28bfa581e22fa0372148d366bea1c54ab776"
     },
     {
       "link": "Validate_Comment_Log",
       "source": "creator/workflows/Validate_Comment_Log.dg",
-      "savedAndReloaded": false,
-      "nativeUpdateRequired": true,
-      "verification": "Updated dual-parent validation source has not yet been saved and independently reloaded as a complete native action; prior October20 evidence does not verify the current body."
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development; independently reopened complete native Workflow Builder body with exactly one script action. Source, after capture and sole action token streams match, preserving literals and grouping.",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/Validate_Comment_Log.after.dg",
+      "capture": "creator/schema-changes/po-create-permission-2026-10-26/Validate_Comment_Log.builder-capture.json",
+      "capture_sha256": "4537c3da1ad85baa650cfeaeb19ef1f0d51e17eb48b79bd121d368dc25aef821",
+      "nativeScriptActionCount": 1
     }
   ],
   "expected_workflow_count": 2,
-  "pending_native_components": [
-    "createBudgetFromSubdivision",
-    "Construction_Attachment_V",
-    "Validate_Comment_Log"
-  ],
-  "blocking_native_state": "Creator reports maintenance mode while a publishing process is active. Remaining native saves and workflow captures are pending; no bypass attempted."
+  "pending_native_components": [],
+  "productionPromotionByThisTask": false,
+  "productionState": "User handles native publishing; resulting Production state has not been independently verified by this task.",
+  "live_testing_status": "Pending after Development frontend deployment."
 }

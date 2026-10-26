@@ -55,6 +55,7 @@ function harness({rows=[raw(ID)],propertyCount=1,countOverride,readHook,updateHo
   return{...h,c,storage,calls,writes,progress,recoveries,TaxUI,stats:()=>({nativeActive,maxActive,handshakes})};
 }
 async function ready(options){const h=harness(options);await h.c.Tax.start();assert.equal((await h.c.loadReferenceDataOnly()).published,true);return h;}
+function facetRequest(c,dim){const ig={};ig[c.FACET_IGNORE[dim]]=true;return{token:c.state.countToken,current:c.buildParcelCriteria({}),bases:{[dim]:c.buildParcelCriteria(ig)}};}
 
 // Missing/duplicate/extra/unsafe identities or a native count mismatch never publish editable parcels.
 for(const malformed of ['missing','duplicate','extra','numeric']){
@@ -130,12 +131,12 @@ for(const params of [{},[],{envUrlFragment:'/environment/development',loginUser:
 // Actual late facet success AND rejection cannot settle or repaint the newer captured criteria.
 for(const rejectOld of [false,true]){
   const h=await ready(),c=h.c,pending=[];let paints=0;c.facetClauseFor=()=>'(Status == "Awaiting Assessment")';c.FACET_RENDER.status=()=>{paints++;};c.fetchRecordCount=()=>{const value=held();pending.push(value);return value.promise;};
-  c.state.search='old';const old=c.refreshFacetCounts('status',[{key:'one'}]);await wait();c.state.search='new';const newer=c.refreshFacetCounts('status',[{key:'one'}]);await wait();pending[1].resolve(17);await newer;const cache=c.state.facetCounts.status,painted=paints;
+  c.state.search='old';const old=c.refreshFacetCounts('status',[{key:'one'}],facetRequest(c,'status'));await wait();c.state.search='new';const newer=c.refreshFacetCounts('status',[{key:'one'}],facetRequest(c,'status'));await wait();pending[1].resolve(17);await newer;const cache=c.state.facetCounts.status,painted=paints;
   rejectOld?pending[0].reject(new Error('Old denied')):pending[0].resolve(5);await old;assert.equal(c.state.facetCounts.status,cache);assert.equal(cache.key,'new');assert.equal(cache.vals.one,17);assert.equal(c.state.facetCountsLoading.status,false);assert.equal(paints,painted);
 }
 // A failed facet retains measured values and explicitly unavailable uncounted entries, without repaint retries.
 {
-  const h=await ready(),c=h.c;let calls=0;c.facetClauseFor=()=>'(Status == "Awaiting Assessment")';c.fetchRecordCount=async()=>{if(++calls===2)throw new Error('Denied');return 7;};c.state.search='scope';await c.refreshFacetCounts('status',[{key:'one'},{key:'two'},{key:'three'}]);const cache=c.state.facetCounts.status;assert.equal(cache.partial,true);assert.equal(cache.settled,true);assert.equal(cache.unavailable,true);assert.equal(cache.counted,1);assert.equal(c.facetCount('status','one'),'7');assert.equal(c.facetCount('status','two'),'—');await c.refreshFacetCounts('status',[{key:'one'},{key:'two'},{key:'three'}]);assert.equal(calls,2);
+  const h=await ready(),c=h.c;let calls=0;c.facetClauseFor=()=>'(Status == "Awaiting Assessment")';c.fetchRecordCount=async()=>{if(++calls===2)throw new Error('Denied');return 7;};c.state.search='scope';await c.refreshFacetCounts('status',[{key:'one'},{key:'two'},{key:'three'}],facetRequest(c,'status'));const cache=c.state.facetCounts.status;assert.equal(cache.partial,true);assert.equal(cache.settled,true);assert.equal(cache.unavailable,true);assert.equal(cache.counted,1);assert.equal(c.facetCount('status','one'),'7');assert.equal(c.facetCount('status','two'),'—');await c.refreshFacetCounts('status',[{key:'one'},{key:'two'},{key:'three'}],facetRequest(c,'status'));assert.equal(calls,2);
 }
 // Actual headline status post-await ownership guards include late errors and criteria changed without token changes.
 for(const rejectOld of [false,true]){

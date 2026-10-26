@@ -12,9 +12,16 @@ string createBudgetFromSubdivision(string subdivisionId, string action)
 		{
 			try
 			{
-				if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting") { result.put("error","This profile has read-only Budget access."); return result.toString(); }
+				if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+				{
+					result.put("error","This profile has read-only Budget access.");
+					return result.toString();
+				}
+			}			catch (profileError)
+			{
+				result.put("error","Budget access could not be verified.");
+				return result.toString();
 			}
-			catch (profileError) { result.put("error","Budget access could not be verified."); return result.toString(); }
 		}
 		accessRow = User_Access[User == zoho.loginuser];
 		if(accessRow.count() != 1 || (accessRow.Edit_All_Budgets != true && accessRow.Edit_Owned_Budgets != true))

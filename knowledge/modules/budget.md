@@ -137,6 +137,10 @@ The independent saved-body captures and current native verification status are
 recorded in
 [`live-install-progress.json`](../../creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json).
 Only entries marked saved and independently reopened are confirmed installed.
+All twenty-one function bodies and both validation workflows now have independently
+reloaded Development captures matching the current reviewed source; each workflow
+capture contains exactly one complete script action. Frontend 122.29.73 targets Development only. Native Production publishing remains user-owned, and final
+in-app behavior is verified separately after the frontend deployment.
 Creator's formatter has previously changed grouped conditions, so native bodies
 must be compared while preserving literals and boolean grouping.
 The independently reloaded `sendModificationEmail` and `modificationAdmin`

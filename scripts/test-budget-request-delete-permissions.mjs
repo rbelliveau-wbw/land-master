@@ -26,7 +26,10 @@ for(const rows of [[],[{User:'actor',Edit_Owned_Budgets:true,Edit_Delete_All_Mod
 }
 const po=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');
 const deleteStart=po.indexOf('if(action == "PreviewDelete" || action == "Delete" || action == "CheckDelete")');
-assert.ok(deleteStart>=0);const guard=po.slice(deleteStart).match(/if\(access\.Edit_All_Budgets[^\n]+/)[0];
+assert.ok(deleteStart>=0);
+const guardStart=po.indexOf('if(access.Edit_All_Budgets',deleteStart),guardOpen=po.indexOf('{',guardStart),guardEnd=po.indexOf('}',guardOpen)+1;
+assert.ok(guardStart>=deleteStart&&guardOpen>guardStart&&guardEnd>guardOpen);
+const guard=po.slice(guardStart,guardEnd);assert.match(guard,/return result\.toString\(\)/,'Execute the full native guard body across Creator formatter line breaks');
 const poGuard=translate('string poDeleteGuard(){result=Map();'+guard+'\n return "ALLOW";\n}').js;
 for(const [global,owned,archived] of [[false,true,false],[false,false,false],[true,false,false],[true,true,true]]){
   const context=vm.createContext({access:{Edit_All_Budgets:global,Edit_Owned_Budgets:owned},budget:{Archived:archived}});vm.runInContext('function Map(){return {put(k,v){this[k]=v;},toString(){return JSON.stringify(this);}};}'+poGuard,context);assert.equal(vm.runInContext('poDeleteGuard()',context)==='ALLOW',global&&!archived);

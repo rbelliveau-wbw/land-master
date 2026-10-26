@@ -1,3 +1,19 @@
+## Report controls and Search-only counts — 19.17.31, October 26, 2026
+
+Selection actions now occupy the left side of the existing pagination row.
+The row keeps its height with no selection; Clear stays beside Select All.
+The compact save dialog opens near the top of the viewport and replaces the
+Bulk Edit form after valid submission. Closing it returns focus to a visible
+report action and restores normal scrolling.
+
+Parcel headline and filter counts wait for Search. Opening the module,
+changing filters, opening filter menus and completing a write do not start
+optional parcel count cycles. Search loads its complete counted scope first,
+then updates counts for the captured filters. Mandatory reference reads and
+the 800-record safety limit remain. No Creator schema, functions, Custom APIs
+or permission changes. Rollback: 19.17.30. See
+[release and verification](../../docs/tax-report-controls-2026-10-26.md).
+
 ## Native bulk saves and compact progress — 19.17.30, October 26, 2026
 
 Bulk edits now group identical captured payloads into native SDK2 updates of up
