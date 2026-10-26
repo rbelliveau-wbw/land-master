@@ -1,3 +1,12 @@
+## PO approval preview permission fix — October 26, 2026
+
+Budget Manager 122.29.74 requests the existing read-only approval preview for a
+new PO or an authoritative own Draft through the same live `canCompose()` gate
+as the composer. The prior legacy Budget-edit check prevented a PO-only Const
+creator from sending the lookup and left the Approvers panel at Checking
+approvers. Existing Budget editors retain preview access; foreign Drafts stay
+restricted. Approval routing, notification settings and native writes are unchanged.
+
 ## Create Purchase Orders and Const access — October 26, 2026
 
 Budget Manager 122.29.73 adds `User_Access.Create_Purchase_Orders`, a default-false decision box under
@@ -139,7 +148,7 @@ recorded in
 Only entries marked saved and independently reopened are confirmed installed.
 All twenty-one function bodies and both validation workflows now have independently
 reloaded Development captures matching the current reviewed source; each workflow
-capture contains exactly one complete script action. Frontend 122.29.73 targets Development only. Native Production publishing remains user-owned, and final
+capture contains exactly one complete script action. Frontend 122.29.74 targets Development only. Native Production publishing remains user-owned, and final
 in-app behavior is verified separately after the frontend deployment.
 Creator's formatter has previously changed grouped conditions, so native bodies
 must be compared while preserving literals and boolean grouping.

@@ -92,6 +92,32 @@ vm.runInContext(helper(ui,'get'),u);await u.get(u.model.id);
 assert.equal(u.model.canEditDraft,false,'An older snapshot cannot inherit the previous PO ownership capability');
 assert.equal(u.readOnly(),true);
 
+// The approval preview follows the PO composer grant, independently of Budget
+// edit access. Execute the real debounce/response path for new and own Drafts.
+const previewTimers=new Map(),previewCalls=[];let previewTimerId=0;
+const previewNode={innerHTML:''};
+const p=vm.createContext({model:{budgetId:budget.ID,editable:false,loadState:'loaded',status:'Draft',approvalState:'Not Configured',
+  amount:'0.01',lines:[{budgetItemId:'90071992547409935'}],balanceState:'loaded'},
+  options:{canCreate:()=>creation,canEdit:()=>editor},current:()=>true,generation:1,previewGeneration:0,previewTimer:null,progress:false,
+  card:{querySelector:()=>previewNode},allocationRows:()=>[{verified:true,available:100n,shortfall:0n,remaining:99n,pending:0n}],
+  patchApprovers(){},money:v=>v,root:{LMPO:u.LMPO},
+  setTimeout:fn=>{const id=++previewTimerId;previewTimers.set(id,fn);return id;},clearTimeout:id=>previewTimers.delete(id),
+  call:async payload=>{previewCalls.push(payload);return {contract:'po-v1',success:true,approvalPreview:{roles:[{role:'CFO',order:1,name:'Test CFO',email:'cfo@example.com'}]}};}
+});
+for(const name of ['canAmend','canCompose','readOnly','patchContext'])vm.runInContext(helper(ui,name),p);
+editor=false;creation=true;p.patchContext();
+assert.equal(previewTimers.size,1,'A PO-only creator schedules approval lookup without Budget edit access');
+await previewTimers.get(p.previewTimer)();previewTimers.clear();
+assert.equal(previewCalls.length,1);assert.equal(previewCalls[0].action,'PreviewApprovals');assert.equal(previewCalls[0].amount,'0.01');
+assert.equal(p.model.previewState,'loaded');assert.equal(p.model.previewRoles[0].email,'cfo@example.com');
+p.patchContext();assert.equal(previewTimers.size,0,'Unchanged preview context does not duplicate a completed lookup');
+Object.assign(p.model,{id:'90071992547409936',canEditDraft:true,previewKey:''});p.patchContext();
+assert.equal(previewTimers.size,1,'An authoritative own Draft can preview its approvers after reopening');
+await previewTimers.get(p.previewTimer)();previewTimers.clear();assert.equal(previewCalls.length,2);
+p.model.canEditDraft=false;p.model.previewKey='';p.patchContext();assert.equal(previewTimers.size,0,'Another actor\'s Draft cannot schedule the creation preview');
+editor=true;p.patchContext();assert.equal(previewTimers.size,1,'Existing Budget editors retain approval preview');
+previewTimers.clear();editor=false;
+
 // Both actual openers guard direct calls, not only disabled menu buttons.
 let opened=0,denials=0;
 Object.assign(c,{requireBudgetRequestDetail:()=>true,poDevelopment:()=>true,getPurchaseOrderUI:()=>({open:async()=>{opened++;}}),toastShow:()=>{denials++;}});
