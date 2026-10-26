@@ -1,3 +1,32 @@
+## Hide Empty beside Search — 122.29.79, October 26, 2026
+
+The approved **Hide Empty** pill switch sits immediately beside line-item Search
+in single-phase View/Edit and all-phases tables. It starts off and remains a
+local editor-session choice when changing categories, tiers, phases and modes.
+Rows hide only when every loaded phase has zero Preliminary, Unapproved, Final,
+HCSS and GP actual amounts, no nonzero per-unit rate or modification, and no
+per-unit setup/draft. Credits and cancelling modifications stay visible. Search
+and category filters compose; empty categories hide, while totals and native
+editors remain mounted. See [the design rule](../design/empty-row-filters.md).
+
+Changed files: Budget HTML/CSS/config and immutable release; shared motion engine
+and adoption registry with synchronized widget source copies; the focused
+regression, package validation entry, manifests, design/module documentation and
+environment mapping. A new combined visibility function was needed because the
+existing Budget search only matched text. It reuses the existing amount parser,
+item lookup and modification adapters. The switch follows Pro Forma's proven
+Hide Empty control.
+
+Creator forms/fields, functions and Custom APIs: no changes. No Creator deployment
+is required for this frontend change. Verification covers zero rows, actual-only
+rows, credits, cancelling modifications, cross-phase amounts, per-unit drafts,
+unknown data, combined search/categories, switch restoration and desktop UI.
+Full `npm run validate` and `npm run build:pages` passed. Desktop verification
+used the actual widget in its isolated mock-data preview: switch placement and
+ARIA state, expanded rows, combined Search, retained phase selection and totals.
+Live Creator records were not changed during verification.
+Rollback: restore Production Budget to 122.29.77; keep the permanent widget URL.
+
 ## Development 76 readonly modal forecast display — October 26, 2026
 
 Budget Manager 122.29.76 hides the future Approvers forecast pane whenever the

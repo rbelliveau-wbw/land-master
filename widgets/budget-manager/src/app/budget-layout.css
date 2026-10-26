@@ -127,6 +127,16 @@
 .cat-tsw{max-width:100%;flex-wrap:wrap}.cat-tsw>*{font-size:11px}.cfl{font-size:9px}
 .cat-toolbar-actions .expand-toggle,.cat-toolbar-actions .project-rates-toggle{height:33px;font-size:10.5px;box-shadow:none;padding:0 11px}
 .cat-toolbar-search #itemSearch{height:33px!important;font-size:11px!important;border-radius:8px!important;background-color:#f7f9fc!important}
+.budget-hide-empty{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 8px;border:1px solid #dde5f0;border-radius:999px;background:#eef2f8;color:#5a6b85;font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap;transition:background .13s,border-color .13s,color .13s}
+.budget-hide-empty .tgl{width:26px;height:16px;border-radius:999px;background:#c9d4e4;position:relative;flex:none;transition:background .13s}
+.budget-hide-empty .tgl:after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0f172a40;transition:transform .13s}
+.budget-hide-empty:hover,.budget-hide-empty.on{color:var(--primary);border-color:#8fb2f3;background:#fff}
+.budget-hide-empty.on .tgl{background:var(--primary)}
+.budget-hide-empty.on .tgl:after{transform:translateX(10px)}
+.budget-hide-empty:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.budget-empty-items{padding:16px 12px;color:var(--muted);font-size:12px;text-align:center}
+.budget-empty-items[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.budget-hide-empty,.budget-hide-empty .tgl,.budget-hide-empty .tgl:after{transition:none}}
 .btn{border-radius:8px;font-weight:650;box-shadow:none}.btn.primary{background:var(--primary-2);border-color:var(--primary-2)}.btn.navy{background:var(--navy);border-color:var(--navy)}
 .ptable .pbtn,.proj-action-btn,.hero-map-btn,.owner-edit-btn,.powner-btn{height:28px;font-size:10px;font-weight:650;padding:0 9px;border-radius:7px;box-shadow:none;transform:none}
 .proj-action-btn.open,.proj-action-btn.compare,.proj-action-btn.open:hover,.proj-action-btn.compare:hover,.pbtn:hover{box-shadow:none;transform:none}.proj-action-btn.open,.pbtn.view{background:var(--navy);border-color:var(--navy)}

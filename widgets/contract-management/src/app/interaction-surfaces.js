@@ -35,7 +35,7 @@
       tab('#modeSwitch','button','#editor');
       tab('.tier-filter-bar','.cfpill','#mx');
       panels.push({selector:'#vBudgets,#vEditor,#vApprovals,#vImports'});
-      list('#mx','tr[data-iid]',row=>row.dataset.iid,()=>state().edBudget?.ID||options.project?.()?.key);
+      list('#mx','tr.irow[data-iid],tr.irow[data-budget-item-ids]',row=>row.dataset.iid||row.dataset.budgetItemIds,()=>state().edBudget?.ID||options.project?.()?.key,{visibility:true});
       list('#projList','.proj-card[data-project-key]',row=>row.dataset.projectKey,'projects');
       surfaceExtra.push('.pop');
       status('[data-project-proforma-wrap]','.proj-card',node=>node.dataset.projectProformaWrap);

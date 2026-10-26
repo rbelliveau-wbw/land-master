@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.78"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.79"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.78"></script>
-<script src="po-grid.js?v=122.29.78"></script>
-<script src="po-controller.js?v=122.29.78"></script>
-<script src="po-progress.js?v=122.29.78"></script>
-<script src="po-ui.js?v=122.29.78"></script>
-<script src="request-attachments.js?v=122.29.78"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.78">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.78">
+<script src="po-domain.js?v=122.29.79"></script>
+<script src="po-grid.js?v=122.29.79"></script>
+<script src="po-controller.js?v=122.29.79"></script>
+<script src="po-progress.js?v=122.29.79"></script>
+<script src="po-ui.js?v=122.29.79"></script>
+<script src="request-attachments.js?v=122.29.79"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.79">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.79">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1836,15 +1836,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.78">
-<script src="success-feedback.js?v=122.29.78"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.78">
-<script src="interaction-motion.js?v=122.29.78"></script>
-<script src="interaction-surfaces.js?v=122.29.78"></script>
-<script src="number-edit-commit.js?v=122.29.78"></script>
-<script src="number-transitions.js?v=122.29.78"></script>
-<script src="number-surfaces.js?v=122.29.78"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.78">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.79">
+<script src="success-feedback.js?v=122.29.79"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.79">
+<script src="interaction-motion.js?v=122.29.79"></script>
+<script src="interaction-surfaces.js?v=122.29.79"></script>
+<script src="number-edit-commit.js?v=122.29.79"></script>
+<script src="number-transitions.js?v=122.29.79"></script>
+<script src="number-surfaces.js?v=122.29.79"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.79">
 </head>
 <body>
 
@@ -2136,6 +2136,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
               <input type="text" id="itemSearch" placeholder="Search line items by name, code, or description…" style="width:100%;height:38px;border:1px solid var(--line);border-radius:999px;padding:0 14px 0 36px;font-size:13px;color:var(--text);outline:none;background:var(--card) url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E&quot;) no-repeat 12px center">
             </div>
             <div class="cat-toolbar-actions">
+              <button class="budget-hide-empty" id="budgetHideEmpty" type="button" role="switch" aria-checked="false" title="Hide line items with no budget, modification or actual amounts"><span class="tgl" aria-hidden="true"></span>Hide Empty</button>
               <button class="expand-toggle" id="expandToggle" type="button" title="Expand or collapse all categories">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
                 <span id="expandToggleText">Expand all</span>
@@ -2146,6 +2147,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
             </div>
           </div>
           <div id="lockNotice"></div>
+          <div id="budgetEmptyItems" class="budget-empty-items" role="status" hidden>No matching line items</div>
           <div class="mpanel"><div class="mscroll"><table class="mx" id="mx"></table></div></div>
         </div>
       </div>
@@ -2608,6 +2610,7 @@ var S = {
   projectFilter: [],
   territoryFilter: [],
   catFilter: "all",
+  hideEmptyItems: false,
   showProjectRates: false,
   audit: [],
   auditSeq: 0,
@@ -2731,7 +2734,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.78", code:"BMW",
+  widget:"Budget Manager", version:"122.29.79", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -9906,6 +9909,7 @@ function renderLockNotice() {
   }
 }
 function updateExpandToggle() {
+  applyBudgetItemFilters();
   var btn = $("expandToggle"), txt = $("expandToggleText");
   if (!btn) return;
   var inEditor = S.view === "vEditor" && S.globalMode !== "approvals";
@@ -10046,12 +10050,43 @@ document.addEventListener("click", function (e) {
   $("edCrumbs").innerHTML = budgetBreadcrumbHtml(S.edBudget,"All Phases",proj&&proj.name);
 });
 function applyCatFilter() {
-  [].forEach.call(document.querySelectorAll("#mx tbody.cat-tbody"), function (tb) {
-    var dept = tb.dataset.dept || "";
-    tb.style.display = (S.catFilter === "all" || dept === S.catFilter) ? "" : "none";
+  applyBudgetItemFilters();
+}
+// Reuse the model's amount parser and modification adapter; never infer emptiness
+// from formatted cells or sums that can cancel credits against positive amounts.
+function budgetItemHasAmounts(it) {
+  if (!it) return true;
+  if (["Prelim_Budget_Ttl", "Unapproved_Final_Budget_Ttl", "Budget_Ttl", "HCSS_Actuals", "PROJ_Actual", "Per_Unit"].some(function (field) { return budgetUnitNumber(it[field]) !== 0; })) return true;
+  if (it._perUnit === true || cleanVal(it.Unit)) return true; // Keep per-unit setup and drafts reachable.
+  if (!budgetModsReady()) return true;
+  return modsForItem(it.ID).some(function (m) { return modSignedAmount(m) !== 0; });
+}
+function applyBudgetItemFilters() {
+  var search = $("itemSearch"), q = String(search && search.value || "").toLowerCase().trim();
+  var hideEmpty = !!S.hideEmptyItems, filtering = hideEmpty || !!q, visible = 0, count = 0;
+  var toggle = $("budgetHideEmpty");
+  if (toggle) { toggle.classList.toggle("on", hideEmpty); toggle.setAttribute("aria-checked", String(hideEmpty)); }
+  document.querySelectorAll("#mx tbody.cat-tbody").forEach(function (tb) {
+    var departmentMatches = S.catFilter === "all" || tb.dataset.dept === S.catFilter, matches = 0;
+    tb.querySelectorAll("tr.irow").forEach(function (row) {
+      var ids = row.dataset.iid ? [row.dataset.iid] : String(row.dataset.budgetItemIds || "").split(",").filter(Boolean);
+      var empty = hideEmpty && ids.length > 0 && !ids.some(function (id) { return budgetItemHasAmounts(findItemById(id)); });
+      var hidden = empty || !!q && String(row.textContent || "").toLowerCase().indexOf(q) < 0;
+      row.classList.toggle("search-hidden", hidden);
+      if (!hidden) matches++;
+      if (departmentMatches) { count++; if (!hidden) visible++; }
+    });
+    tb.style.display = departmentMatches && (!filtering || matches > 0) ? "" : "none";
   });
+  var emptyState = $("budgetEmptyItems");
+  if (emptyState) emptyState.hidden = !filtering || count === 0 || visible > 0;
 }
 document.addEventListener("click", function (e) {
+  if (e.target.closest("#budgetHideEmpty")) {
+    S.hideEmptyItems = !S.hideEmptyItems;
+    applyBudgetItemFilters();
+    return;
+  }
   var prt = e.target.closest("#projectRatesToggle");
   if (prt) {
     e.preventDefault();
@@ -10333,10 +10368,11 @@ function focusIncompleteBudgetPerUnit(draft) {
   var rows = matrix ? [].slice.call(matrix.querySelectorAll("tr.irow[data-iid]")) : [];
   var row = rows.find(function (r) { return String(r.getAttribute("data-iid")) === String(draft.item.ID); });
   if (row) {
+    S.hideEmptyItems = false;
     S.catFilter = "all";
     renderCatFilterBar();
-    applyCatFilter();
     var search = $("itemSearch"); if (search) search.value = "";
+    applyCatFilter();
     rows.forEach(function (r) { r.classList.remove("search-hidden"); });
     setCategoryExpanded(row.closest("tbody.cat-tbody"), true, false);
     if (draft.status.needs === "unit") target = row.querySelector("[data-budget-unit-open]");
@@ -10552,7 +10588,7 @@ function renderProjectMatrix(proj) {
           ? (phasesWithNotes + " of " + phasesWithItem.length + " phase" + (phasesWithItem.length === 1 ? "" : "s") + " have notes")
           : "Add notes for this line by phase";
         var lineNoteButton = "<button class='nbtn multi-line-note-btn" + (phasesWithNotes ? " has" : "") + "' data-multi-line-note='" + escAttr(noteRowKey) + "' title='" + escAttr(noteTitle) + "' aria-label='" + (canEditAnyLineNote ? (phasesWithNotes ? "Edit notes by phase" : "Add notes by phase") : "View locked notes") + "'>" + NOTE_PENCIL_SVG + "</button>";
-        html += "<tr class='irow" + (closed ? " cat-collapsed" : "") + "'><td class='lc'><div class='lab'><div class='nw'><div class='n'>" + esc(ir.name) + "</div>" + (ir.code ? "<div class='cd'>" + esc(ir.code) + "</div>" : "") + "</div>" + lineNoteButton + "</div></td>";
+        html += "<tr class='irow" + (closed ? " cat-collapsed" : "") + "' data-budget-item-ids='" + escAttr(ir.perPhase.filter(Boolean).map(function (it) { return String(it.ID); }).join(",")) + "'><td class='lc'><div class='lab'><div class='nw'><div class='n'>" + esc(ir.name) + "</div>" + (ir.code ? "<div class='cd'>" + esc(ir.code) + "</div>" : "") + "</div>" + lineNoteButton + "</div></td>";
         var rowTot = 0;
         phases.forEach(function (b, pi) {
           var it = ir.perPhase[pi];
@@ -11901,11 +11937,7 @@ document.addEventListener("input", function (e) {
   if (q && Object.keys(S.collapsed).some(function (k) { return S.collapsed[k]; })) {
     setAllCategoriesCollapsed(false);
   }
-  var rows = document.querySelectorAll("#mx tr.irow");
-  rows.forEach(function (row) {
-    var text = (row.textContent || "").toLowerCase();
-    row.classList.toggle("search-hidden", !!q && text.indexOf(q) < 0);
-  });
+  applyBudgetItemFilters();
 });
 
 /* ── Landing budget count ── */
@@ -14035,7 +14067,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.78",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.79",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

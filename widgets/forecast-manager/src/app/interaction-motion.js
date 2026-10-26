@@ -119,7 +119,7 @@
         if(config.resize&&changed&&open)cancel(host);
         const height=config.resize&&open?host.getBoundingClientRect().height:null;
         // Only intentional navigation/structural edits move rows; typing calculations do not.
-        if(primed&&intent>now()&&structural&&old?.samples){
+        if(primed&&intent>now()&&(structural||config.visibility&&changed)&&old?.samples){
           for(const [rowKey,sample] of samples){
             const before=old.samples.get(rowKey);
             if(before){const delta=before.top-sample.top;if(Math.abs(delta)>.5&&Math.abs(delta)<1200)run(sample.node,[{transform:'translateY('+delta+'px)'},{transform:'translateY(0)'}],230);}

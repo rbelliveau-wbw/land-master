@@ -44,6 +44,8 @@ New feature registration:
   and `data-lm-motion="meter"` on a filled meter.
 - Register keyed lists, scope, native sliders and legacy selectors explicitly in
   the adoption registry. Configure visible row identity from the actual model.
+  Lists may opt into `visibility:true` for keyed show/hide filters; animate a
+  changed visible key set through the same engine without replacing live rows.
   Read the old layout before the original handler and play after it; do not
   intercept, clone or replace live editors. Keep originals mounted when possible.
 - For editable subforms register each actual table wrapper separately with a
