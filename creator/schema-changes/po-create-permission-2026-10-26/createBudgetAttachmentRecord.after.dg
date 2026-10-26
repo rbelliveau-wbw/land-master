@@ -1,0 +1,213 @@
+string createBudgetAttachmentRecord(string budgetId)
+{
+	// A plain Budget ID retains the existing Budget-only create contract.
+	response = {"ok":false,"contract":"budget-request-attachments-v1","writeState":"not-started"};
+	writeStarted = false;
+	try 
+	{
+		rawRequest = ifnull(budgetId,"").trim();
+		p = {"action":"Create","budgetId":rawRequest,"paymentRequestId":"","modificationId":""};
+		if(rawRequest.startsWith("{"))
+		{
+			p = rawRequest.toMap();
+			if(p.get("contract") != "budget-request-attachments-v1")
+			{
+				response.put("message","Unsupported attachment request.");
+				return response.toString();
+			}
+		}
+		action = ifnull(p.get("action"),"");
+		if(action != "Create" && action != "Associate" && action != "Validate" && action != "Capabilities")
+		{
+			response.put("message","Unsupported attachment action.");
+			return response.toString();
+		}
+		for each  key in {"budgetId","paymentRequestId","modificationId","attachmentId","expectedPaymentRequestId","expectedModificationId","userAccessId"}
+		{
+			if(p.get(key) != null)
+			{
+				typed = {"value":p.get(key)};
+				if(!typed.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]*\"[ ]*[}]"))
+				{
+					response.put("message","Attachment identities must be exact ID strings.");
+					return response.toString();
+				}
+			}
+		}
+		bid = ifnull(p.get("budgetId"),"");
+		if(!bid.matches("[1-9][0-9]*"))
+		{
+			response.put("message","Missing Budget ID.");
+			return response.toString();
+		}
+		budget = Add_Budget[ID == bid.toLong()];
+		if(budget.count() != 1)
+		{
+			response.put("message","Budget not found.");
+			return response.toString();
+		}
+		actorUser = zoho.loginuser;
+		if(thisapp.environment.type == "Development" && zoho.loginuser == zoho.adminuser && p.get("userAccessId") != null)
+		{
+			actorId = p.get("userAccessId").toString();
+			if(!actorId.matches("[1-9][0-9]*"))
+			{
+				response.put("message","User Access identity is required.");
+				return response.toString();
+			}
+			previewActor = User_Access[ID == actorId.toLong()];
+			if(previewActor.count() == 1)
+			{
+				actorUser = previewActor.User;
+			}
+		}
+		access = User_Access[User == actorUser];
+		if(access.count() != 1 || (p.get("userAccessId") != null && p.get("userAccessId") != access.ID.toString()))
+		{
+			response.put("message","Authenticated User Access is required.");
+			return response.toString();
+		}
+		canWrite = access.Edit_All_Budgets == true || access.Edit_All_Approvals == true;
+		for each  owner in budget.Budget_Owner
+		{
+			if(owner.ID == access.ID)
+			{
+				if(access.Edit_Owned_Budgets == true || access.Edit_Owned_Approvals == true)
+				{
+					canWrite = true;
+				}
+			}
+		}
+		if(actorUser != zoho.adminuser)
+		{
+			try 
+			{
+				if(thisapp.permissions.profileForUser(actorUser) == "Construction Budgeting")
+				{
+					canWrite = false;
+				}
+			}			catch (profileError)
+			{
+				canWrite = false;
+			}
+		}
+		response.put("budgetId",bid);
+		response.put("canWrite",canWrite);
+		if(action == "Capabilities")
+		{
+			response.put("ok",true);
+			return response.toString();
+		}
+		if(!canWrite)
+		{
+			response.put("message","You do not have permission to change this Budget's attachments.");
+			return response.toString();
+		}
+		requestId = ifnull(p.get("paymentRequestId"),"");
+		modificationId = ifnull(p.get("modificationId"),"");
+		if(requestId != "" && modificationId != "")
+		{
+			response.put("message","Choose one associated request.");
+			return response.toString();
+		}
+		requestLink = null;
+		modificationLink = null;
+		if(requestId != "")
+		{
+			if(!requestId.matches("[1-9][0-9]*"))
+			{
+				response.put("message","Request identity is invalid.");
+				return response.toString();
+			}
+			request = Payment_Request[ID == requestId.toLong() && Budget == budget.ID];
+			if(request.count() != 1 || (request.Request_Type != "Purchase Order" && request.Request_Type != "Check" && request.Request_Type != "Wire"))
+			{
+				response.put("message","Request does not belong to this Budget.");
+				return response.toString();
+			}
+			requestLink = request.ID;
+		}
+		if(modificationId != "")
+		{
+			if(!modificationId.matches("[1-9][0-9]*"))
+			{
+				response.put("message","Modification identity is invalid.");
+				return response.toString();
+			}
+			modification = Budget_Modification[ID == modificationId.toLong() && Budget == budget.ID];
+			if(modification.count() != 1)
+			{
+				response.put("message","Modification does not belong to this Budget.");
+				return response.toString();
+			}
+			modificationLink = modification.ID;
+		}
+		response.put("paymentRequestId",requestId);
+		response.put("modificationId",modificationId);
+		if(action == "Validate")
+		{
+			response.put("ok",true);
+			return response.toString();
+		}
+		if(action == "Associate")
+		{
+			attachmentId = ifnull(p.get("attachmentId"),"");
+			if(!attachmentId.matches("[1-9][0-9]*"))
+			{
+				response.put("message","Attachment identity is required.");
+				return response.toString();
+			}
+			attachment = Attachment[ID == attachmentId.toLong() && Budget == budget.ID];
+			if(attachment.count() != 1)
+			{
+				response.put("message","Attachment does not belong to this Budget.");
+				return response.toString();
+			}
+			previousRequest = "";
+			previousModification = "";
+			if(attachment.Payment_Request != null)
+			{
+				previousRequest = attachment.Payment_Request.ID.toString();
+			}
+			if(attachment.Budget_Modification != null)
+			{
+				previousModification = attachment.Budget_Modification.ID.toString();
+			}
+			if(p.get("expectedPaymentRequestId") != previousRequest || p.get("expectedModificationId") != previousModification)
+			{
+				response.put("message","The attachment association changed. Refresh before changing it.");
+				return response.toString();
+			}
+			writeStarted = true;
+			response.put("attachmentId",attachmentId);
+			attachment.Payment_Request=requestLink;
+			attachment.Budget_Modification=modificationLink;
+		}
+		else
+		{
+			writeStarted = true;
+			newAttachmentId = insert into Attachment
+			[
+				Budget=budget.ID
+				Payment_Request=requestLink
+				Budget_Modification=modificationLink
+				Date_field1=zoho.currenttime
+				Email_Attachment=false
+				Added_User=zoho.loginuser
+			];
+			response.put("attachmentId",newAttachmentId.toString());
+		}
+		response.put("ok",true);
+		response.put("writeState","acknowledged");
+		return response.toString();
+	}	catch (attachmentError)
+	{
+		if(writeStarted)
+		{
+			response.put("writeState","unknown");
+		}
+		response.put("message","Attachment action failed: " + attachmentError.toString());
+		return response.toString();
+	}
+	return response.toString();
+}

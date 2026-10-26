@@ -1,0 +1,268 @@
+map handlePurchaseOrderApproval(map request)
+{
+	environmentType = thisapp.environment.type;
+	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
+	changed = false;
+	decisionLockId = 0;
+	try 
+	{
+		poId = request.get("id").toString();
+		rowId = request.get("approvalId").toString();
+		action = request.get("action");
+		note = ifnull(request.get("note"),"").toString().trim();
+		if(!poId.matches("[0-9]+") || !rowId.matches("[0-9]+") || note.length() > 10000)
+		{
+			result.put("error","PO, approval identity or note is invalid.");
+			return result;
+		}
+		po = Payment_Request[ID == poId.toLong() && Budget == request.get("budgetId").toString().toLong() && Request_Type == "Purchase Order"];
+		actorUser = zoho.loginuser;
+		if(environmentType == "Development" && zoho.loginuser == zoho.adminuser)
+		{
+			previewActor = User_Access[ID == request.get("userAccessId").toString().toLong()];
+			if(previewActor.count() == 1)
+			{
+				actorUser = previewActor.User;
+			}
+		}
+		access = User_Access[User == actorUser];
+		if(po.ID == null || access.count() != 1 || access.ID.toString() != request.get("userAccessId") || po.PO_Revision != request.get("expectedRevision"))
+		{
+			result.put("error","PO revision or authenticated User Access identity changed.");
+			return result;
+		}
+		decisionAction = action;
+		if(action == "CheckDecision")
+		{
+			decisionAction = request.get("decision");
+		}
+		decisionToken = "decision-" + zoho.encryption.sha256(poId + "|" + po.PO_Revision + "|" + rowId + "|" + decisionAction);
+		checked = thisapp.poApprovalBundle(poId);
+		if(checked.get("success") != true)
+		{
+			result.put("error",checked.get("error"));
+			return result;
+		}
+		bundle = checked.get("bundle");
+		found = Map();
+		for each  entry in bundle.get("rows")
+		{
+			if(entry.get("id") == rowId)
+			{
+				found = entry;
+			}
+		}
+		notificationOnly = action == "RetryEmail" || (action == "CheckDecision" && request.get("decision") == "RetryEmail");
+		if(actorUser != zoho.adminuser)
+		{
+			try 
+			{
+				actorProfile = thisapp.permissions.profileForUser(actorUser);
+				constNotificationAllowed = notificationOnly && bundle.get("submitterId") == access.ID.toString() && access.Create_Purchase_Orders == true;
+				if(actorProfile == "Construction Budgeting" && constNotificationAllowed != true)
+				{
+					result.put("error","This profile can create POs and retry only its own submission notification; Budget approvals are read-only.");
+					return result;
+				}
+			}			catch (profileError)
+			{
+				result.put("error","Budget permission profile could not be verified.");
+				return result;
+			}
+		}
+		authorized = found.get("id") != null;
+		if(notificationOnly)
+		{
+			// Use the verified actor, never the native owner's bundle permission in View-as.
+			canRetry = bundle.get("active").get("userAccessId") == access.ID.toString() || bundle.get("submitterId") == access.ID.toString() || actorUser == zoho.adminuser;
+			authorized = authorized && canRetry;
+		}
+		// The authenticated assigned approver may also be the PO submitter.
+		else
+		{
+			authorized = authorized && found.get("userAccessId") == access.ID.toString();
+		}
+		if(authorized != true)
+		{
+			result.put("error","Only the assigned approver can decide.");
+			return result;
+		}
+		wanted = "Approved";
+		if(action == "Reject" || request.get("decision") == "Reject")
+		{
+			wanted = "Rejected";
+		}
+		if(action == "CheckDecision")
+		{
+			row = Budget_Approvals[ID == rowId.toLong()];
+			decisionVerified = row.Status == wanted && row.Responded_Date != null && ifnull(row.Approval_Notes,"") == note;
+			if(notificationOnly)
+			{
+				decisionVerified = row.Sent_Date != null;
+			}
+			if(decisionVerified != true)
+			{
+				result.put("writeState","unknown");
+				result.put("error","The requested approval decision could not be verified. Do not replay it.");
+				return result;
+			}
+		}
+		else
+		{
+			if(action != "Approve" && action != "Reject" && action != "RetryEmail")
+			{
+				result.put("error","Unsupported PO approval action.");
+				return result;
+			}
+			if(po.PO_Approval_State != "Pending" || bundle.get("active").get("id") != rowId || found.get("status") != "Pending")
+			{
+				result.put("error","This approval step is no longer active.");
+				return result;
+			}
+			priorNotes = ifnull(found.get("notes"),"");
+			if(action != "RetryEmail" && priorNotes != "" && note != priorNotes && !note.startsWith(priorNotes + "\n\n"))
+			{
+				result.put("error","Prior approval notes must be retained.");
+				return result;
+			}
+			if(PO_Phase_Lock[Phase_Key == po.Budget.toString()].count() > 0)
+			{
+				result.put("error","This phase has an unresolved PO save. Recover the saved PO before making an approval decision.");
+				return result;
+			}
+			decisionLockId = insert into PO_Phase_Lock
+			[
+				Added_User=zoho.loginuser
+				Phase_Key=po.Budget.toString()
+				Operation_Token=decisionToken
+				Actor=access.ID
+			];
+			if(action == "RetryEmail")
+			{
+				mail = thisapp.sendPurchaseOrderEmail(poId);
+			}
+			else
+			{
+				changed = true;
+				row = Budget_Approvals[ID == rowId.toLong()];
+				row.Status=wanted;
+				row.Responded_Date=zoho.currentdate;
+				row.Approval_Notes=note;
+				if(wanted == "Rejected")
+				{
+					for each  modification in bundle.get("modifications")
+					{
+						mod = Budget_Modification[ID == modification.get("id").toLong()];
+						mod.Status="Rejected";
+					}
+					po.PO_Approval_State="Rejected";
+				}
+				else if(found.get("order") == bundle.get("rows").size())
+				{
+					for each  modification in bundle.get("modifications")
+					{
+						mod = Budget_Modification[ID == modification.get("id").toLong()];
+						mod.Status="Approved";
+					}
+					for each  modification in bundle.get("modifications")
+					{
+						thisapp.recalcItemRevisedFinal(modification.get("budgetItemId").toLong());
+					}
+					if(bundle.get("modifications").size() > 0)
+					{
+						thisapp.recalcBudgetModifiedTotals(po.Budget.toLong());
+					}
+					po.PO_Approval_State="Approved";
+				}
+				else
+				{
+					successorStep = bundle.get("rows").get(found.get("order"));
+					successor = Budget_Approvals[ID == successorStep.get("id").toLong()];
+					if(successor.Status != "Not Sent")
+					{
+						result.put("writeState","unknown");
+						result.put("error","Successor state changed after the decision. Review this chain.");
+						return result;
+					}
+					successor.Status="Pending";
+					successor.Sent_Date=null;
+					mail = thisapp.sendPurchaseOrderEmail(poId);
+				}
+			}
+		}
+		actual = thisapp.poSnapshot(poId);
+		if(actual.get("success") != true)
+		{
+			result.put("writeState","unknown");
+			result.put("error",actual.get("error"));
+			return result;
+		}
+		saved = actual.get("snapshot");
+		if(!notificationOnly)
+		{
+			row = Budget_Approvals[ID == rowId.toLong()];
+			if(row.Status != wanted || row.Responded_Date == null || ifnull(row.Approval_Notes,"") != note || saved.get("commitmentState") != "Reserved")
+			{
+				result.put("writeState","unknown");
+				result.put("error","PO approval decision was not verified.");
+				return result;
+			}
+		}
+		if(saved.get("approvalState") == "Approved")
+		{
+			financial = thisapp.poBudgetBalances(po.Budget.toString());
+			if(financial.get("success") != true)
+			{
+				result.put("writeState","unknown");
+				result.put("error","Approved PO balances could not be verified.");
+				return result;
+			}
+			savedBundle = saved.get("approvalBundle");
+			savedModifications = savedBundle.get("modifications");
+			for each  modification in savedModifications
+			{
+				item = Budget_Item[ID == modification.get("budgetItemId").toLong()];
+				matched = false;
+				for each  balance in financial.get("balances")
+				{
+					if(balance.get("budgetItemId") == modification.get("budgetItemId"))
+					{
+						matched = true;
+						expectedCents = balance.get("finalCents").toLong() + balance.get("modCents").toLong();
+						actualText = thisapp.poCurrencyString(ifnull(item.Revised_Final,0).toString());
+						if(actualText == "" || actualText.replaceAll("[.]","").toLong() != expectedCents)
+						{
+							result.put("writeState","unknown");
+							result.put("error","Approved modification totals could not be verified.");
+							return result;
+						}
+					}
+				}
+				if(matched != true)
+				{
+					result.put("writeState","unknown");
+					result.put("error","An approved item balance is unavailable.");
+					return result;
+				}
+			}
+		}
+		delete from PO_Phase_Lock[Phase_Key == po.Budget.toString() && Operation_Token == decisionToken && Actor == access.ID];
+		decisionLockId = 0;
+		if(PO_Phase_Lock[Phase_Key == po.Budget.toString() && Operation_Token == decisionToken].count() > 0)
+		{
+			result.put("writeState","unknown");
+			result.put("error","The approval operation lock needs review.");
+			return result;
+		}
+		result.put("success",true);
+		result.put("writeState","verified");
+		result.put("snapshot",saved);
+		result.put("decisionRowId",rowId);
+		result.put("decision",wanted);
+	}	catch (decisionError)
+	{
+		result.put("writeState",if(changed || decisionLockId != 0,"unknown","not-started"));
+		result.put("error","The PO approval could not be verified. Use read-only Check before another decision.");
+	}
+	return thisapp.poActorResponse(result,ifnull(request.get("userAccessId"),"").toString());
+}

@@ -4,7 +4,7 @@
   "environments": {
     "development": {
       "proforma-manager": "1.80.133",
-      "budget-manager": "122.29.71",
+      "budget-manager": "122.29.73",
       "land-master": "8.17.5",
       "contract-management": "1.62.36",
       "tax-center": "19.17.31",

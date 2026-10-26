@@ -4,18 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.71"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.73"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.71"></script>
-<script src="po-grid.js?v=122.29.71"></script>
-<script src="po-controller.js?v=122.29.71"></script>
-<script src="po-progress.js?v=122.29.71"></script>
-<script src="po-ui.js?v=122.29.71"></script>
-<script src="request-attachments.js?v=122.29.71"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.71">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.71">
+<script src="po-domain.js?v=122.29.73"></script>
+<script src="po-grid.js?v=122.29.73"></script>
+<script src="po-controller.js?v=122.29.73"></script>
+<script src="po-progress.js?v=122.29.73"></script>
+<script src="po-ui.js?v=122.29.73"></script>
+<script src="request-attachments.js?v=122.29.73"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.73">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.73">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1836,15 +1836,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.71">
-<script src="success-feedback.js?v=122.29.71"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.71">
-<script src="interaction-motion.js?v=122.29.71"></script>
-<script src="interaction-surfaces.js?v=122.29.71"></script>
-<script src="number-edit-commit.js?v=122.29.71"></script>
-<script src="number-transitions.js?v=122.29.71"></script>
-<script src="number-surfaces.js?v=122.29.71"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.71">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.73">
+<script src="success-feedback.js?v=122.29.73"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.73">
+<script src="interaction-motion.js?v=122.29.73"></script>
+<script src="interaction-surfaces.js?v=122.29.73"></script>
+<script src="number-edit-commit.js?v=122.29.73"></script>
+<script src="number-transitions.js?v=122.29.73"></script>
+<script src="number-surfaces.js?v=122.29.73"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.73">
 </head>
 <body>
 
@@ -2469,6 +2469,7 @@ var CFG = {
     fields: {
       editAll:      ["Edit_All_Budgets", "Edit_All_Budget"],
       editOwned:    ["Edit_Owned_Budgets", "Edit_Owned_Budget"],
+      poCreate:     ["Create_Purchase_Orders"],
       apprAll:      ["Edit_All_Approvals", "Edit_All_Approval"],
       apprOwned:    ["Edit_Owned_Approvals", "Edit_Owned_Approval"],
       send:         ["Send_for_Approvals", "Send_For_Approvals", "Send_Approvals"],
@@ -2730,7 +2731,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.71", code:"BMW",
+  widget:"Budget Manager", version:"122.29.73", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -2989,11 +2990,12 @@ function sdkInvokeCustomApi(apiName, payload) {
       var out = row ? {
         found: true, hasRow: true,
         editAll: accessTruthy(row.Edit_All_Budgets), editOwned: accessTruthy(row.Edit_Owned_Budgets),
+        poCreate: accessTruthy(row.Create_Purchase_Orders),
         apprAll: accessTruthy(row.Edit_All_Approvals), apprOwned: accessTruthy(row.Edit_Owned_Approvals),
         send: accessTruthy(row.Send_for_Approvals), editOwners: accessTruthy(row.Edit_Budget_Owners),
         viewImports: accessTruthy(row.View_Budget_Import_Items), editImports: accessTruthy(row.Edit_Budget_Import_Items),
         modAdmin: accessTruthy(row.Edit_All_Budgets), deleteArchive: accessTruthy(row.Delete_Archive_Budgets)
-      } : { found:false, hasRow:false, editAll:false, editOwned:false, apprAll:false, apprOwned:false, send:false, editOwners:false, viewImports:false, editImports:false, modAdmin:false, deleteArchive:false };
+      } : { found:false, hasRow:false, editAll:false, editOwned:false, poCreate:false, apprAll:false, apprOwned:false, send:false, editOwners:false, viewImports:false, editImports:false, modAdmin:false, deleteArchive:false };
       out.users = (MOCK.userAccess || []).map(function(r){ return { id: String(r.ID), label: accessUserKey(firstRaw(r, ["User"])) }; });
       out.myId = row ? String(row.ID) : "";
       return new Promise(function(res){ setTimeout(function(){ res({ code:3000, result: JSON.stringify(out) }); }, 200); });
@@ -3903,6 +3905,7 @@ function resolveCurrentUserPerms(){
     hasRow: !!row,
     editAll:   f(CFG.access.fields.editAll),
     editOwned: f(CFG.access.fields.editOwned),
+    poCreate:  f(CFG.access.fields.poCreate),
     apprAll:   f(CFG.access.fields.apprAll),
     apprOwned: f(CFG.access.fields.apprOwned),
     send:      f(CFG.access.fields.send),
@@ -3959,6 +3962,7 @@ function applyHardcodedPerms() {
   var p = {
     hasRow: true,
     editAll: !!o.editAll, editOwned: !!o.editOwned,
+    poCreate: !!o.poCreate,
     apprAll: !!o.apprAll, apprOwned: !!o.apprOwned,
     send: !!o.send, editOwners: !!o.editOwners,
     viewImports: !!o.viewImports, editImports: !!o.editImports,
@@ -4080,6 +4084,19 @@ function userOwnsBudget(b){
 }
 // Capability checks used throughout the UI.
 function canEditBudget(b){ var p = perms(); return p.editAll || (p.editOwned && userOwnsBudget(b)); }
+// PO creation never grants editing of the Budget or its other requests.
+function canCreatePurchaseOrder(b){ return !!b && !!S.myAccessId && (!!perms().poCreate || canEditBudget(b)); }
+function canStartBudgetRequest(kind,b){
+  if(kind==="purchase-order")return canCreatePurchaseOrder(b);
+  if(kind==="modification")return !!b && canSubmitMod(b);
+  return (kind==="check"||kind==="wire") && !!b && canEditBudget(b);
+}
+function canEditPurchaseOrderRequest(b,request){
+  if(!b||!request)return false;
+  var status=cleanVal(request.PO_Status),approval=cleanVal(request.PO_Approval_State);
+  if(status==="Draft")return canEditBudget(b)||(canCreatePurchaseOrder(b)&&request._poCanEditDraft===true);
+  return status==="Submitted"&&canEditBudget(b)&&(approval==="Rejected"||approval==="Pending"&&canDeleteBudgetRequest(b)&&request._poCanEditInFlight===true);
+}
 function canEditBudgetOwners(){ return perms().editOwners; }
 // Modification admin: full control of every Modification and its approvals (CFO-style rights).
 function canAdminMods(){ return !!perms().editAll && !!S.myAccessId; }
@@ -5060,14 +5077,20 @@ function budgetCommentCreateReview() {
   var key=budgetCreateScope("comment:"+budgetCommentThreadField,budgetCommentThreadParent);
   return S.commentCreateReviews&&S.commentCreateReviews[key];
 }
+function canWriteBudgetComments(){ return !perms().readOnly; }
 function syncBudgetCommentCreateReview() {
   var root=$("budgetCommentThread"),review=budgetCommentCreateReview();if(!root)return;
-  var input=root.querySelector(".pc-input"),send=root.querySelector('[data-pc="send"]'),status=root.querySelector(".pc-status");
-  if(input&&input.readOnly!==!!review)input.readOnly=!!review;
-  if(review&&send&&!send.disabled)send.disabled=true;
+  var allowed=canWriteBudgetComments(),composer=root.querySelector(".pc-compose"),input=root.querySelector(".pc-input"),send=root.querySelector('[data-pc="send"]'),status=root.querySelector(".pc-status");
+  if(composer)composer.hidden=!allowed;
+  root.querySelectorAll(".pc-actions,.pc-inline-actions").forEach(function(node){node.hidden=!allowed;});
+  root.querySelectorAll("[data-pc-edit-input]").forEach(function(node){if(node.readOnly!==!allowed)node.readOnly=!allowed;});
+  if(!allowed)root.querySelectorAll(".pc-actions button,.pc-inline-actions button,.pc-toolbar button,.pc-emoji button").forEach(function(node){if(!node.disabled)node.disabled=true;});
+  if(input&&input.readOnly!==(!allowed||!!review))input.readOnly=!allowed||!!review;
+  if((!allowed||review)&&send&&!send.disabled)send.disabled=true;
   if(review&&review.status==="unknown"&&status&&status.textContent!=="Posting needs review in Creator before another comment.")status.textContent="Posting needs review in Creator before another comment.";
 }
 function addBudgetComment(data) {
+  if(!canWriteBudgetComments())return Promise.reject(new Error("Budget and Project comments are read-only."));
   var field=Object.prototype.hasOwnProperty.call(data,"Project")?"Project":"Budget",parent=String(data[field]||"");
   if(!/^\d+$/.test(parent))return Promise.reject(new Error("The comment parent could not be verified."));
   var key=budgetCreateScope("comment:"+field,parent),reviews=S.commentCreateReviews||(S.commentCreateReviews={});
@@ -5083,16 +5106,21 @@ function addBudgetComment(data) {
     setTimeout(syncBudgetCommentCreateReview,0);throw error;
   });
 }
+function updateBudgetComment(commentId,data){
+  if(!canWriteBudgetComments())return Promise.reject(new Error("Budget and Project comments are read-only."));
+  return sdkUpdateRecord(CFG.reports.comments,commentId,data);
+}
 function openBudgetComments(field,id,label,trigger) {
   if(!id)return;budgetCommentThreadField=field;budgetCommentThreadParent=String(id);
   /* The component resolves this function for every read and write, so Project and Budget never inherit one another's lookup field. */
   if(!budgetCommentThread){
-    budgetCommentThread=PFComments.mount($("budgetCommentThread"),{parentField:function(){return budgetCommentThreadField;},currentUser:function(){return S.currentUser||"";},ownerAliases:function(){return PFComments.ownerAliases(S.currentUser);},users:function(){return S.accessUsers||[];},error:function(e){setTimeout(syncBudgetCommentCreateReview,0);return shortErr(e)||"Could not save comment.";},confirm:function(){return new Promise(function(resolve){budgetCommentConfirm=resolve;openBudgetCommentConfirm();});},load:function(parent){return loadBudgetComments(budgetCommentThreadField,parent,true);},onRows:function(parent,rows){rememberBudgetComments(budgetCommentThreadField,parent,rows);setTimeout(syncBudgetCommentCreateReview,0);},add:addBudgetComment,update:function(commentId,data){return sdkUpdateRecord(CFG.reports.comments,commentId,data);}});
+    budgetCommentThread=PFComments.mount($("budgetCommentThread"),{parentField:function(){return budgetCommentThreadField;},currentUser:function(){return S.currentUser||"";},ownerAliases:function(){return PFComments.ownerAliases(S.currentUser);},users:function(){return S.accessUsers||[];},error:function(e){setTimeout(syncBudgetCommentCreateReview,0);return shortErr(e)||"Could not save comment.";},confirm:function(){return new Promise(function(resolve){budgetCommentConfirm=resolve;openBudgetCommentConfirm();});},load:function(parent){return loadBudgetComments(budgetCommentThreadField,parent,true);},onRows:function(parent,rows){rememberBudgetComments(budgetCommentThreadField,parent,rows);setTimeout(syncBudgetCommentCreateReview,0);},add:addBudgetComment,update:updateBudgetComment});
     if(window.MutationObserver)new MutationObserver(syncBudgetCommentCreateReview).observe($("budgetCommentThread"),{childList:true,subtree:true,attributes:true,attributeFilter:["disabled","readonly"]});
   }
   S.commentModalFocus=trigger||document.activeElement;$("budgetCommentTitle").textContent=label;var modal=$("budgetCommentModal");modal.hidden=false;modal.classList.add("show");
   setTimeout(function(){var close=$("budgetCommentClose");if(close)close.focus();},0);
-  return budgetCommentThread.open(id).then(function(result){syncBudgetCommentCreateReview();return result;});
+  var opened=budgetCommentThread.open(id);syncBudgetCommentCreateReview();
+  return opened.then(function(result){syncBudgetCommentCreateReview();return result;});
 }
 
 var budgetManageConfirmResolver=null;
@@ -12140,6 +12168,7 @@ function renderGlobalBudgetChoices() {
 function openGlobalBudgetAdd(kind) {
   if(globalBudgetAdd || approvalProgress || S.sdkInitFailed)return;
   if(kind==="budget" && !canCreateBudget()){toastShow("Budget edit access is required");return;}
+  if(kind!=="budget" && !S.budgets.some(function(b){return !budgetArchived(b)&&canStartBudgetRequest(kind,b);})){toastShow("You don't have permission to create this request.");return;}
   var state=globalBudgetAdd={kind:kind,rows:[],trigger:$("budgetAddMenuBtn"),scope:budgetCreateScope("global-add",kind),inert:[]};
   $("budgetCreateTitle").textContent="Add "+globalBudgetKindTitle(kind);
   $("budgetCreateSub").textContent=kind==="budget"?"Select a subdivision":"Select a budget";
@@ -12156,7 +12185,7 @@ function openGlobalBudgetAdd(kind) {
   var load=kind==="budget"?Promise.all([sdkGetAllRecords(CFG.reports.subdivisions,"",{fresh:true}),sdkGetAllRecords(CFG.reports.budgets,"",{fresh:true})]):Promise.resolve([null,S.budgets]);
   load.then(function(data){
     if(globalBudgetAdd!==state || state.scope!==budgetCreateScope("global-add",kind))return;
-    state.rows=kind==="budget"?data[0].filter(function(sub){return !subdivisionHasBudget(sub,data[1]);}).map(function(sub){return {id:String(sub.ID),label:cleanVal(sub.Subdivision_Name)||cleanVal(sub.Subdivision_Code),detail:cleanVal(sub.Subdivision_Code),record:sub};}):data[1].filter(function(b){return !budgetArchived(b) && (kind!=="modification" || canSubmitMod(b));}).map(function(b){return {id:String(b.ID),label:phaseName(b),detail:projectName(b)+" · "+subdivisionCode(b),record:b};});
+    state.rows=kind==="budget"?data[0].filter(function(sub){return !subdivisionHasBudget(sub,data[1]);}).map(function(sub){return {id:String(sub.ID),label:cleanVal(sub.Subdivision_Name)||cleanVal(sub.Subdivision_Code),detail:cleanVal(sub.Subdivision_Code),record:sub};}):data[1].filter(function(b){return !budgetArchived(b) && canStartBudgetRequest(kind,b);}).map(function(b){return {id:String(b.ID),label:phaseName(b),detail:projectName(b)+" · "+subdivisionCode(b),record:b};});
     state.rows.sort(function(a,b){return a.label.localeCompare(b.label,undefined,{numeric:true,sensitivity:"base"});});
     $("budgetCreateStatus").textContent="";renderGlobalBudgetChoices();
   }).catch(function(error){if(globalBudgetAdd!==state)return;$("budgetCreateStatus").textContent="Could not load choices: "+shortErr(error);});
@@ -12164,6 +12193,7 @@ function openGlobalBudgetAdd(kind) {
 function selectGlobalBudgetParent(id) {
   var state=globalBudgetAdd;if(!state || state.busy)return;
   var row=state.rows.find(function(row){return row.id===String(id);});if(!row)return;
+  if(state.kind!=="budget"&&!canStartBudgetRequest(state.kind,row.record))return;
   if(state.kind==="budget"){
     state.selected=row;$("budgetCreateSearchField").hidden=true;
     $("budgetCreateChoices").innerHTML="<div class='budget-create-choice'><span>"+esc(row.label)+"<small>"+esc(row.detail)+"</small></span></div>";
@@ -12236,7 +12266,7 @@ document.addEventListener("keydown",function(event){
 },true);
 document.addEventListener("click",function(event){
   var button=$("budgetAddMenuBtn"),menu=$("budgetAddMenu");
-  if(event.target.closest("#budgetAddMenuBtn")){var open=menu.style.display==="none";menu.style.display=open?"block":"none";button.setAttribute("aria-expanded",String(open));menu.querySelector("[data-global-budget-kind='budget']").disabled=!canCreateBudget();if(open)menu.querySelector("button:not(:disabled)").focus();return;}
+  if(event.target.closest("#budgetAddMenuBtn")){var open=menu.style.display==="none";menu.style.display=open?"block":"none";button.setAttribute("aria-expanded",String(open));menu.querySelectorAll("[data-global-budget-kind]").forEach(function(choice){var kind=choice.dataset.globalBudgetKind;choice.disabled=kind==="budget"?!canCreateBudget():!S.budgets.some(function(b){return !budgetArchived(b)&&canStartBudgetRequest(kind,b);});});var first=menu.querySelector("button:not(:disabled)");if(open&&first)first.focus();return;}
   var choice=event.target.closest("[data-global-budget-kind]");
   if(choice || !event.target.closest(".budget-global-add")){menu.style.display="none";button.setAttribute("aria-expanded","false");}
   if(choice)openGlobalBudgetAdd(choice.dataset.globalBudgetKind);
@@ -12272,12 +12302,16 @@ function getPurchaseOrderUI(){
   if(!window.LMPOUI)throw new Error("Purchase Order editor could not be loaded. Reload Budget Manager.");
   if(!purchaseOrderUI)purchaseOrderUI = LMPOUI.create({
   scope:function(){return budgetCreateScope("po",S.edBudget&&S.edBudget.ID);}, userAccessId:function(){return String(S.myAccessId||"");},
-  canEdit:canEditBudget, canEditInFlight:canDeleteBudgetRequest, canDelete:canDeleteBudgetRequest, phaseName:phaseName,
+  canEdit:function(b){return !!S.edBudget&&String(S.edBudget.ID)===String(b.ID)&&canEditBudget(S.edBudget);},
+  canCreate:function(b){return !!S.edBudget&&String(S.edBudget.ID)===String(b.ID)&&canCreatePurchaseOrder(S.edBudget);},
+  canCreateVendor:function(){return !!S.edBudget&&canEditBudget(S.edBudget);},
+  canEditInFlight:canDeleteBudgetRequest, canDelete:canDeleteBudgetRequest, phaseName:phaseName,
   itemCategory:function(item){var category=modItemCategory(item);return {id:category?String(category.ID):'',name:category?cleanVal(category.Budget_Category_Name):'Uncategorized'};},
   openDate:function(input,onSelect,onClose){return openRequestDatePicker(input,{iso:true,container:input.closest('.po-overlay'),onSelect:onSelect,onClose:onClose});},
   closeDate:closeRequestDatePicker,
   items:function(){return (S.items[S.edBudget.ID]||[]).filter(function(it){var cat=modItemCategory(it);return cat&&budgetCategoryIsLocked(S.edBudget,catDept(cat))&&!accessTruthy(it.Template_Item);});},
   createVendor:function(data){
+    if(!S.edBudget||!canEditBudget(S.edBudget)){var denied=new Error("Budget edit access is required to create a Vendor.");denied.noReplay=false;return Promise.reject(denied);}
     var expectedScope=budgetCreateScope("po",S.edBudget&&S.edBudget.ID);
     return sdkAddRecord("Vendors",data).then(function(response){
       var entries=Array.isArray(response.result)?response.result:[response],entry=entries.length===1?entries[0]:null,id=entry&&entry.data&&entry.data.ID;
@@ -12299,6 +12333,7 @@ function getPurchaseOrderUI(){
 function openCheckWireRequest(type) {
   if(!requireBudgetRequestDetail())return;
   if (!S.edBudget) return;
+  if(!canStartBudgetRequest(type==="Purchase Order"?"purchase-order":type==="Wire"?"wire":"check",S.edBudget)){toastShow("You don't have permission to create this request.");return;}
   if(type==="Purchase Order"&&poDevelopment()){try{getPurchaseOrderUI().open(S.edBudget,$("requestMenuBtn")).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}return;}
   S.modModal = { requestFlow:true, requestStep:"picker", requestType:type, itemId:"", picker:true, requestDate:fmtDateUS(), dateNeeded:"", requestAmount:"", vendorId:"", vendors:[], vendorState:"idle", poState:"idle", budgetId:String(S.edBudget.ID), trigger:$("requestMenuBtn") };
   S.modModal.scope = requestModalScope(S.modModal);
@@ -13093,7 +13128,7 @@ function mergeManagedPurchaseOrderRequests(rows,managed,vendors,budgetId) {
     if(!po||typeof po.id!=="string"||!/^\d+$/.test(po.id)||poIds.has(po.id)||typeof po.revision!=="string"||!po.revision.trim()||["Draft","Submitted"].indexOf(po.status)<0||typeof po.vendorId!=="string"||!/^\d+$/.test(po.vendorId)||!vendorNames.has(po.vendorId)||Object.prototype.hasOwnProperty.call(po,"budgetId")&&po.budgetId!==budgetId)throw new Error("Saved PO identities do not match this budget.");
     if(!window.LMPO||LMPO.money(po.amount)<=0n)throw new Error("Saved PO amounts are unavailable.");
     poIds.add(po.id);
-    var header={ID:po.id,Budget:{ID:budgetId},Request_Type:"Purchase Order",Request_Amount:po.amount,PO_Status:po.status,PO_Revision:po.revision,Vendor:{ID:po.vendorId,display_value:vendorNames.get(po.vendorId)},_poCanEditInFlight:po.canEditInFlight===true,_poModifications:null,_poModificationsState:"idle"};
+    var header={ID:po.id,Budget:{ID:budgetId},Request_Type:"Purchase Order",Request_Amount:po.amount,PO_Status:po.status,PO_Revision:po.revision,Vendor:{ID:po.vendorId,display_value:vendorNames.get(po.vendorId)},_poCanEditDraft:po.canEditDraft===true,_poCanEditInFlight:po.canEditInFlight===true,_poModifications:null,_poModificationsState:"idle"};
     if(typeof po.requestDate==="string")header.Request_Date=po.requestDate;
     if(typeof po.dateNeeded==="string")header.Date_Needed=po.dateNeeded;
     if(typeof po.approvalState==="string")header.PO_Approval_State=po.approvalState;
@@ -13113,7 +13148,7 @@ function openSavedPurchaseOrder(id,source,intent) {
   if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all")return;
   var bid=String(S.edBudget.ID),request=(S.checkWireRequestsByBudget[bid]||[]).find(function(row){return row.ID===id;});
   if(S.checkWireRequestState[bid]!=="loaded"||!savedPurchaseOrderRequest(request,bid)||intent==='delete'&&!canDeleteBudgetRequest(S.edBudget))return;
-  if(intent==='edit'&&cleanVal(request.PO_Status)==='Submitted'&&cleanVal(request.PO_Approval_State)==='Pending'&&(!canDeleteBudgetRequest(S.edBudget)||request._poCanEditInFlight!==true))return;
+  if(intent==='edit'&&!canEditPurchaseOrderRequest(S.edBudget,request))return;
   try{return getPurchaseOrderUI().open(S.edBudget,source,id,intent,intent==='delete'?{id:id,budgetId:bid,revision:cleanVal(request.PO_Revision),status:cleanVal(request.PO_Status),amount:cleanVal(request.Request_Amount),vendorName:lookupName(request.Vendor)}:null).catch(function(error){toastShow(error.message);});}catch(error){toastShow(error.message);}
 }
 function poApprovalRoleLabel(row){
@@ -13222,7 +13257,7 @@ function renderRequestRailPayment(b,request,children) {
   var status=cleanVal(request.PO_Approval_State),savedStatus=cleanVal(request.PO_Status),date=requestRailDateValue(request,false),needed=cleanVal(request.Date_Needed),rawAmount=cleanVal(request.Request_Amount),acts="";
   if(managed){
     status=status&&status!=="Not Configured"?status:savedStatus;
-    var attrs="data-request-po-open='"+escAttr(request.ID)+"' ",editable=canEditBudget(b)&&(savedStatus==="Draft"||savedStatus==="Submitted"&&status==="Rejected"||savedStatus==="Submitted"&&status==="Pending"&&canDeleteBudgetRequest(b)&&request._poCanEditInFlight===true);
+    var attrs="data-request-po-open='"+escAttr(request.ID)+"' ",editable=canEditPurchaseOrderRequest(b,request);
     acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):"")+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canDeleteBudgetRequest(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):"");
   }
   if(!managed)acts=requestRailIcon('view','View saved request','data-request-payment-open="'+escAttr(request.ID)+'"');
@@ -13292,9 +13327,9 @@ function renderModPhasePanel(b) {
       "<button class='btn mod-page-add' type='button' id='requestMenuBtn' aria-expanded='false'>Request <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' style='width:13px;height:13px'><path d='M6 9l6 6 6-6'/></svg></button>" +
       "<div class='export-dd' id='requestMenu' style='display:none'>" +
         "<button class='export-dd-row' type='button' data-request-kind='modification'" + (canAdd ? "" : " disabled") + "><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M12 3v18M3 12h18'/></svg><span class='export-dd-label'>Bud Mod</span></button>" +
-        "<button class='export-dd-row' type='button' data-request-kind='check'><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M3 7h18v10H3zM3 10h18M7 14h4'/></svg><span class='export-dd-label'>Check Request</span></button>" +
-        "<button class='export-dd-row' type='button' data-request-kind='wire'><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M4 5h16v14H4zM8 10h8M8 14h8'/></svg><span class='export-dd-label'>Wire Request</span></button>" +
-        "<button class='export-dd-row' type='button' data-request-kind='purchase-order'><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M6 3h12v18H6zM9 8h6M9 12h6M9 16h4'/></svg><span class='export-dd-label'>Purchase Order</span></button>" +
+        "<button class='export-dd-row' type='button' data-request-kind='check'"+(canStartBudgetRequest('check',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M3 7h18v10H3zM3 10h18M7 14h4'/></svg><span class='export-dd-label'>Check Request</span></button>" +
+        "<button class='export-dd-row' type='button' data-request-kind='wire'"+(canStartBudgetRequest('wire',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M4 5h16v14H4zM8 10h8M8 14h8'/></svg><span class='export-dd-label'>Wire Request</span></button>" +
+        "<button class='export-dd-row' type='button' data-request-kind='purchase-order'"+(canStartBudgetRequest('purchase-order',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M6 3h12v18H6zM9 8h6M9 12h6M9 16h4'/></svg><span class='export-dd-label'>Purchase Order</span></button>" +
       "</div></div>" +
   "</div>";
   html += renderRequestRailList(b) + "</div>";
@@ -13675,6 +13710,7 @@ function applyPermsFromFlags(flags, source){
     hasRow: !!(flags && (flags.hasRow === true || flags.hasRow === "true" || flags.found === true || flags.found === "true")),
     editAll:   t(flags && (flags.editAll   != null ? flags.editAll   : flags.Edit_All_Budgets)),
     editOwned: t(flags && (flags.editOwned != null ? flags.editOwned : flags.Edit_Owned_Budgets)),
+    poCreate:  t(flags && (flags.poCreate != null ? flags.poCreate : flags.Create_Purchase_Orders)),
     apprAll:   t(flags && (flags.apprAll   != null ? flags.apprAll   : flags.Edit_All_Approvals)),
     apprOwned: t(flags && (flags.apprOwned != null ? flags.apprOwned : flags.Edit_Owned_Approvals)),
     send:      t(flags && (flags.send      != null ? flags.send      : flags.Send_for_Approvals)),
@@ -13759,7 +13795,7 @@ function parseLeanBudgetAccessResponse(response) {
   }
   if(!response||typeof response!=="object"||Array.isArray(response)||String(response.code)!=="3000")reject(response);
   var queue=[response],seen=new Set(),flags=null,signature="";
-  var keys=["found","hasRow","myId","editAll","editOwned","apprAll","apprOwned","send","editOwners","viewImports","editImports","modAdmin","budgetDeleteArchive","lotSalesDashboard","viewTotalLotRevenue","pfEditAll","pfEditOwned","pfEditCurve","pfVpCompTab","pfEditProbability","pfEditOwner","pfDeleteArchive","pfApprAll","pfApprOwned","pfSendApprovals","pfSendCostsToBudgets","pfSubmitLegal","pfAiReview","budgetAssignedToMe","proformaAssignedToMe","legalAssignedToMe","ctEdit","ctPropose","ctApprove","ctTemplates","ctDeleteArchive"];
+  var keys=["found","hasRow","myId","editAll","editOwned","poCreate","apprAll","apprOwned","send","editOwners","viewImports","editImports","modAdmin","budgetDeleteArchive","lotSalesDashboard","viewTotalLotRevenue","pfEditAll","pfEditOwned","pfEditCurve","pfVpCompTab","pfEditProbability","pfEditOwner","pfDeleteArchive","pfApprAll","pfApprOwned","pfSendApprovals","pfSendCostsToBudgets","pfSubmitLegal","pfAiReview","budgetAssignedToMe","proformaAssignedToMe","legalAssignedToMe","ctEdit","ctPropose","ctApprove","ctTemplates","ctDeleteArchive"];
   while(queue.length){
     var value=queue.shift();
     if(typeof value==="string"){try{value=JSON.parse(value);}catch(ignore){continue;}}
@@ -13777,11 +13813,12 @@ function validLeanBudgetAccess(flags) {
   if (!flags || typeof flags.found !== "boolean" || typeof flags.hasRow !== "boolean" || flags.found !== flags.hasRow || typeof flags.myId !== "string" || !Array.isArray(flags.users)) return false;
   var budgetFlags = ["editAll","editOwned","apprAll","apprOwned","send","editOwners","viewImports","editImports","modAdmin","budgetDeleteArchive"];
   if (!budgetFlags.every(function(key){ return typeof flags[key] === "boolean"; })) return false;
+  if ("poCreate" in flags && typeof flags.poCreate !== "boolean") return false;
   if (!flags.users.every(function(user){ return user && typeof user.id === "string" && !!user.id.trim() && typeof user.label === "string" && typeof user.email === "string"; })) return false;
   return flags.hasRow ? !!flags.myId && flags.users.some(function(user){ return user.id === flags.myId; }) : flags.myId === "";
 }
 function denyBudgetAccess(source, error, flags) {
-  S.perms = {hasRow:false,editAll:false,editOwned:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,deleteArchive:false,anyEdit:false,anyAppr:false,readOnly:true};
+  S.perms = {hasRow:false,editAll:false,editOwned:false,poCreate:false,apprAll:false,apprOwned:false,send:false,editOwners:false,viewImports:false,editImports:false,modAdmin:false,deleteArchive:false,anyEdit:false,anyAppr:false,readOnly:true};
   S.myAccessId = "";
   S.accessUsers = flags ? flags.users.map(function(user){var out={id:user.id,label:user.label,email:user.email};["userName","approverEmail","fullName"].forEach(function(key){if(typeof user[key]==="string")out[key]=user[key].trim();});return out;}) : [];
   S.budgetAssignedToMe = false;
@@ -13995,7 +14032,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.71",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.73",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

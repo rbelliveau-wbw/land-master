@@ -5,6 +5,7 @@ string getUserAccessLean(string user)
 	// Budget flags
 	editAll = false;
 	editOwned = false;
+	poCreate = false;
 	apprAll = false;
 	apprOwned = false;
 	sendAppr = false;
@@ -50,6 +51,7 @@ string getUserAccessLean(string user)
 		// Budget permissions
 		editAll = row.Edit_All_Budgets == true;
 		editOwned = row.Edit_Owned_Budgets == true;
+		poCreate = rows.count() == 1 && row.Create_Purchase_Orders == true;
 		apprAll = row.Edit_All_Approvals == true;
 		apprOwned = row.Edit_Owned_Approvals == true;
 		sendAppr = row.Send_for_Approvals == true;
@@ -107,6 +109,7 @@ string getUserAccessLean(string user)
 	// Budget permissions
 	result.put("editAll",editAll);
 	result.put("editOwned",editOwned);
+	result.put("poCreate",poCreate);
 	result.put("apprAll",apprAll);
 	result.put("apprOwned",apprOwned);
 	result.put("send",sendAppr);

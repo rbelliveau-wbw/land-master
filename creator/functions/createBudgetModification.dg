@@ -46,17 +46,58 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		vCatId = itemRec.Budget_Category.ID;
 	}
+	// Match the widget's standalone-request grant; PO creation is separate.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	requestBudget = Add_Budget[ID == vBudgetId];
+	canSubmit = false;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		canSubmit = requestAccess.Edit_All_Budgets == true;
+		if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canSubmit = true;
+				}
+			}
+		}
+	}
+	if(canSubmit != true)
+	{
+		return "ERROR: Budget edit access is required to create a standalone modification.";
+	}
 	policyTerritory = "";
 	if(vBudgetId != 0)
 	{
 		policyBudget = Add_Budget[ID == vBudgetId];
-		if(policyBudget.Subdivision1 != null) { policyTerritory = ifnull(policyBudget.Subdivision1.Territory,""); }
+		if(policyBudget.Subdivision1 != null)
+		{
+			policyTerritory = ifnull(policyBudget.Subdivision1.Territory,"");
+		}
 	}
 	policySubmitter = User_Access[User == zoho.loginuser];
 	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(vAmount.toString())};
 	// Validate the current Settings rule before creating the modification.
 	policyPreview = thisapp.resolveApprovalRoute(policyContext);
-	if(policyPreview.get("success") != true) { return "ERROR: Approval routing unavailable: " + policyPreview.get("error"); }
+	if(policyPreview.get("success") != true)
+	{
+		return "ERROR: Approval routing unavailable: " + policyPreview.get("error");
+	}
 	// Reference goes IN the insert — post-insert assignment on the fresh row was
 	// dropping it in production.
 	vRef = ifnull(reference,"").trim();
@@ -103,9 +144,8 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	emailMsg = "";
 	try
 	{
-		emailMsg = thisapp.sendModificationEmail(newModId, "created");
-	}
-	catch (emailException)
+		emailMsg = thisapp.sendModificationEmail(newModId,"created");
+	}	catch (emailException)
 	{
 		emailMsg = "Approval email could not be sent: " + emailException.toString();
 	}

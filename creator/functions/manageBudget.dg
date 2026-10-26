@@ -22,10 +22,18 @@ string manageBudget(string budgetId, string action, string userAccessId)
 		return result.toString();
 	}
 	accessRow = User_Access[User == zoho.loginuser];
-	if(accessRow == null || accessRow.ID.toString() != accessIdText || accessRow.Delete_Archive_Budgets != true)
+	if(accessRow.count() != 1 || accessRow.ID.toString() != accessIdText || accessRow.Delete_Archive_Budgets != true)
 	{
 		result.put("error","Delete & Archive Budgets access is required.");
 		return result.toString();
+	}
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting") { result.put("error","This profile has read-only Budget access."); return result.toString(); }
+		}
+		catch (profileError) { result.put("error","Budget access could not be verified."); return result.toString(); }
 	}
 	budgetKey = budgetIdText.toLong();
 	budgetRow = Add_Budget[ID == budgetKey];

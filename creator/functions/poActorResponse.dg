@@ -1,11 +1,36 @@
 map poActorResponse(map response, string userAccessId)
 {
-	 environmentType = thisapp.environment.type;
+	environmentType = thisapp.environment.type;
 	// All callers authenticate userAccessId before this private projection.
 	if(response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+"))
 	{
-		editActor = User_Access[ID == userAccessId.toLong()]; editSnapshot = response.get("snapshot"); editBudget = Add_Budget[ID == ifnull(editSnapshot.get("budgetId"),"0").toString().toLong()];
+		editActor = User_Access[ID == userAccessId.toLong()];
+		editSnapshot = response.get("snapshot");
+		editBudget = Add_Budget[ID == ifnull(editSnapshot.get("budgetId"),"0").toString().toLong()];
 		editSnapshot.put("canEditInFlight",editActor.count() == 1 && editActor.Edit_All_Budgets == true && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Submitted" && editSnapshot.get("approvalState") == "Pending");
+		canEditDraft = false;
+		if(editActor.count() == 1 && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Draft" && editSnapshot.get("commitmentState") == "None" && editSnapshot.get("approvalState") == "Not Configured")
+		{
+			canEditDraft = editActor.Edit_All_Budgets == true;
+			for each  editOwner in editBudget.Budget_Owner
+			{
+				if(editOwner.ID == editActor.ID && editActor.Edit_Owned_Budgets == true)
+				{
+					canEditDraft = true;
+				}
+			}
+			if(canEditDraft != true && editActor.Create_Purchase_Orders == true && ifnull(editSnapshot.get("id"),"").toString().matches("[0-9]+"))
+			{
+				editDraft = Payment_Request[ID == editSnapshot.get("id").toString().toLong() && Budget == editBudget.ID && Request_Type == "Purchase Order"];
+				if(editDraft.count() == 1 && ifnull(editDraft.PO_Client_Key,"") != "")
+				{
+					// The first operation records the real actor even when Development APIs run as owner.
+					editCreation = PO_Operation[Token == editDraft.PO_Client_Key && Purchase_Order == editDraft.ID && Budget == editBudget.ID && Actor == editActor.ID && Status == "Complete"];
+					canEditDraft = editCreation.count() == 1;
+				}
+			}
+		}
+		editSnapshot.put("canEditDraft",canEditDraft);
 		response.put("snapshot",editSnapshot);
 	}
 	// Permission hints are projected only after the caller has authenticated the actor.
@@ -15,15 +40,42 @@ map poActorResponse(map response, string userAccessId)
 		actor = User_Access[ID == userAccessId.toLong()];
 		if(actor.count() == 1)
 		{
-			snapshot = response.get("snapshot"); bundle = snapshot.get("approvalBundle");
+			snapshot = response.get("snapshot");
+			bundle = snapshot.get("approvalBundle");
 			if(bundle != null)
 			{
 				active = bundle.get("active");
 				canApprove = active.get("userAccessId") == userAccessId;
 				bundle.put("canApprove",canApprove);
 				bundle.put("canRetryEmail",canApprove || bundle.get("submitterId") == userAccessId || actor.User == zoho.adminuser);
-				snapshot.put("approvalBundle",bundle); response.put("snapshot",snapshot);
+				snapshot.put("approvalBundle",bundle);
+				response.put("snapshot",snapshot);
 			}
+		}
+	}
+	// A captured role must not give the read-only Const Budget profile approval powers.
+	// Apply after Development projection so the display cannot regrant the action.
+	if(response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+") && editActor.count() == 1 && editActor.User != zoho.adminuser)
+	{
+		profileSnapshot = response.get("snapshot");
+		profileBundle = profileSnapshot.get("approvalBundle");
+		if(profileBundle != null)
+		{
+			try
+			{
+				actorProfile = thisapp.permissions.profileForUser(editActor.User);
+				if(actorProfile == "Construction Budgeting")
+				{
+					profileBundle.put("canApprove",false);
+					profileBundle.put("canRetryEmail",editActor.Create_Purchase_Orders == true && profileBundle.get("submitterId") == userAccessId);
+				}
+			}			catch (profileError)
+			{
+				profileBundle.put("canApprove",false);
+				profileBundle.put("canRetryEmail",false);
+			}
+			profileSnapshot.put("approvalBundle",profileBundle);
+			response.put("snapshot",profileSnapshot);
 		}
 	}
 	return response;

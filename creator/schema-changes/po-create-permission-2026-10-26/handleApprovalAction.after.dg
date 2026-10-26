@@ -1,0 +1,760 @@
+string handleApprovalAction(string budgetId, string approvalId, string approvalAction, string approvalNote)
+{
+	/********* HANDLE APPROVAL PAGE BUTTON PRESS *********/
+	// All record IDs are held internally as strings.
+	// IDs are converted to long only when required by:
+	// - Creator record criteria
+	// - Existing helper functions that accept numeric IDs
+	//
+	// Approved:
+	// - Approves the current row.
+	// - Sends the next approver.
+	// - When the last approver finishes:
+	//     Development: Development + Engineering Unapproved -> Final,
+	//                  then Unapproved -> 0.
+	//     Construction: Construction Unapproved -> Final,
+	//                   then Unapproved -> 0.
+	// - When both tracks are fully approved:
+	//     Generates an approved-budget PDF and attaches it to
+	//     Add_Budget.Attachments.
+	//
+	// Rejected:
+	// - Sends the chain back to the previous approver.
+	//
+	// Pending:
+	// - Saves the note only.
+	//
+	// VP cannot reject because there is no previous approver.
+	vBudgetId = ifnull(budgetId,"").trim();
+	vApprovalId = ifnull(approvalId,"").trim();
+	vAction = ifnull(approvalAction,"").trim();
+	vNote = ifnull(approvalNote,"");
+	if(vBudgetId == "")
+	{
+		return "No Budget ID provided.";
+	}
+	if(vApprovalId == "")
+	{
+		return "No Approval ID provided.";
+	}
+	if(vAction == "")
+	{
+		return "No approval action provided.";
+	}
+	/********* LOAD BUDGET *********/
+	budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+	if(budgetRec == null)
+	{
+		return "Budget not found.";
+	}
+	/********* LOAD CURRENT APPROVAL *********/
+	currentRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
+	if(currentRows.count() == 0)
+	{
+		return "Approval row not found.";
+	}
+	currentApproval = null;
+	for each  cr in currentRows
+	{
+		currentApproval = cr;
+	}
+	vApprovalType = ifnull(currentApproval.Type1,"").trim();
+	vCurrentRole = ifnull(currentApproval.Title,"").trim();
+	vCurrentStatus = ifnull(currentApproval.Status,"").trim();
+	if(vCurrentStatus == "")
+	{
+		vCurrentStatus = "Not Sent";
+	}
+	vCurrentSort = 0;
+	if(currentApproval.Sort_Order != null)
+	{
+		vCurrentSort = currentApproval.Sort_Order.toLong();
+	}
+	if(vApprovalType == "")
+	{
+		return "Approval Type is blank.";
+	}
+	if(vApprovalType != "Development" && vApprovalType != "Construction")
+	{
+		return "Unsupported approval type: " + vApprovalType;
+	}
+	if(vCurrentSort == 0)
+	{
+		return "Sort Order is blank for " + vCurrentRole + ".";
+	}
+	// Check modes are targeted reads. Every other path is authorized before any
+	// state synchronization, note/decision, routing, financial or email mutation.
+	allowedActions = {"CheckStart","CheckReject","Check","RepairStart","RepairReject","Repair","Pending","Approved","Rejected"};
+	if(!allowedActions.contains(vAction))
+	{
+		return "Unsupported approval action: " + vAction;
+	}
+	readOnlyAction = vAction == "CheckStart" || vAction == "CheckReject" || vAction == "Check";
+	if(readOnlyAction != true && zoho.loginuser != zoho.adminuser)
+	{
+		requestAccess = User_Access[User == zoho.loginuser];
+		if(requestAccess.count() != 1)
+		{
+			return "ERROR: Authenticated User Access is required.";
+		}
+		try 
+		{
+			requestProfile = thisapp.permissions.profileForUser(zoho.loginuser);
+			if(requestProfile == "Construction Budgeting")
+			{
+				return "ERROR: Construction Budgeting has read-only Budget access except PO creation.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget permission profile could not be verified.";
+		}
+		canMutateApproval = requestAccess.Edit_All_Approvals == true;
+		if(vAction == "RepairStart")
+		{
+			canMutateApproval = requestAccess.Send_for_Approvals == true;
+		}
+		else if(requestAccess.Edit_Owned_Approvals == true)
+		{
+			requestEmail = ifnull(requestAccess.Approver_Email,"").toString().trim().toLowerCase();
+			requestLogin = ifnull(requestAccess.User,"").toString().trim().toLowerCase();
+			if(requestEmail == "" && requestLogin.contains("@"))
+			{
+				requestEmail = requestLogin;
+			}
+			assignedEmail = ifnull(currentApproval.Approver,"").toString().trim().toLowerCase();
+			if(requestEmail != "" && assignedEmail == requestEmail)
+			{
+				canMutateApproval = true;
+			}
+		}
+		if(canMutateApproval != true)
+		{
+			return "ERROR: The matching Budget approval permission is required.";
+		}
+	}
+	// Reconcile the start of one budget track using its first approval row.
+	// CheckStart is read-only. RepairStart sends only a missing first email;
+	// it never resets a started chain or advances another approver.
+	if(vAction == "CheckStart" || vAction == "RepairStart")
+	{
+		startRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		firstId = "";
+		firstSort = 999999;
+		startPending = 0;
+		startApproved = 0;
+		startCount = 0;
+		for each  startRow in startRows
+		{
+			startCount = startCount + 1;
+			startSort = ifnull(startRow.Sort_Order,0).toLong();
+			if(startSort > 0 && startSort < firstSort)
+			{
+				firstSort = startSort;
+				firstId = startRow.ID.toString();
+			}
+			if(ifnull(startRow.Status,"").trim() == "Pending")
+			{
+				startPending = startPending + 1;
+			}
+			if(ifnull(startRow.Status,"").trim() == "Approved")
+			{
+				startApproved = startApproved + 1;
+			}
+		}
+		if(firstId != vApprovalId)
+		{
+			return "The requested row is not the first approver in this track.";
+		}
+		firstRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
+		firstStatus = "";
+		firstSentDate = "";
+		firstRole = "";
+		firstAddress = "";
+		for each  firstRow in firstRows
+		{
+			firstStatus = ifnull(firstRow.Status,"").trim();
+			firstRole = ifnull(firstRow.Title,"").trim();
+			firstAddress = ifnull(firstRow.Approver,"").trim();
+			if(firstRow.Sent_Date != null)
+			{
+				firstSentDate = firstRow.Sent_Date.toString();
+			}
+		}
+		if(vAction == "RepairStart" && firstStatus == "Pending" && startPending == 1 && startApproved == 0)
+		{
+			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			if(firstSentDate == "")
+			{
+				try 
+				{
+					thisapp.sendApprovalEmail(vBudgetId.toLong(),vApprovalId.toLong());
+				}				catch (startMailError)
+				{
+					// The next check reports the persisted state without claiming delivery.
+				}
+			}
+			firstRows = Budget_Approvals[ID == vApprovalId.toLong() && Budget == vBudgetId.toLong()];
+			for each  firstRow in firstRows
+			{
+				if(firstRow.Sent_Date != null)
+				{
+					firstSentDate = firstRow.Sent_Date.toString();
+				}
+			}
+		}
+		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+		startParent = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+		if(vApprovalType == "Construction")
+		{
+			startParent = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+		}
+		startProgress = Map();
+		startProgress.put("ok",true);
+		startProgress.put("budgetId",vBudgetId);
+		startProgress.put("approvalId",vApprovalId);
+		startProgress.put("track",vApprovalType);
+		startProgress.put("parentStatus",startParent);
+		startProgress.put("rowCount",startCount);
+		startProgress.put("pendingCount",startPending);
+		startProgress.put("approvedCount",startApproved);
+		startProgress.put("firstId",firstId);
+		startProgress.put("firstStatus",firstStatus);
+		startProgress.put("role",firstRole);
+		startProgress.put("address",firstAddress);
+		startProgress.put("sentDate",firstSentDate);
+		startProgress.put("emailSent",firstSentDate != "");
+		return startProgress.toString();
+	}
+	/********* TARGETED REJECTION RECONCILIATION *********/
+	// A rejection returns this track to its immediate predecessor. Repair never
+	// repeats the rejection; it only restores that predecessor and missing mail.
+	if(vAction == "CheckReject" || vAction == "RepairReject")
+	{
+		rejectRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		previousId = "";
+		previousOrder = 0;
+		for each  rejectRow in rejectRows
+		{
+			rejectOrder = ifnull(rejectRow.Sort_Order,0).toLong();
+			if(rejectOrder < vCurrentSort && rejectOrder > previousOrder)
+			{
+				previousOrder = rejectOrder;
+				previousId = rejectRow.ID.toString();
+			}
+		}
+		if(previousId == "")
+		{
+			return "There is no previous approver for this rejection.";
+		}
+		repairError = "";
+		previousRows = Budget_Approvals[ID == previousId.toLong() && Budget == vBudgetId.toLong()];
+		if(vAction == "RepairReject" && vCurrentStatus == "Rejected")
+		{
+			otherPending = 0;
+			for each  rejectRow in rejectRows
+			{
+				if(rejectRow.ID.toString() != previousId && ifnull(rejectRow.Status,"").trim() == "Pending")
+				{
+					otherPending = otherPending + 1;
+				}
+			}
+			if(otherPending == 0)
+			{
+				for each  previousRow in previousRows
+				{
+					if(ifnull(previousRow.Status,"").trim() != "Pending")
+					{
+						previousRow.Status="Pending";
+						previousRow.Sent_Date=null;
+						previousRow.Responded_Date=null;
+					}
+					thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+					if(previousRow.Sent_Date == null)
+					{
+						try 
+						{
+							thisapp.sendApprovalEmail(vBudgetId.toLong(),previousId.toLong());
+						}						catch (rejectMailError)
+						{
+							repairError = rejectMailError.toString();
+						}
+					}
+				}
+			}
+		}
+		rejectRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		pendingCount = 0;
+		previousStatus = "";
+		previousSent = "";
+		previousRole = "";
+		previousAddress = "";
+		for each  rejectRow in rejectRows
+		{
+			if(ifnull(rejectRow.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(rejectRow.ID.toString() == previousId)
+			{
+				previousStatus = ifnull(rejectRow.Status,"").trim();
+				previousRole = ifnull(rejectRow.Title,"").trim();
+				previousAddress = ifnull(rejectRow.Approver,"").trim();
+				if(rejectRow.Sent_Date != null)
+				{
+					previousSent = rejectRow.Sent_Date.toString();
+				}
+			}
+		}
+		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+		parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+		if(vApprovalType == "Construction")
+		{
+			parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+		}
+		rejectProgress = Map();
+		rejectProgress.put("ok",true);
+		rejectProgress.put("budgetId",vBudgetId);
+		rejectProgress.put("approvalId",vApprovalId);
+		rejectProgress.put("currentStatus",ifnull(currentApproval.Status,"").trim());
+		rejectProgress.put("previousId",previousId);
+		rejectProgress.put("previousStatus",previousStatus);
+		rejectProgress.put("pendingCount",pendingCount);
+		rejectProgress.put("parentStatus",parentStatus);
+		rejectProgress.put("role",previousRole);
+		rejectProgress.put("address",previousAddress);
+		rejectProgress.put("sentDate",previousSent);
+		rejectProgress.put("emailSent",previousSent != "");
+		rejectProgress.put("repairError",repairError);
+		return rejectProgress.toString();
+	}
+	/********* TARGETED APPROVAL RECONCILIATION *********/
+	// Check is read-only. Repair is idempotent and may be called only once by the widget.
+	// Sent_Date is the delivery marker: sendApprovalEmail stamps it after sendmail succeeds.
+	if(vAction == "Check" || vAction == "Repair")
+	{
+		repairError = "";
+		trackRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		nextId = "";
+		nextOrder = 999999;
+		for each  row in trackRows
+		{
+			rowOrder = ifnull(row.Sort_Order,0).toLong();
+			if(rowOrder > vCurrentSort && rowOrder < nextOrder)
+			{
+				nextOrder = rowOrder;
+				nextId = row.ID.toString();
+			}
+		}
+		if(vAction == "Repair" && vCurrentStatus == "Approved")
+		{
+			if(nextId != "")
+			{
+				for each  row in trackRows
+				{
+					if(row.ID.toString() != nextId && ifnull(row.Status,"").trim() == "Pending")
+					{
+						row.Status="Not Sent";
+						row.Sent_Date=null;
+					}
+				}
+				nextRepairRows = Budget_Approvals[ID == nextId.toLong()];
+				for each  nextRepair in nextRepairRows
+				{
+					if(ifnull(nextRepair.Status,"").trim() != "Pending")
+					{
+						nextRepair.Status="Pending";
+						nextRepair.Sent_Date=null;
+						nextRepair.Responded_Date=null;
+					}
+					if(nextRepair.Sent_Date == null)
+					{
+						try 
+						{
+							thisapp.sendApprovalEmail(vBudgetId.toLong(),nextId.toLong());
+						}						catch (sendError)
+						{
+							repairError = "The approval email could not be sent: " + sendError.toString();
+						}
+					}
+				}
+			}
+			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		}
+		// Read the specific track again after a repair; never fetch unrelated budgets.
+		trackRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == vApprovalType];
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		nextStatus = "";
+		nextRole = "";
+		nextEmail = "";
+		nextSentDate = "";
+		for each  row in trackRows
+		{
+			rowCount = rowCount + 1;
+			rowStatus = ifnull(row.Status,"").trim();
+			if(rowStatus == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(rowStatus == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+			if(row.ID.toString() == nextId)
+			{
+				nextStatus = rowStatus;
+				nextRole = ifnull(row.Title,"").trim();
+				nextEmail = ifnull(row.Approver,"").trim();
+				if(row.Sent_Date != null)
+				{
+					nextSentDate = row.Sent_Date.toString();
+				}
+			}
+		}
+		budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+		parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+		if(vApprovalType == "Construction")
+		{
+			parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+		}
+		financialFinalized = false;
+		if(nextId == "" && rowCount > 0 && approvedCount == rowCount)
+		{
+			financialFinalized = true;
+			grandFinalCheck = 0.0;
+			budgetCategories = Budget_Category[Budget == vBudgetId.toLong()];
+			for each  cat in budgetCategories
+			{
+				dept = ifnull(cat.Deparment,"").trim().toLowerCase();
+				inTrack = (vApprovalType == "Construction" && dept.contains("construction")) || (vApprovalType == "Development" && dept.contains("development") || dept.contains("engineering"));
+				itemFinal = 0.0;
+				catItems = Budget_Item[Budget_Category == cat.ID];
+				for each  item in catItems
+				{
+					itemFinal = itemFinal + ifnull(item.Budget_Ttl,0).toDecimal();
+					if(inTrack && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
+					{
+						financialFinalized = false;
+					}
+				}
+				catFinal = ifnull(cat.Budget_Total,0).toDecimal();
+				if(catFinal != itemFinal)
+				{
+					financialFinalized = false;
+				}
+				grandFinalCheck = grandFinalCheck + catFinal;
+			}
+			if(grandFinalCheck != ifnull(budgetRec.Budget_Grand_Total,0).toDecimal())
+			{
+				financialFinalized = false;
+			}
+		}
+		if(vAction == "Repair" && nextId == "" && financialFinalized && parentStatus != "Approved")
+		{
+			thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			budgetRec = Add_Budget[ID == vBudgetId.toLong()];
+			parentStatus = ifnull(budgetRec.Development_Budget_Approval_Status,"").trim();
+			if(vApprovalType == "Construction")
+			{
+				parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
+			}
+		}
+		progress = Map();
+		progress.put("ok",true);
+		progress.put("budgetId",vBudgetId);
+		progress.put("approvalId",vApprovalId);
+		progress.put("track",vApprovalType);
+		progress.put("currentStatus",ifnull(currentApproval.Status,"").trim());
+		progress.put("nextId",nextId);
+		progress.put("nextStatus",nextStatus);
+		progress.put("pendingCount",pendingCount);
+		progress.put("role",nextRole);
+		progress.put("address",nextEmail);
+		progress.put("emailSent",nextSentDate != "");
+		progress.put("sentDate",nextSentDate);
+		progress.put("allApproved",rowCount > 0 && approvedCount == rowCount);
+		progress.put("parentStatus",parentStatus);
+		progress.put("financialFinalized",financialFinalized);
+		progress.put("repairError",repairError);
+		return progress.toString();
+	}
+	/********* FORMAT NOTE *********/
+	vNote = vNote.replaceAll("\r\n","\n");
+	vNote = vNote.replaceAll("\r","\n");
+	vNote = vNote.replaceAll("\n","<br>");
+	/********* PREVENT STALE OR OUT-OF-SEQUENCE ACTIONS *********/
+	if(vCurrentStatus != "Pending")
+	{
+		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		return vApprovalType + " " + vCurrentRole + " is currently " + vCurrentStatus + ". No action was taken because this approval is not Pending. " + syncResp;
+	}
+	/********* SAVE NOTE ONLY *********/
+	if(vAction == "Pending")
+	{
+		currentApproval.Status="Pending";
+		currentApproval.Approval_Notes=vNote;
+		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		return vApprovalType + " " + vCurrentRole + " note saved. " + syncResp;
+	}
+	/********* APPROVED *********/
+	if(vAction == "Approved")
+	{
+		currentApproval.Status="Approved";
+		currentApproval.Approval_Notes=vNote;
+		currentApproval.Responded_Date=zoho.currentdate;
+		nextApprovalId = "";
+		nextSort = 999999;
+		/********* FIND NEXT APPROVER IN THE SAME TRACK *********/
+		for each  appr in budgetRec.Approvals
+		{
+			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+			{
+				apprSort = 999999;
+				if(appr.Sort_Order != null)
+				{
+					apprSort = appr.Sort_Order.toLong();
+				}
+				if(apprSort > vCurrentSort && apprSort < nextSort)
+				{
+					nextSort = apprSort;
+					nextApprovalId = appr.ID.toString();
+				}
+			}
+		}
+		/********* SEND NEXT APPROVER *********/
+		if(nextApprovalId != "")
+		{
+			// Ensure only one row in this track remains Pending.
+			for each  appr in budgetRec.Approvals
+			{
+				apprIdText = appr.ID.toString();
+				if(ifnull(appr.Type1,"").trim() == vApprovalType && apprIdText != nextApprovalId && apprIdText != vApprovalId)
+				{
+					if(ifnull(appr.Status,"").trim() == "Pending")
+					{
+						pendingRows = Budget_Approvals[ID == apprIdText.toLong()];
+						for each  pr in pendingRows
+						{
+							pr.Status="Not Sent";
+							pr.Sent_Date=null;
+							pr.Responded_Date=null;
+						}
+					}
+				}
+			}
+			nextRows = Budget_Approvals[ID == nextApprovalId.toLong()];
+			for each  nextApproval in nextRows
+			{
+				nextApproval.Status="Pending";
+				// Only sendApprovalEmail may stamp Sent_Date after sendmail succeeds.
+				nextApproval.Sent_Date=null;
+				nextApproval.Responded_Date=null;
+			}
+			emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),nextApprovalId.toLong());
+			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			return vApprovalType + " " + vCurrentRole + " approved. " + emailResp + " " + syncResp;
+		}
+		else
+		{
+			/*****************************************************
+                 			 * FINAL APPROVER FINISHED
+                 			 *
+                 			 * Development:
+                 			 * - Development + Engineering Unapproved -> Final
+                 			 * - Development + Engineering Unapproved -> 0
+                 			 *
+                 			 * Construction:
+                 			 * - Construction Unapproved -> Final
+                 			 * - Construction Unapproved -> 0
+                 			 *****************************************************/
+			finalizedCount = 0;
+			finalizedTotal = 0;
+			budgetCategoriesToFinalize = Budget_Category[Budget == vBudgetId.toLong()];
+			for each  cat in budgetCategoriesToFinalize
+			{
+				deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
+				shouldFinalize = false;
+				if(vApprovalType == "Development")
+				{
+					if(deptKey.contains("development") || deptKey.contains("engineering"))
+					{
+						shouldFinalize = true;
+					}
+				}
+				else if(vApprovalType == "Construction")
+				{
+					if(deptKey.contains("construction"))
+					{
+						shouldFinalize = true;
+					}
+				}
+				if(shouldFinalize == true)
+				{
+					categoryId = cat.ID.toString();
+					catItemsToFinalize = Budget_Item[Budget_Category == categoryId.toLong()];
+					for each  itemToFinalize in catItemsToFinalize
+					{
+						unapprovedVal = 0;
+						if(itemToFinalize.Unapproved_Final_Budget_Ttl != null)
+						{
+							unapprovedNum = itemToFinalize.Unapproved_Final_Budget_Ttl.toNumber();
+							if(unapprovedNum != null)
+							{
+								unapprovedVal = unapprovedNum;
+							}
+						}
+						// Move Unapproved into Final.
+						itemToFinalize.Budget_Ttl=unapprovedVal;
+						// Once the track finishes, Unapproved must be zero.
+						itemToFinalize.Unapproved_Final_Budget_Ttl=0;
+						finalizedCount = finalizedCount + 1;
+						finalizedTotal = finalizedTotal + unapprovedVal;
+					}
+					/********* REFRESH THIS CATEGORY'S FINAL TOTAL *********/
+					catFinalTotal = 0;
+					catFinalSum = Budget_Item[Budget_Category == categoryId.toLong()].sum(Budget_Ttl);
+					if(catFinalSum != null)
+					{
+						catFinalNum = catFinalSum.toNumber();
+						if(catFinalNum != null)
+						{
+							catFinalTotal = catFinalNum;
+						}
+					}
+					cat.Budget_Total=catFinalTotal;
+				}
+			}
+			/********* REFRESH PARENT BUDGET FINAL GRAND TOTAL *********/
+			newGrandTotal = 0;
+			allBudgetCategories = Budget_Category[Budget == vBudgetId.toLong()];
+			for each  catTotalRec in allBudgetCategories
+			{
+				if(catTotalRec.Budget_Total != null)
+				{
+					catTotalNum = catTotalRec.Budget_Total.toNumber();
+					if(catTotalNum != null)
+					{
+						newGrandTotal = newGrandTotal + catTotalNum;
+					}
+				}
+			}
+			budgetRec.Budget_Grand_Total=newGrandTotal;
+			finalizeResp = "Finalized " + finalizedCount + " " + vApprovalType + " items totaling " + finalizedTotal + " into Final and cleared Unapproved.";
+			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			/*****************************************************
+                 			 * CHECK WHETHER BOTH APPROVAL TRACKS ARE COMPLETE
+                 			 *****************************************************/
+			hasDevelopmentTrack = false;
+			hasConstructionTrack = false;
+			allDevelopmentApproved = true;
+			allConstructionApproved = true;
+			allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()];
+			for each  finalCheckRow in allApprovalRows
+			{
+				finalCheckType = ifnull(finalCheckRow.Type1,"").trim();
+				finalCheckStatus = ifnull(finalCheckRow.Status,"").trim();
+				if(finalCheckType == "Development")
+				{
+					hasDevelopmentTrack = true;
+					if(finalCheckStatus != "Approved")
+					{
+						allDevelopmentApproved = false;
+					}
+				}
+				else if(finalCheckType == "Construction")
+				{
+					hasConstructionTrack = true;
+					if(finalCheckStatus != "Approved")
+					{
+						allConstructionApproved = false;
+					}
+				}
+			}
+			pdfResp = "";
+			if(hasDevelopmentTrack == true && hasConstructionTrack == true && allDevelopmentApproved == true && allConstructionApproved == true)
+			{
+				// generateApprovedBudgetPDF expects a STRING.
+				pdfResp = thisapp.generateApprovedBudgetPDF(vBudgetId);
+			}
+			else
+			{
+				pdfResp = "Approved budget PDF will be generated after both approval tracks are fully approved.";
+			}
+			return vApprovalType + " approval chain fully approved. " + finalizeResp + " " + syncResp + " " + pdfResp;
+		}
+	}
+	/********* REJECTED — SEND BACK TO PREVIOUS APPROVER *********/
+	if(vAction == "Rejected")
+	{
+		// VP cannot reject because there is no previous approval row.
+		if(vCurrentSort <= 1 || vCurrentRole == "VP")
+		{
+			currentApproval.Approval_Notes=vNote;
+			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			return vApprovalType + " VP cannot reject because there is no previous approver. Note saved and approval remains Pending. " + syncResp;
+		}
+		currentApproval.Status="Rejected";
+		currentApproval.Approval_Notes=vNote;
+		currentApproval.Responded_Date=zoho.currentdate;
+		previousApprovalId = "";
+		previousSort = 0;
+		/********* FIND PREVIOUS APPROVER IN THE SAME TRACK *********/
+		for each  appr in budgetRec.Approvals
+		{
+			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+			{
+				apprSort = 0;
+				if(appr.Sort_Order != null)
+				{
+					apprSort = appr.Sort_Order.toLong();
+				}
+				if(apprSort < vCurrentSort && apprSort > previousSort)
+				{
+					previousSort = apprSort;
+					previousApprovalId = appr.ID.toString();
+				}
+			}
+		}
+		if(previousApprovalId == "")
+		{
+			currentApproval.Status="Pending";
+			currentApproval.Responded_Date=null;
+			syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+			return vApprovalType + " " + vCurrentRole + " could not be rejected because no previous approver was found. Approval remains Pending. " + syncResp;
+		}
+		/********* PUSH THE CHAIN BACK ONE STEP *********/
+		for each  appr in budgetRec.Approvals
+		{
+			if(ifnull(appr.Type1,"").trim() == vApprovalType)
+			{
+				apprIdText = appr.ID.toString();
+				apprSort = 0;
+				if(appr.Sort_Order != null)
+				{
+					apprSort = appr.Sort_Order.toLong();
+				}
+				apprRows = Budget_Approvals[ID == apprIdText.toLong()];
+				for each  ar in apprRows
+				{
+					if(apprIdText == previousApprovalId)
+					{
+						ar.Status="Pending";
+						ar.Sent_Date=null;
+						ar.Responded_Date=null;
+					}
+					else if(apprSort > vCurrentSort)
+					{
+						ar.Status="Not Sent";
+						ar.Sent_Date=null;
+						ar.Responded_Date=null;
+					}
+				}
+			}
+		}
+		syncResp = thisapp.syncBudgetApprovalStatus(vBudgetId.toLong(),vApprovalType);
+		emailResp = thisapp.sendApprovalEmail(vBudgetId.toLong(),previousApprovalId.toLong());
+		return vApprovalType + " " + vCurrentRole + " rejected. Sent back to previous approver. " + emailResp + " " + syncResp;
+	}
+	return "Unsupported approval action: " + vAction;
+}

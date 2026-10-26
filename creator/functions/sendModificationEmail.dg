@@ -17,10 +17,68 @@ string sendModificationEmail(int modificationId, string action)
 		return "Unknown action: " + vAction;
 	}
 	modRec = Budget_Modification[ID == vModId];
-	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification uses the combined Purchase Order approval chain."; }
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:"))
+	{
+		return "ERROR: This modification uses the combined Purchase Order approval chain.";
+	}
 	if(modRec == null)
 	{
 		return "Modification not found.";
+	}
+	systemActor = zoho.loginuser == zoho.adminuser;
+	if(systemActor != true)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	if(requestAccess.count() > 1)
+	{
+		return "ERROR: Unambiguous authenticated User Access is required.";
+	}
+	requestBudget = Add_Budget[ID == modRec.Budget];
+	canSend = systemActor;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		canSend = canSend || requestAccess.Edit_All_Budgets == true || requestAccess.Edit_All_Approvals == true;
+		if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canSend = true;
+				}
+			}
+		}
+	}
+	actorEmail = ifnull(zoho.loginuser,"").toString().trim().toLowerCase();
+	routingEmail = "";
+	if(requestAccess.count() == 1)
+	{
+		routingEmail = ifnull(requestAccess.Approver_Email,"").toString().trim().toLowerCase();
+	}
+	for each  requestApproval in Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"]
+	{
+		approvalEmail = ifnull(requestApproval.Approver,"").trim().toLowerCase();
+		matchesActor = approvalEmail != "" && approvalEmail == actorEmail || (routingEmail != "" && approvalEmail == routingEmail);
+		actorDecision = (vAction == "created" && requestApproval.Status == "Pending") || (vAction == "approved" && requestApproval.Status == "Approved") || (vAction == "rejected" && requestApproval.Status == "Rejected");
+		if(matchesActor && actorDecision)
+		{
+			canSend = true;
+		}
+	}
+	if(canSend != true)
+	{
+		return "ERROR: Budget edit or recorded approval access is required.";
 	}
 	// Self-heal: an emailed modification is by definition in the approval flow.
 	if(vAction == "created" && ifnull(modRec.Status,"") != "Submitted")

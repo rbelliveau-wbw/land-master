@@ -4,57 +4,70 @@ storedAttachment = Attachment[ID == input.ID];
 attachmentParentId = input.Contract1;
 if(storedAttachment.count() > 0)
 {
- attachmentParentId = storedAttachment.Contract1;
+	attachmentParentId = storedAttachment.Contract1;
 }
 constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
 if(constructionBudgetingProfile)
 {
- scopedAttachmentParent = Contract[ID == attachmentParentId];
- if(attachmentParentId == null || scopedAttachmentParent.count() == 0 || ifnull(scopedAttachmentParent.Work_Module,"") != "Construction")
- {
-  alert "This profile can only attach files to Construction requests.";
-  cancel submit;
- }
+	if(input.Budget != null || input.Pro_Forma != null || input.Payment_Request != null || input.Budget_Modification != null)
+	{
+		alert "Construction attachments cannot also be linked to Budgets, Pro Formas, or Budget requests.";
+		cancel submit;
+	}
+	if(storedAttachment.count() > 0)
+	{
+		if(storedAttachment.Budget != null || storedAttachment.Pro_Forma != null || storedAttachment.Payment_Request != null || storedAttachment.Budget_Modification != null)
+		{
+			alert "Construction attachments cannot also be linked to Budgets, Pro Formas, or Budget requests.";
+			cancel submit;
+		}
+	}
+	scopedAttachmentParent = Contract[ID == attachmentParentId];
+	if(attachmentParentId == null || scopedAttachmentParent.count() == 0 || ifnull(scopedAttachmentParent.Work_Module,"") != "Construction")
+	{
+		alert "This profile can only attach files to Construction requests.";
+		cancel submit;
+	}
 }
 if(attachmentParentId != null)
 {
- attachmentParent = Contract[ID == attachmentParentId];
- if(attachmentParent.count() > 0 && ifnull(attachmentParent.Work_Module,"") == "Construction")
- {
-  constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
-  constructionEditAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
-  if(constructionAllowed != true)
-  {
-   alert "Construction request access is required to add attachments.";
-   cancel submit;
-  }
-  if(ifnull(attachmentParent.Status,"") == "Complete")
-  {
-   alert "This construction request is complete and read-only.";
-   cancel submit;
-  }
-  if(storedAttachment.count() > 0)
-  {
-   if(input.Contract1 != storedAttachment.Contract1)
-   {
-    alert "An attachment cannot be moved to another request.";
-    cancel submit;
-   }
-   if(constructionEditAllowed != true && storedAttachment.Added_User != zoho.loginuser)
-   {
-    alert "You can only upload files to your own construction attachments.";
-    cancel submit;
-   }
-  }
- }
+	attachmentParent = Contract[ID == attachmentParentId];
+	if(attachmentParent.count() > 0 && ifnull(attachmentParent.Work_Module,"") == "Construction")
+	{
+		constructionAllowed = thisapp.hasConstructionPermission(zoho.loginuser,false);
+		constructionEditAllowed = thisapp.hasConstructionPermission(zoho.loginuser,true);
+		if(constructionAllowed != true)
+		{
+			alert "Construction request access is required to add attachments.";
+			cancel submit;
+		}
+		if(ifnull(attachmentParent.Status,"") == "Complete")
+		{
+			alert "This construction request is complete and read-only.";
+			cancel submit;
+		}
+		if(storedAttachment.count() > 0)
+		{
+			if(input.Contract1 != storedAttachment.Contract1)
+			{
+				alert "An attachment cannot be moved to another request.";
+				cancel submit;
+			}
+			if(constructionEditAllowed != true && storedAttachment.Added_User != zoho.loginuser)
+			{
+				alert "You can only upload files to your own construction attachments.";
+				cancel submit;
+			}
+		}
+	}
 }
 // Do not let an existing Legal attachment be moved into Construction either.
 if(storedAttachment.count() > 0 && input.Contract1 != storedAttachment.Contract1 && input.Contract1 != null)
 {
- newAttachmentParent = Contract[ID == input.Contract1];
- if(newAttachmentParent.count() > 0 && ifnull(newAttachmentParent.Work_Module,"") == "Construction")
- {
-  alert "An attachment cannot be moved to another request.";
-  cancel submit;
- }
+	newAttachmentParent = Contract[ID == input.Contract1];
+	if(newAttachmentParent.count() > 0 && ifnull(newAttachmentParent.Work_Module,"") == "Construction")
+	{
+		alert "An attachment cannot be moved to another request.";
+		cancel submit;
+	}
 }

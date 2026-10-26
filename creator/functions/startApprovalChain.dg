@@ -35,13 +35,36 @@ string startApprovalChain(int budgetId, string approvalType)
 	{
 		return "Budget not found.";
 	}
+	// Bind initiation to the authenticated actor before template, financial or email writes.
+	// The actual application owner also runs trusted report/system actions.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		requestAccess = User_Access[User == zoho.loginuser];
+		if(requestAccess.count() != 1 || requestAccess.Send_for_Approvals != true)
+		{
+			return "ERROR: Send for Approvals permission is required.";
+		}
+		try
+		{
+			requestProfile = thisapp.permissions.profileForUser(zoho.loginuser);
+			if(requestProfile == "Construction Budgeting")
+			{
+				return "ERROR: Construction Budgeting has read-only Budget access except PO creation.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget permission profile could not be verified.";
+		}
+	}
 	// Only initialize a new, untouched chain from the central template.
 	// Existing approval handlers, staging, emails and finalization are retained.
 	policyTerritory = "";
-		if(budgetRec.Subdivision1 != null) { policyTerritory = ifnull(budgetRec.Subdivision1.Territory,""); }
-		policySubmitter = User_Access[User == zoho.loginuser];
-		policyContext = {"workflow":"Budget","recordId":vBudgetId.toString(),"territory":policyTerritory,"department":vApprovalType,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":"0.00","amountBasisConfirmed":false};
-
+	if(budgetRec.Subdivision1 != null)
+	{
+		policyTerritory = ifnull(budgetRec.Subdivision1.Territory,"");
+	}
+	policySubmitter = User_Access[User == zoho.loginuser];
+	policyContext = {"workflow":"Budget","recordId":vBudgetId.toString(),"territory":policyTerritory,"department":vApprovalType,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":"0.00","amountBasisConfirmed":false};
 	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 	if(policyExecution.get("success") != true)
 	{

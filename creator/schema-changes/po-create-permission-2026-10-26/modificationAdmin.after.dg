@@ -1,0 +1,451 @@
+string modificationAdmin(string action, int modificationId, int budgetId, string modType, string amount, string reason, string reference, string effectiveDate)
+{
+	/********* MODIFICATION ADMIN *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// actions: "update" | "delete" | "reopen" | "repair" | "check-send" | "repair-send"
+	// - update: edit fields on any modification (modificationId + optional fields).
+	// - delete: remove a modification AND its approval chain; recalcs Revised_Final
+	//   if the modification was Approved.
+	// - reopen: send a Rejected modification back to Draft with a cleared chain so
+	//   it can be revised and resubmitted.
+	// - repair: build a missing Submitted modification chain from its published
+	//   Settings rule. Preserve existing/orphan history; never send or stamp mail.
+	// Admin update/delete use the single Edit_All_Budgets grant on the server.
+	// (repair is also invoked automatically on inconsistency detection).
+	vAction = ifnull(action,"").trim().toLowerCase();
+	if(vAction == "update" || vAction == "delete")
+	{
+		adminAccess = User_Access[User == zoho.loginuser];
+		if(adminAccess.count() != 1 || adminAccess.Edit_All_Budgets != true)
+		{
+			return "ERROR: Edit/Delete All Budgets/Requests access is required.";
+		}
+	}
+	combinedMod = Budget_Modification[ID == modificationId.toLong()];
+	if(ifnull(combinedMod.Reference_Number,"").startsWith("PO:"))
+	{
+		return "ERROR: This modification belongs to a combined Purchase Order approval. Open the PO to edit or resubmit.";
+	}
+	if(vAction == "update" || vAction == "delete" || vAction == "reopen" || vAction == "repair" || vAction == "repair-send" || vAction == "repair-reject")
+	{
+		systemActor = zoho.loginuser == zoho.adminuser;
+		if(systemActor != true)
+		{
+			try 
+			{
+				if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+				{
+					return "ERROR: This profile has read-only Budget access.";
+				}
+			}			catch (profileError)
+			{
+				return "ERROR: Budget access could not be verified.";
+			}
+		}
+		requestAccess = User_Access[User == zoho.loginuser];
+		if(requestAccess.count() > 1)
+		{
+			return "ERROR: Unambiguous authenticated User Access is required.";
+		}
+		requestBudgetId = budgetId.toLong();
+		if(vAction != "repair")
+		{
+			requestBudgetId = 0;
+			if(combinedMod.Budget != null)
+			{
+				requestBudgetId = combinedMod.Budget.ID;
+			}
+		}
+		requestBudget = Add_Budget[ID == requestBudgetId];
+		canEditRequest = systemActor;
+		canApproveRequest = systemActor;
+		if(requestAccess.count() == 1 && requestBudget.count() == 1)
+		{
+			if(requestAccess.Edit_All_Budgets == true)
+			{
+				canEditRequest = true;
+			}
+			if(requestAccess.Edit_All_Approvals == true)
+			{
+				canApproveRequest = true;
+			}
+			if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+			{
+				for each  requestOwner in requestBudget.Budget_Owner
+				{
+					if(requestOwner.ID == requestAccess.ID)
+					{
+						canEditRequest = true;
+					}
+				}
+			}
+		}
+		// Recorded approvers retain their existing decision/reconciliation path without global grants.
+		actorEmail = ifnull(zoho.loginuser,"").toString().trim().toLowerCase();
+		routingEmail = "";
+		if(requestAccess.count() == 1)
+		{
+			routingEmail = ifnull(requestAccess.Approver_Email,"").toString().trim().toLowerCase();
+		}
+		for each  requestApproval in Budget_Approvals[Budget_Modification == modificationId.toLong() && Type1 == "Modification"]
+		{
+			approvalEmail = ifnull(requestApproval.Approver,"").trim().toLowerCase();
+			matchesActor = approvalEmail != "" && approvalEmail == actorEmail || (routingEmail != "" && approvalEmail == routingEmail);
+			if(matchesActor && vAction == "repair-send" && requestApproval.Status == "Pending")
+			{
+				canApproveRequest = true;
+			}
+			if(matchesActor && vAction == "repair-reject" && requestApproval.ID.toString() == ifnull(reference,"").trim() && requestApproval.Status == "Rejected")
+			{
+				canApproveRequest = true;
+			}
+		}
+		if(vAction == "reopen" && canEditRequest != true)
+		{
+			return "ERROR: Budget edit access is required to reopen a modification.";
+		}
+		if(canEditRequest != true && canApproveRequest != true)
+		{
+			return "ERROR: Budget edit or recorded approval access is required.";
+		}
+	}
+	if(vAction == "check-reject" || vAction == "repair-reject")
+	{
+		vModId = modificationId.toLong();
+		vRowId = ifnull(reference,"").trim();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null || vRowId == "")
+		{
+			return "ERROR: Modification or approval row not found.";
+		}
+		targetRows = Budget_Approvals[ID == vRowId.toLong() && Budget_Modification == vModId && Type1 == "Modification"];
+		if(targetRows.count() != 1)
+		{
+			return "ERROR: Target approval row not found.";
+		}
+		targetRow = null;
+		for each  oneRow in targetRows
+		{
+			targetRow = oneRow;
+		}
+		if(vAction == "repair-reject" && ifnull(targetRow.Status,"").trim() == "Rejected" && ifnull(modRec.Status,"").trim() == "Submitted")
+		{
+			modRec.Status="Rejected";
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		result = Map();
+		result.put("ok",true);
+		result.put("modificationId",vModId.toString());
+		result.put("approvalId",vRowId);
+		result.put("status",ifnull(modRec.Status,"").trim());
+		result.put("currentStatus",ifnull(targetRow.Status,"").trim());
+		result.put("noteMatches",ifnull(targetRow.Approval_Notes,"").trim() == ifnull(reason,"").trim());
+		result.put("rowCount",rowCount);
+		result.put("pendingCount",pendingCount);
+		result.put("approvedCount",approvedCount);
+		return result.toString();
+	}
+	if(vAction == "check-send" || vAction == "repair-send")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+		firstRow = null;
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(firstRow == null)
+			{
+				firstRow = row;
+			}
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		repairError = "";
+		repairChainReady = false;
+		repairStatusReady = false;
+		if(firstRow != null)
+		{
+			firstRepairStatus = ifnull(firstRow.Status,"").trim();
+			repairStatusReady = firstRepairStatus == "Not Sent" || firstRepairStatus == "Pending";
+			if(pendingCount == 0)
+			{
+				repairChainReady = true;
+			}
+			if(pendingCount == 1 && firstRepairStatus == "Pending")
+			{
+				repairChainReady = true;
+			}
+		}
+		if(vAction == "repair-send" && ifnull(modRec.Status,"").trim() == "Submitted" && firstRow != null && approvedCount == 0 && repairChainReady && firstRow.Sent_Date == null && repairStatusReady)
+		{
+			try 
+			{
+				emailResult = thisapp.sendModificationEmail(vModId,"created");
+				if(!ifnull(emailResult,"").startsWith("Modification email sent"))
+				{
+					repairError = ifnull(emailResult,"Approval email could not be sent.");
+				}
+			}			catch (repairException)
+			{
+				repairError = repairException.toString();
+			}
+		}
+		rows = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+		firstRow = null;
+		pendingCount = 0;
+		approvedCount = 0;
+		rowCount = 0;
+		for each  row in rows
+		{
+			rowCount = rowCount + 1;
+			if(firstRow == null)
+			{
+				firstRow = row;
+			}
+			if(ifnull(row.Status,"").trim() == "Pending")
+			{
+				pendingCount = pendingCount + 1;
+			}
+			if(ifnull(row.Status,"").trim() == "Approved")
+			{
+				approvedCount = approvedCount + 1;
+			}
+		}
+		result = Map();
+		result.put("ok",true);
+		result.put("modificationId",vModId.toString());
+		result.put("status",ifnull(modRec.Status,"").trim());
+		result.put("rowCount",rowCount);
+		result.put("pendingCount",pendingCount);
+		result.put("approvedCount",approvedCount);
+		firstId = "";
+		firstStatus = "";
+		firstRole = "";
+		firstAddress = "";
+		firstSent = "";
+		if(firstRow != null)
+		{
+			firstId = firstRow.ID.toString();
+			firstStatus = ifnull(firstRow.Status,"").trim();
+			firstRole = ifnull(firstRow.Title,"").trim();
+			firstAddress = ifnull(firstRow.Approver,"").trim();
+			if(firstRow.Sent_Date != null)
+			{
+				firstSent = firstRow.Sent_Date.toString();
+			}
+		}
+		result.put("firstId",firstId);
+		result.put("firstStatus",firstStatus);
+		result.put("role",firstRole);
+		result.put("address",firstAddress);
+		result.put("sentDate",firstSent);
+		result.put("repairError",repairError);
+		return result.toString();
+	}
+	if(vAction == "update")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vType = ifnull(modType,"").trim();
+		if(vType == "Increase" || vType == "Decrease")
+		{
+			modRec.Modification_Type=vType;
+		}
+		vAmt = ifnull(amount,"").trim();
+		if(vAmt != "")
+		{
+			vAmount = vAmt.toDecimal();
+			if(vAmount <= 0)
+			{
+				return "ERROR: Amount must be greater than zero.";
+			}
+			modRec.Amount=vAmount;
+		}
+		vReason = ifnull(reason,"").trim();
+		if(vReason != "")
+		{
+			modRec.Reason=vReason;
+		}
+		vRef = ifnull(reference,"").trim();
+		if(vRef != "")
+		{
+			modRec.Reference_Number=vRef;
+		}
+		vDate = ifnull(effectiveDate,"").trim();
+		if(vDate != "")
+		{
+			modRec.Effective_Date=vDate.toDate();
+		}
+		// Keep the persisted Revised_Final + Modified Final rollups in sync when an
+		// approved delta changes.
+		if(ifnull(modRec.Status,"") == "Approved" && modRec.Budget_Item != null)
+		{
+			recalcMsg = thisapp.recalcItemRevisedFinal(modRec.Budget_Item.ID);
+			if(budgetId.toLong() != 0)
+			{
+				rollupMsg = thisapp.recalcBudgetModifiedTotals(budgetId.toLong());
+			}
+		}
+		return "OK: Modification updated.";
+	}
+	if(vAction == "delete")
+	{
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vItemId = 0;
+		if(modRec.Budget_Item != null)
+		{
+			vItemId = modRec.Budget_Item.ID;
+		}
+		wasApproved = ifnull(modRec.Status,"") == "Approved";
+		if(modRec.Budget == null && Attachment[Budget_Modification == vModId && Budget == null && Contract1 == null && Pro_Forma == null && Payment_Request == null].count() > 0)
+		{
+			return "ERROR: Restore this modification's Budget link before deleting it; its files must remain in Budget Attachments.";
+		}
+		// Request deletion retains the same Budget file and original provenance.
+		for each  attachedFile in Attachment[Budget_Modification == vModId]
+		{
+			if(attachedFile.Budget == null && modRec.Budget != null)
+			{
+				attachedFile.Budget=modRec.Budget;
+			}
+			attachedFile.Budget_Modification=null;
+		}
+		// The approval chain goes with the modification.
+		delete from Budget_Approvals[Budget_Modification == vModId];
+		delete from Budget_Modification[ID == vModId];
+		if(wasApproved && vItemId != 0)
+		{
+			recalcMsg = thisapp.recalcItemRevisedFinal(vItemId);
+			if(budgetId.toLong() != 0)
+			{
+				rollupMsg = thisapp.recalcBudgetModifiedTotals(budgetId.toLong());
+			}
+		}
+		return "OK: Modification and its approvals deleted.";
+	}
+	if(vAction == "reopen")
+	{
+		/********* REVISE AND RESUBMIT *********/
+		// Rejecting a modification is terminal, unlike a budget or Pro Forma
+		// rejection which returns to the prior approver. Without this the record
+		// dead-ends: Submit is gone because the status is not Draft, and only a
+		// delete clears it. Reopen resets it to Draft with a blank chain so the
+		// normal edit-then-submit flow can run again from the top.
+		vModId = modificationId.toLong();
+		modRec = Budget_Modification[ID == vModId];
+		if(modRec == null)
+		{
+			return "ERROR: Modification not found.";
+		}
+		vStatus = ifnull(modRec.Status,"").trim();
+		if(vStatus == "Approved")
+		{
+			return "ERROR: An approved modification cannot be reopened. Delete it instead.";
+		}
+		if(vStatus == "Submitted")
+		{
+			return "ERROR: This modification is already in approvals.";
+		}
+		// A fresh chain is rebuilt on submit, and rebuilding beats resetting: it
+		// picks up the current published Settings approval rule.
+		delete from Budget_Approvals[Budget_Modification == vModId];
+		modRec.Status="Draft";
+		modRec.Approved_On=null;
+		modRec.Approved_By="";
+		// Zoho has silently dropped fetch-assign writes on this form before, and a
+		// dropped write here would leave the record Rejected with no chain. Reading
+		// it back turns that into a visible error; clicking Revise & Resubmit again
+		// then succeeds, because the chain delete is already a no-op.
+		checkRec = Budget_Modification[ID == vModId];
+		if(checkRec != null && ifnull(checkRec.Status,"").trim() != "Draft")
+		{
+			return "ERROR: The approval chain was cleared but the status did not save. Try Revise & Resubmit once more.";
+		}
+		return "OK: Modification reopened for revision.";
+	}
+	if(vAction == "repair")
+	{
+		vBudgetId = budgetId.toLong();
+		if(vBudgetId == 0)
+		{
+			return "ERROR: No budget provided.";
+		}
+		policyTerritory = "";
+		budgetRec = Add_Budget[ID == vBudgetId];
+		if(budgetRec != null && budgetRec.Subdivision1 != null)
+		{
+			policyTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
+		}
+		policySubmitter = User_Access[User == zoho.loginuser];
+		rebuilt = 0;
+		routingErrors = List();
+		for each  modRec in Budget_Modification[Budget == vBudgetId]
+		{
+			if(ifnull(modRec.Reference_Number,"").startsWith("PO:"))
+			{
+				continue;
+			}
+			linked = Budget_Approvals[Budget_Modification == modRec.ID && Type1 == "Modification"];
+			// A Draft has no submitted route to repair. Never rewrite existing rows
+			// or guess which modification owns a historical orphan approval.
+			if(linked.count() == 0 && ifnull(modRec.Status,"") == "Submitted")
+			{
+				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+				policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+				if(policyExecution.get("success") == true && policyExecution.get("shared") == true)
+				{
+					rebuilt = rebuilt + 1;
+				}
+				else
+				{
+					routingErrors.add(modRec.ID.toString() + ": " + ifnull(policyExecution.get("error"),"Settings approval routing is unavailable."));
+				}
+			}
+		}
+		// Repair does not activate a recipient, stamp delivery or send mail.
+		if(routingErrors.size() > 0)
+		{
+			return "ERROR: Settings approval routing failed for " + routingErrors.toString("; ") + ". Rebuilt=" + rebuilt.toString();
+		}
+		return "OK: repair relinked=0 rebuilt=" + rebuilt.toString() + " removed=0";
+	}
+	return "ERROR: Unknown action.";
+}

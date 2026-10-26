@@ -19,7 +19,8 @@ function runValidation(path, input, tables = {}, rawSource = null) {
     Array.prototype.contains=function(value){return this.includes(value);};
     String.prototype.toLong=function(){return Number(this);};
     Number.prototype.addDay=function(days){return this+days;};
-    var zoho={loginuser:'signed-in-user',currentdate:100};
+    Number.prototype.addHour=function(hours){return this+hours;};
+    var zoho={loginuser:'signed-in-user',currentdate:100,currenttime:100};
     var thisapp={permissions:{profileForUser(user){if(tables.__profileError)throw Error('Denied profile');return user===zoho.loginuser?tables.__profile||'':'';},isUserInProfile(profile){return tables.__profile===profile;}}};
     function record(row){return new Proxy(row||{},{get(object,key){return object[key]??null;}});}
     function query(form,predicate){
@@ -149,6 +150,24 @@ for(const profile of ['Dev/Land Acq - Proforma & Budgets','CFO','Construction Bu
 }
 assert.throws(()=>runValidation(parentWorkflow,request(),{...scope,__profileError:true}),/permission is required/);
 
+// Const's Construction grants cannot be used to create or change shared Budget/Project children.
+const constructionOnly={__profile:'Construction Budgeting',Contract:[parent]};
+for(const field of ['Budget','Pro_Forma','Payment_Request','Budget_Modification']){
+ assert.throws(()=>runValidation(attachmentWorkflow,{ID:null,Contract1:20,[field]:70},constructionOnly),/cannot also be linked/,'A second input parent cannot write a Budget attachment through Construction');
+ assert.throws(()=>runValidation(attachmentWorkflow,{ID:90,Contract1:20,[field]:null},{...constructionOnly,Attachment:[{ID:90,Contract1:20,[field]:70,Added_User:'signed-in-user'}]}),/cannot also be linked/,'Clearing the input does not authorize editing an existing shared attachment');
+}
+for(const field of ['Project','Budget','Pro_Forma']){
+ assert.throws(()=>runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:null,Contract1:20,Comment:'Scope fixture',[field]:70},constructionOnly),/cannot also be linked/,'A Construction parent cannot authorize a Budget/Project comment');
+ assert.throws(()=>runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:91,Contract1:20,Comment:'Scope fixture',[field]:null},{...constructionOnly,Comment_Log:[{ID:91,Contract1:20,[field]:70,Added_User:'signed-in-user',Added_Time:99,Comment:'Original'}]}),/cannot also be linked/,'An existing shared comment stays read-only even when the input hides its other parent');
+}
+assert.doesNotThrow(()=>runValidation(attachmentWorkflow,{ID:90,Contract1:20},{...constructionOnly,Attachment:[{ID:90,Contract1:20,Added_User:'signed-in-user'}]}),'Pure Construction file editing stays available');
+assert.equal(runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:91,Contract1:20,Comment:'Edited Construction detail'},{...constructionOnly,Comment_Log:[{ID:91,Contract1:20,Added_User:'signed-in-user',Added_Time:99,Comment:'Original',Deleted:false}]}).input.Comment,'Edited Construction detail','Pure Construction author/time edit remains intact');
+for(const profile of ['Dev/Land Acq - Proforma & Budgets','CFO']){
+ const tables={__profile:profile,Contract:[parent]};
+ assert.doesNotThrow(()=>runValidation(attachmentWorkflow,{ID:null,Contract1:20,Budget:70},tables),'Unrelated profile parent policy is preserved');
+ assert.doesNotThrow(()=>runValidation('creator/workflows/Validate_Comment_Log.dg',{ID:null,Contract1:20,Comment:'Unrelated scope fixture',Project:70},tables));
+}
+
 // Existing Legal profiles can delete from shared native reports. Construction
 // child deletion must still enforce its editor grant and completed-record lock.
 for(const name of ['Construction_Action_Delete_Validation','Construction_Attachment_Delete_Validation']){
@@ -166,6 +185,10 @@ assert.throws(()=>runValidation('creator/workflows/Construction_Comment_Delete_V
 assert.doesNotThrow(()=>runValidation('creator/workflows/Construction_Comment_Delete_Validation.dg',{Contract1:20},{Contract:[{...parent,Work_Module:'Legal'}]}));
 
 console.log('PASS construction backend: independent grants, enforced review intake, submit-only edits/tasks/templates denied, inferred scope, immutable mode, completion lock, Legal approval isolation and legacy Legal compatibility.');
+if(process.argv.includes('--behavior-only')){
+ console.log('PASS scoped workflow behavior only: Const dual-parent create/update/cleared-input denial and pure Construction/other-profile preservation. Native saved-body evidence gate was not run.');
+ process.exit(0);
+}
 
 // Check the complete independently reloaded Workflow Builder capture, including
 // its action count. Comparing only the first body can conceal duplicate actions.

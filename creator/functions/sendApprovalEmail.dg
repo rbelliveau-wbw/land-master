@@ -1,5 +1,14 @@
 				 string sendApprovalEmail(int budgetId, int approvalId)
                  {
+	// This helper is also exposed directly; retain owner-run watchdog/routing callers.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting") { return "ERROR: This profile has read-only Budget access."; }
+		}
+		catch (profileError) { return "ERROR: Budget access could not be verified."; }
+	}
                  	/********* SEND ONE APPROVAL EMAIL *********/
                  	// Return Type: string
                  	// Sends the approval email for one specific Budget_Approvals row.

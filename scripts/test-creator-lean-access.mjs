@@ -9,6 +9,7 @@ const names = ['hasConstructionPermission', 'getUserAccess', 'getUserAccessDev',
 const bodies = names.map(name => translate(fs.readFileSync(new URL(`../creator/functions/${name}.dg`, import.meta.url), 'utf8')));
 const fields = [
   ['Edit_All_Budgets', 'editAll'], ['Edit_Owned_Budgets', 'editOwned'],
+  ['Create_Purchase_Orders', 'poCreate'],
   ['Edit_All_Approvals', 'apprAll'], ['Edit_Owned_Approvals', 'apprOwned'],
   ['Send_for_Approvals', 'send'], ['Edit_Budget_Owners', 'editOwners'],
   ['View_Budget_Import_Items', 'viewImports'], ['Edit_Budget_Import_Items', 'editImports'],
@@ -107,6 +108,7 @@ for (const [, flag] of fields) assert.equal(assertParity('fixture_owner', [nulla
 const duplicate = assertParity('fixture_owner', [actor, {...actor, ID: roster[1].ID, Edit_All_Budgets: true}]).lean.value;
 assert.equal(duplicate.myId, actor.ID, 'Preserve the legacy first-matching-row selection.');
 assert.equal(duplicate.editAll, false);
+assert.equal(assertParity('fixture_owner', [{...actor,Create_Purchase_Orders:true},{...actor,ID:roster[1].ID,Create_Purchase_Orders:true}]).lean.value.poCreate,false,'A duplicate identity cannot grant PO creation.');
 
 const devActor = {...actor, User: 'wbdevelopment', Edit_All_Budgets: true};
 for (const user of ['rbelliveau', 'rbelliveau@wbdevelopment.com']) {

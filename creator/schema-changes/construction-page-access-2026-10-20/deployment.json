@@ -2,7 +2,7 @@
   "environment": "DEVELOPMENT",
   "productionPublished": false,
   "creatorPromotion": "User promotes native changes under PMP.",
-  "verification": "All six functions independently reselected and copied; seven workflows independently reloaded with exactly one native script action and complete body; reports and native profiles separately reopened.",
+  "verification": "Current function/report/profile and unchanged workflow evidence is preserved. October26 Comment validation is independently saved/reloaded; Construction Attachment dual-parent validation remains pending its current native action capture.",
   "functions": [
     {
       "name": "hasConstructionPermission",
@@ -13,14 +13,16 @@
     {
       "name": "getUserAccess",
       "source": "creator/functions/getUserAccess.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccess.after.dg",
-      "savedAndReloaded": true
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccess.after.dg",
+      "savedAndReloaded": true,
+      "updated_by": "creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json"
     },
     {
       "name": "getUserAccessLean",
       "source": "creator/functions/getUserAccessLean.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccessLean.after.dg",
-      "savedAndReloaded": true
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccessLean.after.dg",
+      "savedAndReloaded": true,
+      "updated_by": "creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json"
     },
     {
       "name": "createContractAttachmentRecord",
@@ -61,18 +63,34 @@
     {
       "link": "Construction_Attachment_V",
       "source": "creator/workflows/Construction_Attachment_Validation.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.after.dg",
-      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.builder-capture.json",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/Construction_Attachment_V.after.dg",
+      "capture": "creator/schema-changes/po-create-permission-2026-10-26/Construction_Attachment_V.builder-capture.json",
       "savedAndReloaded": true,
-      "nativeScriptActionCount": 1
+      "nativeScriptActionCount": 1,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development; independently reopened complete native Workflow Builder body with exactly one script action. Source, after capture and sole action token streams match, preserving literals, operators and grouping.",
+      "previous_evidence": [
+        "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.after.dg"
+      ],
+      "previous_captures": [
+        "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.builder-capture.json"
+      ]
     },
     {
       "link": "Validate_Comment_Log",
       "source": "creator/workflows/Validate_Comment_Log.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.after.dg",
-      "capture": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.builder-capture.json",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/Validate_Comment_Log.after.dg",
+      "capture": "creator/schema-changes/po-create-permission-2026-10-26/Validate_Comment_Log.builder-capture.json",
       "savedAndReloaded": true,
-      "nativeScriptActionCount": 1
+      "nativeScriptActionCount": 1,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development; independently reopened complete native Workflow Builder body with exactly one script action. Source, after capture and sole action token streams match, preserving literals and grouping.",
+      "previous_evidence": [
+        "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.after.dg"
+      ],
+      "previous_captures": [
+        "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.builder-capture.json"
+      ]
     },
     {
       "link": "Construction_Action_Delet",
