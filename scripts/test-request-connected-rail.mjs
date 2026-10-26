@@ -139,3 +139,17 @@ const projectedParent={...po,PO_Status:'Submitted',PO_Approval_State:'Pending',_
 const loadedReportAndSnapshot=c.requestRailGroups(budget,[projectedParent],[child,standalone]);assert.equal(loadedReportAndSnapshot.flatMap(g=>[g.record,...g.children]).filter(row=>row.ID===child.ID).length,1,'Own/all-record profiles do not duplicate a child already in the report');
 c.S.checkWireRequestsByBudget[bid]=[{...po,_poModificationsState:'unavailable'}];c.renderModPhasePanel(budget);assert.match(panel.innerHTML,/Attached budget modifications unavailable/);assert.match(panel.innerHTML,/data-request-po-children-retry/);assert.doesNotMatch(source,/\.request-rail-child:before\{/,'The old disconnected one-pixel elbow is removed');assert.match(source,/request-rail-children>li:last-child:before\{bottom:calc\(50% \+ 9px\)\}/,'The trunk reaches the rounded elbow for any last-child height');
 console.log('Connected rail CFO display: report subset supplemented once, real item labels/statuses, explicit failed-read Retry, untouched financial cache and bold curved SVG connectors passed.');
+// Verified old Submitted/Reserved POs have no captured approval bundle. Keep the
+// row read-only and the historical standalone modification separate and intact.
+editable=false;maySubmit=false;admin=false;
+const legacyParent={...po,PO_Status:'Submitted',PO_Approval_State:'Not Configured',_poModifications:null,_poModificationsState:'legacy-unavailable'};
+const legacyMod={...standalone,Reference_Number:'CODEX-PO-DEV-20261008-1',Status:'Draft'};
+c.S.checkWireRequestsByBudget[bid]=[legacyParent];c.S.modifications=[legacyMod];
+const legacyFinancialBefore=JSON.stringify(c.S.modifications),legacyWritesBefore=writes;
+c.renderModPhasePanel(budget);
+assert.match(panel.innerHTML,/<p class='request-rail-notice' role='status'>Approval history unavailable for this older PO\.<\/p>/);
+assert.match(panel.innerHTML,/aria-label='Preview PO'/);
+assert.doesNotMatch(panel.innerHTML,/data-request-po-children-retry|aria-label='Edit PO'|request-rail-children|Repair/i);
+assert.equal(c.requestRailGroups(budget,[legacyParent],[legacyMod]).length,2,'A historical modification pointer does not create a modern relationship');
+assert.equal(JSON.stringify(c.S.modifications),legacyFinancialBefore);assert.equal(writes,legacyWritesBefore);
+console.log('Connected rail legacy history: neutral accessible notice, read-only PO preview, no retry/repair or inferred child, untouched financial cache and zero writes passed.');

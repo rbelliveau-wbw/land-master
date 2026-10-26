@@ -1,0 +1,111 @@
+[
+  {
+    "success": true,
+    "snapshot": {
+      "id": "4410926000005121026",
+      "budgetId": "4410926000005121010",
+      "vendorId": "4410926000005121008",
+      "description": "",
+      "budgetModificationId": null,
+      "requestDate": "2026-10-08",
+      "dateNeeded": "2026-10-10",
+      "amount": "3.01",
+      "revision": "codex-po-native-submit-20261008-001",
+      "status": "Submitted",
+      "commitmentState": "Reserved",
+      "approvalState": "Not Configured",
+      "lines": [
+        {
+          "ID": "4410926000005121036",
+          "key": "calc",
+          "budgetItemId": "4410926000005121018",
+          "description": "Development test calculated line",
+          "costElement": "1",
+          "uom": null,
+          "costCode": "",
+          "pricingMode": "Calculated",
+          "quantity": "0.335",
+          "unitPrice": "3.00",
+          "finalAmount": "1.01"
+        },
+        {
+          "ID": "4410926000005121038",
+          "key": "manual",
+          "budgetItemId": "4410926000005121020",
+          "description": "Development test manual line",
+          "costElement": "5",
+          "uom": null,
+          "costCode": "",
+          "pricingMode": "Manual",
+          "quantity": null,
+          "unitPrice": null,
+          "finalAmount": "1.00"
+        },
+        {
+          "ID": "4410926000005121040",
+          "key": "repeat",
+          "budgetItemId": "4410926000005121018",
+          "description": "Development repeated budget item",
+          "costElement": "5",
+          "uom": null,
+          "costCode": "",
+          "pricingMode": "Manual",
+          "quantity": null,
+          "unitPrice": null,
+          "finalAmount": "1.00"
+        }
+      ],
+      "canEditInFlight": false,
+      "canEditDraft": false
+    },
+    "contract": "po-v1"
+  },
+  {
+    "success": true,
+    "snapshot": {
+      "id": "4410926000005121122",
+      "budgetId": "4410926000005121010",
+      "vendorId": "4410926000005121008",
+      "description": "",
+      "budgetModificationId": "4410926000005121116",
+      "requestDate": "2026-10-08",
+      "dateNeeded": "2026-10-10",
+      "amount": "3.01",
+      "revision": "codex-po-linked-submit-20261008-001",
+      "status": "Submitted",
+      "commitmentState": "Reserved",
+      "approvalState": "Not Configured",
+      "lines": [
+        {
+          "ID": "4410926000005121140",
+          "key": "calc",
+          "budgetItemId": "4410926000005121018",
+          "description": "Development test calculated line",
+          "costElement": "1",
+          "uom": null,
+          "costCode": "",
+          "pricingMode": "Calculated",
+          "quantity": "0.335",
+          "unitPrice": "3.00",
+          "finalAmount": "1.01"
+        },
+        {
+          "ID": "4410926000005121142",
+          "key": "manual",
+          "budgetItemId": "4410926000005121020",
+          "description": "Edited manual line",
+          "costElement": "5",
+          "uom": null,
+          "costCode": "",
+          "pricingMode": "Manual",
+          "quantity": null,
+          "unitPrice": null,
+          "finalAmount": "2.00"
+        }
+      ],
+      "canEditInFlight": false,
+      "canEditDraft": false
+    },
+    "contract": "po-v1"
+  }
+]

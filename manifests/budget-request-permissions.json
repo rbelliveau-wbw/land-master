@@ -35,6 +35,41 @@
       "Other users' PO drafts or any submitted/rejected PO editing",
       "In-flight PO amendments or PO deletion",
       "Budget or PO approval authority"
+    ],
+    "live_development_verification": {
+      "verified_on": "2026-10-26",
+      "method": "Coordinator signed-in Creator Development app testing with demouser_4; exact read-only PO snapshot; user confirmation of received email",
+      "draft_create_save_reopen": true,
+      "own_draft_submit": true,
+      "po_id": "4410926000005444014",
+      "amount": "0.01",
+      "status": "Submitted",
+      "commitment_state": "Reserved",
+      "approval_state": "Pending",
+      "revision": "c5c29aa0-f22b-4e46-ad24-63bfe1d38722",
+      "approval_bundle_id": "4410926000005444030",
+      "cfo_approval_row_id": "4410926000005444032",
+      "approval_preview": "Development74 resolved the configured test CFO",
+      "approval_email": "Creator acknowledged sent; user confirmed receipt",
+      "overbudget_preview": "Existing configured route preserved; missing Territory VP blocks before writes rather than granting extra permissions",
+      "remaining_verification": "Development75 legacy-history notice verification after deployment",
+      "own_submitted_po_readonly": true,
+      "foreign_draft_readonly": true,
+      "budget_edit_controls_readonly": true,
+      "budget_comment_composer_absent": true,
+      "budget_attachment_add_absent": true
+    },
+    "read_only_report_dependencies": [
+      {
+        "report": "All_Wire_Requests",
+        "profile": "Construction Budgeting",
+        "view": true,
+        "view_all": true,
+        "add": false,
+        "edit": false,
+        "delete": false,
+        "verification": "2026-10-26: user explicitly approved View and View All; coordinator saved and verified native permissions; report read denial resolved"
+      }
     ]
   },
   "native_functions": [

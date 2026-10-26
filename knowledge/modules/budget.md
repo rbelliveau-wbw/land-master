@@ -1,3 +1,24 @@
+## Development 75 legacy history and permission acceptance — October 26, 2026
+
+Budget Manager 122.29.75 distinguishes verified older PO snapshots without
+captured approval history from real API/identity failures. The Request rail
+shows a passive history-unavailable notice and preserves all read, authorization
+and modern-bundle validation. See the complete
+[diagnosis and replacement code](../../docs/po-legacy-history-display-2026-10-26.md).
+
+Signed-in Development 74 testing with demouser_4 created, saved, reopened and
+submitted the $0.01 PO 4410926000005444014. Its exact snapshot is Submitted /
+Reserved / Pending with a captured CFO approval; the UI acknowledged email sent
+and the user confirmed receipt. The own submitted PO, a foreign Draft, Budget
+Edit, comments, attachments and approvals exposed no mutation controls for Const.
+All_Wire_Requests View and View All were explicitly approved by the user and
+saved with Add, Edit and Delete off. The configured over-budget preview remains
+blocked before writes when its required Territory VP is missing; it needs route
+configuration rather than additional Const powers. Actual state, exact revision,
+approval IDs and readonly screenshots are recorded in the permission contract
+and live-install-progress audit. Final Development75 legacy-history display
+verification remains pending until the deployed widget is reloaded.
+
 ## PO approval preview permission fix — October 26, 2026
 
 Budget Manager 122.29.74 requests the existing read-only approval preview for a
@@ -148,7 +169,7 @@ recorded in
 Only entries marked saved and independently reopened are confirmed installed.
 All twenty-one function bodies and both validation workflows now have independently
 reloaded Development captures matching the current reviewed source; each workflow
-capture contains exactly one complete script action. Frontend 122.29.74 targets Development only. Native Production publishing remains user-owned, and final
+capture contains exactly one complete script action. Frontend 122.29.75 targets Development only. Native Production publishing remains user-owned, and final
 in-app behavior is verified separately after the frontend deployment.
 Creator's formatter has previously changed grouped conditions, so native bodies
 must be compared while preserving literals and boolean grouping.
@@ -1680,6 +1701,15 @@ No Creator forms, fields, functions or Custom APIs change; no promotion required
 Tests cover restricted reports, duplicate/stale data, malformed identities,
 read failures, actor changes, bounded concurrency and connector geometry.
 Rollback: Budget 122.29.41. See docs/po-cfo-child-visibility-2026-10-14.md.
+
+Verified older Submitted/Reserved POs with Not Configured approval state and no
+captured bundle now show "Approval history unavailable for this older PO."
+after exact successful PO/budget/revision matching. They remain read-only, with
+no inferred modification link, repair or critical automatic report. Denied reads,
+modern malformed bundles/revisions and child mismatches retain errors and Retry.
+The two audited Development snapshots and actual-source regressions are recorded
+in [the exact replacement patch](../../docs/po-legacy-history-display-2026-10-26.md).
+Frontend only; no Creator deployment or data change. Rollback: Budget 122.29.74.
 
 ## Request attachment tabs (122.29.54)
 

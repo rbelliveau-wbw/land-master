@@ -1,7 +1,7 @@
 {
   "environment": "DEVELOPMENT",
   "productionPublished": false,
-  "updated_at": "2026-10-26T15:37:33.544Z",
+  "updated_at": "2026-10-26T16:14:36.844Z",
   "status": "native-development-saved-live-testing-pending",
   "verification": "All 21 function bodies and both existing workflow validation actions were saved in Creator Development and independently reloaded against current reviewed source. Complete workflow captures each show exactly one script action. Final signed-in application tests are tracked separately after Development frontend deployment.",
   "functions": [
@@ -230,5 +230,47 @@
   "pending_native_components": [],
   "productionPromotionByThisTask": false,
   "productionState": "User handles native publishing; resulting Production state has not been independently verified by this task.",
-  "live_testing_status": "Pending after Development frontend deployment."
+  "live_testing_status": "Signed-in Development74 positive PO creation/save/reopen/Submit and email delivery passed; own submitted PO, foreign Draft and Budget controls verified readonly. Development75 legacy-history display verification remains.",
+  "live_tests": {
+    "verified_on": "2026-10-26",
+    "actor": "demouser_4",
+    "po_id": "4410926000005444014",
+    "amount": "0.01",
+    "draft_create_save_reopen": true,
+    "submit": true,
+    "status": "Submitted",
+    "commitment_state": "Reserved",
+    "approval_state": "Pending",
+    "revision": "c5c29aa0-f22b-4e46-ad24-63bfe1d38722",
+    "approval_bundle_id": "4410926000005444030",
+    "cfo_approval_row_id": "4410926000005444032",
+    "email_received_user_confirmed": true,
+    "all_wire_read_denial_resolved": true,
+    "remaining": "Development75 legacy-history notice verification after deployment",
+    "own_submitted_po_readonly": {
+      "vendor_and_dates_disabled": true,
+      "description_and_unit_price_readonly": true,
+      "footer": "Close only; no Save, Submit, Approve or Delete",
+      "attachments": "View only; no Add"
+    },
+    "foreign_draft_readonly": {
+      "description_and_price_readonly": true,
+      "save_buttons": 0,
+      "submit_buttons": 0,
+      "list_edit_control": false
+    },
+    "budget_readonly": {
+      "edit_tab": "Expanded 2 items show static values only",
+      "comments": "No composer",
+      "attachments": "No Add",
+      "approvals": "Existing modification Details only; no approval actions"
+    },
+    "screenshots": [
+      "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-submitted-po-readonly.jpg",
+      "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-foreign-draft-readonly.jpg",
+      "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-edit-tab-readonly.jpg",
+      "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-comments-readonly.jpg",
+      "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-attachments-readonly.jpg"
+    ]
+  }
 }
