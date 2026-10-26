@@ -70,8 +70,23 @@ Overflow styles remain unchanged. In an 1800px iframe, the old dialog begins
 the original permanent scroll lock; the regression covers cleanup and return
 scrolling rather than claiming its precise original cause was proven.
 
-Production UI checks select and clear records only; this release does not
-require changing production field values. Deployment and native count audit
-evidence are recorded after completion. Local evidence lives under
+Production release commit `71aa7eca3d65d95bc1be402a0b54d367ce89e5fb` passed CI
+`40351420498` and Pages deployment `40351420572`. Native loaded assets identify
+19.17.31 and HTML fingerprint `6pbs-a16f10d5`.
+
+On a fresh native load, the audit contained one reference diagnostic and no
+parcel count logs. Selecting Series 125 left that count at one and showed no
+Loading counts cycle. Search loaded 135 records and then produced the expected
+11 headline/status/AG count diagnostics (audit total 12). The selection group
+and Clear rendered beside pagination; clearing left the Creator container at
+scrollTop zero. Native checks made zero production field writes. The save
+transition/scroll cleanup is covered by the full-widget browser save tests.
+
+A separate apparent Search jump was isolated to the browser automation
+pagination wait helper: invoking that helper alone scrolled Creator's hidden
+container from zero to 469px without any app action. It is excluded from app
+regression claims; no speculative viewport/resize change was added.
+
+Local evidence lives under
 `reports/2026-10-26-tax-date-clear/` and the browser fixture's
 `tmp/tax-progress-preview/` output.
