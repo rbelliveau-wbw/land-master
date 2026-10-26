@@ -36,6 +36,11 @@ children together with report rows, once per exact child ID. Preserve actual
 report dates when available; missing dates stay unknown. Keep these supplemental
 rows out of financial report caches. Failed child reads retain the PO and expose
 an explicit unavailable/Retry state; changed actor/phase replies cannot publish.
+An exact successful same-PO/phase/revision Get for a Submitted, Reserved PO with
+Not Configured approval state and no captured bundle instead shows the neutral
+"Approval history unavailable for this older PO." notice. Do not offer repair or
+infer children from its historical link. Modern malformed or denied reads keep
+the unavailable/Retry state and diagnostics.
 
 After an acknowledged submitted PO save, approval decision or deletion, refresh
 both request headers and budget modifications from native reads before the final
