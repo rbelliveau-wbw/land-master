@@ -1,3 +1,13 @@
+## Import assignment count and code filter — October 26, 2026
+
+Budget 122.29.71 loads the exact missing Budget Item count after the usable landing
+screen, shares the complete import read with the workspace, and refreshes the
+toolbar after assignment. Different code filters assigned rows against the native
+`Subdivision_Code + "-" + Minor_Code` key, preserving leading zeroes and existing
+search/source filters. The existing shared numeric transition covers the toolbar.
+No Creator backend deployment is required. See
+[native contract, verification and rollback](../../docs/budget-import-count-and-code-filter-2026-10-26.md).
+
 ## Approval decision comments — October 22, 2026
 
 Budget 122.29.70 shows per-approval comments in standalone modification details,

@@ -50,7 +50,7 @@ function harness(){
     LMRuntime:{current:()=>runtime},ZOHO:{CREATOR:{DATA:{getRecordCount:config=>invoke('count',config),getRecords:config=>invoke('read',config)}}},
     document:{querySelector:()=>null,querySelectorAll:selector=>buttons.filter(btn=>selector.includes('data-comment-field')?!!btn.dataset.commentField:!!btn.dataset.budgetAttachments)},
     $:id=>nodes[id]||(nodes[id]={innerHTML:'',textContent:'',style:{}}),PFComments:{timestamp:Date.parse},esc:value=>String(value??''),escAttr:value=>String(value??''),
-    fetchCurrentUser:async()=>runtime.user,loadUserAccess:async()=>{},hydrateBudgetSubdivisions(){},buildProjects:budgets=>[{key:'project:'+PROJECT,name:'Fixture',phases:budgets}],
+    fetchCurrentUser:async()=>runtime.user,loadUserAccess:async()=>{},canViewImportItems:()=>false,hydrateBudgetSubdivisions(){},buildProjects:budgets=>[{key:'project:'+PROJECT,name:'Fixture',phases:budgets}],
     auditLog(level,message,data){audits.push({level,message,data:clone(data||{})});},setLoad(){},setMsg(){},showView(){},perms:()=>({readOnly:false}),updateImportsTabVisibility(){},renderApprQueue(){},applyDeepLink(){},shortErr:error=>error?.message||String(error),safeStringify:JSON.stringify});
   context.window=context;vm.runInContext(adapter,context);for(const name of functions)vm.runInContext(block(name),context);
   context.renderProjList=()=>{

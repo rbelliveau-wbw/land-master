@@ -795,6 +795,8 @@ assert.equal(preReadyDom.apprCt.textContent,'…','unloaded approval state does 
 await import('./test-budget-landing-projection.mjs');
 await import('./test-budget-deferred-features.mjs');
 await import('./test-budget-background-badges.mjs');
+await import('./test-budget-import-count.mjs');
+await import('./test-budget-import-code-filter.mjs');
 await import('./test-budget-attachment-presentation.mjs');
 console.log('Budget exact native acknowledgements, FILE Recheck/delete locks, scoped mapping/comment uncertain-create and partial-completion guards, lean wrapper conflicts/degradation, startup and detail deduplication passed.');
 
