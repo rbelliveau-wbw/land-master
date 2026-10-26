@@ -1292,6 +1292,12 @@ All other 1.62.40 save behavior and rollback to 1.62.39 remain unchanged.
 
 Live Development View as verified request creation, editing, comment posting
 with persisted preview-user authorship, and acceptance with checklist creation
-on a labelled synthetic test request. Native Attachment form upload succeeded;
-the earlier widget hidden-input picker could not open in the test browser.
-The 1.62.41 picker and widget upload are tested after its Development deploy.
+on labelled synthetic requests. Native Attachment form upload succeeded and the
+widget displayed that persisted file with the correct preview-user author.
+The iframe picker opened operating-system dialogs, but the browser automation
+did not capture those chooser events; repeated picker attempts were stopped.
+The widget upload pipeline therefore retains automated regression coverage but
+is not certified by a completed live widget upload. Owner notification email is
+unavailable on the Development comment fallback and is explicitly shown in the
+comment modal. Production/Stage do not use that fallback. No profile grants,
+Creator functions, native workflows or schema were changed in this release.
