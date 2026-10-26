@@ -96,27 +96,43 @@ assert.equal(u.readOnly(),true);
 // edit access. Execute the real debounce/response path for new and own Drafts.
 const previewTimers=new Map(),previewCalls=[];let previewTimerId=0;
 const previewNode={innerHTML:''};
+const forecastBody={innerHTML:''},forecastCaption={textContent:''},forecastBox={hidden:true,querySelector:selector=>selector==='[data-po-preview-body]'?forecastBody:forecastCaption};
 const p=vm.createContext({model:{budgetId:budget.ID,editable:false,loadState:'loaded',status:'Draft',approvalState:'Not Configured',
   amount:'0.01',lines:[{budgetItemId:'90071992547409935'}],balanceState:'loaded'},
   options:{canCreate:()=>creation,canEdit:()=>editor},current:()=>true,generation:1,previewGeneration:0,previewTimer:null,progress:false,
   card:{querySelector:()=>previewNode},allocationRows:()=>[{verified:true,available:100n,shortfall:0n,remaining:99n,pending:0n}],
-  patchApprovers(){},money:v=>v,root:{LMPO:u.LMPO},
+  overlay:{querySelector:()=>forecastBox},deleteReview:false,esc:value=>String(value??''),money:v=>v,root:{LMPO:u.LMPO},
   setTimeout:fn=>{const id=++previewTimerId;previewTimers.set(id,fn);return id;},clearTimeout:id=>previewTimers.delete(id),
   call:async payload=>{previewCalls.push(payload);return {contract:'po-v1',success:true,approvalPreview:{roles:[{role:'CFO',order:1,name:'Test CFO',email:'cfo@example.com'}]}};}
 });
-for(const name of ['canAmend','canCompose','readOnly','patchContext'])vm.runInContext(helper(ui,name),p);
+for(const name of ['canAmend','canCompose','readOnly','patchContext','patchApprovers','bundleHtml'])vm.runInContext(helper(ui,name),p);
 editor=false;creation=true;p.patchContext();
 assert.equal(previewTimers.size,1,'A PO-only creator schedules approval lookup without Budget edit access');
+assert.equal(forecastBox.hidden,false,'An authorized new PO still shows its real pending forecast');assert.match(forecastBody.innerHTML,/Checking approvers/);
 await previewTimers.get(p.previewTimer)();previewTimers.clear();
 assert.equal(previewCalls.length,1);assert.equal(previewCalls[0].action,'PreviewApprovals');assert.equal(previewCalls[0].amount,'0.01');
 assert.equal(p.model.previewState,'loaded');assert.equal(p.model.previewRoles[0].email,'cfo@example.com');
+assert.equal(forecastBox.hidden,false);assert.match(forecastBody.innerHTML,/Test CFO/);assert.doesNotMatch(forecastBody.innerHTML,/Checking approvers/);
 p.patchContext();assert.equal(previewTimers.size,0,'Unchanged preview context does not duplicate a completed lookup');
 Object.assign(p.model,{id:'90071992547409936',canEditDraft:true,previewKey:''});p.patchContext();
 assert.equal(previewTimers.size,1,'An authoritative own Draft can preview its approvers after reopening');
+assert.equal(forecastBox.hidden,false,'An owned editable Draft retains the forecast panel');
 await previewTimers.get(p.previewTimer)();previewTimers.clear();assert.equal(previewCalls.length,2);
 p.model.canEditDraft=false;p.model.previewKey='';p.patchContext();assert.equal(previewTimers.size,0,'Another actor\'s Draft cannot schedule the creation preview');
+assert.equal(forecastBox.hidden,true,'Another actor\'s read-only Draft never displays a forecast with no request');
+p.model.previewState='loading';p.patchApprovers(true,0n);assert.equal(forecastBox.hidden,true,'A stale Checking approvers state cannot remain visible after composition access is denied');
 editor=true;p.patchContext();assert.equal(previewTimers.size,1,'Existing Budget editors retain approval preview');
 previewTimers.clear();editor=false;
+Object.assign(p.model,{status:'Submitted',commitmentState:'Reserved',approvalState:'Not Configured',approvalBundle:null,previewKey:'',previewState:'idle'});
+const legacyPreviewCalls=previewCalls.length;p.patchContext();
+assert.equal(forecastBox.hidden,true,'A legacy read-only Submitted PO never shows Checking approvers or a fabricated future route');
+assert.equal(previewTimers.size,0);assert.equal(previewCalls.length,legacyPreviewCalls,'The render correction makes no extra request');
+const capturedBundle={rows:[{order:1,role:'CFO',status:'Pending',notes:''}],modifications:[],canApprove:false};
+Object.assign(p.model,{approvalState:'Pending',approvalBundle:capturedBundle});const capturedBefore=JSON.stringify(capturedBundle);p.patchContext();
+assert.equal(forecastBox.hidden,true,'A captured modern chain stays separate from the forecast panel');
+assert.match(p.bundleHtml(),/Approval chain/);assert.match(p.bundleHtml(),/CFO/);assert.match(p.bundleHtml(),/Pending/);
+assert.equal(JSON.stringify(capturedBundle),capturedBefore);assert.equal(previewTimers.size,0);
+console.log('PO read-only forecast: legacy and foreign Draft panels stay hidden without requests; new/own Draft forecasts and captured modern chains remain intact.');
 
 // Both actual openers guard direct calls, not only disabled menu buttons.
 let opened=0,denials=0;

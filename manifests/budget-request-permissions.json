@@ -52,12 +52,19 @@
       "approval_preview": "Development74 resolved the configured test CFO",
       "approval_email": "Creator acknowledged sent; user confirmed receipt",
       "overbudget_preview": "Existing configured route preserved; missing Territory VP blocks before writes rather than granting extra permissions",
-      "remaining_verification": "Development75 legacy-history notice verification after deployment",
+      "remaining_verification": "Development76 readonly modal approval-preview display verification after deployment",
       "own_submitted_po_readonly": true,
       "foreign_draft_readonly": true,
       "budget_edit_controls_readonly": true,
       "budget_comment_composer_absent": true,
-      "budget_attachment_add_absent": true
+      "budget_attachment_add_absent": true,
+      "legacy_history_display": "Development75: both old POs show neutral unavailable-history notices, no critical audit errors; modern Pending PO valid",
+      "visibility_limit": {
+        "report": "All_External_System_Mappings",
+        "state": "permissionDenied; External mappings UI hidden",
+        "blocking_core_budget_po_use_case": false,
+        "additional_grant_approved": false
+      }
     },
     "read_only_report_dependencies": [
       {

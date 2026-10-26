@@ -1,3 +1,17 @@
+## Development 76 readonly modal forecast display — October 26, 2026
+
+Budget Manager 122.29.76 hides the future Approvers forecast pane whenever the
+existing live composer capability is denied. Readonly foreign Drafts and older
+Submitted POs no longer display Checking approvers indefinitely when no lookup
+is authorized. New and authoritative own Drafts keep their real forecast;
+captured modern approval chains remain separate and unchanged. No native
+function, permission, data, reservation or approval behavior changes.
+
+The Development 75 acceptance audit also found a preexisting readonly visibility
+limit: All_External_System_Mappings is denied and its UI section remains hidden.
+This does not block Budget/PO reads or creation; no extra grant was approved.
+Final Development 76 modal/forecast verification follows Pages deployment.
+
 ## Development 75 legacy history and permission acceptance — October 26, 2026
 
 Budget Manager 122.29.75 distinguishes verified older PO snapshots without
@@ -16,8 +30,8 @@ saved with Add, Edit and Delete off. The configured over-budget preview remains
 blocked before writes when its required Territory VP is missing; it needs route
 configuration rather than additional Const powers. Actual state, exact revision,
 approval IDs and readonly screenshots are recorded in the permission contract
-and live-install-progress audit. Final Development75 legacy-history display
-verification remains pending until the deployed widget is reloaded.
+and live-install-progress audit. Signed-in Development 75 testing confirmed two neutral legacy-history notices,
+no critical audit errors and valid modern Pending PO history.
 
 ## PO approval preview permission fix — October 26, 2026
 
@@ -169,7 +183,7 @@ recorded in
 Only entries marked saved and independently reopened are confirmed installed.
 All twenty-one function bodies and both validation workflows now have independently
 reloaded Development captures matching the current reviewed source; each workflow
-capture contains exactly one complete script action. Frontend 122.29.75 targets Development only. Native Production publishing remains user-owned, and final
+capture contains exactly one complete script action. Frontend 122.29.76 targets Development only. Native Production publishing remains user-owned, and final
 in-app behavior is verified separately after the frontend deployment.
 Creator's formatter has previously changed grouped conditions, so native bodies
 must be compared while preserving literals and boolean grouping.
@@ -1710,6 +1724,10 @@ modern malformed bundles/revisions and child mismatches retain errors and Retry.
 The two audited Development snapshots and actual-source regressions are recorded
 in [the exact replacement patch](../../docs/po-legacy-history-display-2026-10-26.md).
 Frontend only; no Creator deployment or data change. Rollback: Budget 122.29.74.
+The PO modal's prospective approver panel also follows its existing composition
+grant: hide it for a read-only foreign Draft or legacy Submitted PO rather than
+showing Checking approvers when no forecast request is authorized. New/own Draft
+forecasts and saved captured approval chains retain their existing behavior.
 
 ## Request attachment tabs (122.29.54)
 
