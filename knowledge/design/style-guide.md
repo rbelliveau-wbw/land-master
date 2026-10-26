@@ -163,6 +163,12 @@ Lot contract reports use compact branch rows: pale blue on a Master with visible
 
 ## Legal and Construction workspaces
 
+Delete confirmations use the affected record's module wording. Construction
+uses Delete construction request, its saved request name, the permanent-delete
+warning, and Delete request; Legal retains Delete contract. Keep the existing
+confirmation layout, Cancel action, permissions and completion locks. Success
+and failure feedback use the same module-specific noun.
+
 Legal and Construction are separate Creator pages. Reuse the same widget with
 page variables selecting a fixed module; never add an in-widget module chooser
 or switch modules while opening a record. A denied Construction page stays

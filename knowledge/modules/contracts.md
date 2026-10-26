@@ -1,3 +1,21 @@
+## Construction request delete wording — 1.62.37, October 26, 2026
+
+Construction deletion now says Delete construction request above the saved request
+name, warns that permanently deleting the construction request cannot be undone,
+and labels the destructive button Delete request. Fallback identity, permission,
+completion-lock, success and failure copy also use construction request. Legal
+retains contract wording. The existing confirmation, Cancel action, access checks,
+native delete and exact-target verification are reused without behavior changes.
+
+Changed files are the widget HTML, widget config/manifest, this module guide,
+the general style guide, immutable 1.62.37 release and environment mapping.
+No forms, fields, functions or Custom APIs change; no Creator deployment is
+required. Regression checks cover Construction and Legal confirmation wording,
+cancellation with zero writes, successful deletion, denied access, locked records
+and failed deletion. Run existing Construction/delete regressions, design-doc
+checks, repository validation and Pages build. Rollback Production's
+contract-management mapping to 1.62.36.
+
 ## Construction board pencil editing — 1.62.36, October 23, 2026
 
 Editable Construction board cards have a compact pencil button using the existing
