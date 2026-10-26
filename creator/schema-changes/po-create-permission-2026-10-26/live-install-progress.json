@@ -1,7 +1,7 @@
 {
   "environment": "DEVELOPMENT",
   "productionPublished": false,
-  "updated_at": "2026-10-26T16:14:36.844Z",
+  "updated_at": "2026-10-26T16:24:42.910Z",
   "status": "native-development-saved-live-testing-pending",
   "verification": "All 21 function bodies and both existing workflow validation actions were saved in Creator Development and independently reloaded against current reviewed source. Complete workflow captures each show exactly one script action. Final signed-in application tests are tracked separately after Development frontend deployment.",
   "functions": [
@@ -230,7 +230,7 @@
   "pending_native_components": [],
   "productionPromotionByThisTask": false,
   "productionState": "User handles native publishing; resulting Production state has not been independently verified by this task.",
-  "live_testing_status": "Signed-in Development74 positive PO creation/save/reopen/Submit and email delivery passed; own submitted PO, foreign Draft and Budget controls verified readonly. Development75 legacy-history display verification remains.",
+  "live_testing_status": "Positive signed-in PO creation/Submit/email and readonly controls passed. Development75 legacy-history notices and modern history passed with no critical audit errors. Development76 readonly modal approval-preview display verification pending.",
   "live_tests": {
     "verified_on": "2026-10-26",
     "actor": "demouser_4",
@@ -246,7 +246,7 @@
     "cfo_approval_row_id": "4410926000005444032",
     "email_received_user_confirmed": true,
     "all_wire_read_denial_resolved": true,
-    "remaining": "Development75 legacy-history notice verification after deployment",
+    "remaining": "Development76 readonly modal approval-preview display verification after deployment",
     "own_submitted_po_readonly": {
       "vendor_and_dates_disabled": true,
       "description_and_unit_price_readonly": true,
@@ -271,6 +271,30 @@
       "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-edit-tab-readonly.jpg",
       "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-comments-readonly.jpg",
       "creator/schema-changes/po-create-permission-2026-10-26/live-tests/const-budget-attachments-readonly.jpg"
-    ]
+    ],
+    "legacy_history_display": {
+      "verified_version": "122.29.75",
+      "older_po_neutral_notices": 2,
+      "critical_audit_errors": 0,
+      "modern_pending_po_history_valid": true,
+      "critical_errors": false,
+      "old_attached_po_failure": false
+    },
+    "runtime": "DEVELOPMENT",
+    "budget_readonly_flags": true,
+    "po_create_flag": true,
+    "modern_po_capabilities": {
+      "canApprove": false,
+      "canEditDraft": false,
+      "canEditInFlight": false
+    },
+    "all_wire_count": 4,
+    "visibility_limit": {
+      "report": "All_External_System_Mappings",
+      "state": "permissionDenied; External mappings UI hidden",
+      "impact": "Existing readonly visibility gap; not blocking Budget/PO reads or PO creation",
+      "permission_granted": false,
+      "disclosure": "Coordinator to disclose this remaining visibility gap in the final response; no additional grant approved"
+    }
   }
 }

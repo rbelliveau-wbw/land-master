@@ -76,3 +76,27 @@ function renderRequestRailList(b) {
 - Native Development follow-up: reopen this same budget as Construction Budgeting, confirm both older PO rows show the neutral notice without a new critical report, and confirm the newly submitted Pending PO still shows its valid captured route. This read-only UI follow-up belongs to the release gate; the code tests do not claim native verification.
 
 Rollback only the widget to Budget Manager 122.29.74. No data rollback or Creator deployment is required; the previous historical warning returns.
+
+## Read-only modal forecast follow-up
+
+Native Development 75 testing confirmed the two older rows now display the
+neutral rail notice. Opening a read-only legacy PO or a foreign Draft exposed a
+separate presentation mismatch: `patchContext` correctly skipped
+`PreviewApprovals` when `canCompose()` was false, but `patchApprovers` still
+displayed "Checking approvers…" indefinitely.
+
+In `widgets/budget-manager/src/app/po-ui.js`, the smallest correction adds the
+same existing composition guard to the forecast panel's visibility predicate:
+
+```javascript
+box.hidden=!valid||!!model.approvalBundle||!canCompose()||progress||deleteReview;
+```
+
+This hides only the prospective forecast, including its Within budget/CFO
+context, when no request can occur. It leaves the separate saved `bundleHtml`
+chain, authorized new/own-Draft forecasts and all server/permission gates intact.
+No Creator deployment or data change is required. The actual-source
+`test-po-create-permission-ui.mjs` executes both the request and rendering paths
+for new/own/foreign Drafts, the legacy Submitted state, a stale Checking state
+and an unchanged modern Pending captured chain. The vendor preview regression
+retains its authorized forecast fixture. Rollback this follow-up to 122.29.75.

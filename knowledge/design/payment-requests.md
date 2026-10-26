@@ -93,8 +93,11 @@ unsupported. Structural row changes clear range Undo history. Downloads use the
 same compact SpreadsheetML .xls generator as the PO email attachment.
 
 Keep budget context to the left of the PO total: Available and Remaining or
-Modification on the first line. Drafts use the server's read-only route preview
-with ordered approver pills. Saved POs show their captured chain once in the
+Modification on the first line. Editable drafts use the server's read-only route
+preview with ordered approver pills. Hide this forecast panel when the current
+actor cannot compose the PO, matching the existing preview request gate; a
+foreign read-only Draft or older submitted PO must never wait for an unrequested
+forecast. Saved POs show their captured chain once in the
 bottom Approval chain section, without repeating the upper flow. Group linked
 modification rows beneath an Attached budget modifications heading in a pale
 amber panel, keeping their item names, amounts and recorded statuses.
