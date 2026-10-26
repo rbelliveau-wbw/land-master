@@ -23,7 +23,7 @@ const ctx={
   addVersionFiles:(cid,files)=>uploads.push({cid,files}),APR_ICON_CLIP:'',
 };
 vm.createContext(ctx);
-for(const name of ['workModule','esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','contractFilePaths','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','attachmentsPanel','wireAttachmentsPanel','attachmentModalRows','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
+for(const name of ['workModule','esc','attr','truthy','asList','lookupId','toInput','fmtDate','findContract','versionsFor','contractFilePaths','fileDisplayName','attachmentExt','attachmentIconSvg','attExtMeta','attachmentCreatorIdentities','attachmentRosterFullName','attachmentRosterAuthor','attachmentAuthorLabel','modalHead','aprMailSwitch','aprAttachmentsTab','contractFilePicker','attachmentsPanel','wireAttachmentsPanel','attachmentModalRows','showAttachmentsModal','attachCard'])vm.runInContext(fn(name),ctx);
 
 for(const [file,label] of [
  [{filename:'Legal.pdf',filepath:'native_Legal.pdf'},'Legal.pdf'],

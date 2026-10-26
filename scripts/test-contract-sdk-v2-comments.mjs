@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ready,ID} from './test-contract-sdk-v2-foundation.mjs';
+import {ready,ID,deferred,drain} from './test-contract-sdk-v2-foundation.mjs';
 const h=await ready();
 const raw={code:3001,error:[{task:'alert',alert_message:['Link the comment to a Project, Budget, Pro Forma, or Contract.']},{task:'cancel_submit',message:'Failed to add data.'}]};
 for(const error of [raw,JSON.stringify(raw),{response:raw},{message:JSON.stringify(raw)},{cause:{responseText:JSON.stringify(raw)}}])assert.equal(h.c.contractCommentError(error),'Link the comment to a Project, Budget, Pro Forma, or Contract.');
@@ -31,3 +31,13 @@ for(const environment of ['development','stage','production'])for(const state of
  assert.equal(posts,1,'the owner-executed API is called once');
 }
 console.log('PASS Development Construction View-as comments: known prewrite owner rejection uses one native form write; Production/Stage and possible prior writes never fall back; owner email unavailability stays visible.');
+
+{
+ const h=await ready({pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true},initialize:()=>({envUrlFragment:'/environment/development',loginUser:'preview-actor@example.test'})}),gate=deferred();
+ h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
+ h.api.invokeCustomApi=()=>gate.promise;
+ const pending=h.c.createRecord('Comment_Log',{Contract1:ID,Comment:'Captured preview actor'}),rejected=assert.rejects(pending);
+ await drain();h.c.LMRuntime.apply({envUrlFragment:'/environment/development',loginUser:'another-actor@example.test'});
+ gate.resolve({code:3000,details:{output:JSON.stringify({contract:'record-comments-v1',ok:false,writeState:'not-started',message:'Construction access is required.'})}});
+ await rejected;assert.equal(h.calls.filter(call=>call.method==='add').length,0,'a changed actor cannot use the preview fallback');
+}

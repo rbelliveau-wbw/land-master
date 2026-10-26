@@ -54,6 +54,7 @@ for(const envelope of [{code:3000,data:{content:'%PDF-1.7',status:'failure'}},{c
  const h=await ready({realDOM:true}),f=files(h),gate=deferred(),native=f.nativeUpload;
  h.c.showAttachmentsModal(ID);
  const overlays=h.node('overlays'),modal=overlays.querySelector('.modal'),drop=h.c.document.getElementById('attDrop'),status=h.c.document.getElementById('attStatus'),input=h.c.document.getElementById('attFile'),mounts=overlays.htmlWrites;
+ assert.equal(input.getAttribute('aria-label'),'Choose Files');assert.equal(input.hidden,false);assert.equal(input.parentNode.tagName,'LABEL','the real native file input receives the user gesture instead of a scripted hidden-input click');
  h.c.ZOHO.CREATOR.FILE.uploadFile=config=>gate.promise.then(()=>native(config));
  const nativeCount=h.api.getRecordCount,nativeRead=h.api.getRecords;let broadReads=0;
  for(const [method,original] of [['getRecordCount',nativeCount],['getRecords',nativeRead]])h.api[method]=config=>{if(config.report_name===h.c.CFG.reports.versions&&!config.criteria){broadReads++;return Promise.reject(Error('Verified upload must not depend on a redundant whole-report reload'));}return original(config);};

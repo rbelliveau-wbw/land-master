@@ -69,6 +69,13 @@ Optional post-save report metadata is a bounded display refresh, never a save
 gate. Captured child/parent/actor, native permission and prewrite guards remain;
 lost transport replies retain read-only recovery without a second upload.
 
+Contract Management 1.62.41 keeps Choose Files styled as the existing button
+while placing the actual native file input in that clickable/focusable area.
+Both the modal and workspace receive the user's gesture directly; avoid relying
+solely on a scripted click on a `display:none` input inside the Creator iframe.
+Keep the native input ID, multiple-file support, change/drop handlers and pending
+disabled state, plus a visible focus outline.
+
 Open Preview inside the widget first. Preserve the original file bytes,
 filename and supported preview behavior; retain an explicit download/open
 action when the format cannot be previewed. Preview and download retain their

@@ -1373,6 +1373,10 @@ select.apr-in{cursor:pointer}
 /* attachment upload + preview */
 .att-drop{border:1.5px dashed #b9c8dc;border-radius:10px;padding:10px 13px;background:#f8fbff;display:flex;align-items:center;gap:10px;margin-bottom:10px;transition:border-color .13s,background .13s}
 .att-drop.dragover{border-color:var(--primary-2);background:#eef4ff}
+.att-picker{position:relative;overflow:hidden;flex:none;cursor:pointer}
+.att-picker input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.att-picker:focus-within{outline:2px solid #285b97;outline-offset:2px}
+.att-picker:has(input:disabled){opacity:.5;cursor:default}
 .att-drop .att-hint{flex:1;min-width:0;font-size:11px;color:var(--muted)}
 .att-drop .att-hint b{display:block;font-size:12px;color:var(--text)}
 .att-status{font-size:11px;font-weight:700;color:var(--primary);padding:4px 0}
@@ -1967,16 +1971,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.40"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.40">
-<script src="interaction-motion.js?v=1.62.40"></script>
-<script src="interaction-surfaces.js?v=1.62.40"></script>
-<script src="number-edit-commit.js?v=1.62.40"></script>
-<script src="number-transitions.js?v=1.62.40"></script>
-<script src="number-surfaces.js?v=1.62.40"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.40">
-<link rel="stylesheet" href="report-layout.css?v=1.62.40">
-<link rel="stylesheet" href="construction-board.css?v=1.62.40">
+<script src="success-feedback.js?v=1.62.41"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.41">
+<script src="interaction-motion.js?v=1.62.41"></script>
+<script src="interaction-surfaces.js?v=1.62.41"></script>
+<script src="number-edit-commit.js?v=1.62.41"></script>
+<script src="number-transitions.js?v=1.62.41"></script>
+<script src="number-surfaces.js?v=1.62.41"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.41">
+<link rel="stylesheet" href="report-layout.css?v=1.62.41">
+<link rel="stylesheet" href="construction-board.css?v=1.62.41">
 </head>
 <body>
 
@@ -2025,7 +2029,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.40", pageSize: 200, maxPages: 25,
+  version: "1.62.41", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -3115,7 +3119,7 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
       // Creator Custom APIs execute as owner in Development View as. If that
       // API explicitly rejected before inserting, use the existing native form
       // writer, whose View-as actor and form permissions remain authoritative.
-      if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||!error.definite||error.message!=='Construction access is required.')throw error;
+      if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||attempt.scope!==contractMutationScope()||!error.definite||error.message!=='Construction access is required.')throw error;
       return api.addRecords({form_name:target,payload:{data:payload}}).then(function(response){return Object.assign({},response,{notificationState:'unavailable'});});
     });
     if(kind==='add')return api.addRecords({form_name:target,payload:{data:payload}});
@@ -8451,6 +8455,10 @@ function attachmentAuthorLabel(row){
   if(full) return full;
   return typeof author.email==="string"&&author.email.trim()?author.email.trim():"\u2014";
 }
+function contractFilePicker(id,enabled){
+  if(!enabled)return '<input type="file" id="'+id+'" multiple hidden disabled/>';
+  return '<label class="btn primary sm att-picker">Choose Files<input type="file" id="'+id+'" multiple aria-label="Choose Files"/></label>';
+}
 function attachmentsPanel(cid){
   var vers=versionsFor(cid), may=mayEdit(cid), mayUpload=canAddContractAttachments(cid);
   var onEmail=vers.filter(function(v){ return truthy(v.Email_Attachment); }).length;
@@ -8482,8 +8490,7 @@ function attachmentsPanel(cid){
     +'<div class="attachment-page-drop">'
       +'<div class="att-drop" id="attPanelDrop"><svg style="width:20px;height:20px;color:#7c9aca;flex:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>'
       +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates an Attachment record per file \u00b7 50 MB max</div>'
-      +(mayUpload?'<button class="btn primary sm" type="button" onclick="document.getElementById(\'attPanelFile\').click()">Choose Files</button>':'')
-      +'<input type="file" id="attPanelFile" multiple style="display:none"/></div>'
+      +contractFilePicker('attPanelFile',mayUpload)+'</div>'
     +'</div>'
     +'<div class="attachment-page-status" id="attPanelStatus" hidden></div>'
     +rows+'</div></div>';
@@ -8532,8 +8539,7 @@ function showAttachmentsModal(cid){
     +'<div class="modal-body">'
     +'<div class="att-drop" id="attDrop"><svg style="width:20px;height:20px;color:#7c9aca;flex:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>'
     +'<div class="att-hint"><b>Drop files here or click to upload</b>Creates an Attachment record per file · 50 MB max</div>'
-    +(canAddContractAttachments(cid)?'<button class="btn primary sm" onclick="document.getElementById(\'attFile\').click()">Choose Files</button>':'')
-    +'<input type="file" id="attFile" multiple style="display:none"/></div>'
+    +contractFilePicker('attFile',canAddContractAttachments(cid))+'</div>'
     +'<div class="att-status" id="attStatus" role="status" aria-live="polite"></div>'
     +'<div id="attRows" data-contract-id="'+attr(cid)+'">'+attachmentModalRows(cid,vers)+'</div>'
     +'</div>',undefined,String(cid)

@@ -1280,3 +1280,18 @@ duplicate prevention, scope changes, native files, and environment-limited
 View-as comment/attachment fallbacks. Rollback: map Contract Management to
 1.62.39. Live Development impersonation results are recorded separately after
 the candidate is deployed; automated fixtures alone do not establish native QA.
+
+### Native picker and captured preview actor — 1.62.41
+
+The modal/workspace Choose Files surface now exposes the existing native input
+directly in its styled button area. This preserves multiple files, callbacks,
+drop handling and pending locks while allowing a genuine input gesture in the
+Creator iframe. Comment preview fallback additionally checks the captured actor
+before its native write, with a late-owner-denial/changed-actor regression.
+All other 1.62.40 save behavior and rollback to 1.62.39 remain unchanged.
+
+Live Development View as verified request creation, editing, comment posting
+with persisted preview-user authorship, and acceptance with checklist creation
+on a labelled synthetic test request. Native Attachment form upload succeeded;
+the earlier widget hidden-input picker could not open in the test browser.
+The 1.62.41 picker and widget upload are tested after its Development deploy.
