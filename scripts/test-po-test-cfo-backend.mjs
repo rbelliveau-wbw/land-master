@@ -50,10 +50,13 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   var thisapp={poCurrencyString(v){if(typeof v!=='string'||!/^\\d+(?:\\.\\d{1,2})?$/.test(v))return '';var parts=v.split('.');return parts[0]+'.'+(parts[1]||'').padEnd(2,'0');},recalcBudgetModifiedTotals(){rollups++;},recalcItemRevisedFinal(){rollups++;},poBudgetBalances(){return map({success:true,balances:[]});},approvalConfigurationSnapshot(){return map({success:true,configuration:{policies:[],roles:[],assignments:[]}});}};
   var request=map(payload);
   thisapp.environment={type:environment};
+  thisapp.permissions={profileForUser(){return '';}};
   String.prototype.toFile=function(name){return {name,content:this.toString()};};
   `+names.map(name=>programs[name]+`;thisapp.${name}=${name};`).join('\n'),c);
   return {c,run:(name,value)=>{c.argument=clone(value);return clone(vm.runInContext(`${name}(map(argument))`,c));},tables:()=>clone(c.tables)};
 }
+// Reuse this native-shaped PO adapter for additional authorization regressions.
+export {runtime as poTestRuntime,compile as compileDelugePO};
 let r=runtime();let route=r.run('resolveApprovalRoute',input);
 assert.equal(route.success,true,JSON.stringify(route));assert.equal(route.snapshot.route.length,1);assert.equal(route.snapshot.route[0].userAccessId,'19');assert.equal(route.snapshot.route[0].email,testCFO.email);assert.deepEqual(route.snapshot.route[0].poTestCFO,testCFO);assert.equal(r.c.writes,0);
 for(const changed of [{budgetId:'62'},{budgetId:61},{amount:'55.01'},{hasBudgetOverrun:true},{hasBudgetModification:true},{hasBudgetModification:null},{hasBudgetOverrun:null}]){r=runtime();assert.equal(r.run('resolveApprovalRoute',{...input,...changed}).success,false,JSON.stringify(changed));assert.equal(r.c.writes,0);}

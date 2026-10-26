@@ -10,13 +10,13 @@ const calls=[];
 let permissions={editOwned:true},scope='dev',token=0,loadResolve,apiResolve;
 const context={
   $,window:{matchMedia:()=>({matches:true})},document:{body:{children:[el('main'),el('budgetCreateOverlay')]}},
-  S:{sdkInitFailed:false,budgets:[]},approvalProgress:null,Promise,setTimeout,clearTimeout,
+  S:{sdkInitFailed:false,budgets:[],myAccessId:'8001'},approvalProgress:null,Promise,setTimeout,clearTimeout,
   perms:()=>permissions,cleanVal:v=>String(v??'').trim(),getSubdivisionRecord:b=>b.Subdivision1,
   lookupId:v=>String(v?.ID||v||''),subdivisionCode:b=>String(b.Subdivision_Code||''),
   esc:v=>String(v),escAttr:v=>String(v),shortErr:e=>e.message,budgetArchived:b=>!!b.Archived,
   budgetCreateScope:()=>scope,sdkGetAllRecords:(report)=>Promise.resolve(report==='subs'?context.subdivisions:context.budgets),
   CFG:{reports:{subdivisions:'subs',budgets:'budgets'}},toastShow:m=>calls.push(['toast',m]),
-  phaseName:b=>b.Phase,projectName:b=>b.Project,canSubmitMod:b=>b.canEdit,
+  phaseName:b=>b.Phase,projectName:b=>b.Project,canSubmitMod:b=>b.canEdit,canEditBudget:b=>!!b.canEdit,
   budgetNavigationToken:()=>token,budgetNavigationCurrent:(t,v,id)=>t===token,
   openPhaseEditor:(id,mode)=>{calls.push(['editor',id,mode]);token++;return new Promise(resolve=>{loadResolve=resolve;});},
   budgetDetailReady:()=>true,budgetModsReady:()=>true,
@@ -25,7 +25,7 @@ const context={
   unwrapBudgetManageResponse:r=>r,refreshBudgetWorkflowState:async id=>calls.push(['refresh',id])
 };
 function $(id){return el(id);}
-vm.createContext(context);vm.runInContext(source.slice(start,end),context);
+vm.createContext(context);vm.runInContext(source.slice(source.indexOf('function canCreatePurchaseOrder('),source.indexOf('function canEditPurchaseOrderRequest(')),context);vm.runInContext(source.slice(start,end),context);
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 const a='900000000000000001',b='900000000000000002',c='900000000000000003';
 context.subdivisions=[{ID:a,Subdivision_Code:'A',Subdivision_Name:'Existing'},{ID:b,Subdivision_Code:'B',Subdivision_Name:'Archived'},{ID:c,Subdivision_Code:'C',Subdivision_Name:'New'}];

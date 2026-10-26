@@ -22,7 +22,93 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		}
 	}
 	combinedMod = Budget_Modification[ID == modificationId.toLong()];
-	if(ifnull(combinedMod.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification belongs to a combined Purchase Order approval. Open the PO to edit or resubmit."; }
+	if(ifnull(combinedMod.Reference_Number,"").startsWith("PO:"))
+	{
+		return "ERROR: This modification belongs to a combined Purchase Order approval. Open the PO to edit or resubmit.";
+	}
+	if(vAction == "update" || vAction == "delete" || vAction == "reopen" || vAction == "repair" || vAction == "repair-send" || vAction == "repair-reject")
+	{
+		systemActor = zoho.loginuser == zoho.adminuser;
+		if(systemActor != true)
+		{
+			try
+			{
+				if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+				{
+					return "ERROR: This profile has read-only Budget access.";
+				}
+			}			catch (profileError)
+			{
+				return "ERROR: Budget access could not be verified.";
+			}
+		}
+		requestAccess = User_Access[User == zoho.loginuser];
+		if(requestAccess.count() > 1)
+		{
+			return "ERROR: Unambiguous authenticated User Access is required.";
+		}
+		requestBudgetId = budgetId.toLong();
+		if(vAction != "repair")
+		{
+			requestBudgetId = 0;
+			if(combinedMod.Budget != null)
+			{
+				requestBudgetId = combinedMod.Budget.ID;
+			}
+		}
+		requestBudget = Add_Budget[ID == requestBudgetId];
+		canEditRequest = systemActor;
+		canApproveRequest = systemActor;
+		if(requestAccess.count() == 1 && requestBudget.count() == 1)
+		{
+			if(requestAccess.Edit_All_Budgets == true)
+			{
+				canEditRequest = true;
+			}
+			if(requestAccess.Edit_All_Approvals == true)
+			{
+				canApproveRequest = true;
+			}
+			if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+			{
+				for each  requestOwner in requestBudget.Budget_Owner
+				{
+					if(requestOwner.ID == requestAccess.ID)
+					{
+						canEditRequest = true;
+					}
+				}
+			}
+		}
+		// Recorded approvers retain their existing decision/reconciliation path without global grants.
+		actorEmail = ifnull(zoho.loginuser,"").toString().trim().toLowerCase();
+		routingEmail = "";
+		if(requestAccess.count() == 1)
+		{
+			routingEmail = ifnull(requestAccess.Approver_Email,"").toString().trim().toLowerCase();
+		}
+		for each  requestApproval in Budget_Approvals[Budget_Modification == modificationId.toLong() && Type1 == "Modification"]
+		{
+			approvalEmail = ifnull(requestApproval.Approver,"").trim().toLowerCase();
+			matchesActor = approvalEmail != "" && approvalEmail == actorEmail || (routingEmail != "" && approvalEmail == routingEmail);
+			if(matchesActor && vAction == "repair-send" && requestApproval.Status == "Pending")
+			{
+				canApproveRequest = true;
+			}
+			if(matchesActor && vAction == "repair-reject" && requestApproval.ID.toString() == ifnull(reference,"").trim() && requestApproval.Status == "Rejected")
+			{
+				canApproveRequest = true;
+			}
+		}
+		if(vAction == "reopen" && canEditRequest != true)
+		{
+			return "ERROR: Budget edit access is required to reopen a modification.";
+		}
+		if(canEditRequest != true && canApproveRequest != true)
+		{
+			return "ERROR: Budget edit or recorded approval access is required.";
+		}
+	}
 	if(vAction == "check-reject" || vAction == "repair-reject")
 	{
 		vModId = modificationId.toLong();
@@ -104,13 +190,20 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			}
 		}
 		repairError = "";
-		repairChainReady = false; repairStatusReady = false;
+		repairChainReady = false;
+		repairStatusReady = false;
 		if(firstRow != null)
 		{
 			firstRepairStatus = ifnull(firstRow.Status,"").trim();
 			repairStatusReady = firstRepairStatus == "Not Sent" || firstRepairStatus == "Pending";
-			if(pendingCount == 0) { repairChainReady = true; }
-			if(pendingCount == 1 && firstRepairStatus == "Pending") { repairChainReady = true; }
+			if(pendingCount == 0)
+			{
+				repairChainReady = true;
+			}
+			if(pendingCount == 1 && firstRepairStatus == "Pending")
+			{
+				repairChainReady = true;
+			}
 		}
 		if(vAction == "repair-send" && ifnull(modRec.Status,"").trim() == "Submitted" && firstRow != null && approvedCount == 0 && repairChainReady && firstRow.Sent_Date == null && repairStatusReady)
 		{
@@ -121,8 +214,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 				{
 					repairError = ifnull(emailResult,"Approval email could not be sent.");
 				}
-			}
-			catch (repairException)
+			}			catch (repairException)
 			{
 				repairError = repairException.toString();
 			}
@@ -248,7 +340,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			return "ERROR: Restore this modification's Budget link before deleting it; its files must remain in Budget Attachments.";
 		}
 		// Request deletion retains the same Budget file and original provenance.
-		for each attachedFile in Attachment[Budget_Modification == vModId]
+		for each  attachedFile in Attachment[Budget_Modification == vModId]
 		{
 			if(attachedFile.Budget == null && modRec.Budget != null)
 			{
@@ -312,15 +404,25 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 	if(vAction == "repair")
 	{
 		vBudgetId = budgetId.toLong();
-		if(vBudgetId == 0) { return "ERROR: No budget provided."; }
+		if(vBudgetId == 0)
+		{
+			return "ERROR: No budget provided.";
+		}
 		policyTerritory = "";
 		budgetRec = Add_Budget[ID == vBudgetId];
-		if(budgetRec != null && budgetRec.Subdivision1 != null) { policyTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim(); }
-		policySubmitter = User_Access[User == zoho.loginuser];
-		rebuilt = 0; routingErrors = List();
-		for each modRec in Budget_Modification[Budget == vBudgetId]
+		if(budgetRec != null && budgetRec.Subdivision1 != null)
 		{
-			if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { continue; }
+			policyTerritory = ifnull(budgetRec.Subdivision1.Territory,"").trim();
+		}
+		policySubmitter = User_Access[User == zoho.loginuser];
+		rebuilt = 0;
+		routingErrors = List();
+		for each  modRec in Budget_Modification[Budget == vBudgetId]
+		{
+			if(ifnull(modRec.Reference_Number,"").startsWith("PO:"))
+			{
+				continue;
+			}
 			linked = Budget_Approvals[Budget_Modification == modRec.ID && Type1 == "Modification"];
 			// A Draft has no submitted route to repair. Never rewrite existing rows
 			// or guess which modification owns a historical orphan approval.
@@ -328,12 +430,21 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			{
 				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
 				policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
-				if(policyExecution.get("success") == true && policyExecution.get("shared") == true) { rebuilt = rebuilt+1; }
-				else { routingErrors.add(modRec.ID.toString() + ": " + ifnull(policyExecution.get("error"),"Settings approval routing is unavailable.")); }
+				if(policyExecution.get("success") == true && policyExecution.get("shared") == true)
+				{
+					rebuilt = rebuilt + 1;
+				}
+				else
+				{
+					routingErrors.add(modRec.ID.toString() + ": " + ifnull(policyExecution.get("error"),"Settings approval routing is unavailable."));
+				}
 			}
 		}
 		// Repair does not activate a recipient, stamp delivery or send mail.
-		if(routingErrors.size() > 0) { return "ERROR: Settings approval routing failed for " + routingErrors.toString("; ") + ". Rebuilt=" + rebuilt.toString(); }
+		if(routingErrors.size() > 0)
+		{
+			return "ERROR: Settings approval routing failed for " + routingErrors.toString("; ") + ". Rebuilt=" + rebuilt.toString();
+		}
 		return "OK: repair relinked=0 rebuilt=" + rebuilt.toString() + " removed=0";
 	}
 	return "ERROR: Unknown action.";

@@ -1,0 +1,78 @@
+string setProjectProforma(string projectId, string proformaId)
+{
+	vProjectId = projectId.toLong();
+	vProformaText = ifnull(proformaId,"").trim();
+	if(vProjectId == 0)
+	{
+		return "{\"ok\":false,\"error\":\"Missing projectId.\"}";
+	}
+	projectRec = Project[ID == vProjectId];
+	if(projectRec == null)
+	{
+		return "{\"ok\":false,\"error\":\"Project not found.\"}";
+	}
+	// The widget permits this association only through an editable Budget in this Project.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try 
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "{\"ok\":false,\"error\":\"This profile has read-only Budget access.\"}";
+			}
+		}		catch (profileError)
+		{
+			return "{\"ok\":false,\"error\":\"Budget access could not be verified.\"}";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	canAssociate = false;
+	if(requestAccess.count() == 1)
+	{
+		for each  scopeSubdivision in Subdivision[Project == vProjectId]
+		{
+			for each  scopeBudget in Add_Budget[Subdivision1 == scopeSubdivision.ID]
+			{
+				if(requestAccess.Edit_All_Budgets == true)
+				{
+					canAssociate = true;
+				}
+				if(requestAccess.Edit_Owned_Budgets == true && scopeBudget.Budget_Owner != null)
+				{
+					for each  scopeOwner in scopeBudget.Budget_Owner
+					{
+						if(scopeOwner.ID == requestAccess.ID)
+						{
+							canAssociate = true;
+						}
+					}
+				}
+			}
+		}
+	}
+	if(canAssociate != true)
+	{
+		return "{\"ok\":false,\"error\":\"Budget edit access in this Project is required.\"}";
+	}
+	if(vProformaText == "")
+	{
+		projectRec.Proforma=null;
+		resultMap = Map();
+		resultMap.put("ok",true);
+		resultMap.put("projectId",vProjectId);
+		resultMap.put("proformaId","");
+		return resultMap.toString();
+	}
+	vProformaId = vProformaText.toLong();
+	proformaRec = Add_Pro_Forma[ID == vProformaId];
+	if(proformaRec == null)
+	{
+		return "{\"ok\":false,\"error\":\"Pro Forma not found.\"}";
+	}
+	projectRec.Proforma=proformaRec.ID;
+	resultMap = Map();
+	resultMap.put("ok",true);
+	resultMap.put("projectId",vProjectId);
+	resultMap.put("proformaId",vProformaId);
+	return resultMap.toString();
+}

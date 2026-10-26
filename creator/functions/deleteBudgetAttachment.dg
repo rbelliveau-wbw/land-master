@@ -1,24 +1,60 @@
-				 string deleteBudgetAttachment(string budgetId, string attachmentId)
-                 {
-                 	/********* DELETE CHILD ATTACHMENT RECORD *********/
-                 	vBudgetId = ifnull(budgetId,"").trim();
-                 	vAttachmentId = ifnull(attachmentId,"").trim();
-                 	if(vBudgetId == "" || vAttachmentId == "")
-                 	{
-                 		return "Missing Budget ID or attachment ID.";
-                 	}
-                 	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
-                 	if(attachmentRows.count() == 0)
-                 	{
-                 		return "Attachment record was not found for this budget.";
-                 	}
-                 	try 
-                 	{
-                 		delete from Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
-                 		return "Attachment deleted.";
-                 	}	catch (deleteError)
-                 	{
-                 		return "Attachment deletion failed: " + deleteError.toString();
-                 	}
-                 	return "gj";
-                 }
+string deleteBudgetAttachment(string budgetId, string attachmentId)
+{
+	/********* DELETE CHILD ATTACHMENT RECORD *********/
+	vBudgetId = ifnull(budgetId,"").trim();
+	vAttachmentId = ifnull(attachmentId,"").trim();
+	if(vBudgetId == "" || vAttachmentId == "")
+	{
+		return "Missing Budget ID or attachment ID.";
+	}
+	attachmentRows = Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+	if(attachmentRows.count() == 0)
+	{
+		return "Attachment record was not found for this budget.";
+	}
+	// Preserve the same editor/approver scope as attachment creation.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	requestBudget = Add_Budget[ID == vBudgetId.toLong()];
+	canDelete = false;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		canDelete = requestAccess.Edit_All_Budgets == true || requestAccess.Edit_All_Approvals == true;
+		ownedGrant = requestAccess.Edit_Owned_Budgets == true || requestAccess.Edit_Owned_Approvals == true;
+		if(ownedGrant && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canDelete = true;
+				}
+			}
+		}
+	}
+	if(canDelete != true)
+	{
+		return "ERROR: Budget attachment edit access is required.";
+	}
+	try
+	{
+		delete from Attachment[ID == vAttachmentId.toLong() && Budget == vBudgetId.toLong()];
+		return "Attachment deleted.";
+	}	catch (deleteError)
+	{
+		return "Attachment deletion failed: " + deleteError.toString();
+	}
+	return "gj";
+}

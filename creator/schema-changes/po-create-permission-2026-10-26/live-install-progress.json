@@ -1,0 +1,226 @@
+{
+  "environment": "DEVELOPMENT",
+  "productionPublished": false,
+  "updated_at": "2026-10-26T15:19:46.862Z",
+  "status": "partial-native-installation",
+  "verification": "Only entries explicitly marked savedAndReloaded match current reviewed source. Two native validation workflow actions and actual signed-in use-case tests are separate installation gates.",
+  "functions": [
+    {
+      "name": "getUserAccess",
+      "source": "creator/functions/getUserAccess.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccess.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "26147d263c0bf15cb36af3744213ed62b4745cdaa5fc963398f8078142f6bdbf",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "getUserAccessLean",
+      "source": "creator/functions/getUserAccessLean.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccessLean.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "c7f31b611a9df9181899345c3dc2bc3da8593d24c631cdb29639f7e7a70d081e",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "poActorResponse",
+      "source": "creator/functions/poActorResponse.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/poActorResponse.after-final.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "99dd802e37db478c1667ed70dc841b51686282c0d3a2b4da708375e45f6d3d07",
+      "nativeUpdateRequired": false,
+      "previous_evidence": [
+        "creator/schema-changes/po-create-permission-2026-10-26/poActorResponse.after.dg"
+      ]
+    },
+    {
+      "name": "managePurchaseOrder",
+      "source": "creator/functions/managePurchaseOrder.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/managePurchaseOrder.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "debca83809b02f8ed53cd4f1fce4069ac53d4b4b56ceee4d291e0cb17599f50c",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "sendModificationEmail",
+      "source": "creator/functions/sendModificationEmail.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/sendModificationEmail.after.dg",
+      "capture_sha256": "8747f569c781bc2ce291c82bd8a402cd791f978347a937c07b4d3a3c8e733cb8",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "modificationAdmin",
+      "source": "creator/functions/modificationAdmin.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/modificationAdmin.after.dg",
+      "capture_sha256": "bb411678c01d6942172ed96edc08a242e813ff14a146b77e53d5388c1dc26574",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "createBudgetModification",
+      "source": "creator/functions/createBudgetModification.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/createBudgetModification.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "17eaf6e387c9f6adfced54abdb61b920aac3a96dfdfea75918a698d0e3cfdcd1",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "submitBudgetModification",
+      "source": "creator/functions/submitBudgetModification.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/submitBudgetModification.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "2b2cbf87e5808a5d4d375590ddf956b25fa8cadf0c7f6743b651037402ab47ff",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "setProjectProforma",
+      "source": "creator/functions/setProjectProforma.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/setProjectProforma.after.dg",
+      "savedAndReloaded": true,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "capture_sha256": "8194a7afdde001968bf9dec638f3db69cb6c21bb091cb613c015c3cfa8f9eae1",
+      "nativeUpdateRequired": false
+    },
+    {
+      "name": "deleteBudgetAttachment",
+      "source": "creator/functions/deleteBudgetAttachment.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/deleteBudgetAttachment.after-final.dg",
+      "capture_sha256": "9f028238706e76e4f6477f1f1369be4df5000f7a013cd6e45199dd5ee8ec5af4",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "previous_evidence": [
+        "creator/schema-changes/po-create-permission-2026-10-26/deleteBudgetAttachment.after.dg"
+      ]
+    },
+    {
+      "name": "startApprovalChain",
+      "source": "creator/functions/startApprovalChain.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/startApprovalChain.after.dg",
+      "capture_sha256": "281e73e3d1644333eebd989f079a443cb4321e16514cdf5324fdaf16430a4664",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "killApprovalChain",
+      "source": "creator/functions/killApprovalChain.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/killApprovalChain.after.dg",
+      "capture_sha256": "368ed7644554a72fdb0dd4a53a20e159bc8be2bdb3868610800aebf0eccfa186",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "killApprovalFlow",
+      "source": "creator/functions/killApprovalFlow.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/killApprovalFlow.after.dg",
+      "capture_sha256": "46ea975122296151f1ca4fe22199c5a1927d0ecd21111f19ca497beb3d391017",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "handleApprovalAction",
+      "source": "creator/functions/handleApprovalAction.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/handleApprovalAction.after.dg",
+      "capture_sha256": "79dc7ece301dccf96d1d50124d0a2860f9517fe88ce8d75d22e10a954929580b",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "sendApprovalEmail",
+      "source": "creator/functions/sendApprovalEmail.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/sendApprovalEmail.after.dg",
+      "capture_sha256": "196d51137eccc611d5b8d14401d6c7a6fa9e25478b166fda6dfa1e0fb3ea817f",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "syncBudgetApprovalStatus",
+      "source": "creator/functions/syncBudgetApprovalStatus.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/syncBudgetApprovalStatus.after.dg",
+      "capture_sha256": "cf88cbf4832b803cee9b64c16f8ca11b23b5319eec3c9d37757aafcd58d3bb8a",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "exportBudgetSnapshot",
+      "source": "creator/functions/exportBudgetSnapshot.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/exportBudgetSnapshot.after.dg",
+      "capture_sha256": "a3c8e66faf4ae6e3a54c4a8b4a1a124f943dc1f2c3c0a7579c13448f9750b0ce",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "manageBudget",
+      "source": "creator/functions/manageBudget.dg",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/manageBudget.after.dg",
+      "capture_sha256": "65c5ff16ef2260b4099d916f7fddcd8a548a2ccbf0ad62c40716ad852df539b7",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping."
+    },
+    {
+      "name": "createBudgetFromSubdivision",
+      "source": "creator/functions/createBudgetFromSubdivision.dg",
+      "savedAndReloaded": false,
+      "nativeUpdateRequired": true,
+      "verification": "No independently reloaded current native after capture has been recorded."
+    },
+    {
+      "name": "createBudgetAttachmentRecord",
+      "source": "creator/functions/createBudgetAttachmentRecord.dg",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/createBudgetAttachmentRecord.after.dg",
+      "capture_sha256": "d95bfa18e2bc4c9020e6bb6af5575f94f8655d35cfa112b50a21189ddf9798fc"
+    },
+    {
+      "name": "handlePurchaseOrderApproval",
+      "source": "creator/functions/handlePurchaseOrderApproval.dg",
+      "savedAndReloaded": true,
+      "nativeUpdateRequired": false,
+      "verification": "Saved in Creator Development and independently reloaded; captured token stream matches current reviewed source, preserving string literals, operators and grouping.",
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/handlePurchaseOrderApproval.after.dg",
+      "capture_sha256": "5030341186b5665754d44c590cce28608d0cb6df517a9b6393b6186e2617f180"
+    }
+  ],
+  "expected_function_count": 21,
+  "workflows": [
+    {
+      "link": "Construction_Attachment_V",
+      "source": "creator/workflows/Construction_Attachment_Validation.dg",
+      "savedAndReloaded": false,
+      "nativeUpdateRequired": true,
+      "verification": "Updated dual-parent validation source has not yet been saved and independently reloaded as a complete native action; prior October20 evidence does not verify the current body."
+    },
+    {
+      "link": "Validate_Comment_Log",
+      "source": "creator/workflows/Validate_Comment_Log.dg",
+      "savedAndReloaded": false,
+      "nativeUpdateRequired": true,
+      "verification": "Updated dual-parent validation source has not yet been saved and independently reloaded as a complete native action; prior October20 evidence does not verify the current body."
+    }
+  ],
+  "expected_workflow_count": 2,
+  "pending_native_components": [
+    "createBudgetFromSubdivision",
+    "Construction_Attachment_V",
+    "Validate_Comment_Log"
+  ],
+  "blocking_native_state": "Creator reports maintenance mode while a publishing process is active. Remaining native saves and workflow captures are pending; no bypass attempted."
+}

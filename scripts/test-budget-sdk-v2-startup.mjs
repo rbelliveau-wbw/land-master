@@ -523,7 +523,7 @@ function createFlowHarness(responses) {
     auditLog:() => {},setMsg:text => messages.push(text),toastShow:text => toasts.push(text),renderExternalMappingModal:() => {},closeExternalMappingModal:() => {},renderHeroMappings:() => {},
     perms:() => ({editAll:true}),budgetSubdivisionId:() => '900000000000000006',externalMappingsForSub:() => [],loadExternalMappings:async () => {reads.push('mapping');},
     cleanVal:value => String(value ?? '').trim(),shortErr:error => error?.message || String(error),Promise,Error,Object,JSON,Date,setTimeout:(fn) => setImmediate(fn)
-  },['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkAddRecord','addedRecordId','budgetCreateScope','budgetCreateRejected','saveExternalMappings','openExternalMappingEditor','budgetCommentCreateReview','syncBudgetCommentCreateReview','addBudgetComment','openBudgetComments']);
+  },['responseLooksBad','isUpdateSuccess','budgetMutationError','getReportCandidates','budgetSdkCode','budgetRequest','invalidateBudgetReports','invalidateBudgetTransport','sdkAddRecord','addedRecordId','budgetCreateScope','budgetCreateRejected','saveExternalMappings','openExternalMappingEditor','budgetCommentCreateReview','canWriteBudgetComments','syncBudgetCommentCreateReview','addBudgetComment','updateBudgetComment','openBudgetComments']);
   c.window=c;c.$=() => null;
   c.LMData.responseFailed=raw=>raw&&raw.code!=null&&String(raw.code)!=="3000";c.sdkInvokeCustomApi=async()=>({code:9350});
   vm.runInContext(fs.readFileSync("widgets/proforma-manager/src/app/comments.js","utf8"),c);

@@ -1,0 +1,133 @@
+string submitBudgetModification(int modificationId)
+{
+	/********* SUBMIT BUDGET MODIFICATION *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// Promotes a Draft modification using its published Settings approval rule,
+	// marks it Submitted, and sends the first approval email.
+	vModId = modificationId.toLong();
+	if(vModId == 0)
+	{
+		return "ERROR: No modification provided.";
+	}
+	modRec = Budget_Modification[ID == vModId];
+	if(modRec == null)
+	{
+		return "ERROR: Modification not found.";
+	}
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:"))
+	{
+		return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit.";
+	}
+	// The authenticated publishing admin also runs approvalWatchdog repairs.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try 
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	requestBudget = Add_Budget[ID == modRec.Budget];
+	canSubmit = zoho.loginuser == zoho.adminuser;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		if(requestAccess.Edit_All_Budgets == true)
+		{
+			canSubmit = true;
+		}
+		if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canSubmit = true;
+				}
+			}
+		}
+	}
+	if(canSubmit != true)
+	{
+		return "ERROR: Budget edit access is required to submit a standalone modification.";
+	}
+	if(ifnull(modRec.Status,"") != "Draft" && ifnull(modRec.Status,"") != "Submitted")
+	{
+		return "ERROR: This modification cannot be submitted from its current status.";
+	}
+	firstExisting = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"] sort by Sort_Order;
+	if(ifnull(modRec.Status,"") == "Submitted" && firstExisting.count() > 0)
+	{
+		firstSubmitted = null;
+		pendingSubmitted = 0;
+		approvedSubmitted = 0;
+		for each  submittedRow in firstExisting
+		{
+			if(firstSubmitted == null)
+			{
+				firstSubmitted = submittedRow;
+			}
+			if(ifnull(submittedRow.Status,"") == "Pending")
+			{
+				pendingSubmitted = pendingSubmitted + 1;
+			}
+			if(ifnull(submittedRow.Status,"") == "Approved")
+			{
+				approvedSubmitted = approvedSubmitted + 1;
+			}
+		}
+		if(approvedSubmitted > 0)
+		{
+			return "ERROR: Modification approvals are already in progress.";
+		}
+		if(firstSubmitted != null && ifnull(firstSubmitted.Status,"") == "Pending" && firstSubmitted.Sent_Date != null && pendingSubmitted == 1)
+		{
+			return "OK: Modification already submitted and first approval email sent.";
+		}
+	}
+	vBudgetId = 0;
+	if(modRec.Budget != null)
+	{
+		vBudgetId = modRec.Budget.ID;
+	}
+	policyTerritory = "";
+	if(vBudgetId != 0)
+	{
+		policyBudget = Add_Budget[ID == vBudgetId];
+		if(policyBudget.Subdivision1 != null)
+		{
+			policyTerritory = ifnull(policyBudget.Subdivision1.Territory,"");
+		}
+	}
+	policySubmitter = User_Access[User == zoho.loginuser];
+	policyContext = {"workflow":"Budget Modification","recordId":vModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+	if(policyExecution.get("success") != true)
+	{
+		return "ERROR: Approval template could not be loaded: " + policyExecution.get("error");
+	}
+	if(policyExecution.get("shared") != true && policyExecution.get("retainedExistingRoute") != true)
+	{
+		return "ERROR: Promote the Settings-based Budget Modification approval functions before submitting.";
+	}
+	existing = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
+	if(existing.count() == 0)
+	{
+		return "ERROR: The Settings approval route did not create a chain. No approval email was sent.";
+	}
+	modRec.Status="Submitted";
+	emailMsg = "";
+	try 
+	{
+		emailMsg = thisapp.sendModificationEmail(vModId,"created");
+	}	catch (emailException)
+	{
+		emailMsg = "Approval email could not be sent: " + emailException.toString();
+	}
+	return "OK: Modification submitted. " + ifnull(emailMsg,"");
+}

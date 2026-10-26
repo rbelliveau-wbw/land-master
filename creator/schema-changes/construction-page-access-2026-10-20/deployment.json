@@ -2,7 +2,7 @@
   "environment": "DEVELOPMENT",
   "productionPublished": false,
   "creatorPromotion": "User promotes native changes under PMP.",
-  "verification": "All six functions independently reselected and copied; seven workflows independently reloaded with exactly one native script action and complete body; reports and native profiles separately reopened.",
+  "verification": "Prior function/report/profile and unchanged workflow evidence is preserved. The October26 Construction Attachment and Comment validation bodies are pending native save/reload; their prior evidence is not current.",
   "functions": [
     {
       "name": "hasConstructionPermission",
@@ -13,14 +13,16 @@
     {
       "name": "getUserAccess",
       "source": "creator/functions/getUserAccess.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccess.after.dg",
-      "savedAndReloaded": true
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccess.after.dg",
+      "savedAndReloaded": true,
+      "updated_by": "creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json"
     },
     {
       "name": "getUserAccessLean",
       "source": "creator/functions/getUserAccessLean.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getUserAccessLean.after.dg",
-      "savedAndReloaded": true
+      "evidence": "creator/schema-changes/po-create-permission-2026-10-26/getUserAccessLean.after.dg",
+      "savedAndReloaded": true,
+      "updated_by": "creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json"
     },
     {
       "name": "createContractAttachmentRecord",
@@ -63,16 +65,20 @@
       "source": "creator/workflows/Construction_Attachment_Validation.dg",
       "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.after.dg",
       "capture": "creator/schema-changes/construction-page-access-2026-10-20/Construction_Attachment_V.builder-capture.json",
-      "savedAndReloaded": true,
-      "nativeScriptActionCount": 1
+      "savedAndReloaded": false,
+      "nativeScriptActionCount": 1,
+      "nativeUpdateRequired": true,
+      "verification": "Current October26 dual-parent validation source is pending native save and independent full action reload; historical evidence preserved."
     },
     {
       "link": "Validate_Comment_Log",
       "source": "creator/workflows/Validate_Comment_Log.dg",
       "evidence": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.after.dg",
       "capture": "creator/schema-changes/construction-page-access-2026-10-20/Validate_Comment_Log.builder-capture.json",
-      "savedAndReloaded": true,
-      "nativeScriptActionCount": 1
+      "savedAndReloaded": false,
+      "nativeScriptActionCount": 1,
+      "nativeUpdateRequired": true,
+      "verification": "Current October26 dual-parent validation source is pending native save and independent full action reload; historical evidence preserved."
     },
     {
       "link": "Construction_Action_Delet",

@@ -1,3 +1,164 @@
+## Create Purchase Orders and Const access — October 26, 2026
+
+Budget Manager 122.29.73 adds `User_Access.Create_Purchase_Orders`, a default-false decision box under
+**Budgets**, labeled **Create Purchase Orders**. The full and lean access
+functions return `poCreate`. Missing or malformed new capability data grants no
+PO creation; legacy access responses retain their existing Budget permissions.
+Conflicting lean response envelopes are rejected, including conflicts on this
+new flag. Install the native field before saving functions that reference it.
+The generated schema remains tied to its captured DS export; record additive
+live observations in [the permission contract](../../manifests/budget-request-permissions.json).
+
+PO creation is permitted by the new grant, by `Edit_All_Budgets`, or by
+`Edit_Owned_Budgets` when the authenticated User Access record is in that phase's
+`Budget_Owner` lookup. The new grant does not enter `canEditBudget`, the Budget
+edit/approval flags, owner/import permissions, attachment permissions or the
+standalone modification grant. Existing global and owned Budget editors keep
+their PO creation and editing behavior.
+
+| Const capability | Scope |
+|---|---|
+| Budgets | View the list, phase detail and existing request history; no Budget, item, category, owner, import, Project association or approval changes |
+| Purchase Orders | Create, save and reopen the creator's own unsubmitted Draft, then submit it on an active phase |
+| Construction Requests | Existing full Construction profile functionality, including review, requests, actions, templates and files, with existing completed-record and comment-author locks |
+| Dev/Land Acq Construction access | Read requests/actions and submit new requests; existing submitter files/comments remain available; no request/action editing, review decisions or templates |
+
+The creation receipt, not `Added_User`, proves PO ownership:
+`Payment_Request.PO_Client_Key` must identify one initial `PO_Operation` with the
+same PO, Budget and authenticated Actor. List and Get responses project
+`canEditDraft`; the server repeats the creator, phase, Draft state, revision and
+permission checks before and after locking. A PO-only creator cannot edit
+another user's Draft, revise a Submitted/Rejected PO, amend Pending approvals,
+delete a PO, manually link an existing Budget Modification, create a Check/Wire
+request, add a Vendor, or gain general Budget/PO file or approval rights. The
+normal UI keeps submitted/rejected records read-only and does not add a recovery
+action for this grant; exact-operation reconciliation retains its existing
+no-replay behavior.
+
+The user confirmed that an over-budget PO retains the existing automatic
+shortfall modification and captured approval process. This does not authorize
+standalone Budget Modifications or bypass the required approvers. No arithmetic,
+reservation, approval sequence or finalization rule changes with this grant.
+
+### Native read-only enforcement
+
+The access audit found legacy elevated functions whose UI controls checked
+permissions while their native mutation bodies did not. Native guards now cover
+standalone modification creation/submission (`createBudgetModification`,
+`submitBudgetModification`), Project/Pro Forma association (`setProjectProforma`)
+and Budget attachment deletion (`deleteBudgetAttachment`). Project association
+requires an editable Budget under the exact `Subdivision.Project`; file deletion
+retains the existing Budget editor/approver all/owned scope. Standalone request
+submission requires Budget edit access, with the authenticated publishing admin
+retaining the scheduled `approvalWatchdog` repair path.
+
+`modificationAdmin` also checks mutating reopen/repair/send/rejection paths;
+`sendModificationEmail` checks before changing a request, approval or financial
+rollup. Unrelated recorded approvers retain their existing path through the exact
+authenticated login or authoritative `User_Access.Approver_Email`, matching an
+actual approval row and the relevant action/status. No email-local-part matching,
+caller-supplied actor override or global approval grant is inferred. Read-only
+check actions remain read-only. Modification email links navigate to the signed-in
+Budget page; these two function signatures accept no approval token.
+
+Construction Budgeting is denied Budget mutations before those general grants
+or recorded-approver exceptions can apply. This closes the mismatch where a
+retained checkbox or recorded approval assignment could otherwise override the
+requested Const read-only scope. Only the actual authenticated publishing admin
+retains trusted scheduled execution; `approvalWatchdog` and
+`sendApprovalReminders` keep their existing internal mail/repair calls.
+
+The native approval API audit also adds permission/profile guards to
+`startApprovalChain`, `killApprovalChain`, `killApprovalFlow` and
+`handleApprovalAction`: ordinary sending requires `Send_for_Approvals`, cancelling
+retains that grant or `Edit_All_Approvals`, and recorded approval mutations retain
+their exact authorized approver scope. Read-only Check variants remain available.
+The profile veto also covers `syncBudgetApprovalStatus`, `sendApprovalEmail`,
+`exportBudgetSnapshot`, `manageBudget`, `createBudgetFromSubdivision` and
+`createBudgetAttachmentRecord`, retaining their existing authorized/system
+behavior. Snapshot export is a write because it persists an Attachment record;
+ordinary read/download exports remain separate. Attachment Capabilities reports
+`canWrite:false` for Const. These functions are part of the same native
+installation bundle; use its deployment record for the exact saved source,
+rather than assuming a hosted widget release publishes Creator functions.
+Budget/Project comment controls now respect the host's read-only state: viewing
+and author identity stay available, while the composer/mutation controls and
+their add/update callbacks remain denied. Shared and Construction comment
+behavior stays unchanged; native `postRecordComment` and `Validate_Comment_Log`
+already restrict Construction Budgeting to Construction parents.
+Construction comments retain their separate native parent-module and
+author/time checks. `handlePurchaseOrderApproval` also blocks Const approval
+decisions or another submitter's email retry even when an old route still names
+that user. The existing creator's own submission-email retry/check remains
+available; `poActorResponse` must match the final installed approval projection
+so Development owner preview cannot restore approval controls.
+The complete bundle has twenty-one existing functions: four
+access/PO functions, six standalone-modification/Project/file guards, four
+approval-control guards, these six additional native entry points and the PO
+approval handler.
+
+Two native validation actions close the shared-child boundary as well:
+`Construction_Attachment_V` rejects Const file records linked to Budget,
+Pro Forma, Payment Request or Budget Modification in addition to Construction;
+`Validate_Comment_Log` rejects extra Budget, Project or Pro Forma links.
+Both examine input and stored parents, so clearing an input cannot authorize
+editing an already shared child. Pure Construction files/comments retain the
+existing permission, completion and author/time rules. Other profiles retain
+their existing parent policy. These are two existing workflow actions, not new
+functions or new form fields, and require their own native save/reload evidence.
+
+These functions keep their existing Custom API names and argument lists. Save
+`sendModificationEmail` before its callers `modificationAdmin`,
+`createBudgetModification` and `submitBudgetModification`; the Project/file
+guards have no new dependency. The PO field precedes the full/lean access getters
+and `poActorResponse`; save `poActorResponse` before `managePurchaseOrder`.
+Native publication and API binding/audience checks are separate from GitHub
+Pages deployment. Previously captured All users metadata for a named API does
+not establish the current audience of every other Budget endpoint.
+
+### Verification and release boundary
+
+Actual-source tests cover create-only/legacy-editor access, own Draft Save and
+Submit, foreign/rejected/in-flight/delete denial, automatic shortfall routing,
+post-lock revocation, exact lookup IDs, recorded-approver scope, duplicate/missing
+actors, Const profile denial and zero-write/zero-mail failures. Focused suites
+include `test-po-create-permission-backend.mjs`,
+`test-po-create-permission-ui.mjs`, `test-budget-readonly-backend.mjs` and
+`test-budget-approval-permissions.mjs`; the existing Settings routing and request
+delete-permission suites preserve authorized behavior. These execute native
+source against fixtures and are not a Creator compiler or mail-delivery test.
+`test-construction-backend.mjs` additionally checks dual-parent create/update,
+hidden/cleared input, exact Construction parents and unrelated profile behavior.
+Its default saved-body gate still requires independent native workflow captures;
+`--behavior-only` explicitly runs offline source behavior without claiming that
+deployment gate passed.
+
+The independent saved-body captures and current native verification status are
+recorded in
+[`live-install-progress.json`](../../creator/schema-changes/po-create-permission-2026-10-26/live-install-progress.json).
+Only entries marked saved and independently reopened are confirmed installed.
+Creator's formatter has previously changed grouped conditions, so native bodies
+must be compared while preserving literals and boolean grouping.
+The independently reloaded `sendModificationEmail` and `modificationAdmin`
+bodies normalize the actor-match grouping. Their actual native expressions are
+adopted in source and pass the focused scope tests: the alternative routing-email
+branch requires a nonempty routing email equal to the recorded approval email,
+so it cannot authorize an empty recorded address.
+
+Development View-as Custom APIs can execute as the publishing admin. The PO API
+uses its existing Development-only authenticated-admin simulation contract;
+Stage and Production keep the authenticated actor. The legacy modification,
+Project and file API signatures have no preview actor parameter, so a publisher
+View-as success does not prove that a real Demo login can mutate the same data.
+Use an actual signed-in Demo session or explicit native execution identity for
+denial verification. Live PO persistence, approval routing/delivery, native file
+behavior and employee-profile enforcement must be reported only when tested.
+
+For frontend rollback, restore the preceding Budget Manager environment mapping.
+Retain the default-false field and native security guards; do not restore an
+unguarded native function or delete request/approval/file records as part of a
+widget rollback.
+
 ## Import assignment count and code filter — October 26, 2026
 
 Budget 122.29.71 loads the exact missing Budget Item count after the usable landing

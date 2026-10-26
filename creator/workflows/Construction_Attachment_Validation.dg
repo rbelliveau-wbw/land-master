@@ -9,6 +9,19 @@ if(storedAttachment.count() > 0)
 constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
 if(constructionBudgetingProfile)
 {
+ if(input.Budget != null || input.Pro_Forma != null || input.Payment_Request != null || input.Budget_Modification != null)
+ {
+  alert "Construction attachments cannot also be linked to Budgets, Pro Formas, or Budget requests.";
+  cancel submit;
+ }
+ if(storedAttachment.count() > 0)
+ {
+  if(storedAttachment.Budget != null || storedAttachment.Pro_Forma != null || storedAttachment.Payment_Request != null || storedAttachment.Budget_Modification != null)
+  {
+   alert "Construction attachments cannot also be linked to Budgets, Pro Formas, or Budget requests.";
+   cancel submit;
+  }
+ }
  scopedAttachmentParent = Contract[ID == attachmentParentId];
  if(attachmentParentId == null || scopedAttachmentParent.count() == 0 || ifnull(scopedAttachmentParent.Work_Module,"") != "Construction")
  {

@@ -84,6 +84,12 @@ safe supported link schemes. Do not replace user text with a success label.
 
 ## Permissions and write feedback
 
+Budget's read-only permission hides its Budget/Project composer and comment
+mutation actions while retaining the conversation and authenticated identity.
+Recheck the same permission in posting and update callbacks so stale controls
+cannot dispatch writes. Preserve pending/unknown recovery locks. This host gate
+does not change Construction request conversations or shared comment permissions.
+
 New posts email the other record owners through the global function and Custom
 API shared by all hosts. Use the **Delivery strip** composer approved October 21:
 a pale-blue mail strip reading **Posting also emails the other record owners.**

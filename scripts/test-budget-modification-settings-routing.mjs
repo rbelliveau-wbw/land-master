@@ -21,11 +21,11 @@ function runtime({policies=[policy],modifications=[],approvals=[],people=[],snap
     Budget_Item:[{ID:'61',Budget:'71',Budget_Category:'81'}],Add_Budget:[{ID:'71',Subdivision1:'91'}],Subdivision:[{ID:'91',Territory:'North'}],
     Approval_Role:[{ID:'1',Role_Name:'CFO',Active:true},{ID:'2',Role_Name:'COO',Active:true}],
     Approval_Role_Assignment:[{ID:'21',Role:'1',Person:'11',Active:true,Territory_Key:'',Department_Key:''},{ID:'22',Role:'2',Person:'12',Active:true,Territory_Key:'',Department_Key:''}],
-    User_Access:[{ID:'19',User:'owner'},...['CFO','COO'].map((role,i)=>({ID:String(11+i),User:role.toLowerCase(),Full_Name:role,Approver_Email:role.toLowerCase()+'@example.test',Approval_Routing_Enabled:true,...people.find(p=>p.ID===String(11+i))}))],
+    User_Access:[{ID:'19',User:'owner',Edit_All_Budgets:true},...['CFO','COO'].map((role,i)=>({ID:String(11+i),User:role.toLowerCase(),Full_Name:role,Approver_Email:role.toLowerCase()+'@example.test',Approval_Routing_Enabled:true,...people.find(p=>p.ID===String(11+i))}))],
     Territory:[],Settings:[{ID:'1',COO_Approval_Threshold:1}]};
   const c=vm.createContext({initial:structuredClone(initial),snapshotFailure});
   vm.runInContext(`
-    var tables=JSON.parse(JSON.stringify(initial)),writes=[],emails=[],diagnostics=[],revision=0,thisapp={};
+    var tables=JSON.parse(JSON.stringify(initial)),writes=[],emails=[],diagnostics=[],revision=0,thisapp={permissions:{profileForUser(){return '';}}};
     function map(value){Object.defineProperties(value,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=v;}}});return value;}
     function Map(){return map({});}function List(){return [];}function ifnull(value,fallback){return value==null?fallback:value;}
     function delugeMap(...pairs){var value={};for(var i=0;i<pairs.length;i+=2)value[pairs[i]]=pairs[i+1];return map(value);}

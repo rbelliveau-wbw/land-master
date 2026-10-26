@@ -1,5 +1,5 @@
 {
-  "contract": "budget-request-permissions-v1",
+  "contract": "budget-request-permissions-v2",
   "verified_on": "2026-10-19",
   "metadata_source": "Authenticated Creator Development field and workflow editors; not a regenerated DS export",
   "form": "User_Access",
@@ -11,11 +11,54 @@
     "modAdmin": "Edit_All_Budgets"
   },
   "request_delete_permission": "One authenticated User Access record with Edit_All_Budgets true",
+  "po_create_permission": {
+    "field": "Create_Purchase_Orders",
+    "display_name": "Create Purchase Orders",
+    "section": "Budgets",
+    "type": "decision box",
+    "default": false,
+    "help_text": "Created so Const Budget Manager can have read-only access to budgets and only create purchase orders.",
+    "response_flag": "poCreate",
+    "native_field_verification": "2026-10-26: root agent saved and verified the exact Create_Purchase_Orders checkbox in Creator Development under Budgets with the requested help text and default false",
+    "schema_snapshot_policy": "creator/generated/fields/User_Access.json remains tied to its recorded DS baseline. Live additive field facts are recorded here; refresh from a captured current DS export before regenerating or adding a provenance-bearing targeted overlay. Do not hand-edit generated metadata to imply a full live export refresh",
+    "native_installation": "Create the field before saving getUserAccess, getUserAccessLean, poActorResponse and managePurchaseOrder; Development save and in-app verification are required",
+    "legacy_grants": "Edit_All_Budgets, or Edit_Owned_Budgets when the authenticated User Access record is in the phase Budget_Owner lookup, continue to create POs",
+    "create_only_scope": "Create a PO and save, reopen or submit only the creator's unsubmitted Draft PO on an active phase; read-only exact-token checks, explicit recovery of own incomplete submission receipts and retry of own submission notification remain available without approval authority",
+    "creator_identity": "Payment_Request.PO_Client_Key matches one initial PO_Operation.Token with the same Purchase_Order, Budget and authenticated Actor; never infer ownership from Added_User during Development View-as",
+    "draft_hints": "List rows and actor-projected snapshots expose canEditDraft; backend checks authorization, ownership, exact revision and state again before and after acquiring the phase lock",
+    "shortfall_policy": "User confirmed 2026-10-26: keep the existing automatic PO shortfall modification and captured approval process; creation does not grant standalone budget modification access",
+    "excluded_grants": [
+      "Budget, item, category, owner or import editing",
+      "Standalone budget modification creation, submission or editing",
+      "Check or Wire creation",
+      "Manual linkage to an existing budget modification",
+      "Other users' PO drafts or any submitted/rejected PO editing",
+      "In-flight PO amendments or PO deletion",
+      "Budget or PO approval authority"
+    ]
+  },
   "native_functions": [
+    "createBudgetAttachmentRecord",
+    "createBudgetFromSubdivision",
+    "createBudgetModification",
+    "deleteBudgetAttachment",
+    "exportBudgetSnapshot",
     "getUserAccess",
     "getUserAccessLean",
+    "handleApprovalAction",
+    "handlePurchaseOrderApproval",
+    "killApprovalChain",
+    "killApprovalFlow",
+    "manageBudget",
+    "managePurchaseOrder",
     "modificationAdmin",
-    "managePurchaseOrder"
+    "poActorResponse",
+    "sendApprovalEmail",
+    "sendModificationEmail",
+    "setProjectProforma",
+    "startApprovalChain",
+    "submitBudgetModification",
+    "syncBudgetApprovalStatus"
   ],
   "native_workflow": {
     "name": "Retire Modification Permission",

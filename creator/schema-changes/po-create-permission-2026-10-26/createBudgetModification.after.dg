@@ -1,0 +1,153 @@
+string createBudgetModification(int itemId, string modType, string amount, string reason, string reference, string effectiveDate, string track)
+{
+	/********* CREATE BUDGET MODIFICATION *********/
+	// Return Type: string ("OK: ..." or "ERROR: ...")
+	// Creates the Budget_Modification record and its approval chain, then attempts
+	// the first approval email. Always return the new ID when delivery fails so
+	// the widget can reconcile that record without creating a duplicate.
+	// The published Settings Budget Modification policy supplies every approver.
+	vItemId = itemId.toLong();
+	if(vItemId == 0)
+	{
+		return "ERROR: No item provided.";
+	}
+	itemRec = Budget_Item[ID == vItemId];
+	if(itemRec == null)
+	{
+		return "ERROR: Budget Item not found.";
+	}
+	vAmount = ifnull(amount,"0").toDecimal();
+	if(vAmount <= 0)
+	{
+		return "ERROR: Amount must be greater than zero.";
+	}
+	vReason = ifnull(reason,"").trim();
+	if(vReason == "")
+	{
+		return "ERROR: Reason is required.";
+	}
+	vType = ifnull(modType,"").trim();
+	if(vType != "Decrease")
+	{
+		vType = "Increase";
+	}
+	vTrack = ifnull(track,"").trim();
+	if(vTrack != "Construction")
+	{
+		vTrack = "Development";
+	}
+	vBudgetId = 0;
+	if(itemRec.Budget != null)
+	{
+		vBudgetId = itemRec.Budget.ID;
+	}
+	vCatId = 0;
+	if(itemRec.Budget_Category != null)
+	{
+		vCatId = itemRec.Budget_Category.ID;
+	}
+	// Match the widget's standalone-request grant; PO creation is separate.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try 
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	requestBudget = Add_Budget[ID == vBudgetId];
+	canSubmit = false;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		canSubmit = requestAccess.Edit_All_Budgets == true;
+		if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canSubmit = true;
+				}
+			}
+		}
+	}
+	if(canSubmit != true)
+	{
+		return "ERROR: Budget edit access is required to create a standalone modification.";
+	}
+	policyTerritory = "";
+	if(vBudgetId != 0)
+	{
+		policyBudget = Add_Budget[ID == vBudgetId];
+		if(policyBudget.Subdivision1 != null)
+		{
+			policyTerritory = ifnull(policyBudget.Subdivision1.Territory,"");
+		}
+	}
+	policySubmitter = User_Access[User == zoho.loginuser];
+	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(vAmount.toString())};
+	// Validate the current Settings rule before creating the modification.
+	policyPreview = thisapp.resolveApprovalRoute(policyContext);
+	if(policyPreview.get("success") != true)
+	{
+		return "ERROR: Approval routing unavailable: " + policyPreview.get("error");
+	}
+	// Reference goes IN the insert — post-insert assignment on the fresh row was
+	// dropping it in production.
+	vRef = ifnull(reference,"").trim();
+	newModId = insert into Budget_Modification
+	[
+		Added_User=zoho.loginuser
+		Budget_Item=vItemId
+		Budget=vBudgetId
+		Budget_Category=vCatId
+		Modification_Type=vType
+		Amount=vAmount
+		Reason=vReason
+		Reference_Number=vRef
+		Status="Draft"
+		Approval_Track=vTrack
+	];
+	if(newModId == null || newModId == 0)
+	{
+		return "ERROR: Could not create the modification record.";
+	}
+	modRec = Budget_Modification[ID == newModId];
+	if(modRec != null)
+	{
+		// Re-assert: some environments have dropped choice values set during insert.
+		modRec.Status="Draft";
+		if(vRef != "" && ifnull(modRec.Reference_Number,"") == "")
+		{
+			modRec.Reference_Number=vRef;
+		}
+		vDate = ifnull(effectiveDate,"").trim();
+		if(vDate != "")
+		{
+			modRec.Effective_Date=vDate.toDate();
+		}
+	}
+	policyContext.put("recordId",newModId.toString());
+	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
+	if(policyExecution.get("success") != true || policyExecution.get("shared") != true)
+	{
+		return "OK: Modification " + newModId + " recorded as Draft. Approval template failed: " + ifnull(policyExecution.get("error"),"Promote the Settings-based Budget Modification approval functions.");
+	}
+	modRec.Status="Submitted";
+	// First approval email (marks the first row Pending + stamps Sent_Date).
+	emailMsg = "";
+	try 
+	{
+		emailMsg = thisapp.sendModificationEmail(newModId,"created");
+	}	catch (emailException)
+	{
+		emailMsg = "Approval email could not be sent: " + emailException.toString();
+	}
+	return "OK: Modification " + newModId + " submitted. " + ifnull(emailMsg,"");
+}

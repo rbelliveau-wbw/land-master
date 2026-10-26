@@ -14,7 +14,48 @@ string submitBudgetModification(int modificationId)
 	{
 		return "ERROR: Modification not found.";
 	}
-	if(ifnull(modRec.Reference_Number,"").startsWith("PO:")) { return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit."; }
+	if(ifnull(modRec.Reference_Number,"").startsWith("PO:"))
+	{
+		return "ERROR: This modification is approved with its Purchase Order. Open the PO to edit or resubmit.";
+	}
+	// The authenticated publishing admin also runs approvalWatchdog repairs.
+	if(zoho.loginuser != zoho.adminuser)
+	{
+		try
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "ERROR: This profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "ERROR: Budget access could not be verified.";
+		}
+	}
+	requestAccess = User_Access[User == zoho.loginuser];
+	requestBudget = Add_Budget[ID == modRec.Budget];
+	canSubmit = zoho.loginuser == zoho.adminuser;
+	if(requestAccess.count() == 1 && requestBudget.count() == 1)
+	{
+		if(requestAccess.Edit_All_Budgets == true)
+		{
+			canSubmit = true;
+		}
+		if(requestAccess.Edit_Owned_Budgets == true && requestBudget.Budget_Owner != null)
+		{
+			for each  requestOwner in requestBudget.Budget_Owner
+			{
+				if(requestOwner.ID == requestAccess.ID)
+				{
+					canSubmit = true;
+				}
+			}
+		}
+	}
+	if(canSubmit != true)
+	{
+		return "ERROR: Budget edit access is required to submit a standalone modification.";
+	}
 	if(ifnull(modRec.Status,"") != "Draft" && ifnull(modRec.Status,"") != "Submitted")
 	{
 		return "ERROR: This modification cannot be submitted from its current status.";
@@ -58,22 +99,33 @@ string submitBudgetModification(int modificationId)
 	if(vBudgetId != 0)
 	{
 		policyBudget = Add_Budget[ID == vBudgetId];
-		if(policyBudget.Subdivision1 != null) { policyTerritory = ifnull(policyBudget.Subdivision1.Territory,""); }
+		if(policyBudget.Subdivision1 != null)
+		{
+			policyTerritory = ifnull(policyBudget.Subdivision1.Territory,"");
+		}
 	}
 	policySubmitter = User_Access[User == zoho.loginuser];
 	policyContext = {"workflow":"Budget Modification","recordId":vModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
 	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
-	if(policyExecution.get("success") != true) { return "ERROR: Approval template could not be loaded: " + policyExecution.get("error"); }
-	if(policyExecution.get("shared") != true && policyExecution.get("retainedExistingRoute") != true) { return "ERROR: Promote the Settings-based Budget Modification approval functions before submitting."; }
+	if(policyExecution.get("success") != true)
+	{
+		return "ERROR: Approval template could not be loaded: " + policyExecution.get("error");
+	}
+	if(policyExecution.get("shared") != true && policyExecution.get("retainedExistingRoute") != true)
+	{
+		return "ERROR: Promote the Settings-based Budget Modification approval functions before submitting.";
+	}
 	existing = Budget_Approvals[Budget_Modification == vModId && Type1 == "Modification"];
-	if(existing.count() == 0) { return "ERROR: The Settings approval route did not create a chain. No approval email was sent."; }
+	if(existing.count() == 0)
+	{
+		return "ERROR: The Settings approval route did not create a chain. No approval email was sent.";
+	}
 	modRec.Status="Submitted";
 	emailMsg = "";
 	try
 	{
-		emailMsg = thisapp.sendModificationEmail(vModId, "created");
-	}
-	catch (emailException)
+		emailMsg = thisapp.sendModificationEmail(vModId,"created");
+	}	catch (emailException)
 	{
 		emailMsg = "Approval email could not be sent: " + emailException.toString();
 	}
