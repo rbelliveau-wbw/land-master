@@ -5,6 +5,30 @@ const PROJECT=(BigInt(NEW)+20n).toString(),LEGAL=(BigInt(NEW)+21n).toString(),TE
 const submit={ctEdit:false,ctPropose:false,ctApprove:false,ctTemplates:false,ctDeleteArchive:false,constructionSubmit:true,constructionEditAll:false};
 const editor={...submit,constructionSubmit:false,constructionEditAll:true};
 const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.method));
+
+// A lost create acknowledgement must not masquerade as revoked create access.
+for(const accessFlags of [submit,editor]){
+ const h=await ready({accessFlags,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);
+ const native=h.api.addRecords;
+ h.api.addRecords=async config=>{await native(config);return {code:3000};};
+ const result=await h.c.constructionSubmitForm();
+ assert.ok(result.error);assert.equal(h.c.workCreateAccess('construction'),true,'independent Construction grant remains present');
+ assert.equal(h.c.contractReady(),false,'unknown create retains the duplicate-send guard');
+ assert.ok(h.reports.All_Contracts1.some(row=>row.ID===NEW),'lost acknowledgement can follow an actual save');
+ assert.equal(h.c.ContractSetupUI.close(),true);
+ const current=h.c.S.nc,count=writes(h).length;let message='';h.c.banner=(kind,text)=>{message=text;};
+ h.c.newContract();
+ assert.match(message,/previous save needs review/i);assert.doesNotMatch(message,/do not have access/i);
+ assert.equal(h.c.S.nc,current,'retained draft is preserved');assert.equal(writes(h).length,count,'no duplicate write follows an unknown acknowledgement');
+}
+
+{
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});
+ h.c.S.coreReady=false;let message='';h.c.banner=(kind,text)=>{message=text;};h.c.newContract();
+ assert.match(message,/Refresh Construction/);assert.doesNotMatch(message,/do not have access/i);assert.equal(writes(h).length,0);
+ h.c.S.acc.constructionSubmit=false;h.c.S.acc.constructionEditAll=false;h.c.newContract();
+ assert.match(message,/do not have access to submit construction requests/i,'an actual missing Construction grant still denies creation');
+}
 function fixture(h,{pending=false,children=true}={}){
  const values={Work_Module:'Construction',Contract_Type:'Internal',Contract_Name:'Fixture construction request',Status:pending?'Proposed':'New',Territory:'Austin',Project:{ID:PROJECT,display_value:'Fixture Project'},Subdivision1:[{ID:SUB,display_value:'Fixture Phase'}],Construction_Plans:'First Round',MUD:false,Priority:'Medium',Date_Needed:'10/30/2026',Description:'Prepare the grading and paving budget.',Parent_Contract:'',Owner:[{ID:ACCESS}]};
  Object.assign(h.reports.All_Contracts1[0],values);Object.assign(h.c.findContract(ID),values);

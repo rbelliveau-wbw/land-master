@@ -1241,3 +1241,9 @@ deletes with a freshly verified retained target no longer lock the widget or hid
 native permission errors behind reply metadata. The approved native Contract
 Approvals Delete grants for Dev/Land Acq, Contract Mgmt and CFO require Creator
 publication. No new field/function/Custom API. See [regressions and rollback](../../docs/contracts-create-and-permission-recovery-2026-10-10.md).
+
+## Creation readiness and access messages — 1.62.39
+
+`newContract` checks the current module’s create grant independently of `contractReady`. An unresolved native mutation now reports that the previous save needs review; an incomplete snapshot asks for a refresh. These states no longer produce a false permission denial. A missing Construction grant still denies submission using Construction wording. Existing draft retention, captured-scope/native-write gates and unknown-result duplicate-send protection remain unchanged. No form, field, Creator function or Custom API changes or Creator deployment are required.
+
+Regression checks exercise the actual Construction submit path with submit-only and editor grants, a saved record followed by a missing-ID acknowledgement, closing the result, and a second New action. They assert preserved grants/drafts and no additional write; missing-grant and snapshot-not-ready branches are separate. This corrects the misleading banner; it does not establish why the reported Production acknowledgement was unrecognized or prove that the original request saved. Roll back the Contract Management mapping to 1.62.38.
