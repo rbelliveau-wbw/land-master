@@ -6,6 +6,14 @@ Use this pattern when a committing action writes to several records. The referen
 
 ## Save policy — October 8, 2026
 
+Legal/Construction override requested October 26: Contract Management 1.62.40
+removes acknowledgement-shape and automatic post-save validation gates for
+ordinary saves and files. Progress says **Saved**, based on the native write;
+optional display refresh cannot change that outcome. Actual native errors,
+pending/lost-reply duplicate guards and operation-specific approval/lot-transfer
+business protections remain. This exception supersedes the ordinary Contract
+save confirmation wording below.
+
 For acknowledged successful saves, confirm destination identity/counts and
 refresh records without comparing editable/calculated fields to the payload.
 Keep actual API errors, partial/unknown results and duplicate-send protection.

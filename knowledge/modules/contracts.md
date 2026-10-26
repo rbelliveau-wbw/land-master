@@ -1247,3 +1247,36 @@ publication. No new field/function/Custom API. See [regressions and rollback](..
 `newContract` checks the current module’s create grant independently of `contractReady`. An unresolved native mutation now reports that the previous save needs review; an incomplete snapshot asks for a refresh. These states no longer produce a false permission denial. A missing Construction grant still denies submission using Construction wording. Existing draft retention, captured-scope/native-write gates and unknown-result duplicate-send protection remain unchanged. No form, field, Creator function or Custom API changes or Creator deployment are required.
 
 Regression checks exercise the actual Construction submit path with submit-only and editor grants, a saved record followed by a missing-ID acknowledgement, closing the result, and a second New action. They assert preserved grants/drafts and no additional write; missing-grant and snapshot-not-ready branches are separate. This corrects the misleading banner; it does not establish why the reported Production acknowledgement was unrecognized or prove that the original request saved. Roll back the Contract Management mapping to 1.62.38.
+
+## Native saves and Development View as — 1.62.40
+
+Per October 26 user direction, Legal/Construction ordinary native writes no
+longer require the widget's acknowledgement envelope or automatic persisted
+readback validation. Creator's actual error responses still fail. Update/delete
+use their captured string ID; new child setup/upload needs a real returned
+string ID. A Construction header submission can finish without an echoed ID,
+clear its submitted draft and refresh the list without a second create.
+Optional display refresh returns captured native-save data after at most two
+seconds. Missing fields, delayed counts or report access cannot fail a completed
+save. Native transport loss/pending timeouts keep their no-replay protections
+and explicit read-only recovery; permissions, prewrite parent/status/module
+checks, native workflows and approval/lot-transfer business guards remain.
+Progress now reports saved items instead of claiming automatic verification.
+
+The existing Purchase Order function documents that Custom APIs execute as
+owner during Development View as. Construction comment and attachment creation
+use the existing native form writer only after the exact known owner denial
+before any insert. Comment fallback additionally requires the API's explicit
+`writeState: not-started`. The native form retains preview-user permission and
+workflow checks. Comment fallback visibly reports owner-email unavailability;
+Production/Stage and any possible prior comment insert never fall back.
+
+Affected existing forms: Contract, Contract_Action, Contract_Approval,
+Contract_Pricing, Comment_Log and Attachment through their existing adapters.
+No schema/function/Custom API changes or Creator deployment are required.
+Regressions cover native errors, alternate/missing success metadata, Construction
+no-ID submission, queued/hung/failed display reads, native transport loss,
+duplicate prevention, scope changes, native files, and environment-limited
+View-as comment/attachment fallbacks. Rollback: map Contract Management to
+1.62.39. Live Development impersonation results are recorded separately after
+the candidate is deployed; automated fixtures alone do not establish native QA.

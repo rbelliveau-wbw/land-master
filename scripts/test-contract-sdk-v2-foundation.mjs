@@ -69,8 +69,13 @@ async function ready(options){const h=harness(options);await drain();assert.equa
 {
   const h=await ready(),row=h.reports.All_Contract_Actions[0];await h.c.updateRecord(ACTION,{Dev_Notes:'captured note'},h.c.CFG.reports.actions);assert.equal(row.Dev_Notes,'captured note');assert.equal(h.calls.filter(call=>call.method==='update').length,1);assert.ok(h.calls.some(call=>call.method==='count'&&call.config.criteria==='(ID == '+ACTION+')'));
 }
-for(const response of [{code:3000},{code:3000,data:{ID:ACTION},result:[{code:3000,data:{ID:ACTION}}]},{code:3000,result:[{code:3000,data:{ID:ACTION},result:[{code:2899}]}]},{code:3000,data:{ID:ACTION,status:'failure'}},{code:3000,result:[{code:3000,data:{ID:ACTION}},{code:2945}]}]){
+for(const response of [{code:3000,result:[{code:3000,data:{ID:ACTION},result:[{code:2899}]}]},{code:3000,result:[{code:3000,data:{ID:ACTION}},{code:2945}]}]){
   const h=await ready();let writes=0;h.api.updateRecordById=async()=>{writes++;return response;};await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'unverified'},h.c.CFG.reports.actions));await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'retry'},h.c.CFG.reports.actions));assert.equal(writes,1);assert.equal(h.c.canEdit(),false,'uncertain writes remain guarded without a global navigation lock');
+}
+for(const response of [{code:3000},{code:3000,data:{ID:ACTION},result:[{code:3000,data:{ID:ACTION}}]},{code:3000,data:{ID:ACTION,status:'failure'}}]){
+  const h=await ready();let writes=0;h.api.updateRecordById=async()=>{writes++;return response;};
+  const saved=await h.c.updateRecord(ACTION,{Dev_Notes:'native save'},h.c.CFG.reports.actions);
+  assert.equal(saved.data.ID,ACTION);assert.equal(writes,1);assert.equal(h.c.canEdit(),true,'acknowledgement shape does not revoke an available editor');
 }
 for(const acknowledgement of [id=>({code:3000,data:{ID:id},details:{message:'Updated successfully',limits:{remaining:10}}}),id=>({code:3000,result:[{code:3000,data:{ID:id},details:{message:'Updated successfully'}}],response:{message:'Request completed'}}),id=>({code:3000,data:{ID:id,details:{message:'Saved'}},output:{message:'Request completed'}})]){
   const h=await ready(),el=h.node('metadata-inline');el.value='native informational metadata';el.isConnected=true;el.setAttribute('data-aid',ACTION);el.setAttribute('data-af','Dev_Notes');
@@ -78,12 +83,14 @@ for(const acknowledgement of [id=>({code:3000,data:{ID:id},details:{message:'Upd
   assert.equal(await h.c.afSave(el),true);assert.equal(el.classList.contains('saved-ok'),true);assert.equal(h.c.contractHasReviews(),false);assert.equal(h.c.findAction(ACTION).ID,ACTION,'decimal string above Number precision is retained');
   const nativeAdd=h.api.addRecords;h.api.addRecords=async config=>{const result=await nativeAdd(config);return acknowledgement(result.result[0].data.ID);};const created=await h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Metadata child',Status:'New'});assert.equal(typeof created.data.ID,'string');assert.equal(h.reports.All_Contract_Actions.filter(row=>row.ID===created.data.ID).length,1);
 }
-for(const metadata of [{code:2899,message:'Denied'},JSON.stringify({output:{code:2899}}),{data:{ID:ID}},{data:{ID:Number(ID)}}]){
+for(const metadata of [{code:2899,message:'Denied'},JSON.stringify({output:{code:2899}})]){
   const h=await ready(),response={code:3000,data:{ID:ACTION},details:metadata};let writes=0;h.api.updateRecordById=async()=>{writes++;return response;};await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'unknown metadata'},h.c.CFG.reports.actions));await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'second click'},h.c.CFG.reports.actions));assert.equal(writes,1);assert.equal(h.c.canEdit(),false);
   const retained=Object.values(h.c.S.sdkMutationReviews)[0];assert.equal(retained.response,response);assert.equal(retained.id,ACTION,'an update rechecks only its originally captured target');
 }
 for(const conflicting of [ID,Number(ID)]){
- const h=await ready();let writes=0;h.api.addRecords=async()=>{writes++;return {code:3000,data:{ID:NEW},details:{data:{ID:conflicting}}};};await assert.rejects(h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Unknown child'}));await assert.rejects(h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Unknown child'}));assert.equal(writes,1);assert.equal(Object.values(h.c.S.sdkMutationReviews)[0].id,'','conflicting or malformed create acknowledgement IDs cannot choose a recovery record');
+ const h=await ready();let writes=0;h.api.addRecords=async()=>{writes++;return {code:3000,data:{ID:NEW},details:{data:{ID:conflicting}}};};
+ const result=await h.c.createRecord(h.c.CFG.forms.action,{Contract1:ID,Contract_Action:'Native child'});
+ assert.equal(result.data.ID,NEW,'direct native data supplies the child link; incidental metadata does not validate or replace it');assert.equal(writes,1);assert.equal(h.c.contractHasReviews(),false);
 }
 // Exact native monetary readback accepts Creator's equivalent credit formatting;
 // canonicalization never aliases distinct decimals through JavaScript Number.

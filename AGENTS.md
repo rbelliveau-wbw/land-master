@@ -89,6 +89,16 @@ Creator connection, and unrelated permission/profile or repository changes.
 
 ## Automatic save comparisons — user direction October 8, 2026
 
+October 26 override for Legal/Construction (Contract Management): the user
+removed widget acknowledgement-shape and automatic post-save validation gates.
+Trust resolved native writes unless Creator reports an actual error. Display
+refreshes are optional and bounded; they cannot invalidate the save. A returned
+string ID is still needed to address a subsequent child/upload operation.
+Preserve native permissions/workflows, prewrite business checks, actor scope,
+actual errors and duplicate-send protection for lost/pending transport replies.
+Read-only recovery of an actually lost reply remains available. Do not restore
+the superseded acknowledgement checks through the older rules below.
+
 Do not reintroduce automatic editable/calculated-field equality checks after a
 successful native save acknowledgement. Keep exact destination IDs, record/child
 counts, actual API failures, prewrite validation, operation-specific protections

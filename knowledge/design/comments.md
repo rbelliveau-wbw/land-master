@@ -84,6 +84,14 @@ safe supported link schemes. Do not replace user text with a success label.
 
 ## Permissions and write feedback
 
+Contract Management 1.62.40 handles Creator Development View as explicitly.
+After the owner-executed comment API returns the exact Construction denial with
+`writeState: not-started`, the Construction host may use the existing native
+form writer under the effective preview user. Native form permissions and
+workflows still apply. The UI reports **Owner email unavailable** for that
+Development-only fallback. A possible prior insert or any Production/Stage
+denial cannot trigger this fallback. No new actor parameter or permission grant.
+
 Budget's read-only permission hides its Budget/Project composer and comment
 mutation actions while retaining the conversation and authenticated identity.
 Recheck the same permission in posting and update callbacks so stale controls

@@ -2,6 +2,20 @@ import assert from 'node:assert/strict';
 import {ready,ID,NEW} from './test-contract-sdk-v2-foundation.mjs';
 
 const PATH='1690000000000_fixture.pdf',OTHER=(BigInt(NEW)+200n).toString();
+
+for(const environment of ['development','stage','production']){
+ const h=await ready({pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:environment==='production'?'':'/environment/'+environment,loginUser:'preview-actor@example.test'})});
+ h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
+ const native=h.api.invokeCustomApi;let calls=0;
+ h.api.invokeCustomApi=config=>config.api_name.replace(/_(DEV|STAGE)$/,'')===h.c.CFG.customApis.createAttachment?(calls++,Promise.resolve({code:3000,details:{output:JSON.stringify({ok:false,message:'Construction request access is required to add attachments.'})}})):native(config);
+ if(environment==='development'){
+  assert.equal(await h.c.createContractAttachmentRecord(ID),NEW);assert.equal(h.calls.filter(call=>call.method==='add').length,1);assert.equal(h.c.contractHasReviews(),false);
+  const row=h.reports.All_Attachments[0];assert.equal(row.Contract1,ID);assert.equal(row.Email_Attachment,'true');
+ }else{
+  await assert.rejects(h.c.createContractAttachmentRecord(ID),/Construction request access is required/);assert.equal(h.calls.filter(call=>call.method==='add').length,0,'Production/Stage never use the Development View-as writer');
+ }
+ assert.equal(calls,1);
+}
 function install(h,{email=true,uploadEnvelope,afterUpload}={}){
  const native=h.api.invokeCustomApi,calls={create:0,upload:0};
  h.api.invokeCustomApi=async config=>{
@@ -59,13 +73,11 @@ for(const envelope of [
  assert.equal(h.c.contractHasReviews(),true);assert.equal(h.reports.All_Attachments.length,1,'unknown files retain their child');
 }
 
-for(const change of [row=>{row.Contract1={ID:OTHER};}]){
- const h=await ready(),calls=install(h,{uploadEnvelope:{code:3000,filename:'fixture.pdf',filepath:PATH},afterUpload:change}),id=await h.c.createContractAttachmentRecord(ID);
- await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}),/verification/);
- const key=h.c.contractAttachmentKey('upload',ID,id);
- assert.equal(await h.c.recheckContractAttachment(key,'upload'),false,'root acknowledgement still requires exact persisted parent and path');
- Object.assign(h.reports.All_Attachments[0],{Contract1:{ID},File_field1:{filepath:PATH}});
- assert.equal(await h.c.recheckContractAttachment(key,'upload'),true);assert.equal(calls.upload,1,'recheck is read-only');
+{
+ const h=await ready(),calls=install(h,{afterUpload:row=>{row.Contract1={ID:OTHER};}}),id=await h.c.createContractAttachmentRecord(ID);
+ await h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20});
+ assert.equal(h.c.contractHasReviews(),false,'post-save report metadata cannot invalidate a completed native upload');
+ assert.equal(calls.upload,1);
 }
 
 for(const env of ['', 'development', 'stage']){
@@ -106,8 +118,9 @@ for(const email of [undefined,false,'false']){
 {
  const h=await ready(),calls=install(h),native=h.api.getRecords;
  h.api.getRecords=config=>config.report_name===h.c.CFG.reports.versions?Promise.reject({code:2898,message:'Permission denied ?tokenId=private-token&next=1'}):native(config);
- await assert.rejects(h.c.createContractAttachmentRecord(ID),error=>error.code==='2898'&&error.attachmentPhase==='verification'&&/Permission denied/.test(error.message)&&!error.message.includes('private-token'));
- assert.equal(calls.create,1);assert.equal(calls.upload,0);assert.equal(h.c.contractHasReviews(),true);
+ assert.equal(await h.c.createContractAttachmentRecord(ID),NEW,'native child creation is not gated by report read permission');
+ await h.c.sdkUploadVersionFile(NEW,{name:'fixture.pdf',size:20});
+ assert.equal(calls.create,1);assert.equal(calls.upload,1);assert.equal(h.c.contractHasReviews(),false);
 }
 
 {
@@ -124,4 +137,4 @@ for(const email of [undefined,false,'false']){
  assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'a native create failure never falls back to CRUD or cleanup');
 }
 
-console.log('PASS Contract attachment verification: documented root/data upload replies, strict ambiguous/failure rejection, exact parent/path readback, Email-off creation/upload, automatic saved-record recovery, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup.');
+console.log('PASS Contract attachment verification: documented root/data upload replies, actual native failure rejection, optional display refresh, Email-off creation/upload, automatic saved-record recovery, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup.');

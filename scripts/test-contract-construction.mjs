@@ -6,11 +6,20 @@ const submit={ctEdit:false,ctPropose:false,ctApprove:false,ctTemplates:false,ctD
 const editor={...submit,constructionSubmit:false,constructionEditAll:true};
 const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.method));
 
-// A lost create acknowledgement must not masquerade as revoked create access.
+// A resolved native create does not require the widget's acknowledgement schema.
+for(const receipt of [{code:3000},{data:{ID:NEW},result:[{data:{ID:NEW}}]}]){
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);
+ const native=h.api.addRecords;h.api.addRecords=async config=>{await native(config);return receipt;};
+ const result=await h.c.constructionSubmitForm();assert.equal(result.error,null);assert.equal(h.c.contractHasReviews(),false);
+ assert.equal(writes(h).length,1);assert.ok(h.reports.All_Contracts1.some(row=>row.ID===NEW));
+ assert.equal(h.c.ContractSetupUI.close(),true);assert.equal(h.c.S.nc,null,'completed submission clears its duplicate draft even without a returned ID');
+}
+
+// An actual transport failure must not masquerade as revoked create access.
 for(const accessFlags of [submit,editor]){
  const h=await ready({accessFlags,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);
  const native=h.api.addRecords;
- h.api.addRecords=async config=>{await native(config);return {code:3000};};
+ h.api.addRecords=async config=>{await native(config);throw new Error('Network connection lost');};
  const result=await h.c.constructionSubmitForm();
  assert.ok(result.error);assert.equal(h.c.workCreateAccess('construction'),true,'independent Construction grant remains present');
  assert.equal(h.c.contractReady(),false,'unknown create retains the duplicate-send guard');

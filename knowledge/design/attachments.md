@@ -63,6 +63,12 @@ saved-author text without replacing an open dialog, list or editor draft. See th
 
 ## File actions and accessibility
 
+Contract Management 1.62.40 follows the October 26 Legal/Construction override:
+resolved native uploads complete unless Creator reports an actual failure.
+Optional post-save report metadata is a bounded display refresh, never a save
+gate. Captured child/parent/actor, native permission and prewrite guards remain;
+lost transport replies retain read-only recovery without a second upload.
+
 Open Preview inside the widget first. Preserve the original file bytes,
 filename and supported preview behavior; retain an explicit download/open
 action when the format cannot be previewed. Preview and download retain their

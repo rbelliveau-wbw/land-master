@@ -30,9 +30,10 @@ for(const envelope of [{code:3000,data:{filename:'fixture.pdf',filepath:'native_
 }
 {
  const h=await ready(),f=files(h),id=await h.c.createContractAttachmentRecord(ID);let writes=0;h.c.ZOHO.CREATOR.FILE.uploadFile=async()=>{writes++;h.reports.All_Attachments[0].File_field1={filepath:'native_fixture.pdf'};return {code:3000,data:{filename:'fixture.pdf',filepath:'native_fixture.pdf'}};};
- // A lost verification response retains the acknowledged path for a read-only exact-parent/path recheck.
- const native=h.api.getRecords;h.api.getRecords=config=>config.report_name===h.c.CFG.reports.versions?Promise.reject({code:2898}):native(config);await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20}));assert.equal(writes,1);h.api.getRecords=native;
- const key=h.c.contractAttachmentKey('upload',ID,id);assert.equal(await h.c.recheckContractAttachment(key,'upload'),true);assert.equal(writes,1);assert.equal(h.c.contractHasReviews(),false);
+ // A failed display refresh cannot invalidate the completed native FILE request.
+ const native=h.api.getRecords;h.api.getRecords=config=>config.report_name===h.c.CFG.reports.versions?Promise.reject({code:2898}):native(config);
+ await h.c.sdkUploadVersionFile(id,{name:'fixture.pdf',size:20});assert.equal(writes,1);assert.equal(h.c.contractHasReviews(),false);
+
 }
 {
  const h=await ready(),f=files(h),gate=deferred();let creates=0;h.api.invokeCustomApi=config=>config.api_name===h.c.CFG.customApis.createAttachment?(creates++,gate.promise):f.nativeCreate(config);
@@ -83,18 +84,11 @@ console.log('PASS actual attachment batch controller: captured files/parent, exp
  const overlays=h.node('overlays'),modal=overlays.querySelector('.modal'),status=h.c.document.getElementById('attStatus'),mounts=overlays.htmlWrites;
  h.c.ZOHO.CREATOR.FILE.uploadFile=async config=>{uploaded=true;return nativeUpload(config);};
  h.api.getRecords=config=>config.report_name===h.c.CFG.reports.versions&&uploaded&&denyVerification?Promise.reject({code:2898,message:'Attachment report temporarily unavailable'}):nativeRead(config);
- const result=await h.c.addVersionFiles(ID,[{name:'readback-review.pdf',size:25}]);assert.ok(result.error);
- assert.equal(h.c.contractHasReviews(),true);assert.equal(overlays.querySelector('.modal'),modal);assert.equal(overlays.htmlWrites,mounts);assert.equal(h.c.document.getElementById('attStatus'),status);
- noExtraAttachmentProgress(h);assert.equal(status.querySelector('.spinner'),null);assert.match(status.textContent,/review|check|verify/i,'an unverified file stays visibly unresolved in the prior attachment modal');
- const recheck=status.querySelector('button');assert.ok(recheck,'the prior attachment modal exposes read-only reconciliation');assert.match(recheck.textContent,/Check status/i);assert.equal(recheck.disabled,false);
- assert.equal(await h.c.addVersionFiles(ID,[{name:'never-repeat.pdf',size:25}]),false);
- denyVerification=false;
- const gate=deferred();h.api.getRecords=config=>config.report_name===h.c.CFG.reports.versions?gate.promise.then(()=>nativeRead(config)):nativeRead(config);
- // Execute the exact inline handler rendered by the real UI, as a browser click would.
- const click=()=>vm.runInContext(recheck.getAttribute('onclick').replace(/^\s*return\s+/,''),h.c);
- const checking=click();await drain();assert.ok(status.querySelector('.spinner'));assert.equal(h.c.closeOverlays(),false,'attachment read-only reconciliation cannot close while verification is pending');assert.equal(await click(),false,'repeated Check status cannot start a second verification');
- gate.resolve();assert.equal(await checking,true);await drain();assert.equal(h.c.contractHasReviews(),false);assert.equal(overlays.querySelector('.modal'),modal);assert.equal(overlays.htmlWrites,mounts);assert.equal(status.querySelector('.spinner'),null);assert.match(modal.textContent,/readback-review\.pdf/);
- assert.equal(f.calls.filter(call=>call.method==='createAttachment').length,1);assert.equal(f.calls.filter(call=>call.method==='uploadFile').length,1);assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,0,'inline recovery never replays or cleans up an uncertain file');noExtraAttachmentProgress(h);
+ const result=await h.c.addVersionFiles(ID,[{name:'readback-review.pdf',size:25}]);assert.equal(result.error,null);
+ assert.equal(h.c.contractHasReviews(),false);assert.equal(overlays.querySelector('.modal'),modal);assert.equal(overlays.htmlWrites,mounts);assert.equal(h.c.document.getElementById('attStatus'),status);
+ noExtraAttachmentProgress(h);assert.equal(status.querySelector('.spinner'),null);assert.match(modal.textContent,/readback-review\.pdf/);
+ assert.equal(f.calls.filter(call=>call.method==='createAttachment').length,1);assert.equal(f.calls.filter(call=>call.method==='uploadFile').length,1);assert.equal(f.calls.filter(call=>call.method==='deleteAttachment').length,0);
+
 }
 
 {

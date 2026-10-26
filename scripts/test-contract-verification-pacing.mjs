@@ -5,37 +5,20 @@ const updates=h=>h.calls.filter(call=>call.method==='update');
 const attempt=h=>Object.values(h.c.S.sdkMutationReviews||{})[0];
 
 {
-  const h=await ready({ratePacing:true,fakeTime:true});
-  while(h.c.LMPerf.snapshot().rate.dispatched<35)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
-  const pending=h.c.updateRecord(ACTION,{Dev_Notes:'paced verification'},h.c.CFG.reports.actions);
-  await drain();
-  assert.equal(updates(h).length,1);assert.equal(attempt(h).status,'pending');assert.equal(attempt(h).verificationPending,true);
-  assert.equal(h.c.LMPerf.snapshot().active,0);assert.equal(h.c.LMPerf.snapshot().rate.waitMs,61000);
-  await h.advance(30000);
-  assert.equal(attempt(h).expired,undefined,'known budget idle cannot turn a successful native write into an unknown result');
-  assert.equal(attempt(h).status,'pending');assert.equal(attempt(h).verificationPending,true);
-  await h.advance(31000);await pending;
-  assert.equal(h.reports.All_Contract_Actions[0].Dev_Notes,'paced verification');assert.equal(h.c.contractHasReviews(),false);
-  assert.equal(updates(h).length,1,'the waiting readback never replays the native mutation');
-  const requests=h.c.LMPerf.snapshot().requests;
-  assert.equal(requests.length,42);assert.equal(requests.filter(row=>row.startedAtMs<61000).length,40);
-  assert.equal(requests.filter(row=>row.startedAtMs>=61000).length,2,'count and full-field records dispatch when the budget opens');
+ const h=await ready({ratePacing:true,fakeTime:true});
+ while(h.c.LMPerf.snapshot().rate.dispatched<35)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
+ const pending=h.c.updateRecord(ACTION,{Dev_Notes:'paced display refresh'},h.c.CFG.reports.actions);await drain();
+ assert.equal(updates(h).length,1);await h.advance(2000);const result=await pending;
+ assert.equal(result.verifiedRow.Dev_Notes,'paced display refresh');assert.equal(h.c.contractHasReviews(),false,'queued display reads cannot gate native save success');
+ await h.advance(59000);assert.equal(updates(h).length,1,'a later display read cannot replay the write');
 }
-
 {
-  const h=await ready({ratePacing:true,fakeTime:true}),held=deferred(),native=h.api.getRecords;
-  while(h.c.LMPerf.snapshot().rate.dispatched<33)await h.c.LMData.request('budget-fixture',()=>({code:3000}));
-  let childReads=0;
-  h.api.getRecords=config=>config.report_name===h.c.CFG.reports.actions&&config.criteria==='(ID == '+ACTION+')'&&++childReads>1?held.promise.then(()=>native(config)):native(config);
-  const pending=h.c.updateRecord(ACTION,{Dev_Notes:'hung readback'},h.c.CFG.reports.actions),rejected=assert.rejects(pending,error=>error.noReplay===true);
-  await drain();assert.equal(h.c.LMPerf.snapshot().active,1);assert.equal(attempt(h).verificationPending,true);
-  const queued=h.c.LMData.request('unrelated-budget-queue',()=>({code:3000}));await drain();
-  assert.equal(h.c.LMPerf.snapshot().rate.waitMs,61000,'an unrelated queued read cannot extend an active hung verification');
-  await h.advance(30000);await rejected;
-  assert.equal(attempt(h).expired,true);assert.equal(attempt(h).status,'unknown','an actually dispatched hung read still expires');
-  await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'second click'},h.c.CFG.reports.actions));assert.equal(updates(h).length,1);
-  held.resolve();await drain();assert.equal(attempt(h).status,'unknown','late read settlement cannot silently change the timed-out outcome');
-  await h.advance(31000);await queued;assert.equal(attempt(h).status,'unknown');
+ const h=await ready({fakeTime:true}),held=deferred(),native=h.api.getRecords;let reads=0;
+ h.api.getRecords=config=>config.report_name===h.c.CFG.reports.actions&&config.criteria==='(ID == '+ACTION+')'&&++reads>1?held.promise.then(()=>native(config)):native(config);
+ const pending=h.c.updateRecord(ACTION,{Dev_Notes:'hung display refresh'},h.c.CFG.reports.actions);await drain();
+ assert.equal(updates(h).length,1);await h.advance(2000);const result=await pending;
+ assert.equal(result.verifiedRow.Dev_Notes,'hung display refresh');assert.equal(h.c.contractHasReviews(),false,'a hung optional refresh cannot fail or lock the completed write');
+ held.resolve();await drain();assert.equal(updates(h).length,1);assert.equal(h.c.contractHasReviews(),false);
 }
 
 {
@@ -62,4 +45,4 @@ const attempt=h=>Object.values(h.c.S.sdkMutationReviews||{})[0];
   await assert.rejects(h.c.updateRecord(ACTION,{Dev_Notes:'second click'},h.c.CFG.reports.actions));assert.equal(sends,1);
 }
 
-console.log('PASS verification pacing: production 40-per-61s budget; queued fresh readback survives 30s idle and completes at 61s; active hung read/native deadlines remain strict; late settlements and throttle never replay writes; read-only Complete Check alone retries.');
+console.log('PASS verification pacing: queued/hung display refresh cannot invalidate native success; native deadlines remain strict; late settlements and throttle never replay writes; read-only Complete Check alone retries.');

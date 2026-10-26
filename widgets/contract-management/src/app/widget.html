@@ -1967,16 +1967,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.39"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.39">
-<script src="interaction-motion.js?v=1.62.39"></script>
-<script src="interaction-surfaces.js?v=1.62.39"></script>
-<script src="number-edit-commit.js?v=1.62.39"></script>
-<script src="number-transitions.js?v=1.62.39"></script>
-<script src="number-surfaces.js?v=1.62.39"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.39">
-<link rel="stylesheet" href="report-layout.css?v=1.62.39">
-<link rel="stylesheet" href="construction-board.css?v=1.62.39">
+<script src="success-feedback.js?v=1.62.40"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.40">
+<script src="interaction-motion.js?v=1.62.40"></script>
+<script src="interaction-surfaces.js?v=1.62.40"></script>
+<script src="number-edit-commit.js?v=1.62.40"></script>
+<script src="number-transitions.js?v=1.62.40"></script>
+<script src="number-surfaces.js?v=1.62.40"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.40">
+<link rel="stylesheet" href="report-layout.css?v=1.62.40">
+<link rel="stylesheet" href="construction-board.css?v=1.62.40">
 </head>
 <body>
 
@@ -2025,7 +2025,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.39", pageSize: 200, maxPages: 25,
+  version: "1.62.40", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2730,7 +2730,7 @@ function contractWorkflowStep(run,key,kind,target,id,data,reviewDecision){
   entry.mutationKey=kind+':'+target+':'+(entry.id||String(parent));
   return (kind==='add'?createRecord(target,entry.payload):kind==='delete'?sdkDeleteById(target,entry.id,reviewDecision):updateRecord(entry.id,entry.payload,target,reviewDecision)).then(function(response){
     contractWorkflowCheck(run);entry.id=contractConfirmedId(response,entry.id||undefined);entry.row=response.verifiedRow;entry.state='verified';entry.phase='verified';
-    if(kind!=='delete'&&entry.row){var collection=report===CFG.reports.contracts?S.contracts:report===CFG.reports.actions?S.actions:report===CFG.reports.approvals?S.approvals:report===CFG.reports.pricing?S.pricing:null;if(collection){var existing=collection.findIndex(function(row){return row.ID===entry.id;});if(existing<0)collection.push(entry.row);else Object.assign(collection[existing],entry.row);}}
+    if(kind!=='delete'&&entry.row&&entry.id){var collection=report===CFG.reports.contracts?S.contracts:report===CFG.reports.actions?S.actions:report===CFG.reports.approvals?S.approvals:report===CFG.reports.pricing?S.pricing:null;if(collection){var existing=collection.findIndex(function(row){return row.ID===entry.id;});if(existing<0)collection.push(entry.row);else Object.assign(collection[existing],entry.row);}}
     if(kind==='delete'&&report===CFG.reports.pricing)S.pricing=S.pricing.filter(function(row){return row.ID!==entry.id;});
     contractWorkflowPaint(run);return response;
   }).catch(function(error){entry.error=error;entry.state=contractDefiniteRejection(error)?'rejected':error&&error.noReplay||contractHasReviews()?'unknown':'not-sent';entry.phase=entry.state;run.error=error;contractWorkflowPaint(run);throw error;});
@@ -2788,7 +2788,11 @@ function contractWorkflowNativePending(){return [contractMutationStore(),S.attac
 function contractWorkflowClose(id){
   var run=S.contractWorkflow;if(!run||run.id!==id||!run.finished||contractWorkflowNativePending())return false;
   S.contractWorkflow=null;contractReleaseBusy();contractControls();
-  if(run.kind==='create'){var history=S.contractWorkflowHistory||(S.contractWorkflowHistory=[]);if(history.indexOf(run)<0){history.unshift(run);history.splice(10);}if(!run.cid&&!contractHasReviews()){ncOpen();return true;}}
+  if(run.kind==='create'){var history=S.contractWorkflowHistory||(S.contractWorkflowHistory=[]);if(history.indexOf(run)<0){history.unshift(run);history.splice(10);}if(!run.cid&&!contractHasReviews()){
+    if(run.error){ncOpen();return true;}
+    if(run.draft===S.nc)S.nc=null;closeOverlays();renderAll();banner('ok','Construction request submitted for review.');
+    var scope=run.scope,generation=run.generation;sdkGetAll(CFG.reports.contracts,'',{fresh:true}).then(function(rows){if(scope!==contractMutationScope()||generation!==S.contractDataGeneration)return;S.contracts=rows;if(S.view==='home'&&!S.busy&&!S.nc)renderAll();},function(){});return true;
+  }}
   if(run.routine&&run.button)run.button.textContent=run.buttonText;
   if(run.routine&&(!contractWorkflowCurrent(run)||run.error&&run.kind==='pricing'))return true;
   if(run.kind==='parent'){if(run.error)return true;closeOverlays();renderAll();if(S.selId===run.cid)refreshDetailPanel();return true;}
@@ -2891,15 +2895,20 @@ function contractProtocolMetadata(value){
 }
 function contractCompetingProtocol(value,root){if(!value||typeof value!=='object')return false;root=root||value;if(Array.isArray(value))return value.some(function(item){return contractCompetingProtocol(item,root);});if(['details','response','output'].some(function(key){return contractOwn(value,key)&&contractProtocolMetadata(value[key]);})||value!==root&&contractOwn(value,'result'))return true;return contractCompetingProtocol(value.result,root)||contractCompetingProtocol(value.data,root);}
 function contractConfirmedId(response,expected){
-  if(!response||typeof response!=='object'||Array.isArray(response)||String(response.code)!=='3000'||responseBad(response)||contractCompetingProtocol(response))throw contractMutationError(response);
-  var hasResult=contractOwn(response,'result');
-  if(hasResult&&(contractOwn(response,'data')||!Array.isArray(response.result)||response.result.length!==1))throw contractMutationError(response);
-  var item=hasResult?response.result[0]:response;
-  if(!item||typeof item!=='object'||Array.isArray(item)||contractOwn(item,'result')||String(item.code)!=='3000'||contractFailureFlag(item)||!item.data||typeof item.data!=='object'||Array.isArray(item.data)||contractFailureFlag(item.data)||['data','result'].some(function(key){return contractOwn(item.data,key);}))throw contractMutationError(response);
-  var id=contractId(item.data.ID);if(!id||(expected&&expected!==id))throw contractMutationError(response);
-  return id;
+  // Record identity is needed for navigation/child links, not as a second save
+  // acknowledgement. Existing-record writes already have their captured ID.
+  if(expected)return expected;
+  var queue=[response],seen=[];
+  for(var i=0;i<queue.length&&i<64;i++){
+    var item=queue[i];if(typeof item==='string'){try{item=JSON.parse(item);}catch(ignore){continue;}}
+    if(!item||typeof item!=='object'||seen.indexOf(item)>=0)continue;seen.push(item);
+    if(Array.isArray(item)){queue.push.apply(queue,item.slice(0,16));continue;}
+    var id=contractId(item.ID)||contractId(item.id);if(id)return id;
+    ['data','result','details','output','response'].forEach(function(key){if(contractOwn(item,key)&&queue.length<64)queue.push(item[key]);});
+  }
+  return '';
 }
-function isSuccess(response,expected){try{contractConfirmedId(response,expected);return true;}catch(error){return false;}}
+function isSuccess(response){return !!response&&!responseBad(response);}
 function isCreateSuccess(response){return isSuccess(response);}
 function contractNativeLabels(value){if(Array.isArray(value))return value.map(contractNativeLabels);if(!value||typeof value!=='object')return value;var copy={};Object.keys(value).forEach(function(key){copy[key]=contractNativeLabels(value[key]);});if(typeof copy.zc_display_value==='string'&&(!contractOwn(copy,'display_value')||typeof copy.display_value!=='string'||!copy.display_value.trim()))copy.display_value=copy.zc_display_value;return copy;}
 function sdkGetAll(reportName,criteria,options){
@@ -2926,7 +2935,7 @@ function sdkInvoke(original,attempt){
   var apiName=String(config.api_name||'').replace(/_(DEV|STAGE)$/i,''),payload=config.payload||{},writesContract=apiName===CFG.customApis.completeLotContract&&!readOnly||apiName===CFG.customApis.sendContractApprovals&&payload.mode!=='Check';
   var prepare=writesContract?contractParentWritePreflight(payload.contractId,false,scope):Promise.resolve();
   return prepare.then(function(){return LMData.request('custom:'+config.api_name,function(){var current=LMRuntime.current();if(scope!==JSON.stringify([current.environment,current.user,current.appLinkName]))throw new Error('The Creator session changed.');if(attempt){attempt.dispatched=true;if(attempt.startNativeDeadline)attempt.startNativeDeadline();}return ZOHO.CREATOR.DATA.invokeCustomApi(config);},{readOnly:!!readOnly});}).then(function(response){
-    if(scope!==contractMutationScope())throw contractMutationError(response,'The Creator session changed while the Custom API was pending.');if(!response||typeof response!=='object'||Array.isArray(response)||String(response.code)!=='3000'||responseBad(response))throw contractMutationError(response,'Creator rejected the Custom API request.');return response;
+    if(scope!==contractMutationScope())throw contractMutationError(response,'The Creator session changed while the Custom API was pending.');if(response&&responseBad(response))throw contractMutationError(response,'Creator rejected the Custom API request.');return response;
   });
 }
 function contractDeepFreeze(value){if(value&&typeof value==='object'){Object.keys(value).forEach(function(key){contractDeepFreeze(value[key]);});Object.freeze(value);}return value;}
@@ -3019,6 +3028,19 @@ function contractReadback(attempt){
     return rows[0];
   });
 }
+function contractRefreshAfterSave(attempt){
+  var report=attempt.reportName,collections={};collections[CFG.reports.contracts]=S.contracts;collections[CFG.reports.actions]=S.actions;collections[CFG.reports.approvals]=S.approvals;collections[CFG.reports.pricing]=S.pricing;collections[CFG.reports.versions]=S.versions;
+  var existing=(collections[report]||[]).find(function(row){return row.ID===attempt.id;});
+  var fallback=Object.assign({},existing||{},attempt.payload,{ID:attempt.id});
+  // Refresh display data only. A report permission, omitted column or changed
+  // readback cannot turn a completed native save into an unknown write.
+  return contractDisplayRefresh(sdkGetAll(report,'(ID == '+attempt.id+')',{fresh:true}).then(function(rows){return rows.find(function(row){return row.ID===attempt.id;})||fallback;}),fallback);
+}
+function contractDisplayRefresh(read,fallback){
+  // Display refresh is optional after a completed native write. It must not
+  // hold the save open when a report is unavailable, queued or never settles.
+  return new Promise(function(resolve){var done=false,timer=setTimeout(function(){finish(fallback);},2000);function finish(row){if(done)return;done=true;clearTimeout(timer);resolve(row);}Promise.resolve(read).then(finish,function(){finish(fallback);});});
+}
 function contractDeletePreflight(attempt){
   return sdkGetAll(attempt.reportName,'(ID == '+attempt.id+')',{fresh:true}).then(function(rows){
     if(attempt.scope!==contractMutationScope())throw new Error('The Creator session changed before deletion.');
@@ -3089,7 +3111,13 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
     attempt.dispatched=true;
     if(attempt.startNativeDeadline)attempt.startNativeDeadline();
     var api=ZOHO.CREATOR.DATA;
-    if(kind==='add'&&target===CFG.forms.comment)return PFComments.create(payload,function(config){config.api_name=LMRuntime.apiName(config.api_name);return api.invokeCustomApi(config);},function(){return api.addRecords({form_name:target,payload:{data:payload}});});
+    if(kind==='add'&&target===CFG.forms.comment)return PFComments.create(payload,function(config){config.api_name=LMRuntime.apiName(config.api_name);return api.invokeCustomApi(config);},function(){return api.addRecords({form_name:target,payload:{data:payload}});}).catch(function(error){
+      // Creator Custom APIs execute as owner in Development View as. If that
+      // API explicitly rejected before inserting, use the existing native form
+      // writer, whose View-as actor and form permissions remain authoritative.
+      if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||!error.definite||error.message!=='Construction access is required.')throw error;
+      return api.addRecords({form_name:target,payload:{data:payload}}).then(function(response){return Object.assign({},response,{notificationState:'unavailable'});});
+    });
     if(kind==='add')return api.addRecords({form_name:target,payload:{data:payload}});
     if(kind==='delete')return api.deleteRecords({report_name:target,payload:{criteria:'(ID == '+id+')'}});
     return api.updateRecordById({report_name:target,id:id,payload:{data:payload}});
@@ -3098,19 +3126,17 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
     if(kind!=='delete'||!attempt.deleteTargetVerified||!attempt.dispatched||attempt.nativePending)throw error;
     attempt.response=error&&error.responseText||error&&error.response||error;return {error:error,response:attempt.response};
   }).then(function(outcome){
-    if(kind==='delete'){
-      /* Only fresh absence of the exact preflighted target confirms deletion.
-         Never replace its captured string ID with an acknowledgement ID. */
-      var conflict=contractDeleteResponseConflict(outcome.response,id);
-      return contractMutationDeadline(attempt,contractReadback(attempt),'verification').then(function(row){
-        if(conflict)auditLog('warn','Delete reply identity differed; captured record absence verified',{report:attempt.reportName});
-        return row;
-      },function(error){if(responseBad(outcome.response))throw contractMutationError(outcome.response);if(outcome.error)throw outcome.error;if(conflict)throw contractMutationError(outcome.response,'Creator returned a conflicting deletion record. Recheck before another write.');throw error;});
-    }
-    attempt.id=contractConfirmedId(outcome.response,id);return contractMutationDeadline(attempt,contractReadback(attempt),'verification');
-  }).then(function(row){delete store[key];return {code:3000,data:{ID:attempt.id},verifiedRow:row,notificationState:attempt.response&&attempt.response.notificationState};}).catch(function(error){
+    if(attempt.scope!==contractMutationScope())throw new Error('The Creator session changed during the write.');
+    if(outcome.error)throw outcome.error;
+    if(outcome.response&&responseBad(outcome.response))throw contractMutationError(outcome.response);
+    if(kind==='delete')return true;
+    attempt.id=contractConfirmedId(outcome.response,id);
+    if(!attempt.id&&kind==='add'&&target===CFG.forms.contract&&workModule(payload)==='construction')return Object.assign({},payload);
+    if(!attempt.id)throw contractMutationError(outcome.response,'The new record ID is required to link the remaining setup. Refresh the list before another create.');
+    return contractRefreshAfterSave(attempt);
+  }).then(function(row){if(attempt.scope!==contractMutationScope())throw new Error('The Creator session changed during the write.');delete store[key];return {code:3000,data:{ID:attempt.id},verifiedRow:row,notificationState:attempt.response&&attempt.response.notificationState};}).catch(function(error){
     if(!attempt.dispatched){delete store[key];throw error;}
-    if(contractDefiniteRejection(error,attempt)&&(kind!=='delete'||attempt.deleteStillPresent)){delete store[key];throw error;}
+    if(contractDefiniteRejection(error,attempt)||kind==='delete'&&attempt.deleteTargetVerified&&/^(1060|1130|2894|2896|2897|2898|2899|2932|2945)$/.test(String(LMData.failureCode(error&&error.response||error)))){delete store[key];throw error;}
     var failure=error&&error.noReplay?error:contractMutationError(error,error&&error.message);if(!attempt.response)attempt.response=error&&error.response||error;attempt.id=attempt.id||contractCandidateId(attempt.response);attempt.error=failure;attempt.status='unknown';throw failure;
   }).finally(contractControls);
 }
@@ -7786,9 +7812,9 @@ function sdkReadVersionFile(recordId){
   var scope=contractMutationScope(),attempt={scope:scope};return contractMutationDeadline(attempt,LMData.request('contracts:file-read',function(){if(scope!==contractMutationScope())throw new Error('Creator session changed.');attempt.dispatched=true;if(attempt.startNativeDeadline)attempt.startNativeDeadline();return ZOHO.CREATOR.FILE.readFile({report_name:CFG.reports.versions,id:recordId,field_name:CFG.fileField});}),'native').then(function(response){if(scope!==contractMutationScope()||responseBad(response)||contractFileResponseFailure(response))throw contractMutationError(response,'Creator did not return a valid file response.');return response;});
 }
 function contractUploadAcknowledgement(response){
-  if(!response||typeof response!=='object'||Array.isArray(response)||String(response.code)!=='3000'||responseBad(response)||LMData.responseFailed({response:response.data})||contractFileResponseFailure(response))throw new Error('Creator did not confirm the file upload.');
+  if(response&&(responseBad(response)||LMData.responseFailed({response:response.data})||contractFileResponseFailure(response)))throw contractMutationError(response,'Creator rejected the file upload.');
   // A native success confirms the captured FILE request. Metadata is optional.
-  var data=response.data&&typeof response.data==='object'&&!Array.isArray(response.data)?response.data:response;
+  var data=response&&response.data&&typeof response.data==='object'&&!Array.isArray(response.data)?response.data:response||{};
   return {filename:typeof data.filename==='string'?data.filename:'',filepath:typeof data.filepath==='string'?data.filepath:''};
 }
 function sdkUploadVersionFile(recordId,file){
@@ -7796,10 +7822,12 @@ function sdkUploadVersionFile(recordId,file){
   if(!S.liveSDK||!id||!cid||parent.scope!==contractMutationScope()||S.contractCoreScope!==contractMutationScope()||!file||typeof file.name!=='string')return Promise.reject(new Error('A captured native attachment parent and file are required.'));
   var key=contractAttachmentKey('upload',cid,id),reviews=S.fileReviews||(S.fileReviews={});if(reviews[key])return Promise.reject(reviews[key].error||new Error('File upload is still pending.'));
   var attempt={key:key,kind:'upload',phase:'native',id:id,cid:cid,name:file.name,file:file,path:'',scope:contractMutationScope(),status:'pending'};reviews[key]=attempt;contractControls();
-  function verified(row){delete reviews[key];contractControls();return {code:3000,data:{filename:attempt.name,filepath:attempt.path},row:row};}
+  function verified(row){if(attempt.scope!==contractMutationScope())throw new Error('Creator session changed during file upload.');delete reviews[key];contractControls();return {code:3000,data:{filename:attempt.name,filepath:attempt.path},row:row};}
   return contractMutationDeadline(attempt,contractParentWritePreflight(cid,false,null,null,'attachment').then(function(){return LMData.request('contracts:file-upload',function(){if(attempt.scope!==contractMutationScope())throw new Error('Creator session changed before upload.');attempt.dispatched=true;if(attempt.startNativeDeadline)attempt.startNativeDeadline();return ZOHO.CREATOR.FILE.uploadFile({report_name:CFG.reports.versions,id:id,field_name:CFG.fileField,file:file});});}),'native').then(function(response){
     attempt.response=response;if(attempt.scope!==contractMutationScope())throw new Error('Creator session changed during file upload.');var data=contractUploadAcknowledgement(response);
-    attempt.acknowledged=true;attempt.path=data.filepath;return contractMutationDeadline(attempt,contractFileReadback(attempt),'verification');
+    attempt.acknowledged=true;attempt.path=data.filepath;
+    var fallback=Object.assign({},findVersion(id)||{},{ID:id,Contract1:{ID:cid}});fallback[CFG.fileField]={filename:attempt.name,filepath:attempt.path};
+    return contractDisplayRefresh(contractFileReadback(attempt),fallback);
   }).then(verified).catch(function(error){
     if(attempt.dispatched&&!attempt.acknowledged&&!attempt.path&&!attempt.nativePending&&!attempt.verificationPending&&!attempt.expired&&attempt.scope===contractMutationScope()){
       return contractMutationDeadline(attempt,contractRecoverUploadedFile(attempt),'verification').then(verified,function(){throw contractAttachmentError(attempt,error);});
@@ -8103,8 +8131,8 @@ function doDeleteVersion(vid,cid){
   vid=contractId(vid);cid=contractId(cid);var row=findVersion(vid);if(!row||S.busy||!mayEdit(cid)||contractFileParent(row)!==cid)return Promise.resolve(false);
   var key=contractAttachmentKey('delete',cid,vid),reviews=S.attachmentReviews||(S.attachmentReviews={});if(reviews[key])return Promise.resolve(false);
   var attempt={key:key,kind:'delete',phase:'native',id:vid,cid:cid,scope:contractMutationScope(),status:'pending',navigation:S.contractNavigationGeneration||0};reviews[key]=attempt;S.busy=true;contractControls();
-  return contractMutationDeadline(attempt,invokeContractAttachmentApi('deleteAttachment',{contractId:cid,attachmentId:vid},attempt),'native').then(function(body){if(body.ok!==true||body.attachmentId!==vid||responseBad(body))throw new Error('Creator did not confirm the intended attachment delete.');return contractMutationDeadline(attempt,contractFileReadback(attempt,true),'verification');}).then(function(){
-    S.versions=S.versions.filter(function(item){return item.ID!==vid;});delete reviews[key];contractReleaseBusy();contractControls();banner('ok','Attachment deleted and verified.');
+  return contractMutationDeadline(attempt,invokeContractAttachmentApi('deleteAttachment',{contractId:cid,attachmentId:vid},attempt),'native').then(function(){
+    S.versions=S.versions.filter(function(item){return item.ID!==vid;});delete reviews[key];contractReleaseBusy();contractControls();banner('ok','Attachment deleted.');
     if(attempt.navigation===(S.contractNavigationGeneration||0))showAttachmentsModal(cid);return true;
   }).catch(function(error){contractReleaseBusy();contractAttachmentError(attempt,error);attStatus(cid,'Delete outcome needs review; this operation will not be repeated.',true);return false;});
 }
@@ -8113,7 +8141,13 @@ function createContractAttachmentRecord(cid){
   cid=contractId(cid);if(!cid||!contractReady()||!canAddContractAttachments(cid))return Promise.reject(new Error('A current editable Contract and complete native data are required.'));
   var key=contractAttachmentKey('create',cid),reviews=S.attachmentReviews||(S.attachmentReviews={});if(reviews[key])return Promise.reject(reviews[key].error||new Error('Attachment create is still pending.'));
   var attempt={key:key,kind:'create',phase:'native',cid:cid,id:'',scope:contractMutationScope(),status:'pending'};reviews[key]=attempt;contractControls();
-  return contractMutationDeadline(attempt,invokeContractAttachmentApi('createAttachment',{contractId:cid},attempt),'native').then(function(body){attempt.id=contractId(body.attachmentId);if(body.ok!==true||!attempt.id||responseBad(body))throw new Error('Creator did not confirm one attachment ID.');return contractMutationDeadline(attempt,contractFileReadback(attempt),'verification');}).then(function(row){
+  var create=invokeContractAttachmentApi('createAttachment',{contractId:cid},attempt).catch(function(error){
+    // This specific Custom API denial occurs before its insert. In Development
+    // View as, the native form writer uses the impersonated user's permissions.
+    if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||error.message!=='Construction request access is required to add attachments.'||attempt.scope!==contractMutationScope())throw error;
+    return createRecord(CFG.forms.version,{Contract1:cid,Email_Attachment:'true'});
+  });
+  return contractMutationDeadline(attempt,create,'native').then(function(body){attempt.id=contractId(body.attachmentId)||contractConfirmedId(body);if(!attempt.id)throw new Error('An attachment ID is required before uploading the file.');if(attempt.scope!==contractMutationScope())throw new Error('Creator session changed during attachment creation.');return {ID:attempt.id,Contract1:{ID:cid}};}).then(function(row){
     S.contractAttachmentParents=S.contractAttachmentParents||{};S.contractAttachmentParents[attempt.id]={cid:cid,scope:attempt.scope};delete reviews[key];contractControls();return attempt.id;
   }).catch(function(error){throw contractAttachmentError(attempt,error);});
 }

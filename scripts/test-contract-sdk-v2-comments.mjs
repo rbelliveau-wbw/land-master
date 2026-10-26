@@ -10,3 +10,24 @@ const ack=await h.c.createRecord('Comment_Log',{Contract1:ID,Comment:'Native Con
 assert.equal(h.reports.Comment_Log_Report[0].ID,ack.data.ID);
 assert.equal(Object.keys(h.c.S.sdkMutationReviews).length,0);
 console.log('PASS Legal comment exact Contract1 lookup and readable native validation errors.');
+
+for(const environment of ['development','stage','production'])for(const state of ['not-started','started']){
+ const preview=await ready({pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:environment==='production'?'':'/environment/'+environment,loginUser:'demouser_4@zohocreator.com'})});
+ preview.reports.All_Contracts1[0].Work_Module='Construction';preview.c.S.contracts[0].Work_Module='Construction';
+ const original=preview.api.invokeCustomApi;let posts=0;
+ preview.api.invokeCustomApi=async config=>{
+  if(config.api_name.replace(/_DEV|_STAGE/,'')!=='Post_Record_Comment')return original(config);
+  posts++;return {code:3000,details:{output:JSON.stringify({contract:'record-comments-v1',ok:false,writeState:state,message:'Construction access is required.'})}};
+ };
+ const save=()=>preview.c.createRecord('Comment_Log',{Contract1:ID,Comment:'View-as Construction comment'});
+ if(environment==='development'&&state==='not-started'){
+  const result=await save();assert.equal(result.notificationState,'unavailable','native Development fallback reports that the Custom API owner email did not run');
+  assert.equal(preview.reports.Comment_Log_Report.length,1);assert.equal(preview.calls.filter(call=>call.method==='add').length,1);
+  assert.equal(preview.c.contractHasReviews(),false);
+ }else{
+  await assert.rejects(save(),/Construction access is required/);
+  assert.equal(preview.reports.Comment_Log_Report.length,0);assert.equal(preview.calls.filter(call=>call.method==='add').length,0,'Production/Stage or a possible prior insert cannot use the native preview fallback');
+ }
+ assert.equal(posts,1,'the owner-executed API is called once');
+}
+console.log('PASS Development Construction View-as comments: known prewrite owner rejection uses one native form write; Production/Stage and possible prior writes never fall back; owner email unavailability stays visible.');
