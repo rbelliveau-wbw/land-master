@@ -74,4 +74,41 @@ empty-date submission. Run `npm run validate` and `npm run build:pages` before
 promotion. Native completion requires a full page reload, the same Company/year
 Search, and inspection of both pages of the fresh 135-record snapshot.
 
-Live completion and deployment evidence are recorded after those steps finish.
+## Completed production verification
+
+Production commit: `da1619190209b905511ccc748e5674b211ec4bc9`.
+[Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/40338962579)
+and [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/40338962462)
+both succeeded. Full local validation passed before and after incorporating the
+concurrent Budget release; the merged Pages build passed. Browser asset URLs
+confirmed that native Creator loaded Tax Center 19.17.28.
+
+A full reload and Company/year Search confirmed the 96 recovered destinations
+remained cleared. Of the 39 unsent records, only three still contained ARB dates:
+`541793-2026`, `541796-2026`, and `541791-2026`. Only those three were selected
+for the final native clear under 19.17.28. The mounted result confirmed 3 / 3
+destinations, with no throttle error.
+
+Another complete page reload and fresh Search returned 135 unique records:
+100 on page one and 35 on page two. All 135 `Arbitration_Notice_Received` inputs
+were empty. Comparing both pages against the fresh pre-final-clear snapshot
+found no changes to `Notice_Received`, `Protest_Deadline`,
+`Protest_Hearing_Date`, or `Arbitration_Hearing_Date`.
+
+The desktop task evidence is saved under
+`reports/2026-10-26-tax-date-clear/` in the parent workspace, including the
+reproduced throttle screenshot, successful final-three ledger/screenshot,
+both final page screenshots, all 135 reloaded date values, exact patch and
+validation/build logs. No new automatic post-acknowledgement value comparison
+was added to the product; this was an explicit manual persistence check.
+
+## Feasible batch size
+
+The existing complete parcel selection limit is 800 matching records. The
+advancing-clock regression executes 135 complete saves across minute windows;
+the production data check confirms 135 cleared records. An 800-record live
+write has not been tested. With the current four-request save/check path and
+45-request budget, sustained throughput is approximately 10–11 records per
+minute before other count activity and native latency. Allow roughly 12–15
+minutes for 135 updates and around 75 minutes for 800. These are estimates,
+not a new timeout or completion guarantee.
