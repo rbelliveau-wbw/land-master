@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-26T14:11:15.732Z",
+  "generated_at": "2026-10-26T14:50:38.214Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -136,13 +136,13 @@
       "slug": "tax-center",
       "name": "Tax Center",
       "module": "tax",
-      "version": "19.17.28",
+      "version": "19.17.29",
       "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
       "source_entry": "widgets/tax-center/src/app/widget.html",
       "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",
       "baseline_zip": "widgets/tax-center/baseline/tax_center_widget_19 (2).zip",
       "html_title": "Tax Center",
-      "source_sha256": "d492e221845566708f875b417524de88319fcdccbd055e66f6ce27e7f177af3f",
+      "source_sha256": "5daf95b932454e341ef11ee9cb4fcc087aa494fde3881c8d69de43d2fd8617f4",
       "baseline_zip_sha256": "995b67247ef6c3af7af98f5c959f9b1ff4b3e690f7dc559c8a9c4682ec4bceb1",
       "plugin_manifest": {
         "service": "CREATOR",

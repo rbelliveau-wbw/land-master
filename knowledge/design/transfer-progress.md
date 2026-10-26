@@ -168,3 +168,21 @@ selectors for a hidden sidebar. The same compact shell applies to pending,
 finished and recovery states. Wider destination tables may retain their existing
 width when their actual columns require it. Preserve progress, focus and pending
 Close/duplicate-write locks; this is a presentation rule, not a timing change.
+
+## Tax batch progress — October 26, 2026
+
+Tax batch updates use the compact 540px shell, capped at 620px or the desktop
+viewport minus 48px. Keep the header, saved count, progress, stages and action
+footer pinned; only the destination results and actual error details scroll.
+Use flex shrink with `min-height:0` through the body and results region so short
+desktop windows retain their Done/Close actions. Keep the same compact shell
+for pending, successful and review states.
+
+Use ordinary labels: **Saving changes**, **N selected records**, **N of M records
+saved**, and the stages **Checking records**, **Saving changes**, **Confirming
+updates**. Result rows say Saved, Checking…, Waiting, Saving…, Needs review or
+Not saved. Reuse the existing field labels, such as **ARB Notice Received**;
+keep report/API link names and raw field keys out of ordinary progress copy.
+Retain authentic failure diagnostics inside the scrolling results area. This
+presentation change preserves confirmed-only progress, mounted rows, display
+pacing, pending close locks, focus/inert behavior and read-only recovery.

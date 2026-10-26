@@ -1,3 +1,19 @@
+## Native bulk saves and compact progress — 19.17.29, October 26, 2026
+
+Bulk edits now group identical captured payloads into native SDK2 updates of up
+to 200 exact selected IDs, followed by counted ID-scoped confirmation reads.
+135 identical edits require one update and seven total calls in the fixture,
+replacing the former per-record update plus three reads. Different copied values,
+full preflight, identity/count checks, workflow execution, partial results,
+read-only recovery and no-replay guards remain. Filter-changing Company/Status
+edits are confirmed by captured ID. The 800-record selection cap is unchanged.
+
+Progress is a compact 540px dialog capped at 620px or viewport minus 48px, with
+an internally scrolling results/error list and pinned summary/actions. Human
+labels replace report/field names and "persisted destinations verified".
+No Creator schema, function, Custom API, permission or backend publication change.
+Rollback: 19.17.28. [Implementation, regressions and native timing](../../docs/tax-native-bulk-and-progress-2026-10-26.md).
+
 ## Native bulk request pacing — 19.17.28, October 26, 2026
 
 The production Series 125 date-clear test reproduced Creator 2955 / HTTP 429:

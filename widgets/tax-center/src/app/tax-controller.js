@@ -28,6 +28,26 @@
     }
     function candidateId(response){const ids=new Set();let malformed=false;for(const item of protocolNodes(response)){if(own(item,'id'))malformed=true;if(own(item,'ID')){if(!safeId(item.ID))malformed=true;else ids.add(item.ID);}}return !malformed&&ids.size===1?Array.from(ids)[0]:'';}
     function definiteRejection(raw){const hasResult=own(raw,'result'),single=hasResult&&String(raw.code)==='3000'&&!own(raw,'data')&&Array.isArray(raw.result)&&raw.result.length===1,record=single?raw.result[0]:raw;if(!raw||typeof raw!=='object'||Array.isArray(raw)||competingProtocol(raw)||hasResult&&!single||!record||typeof record!=='object'||Array.isArray(record)||own(record,'result')||!/^(1060|2894|2897|2898|2899|2945|3001)$/.test(String(record.code||'')))return false;return !protocolNodes(raw).some(item=>own(item,'ID')||own(item,'id'))&&(!own(record,'data')||record.data==null||typeof record.data==='object'&&!Array.isArray(record.data));}
+    // updateRecords acknowledges each exact captured destination. A malformed
+    // set cannot prove which records Creator changed, even when some IDs match.
+    function acknowledgeBatch(response,ids){
+      const outer=response&&typeof response==='object'&&!Array.isArray(response)?{...response}:null;if(outer)delete outer.result;
+      if(!outer||failed(outer)||root.LMData.responseFailed(outer)||firstFailure(outer)||competingProtocol(outer)||own(outer,'responseText')||String(outer.code)!=='3000'||own(outer,'data')||!Array.isArray(response.result)||response.result.length!==ids.length||ids.length>200)throw error('Creator did not confirm the exact batch destination count.',response);
+      const seen=new Set(),outcomes=new Map();
+      for(const record of response.result){
+        const id=record&&record.data&&record.data.ID;
+        if(!safeId(id)||!ids.includes(id)||seen.has(id)||own(record,'id')||own(record,'ID')||own(record,'responseText')||competingProtocol(record))throw error('Creator batch destination IDs differ from the captured selection.',response);
+        seen.add(id);
+        if(String(record.code)==='3000'){
+          try{acknowledge(record,id);outcomes.set(id,{state:'acknowledged'});}catch(failure){outcomes.set(id,{state:'unknown',error:failure});}
+        }else{
+          const failure=error('Creator did not accept this captured destination.',record);
+          const native={...record,data:{...record.data}};delete native.data.ID;
+          outcomes.set(id,{state:definiteRejection(native)?'rejected':'unknown',error:failure});
+        }
+      }
+      return outcomes;
+    }
     function decimalNumberText(value){
       let text=String(value);if(typeof value!=='number'||!Number.isFinite(value)||!/[eE]/.test(text))return text;
       const negative=text[0]==='-';if(negative)text=text.slice(1);
@@ -73,7 +93,7 @@
     function changing(){return pending>0||!!batchActive||!!progressOpen||drafts.size>0||reviews.size>0||!!(options.isDirty&&options.isDirty())||!!(options.navigationDirty&&options.navigationDirty());}
     function interactionAllowed(){return connected&&identity()===actor&&referenceState!=='loading'&&scopeState!=='loading'&&pending===0&&!nativeWrites&&!verificationReads&&!batchActive&&!progressOpen&&!reviews.size;}
     function notify(){if(options.onState)options.onState(snapshot());}
-    function snapshot(){return {connected,referenceState,scopeState,pending,nativeWrites,verificationReads,editEpoch,referenceGeneration,scopeGeneration,expected,rows:scopeRows.length,batchActive:batchActive&&batchActive.id,progressOpen:progressOpen&&progressOpen.id,interactionBlocked:!connected||identity()!==actor||referenceState==='loading'||scopeState==='loading'||pending>0||nativeWrites>0||verificationReads>0||!!batchActive||!!progressOpen,reviews:Array.from(reviews.values()).map(review=>({key:review.key,id:review.id,report:review.report,pending:!!review.nativePending||!!review.verificationPending,payload:copy(review.payload)}))};}
+    function snapshot(){return {connected,referenceState,scopeState,pending,nativeWrites,verificationReads,editEpoch,referenceGeneration,scopeGeneration,expected,rows:scopeRows.length,batchActive:batchActive&&batchActive.id,progressOpen:progressOpen&&progressOpen.id,interactionBlocked:!connected||identity()!==actor||referenceState==='loading'||scopeState==='loading'||pending>0||nativeWrites>0||verificationReads>0||!!batchActive||!!progressOpen,reviews:Array.from(reviews.values()).map(review=>({key:review.key,id:review.id,report:review.report,pending:!!review.nativePending||!!review.verificationPending||!!(review.nativeOwner&&review.nativeOwner.nativePending),payload:copy(review.payload)}))};}
     function cancelled(check){if(check&&check())throw Object.assign(new Error('Load superseded.'),{cancelled:true});session();}
     async function nativeCount(report,criteria,check,max){
       const job=countTail.catch(()=>{}).then(async()=>{cancelled(check);const result=await api().getRecordCount({report_name:report,...(criteria?{criteria}:{})});cancelled(check);const raw=result&&result.result&&result.result.records_count,value=Number(raw);if(root.LMData.responseFailed(result)||failed(result)||firstFailure(result)||String(result.code)!=='3000'||failed(result.result)||(typeof raw!=='number'&&typeof raw!=='string')||typeof raw==='string'&&!/^\d+$/.test(raw.trim())||!Number.isSafeInteger(value)||value<0)throw error('Creator count is unavailable.',result,firstFailure(result));if(max!=null&&value>max)throw error('Narrow the search below '+max+' parcel years.',result);return {result,value};});
@@ -115,7 +135,7 @@
       if(options.onRecovery)options.onRecovery(operation,row);
     }
     async function verify(operation,expired,recovery){session();if(operation.actor!==actor)throw new Error('The Creator actor changed.');if(!operation.id)throw new Error('The created record ID is unknown; this insert cannot be repeated.');const fresh=await read(operation.report,'(ID == '+operation.id+')',()=>identity()!==operation.actor||!!(expired&&expired()));if(fresh.rows.length!==1||fresh.rows[0].ID!==operation.id||recovery&&!matches(fresh.rows[0],operation.payload,operation.report))throw new Error('Fresh Creator data did not verify the exact saved fields.');return fresh.rows[0];}
-    function verifyBounded(operation,recovery){
+    function verifyBounded(operation,recovery,readback){
       return new Promise((resolve,reject)=>{
         let settled=false,expired=false;operation.verificationPending=true;verificationReads++;notify();
         const finish=(ok,value)=>{if(settled)return;settled=true;root.clearTimeout(timer);(ok?resolve:reject)(value);};
@@ -130,7 +150,7 @@
           expired=true;const failure=error('Fresh Creator data did not settle before the verification deadline. The captured fields need review.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);
         }
         timer=root.setTimeout(expire,timeout);
-        Promise.resolve().then(()=>verify(operation,()=>expired,recovery)).then(row=>{operation.verificationPending=false;verificationReads--;notify();finish(true,row);},failure=>{operation.verificationPending=false;verificationReads--;notify();finish(false,failure);});
+        Promise.resolve().then(()=>readback?readback(()=>expired):verify(operation,()=>expired,recovery)).then(row=>{operation.verificationPending=false;verificationReads--;notify();finish(true,row);},failure=>{operation.verificationPending=false;verificationReads--;notify();finish(false,failure);});
       });
     }
     // The caller gets a bounded unknown result; the adapter retains its native slot
@@ -140,10 +160,10 @@
         let settled=false,timer;
         const finish=(ok,value)=>{if(settled)return;settled=true;if(timer)root.clearTimeout(timer);(ok?resolve:reject)(value);};
         root.LMData.request('tax:'+operation.key,()=>{
-          session();if(operation.actor!==actor)throw new Error('Creator session changed before writing.');
+          cancelled(operation.isCancelled);if(operation.actor!==actor)throw new Error('Creator session changed before writing.');
           onDispatch();operation.nativePending=true;nativeWrites++;notify();
           timer=root.setTimeout(()=>{const failure=error('Creator did not settle this write before the deadline. The captured fields need review.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);},options.mutationTimeoutMs||30000);
-          const native=Promise.resolve().then(()=>kind==='update'?api().updateRecordById({report_name:operation.report,id:operation.id,payload:{data:operation.payload}}):api().addRecords({form_name:operation.form,payload:{data:operation.payload}}));
+          const native=Promise.resolve().then(()=>kind==='batch'?api().updateRecords({report_name:operation.report,payload:{criteria:operation.ids.map(id=>'(ID == '+id+')').join(' || '),data:operation.payload}}):kind==='update'?api().updateRecordById({report_name:operation.report,id:operation.id,payload:{data:operation.payload}}):api().addRecords({form_name:operation.form,payload:{data:operation.payload}}));
           const completed=native.then(value=>{operation.nativePending=false;nativeWrites--;notify();return value;},failure=>{operation.nativePending=false;nativeWrites--;notify();throw failure;});
           // Return the original completion, not the deadline, to the bounded queue.
           return completed;
@@ -172,10 +192,60 @@
     }
     async function recheck(key){const operation=reviews.get(key);if(!operation||pending||nativeWrites||verificationReads||batchActive)return false;pending++;notify();try{const row=await verifyBounded(operation,true);publishVerified(operation,row);for(const ledger of ledgers.values())if(ledger.report===operation.report)for(const entry of ledger.entries)if(entry.state==='unknown'&&entry.id===operation.id&&matches(row,entry.payload,operation.report)){entry.state='verified';entry.phase='verified';entry.verifiedRow=row;if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}reviews.delete(key);drafts.delete(key);return true;}catch(failure){operation.error=failure;return false;}finally{pending--;notify();}}
     async function runLedger(ledger,entries){
-      if(pending||batchActive||progressOpen||reviews.size)throw new Error('Finish or recheck the previous Tax operation.');const token={id:ledger.id};batchActive=token;ledger.finished=false;ledger.stage='preflight';if(options.onBatchOpen){progressOpen=ledger;options.onBatchOpen(ledgerView(ledger));}notify();let next=0,stopSending=false;
-      const check=()=>ledger.actor!==identity()||ledger.referenceGeneration!==referenceGeneration||ledger.scopeGeneration!==scopeGeneration;
-      async function worker(){while(!stopSending&&next<entries.length){const entry=entries[next++];try{session();cancelled(check);entry.state='pending';entry.phase='queued';notify();const result=await mutate('update',entry.id,entry.payload,ledger.report,null,token,entry,ledger);entry.state='verified';entry.phase='verified';entry.verifiedRow=result.verifiedRow;}catch(failure){entry.error=failure;entry.state=failure.uncertain?'unknown':'rejected';entry.phase=entry.state;if(failure.uncertain){stopSending=true;ledger.error=failure;}}if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}}
-      try{const baseline=ledger.report===reports.rawLand?referenceRows.rawLand:scopeRows,fresh=await read(ledger.report,ledger.report===reports.rawLand?'':scopeCriteria,check,null,ledger.report===reports.parcelYears?options.maxAutoRows||800:null),freshIds=new Set(fresh.rows.map(row=>row.ID));if(freshIds.size!==baseline.length||baseline.some(row=>!freshIds.has(row.ID)))throw new Error('The complete Tax scope changed before the batch. Reload before editing.');for(const entry of entries){const before=baseline.find(row=>row.ID===entry.id),now=fresh.rows.find(row=>row.ID===entry.id),captured=Object.fromEntries(Object.keys(entry.payload).map(field=>[field,before[field]]));if(!now||!matches(now,captured,ledger.report))throw new Error('A selected Tax field changed before the batch. Reload before editing.');}ledger.stage='sending';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));await Promise.all(Array.from({length:Math.min(3,entries.length)},worker));}catch(failure){ledger.error=failure;for(const entry of entries)if(entry.state==='not-sent'){entry.error=failure;entry.phase='not-sent';}}finally{batchActive=null;ledger.finished=true;if(options.onBatchFinish)await options.onBatchFinish(ledgerView(ledger));notify();}return ledgerView(ledger);
+      if(pending||nativeWrites||verificationReads||batchActive||progressOpen||reviews.size)throw new Error('Finish or recheck the previous Tax operation.');const token={id:ledger.id};batchActive=token;ledger.finished=false;ledger.error=null;ledger.stage='preflight';if(options.onBatchOpen){progressOpen=ledger;options.onBatchOpen(ledgerView(ledger));}pending++;notify();
+      const check=()=>ledger.actor!==identity()||ledger.referenceGeneration!==referenceGeneration||ledger.scopeGeneration!==scopeGeneration||ledger.report===reports.parcelYears&&options.scopeKey&&options.scopeKey()!==scopeCriteria;
+      const progress=()=>{notify();if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));};
+      function retain(entry,failure,state){entry.error=failure;entry.state=state;entry.phase=state;if(state==='unknown'){entry.operation.error=failure;reviews.set(entry.operation.key,entry.operation);failure.noReplay=true;ledger.error=failure;}}
+      const acknowledged=[];
+      try{
+        if(!api()||typeof api().updateRecords!=='function')throw new Error('Creator SDK2 batch update bridge is unavailable.');
+        const baseline=ledger.report===reports.rawLand?referenceRows.rawLand:scopeRows,criteria=ledger.report===reports.rawLand?'':scopeCriteria,max=ledger.report===reports.parcelYears?options.maxAutoRows||800:null;
+        const fresh=await read(ledger.report,criteria,check,null,max),freshIds=new Set(fresh.rows.map(row=>row.ID)),baselineIds=new Set(baseline.map(row=>row.ID));
+        // A prior successful retry destination may now fall outside the old
+        // editable filter. Only those confirmed IDs may leave the captured set.
+        const moved=ledger.report===reports.parcelYears&&criteria?new Set(ledger.entries.filter(entry=>entry.state==='verified').map(entry=>entry.id)):new Set();
+        if(fresh.rows.some(row=>!baselineIds.has(row.ID))||baseline.some(row=>!freshIds.has(row.ID)&&!moved.has(row.ID)))throw new Error('The complete Tax scope changed before the batch. Reload before editing.');
+        const beforeById=new Map(baseline.map(row=>[row.ID,row])),freshById=new Map(fresh.rows.map(row=>[row.ID,row]));
+        for(const entry of entries){const before=beforeById.get(entry.id),now=freshById.get(entry.id),captured=Object.fromEntries(Object.keys(entry.payload).map(field=>[field,before[field]]));if(!now||!matches(now,captured,ledger.report))throw new Error('A selected Tax field changed before the batch. Reload before editing.');}
+        // Creator applies one data object to up to200 matches. Group only identical
+        // frozen payloads, never the company/year criteria or the current page.
+        const grouped=new Map();for(const entry of entries){const key=JSON.stringify(strict(entry.payload));if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(entry);}
+        const groups=[];for(const values of grouped.values())for(let offset=0;offset<values.length;offset+=200)groups.push(values.slice(offset,offset+200));
+        ledger.stage='sending';progress();
+        for(let index=0;index<groups.length;index++){
+          cancelled(check);const group=groups[index],operation={key:ledger.id+':'+index,ids:freeze(group.map(entry=>entry.id)),report:ledger.report,payload:group[0].payload,actor:ledger.actor,generation:ledger.referenceGeneration,scope:ledger.scopeGeneration,isCancelled:check};let dispatched=false,stop=false;
+          for(const entry of group){const key='update:'+ledger.report+':'+entry.id;entry.error=null;entry.state='pending';entry.phase='queued';entry.operation={key,id:entry.id,report:ledger.report,payload:entry.payload,actor:ledger.actor,generation:ledger.referenceGeneration,scope:ledger.scopeGeneration,nativeOwner:operation};drafts.set(key,entry.operation);pendingKeys.add(key);}progress();
+          try{
+            const response=await send(operation,'batch',()=>{dispatched=true;for(const entry of group)entry.phase='sending';progress();});
+            cancelled(check);const outcomes=acknowledgeBatch(response,operation.ids);
+            for(const entry of group){const outcome=outcomes.get(entry.id);if(outcome.state==='acknowledged'){entry.phase='verifying';acknowledged.push(entry);}else{retain(entry,outcome.error,outcome.state);if(outcome.state==='unknown')stop=true;}}
+          }catch(failure){
+            const raw=failure.response||failure.raw||failure,state=!dispatched?'not-sent':definiteRejection(raw)?'rejected':'unknown';
+            for(const entry of group)retain(entry,failure,state);stop=state!=='rejected';
+          }finally{for(const entry of group)pendingKeys.delete(entry.operation.key);progress();}
+          if(stop)break;
+        }
+        if(acknowledged.length){
+          const verification={actor:ledger.actor,report:ledger.report};
+          try{
+            if(nativeWrites)throw error('A native batch is still pending. Confirmed destinations need a read-only recheck.');
+            ledger.stage='verifying';progress();
+            const loaded=await verifyBounded(verification,false,async expired=>{
+              const rows=[];
+              // A saved Company/Status can leave its old filter. Confirm only
+              // captured acknowledged IDs, independent of editable criteria.
+              for(let offset=0;offset<acknowledged.length;offset+=200){
+                const ids=acknowledged.slice(offset,offset+200).map(entry=>entry.id),loaded=await read(ledger.report,ids.map(id=>'(ID == '+id+')').join(' || '),()=>check()||expired(),null,ids.length),returned=new Set(loaded.rows.map(row=>row.ID));
+                if(returned.size!==ids.length||ids.some(id=>!returned.has(id)))throw new Error('Creator did not return the exact acknowledged batch destinations.');rows.push(...loaded.rows);
+              }
+              cancelled(()=>check()||expired());return {rows};
+            });
+            cancelled(check);const rows=new Map(loaded.rows.map(row=>[row.ID,row]));
+            for(const entry of acknowledged){const row=rows.get(entry.id);publishVerified(entry.operation,row);drafts.delete(entry.operation.key);entry.error=null;entry.state='verified';entry.phase='verified';entry.verifiedRow=row;}progress();
+          }catch(failure){for(const entry of acknowledged)retain(entry,failure,'unknown');progress();}
+        }
+      }catch(failure){ledger.error=failure;for(const entry of acknowledged)if(entry.state==='pending')retain(entry,failure,'unknown');for(const entry of entries)if(entry.state==='not-sent'){entry.error=failure;entry.phase='not-sent';}}
+      finally{pending--;batchActive=null;ledger.finished=true;if(options.onBatchFinish)await options.onBatchFinish(ledgerView(ledger));notify();}return ledgerView(ledger);
     }
     function ledgerView(ledger){return {id:ledger.id,report:ledger.report,stage:ledger.stage,finished:!!ledger.finished,error:ledger.error&&ledger.error.message,rows:ledger.entries.map(entry=>({id:entry.id,state:entry.state,phase:entry.phase,payload:copy(entry.payload),code:entry.error&&entry.error.code,message:entry.error&&entry.error.message}))};}
     async function batch(report,intents){
@@ -184,7 +254,7 @@
       const ledger={id:'tax-batch-'+(++batchSequence),report,actor,referenceGeneration,scopeGeneration,entries};ledgers.set(ledger.id,ledger);return runLedger(ledger,entries);
     }
     async function retryBatch(id){const ledger=ledgers.get(id);if(!ledger)throw new Error('Tax batch is unavailable.');if(ledger.entries.some(entry=>entry.state==='unknown'))throw new Error('Recheck uncertain destinations before a retry.');const entries=ledger.entries.filter(entry=>entry.state==='rejected'||entry.state==='not-sent');return entries.length?runLedger(ledger,entries):ledgerView(ledger);}
-    return Object.freeze({start,reloadReferences,search,count,snapshot,canEdit,interactionAllowed,checkParcelYearCode,currencyText:value=>decimal(value,true,false),navigationAllowed:()=>interactionAllowed()&&!changing(),update:(id,data,report)=>mutate('update',id,data,report||reports.parcelYears),create:(form,data)=>mutate('create','',data,form===forms.property?reports.rawLand:reports.parcelYears,form),recheck,batch,retryBatch,ledger:id=>ledgers.has(id)?ledgerView(ledgers.get(id)):null,closeProgress(id){if(!progressOpen||progressOpen.id!==id||!progressOpen.finished||pending||batchActive)return false;const ledger=progressOpen;progressOpen=null;if(options.onBatchClose)options.onBatchClose(ledgerView(ledger));notify();return true;},discardDraft(key){if(reviews.has(key)||pending)return false;drafts.delete(key);notify();return true;},noteDraft(){editEpoch++;notify();}});
+    return Object.freeze({start,reloadReferences,search,count,snapshot,canEdit,interactionAllowed,checkParcelYearCode,currencyText:value=>decimal(value,true,false),navigationAllowed:()=>interactionAllowed()&&!changing(),update:(id,data,report)=>mutate('update',id,data,report||reports.parcelYears),create:(form,data)=>mutate('create','',data,form===forms.property?reports.rawLand:reports.parcelYears,form),recheck,batch,retryBatch,ledger:id=>ledgers.has(id)?ledgerView(ledgers.get(id)):null,closeProgress(id){if(!progressOpen||progressOpen.id!==id||!progressOpen.finished||pending||nativeWrites||verificationReads||batchActive)return false;const ledger=progressOpen;progressOpen=null;if(options.onBatchClose)options.onBatchClose(ledgerView(ledger));notify();return true;},discardDraft(key){if(reviews.has(key)||pending)return false;drafts.delete(key);notify();return true;},noteDraft(){editEpoch++;notify();}});
   }
   root.LMTaxPreparation=Object.freeze({create});
 })(typeof window==='undefined'?globalThis:window);
