@@ -111,7 +111,7 @@
       var roles=bundle&&(readOnly()||canAmend())?bundle.rows.map(function(row){return {role:row.role};}):model.previewRoles;
       node.innerHTML='<div class="po-context-metrics"><span>Available <strong>'+money(root.LMPO.currency(available))+'</strong></span>'+(modification>0n?'<span class="po-context-mod">Modification <strong>+'+money(root.LMPO.currency(modification))+'</strong></span>':'<span class="po-context-remaining'+(remaining<0n?' is-negative':'')+'">Remaining <strong>'+money(root.LMPO.currency(remaining))+'</strong></span>')+'</div>';
       patchApprovers(true,modification);
-      if(bundle||!model.editable)return;
+      if(bundle||!canCompose())return;
       var overrun=allocations.some(function(row){return row.remaining<0n;}),key=model.amount+'|'+(shortfall>0n)+'|'+overrun;if(model.previewKey===key)return;
       model.previewKey=key;model.previewRoles=null;model.previewState='loading';model.previewError='';clearTimeout(previewTimer);var own=generation,request=++previewGeneration;
       patchApprovers(true,modification);
