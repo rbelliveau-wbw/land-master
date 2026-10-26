@@ -29,7 +29,7 @@
 }
 html,body{margin:0;padding:0;height:100%;overflow:hidden;box-sizing:border-box}
 *,*::before,*::after{box-sizing:inherit}
-body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+body{height:var(--tax-viewport-height,100%);display:flex;flex-direction:column;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font-family:inherit}
@@ -64,7 +64,7 @@ button,input,select,textarea{font-family:inherit}
 .sidebar-item .si-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* Content area */
-.content{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.content{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* KPI strip */
 .kpi-strip{display:flex;align-items:stretch;background:var(--card);border-bottom:1px solid var(--line);flex-shrink:0}
@@ -335,7 +335,7 @@ tfoot#tableFooter td{background:var(--surface);border-top:2px solid var(--line-s
 .msg.hidden{display:none!important}
 
 /* Table */
-.table-wrap{height:950px;overflow-y:auto;overflow-x:auto;background:var(--card)}
+.table-wrap{flex:1;min-height:0;overflow:auto;background:var(--card);padding-bottom:12px;scroll-padding-bottom:12px}
 table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
 thead{position:sticky;top:0;z-index:2}
 th{padding:7px 10px;font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);text-align:left;background:#f5f6f8;border-bottom:1px solid var(--line);white-space:nowrap;user-select:none;cursor:pointer}
@@ -443,10 +443,10 @@ tr.lot-row.lot-hidden{display:none}
 .tab-cnt{background:var(--surface);border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;padding:1px 6px;line-height:15px}
 .tab-btn.active .tab-cnt{background:var(--navy);color:#fff;border-color:var(--navy)}
 /* ── Property Panel ─────────────────────────────────────────── */
-.prop-panel{display:none}
-.prop-panel.active{display:block}
-.prop-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.prop-table-wrap{height:1000px;overflow-y:auto;overflow-x:auto;background:var(--card)}
+.prop-panel{display:none;flex:1;min-height:0;overflow:hidden}
+.prop-panel.active{display:flex;flex-direction:column}
+.prop-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-shrink:0}
+.prop-table-wrap{flex:1;min-height:0;overflow:auto;background:var(--card);padding-bottom:12px;scroll-padding-bottom:12px}
 /* ── Add buttons ────────────────────────────────────────────── */
 .add-btn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;font-size:13px;font-weight:700;border-radius:7px;cursor:pointer;white-space:nowrap;transition:.12s;border:none}
 .add-btn.primary{background:var(--navy);color:#fff}
@@ -826,14 +826,14 @@ tr.bulk-on{background:var(--psoft)}
 .unique-note::before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor}
 .unique-note[data-state="duplicate"],.unique-note[data-state="invalid"],.unique-note[data-state="error"]{color:#b42318;font-weight:700}
 </style>
-<script src="success-feedback.js?v=19.17.32"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.32">
-<script src="interaction-motion.js?v=19.17.32"></script>
-<script src="interaction-surfaces.js?v=19.17.32"></script>
-<script src="number-edit-commit.js?v=19.17.32"></script>
-<script src="number-transitions.js?v=19.17.32"></script>
-<script src="number-surfaces.js?v=19.17.32"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.32">
+<script src="success-feedback.js?v=19.17.33"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.33">
+<script src="interaction-motion.js?v=19.17.33"></script>
+<script src="interaction-surfaces.js?v=19.17.33"></script>
+<script src="number-edit-commit.js?v=19.17.33"></script>
+<script src="number-transitions.js?v=19.17.33"></script>
+<script src="number-surfaces.js?v=19.17.33"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.33">
 </head>
 <body>
 
@@ -1030,7 +1030,7 @@ tr.bulk-on{background:var(--psoft)}
     </div>
 
     <!-- Table -->
-    <div class="table-wrap" id="tableWrap">
+    <div class="table-wrap" id="tableWrap" tabindex="0" role="region" aria-label="Tax parcel results">
       <table>
         <thead>
           <tr>
@@ -1079,7 +1079,7 @@ tr.bulk-on{background:var(--psoft)}
         <button class="fbulk-btn" onclick="clearPropBulkSelection()" style="padding:0 8px;margin-left:auto">✕ Clear</button>
       </div>
       <div class="top-pagination-wrap hidden" id="propPager"></div>
-      <div class="prop-table-wrap">
+      <div class="prop-table-wrap" tabindex="0" role="region" aria-label="Property results">
         <table>
           <thead>
             <tr>
@@ -1395,7 +1395,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.32',
+  version: '19.17.33',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -3245,11 +3245,19 @@ function renderLotRow(r, hidden){
   return html;
 }
 
-function setIframeHeight(){
-  try{
-    if(window.ZOHO&&ZOHO.CREATOR&&ZOHO.CREATOR.UTIL&&ZOHO.CREATOR.UTIL.setIframeHeight)
-      ZOHO.CREATOR.UTIL.setIframeHeight(document.body.scrollHeight+20);
-  }catch(e){}
+var reportViewportObserver=null;
+function observeReportViewport(){
+  if(reportViewportObserver||!window.IntersectionObserver)return;
+  // Creator can clip a 2000px iframe to a shorter tile. The implicit root
+  // includes ancestor clipping across origins; window.innerHeight does not.
+  // Observe the unchanged full-height html, so fitting body cannot feed back.
+  reportViewportObserver=new IntersectionObserver(function(entries){
+    var entry=entries[entries.length-1];
+    if(!entry||!entry.isIntersecting||entry.intersectionRect.height<1)return;
+    var bottom=Math.floor(Math.min(window.innerHeight,entry.intersectionRect.bottom))-4;
+    if(bottom>0)document.body.style.setProperty('--tax-viewport-height',bottom+'px');
+  },{threshold:Array.from({length:1001},function(_,index){return index/1000;})});
+  reportViewportObserver.observe(document.documentElement);
 }
 
 // ─── Sidebar ────────────────────────────────────────────────────────────
@@ -3339,7 +3347,7 @@ function switchTab(tab){
   var pp=$('propPanel');
   if(pp){pp.className='prop-panel'+(isParcels?'':' active');}
   if(!isParcels) renderPropertyTab();
-  setTimeout(setIframeHeight,100);
+  setTimeout(observeReportViewport,100);
 }
 
 
@@ -3834,7 +3842,7 @@ function handlePropCheckboxClick(event, id){
 
 function renderAll(){
   updateTabCounts();
-  if(state.activeTab==='properties'){renderPropertyTab();setTimeout(setIframeHeight,100);return;}
+  if(state.activeTab==='properties'){renderPropertyTab();setTimeout(observeReportViewport,100);return;}
   renderYearSwitcher();
   updateFacetPills();
   renderCompanyChips();
@@ -3843,7 +3851,7 @@ function renderAll(){
   renderFilterPills();
   renderBulkBar();
   renderTable(); // renderTable calls renderFooter internally — don't call it again here
-  setTimeout(setIframeHeight,100);
+  setTimeout(observeReportViewport,100);
 }
 
 

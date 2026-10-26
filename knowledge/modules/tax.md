@@ -1,3 +1,14 @@
+## Reachable final report row — 19.17.33, October 26, 2026
+
+Parcel and Property reports fill the visible Creator tile rather than using
+fixed 950px/1000px scrollers inside a clipped 2000px iframe. A single observer
+measures the root's visible intersection across the embedding boundary; the
+unchanged root prevents resize feedback. Flexible report regions retain their
+own vertical/horizontal scrolling, keyboard access and 12px bottom space.
+No data, forms, fields, functions, Custom APIs, workflows or permissions change.
+No Creator publication is required. Rollback: 19.17.32. See
+[release and verification](../../docs/tax-last-row-scroll-2026-10-26.md).
+
 ## Save activity and batch Retry — 19.17.32, October 26, 2026
 
 Active save stages show a spinner; confirmed record counts remain truthful.

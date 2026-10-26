@@ -10,14 +10,17 @@ const {chromium}=createRequire(import.meta.url)('playwright');
 const bulkFields=source.match(/var BULK_EDIT_FIELDS = \[[\s\S]*?\n\];/)[0];
 const appFiles=new Set(fs.readdirSync(appRoot));
 const html='<!doctype html><meta charset="utf-8"><style>body{margin:0;font:14px system-ui}main{padding:24px}button{font:inherit}</style><main id="toolbar"><button id="open">Save changes</button></main><script>window.LMRuntime={current:()=>({user:"fixture",environment:"DEVELOPMENT"})};'+bulkFields+'</script><script src="/tax-progress.js"></script><script src="/interaction-motion.js"></script><link rel="stylesheet" href="/interaction-motion.css">';
-const server=http.createServer((req,res)=>{
+const serve=(req,res)=>{
  const name=new URL(req.url,'http://fixture.test').pathname.slice(1);
  if(name==='full-widget'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(source);}
+ else if(name==='clipped-widget'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><style>html,body{margin:0;height:100%;overflow:hidden}header{height:115px}.tile{height:calc(100vh - 155px);overflow:hidden}iframe{display:block;border:0;width:100%;height:2000px}</style><header>Creator-style report viewport</header><div class="tile"><iframe src="http://127.0.0.1:'+childServer.address().port+'/full-widget"></iframe></div>');}
  else if(name==='embedded-widget'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end('<!doctype html><style>html,body{margin:0;height:100%;overflow:hidden}iframe{display:block;border:0;width:1280px;height:1800px}</style><iframe src="/full-widget"></iframe>');}
  else if(appFiles.has(name)){res.setHeader('Content-Type',name.endsWith('.css')?'text/css':name.endsWith('.html')?'text/html; charset=utf-8':'text/javascript');res.end(readTaxScript(name));}
  else if(['interaction-motion.js','interaction-motion.css'].includes(name)){res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':'text/css');res.end(fs.readFileSync('shared/'+name));}
  else {res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);}
-});
+};
+const server=http.createServer(serve),childServer=http.createServer(serve);
+await new Promise(resolve=>childServer.listen(0,'127.0.0.1',resolve));
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:'chrome',ignoreDefaultArgs:['--hide-scrollbars']});
 const page=await browser.newPage({viewport:{width:1280,height:800},reducedMotion:'reduce'}),errors=[];
@@ -121,6 +124,50 @@ async function wholeWidgetIntegration(){
   assert.equal(await app.evaluate(()=>__taxFixture.calls.length),beforeRetry+3,'the actual Retry button uses one complete counted scope read');assert.equal(await app.evaluate(()=>__taxFixture.writes),3,'Retry never repeats the captured write');
   assert.doesNotMatch(await app.locator('#taxSaveDialog').textContent(),/did not confirm|need review/i);
   await app.locator('#taxSaveClose').click();assert.equal(await app.locator('#tableBody tr[data-lm-record="'+ids[0]+'"] input[type="date"]').nth(3).inputValue(),'2030-12-26','recovery refreshes the visible report to the entered date');
+  // The native page clips its 2000px cross-origin iframe to the visible tile.
+  // Test the actual last row at the real scroll limit, including both pages,
+  // selection chrome, horizontal overflow and desktop window resizing.
+  await app.setViewportSize({width:1456,height:1218});
+  const childUrl='http://127.0.0.1:'+childServer.address().port+'/full-widget';
+  await app.route(childUrl,route=>route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:fs.readFileSync('releases/tax-center/19.17.32/index.html','utf8')}));
+  await app.goto('http://127.0.0.1:'+server.address().port+'/clipped-widget');
+  const previousFrame=app.frames().find(frame=>frame.url()===childUrl);
+  await previousFrame.evaluate(()=>__taxBoot);await previousFrame.evaluate(()=>runParcelSearch());
+  const previousBottom=await previousFrame.evaluate(()=>{const wrap=document.getElementById('tableWrap');wrap.scrollTop=wrap.scrollHeight;return document.querySelector('#tableBody tr:last-child').getBoundingClientRect().bottom;});
+  assert.ok(previousBottom>1063,'the previous fixed-height report reproduces the unreachable clipped last row');
+  await app.screenshot({path:path.join(output,'last-row-previous-clipped.png')});
+  await app.unroute(childUrl);
+  await app.goto('http://127.0.0.1:'+server.address().port+'/clipped-widget');
+  const frame=app.frames().find(frame=>frame.url().endsWith('/full-widget'));
+  await frame.evaluate(()=>__taxBoot);await frame.evaluate(()=>runParcelSearch());
+  const measurements=[];
+  for(const [width,height] of [[1456,1218],[3400,900],[1280,800]]){
+   await app.setViewportSize({width,height});
+   await frame.waitForFunction(expected=>Math.abs(document.body.clientHeight-expected)<4,height-159);
+   for(const pageNumber of [1,2]){
+    await frame.evaluate(pageNumber=>{clearBulkSelection();gotoPage(pageNumber);},pageNumber);
+    if(pageNumber===2)await frame.evaluate(()=>selectAllVisible());
+    await frame.locator('#tableWrap').press('Control+End');
+    await frame.waitForFunction(()=>{const wrap=document.getElementById('tableWrap');return Math.abs(wrap.scrollTop-(wrap.scrollHeight-wrap.clientHeight))<=1;});
+    const geometry=await frame.evaluate(()=>{
+     const wrap=document.getElementById('tableWrap'),last=document.querySelector('#tableBody tr:last-child'),r=wrap.getBoundingClientRect(),row=last.getBoundingClientRect();
+     return {body:document.body.clientHeight,top:r.top,bottom:r.bottom,clientHeight:wrap.clientHeight,scrollHeight:wrap.scrollHeight,scrollTop:wrap.scrollTop,lastTop:row.top,lastBottom:row.bottom,label:last.querySelector('.parcel-name')?.textContent||last.textContent.slice(0,30),scrollWidth:wrap.scrollWidth,clientWidth:wrap.clientWidth};
+    });
+    assert.ok(geometry.clientHeight>100,'the report keeps a usable scroll viewport');
+    assert.ok(geometry.bottom<=height-155,'the entire report viewport fits the clipped Creator tile');
+    assert.ok(geometry.lastTop>=geometry.top,'the final row begins inside the visible report');
+    assert.ok(geometry.lastBottom<=geometry.top+geometry.clientHeight-10,'the complete last row stays above the horizontal scrollbar with bottom breathing room: '+JSON.stringify(geometry));
+    assert.ok(Math.abs(geometry.scrollTop-(geometry.scrollHeight-geometry.clientHeight))<=1,'keyboard scrolling reaches the actual final row');
+    measurements.push({width,height,pageNumber,...geometry});
+    if(width===1456)await app.screenshot({path:path.join(output,'last-row-page-'+pageNumber+'.png')});
+   }
+  }
+  await frame.evaluate(()=>switchTab('properties'));
+  const property=await frame.locator('.prop-table-wrap').evaluate(node=>({bottom:node.getBoundingClientRect().bottom,height:node.clientHeight}));
+  assert.ok(property.height>100&&property.bottom<=645,'the companion Property scroller also fits the available space');
+  assert.equal(await frame.evaluate(()=>__taxFixture.writes),0,'last-row checks never change any record');
+  fs.writeFileSync(path.join(output,'last-row-geometry.json'),JSON.stringify(measurements,null,2));
+  console.log('Clipped Creator last-row geometry: '+JSON.stringify(measurements));
  }finally{await app.close();}
 }
 async function open(count=135){
@@ -205,4 +252,4 @@ await page.screenshot({path:path.join(output,'desktop-review.png')});
  await embeddedFocusRegression();
  assert.deepEqual(errors,[]);
  console.log('PASS compact Tax progress: top-aligned 135/32-row desktop geometry, pinned summary/stages/actions, internal results scrolling, human copy, confirmed counts, reduced motion; whole-widget bulk commit hides its editor, keeps one backdrop and locks the report controls, retains errors, restores visible success/rejection focus and never replays writes.');
-}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+}finally{await browser.close();await Promise.all([new Promise(resolve=>server.close(resolve)),new Promise(resolve=>childServer.close(resolve))]);}

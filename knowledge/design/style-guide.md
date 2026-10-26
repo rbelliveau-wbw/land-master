@@ -23,6 +23,14 @@ Clear beside Select All with the selection group. On tighter desktop widths,
 scroll that action group internally instead of wrapping it into another row.
 Selecting records changes presentation only; retain the existing write guards.
 
+Main report scrollers must fit the visible host area, including Creator pages
+that clip a taller iframe. Use a flexible, shrinkable report region and leave
+space below its final row, above any horizontal scrollbar. The last row and
+bottom scrollbar must remain reachable after resizing, paging and selection.
+Tax Center measures ancestor clipping with an IntersectionObserver on its
+unchanged document root; fitting the body must not create a height feedback loop.
+Keep row and data operations independent from this presentation measurement.
+
 Legal and Construction keep their module slider menu at the left of the page
 toolbar above the filters, with New and Refresh at the right. User direction
 October 20, 2026 supersedes the earlier centered-header placement. Use the exact
