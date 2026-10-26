@@ -31,6 +31,9 @@ function harness(options={}){
  for(const name of ['runtime-context.js','creator-data.js','tax-controller.js','tax-progress.js'])vm.runInContext(readTaxScript(name),c);
  const inline=[...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].filter(m=>m[1].trim()).map(m=>m[1]).join('\n');
  vm.runInContext(inline+'\nwindow.__taxTest={state,CONFIG,Tax,TaxUI,boot:taxBoot};',c);
+ // This business-flow fixture has inert timers. Real request-budget timing is
+ // exercised with an advancing clock in test-tax-rate-pacing.mjs.
+ c.LMData.configure({maxRequestsPerMinute:0});
  return {c,widget:c.__taxTest,nodes,node,selectors,storage,DATA,calls,writes,timers,dispatch,handshakes:()=>handshakes,maxActive:()=>maxActive,tick(ms){const entry=[...timers].find(([,v])=>v.ms===ms);assert.ok(entry);timers.delete(entry[0]);entry[1].fn();}};
 }
 async function ready(options){const h=harness(options),result=await h.c.__taxBoot;assert.equal(result.published,true);assert.equal(h.widget.state.referenceLoaded,true);assert.equal(h.widget.state.rowsLoaded,false);return h;}

@@ -79,13 +79,13 @@
       const job=countTail.catch(()=>{}).then(async()=>{cancelled(check);const result=await api().getRecordCount({report_name:report,...(criteria?{criteria}:{})});cancelled(check);const raw=result&&result.result&&result.result.records_count,value=Number(raw);if(root.LMData.responseFailed(result)||failed(result)||firstFailure(result)||String(result.code)!=='3000'||failed(result.result)||(typeof raw!=='number'&&typeof raw!=='string')||typeof raw==='string'&&!/^\d+$/.test(raw.trim())||!Number.isSafeInteger(value)||value<0)throw error('Creator count is unavailable.',result,firstFailure(result));if(max!=null&&value>max)throw error('Narrow the search below '+max+' parcel years.',result);return {result,value};});
       countTail=job;return job;
     }
-    async function count(report,criteria,check){session();return root.LMData.request(report+':tax-count',()=>nativeCount(report,criteria,check)).then(value=>value.value);}
+    async function count(report,criteria,check){session();return root.LMData.request(report+':tax-count',()=>nativeCount(report,criteria,check),{readOnly:true}).then(value=>value.value);}
     async function read(report,criteria,check,progress,max){
       session();let readExpected=null;
       const bridge={getRecordCount:async config=>{const answer=await nativeCount(report,criteria,check,max);readExpected=answer.value;return answer.result;},getRecords:config=>{cancelled(check);return api().getRecords(config);}};
       const rows=await root.LMData.readAll({reportName:report,criteria,fresh:true,api:bridge,isCancelled:check,onProgress:info=>{cancelled(check);if(progress)progress(info);}});
       cancelled(check);if(rows.some(row=>!row||!safeId(row.ID)))throw new Error('Creator returned a non-string record ID.');
-      const after=await root.LMData.request(report+':tax-count-final',()=>nativeCount(report,criteria,check,max));
+      const after=await root.LMData.request(report+':tax-count-final',()=>nativeCount(report,criteria,check,max),{readOnly:true});
       if(after.value!==readExpected)throw new Error('The Creator record count changed during the complete read.');
       cancelled(check);return {rows,expected:readExpected};
     }
@@ -119,7 +119,17 @@
       return new Promise((resolve,reject)=>{
         let settled=false,expired=false;operation.verificationPending=true;verificationReads++;notify();
         const finish=(ok,value)=>{if(settled)return;settled=true;root.clearTimeout(timer);(ok?resolve:reject)(value);};
-        const timer=root.setTimeout(()=>{expired=true;const failure=error('Fresh Creator data did not settle before the verification deadline. The captured fields need review.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);},options.verificationTimeoutMs||30000);
+        const timeout=options.verificationTimeoutMs||30000;let timer;
+        function expire(){
+          if(settled)return;
+          // Match Contracts: known queue budget/throttle idle time is not a hung
+          // native read. An active or unexplained wait retains the normal bound.
+          let metrics;try{metrics=root.LMPerf.snapshot();}catch(ignore){}
+          const wait=Number(metrics&&metrics.rate&&metrics.rate.waitMs);
+          if(metrics&&metrics.active===0&&Number.isFinite(wait)&&wait>0){timer=root.setTimeout(expire,Math.ceil(wait)+timeout);return;}
+          expired=true;const failure=error('Fresh Creator data did not settle before the verification deadline. The captured fields need review.');failure.timedOut=true;failure.noReplay=true;finish(false,failure);
+        }
+        timer=root.setTimeout(expire,timeout);
         Promise.resolve().then(()=>verify(operation,()=>expired,recovery)).then(row=>{operation.verificationPending=false;verificationReads--;notify();finish(true,row);},failure=>{operation.verificationPending=false;verificationReads--;notify();finish(false,failure);});
       });
     }
@@ -137,7 +147,7 @@
           const completed=native.then(value=>{operation.nativePending=false;nativeWrites--;notify();return value;},failure=>{operation.nativePending=false;nativeWrites--;notify();throw failure;});
           // Return the original completion, not the deadline, to the bounded queue.
           return completed;
-        }).then(value=>finish(true,value),failure=>finish(false,failure));
+        },{readOnly:false}).then(value=>finish(true,value),failure=>finish(false,failure));
       });
     }
     async function checkParcelYearCode(code){
@@ -152,13 +162,13 @@
       if(!payload||typeof payload!=='object'||Array.isArray(payload)||!Object.keys(payload).length)throw new Error('No captured Tax field changes are available.');Object.keys(payload).forEach(field=>comparable(report,field,payload[field]));
       if(kind==='update'){const baseline=(report===reports.rawLand?referenceRows.rawLand:scopeRows).find(row=>row.ID===id);if(!baseline||!Object.keys(payload).every(field=>own(baseline,field)))throw new Error('The complete loaded record did not include every requested field.');}
       if(pendingKeys.has(key))throw new Error('This destination already has a pending write.');const operation={key,id,report,form,payload:freeze(copy(payload)),actor,generation:referenceGeneration,scope:scopeGeneration};pending++;pendingKeys.add(key);drafts.set(key,operation);notify();
-      let dispatched=false;
+      let dispatched=false,acknowledged=false;
       try{
         if(kind==='create'&&form===forms.parcelYear&&own(operation.payload,'Tax_Parcel_Year_Code')){
           const checked=await checkParcelYearCode(operation.payload.Tax_Parcel_Year_Code);
           if(!checked.available)throw Object.assign(new Error(checked.message),{validation:true});
         }
-        const response=await send(operation,kind,()=>{dispatched=true;if(entry){entry.phase='sending';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}});operation.id=acknowledge(response,kind==='update'?id:null);if(entry){entry.phase='verifying';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}const row=await verifyBounded(operation);if(operation.generation!==referenceGeneration||operation.scope!==scopeGeneration)throw new Error('The Tax data generation changed.');publishVerified(operation,row);drafts.delete(key);return {code:3000,data:{ID:operation.id},verifiedRow:row};}catch(failure){const raw=failure.response||failure.raw||failure,detail=root.LMData.failureMessage(raw);if(detail&&!String(failure.message||'').includes(detail))failure.message=(failure.message||'Creator write failed.')+' '+detail;if(dispatched&&!definiteRejection(raw)){operation.id=operation.id||candidateId(raw);operation.error=failure;reviews.set(key,operation);failure.noReplay=true;failure.uncertain=true;}throw failure;}finally{pending--;pendingKeys.delete(key);notify();}
+        const response=await send(operation,kind,()=>{dispatched=true;if(entry){entry.phase='sending';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}});operation.id=acknowledge(response,kind==='update'?id:null);acknowledged=true;if(entry){entry.phase='verifying';if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}const row=await verifyBounded(operation);if(operation.generation!==referenceGeneration||operation.scope!==scopeGeneration)throw new Error('The Tax data generation changed.');publishVerified(operation,row);drafts.delete(key);return {code:3000,data:{ID:operation.id},verifiedRow:row};}catch(failure){const raw=failure.response||failure.raw||failure,detail=root.LMData.failureMessage(raw);if(detail&&!String(failure.message||'').includes(detail))failure.message=(failure.message||'Creator write failed.')+' '+detail;if(dispatched&&(acknowledged||!definiteRejection(raw))){operation.id=operation.id||candidateId(raw);operation.error=failure;reviews.set(key,operation);failure.noReplay=true;failure.uncertain=true;}throw failure;}finally{pending--;pendingKeys.delete(key);notify();}
     }
     async function recheck(key){const operation=reviews.get(key);if(!operation||pending||nativeWrites||verificationReads||batchActive)return false;pending++;notify();try{const row=await verifyBounded(operation,true);publishVerified(operation,row);for(const ledger of ledgers.values())if(ledger.report===operation.report)for(const entry of ledger.entries)if(entry.state==='unknown'&&entry.id===operation.id&&matches(row,entry.payload,operation.report)){entry.state='verified';entry.phase='verified';entry.verifiedRow=row;if(options.onBatchProgress)options.onBatchProgress(ledgerView(ledger));}reviews.delete(key);drafts.delete(key);return true;}catch(failure){operation.error=failure;return false;}finally{pending--;notify();}}
     async function runLedger(ledger,entries){

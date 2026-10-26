@@ -1,3 +1,19 @@
+## Native bulk request pacing — 19.17.28, October 26, 2026
+
+The production Series 125 date-clear test reproduced Creator 2955 / HTTP 429:
+the 135-record bulk path exhausted the native minute limit and left a partial
+ledger. Tax Center now opts into the existing shared 45-request budget and
+read-only throttle retry. Known queue-budget idle time no longer falsely expires
+the verification deadline; active/unexplained waits remain bounded. Writes are
+never automatically replayed. A read error after a valid write acknowledgement
+retains the unresolved destination even when that read's native code normally
+means a definite write rejection. Existing field clears, counts, identities,
+complete-scope preflight and explicit unknown-save recovery remain.
+
+No Creator schema, function, Custom API, permission or backend publication change.
+Rollback: Tax Center 19.17.27. [Native evidence, source changes, regression and
+deployment checks](../../docs/tax-date-clear-native-2026-10-26.md).
+
 ## Shared interaction motion — 19.17.20, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save
