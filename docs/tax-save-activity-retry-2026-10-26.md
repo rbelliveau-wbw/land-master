@@ -53,3 +53,18 @@ does not confirm the user's intended date or reconcile the original attempt.
 No production write was resent. Runtime timeout and recovery behavior are
 verified with native-shaped fixtures; live release/loading evidence is recorded
 after deployment.
+
+## Release result
+
+Full repository validation passed on the initial base and again after merging
+the latest main changes; the Pages build and desktop browser suite passed.
+Production commit `f477a2beee22057e05c3a60fec5742664c043f6f` passed CI
+`40358963006` and Pages deployment `40358963007`. A fresh native Creator page
+loaded both controller and progress assets at 19.17.32 with fingerprint
+`6pa0-3bee375c`. The native check performed no production writes.
+
+Evidence lives under `reports/2026-10-26-tax-date-clear/`: browser and validation
+logs, `production-progress-32-assets.json`, the loaded production screenshot,
+`progress-32-desktop-spinning.png`, the full-widget pending screenshot, the
+release patch and `verification-progress-32.md`. The spinner screenshot is a
+browser fixture, not a claim of a new production save.
