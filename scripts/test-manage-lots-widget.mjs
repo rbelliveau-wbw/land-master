@@ -245,3 +245,20 @@ assert.equal(queue.values.get('a').available,null);
 assert.equal(queue.values.has('b'),false);
 assert.equal(started.length,startsBeforeStop,'stopping must cancel queued work and prevent new requests');
 console.log("Manage Lots bounded/incremental counts, criteria safety, cache invalidation, Legal tints, eligibility, string IDs, selection, and read-only takedown checks passed.");
+
+// Toolbar filters operate on native Status independently of display/relationship precedence.
+const lotFilterState={lotBuilderIds:[],lotStatusIds:[],lotRelations:[]},filterSearch={value:''};
+const filterLots=['Open','Contracted','Scheduled','Sold'].map((Status,i)=>({ID:String(90071992547410000n+BigInt(i)),Status,Builder1:i<2?{ID:'90071992547409961'}:{},Lot_Code:'CODE-'+i,Lot_Number:String(i+1),Block:'01',On_Hold:i===0}));
+const contractIds=new Set([filterLots[0].ID]),takedownIds=new Set([filterLots[0].ID,filterLots[3].ID]);
+const filteredLots=new Function('S','$','selectedSubdivisionLots','idOf','str','indexes','inTakedown','lotBlock','lotNumber',`return (${extractFunction('visibleLots')})`)(lotFilterState,()=>filterSearch,()=>filterLots,row=>row?.ID||'',scalar,()=>({claims:contractIds}),row=>takedownIds.has(row.ID),row=>row.Block,row=>row.Lot_Number);
+const filteredIds=()=>filteredLots().map(row=>row.ID);
+assert.deepEqual(filteredIds(),filterLots.map(row=>row.ID));
+lotFilterState.lotStatusIds=['Open','Scheduled'];assert.deepEqual(filteredIds(),[filterLots[0].ID,filterLots[2].ID]);
+lotFilterState.lotBuilderIds=['90071992547409961'];assert.deepEqual(filteredIds(),[filterLots[0].ID]);
+lotFilterState.lotRelations=['contract'];assert.deepEqual(filteredIds(),[filterLots[0].ID]);
+lotFilterState.lotStatusIds=[];lotFilterState.lotBuilderIds=[];lotFilterState.lotRelations=['contract','takedown'];assert.deepEqual(filteredIds(),[filterLots[0].ID,filterLots[3].ID]);
+lotFilterState.lotRelations=['takedown'];lotFilterState.lotStatusIds=['Sold'];assert.deepEqual(filteredIds(),[filterLots[3].ID]);
+lotFilterState.lotRelations=[];lotFilterState.lotStatusIds=[];lotFilterState.lotBuilderIds=['unassigned'];assert.deepEqual(filteredIds(),[filterLots[2].ID,filterLots[3].ID]);filterSearch.value='code-2';assert.deepEqual(filteredIds(),[filterLots[2].ID]);
+const statusMarkup=source.match(/<select id="lotStatus"[\s\S]*?<\/select>/)[0];assert.deepEqual([...statusMarkup.matchAll(/<option value="([^"]+)"/g)].map(match=>match[1]),['Open','Contracted','Scheduled','Sold']);
+const subdivisionFilterLabel=new Function('str',`return (${extractFunction('subdivisionFilterLabel')})`)(scalar);assert.equal(subdivisionFilterLabel({Subdivision_Name:'Phase 1',Subdivision_Code:'001A'}),'Phase 1 · 001A');assert.equal(subdivisionFilterLabel({Subdivision_Name:'Phase 1'}),'Phase 1');
+console.log('Manage Lots native-status, Builder and relationship filter intersection/union, exact IDs, empty search and subdivision-code label checks passed.');

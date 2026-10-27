@@ -27,6 +27,7 @@
     "test:approval:browser": "node scripts/test-approval-admin-browser.mjs",
     "test:workflow-audit": "node scripts/test-subdivision-schedule-sync.mjs && node scripts/test-hcss-batches.mjs && node scripts/test-integration-audit.mjs && python scripts/test-integration-preparation.py && node scripts/test-workflow-log.mjs",
     "preview:crew": "node scripts/preview-crew-locations.mjs",
-    "test:tax-progress-ui": "node scripts/test-tax-progress-ui.mjs"
+    "test:tax-progress-ui": "node scripts/test-tax-progress-ui.mjs",
+    "test:lots:browser": "node scripts/test-lots-mode-performance-browser.mjs && node scripts/test-lots-filters-browser.mjs && node scripts/test-lots-list-browser.mjs"
   }
 }

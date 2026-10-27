@@ -11,7 +11,8 @@
     const drafts=new Map(),inlineQueue=[];
     const dates=[{key:'Entered_Date',label:'Entered',type:'date'},{key:'Purchase_Date',label:'Purchase',type:'date'},{key:'Close_Date',label:'Close',type:'date'}];
     const columns=new Set(['Lot_Size','Base_Price','Earnest_Money','Appraised_Value','On_Hold']);
-    function builders(){return (options.builders?options.builders():[]).filter(row=>row.Type1==='Builder').sort((a,b)=>natural(a.Builder_Name,b.Builder_Name));}
+    let builderSource=null,builderChoices=[];
+    function builders(){const source=options.builders?options.builders():[];if(source!==builderSource){builderSource=source;builderChoices=source.filter(row=>row.Type1==='Builder').sort((a,b)=>natural(a.Builder_Name,b.Builder_Name));}return builderChoices;}
     function display(key,value){
       if(value==null||value==='')return '—';
       const field=LMLotEdit.fields.find(field=>field.key===key)||dates.find(field=>field.key===key);
@@ -57,12 +58,12 @@
     function cellHTML(row,field){
       const id=row.ID,own=Object.prototype.hasOwnProperty.call(row,field.key),value=display(field.key,row[field.key]),isSaved=saved.get(id)?.includes(field.key),can=editMode&&LMLotEdit.editable(row)&&options.ready()&&own;
       if(field.type==='boolean')return '<td class="ll-boolean"><div class="ll-hold-actions"><input type="checkbox" data-inline-lot="'+esc(id)+'" data-inline-field="On_Hold" aria-label="On hold for Lot '+esc(options.number(row))+'" '+(row.On_Hold===true||row.On_Hold==='true'?'checked ':'')+(can?'':'disabled')+'><span class="ll-save-mark" '+(isSaved?'':'hidden')+'>'+check+'</span><span class="ll-field-error" role="alert"></span></div></td>';
-      if(!can||field.type==='date')return '<td class="ll-'+field.type+'"><span class="ll-read-value'+(isSaved?' ll-saved':'')+'" title="'+esc(value)+'">'+esc(value)+(isSaved?check:'')+'</span></td>';
+      if(!can||field.type==='date')return '<td data-lot-field="'+field.key+'" class="ll-'+field.type+'"><span class="ll-read-value'+(isSaved?' ll-saved':'')+'" title="'+esc(value)+'">'+esc(value)+(isSaved?check:'')+'</span></td>';
       const attrs=' data-inline-lot="'+esc(id)+'" data-inline-field="'+field.key+'" aria-label="Edit '+esc(field.label)+' for Lot '+esc(options.number(row))+'"';
       let input;
-      if(field.type==='lookup')input=inputHTML(field,row[field.key]).replace('id="llValue_'+field.key+'"','id="llInline_'+id+'_'+field.key+'"'+attrs);
+      if(field.type==='lookup')input=inputHTML(field,drafts.get(inlineKey(id,field.key))?.raw??row[field.key],true).replace('id="llValue_'+field.key+'"','id="llInline_'+id+'_'+field.key+'"'+attrs);
       else input='<input class="ll-inline-input" type="text" inputmode="decimal" autocomplete="off" value="'+esc(LMLotEdit.value(field.key,row[field.key]))+'"'+attrs+'>';
-      return '<td class="ll-'+field.type+'"><div class="ll-inline-cell'+(isSaved?' ll-saved':'')+'">'+input+'<span class="ll-save-mark" '+(isSaved?'':'hidden')+'>'+check+'</span><span class="ll-field-error" role="alert"></span></div></td>';
+      return '<td data-lot-field="'+field.key+'" class="ll-'+field.type+'"><div class="ll-inline-cell'+(isSaved?' ll-saved':'')+'">'+input+'<span class="ll-save-mark" '+(isSaved?'':'hidden')+'>'+check+'</span><span class="ll-field-error" role="alert"></span></div></td>';
     }
     function rowHTML(row,fields){
       const id=row.ID,can=LMLotEdit.editable(row)&&!options.locked(),status=options.state(row),canNote=editMode&&LMLotEdit.editable(row)&&options.ready();
@@ -84,7 +85,25 @@
         }).join('')+'</section>').join('')+'</div>';
       const report=host.querySelector('.ll-report');if(report){report.scrollTop=top;report.addEventListener('scroll',syncBlockPill,{passive:true});syncBlockPill();}
       host.querySelectorAll('[data-list-block]').forEach(block=>{block.querySelector('.ll-scroll').scrollLeft=horizontal.get(block.dataset.listBlock)||0;});
-      restoreInlineDrafts();if(root.LMPickers)root.LMPickers.enhance(host);syncChecks();syncFooter();
+      prepareInlineBuilders();restoreInlineDrafts();if(root.LMPickers)root.LMPickers.enhance(host);syncChecks();syncFooter();
+    }
+    function prepareInlineBuilders(){
+      host.querySelectorAll('select[data-inline-field="Builder1"]').forEach(select=>{select._pickerPrepare=()=>{
+        const row=options.byId(select.dataset.inlineLot);if(!row)return;
+        const value=select.value,template=document.createElement('template');template.innerHTML=inputHTML(LMLotEdit.fields.find(field=>field.key==='Builder1'),value);
+        select.replaceChildren(...template.content.firstElementChild.childNodes);select.value=value;
+      };});
+    }
+    function switchEditMode(on){
+      editMode=on;host.classList.toggle('ll-edit-mode',on);
+      // Keep the report, row identities, dates, selection and scroll containers mounted.
+      host.querySelectorAll('[data-lot-row]').forEach(node=>{
+        const row=options.byId(node.dataset.lotRow);if(!row)return;
+        node.querySelectorAll('[data-lot-field]').forEach(cell=>{const field=LMLotEdit.fields.find(field=>field.key===cell.dataset.lotField);if(field)cell.outerHTML=cellHTML(row,field);});
+        const hold=node.querySelector('[data-inline-field="On_Hold"]');if(hold)hold.disabled=!on||!LMLotEdit.editable(row)||!options.ready()||!Object.prototype.hasOwnProperty.call(row,'On_Hold');
+        const noteCell=node.querySelector('.ll-note-cell');if(noteCell)noteCell.innerHTML=noteButton(row,on&&LMLotEdit.editable(row)&&options.ready())+'<span class="ll-field-error" role="alert"></span>';
+      });
+      prepareInlineBuilders();if(root.LMPickers)root.LMPickers.enhance(host);syncFooter();
     }
     function syncBlockPill(){const report=host.querySelector('.ll-report');if(!report)return;const edge=report.getBoundingClientRect().top;let key='';host.querySelectorAll('[data-list-block]').forEach(block=>{if(!key||block.getBoundingClientRect().top<=edge+45)key=block.dataset.listBlock;});host.querySelectorAll('[data-jump-block]').forEach(pill=>{if(pill.dataset.jumpBlock===key)pill.setAttribute('aria-current','location');else pill.removeAttribute('aria-current');});}
     function jumpBlock(key){const block=Array.from(host.querySelectorAll('[data-list-block]')).find(node=>node.dataset.listBlock===key),report=host.querySelector('.ll-report');if(!block||!report)return;collapsed.delete(key);block.querySelector('.ll-scroll').hidden=false;block.querySelector('[data-collapse]').setAttribute('aria-expanded','true');report.scrollTo({top:report.scrollTop+block.getBoundingClientRect().top-report.getBoundingClientRect().top,behavior:root.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});syncBlockPill();}
@@ -166,9 +185,9 @@
       dialog.focus();
     }
     function closeDialog(){if(editor.pending())return;if(!dialog)return;const id=trigger?.dataset?.lotEdit,hold=trigger?.dataset?.lotHold,field=trigger?.dataset?.field;if(root.LMPickers)root.LMPickers.close(false);const pickerMenu=$('lmPickerMenu');if(pickerMenu&&dialog.contains(pickerMenu))document.body.appendChild(pickerMenu);dialog.remove();dialog=null;editing=false;inert.forEach(([node,value])=>node.inert=value);inert=[];options.render();const replacement=hold?host.querySelector('[data-lot-hold="'+CSS.escape(hold)+'"]'):id?host.querySelector('[data-lot-edit="'+CSS.escape(id)+'"]'+(field?'[data-field="'+CSS.escape(field)+'"]':':not([data-field])')):null;const target=trigger?.isConnected?trigger:replacement;if(target&&!target.disabled)target.focus({preventScroll:true});else $('lotsListMode').focus({preventScroll:true});}
-    function inputHTML(field,initial){
+    function inputHTML(field,initial,currentOnly){
       const key=field.key;if(field.type==='boolean')return '<label class="ll-hold"><input id="llValue_'+key+'" type="checkbox" '+(initial===true||initial==='true'?'checked':'')+'> On hold</label>';
-      if(field.type==='lookup'){const id=LMLotEdit.value(key,initial),choices=builders(),current=(options.builders?options.builders():[]).find(row=>row.ID===id);return '<select id="llValue_'+key+'" aria-label="Builder"><option value="">Select…</option>'+(id&&!choices.some(row=>row.ID===id)?'<option value="'+esc(id)+'" selected disabled>'+esc(current?.Builder_Name||display(key,initial))+'</option>':'')+choices.map(row=>'<option value="'+esc(row.ID)+'" '+(row.ID===id?'selected':'')+'>'+esc(row.Builder_Name)+'</option>').join('')+'</select>';}
+      if(field.type==='lookup'){const id=LMLotEdit.value(key,initial),choices=currentOnly?builders().filter(row=>row.ID===id):builders(),current=(options.builders?options.builders():[]).find(row=>row.ID===id);return '<select id="llValue_'+key+'" aria-label="Builder"><option value="">Select…</option>'+(id&&!choices.some(row=>row.ID===id)?'<option value="'+esc(id)+'" selected disabled>'+esc(current?.Builder_Name||display(key,initial))+'</option>':'')+choices.map(row=>'<option value="'+esc(row.ID)+'" '+(row.ID===id?'selected':'')+'>'+esc(row.Builder_Name)+'</option>').join('')+'</select>';}
       if(key==='Notes')return '<textarea id="llValue_'+key+'" rows="3">'+esc(initial||'')+'</textarea>';
       return '<input id="llValue_'+key+'" type="text" '+(['money','integer'].includes(field.type)?'inputmode="decimal" ':'')+'value="'+esc(initial==null?'':String(initial))+'" autocomplete="off">';
     }
@@ -236,7 +255,7 @@
       if(event.target.closest('#llColumns')){const menu=$('llColumnMenu');menu.hidden=!menu.hidden;$('llColumns').setAttribute('aria-expanded',String(!menu.hidden));}
     },true);
     host.addEventListener('change',event=>{
-      if(event.target.id==='llEditMode'){if(drafts.size||inlineRunning||inlineQueue.length||editor.blocked()||editing||options.locked()){event.target.checked=editMode;return;}closeNotePop();if(root.LMPickers)root.LMPickers.close(false);editMode=event.target.checked;render(visible);$('llEditMode')?.focus({preventScroll:true});}
+      if(event.target.id==='llEditMode'){if(drafts.size||inlineRunning||inlineQueue.length||editor.blocked()||editing||options.locked()){event.target.checked=editMode;return;}closeNotePop();if(root.LMPickers)root.LMPickers.close(false);switchEditMode(event.target.checked);$('llEditMode')?.focus({preventScroll:true});}
       if(event.target.matches('[data-inline-field]'))enqueueInline(event.target);
       if(event.target.id==='llSelectAll')choose(visible,event.target.checked);
       if(event.target.matches('[data-block-check]'))choose(visible.filter(row=>options.sid(row)===event.target.dataset.sub&&options.block(row)===event.target.dataset.blockCheck),event.target.checked);

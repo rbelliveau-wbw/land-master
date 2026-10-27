@@ -15,6 +15,16 @@ to it. Preserve vertical and horizontal report positions through cell saves.
 The summary combines subdivision identity and total with small status counts;
 omit the duplicate legend and availability totals in List mode.
 
+Show Subdivision Name and Subdivision_Code together in the subdivision picker;
+search both and preserve leading zeros. Put searchable Builder and Status
+multi-selects immediately to its right. Status offers only native Open,
+Contracted, Scheduled and Sold, regardless of a row's displayed relationship or
+On hold indicator. Separate pressed-state pills filter On a contract and In a
+takedown. Multiple values within a filter are alternatives; active filters
+intersect. Either relationship matches when both pills are pressed. Keep the
+Lots and Builder Takedowns filter selections independent. Existing selected lots
+stay selected through filtering; Select visible acts only on matching rows.
+
 Builder appears immediately after Status, using the existing Lots.Builder1
 lookup and a searchable single picker. Alphabetize only Type1 == "Builder"
 choices; keep historical values readable and check the chosen record's type
@@ -34,6 +44,12 @@ their complete lot detail uses the same block grouping without repeated codes.
 Start each widget session read-only, with a slider-style Edit mode switch above
 the report. In Edit mode, numeric inputs save on blur or Enter; Escape discards
 an unsent draft. Keep the native searchable single Builder picker inline.
+Switch modes by patching editable cells; preserve mounted rows, report containers,
+date cells, selections, collapsed blocks, focus and scroll. Reuse the sorted
+Builder choices for the loaded collection, and populate a row's complete Builder
+choices only when its picker opens. Preserve its current or failed-draft value
+while populating choices. Switching modes must not request or save data. Keep
+draft, pending-write and unknown-result locks in place.
 Lot Size inputs are 70 px (one third of the prior 210 px limit); currency inputs
 are 105 px (half). Show Appraised Value immediately after Earnest Money. Remove
 Address from the list, and keep Entered, Purchase and Close dates always visible

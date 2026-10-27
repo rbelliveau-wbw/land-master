@@ -11,7 +11,7 @@
     var button = select._pickerButton;
     if (!button) return;
     var values = selected(select);
-    button.querySelector('.lm-picker-label').textContent = values.length ? values.slice(0, 2).map(function (o) { return o.textContent; }).join(', ') + (values.length > 2 ? ' +'+(values.length-2) : '') : 'Select…';
+    button.querySelector('.lm-picker-label').textContent = values.length ? values.slice(0, 2).map(function (o) { return o.textContent; }).join(', ') + (values.length > 2 ? ' +'+(values.length-2) : '') : select.dataset.placeholder || 'Select…';
     button.disabled = select.disabled;
     button.setAttribute('aria-label', label(select) + ': ' + (values.length ? values.map(function (o) { return o.textContent; }).join(', ') : 'Select'));
     button.classList.toggle('is-empty', !values.length);
@@ -93,6 +93,7 @@
   function open(select) {
     if (select.disabled) return;
     initMenu(); if (active === select) return close(true); close(false); active = select;
+    if (select._pickerPrepare) { select._pickerPrepare(); refresh(select); }
     (select.closest('[role="dialog"]') || document.body).append(menu);
     search.value = ''; search.placeholder = 'Search ' + label(select) + '…';
     list.setAttribute('aria-label', label(select)); list.setAttribute('aria-multiselectable', String(select.multiple));
