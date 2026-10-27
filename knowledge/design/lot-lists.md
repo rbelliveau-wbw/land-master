@@ -2,30 +2,35 @@
 
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
-Lots defaults to a compact list, with Grid available in the same toolbar. Group
+Lots defaults to a compact list, with Grid available in the centered inventory switch. Group
 by subdivision, then natural-sorted Block and Lot. Put each group identity in
 its header once. Row identity runs Select, Notes, Block, Lot, Lot code, Status,
-then Builder. Keep status visible alongside readable values. Extra editable columns
+Linked to, then Builder. Keep status visible alongside readable values. Extra editable columns
 are chosen through Columns. Collapsing a block preserves its selection.
 
 Keep the toolbar, subdivision summary, status totals, selection controls and
 block navigation above an independently scrolling lot report. Use compact pills
 for every displayed block; clicking one expands that block and scrolls the report
 to it. Preserve vertical and horizontal report positions through cell saves.
-The summary combines subdivision identity and total with small status counts;
-omit the duplicate legend and availability totals in List mode.
+Keep subdivision identity/total, selection, block navigation, the prominent
+navy pill-style List/Grid switch, status counts, Edit mode and Columns in one
+inventory row. Center the switch independently of the left and right content;
+retain it in Grid. Omit the duplicate legend and availability totals in List.
 
 Show Subdivision Name and Subdivision_Code together in the subdivision picker;
 search both and preserve leading zeros. Put searchable Builder and Status
 multi-selects immediately to its right. Status offers only native Open,
 Contracted, Scheduled and Sold, regardless of a row's displayed relationship or
-On hold indicator. Separate pressed-state pills filter On a contract and In a
-takedown. Multiple values within a filter are alternatives; active filters
-intersect. Either relationship matches when both pills are pressed. Keep the
+On hold indicator. Status cells themselves use these same four native statuses.
+Place On a contract and In a takedown badges in a separate Linked to column
+immediately after Status; show both when both apply. These are indicators,
+not toolbar filters. Match the Status dropdown's font, weight and color to
+Subdivision and Builder, including its empty All statuses label.
+Multiple values within a filter are alternatives; active filters intersect. Keep the
 Lots and Builder Takedowns filter selections independent. Existing selected lots
 stay selected through filtering; Select visible acts only on matching rows.
 
-Builder appears immediately after Status, using the existing Lots.Builder1
+Builder appears immediately after Linked to, using the existing Lots.Builder1
 lookup and a searchable single picker. Alphabetize only Type1 == "Builder"
 choices; keep historical values readable and check the chosen record's type
 fresh before saving. The Builder picker lives directly in the row in Edit mode;
@@ -33,6 +38,12 @@ choosing a value saves immediately without opening an editor modal. On hold is
 a boolean checkbox, disabled in read-only mode. Use Budget Manager's circular
 pencil [line-note control and popover](notes.md) between Select and Lot. Its
 yellow state reflects nonempty persisted notes.
+
+Keep the open subdivision menu, query, focus and option identities through
+background count and lot reads. Patch only changed badges and batch count
+updates. Reuse the mounted lot report when its rows and editing context have
+not changed; cached subdivision clicks must not refetch lots. Filtering is not
+a save-state change and must not animate every unchanged table cell as saved.
 
 Use checkboxes and Shift-click on a checkbox or lot number for ranges in the
 current visible order. Select visible respects search; a block checkbox affects

@@ -255,9 +255,9 @@ const filteredIds=()=>filteredLots().map(row=>row.ID);
 assert.deepEqual(filteredIds(),filterLots.map(row=>row.ID));
 lotFilterState.lotStatusIds=['Open','Scheduled'];assert.deepEqual(filteredIds(),[filterLots[0].ID,filterLots[2].ID]);
 lotFilterState.lotBuilderIds=['90071992547409961'];assert.deepEqual(filteredIds(),[filterLots[0].ID]);
-lotFilterState.lotRelations=['contract'];assert.deepEqual(filteredIds(),[filterLots[0].ID]);
-lotFilterState.lotStatusIds=[];lotFilterState.lotBuilderIds=[];lotFilterState.lotRelations=['contract','takedown'];assert.deepEqual(filteredIds(),[filterLots[0].ID,filterLots[3].ID]);
-lotFilterState.lotRelations=['takedown'];lotFilterState.lotStatusIds=['Sold'];assert.deepEqual(filteredIds(),[filterLots[3].ID]);
+
+
+
 lotFilterState.lotRelations=[];lotFilterState.lotStatusIds=[];lotFilterState.lotBuilderIds=['unassigned'];assert.deepEqual(filteredIds(),[filterLots[2].ID,filterLots[3].ID]);filterSearch.value='code-2';assert.deepEqual(filteredIds(),[filterLots[2].ID]);
 const statusMarkup=source.match(/<select id="lotStatus"[\s\S]*?<\/select>/)[0];assert.deepEqual([...statusMarkup.matchAll(/<option value="([^"]+)"/g)].map(match=>match[1]),['Open','Contracted','Scheduled','Sold']);
 const subdivisionFilterLabel=new Function('str',`return (${extractFunction('subdivisionFilterLabel')})`)(scalar);assert.equal(subdivisionFilterLabel({Subdivision_Name:'Phase 1',Subdivision_Code:'001A'}),'Phase 1 · 001A');assert.equal(subdivisionFilterLabel({Subdivision_Name:'Phase 1'}),'Phase 1');

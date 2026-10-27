@@ -4,9 +4,10 @@
   const x='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   const check='<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>';
   const note="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4'><path d='M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z'/></svg>";
-  const natural=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true,sensitivity:'base'});
+  const collator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'}),natural=(a,b)=>collator.compare(String(a),String(b));
   function create(options){
-    const $=id=>document.getElementById(id),host=$('blocks'),selected=new Set(),collapsed=new Set(),saved=new Map();
+    const $=id=>document.getElementById(id),host=$('blocks'),bar=$('lotInventoryBar'),selected=new Set(),collapsed=new Set(),saved=new Map();
+    let lastRows=[],lastView='';
     let layout='list',anchor='',visible=[],dialog=null,draftRows=[],trigger=null,inert=[],editing=false,lastRun=null,editMode=false,notePop=null,noteRow=null,noteTrigger=null,inlineRunning=false,inlineReview=null;
     const drafts=new Map(),inlineQueue=[];
     const dates=[{key:'Entered_Date',label:'Entered',type:'date'},{key:'Purchase_Date',label:'Purchase',type:'date'},{key:'Close_Date',label:'Close',type:'date'}];
@@ -65,9 +66,27 @@
       else input='<input class="ll-inline-input" type="text" inputmode="decimal" autocomplete="off" value="'+esc(LMLotEdit.value(field.key,row[field.key]))+'"'+attrs+'>';
       return '<td data-lot-field="'+field.key+'" class="ll-'+field.type+'"><div class="ll-inline-cell'+(isSaved?' ll-saved':'')+'">'+input+'<span class="ll-save-mark" '+(isSaved?'':'hidden')+'>'+check+'</span><span class="ll-field-error" role="alert"></span></div></td>';
     }
+    const statusLabels={open:'Open',contracted:'Contracted',scheduled:'Scheduled',sold:'Sold'};
+    function lotStatus(row){return String(row.Status||'').trim().toLowerCase();}
+    function statusLabel(status){return statusLabels[status]||'Unavailable';}
+    function linksHTML(row){return (options.links?options.links(row):[]).map(label=>'<span class="ll-link-pill">'+esc(label)+'</span>').join('')||'<span class="ll-link-empty">—</span>';}
+    function feedbackHTML(html){return html.replace(/<td\b([^>]*)>/g,(_,attrs)=>'<td'+(attrs.includes('class="')?attrs.replace('class="','class="lm-motion-feedback '):attrs+' class="lm-motion-feedback"')+'>');}
+    function renderSummary(rows,groups){
+      if(!bar)return;bar.hidden=!options.isLots();bar.classList.toggle('ll-grid-summary',layout==='grid');
+      if(!groups){groups=new Map();rows.forEach(row=>{const sid=options.sid(row);if(!groups.has(sid))groups.set(sid,new Map());const blocks=groups.get(sid),b=options.block(row);if(!blocks.has(b))blocks.set(b,[]);blocks.get(b).push(row);});}
+      const text=(id,value)=>{const node=$(id);if(node.textContent!==String(value))node.textContent=value;};
+      const title=groups.size===1?options.subName(groups.keys().next().value):groups.size?groups.size+' subdivisions':'Choose subdivisions';text('llInventoryTitle',title);$('llInventoryTitle').title=title;text('llInventoryTotal',rows.length+' lots');
+      const tally=new Map();rows.forEach(row=>{const key=lotStatus(row);tally.set(key,(tally.get(key)||0)+1);});
+      const counts=Array.from(tally,([key,count])=>'<span class="ll-count st-'+esc(key)+'"><i></i>'+esc(statusLabel(key))+' <b>'+count+'</b></span>').join('');
+      if($('llInventoryCounts')._markup!==counts){$('llInventoryCounts').innerHTML=counts;$('llInventoryCounts')._markup=counts;}
+      const nav=Array.from(groups,([sid,blocks])=>Array.from(blocks,([block,lots])=>'<button type="button" class="ll-block-pill" data-jump-block="'+esc(sid+':'+block)+'" aria-label="Jump to Block '+esc(block)+' in '+esc(options.subName(sid))+'">'+(groups.size>1?esc(options.subName(sid))+' · ':'')+'Block '+esc(block)+' <span>'+lots.length+'</span></button>').join('')).join('');
+      if($('llBlockNav')._markup!==nav){$('llBlockNav').innerHTML=nav;$('llBlockNav')._markup=nav;}
+      const columnKey=Array.from(columns).join('|');if($('llColumnMenu')._columns!==columnKey){$('llColumnMenu').innerHTML=LMLotEdit.fields.filter(field=>!['Builder1','Address','Notes'].includes(field.key)).map(field=>'<label><input type="checkbox" data-lot-column="'+field.key+'" '+(columns.has(field.key)?'checked':'')+'> '+esc(field.label)+'</label>').join('');$('llColumnMenu')._columns=columnKey;}
+      $('llEditMode').checked=editMode;
+    }
     function rowHTML(row,fields){
-      const id=row.ID,can=LMLotEdit.editable(row)&&!options.locked(),status=options.state(row),canNote=editMode&&LMLotEdit.editable(row)&&options.ready();
-      return '<tr data-lot-row="'+esc(id)+'" aria-selected="'+selected.has(id)+'" class="'+(selected.has(id)?'ll-selected':'')+'"><td class="ll-check"><input type="checkbox" data-lot-check="'+esc(id)+'" aria-label="Select '+esc(row.Lot_Code||'Lot '+options.number(row))+'" '+(selected.has(id)?'checked ':'')+(can?'':'disabled')+'></td><td class="ll-note-cell">'+noteButton(row,canNote)+'<span class="ll-field-error" role="alert"></span></td><td class="ll-block-number">'+esc(options.block(row))+'</td><td class="ll-number"><button type="button" data-lot-select="'+esc(id)+'" '+(can?'':'disabled')+'>'+esc(options.number(row))+'</button></td><td class="ll-code">'+esc(row.Lot_Code)+'</td><td><span class="ll-status st-'+esc(status)+'">'+esc(options.label(status))+'</span></td>'+fields.map(field=>cellHTML(row,field)).join('')+'</tr>';
+      const id=row.ID,can=LMLotEdit.editable(row)&&!options.locked(),status=lotStatus(row),canNote=editMode&&LMLotEdit.editable(row)&&options.ready();
+      return feedbackHTML('<tr data-lot-row="'+esc(id)+'" aria-selected="'+selected.has(id)+'" class="'+(selected.has(id)?'ll-selected':'')+'"><td class="ll-check"><input type="checkbox" data-lot-check="'+esc(id)+'" aria-label="Select '+esc(row.Lot_Code||'Lot '+options.number(row))+'" '+(selected.has(id)?'checked ':'')+(can?'':'disabled')+'></td><td class="ll-note-cell">'+noteButton(row,canNote)+'<span class="ll-field-error" role="alert"></span></td><td class="ll-block-number">'+esc(options.block(row))+'</td><td class="ll-number"><button type="button" data-lot-select="'+esc(id)+'" '+(can?'':'disabled')+'>'+esc(options.number(row))+'</button></td><td class="ll-code">'+esc(row.Lot_Code)+'</td><td><span class="ll-status st-'+esc(status)+'">'+esc(statusLabel(status))+'</span></td><td class="ll-links">'+linksHTML(row)+'</td>'+fields.map(field=>cellHTML(row,field)).join('')+'</tr>');
     }
     function render(rows){
       const scroll=host.querySelector('.ll-report'),top=scroll?scroll.scrollTop:0,horizontal=new Map(Array.from(host.querySelectorAll('[data-list-block]'),block=>[block.dataset.listBlock,block.querySelector('.ll-scroll')?.scrollLeft||0]));
@@ -76,12 +95,14 @@
       const fields=LMLotEdit.fields.filter(field=>field.key==='Builder1'||columns.has(field.key)&&field.key!=='On_Hold').concat(dates,columns.has('On_Hold')?LMLotEdit.fields.filter(field=>field.key==='On_Hold'):[]),groups=new Map();
       visible.forEach(row=>{const sid=options.sid(row);if(!groups.has(sid))groups.set(sid,new Map());const blocks=groups.get(sid),b=options.block(row);if(!blocks.has(b))blocks.set(b,[]);blocks.get(b).push(row);});
       host.classList.add('ll-host');host.classList.toggle('ll-edit-mode',editMode);
-      const tally=new Map();visible.forEach(row=>{const key=options.state(row);tally.set(key,(tally.get(key)||0)+1);});
-      const title=groups.size===1?options.subName(groups.keys().next().value):groups.size+' subdivisions';
-      host.innerHTML=(visible.length?'<div class="ll-summary"><div class="ll-summary-top"><div class="ll-identity"><strong>'+esc(title)+'</strong><span class="ll-total">'+visible.length+' lots</span></div><div class="ll-counts">'+Array.from(tally,([key,count])=>'<span class="ll-count st-'+esc(key)+'"><i></i>'+esc(options.label(key))+' <b>'+count+'</b></span>').join('')+'</div></div><div class="ll-tools"><label><input id="llSelectAll" type="checkbox" aria-label="Select all visible lots"> Select visible</label><nav class="ll-block-nav" aria-label="Jump to block">'+Array.from(groups,([sid,blocks])=>Array.from(blocks,([block,lots])=>'<button type="button" class="ll-block-pill" data-jump-block="'+esc(sid+':'+block)+'" aria-label="Jump to Block '+esc(block)+' in '+esc(options.subName(sid))+'">'+(groups.size>1?esc(options.subName(sid))+' · ':'')+'Block '+esc(block)+' <span>'+lots.length+'</span></button>').join('')).join('')+'</nav><label class="ll-mode-switch"><input id="llEditMode" type="checkbox" role="switch" aria-label="Edit mode" '+(editMode?'checked':'')+'><span class="ll-slider" aria-hidden="true"></span><b>Edit mode</b></label><button class="btn" id="llColumns" type="button" aria-expanded="false">Columns</button><div id="llColumnMenu" class="ll-column-menu" hidden>'+LMLotEdit.fields.filter(field=>!['Builder1','Address','Notes'].includes(field.key)).map(field=>'<label><input type="checkbox" data-lot-column="'+field.key+'" '+(columns.has(field.key)?'checked':'')+'> '+esc(field.label)+'</label>').join('')+'</div></div></div>':'')+'<div class="ll-report" tabindex="0" role="region" aria-label="Lots by block">'+
+      renderSummary(visible,groups);
+      const view=JSON.stringify([editMode,Array.from(columns),options.context(),options.generation(),options.ready(),options.locked(),Array.from(saved),visible.map(row=>[row.ID,lotStatus(row),options.links?options.links(row):[]])]);
+      if(lastView===view&&lastRows.length===visible.length&&visible.every((row,index)=>row===lastRows[index])&&host.querySelector('.ll-report')){syncChecks();syncFooter();return;}
+      lastView=view;lastRows=visible.slice();
+      host.innerHTML='<div class="ll-report" tabindex="0" role="region" aria-label="Lots by block">'+
         Array.from(groups,([sid,blocks])=>'<section class="ll-subdivision"><div class="ll-sub-head"><strong>'+esc(options.subName(sid))+'</strong></div>'+Array.from(blocks,([block,lots])=>{
           const key=sid+':'+block,shut=collapsed.has(key),editable=lots.filter(LMLotEdit.editable);
-          return '<section class="ll-block" data-list-block="'+esc(key)+'"><div class="ll-block-head"><button class="ll-disclosure" type="button" data-collapse="'+esc(key)+'" aria-expanded="'+!shut+'" aria-label="Toggle Block '+esc(block)+'"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 3 5 5-5 5"/></svg></button><input type="checkbox" data-block-check="'+esc(block)+'" data-sub="'+esc(sid)+'" aria-label="Select Block '+esc(block)+' in '+esc(options.subName(sid))+'" '+(editable.length?'':'disabled')+'><strong>Block '+esc(block)+'</strong><span>'+lots.length+' lots</span><button class="link" data-all="'+esc(block)+'" data-sub="'+esc(sid)+'" type="button" '+(lots.some(options.eligible)?'':'disabled')+'>Select available</button></div><div class="ll-scroll" '+(shut?'hidden':'')+'><table class="ll-table"><thead><tr><th class="ll-check"></th><th class="ll-note-cell"></th><th>Block</th><th>Lot</th><th>Lot code</th><th>Status</th>'+fields.map(field=>'<th class="ll-'+field.type+'">'+esc(field.label)+'</th>').join('')+'</tr></thead><tbody>'+lots.map(row=>rowHTML(row,fields)).join('')+'</tbody></table></div></section>';
+          return '<section class="ll-block" data-list-block="'+esc(key)+'"><div class="ll-block-head"><button class="ll-disclosure" type="button" data-collapse="'+esc(key)+'" aria-expanded="'+!shut+'" aria-label="Toggle Block '+esc(block)+'"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 3 5 5-5 5"/></svg></button><input type="checkbox" data-block-check="'+esc(block)+'" data-sub="'+esc(sid)+'" aria-label="Select Block '+esc(block)+' in '+esc(options.subName(sid))+'" '+(editable.length?'':'disabled')+'><strong>Block '+esc(block)+'</strong><span>'+lots.length+' lots</span><button class="link" data-all="'+esc(block)+'" data-sub="'+esc(sid)+'" type="button" '+(lots.some(options.eligible)?'':'disabled')+'>Select available</button></div><div class="ll-scroll" '+(shut?'hidden':'')+'><table class="ll-table"><thead><tr><th class="ll-check"></th><th class="ll-note-cell"></th><th>Block</th><th>Lot</th><th>Lot code</th><th>Status</th><th class="ll-links">Linked to</th>'+fields.map(field=>'<th class="ll-'+field.type+'">'+esc(field.label)+'</th>').join('')+'</tr></thead><tbody>'+lots.map(row=>rowHTML(row,fields)).join('')+'</tbody></table></div></section>';
         }).join('')+'</section>').join('')+'</div>';
       const report=host.querySelector('.ll-report');if(report){report.scrollTop=top;report.addEventListener('scroll',syncBlockPill,{passive:true});syncBlockPill();}
       host.querySelectorAll('[data-list-block]').forEach(block=>{block.querySelector('.ll-scroll').scrollLeft=horizontal.get(block.dataset.listBlock)||0;});
@@ -105,7 +126,7 @@
       });
       prepareInlineBuilders();if(root.LMPickers)root.LMPickers.enhance(host);syncFooter();
     }
-    function syncBlockPill(){const report=host.querySelector('.ll-report');if(!report)return;const edge=report.getBoundingClientRect().top;let key='';host.querySelectorAll('[data-list-block]').forEach(block=>{if(!key||block.getBoundingClientRect().top<=edge+45)key=block.dataset.listBlock;});host.querySelectorAll('[data-jump-block]').forEach(pill=>{if(pill.dataset.jumpBlock===key)pill.setAttribute('aria-current','location');else pill.removeAttribute('aria-current');});}
+    function syncBlockPill(){const report=host.querySelector('.ll-report');if(!report)return;const edge=report.getBoundingClientRect().top;let key='';host.querySelectorAll('[data-list-block]').forEach(block=>{if(!key||block.getBoundingClientRect().top<=edge+45)key=block.dataset.listBlock;});bar.querySelectorAll('[data-jump-block]').forEach(pill=>{if(pill.dataset.jumpBlock===key)pill.setAttribute('aria-current','location');else pill.removeAttribute('aria-current');});}
     function jumpBlock(key){const block=Array.from(host.querySelectorAll('[data-list-block]')).find(node=>node.dataset.listBlock===key),report=host.querySelector('.ll-report');if(!block||!report)return;collapsed.delete(key);block.querySelector('.ll-scroll').hidden=false;block.querySelector('[data-collapse]').setAttribute('aria-expanded','true');report.scrollTo({top:report.scrollTop+block.getBoundingClientRect().top-report.getBoundingClientRect().top,behavior:root.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});syncBlockPill();}
     function inlineKey(id,key){return id+':'+key;}
     function inlineNode(job){return job.field==='Notes'?host.querySelector('[data-note="'+CSS.escape(job.id)+'"]'):host.querySelector('[data-inline-lot="'+CSS.escape(job.id)+'"][data-inline-field="'+CSS.escape(job.field)+'"]');}
@@ -135,12 +156,12 @@
     }
     function patchSavedRow(row){
       const node=host.querySelector('[data-lot-row="'+CSS.escape(row.ID)+'"]');if(!node)return;
-      const status=node.querySelector('.ll-status');if(status){const state=options.state(row);status.className='ll-status st-'+state;status.textContent=options.label(state);}
+      const status=node.querySelector('.ll-status');if(status){const state=lotStatus(row);status.className='ll-status st-'+state;status.textContent=statusLabel(state);const links=node.querySelector('.ll-links');if(links)links.innerHTML=linksHTML(row);}
       node.querySelectorAll('td.ll-date').forEach((cell,index)=>{const value=display(dates[index].key,row[dates[index].key]),span=cell.querySelector('.ll-read-value');if(span){span.textContent=value;span.title=value;}});
       const noteCell=node.querySelector('.ll-note-cell');if(noteCell){const focus=noteCell.contains(document.activeElement);noteCell.innerHTML=noteButton(row,editMode&&LMLotEdit.editable(row))+'<span class="ll-field-error" role="alert"></span>';if(focus)noteCell.querySelector('button')?.focus({preventScroll:true});}
     }
     function finishInline(job){
-      drafts.delete(job.key);job.queued=false;const row=options.byId(job.id);if(row)patchSavedRow(row);const node=inlineNode(job);if(node)node._lotBefore=null;setInlineState(job,'verified');controlLocks();if(node?._pickerButton&&document.activeElement?.closest('#lmPickerMenu'))node._pickerButton.focus({preventScroll:true});
+      drafts.delete(job.key);job.queued=false;const row=options.byId(job.id);if(row)patchSavedRow(row);visible=visible.map(prior=>options.byId(prior.ID)||prior);renderSummary(visible);const node=inlineNode(job);if(node)node._lotBefore=null;setInlineState(job,'verified');controlLocks();if(node?._pickerButton&&document.activeElement?.closest('#lmPickerMenu'))node._pickerButton.focus({preventScroll:true});
       if(root.LMSuccess)root.LMSuccess.inline(job.key,job.field==='Notes'?'Lot note saved.':job.field==='On_Hold'?'Lot hold saved.':job.field==='Builder1'?'Lot builder saved.':'Lot '+LMLotEdit.fields.find(field=>field.key===job.field).label.toLowerCase()+' saved.','lot changes',()=>options.context()===job.context&&options.generation()===job.generation,job.revision);
     }
     async function processInlineQueue(){
@@ -242,7 +263,7 @@
       let operation;try{operation=editor.capture(draftRows,changes());}catch(error){$('llEditError').hidden=false;$('llEditError').textContent=error.message;return;}
       showProgress(operation);const run=await editor.commit(operation);if(run.stage==='verified'){if(window.LMSuccess)LMSuccess.show(run.rows.length===1?'Lot saved.':run.rows.length+' lots updated.');if(run.rows.length===1)closeDialog();}
     }
-    host.addEventListener('click',event=>{
+    function listClick(event){
       if(layout!=='list')return;
       const checkbox=event.target.closest('[data-lot-check]'),number=event.target.closest('[data-lot-select]'),edit=event.target.closest('[data-lot-edit]'),all=event.target.closest('[data-all]'),disclosure=event.target.closest('[data-collapse]'),notes=event.target.closest('[data-note]'),jump=event.target.closest('[data-jump-block]');
       if(checkbox||number||edit||all||disclosure||notes||jump){event.stopImmediatePropagation();}
@@ -253,19 +274,22 @@
       if(all)choose(visible.filter(row=>options.sid(row)===all.dataset.sub&&options.block(row)===all.dataset.all&&options.eligible(row)),true);
       if(disclosure){const key=disclosure.dataset.collapse;if(collapsed.has(key))collapsed.delete(key);else collapsed.add(key);const shut=collapsed.has(key);disclosure.setAttribute('aria-expanded',String(!shut));disclosure.closest('.ll-block').querySelector('.ll-scroll').hidden=shut;}
       if(event.target.closest('#llColumns')){const menu=$('llColumnMenu');menu.hidden=!menu.hidden;$('llColumns').setAttribute('aria-expanded',String(!menu.hidden));}
-    },true);
-    host.addEventListener('change',event=>{
+    }
+    host.addEventListener('click',listClick,true);bar.addEventListener('click',listClick,true);
+    function listChange(event){
       if(event.target.id==='llEditMode'){if(drafts.size||inlineRunning||inlineQueue.length||editor.blocked()||editing||options.locked()){event.target.checked=editMode;return;}closeNotePop();if(root.LMPickers)root.LMPickers.close(false);switchEditMode(event.target.checked);$('llEditMode')?.focus({preventScroll:true});}
       if(event.target.matches('[data-inline-field]'))enqueueInline(event.target);
       if(event.target.id==='llSelectAll')choose(visible,event.target.checked);
       if(event.target.matches('[data-block-check]'))choose(visible.filter(row=>options.sid(row)===event.target.dataset.sub&&options.block(row)===event.target.dataset.blockCheck),event.target.checked);
       if(event.target.matches('[data-lot-column]')){if(drafts.size||inlineRunning||editor.blocked()){event.target.checked=columns.has(event.target.dataset.lotColumn);return;}const key=event.target.dataset.lotColumn;if(event.target.checked)columns.add(key);else columns.delete(key);render(visible);$('llColumns')?.focus();}
-    });
+    }
+    host.addEventListener('change',listChange);bar.addEventListener('change',listChange);
     $('massUpdate').addEventListener('click',()=>{if(lastRun&&lastRun.rows.some(row=>row.state==='unknown')&&!editor.pending()){editing=true;beginDialog('Lot update status',lastRun.rows.length+' lots');showProgress(lastRun.operation);patchRun(lastRun);return;}openEditor(selectedRows());});
     $('clear').addEventListener('click',event=>{if(layout==='list'){event.stopImmediatePropagation();if(!options.locked()&&!editing)clear();}},true);
-    ['lotsListMode','lotsGridMode'].forEach((id,index)=>$(id).addEventListener('click',()=>{if(options.locked()||editing)return;layout=index?'grid':'list';$('lotsListMode').setAttribute('aria-pressed',String(layout==='list'));$('lotsGridMode').setAttribute('aria-pressed',String(layout==='grid'));if(layout==='grid')host.classList.remove('ll-host');options.render();}));
+    ['lotsListMode','lotsGridMode'].forEach((id,index)=>$(id).addEventListener('click',()=>{if(options.locked()||editing)return;layout=index?'grid':'list';$('lotsListMode').setAttribute('aria-pressed',String(layout==='list'));$('lotsGridMode').setAttribute('aria-pressed',String(layout==='grid'));$('lotsListMode').setAttribute('aria-selected',String(layout==='list'));$('lotsGridMode').setAttribute('aria-selected',String(layout==='grid'));if(layout==='grid')host.classList.remove('ll-host');options.render();}));
+    $('lotsLayout').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||options.locked()||editing)return;event.preventDefault();const button=$(event.key==='ArrowLeft'||event.key==='Home'?'lotsListMode':'lotsGridMode');button.click();button.focus({preventScroll:true});});
     document.addEventListener('click',event=>{if(!event.target.closest('.ll-tools')){const menu=$('llColumnMenu');if(menu)menu.hidden=true;$('llColumns')?.setAttribute('aria-expanded','false');}});
-    return Object.freeze({render,syncFooter,selectedRows,layout:()=>layout,active:()=>editing||editor.blocked()||inlineRunning||inlineQueue.length>0||drafts.size>0||!!noteRow,hasDraft:()=>drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow,editMode:()=>editMode,editor,display,clear,remove(id){selected.delete(id);syncChecks();syncFooter();}});
+    return Object.freeze({render,renderSummary,syncFooter,selectedRows,layout:()=>layout,active:()=>editing||editor.blocked()||inlineRunning||inlineQueue.length>0||drafts.size>0||!!noteRow,hasDraft:()=>drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow,editMode:()=>editMode,editor,display,clear,remove(id){selected.delete(id);syncChecks();syncFooter();}});
   }
   root.LMLotsList=Object.freeze({create});
 })(typeof window==='undefined'?globalThis:window);
