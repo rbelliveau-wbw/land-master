@@ -826,14 +826,14 @@ tr.bulk-on{background:var(--psoft)}
 .unique-note::before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor}
 .unique-note[data-state="duplicate"],.unique-note[data-state="invalid"],.unique-note[data-state="error"]{color:#b42318;font-weight:700}
 </style>
-<script src="success-feedback.js?v=19.17.34"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.34">
-<script src="interaction-motion.js?v=19.17.34"></script>
-<script src="interaction-surfaces.js?v=19.17.34"></script>
-<script src="number-edit-commit.js?v=19.17.34"></script>
-<script src="number-transitions.js?v=19.17.34"></script>
-<script src="number-surfaces.js?v=19.17.34"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.34">
+<script src="success-feedback.js?v=19.17.36"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.36">
+<script src="interaction-motion.js?v=19.17.36"></script>
+<script src="interaction-surfaces.js?v=19.17.36"></script>
+<script src="number-edit-commit.js?v=19.17.36"></script>
+<script src="number-transitions.js?v=19.17.36"></script>
+<script src="number-surfaces.js?v=19.17.36"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.36">
 </head>
 <body>
 
@@ -1154,6 +1154,7 @@ tr.bulk-on{background:var(--psoft)}
         Tick a field to update it across all selected records. Unticked fields are left unchanged. For dollar fields, use the <strong>⟵ copy</strong> menu to pull each record's own value from another field (e.g. copy Assessed Value into Market Final) instead of typing one shared value.
       </div>
       <div id="bulkEditFields"></div>
+      <div id="bulkDateErr" class="ferr" role="alert"></div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeBulkEdit()">Cancel</button>
@@ -1395,7 +1396,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.34',
+  version: '19.17.36',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -1554,6 +1555,34 @@ function bindCurrencyInputs(root){
 }
 function toDateInput(v){if(!v||v==='—')return '';const s=String(v).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m)return m[3]+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');const MONTHS={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};const m2=s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);if(m2)return m2[3]+'-'+(MONTHS[m2[2]]||'01')+'-'+m2[1].padStart(2,'0');return '';}
 function toZohoDate(v){if(!v)return '';const m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return v;return m[2]+'/'+m[3]+'/'+m[1];}
+
+// Native date controls emit change after each valid year fragment (for example
+// 0002, 0020, 0202, 2026). Validate on commit and save inline dates only on exit.
+// A partial native control can expose value='' with badInput; it is not a clear.
+function taxValidateDate(input,label,errorElement){
+  if(!input)return true;
+  var valid=!(input.validity&&input.validity.valid===false);
+  if(valid){try{Tax.dateText(input.value);}catch(error){valid=false;}}
+  input.classList.toggle('invalid',!valid);
+  input.setAttribute('aria-invalid',String(!valid));
+  if(valid)return true;
+  var message='Enter a complete, valid date for '+label+'.';
+  setMessage(message,'err');
+  if(errorElement){errorElement.textContent=message;errorElement.style.display='block';}
+  return false;
+}
+function taxInlineDateExit(input,id,field){
+  if(input._taxDateSaving)return input._taxDateSaving;
+  var label=input.getAttribute('aria-label')||field.replace(/_/g,' ');
+  if(!taxValidateDate(input,label))return Promise.resolve(false);
+  var value=input.value;
+  if(value===input.dataset.dateOriginal){input.classList.remove('dirty','save-error');return Promise.resolve(false);}
+  if(!Tax.canEdit(CONFIG.reports.parcelYears,String(id)))return Promise.resolve(false);
+  var payload={};payload[field]=toZohoDate(value);
+  // Explicit source preserves field feedback after blur has moved activeElement.
+  input._taxDateSaving=inlineSave(id,payload,input).then(function(){input.dataset.dateOriginal=value;return true;}).catch(function(error){setMessage('Save failed: '+describeResp(error),'err');return false;}).finally(function(){input._taxDateSaving=null;});
+  return input._taxDateSaving;
+}
 function statusClass(s){return(s||'Awaiting Assessment').replace(/[^A-Za-z0-9]+/g,'');}
 function isPaid(s){return normalizeStatusName(s).indexOf('Paid')===0;}
 function isUntriaged(s){s=normalizeStatusName(s);return s==='Awaiting Assessment'||s==='Assessment Received';}
@@ -2058,12 +2087,12 @@ function applyCodeAndPropertyLink(lr, fieldMap){
   if (fieldMap.Tax_Parcel_Year_Code !== undefined || fieldMap.Property1 !== undefined) refreshDisplayName(lr);
 }
 
-function inlineSave(id, fieldMap) {
+function inlineSave(id, fieldMap, sourceInput) {
   if(!Tax.canEdit(CONFIG.reports.parcelYears,String(id)))return Promise.reject(new Error('The complete parcel scope is unavailable for editing.'));
   // fieldMap: { creatorField: value, ... }
   const lr = state.data.parcelYears.find(r=>String(r.id)===String(id));
   if (!lr) return Promise.reject(new Error('The current parcel binding is unavailable.'));
-  const sourceEl = inlineSourceElement();
+  const sourceEl = sourceInput || inlineSourceElement();
   const saveKey = inlineStateKey(sourceEl, id, fieldMap);
   const feedbackKey='parcel:'+saveKey,feedbackRevision=window.LMSuccess?LMSuccess.begin(feedbackKey):0;
   markInlineState(sourceEl, 'saving', saveKey);
@@ -2225,6 +2254,7 @@ function openBulkEdit(){
     html+='</div>';
   });
   $('bulkEditFields').innerHTML=html;
+  $('bulkDateErr').style.display='none';
   $('bulkEditOverlay').classList.remove('hidden');
 }
 
@@ -2265,6 +2295,12 @@ function applyBulkEdit(){
 
   var fieldByKey={};
   BULK_EDIT_FIELDS.forEach(function(f){fieldByKey[f.key]=f;});
+  $('bulkDateErr').style.display='none';
+  for(var dateField of BULK_EDIT_FIELDS.filter(function(f){return f.type==='date';})){
+    var dateToggle=document.querySelector('.be-toggle[data-key="'+dateField.key+'"]');
+    var dateInput=document.querySelector('.be-input[data-key="'+dateField.key+'"]');
+    if(dateToggle&&dateToggle.checked&&!taxValidateDate(dateInput,dateField.label,$('bulkDateErr'))){if(dateInput)dateInput.focus();return false;}
+  }
 
   // Two kinds of ticked fields:
   //  • literalSpecs — one value applied to every record (classic bulk edit).
@@ -2581,7 +2617,7 @@ function openModal(id) {
   const stageClose=()=>'</div></div>';
   const metaRow=(k,v)=>'<div class="mmeta-row"><span class="k">'+k+'</span>'+(v?'<span class="v" title="'+esc(v)+'">'+esc(v)+'</span>':'<span class="v empty">—</span>')+'</div>';
 
-  let html='';
+  let html='<div id="modalDateErr" class="ferr" role="alert"></div>';
   if(row.legalDesc) html+='<div class="mlegal" title="'+esc(row.legalDesc)+'">'+esc(row.legalDesc)+'</div>';
   html+='<div class="msplit">';
 
@@ -2817,6 +2853,10 @@ function animateSaveButton(btn, promise, opts){
 function saveModalRecord(){
   if(!Tax.canEdit(CONFIG.reports.parcelYears,String(state.modalId)))return false;
   if(!state.modalId)return;
+  var dateError=$('modalDateErr');if(dateError)dateError.style.display='none';
+  for(var dateEntry of [['mNoticeReceived','Notice Received'],['mProtestDeadline','Protest Deadline'],['mProtestHearing','Protest Hearing'],['mArbNoticeReceived','ARB Notice Received'],['mArbHearing','ARB Hearing']]){
+    var dateInput=$(dateEntry[0]);if(!taxValidateDate(dateInput,dateEntry[1],dateError)){dateInput.focus();return false;}
+  }
   const row=state.data.parcelYears.find(r=>String(r.id)===String(state.modalId));
   const fieldData={};
   const status=$('mStatus')?$('mStatus').value:'';
@@ -3218,15 +3258,15 @@ function renderLotRow(r, hidden){
   STATUS_LIST.forEach(s=>{html+='<option'+(r.status===s?' selected':'')+'>'+esc(s)+'</option>';});
   html+='</select></td>';
   // col 8: notice received
-  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" style="text-align:left" value="'+esc(toDateInput(r.noticeReceived))+'" onchange="taxInline(\''+jsArg(r.id)+'\',{Notice_Received:toZohoDate(this.value)})"/></td>';
+  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" aria-label="Notice Received" style="text-align:left" value="'+esc(toDateInput(r.noticeReceived))+'" data-date-original="'+esc(toDateInput(r.noticeReceived))+'" onblur="taxInlineDateExit(this,\''+jsArg(r.id)+'\',\'Notice_Received\')"/></td>';
   // col 9: protest deadline
-  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" style="text-align:left" value="'+esc(toDateInput(r.protestDeadline))+'" onchange="taxInline(\''+jsArg(r.id)+'\',{Protest_Deadline:toZohoDate(this.value)})"/></td>';
+  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" aria-label="Protest Deadline" style="text-align:left" value="'+esc(toDateInput(r.protestDeadline))+'" data-date-original="'+esc(toDateInput(r.protestDeadline))+'" onblur="taxInlineDateExit(this,\''+jsArg(r.id)+'\',\'Protest_Deadline\')"/></td>';
   // col 10: protest hearing date
-  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" style="text-align:left" value="'+esc(toDateInput(r.protestHearingDate))+'" onchange="taxInline(\''+jsArg(r.id)+'\',{Protest_Hearing_Date:toZohoDate(this.value)})"/></td>';
+  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" aria-label="Protest Hearing Date" style="text-align:left" value="'+esc(toDateInput(r.protestHearingDate))+'" data-date-original="'+esc(toDateInput(r.protestHearingDate))+'" onblur="taxInlineDateExit(this,\''+jsArg(r.id)+'\',\'Protest_Hearing_Date\')"/></td>';
   // col 10b: arbitration notice received
-  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" style="text-align:left" value="'+esc(toDateInput(r.arbNoticeReceived))+'" onchange="taxInline(\''+jsArg(r.id)+'\',{Arbitration_Notice_Received:toZohoDate(this.value)})"/></td>';
+  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" aria-label="Arbitration Notice Received" style="text-align:left" value="'+esc(toDateInput(r.arbNoticeReceived))+'" data-date-original="'+esc(toDateInput(r.arbNoticeReceived))+'" onblur="taxInlineDateExit(this,\''+jsArg(r.id)+'\',\'Arbitration_Notice_Received\')"/></td>';
   // col 11: arbitration hearing date
-  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" style="text-align:left" value="'+esc(toDateInput(r.arbHearingDate))+'" onchange="taxInline(\''+jsArg(r.id)+'\',{Arbitration_Hearing_Date:toZohoDate(this.value)})"/></td>';
+  html+='<td onclick="event.stopPropagation()"><input class="cell-input" type="date" aria-label="Arbitration Hearing Date" style="text-align:left" value="'+esc(toDateInput(r.arbHearingDate))+'" data-date-original="'+esc(toDateInput(r.arbHearingDate))+'" onblur="taxInlineDateExit(this,\''+jsArg(r.id)+'\',\'Arbitration_Hearing_Date\')"/></td>';
   // col 12: market value
   html+='<td onclick="event.stopPropagation()"><input class="cell-input" value="'+esc(r.marketValue?utilitiesconvertIntegerToCurrency(r.marketValue):'')+'" onfocus="this.value=this.value.replace(/[$,]/g,\'\')" onblur="taxInline(\''+jsArg(r.id)+'\',{Market_Value:this.value})"/></td>';
   // col 13: assessed value
@@ -3592,6 +3632,7 @@ function submitAddTPY(){
   var year=identity.year,property=identity.property,subdiv=identity.subdiv;
   var valid=true;
   var errEl=$('addTPYErr'); errEl.style.display='none'; errEl.textContent='';
+  if(!taxValidateDate($('atNotice'),'Notice Received',errEl)||!taxValidateDate($('atDeadline'),'Protest Deadline',errEl))return false;
   $('atYear').classList.remove('invalid'); $('atYearErr').classList.remove('show');
   $('atSubdiv').classList.remove('invalid'); $('atSubdivErr').classList.remove('show');
   if(!year){$('atYear').classList.add('invalid');$('atYearErr').classList.add('show');valid=false;}
@@ -4748,12 +4789,13 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Enter'){
     e.preventDefault();
     e.stopPropagation();
-    // Most inline fields save on blur; date inputs save on change, which also fires on blur after edit.
+    // Inline dates also commit on exit, after the complete year is entered.
     el.blur();
   }
 });
 document.addEventListener('input',function(e){
   const el=e.target;
+  if(el&&el.getAttribute&&el.getAttribute('type')==='date'){el.classList.remove('invalid');el.setAttribute('aria-invalid','false');}
   if(el&&(el.classList&&el.classList.contains('cell-input')))markInlineState(el,'dirty',null);
 });
 document.addEventListener('change',function(e){

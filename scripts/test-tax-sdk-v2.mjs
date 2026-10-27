@@ -424,4 +424,39 @@ for(const [field,model,initial] of [['Acres','acres','12.5'],['County','county',
  for(const write of h.writes)for(const [field] of dateEditors)assert.equal(write.payload.data[field],'');h.widget.TaxUI.close();await h.c.runParcelSearch();
  for(const row of h.widget.state.data.parcelYears)for(const [,key] of dateEditors)assert.equal(row[key],'');
 }
-console.log('PASS actual whole Tax SDK2 app: native boot/Search/render/status+fields bulk, locks, counted cursors/exact IDs, partial ledger/read-only recovery, deadlines, parcel/date/money/Property/project clears with reload/modal/rejection coverage, and immutable baseline business/date/copy payloads. Native gates remain separate.');
+// The real five inline controls must keep editing through intermediate native
+// year values. A change event is not a completed keyboard edit. Blur owns the
+// only commit; repeated exit/Enter notifications cannot dispatch twice.
+for(const [field,model] of dateEditors){
+ const h=await ready({rows:[{...parcel(ID),[field]:'09/28/2026'}]});await h.c.runParcelSearch();
+ const input=h.node('tableBody').querySelectorAll('input[type="date"]').find(el=>el.getAttribute('onblur').includes("'"+field+"'"));
+ assert.ok(input,field+' has an actual rendered exit handler');assert.equal(input.hasAttribute('onchange'),false,field+' never saves on partial native change');
+ await h.c.taxInlineDateExit(input,ID,field);assert.equal(h.writes.length,0,'first untouched exit does not write');
+ input.focus();const mounted=h.node('tableBody').htmlWrites;
+ for(const value of ['0002-10-02','0020-10-02','0202-10-02','2026-10-02']){input.value=value;await h.dispatch('input',input);await h.dispatch('change',input);assert.equal(h.writes.length,0);assert.equal(h.c.document.activeElement,input);assert.equal(h.node('tableWrap').inert,false);assert.equal(h.node('tableBody').htmlWrites,mounted);}
+ h.c.__dateInput=input;
+ const saving=vm.runInContext('(function(){return '+input.getAttribute('onblur')+';}).call(__dateInput)',h.c);
+ const duplicate=h.c.taxInlineDateExit(input,ID,field);assert.equal(duplicate,saving,'duplicate exit shares the pending save');await saving;
+ assert.equal(h.writes.length,1);assert.deepEqual(h.writes[0].payload.data,{[field]:'10/02/2026'});assert.equal(h.widget.state.data.parcelYears[0][model],'10/02/2026');assert.equal(input.dataset.dateOriginal,'2026-10-02');assert.ok(input.classList.contains('saved-ok'),'blur keeps its original feedback element');
+ await h.c.taxInlineDateExit(input,ID,field);assert.equal(h.writes.length,1,'unchanged exit does not write');
+ input.value='';input.validity={valid:false,badInput:true};await h.c.taxInlineDateExit(input,ID,field);assert.equal(h.writes.length,1,'blank incomplete control is not a date clear');assert.equal(input.getAttribute('aria-invalid'),'true');assert.equal(h.widget.Tax.snapshot().reviews.length,0);assert.equal(h.node('tableWrap').inert,false);
+ input.validity={valid:true,badInput:false};await h.c.taxInlineDateExit(input,ID,field);assert.equal(h.writes.length,2);assert.deepEqual(h.writes.at(-1).payload.data,{[field]:''},'deliberately empty date still clears');
+}
+// Validation is local and uses real calendar rules before modal, bulk or Add
+// commits. Unticked bulk drafts are irrelevant, and true blanks remain valid.
+for(const [field,key,control] of dateEditors){
+ const h=await ready();await h.c.runParcelSearch();h.c.openModal(ID);const input=h.node(control);input.value='2026-02-30';
+ assert.equal(h.c.saveModalRecord(),false);assert.equal(h.writes.length,0);assert.equal(input.getAttribute('aria-invalid'),'true');assert.match(h.node('modalDateErr').textContent,/complete, valid date/);h.c.closeModal();
+ h.widget.state.bulkSelectedIds={[ID]:true};h.c.openBulkEdit();const bulk=h.c.document.querySelector('.be-input[data-key="'+key+'"]'),toggle=h.c.document.querySelector('.be-toggle[data-key="'+key+'"]');bulk.value='';bulk.validity={valid:false,badInput:true};toggle.checked=true;
+ assert.equal(h.c.applyBulkEdit(),false);assert.equal(h.writes.length,0);assert.match(h.node('bulkDateErr').textContent,/complete, valid date/);assert.equal(h.widget.Tax.snapshot().reviews.length,0);assert.equal(h.widget.Tax.snapshot().batchActive,null);
+ toggle.checked=false;h.c.closeBulkEdit();
+}
+for(const control of ['atNotice','atDeadline']){
+ const h=await ready();h.c.openAddTPY(h.widget.state.data.rawLand[0].id);await drain();const input=h.node(control);input.value='';input.validity={valid:false,badInput:true};
+ assert.equal(h.c.submitAddTPY(),false);assert.equal(h.writes.length,0);assert.match(h.node('addTPYErr').textContent,/complete, valid date/);assert.equal(h.widget.Tax.snapshot().reviews.length,0);
+}
+{
+ const h=await ready();for(const date of ['0100-01-01','0202-10-02','2028-02-29','9999-12-31'])assert.equal(h.widget.Tax.dateText(date),date,'no new historical or future year restriction');
+ for(const date of ['0000-01-01','2026-02-29','2026-04-31','2026-13-01','2026-01-00','202-01-01'])assert.throws(()=>h.widget.Tax.dateText(date),/date/);
+}
+console.log('PASS actual whole Tax SDK2 app: native boot/Search/render/status+fields bulk, locks, counted cursors/exact IDs, partial ledger/read-only recovery, deadlines, parcel/date/money/Property/project clears, all five date exit commits/no writes while typing/dedupe/local partial-input validation across inline/modal/bulk/Add, and immutable baseline business/date/copy payloads. Native gates remain separate.');

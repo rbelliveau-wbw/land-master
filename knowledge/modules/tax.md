@@ -1,3 +1,30 @@
+## Complete date edits — 19.17.36, October 27, 2026
+
+All five parcel report date inputs commit on field exit or Enter. Native
+`change` events while a user types no longer save a partial year, make the
+report inert or remove focus. Calendar choices use the same field-exit commit.
+An unchanged field does not write; repeated exits share the pending save.
+Explicit blank dates still clear, while a blank native control with incomplete
+segments is invalid and cannot silently clear the saved value.
+
+The same local validation runs before detail Save, enabled Bulk Edit dates and
+Add Parcel Year dates. It reuses the existing controller calendar parser and
+preserves its date formats/year semantics, field clears, parcel-year matching,
+native write acknowledgement and uncertain-write protections. Invalid drafts
+stay editable with ordinary validation feedback and never start a native write.
+No Creator form, field, function, Custom API, workflow or publication changes.
+Affected fields: `Notice_Received`, `Protest_Deadline`, `Protest_Hearing_Date`,
+`Arbitration_Notice_Received`, `Arbitration_Hearing_Date` on `Tax_Parcel_Year`.
+
+`scripts/test-tax-sdk-v2.mjs` exercises actual rendered exit handlers for all
+five dates, zero writes/focus or mounting changes through partial year values,
+one completed write, duplicate exits, unchanged values, partial versus cleared
+blanks, all modal/bulk date guards and both Add date guards. Existing whole-app,
+effective-function and native-shaped bulk suites retain their coverage.
+These fixtures do not establish native browser typing behavior or live Creator
+persistence; deployment verification records those separately.
+Rollback: map Tax Center to `19.17.34` and rebuild Pages.
+
 ## Reachable final report row — 19.17.33, October 26, 2026
 
 Parcel and Property reports fill the visible Creator tile rather than using
