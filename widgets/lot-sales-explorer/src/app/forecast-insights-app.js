@@ -27,21 +27,31 @@
   function columns(report,annual=$('fcAnnual').checked){return report.years.flatMap(year=>[...report.months.filter(m=>m.year===year),...(annual?[{year,annual:true}]:[])]);}
   function monthClass(month){return (month.index===0?'fc-year-start ':'')+(S.report.mode==='outlook'&&month.start<S.permissions.today.slice(0,7)+'-01'?'fc-value-sold':'fc-value-forecast')+(month.start.slice(0,7)===S.permissions.today.slice(0,7)?' fc-current-month':'');}
   function numberHTML(node,html,animate){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML===html)return;const prior=animate?window.InsightsNumbers?.capture(node):null;node.innerHTML=html;if(animate)window.InsightsNumbers?.apply(node,prior);}
-  function reportCount(animate){const r=S.report;numberHTML($('fcCount'),number(fmt(new Set(r.rows.map(row=>row.phase.id)).size),'phase-count')+' Phases · '+number(fmt(r.groups.length),'group-count')+' '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy]),animate);}
+  function countMarkup(r){return number(fmt(new Set(r.rows.map(row=>row.phase.id)).size),'phase-count')+' Phases · '+number(fmt(r.groups.length),'group-count')+' '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy]);}
+  function reportCount(animate){numberHTML($('fcCount'),countMarkup(S.report),animate);}
   function syncAnnual(){if(!S.report)return;$('fcMatrix').classList.toggle('fc-no-annual',!$('fcAnnual').checked);$('fcHead').querySelectorAll('.fc-year').forEach(cell=>{cell.colSpan=$('fcAnnual').checked?13:12;});}
-  function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>{value.hidden=hide;});});}
-  function patchTotals(cells,before,after,animate){const changed=cells.map((cell,index)=>({cell,value:after[index],old:before?.[index]})).filter(job=>job.old?.html!==job.value.html||job.old?.title!==job.value.title);changed.forEach(job=>{job.prior=animate?window.InsightsNumbers?.capture(job.cell):null;});changed.forEach(({cell,value})=>{cell.innerHTML=value.html;cell.title=value.title;});if(animate)changed.forEach(({cell,prior})=>window.InsightsNumbers?.apply(cell,prior));}
+  const show=(node,hidden)=>{if(node.hidden!==hidden)node.hidden=hidden;};
+  function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>show(value,hide));});}
+  function queueNumber(jobs,node,html){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML!==html)jobs.push({cell:node,value:{html}});}
+  function queueTotals(jobs,cells,before,after){cells.forEach((cell,index)=>{const value=after[index],old=before?.[index];if(old?.html!==value.html||old?.title!==value.title)jobs.push({cell,value});});}
   function syncHideEmpty(animate=true){
     if(!S.baseReport||!S.permissions?.forecastsDashboard)return;
-    const hide=$('fcHideEmpty').checked;S.report=hide?S.nonemptyReport:S.baseReport;
+    const hide=$('fcHideEmpty').checked,jobs=[],visibility=[];S.report=hide?S.nonemptyReport:S.baseReport;
     S.groupNodes.forEach(nodes=>{
-      const rows=hide?nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)):nodes.group.rows;
-      nodes.header.hidden=!rows.length;if(rows.length)numberHTML(nodes.count,number(fmt(rows.length),'group-count:'+nodes.group.id),animate);
-      const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>{row.hidden=closed||hide&&S.emptyRows.has(nodes.group.rows[index].key);});
-      const totals=hide?nodes.filteredTotals:nodes.allTotals;if(!nodes.header.hidden&&nodes.totalMarkup!==totals){patchTotals(nodes.totalCells,nodes.totalMarkup,totals,animate);nodes.totalMarkup=totals;nodes.totals=nodes.totalCells.map(cell=>cell.firstElementChild);}
+      const count=hide?nodes.nonemptyCount:nodes.rows.length;
+      visibility.push([nodes.header,!count]);if(count)queueNumber(jobs,nodes.count,hide?nodes.filteredCount:nodes.allCount);
+      const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>visibility.push([row,closed||hide&&nodes.emptyMask[index]]));
+      const totals=hide?nodes.filteredTotals:nodes.allTotals;if(count&&nodes.totalMarkup!==totals){queueTotals(jobs,nodes.totalCells,nodes.totalMarkup,totals);nodes.totalMarkup=totals;}
     });
-    const totals=hide?S.filteredFoot:S.allFoot;if(S.footMarkup!==totals){patchTotals(S.footCells,S.footMarkup,totals,animate);S.footMarkup=totals;}syncSubtotals();
-    reportCount(animate);$('fcFoot').hidden=!S.report.rows.length;$('fcEmpty').hidden=S.report.rows.length>0||S.busy;$('fcExport').disabled=S.busy||S.error||!S.report.rows.length;syncCollapse();
+    const totals=hide?S.filteredFoot:S.allFoot;if(S.footMarkup!==totals){queueTotals(jobs,S.footCells,S.footMarkup,totals);S.footMarkup=totals;}
+    queueNumber(jobs,$('fcCount'),hide?S.filteredCount:S.allCount);
+    // Capture every old number before changing visibility or markup: one layout phase.
+    if(animate)jobs.forEach(job=>{job.prior=window.InsightsNumbers?.capture(job.cell);});
+    visibility.forEach(([node,hidden])=>show(node,hidden));
+    jobs.forEach(({cell,value})=>{cell.innerHTML=value.html;if(value.title!=null){cell.title=value.title;cell.classList.toggle('fc-missing',value.missing);}});
+    S.groupNodes.forEach(nodes=>{nodes.totals=nodes.totalCells.map(cell=>cell.firstElementChild);});syncSubtotals();
+    if(animate)jobs.forEach(({cell,prior})=>window.InsightsNumbers?.apply(cell,prior));
+    show($('fcFoot'),!S.report.rows.length);show($('fcEmpty'),S.report.rows.length>0||S.busy);$('fcExport').disabled=S.busy||S.error||!S.report.rows.length;syncCollapse();
   }
   function cellValue(c,key,extra='',group=false,hide=false){
     const title=cellTitle(c);
@@ -49,8 +59,8 @@
     return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+value+'</span>':value)+'</td>';
   }
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),key+':'+(c.annual?'year-'+c.year:c.key),c.annual?'fc-annual':monthClass(c),group,hide)).join('');
-  const cellTitle=c=>c.missing?'Forecast is not available for every selected builder and month.':fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast';
-  function totalsMarkup(cells,key,group=false){return columns(S.baseReport,true).map(c=>{const value=c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),html=cellValue(value,key+':'+(c.annual?'year-'+c.year:c.key),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value)};});}
+  const cellTitle=c=>fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast'+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
+  function totalsMarkup(cells,key,group=false){return columns(S.baseReport,true).map(c=>{const value=c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),html=cellValue(value,key+':'+(c.annual?'year-'+c.year:c.key),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value),missing:!!value.missing};});}
   function render(){
     if(!S.model||!S.permissions?.forecastsDashboard)return;
     closeCard();
@@ -59,6 +69,7 @@
       S.emptyRows=new Set(S.baseReport.rows.filter(row=>!M.hasValues(row.cells)).map(row=>row.key));
       const rows=S.baseReport.rows.filter(row=>!S.emptyRows.has(row.key));
       S.nonemptyReport={...S.baseReport,rows,groups:S.baseReport.groups.map(group=>({...group,rows:group.rows.filter(row=>!S.emptyRows.has(row.key))})).filter(group=>group.rows.length),totals:M.aggregate(rows,S.baseReport.months)};
+      S.allCount=countMarkup(S.baseReport);S.filteredCount=countMarkup(S.nonemptyReport);
       S.error=false;notice('');
     }catch(error){S.error=true;notice(error.message,true);$('fcExport').disabled=true;return;}
     const r=S.baseReport,cols=columns(r,true),prior=window.InsightsNumbers?.capture(host),scroll=$('fcReportPane').querySelector('.fc-scroll'),left=scroll.scrollLeft,top=scroll.scrollTop;
@@ -76,7 +87,7 @@
     }).join('');
     S.groupNodes=[];for(const row of $('fcBody').children){if(row.classList.contains('fc-group'))S.groupNodes.push({group:r.groups[S.groupNodes.length],header:row,button:row.querySelector('[data-fc-group]'),count:row.querySelector('.fc-group-name small'),totals:[...row.querySelectorAll('[data-fc-total]')],rows:[]});else S.groupNodes.at(-1).rows.push(row);}
     $('fcFoot').innerHTML=r.rows.length?'<tr><th class="fc-name" scope="row">All '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy])+'</th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(r.totals,'all')+'</tr>':'';
-    S.groupNodes.forEach(nodes=>{const key='group:'+nodes.group.id;nodes.allTotals=totalsMarkup(M.aggregate(nodes.group.rows,r.months),key,true);nodes.filteredTotals=totalsMarkup(M.aggregate(nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)),r.months),key,true);nodes.totalCells=[...nodes.header.cells].slice(3);nodes.totalMarkup=nodes.allTotals;});
+    S.groupNodes.forEach(nodes=>{const key='group:'+nodes.group.id;nodes.emptyMask=nodes.group.rows.map(row=>S.emptyRows.has(row.key));nodes.nonemptyCount=nodes.emptyMask.filter(empty=>!empty).length;nodes.allCount=number(fmt(nodes.rows.length),'group-count:'+nodes.group.id);nodes.filteredCount=number(fmt(nodes.nonemptyCount),'group-count:'+nodes.group.id);nodes.allTotals=totalsMarkup(M.aggregate(nodes.group.rows,r.months),key,true);nodes.filteredTotals=totalsMarkup(M.aggregate(nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)),r.months),key,true);nodes.totalCells=[...nodes.header.cells].slice(3);nodes.totalMarkup=nodes.allTotals;});
     S.allFoot=totalsMarkup(r.totals,'all');S.filteredFoot=totalsMarkup(S.nonemptyReport.totals,'all');S.footCells=[...($('fcFoot').firstElementChild?.cells||[])].slice(3);S.footMarkup=S.allFoot;
     InsightsControls.placePicker('fcMode',$('fcModeSlot'));
     $('fcEmpty').hidden=r.rows.length>0;$('fcEmpty').querySelector('h2').textContent='No Matching Phases';$('fcRetry').hidden=true;
@@ -84,7 +95,7 @@
     $('fcViewBy').value=S.groupBy;
     InsightsControls.syncAll();window.InsightsNumbers?.apply(host,prior);scroll.scrollLeft=left;scroll.scrollTop=top;
   }
-  function syncCollapse(){const groups=S.report?.groups||[];$('fcCollapse').disabled=!groups.length;$('fcCollapse').textContent=groups.length&&groups.every(g=>S.collapsed.has(g.id))?'Expand All':'Collapse All';}
+  function syncCollapse(){const groups=S.report?.groups||[],label=groups.length&&groups.every(g=>S.collapsed.has(g.id))?'Expand All':'Collapse All';if($('fcCollapse').disabled!==!groups.length)$('fcCollapse').disabled=!groups.length;if($('fcCollapse').textContent!==label)$('fcCollapse').textContent=label;}
   function setCollapsed(index,closed){
     if(!S.permissions?.forecastsDashboard||!S.report)return;
     const group=S.baseReport.groups[index],nodes=S.groupNodes[index];if(!group||!nodes)return;

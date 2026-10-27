@@ -100,6 +100,15 @@ zero. CSV, totals, accessible counts and visible group controls follow the
 same displayed scope. The missing-forecast warning retains the complete matching
 scope, including hidden empty phases. Keep annual cells mounted and toggle their visibility and
 year-header spans together.
+Forecasts uses the same saved Forecast/Forecast Year values and Sold + Forecast
+month boundary as Forecast Manager. A blank or missing builder-year must never
+erase other builders' saved counts. Display available subtotals with their
+missing-data warning; all-unknown values remain unknown and explicit zero stays
+known. Include only builders with a parent in the selected fiscal years, matching
+Forecast Manager's visible matrix. Apply this to row, group, footer, annual and
+CSV values. Cache empty masks, counts and totals at render; capture all changed
+numeric displays before any visibility/markup writes. Skip unchanged hidden and
+subtotal states to avoid repeated layouts and observer work on Hide Empty.
 
 Forecasts loading uses a centered, compact navy spinner and Loading forecasts
 label in the report viewport. Do not use the yellow notice bar for loading.

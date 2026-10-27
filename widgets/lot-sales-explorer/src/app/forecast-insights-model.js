@@ -47,7 +47,7 @@
     for(const phase of model.phases){
       if(!chosen('projectIds',phase.projectId)||!chosen('territories',phase.territory)||!chosen('projectStatuses',phase.projectStatus))continue;
       const allParents=phaseParents.get(phase.id)||[],builderMap=new Map();
-      allParents.forEach(p=>{if(chosen('builderIds',p.builderId)){if(!builderMap.has(p.builderId))builderMap.set(p.builderId,{id:p.builderId,name:p.builder,parents:new Map()});builderMap.get(p.builderId).parents.set(p.year,p);}});
+      allParents.forEach(p=>{if(years.includes(p.year)&&chosen('builderIds',p.builderId)){if(!builderMap.has(p.builderId))builderMap.set(p.builderId,{id:p.builderId,name:p.builder,parents:new Map()});builderMap.get(p.builderId).parents.set(p.year,p);}});
       const builderRows=[...builderMap.values()];
       if(!builderRows.length&&filters.builderIds?.length)continue;
       const searchPhase=[phase.name,phase.project,phase.territory].some(v=>v.toLowerCase().includes(q));
@@ -57,10 +57,10 @@
       if(filters.groupBy==='builder'&&!parts.length)parts.push([]);
       for(const part of parts){
         const cells=months.map(month=>{
-          let value=0,missing=0,sold=0,forecast=0;
+          let value=0,known=0,missing=0,sold=0,forecast=0;
           if(!part.length)missing++;
-          for(const builder of part){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
-          return {...month,value:missing?null:value,knownValue:value,missing,sold,forecast};
+          for(const builder of part){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}known++;value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
+          return {...month,value:known||!missing?value:null,knownValue:value,known,missing,sold,forecast};
         });
         if(filters.hideEmpty&&!hasValues(cells))continue;
         const builder=part[0],groupId=filters.groupBy==='territory'?phase.territory:filters.groupBy==='builder'?builder?.id||'unassigned':phase.projectId||'unassigned';
@@ -72,8 +72,8 @@
     const groups=[];for(const row of rows){let group=groups.find(g=>g.id===row.groupId);if(!group){group={id:row.groupId,name:row.groupName,rows:[]};groups.push(group);}group.rows.push(row);}
     return {years,months,rows,groups,mode,today,totals:aggregate(rows,months)};
   }
-  function aggregate(rows,months){return months.map((month,index)=>{const values=rows.map(r=>r.cells[index]);const missing=values.reduce((s,c)=>s+c.missing,0),knownValue=values.reduce((s,c)=>s+c.knownValue,0);return {...month,missing,knownValue,value:missing?null:knownValue,sold:values.reduce((s,c)=>s+c.sold,0),forecast:values.reduce((s,c)=>s+c.forecast,0)};});}
-  function annual(cells,year){const selected=cells.filter(c=>c.year===year),missing=selected.reduce((s,c)=>s+c.missing,0),knownValue=selected.reduce((s,c)=>s+c.knownValue,0);return {value:missing?null:knownValue,knownValue,missing,sold:selected.reduce((s,c)=>s+c.sold,0),forecast:selected.reduce((s,c)=>s+c.forecast,0)};}
+  function aggregate(rows,months){return months.map((month,index)=>{const values=rows.map(r=>r.cells[index]);const known=values.reduce((s,c)=>s+c.known,0),missing=values.reduce((s,c)=>s+c.missing,0),knownValue=values.reduce((s,c)=>s+c.knownValue,0);return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold:values.reduce((s,c)=>s+c.sold,0),forecast:values.reduce((s,c)=>s+c.forecast,0)};});}
+  function annual(cells,year){const selected=cells.filter(c=>c.year===year),known=selected.reduce((s,c)=>s+c.known,0),missing=selected.reduce((s,c)=>s+c.missing,0),knownValue=selected.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:selected.reduce((s,c)=>s+c.sold,0),forecast:selected.reduce((s,c)=>s+c.forecast,0)};}
   const hasValues=cells=>cells.some(cell=>cell.value>0);
   root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,annual,hasValues});
 })(typeof window==='undefined'?globalThis:window);

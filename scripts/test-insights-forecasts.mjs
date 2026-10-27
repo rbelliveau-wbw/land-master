@@ -23,7 +23,7 @@ assert.equal(M.report(model,{...filters,projectIds:[data.projects[0].ID]},today)
 assert.equal(M.report(model,{...filters,search:'D.R. Horton'},today).rows[0].cells[0].value,3,'Builder search keeps exact builder scope');
 assert.deepEqual(M.yearsFor('custom',today,[2028,2026,2028]),[2026,2028]);assert.deepEqual(M.yearsFor('current','2027-01-10'),[2026]);assert.throws(()=>M.yearsFor('custom',today,[]));assert.throws(()=>M.report(model,filters,''));
 for(const mutate of [d=>d.years.push({...d.years[0],ID:'duplicate'}),d=>d.months.push({...d.months[0],ID:'duplicate'}),d=>d.months.pop(),d=>d.months[0].Forecast_Start_Date='2026-03-01',d=>d.months[0].Forecasted_Lots='-1',d=>d.months[0].Subdivision1={ID:'wrong'}]){const d=forecastFixture();mutate(d);assert.throws(()=>M.normalize(d),'Incomplete or inconsistent forecast data rejects before rendering');}
-const blank=forecastFixture();blank.months.find(m=>m.Forecast_Month==='October').Forecasted_Lots='';assert.equal(M.report(M.normalize(blank),filters,today).rows.find(r=>r.phase.id===alta.phase.id).cells[8].value,null);
+const blank=forecastFixture();blank.months.find(m=>m.Forecast_Month==='October').Forecasted_Lots='';assert.equal(M.report(M.normalize(blank),filters,today).rows.find(r=>r.phase.id===alta.phase.id).cells[8].value,11,'one blank builder never hides another builder saved forecast');
 const all=new Map(Object.entries(A.reports).map(([key,name])=>[name,data[key]]));let calls=0;
 globalThis.LotSalesCreator={readAll:async(api,name,onProgress,fields,options)=>{calls++;assert.equal(options.isCancelled(),false);assert.deepEqual(fields,A.fields[Object.keys(A.reports).find(k=>A.reports[k]===name)]);return all.get(name);}};
 assert.deepEqual(await A.load({}, {isCurrent:()=>true}),data);assert.equal(calls,5);

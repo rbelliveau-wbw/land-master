@@ -270,3 +270,14 @@ rules (#c3a8e4), and concise Current label. Mark only the exact month/year from
 the Creator application date; retain the basis tint inside its body cells and
 update correctly through January/February rollover and selected fiscal ranges.
 Keep known zero, missing, grouping, CSV and independent access semantics intact.
+
+The dashboard reads the same Builder-status Forecast_Year parents and linked
+Forecast records as Forecast Manager, excluding Delete_me records. Only builders
+with a parent in the selected WFY range contribute to that matrix. As with
+Forecast Manager's selected totals, sum available saved values when another
+builder has a blank month or missing year. Preserve a separate missing count and
+warning rather than replacing that saved subtotal with a dash. An explicit zero
+is known; a cell with no known contributors stays unknown. Monthly, group,
+footer, annual and CSV totals must agree with the Manager for the same phase,
+builders, years and view. Native-shaped sparse-year and partial-blank regression
+cases enforce this; do not return to fixtures that give every builder every year.
