@@ -14,7 +14,7 @@ assert.equal(alta.cells[0].value,5,'Completed month uses native Actual Lots');as
 assert.equal(M.annual(alta.cells,2026).value,8*5+4*21);assert.equal(M.annual(alta.cells,2027).value,12*21);
 assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0].value,null,'Absent forecasts remain unknown');
 assert.equal(report.rows.find(r=>r.phase.name.startsWith('Meadow')).phase.soldOut,true);
-assert.equal(M.report(model,{...filters,hideEmpty:true},today).rows.length,2,'Hide Empty retains unknowns and removes complete zero rows');
+const nonempty=M.report(model,{...filters,hideEmpty:true},today);assert.equal(nonempty.rows.length,1,'Hide Empty removes zero, missing-only and mixed blank/zero rows');assert.equal(nonempty.totals[0].value,5,'filtered totals match visible nonempty rows');assert.equal(M.hasValues([{value:null},{value:0}]),false);assert.equal(M.hasValues([{value:null},{value:5}]),true,'a nonzero month keeps a partly missing row');assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0].value,null,'hiding missing-only rows never converts missing data to zero');
 assert.equal(M.report(model,{...filters,mode:'forecast'},today).rows.find(r=>r.phase.id===alta.phase.id).cells[0].value,21,'Forecast-only retains saved past forecasts');
 assert.equal(M.report(model,{...filters,groupBy:'territory'},today).groups.length,2);
 const builderReport=M.report(model,{...filters,groupBy:'builder'},today);assert.equal(builderReport.rows.filter(r=>r.phase.id===alta.phase.id).length,2,'Builder view allocates each forecast once');

@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const M=ForecastInsightsModel,L=LotSalesModel,$=id=>document.getElementById(id),host=$('forecastsDashboard');
-  const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
+  const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const fmt=n=>Number(n).toLocaleString('en-US');
   const number=(value,key,context='')=>window.InsightsNumbers?.markup(value,JSON.stringify(['forecast-dashboard',key]),context)??esc(value);
@@ -30,30 +30,35 @@
   function reportCount(animate){const r=S.report;numberHTML($('fcCount'),number(fmt(new Set(r.rows.map(row=>row.phase.id)).size),'phase-count')+' Phases · '+number(fmt(r.groups.length),'group-count')+' '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy]),animate);}
   function syncAnnual(){if(!S.report)return;$('fcMatrix').classList.toggle('fc-no-annual',!$('fcAnnual').checked);$('fcHead').querySelectorAll('.fc-year').forEach(cell=>{cell.colSpan=$('fcAnnual').checked?13:12;});}
   function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>{value.hidden=hide;});});}
+  function patchTotals(cells,before,after,animate){const changed=cells.map((cell,index)=>({cell,value:after[index],old:before?.[index]})).filter(job=>job.old?.html!==job.value.html||job.old?.title!==job.value.title);changed.forEach(job=>{job.prior=animate?window.InsightsNumbers?.capture(job.cell):null;});changed.forEach(({cell,value})=>{cell.innerHTML=value.html;cell.title=value.title;});if(animate)changed.forEach(({cell,prior})=>window.InsightsNumbers?.apply(cell,prior));}
   function syncHideEmpty(animate=true){
     if(!S.baseReport||!S.permissions?.forecastsDashboard)return;
     const hide=$('fcHideEmpty').checked;S.report=hide?S.nonemptyReport:S.baseReport;
     S.groupNodes.forEach(nodes=>{
       const rows=hide?nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)):nodes.group.rows;
-      nodes.header.hidden=!rows.length;numberHTML(nodes.count,number(fmt(rows.length),'group-count:'+nodes.group.id),animate);
+      nodes.header.hidden=!rows.length;if(rows.length)numberHTML(nodes.count,number(fmt(rows.length),'group-count:'+nodes.group.id),animate);
       const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>{row.hidden=closed||hide&&S.emptyRows.has(nodes.group.rows[index].key);});
+      const totals=hide?nodes.filteredTotals:nodes.allTotals;if(!nodes.header.hidden&&nodes.totalMarkup!==totals){patchTotals(nodes.totalCells,nodes.totalMarkup,totals,animate);nodes.totalMarkup=totals;nodes.totals=nodes.totalCells.map(cell=>cell.firstElementChild);}
     });
+    const totals=hide?S.filteredFoot:S.allFoot;if(S.footMarkup!==totals){patchTotals(S.footCells,S.footMarkup,totals,animate);S.footMarkup=totals;}syncSubtotals();
     reportCount(animate);$('fcFoot').hidden=!S.report.rows.length;$('fcEmpty').hidden=S.report.rows.length>0||S.busy;$('fcExport').disabled=S.busy||S.error||!S.report.rows.length;syncCollapse();
   }
   function cellValue(c,key,extra='',group=false,hide=false){
-    const title=c.missing?'Forecast is not available for every selected builder and month.':fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast';
+    const title=cellTitle(c);
     const value=number(c.value==null?'—':c.value?fmt(c.value):'',key,S.report.mode);
     return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+value+'</span>':value)+'</td>';
   }
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),key+':'+(c.annual?'year-'+c.year:c.key),c.annual?'fc-annual':monthClass(c),group,hide)).join('');
+  const cellTitle=c=>c.missing?'Forecast is not available for every selected builder and month.':fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast';
+  function totalsMarkup(cells,key,group=false){return columns(S.baseReport,true).map(c=>{const value=c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),html=cellValue(value,key+':'+(c.annual?'year-'+c.year:c.key),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value)};});}
   function render(){
     if(!S.model||!S.permissions?.forecastsDashboard)return;
     closeCard();
     try{
       S.baseReport=M.report(S.model,{...filters(),hideEmpty:false},S.permissions.today);S.report=S.baseReport;
-      S.emptyRows=new Set(S.baseReport.rows.filter(row=>row.cells.every(cell=>cell.value===0)).map(row=>row.key));
-      S.nonemptyReport={...S.baseReport,rows:S.baseReport.rows.filter(row=>!S.emptyRows.has(row.key)),groups:S.baseReport.groups.map(group=>({...group,rows:group.rows.filter(row=>!S.emptyRows.has(row.key))})).filter(group=>group.rows.length)};
-      // Removed rows contain only known zeros, so monthly/group totals stay identical.
+      S.emptyRows=new Set(S.baseReport.rows.filter(row=>!M.hasValues(row.cells)).map(row=>row.key));
+      const rows=S.baseReport.rows.filter(row=>!S.emptyRows.has(row.key));
+      S.nonemptyReport={...S.baseReport,rows,groups:S.baseReport.groups.map(group=>({...group,rows:group.rows.filter(row=>!S.emptyRows.has(row.key))})).filter(group=>group.rows.length),totals:M.aggregate(rows,S.baseReport.months)};
       S.error=false;notice('');
     }catch(error){S.error=true;notice(error.message,true);$('fcExport').disabled=true;return;}
     const r=S.baseReport,cols=columns(r,true),prior=window.InsightsNumbers?.capture(host),scroll=$('fcReportPane').querySelector('.fc-scroll'),left=scroll.scrollLeft,top=scroll.scrollTop;
@@ -64,13 +69,16 @@
     $('fcRange').textContent=contiguous?'Feb '+r.years[0]+' – Jan '+(r.years.at(-1)+1):r.years.map(y=>'WFY '+y).join(' · ');
     reportCount(false);
     $('fcLegend').innerHTML=(r.mode==='outlook'?'<span><i></i>Sold</span>':'')+'<span><i class="fc-forecast"></i>Forecast</span>';
-    $('fcHead').innerHTML='<tr><th rowspan="2" class="fc-name">'+({project:'Project / Phase',territory:'Territory / Phase',builder:'Builder / Phase'}[S.groupBy])+'</th><th rowspan="2" class="fc-meta">Zoho Project Status</th><th rowspan="2" class="fc-meta">Builder</th>'+r.years.map(y=>'<th class="fc-year" colspan="'+(12+($('fcAnnual').checked?1:0))+'">WFY '+y+'<span>Feb '+y+' – Jan '+(y+1)+'</span></th>').join('')+'</tr><tr>'+cols.map(c=>c.annual?'<th class="fc-annual">WFY '+c.year+'<small>Annual Total</small></th>':'<th class="'+monthClass(c)+'" data-month-start="'+c.start+'" title="'+esc(c.name+' '+c.start.slice(0,4)+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?' - Current month':''))+'">'+esc(c.name.slice(0,3))+'<small>'+c.start.slice(0,4)+'</small>'+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?'<small class="fc-current-month-label">Current</small>':'')+'</th>').join('')+'</tr>';
+    $('fcHead').innerHTML='<tr><th rowspan="2" class="fc-name"><span class="sr-only">'+({project:'Project / Phase',territory:'Territory / Phase',builder:'Builder / Phase'}[S.groupBy])+'</span><span class="fc-mode-label">Lot Status</span><span id="fcModeSlot" class="fc-header-picker"></span></th><th rowspan="2" class="fc-meta">Zoho Project Status</th><th rowspan="2" class="fc-meta">Builder</th>'+r.years.map(y=>'<th class="fc-year" colspan="'+(12+($('fcAnnual').checked?1:0))+'">WFY '+y+'<span>Feb '+y+' – Jan '+(y+1)+'</span></th>').join('')+'</tr><tr>'+cols.map(c=>c.annual?'<th class="fc-annual">WFY '+c.year+'<small>Annual Total</small></th>':'<th class="'+monthClass(c)+'" data-month-start="'+c.start+'" title="'+esc(c.name+' '+c.start.slice(0,4)+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?' - Current month':''))+'">'+esc(c.name.slice(0,3))+'<small>'+c.start.slice(0,4)+'</small>'+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?'<small class="fc-current-month-label">Current</small>':'')+'</th>').join('')+'</tr>';
     $('fcBody').innerHTML=r.groups.map((g,gi)=>{
       const collapsed=S.collapsed.has(g.id),values=M.aggregate(g.rows,r.months);
       return '<tr class="fc-group" data-motion-row="'+esc('group:'+g.id)+'"><th class="fc-name" scope="row"><div class="fc-group-name"><button type="button" data-fc-group="'+gi+'" aria-expanded="'+!collapsed+'">'+chev+'<span>'+esc(g.name)+'</span><small>'+number(fmt(g.rows.length),'group-count:'+g.id)+'</small></button>'+(S.groupBy==='territory'?'<button type="button" class="fc-info-trigger" data-fc-territory="'+gi+'" aria-label="Territory Details for '+esc(g.name)+'">'+pin+'</button>':'')+'</div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(values,'group:'+g.id,true,!collapsed&&!$('fcSubtotals').checked)+'</tr>'+g.rows.map(row=>'<tr class="fc-leaf" '+(collapsed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name"><span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>'+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Territory for '+esc(row.phase.name)+'">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?esc(row.builders[0].name):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>').join('');
     }).join('');
     S.groupNodes=[];for(const row of $('fcBody').children){if(row.classList.contains('fc-group'))S.groupNodes.push({group:r.groups[S.groupNodes.length],header:row,button:row.querySelector('[data-fc-group]'),count:row.querySelector('.fc-group-name small'),totals:[...row.querySelectorAll('[data-fc-total]')],rows:[]});else S.groupNodes.at(-1).rows.push(row);}
     $('fcFoot').innerHTML=r.rows.length?'<tr><th class="fc-name" scope="row">All '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy])+'</th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(r.totals,'all')+'</tr>':'';
+    S.groupNodes.forEach(nodes=>{const key='group:'+nodes.group.id;nodes.allTotals=totalsMarkup(M.aggregate(nodes.group.rows,r.months),key,true);nodes.filteredTotals=totalsMarkup(M.aggregate(nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)),r.months),key,true);nodes.totalCells=[...nodes.header.cells].slice(3);nodes.totalMarkup=nodes.allTotals;});
+    S.allFoot=totalsMarkup(r.totals,'all');S.filteredFoot=totalsMarkup(S.nonemptyReport.totals,'all');S.footCells=[...($('fcFoot').firstElementChild?.cells||[])].slice(3);S.footMarkup=S.allFoot;
+    InsightsControls.placePicker('fcMode',$('fcModeSlot'));
     $('fcEmpty').hidden=r.rows.length>0;$('fcEmpty').querySelector('h2').textContent='No Matching Phases';$('fcRetry').hidden=true;
     syncAnnual();syncSubtotals();syncHideEmpty(false);
     $('fcViewBy').value=S.groupBy;
@@ -95,7 +103,7 @@
     }catch(error){if(!isCurrent())return;S.error=true;notice(error.message||'Forecasts could not be loaded.',true);$('connection').textContent='Forecasts Unavailable';$('fcRetry').hidden=false;if(!S.model){$('fcEmpty').hidden=false;$('fcEmpty').querySelector('h2').textContent='Forecasts Unavailable';}}
     finally{if(isCurrent()){S.busy=false;loading(false);if(S.report)$('fcEmpty').hidden=S.report.rows.length>0;$('fcExport').disabled=S.error||!S.report?.rows.length;}}
   }
-  function clear(){S.generation++;S.model=null;S.report=null;S.baseReport=null;S.nonemptyReport=null;S.emptyRows=new Set();S.groupNodes=[];S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';$(id)._fcNumberMarkup=null;});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
+  function clear(){S.generation++;S.model=null;S.report=null;S.baseReport=null;S.nonemptyReport=null;S.emptyRows=new Set();S.groupNodes=[];S.allFoot=[];S.filteredFoot=[];S.footCells=[];S.footMarkup=null;S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';$(id)._fcNumberMarkup=null;});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
   function exportCsv(){
     if(!S.permissions?.forecastsDashboard||!S.report||S.busy||S.error)return;
     const r=S.report,cols=columns(r),lines=[['Territory','Project','Phase','Zoho Project Status','Builder',...cols.map(c=>c.annual?'WFY '+c.year+' Total':c.key)]];

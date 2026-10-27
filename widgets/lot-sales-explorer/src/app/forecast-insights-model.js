@@ -62,7 +62,7 @@
           for(const builder of part){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
           return {...month,value:missing?null:value,knownValue:value,missing,sold,forecast};
         });
-        if(filters.hideEmpty&&cells.every(c=>c.value===0))continue;
+        if(filters.hideEmpty&&!hasValues(cells))continue;
         const builder=part[0],groupId=filters.groupBy==='territory'?phase.territory:filters.groupBy==='builder'?builder?.id||'unassigned':phase.projectId||'unassigned';
         const groupName=filters.groupBy==='territory'?phase.territory:filters.groupBy==='builder'?builder?.name||'Unassigned':phase.project;
         rows.push({key:JSON.stringify([phase.id,filters.groupBy==='builder'?groupId:'all']),phase,builders:part,groupId,groupName,cells});
@@ -74,5 +74,6 @@
   }
   function aggregate(rows,months){return months.map((month,index)=>{const values=rows.map(r=>r.cells[index]);const missing=values.reduce((s,c)=>s+c.missing,0),knownValue=values.reduce((s,c)=>s+c.knownValue,0);return {...month,missing,knownValue,value:missing?null:knownValue,sold:values.reduce((s,c)=>s+c.sold,0),forecast:values.reduce((s,c)=>s+c.forecast,0)};});}
   function annual(cells,year){const selected=cells.filter(c=>c.year===year),missing=selected.reduce((s,c)=>s+c.missing,0),knownValue=selected.reduce((s,c)=>s+c.knownValue,0);return {value:missing?null:knownValue,knownValue,missing,sold:selected.reduce((s,c)=>s+c.sold,0),forecast:selected.reduce((s,c)=>s+c.forecast,0)};}
-  root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,annual});
+  const hasValues=cells=>cells.some(cell=>cell.value>0);
+  root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,annual,hasValues});
 })(typeof window==='undefined'?globalThis:window);

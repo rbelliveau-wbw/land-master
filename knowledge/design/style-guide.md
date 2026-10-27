@@ -66,7 +66,7 @@ retain the totals row and keep Diagnostics/version information in Diagnostics.
 Report descriptions, quality metadata and loading status may remain accessible
 outside the visible layout. Measure changes must not resize a bottom text strip.
 
-Forecasts keeps search/status/period filters, a clearly labeled **View by**
+Forecasts keeps search/project-status/period filters, a clearly labeled **View by**
 searchable single dropdown (Project, Territory, Builder), display switches and
 collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
 Totals and Subtotals together, followed immediately by the Sold/Forecast color
@@ -86,13 +86,19 @@ available on hover/focus/click, instead of a full-width notice. Keep actual load
 failures visible. Project/Territory/Builder disclosures update mounted rows and
 cached subtotals immediately; never re-read or re-aggregate the report solely
 to open or close a group.
-All three display switches update the mounted report immediately. Cache known
-zero row membership, group totals and annual columns during a real report build;
+Put the Lot Status picker in the first matrix header, replacing its static
+visible Project / Phase label. Keep that grouping label accessible and reuse
+the mounted searchable picker, including its current value and event handlers.
+All three display switches update the mounted report immediately. Cache empty
+row membership, both visible-scope group/footer totals and annual columns during a real report build;
 switching Hide Empty, Annual Totals or Subtotals must not rebuild the model/table,
-read data, lose focus/scroll, or reset collapsed groups. Hide Empty excludes only
-rows whose complete selected-month values are known zeros; unknown forecasts
-remain visible. CSV, accessible counts and visible group controls follow the
-same filtered scope. Keep annual cells mounted and toggle their visibility and
+read data, lose focus/scroll, or reset collapsed groups. October 27 correction:
+Hide Empty excludes rows with no nonzero displayed monthly value, including
+missing-only and mixed blank/zero rows. A nonzero month keeps a partly missing
+row visible. Missing values remain unknown; hiding them never converts them to
+zero. CSV, totals, accessible counts and visible group controls follow the
+same displayed scope. The missing-forecast warning retains the complete matching
+scope, including hidden empty phases. Keep annual cells mounted and toggle their visibility and
 year-header spans together.
 
 Forecasts loading uses a centered, compact navy spinner and Loading forecasts
