@@ -55,6 +55,21 @@ No fields, forms, reports or API registrations are added. Creator deployment of
 
 ## Verification and rollback
 
+Released as Budget Manager **122.29.83**, commit `e1b8d527`, to Development and
+Production. Creator **9.125** published only exportBudgetSnapshot through Stage
+and Production. A fresh editor read matched the checked-in source's complete
+token stream (including string literals and boolean grouping).
+
+Full `npm run validate`, `npm run build:pages`, GitHub CI and the
+[Pages production deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/40516599868)
+passed. Desktop UI verification confirmed the button's position in the live
+Production header. The live ALL_DETAIL read returned **2,892** nonzero detail
+rows across fifteen successful pages, with a final 92-row page and the same
+matching count throughout. The in-app browser did not expose its blob download
+to the file-capture tool, so the actual downloaded production file was not
+independently inspected; workbook formatting was verified by the XLSX
+write/read round-trip below.
+
 `scripts/test-budget-full-export.mjs` exercises actual export module pagination,
 201 rows, large string IDs, XLSX write/read round-trip, currency, text identifiers,
 formula-safe text, actual-only/credit rows, empty exports, malformed values,
