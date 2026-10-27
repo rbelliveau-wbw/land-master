@@ -1,3 +1,17 @@
+## Shared loading and Forecasts builder breakdown — 1.6.7, October 27, 2026
+
+Lot Sales now matches the centered Forecasts loading card, emblem and navy ring.
+Both dashboards share the same CSS. The canonical appearance is a standing
+[loading-state design rule](../design/loading-states.md) for future report work.
+Lot Sales keeps the loader through recent-data and complete-history reads,
+including retries. It preserves complete-read/export/access gates, accessible
+exact counters, real errors and reduced motion. No Creator changes are needed.
+Forecasts puts Lot Status in the top filter row and View by in the first matrix
+header. Multi-builder phase rows expand into a read-only builder breakdown,
+using cached cells with existing filters, mode and fiscal years. Nested rows
+follow Hide Empty, annual columns and group collapse and never duplicate totals.
+[Checks, files and rollback](../../docs/insights-shared-loading-2026-10-27.md).
+
 ## Centered Forecasts loading — 1.6.2, October 27, 2026
 
 Forecast reads now show a centered navy indeterminate spinner with Loading

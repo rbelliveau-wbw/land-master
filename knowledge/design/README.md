@@ -17,6 +17,7 @@ it; unrelated guides do not need to be read for every small edit.
 
 | Guide | Use for |
 | --- | --- |
+| [Loading states](loading-states.md) | Canonical Forecasts-style centered report loading card, spinner and pending lifecycle |
 | [Empty row filters](empty-row-filters.md) | Hide Empty switches beside Search; Budget and Pro Forma item visibility |
 | [Attachments](attachments.md) | Main-list paperclip actions, file counts, attachment modals, upload/preview/download/delete and Added by |
 | [Comments](comments.md) | Main-list comment actions, activity counts, conversation modals, composer and message actions |

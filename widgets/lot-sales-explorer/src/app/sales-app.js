@@ -109,7 +109,7 @@
   }
   function blank(title, subtitle, rangeText = 'Loading months…') {
     $('matrixHead').innerHTML = ''; $('matrixBody').innerHTML = ''; $('matrixFoot').innerHTML = '';
-    $('empty').hidden = false; $('empty').innerHTML = '<div class="empty-symbol" aria-hidden="true">▥</div><h2>' + esc(title) + '</h2><p>' + esc(subtitle) + '</p>';
+    $('empty').hidden = !$('salesLoading').hidden; $('empty').innerHTML = '<div class="empty-symbol" aria-hidden="true">▥</div><h2>' + esc(title) + '</h2><p>' + esc(subtitle) + '</p>';
     $('export').disabled = true; $('collapse').disabled = true; $('collapse').textContent = 'Collapse All'; $('monthPage').textContent = rangeText;
   }
   function metricDescription(r, metric) {
@@ -372,9 +372,14 @@
     $('subdivisionCard').hidden = false;
     positionSubdivisionCard();
   }
+  function loading(active) {
+    $('salesLoading').hidden = !active;
+    $('matrix').setAttribute('aria-busy', String(active));
+    if (active) $('empty').hidden = true;
+  }
   function historyStatus() {
-    $('historyBanner').hidden = state.historyReady || !state.loaded;
-    $('historyBanner').classList.toggle('loading', !state.historyError);
+    loading(state.loaded && !state.historyReady && !state.historyError);
+    $('historyBanner').hidden = state.historyReady || !state.loaded || !state.historyError;
     $('historyBanner').classList.toggle('failed', !!state.historyError);
     $('retryHistory').hidden = !state.historyError;
     $('historyMessage').textContent = state.historyError
@@ -388,7 +393,7 @@
     try {
       const lots = await LotSalesCreator.loadHistory(ZOHO.CREATOR.DATA, (report, count, total) => {
         if (generation !== state.generation) return;
-        numberHtml('historyMessage', 'Loading report · ' + number(integer(count), 'loading', 'received') + ' / ' + number(integer(total), 'loading', 'total') + ' lots');
+        numberHtml('salesLoadProgress', 'Loading report · ' + number(integer(count), 'loading', 'received') + ' / ' + number(integer(total), 'loading', 'total') + ' lots');
       }, { isCancelled: () => generation !== state.generation });
       if (generation !== state.generation) return;
       state.lots = M.normalize({ ...state.references, lots }); state.historyReady = true;if(state.refreshRequested){state.refreshRequested=false;if(window.LMSuccess)LMSuccess.show('Lot sales report refreshed.');}
@@ -414,7 +419,7 @@
     $('refresh').disabled = true; $('export').disabled = true; $('historyBanner').hidden = true;
     if ($('detail').open) $('detail').close();
     hideSubdivisionCard();
-    $('connection').textContent = 'Loading…'; $('summary').textContent = 'Loading all report data…'; notice(''); blank('Loading report', '');
+    $('connection').textContent = 'Loading…'; $('summary').textContent = 'Loading all report data…'; notice(''); blank('Loading report', ''); $('salesLoadProgress').textContent = ''; loading(true);
     try {
       const data = await LotSalesCreator.loadRecent(ZOHO.CREATOR.DATA, null, { isCancelled: () => generation !== state.generation });
       if (generation !== state.generation) return;
@@ -429,9 +434,9 @@
       if (generation !== state.generation) return;
       refreshNumbers = null;
       const message = error && error.message || String(error); log('Load failed: ' + message); $('connection').textContent = 'Load failed'; $('summary').textContent = 'Report unavailable';
-      blank('Unable to load the report', 'Refresh to retry. Open Diagnostics for details.'); notice(message, true);
+      loading(false); blank('Unable to load the report', 'Refresh to retry. Open Diagnostics for details.'); notice(message, true);
       LMCriticalErrors.breadcrumb('error', 'Lot sales report load failed', { message }, false);
-    } finally { if (generation === state.generation) { state.busy = false; $('refresh').disabled = false; } }
+    } finally { if (generation === state.generation) { loading(false); state.busy = false; $('refresh').disabled = false; } }
   }
   ['projectStatus','territory','project','builder','dateField','excludeBuilders','groupBy','hideEmpty'].forEach(id => $(id).addEventListener('change', () => { if (id === 'groupBy') state.collapsed.clear(); if (id === 'dateField') syncDateBasis(); update(); }));
   $('status').addEventListener('change', () => { syncDateBasis(); update(); });
@@ -499,6 +504,7 @@
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
   applyPeriod();
   async function authorizeAndLoad() {
+    loading(false);
     window.InsightsNumbers?.reset();
     const priorPermissions = state.permissions;
     const priorNumbers = state.historyReady ? captureNumbers($('salesDashboard')) : null;
@@ -506,7 +512,7 @@
     const generation = ++state.generation;
     if (window.LMData) LMData.invalidate(options => Object.values(LotSalesCreator.reports).includes(options.reportName || options.report_name));
     if (window.LMPerf) LMPerf.mark('insights:access-start');
-    state.permissions = null; state.loaded = false; state.historyReady = false; state.report = null; state.lots = [];
+    state.permissions = null; state.busy = false; state.loaded = false; state.historyReady = false; state.report = null; state.lots = [];
     state.references = null; state.window = null; state.detailLots = []; state.detailGroups = null;
     ['matrixHead','matrixBody','matrixFoot','detailBody','subdivisionCardBody'].forEach(id => { $(id).innerHTML = ''; });
     $('updated').textContent = 'Read-only report';

@@ -135,7 +135,7 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
     context.window = context; context.parent = {};context.addEventListener=()=>{};
     vm.runInContext(fs.readFileSync(app + 'runtime-context.js', 'utf8'), context);
     if(actualAccess){
-      context.state={generation:0};context.hideSubdivisionCard=()=>{};context.enforceRevenueAccess=()=>{};context.load=async()=>{events.permissions++;};
+      context.state={generation:0};context.loading=()=>{};context.hideSubdivisionCard=()=>{};context.enforceRevenueAccess=()=>{};context.load=async()=>{events.permissions++;};
       vm.runInContext(fs.readFileSync(app+'insights-access.js','utf8'),context);
       vm.runInContext(source.slice(source.indexOf('  async function authorizeAndLoad()'),source.indexOf('  let starting = false;')),context);
     }

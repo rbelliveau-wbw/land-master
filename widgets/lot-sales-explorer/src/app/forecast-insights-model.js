@@ -56,16 +56,18 @@
       const parts=filters.groupBy==='builder'?visibleBuilders.map(builder=>[builder]):[visibleBuilders];
       if(filters.groupBy==='builder'&&!parts.length)parts.push([]);
       for(const part of parts){
-        const cells=months.map(month=>{
+        const builderCells=builders=>months.map(month=>{
           let value=0,known=0,missing=0,sold=0,forecast=0;
-          if(!part.length)missing++;
-          for(const builder of part){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}known++;value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
+          if(!builders.length)missing++;
+          for(const builder of builders){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}known++;value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
           return {...month,value:known||!missing?value:null,knownValue:value,known,missing,sold,forecast};
         });
+        const builderRows=part.length>1?part.map(builder=>({key:JSON.stringify([phase.id,'builder',builder.id]),builder:{id:builder.id,name:builder.name},cells:builderCells([builder])})):[];
+        const cells=builderRows.length?aggregate(builderRows,months):builderCells(part);
         if(filters.hideEmpty&&!hasValues(cells))continue;
         const builder=part[0],groupId=filters.groupBy==='territory'?phase.territory:filters.groupBy==='builder'?builder?.id||'unassigned':phase.projectId||'unassigned';
         const groupName=filters.groupBy==='territory'?phase.territory:filters.groupBy==='builder'?builder?.name||'Unassigned':phase.project;
-        rows.push({key:JSON.stringify([phase.id,filters.groupBy==='builder'?groupId:'all']),phase,builders:part,groupId,groupName,cells});
+        rows.push({key:JSON.stringify([phase.id,filters.groupBy==='builder'?groupId:'all']),phase,builders:part,builderRows,groupId,groupName,cells});
       }
     }
     rows.sort((a,b)=>a.groupName.localeCompare(b.groupName)||a.phase.name.localeCompare(b.phase.name));

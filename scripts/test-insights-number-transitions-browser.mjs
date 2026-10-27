@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
   const stubs={
     'runtime-context.js':`window.ZOHO={CREATOR:{DATA:{},UTIL:{getInitParams:async()=>({})}}};window.LMRuntime={apply:()=>({environment:'DEVELOPMENT',user:'fixture'}),current:()=>({environment:'DEVELOPMENT',user:'fixture'}),apiName:n=>n};`,
     'critical-error-reporter.js':`window.LMCriticalErrors={configure(){},markReady(){},breadcrumb(){}};`,
-    'creator-adapter.js':`window.LotSalesCreator={reports:{},loadRecent:async()=>({...structuredClone(window.__data),window:{from:'${year-1}-01',to:'${year}-12'}}),loadHistory:async(api,progress)=>{if(new URL(location.href).searchParams.has('loading')){window.__progress=progress;return new Promise(()=>{});}return structuredClone(window.__data.lots);}};`,
+    'creator-adapter.js':`window.LotSalesCreator={reports:{},loadRecent:async()=>{const result={...structuredClone(window.__data),window:{from:'${year-1}-01',to:'${year}-12'}};if(new URL(location.href).searchParams.has('initial-loading')){window.__recentPending=true;await new Promise(resolve=>window.__releaseRecent=resolve);}return result;},loadHistory:async(api,progress)=>{if(new URL(location.href).searchParams.has('loading')){window.__progress=progress;return new Promise((resolve,reject)=>{window.__releaseHistory=()=>resolve(structuredClone(window.__data.lots));window.__failHistory=()=>reject(Error('Fixture history unavailable'));});}return structuredClone(window.__data.lots);}};`,
     'insights-access.js':`window.InsightsAccess={load:async()=>({lotSalesDashboard:window.__granted,viewTotalLotRevenue:window.__revenue})};`
   };
   const filename=path.resolve(root,file);
@@ -38,23 +38,28 @@ const settled=()=>page.waitForFunction(()=>!document.querySelector('.is-changing
 const change=async(id,value)=>page.evaluate(({id,value})=>{const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));},{id,value});
 const keysUnique=async(selector)=>assert.equal(await page.locator(selector+' [data-number-key]').evaluateAll(nodes=>new Set(nodes.map(n=>n.dataset.numberKey)).size===nodes.length),true,'keys identify a field once');
 try{
-  await page.goto(url+'/?loading=1');await page.waitForFunction(()=>typeof window.__progress==='function');
+  await page.goto(url+'/?initial-loading=1&loading=1');await page.waitForFunction(()=>typeof window.__releaseRecent==='function');
+  assert.equal(await page.locator('#salesLoading').isVisible(),true,'initial recent/reference read uses the shared loader');assert.equal(await page.locator('#matrix').getAttribute('aria-busy'),'true');assert.equal(await page.locator('#empty').isVisible(),false);assert.equal(await page.locator('#historyBanner').isVisible(),false);assert.equal(await page.locator('#matrixBody').textContent(),'');assert.equal(await page.locator('#export').isDisabled(),true);
+  assert.equal(await page.locator('#salesLoading').getAttribute('role'),'status');assert.equal(await page.locator('#salesLoading').getAttribute('aria-live'),'polite');
+  await page.evaluate(()=>__releaseRecent());await page.waitForFunction(()=>typeof window.__progress==='function');
   await page.evaluate(()=>{__progress('Lots',26000,26161);__progress('Lots',26100,26161);__progress('Lots',26160,26161);});
-  assert.equal(await page.locator('#historyMessage').textContent(),'Loading report · 26,160 / 26,161 lots','progress uses the latest exact count');
-  const loadingStyle=await page.locator('#historyBanner').evaluate(banner=>({
-    dots:[...banner.querySelectorAll('span')].filter(n=>getComputedStyle(n,'::before').animationName.includes('load-pulse')).length,
-    numbers:[...banner.querySelectorAll('.number-push')].map(n=>({before:getComputedStyle(n,'::before').animationName,background:getComputedStyle(n,'::before').backgroundColor,width:n.getBoundingClientRect().width})),
-    inner:[...banner.querySelectorAll('.number-push-value')].map(n=>getComputedStyle(n,'::before').content)
-  }));
-  assert.equal(loadingStyle.dots,1,'one loading dot belongs to the message, never its nested number spans');
-  assert.ok(loadingStyle.numbers.every(n=>!n.before.includes('load-pulse')&&n.background==='rgba(0, 0, 0, 0)'&&n.width>20),'number transitions retain their own clear, unclipped overlay');
-  assert.ok(loadingStyle.inner.every(content=>content==='none'||content==='normal'),'number text has no generated loading dots');
-  assert.equal(await page.locator('#matrixBody').textContent(),'');assert.equal(await page.locator('#export').isDisabled(),true,'pending history cannot publish a partial report');
-  await page.locator('#historyBanner').screenshot({path:path.join(output,'loading-counter-transition.png')});
-  await settled();await page.locator('#historyBanner').screenshot({path:path.join(output,'loading-counter.png')});
+  assert.equal(await page.locator('#salesLoadProgress').textContent(),'Loading report · 26,160 / 26,161 lots','accessible progress uses the latest exact count');
+  for(const width of [1366,1920]){
+    await page.setViewportSize({width,height:980});const loader=await page.evaluate(()=>{
+      const host=document.querySelector('#salesDashboard .report-card').getBoundingClientRect(),card=document.querySelector('#salesLoading .insights-loading-card').getBoundingClientRect();
+      const properties=(selector,names)=>{const style=getComputedStyle(document.querySelector(selector));return names.map(name=>style[name]);};
+      const ring=['width','height','borderTopWidth','borderTopColor','borderRightColor','borderBottomColor','borderRadius'],surface=['backgroundColor','color','fontSize','fontWeight','borderRadius','paddingTop','paddingRight','gap','boxShadow'];
+      return {x:Math.abs((host.left+host.right-card.left-card.right)/2),y:Math.abs((host.top+host.bottom-card.top-card.bottom)/2),salesRing:properties('#salesLoading .insights-loading-ring',ring),forecastRing:properties('#fcLoading .insights-loading-ring',ring),salesCard:properties('#salesLoading .insights-loading-card',surface),forecastCard:properties('#fcLoading .insights-loading-card',surface),animation:getComputedStyle(document.querySelector('#salesLoading .insights-loading-ring')).animationName,progress:properties('#salesLoadProgress',['position','width','height']),bannerVisible:!document.getElementById('historyBanner').hidden};
+    });
+    assert.ok(loader.x<=1&&loader.y<=1,'Sales loading card is centered in the report viewport');assert.deepEqual(loader.salesRing,loader.forecastRing,'Sales and Forecasts use the exact same ring');assert.deepEqual(loader.salesCard,loader.forecastCard,'Sales and Forecasts use the exact same card');assert.equal(loader.animation,'fc-loading-turn');assert.deepEqual(loader.progress,['absolute','1px','1px'],'real count metadata stays accessible outside the visible card layout');assert.equal(loader.bannerVisible,false);await page.screenshot({path:path.join(output,'loading-'+width+'.png')});
+  }
+  assert.equal(await page.locator('#salesLoading').isVisible(),true,'loader stays active throughout complete-history reads');assert.equal(await page.locator('#empty').isVisible(),false);assert.equal(await page.locator('#matrixBody').textContent(),'');assert.equal(await page.locator('#export').isDisabled(),true,'pending history cannot publish a partial report');assert.equal(await page.locator('#exportDetail').isDisabled(),true);
   await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>__progress('Lots',26161,26161));
-  assert.equal(await page.locator('#historyBanner .is-changing').count(),0);assert.equal(await page.locator('#historyMessage').textContent(),'Loading report · 26,161 / 26,161 lots');
+  assert.equal(await page.locator('#salesLoading .insights-loading-ring').evaluate(node=>getComputedStyle(node).animationName),'none');assert.equal(await page.locator('#salesLoadProgress .is-changing').count(),0);assert.equal(await page.locator('#salesLoadProgress').textContent(),'Loading report · 26,161 / 26,161 lots');
   await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>__failHistory());await page.locator('#salesLoading').waitFor({state:'hidden'});assert.equal(await page.locator('#matrix').getAttribute('aria-busy'),'false');assert.equal(await page.locator('#historyBanner').isVisible(),true,'actual errors keep their retry surface');assert.equal(await page.locator('#retryHistory').isVisible(),true);assert.equal(await page.locator('#matrixBody').textContent(),'');assert.equal(await page.locator('#export').isDisabled(),true);
+  await page.locator('#retryHistory').click();await page.locator('#salesLoading').waitFor();assert.equal(await page.locator('#historyBanner').isVisible(),false);assert.equal(await page.locator('#matrix').getAttribute('aria-busy'),'true');await page.evaluate(()=>__releaseHistory());await page.waitForFunction(()=>__sales.state.historyReady);await page.locator('#salesLoading').waitFor({state:'hidden'});assert.equal(await page.locator('#matrix').getAttribute('aria-busy'),'false');assert.equal(await page.locator('#export').isDisabled(),false);
+  await page.setViewportSize({width:1540,height:980});
   await page.goto(url);await page.waitForFunction(()=>window.__sales?.state.historyReady);
   assert.equal(await page.locator('.is-changing').count(),0,'first appearance stays still');
   assert.equal(await page.locator('.report-footer,.page-foot').count(),0,'bottom description/footer are removed');
@@ -148,6 +153,6 @@ try{
   await page.evaluate(()=>__budget.openDetail('90071992547410999'));assert.equal(await page.locator('#budgetDetail .is-changing').count(),0);
   await page.evaluate(()=>{__budget.state.report.rows[0].details[0].gp=80000;__budget.openDetail('90071992547410999');});assert.ok(await page.locator('#budgetDetail .is-changing').count()>0);await keysUnique('#budgetDetail');
   assert.deepEqual(errors,[]);
-  console.log('PASS Insights desktop Sliding push: one-dot loading counter with rapid exact progress, filters, native refresh, matrix/groups, inventory, lot details, dormant Budget views, immediate final text/CSV, all seven real-picker measure switches, period/status/basis changes, first/equal/unknown/identity suppression, signed rapid changes, permissions and reduced motion. Screenshots: '+output);
+  console.log('PASS Insights centered shared loading card/ring, accessible exact progress, atomic initial/history/retry lifecycle, and desktop Sliding push: filters, native refresh, matrix/groups, inventory, lot details, dormant Budget views, immediate final text/CSV, all seven real-picker measure switches, period/status/basis changes, first/equal/unknown/identity suppression, signed rapid changes, permissions and reduced motion. Screenshots: '+output);
 }catch(error){await page.screenshot({path:path.join(output,'failure.png'),fullPage:true});console.error({errors});throw error;}
 finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

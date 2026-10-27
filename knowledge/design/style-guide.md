@@ -66,9 +66,8 @@ retain the totals row and keep Diagnostics/version information in Diagnostics.
 Report descriptions, quality metadata and loading status may remain accessible
 outside the visible layout. Measure changes must not resize a bottom text strip.
 
-Forecasts keeps search/project-status/period filters, a clearly labeled **View by**
-searchable single dropdown (Project, Territory, Builder), display switches and
-collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
+Forecasts keeps search/project-status/Lot Status/period filters, display switches
+and collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
 Totals and Subtotals together, followed immediately by the Sold/Forecast color
 legend. Omit the separate Monthly Lot Count/count/legend row above the matrix;
 retain the report count as an accessible status.
@@ -86,9 +85,17 @@ available on hover/focus/click, instead of a full-width notice. Keep actual load
 failures visible. Project/Territory/Builder disclosures update mounted rows and
 cached subtotals immediately; never re-read or re-aggregate the report solely
 to open or close a group.
-Put the Lot Status picker in the first matrix header, replacing its static
-visible Project / Phase label. Keep that grouping label accessible and reuse
-the mounted searchable picker, including its current value and event handlers.
+Put the clearly labeled View by searchable single picker (Project, Territory,
+Builder) in the first matrix header. Lot Status (Sold + Forecast / Forecast)
+belongs in the top filter row. This October 27 direction supersedes the earlier
+Lot Status-in-header placement. Reuse the mounted pickers and their handlers.
+Every phase row with multiple displayed builders can expand to show those
+builders' monthly values and annual totals. Preserve the same filters, saved
+data, unknown/zero semantics, basis colors and current-month marking. Child
+rows are a breakdown of the parent; never add them again to totals or CSV.
+Keep group and phase disclosures immediate, mounted and accessible, preserving
+expanded choices through display switches. Hide Empty applies to child lines
+as well as parent phases; hidden/collapsed ancestors hide their descendants.
 All three display switches update the mounted report immediately. Cache empty
 row membership, both visible-scope group/footer totals and annual columns during a real report build;
 switching Hide Empty, Annual Totals or Subtotals must not rebuild the model/table,
@@ -110,8 +117,10 @@ CSV values. Cache empty masks, counts and totals at render; capture all changed
 numeric displays before any visibility/markup writes. Skip unchanged hidden and
 subtotal states to avoid repeated layouts and observer work on Hide Empty.
 
-Forecasts loading uses a centered, compact navy spinner and Loading forecasts
-label in the report viewport. Do not use the yellow notice bar for loading.
+All report loading screens follow the Data Insights Forecasts appearance; see
+[Loading states](loading-states.md). Lot Sales and Forecasts share the same
+centered card and navy spinner, with their short report-specific loading label
+in the report viewport. Do not use the yellow notice bar for loading.
 The indicator follows the real pending read, has no invented percentage or
 minimum display delay, and becomes static for reduced motion. Keep an already
 authorized report mounted during refresh. Real failures retain their error

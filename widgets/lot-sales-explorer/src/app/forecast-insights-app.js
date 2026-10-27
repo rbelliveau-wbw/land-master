@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const M=ForecastInsightsModel,L=LotSalesModel,$=id=>document.getElementById(id),host=$('forecastsDashboard');
-  const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
+  const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],phaseNodes:new Map(),expandedPhases:new Set(),allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const fmt=n=>Number(n).toLocaleString('en-US');
   const number=(value,key,context='')=>window.InsightsNumbers?.markup(value,JSON.stringify(['forecast-dashboard',key]),context)??esc(value);
@@ -31,6 +31,14 @@
   function reportCount(animate){numberHTML($('fcCount'),countMarkup(S.report),animate);}
   function syncAnnual(){if(!S.report)return;$('fcMatrix').classList.toggle('fc-no-annual',!$('fcAnnual').checked);$('fcHead').querySelectorAll('.fc-year').forEach(cell=>{cell.colSpan=$('fcAnnual').checked?13:12;});}
   const show=(node,hidden)=>{if(node.hidden!==hidden)node.hidden=hidden;};
+  function phaseChildren(phase,parentHidden,hide,apply){if(!phase)return;const shut=parentHidden||!S.expandedPhases.has(phase.model.key);phase.children.forEach(child=>apply(child.row,shut||hide&&child.empty));}
+  function togglePhase(key){
+    if(!S.permissions?.forecastsDashboard||!S.report)return;
+    const phase=S.phaseNodes.get(key);if(!phase||!phase.children.length||phase.row.hidden)return;
+    closeCard();if(S.expandedPhases.has(key))S.expandedPhases.delete(key);else S.expandedPhases.add(key);
+    phase.button.setAttribute('aria-expanded',String(S.expandedPhases.has(key)));
+    phaseChildren(phase,false,$('fcHideEmpty').checked,show);
+  }
   function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>show(value,hide));});}
   function queueNumber(jobs,node,html){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML!==html)jobs.push({cell:node,value:{html}});}
   function queueTotals(jobs,cells,before,after){cells.forEach((cell,index)=>{const value=after[index],old=before?.[index];if(old?.html!==value.html||old?.title!==value.title)jobs.push({cell,value});});}
@@ -40,7 +48,7 @@
     S.groupNodes.forEach(nodes=>{
       const count=hide?nodes.nonemptyCount:nodes.rows.length;
       visibility.push([nodes.header,!count]);if(count)queueNumber(jobs,nodes.count,hide?nodes.filteredCount:nodes.allCount);
-      const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>visibility.push([row,closed||hide&&nodes.emptyMask[index]]));
+      const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>{const hidden=closed||hide&&nodes.emptyMask[index];visibility.push([row,hidden]);phaseChildren(S.phaseNodes.get(nodes.group.rows[index].key),hidden,hide,(child,shut)=>visibility.push([child,shut]));});
       const totals=hide?nodes.filteredTotals:nodes.allTotals;if(count&&nodes.totalMarkup!==totals){queueTotals(jobs,nodes.totalCells,nodes.totalMarkup,totals);nodes.totalMarkup=totals;}
     });
     const totals=hide?S.filteredFoot:S.allFoot;if(S.footMarkup!==totals){queueTotals(jobs,S.footCells,S.footMarkup,totals);S.footMarkup=totals;}
@@ -61,6 +69,13 @@
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),key+':'+(c.annual?'year-'+c.year:c.key),c.annual?'fc-annual':monthClass(c),group,hide)).join('');
   const cellTitle=c=>fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast'+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
   function totalsMarkup(cells,key,group=false){return columns(S.baseReport,true).map(c=>{const value=c.annual?M.annual(cells,c.year):cells.find(v=>v.key===c.key),html=cellValue(value,key+':'+(c.annual?'year-'+c.year:c.key),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value),missing:!!value.missing};});}
+  const builderRowId=(phase,builder)=>'fc-builder-'+encodeURIComponent(phase.id)+'-'+encodeURIComponent(builder.id);
+  function phaseHTML(row,groupClosed){
+    const details=row.builderRows,expanded=S.expandedPhases.has(row.key),name='<span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>';
+    const heading=details.length?'<button type="button" class="fc-phase-toggle" data-fc-phase="'+esc(row.key)+'" aria-expanded="'+expanded+'" aria-controls="'+details.map(child=>builderRowId(row.phase,child.builder)).join(' ')+'" aria-label="Builders for '+esc(row.phase.name)+'">'+chev+name+'</button>':name;
+    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Territory for '+esc(row.phase.name)+'">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?esc(row.builders[0].name):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
+    return parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span title="'+esc(child.builder.name)+'">'+esc(child.builder.name)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
+  }
   function render(){
     if(!S.model||!S.permissions?.forecastsDashboard)return;
     closeCard();
@@ -80,16 +95,20 @@
     $('fcRange').textContent=contiguous?'Feb '+r.years[0]+' – Jan '+(r.years.at(-1)+1):r.years.map(y=>'WFY '+y).join(' · ');
     reportCount(false);
     $('fcLegend').innerHTML=(r.mode==='outlook'?'<span><i></i>Sold</span>':'')+'<span><i class="fc-forecast"></i>Forecast</span>';
-    $('fcHead').innerHTML='<tr><th rowspan="2" class="fc-name"><span class="sr-only">'+({project:'Project / Phase',territory:'Territory / Phase',builder:'Builder / Phase'}[S.groupBy])+'</span><span class="fc-mode-label">Lot Status</span><span id="fcModeSlot" class="fc-header-picker"></span></th><th rowspan="2" class="fc-meta">Zoho Project Status</th><th rowspan="2" class="fc-meta">Builder</th>'+r.years.map(y=>'<th class="fc-year" colspan="'+(12+($('fcAnnual').checked?1:0))+'">WFY '+y+'<span>Feb '+y+' – Jan '+(y+1)+'</span></th>').join('')+'</tr><tr>'+cols.map(c=>c.annual?'<th class="fc-annual">WFY '+c.year+'<small>Annual Total</small></th>':'<th class="'+monthClass(c)+'" data-month-start="'+c.start+'" title="'+esc(c.name+' '+c.start.slice(0,4)+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?' - Current month':''))+'">'+esc(c.name.slice(0,3))+'<small>'+c.start.slice(0,4)+'</small>'+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?'<small class="fc-current-month-label">Current</small>':'')+'</th>').join('')+'</tr>';
+    $('fcHead').innerHTML='<tr><th rowspan="2" class="fc-name"><span class="sr-only">'+({project:'Project / Phase',territory:'Territory / Phase',builder:'Builder / Phase'}[S.groupBy])+'</span><span class="fc-header-label">View by</span><span id="fcViewBySlot" class="fc-header-picker"></span></th><th rowspan="2" class="fc-meta">Zoho Project Status</th><th rowspan="2" class="fc-meta">Builder</th>'+r.years.map(y=>'<th class="fc-year" colspan="'+(12+($('fcAnnual').checked?1:0))+'">WFY '+y+'<span>Feb '+y+' – Jan '+(y+1)+'</span></th>').join('')+'</tr><tr>'+cols.map(c=>c.annual?'<th class="fc-annual">WFY '+c.year+'<small>Annual Total</small></th>':'<th class="'+monthClass(c)+'" data-month-start="'+c.start+'" title="'+esc(c.name+' '+c.start.slice(0,4)+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?' - Current month':''))+'">'+esc(c.name.slice(0,3))+'<small>'+c.start.slice(0,4)+'</small>'+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?'<small class="fc-current-month-label">Current</small>':'')+'</th>').join('')+'</tr>';
     $('fcBody').innerHTML=r.groups.map((g,gi)=>{
       const collapsed=S.collapsed.has(g.id),values=M.aggregate(g.rows,r.months);
-      return '<tr class="fc-group" data-motion-row="'+esc('group:'+g.id)+'"><th class="fc-name" scope="row"><div class="fc-group-name"><button type="button" data-fc-group="'+gi+'" aria-expanded="'+!collapsed+'">'+chev+'<span>'+esc(g.name)+'</span><small>'+number(fmt(g.rows.length),'group-count:'+g.id)+'</small></button>'+(S.groupBy==='territory'?'<button type="button" class="fc-info-trigger" data-fc-territory="'+gi+'" aria-label="Territory Details for '+esc(g.name)+'">'+pin+'</button>':'')+'</div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(values,'group:'+g.id,true,!collapsed&&!$('fcSubtotals').checked)+'</tr>'+g.rows.map(row=>'<tr class="fc-leaf" '+(collapsed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name"><span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>'+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Territory for '+esc(row.phase.name)+'">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?esc(row.builders[0].name):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>').join('');
+      return '<tr class="fc-group" data-motion-row="'+esc('group:'+g.id)+'"><th class="fc-name" scope="row"><div class="fc-group-name"><button type="button" data-fc-group="'+gi+'" aria-expanded="'+!collapsed+'">'+chev+'<span>'+esc(g.name)+'</span><small>'+number(fmt(g.rows.length),'group-count:'+g.id)+'</small></button>'+(S.groupBy==='territory'?'<button type="button" class="fc-info-trigger" data-fc-territory="'+gi+'" aria-label="Territory Details for '+esc(g.name)+'">'+pin+'</button>':'')+'</div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(values,'group:'+g.id,true,!collapsed&&!$('fcSubtotals').checked)+'</tr>'+g.rows.map(row=>phaseHTML(row,collapsed)).join('');
     }).join('');
-    S.groupNodes=[];for(const row of $('fcBody').children){if(row.classList.contains('fc-group'))S.groupNodes.push({group:r.groups[S.groupNodes.length],header:row,button:row.querySelector('[data-fc-group]'),count:row.querySelector('.fc-group-name small'),totals:[...row.querySelectorAll('[data-fc-total]')],rows:[]});else S.groupNodes.at(-1).rows.push(row);}
+    S.groupNodes=[];S.phaseNodes=new Map();for(const row of $('fcBody').children){
+      if(row.classList.contains('fc-group'))S.groupNodes.push({group:r.groups[S.groupNodes.length],header:row,button:row.querySelector('[data-fc-group]'),count:row.querySelector('.fc-group-name small'),totals:[...row.querySelectorAll('[data-fc-total]')],rows:[]});
+      else if(row.classList.contains('fc-leaf')){const group=S.groupNodes.at(-1),model=group.group.rows[group.rows.length];group.rows.push(row);S.phaseNodes.set(model.key,{model,row,button:row.querySelector('[data-fc-phase]'),children:[]});}
+      else{const phase=S.phaseNodes.get(row.dataset.fcParent),model=phase.model.builderRows[phase.children.length];phase.children.push({model,row,empty:!M.hasValues(model.cells)});}
+    }
     $('fcFoot').innerHTML=r.rows.length?'<tr><th class="fc-name" scope="row">All '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy])+'</th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(r.totals,'all')+'</tr>':'';
     S.groupNodes.forEach(nodes=>{const key='group:'+nodes.group.id;nodes.emptyMask=nodes.group.rows.map(row=>S.emptyRows.has(row.key));nodes.nonemptyCount=nodes.emptyMask.filter(empty=>!empty).length;nodes.allCount=number(fmt(nodes.rows.length),'group-count:'+nodes.group.id);nodes.filteredCount=number(fmt(nodes.nonemptyCount),'group-count:'+nodes.group.id);nodes.allTotals=totalsMarkup(M.aggregate(nodes.group.rows,r.months),key,true);nodes.filteredTotals=totalsMarkup(M.aggregate(nodes.group.rows.filter(row=>!S.emptyRows.has(row.key)),r.months),key,true);nodes.totalCells=[...nodes.header.cells].slice(3);nodes.totalMarkup=nodes.allTotals;});
     S.allFoot=totalsMarkup(r.totals,'all');S.filteredFoot=totalsMarkup(S.nonemptyReport.totals,'all');S.footCells=[...($('fcFoot').firstElementChild?.cells||[])].slice(3);S.footMarkup=S.allFoot;
-    InsightsControls.placePicker('fcMode',$('fcModeSlot'));
+    InsightsControls.placePicker('fcViewBy',$('fcViewBySlot'));
     $('fcEmpty').hidden=r.rows.length>0;$('fcEmpty').querySelector('h2').textContent='No Matching Phases';$('fcRetry').hidden=true;
     syncAnnual();syncSubtotals();syncHideEmpty(false);
     $('fcViewBy').value=S.groupBy;
@@ -100,7 +119,7 @@
     if(!S.permissions?.forecastsDashboard||!S.report)return;
     const group=S.baseReport.groups[index],nodes=S.groupNodes[index];if(!group||!nodes)return;
     closed?S.collapsed.add(group.id):S.collapsed.delete(group.id);nodes.button.setAttribute('aria-expanded',String(!closed));
-    nodes.rows.forEach((row,index)=>{row.hidden=closed||$('fcHideEmpty').checked&&S.emptyRows.has(group.rows[index].key);});nodes.totals.forEach(value=>{value.hidden=!closed&&!$('fcSubtotals').checked;});
+    nodes.rows.forEach((row,index)=>{const hidden=closed||$('fcHideEmpty').checked&&S.emptyRows.has(group.rows[index].key);show(row,hidden);phaseChildren(S.phaseNodes.get(group.rows[index].key),hidden,$('fcHideEmpty').checked,show);});nodes.totals.forEach(value=>{value.hidden=!closed&&!$('fcSubtotals').checked;});
   }
   const actor=()=>JSON.stringify([LMRuntime.current().environment,LMRuntime.current().user,LMRuntime.current().appLinkName]);
   async function load(){
@@ -114,7 +133,7 @@
     }catch(error){if(!isCurrent())return;S.error=true;notice(error.message||'Forecasts could not be loaded.',true);$('connection').textContent='Forecasts Unavailable';$('fcRetry').hidden=false;if(!S.model){$('fcEmpty').hidden=false;$('fcEmpty').querySelector('h2').textContent='Forecasts Unavailable';}}
     finally{if(isCurrent()){S.busy=false;loading(false);if(S.report)$('fcEmpty').hidden=S.report.rows.length>0;$('fcExport').disabled=S.error||!S.report?.rows.length;}}
   }
-  function clear(){S.generation++;S.model=null;S.report=null;S.baseReport=null;S.nonemptyReport=null;S.emptyRows=new Set();S.groupNodes=[];S.allFoot=[];S.filteredFoot=[];S.footCells=[];S.footMarkup=null;S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';$(id)._fcNumberMarkup=null;});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
+  function clear(){S.generation++;S.model=null;S.report=null;S.baseReport=null;S.nonemptyReport=null;S.emptyRows=new Set();S.groupNodes=[];S.phaseNodes=new Map();S.expandedPhases.clear();S.allFoot=[];S.filteredFoot=[];S.footCells=[];S.footMarkup=null;S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';$(id)._fcNumberMarkup=null;});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
   function exportCsv(){
     if(!S.permissions?.forecastsDashboard||!S.report||S.busy||S.error)return;
     const r=S.report,cols=columns(r),lines=[['Territory','Project','Phase','Zoho Project Status','Builder',...cols.map(c=>c.annual?'WFY '+c.year+' Total':c.key)]];
@@ -136,6 +155,7 @@
   }
   const infoSelector='[data-fc-info],[data-fc-territory],#fcWarning';
   host.addEventListener('click',event=>{
+    const phase=event.target.closest('[data-fc-phase]');if(phase){togglePhase(phase.dataset.fcPhase);return;}
     const group=event.target.closest('[data-fc-group]');if(group){const index=Number(group.dataset.fcGroup),id=S.baseReport?.groups[index]?.id;if(id==null)return;closeCard();setCollapsed(index,!S.collapsed.has(id));syncCollapse();return;}
     const info=event.target.closest(infoSelector);if(info){openCard(info,true);return;}
   });

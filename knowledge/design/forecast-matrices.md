@@ -260,6 +260,18 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+Keep Lot Status in the top filter row and put the clearly labeled View by
+searchable single picker in the first matrix header. Every phase with multiple
+displayed builders offers an accessible disclosure of its per-builder monthly
+and annual values. Use the same already loaded scoped builder data; do not read
+again when expanding. Cache and mount child rows during the actual report build,
+with stable phase/builder keys and shared row/disclosure motion. Display switches
+retain expanded choices; group collapse hides all descendants and Hide Empty
+hides child builders with no nonzero displayed month. In Builder view the phase
+already represents one builder, so omit a redundant disclosure. Children never
+contribute again to parent/group/footer/CSV aggregates. Preserve partial-known,
+missing-year, explicit-zero and all-unknown semantics for every builder cell.
+
 The user requested full cell background colors for this read-only dashboard.
 Its monthly Sold cells use blue text on pale blue, and Forecast cells use green
 text on pale green, matching the larger bold legend. Tint headers, body cells,

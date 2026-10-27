@@ -24,6 +24,45 @@ assert.equal(M.report(model,{...filters,search:'D.R. Horton'},today).rows[0].cel
 assert.deepEqual(M.yearsFor('custom',today,[2028,2026,2028]),[2026,2028]);assert.deepEqual(M.yearsFor('current','2027-01-10'),[2026]);assert.throws(()=>M.yearsFor('custom',today,[]));assert.throws(()=>M.report(model,filters,''));
 for(const mutate of [d=>d.years.push({...d.years[0],ID:'duplicate'}),d=>d.months.push({...d.months[0],ID:'duplicate'}),d=>d.months.pop(),d=>d.months[0].Forecast_Start_Date='2026-03-01',d=>d.months[0].Forecasted_Lots='-1',d=>d.months[0].Subdivision1={ID:'wrong'}]){const d=forecastFixture();mutate(d);assert.throws(()=>M.normalize(d),'Incomplete or inconsistent forecast data rejects before rendering');}
 const blank=forecastFixture();blank.months.find(m=>m.Forecast_Month==='October').Forecasted_Lots='';assert.equal(M.report(M.normalize(blank),filters,today).rows.find(r=>r.phase.id===alta.phase.id).cells[8].value,11,'one blank builder never hides another builder saved forecast');
+
+// Builder details are cached presentation rows, never additional report contributors.
+const firstPhase=result=>result.rows.find(row=>row.phase.id===data.subdivisions[0].ID);
+const numericCell=cell=>({key:cell.key,value:cell.value,knownValue:cell.knownValue,known:cell.known,missing:cell.missing,sold:cell.sold,forecast:cell.forecast});
+function assertBuilderDetailParity(result){
+  const parent=firstPhase(result);assert.equal(parent.builderRows.length,2);
+  assert.deepEqual(parent.builderRows.map(row=>row.builder.id).sort(),parent.builders.map(builder=>builder.id).sort(),'only currently scoped builders have child rows');
+  assert.ok(parent.builderRows.every(row=>typeof row.key==='string'&&typeof row.builder.id==='string'),'exact large Creator IDs remain strings');
+  assert.equal(new Set(parent.builderRows.map(row=>row.key)).size,2,'child motion identities are unique');
+  assert.ok(parent.builderRows.every(child=>!result.rows.some(row=>row.key===child.key)),'child rows are excluded from report/group/footer/CSV source rows');
+  const rolled=M.aggregate(parent.builderRows,result.months);assert.deepEqual(rolled.map(numericCell),parent.cells.map(numericCell),'children reproduce the exact known/unknown monthly parent aggregate');
+  for(const year of result.years)assert.deepEqual(M.annual(rolled,year),M.annual(parent.cells,year),'child annual totals agree without adding a second report contribution');
+  return parent;
+}
+assertBuilderDetailParity(report);assert.equal(report.rows.length,3);assert.equal(report.totals[8].value,21,'cached child details do not double-count the footer');
+assert.ok(report.rows.filter(row=>row.builders.length<=1).every(row=>row.builderRows.length===0),'single-builder and unassigned phases have no redundant children');
+assert.ok(builderReport.rows.every(row=>row.builderRows.length===0),'Builder grouping already supplies the one-builder level');
+for(const mode of ['outlook','forecast'])for(const groupBy of ['project','territory'])assertBuilderDetailParity(M.report(model,{...filters,mode,groupBy},today));
+const currentDetails=M.report(model,{...filters,period:'current'},today);assertBuilderDetailParity(currentDetails);assert.ok(firstPhase(currentDetails).builderRows.every(row=>row.cells.length===12&&row.cells.every(cell=>cell.year===2026)));
+const laterDetails=M.report(model,{...filters,period:'custom',years:['2027']},today);assertBuilderDetailParity(laterDetails);assert.ok(firstPhase(laterDetails).builderRows.every(row=>row.cells.length===12&&row.cells.every(cell=>cell.year===2027)),'child months follow only the selected fiscal range');
+for(const scoped of [M.report(model,{...filters,builderIds:[data.builders[1].ID]},today),M.report(model,{...filters,search:'D.R. Horton'},today)]){
+  const parent=firstPhase(scoped);assert.equal(parent.builders[0].id,data.builders[1].ID);assert.equal(parent.builderRows.length,0,'single-builder filters/search do not expose other builders');
+}
+const repeated=M.report(model,filters,today);assert.deepEqual(firstPhase(repeated).builderRows.map(row=>row.key),alta.builderRows.map(row=>row.key),'child identities survive a genuine report rebuild');
+const sparseDetails=forecastFixture();
+for(const [builderId,year]of [[sparseDetails.builders[0].ID,'2027'],[sparseDetails.builders[1].ID,'2026']]){
+  const parent=sparseDetails.years.find(row=>row.Subdivision1.ID===sparseDetails.subdivisions[0].ID&&row.Builder1.ID===builderId&&row.Forecast_Year===year);
+  sparseDetails.years=sparseDetails.years.filter(row=>row.ID!==parent.ID);sparseDetails.months=sparseDetails.months.filter(row=>row.Forecast_Year2.ID!==parent.ID);
+}
+const sparseParent=assertBuilderDetailParity(M.report(M.normalize(sparseDetails),filters,today));
+assert.ok(sparseParent.builderRows.find(row=>row.builder.id===data.builders[0].ID).cells.filter(cell=>cell.year===2027).every(cell=>cell.value===null&&cell.known===0&&cell.missing===1),'missing builder-years remain unknown in the detail line');
+assert.equal(sparseParent.cells[8].value,10);assert.equal(sparseParent.cells[12].value,11,'one builder missing a year does not erase another builder detail');
+for(const emptyValue of ['0','']){
+  const emptyDetails=forecastFixture();for(const month of emptyDetails.months.filter(row=>row.Subdivision1.ID===emptyDetails.subdivisions[0].ID&&row.Builder1.ID===emptyDetails.builders[0].ID)){month.Forecasted_Lots=emptyValue;month.Actual_Lots='0';}
+  const parent=assertBuilderDetailParity(M.report(M.normalize(emptyDetails),{...filters,mode:'forecast'},today));
+  const emptyChild=parent.builderRows.find(row=>row.builder.id===data.builders[0].ID),populatedChild=parent.builderRows.find(row=>row.builder.id===data.builders[1].ID);
+  assert.equal(M.hasValues(emptyChild.cells),false,'Hide Empty can hide a zero or unknown child while retaining its populated parent');assert.equal(M.hasValues(populatedChild.cells),true);
+  assert.ok(emptyChild.cells.every(cell=>cell.value===(emptyValue===''?null:0)),'zero and unknown child values remain distinct');
+}
 const all=new Map(Object.entries(A.reports).map(([key,name])=>[name,data[key]]));let calls=0;
 globalThis.LotSalesCreator={readAll:async(api,name,onProgress,fields,options)=>{calls++;assert.equal(options.isCancelled(),false);assert.deepEqual(fields,A.fields[Object.keys(A.reports).find(k=>A.reports[k]===name)]);return all.get(name);}};
 assert.deepEqual(await A.load({}, {isCurrent:()=>true}),data);assert.equal(calls,5);
