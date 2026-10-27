@@ -99,7 +99,7 @@
       // Keep the report, row identities, dates, selection and scroll containers mounted.
       host.querySelectorAll('[data-lot-row]').forEach(node=>{
         const row=options.byId(node.dataset.lotRow);if(!row)return;
-        node.querySelectorAll('[data-lot-field]').forEach(cell=>{const field=LMLotEdit.fields.find(field=>field.key===cell.dataset.lotField);if(field)cell.outerHTML=cellHTML(row,field);});
+        node.querySelectorAll('[data-lot-field]').forEach(cell=>{const field=LMLotEdit.fields.find(field=>field.key===cell.dataset.lotField);if(field){const html=cellHTML(row,field);cell.innerHTML=html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>'));}});
         const hold=node.querySelector('[data-inline-field="On_Hold"]');if(hold)hold.disabled=!on||!LMLotEdit.editable(row)||!options.ready()||!Object.prototype.hasOwnProperty.call(row,'On_Hold');
         const noteCell=node.querySelector('.ll-note-cell');if(noteCell)noteCell.innerHTML=noteButton(row,on&&LMLotEdit.editable(row)&&options.ready())+'<span class="ll-field-error" role="alert"></span>';
       });
