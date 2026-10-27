@@ -14,7 +14,7 @@ function harness({denied=false}={}){
  vm.runInContext(fs.readFileSync(app+'sales-model.js','utf8'),c);const M=c.LotSalesModel;
  c.LMRuntime={current:()=>({environment:'DEVELOPMENT',user:'fixture'})};c.LMPerf={mark:(name,detail)=>marks.push({name,detail})};c.LMCriticalErrors={breadcrumb(){}};
  c.ZOHO={CREATOR:{DATA:{}}};c.initializeSalesCreator=async()=>{};c.configureSalesReporter=()=>{};
- c.InsightsShell={setAccess(){},connected:()=>true,markConnected(){}};c.InsightsAccess={load:async()=>({lotSalesDashboard:!denied,viewTotalLotRevenue:true})};
+ c.InsightsShell={setAccess(){},connected:()=>true,markConnected(){},readRoute:async()=>({}),route:()=>({}),current:()=> 'sales'};c.InsightsAccess={load:async()=>({lotSalesDashboard:!denied,viewTotalLotRevenue:true})};
  c.InsightsControls={syncAll(){},placePicker(){},values:el=>el.options.filter(o=>o.selected&&o.value).map(o=>o.value),setValues:(el,values)=>el.options.forEach(o=>o.selected=values.includes(o.value))};
  for(const id of ['project','projectStatus','territory','builder'])c.InsightsControls.setValues(node(id),[]);
  c.InsightsControls.setValues(node('status'),['Sold']);

@@ -209,7 +209,14 @@ for(const workflow of currentWorkflows.values()){
 }
 for(const f of pageDeployment.functions){
  assert.equal(f.savedAndReloaded,true,`${f.name}: independently reselected`);
- assert.equal(canonicalDeluge(read(f.evidence)),canonicalDeluge(read(f.source)),`${f.name}: complete native body and literals match`);
+ let current=read(f.source);
+ // This capture predates the separately tested October 27 Forecasts addition.
+ // Preserve the complete Construction baseline; allow only the exact new flag/date blocks.
+ if(['getUserAccess','getUserAccessLean'].includes(f.name))current=current
+  .replace('\tforecastsDashboard = false;\n','')
+  .replace('\t\tforecastsDashboard = row.Forecasts_Dashboard == true;\n','')
+  .replace('\tresult.put("forecastsDashboard",forecastsDashboard);\n\tif(forecastsDashboard)\n\t{\n\t\tresult.put("today",zoho.currentdate.toString("yyyy-MM-dd"));\n\t}\n','');
+ assert.equal(canonicalDeluge(read(f.evidence)),canonicalDeluge(current),`${f.name}: native Construction body and literals match outside the audited Forecasts additions`);
 }
 const nativeParent=read(currentWorkflows.get('Field_Validations_Contrac').evidence);
 assert.doesNotThrow(()=>runValidation(null,request({Parent_Contract:21,Builder:101}),{...scope,Contract:[{ID:21,Work_Module:'Construction',Parent_Contract:null,Contract_Type:'Offsite',Builder:202,Project:404}],User_Access:[grants({edit:true})]},nativeParent),'native formatter preserved non-Lot parent semantics');

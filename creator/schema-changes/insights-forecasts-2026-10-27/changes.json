@@ -1,0 +1,41 @@
+{
+  "status": "installed-development-pending-owner-promotion",
+  "reason": "Installed through Creator Development UI on 2026-10-27. Both access functions and page variables were saved and reopened. No users or profiles were granted access.",
+  "permission": {
+    "form": "User_Access",
+    "link_name": "Forecasts_Dashboard",
+    "display_name": "Forecasts Dashboard",
+    "type": "decision box",
+    "default": false,
+    "purpose": "View the read-only Forecasts dashboard in Data Insights. Does not grant Lot Sales or forecast editing.",
+    "native_description": "",
+    "mandatory": false,
+    "grant_users": []
+  },
+  "functions_after_field_creation": ["getUserAccess", "getUserAccessLean"],
+  "page": {
+    "target": "Existing Data Insights page",
+    "link_name": "Data_Insights",
+    "widget_url": "https://rbelliveau-wbw.github.io/land-master/prod/insights/",
+    "parameters": [
+      {"name": "dashboard", "type": "Text", "default": "", "optional": true, "widget_allowed_values": ["sales", "forecasts"]},
+      {"name": "projectId", "type": "Text", "default": "", "optional": true}
+    ],
+    "read_method": "ZOHO.CREATOR.UTIL.getQueryParams()",
+    "replace_widget_url": false
+  },
+  "read_only_reports": {
+    "All_Subdivisions": ["ID", "Project", "Subdivision_Name", "Territory", "Projects_Status", "Total_Lots", "Lots_Sold"],
+    "All_Projects": ["ID", "Project_Name"],
+    "All_Builders": ["ID", "Builder_Name", "Type1"],
+    "All_Forecast_Years": ["ID", "Subdivision1", "Builder1", "Forecast_Year", "Status"],
+    "All_Forecasts": ["ID", "Forecast_Year2", "Subdivision1", "Builder1", "Forecast_Year", "Forecast_Month", "Forecast_Start_Date", "Forecasted_Lots", "Actual_Lots", "Scheduled_Lots", "Delete_me"]
+  },
+  "native_verification": {
+    "field": "Reopened properties: Forecasts Dashboard / Forecasts_Dashboard; Decision box; Initial value unchecked; Mandatory unchecked.",
+    "functions": "Saved successfully; closed/reopened both; complete native source matches checked-in source after whitespace normalization.",
+    "page_variables": "Saved successfully; closed/reopened Variables; table lists dashboard Text and projectId Text.",
+    "authorized_report_runtime": "Pending owner selection of authorized viewers and signed-in report-profile verification. No grant was self-assigned."
+  },
+  "production_promotion": "User-managed under PMP; preserve all existing API audiences and report write restrictions."
+}

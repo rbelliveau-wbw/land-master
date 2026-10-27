@@ -15,6 +15,7 @@ string getUserAccess(string user)
 	budgetDeleteArchive = false;
 	// Data Insights permissions
 	lotSalesDashboard = false;
+	forecastsDashboard = false;
 	viewTotalLotRevenue = false;
 	// Pro Forma flags
 	pfEditAll = false;
@@ -61,6 +62,7 @@ string getUserAccess(string user)
 		budgetDeleteArchive = row.Delete_Archive_Budgets == true;
 		// Data Insights permissions
 		lotSalesDashboard = row.Lot_Sales_Dashboard == true;
+		forecastsDashboard = row.Forecasts_Dashboard == true;
 		viewTotalLotRevenue = row.View_Total_Lot_Revenue == true;
 		// Pro Forma permissions
 		pfEditAll = row.Edit_All_Proformas == true;
@@ -134,6 +136,11 @@ string getUserAccess(string user)
 	result.put("budgetDeleteArchive",budgetDeleteArchive);
 	// Data Insights permissions
 	result.put("lotSalesDashboard",lotSalesDashboard);
+	result.put("forecastsDashboard",forecastsDashboard);
+	if(forecastsDashboard)
+	{
+		result.put("today",zoho.currentdate.toString("yyyy-MM-dd"));
+	}
 	result.put("viewTotalLotRevenue",viewTotalLotRevenue);
 	// Pro Forma permissions
 	result.put("pfEditAll",pfEditAll);

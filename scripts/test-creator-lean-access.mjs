@@ -14,7 +14,7 @@ const fields = [
   ['Send_for_Approvals', 'send'], ['Edit_Budget_Owners', 'editOwners'],
   ['View_Budget_Import_Items', 'viewImports'], ['Edit_Budget_Import_Items', 'editImports'],
   ['Edit_All_Budgets', 'modAdmin'], ['Delete_Archive_Budgets', 'budgetDeleteArchive'],
-  ['Lot_Sales_Dashboard', 'lotSalesDashboard'], ['View_Total_Lot_Revenue', 'viewTotalLotRevenue'],
+  ['Lot_Sales_Dashboard', 'lotSalesDashboard'], ['Forecasts_Dashboard', 'forecastsDashboard'], ['View_Total_Lot_Revenue', 'viewTotalLotRevenue'],
   ['Edit_All_Proformas', 'pfEditAll'], ['Edit_Owned_Proformas', 'pfEditOwned'],
   ['Edit_Construction_Curve', 'pfEditCurve'], ['VP_Compensation_Tab', 'pfVpCompTab'],
   ['Edit_Probability', 'pfEditProbability'], ['Edit_Proforma_Owner', 'pfEditOwner'],
@@ -52,7 +52,7 @@ function run(name, user, rows = roster, login = 'fixture_owner', forms = proform
       const rows=(tables[form] || []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
       return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;}});
     }
-    const zoho = {loginuser: login};
+    const zoho = {loginuser: login,currentdate:{toString(format){if(format!=='yyyy-MM-dd')throw Error('Unexpected date format');return '2026-10-27';}}};
     const thisapp = {permissions:{profileForUser(){return '';}}};
     ${bodies.map(body => body.js + `;thisapp.${body.name} = ${body.name};`).join('\n')}
     var rawResult = ${name}(user);

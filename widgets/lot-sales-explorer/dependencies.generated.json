@@ -2,12 +2,24 @@
   "custom_apis": [],
   "forms_referenced": [
     "Builder",
+    "Forecast",
+    "Forecast_Year",
     "Lots",
     "Project",
-    "Subdivision"
+    "Subdivision",
+    "User_Access"
   ],
-  "reports_referenced": [],
-  "sdk_calls": [],
+  "reports_referenced": [
+    "All_Builders",
+    "All_Forecast_Years",
+    "All_Forecasts",
+    "All_Lots_All_Fields",
+    "All_Projects",
+    "All_Subdivisions"
+  ],
+  "sdk_calls": [
+    "ZOHO.CREATOR.UTIL.getQueryParams"
+  ],
   "external_domains": [
     "static.zohocdn.com"
   ]

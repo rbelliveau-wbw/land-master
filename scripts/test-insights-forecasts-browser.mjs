@@ -1,0 +1,42 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import http from 'node:http';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {forecastFixture} from './fixtures/insights-forecasts.mjs';
+import {salesFixture} from './fixtures/lot-sales-data.mjs';
+const {chromium}=createRequire(import.meta.url)('playwright');
+const root=path.resolve('widgets/lot-sales-explorer/src/app'),fixture=forecastFixture(),sales=salesFixture(),output=path.resolve('tmp/forecast-browser');fs.mkdirSync(output,{recursive:true});
+const sdk=`(() => {window.__reads=[];const role=new URLSearchParams(location.search).get('fixtureRole');window.__failForecast=new URLSearchParams(location.search).get('fixtureFail')==='true';window.__fixtureAccess={hasRow:true,lotSalesDashboard:role!=='forecasts-only',forecastsDashboard:role!=='sales-only',viewTotalLotRevenue:true,today:'2026-10-27'};
+const data=${JSON.stringify({All_Subdivisions:fixture.subdivisions,All_Projects:fixture.projects,All_Builders:fixture.builders,All_Forecasts:fixture.months,All_Forecast_Years:fixture.years,All_Lots_All_Fields:sales.lots})};
+window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({appLinkName:'land-master',loginUser:'viewer@example.test',envUrlFragment:'/environment/development'}),getQueryParams:async()=>Object.fromEntries(new URLSearchParams(location.search))},DATA:{invokeCustomApi:async()=>({code:3000,result:JSON.stringify(window.__fixtureAccess)}),getRecordCount:async c=>({code:3000,result:{records_count:data[c.report_name]?.length||0}}),getRecords:async c=>{window.__reads.push(c.report_name);if(window.__failForecast&&c.report_name==='All_Forecasts')throw Error('Forecast read denied');return {code:3000,data:data[c.report_name]||[]};}}}};})();`;
+const server=http.createServer((req,res)=>{const relative=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,''),file=path.resolve(root,relative||'widget.html');if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/html');res.end(fs.readFileSync(file));});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+server.address().port;
+const browser=await chromium.launch({headless:true,channel:'chrome',ignoreDefaultArgs:['--hide-scrollbars']});
+try{
+ const page=await browser.newPage({viewport:{width:1540,height:980}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://static.zohocdn.com/**',route=>route.fulfill({contentType:'application/javascript',body:sdk}));
+ page.setDefaultTimeout(8000);
+ await page.goto(origin+'/widget.html?dashboard=forecasts');
+ try{await page.locator('#fcBody .fc-leaf').first().waitFor();}catch(error){console.log(JSON.stringify({errors,text:await page.locator('body').innerText(),reads:await page.evaluate(()=>window.__reads)},null,2));await page.screenshot({path:path.join(output,'startup-error.png')});throw error;}
+ assert.equal(await page.locator('#fcBody .fc-leaf').count(),3);assert.equal(await page.locator('#salesDashboard').isVisible(),false);
+ assert.equal(await page.evaluate(()=>__reads.includes('All_Lots_All_Fields')),false,'Direct Forecasts navigation does not load Lot Sales');
+ assert.equal(await page.locator('#fcHead .fc-year').count(),2);assert.equal(await page.locator('#fcBody .fc-sold-out').count(),1);
+ await page.locator('#fcSubtotals').check();assert.notEqual((await page.locator('#fcBody .fc-group').first().locator('td').nth(2).textContent()).trim(),'');
+ await page.locator('#fcSubtotals').uncheck();await page.locator('#fcCollapse').click();assert.equal(await page.locator('#fcBody .fc-leaf').count(),0);await page.locator('#fcCollapse').click();
+ await page.locator('[data-fc-view="builder"]').click();assert.equal(await page.locator('#fcBody .fc-leaf').count(),4);
+ await page.locator('[data-fc-view="territory"]').click();await page.locator('[data-fc-territory]').first().hover();assert.equal(await page.locator('#fcInfoCard').isVisible(),true);await page.keyboard.press('Escape');
+ await page.locator('[data-fc-view="project"]').click();await page.locator('#fcSearch').fill('Alta');await page.waitForTimeout(200);assert.equal(await page.locator('#fcBody .fc-leaf').count(),1);await page.locator('#fcReset').click();
+ await page.locator('#fcHideEmpty').check();assert.equal(await page.locator('#fcBody .fc-leaf').count(),2);await page.locator('#fcHideEmpty').uncheck();
+ await page.locator('#fcAnnual').uncheck();assert.equal(await page.locator('#fcHead .fc-annual').count(),0);await page.locator('#fcAnnual').check();
+ await page.locator('#fcAllFilters').click();await page.locator('#fcTerritoryPicker').click();await page.locator('#fcTerritoryPopup .picker-option').filter({hasText:'Austin'}).click();await page.locator('#fcTerritoryPopup .picker-done').click();assert.equal(await page.locator('#fcBody .fc-leaf').count(),1);await page.locator('#fcReset').click();
+ await page.locator('#fcModePicker').click();await page.locator('#fcModePopup .picker-option').filter({hasText:/^Forecast$/}).click();assert.equal(await page.locator('#fcMode').inputValue(),'forecast');
+ for(const width of [1366,1920]){await page.setViewportSize({width,height:980});await page.waitForTimeout(500);const m=await page.evaluate(()=>({body:document.body.scrollWidth,viewport:innerWidth,footer:document.querySelector('#fcMatrix tfoot').getBoundingClientRect().bottom,scroll:document.querySelector('.fc-scroll').getBoundingClientRect().bottom}));assert.ok(m.body<=m.viewport+1,'Desktop page width is contained');assert.ok(m.footer<=m.scroll+2,'Totals remain within the scroll panel');await page.screenshot({path:path.join(output,'forecasts-'+width+'.png')});}
+ await page.evaluate(()=>{__fixtureAccess={...__fixtureAccess,forecastsDashboard:false};});await page.locator('#refresh').click();await page.waitForTimeout(150);assert.equal(await page.locator('#forecastsDashboard').isVisible(),false);assert.equal(await page.locator('#fcBody tr').count(),0);assert.match(await page.locator('#dashboardAccessText').textContent(),/Forecasts dashboard access/);
+ await page.locator('[data-dashboard="sales"]').click();await page.locator('#matrixBody tr').first().waitFor();assert.equal(await page.locator('#salesDashboard').isVisible(),true);
+ await page.goto(origin+'/widget.html?dashboard=forecasts&fixtureRole=forecasts-only');await page.locator('#fcBody .fc-leaf').first().waitFor();assert.equal(await page.locator('[data-dashboard="sales"]').isVisible(),false);assert.equal(await page.locator('#fcBody .fc-leaf').first().locator('td').nth(2).innerText(),'5');
+ const downloadPromise=page.waitForEvent('download');await page.locator('#fcExport').click();const download=await downloadPromise;await download.saveAs(path.join(output,'forecasts.csv'));assert.match(fs.readFileSync(path.join(output,'forecasts.csv'),'utf8'),/WFY 2026 Total/);
+ await page.goto(origin+'/widget.html?dashboard=forecasts&fixtureRole=sales-only');await page.locator('#dashboardAccessText').filter({hasText:'Forecasts dashboard access'}).waitFor();assert.deepEqual(await page.evaluate(()=>__reads),[],'Denied direct routes cannot issue data reads');
+ await page.goto(origin+'/widget.html?dashboard=forecasts&fixtureFail=true');await page.locator('#fcEmpty h2').filter({hasText:'Forecasts Unavailable'}).waitFor();assert.equal(await page.locator('#fcBody tr').count(),0);assert.equal(await page.locator('#fcExport').isDisabled(),true);
+ assert.deepEqual(errors,[]);console.log('PASS actual desktop Forecasts UI, native SDK fixtures, scoped reads, filter/view controls, totals, territory cards, CSV, URL routing, access revocation, independent grants, denied/failed reads and Lot Sales navigation.');
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

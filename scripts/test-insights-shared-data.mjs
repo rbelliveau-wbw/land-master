@@ -123,7 +123,7 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
       setTimeout(callback, ms) { const id = ++nextTimer; timers.set(id, {callback, ms}); return id; },
       clearTimeout(id) { timers.delete(id); },
       $: id => elements[id]||(actualAccess?elements[id]={innerHTML:'',open:false}:undefined), log: message => events.messages.push(message), notice: message => events.messages.push(message),
-      InsightsShell: {current:()=> 'sales',connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { if(!actualAccess)assert.equal(value, null); events.messages.push(message); }},
+      InsightsShell: {readRoute:async()=>({}),route:()=>({}),current:()=> 'sales',connected: () => isConnected, markConnected() { isConnected = true; events.connected++; }, setAccess(value, message) { if(!actualAccess)assert.equal(value, null); events.messages.push(message); }},
       LMCriticalErrors: {configure() { events.reporter++; }, markReady() {},breadcrumb(){}},
       authorizeAndLoad: async () => { events.permissions++; },
       ZOHO: {CREATOR: {
@@ -132,7 +132,7 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
         UTIL: {getInitParams() { events.native++; return getInitParams(); }}
       }}
     });
-    context.window = context; context.parent = {};
+    context.window = context; context.parent = {};context.addEventListener=()=>{};
     vm.runInContext(fs.readFileSync(app + 'runtime-context.js', 'utf8'), context);
     if(actualAccess){
       context.state={generation:0};context.hideSubdivisionCard=()=>{};context.enforceRevenueAccess=()=>{};context.load=async()=>{events.permissions++;};

@@ -1,3 +1,22 @@
+## Forecasts and dashboard page variables — 1.6.0, October 27, 2026
+
+Forecasts adds independent access, the approved Project/Territory/Builder matrix,
+fiscal-year filters, Annual Totals, expanded Subtotals, sold-out checks and
+Territory cards. Sold + Forecast reuses Forecast Manager's completed-month Sold
+and current/future Forecast rule. Cursor/count reads are atomic; missing forecast
+values remain unknown. URL page variable `dashboard=sales` or `forecasts` selects
+the destination; optional `projectId` scopes either view without widening denied
+or unavailable selections. Native page variables are read through SDK2.
+
+`User_Access.Forecasts_Dashboard` defaults false. The field, both access functions
+returning the flag/Creator date, and Text page variables `dashboard`/`projectId`
+on `Data_Insights` are **installed in Development** and saved/reopened. No users
+received the new grant. PMP leaves native Stage/Production promotion to the owner.
+The frontend keeps Forecasts hidden until the independent grant is available. See the
+[exact setup, definitions, tests and rollback](../../docs/insights-forecasts-2026-10-27.md).
+The shared pickers, numeric transitions and motion registry include the new
+surface. No new forecast mutation API or automatic permission grants are added.
+
 ## Shared interaction motion — 1.5.57, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

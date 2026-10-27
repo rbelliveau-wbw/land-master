@@ -134,7 +134,7 @@
   document.addEventListener('keydown',e=>{if(opened&&e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true);}},true);
   document.addEventListener('focusin',e=>{if(opened&&!opened.panel.contains(e.target)&&e.target!==opened.trigger)close();});
   window.addEventListener('resize',position);document.addEventListener('scroll',position,true);
-  document.querySelectorAll('#salesDashboard select').forEach(mountSelect);
+  document.querySelectorAll('#salesDashboard select,#forecastsDashboard select').forEach(mountSelect);
   document.querySelectorAll('[data-month-picker]').forEach(mountMonth);
   const search=document.getElementById('search'),searchWrap=document.createElement('span'),searchClear=document.createElement('button');
   searchWrap.className='report-search';search.before(searchWrap);searchWrap.innerHTML=searchIcon;searchWrap.append(search);

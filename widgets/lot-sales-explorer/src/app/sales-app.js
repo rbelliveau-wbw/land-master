@@ -100,7 +100,7 @@
     options($('territory'), sorted([...new Set(refs.subdivisions.map(r => M.text(r.Territory) || 'Unassigned'))].map(t => [t, t])), 'All territories');
     options($('project'), projects, 'All projects');
     options($('builder'), sorted(refs.builders.filter(r => M.text(r.Type1) === 'Builder').map(r => [M.id(r.ID), M.text(r.Builder_Name) || 'Unassigned'])), 'All builders');
-    const projectScope = !state.scoped && new URLSearchParams(location.search).get('projectId');
+    const projectScope = !state.scoped && (InsightsShell.route().projectId || new URLSearchParams(location.search).get('projectId'));
     state.scoped = true;
     if (projectScope) {
       if (!projects.some(([id]) => id === projectScope)) $('project').add(new Option('Unavailable project', projectScope));
@@ -523,14 +523,14 @@
       if (permissions.lotSalesDashboard && priorPermissions?.lotSalesDashboard && permissions.viewTotalLotRevenue === priorPermissions.viewTotalLotRevenue) refreshNumbers = priorNumbers;
       enforceRevenueAccess();
       InsightsShell.setAccess(permissions);
-      if (!permissions.lotSalesDashboard) {
+      if (!permissions.lotSalesDashboard && !permissions.forecastsDashboard) {
         $('connection').textContent = 'No dashboard access';
         $('summary').textContent = 'No dashboard access';
         log('Lot Sales dashboard access denied.');
         return;
       }
       log('Lot Sales access granted; absolute revenue ' + (permissions.viewTotalLotRevenue ? 'granted.' : 'hidden.'));
-      await load();
+      if (permissions.lotSalesDashboard && InsightsShell.current() === 'sales' && !state.busy) await load();
     } catch (error) {
       if (generation !== state.generation) return;
       InsightsShell.setAccess(null, 'Unable to verify dashboard access. Refresh to retry.');
@@ -547,10 +547,11 @@
     }
     if (starting) return;
     starting = true; $('refresh').disabled = true;
-    try { if (!window.ZOHO || !ZOHO.CREATOR || !ZOHO.CREATOR.DATA) throw new Error('Creator SDK is unavailable.'); await initializeSalesCreator(); configureSalesReporter(); InsightsShell.markConnected(); await authorizeAndLoad(); }
+    try { if (!window.ZOHO || !ZOHO.CREATOR || !ZOHO.CREATOR.DATA) throw new Error('Creator SDK is unavailable.'); await initializeSalesCreator(); await InsightsShell.readRoute(); configureSalesReporter(); InsightsShell.markConnected(); await authorizeAndLoad(); }
     catch (error) { $('connection').textContent = 'Not connected'; log(error.message); InsightsShell.setAccess(null, 'Creator connection failed. Refresh to retry.'); notice(error.message, true); }
     finally { starting = false; $('refresh').disabled = false; }
   }
-  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("lot-sales-explorer",{state:()=>state,ready:()=>!!state.permissions?.lotSalesDashboard,actor:()=>state.permissions});
+  window.addEventListener('insights:dashboard',event=>{if(event.detail==='sales'&&state.permissions?.lotSalesDashboard&&!state.loaded&&!state.busy)void load();});
+  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("lot-sales-explorer",{state:()=>({...state,forecastGroupBy:window.ForecastInsightsApp?.groupBy()}),ready:()=>!!(state.permissions?.lotSalesDashboard||state.permissions?.forecastsDashboard),actor:()=>state.permissions});
   start();
 })();

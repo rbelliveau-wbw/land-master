@@ -88,8 +88,9 @@
     }else if(module==='lot-sales-explorer'){
       
       list('#matrixBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().groupBy||'sales',{highlight:false});
-      surfaceExtra.push('#subdivisionCard,.insights-popover');
-      panels.push({selector:'#salesDashboard,#detailBody'});
+      list('#fcBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().forecastGroupBy||'project',{highlight:false});
+      surfaceExtra.push('#subdivisionCard,.insights-popover,#fcInfoCard');
+      panels.push({selector:'#salesDashboard,#forecastsDashboard,#detailBody'});
       status('#connection');
     }else if(module==='forecast-manager'){
       tab('.segments','[data-view]','#matrixScroll');

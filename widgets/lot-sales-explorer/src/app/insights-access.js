@@ -3,7 +3,7 @@
   const granted = value => value === true || ['true', 'yes', '1'].includes(String(value ?? '').trim().toLowerCase());
   const failed = value => value.error || value.success === false || /^(error|failed|failure)$/i.test(String(value.status || '').trim()) || (value.code != null && String(value.code) !== '3000');
   const wrappers = value => [value.details,value.output,value.response,value.result,value.data];
-  const permissionKey = value => JSON.stringify([granted(value.hasRow ?? value.found),granted(value.lotSalesDashboard),granted(value.viewTotalLotRevenue)]);
+  const permissionKey = value => JSON.stringify([granted(value.hasRow ?? value.found),granted(value.lotSalesDashboard),granted(value.forecastsDashboard),granted(value.viewTotalLotRevenue),value.today||'']);
   function flagsFrom(response) {
     const queue = [response], seen = new Set(); let flags = null;
     while (queue.length) {
@@ -15,7 +15,7 @@
       seen.add(value);
       if (Array.isArray(value)) return null;
       if (failed(value)) return null;
-      if ('lotSalesDashboard' in value || 'viewTotalLotRevenue' in value || 'hasRow' in value || 'found' in value) {
+      if ('lotSalesDashboard' in value || 'forecastsDashboard' in value || 'viewTotalLotRevenue' in value || 'hasRow' in value || 'found' in value) {
         if (value.hasRow != null && value.found != null && granted(value.hasRow) !== granted(value.found)) return null;
         if (flags && permissionKey(flags) !== permissionKey(value)) return null;
         flags = flags || value;
@@ -57,6 +57,8 @@
     return Object.freeze({
       hasRow,
       lotSalesDashboard: hasRow && granted(flags.lotSalesDashboard),
+      forecastsDashboard: hasRow && granted(flags.forecastsDashboard),
+      today: typeof flags.today === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(flags.today) ? flags.today : '',
       viewTotalLotRevenue: hasRow && granted(flags.viewTotalLotRevenue)
     });
   }
