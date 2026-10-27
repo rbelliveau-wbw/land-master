@@ -44,7 +44,7 @@
       list('[data-lm-row-list="request-attachment-files"]','.attachment-page-row[data-record-id]',row=>row.dataset.recordId,()=>state().edBudget?.ID||'budget-files');
     }else if(module==='manage-lots'){
       tab('nav.tabs','[data-view]',null);
-      tab('#lotsLayout','#lotsListMode,#lotsGridMode',null);
+      tab('#lotsLayout','#lotsListMode,#llEditMode,#lotsGridMode',null);
       panels.push({selector:'#lotsView,#takedownsView'});
       list('#blocks','tr[data-lot-row]',row=>row.dataset.lotRow,()=>M.key(state().subdivisionIds||[]));
       // The native takedown editor already owns keyed row FLIP.

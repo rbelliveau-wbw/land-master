@@ -66,8 +66,12 @@ retain the totals row and keep Diagnostics/version information in Diagnostics.
 Report descriptions, quality metadata and loading status may remain accessible
 outside the visible layout. Measure changes must not resize a bottom text strip.
 
-Forecasts keeps its search/status/period filters, Hide Empty, collapse/reset,
-grouping pills and Annual Totals/Subtotals on one compact horizontal control row.
+Forecasts keeps search/status/period filters, a clearly labeled **View by**
+searchable single dropdown (Project, Territory, Builder), display switches and
+collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
+Totals and Subtotals together, followed immediately by the Sold/Forecast color
+legend. Omit the separate Monthly Lot Count/count/legend row above the matrix;
+retain the report count as an accessible status.
 Bound filter widths rather than stretching them across the page; allow local
 horizontal scrolling when required. Expanded All Filters remains optional below.
 Match Lot Sales' 31×18px switch tracks and 12px thumbs, and its 28px pill buttons.

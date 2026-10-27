@@ -52,8 +52,7 @@
     $('fcFoot').innerHTML=r.rows.length?'<tr><th class="fc-name" scope="row">All '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy])+'</th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(r.totals,'all')+'</tr>':'';
     $('fcEmpty').hidden=r.rows.length>0;$('fcEmpty').querySelector('h2').textContent='No Matching Phases';$('fcRetry').hidden=true;
     $('fcExport').disabled=S.busy||!r.rows.length;syncCollapse();
-    host.querySelectorAll('[data-fc-view]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.fcView===S.groupBy)));
-    $('fcReportPane').setAttribute('aria-labelledby',{project:'fcProjectView',territory:'fcTerritoryView',builder:'fcBuilderView'}[S.groupBy]);
+    $('fcViewBy').value=S.groupBy;
     InsightsControls.syncAll();window.InsightsNumbers?.apply(host,prior);scroll.scrollLeft=left;scroll.scrollTop=top;
   }
   function syncCollapse(){const groups=S.report?.groups||[];$('fcCollapse').disabled=!groups.length;$('fcCollapse').textContent=groups.length&&groups.every(g=>S.collapsed.has(g.id))?'Expand All':'Collapse All';}
@@ -97,7 +96,6 @@
   }
   const infoSelector='[data-fc-info],[data-fc-territory],#fcWarning';
   host.addEventListener('click',event=>{
-    const view=event.target.closest('[data-fc-view]');if(view){S.groupBy=view.dataset.fcView;S.collapsed.clear();render();return;}
     const group=event.target.closest('[data-fc-group]');if(group){const index=Number(group.dataset.fcGroup),id=S.report?.groups[index]?.id;if(id==null)return;closeCard();setCollapsed(index,!S.collapsed.has(id));syncCollapse();return;}
     const info=event.target.closest(infoSelector);if(info){openCard(info,true);return;}
   });
@@ -108,6 +106,7 @@
   $('fcInfoCard').addEventListener('pointerenter',()=>clearTimeout(cardTimer));$('fcInfoCard').addEventListener('pointerleave',()=>{if(!cardPinned)cardTimer=setTimeout(closeCard,180);});
   $('fcInfoClose').addEventListener('click',()=>closeCard(true));document.addEventListener('pointerdown',event=>{if(cardTrigger&&!$('fcInfoCard').contains(event.target)&&!cardTrigger.contains(event.target))closeCard();});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeCard(true);});document.addEventListener('scroll',()=>closeCard(),true);window.addEventListener('resize',()=>closeCard());
   ['fcStatus','fcMode','fcPeriod','fcYears','fcTerritory','fcProject','fcBuilder','fcHideEmpty','fcAnnual','fcSubtotals'].forEach(id=>$(id).addEventListener('change',render));
+  $('fcViewBy').addEventListener('change',()=>{S.groupBy=$('fcViewBy').value;S.collapsed.clear();render();});
   let searchTimer;$('fcSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(render,160);});
   $('fcAllFilters').addEventListener('click',()=>{const open=$('fcMoreFilters').hidden;$('fcMoreFilters').hidden=!open;$('fcAllFilters').setAttribute('aria-expanded',String(open));});
   $('fcCollapse').addEventListener('click',()=>{if(!S.report)return;closeCard();const closed=!S.report.groups.every(g=>S.collapsed.has(g.id));S.report.groups.forEach((g,index)=>setCollapsed(index,closed));syncCollapse();});

@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Read-only Lot Sales and Forecasts dashboards with independent access, fiscal matrices and URL page-variable routing.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "d8f12bd970c91a45d71acb12a9a22d1ce055371175908eef4e1dbd576ad5ab1b",
+  "source_sha256": "f39c0db204196e73184b8df9121d2dc7849e03c4ec89cbf42c6c3720f084f1ee",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

@@ -9,7 +9,7 @@
   <script src="creator-data.js"></script>
   <script src="manage-lots-controller.js"></script>
   <script src="lot-edit-controller.js"></script>
-  <script src="lots-list.js?v=0.13.18"></script>
+  <script src="lots-list.js?v=0.13.19"></script>
   <script src="takedown-model.js"></script>
   <script src="takedown-editor.js"></script>
   <script src="searchable-pickers.js" defer></script>
@@ -40,15 +40,15 @@
     @media(max-width:760px){.topbar{padding:0 10px;gap:8px}.brand span:last-child{display:none}.tab{padding:0 10px}.status span:last-child{display:none}.toolbar{padding:11px}.toolbar .field,.sub-filter,.search{width:100%;min-width:100%}.sub-filter-menu{width:100%}.main{padding:12px 11px 96px}.blocks-grid{grid-template-columns:1fr}.grid,.interest{grid-template-columns:1fr}.span3{grid-column:auto}.selected-detail{display:none}.drag-tip{display:none}th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}th:nth-child(1){width:36%}th:nth-child(2){width:24%}th:nth-child(4){width:40%}}
   </style>
   <link rel="stylesheet" href="lots-grid.css"><script src="subdivision-counts.js"></script>
-<script src="success-feedback.js?v=0.13.18"></script>
-  <link rel="stylesheet" href="lots-list.css?v=0.13.18">
-<link rel="stylesheet" href="interaction-motion.css?v=0.13.18">
-<script src="interaction-motion.js?v=0.13.18"></script>
-<script src="interaction-surfaces.js?v=0.13.18"></script>
-<script src="number-edit-commit.js?v=0.13.18"></script>
-<script src="number-transitions.js?v=0.13.18"></script>
-<script src="number-surfaces.js?v=0.13.18"></script>
-<link rel="stylesheet" href="number-transitions.css?v=0.13.18">
+<script src="success-feedback.js?v=0.13.19"></script>
+  <link rel="stylesheet" href="lots-list.css?v=0.13.19">
+<link rel="stylesheet" href="interaction-motion.css?v=0.13.19">
+<script src="interaction-motion.js?v=0.13.19"></script>
+<script src="interaction-surfaces.js?v=0.13.19"></script>
+<script src="number-edit-commit.js?v=0.13.19"></script>
+<script src="number-transitions.js?v=0.13.19"></script>
+<script src="number-surfaces.js?v=0.13.19"></script>
+<link rel="stylesheet" href="number-transitions.css?v=0.13.19">
 </head>
 <body>
   <header class="topbar">
@@ -74,7 +74,7 @@
           <div class="ll-identity"><span class="ll-phase-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg></span><div class="ll-identity-copy"><strong id="llInventoryTitle"></strong><div class="ll-inventory-meta"><span id="llInventoryCode" hidden></span><span id="llInventoryTotal" class="ll-total"></span><span id="llInventoryBlocks" class="ll-block-total"></span></div></div></div>
           <nav id="llBlockNav" class="ll-block-nav" aria-label="Jump to block"></nav>
         </div>
-        <div id="lotsLayout" class="ll-layout" role="group" aria-label="Lot view and editing"><button id="lotsListMode" type="button" aria-pressed="true">List</button><label class="ll-mode-switch"><input id="llEditMode" type="checkbox" role="switch" aria-label="Edit mode"><span class="ll-slider" aria-hidden="true"></span><b>Edit mode</b></label><button id="lotsGridMode" type="button" aria-pressed="false">Grid</button></div>
+        <div id="lotsLayout" class="ll-layout" role="group" aria-label="Lot view and editing"><button id="lotsListMode" type="button" aria-pressed="true">List</button><button id="llEditMode" type="button" aria-label="Edit mode" aria-pressed="false">Edit</button><button id="lotsGridMode" type="button" aria-pressed="false">Grid</button></div>
         <div class="ll-summary-right"><div class="ll-summary-context"><div id="llInventoryCounts" class="ll-counts"></div><div class="ll-selection-tools"><label class="ll-select-visible"><input id="llSelectAll" type="checkbox" aria-label="Select all visible lots"> Select visible</label><span id="llInventorySelected" class="ll-inventory-selected" aria-live="polite"></span><button id="llClearSelection" class="ll-clear-selection" type="button" disabled>Clear</button></div></div><div class="ll-tools"><button class="btn" id="llColumns" type="button" aria-expanded="false">Columns</button><div id="llColumnMenu" class="ll-column-menu" hidden></div></div></div>
       </div>
       <div id="lotsEmpty" class="empty"><b>No subdivisions selected</b>Choose one or more subdivisions to view their lots.</div><div id="blocks" class="subdivision-groups"></div>
@@ -95,7 +95,7 @@
   <script>
   (function(){
     "use strict";
-    var CFG={version:"0.13.18",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
+    var CFG={version:"0.13.19",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
     var S={live:false,view:"lots",audit:[],auditSeq:0,auditErrs:0,subdivisions:[],builders:[],lots:[],takedowns:[],contracts:[],takedownLotIds:new Set(),selected:new Set(),subdivisionIds:[],takedownSubdivisionIds:[],takedownBuilderIds:[],lotBuilderIds:[],lotStatusIds:[],busy:false,drag:{active:false,selecting:true,seen:new Set(),moved:false,pointerId:null}};
     var $=function(id){return document.getElementById(id)};
     var lotsList=null;

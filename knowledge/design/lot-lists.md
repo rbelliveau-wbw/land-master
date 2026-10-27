@@ -16,18 +16,27 @@ Use the approved **Unified header** (October 27, 2026): one white surface connec
 the inventory header and block report, with a soft blue band for each block.
 Keep the entire inventory toolbar in **one horizontal row** (October 27 revision).
 Put subdivision identity/code/counts and compact block pills at the left. Center
-the **List — Edit mode — Grid** group independently of the sides. Put native status
+the **List — Edit — Grid** slider independently of the sides. All three are
+matching, mutually exclusive segments; Edit uses the same moving selection pill.
+Do not put a separate on/off switch inside it. List is read-only; Edit opens the
+same list with editable cells; Grid remains read-only. Put native status
 counts, Select visible, selected count, Clear and Columns at the right. Long block
 or status/selection groups scroll within their allotted width; never push controls
 into a second row. Keep the Columns menu outside those scrollers. Preserve the
-full subdivision title on hover when truncated. Retain the centered group in Grid,
-with Edit mode disabled there because Grid remains read-only. Give each block
+full subdivision title on hover when truncated. Retain the centered slider in
+Grid; choosing Edit returns to the editable list. Give each block
 pill one separator before its count. The selection count
 includes retained filtered selections; Clear reuses the existing whole-selection
 action. Use quiet sentence-case column headings and subtle row separators.
 Both Block and Lot column headings and row values are bold with matching navy
 emphasis, including alphanumeric/leading-zero labels. Retain all real columns
-and horizontal scrolling. Omit the duplicate legend and availability totals in List.
+and horizontal scrolling. Use one explicit column layout for every block and
+subdivision, based only on the chosen columns, in both List and Edit. Headers
+and every row must share the same boundaries even with uneven block sizes,
+long lookups/codes, missing values or large amounts. Synchronize horizontal
+scroll positions across blocks, including newly expanded blocks. Keep shortened
+codes and read-only values available on hover. Keep row heights and report
+position stable when entering or leaving Edit. Omit the duplicate legend and availability totals in List.
 
 Show Subdivision Name and Subdivision_Code together in the subdivision picker;
 search both and preserve leading zeros. Put searchable Builder and Status
@@ -64,8 +73,7 @@ Create Takedown requires every selected lot to meet the existing eligibility
 rules and belong to one subdivision. Existing takedown reports remain read-only;
 their complete lot detail uses the same block grouping without repeated codes.
 
-Start each widget session read-only, with a slider-style Edit mode switch above
-the report. In Edit mode, numeric inputs save on blur or Enter; Escape discards
+Start each widget session in the read-only List segment. In Edit mode, numeric inputs save on blur or Enter; Escape discards
 an unsent draft. Keep the native searchable single Builder picker inline.
 Switch modes by patching editable cells; preserve mounted rows, report containers,
 date cells, selections, collapsed blocks, focus and scroll. Reuse the sorted
