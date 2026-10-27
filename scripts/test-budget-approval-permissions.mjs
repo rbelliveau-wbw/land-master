@@ -77,7 +77,10 @@ for(const name of names){r=fixture({login:'test-owner',users:[],profile:'Constru
 const source=name=>fs.readFileSync(`creator/functions/${name}.dg`,'utf8');
 const prefixProgram=(name,marker)=>compileDelugePO(source(name).slice(0,source(name).indexOf(marker))+'\nreturn "ALLOW";\n}');
 const emailGuard=prefixProgram('sendApprovalEmail','/********* SEND ONE APPROVAL EMAIL');
-const exportGuard=prefixProgram('exportBudgetSnapshot','/********* MANUAL BUDGET EXPORT ENTRY POINT');
+// This fixture covers the attachment-writing PDF/Excel guard. The independent
+// full-export suite executes the preceding read-only ALL_DETAIL branch.
+const exportSource=source('exportBudgetSnapshot');
+const exportGuard=compileDelugePO(exportSource.slice(0,exportSource.indexOf('{')+1)+'\n'+exportSource.slice(exportSource.indexOf('// An export persists'),exportSource.indexOf('/********* MANUAL BUDGET EXPORT ENTRY POINT'))+'\nreturn "ALLOW";\n}');
 const statusProgram=compileDelugePO(source('syncBudgetApprovalStatus'));
 const manageProgram=compileDelugePO(source('manageBudget'));
 const attachmentProgram=compileDelugePO(source('createBudgetAttachmentRecord'));

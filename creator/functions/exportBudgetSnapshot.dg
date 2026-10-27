@@ -1,5 +1,112 @@
 				 string exportBudgetSnapshot(string budgetId, string exportType)
                  {
+	// Read-only, application-wide export. The existing OAuth2 API authenticates callers.
+	// No owner, User_Access, lifecycle or screen-filter restriction is applied here.
+	if(ifnull(exportType,"").trim().toUpperCase() == "ALL_DETAIL")
+	{
+		fullResult = Map();
+		fullResult.put("contract","budget-full-detail-v1");
+		fullResult.put("ok",false);
+		try
+		{
+			if(zoho.loginuser == null || zoho.loginuser == "")
+			{
+				fullResult.put("error","Sign in before exporting budgets.");
+				return fullResult.toString();
+			}
+			fullRequest = budgetId.toMap();
+			afterId = ifnull(fullRequest.get("after"),"0").toString().toLong();
+			throughId = ifnull(fullRequest.get("through"),"0").toString().toLong();
+			if(afterId < 0 || throughId < 0 || (throughId > 0 && afterId > throughId))
+			{
+				fullResult.put("error","Invalid export cursor.");
+				return fullResult.toString();
+			}
+			if(throughId == 0)
+			{
+				for each latestItem in Budget_Item[ID > 0] sort by ID desc range from 0 to 0
+				{
+					throughId = latestItem.ID;
+				}
+			}
+			// Null amounts count as zero. Retain credits and actual-only lines.
+			fullTotal = Budget_Item[(ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0)].count();
+			fullRows = List();
+			nextId = afterId;
+			for each fullItem in Budget_Item[(ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0)] sort by ID range from 0 to 199
+			{
+				fullCategory = Budget_Category[ID == fullItem.Budget_Category];
+				fullBudget = Add_Budget[ID == fullCategory.Budget];
+				fullProject = ifnull(fullBudget.Project,"");
+				fullSubdiv = ifnull(fullBudget.Subdivision_Code,"");
+				if(fullBudget.Subdivision1 != null)
+				{
+					fullSubdivision = Subdivision[ID == fullBudget.Subdivision1];
+					fullSubdiv = ifnull(fullSubdivision.Subdivision_Name,"");
+					if(ifnull(fullSubdivision.Subdivision_Code,"") != "")
+					{
+						fullSubdiv = fullSubdiv + " - " + fullSubdivision.Subdivision_Code;
+					}
+					if(fullSubdivision.Project != null)
+					{
+						fullProjectRecord = Project[ID == fullSubdivision.Project];
+						fullProject = ifnull(fullProjectRecord.Project_Name,fullProject);
+					}
+				}
+				fullModification = 0.0;
+				for each fullMod in Budget_Modification[Budget_Item == fullItem.ID && Status == "Approved"]
+				{
+					fullModAmount = ifnull(fullMod.Amount,0.0).abs();
+					if(ifnull(fullMod.Modification_Type,"") == "Decrease")
+					{
+						fullModification = fullModification - fullModAmount;
+					}
+					else
+					{
+						fullModification = fullModification + fullModAmount;
+					}
+				}
+				fullValues = List();
+				fullValues.add(fullProject);
+				fullValues.add(fullSubdiv);
+				fullValues.add(ifnull(fullCategory.Deparment,""));
+				fullValues.add(ifnull(fullCategory.Category_Code,"").toString());
+				fullValues.add(ifnull(fullCategory.Budget_Category_Name,"Uncategorized"));
+				fullValues.add(ifnull(fullItem.Cost_Code,"").toString());
+				fullValues.add(ifnull(fullItem.Item_Name,"Budget Item"));
+				fullValues.add(ifnull(fullItem.Unit,""));
+				fullValues.add(fullItem.Per_Unit);
+				fullValues.add(ifnull(fullItem.Prelim_Budget_Ttl,0.0));
+				fullValues.add(ifnull(fullItem.Unapproved_Final_Budget_Ttl,0.0));
+				fullValues.add(ifnull(fullItem.Budget_Ttl,0.0));
+				fullValues.add(fullModification);
+				fullValues.add(ifnull(fullItem.HCSS_Actuals,0.0));
+				fullValues.add(ifnull(fullItem.PROJ_Actual,0.0));
+				fullValues.add(ifnull(fullItem.Description,""));
+				fullRow = Map();
+				fullRow.put("id",fullItem.ID.toString());
+				fullRow.put("values",fullValues);
+				fullRows.add(fullRow);
+				nextId = fullItem.ID;
+			}
+			fullResult.put("ok",true);
+			fullResult.put("rows",fullRows);
+			fullResult.put("total",fullTotal);
+			fullResult.put("after",afterId.toString());
+			fullResult.put("next",nextId.toString());
+			fullResult.put("through",throughId.toString());
+			fullResult.put("hasMore",fullRows.size() == 200);
+			return fullResult.toString();
+		}
+		catch (fullExportError)
+		{
+			fullResult.put("ok",false);
+			fullResult.put("error","Full budget export failed: " + fullExportError.toString());
+			return fullResult.toString();
+		}
+	}
+
+
 	// An export persists a new Budget Attachment; it is not a read-only download.
 	if(zoho.loginuser != zoho.adminuser)
 	{

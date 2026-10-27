@@ -89,6 +89,10 @@ Exports keep the originating report or record screen mounted. Load deferred
 options inside the export dialog; do not replace the screen, re-render the main
 report, or refresh its records. Preserve search, scroll, and editor drafts through
 both successful downloads and retryable export failures.
+Budget's application-wide Export All Budgets action sits in the landing header
+beside Audit Log. Keep its loading/count feedback inside the same button and
+preserve the current report, filters and scroll. Download only after every native
+page has completed; a failed read leaves the same action available for retry.
 [Attachments](attachments.md) defines Legal's shared file workspace and the
 required main-list modal target. [Comments](comments.md) defines conversation
 surfaces, composer, activity states and interaction guards. Read the relevant

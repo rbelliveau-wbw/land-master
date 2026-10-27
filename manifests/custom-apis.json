@@ -76,7 +76,8 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "exportBudgetSnapshot",
-      "confidence": "inferred-name-match"
+      "confidence": "inferred-name-match",
+      "notes": "Existing OAuth2 POST All users binding retained. exportType ALL_DETAIL is a read-only application-wide detail export; budgetId is JSON {after,through} exact string cursors. budget-full-detail-v1 returns up to 200 nonzero rows, total, after, next, through, hasMore. PDF/EXCEL/APPROVED_PDF retain existing attachment behavior."
     },
     {
       "name": "Get_Budget_Attachment_Preview",

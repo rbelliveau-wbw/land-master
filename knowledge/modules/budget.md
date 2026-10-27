@@ -1,3 +1,15 @@
+## Full budget detail export — October 27, 2026
+
+The landing header's Export All Budgets downloads a single Budget Detail XLSX
+worksheet for all budgets, independent of owner and screen filters. It adds
+Project, Subdiv and approved net Modification Amount to the existing detail
+columns. The existing authenticated Export_Budget_Snapshot API's new read-only
+ALL_DETAIL mode filters five-field zero rows on the server and pages exact item
+IDs; incomplete/failed reads do not download a partial workbook. Individual
+snapshot exports retain their original behavior. Only exportBudgetSnapshot
+needs native publication; no schema or API registration changes.
+See [contract, verification and rollback](../../docs/budget-full-export-2026-10-27.md).
+
 ## Hide Empty beside Search — 122.29.80, October 26, 2026
 
 The approved **Hide Empty** pill switch shares one wrapping group with Search
