@@ -9,6 +9,7 @@
   const pin='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 8c0 4-6 9-6 9S4 12 4 8a6 6 0 1 1 12 0Z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
   const check='<svg class="fc-sold-out" viewBox="0 0 20 20" role="img" aria-label="Sold Out"><title>Sold Out</title><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m6.5 10 2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
   function notice(message,error=false){$('fcNotice').hidden=!message;$('fcNotice').textContent=message;$('fcNotice').classList.toggle('error',error);}
+  function loading(active){$('fcLoading').hidden=!active;$('fcMatrix').setAttribute('aria-busy',String(active));if(active)$('fcEmpty').hidden=true;}
   const selections=id=>InsightsControls.values($(id));
   function filters(){return {groupBy:S.groupBy,mode:$('fcMode').value,period:$('fcPeriod').value,years:selections('fcYears'),projectStatuses:selections('fcStatus'),territories:selections('fcTerritory'),projectIds:selections('fcProject'),builderIds:selections('fcBuilder'),search:$('fcSearch').value,hideEmpty:$('fcHideEmpty').checked};}
   function options(id,values,label){const control=$(id),before=selections(id);control.innerHTML='<option value="" hidden>'+esc(label)+'</option>'+values.map(([value,label])=>'<option value="'+esc(value)+'">'+esc(label)+'</option>').join('');before.filter(value=>!values.some(([id])=>id===value)).forEach(value=>control.add(new Option('Unavailable Selection',value)));InsightsControls.setValues(control,before);}
@@ -66,15 +67,15 @@
   async function load(){
     if(!S.permissions?.forecastsDashboard||S.busy||InsightsShell.current()!=='forecasts')return;
     const generation=++S.generation,identity=actor();const isCurrent=()=>generation===S.generation&&S.permissions?.forecastsDashboard&&identity===actor();
-    S.busy=true;S.error=false;$('fcExport').disabled=true;$('fcRetry').hidden=true;notice('Loading Forecasts…');$('connection').textContent='Loading Forecasts…';
+    S.busy=true;S.error=false;$('fcExport').disabled=true;$('fcRetry').hidden=true;notice('');loading(true);$('connection').textContent='Loading Forecasts…';
     try{
       if(!ForecastModel.date(S.permissions.today))throw new Error('Publish the updated access function to provide the Creator application date.');
       const data=await ForecastInsightsCreator.load(ZOHO.CREATOR.DATA,{isCurrent});if(!isCurrent())return;
       const model=M.normalize(data);if(!isCurrent())return;S.model=model;fillFilters();render();$('connection').textContent='Connected';
     }catch(error){if(!isCurrent())return;S.error=true;notice(error.message||'Forecasts could not be loaded.',true);$('connection').textContent='Forecasts Unavailable';$('fcRetry').hidden=false;if(!S.model){$('fcEmpty').hidden=false;$('fcEmpty').querySelector('h2').textContent='Forecasts Unavailable';}}
-    finally{if(isCurrent()){S.busy=false;$('fcExport').disabled=S.error||!S.report?.rows.length;}}
+    finally{if(isCurrent()){S.busy=false;loading(false);$('fcExport').disabled=S.error||!S.report?.rows.length;}}
   }
-  function clear(){S.generation++;S.model=null;S.report=null;S.groupNodes=[];S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=false;$('fcEmpty').querySelector('h2').textContent='Loading Forecasts';notice('');closeCard();}
+  function clear(){S.generation++;S.model=null;S.report=null;S.groupNodes=[];S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
   function exportCsv(){
     if(!S.permissions?.forecastsDashboard||!S.report||S.busy||S.error)return;
     const r=S.report,cols=columns(r),lines=[['Territory','Project','Phase','Zoho Project Status','Builder',...cols.map(c=>c.annual?'WFY '+c.year+' Total':c.key)]];

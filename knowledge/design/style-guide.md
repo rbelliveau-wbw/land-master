@@ -77,6 +77,13 @@ failures visible. Project/Territory/Builder disclosures update mounted rows and
 cached subtotals immediately; never re-read or re-aggregate the report solely
 to open or close a group.
 
+Forecasts loading uses a centered, compact navy spinner and Loading forecasts
+label in the report viewport. Do not use the yellow notice bar for loading.
+The indicator follows the real pending read, has no invented percentage or
+minimum display delay, and becomes static for reduced motion. Keep an already
+authorized report mounted during refresh. Real failures retain their error
+notice and the existing retry path; hide the spinner on completion or reset.
+
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
 PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green
 amount, status and compact Edit/View action. Omit column headings and repeated

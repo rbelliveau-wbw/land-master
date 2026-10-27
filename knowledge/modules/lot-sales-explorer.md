@@ -1,3 +1,13 @@
+## Centered Forecasts loading — 1.6.2, October 27, 2026
+
+Forecast reads now show a centered navy indeterminate spinner with Loading
+forecasts in the report viewport. The yellow loading notice and bottom-aligned
+loading label are removed. Empty/error states also use the report viewport.
+Pending state follows the real read, retains an authorized report during refresh,
+stops on completion/error/reset and respects reduced motion. Actual error notices,
+retry, permissions, complete-read gates and export locks remain.
+No Creator changes are needed. [Checks, files and rollback](../../docs/forecasts-centered-loading-2026-10-27.md).
+
 ## Immediate Forecasts disclosures and compact controls — 1.6.1, October 27, 2026
 
 Group disclosures now toggle cached mounted rows/totals instead of re-running
