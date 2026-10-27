@@ -646,8 +646,8 @@
         "widgets/budget-manager/src/app/widget.html"
       ],
       "matching_creator_function": "syncBudgetMetricToProjects",
-      "confidence": "prepared-production-registration",
-      "notes": "POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> project_code. Development binding enabled; Production registration requires owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
+      "confidence": "verified-production-2026-10-27",
+      "notes": "Enabled in Production: POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Native Production function 4410926000005504298. All three Budget -> Projects metric saves and reversions verified on AR05. The expanded Budget -> Subdivision + Projects function and inbound quantity-import removal are saved in Development pending owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
     },
     {
       "name": "Sync_Budget_Metric_to_Projects_DEV",
@@ -656,7 +656,7 @@
       ],
       "matching_creator_function": "syncBudgetMetricToProjects",
       "confidence": "verified-development-2026-10-27",
-      "notes": "POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> project_code. Development binding enabled; Production registration requires owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
+      "notes": "Enabled in Development: POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> Subdivision + project_code. Native function 4410926000005479009. The expanded dual-destination body is saved in Development pending owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
     }
   ]
 }

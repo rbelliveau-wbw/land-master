@@ -1,0 +1,241 @@
+string syncBudgetMetricToProjects(string payload)
+{
+	// Budget is the source. Only the changed metric is sent to avoid overwriting
+	// another metric from a concurrent save. Reuse the milestone connection.
+	result = {"ok":false,"action":"sync-budget-metric","writeAttempted":false};
+	auditId = "";
+	projectId = "";
+	code = "";
+	dryRun = false;
+	try 
+	{
+		if(zoho.loginuser == null || zoho.loginuser == "" || zoho.loginuser == "public")
+		{
+			throw "An authenticated Creator session is required.";
+		}
+		if(payload == null || payload.length() > 4000)
+		{
+			throw "The sync request is invalid.";
+		}
+		request = payload.toMap();
+		dryRun = request.get("dryRun") == true;
+		budgetId = ifnull(request.get("budgetId"),"").toString();
+		field = ifnull(request.get("field"),"").toString();
+		fieldMap = {"Acres":"acres","Lot_Total_Residential":"lot_total_residential","Equiv_LF_of_Street":"equiv_lf_of_street"};
+		apiName = fieldMap.get(field);
+		if(!budgetId.matches("[0-9]+") || apiName == null)
+		{
+			throw "A valid budget ID and one of the three budget metric fields are required.";
+		}
+		b = Add_Budget[ID == budgetId.toLong()];
+		if(b.count() != 1)
+		{
+			throw "The source budget was not found.";
+		}
+		// Reuse the Budget native actor/owner rules. The API accepts no user ID,
+		// destination ID, or metric value supplied by the browser.
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1)
+		{
+			throw "Budget edit access could not be verified.";
+		}
+		canSync = access.Edit_All_Budgets == true;
+		if(!canSync && access.Edit_Owned_Budgets == true && b.Budget_Owner != null)
+		{
+			for each  owner in b.Budget_Owner
+			{
+				if(owner.ID == access.ID)
+				{
+					canSync = true;
+				}
+			}
+		}
+		if(!canSync)
+		{
+			throw "Budget edit access is required.";
+		}
+		if(zoho.loginuser != zoho.adminuser)
+		{
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				throw "This profile has read-only Budget access.";
+			}
+		}
+		code = ifnull(b.Subdivision_Code,"").toString().trim();
+		result.put("budgetId",budgetId);
+		result.put("field",field);
+		result.put("apiName",apiName);
+		result.put("subdivisionCode",code);
+		if(!dryRun)
+		{
+			audit = thisapp.workflowRunLog({"action":"start","workflow":"Budget Metrics to Zoho Projects","system":"Zoho Projects"});
+			auditId = audit.get("id");
+		}
+		if(code == "")
+		{
+			throw "Subdivision_Code is missing. No Zoho Project was updated.";
+		}
+		if(b.Subdivision1 != null)
+		{
+			sub = Subdivision[ID == b.Subdivision1];
+			if(sub.count() != 1 || ifnull(sub.Subdivision_Code,"").toString().trim() != code)
+			{
+				throw "The budget and linked Subdivision codes do not agree. No Zoho Project was updated.";
+			}
+		}
+		value = b.Acres;
+		if(field == "Lot_Total_Residential")
+		{
+			value = b.Lot_Total_Residential;
+		}
+		if(field == "Equiv_LF_of_Street")
+		{
+			value = b.Equiv_LF_of_Street;
+		}
+		if(value == null || value < 0)
+		{
+			throw "The budget metric must contain a nonnegative number. Blank values are not sent as zero.";
+		}
+		// Number and Decimal equality differs in Creator. Normalize both sides
+		// before checking integrality, then send Number fields as integers.
+		value = value.toDecimal();
+		if(field != "Acres")
+		{
+			if(value != value.floor().toDecimal())
+			{
+				throw "The destination Number field requires a whole number. The budget value was not rounded.";
+			}
+			value = value.toLong();
+		}
+		result.put("value",value);
+		portalId = "700737166";
+		baseUrl = "https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects";
+		filter = {"criteria":{{"field_name":"project_code","criteria_condition":"is","value":{code}}},"pattern":"1"};
+		lookupHttp = invokeurl
+		[
+			url :baseUrl
+			type :GET
+			parameters:{"filter":filter.toString(),"page":1,"per_page":2}
+			detailed:true
+			connection:"zoho_projects_connection"
+		];
+		if(lookupHttp.get("responseCode") != 200)
+		{
+			throw "Project Code lookup failed: HTTP " + lookupHttp.get("responseCode");
+		}
+		lookupText = lookupHttp.get("responseText").toString();
+		projects = List();
+		if(lookupText.startsWith("["))
+		{
+			projects = lookupText.toJSONList();
+		}
+		else if(lookupText.startsWith("{"))
+		{
+			// Creator's detailed invokeurl may materialize a one-project result
+			// as a Map. Accept its explicit ID, then repeat the exact code check.
+			lookupObject = lookupText.toMap();
+			if(lookupObject.get("id") != null)
+			{
+				projects.add(lookupObject);
+			}
+			else if(lookupObject.get("projects") != null)
+			{
+				projects = lookupObject.get("projects");
+			}
+			else
+			{
+				throw "Project Code lookup returned an unexpected response.";
+			}
+		}
+		else
+		{
+			throw "Project Code lookup returned an unexpected response.";
+		}
+		if(projects.size() != 1)
+		{
+			throw "Expected exactly one Zoho Project for Project Code " + code + "; found " + projects.size() + ". No update was sent.";
+		}
+		project = projects.get(0);
+		projectId = ifnull(project.get("id"),"").toString();
+		if(!projectId.matches("[0-9]+"))
+		{
+			throw "The matched project has no valid ID.";
+		}
+		detailHttp = invokeurl
+		[
+			url :baseUrl + "/" + projectId
+			type :GET
+			detailed:true
+			connection:"zoho_projects_connection"
+		];
+		if(detailHttp.get("responseCode") != 200)
+		{
+			throw "Project detail lookup failed: HTTP " + detailHttp.get("responseCode");
+		}
+		detail = detailHttp.get("responseText").toString().toMap();
+		if(ifnull(detail.get("id"),"").toString() != projectId || ifnull(detail.get("project_code"),"").toString().trim() != code)
+		{
+			throw "The destination project ID or Project Code did not match. No update was sent.";
+		}
+		result.put("projectId",projectId);
+		result.put("projectName",detail.get("name"));
+		result.put("previousValue",detail.get(apiName));
+		if(dryRun)
+		{
+			result.put("ok",true);
+			result.put("dryRun",true);
+			return result.toString();
+		}
+		body = Map();
+		body.put(apiName,value);
+		result.put("writeAttempted",true);
+		respHttp = invokeurl
+		[
+			url :baseUrl + "/" + projectId
+			type :PATCH
+			parameters:body.toString()
+			headers:{"Content-Type":"application/json"}
+			detailed:true
+			connection:"zoho_projects_connection"
+		];
+		if(respHttp.get("responseCode") < 200 || respHttp.get("responseCode") >= 300)
+		{
+			throw "Zoho Projects update failed: HTTP " + respHttp.get("responseCode");
+		}
+		ack = respHttp.get("responseText").toString().toMap();
+		if(ack.get("error") != null || ack.get("errors") != null || ifnull(ack.get("id"),"").toString() != projectId)
+		{
+			throw "Zoho Projects did not acknowledge the exact destination. Review the destination before retrying.";
+		}
+		result.put("ok",true);
+		result.put("httpStatus",respHttp.get("responseCode"));
+		try 
+		{
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Completed","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":1,"skipped":0,"failed":0},"message":"Budget metric sent to Zoho Projects.","details":result.toString()});
+		}		catch (auditFinishError)
+		{
+			info auditFinishError;
+		}
+	}	catch (syncError)
+	{
+		result.put("ok",false);
+		result.put("message",syncError.toString());
+		if(auditId != "")
+		{
+			try 
+			{
+				status = "Failed";
+				if(result.get("writeAttempted") == true)
+				{
+					status = "Partial";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":status,"stage":"Needs review","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":0,"skipped":0,"failed":1},"message":syncError.toString(),"details":result.toString() + "; no automatic replay"});
+			}			catch (logError)
+			{
+				info logError;
+			}
+		}
+		info result;
+	}
+	return result.toString();
+}

@@ -77,8 +77,34 @@ assert.match(deluge,/projects\.size\(\) != 1/);
 assert.match(deluge,/value = value\.toDecimal\(\);/,'normalize native Number and Decimal values before comparing');
 assert.match(deluge,/value != value\.floor\(\)\.toDecimal\(\)/,'whole-number checks compare matching Deluge types');
 assert.match(deluge,/value = value\.toLong\(\);/,'destination Number fields receive integers');
+assert.match(deluge,/sub = Subdivision\[Subdivision_Code == code\];/);
+assert.match(deluge,/sub\.count\(\) != 1/,'both destinations require unique exact mappings');
+assert.match(deluge,/linkedSub\.ID != sub\.ID/,'the saved lookup must agree with the code mapping');
+for(const [field,assignment] of [['Acres','value'],['Lot_Total_Residential','value.toLong()'],['Equiv_LF_of_Street','value']]) {
+  const write=`if(field == "${field}") { sub.${field} = ${assignment}; }`;
+  assert.ok(deluge.includes(write),`native Subdivision assignment for ${field}`);
+  assert.ok(deluge.indexOf('if(dryRun)')<deluge.indexOf(write),'read-only checks return before every native assignment');
+  assert.ok(deluge.indexOf('The destination project ID or Project Code did not match')<deluge.indexOf(write),'verify both identities before a destination write');
+}
+assert.match(deluge,/result\.put\("subdivisionUpdated",true\);/);
+assert.match(deluge,/result\.put\("projectsUpdated",true\);/);
+assert.ok(deluge.indexOf('result.put("subdivisionUpdated",true)')<deluge.indexOf('type :PATCH'),'preserve the confirmed native result if the external write fails');
+assert.ok(deluge.indexOf('result.put("projectsUpdated",true)')<deluge.lastIndexOf('result.put("ok",true)'),'only acknowledge complete dual-destination success');
+const importBaseline=fs.readFileSync('creator/workflows/budget-source-of-truth-2026-10-27/workflowExportRun.before.dg','utf8').replace(/\r\n/g,'\n');
+const importProcessor=fs.readFileSync('creator/functions/workflowExportRun.dg','utf8').replace(/\r\n/g,'\n');
+let expectedImport=importBaseline;
+for(const statement of ['subdiv.Acres=acres;','subdiv.Lot_Total_Residential=lotTotal;','subdiv.Equiv_LF_of_Street=equivLF;']) {
+  const escaped=statement.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const removal=new RegExp(`^[\\t ]*auditWriteAttempted = true;\\n[\\t ]*${escaped}\\n`,'gm');
+  assert.equal([...expectedImport.matchAll(removal)].length,1,'the captured native processor contains exactly one old quantity write');
+  expectedImport=expectedImport.replace(removal,'');
+}
+expectedImport=expectedImport.replace('subdiv.Projects_Status=status;','subdiv.Projects_Status=status;\n\t\t\t\t\t\t\t// Budget owns Acres, residential lots, and street LF. Do not import those quantities.');
+assert.equal(importProcessor,expectedImport,'preserve the complete live import processor outside the three removed quantity writes and their audit flags');
+assert.doesNotMatch(importProcessor,/\b(?:subdiv|budgCat|budG)\.(?:Acres|Lot_Total_Residential|Equiv_LF_of_Street)\s*=/,'scheduled imports cannot overwrite Budget-owned quantities');
+assert.match(importProcessor,/subdiv\.Projects_Status=status;/,'preserve Subdivision status imports');
 assert.match(deluge,/type :PATCH/);
 assert.match(deluge,/connection:"zoho_projects_connection"/);
 assert.match(deluge,/return result\.toString\(\);\s*}\s*$/,'compile-safe outer return');
 assert.doesNotMatch(deluge,/postman-echo|containsKey|type :POST/);
-console.log('Budget Projects sync: save ordering, all three fields, native lookup shapes, failures, stale edits, serial pushes, truthful toast and preview passed.');
+console.log('Budget source of truth: saved-field ordering, exact dual-destination mappings, dry-run/partial guards, native field types, preserved import processor, failures, stale edits, serial pushes and truthful feedback passed.');

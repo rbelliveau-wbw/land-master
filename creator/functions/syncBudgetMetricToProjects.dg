@@ -2,9 +2,10 @@ string syncBudgetMetricToProjects(string payload)
 {
 	// Budget is the source. Only the changed metric is sent to avoid overwriting
 	// another metric from a concurrent save. Reuse the milestone connection.
-	result = {"ok":false,"action":"sync-budget-metric","writeAttempted":false};
+	result = {"ok":false,"action":"sync-budget-metric","writeAttempted":false,"subdivisionUpdated":false,"projectsUpdated":false};
 	auditId = "";
 	projectId = "";
+	updatedCount = 0;
 	code = "";
 	dryRun = false;
 	try
@@ -53,21 +54,31 @@ string syncBudgetMetricToProjects(string payload)
 		result.put("subdivisionCode",code);
 		if(!dryRun)
 		{
-			audit = thisapp.workflowRunLog({"action":"start","workflow":"Budget Metrics to Zoho Projects","system":"Zoho Projects"});
+			audit = thisapp.workflowRunLog({"action":"start","workflow":"Budget Metrics to Subdivision and Zoho Projects","system":"Zoho Projects"});
 			auditId = audit.get("id");
 		}
 		if(code == "")
 		{
 			throw "Subdivision_Code is missing. No Zoho Project was updated.";
 		}
+		sub = Subdivision[Subdivision_Code == code];
+		if(sub.count() != 1)
+		{
+			throw "Expected exactly one Subdivision for " + code + ". No destination was updated.";
+		}
 		if(b.Subdivision1 != null)
 		{
-			sub = Subdivision[ID == b.Subdivision1];
-			if(sub.count() != 1 || ifnull(sub.Subdivision_Code,"").toString().trim() != code)
+			linkedSub = Subdivision[ID == b.Subdivision1];
+			if(linkedSub.count() != 1 || linkedSub.ID != sub.ID)
 			{
-				throw "The budget and linked Subdivision codes do not agree. No Zoho Project was updated.";
+				throw "The budget's linked Subdivision does not match its code. No destination was updated.";
 			}
 		}
+		result.put("subdivisionId",sub.ID.toString());
+		previousSubdivisionValue = sub.Acres;
+		if(field == "Lot_Total_Residential") { previousSubdivisionValue = sub.Lot_Total_Residential; }
+		if(field == "Equiv_LF_of_Street") { previousSubdivisionValue = sub.Equiv_LF_of_Street; }
+		result.put("previousSubdivisionValue",previousSubdivisionValue);
 		value = b.Acres;
 		if(field == "Lot_Total_Residential") { value = b.Lot_Total_Residential; }
 		if(field == "Equiv_LF_of_Street") { value = b.Equiv_LF_of_Street; }
@@ -152,7 +163,15 @@ string syncBudgetMetricToProjects(string payload)
 		}
 		body = Map();
 		body.put(apiName,value);
+		// All destination identities and values are checked before either write.
+		// Native assignment success acknowledges the Subdivision write; do not
+		// re-read editable values or replay a write after an uncertain response.
 		result.put("writeAttempted",true);
+		if(field == "Acres") { sub.Acres = value; }
+		if(field == "Lot_Total_Residential") { sub.Lot_Total_Residential = value.toLong(); }
+		if(field == "Equiv_LF_of_Street") { sub.Equiv_LF_of_Street = value; }
+		updatedCount = 1;
+		result.put("subdivisionUpdated",true);
 		respHttp = invokeurl
 		[
 			url :baseUrl + "/" + projectId
@@ -171,11 +190,13 @@ string syncBudgetMetricToProjects(string payload)
 		{
 			throw "Zoho Projects did not acknowledge the exact destination. Review the destination before retrying.";
 		}
+		updatedCount = 2;
+		result.put("projectsUpdated",true);
 		result.put("ok",true);
 		result.put("httpStatus",respHttp.get("responseCode"));
 		try
 		{
-			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Completed","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":1,"skipped":0,"failed":0},"message":"Budget metric sent to Zoho Projects.","details":result.toString()});
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Completed","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":updatedCount,"skipped":0,"failed":0},"message":"Budget metric sent to Subdivision and Zoho Projects.","details":result.toString()});
 		}
 		catch(auditFinishError) { info auditFinishError; }
 	}
@@ -189,7 +210,7 @@ string syncBudgetMetricToProjects(string payload)
 			{
 				status = "Failed";
 				if(result.get("writeAttempted") == true) { status = "Partial"; }
-				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":status,"stage":"Needs review","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":0,"skipped":0,"failed":1},"message":syncError.toString(),"details":result.toString() + "; no automatic replay"});
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":status,"stage":"Needs review","reference":code,"counts":{"received":1,"processed":1,"created":0,"updated":updatedCount,"skipped":0,"failed":1},"message":syncError.toString(),"details":result.toString() + "; no automatic replay"});
 			}
 			catch(logError) { info logError; }
 		}

@@ -1,90 +1,111 @@
-# Budget metrics to Zoho Projects — 2026-10-27
+# Budget is the quantity source of truth — 2026-10-27
 
-The Budget Manager sends each of its three saved quantity fields through
-`syncBudgetMetricToProjects(string payload)`. No form workflow was created.
-The user requested a function and Custom API instead of form workflows.
+Budget Manager calls `syncBudgetMetricToProjects(string payload)` after saving one
+of the three header quantities. The expanded function updates that same field on
+the unique matching Subdivision and Zoho Project. No form workflow is used.
 
-| Budget field | Projects API name | Projects field ID |
+| Budget field | Subdivision field | Projects API name | Projects field ID |
+| --- | --- | --- | --- |
+| `Acres` | `Acres` | `acres` | `1496277000000995261` |
+| `Lot_Total_Residential` | `Lot_Total_Residential` | `lot_total_residential` | `1496277000000055039` |
+| `Equiv_LF_of_Street` | `Equiv_LF_of_Street` | `equiv_lf_of_street` | `1496277000000055041` |
+
+## Production API enabled and tested
+
+`Sync_Budget_Metric_to_Projects` is enabled and bound to Land Master Production,
+Default namespace, function component `4410926000005504298`. The `_DEV` API remains
+enabled against Development component `4410926000005479009`.
+
+Both APIs use POST, OAuth2, All users, application/json, Key and Value, and the
+Standard response. Their request is `{ "payload": "<JSON string>" }`; the inner
+JSON supplies `budgetId` and `field`. Optional `dryRun:true` performs read-only
+validation. Creator wraps the string result in `{code:3000,result:"<JSON string>"}`.
+The production endpoint is
+`https://www.zohoapis.com/creator/custom/wbdevelopment/Sync_Budget_Metric_to_Projects`.
+
+The actual Production Budget Manager save path was tested on Arroyo Ranch 5,
+budget `4410926000001664566`, code `AR05`, Project `1496277000013686372`:
+
+| Field | Temporary test value seen in Projects | Restored Budget and Projects value |
 | --- | --- | --- |
-| `Acres` | `acres` | `1496277000000995261` |
-| `Lot_Total_Residential` | `lot_total_residential` | `1496277000000055039` |
-| `Equiv_LF_of_Street` | `equiv_lf_of_street` | `1496277000000055041` |
+| Residential lots | 188 | 186 |
+| Acres | 35.52 | 35.51 |
+| Equivalent street LF | 5873 | 5872 |
 
-## Saved in Creator Development
+Each change and restoration was inspected in Zoho Projects. The compact success
+toast **Budget saved · Projects updated.** was captured. Projects initially had
+35.508 acres; final 35.51 intentionally matches the restored Budget source.
+Production Budget values were all restored before the Development extension was
+tested. No prices, costs, approvals, other budgets or milestone data were edited.
 
-- Function: `syncBudgetMetricToProjects`, native component `4410926000005479009`.
-- Custom API: `Sync_Budget_Metric_to_Projects_DEV`, enabled, POST, OAuth2,
-  All users, application/json, Key and Value, Standard response; bound to
-  Land Master **Development**, Default namespace, the function above.
-- The request body is `{ "payload": "<JSON string>" }`. The JSON string contains
-  `budgetId` and `field`. Optional `dryRun:true` performs read-only validation.
-- Response: Creator's standard `{code:3000,result:"<JSON string>"}` wrapper;
-  the function result includes `ok`, source/destination identities and
-  `writeAttempted`. Dry runs never confirm a Projects update in the widget.
+## Saved in Development; PMP leaves these two functions for owner promotion
 
-The function derives the actor from `zoho.loginuser` and reuses Budget's native
-User_Access/owner-ID permission pattern. It rejects the read-only Construction
-Budgeting profile. It accepts no browser-supplied destination or metric value.
-It reads the saved Budget, requires its `Subdivision_Code`, checks the linked
-Subdivision code when present, filters Projects by exact `project_code`, requires
-one result and confirms the returned ID/code before updating. It reuses the
-milestone portal `700737166`, `zoho_projects_connection`, detailed invokeurl and
-`workflowRunLog`; Projects v3's documented update method is PATCH with a JSON body.
-It updates only the changed metric. Missing/duplicate mappings, denied access,
-HTTP/API errors and uncertain acknowledgements fail without automatic replay.
-No initial backfill, schedule, Subdivision quantity write, or milestone change.
+1. `syncBudgetMetricToProjects`: now writes the changed saved quantity to the
+   matching Subdivision and Project. The function compiled in Creator. Native
+   Development executions passed for all three fields with
+   `subdivisionUpdated:true`, `projectsUpdated:true`, and Projects HTTP 200, using
+   restored source values 35.51, 186 and 5872. Subdivision
+   `4410926000001979003` and Project `1496277000013686372` matched `AR05`.
+2. `workflowExportRun`: removes only the three `subdiv.Acres`,
+   `subdiv.Lot_Total_Residential` and `subdiv.Equiv_LF_of_Street` writes from the
+   `Update_Budgets_w_Projects1` processing branch and their redundant audit flags.
+   The Subdivision status write, Budget Project/Phase/Status identity updates,
+   export continuation, cost imports, batch controls and all other branches are
+   preserved. It compiled in Creator. The broad import was not executed for testing.
 
-Projects' Lots and Equiv. LF fields are Number fields. Fractional values for
-either are rejected without rounding; blank source values are not treated as
-zero. Acres retains decimal precision from the saved Budget. Native Number and
-Decimal values are normalized to Decimal for the whole-number check, then the
-two destination Number fields are sent as integers. The live lot-count dry run
-caught Creator treating Number `186` differently from its Decimal floor result;
-the normalized comparison was saved and verified in Development.
+The current schedule action is only
+`thisapp.workflowExportEnqueue("Update_Budgets_w_Projects1");`; its actual writes
+run through `workflowExportRun`. The published version 9.126 already had no
+quantity writes into Add_Budget or Budget_Category. User direction now also
+removes the scheduled Projects/Analytics-to-Subdivision quantity writes.
 
-## Owner promotion required (PMP leaves Creator publication to the owner)
+Promote **both functions together**, Development → Stage → Production. The
+existing `workflowRunLog` and export dependencies are already published. The
+production API is registered; no new API, widget URL, or form field is needed.
+Until this promotion, Production keeps its tested Projects-only outbound body
+and the previous scheduled Subdivision quantity import. The latest PMP authorizes
+repository publication and leaves Creator promotion to the owner.
 
-1. Publish **only** `syncBudgetMetricToProjects` from Development through Stage
-   to Production, with its existing `workflowRunLog` dependency available.
-2. Create the corresponding production Custom API
-   **`Sync_Budget_Metric_to_Projects`** with the same request/response settings,
-   bound to Land Master **Production** and the promoted function. The Development
-   API is a separate Microservice; do not point production callers at Development.
-3. If Stage testing is needed, register `Sync_Budget_Metric_to_Projects_STAGE`
-   against Stage. The widget's existing runtime routing adds the correct suffix.
+## Contract and partial results
 
-The widget release is promoted per the user's PMP instruction. Until the
-Production function/API are available, native Budget saves still succeed and
-the UI reports **Budget saved · Projects update failed.** It never falsely
-reports external success. After a successful external acknowledgement, the
-existing compact success toast says **Budget saved · Projects updated.**
+The actor comes from `zoho.loginuser`; native Budget User_Access/owner-ID checks
+and the read-only Construction Budgeting profile guard are preserved. Browser
+requests cannot supply the value, Subdivision ID or Project ID. The function reads
+the persisted Budget, requires exactly one Subdivision by Subdivision_Code,
+confirms any saved Subdivision lookup agrees, and requires one Project with the
+same exact project_code and ID before writing either destination.
 
-## Verification and practical limits
+It updates only the requested metric. Blank/negative values fail; destination
+Number fields require whole values without rounding. Creator Number/Decimal
+comparisons normalize to Decimal; the Subdivision residential-lot Number write
+uses an explicit toLong conversion. Acres retains saved Budget precision.
 
-Native Development compilation and a read-only function execution verified:
-Budget `4410926000003558988`, code `AR05`, maps to Projects
-`1496277000013686372` (Arroyo Ranch 5). Budget Acres was `35.51`; Projects Acres
-was `35.508`. The dry run returned `ok:true`, `dryRun:true`,
-`writeAttempted:false`; no Projects value was changed. The live response
-materialized the unique match as a Map, handled explicitly before the code check.
-Final read-only executions of the corrected function passed for all three
-fields: Acres `35.51`, residential lots `186`, and equivalent street length
-`5872`, each matched the same Project ID and returned `writeAttempted:false`.
+A dry run returns before both writes and before audit creation. A real execution
+writes the native Subdivision field, then PATCHes Projects through the existing
+milestone portal `700737166` and `zoho_projects_connection`. Native assignment
+success and the exact Projects ID acknowledgement establish success; there is no
+automatic editable-value equality check. If Projects fails after the native write,
+the response retains `subdivisionUpdated:true`, returns `ok:false`, logs Partial,
+and never automatically replays. This is not an atomic cross-system transaction.
 
-The custom API's enabled state and binding were inspected. A real external
-PATCH and end-to-end production SDK save remain unverified until owner promotion
-and an approved live test. Source-level runtime tests cover all three fields,
-native-save-before-push ordering, SDK response wrapping, local/external errors,
-unknown responses, stale revisions, serial rapid edits and truthful feedback.
 Per-field serialization orders one browser's rapid saves; it is not a global
-cross-user lock. No editable-value equality check was added after saves.
+cross-user lock. Native Budget saves remain successful if the separate sync fails.
+No backfill, schedule run, quantity migration, or milestone update is included.
 
-## Regression and rollback
+## Verification and rollback
 
-Preserve header access, approval locks, per-unit calculations and saves, Lot Price
-and Land Cost behavior, owner edits, environment routing, and inline green saved
-indicators. New sync calls run only after confirmed saves of the three quantities.
+Regression coverage exercises actual widget save ordering, all three fields,
+standard result envelopes, native-save failures, external errors/unknown replies,
+stale revisions, serialized edits, preview honesty, unique destination guards,
+dry-run ordering, partial acknowledgement flags and native integer conversion.
+A preservation check compares the complete captured import processor with the
+new body and permits only the three removed quantity assignments/audit flags and
+one explanatory comment. It preserves all unrelated native code byte for byte.
 
-Rollback: map production Budget Manager back to **122.29.84** and rebuild Pages.
-The new function/API can remain unused or be disabled; there is no form workflow
-to remove and no field migration or data deletion.
+The two prior live bodies are saved under
+`creator/workflows/budget-source-of-truth-2026-10-27/`. Restoring the old import
+body would resume Projects-to-Subdivision quantity writes, so do that only if the
+source-of-truth decision is explicitly reversed. To stop all outbound widget sync,
+disable the API or map Budget Manager back to `122.29.84` and rebuild Pages. The
+current widget remains `122.29.85`; this follow-up changes Creator functions and
+API registration only, with no frontend release required.

@@ -1,4 +1,26 @@
-## Saved quantities push to Zoho Projects — 122.29.85, October 27, 2026
+## Budget owns quantities in Subdivision and Projects — October 27, 2026
+
+The Production `Sync_Budget_Metric_to_Projects` API is enabled and its complete
+Budget Manager save path passed temporary-change/reversion tests on Arroyo Ranch
+5 for Lots, Acres and Equiv. LF. Final Budget and Projects values are 186, 35.51
+and 5872; the success toast **Budget saved · Projects updated.** was captured.
+
+The expanded `syncBudgetMetricToProjects` is saved and compiled in Development.
+It reads the changed persisted Budget field and writes that same field to the
+unique code-matched Subdivision and Project, confirming the saved Subdivision
+lookup agrees before either write. All three native Development executions
+acknowledged both destinations. The `workflowExportRun` import processor is also
+saved and compiled in Development with only its three Subdivision quantity writes
+removed. Status, identity, cost and other imports are preserved; Budget and Budget
+Category quantity imports were already absent from published version 9.126.
+
+Promote both functions together through Stage and Production. PMP leaves these
+Creator changes for the owner to promote; the registered production API and
+Budget Manager 122.29.85 need no frontend or API contract change. Until promotion,
+Production retains the tested Projects-only body and prior Subdivision quantity
+import. See [contract, test evidence, promotion and rollback](../../creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md).
+
+### Initial Projects-only widget release — 122.29.85
 
 After a successful native save of Lots, Acres or Equiv. LF, Budget Manager calls
 `Sync_Budget_Metric_to_Projects` through the existing environment-aware Custom API
@@ -16,13 +38,9 @@ Projects errors leave the native save successful and report the separate failure
 Rapid saves are serialized per browser/budget/field; superseded results cannot
 show success. There is no automatic replay after a failed or uncertain update.
 
-Creator Development has the compiled function and enabled `_DEV` Custom API.
-PMP promotes the widget release but leaves Creator publication to the owner.
-The Production function and unsuffixed API must be available for production sync;
-until then the widget reports the Projects failure without undoing Budget saves.
-See [binding, native dry-run evidence and promotion steps](../../creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md).
-The read-only AR05 test confirmed the exact Projects identity; an external PATCH
-and production SDK save are not yet verified. Regression tests cover native save
+The initial release was verified first with read-only AR05 checks; the Production
+API and real SDK save tests were subsequently completed as recorded above.
+Regression tests cover native save
 ordering, all three fields, errors, envelopes, stale edits and truthful feedback.
 Rollback: production Budget Manager `122.29.84`; no Creator data migration.
 
