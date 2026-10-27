@@ -1,3 +1,31 @@
+## Saved quantities push to Zoho Projects — 122.29.85, October 27, 2026
+
+After a successful native save of Lots, Acres or Equiv. LF, Budget Manager calls
+`Sync_Budget_Metric_to_Projects` through the existing environment-aware Custom API
+adapter. `syncBudgetMetricToProjects` reads the persisted metric and resolves the
+unique destination using `Add_Budget.Subdivision_Code == Projects.project_code`.
+It reuses the milestone portal, connection, detailed requests and audit logging.
+Only the changed field is patched; Lot Price/Land Cost and other saves do not push.
+The API enforces native User_Access/owner-ID rules and rejects missing/duplicate
+mappings. Fractional Number values fail without rounding. No form workflow,
+scheduled sync, initial backfill or Subdivision quantity write was created.
+
+Native Budget saved borders remain immediate. The concise success toast reads
+**Budget saved · Projects updated.** only after an acknowledged external write.
+Projects errors leave the native save successful and report the separate failure.
+Rapid saves are serialized per browser/budget/field; superseded results cannot
+show success. There is no automatic replay after a failed or uncertain update.
+
+Creator Development has the compiled function and enabled `_DEV` Custom API.
+PMP promotes the widget release but leaves Creator publication to the owner.
+The Production function and unsuffixed API must be available for production sync;
+until then the widget reports the Projects failure without undoing Budget saves.
+See [binding, native dry-run evidence and promotion steps](../../creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md).
+The read-only AR05 test confirmed the exact Projects identity; an external PATCH
+and production SDK save are not yet verified. Regression tests cover native save
+ordering, all three fields, errors, envelopes, stale edits and truthful feedback.
+Rollback: production Budget Manager `122.29.84`; no Creator data migration.
+
 ## Lot Price and Land Cost access — 122.29.84, October 27, 2026
 
 The per-budget `Add_Budget.Lot_Price` and `Land_Cost` inputs require the existing

@@ -266,6 +266,11 @@
           "name": "Update_Assigned_To_Me",
           "config_key": "updateAssignedToMe",
           "source": "customApis object"
+        },
+        {
+          "name": "Sync_Budget_Metric_to_Projects",
+          "config_key": "syncBudgetMetricToProjects",
+          "source": "customApis object"
         }
       ],
       "forms_referenced": [

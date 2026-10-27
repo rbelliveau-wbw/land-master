@@ -639,6 +639,24 @@
         }
       ],
       "response_type": "Standard"
+    },
+    {
+      "name": "Sync_Budget_Metric_to_Projects",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "syncBudgetMetricToProjects",
+      "confidence": "prepared-production-registration",
+      "notes": "POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> project_code. Development binding enabled; Production registration requires owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
+    },
+    {
+      "name": "Sync_Budget_Metric_to_Projects_DEV",
+      "consumers": [
+        "widgets/budget-manager/src/app/widget.html"
+      ],
+      "matching_creator_function": "syncBudgetMetricToProjects",
+      "confidence": "verified-development-2026-10-27",
+      "notes": "POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> project_code. Development binding enabled; Production registration requires owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
     }
   ]
 }

@@ -1,6 +1,12 @@
 
 # Budget Manager
 
+Release `122.29.85` pushes saved Lots, Acres and Equiv. LF through the authenticated
+`Sync_Budget_Metric_to_Projects` Custom API, matching Subdivision Code to Projects
+Project Code. Confirmed success says **Budget saved · Projects updated.** Creator
+Development is installed; the owner must publish the function and register the
+Production API. See [the handoff](../../creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md).
+
 Release `122.29.16` uses `Attachment` / `All_Attachments`, retaining the `Budget` parent
 and `File_field1` upload field. Creator Development updates require the user's
 promotion; see the [rename, regressions and rollback](../../docs/attachment-form-rename-2026-10-11.md).
