@@ -66,6 +66,17 @@ retain the totals row and keep Diagnostics/version information in Diagnostics.
 Report descriptions, quality metadata and loading status may remain accessible
 outside the visible layout. Measure changes must not resize a bottom text strip.
 
+Forecasts keeps its search/status/period filters, Hide Empty, collapse/reset,
+grouping pills and Annual Totals/Subtotals on one compact horizontal control row.
+Bound filter widths rather than stretching them across the page; allow local
+horizontal scrolling when required. Expanded All Filters remains optional below.
+Match Lot Sales' 31×18px switch tracks and 12px thumbs, and its 28px pill buttons.
+Missing forecasts use a small amber warning box beside Export CSV, with the count
+available on hover/focus/click, instead of a full-width notice. Keep actual load
+failures visible. Project/Territory/Builder disclosures update mounted rows and
+cached subtotals immediately; never re-read or re-aggregate the report solely
+to open or close a group.
+
 Budget's managed PO requests use [Soft rail rows](payment-requests.md): blue
 PO pill and left rail, vendor, MM/DD/YYYY request date in the middle, green
 amount, status and compact Edit/View action. Omit column headings and repeated

@@ -1,3 +1,14 @@
+## Immediate Forecasts disclosures and compact controls — 1.6.1, October 27, 2026
+
+Group disclosures now toggle cached mounted rows/totals instead of re-running
+the report and replacing the full matrix. The missing-forecast count moves to
+an accessible amber warning icon beside Export CSV. Primary filters, grouping,
+display switches and collapse/reset share one bounded-width control row, with
+the same switch and pill dimensions as Lot Sales. The existing data definitions,
+permission/date/complete-read gates and CSV scope are unchanged. No native
+Creator promotion is needed for 1.6.1.
+[Regression/performance evidence and rollback](../../docs/lots-forecasts-controls-2026-10-27.md).
+
 ## Forecasts and dashboard page variables — 1.6.0, October 27, 2026
 
 Forecasts adds independent access, the approved Project/Territory/Builder matrix,

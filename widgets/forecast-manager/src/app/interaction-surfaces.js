@@ -44,6 +44,7 @@
       list('[data-lm-row-list="request-attachment-files"]','.attachment-page-row[data-record-id]',row=>row.dataset.recordId,()=>state().edBudget?.ID||'budget-files');
     }else if(module==='manage-lots'){
       tab('nav.tabs','[data-view]',null);
+      tab('#lotsLayout','#lotsListMode,#lotsGridMode',null);
       panels.push({selector:'#lotsView,#takedownsView'});
       list('#blocks','tr[data-lot-row]',row=>row.dataset.lotRow,()=>M.key(state().subdivisionIds||[]));
       // The native takedown editor already owns keyed row FLIP.
@@ -88,7 +89,7 @@
     }else if(module==='lot-sales-explorer'){
       
       list('#matrixBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().groupBy||'sales',{highlight:false});
-      list('#fcBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().forecastGroupBy||'project',{highlight:false});
+      list('#fcBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().forecastGroupBy||'project',{highlight:false,visibility:true});
       surfaceExtra.push('#subdivisionCard,.insights-popover,#fcInfoCard');
       panels.push({selector:'#salesDashboard,#forecastsDashboard,#detailBody'});
       status('#connection');

@@ -85,7 +85,7 @@
       const nav=Array.from(groups,([sid,blocks])=>Array.from(blocks,([block,lots])=>'<button type="button" class="ll-block-pill" data-jump-block="'+esc(sid+':'+block)+'" aria-label="Jump to Block '+esc(block)+' in '+esc(options.subName(sid))+'">'+(groups.size>1?esc(options.subName(sid))+' · ':'')+'Block '+esc(block)+' <span>'+lots.length+'</span></button>').join('')).join('');
       if($('llBlockNav')._markup!==nav){$('llBlockNav').innerHTML=nav;$('llBlockNav')._markup=nav;}
       const columnKey=Array.from(columns).join('|');if($('llColumnMenu')._columns!==columnKey){$('llColumnMenu').innerHTML=LMLotEdit.fields.filter(field=>!['Builder1','Address','Notes'].includes(field.key)).map(field=>'<label><input type="checkbox" data-lot-column="'+field.key+'" '+(columns.has(field.key)?'checked':'')+'> '+esc(field.label)+'</label>').join('');$('llColumnMenu')._columns=columnKey;}
-      $('llEditMode').checked=editMode;
+      $('llEditMode').checked=editMode;$('llEditMode').disabled=layout!=='list'||drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow||editing||editor.blocked()||options.locked();
     }
     function rowHTML(row,fields){
       const id=row.ID,can=LMLotEdit.editable(row)&&!options.locked(),status=lotStatus(row),canNote=editMode&&LMLotEdit.editable(row)&&options.ready();
@@ -141,7 +141,7 @@
       node.setAttribute('aria-invalid',String(state==='error'||state==='unknown'));cell.classList.toggle('ll-saved',state==='verified');
       const mark=cell.querySelector('.ll-save-mark');if(mark)mark.hidden=state!=='verified';const error=cell.querySelector('.ll-field-error');if(error)error.textContent=message||'';
     }
-    function controlLocks(){const lock=drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow;const search=$('search');if(search)search.disabled=lock;const mode=$('llEditMode');if(mode)mode.disabled=lock||editing||editor.blocked();host.querySelectorAll('[data-lot-check]').forEach(input=>{input.disabled=lock||editing||editor.blocked()||!LMLotEdit.editable(options.byId(input.dataset.lotCheck));});syncFooter();}
+    function controlLocks(){const lock=drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow;const search=$('search');if(search)search.disabled=lock;const mode=$('llEditMode');if(mode)mode.disabled=layout!=='list'||lock||editing||editor.blocked()||options.locked();host.querySelectorAll('[data-lot-check]').forEach(input=>{input.disabled=lock||editing||editor.blocked()||!LMLotEdit.editable(options.byId(input.dataset.lotCheck));});syncFooter();}
     function markDraft(node){
       if(!editMode||!options.ready()||editing||!node.dataset.inlineField)return null;
       const id=node.dataset.inlineLot,field=node.dataset.inlineField,key=inlineKey(id,field),raw=rawInput(node);let job=drafts.get(key);
@@ -280,7 +280,7 @@
     }
     host.addEventListener('click',listClick,true);bar.addEventListener('click',listClick,true);
     function listChange(event){
-      if(event.target.id==='llEditMode'){if(drafts.size||inlineRunning||inlineQueue.length||editor.blocked()||editing||options.locked()){event.target.checked=editMode;return;}closeNotePop();if(root.LMPickers)root.LMPickers.close(false);switchEditMode(event.target.checked);$('llEditMode')?.focus({preventScroll:true});}
+      if(event.target.id==='llEditMode'){if(layout!=='list'||drafts.size||inlineRunning||inlineQueue.length||editor.blocked()||editing||options.locked()){event.target.checked=editMode;return;}closeNotePop();if(root.LMPickers)root.LMPickers.close(false);switchEditMode(event.target.checked);$('llEditMode')?.focus({preventScroll:true});}
       if(event.target.matches('[data-inline-field]'))enqueueInline(event.target);
       if(event.target.id==='llSelectAll')choose(visible,event.target.checked);
       if(event.target.matches('[data-block-check]'))choose(visible.filter(row=>options.sid(row)===event.target.dataset.sub&&options.block(row)===event.target.dataset.blockCheck),event.target.checked);
@@ -290,8 +290,8 @@
     $('massUpdate').addEventListener('click',()=>{if(lastRun&&lastRun.rows.some(row=>row.state==='unknown')&&!editor.pending()){editing=true;beginDialog('Lot update status',lastRun.rows.length+' lots');showProgress(lastRun.operation);patchRun(lastRun);return;}openEditor(selectedRows());});
     $('clear').addEventListener('click',event=>{if(layout==='list'){event.stopImmediatePropagation();if(!options.locked()&&!editing)clear();}},true);
     $('llClearSelection').addEventListener('click',()=>$('clear').click());
-    ['lotsListMode','lotsGridMode'].forEach((id,index)=>$(id).addEventListener('click',()=>{if(options.locked()||editing)return;layout=index?'grid':'list';$('lotsListMode').setAttribute('aria-pressed',String(layout==='list'));$('lotsGridMode').setAttribute('aria-pressed',String(layout==='grid'));$('lotsListMode').setAttribute('aria-selected',String(layout==='list'));$('lotsGridMode').setAttribute('aria-selected',String(layout==='grid'));if(layout==='grid')host.classList.remove('ll-host');options.render();}));
-    $('lotsLayout').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||options.locked()||editing)return;event.preventDefault();const button=$(event.key==='ArrowLeft'||event.key==='Home'?'lotsListMode':'lotsGridMode');button.click();button.focus({preventScroll:true});});
+    ['lotsListMode','lotsGridMode'].forEach((id,index)=>$(id).addEventListener('click',()=>{if(options.locked()||editing)return;layout=index?'grid':'list';$('lotsListMode').setAttribute('aria-pressed',String(layout==='list'));$('lotsGridMode').setAttribute('aria-pressed',String(layout==='grid'));if(layout==='grid')host.classList.remove('ll-host');options.render();}));
+    $('lotsLayout').addEventListener('keydown',event=>{if(!event.target.matches('#lotsListMode,#lotsGridMode')||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||options.locked()||editing)return;event.preventDefault();const button=$(event.key==='ArrowLeft'||event.key==='Home'?'lotsListMode':'lotsGridMode');button.click();button.focus({preventScroll:true});});
     document.addEventListener('click',event=>{if(!event.target.closest('.ll-tools')){const menu=$('llColumnMenu');if(menu)menu.hidden=true;$('llColumns')?.setAttribute('aria-expanded','false');}});
     return Object.freeze({render,renderSummary,syncFooter,selectedRows,layout:()=>layout,active:()=>editing||editor.blocked()||inlineRunning||inlineQueue.length>0||drafts.size>0||!!noteRow,hasDraft:()=>drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow,editMode:()=>editMode,editor,display,clear,remove(id){selected.delete(id);syncChecks();syncFooter();}});
   }

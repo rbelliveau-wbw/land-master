@@ -1,3 +1,12 @@
+## Single-row inventory toolbar — 0.13.18, October 27, 2026
+
+The inventory controls occupy one row again, with List — Edit mode — Grid
+centered, identity/block navigation at the left, and status/selection/Columns
+at the right. Long navigation/selection groups scroll locally. Block and Lot
+remain bold. The existing Edit switch and view handlers are reused; Grid stays
+read-only and the switch is disabled there. No Creator changes are required.
+[Combined release checks and rollback](../../docs/lots-forecasts-controls-2026-10-27.md).
+
 ## Unified inventory header — 0.13.17, October 27, 2026
 
 The approved Unified header joins subdivision identity/code, lot/block counts,
