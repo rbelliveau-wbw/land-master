@@ -1,4 +1,4 @@
-#forecastsDashboard{display:flex;flex:1;flex-direction:column;min-height:0;gap:10px;color:#153955}
+#forecastsDashboard{display:flex;flex:1;flex-direction:column;min-height:0;gap:10px;color:#153955;--fc-sold:#285b97;--fc-forecast:#14845a;--fc-sold-fill:#edf4ff;--fc-forecast-fill:#edf8f1}
 #forecastsDashboard[hidden]{display:none}
 .fc-top-card{flex:none;border:1px solid #a9bfd9;border-radius:9px;background:#eaf1f9;box-shadow:0 3px 12px #173b6414}
 .fc-heading{display:flex;align-items:center;gap:12px;padding:9px 12px;background:linear-gradient(108deg,#173b64,#1d4f76);border-radius:8px 8px 0 0;color:#fff}
@@ -9,7 +9,7 @@
 .fc-filter-row{display:flex;align-items:end;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
 .fc-filters label:not(.fc-toggle){display:flex;flex-direction:column;gap:5px;min-width:105px;max-width:135px;flex:0 0 135px;font-size:10px;font-weight:650;color:#244869}
 .fc-filters label.fc-search{flex:0 0 165px;max-width:165px}.fc-search input{height:34px;border:1px solid #9bb9db;border-radius:8px;padding:0 10px;background:#fff;font-size:12px;color:#153955;min-width:0;width:100%}
-.fc-filters label.fc-period{flex:0 0 145px;max-width:145px}.fc-filter-row>.button{height:34px;font-size:10px;white-space:nowrap;gap:5px;display:inline-flex;align-items:center;flex:none}.fc-filter-row>.button svg{width:11px;height:11px}.fc-filter-row>.text-button{flex:none;height:34px;font-size:10px}.fc-filter-row .picker-trigger{height:34px}
+.fc-filters label.fc-period{flex:0 0 145px;max-width:145px}.fc-filter-row>.button,.fc-row-actions>.button{height:34px;font-size:10px;white-space:nowrap;gap:5px;display:inline-flex;align-items:center;flex:none}.fc-filter-row>.button svg{width:11px;height:11px}.fc-filter-row>.text-button,.fc-row-actions>.text-button{flex:none;height:34px;font-size:10px}.fc-filter-row .picker-trigger{height:34px}
 .fc-toggle{position:relative;display:inline-flex;align-items:center;gap:8px;flex:none;min-height:34px;padding:5px 8px;border:1px solid #a9c1df;border-radius:8px;background:#f3f7fc;font-size:11px;color:#1d4a78;font-weight:700;white-space:nowrap;cursor:pointer}
 .fc-toggle input{position:absolute;opacity:0;width:1px;height:1px;margin:0}.fc-toggle>span{position:relative;display:inline-block;flex:none;width:31px;height:18px;border-radius:999px;background:#b8c9d9;box-shadow:inset 0 1px 3px #173b6426;pointer-events:none}
 .fc-toggle>span:after{position:absolute;content:"";width:12px;height:12px;top:3px;left:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #173b6440}.fc-toggle input:checked+span{background:#1d66a5}.fc-toggle input:checked+span:after{transform:translateX(13px)}.fc-toggle:focus-within{outline:2px solid #2563eb;outline-offset:2px}
@@ -18,8 +18,8 @@
 .fc-filters label.fc-view-by{flex:0 0 110px;max-width:110px}
 .fc-display-options{display:flex;align-items:center;gap:12px;flex:none;min-height:34px}
 .fc-displays{display:flex;align-items:center;gap:8px;flex:none}
-.fc-legend{display:inline-flex;align-items:center;gap:10px;flex:none;white-space:nowrap;font-size:10px;color:#496581}
-.fc-legend>span{display:flex;align-items:center;gap:5px}.fc-legend i{height:7px;width:7px;border-radius:2px;background:#285b97}.fc-legend i.fc-forecast{background:#14845a}
+.fc-legend{display:inline-flex;align-items:center;gap:10px;flex:none;white-space:nowrap;font-size:13px;font-weight:750;color:var(--fc-sold)}
+.fc-legend>span{display:flex;align-items:center;gap:5px}.fc-legend i{height:12px;width:12px;border-radius:3px;background:var(--fc-sold)}.fc-legend i.fc-forecast{background:var(--fc-forecast)}.fc-legend>span:has(.fc-forecast){color:var(--fc-forecast)}
 #fcReportPane{position:relative;display:flex;flex-direction:column;flex:1;min-height:0}.fc-scroll{flex:1;min-height:0;overflow:auto;scrollbar-color:#a9bed5 #eaf1f9;scrollbar-width:thin}
 #fcMatrix{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-variant-numeric:tabular-nums;font-size:11px;isolation:isolate}
 #fcMatrix th,#fcMatrix td{background:#fff;border-bottom:1px solid #d8e2ee;padding:9px 10px;text-align:right;white-space:nowrap;min-width:65px;font-weight:400}
@@ -40,3 +40,15 @@
 .fc-info-card{position:fixed;z-index:1200;width:280px;max-width:calc(100vw - 16px);border:1px solid #a9bfd9;border-radius:8px;background:#fff;box-shadow:0 12px 32px #173b6430;overflow:hidden;color:#153955}.fc-info-card>header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#173b64;color:#fff;gap:8px}.fc-info-card h2{font-size:13px;margin:0}.fc-info-card .icon-button{display:grid;place-items:center;width:25px;height:25px;padding:0;background:#ffffff14;color:#fff;border:1px solid #ffffff40;border-radius:5px}.fc-info-card .icon-button:hover{color:#b91c1c;background:#fee2e2}.fc-info-card .icon-button svg{width:13px;height:13px}.fc-info-card dl{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;padding:12px;margin:0;font-size:11px}.fc-info-card dt{color:#5c7394}.fc-info-card dd{margin:0;text-align:right;overflow-wrap:anywhere}
 .fc-export-actions{display:flex;align-items:center;gap:8px}.fc-warning{display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid #efd18b;border-radius:7px;background:#fff5d9;color:#8a5b12;cursor:pointer}.fc-warning svg{width:20px;height:20px}.fc-warning:hover{background:#ffedb8}.fc-warning[hidden],#fcMatrix tr[hidden],#fcMatrix [data-fc-total][hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){.fc-toggle>span,.fc-toggle>span:after,.fc-group-name svg{transition:none}.fc-loading:not([hidden]) .fc-loading-ring{animation:none}}
+
+.fc-row-actions{display:flex;align-items:center;gap:8px;flex:none;margin-left:auto;padding-left:8px}
+.fc-scroll{overflow-anchor:none}
+#fcMatrix .fc-leaf>.fc-value-sold{background:var(--fc-sold-fill);color:var(--fc-sold)}
+#fcMatrix .fc-leaf>.fc-value-forecast{background:var(--fc-forecast-fill);color:var(--fc-forecast)}
+#fcMatrix .fc-group>.fc-value-sold,#fcMatrix tfoot .fc-value-sold{background:#dcecff}
+#fcMatrix .fc-group>.fc-value-forecast,#fcMatrix tfoot .fc-value-forecast{background:#dff1e6}
+#fcMatrix thead .fc-value-sold{background:#dcecff}#fcMatrix thead .fc-value-forecast{background:#dff1e6}
+#fcMatrix td.fc-current-month,#fcMatrix thead th.fc-current-month{border-left:2px solid #c3a8e4;border-right:2px solid #c3a8e4}
+#fcMatrix thead th.fc-current-month{background:#eee5fb;color:#76509f;box-shadow:inset 0 3px #c3a8e4}
+#fcMatrix thead .fc-current-month-label{color:inherit;line-height:1.3;font-weight:500}
+#fcMatrix.fc-no-annual .fc-annual,#fcFoot[hidden]{display:none!important}

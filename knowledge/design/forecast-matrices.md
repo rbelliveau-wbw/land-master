@@ -257,3 +257,16 @@ footer; never fill its body cells lavender. Preserve the fixed centered slider,
 contextual legends, server rollover, values/exports and Sliding push wrappers.
 Desktop checks cover all four modes at 1280/1440/2308px, rectangle geometry,
 neutral body cells, colored plain footer values and existing save/recovery/motion.
+
+## Data Insights Forecasts dashboard — October 27, 2026
+
+The user requested full cell background colors for this read-only dashboard.
+Its monthly Sold cells use blue text on pale blue, and Forecast cells use green
+text on pale green, matching the larger bold legend. Tint headers, body cells,
+group subtotals and footer months; keep mixed annual totals neutral. This is a
+dashboard-specific presentation exception to Forecast Manager's value rectangles.
+Reuse Forecast Manager's exact lavender Current heading (#eee5fb), purple side
+rules (#c3a8e4), and concise Current label. Mark only the exact month/year from
+the Creator application date; retain the basis tint inside its body cells and
+update correctly through January/February rollover and selected fiscal ranges.
+Keep known zero, missing, grouping, CSV and independent access semantics intact.

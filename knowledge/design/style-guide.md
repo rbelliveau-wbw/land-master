@@ -72,6 +72,12 @@ collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
 Totals and Subtotals together, followed immediately by the Sold/Forecast color
 legend. Omit the separate Monthly Lot Count/count/legend row above the matrix;
 retain the report count as an accessible status.
+Align Collapse All / Expand All and Reset together at the far right of that
+control row. Make the Sold/Forecast legend 13px and bold, with 12px swatches.
+Tint complete monthly cells blue for Sold and green for Forecast, using the
+legend's basis colors; keep mixed annual totals neutral. Mark the exact Creator
+server month/year with Forecast Manager's lavender Current heading and purple
+side rules through body and totals. Body cells keep their basis tint.
 Bound filter widths rather than stretching them across the page; allow local
 horizontal scrolling when required. Expanded All Filters remains optional below.
 Match Lot Sales' 31×18px switch tracks and 12px thumbs, and its 28px pill buttons.
@@ -80,6 +86,14 @@ available on hover/focus/click, instead of a full-width notice. Keep actual load
 failures visible. Project/Territory/Builder disclosures update mounted rows and
 cached subtotals immediately; never re-read or re-aggregate the report solely
 to open or close a group.
+All three display switches update the mounted report immediately. Cache known
+zero row membership, group totals and annual columns during a real report build;
+switching Hide Empty, Annual Totals or Subtotals must not rebuild the model/table,
+read data, lose focus/scroll, or reset collapsed groups. Hide Empty excludes only
+rows whose complete selected-month values are known zeros; unknown forecasts
+remain visible. CSV, accessible counts and visible group controls follow the
+same filtered scope. Keep annual cells mounted and toggle their visibility and
+year-header spans together.
 
 Forecasts loading uses a centered, compact navy spinner and Loading forecasts
 label in the report viewport. Do not use the yellow notice bar for loading.
