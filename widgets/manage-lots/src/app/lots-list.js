@@ -48,6 +48,7 @@
       $('selectedCount').textContent=n?n+' lot'+(n===1?'':'s')+' selected':'No lots selected';$('selectionEmblem').textContent=n;
       $('selectionBar').classList.toggle('has-selection',!!n);$('selectedDetail').textContent=n?new Set(rows.map(row=>options.sid(row))).size+' subdivision'+(new Set(rows.map(row=>options.sid(row))).size===1?'':'s')+' · '+rows.filter(options.eligible).length+' available for takedown':'Shift-click to select a range';
       $('clear').disabled=!n||locked;
+      $('llInventorySelected').textContent=n?n+' selected':'';$('llClearSelection').disabled=!n||locked;
       $('create').disabled=!n||locked||!rows.every(options.eligible)||new Set(rows.map(row=>options.sid(row))).size!==1;
       $('create').title=n&&!rows.every(options.eligible)?'Select only available lots to create a takedown':'';
       const show=!options.isLots();$('lotsLayout').hidden=show;
@@ -76,6 +77,8 @@
       if(!groups){groups=new Map();rows.forEach(row=>{const sid=options.sid(row);if(!groups.has(sid))groups.set(sid,new Map());const blocks=groups.get(sid),b=options.block(row);if(!blocks.has(b))blocks.set(b,[]);blocks.get(b).push(row);});}
       const text=(id,value)=>{const node=$(id);if(node.textContent!==String(value))node.textContent=value;};
       const title=groups.size===1?options.subName(groups.keys().next().value):groups.size?groups.size+' subdivisions':'Choose subdivisions';text('llInventoryTitle',title);$('llInventoryTitle').title=title;text('llInventoryTotal',rows.length+' lots');
+      const code=groups.size===1&&options.subCode?options.subCode(groups.keys().next().value):'';text('llInventoryCode',code);$('llInventoryCode').hidden=!code;
+      const blockCount=Array.from(groups.values()).reduce((total,blocks)=>total+blocks.size,0);text('llInventoryBlocks',blockCount+' block'+(blockCount===1?'':'s'));
       const tally=new Map();rows.forEach(row=>{const key=lotStatus(row);tally.set(key,(tally.get(key)||0)+1);});
       const counts=Array.from(tally,([key,count])=>'<span class="ll-count st-'+esc(key)+'"><i></i>'+esc(statusLabel(key))+' <b>'+count+'</b></span>').join('');
       if($('llInventoryCounts')._markup!==counts){$('llInventoryCounts').innerHTML=counts;$('llInventoryCounts')._markup=counts;}
@@ -286,6 +289,7 @@
     host.addEventListener('change',listChange);bar.addEventListener('change',listChange);
     $('massUpdate').addEventListener('click',()=>{if(lastRun&&lastRun.rows.some(row=>row.state==='unknown')&&!editor.pending()){editing=true;beginDialog('Lot update status',lastRun.rows.length+' lots');showProgress(lastRun.operation);patchRun(lastRun);return;}openEditor(selectedRows());});
     $('clear').addEventListener('click',event=>{if(layout==='list'){event.stopImmediatePropagation();if(!options.locked()&&!editing)clear();}},true);
+    $('llClearSelection').addEventListener('click',()=>$('clear').click());
     ['lotsListMode','lotsGridMode'].forEach((id,index)=>$(id).addEventListener('click',()=>{if(options.locked()||editing)return;layout=index?'grid':'list';$('lotsListMode').setAttribute('aria-pressed',String(layout==='list'));$('lotsGridMode').setAttribute('aria-pressed',String(layout==='grid'));$('lotsListMode').setAttribute('aria-selected',String(layout==='list'));$('lotsGridMode').setAttribute('aria-selected',String(layout==='grid'));if(layout==='grid')host.classList.remove('ll-host');options.render();}));
     $('lotsLayout').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||options.locked()||editing)return;event.preventDefault();const button=$(event.key==='ArrowLeft'||event.key==='Home'?'lotsListMode':'lotsGridMode');button.click();button.focus({preventScroll:true});});
     document.addEventListener('click',event=>{if(!event.target.closest('.ll-tools')){const menu=$('llColumnMenu');if(menu)menu.hidden=true;$('llColumns')?.setAttribute('aria-expanded','false');}});

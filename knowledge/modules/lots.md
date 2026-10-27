@@ -1,3 +1,15 @@
+## Unified inventory header — 0.13.17, October 27, 2026
+
+The approved Unified header joins subdivision identity/code, lot/block counts,
+centered List/Grid control, status totals, Edit/Columns, block navigation and
+the list report in one surface. Both Block and Lot labels/values are bold.
+Top selection count/Clear reuse the existing selection model and guarded Clear
+action. Block counts and selection counts reuse the shared numeric transitions.
+Existing filters, complete reads, exact string IDs, note/edit/save paths, dates,
+all columns, takedown eligibility, block jumps/collapse and retained selections
+stay in place. No Creator schema, function, API or permission changes are needed.
+See [changes, desktop verification and rollback](../../docs/lots-unified-header-2026-10-27.md).
+
 ## Shared interaction motion — 0.13.7, October 16, 2026
 
 Applicable tabs, disclosures, keyed rows, authorized refreshes, actual save

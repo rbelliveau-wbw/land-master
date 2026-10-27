@@ -9,7 +9,7 @@
   <script src="creator-data.js"></script>
   <script src="manage-lots-controller.js"></script>
   <script src="lot-edit-controller.js"></script>
-  <script src="lots-list.js"></script>
+  <script src="lots-list.js?v=0.13.17"></script>
   <script src="takedown-model.js"></script>
   <script src="takedown-editor.js"></script>
   <script src="searchable-pickers.js" defer></script>
@@ -40,15 +40,15 @@
     @media(max-width:760px){.topbar{padding:0 10px;gap:8px}.brand span:last-child{display:none}.tab{padding:0 10px}.status span:last-child{display:none}.toolbar{padding:11px}.toolbar .field,.sub-filter,.search{width:100%;min-width:100%}.sub-filter-menu{width:100%}.main{padding:12px 11px 96px}.blocks-grid{grid-template-columns:1fr}.grid,.interest{grid-template-columns:1fr}.span3{grid-column:auto}.selected-detail{display:none}.drag-tip{display:none}th:nth-child(3),td:nth-child(3),th:nth-child(5),td:nth-child(5){display:none}th:nth-child(1){width:36%}th:nth-child(2){width:24%}th:nth-child(4){width:40%}}
   </style>
   <link rel="stylesheet" href="lots-grid.css"><script src="subdivision-counts.js"></script>
-<script src="success-feedback.js?v=0.13.16"></script>
-  <link rel="stylesheet" href="lots-list.css">
-<link rel="stylesheet" href="interaction-motion.css?v=0.13.16">
-<script src="interaction-motion.js?v=0.13.16"></script>
-<script src="interaction-surfaces.js?v=0.13.16"></script>
-<script src="number-edit-commit.js?v=0.13.16"></script>
-<script src="number-transitions.js?v=0.13.16"></script>
-<script src="number-surfaces.js?v=0.13.16"></script>
-<link rel="stylesheet" href="number-transitions.css?v=0.13.16">
+<script src="success-feedback.js?v=0.13.17"></script>
+  <link rel="stylesheet" href="lots-list.css?v=0.13.17">
+<link rel="stylesheet" href="interaction-motion.css?v=0.13.17">
+<script src="interaction-motion.js?v=0.13.17"></script>
+<script src="interaction-surfaces.js?v=0.13.17"></script>
+<script src="number-edit-commit.js?v=0.13.17"></script>
+<script src="number-transitions.js?v=0.13.17"></script>
+<script src="number-surfaces.js?v=0.13.17"></script>
+<link rel="stylesheet" href="number-transitions.css?v=0.13.17">
 </head>
 <body>
   <header class="topbar">
@@ -68,7 +68,17 @@
   </section>
   <div id="notice" class="notice"></div>
   <main class="main">
-    <section id="lotsView" class="view active"><div id="lotInventoryBar" class="ll-summary" hidden><div class="ll-summary-left"><div class="ll-identity"><strong id="llInventoryTitle"></strong><span id="llInventoryTotal" class="ll-total"></span></div><label class="ll-select-visible"><input id="llSelectAll" type="checkbox" aria-label="Select all visible lots"> Select visible</label><nav id="llBlockNav" class="ll-block-nav" aria-label="Jump to block"></nav></div><div id="lotsLayout" class="ll-layout" role="tablist" data-lm-motion="tabs" aria-label="Lot layout"><button id="lotsListMode" type="button" role="tab" aria-selected="true" aria-pressed="true">List</button><button id="lotsGridMode" type="button" role="tab" aria-selected="false" aria-pressed="false">Grid</button></div><div class="ll-summary-right"><div id="llInventoryCounts" class="ll-counts"></div><div class="ll-tools"><label class="ll-mode-switch"><input id="llEditMode" type="checkbox" role="switch" aria-label="Edit mode"><span class="ll-slider" aria-hidden="true"></span><b>Edit mode</b></label><button class="btn" id="llColumns" type="button" aria-expanded="false">Columns</button><div id="llColumnMenu" class="ll-column-menu" hidden></div></div></div></div><div id="lotsEmpty" class="empty"><b>No subdivisions selected</b>Choose one or more subdivisions to view their lots.</div><div id="blocks" class="subdivision-groups"></div></section>
+    <section id="lotsView" class="view active">
+      <div id="lotInventoryBar" class="ll-summary" hidden>
+        <div class="ll-inventory-heading">
+          <div class="ll-identity"><span class="ll-phase-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg></span><div class="ll-identity-copy"><strong id="llInventoryTitle"></strong><div class="ll-inventory-meta"><span id="llInventoryCode" hidden></span><span id="llInventoryTotal" class="ll-total"></span><span id="llInventoryBlocks" class="ll-block-total"></span></div></div></div>
+          <div id="lotsLayout" class="ll-layout" role="tablist" data-lm-motion="tabs" aria-label="Lot layout"><button id="lotsListMode" type="button" role="tab" aria-selected="true" aria-pressed="true">List</button><button id="lotsGridMode" type="button" role="tab" aria-selected="false" aria-pressed="false">Grid</button></div>
+          <div class="ll-summary-right"><div id="llInventoryCounts" class="ll-counts"></div><div class="ll-tools"><label class="ll-mode-switch"><input id="llEditMode" type="checkbox" role="switch" aria-label="Edit mode"><span class="ll-slider" aria-hidden="true"></span><b>Edit mode</b></label><button class="btn" id="llColumns" type="button" aria-expanded="false">Columns</button><div id="llColumnMenu" class="ll-column-menu" hidden></div></div></div>
+        </div>
+        <div class="ll-inventory-navigation"><nav id="llBlockNav" class="ll-block-nav" aria-label="Jump to block"></nav><div class="ll-selection-tools"><label class="ll-select-visible"><input id="llSelectAll" type="checkbox" aria-label="Select all visible lots"> Select visible</label><span id="llInventorySelected" class="ll-inventory-selected" aria-live="polite"></span><button id="llClearSelection" class="ll-clear-selection" type="button" disabled>Clear</button></div></div>
+      </div>
+      <div id="lotsEmpty" class="empty"><b>No subdivisions selected</b>Choose one or more subdivisions to view their lots.</div><div id="blocks" class="subdivision-groups"></div>
+    </section>
     <section id="takedownsView" class="view"><div id="takedownsEmpty" class="empty"><b>No subdivisions selected</b>Choose one or more subdivisions to view their builder takedowns.</div><div id="takedownsTable" class="table-card" hidden><table><thead><tr><th>Name</th><th>Builder</th><th>Lots</th><th>Lot details</th></tr></thead><tbody id="takedownsBody"></tbody></table></div></section>
   </main>
   <div id="takedownDetail" class="overlay" role="dialog" aria-modal="true" aria-labelledby="takedownDetailTitle" tabindex="-1"><div class="modal td-detail-modal"><div class="modal-head"><div><div class="td-kicker">Builder Takedown · View only</div><h2 id="takedownDetailTitle"></h2><div id="takedownDetailSub" class="td-sub"></div></div><button id="closeTakedownDetail" class="x" type="button" aria-label="Close takedown details"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="takedownDetailBody" class="modal-body"></div></div></div>
@@ -85,7 +95,7 @@
   <script>
   (function(){
     "use strict";
-    var CFG={version:"0.13.16",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
+    var CFG={version:"0.13.17",pageSize:200,maxPages:50,reports:{subdivisions:"All_Subdivisions",builders:"All_Builders",lots:"All_Lots_All_Fields",lotsList:"All_Active_Lots_List_View",takedowns:"All_Builder_Takedowns",contracts:"All_Contracts1",lotDetails:"All_Active_Lots_Contracts_View",templates:"All_Takedown_Templates",additionalItems:"All_Additional_Items"},form:"Builder_Takedown"};
     var S={live:false,view:"lots",audit:[],auditSeq:0,auditErrs:0,subdivisions:[],builders:[],lots:[],takedowns:[],contracts:[],takedownLotIds:new Set(),selected:new Set(),subdivisionIds:[],takedownSubdivisionIds:[],takedownBuilderIds:[],lotBuilderIds:[],lotStatusIds:[],busy:false,drag:{active:false,selecting:true,seen:new Set(),moved:false,pointerId:null}};
     var $=function(id){return document.getElementById(id)};
     var lotsList=null;
@@ -396,7 +406,7 @@
     window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;auditLog("error","Unhandled promise rejection",{reason:errMeta(r)||safeStringify(r)})});
 
     auditLog("info","Widget build loaded",{version:CFG.version,path:location.pathname,reports:CFG.reports});
-    lotsList=LMLotsList.create({report:CFG.reports.lots,builders:function(){return S.builders},validateBuilder:async function(id){var context=manageController.context(),generation=manageController.state.generation;var rows=await LMData.readAll({reportName:CFG.reports.builders,criteria:"(ID == "+id+")",fields:["Builder_Name","Type1"],fresh:true,isCancelled:function(){return manageController.context()!==context||manageController.state.generation!==generation}});if(rows.length!==1||rows[0].ID!==id||rows[0].Type1!=="Builder")throw new Error("This record is no longer a Builder. Refresh the choices.");},links:function(row){return [indexes().claims.has(String(row.ID))?"On a contract":"",inTakedown(row)?"In a takedown":""].filter(Boolean)},byId:lotById,sid:lotSubdivisionId,block:lotBlock,number:lotNumber,subName:subdivisionName,state:lotState,label:function(key){return LOT_LABEL[key]},eligible:eligible,scopeIds:function(){return S.subdivisionIds},isLots:function(){return S.view==="lots"},clearGridSelection:function(){S.selected.clear()},gridSelection:function(){return Array.from(S.selected).map(lotById).filter(Boolean)},locked:uiLocked,render:render,context:function(){return manageController.context()},generation:function(){return manageController.state.generation},ready:function(){return S.live&&manageController.state.ready&&!manageController.state.loading&&!manageController.active()&&manageController.context()===manageController.state.nativeContext},read:function(ids,cancelled){return LMData.readAll({reportName:CFG.reports.lots,criteria:"("+ids.map(function(id){return "(ID == "+id+")"}).join(" || ")+")",fields:["Subdivision","Archived","Lot_Code","Lot_Number","Block","Status","Add_Builder_Takedown_Name","Entered_Date","Purchase_Date","Close_Date"].concat(LMLotEdit.fields.map(function(f){return f.key})),fresh:true,isCancelled:cancelled})},publish:function(row){S.lots=S.lots.map(function(l){return l.ID===row.ID?Object.assign({},l,row):l});dataIndex=null},error:function(error,entry){auditLog("error","Lot update needs review",{lot:entry&&entry.id,error:errText(error)},true)}});
+    lotsList=LMLotsList.create({report:CFG.reports.lots,builders:function(){return S.builders},validateBuilder:async function(id){var context=manageController.context(),generation=manageController.state.generation;var rows=await LMData.readAll({reportName:CFG.reports.builders,criteria:"(ID == "+id+")",fields:["Builder_Name","Type1"],fresh:true,isCancelled:function(){return manageController.context()!==context||manageController.state.generation!==generation}});if(rows.length!==1||rows[0].ID!==id||rows[0].Type1!=="Builder")throw new Error("This record is no longer a Builder. Refresh the choices.");},links:function(row){return [indexes().claims.has(String(row.ID))?"On a contract":"",inTakedown(row)?"In a takedown":""].filter(Boolean)},byId:lotById,sid:lotSubdivisionId,block:lotBlock,number:lotNumber,subName:subdivisionName,subCode:function(id){return str(selectedSubdivision(id)?.Subdivision_Code)},state:lotState,label:function(key){return LOT_LABEL[key]},eligible:eligible,scopeIds:function(){return S.subdivisionIds},isLots:function(){return S.view==="lots"},clearGridSelection:function(){S.selected.clear()},gridSelection:function(){return Array.from(S.selected).map(lotById).filter(Boolean)},locked:uiLocked,render:render,context:function(){return manageController.context()},generation:function(){return manageController.state.generation},ready:function(){return S.live&&manageController.state.ready&&!manageController.state.loading&&!manageController.active()&&manageController.context()===manageController.state.nativeContext},read:function(ids,cancelled){return LMData.readAll({reportName:CFG.reports.lots,criteria:"("+ids.map(function(id){return "(ID == "+id+")"}).join(" || ")+")",fields:["Subdivision","Archived","Lot_Code","Lot_Number","Block","Status","Add_Builder_Takedown_Name","Entered_Date","Purchase_Date","Close_Date"].concat(LMLotEdit.fields.map(function(f){return f.key})),fresh:true,isCancelled:cancelled})},publish:function(row){S.lots=S.lots.map(function(l){return l.ID===row.ID?Object.assign({},l,row):l});dataIndex=null},error:function(error,entry){auditLog("error","Lot update needs review",{lot:entry&&entry.id,error:errText(error)},true)}});
     wireLotHover();
     window.__MLW_TEST__={lotsList:lotsList,visibleTakedowns:visibleTakedowns,renderTakedowns:renderTakedowns,openTakedownDetail:openTakedownDetail,closeTakedownDetail:closeTakedownDetail,renderBuilderOptions:renderBuilderOptions,takedownDatesHTML:takedownDatesHTML,S:S,CFG:CFG,load:load,loadSubdivisionCounts:loadSubdivisionCounts,indexes:indexes,lotById:lotById,subdivisionStats:subdivisionStats,lotState:lotState,eligible:eligible,render:render,setSubdivisionIds:setSubdivisionIds,lotHoverHTML:lotHoverHTML,latestSelected:latestSelected,readSubdivisionLots:readSubdivisionLots,ensureSubdivisionLots:ensureSubdivisionLots,controller:manageController,confirm:confirm,openModal:openModal,payload:payload,applySelection:applySelection,closeCreateProgress:closeCreateProgress,recheckCreate:recheckCreate};
     if(window.LMCriticalErrors)LMCriticalErrors.configure({widget:"Manage Lots",version:CFG.version,code:"MLOTS",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,user:r.user,subdivisionIds:S.subdivisionIds.slice(),selectedLots:S.selected.size,view:S.view}}});

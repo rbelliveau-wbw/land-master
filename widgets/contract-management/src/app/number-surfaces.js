@@ -64,7 +64,7 @@
         badges('[data-budget-attachments]','data-budget-attachments');badges('[data-budget-comments]','data-budget-comments');
       }else if(module==='manage-lots'){
         const selected=(s.subdivisionIds||[]).slice().sort(),scope=id('lots',selected),receipt=id('receipt',document.getElementById('overlay')?.dataset.lmNumberScope);
-        ['selectionEmblem','selectedCount','availablePill','lockedPill','massUpdate'].forEach(name=>api.id(name,scope));
+        ['selectionEmblem','selectedCount','availablePill','lockedPill','massUpdate','llInventoryBlocks','llInventorySelected'].forEach(name=>api.id(name,scope));
         const selectedDetail=document.getElementById('selectedDetail');if(/^\d+ subdivision/.test(clean(selectedDetail)))api.text(selectedDetail,[scope,'selection-detail']);
         each('[data-subdivision-option]',button=>each('.sub-stat',(node,i)=>api.text(node,['subdivision',button.dataset.subdivisionOption,i]),button));
         each('[data-subdivision-group]',group=>each('.subdivision-meta',(node,i)=>api.text(node,['subdivision',group.dataset.subdivisionGroup,i]),group));

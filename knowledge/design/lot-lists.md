@@ -12,10 +12,18 @@ Keep the toolbar, subdivision summary, status totals, selection controls and
 block navigation above an independently scrolling lot report. Use compact pills
 for every displayed block; clicking one expands that block and scrolls the report
 to it. Preserve vertical and horizontal report positions through cell saves.
-Keep subdivision identity/total, selection, block navigation, the prominent
-navy pill-style List/Grid switch, status counts, Edit mode and Columns in one
-inventory row. Center the switch independently of the left and right content;
-retain it in Grid. Omit the duplicate legend and availability totals in List.
+Use the approved **Unified header** (October 27, 2026): one white surface connects
+the inventory header and block report, with a soft blue band for each block.
+Put subdivision identity, code, lot/block totals, the prominent navy pill-style
+List/Grid switch, native status counts, Edit mode and Columns in the heading.
+Center the switch independently of the left and right content; retain it in Grid.
+Put compact rectangular block pills below, with one separator before each count,
+and Select visible, selected count and Clear at the right. The selection count
+includes retained filtered selections; Clear reuses the existing whole-selection
+action. Use quiet sentence-case column headings and subtle row separators.
+Both Block and Lot column headings and row values are bold with matching navy
+emphasis, including alphanumeric/leading-zero labels. Retain all real columns
+and horizontal scrolling. Omit the duplicate legend and availability totals in List.
 
 Show Subdivision Name and Subdivision_Code together in the subdivision picker;
 search both and preserve leading zeros. Put searchable Builder and Status
