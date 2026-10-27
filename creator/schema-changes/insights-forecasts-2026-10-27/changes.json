@@ -35,6 +35,7 @@
     "field": "Reopened properties: Forecasts Dashboard / Forecasts_Dashboard; Decision box; Initial value unchecked; Mandatory unchecked.",
     "functions": "Saved successfully; closed/reopened both; complete native source matches checked-in source after whitespace normalization.",
     "page_variables": "Saved successfully; closed/reopened Variables; table lists dashboard Text and projectId Text.",
+    "native_direct_link": "Signed-in owner preview at #Page:Data_Insights?dashboard=forecasts reached Forecasts dashboard access is required. The iframe contained only serviceOrigin, confirming native page-variable routing. Prior demouser_4 preview restored.",
     "authorized_report_runtime": "Pending owner selection of authorized viewers and signed-in report-profile verification. No grant was self-assigned."
   },
   "production_promotion": "User-managed under PMP; preserve all existing API audiences and report write restrictions."

@@ -16,6 +16,12 @@ profile grants changed. PMP publishes the repository/frontend and leaves native
 Stage/Production promotion to the owner. Exact inventory is in
 [changes.json](../creator/schema-changes/insights-forecasts-2026-10-27/changes.json).
 
+Signed-in Development direct-link verification reached **Forecasts dashboard
+access is required** in the deployed widget using the owner's existing
+ungranted access. The iframe URL contained only Creator's `serviceOrigin`, so
+the Forecasts destination came from the native page variable. The prior
+`demouser_4` preview profile was restored after this check.
+
 1. Development now has default-false decision box `Forecasts_Dashboard`, labeled
    **Forecasts Dashboard**, in `User_Access`. Grant it only to intended viewers;
    no existing users are automatically granted the new permission.
@@ -104,6 +110,12 @@ independent permissions and revocation. Actual-widget desktop tests cover
 1366/1920px layouts, filtering, all views, collapse/subtotals, annual columns,
 territory cards, CSV, direct denied/allowed routes, Forecasts-only access and
 navigation back to Lot Sales. Fixtures are excluded from published assets.
+
+Full repository validation and Pages build passed after integrating the newer
+Budget release from main. CI and Pages deployment both succeeded for commit
+`9f8afebfb3ec5b99d16fb84499e3e8183e2b2183`:
+[CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/40551598639),
+[Pages](https://github.com/rbelliveau-wbw/land-master/actions/runs/40551598816).
 
 Changed files: Insights HTML/config, new forecast adapter/model/app/CSS and
 reused Forecast Manager model, shared controls/access/shell and Sales startup,
