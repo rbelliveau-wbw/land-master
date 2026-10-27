@@ -31,6 +31,7 @@ const context = vm.createContext({
   budgetCategoryIsLocked: budget => !!budget.constructionLocked,
   budgetTrackIsLocked: (budget, track) => track === "Development" ? !!budget.developmentLocked : !!budget.constructionLocked,
   canEditBudget: budget => budget.canEdit !== false,
+  perms: () => ({editAll:true}),
   clearTimeout: () => {}, setTimeout: callback => { callback(); return 1; },
   setEdAutosave: () => {}, markInputState: () => {},
   flushBudgetDeferredEditorRefresh: () => {}, // The lazy-feature suite exercises actual refresh consumption separately.

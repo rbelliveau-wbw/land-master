@@ -1,3 +1,24 @@
+## Lot Price and Land Cost access — 122.29.84, October 27, 2026
+
+The per-budget `Add_Budget.Lot_Price` and `Land_Cost` inputs require the existing
+`User_Access.Edit_All_Budgets` permission. Everyone else, including users with
+Edit Owned Budgets on their own budget, sees the stored values read-only. The
+shared `budgetMetricEditable` capability governs both rendering and the change
+handler, so stale or injected header inputs cannot queue a save without that
+permission. Existing Edit mode, single-phase and Development approval locks
+still apply. Lots, Acres, Equiv. LF and other budget editing retain their rules.
+
+Changed files: Budget widget HTML/config, module documentation, permission and
+per-unit regressions, package validation entry, widget manifest, immutable
+release and Development/Production mappings. This is a frontend restriction;
+no Creator field, function, Custom API or native workflow changes are included,
+and no Creator publication is required. Regression checks execute the actual
+capability, renderer and change handler with native multi-select owner lookups,
+Edit All, Edit Owned, read-only and approval permissions, stale inputs,
+fractional authorized writes, approval locks and all-phase/View modes.
+Full repository validation and the Pages build passed using the bundled runtime.
+Rollback: restore Production Budget to `122.29.83` and rebuild Pages.
+
 ## Full budget detail export — October 27, 2026
 
 The landing header's Export All Budgets downloads a single Budget Detail XLSX
