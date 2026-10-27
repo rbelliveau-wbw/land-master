@@ -36,7 +36,11 @@ No initial backfill, schedule, Subdivision quantity write, or milestone change.
 
 Projects' Lots and Equiv. LF fields are Number fields. Fractional values for
 either are rejected without rounding; blank source values are not treated as
-zero. Acres retains decimal precision from the saved Budget.
+zero. Acres retains decimal precision from the saved Budget. Native Number and
+Decimal values are normalized to Decimal for the whole-number check, then the
+two destination Number fields are sent as integers. The live lot-count dry run
+caught Creator treating Number `186` differently from its Decimal floor result;
+the normalized comparison was saved and verified in Development.
 
 ## Owner promotion required (PMP leaves Creator publication to the owner)
 
@@ -63,6 +67,9 @@ Budget `4410926000003558988`, code `AR05`, maps to Projects
 was `35.508`. The dry run returned `ok:true`, `dryRun:true`,
 `writeAttempted:false`; no Projects value was changed. The live response
 materialized the unique match as a Map, handled explicitly before the code check.
+Final read-only executions of the corrected function passed for all three
+fields: Acres `35.51`, residential lots `186`, and equivalent street length
+`5872`, each matched the same Project ID and returned `writeAttempted:false`.
 
 The custom API's enabled state and binding were inspected. A real external
 PATCH and end-to-end production SDK save remain unverified until owner promotion

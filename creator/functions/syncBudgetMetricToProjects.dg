@@ -75,9 +75,16 @@ string syncBudgetMetricToProjects(string payload)
 		{
 			throw "The budget metric must contain a nonnegative number. Blank values are not sent as zero.";
 		}
-		if(field != "Acres" && value != value.floor())
+		// Number and Decimal equality differs in Creator. Normalize both sides
+		// before checking integrality, then send Number fields as integers.
+		value = value.toDecimal();
+		if(field != "Acres")
 		{
-			throw "The destination Number field requires a whole number. The budget value was not rounded.";
+			if(value != value.floor().toDecimal())
+			{
+				throw "The destination Number field requires a whole number. The budget value was not rounded.";
+			}
+			value = value.toLong();
 		}
 		result.put("value",value);
 		portalId = "700737166";
