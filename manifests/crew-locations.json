@@ -239,7 +239,7 @@
         "Projects_Status"
       ]
     },
-    "read_protocol": "caller-scoped report pages; independent source cursors; no seven-day limit in management; all sources must complete",
+    "read_protocol": "authenticated client LMData.readAll SDK report reads with fresh module capabilities; independent source cursors and exact counts; no seven-day limit; all sources must complete; no management-list or per-user OAuth dependency for roster loading",
     "write_protocol": "server validates and returns native one-record descriptor; authenticated SDK v2 addRecords/updateRecordById; native On Validate workflows repeat guards; no workflow skipping",
     "native_success": "code 3000 plus exact single destination identity; no post-success editable-value equality gate",
     "unknown_reply": "retain draft and actor/environment request metadata in sessionStorage; block further writes; explicit read-only management-status; never replay",

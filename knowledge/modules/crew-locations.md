@@ -1,5 +1,15 @@
 # Crew Management
 
+## 1.2.6 — CFO roster connection failure
+
+Roster reads now use authenticated `LMData.readAll`, matching schedule reads,
+instead of the connection-dependent `management-list` request that returned
+Invalid Connection for the Production CFO profile. Refresh checks current module
+capabilities, then loads complete caller-scoped Crew, assignment and subdivision
+reports. Native report/row restrictions and required-field checks remain strict.
+No connection authorization, permission grant or Creator promotion is introduced.
+See [release checks and limits](../../docs/crew-cfo-roster-connection-2026-10-28.md).
+
 ## 1.2.5 — milestone feedback and column controls
 
 Milestone updates, propagation and Undo/Redo use the shared success toast without
@@ -225,8 +235,10 @@ cannot change and new dates cannot enter the past. Valid overlap is allowed.
 ## Persistence, access and recovery
 
 Manual management reuses `Crew`, `Crew_Assignment`, `All_Crews` and
-`Crew_Assignment_Report`. Its paginated `management-list` action returns complete
-caller-scoped crews, all-date assignments and phase identities/statuses. The
+`Crew_Assignment_Report`. From 1.2.6, the widget uses the shared authenticated SDK
+adapter to read complete caller-scoped crews, all-date assignments and phase
+identities/statuses. The old `management-list` backend remains for compatibility
+but is not called by the widget. The
 report contract includes Crew_Name, both source fields and assignment Source_Key;
 missing native field exposure fails closed. Independent report cursors are
 carried until every source finishes; a partial roster is not presented as complete.
@@ -261,7 +273,8 @@ Native report reads are paginated and limited to required exposed fields. A
 permission failure clears private data and labels. View preferences alone use
 localStorage. The custom API derives actor from zoho.loginuser, not supplied email.
 
-The EXISTING logged-in-user Creator connection performs delegated report reads/PATCH
+The EXISTING logged-in-user Creator connection still performs server-side save
+preparation/recovery report reads and schedule PATCH
 writes with the trusted `thisapp.environment.linkname` header. An admin connection is not equivalent:
 it would broaden native sharing. Test both report and row restrictions using
 restricted users before enabling the service.

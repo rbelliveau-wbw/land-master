@@ -106,6 +106,11 @@ management is unavailable. Never expose a partial paginated roster as complete.
 Retain the last complete authorized view during a refresh; access and required
 field failures clear private records.
 
+Use the same authenticated SDK report adapter as the schedule for roster reads,
+with fresh module capabilities and complete report pagination. Do not depend on
+an additional per-user OAuth connection to open the Crews workspace or replace
+native report/row permissions with owner-level reads.
+
 In a short Creator frame, tighten crew header and section spacing and hide the
 redundant roster subtitle. Keep text and controls at their normal readable
 sizes. Verify a crew with both latest and upcoming work at the actual content

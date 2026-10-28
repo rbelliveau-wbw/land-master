@@ -14,6 +14,9 @@ function fixtureSDK(data){
  const fixture={requests:[],mode:new URLSearchParams(location.search).get('fixtureMode')||'normal',operations:[],managementWrites:[],nativeAttempts:[],managementPrepared:new Map(),nativeReads:[],prepared:new Map(),data};
  function expose(){const node=document.getElementById('fixture-audit');if(node)node.textContent=JSON.stringify({requests:fixture.requests,operations:fixture.operations,managementWrites:fixture.managementWrites,nativeAttempts:fixture.nativeAttempts,nativeReads:fixture.nativeReads,mode:fixture.mode});}
  const tables={All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,Crew_Assignment_Report:data.assignments,All_Task_Schedules:data.tasks};
+ if(fixture.mode==='paged')for(let i=0;i<201;i++)data.crews.push({...data.crews[0],ID:String(810000+i),Crew_Code:'PAGE-'+i});
+ function nativeRows(config){const rows=tables[config.report_name];return fixture.mode!=='scope-denied'?rows:rows.filter(row=>!(config.report_name==='All_Subdivisions'&&row.ID==='90071992547409933')&&!(config.report_name==='Crew_Assignment_Report'&&row.ID==='90071992547407011'));}
+ function nativeDenied(config){return fixture.mode==='report-denied'&&config.report_name==='Crew_Assignment_Report';}
  const iso=s=>!s?null:/^\d{4}-/.test(s)?s:s.slice(6)+'-'+s.slice(0,2)+'-'+s.slice(3,5),us=s=>!s?'':s.slice(5,7)+'/'+s.slice(8)+'/'+s.slice(0,4);
  const meta=body=>({ok:true,action:body.action,testingMode:false,creatorOnly:true,projectsPushEnabled:false,environment:'development'});
  const active=value=>value===true||value==='true';
@@ -92,15 +95,15 @@ function fixtureSDK(data){
  window.ZOHO={CREATOR:{UTIL:{getInitParams:async()=>({loginUser:fixtureUser,appLinkName:'land-master',envUrlFragment:'environment/development'})},DATA:{
   addRecords:config=>nativeManagementWrite(config,false),
   updateRecordById:config=>nativeManagementWrite(config,true),
-  getRecordCount:async config=>({code:3000,result:{records_count:tables[config.report_name].length}}),
+  getRecordCount:async config=>{fixture.nativeReads.push({action:'sdk-count',config:structuredClone(config),caller:fixtureUser});expose();return nativeDenied(config)?{code:2945,message:'Permission denied for Crew_Assignment_Report.'}:{code:3000,result:{records_count:nativeRows(config).length}};},
   // SDK pages contain at least 200 rows when more remain. Match that contract;
   // tiny synthetic pages can otherwise hit LMData's bounded-completion guard.
-  getRecords:async config=>{const rows=tables[config.report_name],offset=Number(config.record_cursor||0),pageSize=200,batch=rows.slice(offset,offset+pageSize).map(row=>Object.fromEntries(String(config.fields||Object.keys(row).join(',')).split(',').map(field=>[field,row[field]??''])));return {code:3000,data:batch,...(rows.length>offset+pageSize?{record_cursor:String(offset+pageSize)}:{})};},
+  getRecords:async config=>{fixture.nativeReads.push({action:'sdk-records',config:structuredClone(config),caller:fixtureUser});expose();if(nativeDenied(config))return {code:2945,message:'Permission denied for Crew_Assignment_Report.'};const rows=nativeRows(config),offset=Number(config.record_cursor||0),pageSize=200,batch=rows.slice(offset,offset+pageSize).map(row=>Object.fromEntries(String(config.fields||Object.keys(row).join(',')).split(',').filter(field=>!(fixture.mode==='missing-field'&&config.report_name==='Crew_Assignment_Report'&&field==='Source_Key')).map(field=>[field,row[field]??''])));return {code:3000,data:batch,...(rows.length>offset+pageSize?{record_cursor:String(offset+pageSize)}:{})};},
   invokeCustomApi:async config=>{
    const body=JSON.parse(config.payload.payload);fixture.requests.push(body);expose();const base=meta(body);
    if(config.api_name!=='Crew_Locations_Widget_DEV')throw new Error('Unexpected fixture API name');
    if(body.action==='capabilities'){if(fixture.mode==='denied')return {...base,ok:false,message:'Fixture access revoked'};return {...base,...(fixture.mode==='legacy-management'?{}:{management:{enabled:true,nativeWrites:true,protocol:'native-validated-v1'}}),permissions:{view:true,milestones:true,tasks:true,assignments:fixture.mode!=='readonly'},sources:{crews:fixture.mode!=='unconfigured',tasks:fixture.mode!=='unconfigured'&&!new URLSearchParams(location.search).has('desktop')},dependencies:['Isolated browser fixture. No live Creator or Projects records are connected.']};}
-   if(body.action==='management-list')return managementRows(body);
+   if(body.action==='management-list'){if(fixture.mode==='invalid-connection')throw new Error('Error at line: 121, Invalid Connection');return managementRows(body);}
    if(body.action==='save-crew'||body.action==='save-assignment')return managementWrite(body);
    if(body.action==='management-status')return managementStatus(body);
    if(body.action==='history')return {...base,operations:fixture.operations.filter(o=>o.subdivisionId===body.subdivisionId).map(o=>({...o,origin:o.origin,state:o.result.state,actor:'Fixture user',timestamp:'10/21/2026 12:00:00'}))};

@@ -46,17 +46,24 @@
       for(const raw of data[key]){if(typeof raw.id!=='string'||!/^\d+$/.test(raw.id))throw new Error('Crew management returned an invalid record identity.');const row={...raw};if(key==='assignments'){if(typeof raw.crewId!=='string'||!/^\d+$/.test(raw.crewId)||typeof raw.phaseId!=='string'||!/^\d+$/.test(raw.phaseId)||M.date(row.date)==null)throw new Error('Crew management returned an incomplete assignment.');}if(key==='crews'){row.active=raw.active===true;row.color=safeColor(raw.color);}all[key].set(row.id,row);}
     }
   }
-  async function readComplete(){
-    const all={crews:new Map(),assignments:new Map(),phases:new Map()};let cursor=null,last;
-    for(let page=0;page<100;page++){
-      const data=await bridge().api({action:'management-list',...(cursor?{cursor}: {})});
-      if(data.permissions?.view!==true){const error=new Error('Crew Management access has not been granted.');error.denied=true;throw error;}
-      normalizePage(data,all);last=data;
-      if(data.complete===true)return {...data,crews:[...all.crews.values()],assignments:[...all.assignments.values()],phases:[...all.phases.values()]};
-      if(!data.nextCursor||JSON.stringify(data.nextCursor)===JSON.stringify(cursor))throw new Error('Crew management could not finish loading all records.');
-      cursor=data.nextCursor;
-    }
-    throw new Error('Crew management exceeded the supported report size. No partial list is shown.');
+  async function readComplete(capabilities,isCancelled){
+    if(capabilities.permissions?.view!==true){const error=new Error('Crew Management access has not been granted.');error.denied=true;throw error;}
+    if(capabilities.sources?.crews!==true)throw new Error('Native crew reports are not configured.');
+    // Reuse the schedule's signed-in SDK adapter. A roster read must not depend
+    // on a separate per-user OAuth connection or substitute owner-level access.
+    const reports=[['crews','All_Crews',['ID','Crew_Code','Crew_Name','Badge_Color','Active','Source_System','Source_Record_ID']],['assignments','Crew_Assignment_Report',['ID','Subdivision1','Crew','Assignment_Date','Source_System','Source_Record_ID','Source_Key']],['phases','All_Subdivisions',['ID','Subdivision_Name','Subdivision_Code','Phase','Subphase','Territory','Status','Projects_Status']]];
+    const native=Object.fromEntries(await Promise.all(reports.map(async([key,reportName,fields])=>{
+      const rows=await root.LMData.readAll({reportName,fields,fresh:true,isCancelled});
+      for(const row of rows)for(const field of fields)if(!Object.hasOwn(row,field))throw new Error(reportName+' must expose native field '+field+'.');
+      return [key,rows];
+    })));
+    const canEdit=capabilities.permissions.assignments===true;
+    const data={permissions:capabilities.permissions,management:capabilities.management,
+      crews:native.crews.map(row=>({id:M.id(row.ID),code:String(row.Crew_Code||''),name:String(row.Crew_Name||''),color:row.Badge_Color,active:row.Active===true||M.norm(row.Active)==='true',sourceSystem:String(row.Source_System||''),sourceRecordId:String(row.Source_Record_ID||'')})),
+      assignments:native.assignments.map(row=>{const system=String(row.Source_System||''),sourceId=String(row.Source_Record_ID||''),sourceKey=String(row.Source_Key||''),manual=['MANUAL_WIDGET','MANUAL_QA'].includes(system)&&sourceId!==''&&sourceKey===system+':'+sourceId;return {id:M.id(row.ID),crewId:M.id(row.Crew),phaseId:M.id(row.Subdivision1),date:M.iso(M.date(row.Assignment_Date)),sourceSystem:system,sourceRecordId:sourceId,sourceKey,editable:manual&&canEdit,reason:manual?'':'Imported assignment: source editing is unavailable.'};}),
+      phases:native.phases.map(row=>{const creatorStatus=String(row.Status||''),projectsStatus=String(row.Projects_Status||''),locked=M.locked({status:creatorStatus,projectsStatus});return {id:M.id(row.ID),name:String(row.Subdivision_Name||''),code:String(row.Subdivision_Code||''),phase:String(row.Phase??''),subphase:String(row.Subphase||''),territory:String(row.Territory||''),status:projectsStatus.trim()?projectsStatus:creatorStatus,creatorStatus,projectsStatus,editable:!locked&&canEdit,reason:locked?'This phase is locked.':''};})};
+    const all={crews:new Map(),assignments:new Map(),phases:new Map()};normalizePage(data,all);
+    return {...data,crews:[...all.crews.values()],assignments:[...all.assignments.values()],phases:[...all.phases.values()]};
   }
   async function load(){
     if(S.loading||S.saving||!bridge())return;
@@ -64,16 +71,16 @@
     try{
       // Capabilities exists in older Creator deployments too. Refresh that safe
       // route before ever sending a management action to an unsupported version.
-      let capabilities=bridge().capabilities?.();if(!supportsManagement(capabilities))capabilities=await bridge().api({action:'capabilities'});
+      const capabilities=await bridge().api({action:'capabilities'});
       if(!supportsManagement(capabilities)){const setup=new Error('Crew management requires Creator promotion.');setup.setup=true;throw setup;}
-      const data=await readComplete();if(generation!==S.generation||actor!==identity())return;
+      const data=await readComplete(capabilities,()=>generation!==S.generation||actor!==identity());if(generation!==S.generation||actor!==identity())return;
       S.crews=data.crews.sort((a,b)=>String(a.code).localeCompare(String(b.code)));S.assignments=data.assignments;S.phases=data.phases;S.permissions=data.permissions||{};S.management=data.management||{enabled:false,reason:'Creator crew-management promotion is required.'};S.ready=true;S.unavailableReason='';S.actor=actor;
       if(!crew(S.selected))S.selected=S.crews.find(c=>c.active)?.id||S.crews[0]?.id||'';
       render();restoreAttempt();if(S.pending)pendingBanner();else status(canManage()?'':reason(),canManage()?'ready':'readonly');
     }catch(e){
       if(generation!==S.generation||actor!==identity())return;S.unavailableReason=errorText(e);
       if(e.setup){clearPrivate();$('crewRoster').innerHTML='<div class="cm-empty">Crew setup required</div>';$('cmDetail').innerHTML='<div class="cm-empty">'+esc(errorText(e))+'</div>';$('cmSummary').textContent='Setup required';status(errorText(e),'readonly');}
-      else if(e.denied||/permission|access.*denied|not.*granted|not authorized|forbidden|must expose|missing.*field|incomplete|invalid record identity|unavailable.*current user/i.test(errorText(e))){clearPrivate();status(errorText(e),'error');}
+      else if(e.denied||/permission|access.*(?:denied|revoked)|not.*granted|not authorized|forbidden|must expose|missing.*field|incomplete|invalid record identity|unavailable.*current user/i.test(errorText(e))){clearPrivate();status(errorText(e),'error');}
       else{status(S.ready?errorText(e)+' Your last complete roster is still shown.':'Crew management is unavailable. '+errorText(e),'error');if(!S.ready){$('crewRoster').innerHTML='<div class="cm-empty">Crew setup required</div>';$('cmDetail').innerHTML='<div class="cm-empty">'+esc(errorText(e))+'</div>';$('cmSummary').textContent='Setup required';}}
     }finally{if(generation===S.generation){S.loading=false;updateControls();}}
   }
