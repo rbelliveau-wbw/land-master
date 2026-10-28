@@ -79,3 +79,5 @@ console.log('PASS Forecasts native shapes, reused outlook rule, fiscal boundarie
 
 assert.deepEqual(M.report(model,{...filters,subdivisionIds:[data.subdivisions[0].ID]},today).rows.map(r=>r.phase.id),[data.subdivisions[0].ID]);
 assert.equal(M.report(model,{...filters,subdivisionIds:[data.subdivisions[0].ID],projectIds:[data.projects[1].ID]},today).rows.length,0,'Project and Subdivision filters intersect');
+
+assert.deepEqual(M.yearsFor('planning',today),[2026,2027,2028,2029]);

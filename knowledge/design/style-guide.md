@@ -54,8 +54,10 @@ disclosures and keyed rows, authorized refresh continuity, truthful inline
 save feedback, consistent overlays, changed-row highlights and actual progress
 meter transitions. Reuse the shared implementation across every module.
 
-Data Insights keeps branding, connection status, Refresh and Diagnostics in the
-sidebar, reclaiming the full-width shell header for report height. Keep the
+Data Insights keeps branding, Refresh and Diagnostics in the sidebar, reclaiming
+the full-width shell header for report height. Use centered SVG action buttons
+below branding and above navigation, matching Forecast Manager's refresh icon.
+Keep connection status accessible without visible Connected text. Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All
 immediately after Hide Empty, before the space leading to Reset; its label describes the next action for visible

@@ -3,30 +3,30 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Land Master Insights</title>
-  <link rel="stylesheet" href="sales.css?v=1.6.10">
-  <link rel="stylesheet" href="insights.css?v=1.6.10">
-  <link rel="stylesheet" href="insights-controls.css?v=1.6.10">
-  <link rel="stylesheet" href="insights-theme.css?v=1.6.10">
-  <link rel="stylesheet" href="insights-redesign.css?v=1.6.10">
-  <link rel="stylesheet" href="forecast-insights.css?v=1.6.10">
-  <link rel="stylesheet" href="number-transitions.css?v=1.6.10">
-  <link rel="stylesheet" href="interaction-motion.css?v=1.6.10">
-<script src="interaction-motion.js?v=1.6.10"></script>
-<script src="interaction-surfaces.js?v=1.6.10"></script>
-<script src="number-edit-commit.js?v=1.6.10"></script>
-<script src="number-transitions.js?v=1.6.10"></script>
+  <link rel="stylesheet" href="sales.css?v=1.6.11">
+  <link rel="stylesheet" href="insights.css?v=1.6.11">
+  <link rel="stylesheet" href="insights-controls.css?v=1.6.11">
+  <link rel="stylesheet" href="insights-theme.css?v=1.6.11">
+  <link rel="stylesheet" href="insights-redesign.css?v=1.6.11">
+  <link rel="stylesheet" href="forecast-insights.css?v=1.6.11">
+  <link rel="stylesheet" href="number-transitions.css?v=1.6.11">
+  <link rel="stylesheet" href="interaction-motion.css?v=1.6.11">
+<script src="interaction-motion.js?v=1.6.11"></script>
+<script src="interaction-surfaces.js?v=1.6.11"></script>
+<script src="number-edit-commit.js?v=1.6.11"></script>
+<script src="number-transitions.js?v=1.6.11"></script>
   <style>#matrix thead th.period-total{background:#1e456a;color:#fff}#matrix thead th.period-total small{color:#b3cee6}</style>
-  <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=1.6.10"></script>
-  <script src="runtime-context.js?v=1.6.10"></script><script src="critical-error-reporter.js?v=1.6.10"></script>
-  <script src="creator-data.js?v=1.6.10"></script>
-  <script src="sales-model.js?v=1.6.10"></script><script src="creator-adapter.js?v=1.6.10"></script><script src="insights-access.js?v=1.6.10"></script>
+  <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=1.6.11"></script>
+  <script src="runtime-context.js?v=1.6.11"></script><script src="critical-error-reporter.js?v=1.6.11"></script>
+  <script src="creator-data.js?v=1.6.11"></script>
+  <script src="sales-model.js?v=1.6.11"></script><script src="creator-adapter.js?v=1.6.11"></script><script src="insights-access.js?v=1.6.11"></script>
 
-<script src="success-feedback.js?v=1.6.10"></script>
+<script src="success-feedback.js?v=1.6.11"></script>
 </head>
 <body>
 
   <div class="workspace">
-  <aside class="sidebar"><div class="brand"><span class="brand-icon" aria-hidden="true">▥</span><span>LAND MASTER <b>Insights</b></span></div><div class="nav-label">DASHBOARDS</div><nav aria-label="Dashboards"><button class="dashboard-nav active" data-dashboard="sales" aria-current="page" hidden><span aria-hidden="true">▥</span> Lot Sales</button><button class="dashboard-nav" data-dashboard="forecasts" hidden><span aria-hidden="true">▥</span> Forecasts</button><button class="dashboard-nav" data-dashboard="budgets" hidden><span aria-hidden="true">▤</span> Budgets</button></nav><div class="sidebar-foot"><div class="app-actions"><span id="connection" role="status">Connecting…</span><button id="refresh" class="icon-button" title="Refresh report" aria-label="Refresh report">↻</button><button id="audit" class="icon-button" title="Diagnostics" aria-label="Diagnostics">☷</button></div></div></aside>
+  <aside class="sidebar"><div class="brand"><span class="brand-icon" aria-hidden="true">▥</span><span>LAND MASTER <b>Insights</b></span></div><div class="sidebar-tools"><span id="connection" class="sr-only" role="status">Connecting…</span><button id="refresh" class="icon-button" title="Refresh report" aria-label="Refresh report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M19 12a7 7 0 0 0-12-5L4 10m1 2a7 7 0 0 0 12 5l3-3"/></svg></button><button id="audit" class="icon-button" title="Diagnostics" aria-label="Diagnostics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button></div><div class="nav-label">DASHBOARDS</div><nav aria-label="Dashboards"><button class="dashboard-nav active" data-dashboard="sales" aria-current="page" hidden><span aria-hidden="true">▥</span> Lot Sales</button><button class="dashboard-nav" data-dashboard="forecasts" hidden><span aria-hidden="true">▥</span> Forecasts</button><button class="dashboard-nav" data-dashboard="budgets" hidden><span aria-hidden="true">▤</span> Budgets</button></nav></aside>
   <main>
   <section id="dashboardAccessMessage" class="dashboard-access-message" role="status"><h1 id="dashboardAccessText">Checking dashboard access…</h1></section>
   <section id="salesDashboard" aria-label="Lot Sales dashboard" hidden>
@@ -57,7 +57,7 @@
           <label class="fc-search">Search<input id="fcSearch" type="search" placeholder="Project, phase, code, or builder…"></label>
           <label>Project Status<select id="fcStatus" multiple data-picker="multi"><option value="" hidden>All Statuses</option></select></label>
           <label class="fc-picker-backing">View by<select id="fcViewBy" data-picker="single"><option value="project" selected>Project</option><option value="territory">Territory</option><option value="builder">Builder</option></select></label>
-          <label class="fc-period">Period<select id="fcPeriod" data-picker="single"><option value="next" selected>Current WFY + 1</option><option value="current">Current WFY</option><option value="two">Current WFY + 2</option><option value="custom">Choose Years</option></select></label>
+          <label class="fc-period">Period<select id="fcPeriod" data-picker="single"><option value="planning" selected>WFY 2026–2029</option><option value="next">Current WFY + 1</option><option value="current">Current WFY</option><option value="two">Current WFY + 2</option><option value="custom">Choose Years</option></select></label>
           <label class="fc-mode-filter">Lot Status<select id="fcMode" data-picker="single"><option value="outlook" selected>Sold + Forecast</option><option value="forecast">Forecast</option></select></label>
           <label id="fcYearsLabel" hidden>Fiscal Years<select id="fcYears" multiple data-picker="multi"></select></label>
           <button class="button" type="button" id="fcAllFilters" aria-expanded="false" aria-controls="fcMoreFilters">All Filters <svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
@@ -85,11 +85,11 @@
   <dialog id="detail"><div class="dialog-head"><div><div class="eyebrow" id="detailEyebrow">LOT DETAIL</div><h2 id="detailTitle"></h2><p id="detailMeta"></p></div><button class="icon-button dialog-close" id="closeDetail" aria-label="Close lot details"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div><div id="detailStatuses" class="detail-status-slider" role="radiogroup" aria-label="Lot status" hidden><button type="button" role="radio" aria-checked="false" tabindex="-1" data-detail-status="Sold" class="status-sold"><span class="detail-tab-label">Sold</span><span class="detail-tab-count">0</span></button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-detail-status="Scheduled" class="status-scheduled"><span class="detail-tab-label">Scheduled</span><span class="detail-tab-count">0</span></button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-detail-status="Contracted" class="status-contracted"><span class="detail-tab-label">Contracted</span><span class="detail-tab-count">0</span></button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-detail-status="Open" class="status-open"><span class="detail-tab-label">Open</span><span class="detail-tab-count">0</span></button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-detail-status="All" class="status-all"><span class="detail-tab-label">All</span><span class="detail-tab-count">0</span></button></div><div class="detail-scroll"><table class="detail-table"><thead><tr><th>Lot</th><th>Builder</th><th>Status</th><th>Close Date</th><th>Purchase Date</th><th>Front Ft</th><th>Base Price</th><th>Base $/FF</th><th>Interest</th><th>Interest $/FF</th><th>Escalator</th><th>Total Price</th><th>Price $/FF</th><th>Notes</th></tr></thead><tbody id="detailBody"></tbody></table></div><div class="dialog-foot"><span id="detailPage"></span><button id="detailPrev" class="text-button">Previous</button><button id="detailNext" class="text-button">Next</button><div class="toolbar-spacer"></div><button class="button" id="exportDetail">Export Lots</button></div></dialog>
   <div id="subdivisionCard" class="subdivision-popover" role="dialog" aria-labelledby="subdivisionCardTitle" hidden><div class="subdivision-card-head"><div><h2 id="subdivisionCardTitle"></h2><p id="subdivisionCardContext"></p></div><button class="icon-button dialog-close" id="closeSubdivisionCard" aria-label="Close subdivision details"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5 5 15"/></svg></button></div><div class="subdivision-card-body" id="subdivisionCardBody"></div><div class="subdivision-card-foot"><span>LAND MASTER <b>Insights</b></span><button class="button" id="viewSubdivisionLots">View Lots <span aria-hidden="true">→</span></button></div></div>
   <dialog id="budgetDetail"><div class="dialog-head"><div><div class="eyebrow">BUDGET DETAIL</div><h2 id="budgetDetailTitle"></h2><p id="budgetDetailMeta"></p></div><button id="closeBudgetDetail" class="icon-button" aria-label="Close budget details">×</button></div><div class="detail-scroll"><table class="detail-table budget-detail-table"><thead><tr><th>Category</th><th>Final</th><th>Approved changes</th><th>Revised Final</th><th>GP actuals</th><th>HCSS actuals</th></tr></thead><tbody id="budgetDetailBody"></tbody></table></div><div class="dialog-foot" id="budgetDetailNote"></div></dialog>
-  <dialog id="diagnostics"><div class="dialog-head"><h2>Diagnostics <span class="version">v1.6.10</span></h2><button id="closeAudit" class="icon-button" aria-label="Close diagnostics">×</button></div><pre id="auditText"></pre></dialog>
+  <dialog id="diagnostics"><div class="dialog-head"><h2>Diagnostics <span class="version">v1.6.11</span></h2><button id="closeAudit" class="icon-button" aria-label="Close diagnostics">×</button></div><pre id="auditText"></pre></dialog>
   <script>
     // SDK startup lives in the standalone shell; the report model remains embeddable.
     function configureSalesReporter() {
-      LMCriticalErrors.configure({widget:"Land Master Insights",version:"1.6.10",code:"LSE",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:LMRuntime.current});
+      LMCriticalErrors.configure({widget:"Land Master Insights",version:"1.6.11",code:"LSE",apiCandidates:[LMRuntime.apiName("Report_Proforma_Widget_Error")],getContext:LMRuntime.current});
       LMCriticalErrors.markReady();
     }
     let salesCreatorInit = null;
@@ -123,12 +123,12 @@
       return attempt;
     }
   </script>
-  <script src="forecast-model.js?v=1.6.10"></script>
-  <script src="forecast-insights-model.js?v=1.6.10"></script>
-  <script src="forecast-insights-adapter.js?v=1.6.10"></script>
-  <script src="insights-shell.js?v=1.6.10"></script>
-  <script src="insights-controls.js?v=1.6.10"></script>
-  <script src="forecast-insights-app.js?v=1.6.10"></script>
-  <script src="sales-app.js?v=1.6.10"></script>
+  <script src="forecast-model.js?v=1.6.11"></script>
+  <script src="forecast-insights-model.js?v=1.6.11"></script>
+  <script src="forecast-insights-adapter.js?v=1.6.11"></script>
+  <script src="insights-shell.js?v=1.6.11"></script>
+  <script src="insights-controls.js?v=1.6.11"></script>
+  <script src="forecast-insights-app.js?v=1.6.11"></script>
+  <script src="sales-app.js?v=1.6.11"></script>
 </body>
 </html>

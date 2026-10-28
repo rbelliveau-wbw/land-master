@@ -260,6 +260,14 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+Default and Reset use the explicit WFY2026–2029 planning preset, with those four
+years also selected in Choose Years. Keep missing years unknown. Selected filters
+apply immediately against loaded data. Reuse keyed unchanged rows/header and a
+bounded per-model row pool; clear cached nodes on new data or access reset.
+Reuse the number formatter across cells and render unknown/blank cells as static
+text. Retain numeric transitions for actual nonzero changes, complete scope,
+counts, CSV and access gates. Search uses a short50ms typing debounce.
+
 Subdivision uses the same searchable multi-select as Project, immediately to its
 right in All Filters. Apply selections together with all other filters and clear
 them on Reset, using cached native string subdivision IDs.

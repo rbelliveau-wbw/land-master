@@ -1,3 +1,12 @@
+## Actions, default years and filter speed — 1.6.11, October 28, 2026
+
+Refresh/Diagnostics use centered SVG buttons below branding; connection status
+is accessible without visible Connected text. Forecasts starts/resets to WFY
+2026–2029. Filters reuse unchanged rows/header and a per-model row pool, omit
+unknown/blank transition wrappers and reuse a single number formatter. Four-year
+filter handlers measure145–190ms on346 phases with no extra data reads.
+[Implementation, checks and rollback](../../docs/insights-actions-filter-speed-2026-10-28.md).
+
 ## Forecasts search and density — 1.6.10, October 28, 2026
 
 Search includes native subdivision codes and has a198px minimum width, with

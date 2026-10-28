@@ -34,6 +34,7 @@
   }
   function yearsFor(period,today,selected=[]){
     const current=F.currentYear(today);
+    if(period==='planning')return [2026,2027,2028,2029];
     if(period==='custom'){const years=[...new Set(selected.map(Number))].sort((a,b)=>a-b);if(!years.length||years.some(y=>!Number.isInteger(y)||y<2018||y>2046))throw new Error('Choose at least one valid fiscal year.');return years;}
     return Array.from({length:period==='current'?1:period==='two'?3:2},(_,i)=>current+i);
   }
