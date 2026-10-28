@@ -1,4 +1,15 @@
-# Crew Management — 1.2.3 publication ready
+# Crew Management
+
+## 1.2.5 — milestone feedback and column controls
+
+Milestone updates, propagation and Undo/Redo use the shared success toast without
+automatically opening the save modal. Pending status and actual errors remain
+inline; unknown replies keep the editing lock and explicit Review save recovery.
+Individual Start / Days / End Hide buttons are removed. Hide Group, restoration
+chips and Show All Columns remain. No native data contracts or permissions change.
+See the [release checks and rollback](../../docs/crew-milestone-toast-2026-10-28.md).
+
+## 1.2.3 publication baseline
 
 The 1.2.0 change adds actual manual crew management: create a crew, edit its
 optional name/color, deactivate/reactivate it, add dated phase work and correct

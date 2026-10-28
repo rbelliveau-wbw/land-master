@@ -44,6 +44,11 @@ accompany a verified terminal result; it cannot substitute for its result ledger
 
 ## Truthful, context-aware text
 
+Crew Management milestone updates use this toast without an automatic save
+modal, per October 28, 2026 direction. This includes propagation and Undo/Redo.
+Preserve pending duplicate-write locks, actual errors and explicit Review save
+recovery for unknown replies; see [Crew scheduling](crew-scheduling.md).
+
 Name the actual action and object: **Lot pricing saved.**, **Budget item saved.**,
 **2026 parcel year added.**, **Construction curve row saved.**, **Owners updated.**,
 **Comment added.**, **Audit log copied.**, **Lot sales CSV ready.** Avoid vague

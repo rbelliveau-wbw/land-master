@@ -23,6 +23,12 @@ see [the system policy](../../docs/automatic-save-check-removal-2026-10-08.md).
 
 ## Appearance and interaction
 
+Crew Management milestone updates have an October 28, 2026 exception: no
+automatic progress/result modal, including propagation and Undo/Redo. Use inline
+pending/error status and the shared confirmed-success toast. Keep the captured
+destination ledger, duplicate-write locks and explicit Review save dialog for
+read-only unknown-reply recovery. See [Crew scheduling](crew-scheduling.md).
+
 Forecast Manager builder assignment has the compact success exception approved
 October 15, 2026. After the existing acknowledgement and complete destination-ID
 checks pass, replace progress and per-year rows with a 440px confirmation:

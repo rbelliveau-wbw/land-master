@@ -48,6 +48,10 @@ scrollbar sits above column controls. Show All Columns shares the restoration
 chip row to its right. Date inputs are plain explicit calendar-date text fields;
 do not introduce native browser date pickers or dialogs.
 
+October 28, 2026 direction: omit individual Hide buttons on Start, Days and End.
+Retain Hide Group, restoration chips and Show All Columns, including restoration
+of previously hidden individual columns.
+
 Milestone handles change only their represented endpoints. Task Gantt surfaces
 remain read-only even when task-table editing is permitted. All editing uses
 authenticated server validation, durable audited operations and exact identities.
@@ -126,6 +130,12 @@ permission changes and reduced motion retain the shared guards.
 
 The latest October 21 direction removes testing mode and permits Creator-only
 Production edits. Keep the compact Creator only / Projects push off label.
-Prepare and apply use the same progress dialog; preparation is not a saved date.
+October 28, 2026 overrides the earlier automatic progress dialog for milestone
+updates: use the shared nonblocking success toast after an acknowledged save,
+including propagation and Undo/Redo. Show pending status inline and block duplicate
+writes while saving. Keep actual errors visible. Unknown replies retain the
+editing lock and an explicit Review save action with read-only status recovery;
+never automatically open a dialog or replay an uncertain write. Retain the
+destination ledger for that explicit review. Preparation is not a saved date.
 Do not advertise Projects synchronization success for a Creator-only save.
 Fixtures belong exclusively in the local browser harness, never widget releases.
