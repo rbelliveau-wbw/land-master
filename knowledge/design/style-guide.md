@@ -56,7 +56,9 @@ meter transitions. Reuse the shared implementation across every module.
 
 Data Insights keeps branding, Refresh and Diagnostics in the sidebar, reclaiming
 the full-width shell header for report height. Use centered SVG action buttons
-below branding and above navigation, matching Forecast Manager's refresh icon.
+stacked vertically at the top-right beside branding and above navigation,
+matching Forecast Manager's refresh icon. Refresh sits above Diagnostics; reserve
+branding height and horizontal clearance so neither label nor navigation overlaps.
 Keep connection status accessible without visible Connected text. Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All

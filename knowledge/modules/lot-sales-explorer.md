@@ -1,3 +1,9 @@
+## Stacked sidebar actions — 1.6.13, October 28, 2026
+
+Refresh and Diagnostics stack vertically at the top-right beside branding,
+with centered SVGs and reserved space above navigation.
+[Checks and rollback](../../docs/insights-stacked-actions-2026-10-28.md).
+
 ## Actions, default years and filter speed — 1.6.11, October 28, 2026
 
 Refresh/Diagnostics use centered SVG buttons below branding; connection status

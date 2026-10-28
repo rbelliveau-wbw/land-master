@@ -234,3 +234,6 @@ main{padding:10px 14px 6px}
 
 /* The table uses the former description and update-footer space. */
 #salesDashboard .matrix-scroll{flex:1 1 auto;min-height:0}
+
+/* Sidebar actions align with branding and stack above navigation. */
+.sidebar>.brand{position:relative;min-height:66px;align-items:flex-start;padding:0 40px 0 4px}.sidebar-tools{position:absolute;top:0;right:0;flex-direction:column;gap:6px;padding:0}
