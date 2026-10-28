@@ -1,3 +1,10 @@
+## Forecasts search and density — 1.6.9, October 28, 2026
+
+Search includes native subdivision codes and has a198px minimum width, with
+unclipped focus clearance. Month columns are15% narrower and center values.
+Project-view bulk Expand/Collapse includes builder branches and respects Hide
+Empty without new reads. [Checks and rollback](../../docs/forecasts-search-density-2026-10-28.md).
+
 ## Shared loading and Forecasts builder breakdown — 1.6.7, October 27, 2026
 
 Lot Sales now matches the centered Forecasts loading card, emblem and navy ring.

@@ -8,6 +8,8 @@ const M=globalThis.ForecastInsightsModel,A=globalThis.ForecastInsightsCreator,to
 assert.equal(fs.readFileSync(dir+'forecast-model.js','utf8'),fs.readFileSync('widgets/forecast-manager/src/app/forecast-model.js','utf8'),'Forecast Manager rules are reused unchanged');
 const filters={groupBy:'project',mode:'outlook',period:'next',years:[],projectStatuses:[],territories:[],projectIds:[],builderIds:[],search:'',hideEmpty:false};
 const data=forecastFixture(),model=M.normalize(data),report=M.report(model,filters,today);
+assert.deepEqual(M.report(model,{...filters,search:' av01 '},today).rows.map(r=>r.phase.id),[data.subdivisions[0].ID],'subdivision codes match case-insensitively with trimmed search');
+assert.ok(A.fields.subdivisions.includes('Subdivision_Code'),'the existing native field is explicitly requested');
 assert.deepEqual(report.years,[2026,2027]);assert.equal(report.months.length,24);assert.equal(report.months[11].key,'2027-01');assert.equal(report.months[12].key,'2027-02');
 const alta=report.rows.find(r=>r.phase.name.startsWith('Alta'));
 assert.equal(alta.cells[0].value,5,'Completed month uses native Actual Lots');assert.equal(alta.cells[8].value,21,'Current month uses saved forecast, without adding actuals');assert.equal(alta.cells[9].value,21);
@@ -74,3 +76,6 @@ const access=async flags=>globalThis.InsightsAccess.load({DATA:{invokeCustomApi:
 assert.equal((await access({hasRow:true,lotSalesDashboard:true})).forecastsDashboard,false,'Lot Sales access never implies Forecasts');
 assert.equal((await access({hasRow:true,forecastsDashboard:true,today})).forecastsDashboard,true);assert.equal((await access({hasRow:false,forecastsDashboard:true,today})).forecastsDashboard,false);
 console.log('PASS Forecasts native shapes, reused outlook rule, fiscal boundaries, exact grouping, unknown values, complete reads and independent access.');
+
+assert.deepEqual(M.report(model,{...filters,subdivisionIds:[data.subdivisions[0].ID]},today).rows.map(r=>r.phase.id),[data.subdivisions[0].ID]);
+assert.equal(M.report(model,{...filters,subdivisionIds:[data.subdivisions[0].ID],projectIds:[data.projects[1].ID]},today).rows.length,0,'Project and Subdivision filters intersect');

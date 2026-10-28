@@ -11,13 +11,14 @@
   function notice(message,error=false){$('fcNotice').hidden=!message;$('fcNotice').textContent=message;$('fcNotice').classList.toggle('error',error);}
   function loading(active){$('fcLoading').hidden=!active;$('fcMatrix').setAttribute('aria-busy',String(active));if(active)$('fcEmpty').hidden=true;}
   const selections=id=>InsightsControls.values($(id));
-  function filters(){return {groupBy:S.groupBy,mode:$('fcMode').value,period:$('fcPeriod').value,years:selections('fcYears'),projectStatuses:selections('fcStatus'),territories:selections('fcTerritory'),projectIds:selections('fcProject'),builderIds:selections('fcBuilder'),search:$('fcSearch').value,hideEmpty:$('fcHideEmpty').checked};}
+  function filters(){return {groupBy:S.groupBy,mode:$('fcMode').value,period:$('fcPeriod').value,years:selections('fcYears'),projectStatuses:selections('fcStatus'),territories:selections('fcTerritory'),projectIds:selections('fcProject'),subdivisionIds:selections('fcSubdivision'),builderIds:selections('fcBuilder'),search:$('fcSearch').value,hideEmpty:$('fcHideEmpty').checked};}
   function options(id,values,label){const control=$(id),before=selections(id);control.innerHTML='<option value="" hidden>'+esc(label)+'</option>'+values.map(([value,label])=>'<option value="'+esc(value)+'">'+esc(label)+'</option>').join('');before.filter(value=>!values.some(([id])=>id===value)).forEach(value=>control.add(new Option('Unavailable Selection',value)));InsightsControls.setValues(control,before);}
   function fillFilters(){
     const phases=S.model.phases,sorted=entries=>entries.sort((a,b)=>a[1].localeCompare(b[1]));
     options('fcStatus',sorted([...new Set(phases.map(p=>p.projectStatus).filter(Boolean))].map(s=>[s,s])),'All Statuses');
     options('fcTerritory',sorted([...new Set(phases.map(p=>p.territory))].map(s=>[s,s])),'All Territories');
     options('fcProject',sorted([...new Map(phases.map(p=>[p.projectId,p.project]))].filter(([id])=>id)),'All Projects');
+    options('fcSubdivision',sorted(phases.map(p=>[p.id,p.name])),'All Subdivisions');
     options('fcBuilder',sorted(S.model.builders.map(b=>[b.id,b.name])),'All Builders');
     const current=ForecastModel.currentYear(S.permissions.today),years=[...new Set([...S.model.availableYears,current,current+1,current+2])].sort((a,b)=>a-b);
     options('fcYears',years.map(y=>[String(y),'WFY '+y]),'Choose Fiscal Years');if(!selections('fcYears').length)InsightsControls.setValues($('fcYears'),[String(current),String(current+1)]);
@@ -165,13 +166,13 @@
   host.addEventListener('focusout',event=>{if(event.target.closest(infoSelector)&&!cardPinned)cardTimer=setTimeout(closeCard,180);});
   $('fcInfoCard').addEventListener('pointerenter',()=>clearTimeout(cardTimer));$('fcInfoCard').addEventListener('pointerleave',()=>{if(!cardPinned)cardTimer=setTimeout(closeCard,180);});
   $('fcInfoClose').addEventListener('click',()=>closeCard(true));document.addEventListener('pointerdown',event=>{if(cardTrigger&&!$('fcInfoCard').contains(event.target)&&!cardTrigger.contains(event.target))closeCard();});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeCard(true);});document.addEventListener('scroll',()=>closeCard(),true);window.addEventListener('resize',()=>closeCard());
-  ['fcStatus','fcMode','fcPeriod','fcYears','fcTerritory','fcProject','fcBuilder'].forEach(id=>$(id).addEventListener('change',render));
+  ['fcStatus','fcMode','fcPeriod','fcYears','fcTerritory','fcProject','fcSubdivision','fcBuilder'].forEach(id=>$(id).addEventListener('change',render));
   $('fcHideEmpty').addEventListener('change',()=>{closeCard();syncHideEmpty();});$('fcAnnual').addEventListener('change',syncAnnual);$('fcSubtotals').addEventListener('change',syncSubtotals);
   $('fcViewBy').addEventListener('change',()=>{S.groupBy=$('fcViewBy').value;S.collapsed.clear();render();});
   let searchTimer;$('fcSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(render,160);});
   $('fcAllFilters').addEventListener('click',()=>{const open=$('fcMoreFilters').hidden;$('fcMoreFilters').hidden=!open;$('fcAllFilters').setAttribute('aria-expanded',String(open));});
-  $('fcCollapse').addEventListener('click',()=>{if(!S.report)return;closeCard();const closed=!S.report.groups.every(g=>S.collapsed.has(g.id)),shown=new Set(S.report.groups.map(g=>g.id));S.baseReport.groups.forEach((g,index)=>{if(shown.has(g.id))setCollapsed(index,closed);});syncCollapse();});
-  $('fcReset').addEventListener('click',()=>{['fcStatus','fcTerritory','fcProject','fcBuilder'].forEach(id=>InsightsControls.setValues($(id),[]));$('fcSearch').value='';$('fcMode').value='outlook';$('fcPeriod').value='next';$('fcHideEmpty').checked=false;$('fcAnnual').checked=true;$('fcSubtotals').checked=false;S.collapsed.clear();render();});
+  $('fcCollapse').addEventListener('click',()=>{if(!S.report)return;closeCard();const closed=!S.report.groups.every(g=>S.collapsed.has(g.id)),shown=new Set(S.report.groups.map(g=>g.id));S.baseReport.groups.forEach((g,index)=>{if(shown.has(g.id)){if(S.groupBy==='project')g.rows.forEach(row=>{const phase=S.phaseNodes.get(row.key);if(!phase?.children.length)return;closed?S.expandedPhases.delete(row.key):S.expandedPhases.add(row.key);phase.button.setAttribute('aria-expanded',String(!closed));});setCollapsed(index,closed);}});syncCollapse();});
+  $('fcReset').addEventListener('click',()=>{['fcStatus','fcTerritory','fcProject','fcSubdivision','fcBuilder'].forEach(id=>InsightsControls.setValues($(id),[]));$('fcSearch').value='';$('fcMode').value='outlook';$('fcPeriod').value='next';$('fcHideEmpty').checked=false;$('fcAnnual').checked=true;$('fcSubtotals').checked=false;S.collapsed.clear();render();});
   $('fcRetry').addEventListener('click',()=>$('refresh').click());$('fcExport').addEventListener('click',exportCsv);
   window.addEventListener('insights:access',event=>{S.permissions=event.detail;clear();});
   window.addEventListener('insights:dashboard',event=>{closeCard();if(event.detail==='forecasts'&&S.permissions?.forecastsDashboard&&!S.model)void load();});

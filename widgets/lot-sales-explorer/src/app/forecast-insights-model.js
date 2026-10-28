@@ -11,7 +11,7 @@
     const phases=[...subdivisions].map(([subdivisionId,sub])=>{
       const projectId=id(sub.Project),project=projects.get(projectId);
       const total=number(sub.Total_Lots),sold=number(sub.Lots_Sold);
-      return {id:subdivisionId,name:text(sub.Subdivision_Name)||text(sub.ID),projectId,project:text(project?.Project_Name)||text(sub.Project)||'Unassigned',territory:text(sub.Territory)||'Unassigned',projectStatus:text(sub.Projects_Status),soldOut:total>0&&sold>=total,totalLots:total,soldLots:sold};
+      return {id:subdivisionId,name:text(sub.Subdivision_Name)||text(sub.ID),code:text(sub.Subdivision_Code),projectId,project:text(project?.Project_Name)||text(sub.Project)||'Unassigned',territory:text(sub.Territory)||'Unassigned',projectStatus:text(sub.Projects_Status),soldOut:total>0&&sold>=total,totalLots:total,soldLots:sold};
     });
     const phaseMap=new Map(phases.map(p=>[p.id,p]));
     for(const [parentId,row]of parentRows){
@@ -45,12 +45,12 @@
     const phaseParents=new Map();model.parents.forEach(p=>{if(!phaseParents.has(p.phase.id))phaseParents.set(p.phase.id,[]);phaseParents.get(p.phase.id).push(p);});
     const rows=[];
     for(const phase of model.phases){
-      if(!chosen('projectIds',phase.projectId)||!chosen('territories',phase.territory)||!chosen('projectStatuses',phase.projectStatus))continue;
+      if(!chosen('subdivisionIds',phase.id)||!chosen('projectIds',phase.projectId)||!chosen('territories',phase.territory)||!chosen('projectStatuses',phase.projectStatus))continue;
       const allParents=phaseParents.get(phase.id)||[],builderMap=new Map();
       allParents.forEach(p=>{if(years.includes(p.year)&&chosen('builderIds',p.builderId)){if(!builderMap.has(p.builderId))builderMap.set(p.builderId,{id:p.builderId,name:p.builder,parents:new Map()});builderMap.get(p.builderId).parents.set(p.year,p);}});
       const builderRows=[...builderMap.values()];
       if(!builderRows.length&&filters.builderIds?.length)continue;
-      const searchPhase=[phase.name,phase.project,phase.territory].some(v=>v.toLowerCase().includes(q));
+      const searchPhase=[phase.name,phase.code,phase.project,phase.territory].some(v=>v.toLowerCase().includes(q));
       const visibleBuilders=builderRows.filter(b=>!q||searchPhase||b.name.toLowerCase().includes(q));
       if(q&&!searchPhase&&!visibleBuilders.length)continue;
       const parts=filters.groupBy==='builder'?visibleBuilders.map(builder=>[builder]):[visibleBuilders];

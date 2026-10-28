@@ -1,5 +1,6 @@
 export function forecastFixture(){
   const subdivisions=[{ID:'900000000000000001',Subdivision_Name:'Alta Vista - Phase 1',Project:{ID:'900000000000000011',display_value:'Alta Vista'},Territory:'Fort Hood',Projects_Status:'Active',Total_Lots:'100',Lots_Sold:'70'},{ID:'900000000000000002',Subdivision_Name:'Meadow Creek - Phase 1',Project:{ID:'900000000000000012'},Territory:'Austin',Projects_Status:'Complete',Total_Lots:'50',Lots_Sold:'50'},{ID:'900000000000000003',Subdivision_Name:'No Forecast - Phase 1',Project:{ID:'900000000000000013'},Territory:'Fort Hood',Projects_Status:'Planning',Total_Lots:'90',Lots_Sold:'0'}];
+  subdivisions.forEach((phase,index)=>phase.Subdivision_Code=['AV01','MC01','NF01'][index]);
   const projects=[{ID:'900000000000000011',Project_Name:'Alta Vista'},{ID:'900000000000000012',Project_Name:'Meadow Creek'},{ID:'900000000000000013',Project_Name:'No Forecast'}];
   const builders=[{ID:'900000000000000021',Builder_Name:'Adams Homes',Type1:'Builder'},{ID:'900000000000000022',Builder_Name:'D.R. Horton',Type1:'Builder'}];
   const years=[],months=[],names=['February','March','April','May','June','July','August','September','October','November','December','January'];
