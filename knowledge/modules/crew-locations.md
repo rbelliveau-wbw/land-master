@@ -1,6 +1,6 @@
 # Crew Management
 
-## 1.2.6 — CFO roster connection failure
+## 1.2.7 — CFO roster connection failure
 
 Roster reads now use authenticated `LMData.readAll`, matching schedule reads,
 instead of the connection-dependent `management-list` request that returned
@@ -8,6 +8,8 @@ Invalid Connection for the Production CFO profile. Refresh checks current module
 capabilities, then loads complete caller-scoped Crew, assignment and subdivision
 reports. Native report/row restrictions and required-field checks remain strict.
 No connection authorization, permission grant or Creator promotion is introduced.
+The 1.2.7 follow-up also clears retained roster data for code-only native report
+permission denials; it includes the SDK roster change from 1.2.6.
 See [release checks and limits](../../docs/crew-cfo-roster-connection-2026-10-28.md).
 
 ## 1.2.5 — milestone feedback and column controls

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Crew Management</title>
+<meta name="crew-locations-version" content="1.2.7">
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+<script src="runtime-context.js"></script><script src="creator-data.js"></script><script src="critical-error-reporter.js"></script>
+<script src="success-feedback.js?v=1.2.7"></script>
+<link rel="stylesheet" href="crew-locations.css?v=1.2.7"><link rel="stylesheet" href="crew-manager.css?v=1.2.7"><link rel="stylesheet" href="interaction-motion.css?v=1.2.7"><link rel="stylesheet" href="number-transitions.css?v=1.2.7">
+</head><body>
+<main id="app" data-workspace="crews">
+  <header class="page-head"><div><h1>Crew Management</h1><p id="assignmentWindow"></p><p class="cm-workspace-subtitle">Crew roster and dated work</p></div><div class="actions"><a class="workspace-link" href="#schedule">Edit Schedule <span aria-hidden="true">↓</span></a><span class="mode" title="Dates save in Land Master only. Daily inbound sync may replace these dates.">Creator only · Projects push off</span><button id="refresh">Refresh</button><button id="history">History</button><button id="reviewSave" hidden>Review save</button></div></header>
+  <p id="connection" role="status" data-lm-motion="feedback">Connecting to Creator…</p>
+  <nav id="workspaceTabs" class="cm-workspace-tabs" role="tablist" aria-label="Crew Management workspace" data-lm-motion="tabs"><button role="tab" id="crewsTab" data-workspace="crews" aria-selected="true" aria-controls="crewManager">Crews</button><button role="tab" id="scheduleTab" data-workspace="schedule" aria-selected="false" aria-controls="timeline" tabindex="-1">Milestones &amp; tasks</button></nav>
+  <section id="crewManager" class="card cm-manager" role="tabpanel" aria-labelledby="crewsTab" data-lm-motion="panel">
+    <header class="cm-section-head"><div><h2>Crews</h2><span id="cmSummary" class="cm-muted">Connecting…</span></div><div class="cm-actions"><button id="cmRefresh">Refresh crews</button><button id="cmNewCrew" class="cm-primary" disabled>New crew</button></div></header>
+    <div id="cmStatus" class="cm-status" role="status" data-lm-motion="feedback" data-state="loading">Loading crew management…</div>
+    <div class="cm-workspace"><aside class="cm-roster-panel" aria-label="Crew roster"><div class="cm-roster-tools"><input id="crewSearch" type="search" aria-label="Search crews" placeholder="Find a crew"><div class="cm-roster-filter" role="group" aria-label="Crew status"><button data-cm-status="active" aria-pressed="true">Active</button><button data-cm-status="inactive" aria-pressed="false">Inactive</button><button data-cm-status="all" aria-pressed="false">All</button></div></div><div id="crewRoster" class="cm-roster" aria-label="Crews"></div></aside><div id="cmDetail" class="cm-detail"><div class="cm-empty">Select a crew</div></div></div>
+  </section>
+  <section id="timeline" class="card timeline" aria-label="Crew location timeline" data-lm-motion="panel">
+    <div id="ganttFilters" class="filters"></div>
+    <div id="gantt" aria-label="Milestones and tasks Gantt"></div>
+  </section>
+  <section id="schedule" class="card schedule" aria-labelledby="scheduleTitle" data-lm-motion="panel">
+    <div class="table-heading"><h2 id="scheduleTitle">Project milestones and tasks</h2><div class="table-actions"><a class="workspace-link" href="#timeline">Back to Timeline <span aria-hidden="true">↑</span></a><label class="check-label"><input id="showAll" type="checkbox">Show all projects</label></div></div>
+    <div id="tableFilters" class="filters"></div>
+    <div id="tableTopScroll" class="top-scroll" tabindex="0" aria-label="Scroll schedule horizontally"><div></div></div>
+    <div class="column-controls"><button id="jumpStage" class="stage-jump" data-filter="stageJump" data-empty="Jump to stage" aria-label="Jump to stage" aria-haspopup="dialog" aria-expanded="false"><span>Jump to stage</span><svg class="chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button><div id="restoreChips"></div><button id="showColumns">Show All Columns</button></div>
+    <div id="tableScroll" class="table-scroll" tabindex="0" role="region" aria-label="Scroll milestone and task schedule"><table id="scheduleTable"></table></div>
+  </section>
+  <details id="issues" class="data-issues"><summary>Data and integration details</summary><div id="issueList"></div></details>
+</main>
+<dialog id="cmEditorDialog" class="cm-editor" aria-labelledby="cmEditorTitle" data-lm-motion="popover"><form id="cmForm" novalidate><header><div><small id="cmEditorKicker">Crew Management</small><h2 id="cmEditorTitle">New crew</h2></div><button type="button" id="cmClose" class="icon-button" aria-label="Close crew editor"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="cmEditorFields" class="cm-editor-fields"></div><p id="cmEditorStatus" class="cm-editor-status" role="status" data-lm-motion="feedback"></p><footer><button type="button" id="cmCheckStatus" hidden>Check save status</button><button type="button" id="cmCancel">Cancel</button><button type="submit" id="cmSave" class="cm-primary">Save crew</button></footer><div id="cmPicker" class="cm-picker" role="dialog" aria-label="Choose an option" data-lm-motion="popover" hidden></div></form></dialog>
+<div id="picker" class="picker-pop" role="dialog" aria-modal="false" aria-label="Filter options" data-lm-motion="popover" hidden></div>
+<dialog id="operationDialog" aria-labelledby="operationTitle" data-lm-motion="popover"><header class="dialog-head"><div><small>Schedule changes → Creator milestones</small><h2 id="operationTitle">Saving schedule</h2></div><button id="closeOperation" class="icon-button" aria-label="Close save result"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div class="dialog-body"><div id="operationStages"></div><div class="progress" role="progressbar" aria-label="Confirmed schedule records" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="operationProgress" data-lm-motion="meter"></i></div><p id="operationStatus" role="status"></p><ol id="operationResults"></ol></div><footer><button id="checkOperation" hidden>Check status</button><button id="doneOperation">Close</button></footer></dialog>
+<dialog id="historyDialog" aria-labelledby="historyTitle"><header><h2 id="historyTitle">Schedule history</h2><button id="closeHistory" class="icon-button" aria-label="Close history"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="historyContent"></div></dialog>
+<dialog id="endpointDialog" aria-labelledby="endpointTitle"><header><h2 id="endpointTitle">Milestone boundary</h2><button id="closeEndpoint" class="icon-button" aria-label="Close boundary editor"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></header><div id="endpointContent"></div></dialog>
+<div id="dragPreview" role="status" hidden></div>
+<script src="crew-model.js?v=1.2.7"></script><script src="crew-app.js?v=1.2.7"></script>
+<script src="number-edit-commit.js?v=1.2.7"></script><script src="number-transitions.js?v=1.2.7"></script><script src="interaction-motion.js?v=1.2.7"></script><script src="interaction-surfaces.js?v=1.2.7"></script>
+<script src="crew-surfaces.js?v=1.2.7"></script>
+<script src="crew-manager.js?v=1.2.7"></script>
+<script>
+LMCriticalErrors.configure({widget:"Crew Management",version:"1.2.7",code:"CREW",getContext:function(){return LMRuntime.current();}});
+CrewSurfaces.install();
+CrewManager.install();
+LMNumbers.start({module:'crew-locations',ready:()=>CrewApp.state.ready||CrewManager.state.ready,actor:()=>LMRuntime.current().user+':'+CrewApp.state.epoch,collect:api=>api.each('[data-crew-number]',node=>api.text(node,node.dataset.crewNumber))});
+CrewApp.start();
+</script></body></html>

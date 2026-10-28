@@ -1,4 +1,4 @@
-# Crew Management 1.2.6 — CFO roster loading
+# Crew Management 1.2.7 — CFO roster loading
 
 The Production CFO screenshot reports `Error at line: 121, Invalid Connection`
 while loading Crews. That line is in the reopened native management-list report
@@ -12,6 +12,10 @@ required exposed fields, all-date assignments, source locks, phase locks and
 read-only permissions. Publish a new snapshot only after every source completes.
 Never fall back to management-list or owner-level reads on a denied SDK report.
 Revoked access clears previously loaded private records.
+The 1.2.7 follow-up includes the 1.2.6 SDK read change and handles the shared
+adapter's structured permission-denied flag even when Creator supplies no
+human-readable error. The browser refresh test covers both module revocation
+and native code-only report denial after a successful complete roster load.
 
 Changed source: crew-manager.js; isolated SDK fixture and browser checks; new
 executable client regression suite; module/design/contract documentation;
@@ -34,8 +38,11 @@ schedule browser groups cover the existing scheduling behavior. Full repository
 validation and Pages build are required before PMP.
 
 The isolated CFO-connection regression does not claim an authenticated CFO login
-or a live CFO write. Production owner-session SDK loading is checked separately
-after deployment. No live business records are changed for this roster fix.
+or a live CFO write. Production owner-session SDK loading was independently
+observed on the deployed 1.2.6 read path: four active crews, one inactive crew,
+latest dated work and future work loaded without a roster error. The 1.2.7
+permission-denial follow-up preserves that same native SDK read path. No live
+business records are changed for this roster fix.
 
 Rollback: map crew-locations back to immutable `1.2.5`; stable widget URLs remain
 unchanged. That restores the prior connection-dependent roster path.

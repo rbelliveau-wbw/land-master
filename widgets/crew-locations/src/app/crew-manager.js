@@ -80,7 +80,7 @@
     }catch(e){
       if(generation!==S.generation||actor!==identity())return;S.unavailableReason=errorText(e);
       if(e.setup){clearPrivate();$('crewRoster').innerHTML='<div class="cm-empty">Crew setup required</div>';$('cmDetail').innerHTML='<div class="cm-empty">'+esc(errorText(e))+'</div>';$('cmSummary').textContent='Setup required';status(errorText(e),'readonly');}
-      else if(e.denied||/permission|access.*(?:denied|revoked)|not.*granted|not authorized|forbidden|must expose|missing.*field|incomplete|invalid record identity|unavailable.*current user/i.test(errorText(e))){clearPrivate();status(errorText(e),'error');}
+      else if(e.denied||e.permissionDenied||/permission|access.*(?:denied|revoked)|not.*granted|not authorized|forbidden|must expose|missing.*field|incomplete|invalid record identity|unavailable.*current user/i.test(errorText(e))){clearPrivate();status(errorText(e),'error');}
       else{status(S.ready?errorText(e)+' Your last complete roster is still shown.':'Crew management is unavailable. '+errorText(e),'error');if(!S.ready){$('crewRoster').innerHTML='<div class="cm-empty">Crew setup required</div>';$('cmDetail').innerHTML='<div class="cm-empty">'+esc(errorText(e))+'</div>';$('cmSummary').textContent='Setup required';}}
     }finally{if(generation===S.generation){S.loading=false;updateControls();}}
   }
