@@ -1,4 +1,4 @@
-## Forecasts search and density — 1.6.9, October 28, 2026
+## Forecasts search and density — 1.6.10, October 28, 2026
 
 Search includes native subdivision codes and has a198px minimum width, with
 unclipped focus clearance. Month columns are15% narrower and center values.

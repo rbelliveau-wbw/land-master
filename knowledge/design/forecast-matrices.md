@@ -265,7 +265,8 @@ right in All Filters. Apply selections together with all other filters and clear
 them on Reset, using cached native string subdivision IDs.
 October 28: search has a 198px minimum width (20% wider than165px), includes
 Subdivision_Code case-insensitively, and reserves 4px around controls so focus
-outlines cannot clip in the horizontal filter scroller. Monthly columns are
+outlines cannot clip in the horizontal filter scroller. Use an inset blue search
+focus ring so scrolling the padding out of view cannot clip selection. Monthly columns are
 55.25px (15% narrower than65px), with centered header/body/group/footer and builder
 values. Annual and identity columns retain their widths. Project-view Expand All
 and Collapse All apply to the builder branches as well as project groups, using
