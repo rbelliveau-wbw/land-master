@@ -1,3 +1,11 @@
+## Footer Clear stages deselection — 1.7.24, October 29, 2026
+
+Territory, Builders and Fiscal years footer Clear deselects every option while
+keeping the picker open and focused. Applied filters change only on Done;
+Escape/outside cancels the staged change. All/preset restores choices, the
+top-right X retains reset-and-close, and empty fiscal years still cannot apply.
+[Behavior, checks and rollback](../../docs/forecast-picker-clear-2026-10-29.md).
+
 ## Native metadata published — Creator 9.131, October 29, 2026
 
 The latest `forecastManagerWidget` was saved and reopened in native Creator,

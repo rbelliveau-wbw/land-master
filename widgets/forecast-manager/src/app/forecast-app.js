@@ -320,7 +320,7 @@
       if(button.hasAttribute('data-pop-close')){if(kind.startsWith('new')||kind==='assignBuilder'){closePicker();anchor.focus();}else clearPicker(p);return;}
       if(button.hasAttribute('data-pop-forecast-years')){p.all=true;p.selected.clear();drawOptions(p);return;}
       if(button.hasAttribute('data-pop-all')){p.all=true;p.selected.clear();drawOptions(p);return;}
-      if(button.hasAttribute('data-pop-clear')){clearPicker(p);return;}
+      if(button.hasAttribute('data-pop-clear')){p.all=false;p.selected.clear();drawOptions(p);return;}
       if(button.hasAttribute('data-pop-visible')){p.all=false;p.visible.forEach(option=>p.selected.add(option.id));drawOptions(p);return;}
       if(button.hasAttribute('data-pop-done')){commitPicker(p);return;}
       if(button.dataset.option){const id=button.dataset.option;p.all=false;if(multi){p.selected.has(id)?p.selected.delete(id):p.selected.add(id);drawOptions(p);}else{p.selected=new Set([id]);commitPicker(p);}}
