@@ -5,6 +5,50 @@ foreman timecards for its location badges. Keep only the last three calendar
 months of timecards; retain employees who become inactive. Publish repository
 main and Production widget assets; the user promotes Creator environments.
 
+## Audit follow-up — October 29, 2026
+
+The user subsequently authorized promotion of **all pending Creator changes**,
+including changes from other requests. This supersedes the initial handoff above.
+
+Both syncs already used the durable `workflowRunLog` and completion-gated
+`analyticsExportRows` helpers. This follow-up aligns their remaining audit behavior
+with the other Analytics imports:
+
+- Every inspected source row is processed, including intentional employee skips.
+  Before Success, received must reconcile with processed and created/updated/skipped.
+- Missing source columns, bad identities/flags/dates and incomplete exports stop
+  before mutations. Exports select only the five employee or eight timecard fields
+  actually used; the same source/date window and mappings are preserved.
+- Failures before a write report Failed; failures after attempted writes report
+  Partial, with the source key, operation stage, completed counts and rollback/retry
+  warning. Business operations are never replayed automatically.
+- Timecard logs include unmapped, tombstoned and expired totals plus the calendar
+  cutoff. Count reconciliation precedes tombstones and expiry. Failed imports
+  never proceed to retention.
+- Existing independent terminal timestamps, configured failure notifications and
+  the 30-minute still-Running watchdog are inherited. No new recipients,
+  connections, Custom APIs or log schema fields are introduced.
+
+Column validation runs once at the export boundary, matching the shared helper;
+per-record identities, flags and dates remain validated across the complete export.
+An initial repeated-column preview exceeded Creator's statement budget. The lean
+export and boundary validation passed the full 1,616-record native preview.
+
+The actual Deluge bodies are exercised in `scripts/test-crew-sync-audit.mjs` with
+native record/transport fixtures: normal/dry runs, inactive staffing preservation,
+missing/duplicate source data, audit-start failure, interrupted writes, lost audit
+finish, count mismatch, tombstones and retention failures. Native compilation and
+real audit records supplement these fixtures. The employee native run reconciled
+592 received/processed, 72 updated and 520 skipped; its durable log showed Success.
+
+The function changes require no widget source change; widget assets remain 1.3.2.
+Stage now maps Crew Management to that same immutable release so the promoted
+Creator app can load its widget in Stage; Production remains on 1.3.2. To roll back only the
+audit refinements, use `native-before/crewSyncEmployees.audit-20261029.dg` and
+`native-before/crewSyncTimecards.audit-20261029.dg`, preserving the previous
+employee/retention behavior and the shared audit helpers. Full Creator rollback
+must account for every component promoted in the application bundle.
+
 ## Behavior
 
 Employees opens first after the native capability is promoted. The roster defaults

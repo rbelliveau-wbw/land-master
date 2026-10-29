@@ -601,6 +601,25 @@
       "foremanTimecardsEnabled"
     ],
     "writes": "caller-scoped SDK updateRecordById with native On Validate; only Territory,Labor_Type,Crew",
-    "proof": "docs/crew-employees-timecards-2026-10-29.md"
+    "proof": "docs/crew-employees-timecards-2026-10-29.md",
+    "audit": {
+      "helpers": [
+        "workflowRunLog",
+        "analyticsExportRows"
+      ],
+      "processed_includes_skipped": true,
+      "success_reconciliation": true,
+      "failure_statuses": [
+        "Failed",
+        "Partial"
+      ],
+      "details": [
+        "cutoff",
+        "unmapped",
+        "tombstoned",
+        "expired"
+      ],
+      "new_audit_schema": false
+    }
   }
 }

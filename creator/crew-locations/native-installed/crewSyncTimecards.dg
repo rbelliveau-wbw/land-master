@@ -1,28 +1,29 @@
 map crewSyncTimecards(bool dryRun)
 {
-	result = {"ok":false};
-	auditId = "";
-	created = 0;
-	updated = 0;
-	unmapped = 0;
-	received = 0;
-	attempted = false;
-	try 
+	result = {"ok":false}; auditId = "";
+	created = 0; updated = 0; unmapped = 0; received = 0; processed = 0; tombstoned = 0; expired = 0; attempted = false;
+	stage = "Starting"; recordKey = "";
+	try
 	{
 		if(!dryRun)
 		{
 			audit = thisapp.workflowRunLog({"action":"start","workflow":"Daily Crew Timecards","system":"Zoho Analytics / HeavyJob","stage":"Reading rolling three-month timecards"});
 			auditId = ifnull(audit.get("id"),"").toString();
+			if(!auditId.matches("[0-9]+")) { throw "The timecard audit start was not acknowledged. No timecard changes were applied."; }
 		}
+		stage = "Reading rolling three-month timecards";
 		cutoff = zoho.currentdate.subMonth(3);
 		config = Map();
+		config.put("selectedColumns",{"zzz_TimecardID_Guid","Date","ForemanID","ForemanCode","ForemanName","JobCode","JobDescription","IsDeleted"});
 		config.put("criteria","(\"HeavyJob_JM_Timecard\".\"Date\" >= '" + cutoff.toString("yyyy-MM-dd") + "' AND \"HeavyJob_JM_Timecard\".\"Date\" < '" + zoho.currentdate.addDay(1).toString("yyyy-MM-dd") + "')");
 		rows = thisapp.analyticsExportRows("2107789000022718491",config,auditId,false);
 		received = rows.size();
-		seen = List();
-		normalized = List();
-		validFlags = {"true","false"};
-		for each  row in rows
+		stage = "Validating timecard export";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"counts":{"received":received,"processed":0}}); }
+		seen = List(); normalized = List(); validFlags = {"true","false"};
+		exportColumns = rows.get(0).keys();
+		for each field in {"zzz_TimecardID_Guid","Date","ForemanID","JobCode","IsDeleted"} { if(!exportColumns.contains(field)) { throw "Timecard export is missing column " + field + ". No timecard changes were applied."; } }
+		for each row in rows
 		{
 			key = ifnull(row.get("zzz_TimecardID_Guid"),"").toString().trim().toUpperCase();
 			foreman = ifnull(row.get("ForemanID"),"").toString().trim().toUpperCase();
@@ -30,50 +31,29 @@ map crewSyncTimecards(bool dryRun)
 			deletedFlag = ifnull(row.get("IsDeleted"),"").toString().toLowerCase();
 			dateText = ifnull(row.get("Date"),"").toString().trim();
 			workDate = null;
-			if(dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*"))
-			{
-				workDate = dateText.left(10).toDate("yyyy-MM-dd");
-			}
-			else if(dateText.matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*"))
-			{
-				workDate = dateText.left(10).toDate("MM/dd/yyyy");
-			}
-			else
-			{
-				throw "Timecard export contains an unrecognized Date format. No timecard changes were applied.";
-			}
+			if(dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*")) { workDate = dateText.left(10).toDate("yyyy-MM-dd"); }
+			else if(dateText.matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*")) { workDate = dateText.left(10).toDate("MM/dd/yyyy"); }
+			else { throw "Timecard export contains an unrecognized Date format. No timecard changes were applied."; }
 			if(!key.matches("[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}") || seen.contains(key) || !validFlags.contains(deletedFlag) || workDate < cutoff || workDate > zoho.currentdate)
 			{
 				throw "Timecard export contains a duplicate/invalid identity, deletion flag or out-of-window date. No timecard changes were applied.";
 			}
-			if(deletedFlag == "false" && foreman == "" || job == "")
-			{
-				throw "A timecard is missing its foreman or job identity. No timecard changes were applied.";
-			}
+			if(deletedFlag == "false" && (foreman == "" || job == "")) { throw "A timecard is missing its foreman or job identity. No timecard changes were applied."; }
 			seen.add(key);
 			normalized.add({"key":key,"date":workDate,"foreman":foreman,"code":ifnull(row.get("ForemanCode"),"").toString(),"name":ifnull(row.get("ForemanName"),"").toString(),"job":job,"jobName":ifnull(row.get("JobDescription"),"").toString(),"deleted":deletedFlag == "true"});
 		}
 		// Reuse the established HeavyJob External_System_Mapping contract. Never
 		// infer a phase from a project name, a code prefix or a nearest match.
-		for each  card in normalized
+		stage = "Synchronizing timecard mirror";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage}); }
+		for each card in normalized
 		{
-			key = card.get("key");
-			job = card.get("job");
-			phaseId = null;
+			key = card.get("key"); recordKey = key; processed = processed + 1; job = card.get("job"); phaseId = null;
 			mapping = External_System_Mapping[External_System == "HeavyJob" && External_Code == job];
-			if(mapping.count() == 1)
-			{
-				phaseId = mapping.Subdivision1;
-			}
-			if(phaseId == null)
-			{
-				unmapped = unmapped + 1;
-			}
+			if(mapping.count() == 1) { phaseId = mapping.Subdivision1; }
+			if(phaseId == null) { unmapped = unmapped + 1; }
 			existing = Crew_Timecards[Timecard_ID == key];
-			if(existing.count() > 1)
-			{
-				throw "Duplicate native timecard identity requires review.";
-			}
+			if(existing.count() > 1) { throw "Duplicate native timecard identity requires review."; }
 			if(existing.count() == 0)
 			{
 				if(!dryRun)
@@ -117,36 +97,31 @@ map crewSyncTimecards(bool dryRun)
 				updated = updated + 1;
 			}
 		}
+		if(processed != received || created + updated != received) { throw "Timecard source/destination operation counts did not reconcile. Retention was not run."; }
+		stage = "Reconciling missing timecards";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"counts":{"received":received,"processed":processed,"created":created,"updated":updated}}); }
 		// A completed authoritative window may remove/move a source card. Preserve
 		// its mirror as a tombstone so an old location cannot remain on the Gantt.
 		if(!dryRun)
 		{
-			for each  missing in Crew_Timecards[Work_Date >= cutoff && Work_Date <= zoho.currentdate && IsDeleted == false]
+			for each missing in Crew_Timecards[Work_Date >= cutoff && Work_Date <= zoho.currentdate && IsDeleted == false]
 			{
-				if(!seen.contains(missing.Timecard_ID))
-				{
-					missing.IsDeleted=true;
-					missing.Synced_At=zoho.currenttime;
-				}
+				if(!seen.contains(missing.Timecard_ID)) { attempted = true; missing.IsDeleted = true; missing.Synced_At = zoho.currenttime; tombstoned = tombstoned + 1; }
 			}
 		}
 		// Retention runs only after a complete validated export and successful upserts.
-		expired = Crew_Timecards[Work_Date < cutoff].count();
-		if(!dryRun)
-		{
-			delete from Crew_Timecards[Work_Date < cutoff];
-		}
-		result = {"ok":true,"dryRun":dryRun,"received":received,"created":created,"updated":updated,"unmapped":unmapped,"expired":expired};
-		if(auditId != "")
-		{
-			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Timecards synchronized; unmapped jobs: " + unmapped,"counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"skipped":0,"failed":0}});
-		}
-	}	catch (syncError)
+        stage = "Expiring timecards outside retention";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"details":"Three-month cutoff: " + cutoff.toString("yyyy-MM-dd") + "; unmapped: " + unmapped + "; tombstoned: " + tombstoned}); }
+		expiredCandidates = Crew_Timecards[Work_Date < cutoff].count();
+        if(!dryRun) { if(expiredCandidates > 0) { attempted = true; } delete from Crew_Timecards[Work_Date < cutoff]; }
+		expired = expiredCandidates;
+        result = {"ok":true,"dryRun":dryRun,"received":received,"processed":processed,"created":created,"updated":updated,"unmapped":unmapped,"tombstoned":tombstoned,"expired":expired};
+		if(auditId != "") { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Timecards synchronized; unmapped jobs: " + unmapped,"counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":0,"failed":0},"details":"Counts reconciled. Three-month cutoff: " + cutoff.toString("yyyy-MM-dd") + "; unmapped: " + unmapped + "; tombstoned: " + tombstoned + "; expired: " + expired}); }
+	}
+	catch(syncError)
 	{
-		if(auditId != "")
-		{
-			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Timecard synchronization failed","counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"failed":1},"message":syncError.toString()});
-		}
+		auditStatus = "Failed"; if(attempted) { auditStatus = "Partial"; }
+		if(auditId.matches("[0-9]+")) { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"stage":stage,"counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":0,"failed":1},"message":syncError.toString(),"details":"Stopped at source key " + recordKey + "; unmapped: " + unmapped + "; tombstoned: " + tombstoned + "; expired: " + expired + ". Counts identify completed native operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."}); }
 		throw syncError.toString();
 	}
 	return result;

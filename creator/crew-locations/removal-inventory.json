@@ -1801,5 +1801,48 @@
         "height": 720
       }
     }
+  },
+  "employees_timecards_audit_2026_10_29": {
+    "authorization": "User explicitly authorized all pending Creator changes, including other requests, for Stage and Production.",
+    "functions": [
+      "crewSyncEmployees",
+      "crewSyncTimecards"
+    ],
+    "shared_helpers_reused": [
+      "workflowRunLog",
+      "analyticsExportRows",
+      "Finalize_Workflow_Run_Log",
+      "Workflow_Log_Timeout"
+    ],
+    "new_components": [],
+    "checks": [
+      "complete source validation",
+      "all inspected source rows counted",
+      "success count reconciliation",
+      "Failed vs Partial",
+      "retention gated by complete import",
+      "cutoff/unmapped/tombstone/expiry details",
+      "no automatic business replay"
+    ],
+    "selected_columns": {
+      "employees": 5,
+      "timecards": 8
+    },
+    "native_employee_run": {
+      "received": 592,
+      "processed": 592,
+      "created": 0,
+      "updated": 72,
+      "skipped": 520
+    },
+    "native_timecard_preview": {
+      "received": 1616,
+      "processed": 1616,
+      "updated": 1616,
+      "unmapped": 1442
+    },
+    "creator_promotion": "pending final verified publication",
+    "widget_release_unchanged": "1.3.2",
+    "rollback": "native-before/crewSyncEmployees.audit-20261029.dg and crewSyncTimecards.audit-20261029.dg"
   }
 }

@@ -2,20 +2,28 @@ map crewSyncEmployees(bool dryRun)
 {
 	result = {"ok":false};
 	auditId = "";
-	created = 0; updated = 0; skipped = 0; received = 0; attempted = false;
+	created = 0; updated = 0; skipped = 0; received = 0; processed = 0; attempted = false;
+	stage = "Starting"; recordKey = "";
 	try
 	{
 		if(!dryRun)
 		{
 			audit = thisapp.workflowRunLog({"action":"start","workflow":"Daily Crew Employees","system":"Zoho Analytics / HeavyJob","stage":"Reading employee directory"});
 			auditId = ifnull(audit.get("id"),"").toString();
+			if(!auditId.matches("[0-9]+")) { throw "The employee audit start was not acknowledged. No employee changes were applied."; }
 		}
+		stage = "Reading employee directory";
 		config = Map();
+		config.put("selectedColumns",{"zzz_BUEmployeeID_Guid","EmployeeName","EmployeeCode","IsActive","IsDeleted"});
         rows = thisapp.analyticsExportRows("2107789000036057124",config,auditId,false);
 		received = rows.size();
+		stage = "Validating employee directory";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"counts":{"received":received,"processed":0}}); }
 		seen = List(); normalized = List(); validFlags = {"true","false"};
 		// Validate the entire export before changing any roster record. Absence is
 		// never evidence of inactivity; only an explicit source flag changes it.
+		exportColumns = rows.get(0).keys();
+		for each field in {"zzz_BUEmployeeID_Guid","EmployeeName","EmployeeCode","IsActive","IsDeleted"} { if(!exportColumns.contains(field)) { throw "Employee export is missing column " + field + ". No employee changes were applied."; } }
 		for each row in rows
 		{
 			key = ifnull(row.get("zzz_BUEmployeeID_Guid"),"").toString().trim().toUpperCase();
@@ -31,9 +39,11 @@ map crewSyncEmployees(bool dryRun)
 			// BU GUID is the key; an employee code is optional. Blank names never replace a saved name.
 			seen.add(key); normalized.add({"key":key,"name":name,"code":code,"active":active});
 		}
+		stage = "Synchronizing employee roster";
+		if(auditId != "") { thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage}); }
 		for each employee in normalized
 		{
-			key = employee.get("key");
+			key = employee.get("key"); recordKey = key; processed = processed + 1;
 			existing = Employees[BU_Employee_ID == key];
 			if(existing.count() > 1) { throw "Duplicate native BU employee identity requires review."; }
 			skipEmployee = false;
@@ -74,12 +84,14 @@ map crewSyncEmployees(bool dryRun)
 				updated = updated + 1;
 			}
 		}
-		result = {"ok":true,"dryRun":dryRun,"received":received,"created":created,"updated":updated,"skipped":skipped};
-		if(auditId != "") { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Employee roster synchronized","counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"skipped":skipped,"failed":0}}); }
+		if(processed != received || created + updated + skipped != received) { throw "Employee source/destination operation counts did not reconcile."; }
+		result = {"ok":true,"dryRun":dryRun,"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped};
+		if(auditId != "") { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Employee roster synchronized","counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0},"details":"Counts reconciled: every source row was created, updated or intentionally skipped. Employee staffing and retained inactive records are preserved."}); }
 	}
 	catch(syncError)
 	{
-		if(auditId != "") { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Employee synchronization failed","counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"skipped":skipped,"failed":1},"message":syncError.toString()}); }
+		auditStatus = "Failed"; if(attempted) { auditStatus = "Partial"; }
+		if(auditId.matches("[0-9]+")) { thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"stage":stage,"counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":1},"message":syncError.toString(),"details":"Stopped at source key " + recordKey + ". Counts identify completed native operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."}); }
 		throw syncError.toString();
 	}
 	return result;

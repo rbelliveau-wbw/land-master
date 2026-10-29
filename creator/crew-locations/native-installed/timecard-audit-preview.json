@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "dryRun": true,
+  "received": 1616,
+  "processed": 1616,
+  "created": 0,
+  "updated": 1616,
+  "unmapped": 1442,
+  "tombstoned": 0,
+  "expired": 0
+}
