@@ -2,7 +2,7 @@
   'use strict';
   const M = ForecastModel, $ = id => document.getElementById(id);
   const icons = {check:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3 3 7-7"/></svg>',close:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>'};
-  const S = {ready:false,catalog:null,snapshot:null,sub:'',builders:null,years:[],view:'forecast',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
+  const S = {ready:false,catalog:null,snapshot:null,sub:'',territories:null,builders:null,years:[],view:'forecast',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
@@ -47,7 +47,7 @@
     if(!data.subdivision || data.subdivision.id !== S.sub || !Array.isArray(data.years) || !Array.isArray(data.months)) throw new Error('The forecast snapshot does not match this subdivision.');
     S.snapshot=data;
     for(const [id,entry] of S.entries) {const month=data.months.find(row=>row.id===id);if(entry.phase==='saved'&&(!month||month.forecast!==entry.attempted))S.entries.delete(id);}
-    const summaryHtml=String(data.summaryHtml || ''), compact=window.ForecastSummary && ForecastSummary.render(summaryHtml,$('compactSummary'),data.inventory,S.sub);
+    const summaryHtml=String(data.summaryHtml || ''), compact=window.ForecastSummary && ForecastSummary.render(summaryHtml,$('compactSummary'),data.inventory,S.sub,ForecastOverview.build(data));
     $('compactSummary').hidden=!compact; $('summary').hidden=!!compact;
     $('summaryFrame').srcdoc=compact?'':'<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\';"><style>body{margin:0;padding:12px;background:#fff} .fm-wrap{border:0!important;padding:0!important;background:#fff!important}</style></head><body>'+summaryHtml+'</body></html>';
   }
@@ -56,10 +56,13 @@
     if(!S.snapshot) return [];
     return [...new Set([...(S.snapshot.subdivision.builderIds || []),...S.snapshot.years.map(row=>row.builderId)])].filter(id=>id && S.catalog.builders.some(row=>row.id===id));
   }
-  function years() {return S.years.length ? S.years : [...new Set([String(M.currentYear(S.snapshot.today)),...S.snapshot.years.map(row=>String(row.year))])];}
+  const forecastYears=()=>[...new Set((S.snapshot?.years||[]).map(row=>String(row.year)))].sort((a,b)=>Number(a)-Number(b));
+  const territoryOf=row=>String(row.territory||'Unassigned');
+  const availableSubdivisions=()=>S.catalog.subdivisions.filter(row=>!S.territories||S.territories.includes(territoryOf(row)));
+  function years() {return S.years.length ? S.years : forecastYears();}
   function rows() {return S.snapshot?M.visibleMatrix(S.snapshot,builders().sort((a,b)=>name(a).localeCompare(name(b))),years()):[];}
   function controls() {
-    ['subPicker','builderPicker','yearPicker','refresh','export','add'].forEach(id=>{$(id).disabled=!S.ready || !S.catalog || busy() || !!creationReview() || (id==='export'||id==='add') && !S.snapshot;});
+    ['territoryPicker','subPicker','builderPicker','yearPicker','refresh','export','add'].forEach(id=>{$(id).disabled=!S.ready || !S.catalog || busy() || !!creationReview() || (id==='export'||id==='add') && !S.snapshot;});
     document.querySelectorAll('[data-create-builder]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview();button.textContent=S.creating && S.creation && button.dataset.createBuilder===S.creation.destination.builderId && button.dataset.createYear===S.creation.destination.year?'Creating…':'Create Forecast';});
     $('check').hidden=!changed()&&!creationReview(); $('check').disabled=busy(); $('discard').hidden=!changed(); $('discard').disabled=busy();
     $('creationStatus').hidden=!S.creation;
@@ -70,8 +73,12 @@
     if(S.rowPending)$('saveStatus').textContent='Saving builder changes…';
     document.querySelectorAll('[data-assign-name],[data-builder-notes]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview()||S.snapshot?.builderActionsVersion!==1;});
     $('subText').textContent=S.catalog?(S.catalog.subdivisions.find(row=>row.id===S.sub)||{}).name || 'Choose subdivision':'Choose subdivision';
+    $('territoryText').textContent=S.territories?(S.territories.length?S.territories.join(' · '):'0 Territories'):'All Territories';
+    $('territoryPicker').title=S.territories?(S.territories.length?S.territories.join(', '):'0 Territories'):'All Territories';
+    $('territoryPicker').disabled=$('territoryPicker').disabled||!S.catalog?.subdivisions.some(row=>Object.hasOwn(row,'territory'));
+    if(S.catalog&&!S.catalog.subdivisions.some(row=>Object.hasOwn(row,'territory')))$('territoryPicker').title='Territory choices require the updated Forecast Manager function.';
     $('builderText').textContent=S.builders?S.builders.length+' builder'+(S.builders.length===1?'':'s'):'All for subdivision';
-    $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All years';
+    $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All Years with Forecasts';
   }
   // Zero suppression is presentation-only; stored values and exports stay explicit.
   function matrixCount(value) {return S.view!=='forecast' && Number(value||0)===0 ? '' : count(value);}
@@ -81,6 +88,7 @@
   function comparison(month) {return 'Actuals: '+count(month.actual)+' · Forecast: '+(month.forecast==null?'Not set':count(month.forecast))+' · Scheduled: '+count(month.scheduled);}
   const numberKey = key => S.sub+'|'+S.view+'|'+key;
   const numberMarkup = (value,key) => ForecastNumbers.markup(value,numberKey(key));
+  const periodNumberMarkup=(value,key)=>ForecastNumbers.markup(value,S.sub+'|'+key);
   const hasValue = value => Number.isFinite(Number(value)) && Number(value)!==0;
   const valueColor = value => hasValue(value)?' data-has-value':'';
   function refreshMonthColors() {
@@ -100,11 +108,11 @@
     const previous=ForecastNumbers.capture($('matrix'));
     const matrix=rows(), yearList=years().map(String).sort((a,b)=>Number(a)-Number(b));
     $('matrix').dataset.view=S.view; ForecastNumbers.text($('matrixCount'),matrix.length+' builder'+(matrix.length===1?'':'s')+' · '+yearList.length+' year'+(yearList.length===1?'':'s'),numberKey('matrix-count'));
-    let html='<colgroup><col>'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th>';
+    let html='<colgroup><col><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months for this builder">Total<small>Selected years</small></th>';
     html+=yearList.map(year=>'<th colspan="13"><div class="year-heading"><strong>WFY '+esc(year)+'</strong><small>Feb '+esc(year)+' — Jan '+esc(Number(year)+1)+'</small></div></th>').join('')+'</tr><tr>';
     html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3).toUpperCase()+'<small class="current-month-label">Current</small></th>').join('')+'<th class="year-total">TOTAL</th>').join('')+'</tr></thead><tbody>';
     for(const row of matrix) {
-      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column"><div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId)+'</div></div></th>';
+      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column"><div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId)+'</div></div></th><td class="builder-period-total" data-builder-total="'+esc(row.builderId)+'">'+periodNumberMarkup(matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)),'builder-total:'+row.builderId)+'</td>';
       for(const year of row.years) {
         if(year.issue) {html+='<td colspan="13" class="missing-year issue">'+esc(year.issue)+' · Review in Creator</td>';continue;}
         if(!year.parent) {html+='<td colspan="13" class="missing-year"><div class="missing-content"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 2v4m10-4v4M3 9h18m-9 3v5m-2.5-2.5h5"/></svg><span><b>No forecast available.</b></span><button class="btn" data-create-builder="'+esc(row.builderId)+'" data-create-year="'+esc(year.year)+'"'+(busy()?' disabled':'')+'>Create Forecast</button></div></td>';continue;}
@@ -117,8 +125,8 @@
       }
       html+='</tr>';
     }
-    if(!matrix.length) html+='<tr><td colspan="'+(1+13*yearList.length)+'" class="empty-table">No forecast available.</td></tr>';
-    html+='</tbody><tfoot><tr><th class="builder-column">Selected total</th>'+yearList.map(year=>{
+    if(!matrix.length) html+='<tr><td colspan="'+(2+13*yearList.length)+'" class="empty-table">No forecast available.</td></tr>';
+    html+='</tbody><tfoot><tr><th class="builder-column">Selected total</th><td class="builder-period-total" data-foot-builder-total>'+periodNumberMarkup(matrixCount(matrix.reduce((sum,row)=>sum+row.years.reduce((total,year)=>total+metric(year),0),0)),'foot-builder-total')+'</td>'+yearList.map(year=>{
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
       return M.months.map((month,index)=>{const value=selected.reduce((sum,row)=>sum+Number(displayed(row.months[index])||0),0);return '<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+valueColor(value)+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(value),'foot:'+year+'-'+index)+'</td>';}).join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(selected.reduce((sum,row)=>sum+metric(row),0)),'foot-total:'+year)+'</td>';
     }).join('')+'</tr></tfoot>';
@@ -152,6 +160,8 @@
       cell.title=title;output.setAttribute('aria-label',name(month.builderId)+' WFY '+month.year+' '+month.month+' · '+title);
     }
     const matrix=rows();
+    for(const row of matrix){const cell=document.querySelector('[data-builder-total="'+row.builderId+'"]');if(cell)ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)));}
+    const builderTotal=document.querySelector('[data-foot-builder-total]');if(builderTotal)ForecastNumbers.update(builderTotal.querySelector('[data-number-key]'),matrixCount(matrix.reduce((sum,row)=>sum+row.years.reduce((total,year)=>total+metric(year),0),0)));
     for(const row of matrix) for(const year of row.years) {const cell=document.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(metric(year)));}
     for(const year of years().map(String)) {
       const selected=matrix.map(row=>row.years.find(item=>item.year===year));
@@ -278,16 +288,17 @@
   function closePicker() {if(S.picker){const p=S.picker; p.element.remove();p.anchor.setAttribute('aria-expanded','false');p.anchor.removeAttribute('aria-controls');S.picker=null;}}
   function pickerOptions(kind) {
     if(kind==='assignBuilder')return S.catalog.builders.filter(row=>row.type==='Builder'&&!ForecastBuilderActions.isPlaceholder(row)).map(row=>({id:row.id,label:row.name}));
-    if(kind==='sub')return S.catalog.subdivisions.map(row=>({id:row.id,label:row.name,detail:row.code}));
+    if(kind==='territories')return [...new Set(S.catalog.subdivisions.map(territoryOf))].sort((a,b)=>a.localeCompare(b)).map(territory=>({id:territory,label:territory}));
+    if(kind==='sub')return availableSubdivisions().map(row=>({id:row.id,label:row.name,detail:row.code}));
     if(kind==='builders'||kind==='newBuilder')return S.catalog.builders.filter(row=>kind!=='newBuilder'||row.type==='Builder').map(row=>({id:row.id,label:row.name}));
     const first=kind==='newYear'?2019:2018,last=kind==='newYear'?2046:2050;
     return Array.from({length:last-first+1},(_,index)=>({id:String(first+index),label:'WFY '+(first+index),detail:'Feb '+(first+index)+' — Jan '+(first+index+1)}));
   }
   function openPicker(anchor,kind) {
     if(S.picker && S.picker.anchor===anchor) {closePicker();return;}
-    closePicker();const multi=kind==='builders'||kind==='years', current=kind==='sub'?S.sub:kind==='newBuilder'?S.newBuilder:kind==='newYear'?S.newYear:kind==='builders'?S.builders:S.years;
-    const p={anchor,kind,multi,all:kind==='builders'?S.builders===null:kind==='years'?S.years.length===0:false,selected:new Set(multi?current||[]:[current]),options:pickerOptions(kind)};
-    const label=kind.includes('Year')||kind==='years'?'Fiscal Year':kind==='sub'?'Subdivision':'Builder';
+    closePicker();const multi=kind==='builders'||kind==='years'||kind==='territories', current=kind==='territories'?S.territories:kind==='sub'?S.sub:kind==='newBuilder'?S.newBuilder:kind==='newYear'?S.newYear:kind==='builders'?S.builders:S.years;
+    const p={anchor,kind,multi,all:kind==='territories'?S.territories===null:kind==='builders'?S.builders===null:kind==='years'?S.years.length===0:false,selected:new Set(multi?current||[]:[current]),options:pickerOptions(kind)};
+    const label=kind.includes('Year')||kind==='years'?'Fiscal Year':kind==='sub'?'Subdivision':kind==='territories'?'Territory':'Builder';
     p.element=document.createElement('section');p.element.className='popover';p.element.dataset.multi=String(multi);p.element.id='forecast-picker';p.element.setAttribute('role','dialog');p.element.setAttribute('aria-label',label+' picker');p.element.innerHTML='<header><input aria-label="Search '+label+'" placeholder="Search '+label+'"><button class="close-btn" data-pop-close aria-label="'+(kind.startsWith('new')?'Close picker':'Clear '+label+' filter')+'">'+icons.close+'</button></header>'+(multi?'<div class="picker-selection" role="status"></div>':'')+'<div class="options" role="listbox" aria-label="'+label+'"'+(multi?' aria-multiselectable="true"':'')+'></div>'+(multi?'<footer><button class="btn" data-pop-all>All</button><button class="btn" data-pop-clear>Clear</button><button class="btn" data-pop-visible>Select visible</button><button class="btn primary" data-pop-done>Done</button></footer>':'');
     ($('modal').hidden?document.body:$('modal').querySelector('.dialog')).appendChild(p.element);S.picker=p;anchor.setAttribute('aria-expanded','true');drawOptions(p);
     anchor.setAttribute('aria-controls',p.element.id);positionPicker(p);p.element.querySelector('input').focus();
@@ -297,6 +308,7 @@
     p.element.addEventListener('click',event=>{
       const button=event.target.closest('button');if(!button)return;
       if(button.hasAttribute('data-pop-close')){if(kind.startsWith('new')||kind==='assignBuilder'){closePicker();anchor.focus();}else clearPicker(p);return;}
+      if(button.hasAttribute('data-pop-forecast-years')){p.all=true;p.selected.clear();drawOptions(p);return;}
       if(button.hasAttribute('data-pop-all')){p.all=true;p.selected.clear();drawOptions(p);return;}
       if(button.hasAttribute('data-pop-clear')){clearPicker(p);return;}
       if(button.hasAttribute('data-pop-visible')){p.all=false;p.visible.forEach(option=>p.selected.add(option.id));drawOptions(p);return;}
@@ -309,21 +321,23 @@
   function drawOptions(p) {
     const focusedOption=p.element.contains(document.activeElement)&&document.activeElement.dataset.option;
     const query=p.element.querySelector('input').value.toLowerCase();p.visible=p.options.filter(option=>(option.label+' '+(option.detail||'')).toLowerCase().includes(query));
-    p.element.querySelector('.options').innerHTML=p.visible.map(option=>{const selected=p.all||p.selected.has(option.id),mark='<i>'+ (selected?icons.check:'')+'</i>';return '<button class="option" role="option" data-option="'+esc(option.id)+'" aria-selected="'+selected+'" aria-pressed="'+selected+'">'+(p.multi?mark:'')+'<span>'+esc(option.label)+(option.detail?'<small>'+esc(option.detail)+'</small>':'')+'</span>'+(p.multi?'':mark)+'</button>';}).join('')||'<div class="empty-table">No matches</div>';
-    if(p.multi)p.element.querySelector('.picker-selection').textContent=(p.all?'All selected':p.selected.size+' selected')+' · '+p.visible.length+' shown';
+    p.element.querySelector('.options').innerHTML=(p.kind==='years'?'<button class="option forecast-years-option" role="option" data-pop-forecast-years aria-selected="'+p.all+'" aria-pressed="'+p.all+'"><i>'+(p.all?icons.check:'')+'</i><span>All Years with Forecasts</span></button>':'')+p.visible.map(option=>{const selected=p.all?(p.kind!=='years'||forecastYears().includes(option.id)):p.selected.has(option.id),mark='<i>'+ (selected?icons.check:'')+'</i>';return '<button class="option" role="option" data-option="'+esc(option.id)+'" aria-selected="'+selected+'" aria-pressed="'+selected+'">'+(p.multi?mark:'')+'<span>'+esc(option.label)+(option.detail?'<small>'+esc(option.detail)+'</small>':'')+'</span>'+(p.multi?'':mark)+'</button>';}).join('');
+    if(!p.visible.length)p.element.querySelector('.options').insertAdjacentHTML('beforeend','<div class="empty-table">No matches</div>');
+    if(p.multi)p.element.querySelector('.picker-selection').textContent=(p.all?(p.kind==='years'?'All Years with Forecasts':'All selected'):p.selected.size+' selected')+' · '+p.visible.length+' shown';
     if(focusedOption){const replacement=[...p.element.querySelectorAll('.option')].find(option=>option.dataset.option===focusedOption);if(replacement)replacement.focus();else p.element.querySelector('input').focus();}
   }
   function commitPicker(p) {
     const values=[...p.selected];
     if(p.kind==='assignBuilder'){closePicker();ForecastBuilderActions.confirm(p.anchor.dataset.assignName,values[0]);return;}
-    if((p.kind==='sub'||p.kind==='builders'||p.kind==='years') && changed()){closePicker();notice('Check or discard local changes before changing filters.',true);return;}
+    if((p.kind==='territories'||p.kind==='sub'||p.kind==='builders'||p.kind==='years') && changed()){closePicker();notice('Check or discard local changes before changing filters.',true);return;}
     const nextSub=values[0]||'', subdivisionChanged=p.kind==='sub'&&nextSub!==S.sub;
+    if(p.kind==='territories'){S.territories=p.all?null:values;if(S.sub&&!availableSubdivisions().some(row=>row.id===S.sub)){S.sub='';S.snapshot=null;S.creation=null;S.entries.clear();$('compactSummary').replaceChildren();$('summaryFrame').srcdoc='';}}
     if(subdivisionChanged){S.sub=nextSub;S.snapshot=null;S.creation=null;S.entries.clear();}
     if(p.kind==='builders')S.builders=p.all?null:values;
     if(p.kind==='years'){if(!p.all&&!values.length){notice('Choose at least one fiscal year.');return;}S.years=p.all?[]:values;}
     if(p.kind==='newBuilder')S.newBuilder=values[0]||'';
     if(p.kind==='newYear')S.newYear=values[0]||'';
-    closePicker();updateNew();if(p.kind==='sub'||p.kind==='builders'||p.kind==='years')render();p.anchor.focus();if(subdivisionChanged&&S.sub)load();
+    closePicker();updateNew();if(p.kind==='territories'||p.kind==='sub'||p.kind==='builders'||p.kind==='years')render();p.anchor.focus();if(subdivisionChanged&&S.sub)load();
   }
   function exportCsv() {
     if(busy()||!S.snapshot)return;

@@ -113,7 +113,8 @@
     return model;
   }
 
-  function build(model, document, inventory) {
+  function build(model, document, inventory, overviewData, scope) {
+    const data = overviewData && typeof overviewData === 'object' ? overviewData : {};
     const element = (tag, className, value) => {
       const node = document.createElement(tag);
       if (className) node.className = className;
@@ -126,6 +127,50 @@
       node.dataset.nativeValue = row.value;
       node.setAttribute('aria-label', row.label + ': ' + (row.value || 'Not set'));
       return node;
+    }
+    function dateText(value) {
+      const source = String(value || '');
+      const match = source.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return source || '—';
+      const parsed = new Date(source + 'T00:00:00Z');
+      return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0,10) !== source ? '—' : match[2] + '/' + match[3] + '/' + match[1];
+    }
+    const knownCount = value => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+    function numericValue(node, value, key, signed = false) {
+      const text = Number.isSafeInteger(value) ? (signed && value > 0 ? '+' : '') + value.toLocaleString('en-US') : '—';
+      if (global.ForecastNumbers && Number.isSafeInteger(value)) node.innerHTML = ForecastNumbers.markup(text, scope + '|header|' + key);
+      else node.textContent = text;
+    }
+    function headerField(key, label, value) {
+      const field = element('div', 'fs-header-field'), output = element('dd', 'fs-header-value');
+      field.dataset.overviewField = key;
+      field.append(element('dt', 'fs-header-label', label), output);
+      if (value !== undefined) output.textContent = value;
+      return {field, output};
+    }
+    function soldCheck(output) {
+      const icon = element('span', 'fs-sold-check');
+      icon.setAttribute('role', 'img');
+      icon.setAttribute('aria-label', 'Actual sale');
+      icon.title = 'Actual sale';
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 20 20');
+      svg.setAttribute('aria-hidden', 'true');
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', '10');circle.setAttribute('cy', '10');circle.setAttribute('r', '7.5');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'm5 10.5 3 3 7-7');
+      svg.append(circle, path);icon.append(svg);output.append(icon);
+    }
+    function difference(field, value, key, basis) {
+      if (!Number.isSafeInteger(value)) return;
+      const node = element('small', 'fs-header-difference'), amount = element('span');
+      node.dataset.overviewDifference = key;
+      node.title = (key === 'projectsLots' ? 'Projects Lots' : 'LM Lots') + ' minus ' + basis;
+      node.append(element('span', 'sr-only', 'Difference from ' + basis + ': '), amount);
+      numericValue(amount, value, key + '-difference', true);
+      node.dataset.sign = value < 0 ? 'negative' : value > 0 ? 'positive' : 'zero';
+      field.append(node);
     }
     function balance(data, className) {
       const node = element('div', className + (data.negative ? ' negative' : ''));
@@ -211,7 +256,15 @@
     root.open = true;
     heading.title = 'Show or hide lot status and builder schedules';
     const nameRow = model.facts.find(row => row.label === 'Subdivision Name'), codeRow = model.facts.find(row => row.label === 'Subdivision Code');
-    const name = element('h2', 'fs-name', model.name), meta = element('div', 'fs-meta', model.meta);
+    const name = element('h2', 'fs-name', model.name), meta = element('div', 'fs-meta');
+    const code = codeRow?.value || '', projectStatus = typeof data.projectStatus === 'string' ? data.projectStatus : normalize(model.meta.replace(code, '').replace(/^[\s·]+/, ''));
+    if (code) meta.append(element('span', 'fs-code', code));
+    if (code && projectStatus) meta.append(document.createTextNode(' · '));
+    if (projectStatus) {
+      const status = element('span', 'fs-project-status', projectStatus);
+      status.title = 'Zoho Project Status';
+      meta.append(status);
+    }
     // Name and code stay in the heading instead of being duplicated in facts.
     if (nameRow && nameRow.value === model.name) { name.dataset.nativeLabel = nameRow.label; name.dataset.nativeValue = nameRow.value; }
     if (codeRow && (!codeRow.value || model.meta.includes(codeRow.value))) { meta.dataset.nativeLabel = codeRow.label; meta.dataset.nativeValue = codeRow.value; }
@@ -244,12 +297,50 @@
       cards.append(card);
     });
     const titleContext=element('dl','fs-title-context');
-    titleContext.setAttribute('aria-label','Subdivision county');
+    titleContext.setAttribute('aria-label','Subdivision county and territory');
     for(const contextFact of [...facts.querySelectorAll('.fs-fact--company,.fs-fact--county')]) titleContext.append(contextFact);
+    const territory = typeof data.territory === 'string' ? data.territory : inventory?.territory;
+    if (territory) {
+      const field = element('div', 'fs-fact fs-fact--territory');
+      field.append(element('dt', 'fs-fact-label', 'Territory'), element('dd', 'fs-territory', territory));
+      titleContext.append(field);
+    }
     if(titleContext.childElementCount) identity.append(titleContext);
     const titleHead=element('div','fs-title-head');
     const headerFacts=element('dl','fs-header-facts');
-    for(const field of [...facts.children]) if(field.querySelector('[data-native-label="Last Sold Date"]')) headerFacts.append(field);
+    headerFacts.setAttribute('aria-label', 'Subdivision forecast overview, all years');
+    const storedLastSold = model.facts.find(row => row.label === 'Last Sold Date');
+    const firstDate = data.firstDate ?? (data.firstSoldDate || data.firstForecastDate);
+    const firstIsSold = data.firstIsSold ?? Boolean(data.firstSoldDate);
+    const first = headerField('firstDate', 'First Sold/Forecast', dateText(firstDate));
+    if (firstIsSold && firstDate) soldCheck(first.output);
+    first.field.title = firstIsSold ? 'First actual sale' : firstDate ? 'First forecast month' : 'First sale or forecast date unavailable';
+    const lastDate = Object.hasOwn(data, 'lastSoldDate') ? data.lastSoldDate : storedLastSold?.value;
+    const last = headerField('lastSoldDate', 'Last Sold Date', dateText(lastDate));
+    last.field.title = 'Most recent actual sale';
+    const finalDate = data.finalDate ?? (data.soldOut ? data.lastSoldDate : data.finalForecastDate);
+    const final = headerField('finalDate', 'Final Sold/Forecast', dateText(finalDate));
+    final.field.title = data.soldOut ? 'Final actual sale; subdivision sold out' : finalDate ? 'Final forecast month' : 'Final sale or forecast date unavailable';
+    const totalLabel = typeof data.displayTotalLabel === 'string' ? data.displayTotalLabel : 'Sold + Forecast';
+    const combined = headerField('soldForecast', totalLabel);
+    numericValue(combined.output, data.displayTotal ?? data.soldForecast, 'sold-forecast');
+    combined.field.title = 'All subdivision forecast years';
+    const storedProjects = model.facts.find(row => row.label === 'Lot Total Residential')?.value;
+    const projectsLots = Object.hasOwn(data, 'projectsLots') ? data.projectsLots : /^\d+$/.test(storedProjects || '') ? Number(storedProjects) : null;
+    const projects = headerField('projectsLots', 'Projects Lots');
+    numericValue(projects.output, knownCount(projectsLots) ? projectsLots : null, 'projects-lots');
+    projects.field.title = 'Subdivision residential lot count from Projects / Budget';
+    if (knownCount(projectsLots)) difference(projects.field, data.projectsDifference, 'projectsLots', totalLabel);
+    const lmLots = Object.hasOwn(data, 'lmLots') ? data.lmLots : inventory?.counts?.Total;
+    const lm = headerField('lmLots', 'LM Lots');
+    if (lmLots === 0) lm.output.textContent = 'No LM lots';
+    else numericValue(lm.output, knownCount(lmLots) ? lmLots : null, 'lm-lots');
+    lm.field.title = 'Actual Land Master lot records for this subdivision';
+    if (knownCount(lmLots) && lmLots > 0) difference(lm.field, data.lmDifference, 'lmLots', totalLabel);
+    headerFacts.append(first.field, last.field, final.field, combined.field, projects.field, lm.field);
+    // Preserve the native stored date as accessible source evidence even when
+    // the additive overview reports a fresher date from actual lot records.
+    for(const field of [...facts.children]) if(field.querySelector('[data-native-label="Last Sold Date"]')) {field.classList.add('sr-only');headerFacts.append(field);}
     const arrow=element('span','fs-disclosure-arrow');
     arrow.setAttribute('aria-hidden','true');
     titleHead.append(identity,headerFacts,heading.lastChild,arrow);
@@ -257,7 +348,6 @@
     const overview = element('div', 'fs-overview');
     const lotCard = element('aside', 'fs-lot-card');
     lotCard.setAttribute('aria-label', 'Subdivision lot status, all dates');
-    if (inventory && inventory.territory) identity.append(element('span', 'fs-territory', inventory.territory));
     const lotBody = element('div', 'subdivision-card-body');
     lotBody.append(element('h3', 'fs-inventory-title', 'Lot status · All dates'));
     lotCard.append(facts, lotBody);
@@ -321,13 +411,14 @@
     return root;
   }
 
-  function render(html, host, inventory, scope = '') {
+  function render(html, host, inventory, scope = '', overview) {
     try {
       if (!host || !host.ownerDocument || typeof host.replaceChildren !== 'function') return false;
       const previous=global.ForecastNumbers ? ForecastNumbers.capture(host) : new Map();
       const previousMeters=global.LMMotion ? LMMotion.captureMeters(host) : new Map();
-      const model = parse(html), result = build(model, host.ownerDocument, inventory);
+      const model = parse(html);
       const summaryScope=scope || model.name+'|'+(model.facts.find(row=>row.label==='Subdivision Code')?.value || '');
+      const result = build(model, host.ownerDocument, inventory, overview, summaryScope);
       const oldDisclosure=host.querySelector('.fs-disclosure');
       result.dataset.summaryScope=summaryScope;
       if(oldDisclosure && oldDisclosure.dataset.summaryScope===summaryScope) result.open=oldDisclosure.open;

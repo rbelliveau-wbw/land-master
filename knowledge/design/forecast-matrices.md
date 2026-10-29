@@ -46,6 +46,31 @@ the saved year's note and the scoped contract flag.
 
 ## Layout
 
+October 29, 2026, Forecast Manager 1.7.22: put the searchable multi-select
+Territory filter before Subdivision and narrow only its choices. Clear an
+out-of-scope subdivision without silently selecting another. Retain pending
+write and unresolved-change guards. Fiscal years offers **All Years with
+Forecasts**, meaning the subdivision's existing Builder forecast years, without
+inserting an empty current year. Explicit year choices remain available.
+
+Keep a pinned **Total / Selected years** column immediately after Builder and
+its grand total in the Selected total footer. Sum displayed months across
+selected years in all four views. Preserve native zero presentation,
+missing-year creation, actual values and Sliding push identities.
+
+Expand the blue bar with labeled County/Territory, Zoho Project Status,
+First Sold/Forecast, Last Sold Date, Final Sold/Forecast, Sold + Forecast,
+Projects Lots and LM Lots. The combined quantity stays subdivision-wide across
+all saved forecast years on every tab, independently of matrix filters. Prefer
+the first actual sale over the first positive forecast month and mark an actual
+first sale with a centered green SVG check. When sold out, use the last actual
+sale for the final date. Projects Lots uses the residential count mirrored from
+Budget; LM Lots counts actual subdivision lot records. Differences are source
+count minus combined Sold + Forecast. With no LM records show **No LM lots**
+and omit the difference. Preserve unknowns, the existing unforecasted balance,
+native schedule details, source evidence and disclosure state.
+[Sources, checks and deployment](../../docs/forecast-manager-overview-2026-10-29.md).
+
 The matrix heading is **Builder Forecasts**. Its border hugs short tables;
 do not reserve a minimum table height beneath the selected-total row. Preserve
 the existing maximum-height internal scrolling for longer tables.

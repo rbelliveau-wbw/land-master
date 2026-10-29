@@ -1,3 +1,19 @@
+## Territory, forecast years, overview and totals — 1.7.22, October 29, 2026
+
+Territory narrows Subdivision choices, and All Years with Forecasts selects its
+existing Builder forecast years. The pinned builder Total and Selected total
+footer sum displayed values across selected years in every view.
+
+The blue subdivision bar adds Project Status, labeled Territory, first/last/final
+dates, an actual first-sale check, all-year Sold + Forecast and Projects/LM count
+differences. The combined quantity stays constant across all tabs and independent
+of matrix filters. Zero LM records displays No LM lots without a difference.
+
+The additive `forecastManagerWidget` catalog/overview contract requires Creator
+promotion by the user under PMP. Old snapshots retain matrix/combined totals and
+safe unknown date displays. No new form, field, query or mutation is introduced.
+[Sources, files, checks, required Creator update and rollback](../../docs/forecast-manager-overview-2026-10-29.md).
+
 ## Version 1.7.21 numbered placeholder exceptions
 
 The existing placeholder notes and builder-assignment exception applies to

@@ -33,6 +33,7 @@ string forecastManagerWidget(string payload)
 				choice.put("id",subChoice.ID.toString());
 				choice.put("name",ifnull(subChoice.Subdivision_Name,""));
 				choice.put("code",ifnull(subChoice.Subdivision_Code,""));
+				choice.put("territory",ifnull(subChoice.Territory,"Unassigned"));
 				subdivisionChoices.add(choice);
 			}
 			builderChoices = List();
@@ -482,12 +483,22 @@ string forecastManagerWidget(string payload)
 		}
 		lotBuilderNames = List();
 		lotBuilderCounts = Map();
+		firstSoldDate = null;
+		lastSoldDate = null;
 		for each inventoryLot in Lots[Subdivision == subdivisionId]
 		{
 			lotStatus = ifnull(inventoryLot.Status,"");
 			if(inventoryLot.Close_Date != null)
 			{
 				lotStatus = "Sold";
+				if(firstSoldDate == null || inventoryLot.Close_Date < firstSoldDate)
+				{
+					firstSoldDate = inventoryLot.Close_Date;
+				}
+				if(lastSoldDate == null || inventoryLot.Close_Date > lastSoldDate)
+				{
+					lastSoldDate = inventoryLot.Close_Date;
+				}
 			}
 			else if(inventoryLot.Purchase_Date != null)
 			{
@@ -547,6 +558,8 @@ string forecastManagerWidget(string payload)
 		}
 		years = List();
 		monthRecords = List();
+		firstForecastDate = null;
+		finalForecastDate = null;
 		for each fy in Forecast_Year[(Subdivision1 == subdivisionId) && (Status == "Builder")] sort by Forecast_Year
 		{
 			yearRecord = Map();
@@ -570,6 +583,18 @@ string forecastManagerWidget(string payload)
 				if(child.Forecast_Start_Date != null)
 				{
 					monthStart = child.Forecast_Start_Date.toString("yyyy-MM-dd");
+					// Only populated, correctly scoped Builder forecasts define the date range.
+					if(ifnull(child.Forecasted_Lots,0) > 0 && child.Subdivision1 == subdivisionId && child.Builder1 == fy.Builder1 && child.Forecast_Year == fy.Forecast_Year)
+					{
+						if(firstForecastDate == null || child.Forecast_Start_Date < firstForecastDate)
+						{
+							firstForecastDate = child.Forecast_Start_Date;
+						}
+						if(finalForecastDate == null || child.Forecast_Start_Date > finalForecastDate)
+						{
+							finalForecastDate = child.Forecast_Start_Date;
+						}
+					}
 				}
 				monthRecord.put("start",monthStart);
 				monthRecord.put("forecast",child.Forecasted_Lots);
@@ -580,6 +605,35 @@ string forecastManagerWidget(string payload)
 		}
 		response.put("years",years);
 		response.put("months",monthRecords);
+		// Read-only all-subdivision facts; matrix builder/year/view filters never narrow them.
+		overview = Map();
+		overview.put("version",1);
+		overview.put("projectStatus",ifnull(subdiv.Projects_Status,""));
+		overview.put("territory",ifnull(subdiv.Territory,"Unassigned"));
+		overview.put("projectsLots",subdiv.Lot_Total_Residential);
+		overview.put("lmLots",lotCounts.get("Total"));
+		overview.put("soldOut",lotCounts.get("Total") > 0 && lotCounts.get("Sold") >= lotCounts.get("Total"));
+		overview.put("firstSoldDate","");
+		overview.put("lastSoldDate","");
+		overview.put("firstForecastDate","");
+		overview.put("finalForecastDate","");
+		if(firstSoldDate != null)
+		{
+			overview.put("firstSoldDate",firstSoldDate.toString("yyyy-MM-dd"));
+		}
+		if(lastSoldDate != null)
+		{
+			overview.put("lastSoldDate",lastSoldDate.toString("yyyy-MM-dd"));
+		}
+		if(firstForecastDate != null)
+		{
+			overview.put("firstForecastDate",firstForecastDate.toString("yyyy-MM-dd"));
+		}
+		if(finalForecastDate != null)
+		{
+			overview.put("finalForecastDate",finalForecastDate.toString("yyyy-MM-dd"));
+		}
+		response.put("overview",overview);
 		response.put("summaryHtml",thisapp.buildForecastManagerSummary(subdivisionId));
 		response.put("ok",true);
 		return response.toString();
