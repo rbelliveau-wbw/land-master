@@ -1,0 +1,4 @@
+// Crew_Timecards: Created or Edited -> On Validate.
+// Analytics sync uses direct Deluge writes. Interactive source edits are denied.
+alert "Timecards are maintained by the daily Analytics sync.";
+cancel submit;

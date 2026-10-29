@@ -1,0 +1,116 @@
+map crewLocationsRead(string reportName, string criteria)
+{
+	result = {"ok":false,"message":"Creator record access was not confirmed."};
+	safeHttp = "missing";
+	safeCode = "missing";
+	try 
+	{
+		config = thisapp.crewLocationsConfig();
+		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules","All_Crews","Crew_Assignment_Report","All_Employees","All_Crew_Timecards"};
+		if(!allowed.contains(reportName) || zoho.loginuser == null || zoho.loginuser == "public")
+		{
+			return result;
+		}
+		// Production is the native API default; only non-production sends an environment header.
+		headers = {"Content-Type":"application/json"};
+		if(config.get("environment") != "production")
+		{
+			headers.put("environment",config.get("environmentLink"));
+		}
+		parameters = {"criteria":criteria,"max_records":1000,"field_config":"all"};
+		// Verified existing LOGGED-IN USER connection; never substitute an admin connection.
+		// These delegated report reads preserve native sharing and API/report access.
+		http = invokeurl
+		[
+			url :config.get("baseUrl") + reportName
+			type :GET
+			parameters:parameters
+			headers:headers
+			detailed:true
+			connection:"zoho_creator_connection"
+		];
+		httpStatus = http.get("responseCode");
+		if(ifnull(httpStatus,"").toString().matches("[0-9]{3}"))
+		{
+			safeHttp = httpStatus.toString();
+		}
+		raw = http.get("responseText").toString().toMap();
+		code = ifnull(raw.get("code"),"").toString();
+		if(code.matches("[0-9]+"))
+		{
+			safeCode = code;
+		}
+		result.put("message","Caller-scoped Creator access failed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+		data = raw.get("data");
+		emptyData = false;
+		if(data == null)
+		{
+			emptyData = true;
+		}
+		else if(data.toString() == "[]")
+		{
+			emptyData = true;
+		}
+		validHttp = false;
+		if(httpStatus >= 200 && httpStatus < 300)
+		{
+			validHttp = true;
+		}
+		emptyHttp = false;
+		if(code == "3100")
+		{
+			emptyHttp = validHttp;
+			if(httpStatus == 404)
+			{
+				emptyHttp = true;
+			}
+		}
+		if(code == "9220")
+		{
+			if(httpStatus == 200)
+			{
+				emptyHttp = true;
+			}
+			if(httpStatus == 400)
+			{
+				emptyHttp = true;
+			}
+		}
+		nonblankCriteria = false;
+		if(criteria != null)
+		{
+			if(criteria.trim() != "")
+			{
+				nonblankCriteria = true;
+			}
+		}
+		if(code == "9280" && nonblankCriteria)
+		{
+			if(httpStatus == 400)
+			{
+				emptyHttp = true;
+			}
+		}
+		emptyPage = emptyData && raw.get("error") == null && raw.get("success") != false && emptyHttp;
+		if(emptyPage)
+		{
+			return {"ok":true,"records":List()};
+		}
+		if(!validHttp || code != "3000" || data == null || raw.get("error") != null || raw.get("success") == false)
+		{
+			return result;
+		}
+		rows = raw.get("data");
+		// Scoped record/stage checks never silently truncate a report page.
+		if(rows.size() >= 1000)
+		{
+			return {"ok":false,"message":"The scoped source has 1000 or more records; narrow the configured report before editing."};
+		}
+		result.put("records",rows);
+		result.put("ok",true);
+	}	catch (readError)
+	{
+		result.put("message","Caller-scoped Creator access failed (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+	}
+	return result;
+}

@@ -1,0 +1,84 @@
+list All_Employees
+{
+	displayName = "All Employees"
+	show all rows from Employees    
+	(
+		EmployeeName
+		IsActive
+		Territory
+		Labor_Type
+		Crew
+		BU_Employee_ID
+		Employee_Code
+		Synced_At
+		ID
+	)
+	quickview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					EmployeeName
+					IsActive
+					Territory
+					Labor_Type
+					Crew
+					BU_Employee_ID
+					Employee_Code
+					Synced_At
+					ID
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

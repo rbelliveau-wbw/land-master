@@ -5,7 +5,7 @@ map crewLocationsRead(string reportName,string criteria)
 	try
 	{
 		config = thisapp.crewLocationsConfig();
-		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules","All_Crews","Crew_Assignment_Report"};
+		allowed = {"All_Subdivisions","All_Milestones","All_Task_Schedules","All_Crews","Crew_Assignment_Report","All_Employees","All_Crew_Timecards"};
 		if(!allowed.contains(reportName) || zoho.loginuser == null || zoho.loginuser == "public") { return result; }
 		// Production is the native API default; only non-production sends an environment header.
 		headers = {"Content-Type":"application/json"};

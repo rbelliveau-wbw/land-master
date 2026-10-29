@@ -1,5 +1,16 @@
 # Crew Management
 
+## 1.3.1 — employee staffing and foreman locations
+
+The opening Employees workspace lists synced active employees with territory, labor
+type and crew assignment. Active/Inactive/All keeps retained inactive employees
+visible. New crew reuses the existing native crew editor. Foremen place their
+crew badge on every exactly mapped phase appearing in their last seven calendar
+dates of timecards. No name/code inference is used. The two daily Analytics syncs
+retain employees indefinitely and only the last three calendar months of timecards.
+Native changes are installed in Development; the user controls Creator promotion.
+See [installation, verification and rollback](../../docs/crew-employees-timecards-2026-10-29.md).
+
 ## 1.2.7 — CFO roster connection failure
 
 Roster reads now use authenticated `LMData.readAll`, matching schedule reads,

@@ -1,0 +1,18 @@
+Daily_Crew_Timecards as "Daily Crew Timecards"
+{
+	type =  schedule
+	start = "2026-10-30 05:15:00"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			thisapp.crewSyncTimecards(false);
+		)
+		}
+	}
+}
+

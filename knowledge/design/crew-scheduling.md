@@ -4,7 +4,9 @@ Repository-wide rules for Crew Locations and equivalent scheduling surfaces.
 The implementation and installation contract are in
 [Crew Locations](../modules/crew-locations.md).
 
-Open **Crews** by default, beside the **Milestones & tasks** workspace. Keep
+Open **Employees** by default when the native employee capability is enabled.
+Keep **Crews** and **Milestones & tasks** as separate workspaces. Legacy native
+versions retain the Crews default until Creator promotion. Keep
 the schedule mounted while switching workspaces. In the schedule workspace,
 use a full-width timeline above the schedule grid. Keep each phase's Milestones
 row directly above Tasks. Put crew badges beneath Tasks in the left title column.
@@ -12,8 +14,10 @@ Keep phase IDs stable, readable text, normal page scrolling, and a real calendar
 axis starting today in America/Chicago. Month and year labels must remain readable
 for partial months. Sections share the same band within each row type.
 
-On desktop, bound the timeline and editing table to readable scrolling workspaces
-while retaining normal page scrolling. Freeze phase labels horizontally and keep
+October 29 direction: the timeline grows vertically with the selected phases and
+fits the selected calendar horizon horizontally where readable. Retain horizontal
+scrolling when needed; never compress phase labels or edit cells. Bound the editing
+table to its readable scrolling workspace while retaining normal page scrolling. Freeze phase labels horizontally and keep
 the calendar axis and both table heading rows visible during vertical scrolling.
 Provide direct Timeline / Edit Schedule navigation and a searchable Jump to stage
 action so editing does not require traversing every phase or dragging a long
@@ -144,3 +148,18 @@ never automatically open a dialog or replay an uncertain write. Retain the
 destination ledger for that explicit review. Preparation is not a saved date.
 Do not advertise Projects synchronization success for a Creator-only save.
 Fixtures belong exclusively in the local browser harness, never widget releases.
+
+## Employee staffing and foreman locations — October 29, 2026
+
+The Employees roster defaults to active people and offers Inactive/All plus search.
+Edit territory (including N/A), labor type and crew through the established searchable
+single-select pickers. Reuse New crew; names, BU identity and active status belong
+to Analytics. Retain inactive people and their staffing; show Inactive on schedule
+badges when their foreman timecards still fall in the seven-date window.
+
+Use the foreman’s exact BU employee GUID and assigned crew. Today and the previous
+six calendar dates determine badges on every exactly mapped phase. Ignore deleted
+and future cards. Never fall back to names, employee codes, job prefixes or old
+manual assignments in foreman mode. Multiple crews may share a phase; one foreman
+working multiple phases may place that crew on multiple phases. Missing mapping
+is a data issue, not a guessed location.

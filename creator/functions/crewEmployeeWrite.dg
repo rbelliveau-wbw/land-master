@@ -1,0 +1,37 @@
+map crewEmployeeWrite(map request)
+{
+	result = {"ok":false,"message":"Employee assignment was rejected."};
+	access = User_Access[User == zoho.loginuser];
+	if(access.count() != 1 || access.View_Crew_Locations != true || access.Manage_Crew_Assignments != true) { return result; }
+	draft = request.get("employee");
+	if(draft == null) { return result; }
+	recordId = ifnull(draft.get("id"),"").toString();
+	requestId = ifnull(request.get("requestId"),"").toString();
+	if(!recordId.matches("[0-9]+") || !requestId.matches("[a-fA-F0-9-]{36}")) { return result; }
+	read = thisapp.crewLocationsRead("All_Employees","ID == " + recordId);
+	if(read.get("ok") != true || read.get("records").size() != 1) { return {"ok":false,"message":"This employee is unavailable to the current user."}; }
+	current = read.get("records").get(0);
+	for each field in {"ID","IsActive","Territory","Labor_Type","Crew"} { if(!current.keys().contains(field)) { return {"ok":false,"message":"All_Employees must expose native field " + field + "."}; } }
+	validLabor = {"","Superintendent","Foreman","Skilled","Unskilled","Pipe Layer","Laborer"};
+    territory = ifnull(draft.get("territory"),"").toString().trim();
+	labor = ifnull(draft.get("laborType"),"").toString().trim();
+	crewId = ifnull(draft.get("crewId"),"").toString();
+	if(territory == "" || territory.length() > 255 || !validLabor.contains(labor) || (crewId != "" && !crewId.matches("[0-9]+"))) { return result; }
+	currentCrew = "";
+	if(current.get("Crew") != null && current.get("Crew").toString() != "") { currentCrew = current.get("Crew").get("ID").toString(); }
+	if(request.get("action") == "employee-status")
+	{
+		matches = ifnull(current.get("Territory"),"").toString() == territory && ifnull(current.get("Labor_Type"),"").toString() == labor && currentCrew == crewId;
+		return {"ok":true,"state":if(matches,"saved","unconfirmed"),"kind":"employee","requestId":requestId,"recordId":recordId,"unknown":!matches};
+	}
+	if(ifnull(current.get("IsActive"),false).toString().toLowerCase() != "true") { return {"ok":false,"message":"Inactive employee assignments are retained for history."}; }
+	if(crewId != "")
+	{
+		crewRead = thisapp.crewLocationsRead("All_Crews","ID == " + crewId);
+		if(crewRead.get("ok") != true || crewRead.get("records").size() != 1) { return {"ok":false,"message":"This crew is unavailable to the current user."}; }
+		if(crewId != currentCrew && ifnull(crewRead.get("records").get(0).get("Active"),false).toString().toLowerCase() != "true") { return {"ok":false,"message":"Choose an active crew."}; }
+	}
+	patch = {"Territory":territory,"Labor_Type":labor,"Crew":crewId};
+	result = {"ok":true,"state":"ready","requestId":requestId,"write":{"kind":"employee","formName":"Employees","reportName":"All_Employees","recordId":recordId,"data":patch}};
+	return result;
+}

@@ -1,0 +1,110 @@
+map crewSyncEmployees(bool dryRun)
+{
+	result = {"ok":false};
+	auditId = "";
+	created = 0;
+	updated = 0;
+	skipped = 0;
+	received = 0;
+	attempted = false;
+	try 
+	{
+		if(!dryRun)
+		{
+			audit = thisapp.workflowRunLog({"action":"start","workflow":"Daily Crew Employees","system":"Zoho Analytics / HeavyJob","stage":"Reading employee directory"});
+			auditId = ifnull(audit.get("id"),"").toString();
+		}
+		config = Map();
+		rows = thisapp.analyticsExportRows("2107789000036057124",config,auditId,false);
+		received = rows.size();
+		seen = List();
+		normalized = List();
+		validFlags = {"true","false"};
+		// Validate the entire export before changing any roster record. Absence is
+		// never evidence of inactivity; only an explicit source flag changes it.
+		for each  row in rows
+		{
+			key = ifnull(row.get("zzz_BUEmployeeID_Guid"),"").toString().trim().toUpperCase();
+			name = ifnull(row.get("EmployeeName"),"").toString().trim();
+			code = ifnull(row.get("EmployeeCode"),"").toString().trim();
+			activeFlag = ifnull(row.get("IsActive"),"").toString().toLowerCase();
+			deletedFlag = ifnull(row.get("IsDeleted"),"").toString().toLowerCase();
+			if(!key.matches("[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}") || seen.contains(key) || !validFlags.contains(activeFlag) || !validFlags.contains(deletedFlag))
+			{
+				throw "Employee export contains an invalid/duplicate BU identity or missing activity flag. No roster changes were applied.";
+			}
+			active = activeFlag == "true" && deletedFlag == "false";
+			// BU GUID is the key; an employee code is optional. Blank names never replace a saved name.
+			seen.add(key);
+			normalized.add({"key":key,"name":name,"code":code,"active":active});
+		}
+		for each  employee in normalized
+		{
+			key = employee.get("key");
+			existing = Employees[BU_Employee_ID == key];
+			if(existing.count() > 1)
+			{
+				throw "Duplicate native BU employee identity requires review.";
+			}
+			skipEmployee = false;
+			if(existing.count() == 0)
+			{
+				if(employee.get("active") != true || employee.get("name") == "")
+				{
+					skipEmployee = true;
+				}
+			}
+			if(skipEmployee)
+			{
+				skipped = skipped + 1;
+			}
+			else if(existing.count() == 0)
+			{
+				if(!dryRun)
+				{
+					attempted = true;
+					newId = insert into Employees
+					[
+						Added_User=zoho.loginuser
+						BU_Employee_ID=key
+						EmployeeName=employee.get("name")
+						Employee_Code=employee.get("code")
+						IsActive=true
+						Territory="N/A"
+						Synced_At=zoho.currenttime
+					];
+				}
+				created = created + 1;
+			}
+			else
+			{
+				if(!dryRun)
+				{
+					attempted = true;
+					// Staffing belongs to LM: never overwrite Territory, Labor_Type or Crew.
+					if(employee.get("name") != "")
+					{
+						existing.EmployeeName=employee.get("name");
+					}
+					existing.Employee_Code=employee.get("code");
+					existing.IsActive=employee.get("active");
+					existing.Synced_At=zoho.currenttime;
+				}
+				updated = updated + 1;
+			}
+		}
+		result = {"ok":true,"dryRun":dryRun,"received":received,"created":created,"updated":updated,"skipped":skipped};
+		if(auditId != "")
+		{
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Employee roster synchronized","counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"skipped":skipped,"failed":0}});
+		}
+	}	catch (syncError)
+	{
+		if(auditId != "")
+		{
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Employee synchronization failed","counts":{"received":received,"processed":created + updated,"created":created,"updated":updated,"skipped":skipped,"failed":1},"message":syncError.toString()});
+		}
+		throw syncError.toString();
+	}
+	return result;
+}

@@ -104,7 +104,7 @@
   function render(){renderRoster();renderDetail();updateControls();}
   function switchWorkspace(name){
     $('app').dataset.workspace=name;document.querySelectorAll('#workspaceTabs [data-workspace]').forEach(node=>{const selected=node.dataset.workspace===name;node.setAttribute('aria-selected',String(selected));node.tabIndex=selected?0:-1;});
-    $('crewManager').setAttribute('aria-hidden',String(name!=='crews'));$('timeline').setAttribute('aria-hidden',String(name!=='schedule'));$('schedule').setAttribute('aria-hidden',String(name!=='schedule'));
+    $('employeeRoster')?.setAttribute('aria-hidden',String(name!=='employees'));$('crewManager').setAttribute('aria-hidden',String(name!=='crews'));$('timeline').setAttribute('aria-hidden',String(name!=='schedule'));$('schedule').setAttribute('aria-hidden',String(name!=='schedule'));
   }
   function openEditor(kind,item,restored=null){
     if(!restored&&blocked())return;
@@ -183,7 +183,7 @@
     // keyed roster/assignment lists. Do not install a second rail or observer.
     const sync=()=>{const key=identity();if(S.actor&&key!==S.actor){S.generation++;clearPrivate();bridge()?.setPending?.(false);S.actor=key;}const c=context();if(bridge()&&c.user&&c.user!=='(unknown)'&&['DEVELOPMENT','STAGE','PRODUCTION'].includes(c.environment)){if(!S.ready&&savedAttempt())bridge().setPending?.(true);if(!S.loading&&!S.saving&&!S.ready&&S.attempted!==key)load();}};
     document.addEventListener('crew:management-ready',()=>{sync();if(S.ready&&!S.pending)load();});setInterval(sync,700);sync();
-    root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace});
+    root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace,newCrew:()=>openEditor('crew')});
   }
-  root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace});
+  root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace,newCrew:()=>openEditor('crew')});
 })(window);

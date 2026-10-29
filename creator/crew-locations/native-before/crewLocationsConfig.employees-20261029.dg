@@ -1,0 +1,24 @@
+map crewLocationsConfig()
+{
+	// Server configuration. Do not accept these values from a widget request.
+	config = Map();
+	config.put("enabled",true);
+	runtimeEnvironment = thisapp.environment.type;
+	config.put("environment",runtimeEnvironment.toLowerCase());
+	config.put("environmentLink",thisapp.environment.linkname);
+	config.put("testingMode",false);
+	config.put("creatorOnly",true);
+	config.put("projectsPushEnabled",false);
+	// Read native Crew/Crew_Assignment reports; this does not enable ingestion.
+	config.put("nativeCrewReadsEnabled",true);
+	config.put("crewsEnabled",false);
+	config.put("tasksEnabled",false);
+	// Individual source-task mirror remains disabled until configured.
+	config.put("taskMirrorEnabled",false);
+	config.put("taskWritesVerified",false);
+	config.put("importActor","");
+	config.put("crewSourceSystem","");
+	config.put("taskSourceSystem","");
+	config.put("baseUrl","https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/report/");
+	return config;
+}

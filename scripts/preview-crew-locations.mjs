@@ -13,7 +13,13 @@ function fixtureSDK(data){
  const NativeDate=Date;window.Date=class extends NativeDate{constructor(...args){super(...(args.length?args:['2026-10-21T17:00:00Z']));}static now(){return NativeDate.now();}};
  const fixture={requests:[],mode:new URLSearchParams(location.search).get('fixtureMode')||'normal',operations:[],managementWrites:[],nativeAttempts:[],managementPrepared:new Map(),nativeReads:[],prepared:new Map(),data};
  function expose(){const node=document.getElementById('fixture-audit');if(node)node.textContent=JSON.stringify({requests:fixture.requests,operations:fixture.operations,managementWrites:fixture.managementWrites,nativeAttempts:fixture.nativeAttempts,nativeReads:fixture.nativeReads,mode:fixture.mode});}
- const tables={All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,Crew_Assignment_Report:data.assignments,All_Task_Schedules:data.tasks};
+ const employeePreview=new URLSearchParams(location.search).has('employees');
+ data.employees=employeePreview?[
+ {ID:'90071992547408801',BU_Employee_ID:'FOREMAN-A',EmployeeName:'John Doe',Employee_Code:'1696',IsActive:true,Territory:'North Austin',Labor_Type:'Foreman',Crew:{ID:data.crews[0].ID},Synced_At:'10/21/2026 08:00:00'},
+ {ID:'90071992547408802',BU_Employee_ID:'EMPLOYEE-B',EmployeeName:'Alex Employee',Employee_Code:'1697',IsActive:true,Territory:'N/A',Labor_Type:'Skilled',Crew:'',Synced_At:'10/21/2026 08:00:00'},
+ {ID:'90071992547408803',BU_Employee_ID:'FOREMAN-C',EmployeeName:'Former Foreman',Employee_Code:'1698',IsActive:false,Territory:'Waco',Labor_Type:'Foreman',Crew:{ID:data.crews[1].ID},Synced_At:'10/21/2026 08:00:00'}]:[];
+ data.timecards=employeePreview?[{ID:'90071992547407701',Timecard_ID:'CARD-A',Work_Date:'10/21/2026',Foreman_ID:'FOREMAN-A',Subdivision1:{ID:data.subdivisions[0].ID},IsDeleted:false,Foreman_Name:'John Doe',Job_Code:'C_CAM01',Synced_At:'10/21/2026 08:00:00'},{ID:'90071992547407702',Timecard_ID:'CARD-B',Work_Date:'10/20/2026',Foreman_ID:'FOREMAN-C',Subdivision1:{ID:data.subdivisions[0].ID},IsDeleted:false,Foreman_Name:'Former Foreman',Job_Code:'C_CAM01',Synced_At:'10/21/2026 08:00:00'}]:[];
+ const tables={All_Employees:data.employees,All_Crew_Timecards:data.timecards,All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,Crew_Assignment_Report:data.assignments,All_Task_Schedules:data.tasks};
  if(fixture.mode==='paged')for(let i=0;i<201;i++)data.crews.push({...data.crews[0],ID:String(810000+i),Crew_Code:'PAGE-'+i});
  function nativeRows(config){const rows=tables[config.report_name];return fixture.mode!=='scope-denied'?rows:rows.filter(row=>!(config.report_name==='All_Subdivisions'&&row.ID==='90071992547409933')&&!(config.report_name==='Crew_Assignment_Report'&&row.ID==='90071992547407011'));}
  function nativeDenied(config){return fixture.mode==='report-denied'&&config.report_name==='Crew_Assignment_Report';}
@@ -40,6 +46,13 @@ function fixtureSDK(data){
  async function managementWrite(body){
   if(fixture.mode==='readonly'||fixture.mode==='denied')return managementError(body,'Crew management permission is required.');
   if(fixture.mode==='report-denied')return managementError(body,'Creator denied this record operation.');
+  if(body.action==='save-employee'){
+   const e=body.employee,row=data.employees.find(r=>r.ID===e?.id);
+   if(!row||!active(row.IsActive))return managementError(body,'Inactive or unavailable employee.');
+   const crew=data.crews.find(c=>c.ID===e.crewId);if(e.crewId&&(!crew||!active(crew.Active)))return managementError(body,'Choose an active crew.');
+   const write={kind:'employee',formName:'Employees',reportName:'All_Employees',recordId:e.id,data:{Territory:e.territory,Labor_Type:e.laborType,Crew:e.crewId}};
+   fixture.managementPrepared.set(body.requestId,{body:structuredClone(body),write});expose();return {...meta(body),state:'ready',requestId:body.requestId,write};
+  }
   const crewWrite=body.action==='save-crew',kind=crewWrite?'crew':'assignment',entry=body[kind];
   if(!entry||!body.requestId)return managementError(body,'An exact record and request identity are required.');
   const prior=fixture.managementWrites.find(write=>write.requestId===body.requestId);if(prior)return {...meta(body),state:'saved',kind,requestId:body.requestId,recordId:prior.recordId};
@@ -72,7 +85,7 @@ function fixtureSDK(data){
   if(fixture.mode==='native-thrown-denied'){fixture.mode='normal';expose();throw {code:2897,message:'Fixture native SDK rejected with profile denial.'};}
   if(fixture.mode==='create-scope-denied'||fixture.mode==='report-denied')return {code:2945,message:'Creator permission denied.'};
   await new Promise(resolve=>setTimeout(resolve,90));
-  const {body,write}=prepared,entry=body[write.kind],id=write.recordId||'900719925474'+String(81000+fixture.managementWrites.length),rows=write.kind==='crew'?data.crews:data.assignments;
+  const {body,write}=prepared,entry=body[write.kind],id=write.recordId||'900719925474'+String(81000+fixture.managementWrites.length),rows=write.kind==='employee'?data.employees:write.kind==='crew'?data.crews:data.assignments;
   let row=rows.find(item=>item.ID===id);if(!row){row={ID:id};rows.push(row);}Object.assign(row,structuredClone(write.data));
   if(write.kind==='assignment')Object.assign(row,{Crew:{ID:entry.crewId,display_value:data.crews.find(crew=>crew.ID===entry.crewId).Crew_Code},Subdivision1:{ID:entry.phaseId,display_value:data.subdivisions.find(phase=>phase.ID===entry.phaseId).Subdivision_Name}});
   fixture.managementWrites.push({requestId:body.requestId,recordId:id,kind:write.kind,payload:structuredClone(entry),method:update?'PATCH':'POST',caller:fixtureUser});expose();
@@ -102,10 +115,11 @@ function fixtureSDK(data){
   invokeCustomApi:async config=>{
    const body=JSON.parse(config.payload.payload);fixture.requests.push(body);expose();const base=meta(body);
    if(config.api_name!=='Crew_Locations_Widget_DEV')throw new Error('Unexpected fixture API name');
-   if(body.action==='capabilities'){if(fixture.mode==='denied')return {...base,ok:false,message:'Fixture access revoked'};return {...base,...(fixture.mode==='legacy-management'?{}:{management:{enabled:true,nativeWrites:true,protocol:'native-validated-v1'}}),permissions:{view:true,milestones:true,tasks:true,assignments:fixture.mode!=='readonly'},sources:{crews:fixture.mode!=='unconfigured',tasks:fixture.mode!=='unconfigured'&&!new URLSearchParams(location.search).has('desktop')},dependencies:['Isolated browser fixture. No live Creator or Projects records are connected.']};}
+   if(body.action==='capabilities'){if(fixture.mode==='denied')return {...base,ok:false,message:'Fixture access revoked'};return {...base,...(fixture.mode==='legacy-management'?{}:{management:{enabled:true,nativeWrites:true,protocol:'native-validated-v1'}}),permissions:{view:true,milestones:true,tasks:true,assignments:fixture.mode!=='readonly'},sources:{employees:employeePreview,foremanTimecards:employeePreview,crews:fixture.mode!=='unconfigured',tasks:fixture.mode!=='unconfigured'&&!new URLSearchParams(location.search).has('desktop')},dependencies:['Isolated browser fixture. No live Creator or Projects records are connected.']};}
    if(body.action==='management-list'){if(fixture.mode==='invalid-connection')throw new Error('Error at line: 121, Invalid Connection');return managementRows(body);}
-   if(body.action==='save-crew'||body.action==='save-assignment')return managementWrite(body);
+   if(body.action==='save-crew'||body.action==='save-assignment'||body.action==='save-employee')return managementWrite(body);
    if(body.action==='management-status')return managementStatus(body);
+   if(body.action==='employee-status'){const saved=fixture.managementWrites.find(w=>w.requestId===body.requestId&&w.kind==='employee');return {...base,state:saved?'saved':'unconfirmed',kind:'employee',requestId:body.requestId,recordId:saved?.recordId||'',unknown:!saved};}
    if(body.action==='history')return {...base,operations:fixture.operations.filter(o=>o.subdivisionId===body.subdivisionId).map(o=>({...o,origin:o.origin,state:o.result.state,actor:'Fixture user',timestamp:'10/21/2026 12:00:00'}))};
    if(body.action==='status'){const op=fixture.operations.find(o=>o.operationId===body.operationId);if(op?.recoveryResult)op.result=op.recoveryResult;expose();return {...op?.result,...base,state:op?'saved':'unknown',unknown:!op,operationId:body.operationId};}
    if(body.action==='prepare'){

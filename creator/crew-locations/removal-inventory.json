@@ -1,4 +1,77 @@
 {
+  "employees_timecards_2026_10_29": {
+    "release": "1.3.1",
+    "environment": "Development only; user handles Creator promotion",
+    "status": "native-installed-initial-sync-verified",
+    "forms": {
+      "Employees": [
+        "BU_Employee_ID",
+        "Employee_Code",
+        "EmployeeName",
+        "IsActive",
+        "Territory",
+        "Labor_Type",
+        "Crew",
+        "Synced_At"
+      ],
+      "Crew_Timecards": [
+        "Timecard_ID",
+        "Work_Date",
+        "Foreman_ID",
+        "Foreman_Code",
+        "Foreman_Name",
+        "Job_Code",
+        "Job_Name",
+        "Subdivision1",
+        "IsDeleted",
+        "Synced_At"
+      ]
+    },
+    "reports": [
+      "All_Employees",
+      "All_Crew_Timecards"
+    ],
+    "new_functions": [
+      "crewSyncEmployees",
+      "crewSyncTimecards",
+      "crewEmployeeWrite"
+    ],
+    "modified_functions": [
+      "crewLocationsConfig",
+      "crewLocationsRead",
+      "crewLocationsWidget"
+    ],
+    "validation_workflows": {
+      "Employees_Staffing_Guard": "Employees / Created or Edited / Validations on form submission",
+      "Crew_Timecards_Source_Gua": "Crew_Timecards / Created or Edited / Validations on form submission"
+    },
+    "daily_schedules": {
+      "Daily_Crew_Employees": "05:00 America/Chicago",
+      "Daily_Crew_Timecards": "05:15 America/Chicago"
+    },
+    "schedule_start": "2026-10-30",
+    "schedule_development_execution": "suspended by existing environment setting; manual function imports verified",
+    "initial_employee_import": {
+      "received": 592,
+      "created": 72,
+      "updated": 0,
+      "skipped": 520
+    },
+    "initial_timecard_import": {
+      "received": 1616,
+      "created": 1616,
+      "updated": 0,
+      "unmapped": 1442,
+      "expired": 0
+    },
+    "new_connections": false,
+    "new_custom_apis": false,
+    "creator_promoted": false,
+    "native_snapshots": "creator/crew-locations/native-installed/",
+    "rollback_snapshots": "creator/crew-locations/native-before/*.employees-20261029.dg",
+    "reference": "docs/crew-employees-timecards-2026-10-29.md",
+    "removal_rule": "Stop the two schedules first. Retain employee staffing and mirrored records unless user explicitly authorizes removal. Preserve Crew, existing manual assignments, Milestones, reused connections and unrelated data. Restore only scoped function changes."
+  },
   "purpose": "User explicitly requested a durable inventory in case they later ask to delete this feature. This file is not deletion authorization.",
   "recorded_date": "2026-10-21",
   "management_2026_10_23": {
@@ -875,6 +948,44 @@
         "column": 0,
         "data_field_column": 1
       }
+    },
+    {
+      "link_name": "Employees",
+      "created": true,
+      "fields": [
+        "BU_Employee_ID",
+        "Employee_Code",
+        "EmployeeName",
+        "IsActive",
+        "Territory",
+        "Labor_Type",
+        "Crew",
+        "Synced_At"
+      ],
+      "report_link_name": "All_Employees",
+      "report_link_name_verified": true,
+      "records_created_by_this_installation": 72,
+      "native_source_snapshot": "creator/crew-locations/native-installed/Employees.ds"
+    },
+    {
+      "link_name": "Crew_Timecards",
+      "created": true,
+      "fields": [
+        "Timecard_ID",
+        "Work_Date",
+        "Foreman_ID",
+        "Foreman_Code",
+        "Foreman_Name",
+        "Job_Code",
+        "Job_Name",
+        "Subdivision1",
+        "IsDeleted",
+        "Synced_At"
+      ],
+      "report_link_name": "All_Crew_Timecards",
+      "report_link_name_verified": true,
+      "records_created_by_this_installation": 1616,
+      "native_source_snapshot": "creator/crew-locations/native-installed/Crew_Timecards.ds"
     }
   ],
   "native_functions_created": [
@@ -887,7 +998,10 @@
     "crewLocationsBeginPush",
     "crewLocationsEndPush",
     "crewLocationsStatus",
-    "crewLocationsWidget"
+    "crewLocationsWidget",
+    "crewSyncEmployees",
+    "crewSyncTimecards",
+    "crewEmployeeWrite"
   ],
   "optional_functions_prepared_not_installed": [
     "crewLocationsImportAssignments",
@@ -963,7 +1077,10 @@
     "creator/functions/crewLocationsRead.dg",
     "creator/functions/crewLocationsStatus.dg",
     "creator/functions/crewLocationsValidate.dg",
-    "creator/functions/crewLocationsWidget.dg"
+    "creator/functions/crewLocationsWidget.dg",
+    "creator/functions/crewSyncEmployees.dg",
+    "creator/functions/crewSyncTimecards.dg",
+    "creator/functions/crewEmployeeWrite.dg"
   ],
   "local_added_files": [
     "scripts/prepare-crew-locations.mjs",
@@ -1192,6 +1309,16 @@
       "event": "created or edited on validate",
       "script_saved": false,
       "blocker": "Creator script service unavailable during publication lock"
+    },
+    {
+      "name": "Employees_Staffing_Guard",
+      "event": "Employees / Created or Edited / Validations on form submission",
+      "script_saved": true
+    },
+    {
+      "name": "Crew_Timecards_Source_Gua",
+      "event": "Crew_Timecards / Created or Edited / Validations on form submission",
+      "script_saved": true
     }
   ],
   "existing_report_additions": [
@@ -1357,8 +1484,8 @@
       "restoredEnd": "2027-03-17"
     }
   },
-  "current_release": "1.2.3",
-  "current_creator_promotion": "User promotes verified Development Crew Management functions/workflows, Task_Schedule schema/report layout, existing Crew reports and registered page/widget changes under PMP. Task importer and external/task writes remain disabled.",
+  "current_release": "1.3.1",
+  "current_creator_promotion": "User controlled; new employee/timecard components installed in Development only.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
     "release": "1.1.4",

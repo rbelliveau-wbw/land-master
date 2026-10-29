@@ -1,5 +1,5 @@
 {
-  "status": "PREPARED COMPONENT DEFINITIONS â€” see native-install-progress.json for current Development installation state",
+  "status": "PREPARED COMPONENT DEFINITIONS \u00e2\u20ac\u201d see native-install-progress.json for current Development installation state",
   "authority": {
     "path": "creator/exports/Land_Master_2026-10-21-development.ds",
     "sha256": "66d911f24354bba2b17eee2dbd657bb03c4e8ba98fcf2706e02628f4f0601fc3"
@@ -353,6 +353,112 @@
         "display_name": "Test Record Details",
         "row": 1
       }
+    },
+    {
+      "name": "Employees",
+      "report": "All_Employees",
+      "fields": [
+        {
+          "name": "BU_Employee_ID",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Employee_Code",
+          "type": "text"
+        },
+        {
+          "name": "EmployeeName",
+          "type": "text"
+        },
+        {
+          "name": "IsActive",
+          "type": "checkbox"
+        },
+        {
+          "name": "Territory",
+          "type": "text"
+        },
+        {
+          "name": "Labor_Type",
+          "type": "picklist",
+          "values": [
+            "Superintendent",
+            "Foreman",
+            "Skilled",
+            "Unskilled",
+            "Pipe Layer",
+            "Laborer"
+          ]
+        },
+        {
+          "name": "Crew",
+          "type": "lookup",
+          "target": "Crew"
+        },
+        {
+          "name": "Synced_At",
+          "type": "datetime"
+        }
+      ],
+      "section": {
+        "name": "Employee_Details",
+        "row": 1
+      }
+    },
+    {
+      "name": "Crew_Timecards",
+      "report": "All_Crew_Timecards",
+      "fields": [
+        {
+          "name": "Timecard_ID",
+          "type": "text",
+          "required": true,
+          "unique": true
+        },
+        {
+          "name": "Work_Date",
+          "type": "date"
+        },
+        {
+          "name": "Foreman_ID",
+          "type": "text"
+        },
+        {
+          "name": "Foreman_Code",
+          "type": "text"
+        },
+        {
+          "name": "Foreman_Name",
+          "type": "text"
+        },
+        {
+          "name": "Job_Code",
+          "type": "text"
+        },
+        {
+          "name": "Job_Name",
+          "type": "text"
+        },
+        {
+          "name": "Subdivision1",
+          "type": "lookup",
+          "target": "Subdivision"
+        },
+        {
+          "name": "IsDeleted",
+          "type": "checkbox"
+        },
+        {
+          "name": "Synced_At",
+          "type": "datetime"
+        }
+      ],
+      "section": {
+        "name": "Timecard_Details",
+        "row": 1
+      }
     }
   ],
   "add_to_User_Access": [
@@ -402,5 +508,6 @@
   },
   "testing_mode": false,
   "creator_only": true,
-  "projects_push_enabled": false
+  "projects_push_enabled": false,
+  "employees_timecards_authority": "Native component definitions captured 2026-10-29 under native-installed/; generated full-export metadata remains historical."
 }

@@ -46,11 +46,12 @@
       if(records.has(type+':'+recordId))throw new Error('Duplicate source record ID.');records.set(type+':'+recordId,r);
     }}
     add(data.milestones,'M');add(data.tasks,'T');
-    const crews=new Map((data.crews||[]).filter(r=>r.Active===true||norm(r.Active)==='true').map(r=>[id(r.ID),{id:id(r.ID),code:String(r.Crew_Code||''),color:/^#[a-f\d]{6}$/i.test(r.Badge_Color||'')?r.Badge_Color:'#49688c'}]));
-    return {phases,byId,records,crews,assignments:data.assignments||[],issues};
+    const crews=new Map((data.crews||[]).filter(r=>data.foremanTimecards===true||r.Active===true||norm(r.Active)==='true').map(r=>[id(r.ID),{id:id(r.ID),code:String(r.Crew_Code||''),name:String(r.Crew_Name||''),active:r.Active===true||norm(r.Active)==='true',color:/^#[a-f\d]{6}$/i.test(r.Badge_Color||'')?r.Badge_Color:'#49688c'}]));
+    return {phases,byId,records,crews,assignments:data.assignments||[],employees:data.employees||[],timecards:data.timecards||[],foremanTimecards:data.foremanTimecards===true,issues};
   }
   function assignments(model,day){
     model.phases.forEach(p=>p.crews=[]);
+    if(model.foremanTimecards){root.CrewEmployeesModel.assignBadges(model,day);return;}
     for(const a of model.assignments){const d=date(a.Assignment_Date),p=model.byId.get(id(a.Subdivision1)),crew=model.crews.get(id(a.Crew));if(d!=null&&d>=day-7&&d<=day&&p&&crew&&!p.crews.some(c=>c.id===crew.id))p.crews.push(crew);}
     model.phases.forEach(p=>p.crews.sort((a,b)=>a.code.localeCompare(b.code)));
   }

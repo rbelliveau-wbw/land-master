@@ -1,8 +1,8 @@
 {
-  "status": "mapped-1.2.3-awaiting-workflow-completion",
+  "status": "1.3.1-native-development-installed-user-promotion-pending",
   "widget": "crew-locations",
-  "version": "1.2.3",
-  "mode": "manual-crew-management-and-creator-only-scheduling",
+  "version": "1.3.1",
+  "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
   "new_page": "Crew_Management",
@@ -64,7 +64,18 @@
     "View_Crew_Locations",
     "Edit_Crew_Milestones",
     "Edit_Crew_Task_Dates",
-    "Manage_Crew_Assignments"
+    "Manage_Crew_Assignments",
+    "Employees",
+    "Crew_Timecards",
+    "All_Employees",
+    "All_Crew_Timecards",
+    "crewSyncEmployees",
+    "crewSyncTimecards",
+    "crewEmployeeWrite",
+    "Employees_Staffing_Guard",
+    "Crew_Timecards_Source_Gua",
+    "Daily_Crew_Employees",
+    "Daily_Crew_Timecards"
   ],
   "task_adapter": {
     "status": "unverified-source-disabled",
@@ -309,7 +320,7 @@
         {
           "id": "4410926000005393014",
           "code": "TEST-DEV-1023",
-          "final_name": "TEST Development Crew — edited",
+          "final_name": "TEST Development Crew \u2014 edited",
           "final_badge_color": "#FFFFFF",
           "deactivated_and_reactivated": true,
           "final_active": true
@@ -567,5 +578,29 @@
       "exit_code": 0,
       "session": "9637"
     }
+  },
+  "employees_timecards": {
+    "native_environment": "development",
+    "creator_promotion": "user controlled; not performed",
+    "analytics_workspace": "2107789000000003001",
+    "employee_view": "2107789000036057124",
+    "timecard_view": "2107789000022718491",
+    "employee_key": "zzz_BUEmployeeID_Guid -> Employees.BU_Employee_ID",
+    "foreman_join": "ForemanID -> Employees.BU_Employee_ID (exact GUID, case insensitive)",
+    "phase_join": "JobCode -> External_System_Mapping[External_System == HeavyJob].External_Code; exactly one Subdivision1",
+    "roster_import": "Create named active/nondeleted employees only. Update retained existing employees to inactive. Never delete employees or infer inactivity from absence. Preserve staffing fields.",
+    "badge_window": "Today and previous six calendar dates in America/Chicago; all matching phases; deleted/future cards excluded",
+    "badge_owner": "Employee.Labor_Type == Foreman and current Crew lookup; inactive employee/crew shown explicitly",
+    "retention": "Work_Date < zoho.currentdate.subMonth(3) deleted only after a complete validated successful upsert batch",
+    "schedules": {
+      "Daily_Crew_Employees": "daily 05:00 America/Chicago",
+      "Daily_Crew_Timecards": "daily 05:15 America/Chicago"
+    },
+    "flags": [
+      "employeeRosterEnabled",
+      "foremanTimecardsEnabled"
+    ],
+    "writes": "caller-scoped SDK updateRecordById with native On Validate; only Territory,Labor_Type,Crew",
+    "proof": "docs/crew-employees-timecards-2026-10-29.md"
   }
 }

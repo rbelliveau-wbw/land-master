@@ -14,9 +14,9 @@
    assert(document.documentElement.scrollWidth<=innerWidth+1,'No horizontal page overflow',document.documentElement.scrollWidth);
    assert(all('.filters').every(node=>node.scrollWidth<=node.clientWidth+1),'Filters stay inside their cards');
    metrics.timelineHeight=gantt.clientHeight;metrics.scheduleHeight=table.clientHeight;
-   assert(gantt.clientHeight<=Math.max(260,Math.min(innerHeight*.48,480))+1,'Timeline has a bounded desktop height');
+   assert(gantt.scrollHeight<=gantt.clientHeight+1,'Timeline grows to fit all selected phase rows');
    assert(table.clientHeight<=Math.max(320,Math.min(innerHeight*.58,640))+1,'Editor has a bounded desktop height');
-   assert(gantt.scrollHeight>gantt.clientHeight&&table.scrollHeight>table.clientHeight,'Both workspaces retain all phases through vertical scrolling');
+   assert(table.scrollHeight>table.clientHeight,'Editor retains all phases through vertical scrolling');
    assert(all('.gantt-row.task-unavailable').length===38&&all('#scheduleTable tr.task-unavailable').length===38,'Unavailable Tasks preserve every phase pair');
    assert(all('#scheduleTable .task-unavailable input').length===0,'Unavailable Tasks omit disabled empty inputs');
    assert(all('.task-unavailable .source-unavailable').length===76,'Unavailable Tasks carry explicit source labels');

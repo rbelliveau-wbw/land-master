@@ -1,0 +1,62 @@
+Employees_Staffing_Guard as "Employees Staffing Guard"
+{
+	type =  form
+	form = Employees
+    description = "Workflow"
+
+	record event = on add or edit
+
+	on validate
+	{
+		actions 
+		{
+			custom deluge script
+			(
+					// Employees: Created or Edited -> On Validate. Imports use the native Deluge
+				// transaction; interactive writes can change staffing only.
+				employeeError = "";
+				validLabor = {"","Superintendent","Foreman","Skilled","Unskilled","Pipe Layer","Laborer"};
+				access = User_Access[User == zoho.loginuser];
+				if(access.count() != 1 || access.View_Crew_Locations != true || access.Manage_Crew_Assignments != true)
+				{
+					employeeError = "Crew management permission has not been granted.";
+				}
+				current = Employees[ID == input.ID];
+				if(current.count() != 1)
+				{
+					employeeError = "Employees are created by the daily directory sync.";
+				}
+				else
+				{
+					if(current.BU_Employee_ID != input.BU_Employee_ID || current.Employee_Code != input.Employee_Code || current.EmployeeName != input.EmployeeName || current.IsActive != input.IsActive || current.Synced_At != input.Synced_At)
+					{
+						employeeError = "Employee identity and active status are maintained by the daily sync.";
+					}
+					if(current.IsActive != true)
+					{
+						employeeError = "Inactive employee assignments are retained for history.";
+					}
+					if(input.Crew != null && input.Crew != current.Crew)
+					{
+						targetCrew = Crew[ID == input.Crew];
+						if(targetCrew.count() != 1 || targetCrew.Active != true)
+						{
+							employeeError = "Choose an active crew.";
+						}
+					}
+				}
+				if(ifnull(input.Territory,"").trim() == "" || !validLabor.contains(ifnull(input.Labor_Type,"")))
+				{
+					employeeError = "Choose a territory and valid labor type.";
+				}
+				if(employeeError != "")
+				{
+					alert employeeError;
+					cancel submit;
+				}
+			)
+		}
+	}
+
+}
+

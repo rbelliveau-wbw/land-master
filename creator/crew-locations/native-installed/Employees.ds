@@ -1,0 +1,99 @@
+form Employees
+{
+	success message = "Employee Added Successfully"
+	Employee_Details
+	(
+		type = section
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have unique BU_Employee_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Employee_Code
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	EmployeeName
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	IsActive
+	(
+    	type = checkbox
+		initial value = false
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Territory
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Labor_Type
+	(
+		type = picklist
+		values = {"Superintendent","Foreman","Skilled","Unskilled","Pipe Layer","Laborer"}
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Crew
+	(
+		type = picklist	
+		values  = Crew.ID
+    	displayformat = [Crew_Code]
+		sortorder = ascending
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Synced_At
+	(
+    	type = datetime
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

@@ -1,0 +1,112 @@
+form Crew_Timecards
+{
+	Timecard_Details
+	(
+		type = section
+		displayname = "Timecard Details"
+	 	row = 1
+	 	column = 0   
+		width = medium
+	)
+	must have unique Timecard_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Work_Date
+	(
+    	type = date
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Foreman_ID
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Foreman_Code
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Foreman_Name
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Job_Code
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Job_Name
+	(
+    	type = text
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Subdivision1
+	(
+		type = picklist	
+		values  = Subdivision.ID
+    	displayformat = [Subdivision_Name]
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	IsDeleted
+	(
+    	type = checkbox
+		initial value = false
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	Synced_At
+	(
+    	type = datetime
+		timedisplayoptions = "hh:mm:ss"
+		alloweddays = 0,1,2,3,4,5,6
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
+	
+	actions
+	{
+		on add
+		{
+			submit
+			(
+   				type = submit
+   				displayname = "Submit"
+			)
+		}
+		on edit
+		{
+			update
+			(
+   				type = submit
+   				displayname = "Update"
+			)
+			cancel
+			(
+   				type = cancel
+   				displayname = "Cancel"
+			)
+		}
+	}
+}

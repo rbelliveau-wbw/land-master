@@ -1,0 +1,988 @@
+string crewLocationsWidget(string payload)
+{
+	response = {"ok":false,"unknown":false};
+	phaseId = "";
+	operationId = "";
+	acquired = false;
+	writeUncertain = false;
+	confirmed = List();
+	savedRecords = List();
+	try 
+	{
+		config = thisapp.crewLocationsConfig();
+		response.put("testingMode",false);
+		response.put("creatorOnly",true);
+		response.put("projectsPushEnabled",false);
+		response.put("environment",config.get("environment"));
+		if(zoho.loginuser == null || zoho.loginuser == "" || zoho.loginuser == "public")
+		{
+			response.put("message","An authenticated Creator session is required.");
+			return response.toString();
+		}
+		if(payload == null || payload.length() > 48000)
+		{
+			response.put("message","Schedule request exceeds its supported size.");
+			return response.toString();
+		}
+		request = payload.toMap();
+		action = ifnull(request.get("action"),"").toString();
+		response.put("action",action);
+		allowedEnvironments = {"development","stage","production"};
+		if(config.get("enabled") != true || config.get("creatorOnly") != true || config.get("projectsPushEnabled") != false || !allowedEnvironments.contains(config.get("environment")))
+		{
+			response.put("message","Creator-only scheduling has not been enabled.");
+			return response.toString();
+		}
+		access = User_Access[User == zoho.loginuser];
+		if(access.count() != 1 || access.View_Crew_Locations != true)
+		{
+			response.put("message","Crew Locations access has not been granted.");
+			return response.toString();
+		}
+		if(action == "capabilities")
+		{
+			response.put("permissions",{"view":true,"milestones":access.Edit_Crew_Milestones == true,"tasks":access.Edit_Crew_Task_Dates == true && config.get("taskWritesVerified") == true,"assignments":access.Manage_Crew_Assignments == true});
+			response.put("management",{"enabled":true,"nativeWrites":true,"protocol":"native-validated-v1"});
+			response.put("sources",{"crews":config.get("nativeCrewReadsEnabled") == true,"tasks":config.get("tasksEnabled") == true,"employees":config.get("employeeRosterEnabled") == true,"foremanTimecards":config.get("foremanTimecardsEnabled") == true});
+			dependencies = List();
+			if(config.get("nativeCrewReadsEnabled") != true)
+			{
+				dependencies.add("Native crew reports are not configured.");
+			}
+			if(config.get("tasksEnabled") != true)
+			{
+				dependencies.add("Task source: verify the T-row source, stage mapping and date columns before enabling the task mirror.");
+			}
+			if(config.get("taskWritesVerified") != true)
+			{
+				dependencies.add("Task editing is unavailable until its local/source write semantics are verified.");
+			}
+			dependencies.add("Dates save to Creator only with Push_Update false. Daily inbound Analytics sync may replace them.");
+			response.put("dependencies",dependencies);
+			response.put("ok",true);
+			return response.toString();
+		}
+		// Management reads and preparation reuse the authenticated native reports.
+		// The browser performs the one-record write through DATA.addRecords or
+		// DATA.updateRecordById; mandatory native On Validate workflows repeat these
+		// guards. Never substitute an owner insert or widen the reused connection.
+		if(action == "save-employee" || action == "employee-status")
+        {
+            employeeResult = thisapp.crewEmployeeWrite(request);
+            for each employeeKey in employeeResult.keys() { response.put(employeeKey,employeeResult.get(employeeKey)); }
+            return response.toString();
+        }
+		if(action == "management-list")
+		{
+			if(config.get("nativeCrewReadsEnabled") != true)
+			{
+				response.put("message","Native crew reports are not configured.");
+				return response.toString();
+			}
+			crews = List();
+			assignments = List();
+			phases = List();
+			nextCursor = Map();
+			complete = true;
+			cursor = request.get("cursor");
+			continuing = cursor != null;
+			for each  source in {"crews","assignments","phases"}
+			{
+				reportName = "All_Crews";
+				requiredFields = {"ID","Crew_Code","Crew_Name","Badge_Color","Active","Source_System","Source_Record_ID"};
+				if(source == "assignments")
+				{
+					reportName = "Crew_Assignment_Report";
+					requiredFields = {"ID","Subdivision1","Crew","Assignment_Date","Source_System","Source_Record_ID","Source_Key"};
+				}
+				if(source == "phases")
+				{
+					reportName = "All_Subdivisions";
+					requiredFields = {"ID","Subdivision_Name","Subdivision_Code","Phase","Subphase","Territory","Status","Projects_Status"};
+				}
+				nextCursor.put(source,"");
+				token = "";
+				if(continuing)
+				{
+					token = ifnull(cursor.get(source),"").toString();
+				}
+				if(!continuing || token != "")
+				{
+					if(token.length() > 4096)
+					{
+						response.put("message","The crew report cursor is invalid.");
+						return response.toString();
+					}
+					readHeaders = {"Content-Type":"application/json"};
+					if(config.get("environment") != "production")
+					{
+						readHeaders.put("environment",config.get("environmentLink"));
+					}
+					if(token != "")
+					{
+						readHeaders.put("record_cursor",token);
+					}
+					page = invokeurl
+					[
+						url :config.get("baseUrl") + reportName
+						type :GET
+						parameters:{"max_records":1000,"field_config":"all"}
+						headers:readHeaders
+						detailed:true
+						connection:"zoho_creator_connection"
+					];
+					pageHttp = page.get("responseCode");
+					safeHttp = "missing";
+					safeCode = "missing";
+					if(ifnull(pageHttp,"").toString().matches("[0-9]{3}"))
+					{
+						safeHttp = pageHttp.toString();
+					}
+					try 
+					{
+						pageBody = page.get("responseText").toString().toMap();
+					}					catch (pageParseError)
+					{
+						response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+						return response.toString();
+					}
+					pageCode = ifnull(pageBody.get("code"),"").toString();
+					pageRows = List();
+					if(pageCode.matches("[0-9]+"))
+					{
+						safeCode = pageCode;
+					}
+					pageData = pageBody.get("data");
+					// Native empty reports use 3100/404 or v2.1 9220/200 or 400.
+					// Accept only the exact empty envelope/status pair, never an error
+					// contradiction or populated response. All other failures stay closed.
+					emptyData = false;
+					if(pageData == null)
+					{
+						emptyData = true;
+					}
+					else if(pageData.toString() == "[]")
+					{
+						emptyData = true;
+					}
+					validHttp = false;
+					if(pageHttp >= 200 && pageHttp < 300)
+					{
+						validHttp = true;
+					}
+					emptyHttp = false;
+					if(pageCode == "3100")
+					{
+						emptyHttp = validHttp;
+						if(pageHttp == 404)
+						{
+							emptyHttp = true;
+						}
+					}
+					if(pageCode == "9220")
+					{
+						if(pageHttp == 200)
+						{
+							emptyHttp = true;
+						}
+						if(pageHttp == 400)
+						{
+							emptyHttp = true;
+						}
+					}
+					emptyPage = emptyData && pageBody.get("error") == null && pageBody.get("success") != false && emptyHttp;
+					invalidHttp = !validHttp;
+					if(invalidHttp && !emptyPage)
+					{
+						response.put("message","Native report access was not confirmed for " + reportName + " (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+						return response.toString();
+					}
+					if(pageCode == "3000" && pageData != null && pageBody.get("error") == null && pageBody.get("success") != false)
+					{
+						pageRows = pageData;
+					}
+					else if(!emptyPage)
+					{
+						response.put("message","Creator did not return readable " + reportName + " records (HTTP " + safeHttp + ", Creator " + safeCode + ").");
+						return response.toString();
+					}
+					pageHeaders = page.get("responseHeader");
+					nextToken = "";
+					if(pageHeaders != null)
+					{
+						for each  headerName in pageHeaders.keys()
+						{
+							if(headerName.toLowerCase() == "record_cursor")
+							{
+								nextToken = ifnull(pageHeaders.get(headerName),"").toString();
+							}
+						}
+					}
+					if(nextToken != "")
+					{
+						if(nextToken == token)
+						{
+							response.put("message","Creator repeated a crew report cursor.");
+							return response.toString();
+						}
+						nextCursor.put(source,nextToken);
+						complete = false;
+					}
+					for each  row in pageRows
+					{
+						for each  fieldName in requiredFields
+						{
+							if(!row.keys().contains(fieldName))
+							{
+								response.put("message",reportName + " must expose native field " + fieldName + ".");
+								return response.toString();
+							}
+						}
+						rowId = ifnull(row.get("ID"),"").toString();
+						if(!rowId.matches("[0-9]+"))
+						{
+							response.put("message","Creator returned an invalid crew record identity.");
+							return response.toString();
+						}
+						if(source == "crews")
+						{
+							crews.add({"id":rowId,"code":ifnull(row.get("Crew_Code"),"").toString(),"name":ifnull(row.get("Crew_Name"),"").toString(),"color":ifnull(row.get("Badge_Color"),"").toString(),"active":ifnull(row.get("Active"),false).toString().toLowerCase() == "true","sourceSystem":ifnull(row.get("Source_System"),"").toString(),"sourceRecordId":ifnull(row.get("Source_Record_ID"),"").toString()});
+						}
+						else if(source == "assignments")
+						{
+							crewLookup = row.get("Crew");
+							phaseLookup = row.get("Subdivision1");
+							if(crewLookup == null || phaseLookup == null || crewLookup.get("ID") == null || phaseLookup.get("ID") == null)
+							{
+								response.put("message","Creator assignment lookup identities are unavailable.");
+								return response.toString();
+							}
+							system = ifnull(row.get("Source_System"),"").toString();
+							sourceId = ifnull(row.get("Source_Record_ID"),"").toString();
+							sourceKey = ifnull(row.get("Source_Key"),"").toString();
+							manualSource = false;
+							if(system == "MANUAL_WIDGET")
+							{
+								manualSource = true;
+							}
+							if(system == "MANUAL_QA")
+							{
+								manualSource = true;
+							}
+							manual = manualSource && sourceId != "" && sourceKey == system + ":" + sourceId;
+							reason = "";
+							if(!manual)
+							{
+								reason = "Imported assignment: source editing is unavailable.";
+							}
+							assignments.add({"id":rowId,"crewId":crewLookup.get("ID").toString(),"phaseId":phaseLookup.get("ID").toString(),"date":thisapp.crewLocationsIso(ifnull(row.get("Assignment_Date"),"").toString()),"sourceSystem":system,"sourceRecordId":sourceId,"sourceKey":sourceKey,"editable":manual && access.Manage_Crew_Assignments == true,"reason":reason});
+						}
+						else
+						{
+							phaseEditable = true;
+							phaseReason = "";
+							operationalStatus = ifnull(row.get("Projects_Status"),"").toString();
+							if(operationalStatus.trim() == "")
+							{
+								operationalStatus = ifnull(row.get("Status"),"").toString();
+							}
+							lockedStatuses = {"completed","sold out","sold out (prev wfy)"};
+							for each  rawStatus in {row.get("Status"),row.get("Projects_Status")}
+							{
+								normalizedStatus = ifnull(rawStatus,"").toString().trim().toLowerCase().replaceAll("\\s+"," ");
+								if(lockedStatuses.contains(normalizedStatus))
+								{
+									phaseEditable = false;
+									phaseReason = "This phase is locked.";
+								}
+							}
+							phases.add({"id":rowId,"name":ifnull(row.get("Subdivision_Name"),"").toString(),"code":ifnull(row.get("Subdivision_Code"),"").toString(),"phase":ifnull(row.get("Phase"),"").toString(),"subphase":ifnull(row.get("Subphase"),"").toString(),"territory":ifnull(row.get("Territory"),"").toString(),"status":operationalStatus,"creatorStatus":ifnull(row.get("Status"),"").toString(),"projectsStatus":ifnull(row.get("Projects_Status"),"").toString(),"editable":phaseEditable && access.Manage_Crew_Assignments == true,"reason":phaseReason});
+						}
+					}
+				}
+			}
+			response.put("crews",crews);
+			response.put("assignments",assignments);
+			response.put("phases",phases);
+			response.put("nextCursor",nextCursor);
+			response.put("complete",complete);
+			response.put("permissions",{"view":true,"assignments":access.Manage_Crew_Assignments == true});
+			response.put("management",{"enabled":true,"nativeWrites":true,"protocol":"native-validated-v1"});
+			response.put("ok",true);
+			return response.toString();
+		}
+		if(action == "save-crew" || action == "save-assignment" || action == "management-status")
+		{
+			if(access.Manage_Crew_Assignments != true)
+			{
+				response.put("message","Crew management permission has not been granted.");
+				return response.toString();
+			}
+			if(config.get("nativeCrewReadsEnabled") != true)
+			{
+				response.put("message","Native crew reports are not configured.");
+				return response.toString();
+			}
+			requestId = ifnull(request.get("requestId"),"").toString();
+			response.put("requestId",requestId);
+			if(!requestId.matches("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"))
+			{
+				response.put("message","A valid crew save request ID is required.");
+				return response.toString();
+			}
+			managementLockedStatuses = {"completed","sold out","sold out (prev wfy)"};
+			kind = "crew";
+			if(action == "save-assignment")
+			{
+				kind = "assignment";
+			}
+			if(action == "management-status")
+			{
+				kind = ifnull(request.get("statusFor"),"").toString();
+			}
+			if(kind != "crew" && kind != "assignment")
+			{
+				response.put("message","A valid crew save kind is required.");
+				return response.toString();
+			}
+			draft = request.get(kind);
+			if(draft == null)
+			{
+				response.put("message","Crew save details are required.");
+				return response.toString();
+			}
+			recordId = ifnull(draft.get("id"),"").toString();
+			if(recordId != "" && !recordId.matches("[0-9]+"))
+			{
+				response.put("message","A valid native record ID is required.");
+				return response.toString();
+			}
+			reportName = "All_Crews";
+			formName = "Crew";
+			patch = Map();
+			candidate = Map();
+			found = false;
+			if(kind == "crew")
+			{
+				code = ifnull(draft.get("code"),"").toString().trim();
+				name = ifnull(draft.get("name"),"").toString().trim();
+				color = ifnull(draft.get("color"),"").toString().trim();
+				active = draft.get("active");
+				validActive = false;
+				if(active == true)
+				{
+					validActive = true;
+				}
+				if(active == false)
+				{
+					validActive = true;
+				}
+				if(code == "" || code.length() > 64 || name.length() > 255 || !color.matches("#[a-fA-F0-9]{6}") || !validActive)
+				{
+					response.put("message","Enter a crew code, #RRGGBB color and active status.");
+					return response.toString();
+				}
+				criteria = "ID == " + recordId;
+				if(recordId == "")
+				{
+					if(!code.matches("[a-zA-Z0-9][a-zA-Z0-9 _-]{0,63}"))
+					{
+						response.put("message","Crew code supports letters, numbers, spaces, underscores and hyphens.");
+						return response.toString();
+					}
+					criteria = "Crew_Code == \"" + code + "\"";
+				}
+				read = thisapp.crewLocationsRead(reportName,criteria);
+				if(read.get("ok") != true)
+				{
+					response.put("message",read.get("message"));
+					return response.toString();
+				}
+				unavailableCount = read.get("records").size() > 1;
+				if(recordId != "")
+				{
+					if(read.get("records").size() != 1)
+					{
+						unavailableCount = true;
+					}
+				}
+				if(unavailableCount)
+				{
+					response.put("message","This crew is unavailable to the current user.");
+					return response.toString();
+				}
+				if(read.get("records").size() == 1)
+				{
+					candidate = read.get("records").get(0);
+					found = true;
+					for each  fieldName in {"ID","Crew_Code","Crew_Name","Badge_Color","Active","Source_System","Source_Record_ID"}
+					{
+						if(!candidate.keys().contains(fieldName))
+						{
+							response.put("message","All_Crews must expose native field " + fieldName + ".");
+							return response.toString();
+						}
+					}
+					if(recordId == "")
+					{
+						if(candidate.get("Source_System") != "MANUAL_WIDGET" || candidate.get("Source_Record_ID") != requestId)
+						{
+							response.put("message","That crew code is already in use.");
+							return response.toString();
+						}
+					}
+					if(candidate.get("Crew_Code").toString() != code)
+					{
+						response.put("message","Crew code is immutable.");
+						return response.toString();
+					}
+				}
+				patch.put("Crew_Name",name);
+				patch.put("Badge_Color",color);
+				patch.put("Active",active);
+				if(recordId == "")
+				{
+					patch.put("Crew_Code",code);
+					patch.put("Source_System","MANUAL_WIDGET");
+					patch.put("Source_Record_ID",requestId);
+				}
+			}
+			else
+			{
+				reportName = "Crew_Assignment_Report";
+				formName = "Crew_Assignment";
+				crewId = ifnull(draft.get("crewId"),"").toString();
+				targetPhaseId = ifnull(draft.get("phaseId"),"").toString();
+				dateText = ifnull(draft.get("date"),"").toString();
+				if(!crewId.matches("[0-9]+") || !targetPhaseId.matches("[0-9]+") || !dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))
+				{
+					response.put("message","A crew, phase and work date are required.");
+					return response.toString();
+				}
+				workDate = dateText.toDate("yyyy-MM-dd");
+				if(workDate.toString("yyyy-MM-dd") != dateText)
+				{
+					response.put("message","Enter a valid work date.");
+					return response.toString();
+				}
+				criteria = "ID == " + recordId;
+				if(recordId == "")
+				{
+					criteria = "Source_Key == \"MANUAL_WIDGET:" + requestId + "\"";
+				}
+				read = thisapp.crewLocationsRead(reportName,criteria);
+				if(read.get("ok") != true)
+				{
+					response.put("message",read.get("message"));
+					return response.toString();
+				}
+				unavailableCount = read.get("records").size() > 1;
+				if(recordId != "")
+				{
+					if(read.get("records").size() != 1)
+					{
+						unavailableCount = true;
+					}
+				}
+				if(unavailableCount)
+				{
+					response.put("message","This assignment is unavailable to the current user.");
+					return response.toString();
+				}
+				oldPhaseId = "";
+				oldCrewId = "";
+				if(read.get("records").size() == 1)
+				{
+					candidate = read.get("records").get(0);
+					found = true;
+					for each  fieldName in {"ID","Subdivision1","Crew","Assignment_Date","Source_System","Source_Record_ID","Source_Key"}
+					{
+						if(!candidate.keys().contains(fieldName))
+						{
+							response.put("message","Crew_Assignment_Report must expose native field " + fieldName + ".");
+							return response.toString();
+						}
+					}
+					system = ifnull(candidate.get("Source_System"),"").toString();
+					sourceId = ifnull(candidate.get("Source_Record_ID"),"").toString();
+					manualSource = false;
+					if(system == "MANUAL_WIDGET")
+					{
+						manualSource = true;
+					}
+					if(system == "MANUAL_QA")
+					{
+						manualSource = true;
+					}
+					validIdentity = manualSource && sourceId != "" && candidate.get("Source_Key") == system + ":" + sourceId;
+					if(!validIdentity)
+					{
+						response.put("message","Imported assignment editing is unavailable.");
+						return response.toString();
+					}
+					if(recordId == "")
+					{
+						if(system != "MANUAL_WIDGET" || sourceId != requestId)
+						{
+							response.put("message","Assignment request identity does not match.");
+							return response.toString();
+						}
+					}
+					oldPhaseId = candidate.get("Subdivision1").get("ID").toString();
+					oldCrewId = candidate.get("Crew").get("ID").toString();
+				}
+				crewRead = thisapp.crewLocationsRead("All_Crews","ID == " + crewId);
+				if(crewRead.get("ok") != true || crewRead.get("records").size() != 1)
+				{
+					response.put("message","This crew is unavailable to the current user.");
+					return response.toString();
+				}
+				targetCrew = crewRead.get("records").get(0);
+				if(!targetCrew.keys().contains("Active"))
+				{
+					response.put("message","All_Crews must expose native field Active.");
+					return response.toString();
+				}
+				requiresActiveCrew = false;
+				if(recordId == "")
+				{
+					requiresActiveCrew = true;
+				}
+				if(oldCrewId != crewId)
+				{
+					requiresActiveCrew = true;
+				}
+				if(action != "management-status" && ifnull(targetCrew.get("Active"),false).toString().toLowerCase() != "true" && requiresActiveCrew)
+				{
+					response.put("message","Choose an active crew.");
+					return response.toString();
+				}
+				phaseIds = {targetPhaseId};
+				if(oldPhaseId != "" && oldPhaseId != targetPhaseId)
+				{
+					phaseIds.add(oldPhaseId);
+				}
+				for each  managementPhaseId in phaseIds
+				{
+					phaseRead = thisapp.crewLocationsRead("All_Subdivisions","ID == " + managementPhaseId);
+					if(phaseRead.get("ok") != true || phaseRead.get("records").size() != 1)
+					{
+						response.put("message","This phase is unavailable to the current user.");
+						return response.toString();
+					}
+					currentPhase = phaseRead.get("records").get(0);
+					for each  fieldName in {"Status","Projects_Status"}
+					{
+						if(!currentPhase.keys().contains(fieldName))
+						{
+							response.put("message","All_Subdivisions must expose native field " + fieldName + ".");
+							return response.toString();
+						}
+					}
+					if(action != "management-status")
+					{
+						for each  rawStatus in {currentPhase.get("Status"),currentPhase.get("Projects_Status")}
+						{
+							normalizedStatus = ifnull(rawStatus,"").toString().trim().toLowerCase().replaceAll("\\s+"," ");
+							if(managementLockedStatuses.contains(normalizedStatus))
+							{
+								response.put("message","This phase is locked.");
+								return response.toString();
+							}
+						}
+					}
+				}
+				patch.put("Crew",crewId);
+				patch.put("Subdivision1",targetPhaseId);
+				patch.put("Assignment_Date",workDate.toString("MM/dd/yyyy"));
+				if(recordId == "")
+				{
+					patch.put("Source_System","MANUAL_WIDGET");
+					patch.put("Source_Record_ID",requestId);
+					patch.put("Source_Key","MANUAL_WIDGET:" + requestId);
+				}
+			}
+			if(action == "management-status")
+			{
+				// Only explicit ambiguous-reply recovery compares editable values.
+				matches = found;
+				if(found && kind == "crew")
+				{
+					matches = candidate.get("Crew_Code").toString() == code && ifnull(candidate.get("Crew_Name"),"").toString() == name && ifnull(candidate.get("Badge_Color"),"").toString() == color && ifnull(candidate.get("Active"),false).toString().toLowerCase() == active.toString();
+				}
+				if(found && kind == "assignment")
+				{
+					matches = oldCrewId == crewId && oldPhaseId == targetPhaseId && thisapp.crewLocationsIso(ifnull(candidate.get("Assignment_Date"),"").toString()) == dateText;
+				}
+				response.put("ok",matches);
+				response.put("unknown",!matches);
+				response.put("kind",kind);
+				response.put("state","unconfirmed");
+				if(matches)
+				{
+					response.put("state","saved");
+					response.put("recordId",candidate.get("ID").toString());
+				}
+				else
+				{
+					response.put("message","The saved record is not confirmed. Review in Creator; this write has not been replayed.");
+				}
+				return response.toString();
+			}
+			if(recordId == "" && found)
+			{
+				response.put("unknown",true);
+				response.put("kind",kind);
+				response.put("state","unconfirmed");
+				response.put("recordId",candidate.get("ID").toString());
+				response.put("message","This create request already has a native record. Recheck the saved record; no insert was repeated.");
+				return response.toString();
+			}
+			response.put("write",{"kind":kind,"formName":formName,"reportName":reportName,"recordId":recordId,"data":patch});
+			response.put("ok",true);
+			response.put("state","ready");
+			return response.toString();
+		}
+		phaseId = ifnull(request.get("subdivisionId"),"").toString();
+		if(!phaseId.matches("[0-9]+"))
+		{
+			response.put("message","A valid phase ID is required.");
+			return response.toString();
+		}
+		phaseRead = thisapp.crewLocationsRead("All_Subdivisions","ID == " + phaseId);
+		if(phaseRead.get("ok") != true || phaseRead.get("records").size() != 1)
+		{
+			response.put("message","This phase is unavailable to the current user.");
+			return response.toString();
+		}
+		if(action == "history")
+		{
+			operations = List();
+			readable = List();
+			historyMilestones = thisapp.crewLocationsRead("All_Milestones","Subdivision1 == " + phaseId);
+			if(historyMilestones.get("ok") == true)
+			{
+				for each  historySource in historyMilestones.get("records")
+				{
+					readable.add("M:" + historySource.get("ID").toString());
+				}
+			}
+			if(config.get("tasksEnabled") == true)
+			{
+				historyTasks = thisapp.crewLocationsRead("All_Task_Schedules","Subdivision1 == " + phaseId);
+				if(historyTasks.get("ok") == true)
+				{
+					for each  historySource in historyTasks.get("records")
+					{
+						readable.add("T:" + historySource.get("ID").toString());
+					}
+				}
+			}
+			for each  entry in Schedule_Change_Log[Subdivision1 == phaseId.toLong()] sort by Timestamp desc range from 0 to 49
+			{
+				canRead = true;
+				historyChanges = entry.Request_JSON.toMap().get("changes");
+				for each  historyChange in historyChanges
+				{
+					if(!readable.contains(historyChange.get("type") + ":" + historyChange.get("recordId")))
+					{
+						canRead = false;
+					}
+				}
+				if(canRead)
+				{
+					operations.add({"operationId":entry.Operation_ID,"origin":entry.Origin,"state":entry.State,"actor":entry.Actor,"timestamp":entry.Timestamp.toString("MM/dd/yyyy HH:mm:ss"),"changes":historyChanges});
+				}
+			}
+			response.put("operations",operations);
+			response.put("ok",true);
+			return response.toString();
+		}
+		operationId = ifnull(request.get("operationId"),"").toString();
+		if(!operationId.matches("[a-fA-F0-9-]{36}"))
+		{
+			response.put("message","A valid operation ID is required.");
+			return response.toString();
+		}
+		if(action == "status")
+		{
+			response = thisapp.crewLocationsStatus(operationId,phaseId);
+			response.put("action",action);
+			response.put("testingMode",false);
+			response.put("creatorOnly",true);
+			response.put("projectsPushEnabled",false);
+			response.put("environment",config.get("environment"));
+			return response.toString();
+		}
+		if(action != "prepare" && action != "apply")
+		{
+			response.put("message","Unknown schedule action.");
+			return response.toString();
+		}
+		// Both calls bind to the same canonical plan. Preparation commits the phase
+		// lock/audit before the delegated PATCH starts a separate Creator transaction.
+		request.put("action","apply");
+		payload = request.toString();
+		existing = Schedule_Change_Log[Operation_ID == operationId];
+		if(existing.count() > 0)
+		{
+			if(existing.Actor != zoho.loginuser || existing.Request_JSON != payload || existing.Subdivision1 != phaseId.toLong())
+			{
+				response.put("message","Operation ID was already used for a different request.");
+				return response.toString();
+			}
+			if(action == "prepare" || existing.State != "prepared")
+			{
+				response = thisapp.crewLocationsStatus(operationId,phaseId);
+				response.put("action",action);
+				response.put("testingMode",false);
+				response.put("creatorOnly",true);
+				response.put("projectsPushEnabled",false);
+				response.put("environment",config.get("environment"));
+				return response.toString();
+			}
+		}
+		if(action == "apply" && existing.count() != 1)
+		{
+			response.put("message","Prepare this operation before saving.");
+			return response.toString();
+		}
+		if(action == "prepare")
+		{
+			// Unique Phase_Key gives one scheduling operation exclusive use of a phase.
+			// Every protected direct edit and the inbound importer must honor this lock.
+			lockId = insert into Crew_Schedule_Lock
+			[
+				Phase_Key=phaseId
+				Subdivision1=phaseId.toLong()
+				Operation_ID=operationId
+				Actor=zoho.loginuser
+				Acquired_At=zoho.currenttime
+				Added_User=zoho.loginuser
+			];
+			acquired = true;
+			logId = insert into Schedule_Change_Log
+			[
+				Operation_ID=operationId
+				Operation_Type="creator_only_schedule"
+				Actor=zoho.loginuser
+				Timestamp=zoho.currenttime
+				Subdivision1=phaseId.toLong()
+				Origin=request.get("origin")
+				Request_JSON=payload
+				State="validating"
+				Execution_Finished=false
+				Duration_Operation_ID=ifnull(request.get("durationOperationId"),"")
+				Reverses_Operation_ID=ifnull(request.get("reversesOperationId"),"")
+				Added_User=zoho.loginuser
+			];
+			log = Schedule_Change_Log[ID == logId];
+			plan = thisapp.crewLocationsValidate(request);
+			if(plan.get("ok") != true)
+			{
+				response.put("message",plan.get("message"));
+				response.put("state","rejected");
+				response.put("operationId",operationId);
+				response.put("confirmed",confirmed);
+				response.put("records",savedRecords);
+				log.Result_JSON=response.toString();
+				log.Execution_Finished=true;
+				log.State="rejected";
+				delete from Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId];
+				return response.toString();
+			}
+			for each  target in plan.get("payloads")
+			{
+				key = target.get("type") + ":" + target.get("recordId");
+				if(Crew_Test_Record[Record_Key == key].count() == 0)
+				{
+					markerId = insert into Crew_Test_Record
+					[
+						Record_Key=key
+						Subdivision1=phaseId.toLong()
+						First_Operation_ID=operationId
+						Created_At=zoho.currenttime
+						Added_User=zoho.loginuser
+					];
+				}
+			}
+			response.put("ok",true);
+			response.put("state","prepared");
+			response.put("operationId",operationId);
+			log.Result_JSON=response.toString();
+			log.State="prepared";
+			return response.toString();
+		}
+		ownedLock = Crew_Schedule_Lock[Phase_Key == phaseId && Operation_ID == operationId && Actor == zoho.loginuser];
+		if(ownedLock.count() != 1)
+		{
+			response.put("message","The prepared phase lock is unavailable.");
+			return response.toString();
+		}
+		// A second unique key prevents two apply calls from executing the same plan.
+		// Do not reclaim a claim after an ambiguous response or an elapsed timeout.
+		try 
+		{
+			claimId = insert into Crew_Schedule_Lock
+			[
+				Phase_Key=phaseId + ":apply"
+				Subdivision1=phaseId.toLong()
+				Operation_ID=operationId
+				Actor=zoho.loginuser
+				Acquired_At=zoho.currenttime
+				Added_User=zoho.loginuser
+			];
+		}		catch (claimError)
+		{
+			response.put("unknown",true);
+			response.put("operationId",operationId);
+			response.put("message","This prepared operation is already executing or needs recovery. Check status; do not replay it.");
+			return response.toString();
+		}
+		acquired = true;
+		log = Schedule_Change_Log[Operation_ID == operationId];
+		plan = thisapp.crewLocationsValidate(request);
+		if(plan.get("ok") != true)
+		{
+			response.put("message",plan.get("message"));
+			response.put("state","rejected");
+			response.put("operationId",operationId);
+			response.put("confirmed",confirmed);
+			response.put("records",savedRecords);
+			log.Result_JSON=response.toString();
+			log.Execution_Finished=true;
+			log.State="rejected";
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
+			return response.toString();
+		}
+		log.State="saving";
+		for each  target in plan.get("payloads")
+		{
+			// Recheck all before-values, status and rights before starting writes, then
+			// validate each subsequent target against its original before-values.
+			currentRequest = request;
+			if(confirmed.size() > 0)
+			{
+				currentRequest = Map();
+				currentRequest.put("subdivisionId",phaseId);
+				currentRequest.put("origin","table");
+				for each  originalChange in request.get("changes")
+				{
+					if(originalChange.get("recordId") == target.get("recordId"))
+					{
+						currentRequest.put("changes",{originalChange});
+					}
+				}
+			}
+			fresh = thisapp.crewLocationsValidate(currentRequest);
+			if(fresh.get("ok") != true)
+			{
+				response.put("message",fresh.get("message"));
+				break;
+			}
+			key = target.get("type") + ":" + target.get("recordId");
+			log.Inflight_Record_Key=key;
+			fields = {"Start_Date","End_Date"};
+			body = {"data":target.get("patch"),"result":{"fields":fields}};
+			headers = {"Content-Type":"application/json"};
+			if(config.get("environment") != "production")
+			{
+				headers.put("environment",config.get("environmentLink"));
+			}
+			writeUncertain = true;
+			ack = invokeurl
+			[
+				url :(config.get("baseUrl") + target.get("report")) + "/" + target.get("recordId")
+				type :PATCH
+				parameters:body.toString()
+				headers:headers
+				connection:"zoho_creator_connection"
+			];
+			if(ack.get("code") != null && ack.get("code").toString() != "3000")
+			{
+				writeUncertain = false;
+				nativeDetails = ifnull(ack.get("message"),ifnull(ack.get("error"),ifnull(ack.get("data"),"Details unavailable."))).toString();
+				response.put("nativeCode",ack.get("code"));
+				response.put("message","Creator rejected the schedule update (" + ack.get("code") + "): " + nativeDetails);
+				break;
+			}
+			if(ack.get("code") == null || ack.get("data") == null || ack.get("data").get("ID").toString() != target.get("recordId") || ack.get("error") != null || ack.get("success") == false)
+			{
+				response.put("message","Creator did not return an unambiguous destination acknowledgement.");
+				break;
+			}
+			confirmed.add({"type":target.get("type"),"recordId":target.get("recordId")});
+			writeUncertain = false;
+			log.Inflight_Record_Key="";
+			// Native returned field values are used, without post-save equality gating.
+			returned = ack.get("data");
+			if(returned.keys().contains("Start_Date") && returned.keys().contains("End_Date"))
+			{
+				try 
+				{
+					savedRecords.add({"type":target.get("type"),"id":target.get("recordId"),"start":thisapp.crewLocationsIso(ifnull(returned.get("Start_Date"),"").toString()),"end":thisapp.crewLocationsIso(ifnull(returned.get("End_Date"),"").toString())});
+				}				catch (displayRefreshError)
+				{
+					response.put("displayRefreshNeeded",true);
+				}
+			}
+			response.put("confirmed",confirmed);
+			response.put("records",savedRecords);
+			log.Result_JSON=response.toString();
+		}
+		state = "partial";
+		success = confirmed.size() == request.get("changes").size();
+		if(success)
+		{
+			state = "saved";
+		}
+		if(writeUncertain)
+		{
+			state = "unknown";
+		}
+		response.put("ok",success);
+		response.put("unknown",writeUncertain);
+		response.put("state",state);
+		response.put("operationId",operationId);
+		response.put("confirmed",confirmed);
+		response.put("records",savedRecords);
+		// Publish the complete result before the terminal state so read-only status
+		// recovery cannot observe a saved state with an older, incomplete ledger.
+		log.Result_JSON=response.toString();
+		log.Execution_Finished=true;
+		log.State=state;
+		if(!writeUncertain)
+		{
+			delete from Crew_Schedule_Lock[Operation_ID == operationId];
+		}
+	}	catch (scheduleError)
+	{
+		response.put("message",scheduleError.toString());
+		response.put("unknown",writeUncertain);
+		response.put("operationId",operationId);
+		response.put("confirmed",confirmed);
+		response.put("records",savedRecords);
+		if(acquired)
+		{
+			entry = Schedule_Change_Log[Operation_ID == operationId];
+			if(entry.count() == 1)
+			{
+				failureState = "partial";
+				if(writeUncertain)
+				{
+					failureState = "unknown";
+				}
+				response.put("state",failureState);
+				entry.Result_JSON=response.toString();
+				entry.Execution_Finished=true;
+				entry.Error=scheduleError.toString();
+				entry.State=failureState;
+			}
+			if(!writeUncertain)
+			{
+				delete from Crew_Schedule_Lock[Operation_ID == operationId];
+			}
+		}
+	}
+	return response.toString();
+}

@@ -1,0 +1,24 @@
+Crew_Timecards_Source_Gua as "Crew Timecards Source Guard"
+{
+	type =  form
+	form = Crew_Timecards
+    description = "Workflow"
+
+	record event = on add or edit
+
+	on validate
+	{
+		actions 
+		{
+			custom deluge script
+			(
+					// Crew_Timecards: Created or Edited -> On Validate.
+				// Analytics sync uses direct Deluge writes. Interactive source edits are denied.
+				alert "Timecards are maintained by the daily Analytics sync.";
+				cancel submit;
+			)
+		}
+	}
+
+}
+

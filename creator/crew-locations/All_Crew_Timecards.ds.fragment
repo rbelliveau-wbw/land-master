@@ -1,0 +1,88 @@
+list All_Crew_Timecards
+{
+	displayName = "All Crew Timecards"
+	show all rows from Crew_Timecards    
+	(
+		Timecard_ID
+		Work_Date
+		Foreman_ID
+		Foreman_Code
+		Foreman_Name
+		Job_Code
+		Job_Name
+		Subdivision1
+		IsDeleted
+		Synced_At
+		ID
+	)
+	quickview
+	(
+		layout
+		(
+			datablock1
+			(
+				fields
+				(
+					Timecard_ID
+					Work_Date
+					Foreman_ID
+					Foreman_Code
+					Foreman_Name
+					Job_Code
+					Job_Name
+					Subdivision1
+					IsDeleted
+					Synced_At
+					ID
+				)
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			record
+			(
+				Edit   	   
+				Duplicate   	   
+				Delete   	   
+    		)
+			)
+    	action
+    	(
+			on click
+			(
+				View Record   	   
+    		)
+			on right click
+			(
+				Edit   	   
+				Delete   	   
+				Duplicate   	   
+				View Record   	   
+    		)
+     	)
+	)
+	detailview
+	(
+		layout
+		(
+			datablock1
+			(
+			)
+		)
+			menu
+			(
+				header
+				(
+					Edit 
+					Duplicate 
+					Delete 
+				)
+			)
+	)
+}

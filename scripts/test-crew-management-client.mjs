@@ -9,7 +9,7 @@ function harness(read){
  const scope=vm.createContext({Date,Intl,Map,Set,Number,String,Object,Math,LMData:{readAll:async options=>{calls.push(options);const rows=structuredClone(reports[options.reportName]);for(const row of rows)for(const field of options.fields)if(!Object.hasOwn(row,field))row[field]='';return read?read(options,{...reports,[options.reportName]:rows}):rows;}}});scope.window=scope;
  vm.runInContext(fs.readFileSync('widgets/crew-locations/src/app/crew-model.js','utf8'),scope);
  const source=fs.readFileSync('widgets/crew-locations/src/app/crew-manager.js','utf8');
- vm.runInContext(source.replaceAll('root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace});','root.CrewManager=Object.freeze({install,state:S,load,switchWorkspace,readComplete});'),scope);
+ vm.runInContext(source.replaceAll('install,state:S,load,switchWorkspace,','install,state:S,load,switchWorkspace,readComplete,'),scope);
  return {read:scope.CrewManager.readComplete,calls,data};
 }
 const capabilities=assignments=>({permissions:{view:true,assignments},sources:{crews:true},management:{enabled:true,nativeWrites:true,protocol:'native-validated-v1'}});
