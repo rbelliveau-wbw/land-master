@@ -1,6 +1,6 @@
 # Crew Management
 
-## 1.3.1 — employee staffing and foreman locations
+## 1.3.2 — employee staffing and foreman locations
 
 The opening Employees workspace lists synced active employees with territory, labor
 type and crew assignment. Active/Inactive/All keeps retained inactive employees

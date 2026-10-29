@@ -1,4 +1,4 @@
-# Crew Management 1.3.1 — employees and foreman locations
+# Crew Management 1.3.2 — employees and foreman locations
 
 User direction: implement Aynsley's employee staffing roster and use each crew's
 foreman timecards for its location badges. Keep only the last three calendar
@@ -76,6 +76,9 @@ authority for these additions; generated full-export metadata remains historical
 ## Verification and limits
 
 - Native Deluge compilation and reopened function/form/report/schedule definitions.
+- Published widget in Development: all 72 employee records read through the native
+  SDK; unchanged staffing saved to the same record with native success. This used
+  the current authenticated administrator, without impersonating other profiles.
 - Employee dry run and initial Development import: 592 source rows, **72 created**,
   520 skipped (inactive/deleted/unnamed). A second run created zero and updated the
   same 72 people, proving import idempotency.
@@ -98,7 +101,7 @@ Production with the same sync functions or allow its first scheduled run.
 ## Release and rollback
 
 Widget source, configuration, immutable release and Development/Production mapping
-use 1.3.1. Older native versions retain the legacy crew workspace and manual badge
+use 1.3.2. Older native versions retain the legacy crew workspace and manual badge
 source until the Creator capabilities are promoted. All employee/timecard native
 components are listed in both removal inventory and installation progress records.
 
@@ -111,4 +114,7 @@ function changes from `native-before/*.employees-20261029.dg` if needed; do not
 replace unrelated application changes or promote Creator automatically.
 
 The immutable 1.3.0 candidate is preserved but was never mapped to Production
-on main. The final 1.3.1 release includes the employee permission-refresh check.
+on main. The final 1.3.2 release includes the employee permission-refresh check.
+
+The 1.3.2 follow-up widens the employee action column and keeps Edit on one line
+in the actual Creator desktop embed; no staffing or sync behavior changes.

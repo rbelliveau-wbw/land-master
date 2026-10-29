@@ -1,6 +1,6 @@
 {
   "employees_timecards_2026_10_29": {
-    "release": "1.3.1",
+    "release": "1.3.2",
     "environment": "Development only; user handles Creator promotion",
     "status": "native-installed-initial-sync-verified",
     "forms": {
@@ -70,7 +70,20 @@
     "native_snapshots": "creator/crew-locations/native-installed/",
     "rollback_snapshots": "creator/crew-locations/native-before/*.employees-20261029.dg",
     "reference": "docs/crew-employees-timecards-2026-10-29.md",
-    "removal_rule": "Stop the two schedules first. Retain employee staffing and mirrored records unless user explicitly authorizes removal. Preserve Crew, existing manual assignments, Milestones, reused connections and unrelated data. Restore only scoped function changes."
+    "removal_rule": "Stop the two schedules first. Retain employee staffing and mirrored records unless user explicitly authorizes removal. Preserve Crew, existing manual assignments, Milestones, reused connections and unrelated data. Restore only scoped function changes.",
+    "live_widget_verification": {
+      "published_version_tested": "1.3.1",
+      "current_account": "authenticated Development administrator; other profiles not impersonated",
+      "native_employee_read_count": 72,
+      "native_employee_save": "SDK update acknowledged on the same record; territory N/A, labor/crew unassigned retained",
+      "repeat_sync": {
+        "created": 0,
+        "updated": 72,
+        "skipped": 520
+      },
+      "production_publish": "CI and Pages success; public release metadata verified",
+      "final_css_followup": "1.3.2 keeps Edit on one line in Creator embed"
+    }
   },
   "date": "2026-10-21",
   "management_2026_10_23": {
@@ -1006,7 +1019,7 @@
       "restoredEnd": "2027-03-17"
     }
   },
-  "current_release": "1.3.1",
+  "current_release": "1.3.2",
   "current_creator_promotion": "User controlled; new employee/timecard components installed in Development only.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
