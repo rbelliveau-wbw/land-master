@@ -4,7 +4,10 @@
   const pencil='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 12 7.5-7.5a1.8 1.8 0 0 1 2.5 2.5L7.5 14.5 4 16zM11.5 5.5l3 3"/></svg>';
   const contract='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM11 2v6h6"/><path class="contract-yes" d="m6 12 2.5 2.5L14 10"/><path class="contract-no" d="m7 11 5 5m0-5-5 5"/><path class="contract-unknown" d="M7 13h6"/></svg>';
   let H;
-  function placeholder(id) {const b=H.S.catalog.builders.find(row=>row.id===id);return !!b&&(b.placeholder===true||b.name.trim().toLowerCase()==='placeholder');}
+  function isPlaceholder(builder) {
+    return Boolean(builder && (builder.placeholder === true || ['placeholder','placeholder2','placeholder3','placeholder4'].includes(String(builder.name || '').trim().toLowerCase())));
+  }
+  function placeholder(id) {return isPlaceholder(H.S.catalog.builders.find(row=>row.id===id));}
   function parents(id) {return H.S.snapshot.years.filter(row=>row.builderId===id).sort((a,b)=>Number(a.year)-Number(b.year));}
   function available() {return H.S.snapshot&&H.S.snapshot.builderActionsVersion===1;}
   function blocked() {return H.busy()||H.changed()||H.creationReview()||!available();}
@@ -97,5 +100,5 @@
     }catch(error){H.S.rowPending=false;terminal(error.message,true,true);}
   }
   function connect(hooks) {H=hooks;document.addEventListener('click',event=>{const assign=event.target.closest('[data-assign-name]');if(assign&&!assign.disabled&&!blocked()){H.openPicker(assign,'assignBuilder');return;}const note=event.target.closest('[data-builder-notes]');if(note&&!note.disabled)notes(note.dataset.builderNotes);});}
-  window.ForecastBuilderActions=Object.freeze({connect,label,confirm,recheck});
+  window.ForecastBuilderActions=Object.freeze({connect,label,confirm,recheck,isPlaceholder});
 })();

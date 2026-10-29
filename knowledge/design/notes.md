@@ -34,3 +34,10 @@ The Purchase Order spreadsheet ledger is an explicit exception (October 9, 2026)
 Description remains an inline text field. Replace its pencil with a 23 px rounded
 square blue duplicate button containing overlapping squares, matching the user
 reference. Do not apply this exception to Budget's other item-note controls.
+
+Forecast Manager retains its existing per-fiscal-year builder-note dialog for
+`Forecast_Year.Builder_Notes`. Its placeholder-only editing exception covers
+exactly Placeholder, Placeholder2, Placeholder3 and Placeholder4 (case-insensitive,
+ignoring outer whitespace). Keep the existing 22 px empty/yellow pencil,
+year-specific Save note, real-builder read-only notes and assignment preservation.
+See the [module contract](../modules/forecast-manager.md#version-1721-numbered-placeholder-exceptions).

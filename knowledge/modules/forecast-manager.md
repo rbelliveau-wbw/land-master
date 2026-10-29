@@ -1,3 +1,29 @@
+## Version 1.7.21 numbered placeholder exceptions
+
+The existing placeholder notes and builder-assignment exception applies to
+exactly `Placeholder`, `Placeholder2`, `Placeholder3` and `Placeholder4`, with
+case-insensitive names and outer whitespace ignored. Use the shared
+`ForecastBuilderActions.isPlaceholder` predicate for the row tools and assignment picker;
+the Creator catalog and write guards use the same explicit list. Existing
+`placeholder: true` catalog metadata remains supported by the widget. Numbered
+placeholders cannot be assignment destinations. Similar names such as
+`Placeholder1`, `Placeholder5`, `Placeholder20` and `Placeholder Builders` do
+not gain the exception.
+
+Notes still save to the exact `Forecast_Year.Builder_Notes` row. Assignment still
+updates `Forecast_Year.Builder1`, `Forecast_Year.Forecast_Name` and
+`Forecast.Builder1` across all years for the selected subdivision and source
+builder, preserving notes and lot counts. Real-builder locks, stale-note checks,
+destination conflicts, exact scope checks and read-only unknown-result recovery
+are unchanged. There are no new forms, fields, APIs or permissions.
+
+Creator deployment is required for the updated `forecastManagerWidget(string
+payload)` function behind the existing Forecast Manager Custom APIs. PMP
+publishes the widget and repository only; this function is prepared in the
+repository and must be installed/promoted by the user. Until that happens, the
+numbered-placeholder controls appear but the old backend rejects those writes.
+See [release, validation and rollback details](../releases/forecast-manager-v1.7.21-2026-10-29.md).
+
 ## October 21, 2026 follow-up
 
 Forecast 1.7.18 changes the heading to Builder Forecasts and makes the matrix border follow short tables.

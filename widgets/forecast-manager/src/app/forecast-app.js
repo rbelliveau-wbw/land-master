@@ -277,7 +277,7 @@
   }
   function closePicker() {if(S.picker){const p=S.picker; p.element.remove();p.anchor.setAttribute('aria-expanded','false');p.anchor.removeAttribute('aria-controls');S.picker=null;}}
   function pickerOptions(kind) {
-    if(kind==='assignBuilder')return S.catalog.builders.filter(row=>row.type==='Builder'&&row.placeholder!==true&&row.name.trim().toLowerCase()!=='placeholder').map(row=>({id:row.id,label:row.name}));
+    if(kind==='assignBuilder')return S.catalog.builders.filter(row=>row.type==='Builder'&&!ForecastBuilderActions.isPlaceholder(row)).map(row=>({id:row.id,label:row.name}));
     if(kind==='sub')return S.catalog.subdivisions.map(row=>({id:row.id,label:row.name,detail:row.code}));
     if(kind==='builders'||kind==='newBuilder')return S.catalog.builders.filter(row=>kind!=='newBuilder'||row.type==='Builder').map(row=>({id:row.id,label:row.name}));
     const first=kind==='newYear'?2019:2018,last=kind==='newYear'?2046:2050;

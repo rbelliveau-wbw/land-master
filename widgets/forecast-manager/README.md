@@ -1,5 +1,11 @@
 # Forecast Manager
 
+Version 1.7.21 extends the existing editable builder-note and builder-assignment
+exception to exactly Placeholder, Placeholder2, Placeholder3 and Placeholder4
+(case-insensitive, ignoring outer whitespace). All four are excluded from
+assignment destinations. Install the matching `forecastManagerWidget` function
+before using the numbered placeholders; PMP leaves Creator promotion to the user.
+
 Version 1.6.0 adds clickable Placeholder reassignment across every fiscal year
 for its subdivision, per-Forecast-Year builder notes with empty/yellow pencil
 states, and Legal Lot contract yes/no icons scoped to builder + subdivision.

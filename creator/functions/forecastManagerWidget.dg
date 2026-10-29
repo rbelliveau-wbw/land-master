@@ -23,6 +23,7 @@ string forecastManagerWidget(string payload)
 			forecastWindowOpen = settingsList.get(0);
 		}
 		response.put("windowOpen",forecastWindowOpen == true);
+		placeholderBuilderNames = {"placeholder","placeholder2","placeholder3","placeholder4"};
 		if(action == "catalog")
 		{
 			subdivisionChoices = List();
@@ -41,7 +42,7 @@ string forecastManagerWidget(string payload)
 				choice.put("id",builderChoice.ID.toString());
 				choice.put("name",ifnull(builderChoice.Builder_Name,""));
 				choice.put("type",ifnull(builderChoice.Type1,""));
-				choice.put("placeholder",ifnull(builderChoice.Builder_Name,"").trim().toLowerCase() == "placeholder");
+				choice.put("placeholder",placeholderBuilderNames.contains(ifnull(builderChoice.Builder_Name,"").trim().toLowerCase()));
 				builderChoices.add(choice);
 			}
 			response.put("subdivisions",subdivisionChoices);
@@ -72,7 +73,7 @@ string forecastManagerWidget(string payload)
 				return response.toString();
 			}
 			noteBuilder = Builder[ID == noteParent.Builder1];
-			if(noteBuilder.count() != 1 || ifnull(noteBuilder.Builder_Name,"").trim().toLowerCase() != "placeholder")
+			if(noteBuilder.count() != 1 || !placeholderBuilderNames.contains(ifnull(noteBuilder.Builder_Name,"").trim().toLowerCase()))
 			{
 				response.put("message","Notes can be edited only for a placeholder builder.");
 				return response.toString();
@@ -98,7 +99,7 @@ string forecastManagerWidget(string payload)
 			destinationBuilderId = ifnull(request.get("destinationBuilderId"),"").toString().toLong();
 			sourceBuilder = Builder[ID == sourceBuilderId];
 			destinationBuilder = Builder[ID == destinationBuilderId];
-			if(sourceBuilder.count() != 1 || ifnull(sourceBuilder.Builder_Name,"").trim().toLowerCase() != "placeholder" || destinationBuilder.count() != 1 || destinationBuilder.Type1 != "Builder" || ifnull(destinationBuilder.Builder_Name,"").trim().toLowerCase() == "placeholder" || sourceBuilderId == destinationBuilderId)
+			if(sourceBuilder.count() != 1 || !placeholderBuilderNames.contains(ifnull(sourceBuilder.Builder_Name,"").trim().toLowerCase()) || destinationBuilder.count() != 1 || destinationBuilder.Type1 != "Builder" || placeholderBuilderNames.contains(ifnull(destinationBuilder.Builder_Name,"").trim().toLowerCase()) || sourceBuilderId == destinationBuilderId)
 			{
 				response.put("message","Only a placeholder can be assigned to a real builder.");
 				return response.toString();

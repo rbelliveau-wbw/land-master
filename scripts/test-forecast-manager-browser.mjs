@@ -27,6 +27,11 @@ await page.addInitScript(({summaryHtml})=>{
     window.__snapshot.builderActionsVersion=1;window.__catalog.builders.find(row=>row.id===placeholder).type='Builder';window.__catalog.builders.find(row=>row.id===placeholder).placeholder=true;
     window.__catalog.builders.push({id:target,name:'Target Builder',type:'Builder',placeholder:false});addYear(placeholder,'2026');addYear(placeholder,'2029');
     window.__snapshot.years.forEach(row=>{row.note=row.year==='2029'?'Targeting a builder for future lots':'';row.hasLotContract=row.builderId===a;});
+    const placeholderName=new URL(location.href).searchParams.get('placeholderName');
+    if(placeholderName){
+      Object.assign(window.__catalog.builders.find(row=>row.id===placeholder),{name:placeholderName,placeholder:false});
+      ['Placeholder','Placeholder2','Placeholder3','Placeholder4'].filter(name=>name!==placeholderName).forEach((name,index)=>window.__catalog.builders.push({id:'9007199254740997'+index,name,type:'Builder',placeholder:false}));
+    }
   }
   const assignment=body=>{const parents=window.__snapshot.years.filter(row=>row.builderId===body.sourceBuilderId),months=window.__snapshot.months.filter(row=>row.builderId===body.sourceBuilderId);return {sourceBuilderId:body.sourceBuilderId,destinationBuilderId:body.destinationBuilderId,parentIds:parents.map(row=>row.id),forecastIds:months.map(row=>row.id),parents:parents.map(row=>({id:row.id,year:row.year,monthCount:12}))};};
   window.__today='2026-10-07';window.__calls=[];window.__sends=[];window.__delay=0;window.__lost=false;window.__window=true;
@@ -162,7 +167,22 @@ try {
   await page.locator('#yearPicker').click();assert.ok(await page.locator('.popover').evaluate(node=>node.getBoundingClientRect().right<=innerWidth&&node.getBoundingClientRect().left>=0));await page.keyboard.press('Escape');
   await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html');await page.waitForFunction(()=>!document.getElementById('subPicker').disabled);await page.locator('#subPicker').click();await page.locator('.option').click();await page.waitForSelector('[data-create-builder]');await page.evaluate(()=>{__lost=true;});await page.locator('[data-create-builder]').click();await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='Changes need review');assert.equal(await page.locator('#modal').isVisible(),false);assert.equal(await page.locator('[data-create-builder]').isDisabled(),true,'uncertain creation blocks replay');assert.equal(await page.locator('#refresh').isDisabled(),true);assert.equal(await page.evaluate(()=>__sends.length),1);await page.locator('#check').click();await page.waitForFunction(()=>document.getElementById('creationStatus').hidden);assert.equal(await page.evaluate(()=>__sends.length),1,'reconciliation sends no writes');assert.deepEqual(await page.evaluate(()=>__calls.map(c=>c.action)),['catalog','snapshot','ensure','snapshot']);assert.equal(await page.locator('[data-create-builder]').count(),0);
   await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html?missing=1');await page.waitForFunction(()=>document.getElementById('saveStatus').textContent==='API setup required');assert.match(await page.locator('#notice').textContent(),/Missing Creator API: Forecast_Manager_Widget_DEV/);assert.equal(await page.locator('#subPicker').isDisabled(),true);assert.equal(await page.evaluate(()=>__sends.length),0,'missing API never attempts a write');
-  async function loadActions(){await page.setViewportSize({width:1440,height:1000});await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html?actions=1');await page.waitForFunction(()=>!document.getElementById('subPicker').disabled);await page.locator('#subPicker').click();await page.locator('.option').click();await page.waitForSelector('[data-assign-name]');}
+  async function loadActions(placeholderName=''){await page.setViewportSize({width:1440,height:1000});await page.goto('http://127.0.0.1:'+server.address().port+'/widget.html?actions=1&placeholderName='+encodeURIComponent(placeholderName));await page.waitForFunction(()=>!document.getElementById('subPicker').disabled);await page.locator('#subPicker').click();await page.locator('.option').click();await page.waitForSelector('[data-assign-name]');}
+  for(const name of ['Placeholder','Placeholder2','Placeholder3','Placeholder4']){
+    await loadActions(name);
+    assert.equal(await page.locator('[data-assign-name]').textContent(),name,name+' is changeable even with older catalog metadata');
+    await page.locator('[data-builder-notes]').click();assert.equal(await page.locator('[data-note-save]').count(),2,name+' notes are editable in every fiscal year');
+    await page.locator('[data-note-parent]').first().fill('Future builder for '+name);await page.locator('[data-note-save]').first().click();
+    await page.waitForFunction(()=>document.getElementById('dialogStatus').textContent==='Note saved.');await page.locator('#dialogCancel').click();
+    assert.equal(await page.locator('.note-icon.has-note').count(),1,name+' shows the saved-note pencil');
+    await page.locator('[data-assign-name]').click();
+    assert.equal(await page.locator('.option').count(),3,'all four placeholder names are excluded from assignment destinations');
+    await page.locator('[data-option="90071992547409964"]').click();await page.waitForFunction(()=>!document.getElementById('dialogAction').disabled);
+    await page.locator('#dialogAction').click();await page.waitForFunction(()=>document.getElementById('dialogStatus').textContent==='Builder assigned to all forecasts.');
+    assert.equal(await page.locator('[data-assign-name]').count(),0,name+' becomes a locked real builder after assignment');
+    assert.equal(await page.evaluate(()=>__snapshot.years.find(row=>row.builderId==='90071992547409964'&&row.year==='2026').note),'Future builder for '+name);
+    await page.locator('#dialogCancel').click();
+  }
   await loadActions();
   assert.equal(await page.locator('.builder-avatar,#matrix tbody .builder-column small').count(),0,'no initials square or per-builder year count');
   assert.equal(await page.locator('.contract-icon.yes').getAttribute('title'),'Found lot contract');
