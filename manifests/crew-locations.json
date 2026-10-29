@@ -1,5 +1,5 @@
 {
-  "status": "1.3.2-native-development-installed-user-promotion-pending",
+  "status": "1.3.2-native-9.132-published",
   "widget": "crew-locations",
   "version": "1.3.2",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
@@ -580,8 +580,8 @@
     }
   },
   "employees_timecards": {
-    "native_environment": "development",
-    "creator_promotion": "user controlled; not performed",
+    "native_environment": "Development, Stage and Production",
+    "creator_promotion": "All pending components promoted to Stage and Production 9.132 on 2026-10-29 by explicit user authorization",
     "analytics_workspace": "2107789000000003001",
     "employee_view": "2107789000036057124",
     "timecard_view": "2107789000022718491",

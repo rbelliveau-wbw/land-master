@@ -1,8 +1,8 @@
 {
   "employees_timecards_2026_10_29": {
     "release": "1.3.2",
-    "environment": "Development only; user handles Creator promotion",
-    "status": "native-installed-initial-sync-verified",
+    "environment": "Development, Stage and Production",
+    "status": "published-native-9.132",
     "forms": {
       "Employees": [
         "BU_Employee_ID",
@@ -66,7 +66,7 @@
     },
     "new_connections": false,
     "new_custom_apis": false,
-    "creator_promoted": false,
+    "creator_promoted": true,
     "native_snapshots": "creator/crew-locations/native-installed/",
     "rollback_snapshots": "creator/crew-locations/native-before/*.employees-20261029.dg",
     "reference": "docs/crew-employees-timecards-2026-10-29.md",
@@ -1020,7 +1020,7 @@
     }
   },
   "current_release": "1.3.2",
-  "current_creator_promotion": "User controlled; new employee/timecard components installed in Development only.",
+  "current_creator_promotion": "All 35 pending components promoted to Stage and Production 9.132 with explicit user authorization.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
     "release": "1.1.4",
@@ -1370,8 +1370,26 @@
       "updated": 1616,
       "unmapped": 1442
     },
-    "creator_promotion": "pending final verified publication",
+    "creator_promotion": "completed all 35 pending components",
     "widget_release_unchanged": "1.3.2",
-    "rollback": "native-before/crewSyncEmployees.audit-20261029.dg and crewSyncTimecards.audit-20261029.dg"
+    "rollback": "native-before/crewSyncEmployees.audit-20261029.dg and crewSyncTimecards.audit-20261029.dg",
+    "creator_versions": {
+      "stage": "9.132",
+      "production": "9.132"
+    },
+    "native_timecard_run": {
+      "received": 1616,
+      "processed": 1616,
+      "created": 0,
+      "updated": 1616,
+      "unmapped": 1442,
+      "tombstoned": 0,
+      "expired": 0
+    },
+    "production_widget_verification": "1.3.2 loads Employees through the existing Production API; new Production mirror forms are empty before their first daily runs",
+    "stage_widget_verification": "Stage schema 9.132 and assets 1.3.2 published; missing Crew_Locations_Widget_STAGE alias requires separate approval. Creation was rejected by automatic approval review and was not performed.",
+    "ci": "success: 40964421776",
+    "pages": "success: 40964421777",
+    "repository_commit": "ba841503d21e14409c6f8151b1cf00f6974aa0db"
   }
 }

@@ -8,7 +8,9 @@ visible. New crew reuses the existing native crew editor. Foremen place their
 crew badge on every exactly mapped phase appearing in their last seven calendar
 dates of timecards. No name/code inference is used. The two daily Analytics syncs
 retain employees indefinitely and only the last three calendar months of timecards.
-Native changes are installed in Development; the user controls Creator promotion.
+All 35 pending native components were promoted to Stage and Production 9.132
+on October 29 with explicit user authorization. The audit follow-up counts all
+source rows, reconciles success totals and distinguishes Failed from Partial.
 See [installation, verification and rollback](../../docs/crew-employees-timecards-2026-10-29.md).
 
 ## 1.2.7 — CFO roster connection failure

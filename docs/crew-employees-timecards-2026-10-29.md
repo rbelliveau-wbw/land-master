@@ -1,6 +1,6 @@
 # Crew Management 1.3.2 — employees and foreman locations
 
-User direction: implement Aynsley's employee staffing roster and use each crew's
+Initial user direction: implement Aynsley's employee staffing roster and use each crew's
 foreman timecards for its location badges. Keep only the last three calendar
 months of timecards; retain employees who become inactive. Publish repository
 main and Production widget assets; the user promotes Creator environments.
@@ -8,7 +8,9 @@ main and Production widget assets; the user promotes Creator environments.
 ## Audit follow-up — October 29, 2026
 
 The user subsequently authorized promotion of **all pending Creator changes**,
-including changes from other requests. This supersedes the initial handoff above.
+including changes from other requests. This supersedes the initial handoff above. All **35 pending components** were
+published to Stage and Production as **Creator 9.132**. CI and Pages publishing
+passed for commit `ba841503`.
 
 Both syncs already used the durable `workflowRunLog` and completion-gated
 `analyticsExportRows` helpers. This follow-up aligns their remaining audit behavior
@@ -40,6 +42,9 @@ missing/duplicate source data, audit-start failure, interrupted writes, lost aud
 finish, count mismatch, tombstones and retention failures. Native compilation and
 real audit records supplement these fixtures. The employee native run reconciled
 592 received/processed, 72 updated and 520 skipped; its durable log showed Success.
+The audited native timecard run then received/processed/updated all 1,616 records,
+with 1,442 unmapped, zero tombstones and zero expirations. Its durable log also
+showed Success with the 2026-07-29 cutoff.
 
 The function changes require no widget source change; widget assets remain 1.3.2.
 Stage now maps Crew Management to that same immutable release so the promoted
@@ -80,7 +85,8 @@ guessing or manual-assignment fallback is used in foreman mode.
 
 ## Native installation
 
-Installed in **Development**, with no Creator environment promotion:
+Initially installed in **Development**; the full component bundle is now
+promoted to Stage and Production **9.132**:
 
 | Component | Purpose |
 | --- | --- |
@@ -162,3 +168,18 @@ on main. The final 1.3.2 release includes the employee permission-refresh check.
 
 The 1.3.2 follow-up widens the employee action column and keeps Edit on one line
 in the actual Creator desktop embed; no staffing or sync behavior changes.
+
+## Production handoff after audit follow-up
+
+Production Crew Management 1.3.2 loads through its existing authenticated API with
+the promoted 9.132 capabilities and reports. Creator promotion copies schema/code,
+not the Development mirror records: Production currently shows zero employees.
+Its first daily imports are **October 30, 2026 at 05:00 and 05:15 America/Chicago**.
+No Development staffing or timecard lookup data was copied into Production.
+
+Stage 9.132 publication succeeded and its immutable assets are mapped. Its widget
+preview exposed the preexisting missing `Crew_Locations_Widget_STAGE` API alias.
+Automatic approval review rejected creating a new persistent API under the
+promotion-only authorization. A separate approval was requested for an OAuth2,
+administrator-only Stage alias using the existing Crew handler. No alias or new
+API permissions were created; Production uses its existing API successfully.
