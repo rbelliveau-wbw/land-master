@@ -27,6 +27,11 @@
 
 ## Creator contract and deployment
 
+**Publication completed:** the native function was saved, reopened and published
+through Stage and Production 9.131, followed by read-only production verification.
+See the [October 29 publication record](forecast-manager-native-publication-2026-10-29.md).
+The original implementation handoff below records its required deployment step.
+
 `forecastManagerWidget` adds `catalog.subdivisions[].territory` and optional
 snapshot `overview` version 1 with projectStatus, territory, projectsLots, lmLots,
 soldOut, firstSoldDate, lastSoldDate, firstForecastDate and finalForecastDate.

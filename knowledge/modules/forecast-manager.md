@@ -1,3 +1,12 @@
+## Native metadata published — Creator 9.131, October 29, 2026
+
+The latest `forecastManagerWidget` was saved and reopened in native Creator,
+then published as the only component through Stage and Production 9.131.
+Environments showed No changes available. Read-only production verification
+confirmed enabled Territory filtering, date metadata, constant cross-tab combined
+totals, all saved forecast years, and builder/footer sums in all four views.
+[Publication evidence and rollback](../../docs/forecast-manager-native-publication-2026-10-29.md).
+
 ## Refresh promoted metadata and simplify Total — 1.7.23, October 29, 2026
 
 Refresh reloads the complete native catalog before the selected subdivision
@@ -19,8 +28,9 @@ dates, an actual first-sale check, all-year Sold + Forecast and Projects/LM coun
 differences. The combined quantity stays constant across all tabs and independent
 of matrix filters. Zero LM records displays No LM lots without a difference.
 
-The additive `forecastManagerWidget` catalog/overview contract requires Creator
-promotion by the user under PMP. Old snapshots retain matrix/combined totals and
+The additive `forecastManagerWidget` catalog/overview contract was subsequently
+published through Creator 9.131; see the publication record above. Old snapshots
+retain matrix/combined totals and
 safe unknown date displays. No new form, field, query or mutation is introduced.
 [Sources, files, checks, required Creator update and rollback](../../docs/forecast-manager-overview-2026-10-29.md).
 
