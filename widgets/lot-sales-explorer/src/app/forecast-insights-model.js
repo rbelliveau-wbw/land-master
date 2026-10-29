@@ -75,7 +75,7 @@
     const groups=[];for(const row of rows){let group=groups.find(g=>g.id===row.groupId);if(!group){group={id:row.groupId,name:row.groupName,rows:[]};groups.push(group);}group.rows.push(row);}
     return {years,months,rows,groups,mode,today,totals:aggregate(rows,months)};
   }
-  function aggregate(rows,months){return months.map((month,index)=>{const values=rows.map(r=>r.cells[index]);const known=values.reduce((s,c)=>s+c.known,0),missing=values.reduce((s,c)=>s+c.missing,0),knownValue=values.reduce((s,c)=>s+c.knownValue,0);return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold:values.reduce((s,c)=>s+c.sold,0),forecast:values.reduce((s,c)=>s+c.forecast,0)};});}
+  function aggregate(rows,months){return months.map((month,index)=>{let known=0,missing=0,knownValue=0,sold=0,forecast=0;for(const row of rows){const cell=row.cells[index];known+=cell.known;missing+=cell.missing;knownValue+=cell.knownValue;sold+=cell.sold;forecast+=cell.forecast;}return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold,forecast};});}
   function total(cells){const known=cells.reduce((s,c)=>s+c.known,0),missing=cells.reduce((s,c)=>s+c.missing,0),knownValue=cells.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:cells.reduce((s,c)=>s+c.sold,0),forecast:cells.reduce((s,c)=>s+c.forecast,0)};}
   function annual(cells,year){return total(cells.filter(c=>c.year===year));}
   const hasValues=cells=>cells.some(cell=>cell.value>0);

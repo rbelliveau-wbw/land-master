@@ -1,4 +1,4 @@
-# Land Master Insights 1.5.52
+# Land Master Insights 1.6.16
 
 Numeric displays, including all seven Measure switches, use the Forecast Manager
 [Sliding push pattern](../../knowledge/design/number-transitions.md).
@@ -222,3 +222,6 @@ The Measure picker no longer offers Weighted Base $/FF. The pure report model no
 ## Routine success feedback (1.5.45)
 
 Uses the shared [success-feedback guide](../../knowledge/design/success-feedback.md). Existing inline green verification and progress/result dialogs remain. Routine confirmations describe the actual completed action; inline saves are grouped without delaying writes. Frontend only; no Creator deployment is required.
+
+Forecasts defaults Hide Empty on, including Reset. See the [filter performance
+release](../../docs/forecasts-filter-speed-2026-10-29.md) for scope, checks and rollback.

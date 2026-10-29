@@ -1,3 +1,13 @@
+## Forecasts default and filter performance — 1.6.16, October 29, 2026
+
+Forecasts opens with Hide Empty on, and Reset restores it. Lot Sales defaults
+are unchanged. Local filter changes reuse bounded, snapshot-scoped report and
+markup caches; refresh/access reset invalidates reports. Column values and group
+aggregates are reused, and rendering no longer forces a full table layout by
+assigning unchanged scroll offsets. Values, missingness, CSV, permissions and
+complete-read gates retain their existing meaning. No Creator deployment.
+[Verification, changed files and rollback](../../docs/forecasts-filter-speed-2026-10-29.md).
+
 ## Forecasts Total label — 1.6.15, October 29, 2026
 
 The Forecasts matrix heading and CSV column are both Total. Remove the Selected

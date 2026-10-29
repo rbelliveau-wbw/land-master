@@ -1,0 +1,218 @@
+(function(){
+  'use strict';
+  const M=ForecastInsightsModel,L=LotSalesModel,$=id=>document.getElementById(id),host=$('forecastsDashboard');
+  const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],phaseNodes:new Map(),expandedPhases:new Set(),allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
+  const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const countFormat=new Intl.NumberFormat('en-US'),fmt=n=>countFormat.format(Number(n));
+  const number=(value,key,context='')=>window.InsightsNumbers?.markup(value,JSON.stringify(['forecast-dashboard',key]),context)??esc(value);
+  const chev='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  const pin='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 8c0 4-6 9-6 9S4 12 4 8a6 6 0 1 1 12 0Z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+  const check='<svg class="fc-sold-out" viewBox="0 0 20 20" role="img" aria-label="Sold Out"><title>Sold Out</title><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m6.5 10 2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  function notice(message,error=false){$('fcNotice').hidden=!message;$('fcNotice').textContent=message;$('fcNotice').classList.toggle('error',error);}
+  function loading(active){$('fcLoading').hidden=!active;$('fcMatrix').setAttribute('aria-busy',String(active));if(active)$('fcEmpty').hidden=true;}
+  const selections=id=>InsightsControls.values($(id));
+  function filters(){return {groupBy:S.groupBy,mode:$('fcMode').value,period:$('fcPeriod').value,years:selections('fcYears'),projectStatuses:selections('fcStatus'),territories:selections('fcTerritory'),projectIds:selections('fcProject'),subdivisionIds:selections('fcSubdivision'),builderIds:selections('fcBuilder'),search:$('fcSearch').value,hideEmpty:$('fcHideEmpty').checked};}
+  function options(id,values,label){const control=$(id),before=selections(id);control.innerHTML='<option value="" hidden>'+esc(label)+'</option>'+values.map(([value,label])=>'<option value="'+esc(value)+'">'+esc(label)+'</option>').join('');before.filter(value=>!values.some(([id])=>id===value)).forEach(value=>control.add(new Option('Unavailable Selection',value)));InsightsControls.setValues(control,before);}
+  function fillFilters(){
+    const phases=S.model.phases,sorted=entries=>entries.sort((a,b)=>a[1].localeCompare(b[1]));
+    options('fcStatus',sorted([...new Set(phases.map(p=>p.projectStatus).filter(Boolean))].map(s=>[s,s])),'All Statuses');
+    options('fcTerritory',sorted([...new Set(phases.map(p=>p.territory))].map(s=>[s,s])),'All Territories');
+    options('fcProject',sorted([...new Map(phases.map(p=>[p.projectId,p.project]))].filter(([id])=>id)),'All Projects');
+    options('fcSubdivision',sorted(phases.map(p=>[p.id,p.name])),'All Subdivisions');
+    options('fcBuilder',sorted(S.model.builders.map(b=>[b.id,b.name])),'All Builders');
+    const current=ForecastModel.currentYear(S.permissions.today),years=[...new Set([...S.model.availableYears,current,current+1,current+2,2026,2027,2028,2029])].sort((a,b)=>a-b);
+    options('fcYears',years.map(y=>[String(y),'WFY '+y]),'Choose Fiscal Years');if(!selections('fcYears').length)InsightsControls.setValues($('fcYears'),['2026','2027','2028','2029']);
+    if(!S.scoped&&InsightsShell.route().projectId){const id=InsightsShell.route().projectId;if(![...$('fcProject').options].some(o=>o.value===id))$('fcProject').add(new Option('Unavailable Project',id));InsightsControls.setValues($('fcProject'),[id]);}S.scoped=true;
+    InsightsControls.syncAll();
+  }
+  const columnCache=new WeakMap(),valueCache=new WeakMap(),phaseMarkup=new WeakMap();
+  function columns(report,annual=$('fcAnnual').checked){
+    let cached=columnCache.get(report);if(!cached){cached=new Map();columnCache.set(report,cached);}
+    if(!cached.has(annual))cached.set(annual,[{total:true},...report.years.flatMap(year=>[...report.months.filter(m=>m.year===year),...(annual?[{year,annual:true}]:[])])]);
+    return cached.get(annual);
+  }
+  function columnValue(cells,column){
+    let cached=valueCache.get(cells);
+    if(!cached){const years=new Map();cells.forEach(cell=>{if(!years.has(cell.year))years.set(cell.year,[]);years.get(cell.year).push(cell);});cached={total:M.total(cells),annual:new Map([...years].map(([year,values])=>[year,M.total(values)])),months:new Map(cells.map(cell=>[cell.key,cell]))};valueCache.set(cells,cached);}
+    return column.total?cached.total:column.annual?cached.annual.get(column.year):cached.months.get(column.key);
+  }
+  const columnKey=column=>column.total?'period-total':column.annual?'year-'+column.year:column.key;
+  function monthClass(month){return (month.index===0?'fc-year-start ':'')+(S.report.mode==='outlook'&&month.start<S.permissions.today.slice(0,7)+'-01'?'fc-value-sold':'fc-value-forecast')+(month.start.slice(0,7)===S.permissions.today.slice(0,7)?' fc-current-month':'');}
+  function numberHTML(node,html,animate){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML===html)return;const prior=animate?window.InsightsNumbers?.capture(node):null;node.innerHTML=html;if(animate)window.InsightsNumbers?.apply(node,prior);}
+  function countMarkup(r){return number(fmt(new Set(r.rows.map(row=>row.phase.id)).size),'phase-count')+' Phases · '+number(fmt(r.groups.length),'group-count')+' '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy]);}
+  function reportCount(animate){numberHTML($('fcCount'),countMarkup(S.report),animate);}
+  function syncAnnual(){if(!S.report)return;$('fcMatrix').classList.toggle('fc-no-annual',!$('fcAnnual').checked);$('fcHead').querySelectorAll('.fc-year').forEach(cell=>{cell.colSpan=$('fcAnnual').checked?13:12;});}
+  const show=(node,hidden)=>{if(node.hidden!==hidden)node.hidden=hidden;};
+  function phaseChildren(phase,parentHidden,hide,apply){if(!phase)return;const shut=parentHidden||!S.expandedPhases.has(phase.model.key);phase.children.forEach(child=>apply(child.row,shut||hide&&child.empty));}
+  function togglePhase(key){
+    if(!S.permissions?.forecastsDashboard||!S.report)return;
+    const phase=S.phaseNodes.get(key);if(!phase||!phase.children.length||phase.row.hidden)return;
+    closeCard();if(S.expandedPhases.has(key))S.expandedPhases.delete(key);else S.expandedPhases.add(key);
+    phase.button.setAttribute('aria-expanded',String(S.expandedPhases.has(key)));
+    phaseChildren(phase,false,$('fcHideEmpty').checked,show);
+  }
+  function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>show(value,hide));});}
+  function queueNumber(jobs,node,html){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML!==html)jobs.push({cell:node,value:{html}});}
+  function queueTotals(jobs,cells,before,after){cells.forEach((cell,index)=>{const value=after[index],old=before?.[index];if(old?.html!==value.html||old?.title!==value.title)jobs.push({cell,value});});}
+  function syncHideEmpty(animate=true){
+    if(!S.baseReport||!S.permissions?.forecastsDashboard)return;
+    const hide=$('fcHideEmpty').checked,jobs=[],visibility=[];S.report=hide?S.nonemptyReport:S.baseReport;
+    S.groupNodes.forEach(nodes=>{
+      const count=hide?nodes.nonemptyCount:nodes.rows.length;
+      visibility.push([nodes.header,!count]);if(count)queueNumber(jobs,nodes.count,hide?nodes.filteredCount:nodes.allCount);
+      const closed=S.collapsed.has(nodes.group.id);nodes.rows.forEach((row,index)=>{const hidden=closed||hide&&nodes.emptyMask[index];visibility.push([row,hidden]);phaseChildren(S.phaseNodes.get(nodes.group.rows[index].key),hidden,hide,(child,shut)=>visibility.push([child,shut]));});
+      const totals=hide?nodes.filteredTotals:nodes.allTotals;if(count&&nodes.totalMarkup!==totals){queueTotals(jobs,nodes.totalCells,nodes.totalMarkup,totals);nodes.totalMarkup=totals;nodes.header._fcTotalMarkup=totals;}
+    });
+    const totals=hide?S.filteredFoot:S.allFoot;if(S.footMarkup!==totals){queueTotals(jobs,S.footCells,S.footMarkup,totals);S.footMarkup=totals;}
+    queueNumber(jobs,$('fcCount'),hide?S.filteredCount:S.allCount);
+    // Capture every old number before changing visibility or markup: one layout phase.
+    if(animate)jobs.forEach(job=>{job.prior=window.InsightsNumbers?.capture(job.cell);});
+    visibility.forEach(([node,hidden])=>show(node,hidden));
+    jobs.forEach(({cell,value})=>{cell.innerHTML=value.html;if(value.title!=null){cell.title=value.title;cell.classList.toggle('fc-missing',value.missing);}});
+    S.groupNodes.forEach(nodes=>{nodes.totals=nodes.totalCells.map(cell=>cell.firstElementChild);});syncSubtotals();
+    if(animate)jobs.forEach(({cell,prior})=>window.InsightsNumbers?.apply(cell,prior));
+    show($('fcFoot'),!S.report.rows.length);show($('fcEmpty'),S.report.rows.length>0||S.busy);$('fcExport').disabled=S.busy||S.error||!S.report.rows.length;syncCollapse();
+  }
+  function cellValue(c,key,extra='',group=false,hide=false){
+    const title=cellTitle(c);
+    const value=c.value==null?'—':c.value?number(fmt(c.value),key,S.report.mode):'';
+    return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+value+'</span>':value)+'</td>';
+  }
+  const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(columnValue(cells,c),key+':'+columnKey(c),c.total?'fc-period-total':c.annual?'fc-annual':monthClass(c),group,hide)).join('');
+  const cellTitle=c=>fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast'+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
+  const totalsCache=new WeakMap(),groupCache=new WeakMap();
+  function totalsMarkup(cells,key,group=false){
+    let cached=totalsCache.get(cells);if(!cached){cached=new Map();totalsCache.set(cells,cached);}const identity=JSON.stringify([key,group]);
+    if(!cached.has(identity))cached.set(identity,columns(S.baseReport,true).map(c=>{const value=columnValue(cells,c),html=cellValue(value,key+':'+columnKey(c),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value),missing:!!value.missing};}));return cached.get(identity);
+  }
+  function groupValues(group){
+    let cached=groupCache.get(group);if(!cached){cached={all:M.aggregate(group.rows,S.baseReport.months),filtered:M.aggregate(group.rows.filter(row=>!S.emptyRows.has(row.key)),S.baseReport.months),headers:new Map()};groupCache.set(group,cached);}return cached;
+  }
+  const builderRowId=(phase,builder)=>'fc-builder-'+encodeURIComponent(phase.id)+'-'+encodeURIComponent(builder.id);
+  function phaseHTML(row,groupClosed){
+    const signature=JSON.stringify([groupClosed,S.expandedPhases.has(row.key)]),cached=phaseMarkup.get(row);
+    if(cached?.signature===signature)return cached.html;
+    const details=row.builderRows,expanded=S.expandedPhases.has(row.key),name='<span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>';
+    const heading=details.length?'<button type="button" class="fc-phase-toggle" data-fc-phase="'+esc(row.key)+'" aria-expanded="'+expanded+'" aria-controls="'+details.map(child=>builderRowId(row.phase,child.builder)).join(' ')+'" aria-label="Builders for '+esc(row.phase.name)+'">'+chev+name+'</button>':name;
+    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Territory for '+esc(row.phase.name)+'">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?esc(row.builders[0].name):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
+    const html=parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span title="'+esc(child.builder.name)+'">'+esc(child.builder.name)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
+    phaseMarkup.set(row,{signature,html});return html;
+  }
+  // Revisit recent filter combinations only within the current authorized snapshot.
+  let reportCache=new Map();
+  function reportForFilters(){
+    const current={...filters(),hideEmpty:false},key=JSON.stringify([S.permissions.today,current]);let cached=reportCache.get(key);
+    if(cached){reportCache.delete(key);reportCache.set(key,cached);return cached;}
+    const base=M.report(S.model,current,S.permissions.today),empty=new Set(base.rows.filter(row=>!M.hasValues(row.cells)).map(row=>row.key)),rows=base.rows.filter(row=>!empty.has(row.key));
+    cached={base,empty,nonempty:{...base,rows,groups:base.groups.map(group=>({...group,rows:group.rows.filter(row=>!empty.has(row.key))})).filter(group=>group.rows.length),totals:M.aggregate(rows,base.months)}};
+    reportCache.set(key,cached);if(reportCache.size>6)reportCache.delete(reportCache.keys().next().value);return cached;
+  }
+  let bodyChunks=new Map();
+  function setHTML(node,html){if(node._markup===html)return;node._markup=html;node.innerHTML=html;}
+  function reconcileBody(chunks){
+    const body=$('fcBody'),next=new Map(),nodes=[];
+    for(const [key,html]of chunks){let chunk=bodyChunks.get(key);if(!chunk||chunk.html!==html){const template=document.createElement('template');template.innerHTML=html;chunk={html,nodes:[...template.content.children]};}next.set(key,chunk);nodes.push(...chunk.nodes);}
+    const keep=new Set(nodes);for(const node of [...body.children])if(!keep.has(node))node.remove();
+    let cursor=body.firstElementChild;for(const node of nodes){if(node===cursor)cursor=cursor.nextElementSibling;else body.insertBefore(node,cursor);}
+    for(const [key,chunk]of next)bodyChunks.set(key,chunk);
+  }
+  function render(){
+    if(!S.model||!S.permissions?.forecastsDashboard)return;
+    closeCard();
+    try{
+      const cached=reportForFilters();S.baseReport=cached.base;S.report=S.baseReport;S.emptyRows=cached.empty;S.nonemptyReport=cached.nonempty;
+      S.allCount=countMarkup(S.baseReport);S.filteredCount=countMarkup(S.nonemptyReport);
+      S.error=false;notice('');
+    }catch(error){S.error=true;notice(error.message,true);$('fcExport').disabled=true;return;}
+    const r=S.baseReport,cols=columns(r,true),prior=window.InsightsNumbers?.capture(host);
+    const missingPhases=new Set(r.rows.filter(row=>row.cells.some(c=>c.missing)).map(row=>row.phase.id)).size;
+    S.missingPhases=missingPhases;$('fcWarning').hidden=!missingPhases;const warning='Missing Forecasts: '+fmt(missingPhases)+' '+(missingPhases===1?'Phase':'Phases');$('fcWarning').title=warning;$('fcWarning').setAttribute('aria-label',warning);
+    $('fcYearsLabel').hidden=$('fcPeriod').value!=='custom';
+    const contiguous=r.years.every((y,i)=>i===0||y===r.years[i-1]+1);
+    $('fcRange').textContent=contiguous?'Feb '+r.years[0]+' – Jan '+(r.years.at(-1)+1):r.years.map(y=>'WFY '+y).join(' · ');
+    reportCount(false);
+    $('fcLegend').innerHTML=(r.mode==='outlook'?'<span><i></i>Sold</span>':'')+'<span><i class="fc-forecast"></i>Forecast</span>';
+    setHTML($('fcHead'),'<tr><th rowspan="2" class="fc-name"><span class="sr-only">'+({project:'Project / Phase',territory:'Territory / Phase',builder:'Builder / Phase'}[S.groupBy])+'</span><span class="fc-header-label">View by</span><span id="fcViewBySlot" class="fc-header-picker"></span></th><th rowspan="2" class="fc-meta">Zoho Project Status</th><th rowspan="2" class="fc-meta">Builder</th><th rowspan="2" scope="col" class="fc-period-total" title="Sum of all months in the selected period">Total</th>'+r.years.map(y=>'<th class="fc-year" colspan="'+(12+($('fcAnnual').checked?1:0))+'">WFY '+y+'<span>Feb '+y+' – Jan '+(y+1)+'</span></th>').join('')+'</tr><tr>'+cols.filter(c=>!c.total).map(c=>c.annual?'<th class="fc-annual">WFY '+c.year+'<small>Annual Total</small></th>':'<th class="'+monthClass(c)+'" data-month-start="'+c.start+'" title="'+esc(c.name+' '+c.start.slice(0,4)+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?' - Current month':''))+'">'+esc(c.name.slice(0,3))+'<small>'+c.start.slice(0,4)+'</small>'+(c.start.slice(0,7)===S.permissions.today.slice(0,7)?'<small class="fc-current-month-label">Current</small>':'')+'</th>').join('')+'</tr>');
+    const chunks=[];r.groups.forEach((g,gi)=>{
+      const collapsed=S.collapsed.has(g.id),cached=groupValues(g),signature=JSON.stringify([gi,collapsed,$('fcSubtotals').checked]);
+      if(!cached.headers.has(signature))cached.headers.set(signature,'<tr class="fc-group" data-motion-row="'+esc('group:'+g.id)+'"><th class="fc-name" scope="row"><div class="fc-group-name"><button type="button" data-fc-group="'+gi+'" aria-expanded="'+!collapsed+'">'+chev+'<span>'+esc(g.name)+'</span><small>'+number(fmt(g.rows.length),'group-count:'+g.id)+'</small></button>'+(S.groupBy==='territory'?'<button type="button" class="fc-info-trigger" data-fc-territory="'+gi+'" aria-label="Territory Details for '+esc(g.name)+'">'+pin+'</button>':'')+'</div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(cached.all,'group:'+g.id,true,!collapsed&&!$('fcSubtotals').checked)+'</tr>');
+      chunks.push(['group:'+g.id,cached.headers.get(signature)]);g.rows.forEach(row=>chunks.push(['phase:'+row.key,phaseHTML(row,collapsed)]));
+    });reconcileBody(chunks);
+    S.groupNodes=[];S.phaseNodes=new Map();for(const row of $('fcBody').children){
+      if(row.classList.contains('fc-group'))S.groupNodes.push({group:r.groups[S.groupNodes.length],header:row,button:row.querySelector('[data-fc-group]'),count:row.querySelector('.fc-group-name small'),totals:[...row.querySelectorAll('[data-fc-total]')],rows:[]});
+      else if(row.classList.contains('fc-leaf')){const group=S.groupNodes.at(-1),model=group.group.rows[group.rows.length];group.rows.push(row);S.phaseNodes.set(model.key,{model,row,button:row.querySelector('[data-fc-phase]'),children:[]});}
+      else{const phase=S.phaseNodes.get(row.dataset.fcParent),model=phase.model.builderRows[phase.children.length];phase.children.push({model,row,empty:!M.hasValues(model.cells)});}
+    }
+    $('fcFoot').innerHTML=r.rows.length?'<tr><th class="fc-name" scope="row">All '+({project:'Projects',territory:'Territories',builder:'Builders'}[S.groupBy])+'</th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(r.totals,'all')+'</tr>':'';
+    S.groupNodes.forEach(nodes=>{const key='group:'+nodes.group.id,cached=groupValues(nodes.group);nodes.emptyMask=nodes.group.rows.map(row=>S.emptyRows.has(row.key));nodes.nonemptyCount=nodes.emptyMask.filter(empty=>!empty).length;nodes.allCount=number(fmt(nodes.rows.length),'group-count:'+nodes.group.id);nodes.filteredCount=number(fmt(nodes.nonemptyCount),'group-count:'+nodes.group.id);nodes.allTotals=totalsMarkup(cached.all,key,true);nodes.filteredTotals=totalsMarkup(cached.filtered,key,true);nodes.totalCells=[...nodes.header.cells].slice(3);nodes.totalMarkup=nodes.header._fcTotalMarkup||nodes.allTotals;});
+    S.allFoot=totalsMarkup(r.totals,'all');S.filteredFoot=totalsMarkup(S.nonemptyReport.totals,'all');S.footCells=[...($('fcFoot').firstElementChild?.cells||[])].slice(3);S.footMarkup=S.allFoot;
+    InsightsControls.placePicker('fcViewBy',$('fcViewBySlot'));
+    $('fcEmpty').hidden=r.rows.length>0;$('fcEmpty').querySelector('h2').textContent='No Matching Phases';$('fcRetry').hidden=true;
+    syncAnnual();syncSubtotals();syncHideEmpty(false);
+    $('fcViewBy').value=S.groupBy;
+    InsightsControls.syncAll();window.InsightsNumbers?.apply(host,prior);
+    // The mounted scroller preserves its offsets; assigning them here forces a full table layout.
+  }
+  function syncCollapse(){const groups=S.report?.groups||[],label=groups.length&&groups.every(g=>S.collapsed.has(g.id))?'Expand All':'Collapse All';if($('fcCollapse').disabled!==!groups.length)$('fcCollapse').disabled=!groups.length;if($('fcCollapse').textContent!==label)$('fcCollapse').textContent=label;}
+  function setCollapsed(index,closed){
+    if(!S.permissions?.forecastsDashboard||!S.report)return;
+    const group=S.baseReport.groups[index],nodes=S.groupNodes[index];if(!group||!nodes)return;
+    closed?S.collapsed.add(group.id):S.collapsed.delete(group.id);nodes.button.setAttribute('aria-expanded',String(!closed));
+    nodes.rows.forEach((row,index)=>{const hidden=closed||$('fcHideEmpty').checked&&S.emptyRows.has(group.rows[index].key);show(row,hidden);phaseChildren(S.phaseNodes.get(group.rows[index].key),hidden,$('fcHideEmpty').checked,show);});nodes.totals.forEach(value=>{value.hidden=!closed&&!$('fcSubtotals').checked;});
+  }
+  const actor=()=>JSON.stringify([LMRuntime.current().environment,LMRuntime.current().user,LMRuntime.current().appLinkName]);
+  async function load(){
+    if(!S.permissions?.forecastsDashboard||S.busy||InsightsShell.current()!=='forecasts')return;
+    const generation=++S.generation,identity=actor();const isCurrent=()=>generation===S.generation&&S.permissions?.forecastsDashboard&&identity===actor();
+    S.busy=true;S.error=false;$('fcExport').disabled=true;$('fcRetry').hidden=true;notice('');loading(true);$('connection').textContent='Loading Forecasts…';
+    try{
+      if(!ForecastModel.date(S.permissions.today))throw new Error('Publish the updated access function to provide the Creator application date.');
+      const data=await ForecastInsightsCreator.load(ZOHO.CREATOR.DATA,{isCurrent});if(!isCurrent())return;
+      const model=M.normalize(data);if(!isCurrent())return;S.model=model;bodyChunks=new Map();reportCache=new Map();fillFilters();render();$('connection').textContent='Connected';
+    }catch(error){if(!isCurrent())return;S.error=true;notice(error.message||'Forecasts could not be loaded.',true);$('connection').textContent='Forecasts Unavailable';$('fcRetry').hidden=false;if(!S.model){$('fcEmpty').hidden=false;$('fcEmpty').querySelector('h2').textContent='Forecasts Unavailable';}}
+    finally{if(isCurrent()){S.busy=false;loading(false);if(S.report)$('fcEmpty').hidden=S.report.rows.length>0;$('fcExport').disabled=S.error||!S.report?.rows.length;}}
+  }
+  function clear(){bodyChunks=new Map();reportCache=new Map();S.generation++;S.model=null;S.report=null;S.baseReport=null;S.nonemptyReport=null;S.emptyRows=new Set();S.groupNodes=[];S.phaseNodes=new Map();S.expandedPhases.clear();S.allFoot=[];S.filteredFoot=[];S.footCells=[];S.footMarkup=null;S.missingPhases=0;S.busy=false;S.error=false;['fcHead','fcBody','fcFoot','fcCount','fcRange'].forEach(id=>{$(id).innerHTML='';$(id)._markup=null;$(id)._fcNumberMarkup=null;});$('fcWarning').hidden=true;$('fcExport').disabled=true;$('fcCollapse').disabled=true;$('fcEmpty').hidden=true;loading(false);notice('');closeCard();}
+  function exportCsv(){
+    if(!S.permissions?.forecastsDashboard||!S.report||S.busy||S.error)return;
+    const r=S.report,cols=columns(r),lines=[['Territory','Project','Phase','Zoho Project Status','Builder',...cols.map(c=>c.total?'Total':c.annual?'WFY '+c.year+' Total':c.key)]];
+    for(const row of r.rows)lines.push([row.phase.territory,row.phase.project,row.phase.name,row.phase.projectStatus,row.builders.map(b=>b.name).join('; '),...cols.map(c=>columnValue(row.cells,c).value??'')]);
+    lines.push(['','','All '+S.groupBy+'s','','',...cols.map(c=>columnValue(r.totals,c).value??'')]);
+    const quote=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
+    const url=URL.createObjectURL(new Blob(['\ufeff'+lines.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Forecasts-'+r.mode+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }
+  let cardTimer,cardTrigger=null,cardPinned=false;
+  function closeCard(restore=false){clearTimeout(cardTimer);$('fcInfoCard').hidden=true;if(cardTrigger)cardTrigger.setAttribute('aria-expanded','false');if(restore)cardTrigger?.focus();cardTrigger=null;cardPinned=false;}
+  function openCard(trigger,pinned=false){
+    clearTimeout(cardTimer);if(cardTrigger&&cardTrigger!==trigger)cardTrigger.setAttribute('aria-expanded','false');cardTrigger=trigger;cardPinned=pinned;trigger.setAttribute('aria-expanded','true');
+    let title,details;
+    if(trigger.hasAttribute('data-fc-info')){const p=S.model.phases.find(p=>p.id===trigger.dataset.fcInfo);if(!p)return;title=p.territory;details=[['Project',p.project],['Phase',p.name],['Project Status',p.projectStatus||'—']];}
+    else if(trigger.id==='fcWarning'){title='Missing Forecasts';details=[['Phases',S.missingPhases],['Unavailable values','Shown as —']];}
+    else{const base=S.baseReport.groups[Number(trigger.dataset.fcTerritory)],g=S.report.groups.find(group=>group.id===base?.id);if(!g)return;title=g.name;details=[['Selected Projects',new Set(g.rows.map(r=>r.phase.projectId)).size],['Selected Phases',new Set(g.rows.map(r=>r.phase.id)).size],['Builders',new Set(g.rows.flatMap(r=>r.builders.map(b=>b.id))).size]];}
+    $('fcInfoTitle').textContent=title;$('fcInfoBody').innerHTML='<dl>'+details.map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>';
+    const card=$('fcInfoCard');card.hidden=false;const rect=trigger.getBoundingClientRect(),height=card.offsetHeight,width=card.offsetWidth;card.style.left=Math.max(8,Math.min(rect.left,innerWidth-width-8))+'px';card.style.top=Math.max(8,Math.min(rect.bottom+5,innerHeight-height-8))+'px';
+  }
+  const infoSelector='[data-fc-info],[data-fc-territory],#fcWarning';
+  host.addEventListener('click',event=>{
+    const phase=event.target.closest('[data-fc-phase]');if(phase){togglePhase(phase.dataset.fcPhase);return;}
+    const group=event.target.closest('[data-fc-group]');if(group){const index=Number(group.dataset.fcGroup),id=S.baseReport?.groups[index]?.id;if(id==null)return;closeCard();setCollapsed(index,!S.collapsed.has(id));syncCollapse();return;}
+    const info=event.target.closest(infoSelector);if(info){openCard(info,true);return;}
+  });
+  host.addEventListener('pointerover',event=>{const t=event.target.closest(infoSelector);if(t&&event.pointerType!=='touch')openCard(t);});
+  host.addEventListener('pointerout',event=>{if(event.target.closest(infoSelector)&&!cardPinned)cardTimer=setTimeout(closeCard,180);});
+  host.addEventListener('focusin',event=>{const t=event.target.closest(infoSelector);if(t)openCard(t);});
+  host.addEventListener('focusout',event=>{if(event.target.closest(infoSelector)&&!cardPinned)cardTimer=setTimeout(closeCard,180);});
+  $('fcInfoCard').addEventListener('pointerenter',()=>clearTimeout(cardTimer));$('fcInfoCard').addEventListener('pointerleave',()=>{if(!cardPinned)cardTimer=setTimeout(closeCard,180);});
+  $('fcInfoClose').addEventListener('click',()=>closeCard(true));document.addEventListener('pointerdown',event=>{if(cardTrigger&&!$('fcInfoCard').contains(event.target)&&!cardTrigger.contains(event.target))closeCard();});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeCard(true);});document.addEventListener('scroll',()=>closeCard(),true);window.addEventListener('resize',()=>closeCard());
+  ['fcStatus','fcMode','fcPeriod','fcYears','fcTerritory','fcProject','fcSubdivision','fcBuilder'].forEach(id=>$(id).addEventListener('change',render));
+  $('fcHideEmpty').addEventListener('change',()=>{closeCard();syncHideEmpty();});$('fcAnnual').addEventListener('change',syncAnnual);$('fcSubtotals').addEventListener('change',syncSubtotals);
+  $('fcViewBy').addEventListener('change',()=>{S.groupBy=$('fcViewBy').value;S.collapsed.clear();render();});
+  let searchTimer;$('fcSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(render,50);});
+  $('fcAllFilters').addEventListener('click',()=>{const open=$('fcMoreFilters').hidden;$('fcMoreFilters').hidden=!open;$('fcAllFilters').setAttribute('aria-expanded',String(open));});
+  $('fcCollapse').addEventListener('click',()=>{if(!S.report)return;closeCard();const closed=!S.report.groups.every(g=>S.collapsed.has(g.id)),shown=new Set(S.report.groups.map(g=>g.id));S.baseReport.groups.forEach((g,index)=>{if(shown.has(g.id)){if(S.groupBy==='project')g.rows.forEach(row=>{const phase=S.phaseNodes.get(row.key);if(!phase?.children.length)return;closed?S.expandedPhases.delete(row.key):S.expandedPhases.add(row.key);phase.button.setAttribute('aria-expanded',String(!closed));});setCollapsed(index,closed);}});syncCollapse();});
+  $('fcReset').addEventListener('click',()=>{['fcStatus','fcTerritory','fcProject','fcSubdivision','fcBuilder'].forEach(id=>InsightsControls.setValues($(id),[]));$('fcSearch').value='';$('fcMode').value='outlook';$('fcPeriod').value='planning';InsightsControls.setValues($('fcYears'),['2026','2027','2028','2029']);$('fcHideEmpty').checked=true;$('fcAnnual').checked=true;$('fcSubtotals').checked=false;S.collapsed.clear();render();});
+  $('fcRetry').addEventListener('click',()=>$('refresh').click());$('fcExport').addEventListener('click',exportCsv);
+  window.addEventListener('insights:access',event=>{S.permissions=event.detail;clear();});
+  window.addEventListener('insights:dashboard',event=>{closeCard();if(event.detail==='forecasts'&&S.permissions?.forecastsDashboard&&!S.model)void load();});
+  window.ForecastInsightsApp=Object.freeze({groupBy:()=>S.groupBy,refresh:load});
+})();

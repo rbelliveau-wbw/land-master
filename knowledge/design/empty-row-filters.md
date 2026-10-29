@@ -21,3 +21,8 @@ Budget's phase and all-phases item lists use the shared keyed movement engine
 with `visibility:true` so filtered survivors move to their real positions.
 Existing 100-row motion limits and reduced-motion behavior remain in force.
 No count or monetary total changes as a result of this visibility choice.
+
+Forecasts dashboard defaults Hide Empty on, including Reset (October 29, 2026).
+Users can switch it off to restore empty/unknown rows; keep mounted identity,
+remembered disclosure state and numeric motion. This default is specific to
+Forecasts and does not change Lot Sales or editor defaults.
