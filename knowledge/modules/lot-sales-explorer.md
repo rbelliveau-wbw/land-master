@@ -1,3 +1,10 @@
+## Forecasts Total label — 1.6.15, October 29, 2026
+
+The Forecasts matrix heading and CSV column are both Total. Remove the Selected
+Period subtitle while preserving the selected-period scope, pinned alignment,
+builder details, group/footer totals and annual-column independence.
+[Checks and rollback](../../docs/forecast-total-labels-and-refresh-2026-10-29.md).
+
 ## Forecasts selected-period total — 1.6.14, October 29, 2026
 
 Total appears immediately after Builder and sums every displayed month in the

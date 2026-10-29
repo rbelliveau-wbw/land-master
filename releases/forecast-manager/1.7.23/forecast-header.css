@@ -1,0 +1,17 @@
+/* Whole-subdivision facts stay visible in every Forecast Manager view. */
+.fs-disclosure .fs-title-head{display:grid;grid-template-columns:minmax(210px,1.2fr) minmax(0,3.2fr) auto 10px;gap:16px}
+.fs-disclosure .fs-title-head>.fs-identity{min-width:0}
+.fs-disclosure .fs-title-context{display:flex;gap:3px 12px;margin-right:0}
+.fs-disclosure .fs-title-context .fs-territory{display:block;margin:0;color:#e7eff9;font-size:9px;font-weight:700}
+.fs-disclosure .fs-header-facts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;min-width:0;align-items:start}
+.fs-header-field{min-width:0;margin:0;font-variant-numeric:tabular-nums}
+.fs-header-label{margin:0;color:#bccfe4;font-size:9px;line-height:1.35;font-weight:500;white-space:nowrap}
+.fs-header-value{display:flex;align-items:center;gap:5px;margin:4px 0 0;color:#fff;font-size:13px;font-weight:750;line-height:1.4;white-space:nowrap}
+.fs-header-difference{display:block;min-height:13px;margin-top:2px;color:#c7d9ec;font-size:9px;line-height:1.35;font-weight:600}
+.fs-header-difference[data-sign=negative]{color:#ffd1cf}.fs-header-difference[data-sign=positive]{color:#b1efd1}
+.fs-sold-check{display:grid;place-items:center;flex:none;width:14px;height:14px;color:#8be0b7}
+.fs-sold-check svg{display:block;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.fs-disclosure .fs-title-head .fs-balance{max-width:135px;gap:8px}
+.fs-disclosure .fs-title-head .fs-balance-label{max-width:74px;font-size:9px}
+@media(max-width:1380px){.fs-disclosure .fs-title-head{grid-template-columns:minmax(190px,1fr) minmax(0,3fr) auto 10px;gap:12px}.fs-disclosure .fs-header-facts{gap:8px}.fs-header-value{font-size:12px}.fs-disclosure .fs-title-head .fs-balance{max-width:110px}.fs-disclosure .fs-title-head .fs-balance-label{max-width:61px;font-size:8px}}
+@media(max-width:1100px){.fs-disclosure .fs-title-head{grid-template-columns:minmax(190px,1fr) auto 10px;gap:12px}.fs-disclosure .fs-header-facts{grid-column:1/-1;grid-row:2;gap:14px;border-top:1px solid #ffffff20;padding-top:10px}.fs-header-label{font-size:9px}.fs-header-value{font-size:13px}}

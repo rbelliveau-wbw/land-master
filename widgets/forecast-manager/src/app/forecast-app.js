@@ -43,6 +43,11 @@
     } catch(error) {if(error.apiMissing || /custom api.*(?:doesn.?t exist|does not exist|not exist|linkname)/i.test(error.message || '')){error.apiMissing=true;error.apiName=apiName;}if(write && error.unknown == null) error.unknown=true; throw error;}
     finally {clearTimeout(timer);}
   }
+  async function readCatalog() {
+    const catalog=await request({action:'catalog'});
+    if(!Array.isArray(catalog.subdivisions)||!Array.isArray(catalog.builders))throw new Error('Forecast choices are unavailable.');
+    return catalog;
+  }
   function applySnapshot(data) {
     if(!data.subdivision || data.subdivision.id !== S.sub || !Array.isArray(data.years) || !Array.isArray(data.months)) throw new Error('The forecast snapshot does not match this subdivision.');
     S.snapshot=data;
@@ -108,7 +113,7 @@
     const previous=ForecastNumbers.capture($('matrix'));
     const matrix=rows(), yearList=years().map(String).sort((a,b)=>Number(a)-Number(b));
     $('matrix').dataset.view=S.view; ForecastNumbers.text($('matrixCount'),matrix.length+' builder'+(matrix.length===1?'':'s')+' · '+yearList.length+' year'+(yearList.length===1?'':'s'),numberKey('matrix-count'));
-    let html='<colgroup><col><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months for this builder">Total<small>Selected years</small></th>';
+    let html='<colgroup><col><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months for this builder">Total</th>';
     html+=yearList.map(year=>'<th colspan="13"><div class="year-heading"><strong>WFY '+esc(year)+'</strong><small>Feb '+esc(year)+' — Jan '+esc(Number(year)+1)+'</small></div></th>').join('')+'</tr><tr>';
     html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===S.snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3).toUpperCase()+'<small class="current-month-label">Current</small></th>').join('')+'<th class="year-total">TOTAL</th>').join('')+'</tr></thead><tbody>';
     for(const row of matrix) {
@@ -170,12 +175,17 @@
     }
     refreshMonthColors();
   }
-  async function load() {
+  async function load(refreshCatalog=false) {
     if(busy() || creationReview()) return;
-    if(!S.sub) {notice('Choose a subdivision.');return;}
-    if(changed()) {discardDialog(load);return;}
+    if(!S.sub&&!refreshCatalog) {notice('Choose a subdivision.');return;}
+    if(changed()) {discardDialog(()=>load(refreshCatalog));return;}
     closePicker(); S.creation=null; S.loading=true; notice(''); patch(); controls();
-    try {const data=await request({action:'snapshot',subdivisionId:S.sub});applySnapshot(data);S.entries.clear();render();}
+    try {
+      const catalog=refreshCatalog?await readCatalog():null;
+      if(S.sub){const data=await request({action:'snapshot',subdivisionId:S.sub});applySnapshot(data);}
+      if(catalog)S.catalog=catalog;
+      S.entries.clear();render();
+    }
     catch(error) {notice(error.message,true);}
     finally {S.loading=false;patch();controls();}
   }
@@ -357,7 +367,7 @@
   $('matrix').addEventListener('focusout',event=>{const input=event.target,entry=S.entries.get(input.dataset.forecast);if(S.view==='outlook'&&input.dataset.forecast&&input.value==='0'&&(!entry||entry.phase==='saved'))input.value='';});
   $('matrix').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('matrix').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...document.querySelectorAll('[data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
-  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{const before=S.snapshot,sub=S.sub;return window.LMMotion?LMMotion.refresh($('workspace'),load,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before}):load();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
+  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{const before=S.snapshot,catalog=S.catalog,sub=S.sub,refresh=()=>load(true);return window.LMMotion?LMMotion.refresh($('workspace'),refresh,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before||S.catalog!==catalog}):refresh();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
   $('dialogClose').addEventListener('click',closeDialog);$('dialogCancel').addEventListener('click',closeDialog);$('dialogAction').addEventListener('click',()=>{if(S.dialog&&S.dialog.action&&!$('dialogAction').disabled)S.dialog.action();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){if(S.picker){const anchor=S.picker.anchor;closePicker();anchor.focus();}else if(S.dialog){event.preventDefault();closeDialog();}return;}
@@ -373,7 +383,7 @@
       if(context.environment==='UNKNOWN'||!context.user||context.user==='(unknown)')throw new Error('Creator did not identify the connected user and environment.');
       S.ready=true;$('environment').hidden=context.environment==='PRODUCTION';$('environment').textContent=context.environment;$('environment').classList.toggle('dev',context.environment!=='PRODUCTION');
       LMCriticalErrors.configure({apiCandidates:[LMRuntime.apiName('Report_Proforma_Widget_Error')]});forecastReporterReady();
-      S.catalog=await request({action:'catalog'});if(!Array.isArray(S.catalog.subdivisions)||!Array.isArray(S.catalog.builders))throw new Error('Forecast choices are unavailable.');
+      S.catalog=await readCatalog();
       S.years=[String(M.currentYear(S.catalog.today)),String(M.currentYear(S.catalog.today)+1)];controls();
     } catch(error) {S.ready=false;notice(error.apiMissing?'Missing Creator API: '+error.apiName+'. Bind it to forecastManagerWidget in '+LMRuntime.current().environment.toLowerCase()+', then reload.':error.message+' Forecast Manager setup may be required in this Creator environment.',true);$('saveStatus').textContent=error.apiMissing?'API setup required':'Connection unavailable';$('saveStatus').dataset.state='review';}
     finally {clearTimeout(timer);}

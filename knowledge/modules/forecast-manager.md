@@ -1,3 +1,13 @@
+## Refresh promoted metadata and simplify Total — 1.7.23, October 29, 2026
+
+Refresh reloads the complete native catalog before the selected subdivision
+snapshot, so newly promoted Territory metadata becomes available without a full
+page reload. It also works before a subdivision is selected. Failed catalog
+validation retains the mounted complete report and stops the snapshot request;
+pending/unknown writes and unresolved edits retain their existing guards.
+The builder Total heading now has no subtitle; its selected-year math is unchanged.
+[Checks and rollback](../../docs/forecast-total-labels-and-refresh-2026-10-29.md).
+
 ## Territory, forecast years, overview and totals — 1.7.22, October 29, 2026
 
 Territory narrows Subdivision choices, and All Years with Forecasts selects its

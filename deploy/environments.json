@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T17:48:04.386Z",
+  "generated_at": "2026-10-29T19:04:33.459Z",
   "note": "Creator registrations retain stable Production URLs. Migrated widget loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
@@ -11,8 +11,8 @@
       "milestone-gantt": "1.1.20",
       "manage-lots": "0.13.19",
       "settings-manager": "1.6.4",
-      "lot-sales-explorer": "1.6.14",
-      "forecast-manager": "1.7.22",
+      "lot-sales-explorer": "1.6.15",
+      "forecast-manager": "1.7.23",
       "crew-locations": "1.2.7"
     },
     "stage": {
@@ -34,8 +34,8 @@
       "milestone-gantt": "1.1.20",
       "manage-lots": "0.13.19",
       "settings-manager": "1.6.4",
-      "lot-sales-explorer": "1.6.14",
-      "forecast-manager": "1.7.22",
+      "lot-sales-explorer": "1.6.15",
+      "forecast-manager": "1.7.23",
       "crew-locations": "1.2.7"
     }
   },

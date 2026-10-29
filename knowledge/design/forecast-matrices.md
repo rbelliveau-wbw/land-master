@@ -53,7 +53,7 @@ write and unresolved-change guards. Fiscal years offers **All Years with
 Forecasts**, meaning the subdivision's existing Builder forecast years, without
 inserting an empty current year. Explicit year choices remain available.
 
-Keep a pinned **Total / Selected years** column immediately after Builder and
+Keep a pinned **Total** column immediately after Builder and
 its grand total in the Selected total footer. Sum displayed months across
 selected years in all four views. Preserve native zero presentation,
 missing-year creation, actual values and Sliding push identities.
@@ -285,7 +285,7 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
-October 29: put a neutral **Total / Selected Period** column immediately after
+October 29: put a neutral **Total** column immediately after
 Builder, before the fiscal month groups. Sum all months in the selected fiscal
 years using the current displayed basis and filters, including both completed
 Sold months and current/future Forecast months in Sold + Forecast. Pin this
