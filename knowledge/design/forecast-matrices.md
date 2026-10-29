@@ -260,6 +260,15 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+October 29: put a neutral **Total / Selected Period** column immediately after
+Builder, before the fiscal month groups. Sum all months in the selected fiscal
+years using the current displayed basis and filters, including both completed
+Sold months and current/future Forecast months in Sold + Forecast. Pin this
+column beside the phase identity during horizontal scrolling. Include builder
+details, group subtotals, footer and CSV, without counting child rows twice.
+Keep it visible independently of Annual Totals. Preserve partial-known totals,
+missing counts, unknown versus zero, and stable Sliding push numeric identities.
+
 Default and Reset use the explicit WFY2026–2029 planning preset, with those four
 years also selected in Choose Years. Keep missing years unknown. Selected filters
 apply immediately against loaded data. Reuse keyed unchanged rows/header and a

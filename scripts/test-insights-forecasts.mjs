@@ -14,6 +14,19 @@ assert.deepEqual(report.years,[2026,2027]);assert.equal(report.months.length,24)
 const alta=report.rows.find(r=>r.phase.name.startsWith('Alta'));
 assert.equal(alta.cells[0].value,5,'Completed month uses native Actual Lots');assert.equal(alta.cells[8].value,21,'Current month uses saved forecast, without adding actuals');assert.equal(alta.cells[9].value,21);
 assert.equal(M.annual(alta.cells,2026).value,8*5+4*21);assert.equal(M.annual(alta.cells,2027).value,12*21);
+assert.deepEqual(M.total(alta.cells),{value:376,known:48,knownValue:376,missing:0,sold:40,forecast:336},'selected-period total adds past Sold and current/future Forecast once');
+for(const mode of ['outlook','forecast'])for(const groupBy of ['project','territory','builder'])for(const period of ['current','next','planning','custom']){
+  const scoped=M.report(model,{...filters,mode,groupBy,period,years:['2026','2028']},today);
+  for(const row of [...scoped.rows,...scoped.rows.flatMap(row=>row.builderRows),{cells:scoped.totals}]){
+    const sum=M.total(row.cells),annuals=scoped.years.map(year=>M.annual(row.cells,year));
+    assert.equal(sum.knownValue,annuals.reduce((value,year)=>value+year.knownValue,0),'period total includes only selected months, including noncontiguous fiscal years');
+    assert.equal(sum.sold+sum.forecast,sum.knownValue);
+    assert.equal(sum.missing,annuals.reduce((value,year)=>value+year.missing,0),'missing months retain their warning');
+  }
+}
+assert.equal(M.total(alta.builderRows[0].cells).value,176);assert.equal(M.total(alta.builderRows[1].cells).value,200,'builder detail totals do not add to the report twice');
+assert.equal(M.total(report.rows.find(row=>row.phase.name.startsWith('No Forecast')).cells).value,null,'all-unknown period stays unknown');
+assert.equal(M.total(report.rows.find(row=>row.phase.name.startsWith('Meadow')).cells).value,0,'known zero period stays zero');
 assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0].value,null,'Absent forecasts remain unknown');
 assert.equal(report.rows.find(r=>r.phase.name.startsWith('Meadow')).phase.soldOut,true);
 const nonempty=M.report(model,{...filters,hideEmpty:true},today);assert.equal(nonempty.rows.length,1,'Hide Empty removes zero, missing-only and mixed blank/zero rows');assert.equal(nonempty.totals[0].value,5,'filtered totals match visible nonempty rows');assert.equal(M.hasValues([{value:null},{value:0}]),false);assert.equal(M.hasValues([{value:null},{value:5}]),true,'a nonzero month keeps a partly missing row');assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0].value,null,'hiding missing-only rows never converts missing data to zero');

@@ -76,7 +76,8 @@
     return {years,months,rows,groups,mode,today,totals:aggregate(rows,months)};
   }
   function aggregate(rows,months){return months.map((month,index)=>{const values=rows.map(r=>r.cells[index]);const known=values.reduce((s,c)=>s+c.known,0),missing=values.reduce((s,c)=>s+c.missing,0),knownValue=values.reduce((s,c)=>s+c.knownValue,0);return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold:values.reduce((s,c)=>s+c.sold,0),forecast:values.reduce((s,c)=>s+c.forecast,0)};});}
-  function annual(cells,year){const selected=cells.filter(c=>c.year===year),known=selected.reduce((s,c)=>s+c.known,0),missing=selected.reduce((s,c)=>s+c.missing,0),knownValue=selected.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:selected.reduce((s,c)=>s+c.sold,0),forecast:selected.reduce((s,c)=>s+c.forecast,0)};}
+  function total(cells){const known=cells.reduce((s,c)=>s+c.known,0),missing=cells.reduce((s,c)=>s+c.missing,0),knownValue=cells.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:cells.reduce((s,c)=>s+c.sold,0),forecast:cells.reduce((s,c)=>s+c.forecast,0)};}
+  function annual(cells,year){return total(cells.filter(c=>c.year===year));}
   const hasValues=cells=>cells.some(cell=>cell.value>0);
-  root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,annual,hasValues});
+  root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,total,annual,hasValues});
 })(typeof window==='undefined'?globalThis:window);

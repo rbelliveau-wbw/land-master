@@ -1,3 +1,13 @@
+## Forecasts selected-period total — 1.6.14, October 29, 2026
+
+Total appears immediately after Builder and sums every displayed month in the
+selected fiscal years, past and future, using the active Lot Status and filters.
+It remains visible with Annual Totals off and pins beside the phase name when
+scrolling. Builder details, group subtotals, the footer and CSV use the same
+aggregate, preserving partial-known, unknown and zero semantics. The existing
+Sliding push engine handles numeric updates with stable period-total keys.
+[Changed files, checks and rollback](../../docs/forecasts-period-total-2026-10-29.md).
+
 ## Stacked sidebar actions — 1.6.13, October 28, 2026
 
 Refresh and Diagnostics stack vertically at the top-right beside branding,
