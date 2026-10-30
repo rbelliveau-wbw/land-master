@@ -111,6 +111,10 @@ Keep exact attachment ID/parent/scope confirmation and unknown-reply recovery.
 
 ## UI copy style
 
+- User direction October 30, 2026: use Title Case for visible page headings,
+  tabs, column headings, field labels and action labels (for example, **By
+  Foreman**, **Labor Type**, **New Crew**). Preserve record names, source-owned
+  values, identifiers and ordinary explanatory sentences.
 - Robby does not like verbose explanatory text blocks in widget UI (2026-08-13).
   No multi-sentence descriptions under section headings, no long empty-state
   paragraphs explaining how a feature works. A heading, a short label, and the

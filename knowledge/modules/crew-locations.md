@@ -421,3 +421,17 @@ end date. Full repository validation, the 33-path build, CI and Pages passed.
 Evidence and exact operation IDs: [PMP outcome](../../creator/crew-locations/pmp-outcome.json).
 Pending Creator publication remains the user's step under PMP; Production native
 save verification is therefore not claimed. Crew/task source adapters stay off.
+
+## Compact Staffing Workspace — 1.5.2
+
+Workspace tabs share the title bar. Roster / By Foreman, search, status and actions
+share one compact employee toolbar. Roster and member rows are 35px / 34px.
+Territory, Labor Type and Crew Assignment save inline through the existing guarded
+employee write. No-op selections do not write; inactive/read-only users cannot
+edit. Unknown replies use the same persisted request and read-only recovery dialog.
+Foreman group headers also expose that employee’s Labor Type and Crew. Groups
+remain review-only until a user explicitly edits staffing; no automatic assignment
+is inferred. Exact work dates and full job labels remain in titles.
+Shared motion covers tabs, pickers, status, keyed rows and confirmed-cell highlights;
+Sliding push count identities remain stable and dates remain static.
+See [release and rollback evidence](../../docs/crew-compact-workspace-2026-10-30.md).

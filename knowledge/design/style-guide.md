@@ -8,6 +8,16 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+User direction October 30, 2026: page headings, tabs, column headings, field
+labels and action labels use Title Case, such as **By Foreman**, **Labor Type**
+and **New Crew**. Keep record names and source-owned values unchanged; ordinary
+status/error sentences remain sentences. Crew Management keeps workspace tabs
+beside its title and employee view switches beside search, status and actions,
+using horizontal space before adding another toolbar row. Roster and foreman
+member rows use compact single-line names/codes and inline searchable staffing
+pickers. Preserve exact text in titles when shortened, existing native writes,
+permission guards and unknown-save recovery.
+
 Lookup names that shorten within a control must remain available on hover.
 Reuse the existing native full-name title pattern where it is already proven,
 as in Tax's Company selector. Land & Projects table and record lookup controls

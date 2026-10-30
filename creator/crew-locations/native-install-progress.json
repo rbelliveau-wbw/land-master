@@ -1542,5 +1542,12 @@
       "repository_commit": "d67fa0e81d520db1f08c3616cd7c29d2dca3daef"
     },
     "verification_file": "creator/crew-locations/native-installed/production-foreman-sync-20261030.json"
+  },
+  "compact_workspace_2026_10_30": {
+    "release": "1.5.2",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-compact-workspace-2026-10-30.md",
+    "rollback": "Production crew-locations mapping to 1.4.0; retain Creator 9.134 and all staffing/sync data."
   }
 }
