@@ -57,8 +57,15 @@ Exact live baseline and optimized action bodies are under
   than the reported production record; it does not establish a production time
   guarantee. The deterministic improvement is removal of per-month queries.
 
-Required release gates: `npm run validate`, `npm run build:pages`, GitHub CI/Pages,
-and native desktop verification of the deployed duplicate flow.
+Release gates passed: `npm run validate`, `npm run build:pages`,
+[GitHub CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/40991215264)
+and [Pages](https://github.com/rbelliveau-wbw/land-master/actions/runs/40991215281).
+After deployment, native Development preview as demouser_1 (Dev/Land Acq,
+read-only widget flags and not a source owner) showed Duplicate while source Edit
+remained disabled. Saving the financial recreation produced a distinct record,
+retained the source owner, added the creator and returned the same ROI/IRR/XIRR.
+The saved record reopened at Ready. Desktop screenshots and private save timing
+logs are retained in the local `proforma-test-results` folder outside this repo.
 
 ## Release and rollback
 
