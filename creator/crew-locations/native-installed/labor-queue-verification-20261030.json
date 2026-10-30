@@ -1,0 +1,13 @@
+{
+  "auditId": "4410926000005607011",
+  "environment": "Development",
+  "queued": true,
+  "ok": true,
+  "received": 1247,
+  "processed": 1247,
+  "updated": 206,
+  "memberships": 832,
+  "unmatched": 0,
+  "expiredMemberships": 0,
+  "employeeStaffingWrites": 0
+}

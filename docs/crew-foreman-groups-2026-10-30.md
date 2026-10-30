@@ -84,3 +84,26 @@ and prior queue definitions. Preserve all imported records, employee staffing,
 external mappings, shared connections and unrelated Creator components. Keep the
 added membership field unless its deletion is separately authorized. The existing
 DEV, Stage and Production APIs remain required and unchanged.
+
+## Production outcome
+
+Exactly eleven required components were promoted to Stage and Production **9.134**;
+the unrelated Pro Forma audit helper was excluded. CI and Pages deployment for
+`d67fa0e8` succeeded. Widget **1.4.0** was verified in the actual Production iframe.
+
+The daily schedule started automatically at **10:30:11 America/Chicago**. Its
+timecard step finished at 10:32:26 with 1,611 received/processed, 16 created and
+1,595 updated. It mapped 1,318 cards; 293 cards remain unmapped across the seven
+job codes listed in the verification JSON. No conflicting HeavyJob destinations
+were found. The labor step then finished at **10:34:29**, received/processed 1,363
+rows and saved 908 distinct memberships on 222 timecards, with zero unmatched
+labor rows and zero expired payloads on this first run. Both durable audits show
+Success. The live widget's Employees / By foreman view shows **12 foreman groups**
+for October 17–30 and all 72 active employees remain available in the roster.
+No employee staffing assignments were changed.
+
+The user subsequently clarified that the compact storage approach is acceptable.
+No separate labor-resource table/form was created. The source remains
+HeavyJob_TimecardCostcodeLaborResource, and only fourteen dates of its membership
+data are retained in Land Master. Exact counts, audit IDs and remaining job codes
+are in `native-installed/production-foreman-sync-20261030.json`.

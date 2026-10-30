@@ -1020,7 +1020,7 @@
     }
   },
   "current_release": "1.4.0",
-  "current_creator_promotion": "All 35 pending components promoted to Stage and Production 9.132 with explicit user authorization.",
+  "current_creator_promotion": "Eleven required crew components promoted to Stage and Production 9.134 on 2026-10-30; scheduled Production run and live By foreman verified. Unrelated Pro Forma audit helper was excluded.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
     "release": "1.1.4",
@@ -1433,7 +1433,7 @@
   },
   "foreman_groups_2026_10_30": {
     "release": "1.4.0",
-    "status": "development-installed-native-queue-verification-in-progress",
+    "status": "production-9.134-1.4.0-native-scheduled-run-and-widget-verified",
     "requested_date": "2026-10-30",
     "native_promotion_authorized": true,
     "grouping": "Read-only review of recorded employee membership under every recent foreman; no automatic staffing updates",
@@ -1479,6 +1479,68 @@
     "reference": "docs/crew-foreman-groups-2026-10-30.md",
     "rollback": "Restore 1.3.2 assets and scoped native-before/*.foreman-20261030.* snapshots. Retain field and records; do not delete employee staffing.",
     "native_compile_verified": true,
-    "native_labor_test_audit_id": "4410926000005607011"
+    "native_labor_test_audit_id": "4410926000005607011",
+    "creator_versions": {
+      "stage": "9.134",
+      "production": "9.134"
+    },
+    "production_verification": {
+      "date": "2026-10-30",
+      "environment": "Production",
+      "creator_version": "9.134",
+      "widget_version": "1.4.0",
+      "schedule_started_at": "2026-10-30 10:30:11 America/Chicago",
+      "component_count": 11,
+      "timecards": {
+        "audit_id": "4410926000005622002",
+        "status": "Success",
+        "finished_at": "2026-10-30 10:32:26 America/Chicago",
+        "received": 1611,
+        "processed": 1611,
+        "created": 16,
+        "updated": 1595,
+        "unmapped": 293,
+        "mapped": 1318,
+        "tombstoned": 0,
+        "expired": 0,
+        "unmapped_jobs": [
+          "C_TRAMENITY",
+          "C_ADMIN",
+          "C_WARRANTY26",
+          "C_RSWL",
+          "TEST",
+          "RSAMENITIES",
+          "C_RO01"
+        ],
+        "conflicting_jobs": []
+      },
+      "labor": {
+        "audit_id": "4410926000005586049",
+        "status": "Success",
+        "started_at": "2026-10-30 10:32:26 America/Chicago",
+        "finished_at": "2026-10-30 10:34:29 America/Chicago",
+        "received": 1363,
+        "processed": 1363,
+        "timecards_updated": 222,
+        "memberships": 908,
+        "unmatched": 0,
+        "expired_membership_payloads": 0,
+        "cutoff": "2026-10-17"
+      },
+      "widget": {
+        "native_production_verified": true,
+        "active_employees": 72,
+        "inactive_employees": 0,
+        "visible_foreman_groups": 12,
+        "view": "Employees / By foreman",
+        "period": "2026-10-17 through 2026-10-30",
+        "employee_staffing_writes": 0
+      },
+      "user_storage_preference": "User clarified on 2026-10-30 that the compact membership approach is acceptable; no separate labor-resource form/table was created.",
+      "ci": "https://github.com/rbelliveau-wbw/land-master/actions/runs/41080558519",
+      "pages": "https://github.com/rbelliveau-wbw/land-master/actions/runs/41080558252",
+      "repository_commit": "d67fa0e81d520db1f08c3616cd7c29d2dca3daef"
+    },
+    "verification_file": "creator/crew-locations/native-installed/production-foreman-sync-20261030.json"
   }
 }
