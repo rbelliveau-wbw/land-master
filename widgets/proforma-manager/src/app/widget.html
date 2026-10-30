@@ -8,23 +8,23 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.134"></script>
-<script src="pf-save-audit.js?v=1.80.134"></script>
-<script src="pf-progress.js?v=1.80.134"></script>
+<script src="pf-save-verification.js?v=1.80.135"></script>
+<script src="pf-save-audit.js?v=1.80.135"></script>
+<script src="pf-progress.js?v=1.80.135"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.134">
-<script src="interaction-motion.js?v=1.80.134"></script>
-<script src="interaction-surfaces.js?v=1.80.134"></script>
-<script src="number-edit-commit.js?v=1.80.134"></script>
-<script src="number-transitions.js?v=1.80.134"></script>
-<script src="number-views.js?v=1.80.134"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.134">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.135">
+<script src="interaction-motion.js?v=1.80.135"></script>
+<script src="interaction-surfaces.js?v=1.80.135"></script>
+<script src="number-edit-commit.js?v=1.80.135"></script>
+<script src="number-transitions.js?v=1.80.135"></script>
+<script src="number-views.js?v=1.80.135"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.135">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.134"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.134">
-<script src="comments.js?v=1.80.134"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.134">
+<script src="budget-transfer-ui.js?v=1.80.135"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.135">
+<script src="comments.js?v=1.80.135"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.135">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1837,7 +1837,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.134"></script>
+<script src="success-feedback.js?v=1.80.135"></script>
 </head>
 <body>
 
@@ -2252,7 +2252,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.134";
+var PFW_VERSION="1.80.135";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -2833,7 +2833,7 @@ function isSalePricePrecisionRejection(err){
   var code=resp&&(resp.code||(resp.result&&resp.result.code));
   return (code===3002||code==="3002") && /round off.*0 decimal places/i.test(String(fieldError||err&&err.message||""));
 }
-function sdkUpdate(reportName,id,data){if(!S.liveSDK)return Promise.resolve({code:3000,data:{ID:String(id)}});return PFTransport.mutate('update',candidates(reportName)[0],String(id),data).catch(function(e){if(e.raw&&Number(e.raw.code)===3000&&Array.isArray(e.raw.error)&&e.raw.error.length){S._engineScriptError=e.raw.error.join(' | ');auditLog('error','Server workflow could not be confirmed; no update replay was attempted',{report:reportName,error:e.raw.error});}throw e;});}
+function sdkUpdate(reportName,id,data,writeOptions){if(!S.liveSDK)return Promise.resolve({code:3000,data:{ID:String(id)}});return PFTransport.mutate('update',candidates(reportName)[0],String(id),data,null,null,writeOptions).catch(function(e){if(e.raw&&Number(e.raw.code)===3000&&Array.isArray(e.raw.error)&&e.raw.error.length){S._engineScriptError=e.raw.error.join(' | ');auditLog('error','Server workflow could not be confirmed; no update replay was attempted',{report:reportName,error:e.raw.error});}throw e;});}
 
 /* Creator lookup fields are not perfectly consistent across forms created at different
    times. Some multi-select lookups accept an ID array in the widget SDK, while other
@@ -3157,7 +3157,8 @@ function proformaEditDisabledReason(rec,approvalState){
   }
   return "This Pro Forma cannot be edited.";
 }
-function canDuplicatePf(rec){ return !!perms().editAll || userOwnsPf(rec); }
+/* Copying a visible record creates a separate Draft; it does not edit the source. */
+function canDuplicatePf(rec){ return !!(rec&&rec.ID); }
 function canEditCurve(){ return perms().editCurve; }
 function canSeeVpComp(){ return perms().vpCompTab; }
 function canEditProbability(){ return perms().editProbability; }
@@ -5792,8 +5793,8 @@ function renderPermBanner(){
   host.hidden=false;
   host.innerHTML='<div class="pb-icon">!</div><div><b>Read-only access</b>'
     +'<div class="pb-sub">'+(p.hasRow
-      ? "Your account doesn't have edit rights for Pro Formas. You can view records, but saving is disabled."
-      : "No access record was found for your account. You can view records, but saving is disabled. Contact an administrator to be granted access.")
+      ? "You can view or duplicate Pro Formas. Editing existing records is disabled."
+      : "You can view or duplicate Pro Formas. Contact an administrator for edit access.")
     +'</div></div>';
 }
 function boolValue(v){
@@ -8357,7 +8358,7 @@ function duplicateProforma(pfId){
   if(!pfPublicReady())return false;
   var rec=(S.proformas||[]).find(function(r){return String(r.ID)===String(pfId);});
   if(!rec){ toast("Could not find that Pro Forma to duplicate.","err"); return; }
-  if(!canDuplicatePf(rec)){ toast("Only a Pro Forma owner or an Edit All Proformas administrator can duplicate it.","err"); return; }
+  if(!canDuplicatePf(rec)){ toast("This Pro Forma is not available to duplicate.","err"); return; }
   var srcName=String(rec.Name||"Pro Forma");
   /* Each stage paints before its work runs — copying and recalculating a large Pro Forma
      blocks the thread, so without the yield the modal would never appear at all. */
@@ -12013,14 +12014,16 @@ function saveProforma(){
       auditLog("info","Triggering server engine (LOI header fields already persisted by Save_PF)",{
         id:pfId, loiState:loiAuditSnapshot(m), sentKeys:Object.keys(headerTouch)
       });
-      var engineTouch=sdkUpdate(CFG.reports.proformas,pfId,headerTouch);
+      /* The native recalculation can outlast an ordinary record write. Keep its
+         single request active through the same three-minute budget as verification. */
+      var engineTouch=sdkUpdate(CFG.reports.proformas,pfId,headerTouch,{timeoutMs:180000});
       if(fractionalSalePrice){
         engineTouch=engineTouch.catch(function(err){
           if(err&&err.noReplay)throw err;if(!isSalePricePrecisionRejection(err)) throw err;
           /* All_Pro_Formas is a second verified report for Add_Pro_Forma. A 3002
              rejected the first write before its on-success workflow ran. */
           auditLog("warn","Retrying two-decimal engine trigger through All_Pro_Formas",{id:pfId});
-          return sdkUpdate("All_Pro_Formas",pfId,headerTouch);
+          return sdkUpdate("All_Pro_Formas",pfId,headerTouch,{timeoutMs:180000});
         });
       }
       return engineTouch.then(function(){

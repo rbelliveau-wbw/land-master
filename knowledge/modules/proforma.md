@@ -1,3 +1,16 @@
+## Duplication access and final recalculation — 1.80.135, October 29, 2026
+
+Anyone who can view a saved Pro Forma can duplicate it, including non-owners and
+read-only users. The copy retains source owners, adds its creator, clears record
+IDs and starts as an unlocked Draft. Existing source editing and approval guards
+remain. The final native engine request has a bounded 180-second deadline; other
+writes retain 30 seconds, and pending/unknown requests cannot be replayed.
+
+Development also has the optimized `Calc_IRR_XIRR_Pro_Forma` workflow: aggregate
+monthly cash flows from one existing query instead of querying each month.
+Creator promotion is required for the production calculation improvement.
+[Native checks, release details and rollback](../../docs/proforma-duplicate-recalculation-2026-10-29.md).
+
 ## Delivery strip composer — October 21, 2026
 
 Pro Forma 1.80.131 adopts the approved shared Delivery strip composer.

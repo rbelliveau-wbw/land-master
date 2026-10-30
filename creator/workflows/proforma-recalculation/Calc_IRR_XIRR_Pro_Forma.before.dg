@@ -1,0 +1,99 @@
+// ===============================
+// ROI & IRR using SUBFORM rows
+// Fixed version - Unique month summing
+// UPDATED: annualize monthly IRR to match Excel-style annual %
+// (no pow(), no math.*)
+// ===============================
+// ----- ROI -----
+input.ROI1 = null;
+if(input.Total_Expenses != null && input.Total_Expenses != 0)
+{
+	input.ROI1 = input.Net_Profit / input.Total_Expenses * 100;
+}
+// use this field if you have it
+pfmnths = Proforma_Months[Proforma == input.ID];
+if(pfmnths != null && pfmnths.count() > 0)
+{
+	// Build cash flow list by unique Month1
+	monthNums = Proforma_Months[Proforma == input.ID].Month1.getAll();
+	unqMonths = monthNums.distinct().size();
+	loop = thisapp.forLoop(1,unqMonths);
+	monthNo = 1;
+	mnths = List();
+	for each  el in loop
+	{
+		monthCash = Proforma_Months[Proforma == input.ID && Month1 == monthNo].sum(Cash_Flow);
+		if(monthCash == null)
+		{
+			monthCash = 0;
+		}
+		mnths.add(monthCash);
+		monthNo = monthNo + 1;
+	}
+	// DEBUG
+	info "Rows in pfmnths: " + pfmnths.count();
+	info "Unique Month count: " + unqMonths;
+	info "Summed cash flow list: " + mnths;
+	info "List size: " + mnths.size();
+	if(mnths.size() > 0)
+	{
+		guess = 0.008;
+		tolerance = 0.0001;
+		maxIterations = 25;
+		for each  iter in thisapp.forLoop(1,maxIterations)
+		{
+			npv = 0.0;
+			npv_derivative = 0.0;
+			t = 0;
+			discountFactor = 1.0;
+			for each  cf3 in mnths
+			{
+				if(guess <= -0.99)
+				{
+					guess = -0.99;
+				}
+				npv = npv + cf3 / discountFactor;
+				if(t > 0)
+				{
+					derivDenom = discountFactor * (1.0 + guess);
+					npv_derivative = npv_derivative - (t * cf3) / derivDenom;
+				}
+				t = t + 1;
+				discountFactor = discountFactor * (1.0 + guess);
+			}
+			info "Iter " + iter + ": guess=" + guess + ", npv=" + npv + ", deriv=" + npv_derivative;
+			if(npv_derivative == 0.0)
+			{
+				info "Derivative is zero, breaking";
+				break;
+			}
+			adjustment = npv / npv_derivative;
+			new_guess = guess - adjustment;
+			diff = new_guess - guess;
+			if(diff < 0)
+			{
+				diff = diff * -1;
+			}
+			guess = new_guess;
+			if(diff < tolerance)
+			{
+				info "Converged at iteration " + iter;
+				break;
+			}
+		}
+		// ----- OPTION A: keep your original linear annualization -----
+		input.IRR = guess * 1200;
+		// ----- OPTION B: Excel-style effective annual % -----
+		annualFactor = 1.0;
+		for each  i in thisapp.forLoop(1,12)
+		{
+			annualFactor = annualFactor * (1.0 + guess);
+		}
+		annualRate = annualFactor - 1.0;
+		// Put this where you want the Excel-matching number:
+		input.XIRR = annualRate * 100;
+		info "Final IRR (linear): " + input.IRR + "%";
+		info "Final XIRR (effective annual): " + input.XIRR + "%";
+	}
+}
+

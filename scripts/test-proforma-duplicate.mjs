@@ -248,10 +248,59 @@ has(/data-act="duplicate"/, "the row menu must expose a Duplicate button");
 has(/data-act="duplicate"[\s\S]{0,400}?<rect x="8" y="8" width="14" height="14" rx="2" ry="2"><\/rect><path d="M4 16c-1\.1 0-2-\.9-2-2V4c0-1\.1\.9-2 2-2h10c1\.1 0 2 \.9 2 2"><\/path>/, "Duplicate must use the complete standard copy icon");
 lacks(/data-act="duplicate"[\s\S]{0,400}?M5 15H4a1 1 0 0 1-1-1/, "Duplicate must not use the partial back-sheet icon that collapses at menu size");
 has(/act==="duplicate"\) duplicateProforma\(id\)/, "the row menu must route Duplicate to duplicateProforma");
-has(/function canDuplicatePf\(rec\)\{ return !!perms\(\)\.editAll \|\| userOwnsPf\(rec\); \}/, "Duplicate must require ownership or Edit All Proformas");
-has(/canDuplicatePf\(r\)\?'<button[^']*data-act="duplicate"/, "Duplicate must be hidden when the row is neither owned nor covered by Edit All Proformas");
-has(/if\(!canDuplicatePf\(rec\)\)\{ toast\("Only a Pro Forma owner or an Edit All Proformas administrator can duplicate it\./, "duplicateProforma must enforce the same owner/admin rule even when called directly");
-has(/if\(S\.ed&&S\.ed\._duplicateOf\)[\s\S]{0,260}?return !!source&&canDuplicatePf\(source\)/, "an authorized owner must remain allowed to save the staged duplicate");
+has(/canDuplicatePf\(r\)\?'<button[^']*data-act="duplicate"/, "the menu must use the same duplicate eligibility as the action");
+has(/if\(!canDuplicatePf\(rec\)\)\{ toast\(/, "direct duplicate calls must still reject an unavailable source");
+{
+  const other = { ID: "90071992547409931", Owner: [{ ID: "90071992547409932" }] };
+  const S = { proformas: [other], ed: { _duplicateOf: other.ID } };
+  let permissions;
+  const access = new Function("S", "perms", "userOwnsPf", "migrationEditAccess", "proformaApprovalState",
+    ["canDuplicatePf", "canEditPf", "canSavePf"].map(extractFunction).join("\n") +
+    "\nreturn {canDuplicatePf,canEditPf,canSavePf};"
+  )(S, () => ({ editAll: false, editOwned: false, anyEdit: false, ...permissions }), () => false, () => false, rec => ({ complete: rec.Status === "Approved" }));
+  for (const p of [
+    { editOwned: true, anyEdit: true },
+    { readOnly: true, anyEdit: false },
+    { hasRow: false, readOnly: true, anyEdit: false }
+  ]) {
+    permissions = p;
+    assert.equal(access.canDuplicatePf(other), true, "a non-owner may duplicate a visible Pro Forma");
+    assert.equal(access.canSavePf({ ID: null }), true, "the staged copy may be created without editing the source");
+    assert.equal(access.canEditPf(other), false, "duplication must not grant source editing");
+    assert.equal(access.canSavePf(other), false, "the original still requires its existing edit grant");
+    assert.equal(access.canDuplicatePf({ ...other, Status: "Approved", Lock_Inputs: true }), true,
+      "a protected source may be copied into a separate unlocked Draft");
+  }
+  permissions = { editAll: true, anyEdit: true };
+  assert.equal(access.canSavePf({ ...other, Status: "Approved" }), false, "completed approvals still protect the original");
+  for (const absent of [null, undefined, {}, { ID: "" }])
+    assert.equal(access.canDuplicatePf(absent), false, "a source must identify a saved record");
+  S.ed._duplicateOf = "missing";
+  assert.equal(access.canSavePf({ ID: null }), false, "a missing source cannot authorize a staged copy");
+  S.ed = {};
+  permissions = { readOnly: true, anyEdit: false };
+  assert.equal(access.canSavePf({ ID: null }), false, "ordinary new-record permissions are unchanged");
+}
+{
+  const { saveFixture } = await import("./fixtures/proforma-sdk-v2-save-fixture.mjs");
+  for (const editOwned of [true, false]) {
+    const h = await saveFixture();
+    const w = h.widget, sourceId = h.model.ID;
+    const original = JSON.parse(JSON.stringify(h.storage.All_Pro_Formas_All_Fields));
+    w.S.perms = { ...w.S.perms, editAll: false, editOwned, anyEdit: editOwned, readOnly: !editOwned };
+    const draft = w.forkModel({ ...h.model, Owner: [{ ID: "90071992547409932", zc_display_value: "Other Owner" }] });
+    w.S.ed.model = draft;
+    w.S.ed.calc = w.modelToCalc(draft);
+    Object.assign(w.S.ed, { id: null, isNew: true, dirty: true, _duplicateOf: sourceId });
+    await w.saveProforma();
+    assert.ok(draft.ID && draft.ID !== sourceId, "a non-owner's duplicate must save as a distinct parent");
+    assert.equal(h.storage.All_Pro_Formas_All_Fields.length, original.length + 1);
+    assert.deepEqual(h.storage.All_Pro_Formas_All_Fields.filter(row => row.ID === sourceId), original,
+      "saving the copy must preserve the source parent");
+    assert.equal(w.PFTransport.snapshot().reviews.length, 0, "the duplicate save must complete without an unresolved write");
+    assert.ok(draft.Owner.split(",").includes(w.S.myAccessId), "the creating user remains an owner of the copy");
+  }
+}
 has(
   /function writeLotMixViaSDK\(pfId\)\{[\s\S]{0,600}?if\(!pfId\)\{[\s\S]{0,200}?return Promise\.resolve/,
   "the lot mix writer must refuse to run without a record ID, or its diff would delete other records' rows"
