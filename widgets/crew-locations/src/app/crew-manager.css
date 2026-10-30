@@ -113,3 +113,9 @@ body{padding:12px 16px 20px}
 #employeeGroupStatus{margin:0;padding:6px 13px;font-size:11px;border:0;background:transparent}#employeeInlinePicker{width:300px;z-index:80}#employeeInlinePicker .cm-picker-option{min-height:34px;font-size:13px;padding:6px 8px}.cm-editor header small{text-transform:none}
 #employeeStatus:not(:empty){padding:7px 13px}.employee-foreman-group:has(table){overflow:auto}
 @media(max-width:1200px){.employee-toolbar{gap:8px}.employee-toolbar #employeeSummary{display:none}.employee-toolbar>input{width:190px}.employee-foreman-fields .employee-inline{width:150px}}
+/* Fit Creator's actual iframe height; keep only the employee report scrolling. */
+#app[data-workspace=employees]{height:calc(100dvh - 32px);display:flex;flex-direction:column}
+#app[data-workspace=employees]>.page-head,#app[data-workspace=employees]>#connection{flex:none}
+#app[data-workspace=employees] #employeeRoster{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.employee-toolbar,#employeeStatus{flex:none}
+#employeeRoster>.employee-scroll,#employeeRoster>.employee-group-panel{flex:1;min-height:0;max-height:none}

@@ -1544,7 +1544,7 @@
     "verification_file": "creator/crew-locations/native-installed/production-foreman-sync-20261030.json"
   },
   "compact_workspace_2026_10_30": {
-    "release": "1.5.2",
+    "release": "1.5.3",
     "type": "frontend-only",
     "new_native_components": false,
     "reference": "docs/crew-compact-workspace-2026-10-30.md",

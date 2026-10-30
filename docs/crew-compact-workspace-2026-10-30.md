@@ -1,6 +1,6 @@
 # Compact Crew Management
 
-Release 1.5.2 is a frontend change. Creator remains at the verified 9.134 sync
+Release 1.5.3 is a frontend change. Creator remains at the verified 9.134 sync
 installation; there are no new forms, functions, endpoints or grants.
 
 Workspace tabs move into the title bar. Employees uses one desktop toolbar for
@@ -10,6 +10,9 @@ on one line. Work dates show distinct day counts and compact bounds; their
 title retains every exact recorded date, including gaps. Job codes also keep
 their full value in titles. Active/inactive semantics and 14-day review grouping
 are unchanged; crew location badges still use seven calendar dates.
+The employee workspace flexes within Creator's actual iframe height. Its toolbar
+stays mounted and the remaining report region scrolls, leaving bottom clearance
+without adding a second document scrollbar. Other workspaces keep their layout.
 
 Territory, Labor Type and Crew Assignment use inline searchable single pickers.
 The foreman's Labor Type and Crew also appear in each group header. Selection
@@ -36,7 +39,7 @@ reduced motion remains supported.
 - Isolated desktop browser: searchable Roster edit issued one native PATCH;
   no-op issued none. A By Foreman crew change with a lost reply opened recovery;
   Check Save Status confirmed it with still exactly one native attempt.
-- `npm run validate` and `npm run build:pages` passed for the final 1.5.2 source.
+- `npm run validate` and `npm run build:pages` passed for the final 1.5.3 source.
 - Desktop browser additionally verified disabled inline controls for inactive
   employees and read-only accounts, and retained cell focus after a native save
   and the complete report refresh. Measured Roster rows are exactly 35px.

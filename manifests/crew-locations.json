@@ -1,7 +1,7 @@
 {
-  "status": "1.5.2-compact-workspace-native-9.134",
+  "status": "1.5.3-compact-workspace-native-9.134",
   "widget": "crew-locations",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -747,7 +747,7 @@
     "verification_file": "creator/crew-locations/native-installed/production-foreman-sync-20261030.json"
   },
   "compact_workspace_2026_10_30": {
-    "release": "1.5.2",
+    "release": "1.5.3",
     "type": "frontend-only",
     "new_native_components": false,
     "reference": "docs/crew-compact-workspace-2026-10-30.md",

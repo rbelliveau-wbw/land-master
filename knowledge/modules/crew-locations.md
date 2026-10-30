@@ -422,7 +422,7 @@ Evidence and exact operation IDs: [PMP outcome](../../creator/crew-locations/pmp
 Pending Creator publication remains the user's step under PMP; Production native
 save verification is therefore not claimed. Crew/task source adapters stay off.
 
-## Compact Staffing Workspace — 1.5.2
+## Compact Staffing Workspace — 1.5.3
 
 Workspace tabs share the title bar. Roster / By Foreman, search, status and actions
 share one compact employee toolbar. Roster and member rows are 35px / 34px.
