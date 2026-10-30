@@ -23,13 +23,20 @@
   function today(now=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);const get=t=>parts.find(p=>p.type===t).value;return date(get('year')+'-'+get('month')+'-'+get('day'));}
   function months(n,count){const dt=new Date(n*DAY),d=dt.getUTCDate();dt.setUTCDate(1);dt.setUTCMonth(dt.getUTCMonth()+count);const last=new Date(Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth()+1,0)).getUTCDate();dt.setUTCDate(Math.min(d,last));return dt.getTime()/DAY;}
   function monthTicks(from,to){let n=from;const out=[];while(n<to){const dt=new Date(n*DAY);const next=Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth()+1,1)/DAY;out.push({start:n,end:Math.min(next,to),label:dt.toLocaleDateString('en-US',{timeZone:'UTC',month:'short',year:'numeric'})});n=next;}return out;}
+  function calendarAxis(from,to){
+    const ticks=monthTicks(from,to),count=ticks.length;
+    const position=n=>{if(n<=from)return 0;if(n>=to)return 100;const i=ticks.findIndex(t=>n>=t.start&&n<t.end),t=ticks[i];return (i+(n-t.start)/(t.end-t.start))/count*100;};
+    const dayAt=p=>{const x=Math.max(0,Math.min(count,p/100*count)),i=Math.min(count-1,Math.floor(x)),t=ticks[i];return Math.round(t.start+(x-i)*(t.end-t.start));};
+    const years=[];for(const t of ticks){const year=new Date(t.start*DAY).getUTCFullYear();if(years.at(-1)?.year===year)years.at(-1).months++;else years.push({year,months:1});}
+    return {ticks,years,position,dayAt};
+  }
   const duration=r=>r&&r.start!=null&&r.end!=null&&r.end>=r.start?r.end-r.start:null;
   const stage=name=>STAGES.find(s=>norm(s)===norm(String(name??'').split('|')[0]))||null; // Exact canonical stage; native names may append an assignee after a pipe.
   const locked=p=>[p.status,p.projectsStatus].some(v=>['completed','sold out','sold out (prev wfy)'].includes(norm(v)));
   const soldStatus=v=>['sold out','sold out (prev wfy)'].includes(norm(v));
   const sold=p=>[p.status,p.projectsStatus].some(soldStatus);
   const displayStatus=p=>p.projectsStatus||p.status||'Unknown';
-  function defaults(){return {crews:[],phases:['assigned'],territories:[],sections:SECTIONS.map(s=>s.key),horizons:[12],showAll:false,table:{projects:[],codes:[],territories:[],statuses:[]}};}
+  function defaults(){return {crews:[],phases:['assigned'],territories:[],sections:SECTIONS.map(s=>s.key),horizons:[24],showAll:false,table:{projects:[],codes:[],territories:[],statuses:[]}};}
   function normalize(data){
     const issues=[],phases=(data.subdivisions||[]).map(r=>({id:id(r.ID),name:String(r.Subdivision_Name||''),code:String(r.Subdivision_Code||''),phase:r.Phase??'',subphase:r.Subphase||'',parentId:id(r.Project),territory:String(r.Territory||''),status:String(r.Status||''),projectsStatus:String(r.Projects_Status||''),projectId:id(r.Project_ID),lots:r.Total_Lots??null,residentialLots:r.Lot_Total_Residential??null,records:{M:{},T:{}},crews:[]}));
     const byId=new Map(phases.map(p=>[p.id,p])),records=new Map();
@@ -94,5 +101,5 @@
     for(const key of targets){if(used.has(key))throw new Error('This duration adjustment was already applied to '+key);const target=p.records[r.type][key];if(!target)continue;const patch={};for(const field of ['start','end'])if(target[field]!=null)patch[field]=target[field]+Math.abs(delta)*direction;if(!Object.keys(patch).length)continue;validate(p,target,patch,permissions,day,'arrow');changes.push(change(target,patch));}
     if(!changes.length)throw new Error('No saved dates in the requested stages');return changes;
   }
-  root.CrewModel=Object.freeze({STAGES,SECTIONS,norm,id,date,iso,us,today,months,monthTicks,duration,stage,locked,soldStatus,sold,displayStatus,defaults,normalize,assignments,upcoming,selected,tablePhases,tableStages,visible,intervals,overlaps,editable,validate,change,setDuration,propagate});
+  root.CrewModel=Object.freeze({STAGES,SECTIONS,norm,id,date,iso,us,today,months,monthTicks,calendarAxis,duration,stage,locked,soldStatus,sold,displayStatus,defaults,normalize,assignments,upcoming,selected,tablePhases,tableStages,visible,intervals,overlaps,editable,validate,change,setDuration,propagate});
 })(typeof window==='undefined'?globalThis:window);

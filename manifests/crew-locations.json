@@ -1,7 +1,7 @@
 {
-  "status": "1.6.0-approved-compact-workspace-native-9.134",
+  "status": "1.7.0-combined-crews-calendar-native-9.134",
   "widget": "crew-locations",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -760,5 +760,14 @@
     "new_native_components": false,
     "reference": "docs/crew-compact-workspace-selected-2026-10-30.md",
     "rollback": "Production crew-locations mapping to 1.5.3; retain Creator 9.134 and all staffing/sync data."
+  },
+  "combined_crews_calendar_2026_10_30": {
+    "release": "1.7.0",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-combined-calendar-2026-10-30.md",
+    "employee_group_update": "Explicit foreman Crew selection applies to the captured active 14-date group including search-hidden people. Existing single-employee writes/status checks; inactive staffing retained; no automatic assignment.",
+    "calendar": "24-month default; equal month columns and grouped years; exact inverse date coordinates.",
+    "rollback": "Production crew-locations mapping to 1.6.0; retain Creator 9.134 and all staffing/sync data."
   }
 }

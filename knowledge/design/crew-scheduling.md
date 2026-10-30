@@ -4,19 +4,27 @@ Repository-wide rules for Crew Locations and equivalent scheduling surfaces.
 The implementation and installation contract are in
 [Crew Locations](../modules/crew-locations.md).
 
-Open **Employees** by default when the native employee capability is enabled.
-Keep **Crews** and **Milestones & Tasks** as separate workspaces. Legacy native
-versions retain the Crews default until Creator promotion. Keep
+Open **Crews** by default. The latest October 30 direction combines Employees
+and Crews in equal-width desktop panes on that tab; **Milestones & Tasks** stays
+a separate full-width workspace. Group employees by their recorded recent
+foremen by default, with search and Active/Inactive/All filtering. Remove the
+Roster / By Foreman switch. Keep ungrouped employees under **No Recent Foreman**.
+Use compact 32px member rows and aligned inline searchable staffing pickers. Keep
 the schedule mounted while switching workspaces. October 30, 2026: the user
 approved **Compact Workspace**, with **Timeline / Edit Schedule** views in one
 viewport instead of stacking the Gantt above the date grid. Both remain mounted;
 switching views preserves filters, drafts, scroll and unknown-save locks. Keep each phase's Milestones
 row directly above Tasks. Put crew badges beneath Tasks in the left title column.
 Keep phase IDs stable, readable text, report scrolling, and a real calendar
-axis starting today in America/Chicago. Month and year labels must remain readable
-for partial months. Sections share the same band within each row type.
+axis starting today in America/Chicago. Default to **Next 24 Months**, migrating
+the former unspecialized 12-month preference. Use equal-width month columns of
+at least 48px, short month labels, and a separate grouped year band. Partial edge
+months retain their own columns. Position bars and drag boundaries with the same
+calendar-month mapping and its inverse so source dates remain exact. This display
+range does not change the existing 12-month upcoming-phase selection rule.
+Sections share the same band within each row type.
 
-October 30 supersedes October 29's natural page-height timeline: all three main
+October 30 supersedes October 29's natural page-height timeline: both main
 workspaces fit Creator's actual iframe, and their report regions scroll. The
 timeline fits the selected calendar horizon horizontally where readable. Retain horizontal
 scrolling when needed; never compress phase labels or edit cells. Bound the editing
@@ -166,6 +174,17 @@ Edit territory (including N/A), labor type and crew through the established sear
 single-select pickers. Reuse New crew; names, BU identity and active status belong
 to Analytics. Retain inactive people and their staffing; show Inactive on schedule
 badges when their foreman timecards still fall in the seven-date window.
+
+Changing a recorded foreman's Crew applies that explicit selection to the foreman
+and every active employee in that captured 14-date timecard group, including members
+hidden by search. Deduplicate native employee IDs; preserve fresh Territory and
+Labor Type and all inactive staffing. Do not infer or save assignments otherwise.
+Use the existing validated single-employee native write sequentially. Follow the
+[multi-record progress contract](transfer-progress.md): keep per-person outcomes
+visible, stop on errors or uncertain replies, persist actor/environment-scoped
+intent, and check lost replies without replay. Only explicit **Continue Remaining**
+may send unsaved people after a resolved check. Reapplying the foreman's current
+crew may fill differing member assignments; a completely matching group is a no-op.
 
 Use the foreman’s exact BU employee GUID and assigned crew. Today and the previous
 six calendar dates determine badges on every exactly mapped phase. Ignore deleted

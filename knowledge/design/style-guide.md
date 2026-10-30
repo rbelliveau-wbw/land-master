@@ -12,11 +12,16 @@ User direction October 30, 2026: page headings, tabs, column headings, field
 labels and action labels use Title Case, such as **By Foreman**, **Labor Type**
 and **New Crew**. Keep record names and source-owned values unchanged; ordinary
 status/error sentences remain sentences. Crew Management keeps workspace tabs
-beside its title and employee view switches beside search, status and actions,
-using horizontal space before adding another toolbar row. Roster and foreman
-member rows use compact single-line names/codes and inline searchable staffing
+beside its title and combines employees and crews in equal desktop panes on
+**Crews**. Group employees by Foreman, with search and a compact status menu;
+omit the Roster / By Foreman switch. Use horizontal space before adding another
+toolbar row. Foreman member rows use compact single-line names/codes and inline searchable staffing
 pickers. Preserve exact text in titles when shortened, existing native writes,
 permission guards and unknown-save recovery.
+
+Crew scheduling uses short, evenly spaced month headings with years grouped
+above them and a 24-month default. Keep readable month columns and horizontal
+scrolling rather than squeezing or overlapping the labels.
 
 Lookup names that shorten within a control must remain available on hover.
 Reuse the existing native full-name title pattern where it is already proven,

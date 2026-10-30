@@ -7,7 +7,6 @@
   LMMotion.start({module:'crew-locations-rows',root:document.getElementById('app'),ready,actor,lists:[
    {selector:'.gantt-grid',rows:'.gantt-row[data-phase]',key:node=>node.dataset.phase+':'+node.dataset.rowType,scope:'authorized-phases'},
    {selector:'#scheduleTable tbody',rows:'tr[data-phase]',key:node=>node.dataset.phase+':'+node.dataset.rowType,scope:'authorized-table-phases'},
-   {selector:'#employeeRows',rows:'tr[data-employee-id]',key:node=>node.dataset.employeeId,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
    {selector:'#employeeGroups',rows:'[data-foreman]',key:node=>node.dataset.foreman,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
    {selector:'.employee-foreman-group tbody',rows:'[data-member]',key:node=>node.dataset.member,hostKey:node=>node.closest('[data-foreman]')?.dataset.foreman,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
    {selector:'.cm-members-table tbody',rows:'[data-crew-member]',key:node=>node.dataset.crewMember,hostKey:node=>node.closest('[data-crew-detail]')?.dataset.crewDetail,scope:()=>root.CrewEmployees?.state.scope},

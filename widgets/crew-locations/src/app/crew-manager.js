@@ -113,8 +113,10 @@
   }
   function render(){renderRoster();renderDetail();updateControls();}
   function switchWorkspace(name){
+    if(name==='employees')name='crews';
     $('app').dataset.workspace=name;document.querySelectorAll('#workspaceTabs [data-workspace]').forEach(node=>{const selected=node.dataset.workspace===name;node.setAttribute('aria-selected',String(selected));node.tabIndex=selected?0:-1;});
-    $('employeeRoster')?.setAttribute('aria-hidden',String(name!=='employees'));$('crewManager').setAttribute('aria-hidden',String(name!=='crews'));$('timeline').setAttribute('aria-hidden',String(name!=='schedule'));$('schedule').setAttribute('aria-hidden',String(name!=='schedule'));
+    $('employeeRoster')?.setAttribute('aria-hidden',String(name!=='crews'));$('crewManager').setAttribute('aria-hidden',String(name!=='crews'));$('timeline').setAttribute('aria-hidden',String(name!=='schedule'));$('schedule').setAttribute('aria-hidden',String(name!=='schedule'));
+    $('crewWorkspace').hidden=name!=='crews';
     root.CrewApp.scheduleView?.($('app').dataset.scheduleView||'timeline');
   }
   function openEditor(kind,item,restored=null){

@@ -446,3 +446,23 @@ are fitted, separately visible panes with the same mounted model, filters, sourc
 colors, date guards and native save/recovery paths. Shared motion and Sliding push
 counts cover the new member rows and quantities.
 See [verification and rollback](../../docs/crew-compact-workspace-selected-2026-10-30.md).
+
+## Combined Crews And Calendar — 1.7.0
+
+The latest October 30 direction supersedes the separate employee tab and view
+switch. Crews opens with equal employee/crew panes. Employees always group by
+recorded recent foremen; search and status filtering retain a No Recent Foreman
+fallback. Explicit foreman Crew changes apply to every active captured group
+member, including search-hidden employees. Existing single-employee preparation,
+native SDK PATCH and employee-status recovery are reused sequentially. A mounted
+progress dialog records exact destination acknowledgements and stops at partial
+or uncertain results. Recovery checks are read-only; continuing remaining people
+requires an explicit action. Fresh Territory and Labor Type are preserved,
+inactive staffing remains retained, and no automatic timecard assignment occurs.
+
+Timeline defaults to Next 24 Months, including the old implicit 12-month saved
+view. Equal-width calendar months and a grouped year band keep labels readable;
+bars, gridlines and inverse drag coordinates use the same month mapping. Source
+dates, seven-date location badges and 12-month upcoming-phase selection do not
+change. No new Creator component or promotion is needed.
+See [verification and rollback](../../docs/crew-combined-calendar-2026-10-30.md).

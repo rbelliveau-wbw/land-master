@@ -16,3 +16,9 @@ app.scheduleView('timeline');assert.equal(editor.hidden,true);assert.equal(timel
 app.scheduleView('invalid');assert.equal(node('app').dataset.scheduleView,'timeline');
 node('app').dataset.workspace='employees';app.scheduleView('editor');assert.equal(editor['aria-hidden'],'true');assert.equal(timeline['aria-hidden'],'true');
 console.log('PASS: compact schedule switches keep the mounted editor, source values, filters, unknown-save state and real horizontal width; inaccessible workspaces retain ARIA state.');
+const M=context.CrewModel,from=M.date('2026-10-30'),to=M.months(from,24),axis=M.calendarAxis(from,to);
+assert.equal(M.defaults().horizons[0],24);assert.equal(axis.ticks.length,25);assert.deepEqual(Array.from(axis.years,y=>[y.year,y.months]),[[2026,3],[2027,12],[2028,10]]);
+for(let day=from;day<=to;day++)assert.equal(axis.dayAt(axis.position(day)),day,'Calendar coordinates preserve exact source days across partial months and leap year');
+for(const [i,tick] of axis.ticks.entries())assert.ok(Math.abs(axis.position(tick.start)-i/25*100)<1e-9,'Equal month columns align with bar/grid positions');
+assert.equal(axis.dayAt(-10),from);assert.equal(axis.dayAt(110),to);
+console.log('PASS: 24-month default, grouped years, equal calendar columns, partial edge months, leap day and exact inverse drag dates.');
