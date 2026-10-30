@@ -1,4 +1,4 @@
-# Combined Crews And Calendar — 1.7.0
+# Combined Crews And Calendar — 1.7.1
 
 Crews now combines Employees and Crews in equal desktop panes. The employee list
 always groups by recorded recent foremen, with search, Active/Inactive/All and a
@@ -55,7 +55,7 @@ field, function, API endpoint, schedule, permission or Creator promotion is adde
   fitted editors/pickers and centered close controls, with no native writes.
 - The interactive mockup's foreman selection updates the whole sample group and
   its Timeline opens with 24 months; no console warnings/errors were recorded.
-- Full repository validation and the 34-path Pages build passed for 1.7.0.
+- Full repository validation and the 34-path Pages build passed for 1.7.1.
   Deployment monitoring and native Production smoke verification follow the
   push; local synthetic writes do not claim live employee reassignment.
 

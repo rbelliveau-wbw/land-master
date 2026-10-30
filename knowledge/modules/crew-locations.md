@@ -447,7 +447,7 @@ colors, date guards and native save/recovery paths. Shared motion and Sliding pu
 counts cover the new member rows and quantities.
 See [verification and rollback](../../docs/crew-compact-workspace-selected-2026-10-30.md).
 
-## Combined Crews And Calendar — 1.7.0
+## Combined Crews And Calendar — 1.7.1
 
 The latest October 30 direction supersedes the separate employee tab and view
 switch. Crews opens with equal employee/crew panes. Employees always group by
