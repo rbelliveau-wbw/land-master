@@ -10,6 +10,7 @@
    {selector:'#employeeRows',rows:'tr[data-employee-id]',key:node=>node.dataset.employeeId,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
    {selector:'#employeeGroups',rows:'[data-foreman]',key:node=>node.dataset.foreman,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
    {selector:'.employee-foreman-group tbody',rows:'[data-member]',key:node=>node.dataset.member,hostKey:node=>node.closest('[data-foreman]')?.dataset.foreman,scope:()=>root.CrewEmployees?.state.scope+':'+root.CrewEmployees?.state.status+':'+root.CrewEmployees?.state.query},
+   {selector:'.cm-members-table tbody',rows:'[data-crew-member]',key:node=>node.dataset.crewMember,hostKey:node=>node.closest('[data-crew-detail]')?.dataset.crewDetail,scope:()=>root.CrewEmployees?.state.scope},
    {selector:'#crewRoster',rows:'[data-cm-crew]',key:node=>node.dataset.cmCrew,scope:()=>root.CrewManager?.state.status+':'+root.CrewManager?.state.query},
    {selector:'.cm-assignment-table tbody',rows:'[data-cm-assignment]',key:node=>node.dataset.cmAssignment,hostKey:node=>node.closest('.cm-detail-section')?.querySelector('h4')?.textContent.replace(/\d+/g,'')||'earlier-work',scope:()=>root.CrewManager?.state.selected}
   ]});

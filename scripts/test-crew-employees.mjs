@@ -38,3 +38,13 @@ console.log('PASS: foreman BU identity joins, seven calendar dates, multiple cre
  assert.equal(E.foremanGroups([employees[0]], [membership('1','2026-10-29')],day)[0].members.size,0,'Caller-scoped hidden employees are not exposed');
  assert.throws(()=>E.foremanGroups([...employees,member],[membership('bad','2026-10-29','FOREMAN-A',{Multi_Line:'broken'})],day),/successful sync/);
 }
+
+{
+ const member={ID:'900719925474099350',BU_Employee_ID:'MEMBER',EmployeeName:'Member',IsActive:false,Crew:{ID:crews[0].ID}};
+ const cards=[card('today','FOREMAN-A','2026-10-29'),card('second-job','FOREMAN-A','2026-10-29','900719925474099322'),card('previous','FOREMAN-A','2026-10-23'),card('old','FOREMAN-A','2026-10-22'),card('other-owner','FOREMAN-B','2026-10-29'),card('deleted','FOREMAN-A','2026-10-29',undefined,{IsDeleted:true}),card('future','FOREMAN-A','2026-10-30')];
+ const original=JSON.stringify(member),result=E.crewStaffing([...employees,member],cards,crews[0].ID,day);
+ assert.equal(result.members.length,2,'Saved crew membership includes the foreman and retained inactive employee');assert.equal(result.foremen[0].ID,employees[0].ID);assert.equal(result.latest,day);assert.deepEqual(Array.from(result.jobs,j=>j.phaseId),['900719925474099321','900719925474099322']);assert.equal(JSON.stringify(member),original,'Viewing a crew never changes staffing');
+ assert.equal(E.crewStaffing([member],cards,crews[0].ID,day).jobs.length,0,'A membership payload or matching name is not an assigned foreman');
+ assert.equal(E.crewStaffing([...employees,{...employees[0],ID:'duplicate',Crew:''}],cards,crews[0].ID,day).jobs.length,0,'Ambiguous BU identities cannot establish recent jobs');
+ assert.equal(E.crewStaffing(employees,[card('old','FOREMAN-A','2026-10-22')],crews[0].ID,day).latest,null,'Recent work is limited to exactly seven calendar dates');
+}

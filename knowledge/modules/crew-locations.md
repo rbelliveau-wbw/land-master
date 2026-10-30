@@ -435,3 +435,14 @@ is inferred. Exact work dates and full job labels remain in titles.
 Shared motion covers tabs, pickers, status, keyed rows and confirmed-cell highlights;
 Sliding push count identities remain stable and dates remain static.
 See [release and rollback evidence](../../docs/crew-compact-workspace-2026-10-30.md).
+
+## Approved Compact Workspace — 1.6.0
+
+The user selected Compact Workspace on October 30. Crews now uses a compact
+roster beside saved staffing, latest seven-date foreman jobs and upcoming work.
+Its Labor Type fields reuse employee saves; inferred review groups never assign
+staffing. Manual history remains under Dated Work. Timeline / Edit Schedule
+are fitted, separately visible panes with the same mounted model, filters, source
+colors, date guards and native save/recovery paths. Shared motion and Sliding push
+counts cover the new member rows and quantities.
+See [verification and rollback](../../docs/crew-compact-workspace-selected-2026-10-30.md).

@@ -45,6 +45,13 @@
     finally{clearTimeout(timer);S.managementBusy=false;controls();}
   }
   function windowLabel(){const f=n=>new Date(n*86400000).toLocaleDateString('en-US',{timeZone:'UTC',month:'long',day:'numeric',year:'numeric'});$('assignmentWindow').textContent='Foreman timecards · '+f(S.day-6)+'–'+f(S.day);}
+  function scheduleView(view){
+    if(!['timeline','editor'].includes(view))return;
+    const app=$('app');app.dataset.scheduleView=view;$('scheduleTab').setAttribute('aria-controls',view==='timeline'?'timeline':'schedule');const active=app.dataset.workspace==='schedule';
+    for(const [name,id] of [['timeline','timeline'],['editor','schedule']]){const pane=$(id),selected=name===view;pane.setAttribute('role','tabpanel');pane.setAttribute('aria-labelledby',name==='timeline'?'timelineView':'editorView');pane.setAttribute('aria-hidden',String(!active||!selected));pane.hidden=!selected;}
+    document.querySelectorAll('[data-schedule-view][role=tab]').forEach(n=>{const selected=n.dataset.scheduleView===view;n.setAttribute('aria-selected',String(selected));n.tabIndex=selected?0:-1;});
+    if(view==='editor')requestAnimationFrame(()=>{$('tableTopScroll').firstElementChild.style.width=$('scheduleTable').scrollWidth+'px';});
+  }
   function preferenceKey(){const c=LMRuntime.current();return 'crew-locations:view:'+c.environment+':'+c.user;}
   function storeView(){try{localStorage.setItem(preferenceKey(),JSON.stringify({filters:S.filters,hidden:[...S.hidden]}));}catch{}}
   function defaultFilters(){const filters=M.defaults();if(S.model&&S.capabilities?.sources?.crews===false)filters.phases=M.upcoming(S.model,filters,S.day).map(p=>p.id);return filters;}
@@ -108,7 +115,7 @@
     const grid=ticks.map(t=>'<i class="gridline" style="left:'+pos(t.start)+'%"></i>').join('');
     let html='<div class="gantt-scroll" tabindex="0" role="region" aria-label="Scroll crew timeline"><div class="gantt-grid" style="min-width:'+Math.max(700,272+ticks.length*34)+'px"><div class="gantt-head"><div class="phase-head">Subdivision / Phase</div><div class="months">'+ticks.map(t=>'<div class="month" title="'+M.us(t.start)+'–'+M.us(t.end)+'" style="width:'+((t.end-t.start)/width*100)+'%">'+esc(t.label).replace(' ','<br>')+'</div>').join('')+'</div></div>';
     for(const p of phases)for(const type of ['M','T']){
-      const unavailable=type==='T'&&S.capabilities.sources.tasks===false,data=M.intervals(p,type,S.filters.sections,S.hidden),label=type==='M'?'<strong>'+esc(phaseName(p))+'</strong><small>'+esc(p.code+' · '+p.territory)+'</small><span class="row-type">Milestones</span>':'<span class="row-type">Tasks</span>'+badges(p);
+      const unavailable=type==='T'&&S.capabilities.sources.tasks===false,data=M.intervals(p,type,S.filters.sections,S.hidden),label=type==='M'?'<strong>'+esc(phaseName(p))+'</strong><small>'+esc(p.code+' · '+p.territory)+'<span class="row-type">Milestones</span></small>':'<span class="row-type">Tasks</span>'+badges(p);
       html+='<div class="gantt-row '+(type==='M'?'milestone':'task')+(unavailable?' task-unavailable':'')+'" data-phase="'+p.id+'" data-row-type="'+type+'"><div class="gantt-label">'+label+'</div><div class="lane" data-from="'+from+'" data-to="'+to+'">'+grid;
       if(unavailable)html+='<span class="source-unavailable">Task source unavailable</span>';else if(data.missing.length)html+='<span class="missing-note" title="'+esc(data.missing.join('\n'))+'">'+(data.intervals.length?'Partial / hidden boundaries':'Dates unavailable')+'</span>';
       for(const x of data.intervals){const title=tooltip(x)+(x.start!=null&&x.start<from||x.end!=null&&x.end>to?' · clipped; source dates retained':''),key=recordKey(x.startRecord)+':'+x.section+':'+x.endRecord.id;
@@ -144,7 +151,12 @@
     $('scheduleTable').innerHTML=html+'</tbody>';
     // Bind on the actual editor, before native host document handlers can consume
     // its bubbling change event. This follows the existing native widget pattern.
-    $('scheduleTable').querySelectorAll('.stage-input').forEach(input=>input.onchange=()=>edit(input));
+    $('scheduleTable').querySelectorAll('.stage-input').forEach(input=>{
+      input.onchange=()=>edit(input);
+      // Browser/autofill setters can update a value without a native change event.
+      // Reuse the same editor on exit; an in-flight change is never sent twice.
+      input.onblur=()=>{if(input.isConnected&&input.value!==input.defaultValue&&!S.busy&&!S.loading&&!S.managementBusy&&!S.managementUnknown&&!S.operation?.unknown)edit(input);};
+    });
     $('restoreChips').innerHTML=[...S.hidden].map(key=>'<button class="restore-chip" data-restore="'+esc(key)+'">Restore '+esc(key.replace(':',' '))+'</button>').join('');
     requestAnimationFrame(()=>{$('tableTopScroll').firstElementChild.style.width=$('scheduleTable').scrollWidth+'px';});
   }
@@ -198,6 +210,9 @@
   async function checkHistory(button){const operationId=button.dataset.historyStatus,phaseId=button.dataset.phase,changes=JSON.parse(button.closest('.history-entry').querySelector('pre').textContent);button.disabled=true;try{const result=await api({action:'status',operationId,subdivisionId:phaseId});if(result.operationId!==operationId)throw new Error('Creator returned status for a different operation');if(result.state==='saved'&&!result.unknown){requireDestinations(result,operationId,changes);if(S.operation?.operationId===operationId)S.operation=null;await load();if(S.ready){await history(phaseId);message('Recovered local save. No writes replayed.');}}else message(result.message||'This operation still needs review. No writes replayed.','error');}catch(e){message(e.message,'error');}finally{if(button.isConnected)button.disabled=false;controls();}}
   async function compensate(button){try{const data=await api({action:'history',subdivisionId:button.dataset.phase}),operation=data.operations.find(o=>o.operationId===button.dataset.compensate);if(!operation)throw new Error('Operation history changed. Refresh first.');const p=S.model.byId.get(button.dataset.phase),changes=operation.changes.map(c=>{const r=S.model.records.get(c.type+':'+c.recordId);if(!r)throw new Error('A source record is no longer available');for(const field of Object.keys(c.fields))if((M.iso(r[field])||null)!==c.fields[field].after)throw new Error('Dates changed after this operation. Refresh before undo/redo.');const patch=Object.fromEntries(Object.entries(c.fields).map(([field,v])=>[field,M.date(v.before)]));M.validate(p,r,patch,S.permissions,S.day,button.dataset.mode);return M.change(r,patch);});$('historyDialog').close();await commit(p,changes,button.dataset.mode,{reversesOperationId:operation.operationId});}catch(e){message(e.message,'error');}}
   function bind(){
+    $('scheduleViews').onclick=e=>{const b=e.target.closest('[data-schedule-view]');if(b)scheduleView(b.dataset.scheduleView);};
+    $('scheduleViews').onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const view=e.key==='Home'?'timeline':e.key==='End'?'editor':$('app').dataset.scheduleView==='timeline'?'editor':'timeline';scheduleView(view);$(view==='timeline'?'timelineView':'editorView').focus({preventScroll:true});};
+    scheduleView('timeline');
     document.addEventListener('click',event=>{const target=event.target,filter=target.closest('[data-filter]');if(filter){openPicker(filter.dataset.filter,filter);return;}if(target.closest('[data-option]')){pickerChange(target.closest('[data-option]').dataset.option);return;}if(target.closest('[data-clear]')){pickerChange('',true);return;}if(target.closest('[data-picker-done]')){const button=S.picker.button;closePicker();button.focus();return;}if(!target.closest('#picker'))closePicker();
       if(target.id==='reset'){S.filters=defaultFilters();storeView();render();}if(target.id==='showColumns'){S.hidden.clear();storeView();render();}const hide=target.closest('[data-hide]'),group=target.closest('[data-hide-group]'),restore=target.closest('[data-restore]');if(hide)S.hidden.add(hide.dataset.hide);if(group)for(const field of ['start','days','end'])S.hidden.add(group.dataset.hideGroup+':'+field);if(restore)S.hidden.delete(restore.dataset.restore);if(hide||group||restore){storeView();render();}
       const keyboardHandle=target.closest('[data-drag]');if(keyboardHandle&&event.detail===0)endpointEditor([keyboardHandle.dataset.record+'@'+keyboardHandle.dataset.drag]);
@@ -216,5 +231,5 @@
   async function start(){bind();windowLabel();try{const params=await ZOHO.CREATOR.UTIL.getInitParams();const ctx=LMRuntime.apply(params);if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(ctx.environment))throw new Error('Creator did not identify a supported environment');LMCriticalErrors.markReady();restoreView();await load();}catch(e){message(e.message,'error');$('gantt').innerHTML='<p class="empty">Development setup required</p>';controls();}
     setInterval(()=>{const day=M.today();if(day!==S.day&&!S.busy&&!S.operation?.unknown&&!S.drag){S.day=day;if(S.model){M.assignments(S.model,day);render();}load();}},30000);
   }
-  root.CrewApp=Object.freeze({start,state:S,management:Object.freeze({api:managementApi,reload:load,context:()=>({...LMRuntime.current(),epoch:S.epoch,ready:S.ready,loading:S.loading,busy:S.busy||S.managementBusy,unknown:S.managementUnknown}),model:()=>S.model,permissions:()=>S.permissions,capabilities:()=>S.capabilities,setPending:value=>{S.managementUnknown=value===true;controls();}})});
+  root.CrewApp=Object.freeze({start,state:S,scheduleView,management:Object.freeze({api:managementApi,reload:load,context:()=>({...LMRuntime.current(),epoch:S.epoch,ready:S.ready,loading:S.loading,busy:S.busy||S.managementBusy,unknown:S.managementUnknown}),model:()=>S.model,permissions:()=>S.permissions,capabilities:()=>S.capabilities,setPending:value=>{S.managementUnknown=value===true;controls();}})});
 })(window);

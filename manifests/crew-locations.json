@@ -1,7 +1,7 @@
 {
-  "status": "1.5.3-compact-workspace-native-9.134",
+  "status": "1.6.0-approved-compact-workspace-native-9.134",
   "widget": "crew-locations",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -752,5 +752,13 @@
     "new_native_components": false,
     "reference": "docs/crew-compact-workspace-2026-10-30.md",
     "rollback": "Production crew-locations mapping to 1.4.0; retain Creator 9.134 and all staffing/sync data."
+  },
+  "compact_workspace_selected_2026_10_30": {
+    "release": "1.6.0",
+    "selected_design": "Compact Workspace",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-compact-workspace-selected-2026-10-30.md",
+    "rollback": "Production crew-locations mapping to 1.5.3; retain Creator 9.134 and all staffing/sync data."
   }
 }

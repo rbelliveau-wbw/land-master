@@ -52,5 +52,13 @@
     }
     return [...groups.values()].sort((a,b)=>String(a.foreman.EmployeeName).localeCompare(String(b.foreman.EmployeeName)));
   }
-  root.CrewEmployeesModel=Object.freeze({assignBadges,foremanGroups,label,truth,guid});
+  function crewStaffing(employees,timecards,crewId,day){
+    const M=root.CrewModel,members=employees.filter(e=>M.id(e.Crew)===crewId).sort((a,b)=>String(a.EmployeeName).localeCompare(String(b.EmployeeName))),foremen=members.filter(e=>M.norm(e.Labor_Type)==='foreman');
+    const byBU=new Map(),ambiguous=new Set();for(const e of employees){const key=guid(e.BU_Employee_ID);if(byBU.has(key))ambiguous.add(key);byBU.set(key,e);}
+    const owners=new Set(foremen.map(e=>guid(e.BU_Employee_ID)).filter(key=>key&&!ambiguous.has(key))),seen=new Set(),recent=[];
+    for(const card of timecards){const key=guid(card.Timecard_ID),date=M.date(card.Work_Date);if(!key||seen.has(key)||truth(card.IsDeleted)||date==null||date<day-6||date>day||!owners.has(guid(card.Foreman_ID)))continue;seen.add(key);recent.push({date,phaseId:M.id(card.Subdivision1),jobCode:String(card.Job_Code||'')});}
+    const latest=recent.length?Math.max(...recent.map(r=>r.date)):null,jobs=new Map();for(const row of recent.filter(r=>r.date===latest))jobs.set(row.phaseId+':'+row.jobCode,row);
+    return {members,foremen,latest,jobs:[...jobs.values()]};
+  }
+  root.CrewEmployeesModel=Object.freeze({assignBadges,foremanGroups,crewStaffing,label,truth,guid});
 })(window);

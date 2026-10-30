@@ -5,21 +5,24 @@ The implementation and installation contract are in
 [Crew Locations](../modules/crew-locations.md).
 
 Open **Employees** by default when the native employee capability is enabled.
-Keep **Crews** and **Milestones & tasks** as separate workspaces. Legacy native
+Keep **Crews** and **Milestones & Tasks** as separate workspaces. Legacy native
 versions retain the Crews default until Creator promotion. Keep
-the schedule mounted while switching workspaces. In the schedule workspace,
-use a full-width timeline above the schedule grid. Keep each phase's Milestones
+the schedule mounted while switching workspaces. October 30, 2026: the user
+approved **Compact Workspace**, with **Timeline / Edit Schedule** views in one
+viewport instead of stacking the Gantt above the date grid. Both remain mounted;
+switching views preserves filters, drafts, scroll and unknown-save locks. Keep each phase's Milestones
 row directly above Tasks. Put crew badges beneath Tasks in the left title column.
-Keep phase IDs stable, readable text, normal page scrolling, and a real calendar
+Keep phase IDs stable, readable text, report scrolling, and a real calendar
 axis starting today in America/Chicago. Month and year labels must remain readable
 for partial months. Sections share the same band within each row type.
 
-October 29 direction: the timeline grows vertically with the selected phases and
-fits the selected calendar horizon horizontally where readable. Retain horizontal
+October 30 supersedes October 29's natural page-height timeline: all three main
+workspaces fit Creator's actual iframe, and their report regions scroll. The
+timeline fits the selected calendar horizon horizontally where readable. Retain horizontal
 scrolling when needed; never compress phase labels or edit cells. Bound the editing
-table to its readable scrolling workspace while retaining normal page scrolling. Freeze phase labels horizontally and keep
+table to its readable scrolling workspace. Freeze phase labels horizontally and keep
 the calendar axis and both table heading rows visible during vertical scrolling.
-Provide direct Timeline / Edit Schedule navigation and a searchable Jump to stage
+Provide direct Timeline / Edit Schedule navigation and a searchable Jump to Stage
 action so editing does not require traversing every phase or dragging a long
 horizontal scrollbar. Keep all stage columns available through the existing
 hide/restore controls. Let filter controls wrap within the card when needed;
@@ -74,8 +77,15 @@ values/caret. Reduced motion is supported.
 
 Use the Pro Forma workspace palette, compact record header and readable desktop
 cards. Put the searchable Active / Inactive / All roster on the left and the
-selected crew's detail on the right. Bound the roster and work tables with their
-own vertical scrolling while retaining normal page scrolling. New crew, Edit
+selected crew's detail on the right. October 30's Compact Workspace puts search,
+status and actions in one toolbar, uses code/name roster rows, and shows assigned
+employees with the existing inline Labor Type picker. Foreman uses saved staffing;
+Recent Job shows all jobs on the latest foreman timecard date within seven calendar
+dates. Use exact BU identities and saved phase mappings; never infer membership
+or a location from names. Retained inactive employees stay visible. Manual latest
+and earlier dated assignments remain under **Dated Work**; Upcoming Work stays
+in the primary detail view. Bound the roster and work tables with their
+own vertical scrolling inside the fitted workspace. New Crew, Edit
 crew, Deactivate / Reactivate and Assign work remain visible at ordinary desktop
 sizes. Keep Milestones & tasks available as a separate full-width workspace;
 do not insert a roster above or beside its Gantt.
