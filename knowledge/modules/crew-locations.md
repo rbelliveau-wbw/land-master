@@ -466,3 +466,15 @@ bars, gridlines and inverse drag coordinates use the same month mapping. Source
 dates, seven-date location badges and 12-month upcoming-phase selection do not
 change. No new Creator component or promotion is needed.
 See [verification and rollback](../../docs/crew-combined-calendar-2026-10-30.md).
+
+## Live Milestone Dragging — 1.8.0
+
+Milestone endpoints now resize their mounted bars during pointer movement,
+including live day counts, boundary guides and recomputed overlap hatching. The
+preview is a draft; native records change only after a valid drop through the
+existing prepare/apply path. Edge scrolling uses the same inverse calendar mapping.
+Date and save feedback sit beside the dragged edge. Task bars, past endpoints,
+locked phases, pending pushes, permissions and unknown-save locks remain guarded.
+Clicks and cancelled/invalid drags never write. A confirmed drag invalidates an
+older Days propagation delta for that source record. No Creator changes are needed.
+See [checks and rollback](../../docs/crew-milestone-drag-2026-10-30.md).

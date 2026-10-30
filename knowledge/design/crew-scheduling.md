@@ -72,6 +72,25 @@ remain read-only even when task-table editing is permitted. All editing uses
 authenticated server validation, durable audited operations and exact identities.
 Locks and permission errors take precedence over every presentation control.
 
+October 30 drag refinement: resize the actual mounted bar continuously, snapping
+to calendar days. Move its source boundary, duration and exact overlap shading
+with it; retain a quiet outline of the original span until release. Use compact
+grips above overlap hit areas and edge scrolling that includes the scrolled
+distance in the calendar coordinate calculation. Keep the saved model untouched
+during the preview. A click or sub-threshold movement never saves. Escape, pointer
+cancellation/capture loss, window blur, view changes and actor invalidation restore
+the source span and send nothing. Invalid spans are red and cannot be saved.
+
+Put stage/endpoint, before → after dates, day change, total duration and Save/Cancel
+feedback beside the edge being changed, within the timeline viewport. Do not put
+this data in a fixed bottom banner. Pending, Saved and failure/unknown feedback
+remain at that location. The user's latest direction replaces the shared success
+popup for pointer drags only; other milestone edits retain it. Existing audited
+prepare/apply, destination acknowledgements and explicit read-only Review Save
+remain authoritative. Never replay an uncertain drop. Direct pointer tracking has
+no easing or artificial numeric animation; confirmed render values still use the
+existing shared numeric and feedback engines.
+
 Apply [interaction motion](interaction-motion.md),
 [number transitions](number-transitions.md), and
 [transfer progress](transfer-progress.md). The Crew Locations registry is

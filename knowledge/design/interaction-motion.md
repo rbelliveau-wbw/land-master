@@ -26,6 +26,13 @@ finish an animation. Native editable values, precision and carets remain intact.
 Keep animation overflow inside its component; no temporary horizontal scrollbar,
 right-side strip, moving table border or hidden incoming value that changes layout.
 
+Pointer-driven milestone resizing follows the actual cursor without easing,
+including under reduced motion. Update the mounted source bar and its draft
+overlap geometry; a nearby date card carries pending/confirmed/error feedback.
+Cancellation restores the original visuals immediately without changing dates.
+This direct manipulation reuses the schedule's existing save and feedback states;
+it does not introduce a second timed motion engine. See [Crew scheduling](crew-scheduling.md).
+
 ## Shared implementation
 
 Use [interaction-motion.js](../../shared/interaction-motion.js),

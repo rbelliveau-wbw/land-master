@@ -2057,5 +2057,13 @@
     "employee_group_update": "Explicit foreman Crew selection applies to the captured active 14-date group including search-hidden people. Existing single-employee writes/status checks; inactive staffing retained; no automatic assignment.",
     "calendar": "24-month default; equal month columns and grouped years; exact inverse date coordinates.",
     "rollback": "Production crew-locations mapping to 1.6.0; retain Creator 9.134 and all staffing/sync data."
+  },
+  "milestone_drag_2026_10_30": {
+    "release": "1.8.0",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-milestone-drag-2026-10-30.md",
+    "scope": "Mounted milestone endpoint resizing, draft overlap/duration previews, anchored date/save feedback, cancellation and scroll-aware calendar mapping; existing native prepare/apply/status reused.",
+    "rollback": "Production crew-locations mapping to 1.7.1; retain all native records and audit history."
   }
 }
