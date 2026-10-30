@@ -1,2 +1,2 @@
-// Daily, 05:15:00 in the application timezone; native start 2026-10-30.
+// Daily, 10:30:00 America/Chicago, starting 2026-10-30. Existing resumable export/audit queue.
 thisapp.crewSyncTimecards(false);

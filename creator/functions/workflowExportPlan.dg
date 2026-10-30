@@ -1,0 +1,213 @@
+map workflowExportPlan(string workflow, int capturedBatch)
+{
+	requests = List();
+	if(workflow == "Daily_Crew_Timecards")
+	{
+		cutoff = zoho.currentdate.subMonth(3);
+		headerConfig = {"selectedColumns":{"zzz_TimecardID_Guid","Date","ForemanID","ForemanCode","ForemanName","JobCode","JobDescription","IsDeleted"}};
+		headerConfig.put("criteria","(\"HeavyJob_JM_Timecard\".\"Date\" >= '" + cutoff.toString("yyyy-MM-dd") + "' AND \"HeavyJob_JM_Timecard\".\"Date\" < '" + zoho.currentdate.addDay(1).toString("yyyy-MM-dd") + "')");
+		requests.add({"view":"2107789000022718491","config":headerConfig,"allowEmpty":false});
+	}
+	else if(workflow == "Daily_Crew_Labor")
+	{
+		laborCutoff = zoho.currentdate.addDay(-13);
+		directoryConfig = {"selectedColumns":{"zzz_BUEmployeeID_Guid","zzz_MasterEmployeeID_Guid"}};
+		laborConfig = {"selectedColumns":{"zzz_TimecardID_Guid","zzz_MasterEmployeeID_Guid","IsDeleted"}};
+		laborConfig.put("criteria","(\"HeavyJob_TimecardCostcodeLaborResource\".\"Date\" >= '" + laborCutoff.toString("yyyy-MM-dd") + "' AND \"HeavyJob_TimecardCostcodeLaborResource\".\"Date\" < '" + zoho.currentdate.addDay(1).toString("yyyy-MM-dd") + "')");
+		requests.add({"view":"2107789000036057124","config":directoryConfig,"allowEmpty":false});
+		requests.add({"view":"2107789000025629150","config":laborConfig,"allowEmpty":true});
+	}
+	else if(workflow == "Update_Budgets_w_Projects1")
+	{
+		config = Map();
+		// query config
+		config.put("responseFormat","json");
+		// columns to return
+		cols = list();
+		cols.add("Project Code");
+		cols.add("Status");
+		cols.add("Gross Acres");
+		cols.add("Lot Total - Residential");
+		cols.add("Equiv. LF of Street");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000000012031","config":config,"allowEmpty":false});
+	}
+	else if(workflow == "Update_Projects_Start_End")
+	{
+		config = Map();
+		config.put("responseFormat","json");
+		cols = List();
+		cols.add("Project ID");
+		cols.add("MS Earliest Start Date");
+		cols.add("MS Latest End Date");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000020982002","config":config,"allowEmpty":true});
+	}
+	else if(workflow == "Sync_Final_Acceptance_Due")
+	{
+		syncScopeCodes = Subdivision[ID != 0].distinct(Subdivision_Code);
+		syncScopeCodes = syncScopeCodes.sort(true);
+		syncScopeSql = "''";
+		for each  syncScopeCode in syncScopeCodes
+		{
+			if(syncScopeCode != null && syncScopeCode.toString().trim() != "")
+			{
+				syncScopeSql = syncScopeSql + ",'" + syncScopeCode.toString().replaceAll("'","''") + "'";
+			}
+		}
+		projectConfig = Map();
+		projectConfig.put("responseFormat","json");
+		projectConfig.put("keyValueFormat",true);
+		projectColumns = List();
+		projectColumns.add("Project ID");
+		projectColumns.add("Project Code");
+		projectConfig.put("selectedColumns",projectColumns);
+		projectConfig.put("criteria","(\"Projects (Zoho Projects)\".\"Project Code\" IN (" + syncScopeSql + "))");
+		taskConfig = Map();
+		taskConfig.put("responseFormat","json");
+		taskConfig.put("keyValueFormat",true);
+		taskColumns = List();
+		taskColumns.add("Task ID");
+		taskColumns.add("Task Name");
+		taskColumns.add("Project ID");
+		taskColumns.add("Due Date");
+		taskConfig.put("selectedColumns",taskColumns);
+		// Keep the proven compact source filter; long ID lists can exceed GET URL limits.
+		taskConfig.put("criteria","(\"Tasks (Zoho Projects)\".\"Task Name\" = 'Final Acceptance' OR \"Tasks (Zoho Projects)\".\"Task Name\" = 'Accept - Muni')");
+		requests.add({"view":"2107789000000012031","config":projectConfig,"allowEmpty":true});
+		requests.add({"view":"2107789000000012088","config":taskConfig,"allowEmpty":true});
+		requests.add({"view":"2107789000014058199","config":{"selectedColumns":{"Projects (Zoho Projects).Project ID","Projects (Zoho Projects).Project Code","Const Plans Release","Const Start","Rough Start Date"}},"allowEmpty":true});
+		requests.add({"view":"2107789000014196812","config":{"selectedColumns":{"Projects (Zoho Projects).Project ID","Projects (Zoho Projects).Project Code","CP Rel Est (EST. Comp Date)"}},"allowEmpty":true});
+	}
+	else if(workflow == "Budgets_Check_HCSS_Budget1")
+	{
+		batch = capturedBatch;
+		if(batch < 0 || batch > 4)
+		{
+			throw "Batch must be 0 through 4.";
+		}
+		// Fetch each native collection once; do not query mappings per Analytics row.
+		budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
+		batchCodes = List();
+		codeCounts = Map();
+		for each  subdivision in Subdivision[Subdivision_Code in budgetCodes]
+		{
+			code = ifnull(subdivision.Subdivision_Code,"").toString();
+			if(code != "")
+			{
+				codeCounts.put(code,ifnull(codeCounts.get(code),0) + 1);
+				if(subdivision.ID % 5 == batch)
+				{
+					batchCodes.add(code);
+				}
+			}
+		}
+		jobCounts = Map();
+		jobCodes = Map();
+		selectedJobs = List();
+		for each  mapping in External_System_Mapping[External_System == "HeavyJob"]
+		{
+			job = ifnull(mapping.External_Code,"").toString();
+			if(job != "")
+			{
+				jobCounts.put(job,ifnull(jobCounts.get(job),0) + 1);
+				mappedCode = "";
+				if(mapping.Subdivision1 != null)
+				{
+					mappedCode = ifnull(mapping.Subdivision1.Subdivision_Code,"").toString();
+				}
+				jobCodes.put(job,mappedCode);
+				if(batchCodes.contains(mappedCode))
+				{
+					selectedJobs.add(job);
+				}
+			}
+		}
+		selectedJobs = selectedJobs.distinct();
+		selectedJobs = selectedJobs.sort(true);
+		eligibleCodes = List();
+		jobSql = "";
+		for each  job in selectedJobs
+		{
+			mappedCode = ifnull(jobCodes.get(job),"").toString();
+			if(jobCounts.get(job) != 1 || mappedCode == "" || codeCounts.get(mappedCode) != 1)
+			{
+				throw "Duplicate or broken HeavyJob/subdivision mapping; job=" + job + "; batch=" + batch + ". No cleanup writes started.";
+			}
+			eligibleCodes.add(mappedCode);
+			if(jobSql != "")
+			{
+				jobSql = jobSql + ",";
+			}
+			jobSql = jobSql + "'" + job.replaceAll("'","''",true) + "'";
+		}
+		eligibleCodes = eligibleCodes.distinct();
+		if(selectedJobs.size() > 0)
+		{
+			config = Map();
+			config.put("selectedColumns",{"H.zzz_CostCodeID_Guid","H.JobCode","H.Minor Code"});
+			config.put("criteria","(\"HeavyJob Budget Costs joined w/ Subdivs\".\"H.JobCode\" IN (" + jobSql + "))");
+			requests.add({"view":"2107789000023687048","config":config,"allowEmpty":true});
+		}
+	}
+	else if(workflow == "Budgets_Import_Load_GP_Co")
+	{
+		config = Map();
+		config.put("responseFormat","json");
+		cols = List();
+		cols.add("WS_Job_Number_Trim");
+		cols.add("Cost_Code_Number_1");
+		cols.add("Cost_Code_Number_2");
+		cols.add("Cost_Code_Description");
+		cols.add("Total_Actuals");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000031077002","config":config,"allowEmpty":false});
+	}
+	else if(workflow == "Budgets_Import_Load_HCSS_1")
+	{
+		config = Map();
+		config.put("responseFormat","json");
+		cols = List();
+		cols.add("H.zzz_CostCodeID_Guid");
+		cols.add("H.Major Code");
+		cols.add("H.Minor Code");
+		cols.add("H.Total Budget Decimal");
+		cols.add("J.JobCodeFinal");
+		cols.add("H.JobCode");
+		cols.add("H.CostCodeDescription");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000023687048","config":config,"allowEmpty":false});
+	}
+	else if(workflow == "Budgets_Import_Load_HCSS_")
+	{
+		config = Map();
+		config.put("responseFormat","json");
+		cols = List();
+		cols.add("Major Code");
+		cols.add("H.Minor Code");
+		cols.add("TotalActualCost");
+		cols.add("J.JobCodeFinal");
+		cols.add("H.JobCode");
+		cols.add("CostCodeDescription");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000023717814","config":config,"allowEmpty":false});
+	}
+	else if(workflow == "Budgets_Import_Load_CTC_C")
+	{
+		config = Map();
+		config.put("responseFormat","json");
+		cols = List();
+		cols.add("H.Major Code");
+		cols.add("H.Minor Code");
+		cols.add("H.Percent Complete Display");
+		cols.add("H.JobCode");
+		cols.add("Projected Total");
+		config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000029519084","config":config,"allowEmpty":false});
+	}
+	else
+	{
+		throw "Unknown export workflow: " + workflow;
+	}
+	return {"requests":requests,"batch":capturedBatch};
+}

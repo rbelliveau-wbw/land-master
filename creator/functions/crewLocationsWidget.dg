@@ -16,7 +16,7 @@ string crewLocationsWidget(string payload)
 		{
 			response.put("permissions",{"view":true,"milestones":access.Edit_Crew_Milestones == true,"tasks":access.Edit_Crew_Task_Dates == true && config.get("taskWritesVerified") == true,"assignments":access.Manage_Crew_Assignments == true});
 			response.put("management",{"enabled":true,"nativeWrites":true,"protocol":"native-validated-v1"});
-			response.put("sources",{"crews":config.get("nativeCrewReadsEnabled") == true,"tasks":config.get("tasksEnabled") == true,"employees":config.get("employeeRosterEnabled") == true,"foremanTimecards":config.get("foremanTimecardsEnabled") == true});
+			response.put("sources",{"crews":config.get("nativeCrewReadsEnabled") == true,"tasks":config.get("tasksEnabled") == true,"employees":config.get("employeeRosterEnabled") == true,"foremanTimecards":config.get("foremanTimecardsEnabled") == true,"foremanGroups":config.get("foremanGroupsEnabled") == true});
 			dependencies = List();
 			if(config.get("nativeCrewReadsEnabled") != true) { dependencies.add("Native crew reports are not configured."); }
 			if(config.get("tasksEnabled") != true) { dependencies.add("Task source: verify the T-row source, stage mapping and date columns before enabling the task mirror."); }

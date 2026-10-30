@@ -1,0 +1,1694 @@
+string workflowExportRun(string queuedAuditId)
+{
+	if(!queuedAuditId.matches("[0-9]+"))
+	{
+		throw "Export continuation requires a run ID.";
+	}
+	queuedRun = Workflow_Run_Log[ID == queuedAuditId.toLong()];
+	if(queuedRun.count() != 1 || queuedRun.Run_Status != "Running")
+	{
+		throw "Export run is no longer active.";
+	}
+	state = queuedRun.Export_State.toMap();
+	if(state.get("version") != 1 || state.get("phase") != "processing")
+	{
+		throw "Export run has no processing claim.";
+	}
+	runKey = state.get("workflow");
+	auditId = queuedAuditId;
+	if(runKey == "Update_Budgets_w_Projects1")
+	{
+		budgetAction = ifnull(state.get("budgetAction"),1);
+		if(budgetAction != 1 && budgetAction != 2 && budgetAction != 3)
+		{
+			throw "Invalid Budget continuation action.";
+		}
+		if(budgetAction == 1)
+		{
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try 
+			{
+				// === 1) Analytics identifiers ===
+				orgId = "700732567";
+				workspaceId = "2107789000000003001";
+				viewId = "2107789000000012031";
+				// === 2) Request setup ===
+				headers = Map();
+				// auth header
+				headers.put("ZANALYTICS-ORGID",orgId);
+				config = Map();
+				// query config
+				config.put("responseFormat","json");
+				// columns to return
+				cols = list();
+				cols.add("Project Code");
+				cols.add("Status");
+				cols.add("Gross Acres");
+				cols.add("Lot Total - Residential");
+				cols.add("Equiv. LF of Street");
+				config.put("selectedColumns",cols);
+				// === 3) Call Zoho Analytics ===
+				params = Map();
+				params.put("CONFIG",config.toString());
+				resp = {"data":thisapp.workflowPreparedExportRows(viewId,config,auditId,false)};
+				auditReceived = auditReceived + resp.get("data").size();
+				// === 4) Parse response ===
+				rows = resp.get("data");
+				// list of row-maps
+				// Row payloads are omitted from execution logs.
+				// === 5) Loop through rows and update matching Subdivisions ===
+				for each  proj in rows
+				{
+					auditProcessed = auditProcessed + 1;
+					auditRowChanged = false;
+					projectCode = proj.get("Project Code").toString();
+					if(projectCode != "")
+					{
+						subdiv = Subdivision[Subdivision_Code == projectCode];
+						if(subdiv.count() > 0)
+						{
+							// pull values, default blanks to zero
+							acres = proj.get("Gross Acres");
+							status = proj.get("Status");
+							lotTotal = proj.get("Lot Total - Residential");
+							equivLF = proj.get("Equiv. LF of Street");
+							if(acres == "")
+							{
+								acres = 0;
+							}
+							if(lotTotal == "")
+							{
+								lotTotal = 0;
+							}
+							if(equivLF == "")
+							{
+								equivLF = 0;
+							}
+							// write back to Zoho Creator
+							auditWriteAttempted = true;
+							subdiv.Projects_Status=status;
+							// Budget owns Acres, residential lots, and street LF. Do not import those quantities.
+							auditDestination = subdiv.ID.toString();
+							if(!auditUpdatedIds.contains(auditDestination))
+							{
+								auditUpdatedIds.add(auditDestination);
+								auditUpdated = auditUpdated + 1;
+							}
+							auditRowChanged = true;
+						}
+					}
+					if(!auditRowChanged)
+					{
+						auditSkipped = auditSkipped + 1;
+					}
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+				auditFinalStatus = "Success";
+				if(auditNoEligible)
+				{
+					auditFinalStatus = "Skipped";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}			catch (auditError)
+			{
+				auditStatus = "Failed";
+				if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+				{
+					auditStatus = "Partial";
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+				throw auditError;
+			}
+		}
+		else if(budgetAction == 2)
+		{
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try 
+			{
+				//Iterates through every Budget Category and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
+				for each  budgCat in Budget_Category[ID != 0 && Budget.Subdivision1 != NULL]
+				{
+					auditProcessed = auditProcessed + 1;
+					auditRowChanged = false;
+					subdiv = Subdivision[ID == budgCat.Budget.Subdivision1];
+					auditWriteAttempted = true;
+					budgCat.Project=subdiv.Project.Project_Name.toUpperCase();
+					auditWriteAttempted = true;
+					budgCat.Phase=if(subdiv.Subphase == "","PHASE " + subdiv.Phase,"PHASE " + subdiv.Phase + "-" + subdiv.Subphase);
+					auditDestination = budgCat.ID.toString();
+					if(!auditUpdatedIds.contains(auditDestination))
+					{
+						auditUpdatedIds.add(auditDestination);
+						auditUpdated = auditUpdated + 1;
+					}
+					auditRowChanged = true;
+					if(!auditRowChanged)
+					{
+						auditSkipped = auditSkipped + 1;
+					}
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+				auditFinalStatus = "Success";
+				if(auditNoEligible)
+				{
+					auditFinalStatus = "Skipped";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}			catch (auditError)
+			{
+				auditStatus = "Failed";
+				if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+				{
+					auditStatus = "Partial";
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+				throw auditError;
+			}
+		}
+		else if(budgetAction == 3)
+		{
+			auditReceived = 0;
+			auditProcessed = 0;
+			auditCreated = 0;
+			auditUpdated = 0;
+			auditUpdatedIds = List();
+			auditSkipped = 0;
+			auditMissingMapping = 0;
+			auditNoBudget = 0;
+			auditNoEligible = false;
+			auditWriteAttempted = false;
+			auditRowChanged = false;
+			auditSourceKeys = Map();
+			auditRecordKey = "";
+			try 
+			{
+				//Iterates through every Budget  and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
+				for each  budG in Add_Budget[ID != 0]
+				{
+					auditProcessed = auditProcessed + 1;
+					auditRowChanged = false;
+					if(budG.Subdivision1 != null)
+					{
+						subdiv = Subdivision[ID == budG.Subdivision1.ID];
+						auditWriteAttempted = true;
+						budG.Project=subdiv.Project.Project_Name.toUpperCase();
+						auditWriteAttempted = true;
+						budG.Status=subdiv.Projects_Status;
+						auditWriteAttempted = true;
+						budG.Phase=if(subdiv.Subphase == "","PHASE " + subdiv.Phase,"PHASE " + subdiv.Phase + "-" + subdiv.Subphase);
+						auditDestination = budG.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+						auditRowChanged = true;
+					}
+					if(!auditRowChanged)
+					{
+						auditSkipped = auditSkipped + 1;
+					}
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+				auditFinalStatus = "Success";
+				if(auditNoEligible)
+				{
+					auditFinalStatus = "Skipped";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+			}			catch (auditError)
+			{
+				auditStatus = "Failed";
+				if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+				{
+					auditStatus = "Partial";
+				}
+				auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+				throw auditError;
+			}
+		}
+		// Reuse the existing one-shot audit claim and date-field continuation.
+		// A successor is created only after this action's successful native receipt.
+		if(budgetAction < 3)
+		{
+			nextAuditId = "";
+			try 
+			{
+				nextAction = budgetAction + 1;
+				nextAudit = thisapp.workflowRunLog({"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action " + nextAction + "/3)","system":"Zoho Analytics"});
+				nextAuditId = nextAudit.get("id");
+				nextState = {"version":1,"workflow":runKey,"phase":"arming","tick":0,"budgetAction":nextAction,"predecessor":queuedAuditId,"requests":List()};
+				nextAt = zoho.currenttime.addMinutes(1);
+				thisapp.workflowRunLog({"action":"update","id":nextAuditId,"stage":"Queued Budget action " + nextAction,"exportState":nextState.toString(),"clearResume":true,"details":"Predecessor " + queuedAuditId + " completed. Separate native execution; no previous business action is replayed."});
+				thisapp.workflowExportWake(nextAuditId,0,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+				if(nextAt <= zoho.currenttime)
+				{
+					throw "Budget successor wake-up window elapsed before handoff acknowledgement.";
+				}
+				nextState.put("phase","waiting");
+				thisapp.workflowRunLog({"action":"update","id":nextAuditId,"stage":"Queued Budget action " + nextAction,"exportState":nextState.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a")});
+				return "Queued Budget action " + nextAction;
+			}			catch (successorError)
+			{
+				// The completed business action must commit even if a later queue
+				// acknowledgement is lost. Its one-shot process claim remains held.
+				try 
+				{
+					if(nextAuditId != "")
+					{
+						thisapp.workflowRunLog({"action":"finish","id":nextAuditId,"status":"Failed","stage":"Successor wake-up failed","message":successorError.toString(),"counts":{"failed":1},"clearResume":true});
+					}
+					thisapp.workflowRunLog({"action":"finish","id":queuedAuditId,"status":"Partial","stage":"Successor queue failed","message":successorError.toString(),"details":"Business action completed. Successor queue acknowledgement failed or is unknown. Inspect any queued successor; do not replay the completed action.","counts":{"failed":1},"clearResume":true});
+				}				catch (queueAuditError)
+				{
+					info "Successor queue and audit acknowledgement require review; original run=" + queuedAuditId;
+				}
+				return "Completed action; successor queue requires review";
+			}
+		}
+	}
+	else if(runKey == "Sync_Final_Acceptance_Due")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			// Schedule: daily, Settings.Next_Workflow_Run, America/Chicago.
+			// Destination: Add Subdivision (internal form name: Subdivision).
+			// v2: one filtered subdivision fetch; match counts and date selection are in memory.
+			// Writes enabled after successful Dev preview; REVIEW preserves conflicting dates.
+			dryRun = false;
+			// REVIEW skips differing dates; LATEST, EARLIEST, or PREFER_FINAL resolve them.
+			conflictRule = "REVIEW";
+			updatedCount = 0;
+			unchangedCount = 0;
+			reviewCount = 0;
+			skippedCount = 0;
+			operationStage = "initializing";
+			currentProjectCode = "";
+			try 
+			{
+				orgId = "700732567";
+				workspaceId = "2107789000000003001";
+				headers = Map();
+				headers.put("ZANALYTICS-ORGID",orgId);
+				// Only existing native subdivisions can receive these dates. Scope every
+				// export before iterating, so Development and Production pay for their own rows.
+				syncScopeCodes = Subdivision[ID != 0].distinct(Subdivision_Code);
+				syncScopeCodes = syncScopeCodes.sort(true);
+				syncScopeSql = "''";
+				for each  syncScopeCode in syncScopeCodes
+				{
+					if(syncScopeCode != null && syncScopeCode.toString().trim() != "")
+					{
+						syncScopeSql = syncScopeSql + ",'" + syncScopeCode.toString().replaceAll("'","''") + "'";
+					}
+				}
+				projectConfig = Map();
+				projectConfig.put("responseFormat","json");
+				projectConfig.put("keyValueFormat",true);
+				projectColumns = List();
+				projectColumns.add("Project ID");
+				projectColumns.add("Project Code");
+				projectConfig.put("selectedColumns",projectColumns);
+				projectConfig.put("criteria","(\"Projects (Zoho Projects)\".\"Project Code\" IN (" + syncScopeSql + "))");
+				projectParams = Map();
+				projectParams.put("CONFIG",projectConfig.toString());
+				operationStage = "exporting Projects";
+				info "Final Acceptance sync v2: " + operationStage;
+				projectsResponse = {"data":thisapp.workflowPreparedExportRows("2107789000000012031",projectConfig,auditId,true)};
+				auditReceived = auditReceived + projectsResponse.get("data").size();
+				taskConfig = Map();
+				taskConfig.put("responseFormat","json");
+				taskConfig.put("keyValueFormat",true);
+				taskColumns = List();
+				taskColumns.add("Task ID");
+				taskColumns.add("Task Name");
+				taskColumns.add("Project ID");
+				taskColumns.add("Due Date");
+				taskConfig.put("selectedColumns",taskColumns);
+				// Keep the proven compact source filter; long ID lists can exceed GET URL limits.
+				taskConfig.put("criteria","(\"Tasks (Zoho Projects)\".\"Task Name\" = 'Final Acceptance' OR \"Tasks (Zoho Projects)\".\"Task Name\" = 'Accept - Muni')");
+				taskParams = Map();
+				taskParams.put("CONFIG",taskConfig.toString());
+				operationStage = "exporting Tasks";
+				info "Final Acceptance sync v2: " + operationStage;
+				tasksResponse = {"data":thisapp.workflowPreparedExportRows("2107789000000012088",taskConfig,auditId,true)};
+				auditReceived = auditReceived + tasksResponse.get("data").size();
+				projectRows = projectsResponse.get("data");
+				taskRows = tasksResponse.get("data");
+				if(projectRows == null || taskRows == null)
+				{
+					throw "Final Acceptance sync stopped: missing Analytics data.";
+				}
+				else
+				{
+					operationStage = "joining Analytics rows";
+					info "Final Acceptance sync v2: projects=" + projectRows.size() + ", tasks=" + taskRows.size();
+					// Build the project ID -> project code join in memory (IDs stay text).
+					codeByProject = Map();
+					projectByCode = Map();
+					ambiguousCodes = List();
+					for each  projectRow in projectRows
+					{
+						projectId = ifnull(projectRow.get("Project ID"),"").toString().trim();
+						projectCode = ifnull(projectRow.get("Project Code"),"").toString().trim();
+						if(projectId != "" && projectCode != "" && syncScopeCodes.contains(projectCode))
+						{
+							priorProject = projectByCode.get(projectCode);
+							if(priorProject != null && priorProject != projectId)
+							{
+								if(!ambiguousCodes.contains(projectCode))
+								{
+									ambiguousCodes.add(projectCode);
+								}
+							}
+							codeByProject.put(projectId,projectCode);
+							projectByCode.put(projectCode,projectId);
+						}
+					}
+					latestByCode = Map();
+					earliestByCode = Map();
+					finalByCode = Map();
+					badDateCodes = List();
+					finalConflictCodes = List();
+					for each  taskRow in taskRows
+					{
+						taskName = ifnull(taskRow.get("Task Name"),"").toString();
+						projectId = ifnull(taskRow.get("Project ID"),"").toString().trim();
+						projectCode = codeByProject.get(projectId);
+						if(projectCode == null || !syncScopeCodes.contains(projectCode))
+						{
+							continue;
+						}
+						dateText = ifnull(taskRow.get("Due Date"),"").toString().trim();
+						if(taskName == "Final Acceptance" || taskName == "Accept - Muni" && projectCode != null && dateText != "")
+						{
+							try 
+							{
+								// Preserve the source calendar date; discard its time of day.
+								dueDate = null;
+								if(dateText.matches("[0-9]{2} [A-Za-z]{3}, [0-9]{4}.*"))
+								{
+									dueDate = dateText.subString(0,12).toDate("dd MMM, yyyy");
+								}
+								else if(dateText.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*"))
+								{
+									dueDate = dateText.subString(0,10).toDate("yyyy-MM-dd");
+								}
+								else if(dateText.matches("[0-9]{2}-[0-9]{2}-[0-9]{4}.*"))
+								{
+									dueDate = dateText.subString(0,10).toDate("MM-dd-yyyy");
+								}
+								else if(dateText.matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*"))
+								{
+									dueDate = dateText.subString(0,10).toDate("MM/dd/yyyy");
+								}
+								if(dueDate == null)
+								{
+									badDateCodes.add(projectCode);
+									info "Review date format: " + projectCode + ", task " + taskRow.get("Task ID") + ", Due Date=" + dateText;
+								}
+								else
+								{
+									latest = latestByCode.get(projectCode);
+									earliest = earliestByCode.get(projectCode);
+									if(latest == null || dueDate > latest)
+									{
+										latestByCode.put(projectCode,dueDate);
+									}
+									if(earliest == null || dueDate < earliest)
+									{
+										earliestByCode.put(projectCode,dueDate);
+									}
+									if(taskName == "Final Acceptance")
+									{
+										priorFinal = finalByCode.get(projectCode);
+										if(priorFinal != null && priorFinal != dueDate)
+										{
+											finalConflictCodes.add(projectCode);
+										}
+										finalByCode.put(projectCode,dueDate);
+									}
+								}
+							}							catch (dateError)
+							{
+								badDateCodes.add(projectCode);
+								info "Invalid due date: " + projectCode + ", task " + taskRow.get("Task ID") + ": " + dateText;
+							}
+						}
+						else
+						{
+							skippedCount = skippedCount + 1;
+						}
+					}
+					candidateCodes = latestByCode.keys();
+					selectedByCode = Map();
+					if(candidateCodes.size() > 0)
+					{
+						operationStage = "fetching matching subdivisions";
+						info "Final Acceptance sync v2: " + operationStage + ", candidate codes=" + candidateCodes.size();
+						// Fetch once, then count exact code matches in memory before any writes.
+						subdivisions = Subdivision[Subdivision_Code in candidateCodes];
+						subdivisionCountByCode = Map();
+						fetchedCount = 0;
+						for each  subdiv in subdivisions
+						{
+							auditProcessed = auditProcessed + 1;
+							auditRowChanged = false;
+							projectCode = ifnull(subdiv.Subdivision_Code,"").toString();
+							subdivisionCountByCode.put(projectCode,ifnull(subdivisionCountByCode.get(projectCode),0) + 1);
+							fetchedCount = fetchedCount + 1;
+							if(!auditRowChanged)
+							{
+								auditSkipped = auditSkipped + 1;
+							}
+						}
+						info "Final Acceptance sync v2: fetched subdivisions=" + fetchedCount;
+						operationStage = "selecting unambiguous dates";
+						for each  projectCode in candidateCodes
+						{
+							latest = latestByCode.get(projectCode);
+							earliest = earliestByCode.get(projectCode);
+							selectedDate = latest;
+							needsReview = ambiguousCodes.contains(projectCode) || badDateCodes.contains(projectCode);
+							if(conflictRule == "EARLIEST")
+							{
+								selectedDate = earliest;
+							}
+							else if(conflictRule == "PREFER_FINAL")
+							{
+								if(finalByCode.get(projectCode) != null)
+								{
+									selectedDate = finalByCode.get(projectCode);
+									needsReview = needsReview || finalConflictCodes.contains(projectCode);
+								}
+								else if(latest != earliest)
+								{
+									needsReview = true;
+								}
+							}
+							else if(conflictRule != "LATEST" && latest != earliest)
+							{
+								needsReview = true;
+							}
+							matchCount = ifnull(subdivisionCountByCode.get(projectCode),0);
+							if(needsReview || matchCount > 1)
+							{
+								reviewCount = reviewCount + 1;
+								info "Review mapping/dates: " + projectCode + ", earliest=" + earliest + ", latest=" + latest + ", subdivision matches=" + matchCount;
+							}
+							else if(matchCount == 0)
+							{
+								skippedCount = skippedCount + 1;
+								info "No subdivision for Project Code: " + projectCode;
+							}
+							else
+							{
+								selectedByCode.put(projectCode,selectedDate);
+							}
+						}
+						operationStage = "writing subdivision dates";
+						info "Final Acceptance sync v2: " + operationStage + ", selected codes=" + selectedByCode.size();
+						for each  subdiv in subdivisions
+						{
+							auditProcessed = auditProcessed + 1;
+							auditRowChanged = false;
+							currentProjectCode = ifnull(subdiv.Subdivision_Code,"").toString();
+							selectedDate = selectedByCode.get(currentProjectCode);
+							if(selectedDate != null)
+							{
+								if(subdiv.Final_Acceptance_Due_Date == selectedDate)
+								{
+									unchangedCount = unchangedCount + 1;
+								}
+								else
+								{
+									info "Final Acceptance Due Date: " + currentProjectCode + ", " + subdiv.Final_Acceptance_Due_Date + " -> " + selectedDate;
+									if(!dryRun)
+									{
+										auditWriteAttempted = true;
+										subdiv.Final_Acceptance_Due_Date=selectedDate;
+										auditDestination = subdiv.ID.toString();
+										if(!auditUpdatedIds.contains(auditDestination))
+										{
+											auditUpdatedIds.add(auditDestination);
+											auditUpdated = auditUpdated + 1;
+										}
+										auditRowChanged = true;
+									}
+									updatedCount = updatedCount + 1;
+								}
+							}
+							if(!auditRowChanged)
+							{
+								auditSkipped = auditSkipped + 1;
+							}
+						}
+					}
+					operationStage = "complete";
+					info "Final Acceptance sync: dryRun=" + dryRun + ", changed/planned=" + updatedCount + ", unchanged=" + unchangedCount + ", review=" + reviewCount + ", skipped=" + skippedCount;
+				}
+			}			catch (syncError)
+			{
+				info "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; changed/planned so far=" + updatedCount + "; " + syncError.toString();
+				throw "Final Acceptance sync failed; stage=" + operationStage + "; project code=" + currentProjectCode + "; " + syncError.toString();
+			}
+			// Construction dates are independent of the acceptance task/date candidates.
+			// Read the established Analytics query columns, retaining their exact SQL rules.
+			operationStage = "exporting construction schedule dates";
+			scheduleDefinitions = List();
+			scheduleDefinitions.add({"view":"2107789000014058199","columns":{"Projects (Zoho Projects).Project ID","Projects (Zoho Projects).Project Code","Const Plans Release","Const Start","Rough Start Date"},"fields":{"CP_Release_Goal":"Const Plans Release","Construction_Start_Goal":"Const Start","Construction_Start_Estimate":"Rough Start Date"}});
+			scheduleDefinitions.add({"view":"2107789000014196812","columns":{"Projects (Zoho Projects).Project ID","Projects (Zoho Projects).Project Code","CP Rel Est (EST. Comp Date)"},"fields":{"CP_Release_Estimate":"CP Rel Est (EST. Comp Date)"}});
+			scheduleValues = Map();
+			scheduleSeen = Map();
+			scheduleReviewKeys = Map();
+			scheduleCandidates = Map();
+			scheduleDateCache = Map();
+			for each  scheduleDefinition in scheduleDefinitions
+			{
+				scheduleFields = scheduleDefinition.get("fields");
+				scheduleFieldLinks = scheduleFields.keys();
+				scheduleColumns = scheduleDefinition.get("columns");
+				scheduleConfig = {"selectedColumns":scheduleColumns};
+				// Reuse the cached query exports; scope locally after native deduplication.
+				// A scoped query may legitimately have no rows; absence never clears a field.
+				scheduleRows = thisapp.workflowPreparedExportRows(scheduleDefinition.get("view"),scheduleConfig,auditId,true);
+				auditReceived = auditReceived + scheduleRows.size();
+				// Native verified: T's 30,131 selected rows reduce to 262 distinct maps.
+				// Flat-map equality preserves IDs/codes/dates and distinguishes null from absence.
+				scheduleRows = scheduleRows.distinct();
+				scheduleSeenRows = Map();
+				for each  scheduleRow in scheduleRows
+				{
+					scheduleCode = ifnull(scheduleRow.get("Projects (Zoho Projects).Project Code"),"").toString().trim();
+					if(!syncScopeCodes.contains(scheduleCode))
+					{
+						continue;
+					}
+					// Skip repeated identical joined rows before identity and date processing.
+					scheduleRowFingerprint = scheduleRow.toString();
+					if(scheduleSeenRows.get(scheduleRowFingerprint) == true)
+					{
+						continue;
+					}
+					scheduleSeenRows.put(scheduleRowFingerprint,true);
+					scheduleProjectId = ifnull(scheduleRow.get("Projects (Zoho Projects).Project ID"),"").toString().trim();
+					auditRecordKey = scheduleCode;
+					if(scheduleProjectId == "" || codeByProject.get(scheduleProjectId) != scheduleCode || ambiguousCodes.contains(scheduleCode))
+					{
+						reviewCount = reviewCount + 1;
+						for each  scheduleField in scheduleFieldLinks
+						{
+							scheduleReviewKeys.put(scheduleCode + "|" + scheduleField,true);
+							if(codeByProject.get(scheduleProjectId) != null)
+							{
+								scheduleReviewKeys.put(codeByProject.get(scheduleProjectId) + "|" + scheduleField,true);
+							}
+						}
+						info "Review construction query mapping: view=" + scheduleDefinition.get("view") + ", project=" + scheduleProjectId + ", code=" + scheduleCode;
+						continue;
+					}
+					scheduleRowKeys = scheduleRow.keys();
+					if(scheduleRowKeys.intersect(scheduleColumns).size() != scheduleColumns.size())
+					{
+						throw "Construction schedule export is missing selected columns; view=" + scheduleDefinition.get("view");
+					}
+					scheduleCandidates.put(scheduleCode,true);
+					for each  scheduleField in scheduleFieldLinks
+					{
+						// One native initialization instead of five per-field assignments.
+						scheduleState = {"key":scheduleCode + "|" + scheduleField,"column":scheduleFields.get(scheduleField),"text":ifnull(scheduleRow.get(scheduleFields.get(scheduleField)),"").toString().trim(),"date":null,"valid":true};
+						if(scheduleState.get("text") != "")
+						{
+							if(scheduleDateCache.get(scheduleState.get("text")) != null)
+							{
+								scheduleState.put("date",scheduleDateCache.get(scheduleState.get("text")));
+							}
+							else
+							{
+								try 
+								{
+									scheduleState.put("format",if(scheduleState.get("text").matches("[0-9]{2} [A-Za-z]{3}, [0-9]{4}.*"),"dd MMM, yyyy",if(scheduleState.get("text").matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*"),"yyyy-MM-dd",if(scheduleState.get("text").matches("[0-9]{2}-[0-9]{2}-[0-9]{4}.*"),"MM-dd-yyyy",if(scheduleState.get("text").matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*"),"MM/dd/yyyy","")))));
+									if(scheduleState.get("format") != "")
+									{
+										scheduleState.put("date",scheduleState.get("text").left(if(scheduleState.get("format") == "dd MMM, yyyy",12,10)).toDate(scheduleState.get("format")));
+									}
+									if(scheduleState.get("date") == null)
+									{
+										scheduleState.put("valid",false);
+									}
+									else
+									{
+										scheduleDateCache.put(scheduleState.get("text"),scheduleState.get("date"));
+									}
+								}								catch (scheduleDateError)
+								{
+									scheduleState.put("valid",false);
+								}
+							}
+						}
+						if(!scheduleState.get("valid"))
+						{
+							scheduleReviewKeys.put(scheduleState.get("key"),true);
+							info "Review construction date: " + scheduleCode + ", " + scheduleState.get("column") + "=" + scheduleState.get("text");
+						}
+						else if(scheduleSeen.get(scheduleState.get("key")) == true && scheduleValues.get(scheduleState.get("key")) != scheduleState.get("date"))
+						{
+							scheduleReviewKeys.put(scheduleState.get("key"),true);
+							info "Review conflicting construction dates: " + scheduleState.get("key");
+						}
+						else
+						{
+							scheduleSeen.put(scheduleState.get("key"),true);
+							scheduleValues.put(scheduleState.get("key"),scheduleState.get("date"));
+						}
+					}
+				}
+			}
+			operationStage = "writing construction schedule dates";
+			scheduleCandidateCodes = scheduleCandidates.keys();
+			if(scheduleCandidateCodes.size() > 0)
+			{
+				scheduleSubdivisions = Subdivision[Subdivision_Code in scheduleCandidateCodes];
+				scheduleSubdivisionCounts = Map();
+				for each  scheduleSubdivision in scheduleSubdivisions
+				{
+					scheduleCode = ifnull(scheduleSubdivision.Subdivision_Code,"").toString();
+					scheduleSubdivisionCounts.put(scheduleCode,ifnull(scheduleSubdivisionCounts.get(scheduleCode),0) + 1);
+				}
+				for each  scheduleCode in scheduleCandidateCodes
+				{
+					if(ifnull(scheduleSubdivisionCounts.get(scheduleCode),0) == 0)
+					{
+						auditMissingMapping = auditMissingMapping + 1;
+						info "No subdivision for construction Project Code: " + scheduleCode;
+					}
+				}
+				for each  scheduleSubdivision in scheduleSubdivisions
+				{
+					auditProcessed = auditProcessed + 1;
+					scheduleCode = ifnull(scheduleSubdivision.Subdivision_Code,"").toString();
+					currentProjectCode = scheduleCode;
+					auditRecordKey = scheduleCode;
+					if(ifnull(scheduleSubdivisionCounts.get(scheduleCode),0) != 1 || ambiguousCodes.contains(scheduleCode))
+					{
+						reviewCount = reviewCount + 1;
+						auditSkipped = auditSkipped + 1;
+						info "Review construction subdivision mapping: " + scheduleCode;
+						continue;
+					}
+					// Direct guards replace the per-field loop, switch and repeated write flags.
+					// Missing source rows preserve dates; seen nulls remain eligible to clear.
+					scheduleWrite = {"cpGoal":scheduleSeen.get(scheduleCode + "|CP_Release_Goal") == true && scheduleReviewKeys.get(scheduleCode + "|CP_Release_Goal") != true,"cpEstimate":scheduleSeen.get(scheduleCode + "|CP_Release_Estimate") == true && scheduleReviewKeys.get(scheduleCode + "|CP_Release_Estimate") != true,"startGoal":scheduleSeen.get(scheduleCode + "|Construction_Start_Goal") == true && scheduleReviewKeys.get(scheduleCode + "|Construction_Start_Goal") != true,"startEstimate":scheduleSeen.get(scheduleCode + "|Construction_Start_Estimate") == true && scheduleReviewKeys.get(scheduleCode + "|Construction_Start_Estimate") != true};
+					if(!dryRun && scheduleWrite.get("cpGoal") || scheduleWrite.get("cpEstimate") || scheduleWrite.get("startGoal") || scheduleWrite.get("startEstimate"))
+					{
+						auditWriteAttempted = true;
+						// Creator counts one update-multiple-fields task as one statement.
+						update scheduleSubdivision
+						[
+							CP_Release_Goal=if(scheduleWrite.get("cpGoal"),scheduleValues.get(scheduleCode + "|CP_Release_Goal"),scheduleSubdivision.CP_Release_Goal)
+							CP_Release_Estimate=if(scheduleWrite.get("cpEstimate"),scheduleValues.get(scheduleCode + "|CP_Release_Estimate"),scheduleSubdivision.CP_Release_Estimate)
+							Construction_Start_Goal=if(scheduleWrite.get("startGoal"),scheduleValues.get(scheduleCode + "|Construction_Start_Goal"),scheduleSubdivision.Construction_Start_Goal)
+							Construction_Start_Estimate=if(scheduleWrite.get("startEstimate"),scheduleValues.get(scheduleCode + "|Construction_Start_Estimate"),scheduleSubdivision.Construction_Start_Estimate)
+						];
+						auditRowChanged = true;
+						auditDestination = scheduleSubdivision.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+					}
+					else
+					{
+						auditSkipped = auditSkipped + 1;
+					}
+				}
+			}
+			reviewCount = reviewCount + scheduleReviewKeys.size();
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			auditFinalMessage = "Completed; exclusions and unchanged rows remain skipped.";
+			if(reviewCount > 0)
+			{
+				auditFinalStatus = "Partial";
+				auditCounts.put("failed",reviewCount);
+				auditFinalMessage = "Schedule dates updated; " + reviewCount + " mapping/date conflicts preserved for review.";
+			}
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":auditFinalMessage,"details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else if(runKey == "Update_Projects_Start_End")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			//THIS CODE UPDATES ZOHO PROJECTS PROJECT START DATE/END DATE BASED ON EARLIEST MILESTONE START DATE AND LATEST MILESTONE END DATE
+			//IT USES A QUERY TABLE IN ANALYTICS TO CHECK FOR PROJECTS WHERE THE AFOREMENTIONED DATES ARE NOT IN SYNC AND UPDATES ANYTHING IN THAT QUERY
+			// https://analytics.zoho.com/workspace/2107789000000003001/view/2107789000020982002
+			// === 1) Analytics & Projects identifiers ===
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000020982002";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("Project ID");
+			cols.add("MS Earliest Start Date");
+			cols.add("MS Latest End Date");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,true);
+			auditReceived = rows.size();
+			// === 8) Loop through every analytics row and update each project ===
+			for each  rec in rows
+			{
+				auditProcessed = auditProcessed + 1;
+				auditRowChanged = false;
+				projId = rec.get("Project ID").toString();
+				startDate = rec.get("MS Earliest Start Date");
+				endDate = rec.get("MS Latest End Date");
+				// Build update payload
+				updateParams = Map();
+				updateParams.put("start_date",startDate);
+				updateParams.put("end_date",endDate);
+				// Call Zoho Projects API to update this project
+				auditWriteAttempted = true;
+				respUpdateHttp = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + projId
+					type :PATCH
+					parameters:updateParams.toString()
+					headers:headers
+					detailed:true
+					connection:"projects_view_only"
+				];
+				if(respUpdateHttp.get("responseCode") < 200 || respUpdateHttp.get("responseCode") >= 300)
+				{
+					throw "Zoho Projects HTTP " + respUpdateHttp.get("responseCode");
+				}
+				respUpdate = respUpdateHttp.get("responseText");
+				responseText = respUpdate.toString();
+				if(responseText.length() == 0)
+				{
+					throw "Zoho Projects returned an empty acknowledgement; verify the destination before retrying.";
+				}
+				if(responseText.left(1) == "{")
+				{
+					respUpdate = responseText.toMap();
+					apiFailureStatuses = {"error","failed","failure"};
+					if(respUpdate.get("error") != null || respUpdate.get("errors") != null || apiFailureStatuses.contains(ifnull(respUpdate.get("status"),"").toString().toLowerCase()))
+					{
+						throw "Zoho Projects returned an API error.";
+					}
+				}
+				else if(responseText.left(1) != "[")
+				{
+					throw "Zoho Projects returned a non-JSON response.";
+				}
+				auditUpdated = auditUpdated + 1;
+				auditRowChanged = true;
+				// Log the result
+				info "Updated project " + projId + ": " + respUpdate.toString();
+				if(!auditRowChanged)
+				{
+					auditSkipped = auditSkipped + 1;
+				}
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else if(runKey == "Budgets_Check_HCSS_Budget1")
+	{
+		// Settings.Next_Workflow_Run schedule. Stable bucket: native Subdivision.ID % 5.
+		// Preview changes neither business records, workflow logs, nor Settings.
+		dryRun = false;
+		previewBatch = 0;
+		auditId = queuedAuditId;
+		auditReceived = 0;
+		checkedCount = 0;
+		refreshedCount = 0;
+		zeroedCount = 0;
+		unchangedCount = 0;
+		duplicateCount = 0;
+		auditWriteAttempted = false;
+		batch = 0;
+		try 
+		{
+			settings = Settings[ID != 0];
+			if(settings.count() != 1)
+			{
+				throw "Expected exactly one Settings record. No cleanup started.";
+			}
+			capturedCursor = state.get("batch");
+			if(capturedCursor != null && capturedCursor >= 0 && capturedCursor <= 4)
+			{
+				batch = capturedCursor;
+			}
+			if(dryRun)
+			{
+				batch = previewBatch;
+			}
+			if(batch < 0 || batch > 4)
+			{
+				throw "Batch must be 0 through 4.";
+			}
+			if(!dryRun)
+			{
+				// Continue the original run and captured batch.
+				thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Selecting batch " + batch,"details":"Five stable subdivision buckets; batch captured at startup. Next Workflow Run/Next Batch owns the cursor."});
+			}
+			// Fetch each native collection once; do not query mappings per Analytics row.
+			budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
+			batchCodes = List();
+			codeCounts = Map();
+			for each  subdivision in Subdivision[Subdivision_Code in budgetCodes]
+			{
+				code = ifnull(subdivision.Subdivision_Code,"").toString();
+				if(code != "")
+				{
+					codeCounts.put(code,ifnull(codeCounts.get(code),0) + 1);
+					if(subdivision.ID % 5 == batch)
+					{
+						batchCodes.add(code);
+					}
+				}
+			}
+			jobCounts = Map();
+			jobCodes = Map();
+			selectedJobs = List();
+			for each  mapping in External_System_Mapping[External_System == "HeavyJob"]
+			{
+				job = ifnull(mapping.External_Code,"").toString();
+				if(job != "")
+				{
+					jobCounts.put(job,ifnull(jobCounts.get(job),0) + 1);
+					mappedCode = "";
+					if(mapping.Subdivision1 != null)
+					{
+						mappedCode = ifnull(mapping.Subdivision1.Subdivision_Code,"").toString();
+					}
+					jobCodes.put(job,mappedCode);
+					if(batchCodes.contains(mappedCode))
+					{
+						selectedJobs.add(job);
+					}
+				}
+			}
+			selectedJobs = selectedJobs.distinct();
+			selectedJobs = selectedJobs.sort(true);
+			eligibleCodes = List();
+			jobSql = "";
+			for each  job in selectedJobs
+			{
+				mappedCode = ifnull(jobCodes.get(job),"").toString();
+				if(jobCounts.get(job) != 1 || mappedCode == "" || codeCounts.get(mappedCode) != 1)
+				{
+					throw "Duplicate or broken HeavyJob/subdivision mapping; job=" + job + "; batch=" + batch + ". No cleanup writes started.";
+				}
+				eligibleCodes.add(mappedCode);
+				if(jobSql != "")
+				{
+					jobSql = jobSql + ",";
+				}
+				jobSql = jobSql + "'" + job.replaceAll("'","''",true) + "'";
+			}
+			eligibleCodes = eligibleCodes.distinct();
+			activeIds = Map();
+			activeCodes = Map();
+			duplicateCodes = Map();
+			rows = List();
+			if(selectedJobs.size() > 0)
+			{
+				config = Map();
+				config.put("selectedColumns",{"H.zzz_CostCodeID_Guid","H.JobCode","H.Minor Code"});
+				config.put("criteria","(\"HeavyJob Budget Costs joined w/ Subdivs\".\"H.JobCode\" IN (" + jobSql + "))");
+				// A filtered bucket may legitimately be empty. It is a protected no-op,
+				// never permission to zero costs; HTTP/schema/export failures still throw.
+				rows = thisapp.workflowPreparedExportRows("2107789000023687048",config,auditId,true);
+				auditReceived = rows.size();
+				// Validate every source identity before the first destination write.
+				for each  rec in rows
+				{
+					guid = ifnull(rec.get("H.zzz_CostCodeID_Guid"),"").toString();
+					job = ifnull(rec.get("H.JobCode"),"").toString();
+					minor = ifnull(rec.get("H.Minor Code"),"").toString();
+					if(guid == "" || job == "" || minor == "")
+					{
+						throw "Incomplete source identity. No cleanup writes started.";
+					}
+					if(!selectedJobs.contains(job))
+					{
+						throw "Analytics returned a job outside the requested batch. No cleanup writes started.";
+					}
+					stableCode = jobCodes.get(job) + "-B-" + minor;
+					previousGuid = activeCodes.get(stableCode);
+					if(previousGuid != null && previousGuid != guid)
+					{
+						duplicateCodes.put(stableCode,true);
+					}
+					activeCodes.put(stableCode,guid);
+					activeIds.put(guid,true);
+				}
+			}
+			// The timer may advance the shared cursor during this run. Keep using the
+			// captured batch and never overwrite the timer's newer value.
+			// Empty/no-eligible source protects all costs. No unmapped subdivision is queried.
+			if(activeCodes.size() > 0)
+			{
+				for each  existingItem in Budget_Import_Item[Data_Source == "HeavyJob Budget" && Cost != 0 && Subdivision_Code in eligibleCodes]
+				{
+					checkedCount = checkedCount + 1;
+					existingId = ifnull(existingItem.Cost_Code_ID,"").toString();
+					existingCode = ifnull(existingItem.Code,"").toString();
+					if(activeIds.get(existingId) != null)
+					{
+						unchangedCount = unchangedCount + 1;
+					}
+					else if(activeCodes.get(existingCode) != null)
+					{
+						if(duplicateCodes.get(existingCode) != null)
+						{
+							duplicateCount = duplicateCount + 1;
+						}
+						else
+						{
+							newCostCodeId = activeCodes.get(existingCode);
+							if(!dryRun)
+							{
+								auditWriteAttempted = true;
+								existingItem.Cost_Code_ID=newCostCodeId;
+							}
+							refreshedCount = refreshedCount + 1;
+						}
+					}
+					else
+					{
+						if(!dryRun)
+						{
+							auditWriteAttempted = true;
+							existingItem.Cost=0;
+						}
+						zeroedCount = zeroedCount + 1;
+					}
+				}
+			}
+			summary = "batch=" + batch + "; buckets=5; subdivisions=" + batchCodes.distinct().size() + "; mapped subdivisions=" + eligibleCodes.size() + "; jobs=" + selectedJobs.size() + "; source rows=" + auditReceived + "; checked=" + checkedCount + "; refreshed IDs=" + refreshedCount + "; zeroed costs=" + zeroedCount + "; unchanged=" + unchangedCount + "; duplicate protections=" + duplicateCount;
+			info summary;
+			if(!dryRun)
+			{
+				finalStatus = "Success";
+				if(activeCodes.size() == 0)
+				{
+					finalStatus = "Skipped";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":finalStatus,"stage":"Completed batch " + batch,"message":summary,"counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"skipped":unchangedCount + duplicateCount,"failed":0}});
+			}
+		}		catch (batchError)
+		{
+			if(!dryRun && auditId != "")
+			{
+				failureStatus = "Failed";
+				if(auditWriteAttempted)
+				{
+					failureStatus = "Partial";
+				}
+				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"message":batchError.toString(),"details":"Batch=" + batch + "; cursor controlled by Next Workflow Run/Next Batch. Check any completed writes before retrying.","counts":{"received":auditReceived,"processed":checkedCount,"updated":refreshedCount + zeroedCount,"failed":1}});
+			}
+			throw batchError;
+		}
+	}
+	else if(runKey == "Budgets_Import_Load_GP_Co")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Builds a list of Subdivision codes that have Budgets.
+			// - For each exported row whose JobCode is in that list:
+			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Ensure TotalActualCost is numeric (normalize if needed).
+			// - Requires valid Analytics connection (zoho_analytics_connection).
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000031077002";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("WS_Job_Number_Trim");
+			cols.add("Cost_Code_Number_1");
+			cols.add("Cost_Code_Number_2");
+			cols.add("Cost_Code_Description");
+			cols.add("Total_Actuals");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+			// === 8) Loop through every analytics row and update each project ===
+			//get all Subdiv codes that have a Budget
+			budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+			for each  rec in rows
+			{
+				auditProcessed = auditProcessed + 1;
+				auditRowChanged = false;
+				auditRecordKey = ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "-GP-" + ifnull(rec.get("Cost_Code_Number_2"),"").toString();
+				subdivCode = External_System_Mapping[External_Code == rec.get("WS_Job_Number_Trim") && External_System == "Great Plains"];
+				if(subdivCode.count() == 0)
+				{
+					auditMissingMapping = auditMissingMapping + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null)
+				{
+					throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + ifnull(rec.get("WS_Job_Number_Trim"),"").toString() + "; matching Great Plains mappings=" + subdivCode.count();
+				}
+				//check if Budget exists for subdiv attached to matching External Code
+				if(!budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+				{
+					auditNoBudget = auditNoBudget + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+				{
+					// Row payloads are omitted from execution logs.
+					jobCode = ifnull(rec.get("WS_Job_Number_Trim"),"").toString().trim();
+					if(ifnull(rec.get("Cost_Code_Number_2"),"").toString().trim() == "" || rec.get("Total_Actuals") == null || rec.get("Total_Actuals").toString().trim() == "")
+					{
+						throw "Eligible Analytics row has no cost code or cost; job=" + rec.get("WS_Job_Number_Trim");
+					}
+					validatedCost = rec.get("Total_Actuals").toDecimal();
+					codeBuild = rec.get("WS_Job_Number_Trim") + "-GP-" + rec.get("Cost_Code_Number_2");
+					if(auditSourceKeys.get(codeBuild) != null)
+					{
+						throw "Duplicate Analytics source key: " + codeBuild;
+					}
+					auditSourceKeys.put(codeBuild,true);
+					auditRecordKey = codeBuild;
+					budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+					if(budgimpItem.count() > 1)
+					{
+						throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+					}
+					if(budgimpItem.count() == 1)
+					{
+						auditWriteAttempted = true;
+						budgimpItem.Cost=rec.get("Total_Actuals");
+						auditWriteAttempted = true;
+						budgimpItem.Updated_Date=zoho.currentdate;
+						auditWriteAttempted = true;
+						budgimpItem.Data_Source="Great Plains";
+						auditDestination = budgimpItem.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+						auditRowChanged = true;
+					}
+					if(budgimpItem.count() == 0)
+					{
+						impItem = insert into Budget_Import_Item
+						[
+							Data_Source="Great Plains"
+							Cost=rec.get("Total_Actuals")
+							Cost_Code_Description=rec.get("Cost_Code_Description")
+							Code=codeBuild
+							Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+							Major_Code=rec.get("Cost_Code_Number_1")
+							Minor_Code=rec.get("Cost_Code_Number_2")
+							Added_User=zoho.loginuser
+							Cost_Code_ID=codeBuild
+						];
+						auditCreated = auditCreated + 1;
+						auditRowChanged = true;
+					}
+				}
+				if(!auditRowChanged)
+				{
+					auditSkipped = auditSkipped + 1;
+				}
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else if(runKey == "Budgets_Import_Load_HCSS_1")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Builds a list of Subdivision codes that have Budgets.
+			// - For each exported row whose JobCode is in that list:
+			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Ensure TotalActualCost is numeric (normalize if needed).
+			// - Requires valid Analytics connection (zoho_analytics_connection).
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000023687048";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("H.zzz_CostCodeID_Guid");
+			cols.add("H.Major Code");
+			cols.add("H.Minor Code");
+			cols.add("H.Total Budget Decimal");
+			cols.add("J.JobCodeFinal");
+			cols.add("H.JobCode");
+			cols.add("H.CostCodeDescription");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+			// === 8) Loop through every analytics row and update each project ===
+			//get all Subdiv codes that have a Budget
+			budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+			for each  rec in rows
+			{
+				auditProcessed = auditProcessed + 1;
+				auditRowChanged = false;
+				hcssCostMapping = External_System_Mapping[External_Code = rec.get("H.JobCode") && External_System == "HeavyJob"];
+				if(hcssCostMapping.count() == 0)
+				{
+					auditMissingMapping = auditMissingMapping + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(hcssCostMapping.count() != 1 || hcssCostMapping.Subdivision1 == null)
+				{
+					throw "Duplicate or broken external mapping; source row=" + auditProcessed;
+				}
+				if(!budgCodes.contains(hcssCostMapping.Subdivision1.Subdivision_Code))
+				{
+					auditNoBudget = auditNoBudget + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(budgCodes.contains(hcssCostMapping.Subdivision1.Subdivision_Code))
+				{
+					if(rec.get("H.Total Budget Decimal") == null || rec.get("H.Total Budget Decimal").toString().trim() == "")
+					{
+						throw "Eligible Analytics row has no cost; source row=" + auditProcessed;
+					}
+					validatedCost = rec.get("H.Total Budget Decimal").toDecimal();
+					codeBuild = rec.get("H.JobCode") + "-B-" + rec.get("H.Minor Code");
+					if(auditSourceKeys.get(codeBuild) != null)
+					{
+						throw "Duplicate Analytics source key: " + codeBuild;
+					}
+					auditSourceKeys.put(codeBuild,true);
+					auditRecordKey = codeBuild;
+					budgimpItem = Budget_Import_Item[Code = codeBuild && Data_Source == "HeavyJob Budget"];
+					if(budgimpItem.count() > 1)
+					{
+						throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+					}
+					if(budgimpItem.count() == 1)
+					{
+						auditWriteAttempted = true;
+						budgimpItem.Cost=rec.get("H.Total Budget Decimal").toLong();
+						auditWriteAttempted = true;
+						budgimpItem.Updated_Date=zoho.currentdate;
+						auditWriteAttempted = true;
+						budgimpItem.Data_Source="HeavyJob Budget";
+						auditDestination = budgimpItem.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+						auditRowChanged = true;
+					}
+					if(budgimpItem.count() == 0)
+					{
+						impItem = insert into Budget_Import_Item
+						[
+							Data_Source="HeavyJob Budget"
+							Cost=rec.get("H.Total Budget Decimal").toLong()
+							Cost_Code_Description=rec.get("H.CostCodeDescription")
+							Code=codeBuild
+							Subdivision_Code=hcssCostMapping.Subdivision1.Subdivision_Code
+							Major_Code=rec.get("H.Major Code")
+							Minor_Code=rec.get("H.Minor Code")
+							Added_User=zoho.loginuser
+							Cost_Code_ID=rec.get("H.zzz_CostCodeID_Guid")
+							Updated_Date=zoho.currentdate
+						];
+						auditCreated = auditCreated + 1;
+						auditRowChanged = true;
+						//CREATE MILESTONE IN CREATOR
+					}
+				}
+				if(!auditRowChanged)
+				{
+					auditSkipped = auditSkipped + 1;
+				}
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else if(runKey == "Budgets_Import_Load_HCSS_")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Builds a list of Subdivision codes that have Budgets.
+			// - For each exported row whose JobCode is in that list:
+			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Ensure TotalActualCost is numeric (normalize if needed).
+			// - Requires valid Analytics connection (zoho_analytics_connection).
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000023717814";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("Major Code");
+			cols.add("H.Minor Code");
+			cols.add("TotalActualCost");
+			cols.add("J.JobCodeFinal");
+			cols.add("H.JobCode");
+			cols.add("CostCodeDescription");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+			// === 8) Loop through every analytics row and update each project ===
+			extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+			for each  rec in rows
+			{
+				auditProcessed = auditProcessed + 1;
+				auditRowChanged = false;
+				//get hcssActualMapping code
+				hcssActualMapping = External_System_Mapping[External_Code == rec.get("H.JobCode") && External_System == "HeavyJob"];
+				if(hcssActualMapping.count() == 0)
+				{
+					auditMissingMapping = auditMissingMapping + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(hcssActualMapping.count() != 1 || hcssActualMapping.Subdivision1 == null)
+				{
+					throw "Duplicate or broken external mapping; source row=" + auditProcessed;
+				}
+				budgCheck = Add_Budget[Subdivision_Code == hcssActualMapping.Subdivision1.Subdivision_Code];
+				if(budgCheck.count() == 0)
+				{
+					auditNoBudget = auditNoBudget + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				//make item if budget exists
+				if(budgCheck.count() > 0)
+				{
+					if(rec.get("TotalActualCost") == null || rec.get("TotalActualCost").toString().trim() == "")
+					{
+						throw "Eligible Analytics row has no cost; source row=" + auditProcessed;
+					}
+					validatedCost = rec.get("TotalActualCost").toDecimal();
+					codeBuild = rec.get("H.JobCode") + "-HJ-" + rec.get("H.Minor Code");
+					if(auditSourceKeys.get(codeBuild) != null)
+					{
+						throw "Duplicate Analytics source key: " + codeBuild;
+					}
+					auditSourceKeys.put(codeBuild,true);
+					auditRecordKey = codeBuild;
+					budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "HeavyJob"];
+					if(budgimpItem.count() > 1)
+					{
+						throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+					}
+					if(budgimpItem.count() == 1 && budgimpItem.Cost != rec.get("TotalActualCost"))
+					{
+						auditWriteAttempted = true;
+						budgimpItem.Cost=rec.get("TotalActualCost");
+						auditWriteAttempted = true;
+						budgimpItem.Updated_Date=zoho.currentdate;
+						auditWriteAttempted = true;
+						budgimpItem.Data_Source="HeavyJob";
+						auditDestination = budgimpItem.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+						auditRowChanged = true;
+					}
+					if(budgimpItem.count() == 0)
+					{
+						impItem = insert into Budget_Import_Item
+						[
+							Data_Source="HeavyJob"
+							Cost=rec.get("TotalActualCost")
+							Cost_Code_Description=rec.get("CostCodeDescription")
+							Code=codeBuild
+							Subdivision_Code=hcssActualMapping.Subdivision1.Subdivision_Code
+							Major_Code=rec.get("Major Code")
+							Minor_Code=rec.get("H.Minor Code")
+							Added_User=zoho.loginuser
+							Updated_Date=zoho.currentdate
+						];
+						auditCreated = auditCreated + 1;
+						auditRowChanged = true;
+						//CREATE MILESTONE IN CREATOR
+					}
+				}
+				if(!auditRowChanged)
+				{
+					auditSkipped = auditSkipped + 1;
+				}
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else if(runKey == "Budgets_Import_Load_CTC_C")
+	{
+		auditReceived = 0;
+		auditProcessed = 0;
+		auditCreated = 0;
+		auditUpdated = 0;
+		auditUpdatedIds = List();
+		auditSkipped = 0;
+		auditMissingMapping = 0;
+		auditNoBudget = 0;
+		auditNoEligible = false;
+		auditWriteAttempted = false;
+		auditRowChanged = false;
+		auditSourceKeys = Map();
+		auditRecordKey = "";
+		try 
+		{
+			// ================================================
+			// Script: Analytics → Budget_Import_Item Upsert
+			// What it does:
+			// - Exports selected columns from a Zoho Analytics view.
+			// - Builds a list of Subdivision codes that have Budgets.
+			// - For each exported row whose JobCode is in that list:
+			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+			//     • Else insert a new Budget_Import_Item with mapped fields.
+			// Notes:
+			// - Ensure TotalActualCost is numeric (normalize if needed).
+			// - Requires valid Analytics connection (zoho_analytics_connection).
+			// ================================================
+			portalId = "700737166";
+			orgId = "700732567";
+			workspaceId = "2107789000000003001";
+			viewId = "2107789000029519084";
+			// === 2) Analytics request setup ===
+			headers = Map();
+			headers.put("ZANALYTICS-ORGID",orgId);
+			config = Map();
+			config.put("responseFormat","json");
+			cols = List();
+			cols.add("H.Major Code");
+			cols.add("H.Minor Code");
+			cols.add("H.Percent Complete Display");
+			cols.add("H.JobCode");
+			cols.add("Projected Total");
+			config.put("selectedColumns",cols);
+			// === 3) Kick off the async export job ===
+			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+			auditReceived = rows.size();
+			// === 8) Loop through every analytics row and update each project ===
+			extCodes = External_System_Mapping[ID != 0].Subdivision1.getAll();
+			for each  rec in rows
+			{
+				auditProcessed = auditProcessed + 1;
+				auditRowChanged = false;
+				//get hcssCtcMapping code
+				hcssCtcMapping = External_System_Mapping[External_Code == rec.get("H.JobCode") && External_System == "HeavyJob"];
+				if(hcssCtcMapping.count() == 0)
+				{
+					auditMissingMapping = auditMissingMapping + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				if(hcssCtcMapping.count() != 1 || hcssCtcMapping.Subdivision1 == null)
+				{
+					throw "Duplicate or broken external mapping; source row=" + auditProcessed;
+				}
+				budgCheck = Add_Budget[Subdivision_Code == hcssCtcMapping.Subdivision1.Subdivision_Code];
+				if(budgCheck.count() == 0)
+				{
+					auditNoBudget = auditNoBudget + 1;
+					auditSkipped = auditSkipped + 1;
+					continue;
+				}
+				//make item if budget exists
+				if(budgCheck.count() > 0)
+				{
+					info hcssCtcMapping.Subdivision1.Subdivision_Name;
+					budgimpItem = Budget_Import_Item[Code = hcssCtcMapping.Subdivision1.Subdivision_Code + '-' + rec.get("H.Minor Code") && Data_Source == "HeavyJob"];
+					if(budgimpItem.count() > 1)
+					{
+						throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+					}
+					if(budgimpItem.count() == 1 && budgimpItem.Cost_to_Complete != rec.get("Projected Total"))
+					{
+						// Row payloads are omitted from execution logs.
+						auditWriteAttempted = true;
+						budgimpItem.Percent_Complete=rec.get("H.Percent Complete Display");
+						auditWriteAttempted = true;
+						budgimpItem.Cost_to_Complete=rec.get("Projected Total");
+						auditWriteAttempted = true;
+						budgimpItem.Updated_Date=zoho.currentdate;
+						auditDestination = budgimpItem.ID.toString();
+						if(!auditUpdatedIds.contains(auditDestination))
+						{
+							auditUpdatedIds.add(auditDestination);
+							auditUpdated = auditUpdated + 1;
+						}
+						auditRowChanged = true;
+					}
+				}
+				if(!auditRowChanged)
+				{
+					auditSkipped = auditSkipped + 1;
+				}
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+			auditFinalStatus = "Success";
+			if(auditNoEligible)
+			{
+				auditFinalStatus = "Skipped";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+		}		catch (auditError)
+		{
+			auditStatus = "Failed";
+			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+			{
+				auditStatus = "Partial";
+			}
+			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+			throw auditError;
+		}
+	}
+	else
+	{
+		throw "Unknown export workflow: " + runKey;
+	}
+	return "Completed";
+}

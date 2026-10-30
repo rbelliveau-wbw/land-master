@@ -12,6 +12,7 @@ list All_Crew_Timecards
 		Job_Name
 		Subdivision1
 		IsDeleted
+		Multi_Line
 		Synced_At
 		ID
 	)

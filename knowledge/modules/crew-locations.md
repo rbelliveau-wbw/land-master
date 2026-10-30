@@ -1,5 +1,19 @@
 # Crew Management
 
+## 1.4.0 — HeavyJob mappings and foreman review groups
+
+Employees now offers **By foreman**, showing recorded employee membership, work
+dates and job codes from the last fourteen calendar dates. It preserves manual
+Territory/Labor_Type/Crew assignments and caller-scoped roster visibility. The
+seven-day location badge window is unchanged. The daily 10:30 America/Chicago
+entry queues separate timecard and labor steps through the existing audit/export
+recovery setup. Source-only compact membership expires after fourteen days;
+parent timecards keep their three-month policy. Exact existing HeavyJob mappings
+are normalized and same-destination duplicates deduplicated; conflicting phases
+remain unmapped. Development has 28 mappings versus Production's 536, which
+explains the earlier Development-only unmapped count.
+See [verification, promotion and rollback](../../docs/crew-foreman-groups-2026-10-30.md).
+
 ## 1.3.2 — employee staffing and foreman locations
 
 The opening Employees workspace lists synced active employees with territory, labor

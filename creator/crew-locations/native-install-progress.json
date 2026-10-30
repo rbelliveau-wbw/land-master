@@ -1019,7 +1019,7 @@
       "restoredEnd": "2027-03-17"
     }
   },
-  "current_release": "1.3.2",
+  "current_release": "1.4.0",
   "current_creator_promotion": "All 35 pending components promoted to Stage and Production 9.132 with explicit user authorization.",
   "repository_release_outcome_1_1_4": {
     "status": "Repository PMP deployed; Production widget verified; Development empty native crew SDK reads passed; user Creator promotion pending",
@@ -1430,5 +1430,55 @@
     "cleanup_rule": "Remove this Stage-only alias if the Stage consumer is retired or no longer uses it; preserve DEV and Production APIs.",
     "regression": "Existing DEV/Production endpoints and widget assets unchanged. OAuth2, Admin only, Stage application, existing handler and payload envelope verified in native UI.",
     "rollback": "Disable the Stage-only alias to stop requests, or delete it if unused. No form, field, function or business-data rollback is required."
+  },
+  "foreman_groups_2026_10_30": {
+    "release": "1.4.0",
+    "status": "development-installed-native-queue-verification-in-progress",
+    "requested_date": "2026-10-30",
+    "native_promotion_authorized": true,
+    "grouping": "Read-only review of recorded employee membership under every recent foreman; no automatic staffing updates",
+    "labor_window": "Today and prior thirteen calendar dates; three identity/deletion columns only",
+    "badge_window": "Today and prior six calendar dates, unchanged",
+    "field": {
+      "form": "Crew_Timecards",
+      "link_name": "Multi_Line",
+      "type": "multiline",
+      "content": "JSON members array of distinct roster BU GUIDs; cleared after fourteen days"
+    },
+    "identity": "Labor zzz_MasterEmployeeID_Guid -> directory zzz_MasterEmployeeID_Guid -> saved Employees.BU_Employee_ID; no name/code inference; ambiguous master identities excluded",
+    "phase_mapping": "Existing subdivision External_System_Mapping HeavyJob rows; trim/case normalization; duplicate rows to same phase accepted; conflicting phases unmapped and logged",
+    "native_mapping_evidence": {
+      "development_total": 28,
+      "production_total": 536,
+      "production_example": "HeavyJob C_TR08 -> Turnbo Ranch - Phase 08"
+    },
+    "schedule": "Daily_Crew_Timecards, 2026-10-30 10:30 America/Chicago; queues header import then Daily_Crew_Labor",
+    "audit_queue": [
+      "workflowExportEnqueue",
+      "workflowExportPlan",
+      "workflowExportTick",
+      "workflowPreparedExportRows",
+      "workflowExportRun",
+      "workflowRunLog"
+    ],
+    "new_functions": [
+      "crewSyncTimecardsRun"
+    ],
+    "modified_functions": [
+      "crewSyncTimecards",
+      "crewLocationsConfig",
+      "crewLocationsWidget",
+      "workflowExportPlan",
+      "workflowExportEnqueue",
+      "workflowExportRun",
+      "workflowExportTick"
+    ],
+    "existing_guard": "Crew_Timecards_Source_Gua still denies interactive source changes",
+    "no_new_api_connection_or_permission": true,
+    "retention": "Main timecards retain three months; older labor membership payloads cleared only after successful complete labor export and validation",
+    "reference": "docs/crew-foreman-groups-2026-10-30.md",
+    "rollback": "Restore 1.3.2 assets and scoped native-before/*.foreman-20261030.* snapshots. Retain field and records; do not delete employee staffing.",
+    "native_compile_verified": true,
+    "native_labor_test_audit_id": "4410926000005607011"
   }
 }

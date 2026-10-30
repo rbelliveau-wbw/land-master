@@ -14,6 +14,7 @@ list All_Crew_Timecards
 		IsDeleted
 		Synced_At
 		ID
+		Multi_Line as "Multi Line"
 	)
 	quickview
 	(
@@ -73,6 +74,10 @@ list All_Crew_Timecards
 		(
 			datablock1
 			(
+				fields
+				(
+					Multi_Line as "Multi Line"
+				)
 			)
 		)
 			menu

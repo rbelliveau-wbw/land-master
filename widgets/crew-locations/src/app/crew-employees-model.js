@@ -31,5 +31,26 @@
     }
     model.phases.forEach(p=>p.crews.sort((a,b)=>a.label.localeCompare(b.label)));
   }
-  root.CrewEmployeesModel=Object.freeze({assignBadges,label,truth,guid});
+  function foremanGroups(employees,timecards,day){
+    const M=root.CrewModel,byBU=new Map(),ambiguous=new Set(),groups=new Map(),seen=new Set();
+    for(const employee of employees){const key=guid(employee.BU_Employee_ID);if(byBU.has(key))ambiguous.add(key);byBU.set(key,employee);}
+    for(const card of timecards){
+      const key=guid(card.Timecard_ID),date=M.date(card.Work_Date),foreman=guid(card.Foreman_ID);
+      if(!key||seen.has(key)||truth(card.IsDeleted)||date==null||date<day-13||date>day||!foreman||ambiguous.has(foreman))continue;
+      seen.add(key);
+      let payload;try{payload=JSON.parse(card.Multi_Line||'{"members":[]}');}catch{throw new Error('Employee membership data needs a successful sync.');}
+      const members=Array.isArray(payload)?payload:payload?.members;
+      if(!Array.isArray(members)||members.some(v=>typeof v!=='string'))throw new Error('Employee membership data is incomplete.');
+      const owner=byBU.get(foreman);if(!owner)continue; // Keep caller-scoped employee visibility.
+      let group=groups.get(foreman);if(!group){group={key:foreman,foreman:owner,members:new Map(),dates:new Set(),jobs:new Set()};groups.set(foreman,group);}
+      group.dates.add(date);if(card.Job_Code)group.jobs.add(String(card.Job_Code));
+      for(const bu of new Set(members.map(guid))){
+        const employee=byBU.get(bu);if(!employee||ambiguous.has(bu)||bu===foreman)continue;
+        let member=group.members.get(bu);if(!member){member={employee,dates:new Set(),jobs:new Set()};group.members.set(bu,member);}
+        member.dates.add(date);if(card.Job_Code)member.jobs.add(String(card.Job_Code));
+      }
+    }
+    return [...groups.values()].sort((a,b)=>String(a.foreman.EmployeeName).localeCompare(String(b.foreman.EmployeeName)));
+  }
+  root.CrewEmployeesModel=Object.freeze({assignBadges,foremanGroups,label,truth,guid});
 })(window);

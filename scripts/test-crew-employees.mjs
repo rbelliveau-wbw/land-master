@@ -23,9 +23,18 @@ function model(cards,staff=employees){const model=M.normalize({subdivisions:[{ID
  const unmapped=model([card('1','FOREMAN-A','2026-10-29','999')]);assert.equal(unmapped.phases[0].crews.length,0);assert.match(unmapped.issues[0],/Unmapped/);
 }
 assert.equal(E.label({name:'Dry 1',code:'dry-one'}),'Dry1');assert.equal(E.label({name:'Finish 4',code:'Finish4'}),'F4');
-for(const [file,source] of [['employee','creator/functions/crewSyncEmployees.dg'],['timecard','creator/functions/crewSyncTimecards.dg']]){
+for(const [file,source] of [['employee','creator/functions/crewSyncEmployees.dg'],['timecard','creator/functions/crewSyncTimecardsRun.dg']]){
  const s=fs.readFileSync(source,'utf8');assert.ok(s.indexOf('normalized.add')<s.indexOf('insert into'));assert.match(s,/thisapp\.analyticsExportRows\(/);assert.match(s,/"counts":\{/);assert.match(s,/return result;\s*}\s*$/);assert.doesNotMatch(s,/containsKey|\bwhile\s*\(/);
  if(file==='employee'){assert.doesNotMatch(s,/delete from Employees|existing\.(Territory|Labor_Type|Crew)\s*=/);assert.match(s,/existing\.IsActive = employee.get\("active"\)/);}
  else{assert.match(s,/subMonth\(3\)/);assert.ok(s.indexOf('delete from Crew_Timecards')>s.indexOf('update existing'));assert.match(s,/if\(!dryRun\) \{ if\(expiredCandidates > 0\) \{ attempted = true; \} delete from Crew_Timecards\[Work_Date < cutoff\]; \}/);}
 }
 console.log('PASS: foreman BU identity joins, seven calendar dates, multiple crews/phases, inactive flags, manual/name/code exclusion, unmapped/duplicate guards, native IDs, sync preservation and retention ordering.');
+
+{
+ const member={ID:'900719925474099350',BU_Employee_ID:'EMPLOYEE-M',EmployeeName:'Member',IsActive:true,Crew:''};
+ const membership=(id,date,foreman='FOREMAN-A',extra={})=>card(id,foreman,date,undefined,{Multi_Line:JSON.stringify({members:['EMPLOYEE-M','EMPLOYEE-M','FOREMAN-A']}),Job_Code:'C_CAM01',...extra});
+ const grouped=E.foremanGroups([...employees,member],[membership('1','2026-10-29'),membership('2','2026-10-16'),membership('3','2026-10-15'),membership('4','2026-10-30'),membership('5','2026-10-29','FOREMAN-B'),membership('6','2026-10-29','FOREMAN-A',{IsDeleted:true})],day);
+ assert.equal(grouped.length,2);assert.equal(grouped[0].members.size,1);assert.equal(grouped[0].members.get('EMPLOYEE-M').dates.size,2);assert.equal(grouped[1].members.get('EMPLOYEE-M').dates.size,1);assert.equal(member.Crew,'','Review grouping never assigns a crew');
+ assert.equal(E.foremanGroups([employees[0]], [membership('1','2026-10-29')],day)[0].members.size,0,'Caller-scoped hidden employees are not exposed');
+ assert.throws(()=>E.foremanGroups([...employees,member],[membership('bad','2026-10-29','FOREMAN-A',{Multi_Line:'broken'})],day),/successful sync/);
+}

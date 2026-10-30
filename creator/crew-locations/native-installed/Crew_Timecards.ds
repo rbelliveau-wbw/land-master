@@ -84,6 +84,15 @@ form Crew_Timecards
 	 	column = 1   
 		width = medium
 	)
+	Multi_Line
+	(
+    	type = textarea
+		displayname = "Multi Line"
+		height = 100px
+	 	row = 1
+	 	column = 1   
+		width = medium
+	)
 	
 	actions
 	{

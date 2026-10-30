@@ -1,0 +1,46 @@
+string workflowExportEnqueue(string workflow)
+{
+	workflowNames = {"Daily_Crew_Labor":"Daily Crew Labor","Daily_Crew_Timecards":"Daily Crew Timecards","Update_Budgets_w_Projects1":"Update Budgets w/ Projects Info - Budget (action 1/3)","Sync_Final_Acceptance_Due":"Zoho Projects - Sync Subdivision Schedule Dates","Update_Projects_Start_End":"Update Projects Start/End Date - Zoho Projects","Budgets_Check_HCSS_Budget1":"Budgets - Check HCSS Budget Lines - 5 Batches","Budgets_Import_Load_GP_Co":"Budgets - Import/Load GP Const Costs","Budgets_Import_Load_HCSS_1":"Budgets - Import/Load HCSS Budget Cost","Budgets_Import_Load_HCSS_":"Budgets - Import/Load HCSS Job Cost Summary","Budgets_Import_Load_CTC_C":"Budgets - Import/Load CTC & % Complete"};
+	offsets = {"Daily_Crew_Labor":1,"Daily_Crew_Timecards":1,"Update_Budgets_w_Projects1":1,"Sync_Final_Acceptance_Due":5,"Update_Projects_Start_End":6,"Budgets_Check_HCSS_Budget1":3,"Budgets_Import_Load_GP_Co":8,"Budgets_Import_Load_HCSS_1":10,"Budgets_Import_Load_HCSS_":1,"Budgets_Import_Load_CTC_C":1};
+	display = workflowNames.get(workflow);
+	if(display == null)
+	{
+		throw "Unknown export workflow: " + workflow;
+	}
+	audit = thisapp.workflowRunLog({"action":"start","workflow":display,"system":"Zoho Analytics"});
+	auditId = audit.get("id");
+	try 
+	{
+		capturedBatch = 0;
+		if(workflow == "Budgets_Check_HCSS_Budget1")
+		{
+			settings = Settings[ID != 0];
+			if(settings.count() != 1)
+			{
+				throw "Expected exactly one Settings record.";
+			}
+			cursor = settings.Current_Batch;
+			if(cursor != null && cursor >= 0 && cursor <= 4)
+			{
+				capturedBatch = cursor;
+			}
+		}
+		plan = thisapp.workflowExportPlan(workflow,capturedBatch);
+		resumeAt = zoho.currenttime.addMinutes(offsets.get(workflow));
+		state = {"version":1,"workflow":workflow,"phase":"arming","tick":0,"batch":capturedBatch,"requests":plan.get("requests"),"deadline":resumeAt.addMinutes(15).toLong(),"deadlineAt":resumeAt.addMinutes(15).toString("MM/dd/yyyy hh:mm:ss a")};
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving export wake-ups","exportState":state.toString(),"clearResume":true,"details":"Resumable export; original run and batch retained. All sources must complete before business writes; 15-minute export deadline after scheduled start."});
+		thisapp.workflowExportWake(auditId,0,resumeAt.toString("MM/dd/yyyy hh:mm:ss a"));
+		if(resumeAt <= zoho.currenttime)
+		{
+			throw "Export wake-up window elapsed before handoff acknowledgement.";
+		}
+		state.put("phase","waiting");
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Queued for Analytics export","exportState":state.toString(),"resumeAt":resumeAt.toString("MM/dd/yyyy hh:mm:ss a")});
+		return auditId;
+	}	catch (enqueueError)
+	{
+		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Preparing Analytics export","message":enqueueError.toString(),"counts":{"failed":1},"clearResume":true});
+		throw enqueueError;
+	}
+	return "";
+}

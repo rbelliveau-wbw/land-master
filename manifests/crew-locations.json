@@ -1,7 +1,7 @@
 {
-  "status": "1.3.2-native-9.132-published",
+  "status": "1.4.0-native-queue-verification-in-progress",
   "widget": "crew-locations",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -633,5 +633,55 @@
     "module_access_verified": false,
     "evidence": "creator/crew-locations/native-installed/Crew_Locations_Widget_STAGE.api-evidence.json",
     "cleanup": "User requested removal if unused; retained because Stage preview invokes it."
+  },
+  "foreman_groups": {
+    "release": "1.4.0",
+    "status": "development-installed-native-queue-verification-in-progress",
+    "requested_date": "2026-10-30",
+    "native_promotion_authorized": true,
+    "grouping": "Read-only review of recorded employee membership under every recent foreman; no automatic staffing updates",
+    "labor_window": "Today and prior thirteen calendar dates; three identity/deletion columns only",
+    "badge_window": "Today and prior six calendar dates, unchanged",
+    "field": {
+      "form": "Crew_Timecards",
+      "link_name": "Multi_Line",
+      "type": "multiline",
+      "content": "JSON members array of distinct roster BU GUIDs; cleared after fourteen days"
+    },
+    "identity": "Labor zzz_MasterEmployeeID_Guid -> directory zzz_MasterEmployeeID_Guid -> saved Employees.BU_Employee_ID; no name/code inference; ambiguous master identities excluded",
+    "phase_mapping": "Existing subdivision External_System_Mapping HeavyJob rows; trim/case normalization; duplicate rows to same phase accepted; conflicting phases unmapped and logged",
+    "native_mapping_evidence": {
+      "development_total": 28,
+      "production_total": 536,
+      "production_example": "HeavyJob C_TR08 -> Turnbo Ranch - Phase 08"
+    },
+    "schedule": "Daily_Crew_Timecards, 2026-10-30 10:30 America/Chicago; queues header import then Daily_Crew_Labor",
+    "audit_queue": [
+      "workflowExportEnqueue",
+      "workflowExportPlan",
+      "workflowExportTick",
+      "workflowPreparedExportRows",
+      "workflowExportRun",
+      "workflowRunLog"
+    ],
+    "new_functions": [
+      "crewSyncTimecardsRun"
+    ],
+    "modified_functions": [
+      "crewSyncTimecards",
+      "crewLocationsConfig",
+      "crewLocationsWidget",
+      "workflowExportPlan",
+      "workflowExportEnqueue",
+      "workflowExportRun",
+      "workflowExportTick"
+    ],
+    "existing_guard": "Crew_Timecards_Source_Gua still denies interactive source changes",
+    "no_new_api_connection_or_permission": true,
+    "retention": "Main timecards retain three months; older labor membership payloads cleared only after successful complete labor export and validation",
+    "reference": "docs/crew-foreman-groups-2026-10-30.md",
+    "rollback": "Restore 1.3.2 assets and scoped native-before/*.foreman-20261030.* snapshots. Retain field and records; do not delete employee staffing.",
+    "native_compile_verified": true,
+    "native_labor_test_audit_id": "4410926000005607011"
   }
 }

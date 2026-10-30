@@ -1,5 +1,5 @@
 {
-  "status": "PREPARED COMPONENT DEFINITIONS \u00e2\u20ac\u201d see native-install-progress.json for current Development installation state",
+  "status": "PREPARED COMPONENT DEFINITIONS â€” see native-install-progress.json for current Development installation state",
   "authority": {
     "path": "creator/exports/Land_Master_2026-10-21-development.ds",
     "sha256": "66d911f24354bba2b17eee2dbd657bb03c4e8ba98fcf2706e02628f4f0601fc3"
@@ -453,6 +453,13 @@
         {
           "name": "Synced_At",
           "type": "datetime"
+        },
+        {
+          "name": "Multi_Line",
+          "display_name": "Multi Line",
+          "type": "multiline",
+          "content": "JSON object with distinct employee BU GUIDs, latest fourteen days only",
+          "native_link_name_verified": true
         }
       ],
       "section": {

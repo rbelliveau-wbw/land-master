@@ -100,7 +100,13 @@ for(const statement of ['subdiv.Acres=acres;','subdiv.Lot_Total_Residential=lotT
   expectedImport=expectedImport.replace(removal,'');
 }
 expectedImport=expectedImport.replace('subdiv.Projects_Status=status;','subdiv.Projects_Status=status;\n\t\t\t\t\t\t\t// Budget owns Acres, residential lots, and street LF. Do not import those quantities.');
-assert.equal(importProcessor,expectedImport,'preserve the complete live import processor outside the three removed quantity writes and their audit flags');
+// The existing export-recovery work subsequently added continuations and cost
+// branches in Creator. Preserve that current native body outside the new crew
+// dispatch, while retaining the Budget-owned quantity prohibitions below.
+const currentNative=fs.readFileSync('creator/crew-locations/native-before/workflowExportRun.foreman-20261030.dg','utf8').replace(/\r\n/g,'\n');
+const crewBranch='\tif(runKey == "Daily_Crew_Timecards" || runKey == "Daily_Crew_Labor")\n\t{\n\t\tcrewResult = thisapp.crewSyncTimecardsRun(false,auditId);\n\t\tif(runKey == "Daily_Crew_Timecards") { thisapp.workflowExportEnqueue("Daily_Crew_Labor"); }\n\t\treturn crewResult.toString();\n\t}\n\telse if(runKey == "Update_Budgets_w_Projects1")';
+assert.equal(importProcessor.split(crewBranch).length,2,'exactly one crew continuation branch');
+assert.equal(importProcessor.replace(crewBranch,'\tif(runKey == "Update_Budgets_w_Projects1")'),currentNative,'preserve every existing native import/recovery branch outside the crew delegation');
 assert.doesNotMatch(importProcessor,/\b(?:subdiv|budgCat|budG)\.(?:Acres|Lot_Total_Residential|Equiv_LF_of_Street)\s*=/,'scheduled imports cannot overwrite Budget-owned quantities');
 assert.match(importProcessor,/subdiv\.Projects_Status=status;/,'preserve Subdivision status imports');
 assert.match(deluge,/type :PATCH/);
