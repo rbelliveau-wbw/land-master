@@ -1574,5 +1574,13 @@
     "reference": "docs/crew-milestone-drag-2026-10-30.md",
     "scope": "Mounted milestone endpoint resizing, draft overlap/duration previews, anchored date/save feedback, cancellation and scroll-aware calendar mapping; existing native prepare/apply/status reused.",
     "rollback": "Production crew-locations mapping to 1.7.1; retain all native records and audit history."
+  },
+  "stable_save_layout_2026_10_30": {
+    "release": "1.8.1",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-stable-save-layout-2026-10-30.md",
+    "scope": "Routine employee, crew, staffing and schedule save/refresh/success announcements removed from page flow. Existing busy controls, accessible announcements, errors and review/progress dialogs retained.",
+    "rollback": "Production crew-locations mapping to 1.8.0; retain all native data and audit history."
   }
 }

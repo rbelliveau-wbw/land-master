@@ -478,3 +478,12 @@ locked phases, pending pushes, permissions and unknown-save locks remain guarded
 Clicks and cancelled/invalid drags never write. A confirmed drag invalidates an
 older Days propagation delta for that source record. No Creator changes are needed.
 See [checks and rollback](../../docs/crew-milestone-drag-2026-10-30.md).
+
+## Stable Save Layout — 1.8.1
+
+The employee Saving Assignment row, crew refresh row, crew-detail staffing save
+row and schedule's ordinary loading/saving/success row no longer occupy layout
+space. Their existing live announcements, disabled/busy controls, native save
+paths, success feedback and anchored drag card remain. Actual errors and unknown
+review actions remain visible. Required dialogs stay outside page flow.
+See [verification and rollback](../../docs/crew-stable-save-layout-2026-10-30.md).

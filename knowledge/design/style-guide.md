@@ -23,6 +23,12 @@ Crew scheduling uses short, evenly spaced month headings with years grouped
 above them and a 24-month default. Keep readable month columns and horizontal
 scrolling rather than squeezing or overlapping the labels.
 
+Routine save and refresh feedback must not add or remove page rows. Use existing
+button/cell busy states, anchored feedback or overlays; retain accessible live
+announcements outside normal layout flow. Preserve actual errors, permission/setup
+notices and unknown-save review actions. Crew Management's ordinary pending,
+refreshing and successful page-status messages follow this rule.
+
 Lookup names that shorten within a control must remain available on hover.
 Reuse the existing native full-name title pattern where it is already proven,
 as in Tax's Company selector. Land & Projects table and record lookup controls

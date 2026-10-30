@@ -91,6 +91,14 @@ remain authoritative. Never replay an uncertain drop. Direct pointer tracking ha
 no easing or artificial numeric animation; confirmed render values still use the
 existing shared numeric and feedback engines.
 
+October 30 save-status refinement: ordinary saving, refreshing and successful
+status announcements must not insert a row or move the employee groups, crew
+detail, timeline or date grid. Keep those page-level announcements accessible
+outside layout flow, using the existing busy controls, cell state and anchored
+drag feedback. Preserve visible errors, setup/permission notices, unknown-save
+review actions, and the required progress/recovery dialogs. Dialog content is
+already outside page flow and retains its truthful save feedback.
+
 Apply [interaction motion](interaction-motion.md),
 [number transitions](number-transitions.md), and
 [transfer progress](transfer-progress.md). The Crew Locations registry is
