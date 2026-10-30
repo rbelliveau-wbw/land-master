@@ -103,7 +103,8 @@ promoted to Stage and Production **9.132**:
 The existing `crewLocationsRead` allowlist, `crewLocationsWidget` routing/capabilities
 and `crewLocationsConfig` flags were extended. Stable Custom API names, logged-in
 Creator connection, Analytics connection, original milestone page identity and
-Projects push guards are preserved. No new connection or Custom API was created.
+Projects push guards are preserved. The sync installation created no new connection
+or Custom API; the separately approved Stage alias is recorded below.
 `projectsPushEnabled` remains false. Direct Deluge sync writes bypass interactive
 On Validate workflows; browser staffing saves use native SDK validation.
 
@@ -143,7 +144,7 @@ authority for these additions; generated full-export metadata remains historical
   layout checks, employee read-only permission refresh; full `npm run validate` and `npm run build:pages`.
 
 Development schedule executions are suspended by the existing environment setting.
-The imports above were manual function executions in Development. After user
+The imports above were manual function executions in Development. After the completed
 promotion, Production schedules run under the application's existing environment
 settings. Creator record data does not travel with schema promotion: initialize
 Production with the same sync functions or allow its first scheduled run.
@@ -178,8 +179,30 @@ Its first daily imports are **October 30, 2026 at 05:00 and 05:15 America/Chicag
 No Development staffing or timecard lookup data was copied into Production.
 
 Stage 9.132 publication succeeded and its immutable assets are mapped. Its widget
-preview exposed the preexisting missing `Crew_Locations_Widget_STAGE` API alias.
-Automatic approval review rejected creating a new persistent API under the
-promotion-only authorization. A separate approval was requested for an OAuth2,
-administrator-only Stage alias using the existing Crew handler. No alias or new
-API permissions were created; Production uses its existing API successfully.
+preview exposed the missing `Crew_Locations_Widget_STAGE` API alias. After the
+separate explicit user approval, that alias was created and enabled with POST,
+OAuth2, **Admin only**, application/json, Key and Value `payload`, and Standard
+response. It binds to the existing `crewLocationsWidget` in **Land Master STAGE**
+(application `4410926000000011415`, function `4410926000005291477`). No new
+connection, credential, form, field or function was introduced. This global API
+configuration does not require another Creator application promotion.
+
+Loading the actual Stage Crew Management 1.3.2 preview generated **three HTTP 200
+Success entries** in the alias's native API Hits tab. The existing handler then
+returned **Crew Locations access has not been granted**. Transport/routing is
+verified; Stage roster/data behavior is still limited by the account's existing
+module access. No User_Access records or module permissions were changed.
+Production continues to use its existing API successfully.
+
+The user requested deletion if unused. The alias is **retained because the Stage
+preview actually invokes it**. If that consumer is retired, remove only the Stage
+alias; preserve the Development/Production endpoints. Disabling it is the
+reversible rollback and restores the former Stage connection failure without
+affecting Production. Its exact configuration, usage and cleanup condition are
+recorded in both removal/install inventories and
+[`Crew_Locations_Widget_STAGE.api-evidence.json`](../creator/crew-locations/native-installed/Crew_Locations_Widget_STAGE.api-evidence.json).
+The existing DEV API's current native scope was observed as All users and the
+registry was corrected to match; its permissions were not modified. Widget
+release/mappings remain 1.3.2, Creator remains 9.132, and the earlier full validation
+and Pages build remain applicable; the metadata update also passes repository
+validation.

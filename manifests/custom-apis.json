@@ -600,13 +600,13 @@
         "widgets/crew-locations/src/app/crew-app.js"
       ],
       "matching_creator_function": "crewLocationsWidget",
-      "confidence": "verified-native-2026-10-21",
+      "confidence": "verified-native-2026-10-29",
       "implementation_contract": "manifests/crew-locations.json",
       "environment": "Development",
       "enabled": true,
       "method": "POST",
       "authentication": "OAuth2",
-      "user_scope": "Admin only",
+      "user_scope": "All users",
       "argument_type": "Key and Value",
       "content_type": "application/json",
       "parameters": [
@@ -615,7 +615,8 @@
           "type": "string"
         }
       ],
-      "response_type": "Standard"
+      "response_type": "Standard",
+      "verification_note": "Existing native scope observed; no permission change performed."
     },
     {
       "name": "Crew_Locations_Widget",
@@ -657,6 +658,33 @@
       "matching_creator_function": "syncBudgetMetricToProjects",
       "confidence": "verified-development-2026-10-27",
       "notes": "Enabled in Development: POST, OAuth2, All users, application/json key-value {payload:JSON.stringify({budgetId,field})}; standard response. Server checks authenticated Budget editor/owner and exact Subdivision_Code -> Subdivision + project_code. Native function 4410926000005479009. The expanded dual-destination body is saved in Development pending owner promotion. See creator/functions/BUDGET_PROJECTS_SYNC_HANDOFF.md."
+    },
+    {
+      "name": "Crew_Locations_Widget_STAGE",
+      "consumers": [
+        "widgets/crew-locations/src/app/crew-app.js",
+        "widgets/crew-locations/src/app/runtime-context.js"
+      ],
+      "matching_creator_function": "crewLocationsWidget",
+      "confidence": "verified-native-2026-10-29",
+      "implementation_contract": "manifests/crew-locations.json",
+      "environment": "Stage",
+      "application_id": "4410926000000011415",
+      "function_id": "4410926000005291477",
+      "enabled": true,
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "Admin only",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "verification_evidence": "creator/crew-locations/native-installed/Crew_Locations_Widget_STAGE.api-evidence.json"
     }
   ]
 }

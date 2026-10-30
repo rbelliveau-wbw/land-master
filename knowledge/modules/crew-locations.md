@@ -11,6 +11,10 @@ retain employees indefinitely and only the last three calendar months of timecar
 All 35 pending native components were promoted to Stage and Production 9.132
 on October 29 with explicit user authorization. The audit follow-up counts all
 source rows, reconciles success totals and distinguishes Failed from Partial.
+The approved Stage-only OAuth2/Admin only API alias is enabled and receives real
+preview calls. Stage still stops at its existing module access guard; no module
+permission was granted. The alias is retained under the user's remove-if-unused
+condition because the deployed Stage preview uses it.
 See [installation, verification and rollback](../../docs/crew-employees-timecards-2026-10-29.md).
 
 ## 1.2.7 — CFO roster connection failure

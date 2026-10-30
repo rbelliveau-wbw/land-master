@@ -320,7 +320,7 @@
         {
           "id": "4410926000005393014",
           "code": "TEST-DEV-1023",
-          "final_name": "TEST Development Crew \u2014 edited",
+          "final_name": "TEST Development Crew — edited",
           "final_badge_color": "#FFFFFF",
           "deactivated_and_reactivated": true,
           "final_active": true
@@ -621,5 +621,17 @@
       ],
       "new_audit_schema": false
     }
+  },
+  "stage_api": {
+    "name": "Crew_Locations_Widget_STAGE",
+    "environment": "Stage",
+    "authentication": "OAuth2",
+    "user_scope": "Admin only",
+    "enabled": true,
+    "native_binding": "Land Master STAGE / crewLocationsWidget",
+    "usage_verified": true,
+    "module_access_verified": false,
+    "evidence": "creator/crew-locations/native-installed/Crew_Locations_Widget_STAGE.api-evidence.json",
+    "cleanup": "User requested removal if unused; retained because Stage preview invokes it."
   }
 }
