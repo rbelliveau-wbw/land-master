@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ready,ID,NEW} from './test-contract-sdk-v2-foundation.mjs';
+import {ready,ID,NEW,ACCESS} from './test-contract-sdk-v2-foundation.mjs';
 
 const PATH='1690000000000_fixture.pdf',OTHER=(BigInt(NEW)+200n).toString();
 
@@ -137,4 +137,18 @@ for(const email of [undefined,false,'false']){
  assert.equal(h.calls.filter(call=>['add','update','delete'].includes(call.method)).length,0,'a native create failure never falls back to CRUD or cleanup');
 }
 
-console.log('PASS Contract attachment verification: documented root/data upload replies, actual native failure rejection, optional display refresh, Email-off creation/upload, automatic saved-record recovery, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup.');
+{
+ const h=await ready({realDOM:true,accessFlags:{ctEdit:false,ctPropose:true}}),row=h.c.findContract(ID);
+ for(const current of [row,h.reports.All_Contracts1[0]])Object.assign(current,{Contract_Name:'Approved Owner Fixture',Contract_Type:'Amendment',Status:'Approved',Owner:[{ID:ACCESS,display_value:'Record Owner'}]});
+ assert.equal(h.c.canAddContractAttachments(ID),true,'an approved amendment owner with the existing owned-edit grant can upload');
+ h.c.S.coreRefreshing=true;h.c.showAttachmentsModal(ID);const input=h.node('attFile'),modal=h.node('overlays').innerHTML;
+ assert.match(modal,/Choose Files/);assert.equal(input.disabled,true,'the chooser stays visible during a native refresh');assert.equal(input.hidden,false);
+ h.c.S.coreRefreshing=false;h.c.contractControls();assert.equal(h.node('attFile'),input);assert.equal(input.disabled,false,'refresh completion enables the mounted chooser without rebuilding the dialog');
+ h.c.S.busy=true;h.c.contractControls();assert.equal(input.disabled,true);h.c.S.busy=false;h.c.contractControls();assert.equal(input.disabled,false,'settled work restores current picker access');
+ row.Owner=[{ID:NEW}];h.c.contractControls();assert.equal(input.disabled,true,'a non-owner cannot select files');
+ row.Owner=[{ID:ACCESS}];row.Status='Complete';h.c.contractControls();assert.equal(input.disabled,true,'completed contracts retain their upload lock');
+ row.Status='Approved';h.c.contractControls();assert.equal(input.disabled,false);
+ h.flags.ctPropose=false;await h.c.ncLoadUsers(true);assert.equal(input.disabled,true);h.flags.ctPropose=true;await h.c.ncLoadUsers(true);assert.equal(h.node('attFile'),input);assert.equal(input.disabled,false,'a late granted-access reply updates the mounted chooser');
+ const calls=install(h);assert.equal(await h.c.createContractAttachmentRecord(ID),NEW);await h.c.sdkUploadVersionFile(NEW,{name:'fixture.pdf',size:20});assert.equal(calls.create,1);assert.equal(calls.upload,1,'the existing owner permission reaches both native attachment writes');
+}
+console.log('PASS Contract attachment verification: documented root/data upload replies, actual native failure rejection, optional display refresh, Email-off creation/upload, automatic saved-record recovery, captured parent restoration, decoded native failure and safe cause/phase/code diagnostics, no replay or uncertain cleanup, and mounted owner picker refresh recovery.');

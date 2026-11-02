@@ -1301,3 +1301,15 @@ is not certified by a completed live widget upload. Owner notification email is
 unavailable on the Development comment fallback and is explicitly shown in the
 comment modal. Production/Stage do not use that fallback. No profile grants,
 Creator functions, native workflows or schema were changed in this release.
+
+### Always-visible attachment picker — 1.62.42
+
+Legal and Construction retain Choose Files in the attachment modal and workspace
+when upload is unavailable, with a disabled native file input instead of a
+disappearing button. Temporary readiness and pending states must not remove the
+picker or leave it disabled after the state settles. Existing ownership, upload,
+editing, deletion, Construction permissions and completed-record locks remain.
+The existing native picker and upload pipeline are reused; no forms, fields, functions,
+Custom APIs or Creator deployment change. Focused checks cover allowed owners,
+non-owners, completed records, pending work and file input routing. Full repository
+validation and Pages build are required. Rollback: Contract Management 1.62.41.

@@ -32,7 +32,12 @@ presentation increment; live upload/delete coverage is recorded separately.
   with a `9px` radius. Keep the name readable with truncation
   and the full name accessible. Cap the modal to the viewport and scroll its
   body; keep identity and actions reachable on narrow screens.
-- Place a dashed drop area and **Choose Files** above the list. Show file-type
+- Always show a dashed drop area and **Choose Files** above the list, including
+  empty, read-only and pending states. Disable the picker when upload is blocked;
+  never remove the button. Place the native multiple-file input directly over
+  the styled picker so mouse and keyboard gestures reach it inside Creator.
+  Retain each surface's existing change handler and prevent picker clicks from
+  also triggering the drop area's scripted input click. Show file-type
   badges, blue filenames, compact date and **Added by** metadata. Align matching
   square Preview, Download and Delete controls. Use a restrained red Delete
   hover treatment and short empty/error labels.
@@ -75,6 +80,13 @@ Both the modal and workspace receive the user's gesture directly; avoid relying
 solely on a scripted click on a `display:none` input inside the Creator iframe.
 Keep the native input ID, multiple-file support, change/drop handlers and pending
 disabled state, plus a visible focus outline.
+
+Contract Management 1.62.42 extends this visible picker rule to Legal and
+Construction, and Budget 122.29.86 and Pro Forma 1.80.136 adopt the same native
+input pattern in their modal/workspace and Budget request draft surfaces.
+Keep each module's existing ownership and upload permissions. Temporary native
+readiness or pending states must not remove the picker or strand it disabled
+after the blocking state settles.
 
 Open Preview inside the widget first. Preserve the original file bytes,
 filename and supported preview behavior; retain an explicit download/open

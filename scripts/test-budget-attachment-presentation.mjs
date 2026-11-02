@@ -91,12 +91,13 @@ function harness(){
     assert.match(html,new RegExp(`data-download-budget-attachment='${i}'`));assert.match(html,new RegExp(`data-delete-budget-attachment='${i}'`));
   }
   assert.doesNotMatch(html,/att-mail|Email Attachment|Click a file to preview|opens the Creator viewer/,'Budget has neither Legal email slider nor bottom helper');
-  h.setAllowed(false);h.c.renderAttachmentPage(h.c.S.edBudget);assert.doesNotMatch(h.pane.innerHTML,/data-budget-attachment-drop|data-add-budget-attachment|data-delete-budget-attachment/);assert.match(h.pane.innerHTML,/data-open-budget-attachment|data-download-budget-attachment/);
+  h.setAllowed(false);h.c.renderAttachmentPage(h.c.S.edBudget);assert.doesNotMatch(h.pane.innerHTML,/data-add-budget-attachment|data-delete-budget-attachment/);assert.match(h.pane.innerHTML,/data-open-budget-attachment|data-download-budget-attachment/);
+  assert.match(h.pane.innerHTML,/Choose Files<input type='file' multiple data-budget-attachment-native-picker aria-label='Choose Files' disabled>/,'read-only users keep a visible disabled file picker');
   h.setAllowed(true);
   for(const mode of ['busy','review']){
     h.c.S.attachmentBusy=mode==='busy';h.c.S.attachmentUploadReview=mode==='review'?{}:null;h.c.S.attachmentStatus='Needs review';
     h.c.renderAttachmentPage(h.c.S.edBudget);
-    assert.match(h.pane.innerHTML,/data-budget-attachment-drop aria-disabled='true'/);assert.match(h.pane.innerHTML,/data-add-budget-attachment type='button' disabled/);assert.match(h.pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/);
+    assert.match(h.pane.innerHTML,/data-budget-attachment-drop aria-disabled='true'/);assert.match(h.pane.innerHTML,/data-budget-attachment-native-picker aria-label='Choose Files' disabled/);assert.match(h.pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/);
     if(mode==='review')assert.match(h.pane.innerHTML,/data-recheck-budget-upload/,'existing safe Recheck remains accessible');
   }
   h.features['attachments:'+BID].status='error';h.c.renderAttachmentPage(h.c.S.edBudget);assert.match(h.pane.innerHTML,/unavailable.*Retry/);assert.doesNotMatch(h.pane.innerHTML,/No attachments|attachment-page-row/);
@@ -167,7 +168,7 @@ function modalHarness(){
   const controlsStart=source.indexOf('document.addEventListener("click", function(e){',source.indexOf('/* Budget attachment controls */'));
   vm.runInContext(source.slice(controlsStart,source.indexOf('\n});',controlsStart)+4),c);
   function action(selector,properties={}){const target={...properties,closest:query=>query===selector||query.split(',').includes(selector)?target:null,getAttribute:name=>properties[name]??null};return target;}
-  function dispatch(target){const event={target,preventDefault(){},stopPropagation(){}};for(const {fn}of listeners.click)fn(event);}
+  function dispatch(target){const event={target,defaultPrevented:false,preventDefault(){this.defaultPrevented=true;},stopPropagation(){}};for(const {fn}of listeners.click)fn(event);return event;}
   function paperclip(id){const target=action('[data-budget-attachments]',{dataset:{budgetAttachments:id},isConnected:true,focus(){c.document.activeElement=target;}});return target;}
   return {c,nodes,reads,writes,calls,rows,scrolls,dispatch,action,paperclip,setAllowed:v=>allowed=v,setRuntime:v=>runtime={...runtime,...v},failRead:v=>failedRead=v,holdRead:promise=>heldRead=promise,holdWrite:promise=>heldWrite=promise};
 }
@@ -213,6 +214,18 @@ function modalHarness(){
   for(const change of [()=>h.c.S.navigationGeneration++,()=>h.c.S.badgeGeneration++,()=>h.setRuntime({environment:'DEVELOPMENT'}),()=>h.setRuntime({appLinkName:'another-app'})]){
     await h.c.openBudgetAttachmentModal(BID,h.paperclip(BID));assert.ok(h.c.S.attachmentModal);change();const before=h.reads.length;assert.equal(await h.c.refreshBudgetAttachmentModal(),false);h.c.deleteBudgetAttachment(0);assert.equal(h.reads.length,before);h.c.renderBudgetAttachmentModal();assert.equal(h.c.S.attachmentModal,null);
   }
+}
+{
+  const h=modalHarness();await h.c.openBudgetAttachmentModal(BID,h.paperclip(BID));
+  const input=h.action('[data-budget-attachment-native-picker]',{value:'previous file',files:[]});
+  const click=h.dispatch(input);
+  assert.equal(click.defaultPrevented,false,'the native input receives the original picker gesture');
+  assert.equal(input.value,'');assert.equal(input._budgetAttachmentNativePicker,true);assert.equal(input._budgetAttachmentModal,h.c.S.attachmentModal);
+  assert.equal(h.nodes.budgetAttachmentModalInput.clicks,undefined,'the visible native picker never opens the hidden fallback a second time');
+  h.c.S.attachmentBusy=true;assert.equal(h.dispatch(input).defaultPrevented,true,'native picker activation retains pending-write guards');h.c.S.attachmentBusy=false;
+  h.setAllowed(false);assert.equal(h.dispatch(input).defaultPrevented,true,'native picker activation retains permission guards');h.setAllowed(true);
+  h.c.closeBudgetAttachmentModal();input.files=[{name:'late-native-picker.pdf',size:42}];h.c.handleBudgetAttachmentInput.call(input);await tick();
+  assert.equal(h.writes.length,0,'a native picker returning after close cannot upload into the retained editor');
 }
 {
   const h=modalHarness();await h.c.openBudgetAttachmentModal(BID,h.paperclip(BID));let release;h.holdWrite(new Promise(resolve=>release=resolve));const upload=h.c.uploadBudgetAttachments([{name:'changed-context.pdf',size:42}]);await tick();const reads=h.reads.length;

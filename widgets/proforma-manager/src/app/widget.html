@@ -8,23 +8,23 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.135"></script>
-<script src="pf-save-audit.js?v=1.80.135"></script>
-<script src="pf-progress.js?v=1.80.135"></script>
+<script src="pf-save-verification.js?v=1.80.136"></script>
+<script src="pf-save-audit.js?v=1.80.136"></script>
+<script src="pf-progress.js?v=1.80.136"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.135">
-<script src="interaction-motion.js?v=1.80.135"></script>
-<script src="interaction-surfaces.js?v=1.80.135"></script>
-<script src="number-edit-commit.js?v=1.80.135"></script>
-<script src="number-transitions.js?v=1.80.135"></script>
-<script src="number-views.js?v=1.80.135"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.135">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.136">
+<script src="interaction-motion.js?v=1.80.136"></script>
+<script src="interaction-surfaces.js?v=1.80.136"></script>
+<script src="number-edit-commit.js?v=1.80.136"></script>
+<script src="number-transitions.js?v=1.80.136"></script>
+<script src="number-views.js?v=1.80.136"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.136">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.135"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.135">
-<script src="comments.js?v=1.80.135"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.135">
+<script src="budget-transfer-ui.js?v=1.80.136"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.136">
+<script src="comments.js?v=1.80.136"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.136">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1818,6 +1818,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-drop>svg{width:20px;height:20px;color:#7c9aca;flex:none}
 .pf-attachment-drop-hint{flex:1;min-width:0;font-size:11px;color:#5c7394}.pf-attachment-drop-hint b{display:block;font-size:12px;color:#0f2744}
 .pf-attachment-drop .btn{padding:4px 10px;font-size:11px;white-space:nowrap}
+.pf-attachment-picker{position:relative;overflow:hidden;flex:none;cursor:pointer}.pf-attachment-picker input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.pf-attachment-picker:focus-within{outline:2px solid #285b97;outline-offset:2px}.pf-attachment-picker:has(input:disabled){opacity:.5;cursor:default}.pf-attachment-picker input:disabled{cursor:default}
 .pf-attachment-list{padding:0}.pf-attachment-row{display:flex;gap:14px;padding:13px 6px;border:0;border-bottom:1px solid #eef2f8}
 .pf-attachment-row:last-child{border-bottom:0}.pf-attachment-row:hover{background:#f8fbff}
 .pf-attachment-file-icon{width:42px;height:42px;border-radius:10px;border:0;flex:none;background:#f1f5f9;color:#64748b;font-size:10.5px;font-weight:800}
@@ -1837,7 +1838,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.135"></script>
+<script src="success-feedback.js?v=1.80.136"></script>
 </head>
 <body>
 
@@ -2252,7 +2253,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.135";
+var PFW_VERSION="1.80.136";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -5107,18 +5108,24 @@ function pfAttachmentInlineEvent(event,state){
 }
 function syncPfAttachmentTransfer(state){
   var context=S.attachmentUploadContext;if(!context||!pfAttachmentContextActive(context))return;state=state||PFTransport.snapshot();var prefix=context.modal?'pfAttachmentModal':'pfAttachmentPanel',status=document.getElementById(prefix+'Status'),pending=pfAttachmentTransferPending(state),review=state.reviews.length>0;if(!status)return;status.hidden=!S.attachmentStatus;status.className='pf-attachment-status'+(S.attachmentStatusError?' error':'');status.setAttribute('aria-busy',pending?'true':'false');document.getElementById(prefix+'Spinner').hidden=!pending;document.getElementById(prefix+'Message').textContent=S.attachmentStatus||'';(S.attachmentUploadResults||[]).forEach(function(row,index){var node=document.getElementById(prefix+'File'+index);if(node)node.textContent=row.state;});var button=document.getElementById(prefix+'Recheck');button.hidden=!review;button.disabled=pending;var panel=document.getElementById(context.modal?'proformaAttachmentModalPanel':'proformaAttachmentPanel');panel.querySelectorAll('[data-pf-attachment-add],[data-pf-attachment-delete]').forEach(function(node){node.disabled=pending||review;});if(context.modal)document.getElementById('proformaAttachmentModalClose').disabled=pending;
+  var picker=document.getElementById(context.modal?'proformaAttachmentModalInput':'proformaAttachmentInput');if(picker)picker.disabled=pending||review||!Object.prototype.hasOwnProperty.call(S.attachmentsByPf,context.id)||!canEditPf(pfAttachmentRec(context.id));
 }
 function recheckPfAttachments(context){
   if(!context||!pfAttachmentContextActive(context)||pfAttachmentTransferPending())return Promise.resolve(false);S.attachmentBusy=true;S.attachmentStatus='Checking saved attachments…';syncPfAttachmentTransfer();var complete=true,chain=Promise.resolve();PFTransport.snapshot().reviews.forEach(function(row){chain=chain.then(function(){return PFTransport.recheck(row.key).then(function(ok){if(!ok)complete=false;});});});return chain.then(function(){if(!complete){S.attachmentStatusError=true;S.attachmentStatus='Some attachments still need review. Another upload is blocked.';return false;}S.attachmentStatusError=false;S.attachmentStatus='Saved attachments checked. Files that were not sent can be selected again.';(S.attachmentUploadResults||[]).forEach(function(row){if(row.state==='Needs review')row.state='Verified';});return loadPfAttachments(context.id,true).then(function(){return true;});}).catch(function(err){S.attachmentStatusError=true;S.attachmentStatus='Could not check saved attachments: '+String(err&&err.message||err);return false;}).finally(function(){S.attachmentBusy=false;renderPfAttachmentSurfaces(context);syncPfAttachmentTransfer();});
+}
+function mountPfAttachmentPicker(modal,disabled){
+  var input=document.getElementById(modal?'proformaAttachmentModalInput':'proformaAttachmentInput'),host=document.getElementById(modal?'proformaAttachmentModalPicker':'proformaAttachmentPicker');if(!input||!host||!host.appendChild)return;host.appendChild(input);input.hidden=false;input.removeAttribute('aria-hidden');input.disabled=!!disabled;
 }
 function renderPfAttachments(context){
   var modal=context&&context.modal,active=S.attachmentModal;if(modal&&!pfAttachmentContextActive(context))return;if(S.attachmentCounts.scope!==pfAttachmentScope())resetPfAttachmentCounts();
   var panel=document.getElementById(modal?"proformaAttachmentModalPanel":"proformaAttachmentPanel"),id=String(modal?context.id:S.attachmentPfId||"");if(!panel||!id)return;var rec=pfAttachmentRec(id),name=rec&&rec.Name||("Pro Forma #"+id),canAdd=!!rec&&canEditPf(rec);
   if(modal){document.getElementById("proformaAttachmentModalTitle").textContent="Attachments — "+name;document.getElementById("proformaAttachmentModalClose").disabled=!!S.attachmentBusy;}else{document.getElementById("attachmentViewTitle").textContent="Attachments — "+name;document.getElementById("attachmentViewSub").textContent="";}
-  if(!Object.prototype.hasOwnProperty.call(S.attachmentsByPf,id)){var error=S.attachmentErrors[id];panel.innerHTML="<div class='pf-attachment-card-head'><div class='pf-attachment-kicker'>Attachments</div><h2 class='pf-attachment-record-name' title='"+esc(name)+"'>"+esc(name)+"</h2></div><div class='pf-attachment-empty'>"+pfAttachmentIcon()+"<b>"+(error?"Attachments unavailable":"Loading attachments…")+"</b>"+(error?"<button type='button' class='btn sm' data-pf-attachment-retry>Retry</button>":"")+"</div>"+pfAttachmentStatusHtml(modal);syncPfAttachmentTransfer();if(!error)loadPfAttachments(id,false).then(function(){if(modal)renderPfAttachments(context);else if(String(S.attachmentPfId)===id)renderPfAttachments();}).catch(function(){if(modal)renderPfAttachments(context);else if(String(S.attachmentPfId)===id)renderPfAttachments();});return;}
-  var files=pfAttachments(id),busy=!!S.attachmentBusy,add=canAdd?"<div class='pf-attachment-drop' data-pf-attachment-drop><svg viewBox='0 0 24 24' aria-hidden='true' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12'/></svg><div class='pf-attachment-drop-hint' data-pf-attachment-add><b>Drop files here or click to upload</b>Creates an Attachment record per file · 50 MB max</div><button class='btn primary sm' type='button' data-pf-attachment-add"+(busy?" disabled":"")+">"+(busy?"Uploading…":"Choose Files")+"</button></div>":"";
+  var loaded=Object.prototype.hasOwnProperty.call(S.attachmentsByPf,id),busy=!!S.attachmentBusy,picker=document.getElementById(modal?'proformaAttachmentModalInput':'proformaAttachmentInput');if(picker&&picker.parentNode&&document.body.appendChild){picker.hidden=true;document.body.appendChild(picker);}
+  var add="<div class='pf-attachment-drop' data-pf-attachment-drop><svg viewBox='0 0 24 24' aria-hidden='true' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12'/></svg><div class='pf-attachment-drop-hint' data-pf-attachment-add><b>Drop files here or click to upload</b>Creates an Attachment record per file · 50 MB max</div><label class='btn primary sm pf-attachment-picker' id='"+(modal?'proformaAttachmentModalPicker':'proformaAttachmentPicker')+"'"+(!canAdd?" title='File uploads are unavailable for this record.'":"")+">Choose Files</label></div>";
+  if(!loaded){var error=S.attachmentErrors[id];panel.innerHTML="<div class='pf-attachment-card-head'><div class='pf-attachment-kicker'>Attachments</div><h2 class='pf-attachment-record-name' title='"+esc(name)+"'>"+esc(name)+"</h2></div><div class='pf-attachment-body'>"+add+"<div class='pf-attachment-empty'>"+pfAttachmentIcon()+"<b>"+(error?"Attachments unavailable":"Loading attachments…")+"</b>"+(error?"<button type='button' class='btn sm' data-pf-attachment-retry>Retry</button>":"")+"</div></div>"+pfAttachmentStatusHtml(modal);mountPfAttachmentPicker(modal,true);syncPfAttachmentTransfer();if(!error)loadPfAttachments(id,false).then(function(){if(modal)renderPfAttachments(context);else if(String(S.attachmentPfId)===id)renderPfAttachments();}).catch(function(){if(modal)renderPfAttachments(context);else if(String(S.attachmentPfId)===id)renderPfAttachments();});return;}
+  var files=pfAttachments(id);
   var rows=files.length?"<div class='pf-attachment-list'>"+files.map(function(file,i){var ext=pfAttachmentExt(file.name),label=ext==="pdf"?"PDF":/^(xls|xlsx|csv)$/.test(ext)?"XLS":/^(png|jpg|jpeg|gif|webp)$/.test(ext)?"IMG":"DOC",tone=label==="PDF"?" pdf":label==="XLS"?" xls":label==="DOC"?" doc":"",author=file.rawRecord?pfAttachmentAuthorLabel(file.rawRecord.Added_User):file.addedUser||"—",disabled=busy?" disabled":"";return "<div class='pf-attachment-row'><div class='pf-attachment-file-icon"+tone+"'>"+label+"</div><div class='pf-attachment-copy'><button class='pf-attachment-name' type='button' data-pf-attachment-preview='"+i+"' title='"+esc(file.name)+"'>"+esc(file.name)+"</button><div class='pf-attachment-meta'>"+esc(pfAttachmentDateLabel(file.addedTime))+" · Added by <b data-pf-attachment-author='"+esc(file.recordId)+"' data-pf-attachment-parent='"+esc(file.proformaId)+"'>"+esc(author||"—")+"</b></div></div><div class='pf-attachment-actions'><button class='pf-attachment-action' type='button' title='Preview' aria-label='Preview "+esc(file.name)+"' data-pf-attachment-preview='"+i+"'>"+pfAttachmentActionIcon("preview")+"</button><button class='pf-attachment-action' type='button' title='Download' aria-label='Download "+esc(file.name)+"' data-pf-attachment-download='"+i+"'>"+pfAttachmentActionIcon("download")+"</button>"+(canAdd?"<button class='pf-attachment-action danger' type='button' title='Delete' aria-label='Delete "+esc(file.name)+"' data-pf-attachment-delete='"+i+"'"+disabled+">"+pfAttachmentActionIcon("delete")+"</button>":"")+"</div></div>";}).join("")+"</div>":"<div class='pf-attachment-empty'><b>No attachments yet</b></div>";
-  panel.innerHTML="<div class='pf-attachment-card-head'><div class='pf-attachment-kicker'>Attachments · "+files.length+" file"+(files.length===1?"":"s")+"</div><h2 class='pf-attachment-record-name' title='"+esc(name)+"'>"+esc(name)+"</h2></div><div class='pf-attachment-body'>"+add+rows+pfAttachmentStatusHtml(modal)+"</div>";syncPfAttachmentTransfer();
+  panel.innerHTML="<div class='pf-attachment-card-head'><div class='pf-attachment-kicker'>Attachments · "+files.length+" file"+(files.length===1?"":"s")+"</div><h2 class='pf-attachment-record-name' title='"+esc(name)+"'>"+esc(name)+"</h2></div><div class='pf-attachment-body'>"+add+rows+pfAttachmentStatusHtml(modal)+"</div>";mountPfAttachmentPicker(modal,busy||!canAdd);syncPfAttachmentTransfer();
 }
 function openPfAttachments(pfId,returnView){
   if(!pfPublicReady())return false;if(S.attachmentModal){if(S.attachmentBusy)return;closePfAttachmentModal();}var id=String(pfId||"");if(!id){toast("Save the Pro Forma before adding attachments.","err");return;}S.attachmentPfId=id;var editor=(S.ed&&String(S.ed.id)===id&&S.ed.model)||null,dash=(S.dash&&String(S.dash.id)===id&&S.dash.model)||null;syncPersistentRecordHeader(pfAttachmentRec(id),editor||dash,(editor&&S.ed.calc)||(dash&&S.dash.calc));syncRecordUrl(id,"attachments");S.attachmentReturnView=returnView||S.view||"vDash";S.attachmentStatus="";S.attachmentStatusError=false;renderPfAttachments();showView("vAttachments");refreshPfCommentBadge(id);}
@@ -5142,7 +5149,7 @@ function deletePfAttachmentRecord(pfId,file){var id=String(pfId),record=String(f
   return PFTransport.invoke({api_name:name,http_method:'POST',content_type:'application/json',payload:{proformaId:id,attachmentId:record}},false,function(resp,check){parsePfAttachmentApi(resp);return absent(resp,check);},absent).catch(function(e){if(!e||!e.apiMissing)throw e;return sdkDelete(CFG.reports.attachments,'(ID == '+record+' && '+CFG.attachmentProformaField+' == '+id+')');});
 }
 function pfAttachmentActionContext(modal){var current=S.attachmentModal;return modal&&current?{modal:true,id:current.id,token:current.token,scope:current.scope}:{modal:false,id:String(S.attachmentPfId||""),scope:pfAttachmentScope()};}
-function pfAttachmentContextActive(context){if(context&&context.modal&&S.attachmentModal&&(S.attachmentModal.scope!==pfAttachmentScope()||!pfAttachmentRec(S.attachmentModal.id))){document.getElementById("proformaAttachmentModalPanel").innerHTML="<div class='pf-attachment-empty'><b>Attachment context changed</b></div>";if(!S.attachmentBusy)closePfAttachmentModal();return false;}return !!context&&context.scope===pfAttachmentScope()&&(context.modal?!!S.attachmentModal&&S.attachmentModal.token===context.token&&S.attachmentModal.id===context.id:String(S.attachmentPfId)===context.id);}
+function pfAttachmentContextActive(context){if(context&&context.modal&&S.attachmentModal&&(S.attachmentModal.scope!==pfAttachmentScope()||!pfAttachmentRec(S.attachmentModal.id))){var picker=document.getElementById('proformaAttachmentModalInput'),host=document.getElementById('proformaAttachmentModal');if(picker&&host&&host.appendChild){picker.hidden=true;host.appendChild(picker);}document.getElementById("proformaAttachmentModalPanel").innerHTML="<div class='pf-attachment-empty'><b>Attachment context changed</b></div>";if(!S.attachmentBusy)closePfAttachmentModal();return false;}return !!context&&context.scope===pfAttachmentScope()&&(context.modal?!!S.attachmentModal&&S.attachmentModal.token===context.token&&S.attachmentModal.id===context.id:String(S.attachmentPfId)===context.id);}
 function renderPfAttachmentSurfaces(context){if(!context||!pfAttachmentContextActive(context))return;if(context.modal){renderPfAttachments(context);var modal=document.getElementById("proformaAttachmentModal");if(!modal.contains(document.activeElement)&&!document.getElementById("confirmModal").classList.contains("show")&&!document.getElementById("proformaAttachmentPreview").classList.contains("show"))document.getElementById(S.attachmentBusy?"pfAttachmentModalStatus":"proformaAttachmentModalClose").focus();}else renderPfAttachments();}
 function openPfAttachmentModal(pfId,trigger){
   var review=PFTransport.snapshot(),resume=review.inlineAttachments&&S.attachmentUploadContext&&String(pfId)===S.attachmentUploadContext.id&&S.attachmentUploadContext.scope===pfAttachmentScope()&&!pfAttachmentTransferPending(review);if(!pfPublicReady()&&!resume)return false;
@@ -5170,7 +5177,7 @@ function handlePfAttachmentClick(e,modal){
   if(!pfPublicReady())return false;
   var context=pfAttachmentActionContext(modal);if(!pfAttachmentContextActive(context))return;var rec=pfAttachmentRec(context.id),add=e.target.closest("[data-pf-attachment-add]"),retry=e.target.closest("[data-pf-attachment-retry]");
   if(retry){if(S.attachmentBusy)return;delete S.attachmentsByPf[context.id];delete S.attachmentErrors[context.id];renderPfAttachmentSurfaces(context);loadPfAttachmentSummaries(true);return;}
-  if(add){if(!S.attachmentBusy&&rec&&canEditPf(rec)){var input=document.getElementById(modal?"proformaAttachmentModalInput":"proformaAttachmentInput");input._pfAttachmentContext=context;input.click();}return;}
+  if(add){if(!S.attachmentBusy&&rec&&canEditPf(rec)){var input=document.getElementById(modal?"proformaAttachmentModalInput":"proformaAttachmentInput");if(!input||input.disabled)return;input._pfAttachmentContext=context;input.click();}return;}
   var files=pfAttachments(context.id),preview=e.target.closest("[data-pf-attachment-preview]"),download=e.target.closest("[data-pf-attachment-download]"),del=e.target.closest("[data-pf-attachment-delete]");if(S.attachmentBusy)return;
   if(preview){var p=files[+preview.getAttribute("data-pf-attachment-preview")];if(p)previewPfAttachment(p);return;}if(download){var d=files[+download.getAttribute("data-pf-attachment-download")];if(d)downloadPfAttachment(d);return;}
   if(!del||!rec||!canEditPf(rec))return;var file=files[+del.getAttribute("data-pf-attachment-delete")];if(!file)return;
@@ -12492,6 +12499,7 @@ document.getElementById("proformaAttachmentPanel").addEventListener("click",func
 ["proformaAttachmentPanel","proformaAttachmentModalPanel"].forEach(function(id){var panel=document.getElementById(id),modal=id==="proformaAttachmentModalPanel";if(modal)panel.addEventListener("click",function(e){return handlePfAttachmentClick(e,true);});panel.addEventListener("dragover",function(e){var drop=e.target.closest("[data-pf-attachment-drop]");if(!drop)return;e.preventDefault();if(!S.attachmentBusy)drop.classList.add("dragover");});panel.addEventListener("dragleave",function(e){var drop=e.target.closest("[data-pf-attachment-drop]");if(drop&&!drop.contains(e.relatedTarget))drop.classList.remove("dragover");});panel.addEventListener("drop",function(e){return handlePfAttachmentDrop(e,modal);});});
 document.getElementById("proformaAttachmentInput").addEventListener("change",function(){var files=Array.prototype.slice.call(this.files||[]);var context=this._pfAttachmentContext;this.value="";this._pfAttachmentContext=null;handlePfAttachmentPicker(files,false,context);});
 document.getElementById("proformaAttachmentModalInput").addEventListener("change",function(){var files=Array.prototype.slice.call(this.files||[]);var context=this._pfAttachmentContext;this.value="";this._pfAttachmentContext=null;handlePfAttachmentPicker(files,true,context);});
+["proformaAttachmentInput","proformaAttachmentModalInput"].forEach(function(id){var input=document.getElementById(id),modal=id==="proformaAttachmentModalInput";input.addEventListener("click",function(e){var context=pfAttachmentActionContext(modal),rec=pfAttachmentRec(context.id);if(!pfPublicReady()||S.attachmentBusy||!pfAttachmentContextActive(context)||!rec||!canEditPf(rec)||!Object.prototype.hasOwnProperty.call(S.attachmentsByPf,context.id)){e.preventDefault();this._pfAttachmentContext=null;return;}this._pfAttachmentContext=context;});});
 document.getElementById("proformaAttachmentModalClose").addEventListener("click",closePfAttachmentModal);
 document.getElementById("proformaAttachmentModal").addEventListener("click",function(e){if(e.target===this)closePfAttachmentModal();});
 document.addEventListener("keydown",pfAttachmentModalKeydown,true);

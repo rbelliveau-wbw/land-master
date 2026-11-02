@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ready,ID,OTHER,held,drain} from './fixtures/proforma-sdk-v2-harness.mjs';
+import {ready,ID,OTHER,held,drain,source} from './fixtures/proforma-sdk-v2-harness.mjs';
 
 // Runs the whole current widget/controller/progress scripts, not a copied parser.
 const bytes=Uint8Array.from([0,255,32,65,10]);
@@ -91,4 +91,15 @@ function creator(config,storage,next){const content=preview(config);if(content)r
  denyReadback=false;
  const check=h.document.getElementById('pfAttachmentModalRecheck'),panel=h.document.getElementById('proformaAttachmentModalPanel');const checkEvent=await h.dispatch('click',check,{type:'click'});assert.notEqual(checkEvent.prevented,true,'capture gate permits read-only status recovery');await panel.fire('click',checkEvent);assert.equal(uploads,2,'recovery only reads saved parent/path');assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);assert.equal(h.widget.S.attachmentUploadResults[1].state,'Verified');assert.equal(h.widget.S.attachmentUploadResults[2].state,'Not sent');
 }
-console.log('PASS PF actual root/data upload receipts, exact scalar/object persisted path + parent, fail-closed/no replay, mounted inline attachment progress/recovery, and unchanged ordinary Save dialog.');
+{
+ const loading=held(),testSource=source.replace('window.__PFW_TEST__=','window.__pfPickerTest={render:renderPfAttachments,close:closePfAttachmentModal,active:pfAttachmentContextActive};window.__PFW_TEST__='),h=await ready({source:testSource,read:config=>config.report_name==='All_Attachments'?loading.promise:undefined}),input=h.document.getElementById('proformaAttachmentModalInput'),pickerTest=h.c.__pfPickerTest;
+ assert.equal(h.widget.openPfAttachmentModal(ID),true);assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input);assert.equal(input.parentNode.id,'proformaAttachmentModalPicker');assert.equal(input.disabled,true,'loading retains a visible disabled native chooser');assert.equal(input.hidden,false);
+ loading.resolve({code:3000,data:[]});await drain();assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input);assert.equal(input.disabled,false,'loaded attachments enable the original native input');
+ const context=h.widget.pfAttachmentActionContext(true);pickerTest.render(context);pickerTest.render(context);assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input);assert.equal(input.parentNode.id,'proformaAttachmentModalPicker');
+ let scriptedClicks=0;input.click=()=>scriptedClicks++;await input.fire('click',{preventDefault(){assert.fail('valid native chooser must retain its user gesture');}});await h.document.getElementById('proformaAttachmentModalPanel').fire('click',{target:input});assert.equal(scriptedClicks,0,'native input click bubbling never scripts a second chooser');assert.equal(input._pfAttachmentContext.id,ID);
+ pickerTest.close();assert.equal(h.widget.openPfAttachmentModal(ID),true);assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input,'close/reopen retains native listeners and identity');
+ h.widget.S.attachmentModal.scope='stale-session';assert.equal(pickerTest.active(h.widget.pfAttachmentActionContext(true)),false);assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input,'invalid-context replacement parks the original input safely');
+ assert.equal(h.widget.openPfAttachmentModal(ID),true);assert.equal(h.document.getElementById('proformaAttachmentModalInput'),input);assert.equal(input.parentNode.id,'proformaAttachmentModalPicker');assert.equal(input.hidden,false);assert.equal(input.disabled,false);assert.equal(input.inert,false,'a parked input never captures the next modal background inert state');
+ h.widget.S.perms.editAll=false;h.widget.S.perms.editOwned=false;pickerTest.render(h.widget.pfAttachmentActionContext(true));assert.match(h.document.getElementById('proformaAttachmentModalPanel').textContent,/Choose Files/);assert.equal(input.disabled,true,'read-only users retain the visible chooser without gaining upload access');
+}
+console.log('PASS PF actual root/data upload receipts, exact scalar/object persisted path + parent, fail-closed/no replay, mounted inline attachment progress/recovery, stable native picker through loading/rerender/reopen/context replacement, and unchanged ordinary Save dialog.');

@@ -1,3 +1,15 @@
+## Always-visible attachment picker — 122.29.86, November 2, 2026
+
+Choose Files stays visible in Budget attachment modals/workspaces and saved or
+draft PO, Budget Mod and Check/Wire attachment tabs. The styled picker contains
+a native multiple-file input, retaining the existing change/upload path and
+preventing duplicate picker clicks. Read-only, pending and unknown-write states
+disable the control instead of hiding it. Existing request association and draft
+upload timing are retained. No forms, fields, functions, Custom APIs or Creator
+deployment change. Regression checks cover shared/saved/draft picker routing and
+blocked states; full validation and Pages build are required.
+Rollback: Budget Manager 122.29.85.
+
 ## Budget owns quantities in Subdivision and Projects — October 27, 2026
 
 The Production `Sync_Budget_Metric_to_Projects` API is enabled and its complete

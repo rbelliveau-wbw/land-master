@@ -70,6 +70,15 @@ try{
   await page.evaluate(()=>S.attachmentBusy=true);await page.locator('#modModalClose').click();assert.equal(await page.locator('#modOverlay').evaluate(n=>n.classList.contains('show')),true,'Pending upload holds Close');await page.evaluate(()=>S.attachmentBusy=false);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#modOverlay').evaluate(n=>n.classList.contains('show')),false);assert.equal(await page.locator(button).evaluate(n=>n===document.activeElement),true);assert.equal(await page.locator(button).evaluate(n=>n.inert),false);
  }
+ // Choose Files is a visible native gesture target, including on unsaved request tabs.
+ await page.locator('#draftModOpen').click();
+ const draftPicker=page.locator('#modOverlay .attachment-page-picker');
+ assert.equal(await draftPicker.innerText(),'Choose Files');assert.equal(await draftPicker.isVisible(),true);
+ const choosing=page.waitForEvent('filechooser');await draftPicker.click();const chooser=await choosing;
+ assert.equal(chooser.isMultiple(),true);await chooser.setFiles([]);
+ assert.equal(await page.locator('#modOverlay .request-attachment-draft-row').count(),0,'Cancelling the native chooser stages no files');await page.keyboard.press('Escape');
+ await page.evaluate(()=>allowed=false);await page.locator('#draftModOpen').click();
+ assert.equal(await page.locator('#modOverlay .attachment-page-picker').isVisible(),true);assert.equal(await page.locator('#modOverlay [data-ra-draft-input]').isDisabled(),true,'Read-only draft retains disabled Choose Files');await page.keyboard.press('Escape');await page.evaluate(()=>allowed=true);
  // Budget-side choices use the same single-screen Save flow and the approved helper.
  await page.evaluate(()=>getRequestAttachmentUI().openPicker({budget:S.edBudget,mode:'association',file:allFiles[0],trigger:document.getElementById('view')}));
  await page.getByRole('button',{name:/Bud Mod · Roadwork/}).waitFor();assert.equal(await page.locator('[data-ra-hint]').innerText(),'Choose a request to link this attachment to.');assert.equal(await page.getByRole('button',{name:'Save',exact:true}).isDisabled(),true);

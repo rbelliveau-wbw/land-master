@@ -1,3 +1,14 @@
+## Always-visible attachment picker — 1.80.136, November 2, 2026
+
+Choose Files stays visible in both the attachment modal and record workspace.
+The native multiple-file input receives the user's gesture directly inside the
+styled control; clicks do not open the picker twice. Upload access, pending and
+unknown-write guards disable the control instead of hiding it. Existing upload,
+drop, preview and deletion paths are retained. No forms, fields, functions,
+Custom APIs or Creator deployment change. Regression checks cover picker routing,
+read-only and busy states; full validation and Pages build are required.
+Rollback: Proforma Manager 1.80.135.
+
 ## Duplication access and final recalculation — 1.80.135, October 29, 2026
 
 Anyone who can view a saved Pro Forma can duplicate it, including non-owners and

@@ -4,19 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.85"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.86"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.85"></script>
-<script src="po-grid.js?v=122.29.85"></script>
-<script src="po-controller.js?v=122.29.85"></script>
-<script src="po-progress.js?v=122.29.85"></script>
-<script src="po-ui.js?v=122.29.85"></script>
-<script src="request-attachments.js?v=122.29.85"></script>
-<script src="full-budget-export.js?v=122.29.85"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.85">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.85">
+<script src="po-domain.js?v=122.29.86"></script>
+<script src="po-grid.js?v=122.29.86"></script>
+<script src="po-controller.js?v=122.29.86"></script>
+<script src="po-progress.js?v=122.29.86"></script>
+<script src="po-ui.js?v=122.29.86"></script>
+<script src="request-attachments.js?v=122.29.86"></script>
+<script src="full-budget-export.js?v=122.29.86"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.86">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.86">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -419,6 +419,11 @@ table.at tr.aq-project-row td span{font-weight:700;color:var(--muted);font-size:
 .attachment-page-sub{font-size:11px;color:var(--muted);margin-top:3px}
 .attachment-page-actions{display:flex;align-items:center;gap:8px;flex:none}
 .attachment-page-add{height:34px;padding:0 13px;border-radius:9px}
+.attachment-page-picker{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;overflow:hidden;cursor:pointer}
+.attachment-page-picker input[type=file]{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.attachment-page-picker:focus-within{outline:2px solid #729ed4;outline-offset:2px}
+.attachment-page-picker.disabled{opacity:.65;cursor:default}
+.attachment-page-picker.disabled input[type=file]{cursor:default}
 .attachment-page-list{padding:0 14px 12px}
 .attachment-page-drop{display:flex;align-items:center;gap:10px;margin:14px 14px 10px;padding:10px 13px;border:1.5px dashed #b9c8dc;border-radius:10px;background:#f8fbff;transition:border-color 180ms ease,background 180ms ease}
 .attachment-page-drop.dragover{border-color:var(--primary);background:#eef4ff}
@@ -1837,15 +1842,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.85">
-<script src="success-feedback.js?v=122.29.85"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.85">
-<script src="interaction-motion.js?v=122.29.85"></script>
-<script src="interaction-surfaces.js?v=122.29.85"></script>
-<script src="number-edit-commit.js?v=122.29.85"></script>
-<script src="number-transitions.js?v=122.29.85"></script>
-<script src="number-surfaces.js?v=122.29.85"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.85">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.86">
+<script src="success-feedback.js?v=122.29.86"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.86">
+<script src="interaction-motion.js?v=122.29.86"></script>
+<script src="interaction-surfaces.js?v=122.29.86"></script>
+<script src="number-edit-commit.js?v=122.29.86"></script>
+<script src="number-transitions.js?v=122.29.86"></script>
+<script src="number-surfaces.js?v=122.29.86"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.86">
 </head>
 <body>
 
@@ -2737,7 +2742,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.85", code:"BMW",
+  widget:"Budget Manager", version:"122.29.86", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -7592,10 +7597,11 @@ function renderAttachmentPage(b, target, modal) {
   S.attachmentPageFileIndex = -1;
   S.attachmentPageExpanded = false;
   var uploadBlocked=!!(S.attachmentBusy || S.attachmentUploadReview || attachmentAssociationReview);
-  var uploadArea = canAdd ? "<div class='attachment-page-drop" + (uploadBlocked ? " disabled" : "") + "' data-budget-attachment-drop aria-disabled='" + uploadBlocked + "'>" +
+  var pickerBlocked=!canAdd || uploadBlocked;
+  var uploadArea = "<div class='attachment-page-drop" + (pickerBlocked ? " disabled" : "") + "' data-budget-attachment-drop aria-disabled='" + pickerBlocked + "'>" +
     "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7'><path d='M12 16V4m-4 4 4-4 4 4'/><path d='M4 15v5h16v-5'/></svg>" +
-    "<div class='attachment-page-upload-hint' data-add-budget-attachment><b>Drop files here or click to upload</b>50 MB per file</div>" +
-    "<button class='btn primary attachment-page-add' data-add-budget-attachment type='button'" + (uploadBlocked ? " disabled" : "") + ">" + (S.attachmentBusy ? "Uploading…" : "Choose Files") + "</button></div>" : "";
+    "<div class='attachment-page-upload-hint'"+(canAdd?" data-add-budget-attachment":"")+"><b>"+(canAdd?"Drop files here or click to upload":"Attachment upload permission is required.")+"</b>50 MB per file</div>" +
+    "<label class='btn primary attachment-page-add attachment-page-picker"+(pickerBlocked?" disabled":"")+"'>Choose Files<input type='file' multiple data-budget-attachment-native-picker aria-label='Choose Files'"+(pickerBlocked?" disabled":"")+"></label></div>";
   var rows = "";
   if (files.length) {
     rows = "<div class='attachment-page-list' data-lm-row-list='request-attachment-files'>" + files.map(function(file){
@@ -11673,6 +11679,16 @@ document.addEventListener("click", function(e){
   if(e.target.closest("[data-close-budget-attachment-modal]")||e.target.id==="budgetAttachmentModalOverlay"){e.preventDefault();closeBudgetAttachmentModal();return;}
   if(e.target.closest("[data-retry-budget-attachment-modal]")){e.preventDefault();refreshBudgetAttachmentModal();return;}
   if(e.target.closest("[data-recheck-budget-upload]")){e.preventDefault();recheckBudgetAttachmentUpload();return;}
+  var nativePicker=e.target.closest("[data-budget-attachment-native-picker]");
+  if(nativePicker){
+    var nativeModal=S.attachmentModal,nativeBudget=nativeModal?(budgetAttachmentModalCurrent(nativeModal)&&!nativeModal.loading?nativeModal.budget:null):S.edBudget;
+    if(!nativeBudget||!canAddBudgetAttachment(nativeBudget)||S.attachmentBusy||S.attachmentUploadReview||attachmentAssociationReview){e.preventDefault();return;}
+    nativePicker.value="";
+    nativePicker._budgetAttachmentNativePicker=true;
+    nativePicker._budgetAttachmentModal=nativeModal;
+    var nativeSurface=requestAttachmentSurface(nativePicker);nativePicker._requestAttachmentContext=nativeSurface?nativeSurface.requestContext:null;nativePicker._requestAttachmentSurface=nativeSurface;
+    return;
+  }
   var add = e.target.closest("[data-add-budget-attachment]");
   if (add) {
     e.preventDefault();
@@ -11729,6 +11745,7 @@ function handleBudgetAttachmentInput() {
   if (!selected.length) return;
   if(this.id==="budgetAttachmentModalInput"&&(!budgetAttachmentModalCurrent(this._budgetAttachmentModal)||this._budgetAttachmentModal.loading))return;
   if(this.id==="budgetAttachmentInput"&&S.attachmentModal)return;
+  if(this._budgetAttachmentNativePicker&&(this._budgetAttachmentModal?(!budgetAttachmentModalCurrent(this._budgetAttachmentModal)||this._budgetAttachmentModal.loading):!!S.attachmentModal))return;
   auditLog("info", "Budget attachments selected", {
     budgetId:S.attachmentModal?S.attachmentModal.budgetId:S.edBudget ? String(S.edBudget.ID) : "",
     count:selected.length,
@@ -11739,6 +11756,7 @@ function handleBudgetAttachmentInput() {
   uploadBudgetAttachments(selected,context);
 }
 ["budgetAttachmentInput","budgetAttachmentModalInput"].forEach(function(id){var input=$(id);if(input)input.addEventListener("change",handleBudgetAttachmentInput);});
+document.addEventListener("change",function(e){if(e.target.matches("[data-budget-attachment-native-picker]"))handleBudgetAttachmentInput.call(e.target);});
 document.addEventListener("keydown",handleBudgetAttachmentModalKey,true);
 document.addEventListener("focusin",handleBudgetAttachmentModalFocus,true);
 document.addEventListener("keydown", function(e){ if (e.key === "Escape" && $("attachmentPreviewOverlay") && $("attachmentPreviewOverlay").classList.contains("show")) closeAttachmentPreview(); });
@@ -14126,7 +14144,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.85",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.86",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

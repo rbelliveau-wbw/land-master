@@ -490,7 +490,7 @@ for(const options of [{createError:new Error('Child created but response lost')}
   const pane={innerHTML:''};c.$=() => pane;c.S.edPhaseIdx=0;
   Object.assign(c,{budgetFeature:() => ({status:'loaded'}),budgetNavigationToken:() => 1,budgetAttachments:() => [{name:'existing.pdf',recordId:'900000000000000005'}],phaseName:() => 'Phase',attachmentIconSvg:() => '',attachmentExt:() => 'pdf',esc:value => String(value),escAttr:value => String(value)});
   vm.runInContext(block('renderAttachmentPage'),c);c.renderAttachmentPage(c.S.edBudget);
-  assert.match(pane.innerHTML,/data-add-budget-attachment type='button' disabled/);
+  assert.match(pane.innerHTML,/Choose Files<input type='file' multiple data-budget-attachment-native-picker aria-label='Choose Files' disabled>/,'uncertain upload keeps Choose Files visible with its native input disabled');
   assert.match(pane.innerHTML,/data-recheck-budget-upload/,'uncertain outcome exposes a read-only Recheck action');
   assert.match(pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/,'mounted row Delete stays disabled during review');
   c.S.attachmentUploadReview=null;c.S.attachmentBusy=true;c.renderAttachmentPage(c.S.edBudget);
@@ -502,6 +502,8 @@ for(const options of [{createError:new Error('Child created but response lost')}
   vm.runInContext(source.slice(start,source.indexOf('\n});',start)+4),c);
   handler({preventDefault:() => {},target:{closest:selector => selector === '[data-add-budget-attachment]' ? {} : null}});
   assert.equal(chooser,0,'the actual delegated Add action cannot open another chooser while uncertain');
+  let nativePrevented=0;handler({preventDefault:() => nativePrevented++,target:{closest:selector => selector === '[data-budget-attachment-native-picker]' ? {} : null}});
+  assert.equal(nativePrevented,1,'the direct native chooser also blocks activation while upload outcome is uncertain');assert.equal(chooser,0);
   handler({preventDefault:() => {},target:{closest:selector => selector === '[data-recheck-budget-upload]' ? {} : null}});
   assert.equal(rechecks,1,'the actual delegated Recheck action invokes only the safe recheck path');
 }
