@@ -25,6 +25,12 @@ function fixtureSDK(data){
   names.forEach((name,index)=>data.employees.push({ID:'900719925474089'+String(index).padStart(2,'0'),BU_Employee_ID:'ROSTER-PREVIEW-'+index,EmployeeName:name,Employee_Code:String(1700+index),IsActive:true,Territory:index%3?'North Austin':'Waco',Labor_Type:index===0?'Foreman':index%2?'Skilled':'Laborer',Crew:index>6?{ID:null,zc_display_value:''}:{ID:data.crews[index%2].ID},Synced_At:'10/21/2026 08:00:00'}));
  }
  const tables={All_Employees:data.employees,All_Crew_Timecards:data.timecards,All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,Crew_Assignment_Report:data.assignments,All_Task_Schedules:data.tasks};
+ if(new URLSearchParams(location.search).has('splitGripsPreview')){
+  const find=(phase,stage)=>data.milestones.find(row=>row.Subdivision1.ID===data.subdivisions[phase].ID&&row.Milestone_Name===stage);
+  find(1,'Sewer').Start_Date=find(1,'Rough Cut').End_Date;
+  find(0,'Road Prep').End_Date='10/26/2026';
+  Object.assign(find(2,'Rough Cut'),{Start_Date:'11/15/2026',End_Date:'11/15/2026'});
+ }
  if(fixture.mode==='paged')for(let i=0;i<201;i++)data.crews.push({...data.crews[0],ID:String(810000+i),Crew_Code:'PAGE-'+i});
  function nativeRows(config){let rows=tables[config.report_name];if(fixture.mode==='scope-denied')rows=rows.filter(row=>!(config.report_name==='All_Subdivisions'&&row.ID==='90071992547409933')&&!(config.report_name==='Crew_Assignment_Report'&&row.ID==='90071992547407011'));const criteria=config.criteria||'',id=/^\(ID == (\d+)\)$/.exec(criteria);if(id)return rows.filter(row=>row.ID===id[1]);if(config.report_name==='All_Crews'){const code=/Crew_Code == "([^"]+)"/.exec(criteria),source=/Source_Record_ID == "([^"]+)"/.exec(criteria);if(code||source)rows=rows.filter(row=>(code&&row.Crew_Code.toLowerCase()===code[1].toLowerCase())||(source&&row.Source_System==='MANUAL_WIDGET'&&row.Source_Record_ID===source[1]));}return rows;}
  function nativeDenied(config){return fixture.mode==='report-denied'&&config.report_name==='Crew_Assignment_Report';}

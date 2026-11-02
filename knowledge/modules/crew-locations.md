@@ -1,5 +1,16 @@
 # Crew Management
 
+## 1.9.1 — Split Grips
+
+Editable milestone Start and End grips are permanently visible inside their
+own bars. Touching bars have separate targets, with section colors and paired
+vertical marks; hover no longer creates a bar stacking context that can switch
+which endpoint receives the pointer. Narrow and zero-day bars cap the targets
+to their available halves. Existing date mapping, pointer capture, keyboard
+boundary editor, preview/cancel behavior, permissions and native saves are reused.
+No form, field, function, API or Creator deployment changes are required.
+See [verification and rollback](../../docs/crew-split-grips-2026-11-02.md).
+
 ## 1.9.0 — Employees By Crew
 
 The employee pane now groups by the saved Employees.Crew lookup instead of

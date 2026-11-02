@@ -2155,5 +2155,13 @@
       "Creator components, permissions and APIs"
     ],
     "recovery": "Creator Audit Trail deleted-record recovery; widget rollback does not restore deleted test records."
+  },
+  "split_grips_2026_11_02": {
+    "release": "1.9.1",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-split-grips-2026-11-02.md",
+    "scope": "Permanently visible 18px inward milestone grips with distinct targets, section identity and stable hover stacking; existing drag controller, permissions, cancellation and native save path reused unchanged.",
+    "rollback": "Production crew-locations mapping to 1.9.0; retain native metadata, dates, staffing and audit history."
   }
 }

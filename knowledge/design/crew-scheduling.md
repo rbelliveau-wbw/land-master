@@ -89,6 +89,16 @@ during the preview. A click or sub-threshold movement never saves. Escape, point
 cancellation/capture loss, window blur, view changes and actor invalidation restore
 the source span and send nothing. Invalid spans are red and cannot be saved.
 
+November 2 selected **Split Grips**: keep editable milestone grips visible and
+18px wide inside their own bar, with Start on the inside left and End on the
+inside right. Cap each grip at half the available bar width (the full width
+when only one endpoint is editable), so short and zero-day spans do not create
+overlapping targets. Reuse the section's purple, outlined white or grey color
+and two vertical grip marks. Hover must never change the bar's stacking order;
+grips remain above overlap inspectors, and only the captured active resize raises
+its bar. Preserve exact date geometry, row height, pointer capture, keyboard
+boundary editing, cancellation, guards and native save behavior.
+
 Put stage/endpoint, before → after dates, day change, total duration and Save/Cancel
 feedback beside the edge being changed, within the timeline viewport. Do not put
 this data in a fixed bottom banner. Pending, Saved and failure/unknown feedback

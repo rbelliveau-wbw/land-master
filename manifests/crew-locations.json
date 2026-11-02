@@ -1,7 +1,7 @@
 {
-  "status": "1.9.0-employee-crew-groups-creator-9.137",
+  "status": "1.9.1-split-grips-creator-9.137",
   "widget": "crew-locations",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -809,5 +809,13 @@
     "reference": "docs/crew-employees-by-crew-2026-11-02.md",
     "scope": "Each employee displayed once by saved Crew, foremen first, crew color/code and counts, Unassigned last; existing staffing permissions, native writes and captured foreman-group review retained.",
     "rollback": "Production crew-locations mapping to 1.8.3; retain all native metadata, staffing and audit history."
+  },
+  "split_grips_2026_11_02": {
+    "release": "1.9.1",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-split-grips-2026-11-02.md",
+    "scope": "Permanently visible 18px inward milestone grips with distinct targets, section identity and stable hover stacking; existing drag controller, permissions, cancellation and native save path reused unchanged.",
+    "rollback": "Production crew-locations mapping to 1.9.0; retain native metadata, dates, staffing and audit history."
   }
 }
