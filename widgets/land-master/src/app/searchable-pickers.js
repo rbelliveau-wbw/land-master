@@ -33,12 +33,16 @@
   }
   function render() {
     list.replaceChildren();
-    var query = search.value.trim().toLowerCase();
+    var query = search.value.trim().toLowerCase(), group = null, showDisabled = active.getAttribute('data-show-disabled') === '1';
     Array.from(active.options).forEach(function (option) {
-      if (!option.value || option.disabled || option.textContent.toLowerCase().indexOf(query) < 0) return;
+      if (!option.value || (!showDisabled && option.disabled) || option.textContent.toLowerCase().indexOf(query) < 0) return;
+      if (option.parentElement.tagName === 'OPTGROUP' && group !== option.parentElement) {
+        group = option.parentElement;
+        var heading = document.createElement('div'); heading.className = 'lm-picker-group'; heading.setAttribute('role', 'presentation'); heading.textContent = group.label; list.append(heading);
+      }
       var row = document.createElement('button');
       row.type = 'button'; row.className = 'lm-picker-option';
-      row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(option.selected));
+      row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(option.selected)); row.disabled = option.disabled; row.setAttribute('aria-disabled', String(option.disabled));
       var text = document.createElement('span'); text.textContent = option.textContent;
       if (active.multiple) {
         var mark = document.createElement('span'); mark.className = 'lm-picker-mark'; mark.innerHTML = option.selected ? "<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"m4 10 4 4 8-8\"/></svg>" : '';
@@ -46,9 +50,9 @@
       }
       row.append(text);
       row.addEventListener('click', function () {
-        if (!active) return;
+        if (!active || option.disabled) return;
         if (active.multiple) { option.selected = !option.selected; change(); render(); }
-        else { active.value = option.value; change(); close(true); }
+        else { active.selectedIndex = option.index; change(); close(true); }
       });
       list.append(row);
     });
@@ -75,7 +79,7 @@
     menu.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(true); }
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        event.preventDefault(); var rows = Array.from(list.querySelectorAll('button'));
+        event.preventDefault(); var rows = Array.from(list.querySelectorAll('button:not(:disabled)'));
         if (!rows.length) return; var current = rows.indexOf(document.activeElement), next = event.key === 'ArrowDown' ? Math.min(current + 1, rows.length - 1) : Math.max(current - 1, 0); rows[next].focus();
       }
       if (event.key === 'Tab') {
@@ -116,7 +120,7 @@
     var height = Math.min(menu.offsetHeight, window.innerHeight-24);
     menu.style.top = Math.max(12, rect.bottom+height+6 < window.innerHeight-12 ? rect.bottom+6 : Math.min(rect.top-height-6, window.innerHeight-height-12))+'px';
     select._pickerButton.setAttribute('aria-expanded', 'true');
-    var focus = searchable ? search : list.querySelector('[aria-selected="true"]') || list.querySelector('button');
+    var focus = searchable ? search : list.querySelector('[aria-selected="true"]:not(:disabled)') || list.querySelector('button:not(:disabled)');
     if (focus) focus.focus();
   }
   function enhance(root) {

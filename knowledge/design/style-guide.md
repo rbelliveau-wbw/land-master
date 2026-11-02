@@ -596,3 +596,5 @@ ignore stale replies, and hide the notice when available. Retain a final server
 check and native uniqueness enforcement for concurrent writers. Tax Center's
 parcel-year creation adopts this pattern; do not claim other forms have adopted
 live checking merely because they display native validation details.
+
+Property Subtype is dependent on Land Type. Keep Other, Residential, and Commercial group headings and all values visible; grey out unavailable choices and omit them from keyboard selection. Disable the whole control until Land Type is selected and for LOI. Shared values remain available in each relevant category. Clear an incompatible draft when Land Type changes and enforce the pair before a native write.

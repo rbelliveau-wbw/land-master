@@ -169,6 +169,15 @@ read-only. This supersedes earlier automatic field-equality requirements. See
 [implementation, regressions and rollback](../../docs/automatic-save-check-removal-2026-10-08.md).
 # Land Master Module
 
+## Land Type / Subtype — 8.17.8, November 2, 2026
+
+Property Subtype follows the categories and ordering in the supplied land subtype slide. School District is Residential; Personal Property is available for both Other and Commercial; Tract is available for both Other and Residential. All categories remain visible in the widget with incompatible choices disabled. The entire Subtype control is disabled until Land Type is selected, and for LOI. LOI requires a blank Subtype.
+
+The existing custom picker now supports optgroup headings and explicitly visible disabled choices, including keyboard exclusion and exact duplicate-option selection. Modal, inline, and mass Property edits reuse the same small subtype rules module because no existing category contract was present. Changing Land Type clears an incompatible Subtype in the same write; compatible shared values survive. Opening an old mismatch preserves the displayed saved value until corrected, and the modal rejects mismatches before saving. Property write guards reject invalid submitted pairs; mass updates preflight every target. Unrelated edits and existing mutation acknowledgements retain their behavior. No record migration is performed.
+
+Changed files: widget HTML, property-subtypes.js, picker JS/CSS, widget config/manifest, subtype regression, validation command, design/module documentation, release 8.17.8 and Development/Production mapping. Forms/fields: Property.Land_Type and Property.Subtype. No functions, Custom APIs, native validation scripts, or form workflows change. School District was added and saved through the native Subtype field UI in Development; Personal Property already existed in the same picklist. The temporary scripted form workflow was deleted at the user’s direction, and the live workflow list confirmed its removal. All category/dependency validation lives in the widget. Promote the additive native field change separately; PMP leaves Creator promotion to the user. Regression: full npm validation and Pages build; desktop browser verification of the real new-Property modal, blank disabled control, three visible categories, grey disabled choices, Commercial-to-Other Personal Property preservation, Residential mismatch clear/School District selection, and LOI blank/disabled state. Focused fixtures cover category memberships, legacy mismatches, atomic update clears, create/update guards, bulk preflight and exact string record IDs. No live Property records were written. Rollback: Land Master 8.17.6; preserve the additive native picklist value and any entered data.
+
+
 ## Project expansion drift — 8.16.9, October 20, 2026
 
 The actual Projects renderer reproduced the recording: numeric decoration
