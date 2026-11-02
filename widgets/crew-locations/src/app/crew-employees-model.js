@@ -60,5 +60,21 @@
     const latest=recent.length?Math.max(...recent.map(r=>r.date)):null,jobs=new Map();for(const row of recent.filter(r=>r.date===latest))jobs.set(row.phaseId+':'+row.jobCode,row);
     return {members,foremen,latest,jobs:[...jobs.values()]};
   }
-  root.CrewEmployeesModel=Object.freeze({assignBadges,foremanGroups,crewStaffing,label,truth,guid});
+  function crewGroups(employees,crews){
+    const M=root.CrewModel,byId=new Map(crews.map(crew=>[M.id(crew.ID),crew])),groups=new Map(),seen=new Set();
+    for(const employee of employees){
+      const employeeId=M.id(employee.ID);if(seen.has(employeeId))continue;seen.add(employeeId);
+      const crewId=M.id(employee.Crew),key=crewId||'unassigned';
+      let group=groups.get(key);if(!group){group={key,crewId,crew:byId.get(crewId)||null,members:[],foremen:[]};groups.set(key,group);}
+      group.members.push(employee);if(M.norm(employee.Labor_Type)==='foreman')group.foremen.push(employee);
+    }
+    const name=group=>group.crew?(group.crew.Crew_Name||group.crew.Crew_Code):group.crewId?'Unavailable Crew':'Unassigned';
+    for(const group of groups.values()){
+      group.name=name(group);
+      group.members.sort((a,b)=>Number(M.norm(b.Labor_Type)==='foreman')-Number(M.norm(a.Labor_Type)==='foreman')||String(a.EmployeeName).localeCompare(String(b.EmployeeName))||M.id(a.ID).localeCompare(M.id(b.ID)));
+      group.foremen.sort((a,b)=>String(a.EmployeeName).localeCompare(String(b.EmployeeName)));
+    }
+    return [...groups.values()].sort((a,b)=>Number(!a.crewId)-Number(!b.crewId)||a.name.localeCompare(b.name,undefined,{numeric:true})||a.key.localeCompare(b.key));
+  }
+  root.CrewEmployeesModel=Object.freeze({assignBadges,foremanGroups,crewStaffing,crewGroups,label,truth,guid});
 })(window);

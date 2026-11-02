@@ -13,9 +13,11 @@ labels and action labels use Title Case, such as **By Foreman**, **Labor Type**
 and **New Crew**. Keep record names and source-owned values unchanged; ordinary
 status/error sentences remain sentences. Crew Management keeps workspace tabs
 beside its title and combines employees and crews in equal desktop panes on
-**Crews**. Group employees by Foreman, with search and a compact status menu;
-omit the Roster / By Foreman switch. Use horizontal space before adding another
-toolbar row. Foreman member rows use compact single-line names/codes and inline searchable staffing
+**Crews**. November 2 groups each employee once by their saved Crew, with
+crew code/color badges, member counts, assigned foreman names and an amber
+Unassigned section. Keep search and a compact status menu; omit the Roster /
+By Foreman switch. Use horizontal space before adding another toolbar row.
+Member rows use readable names/codes, small initials and Foreman cues with inline searchable staffing
 pickers. Preserve exact text in titles when shortened, existing native writes,
 permission guards and unknown-save recovery.
 

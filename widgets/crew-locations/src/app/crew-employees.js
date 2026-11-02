@@ -8,7 +8,7 @@
   const storageKey=()=>{const c=bridge().context();return 'crew-employees:pending:'+c.user+':'+c.environment;};
   const canWrite=()=>S.ready&&S.canAssign&&bridge().permissions().assignments===true;
   const locked=()=>S.groupBusy||S.loading||S.saving||!!S.pending||bridge().context().busy||bridge().context().unknown;
-  function preserveFocus(){const b=document.activeElement;if(b?.dataset.employeeInline)S.focusCell={id:b.dataset.employeeInline,field:b.dataset.field,foreman:b.closest('[data-foreman]')?.dataset.foreman,crew:b.closest('[data-crew-detail]')?.dataset.crewDetail};}
+  function preserveFocus(){const b=document.activeElement;if(b?.dataset.employeeInline)S.focusCell={id:b.dataset.employeeInline,field:b.dataset.field,crew:b.closest('[data-crew-detail]')?.dataset.crewDetail};}
   function staffing(crewId){const context=bridge().context();if(!S.ready||S.scope!==identity()||context.ready===false)return {ready:false,members:[],foremen:[],jobs:[]};const model=bridge().model();return {ready:true,...E.crewStaffing(S.rows,model?.foremanTimecards?model.timecards:[],crewId,M.today())};}
   function assignmentCell(id,key){if(!Object.hasOwn(fieldLabels,key)||!S.ready||S.scope!==identity())return '';const row=S.rows.find(r=>r.ID===id);return row?cell(row,key):'';}
   function feedbackForCrew(id){return S.ready&&S.scope===identity()&&S.crewSurface===id?S.staffingFeedback||{text:'',state:'ready'}:{text:'',state:'ready'};}
@@ -34,7 +34,7 @@
     document.querySelectorAll('[data-employee-status]').forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.employeeStatus===S.status)));
     $('employeeFilterLabel').textContent={active:'Active',inactive:'Inactive',all:'All'}[S.status];renderGroups(crews);controls();
   }
-  function restoreCellFocus(){if(S.groupBusy||S.loading||S.saving||S.pending)return;const f=S.focusCell;if(f&&document.activeElement===document.body){const host=f.crew?document.querySelector('[data-crew-detail="'+f.crew+'"]'):f.foreman?document.querySelector('[data-foreman="'+f.foreman+'"]'):$('employeeGroups');const button=host?.querySelector('[data-employee-inline="'+f.id+'"][data-field="'+f.field+'"]:not(:disabled)');(button||f.crew&&$('cmEditCrew'))?.focus({preventScroll:true});}S.focusCell=null;}
+  function restoreCellFocus(){if(S.groupBusy||S.loading||S.saving||S.pending)return;const f=S.focusCell;if(f&&document.activeElement===document.body){const host=f.crew?document.querySelector('[data-crew-detail="'+f.crew+'"]'):$('employeeGroups');const button=host?.querySelector('[data-employee-inline="'+f.id+'"][data-field="'+f.field+'"]:not(:disabled)');(button||f.crew&&$('cmEditCrew'))?.focus({preventScroll:true});}S.focusCell=null;}
   function recordedGroups(){return S.groupsEnabled?E.foremanGroups(S.rows,S.timecards,M.today()):[];}
   function groupAssignment(employeeId){
     const group=recordedGroups().find(g=>g.foreman.ID===employeeId);if(!group)return null;
@@ -42,20 +42,19 @@
     return {foremanId:employeeId,foremanName:group.foreman.EmployeeName,rows:[...new Map(rows.map(r=>[r.ID,{id:r.ID,name:r.EmployeeName,crewId:M.id(r.Crew)}])).values()]};
   }
   function renderGroups(crews){
-    let groups=[];try{groups=recordedGroups();}catch(error){$('employeeGroups').replaceChildren();$('employeeGroupStatus').textContent=error.message;return;}
-    const matches=r=>(S.status==='all'||E.truth(r.IsActive)===(S.status==='active')),query=M.norm(S.query),represented=new Set(),html=[];
-    const memberHtml=(row,detail='')=>'<tr data-member="'+esc(row.ID)+'"><td class="employee-name" title="'+esc(row.EmployeeName+(detail?' · '+detail:''))+'"><strong>'+esc(row.EmployeeName)+'</strong><small>'+esc(row.Employee_Code)+(E.truth(row.IsActive)?'':' · Inactive')+'</small></td><td>'+cell(row,'territory')+'</td><td>'+cell(row,'laborType')+'</td><td>'+cell(row,'crewId')+'</td></tr>';
+    const matches=r=>(S.status==='all'||E.truth(r.IsActive)===(S.status==='active')),query=M.norm(S.query),html=[];
+    const groups=E.crewGroups(S.rows.filter(matches),[...crews.values()]);let visible=0,assignedGroups=0,unassigned=0;
+    const peopleIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 20v-2a6 6 0 0 0-4-5.65"/></svg>';
+    const memberHtml=row=>{const foreman=M.norm(row.Labor_Type)==='foreman',initials=String(row.EmployeeName||'').trim().split(/\s+/).filter(Boolean).map(part=>part[0]).filter((_,i,all)=>i===0||i===all.length-1).join('').slice(0,2);return '<tr data-member="'+esc(row.ID)+'"'+(foreman?' class="employee-is-foreman"':'')+'><td class="employee-name" title="'+esc(row.EmployeeName+(row.Employee_Code?' · '+row.Employee_Code:''))+'"><div class="employee-person"><span class="employee-avatar" aria-hidden="true">'+esc(initials)+'</span><div class="employee-person-copy"><strong>'+esc(row.EmployeeName)+'</strong><small>'+esc(row.Employee_Code)+(E.truth(row.IsActive)?'':' · Inactive')+'</small>'+(foreman?'<span class="employee-role">Foreman</span>':'')+'</div></div></td><td>'+cell(row,'territory')+'</td><td>'+cell(row,'laborType')+'</td><td>'+cell(row,'crewId')+'</td></tr>';};
     for(const group of groups){
-      const owner=group.foreman;represented.add(owner.ID);for(const m of group.members.values())represented.add(m.employee.ID);
-      const ownerMatch=M.norm(owner.EmployeeName+' '+owner.Employee_Code+' '+(crews.get(M.id(owner.Crew))?.Crew_Name||'')).includes(query);
-      const members=[...group.members.values()].filter(m=>matches(m.employee)&&(ownerMatch||M.norm(m.employee.EmployeeName+' '+m.employee.Employee_Code+' '+[...m.jobs].join(' ')).includes(query))).sort((a,b)=>String(a.employee.EmployeeName).localeCompare(String(b.employee.EmployeeName)));
-      if(!members.length&&!(ownerMatch&&matches(owner)))continue;
-      html.push('<article class="employee-foreman-group" data-foreman="'+esc(group.key)+'"><header><div class="employee-owner"><h3 title="'+esc(owner.EmployeeName)+'">'+esc(owner.EmployeeName)+(E.truth(owner.IsActive)?'':' · Inactive')+'</h3><span class="cm-count" title="Employees in this timecard group"><span data-crew-number="foreman:'+esc(group.key)+':members">'+group.members.size+'</span></span></div>'+cell(owner,'territory')+cell(owner,'laborType')+cell(owner,'crewId')+'</header><table><tbody>'+members.map(m=>memberHtml(m.employee,'Work Dates: '+[...m.dates].sort((a,b)=>a-b).map(M.us).join(', ')+' · Jobs: '+[...m.jobs].join(', '))).join('')+'</tbody></table></article>');
+      const crew=group.crew,groupMatch=M.norm(group.name+' '+(crew?.Crew_Code||'')).includes(query),members=group.members.filter(row=>groupMatch||M.norm(row.EmployeeName+' '+row.Employee_Code+' '+row.Territory+' '+row.Labor_Type).includes(query));
+      if(!members.length)continue;
+      visible+=members.length;if(group.crewId)assignedGroups++;else unassigned+=members.length;
+      const color=/^#[a-f\d]{6}$/i.test(crew?.Badge_Color||'')?crew.Badge_Color:group.crewId?'#49688c':'#a16b24',foremen=group.foremen.map(row=>row.EmployeeName).join(', '),context=foremen?(group.foremen.length===1?'Foreman: ':'Foremen: ')+foremen:group.crewId?'No Assigned Foreman':'Awaiting Crew Assignment',badge=crew?esc(E.label({name:crew.Crew_Name,code:crew.Crew_Code})):peopleIcon;
+      html.push('<article class="employee-crew-group'+(!group.crewId?' employee-unassigned':'')+'" data-employee-crew="'+esc(group.key)+'" style="--employee-crew-accent:'+color+';--employee-crew-ink:'+(root.CrewApp.badgeInk?.(color)||'#ffffff')+'"><header><span class="employee-crew-badge" aria-hidden="true">'+badge+'</span><div class="employee-crew-title"><h3 title="'+esc(group.name)+'">'+esc(group.name)+(crew&&!E.truth(crew.Active)?'<span class="employee-crew-inactive">Inactive</span>':'')+'</h3><p title="'+esc(context)+'">'+esc(context)+'</p></div><span class="employee-crew-count">'+peopleIcon+'<span data-crew-number="employee-crew:'+esc(group.key)+':members">'+members.length+'</span><span>'+(members.length===1?'Employee':'Employees')+'</span></span></header><table aria-label="'+esc(group.name+' Employees')+'"><tbody>'+members.map(memberHtml).join('')+'</tbody></table></article>');
     }
-    const ungrouped=S.rows.filter(r=>!represented.has(r.ID)&&matches(r)&&M.norm(r.EmployeeName+' '+r.Employee_Code+' '+r.Territory+' '+r.Labor_Type).includes(query));
-    if(ungrouped.length)html.push('<article class="employee-foreman-group employee-ungrouped" data-foreman="unassigned"><header><h3>No Recent Foreman</h3><span class="cm-count">'+ungrouped.length+'</span></header><table><tbody>'+ungrouped.map(r=>memberHtml(r)).join('')+'</tbody></table></article>');
     $('employeeGroups').innerHTML=html.join('')||'<div class="cm-empty compact">No Matching Employees</div>';
-    $('employeeGroupStatus').textContent='Recent Timecards · '+M.us(M.today()-13)+'–'+M.us(M.today());
+    $('employeeGroupStatus').innerHTML='<span class="employee-group-mode">'+peopleIcon+'By Crew</span><span><span data-crew-number="employees:visible">'+visible+'</span> '+(visible===1?'Employee':'Employees')+'</span><span><span data-crew-number="employees:visible-crews">'+assignedGroups+'</span> '+(assignedGroups===1?'Crew':'Crews')+'</span>'+(unassigned?'<span class="employee-unassigned-count"><span data-crew-number="employees:unassigned">'+unassigned+'</span> Unassigned</span>':'');
   }
   async function load(){
     if(S.groupBusy||S.loading||S.saving||S.pending)return;
@@ -66,7 +65,7 @@
       if(cap.sources?.employees!==true)throw Object.assign(new Error('Employee setup requires Creator promotion.'),{setup:true});
       if(scope!==identity()||generation!==S.generation)return;
       S.canAssign=cap.permissions?.assignments===true;
-      const reports=[['All_Employees',['ID','BU_Employee_ID','Employee_Code','EmployeeName','IsActive','Territory','Labor_Type','Crew','Synced_At']],['All_Crews',['ID','Crew_Code','Crew_Name','Active']]];
+      const reports=[['All_Employees',['ID','BU_Employee_ID','Employee_Code','EmployeeName','IsActive','Territory','Labor_Type','Crew','Synced_At']],['All_Crews',['ID','Crew_Code','Crew_Name','Active','Badge_Color']]];
       const groupsEnabled=cap.sources?.foremanGroups===true;
       if(groupsEnabled)reports.push(['All_Crew_Timecards',['ID','Timecard_ID','Work_Date','Foreman_ID','Foreman_Name','Job_Code','IsDeleted','Multi_Line']]);
       const values=await Promise.all(reports.map(async([reportName,fields])=>{const rows=await LMData.readAll({reportName,fields,criteria:reportName==='All_Crew_Timecards'?"(Work_Date >= '"+M.us(M.today()-13)+"' && Work_Date <= '"+M.us(M.today())+"')":undefined,fresh:true,isCancelled:()=>scope!==identity()||generation!==S.generation});for(const row of rows)for(const field of fields)if(!Object.hasOwn(row,field))throw new Error(reportName+' must expose native field '+field+'.');for(const row of rows)if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID))throw new Error('Invalid employee, crew or timecard identity.');return rows;}));

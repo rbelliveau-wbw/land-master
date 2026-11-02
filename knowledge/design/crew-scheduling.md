@@ -6,10 +6,18 @@ The implementation and installation contract are in
 
 Open **Crews** by default. The latest October 30 direction combines Employees
 and Crews in equal-width desktop panes on that tab; **Milestones & Tasks** stays
-a separate full-width workspace. Group employees by their recorded recent
-foremen by default, with search and Active/Inactive/All filtering. Remove the
-Roster / By Foreman switch. Keep ungrouped employees under **No Recent Foreman**.
-Use compact 32px member rows and aligned inline searchable staffing pickers. Keep
+a separate full-width workspace. November 2 supersedes the recent-foreman review
+grouping: group employees by their exact saved Crew lookup, once per employee
+record. Keep **Unassigned** last, retain distinct unavailable crew identities,
+and preserve search and Active/Inactive/All filtering. Crew-name/code search
+shows that crew's members; employee-name/code, territory and labor-type search
+filters people within their crew context. Use a crew code/color badge, visible
+member count, assigned foreman names and foreman-first member rows. Keep readable
+42px identity rows with initials, source employee codes, compact Foreman labels
+and aligned inline searchable staffing pickers. Reuse badge contrast, shared
+keyed movement and Sliding push counts. No viewing/filtering action changes
+staffing; the existing explicit foreman group-write review still uses its
+captured fourteen-date membership. Keep
 the schedule mounted while switching workspaces. October 30, 2026: the user
 approved **Compact Workspace**, with **Timeline / Edit Schedule** views in one
 viewport instead of stacking the Gantt above the date grid. Both remain mounted;

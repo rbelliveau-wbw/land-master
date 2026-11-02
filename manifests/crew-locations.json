@@ -1,7 +1,7 @@
 {
-  "status": "1.8.3-native-crew-staffing-production-creator-9.137",
+  "status": "1.9.0-employee-crew-groups-creator-9.137",
   "widget": "crew-locations",
-  "version": "1.8.3",
+  "version": "1.9.0",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -801,5 +801,13 @@
       "milestone schedule writes/history"
     ],
     "rollback": "Restore widget 1.8.1 and scoped Crew_on_validate.cfo-20261102.dg snapshot; retain all native records and permissions."
+  },
+  "employees_by_crew_2026_11_02": {
+    "release": "1.9.0",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-employees-by-crew-2026-11-02.md",
+    "scope": "Each employee displayed once by saved Crew, foremen first, crew color/code and counts, Unassigned last; existing staffing permissions, native writes and captured foreman-group review retained.",
+    "rollback": "Production crew-locations mapping to 1.8.3; retain all native metadata, staffing and audit history."
   }
 }

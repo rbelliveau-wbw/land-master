@@ -11,8 +11,15 @@
   "cfo_access_2026_11_02": {
     "status": "published-stage-and-production-9.136-cfo-preview-verified",
     "existing_profile_modified": "CFO",
-    "existing_forms_granted": ["Employees", "Crew_Timecards"],
-    "employee_editable_fields": ["Territory", "Labor_Type", "Crew"],
+    "existing_forms_granted": [
+      "Employees",
+      "Crew_Timecards"
+    ],
+    "employee_editable_fields": [
+      "Territory",
+      "Labor_Type",
+      "Crew"
+    ],
     "new_components": false,
     "stage_api_current_scope": "All users / OAuth2; changed from Admin only by explicit user confirmation",
     "evidence": "creator/crew-locations/native-installed/cfo-access-20261102.json",
@@ -2092,5 +2099,61 @@
     "reference": "docs/crew-stable-save-layout-2026-10-30.md",
     "scope": "Routine employee, crew, staffing and schedule save/refresh/success announcements removed from page flow. Existing busy controls, accessible announcements, errors and review/progress dialogs retained.",
     "rollback": "Production crew-locations mapping to 1.8.0; retain all native data and audit history."
+  },
+  "employees_by_crew_2026_11_02": {
+    "release": "1.9.0",
+    "type": "frontend-only",
+    "new_native_components": false,
+    "reference": "docs/crew-employees-by-crew-2026-11-02.md",
+    "scope": "Each employee displayed once by saved Crew, foremen first, crew color/code and counts, Unassigned last; existing staffing permissions, native writes and captured foreman-group review retained.",
+    "rollback": "Production crew-locations mapping to 1.8.3; retain all native metadata, staffing and audit history."
+  },
+  "test_data_cleanup_2026_11_02": {
+    "authorization": "User requested deletion of the test crews and everything under them in Production Crew Management.",
+    "method": "Native Creator report bulk delete, dated assignments first then test crews.",
+    "crews_deleted": [
+      {
+        "code": "TEST-A",
+        "id": "4410926000005393002"
+      },
+      {
+        "code": "TEST-B",
+        "id": "4410926000005393004"
+      },
+      {
+        "code": "TEST-C",
+        "id": "4410926000005393006"
+      },
+      {
+        "code": "TEST-PROD-1023",
+        "id": "4410926000005393022"
+      },
+      {
+        "code": "TEST-PROD-1027",
+        "id": "4410926000005497002"
+      }
+    ],
+    "assignment_ids_deleted": [
+      "4410926000005513002",
+      "4410926000005497004",
+      "4410926000005393024",
+      "4410926000005393012",
+      "4410926000005393010",
+      "4410926000005393008"
+    ],
+    "verification": {
+      "remaining_crews": 9,
+      "remaining_assignments": 0,
+      "test_crew_assigned_employees": 0,
+      "crew_management_refreshed": true
+    },
+    "preserved": [
+      "Employees and staffing",
+      "Projects and subdivisions",
+      "Timecards",
+      "Milestones",
+      "Creator components, permissions and APIs"
+    ],
+    "recovery": "Creator Audit Trail deleted-record recovery; widget rollback does not restore deleted test records."
   }
 }

@@ -1,5 +1,25 @@
 # Crew Management
 
+## 1.9.0 — Employees By Crew
+
+The employee pane now groups by the saved Employees.Crew lookup instead of
+recent timecard foreman membership. Each native employee record appears once;
+assigned foremen sort first and Unassigned stays last. Distinct inaccessible
+crew identities stay separate without exposing an inferred name. Search and
+Active/Inactive/All filtering retain exact native identities and staffing.
+Crew headers reuse saved Badge_Color and the schedule's contrast function,
+show counts and assigned foreman names, and separate Unassigned with an amber
+accent. Initials, employee codes and Foreman cues improve scanning. Shared row
+motion and Sliding push counters use stable crew/employee keys; focus follows
+the employee after a saved reassignment moves their row.
+
+All_Employees, All_Crews and All_Crew_Timecards remain the native read sources;
+the employee crew read adds the already-exposed Badge_Color field. Existing
+single-employee native writes, the explicit captured foreman-group review,
+permissions, unknown-save recovery, schedule data and timecard syncs are reused.
+No Creator component, connection, profile or workflow change is needed.
+See [verification and rollback](../../docs/crew-employees-by-crew-2026-11-02.md).
+
 ## 1.8.3 — CFO Crew and Employee Saves
 
 Crew creation/editing/activation and employee staffing updates now use fresh

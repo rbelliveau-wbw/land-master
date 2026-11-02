@@ -23,6 +23,17 @@ function model(cards,staff=employees){const model=M.normalize({subdivisions:[{ID
  const unmapped=model([card('1','FOREMAN-A','2026-10-29','999')]);assert.equal(unmapped.phases[0].crews.length,0);assert.match(unmapped.issues[0],/Unmapped/);
 }
 assert.equal(E.label({name:'Dry 1',code:'dry-one'}),'Dry1');assert.equal(E.label({name:'Finish 4',code:'Finish4'}),'F4');
+{
+ const sharedMember={ID:'900719925474099350',BU_Employee_ID:'MEMBER',EmployeeName:'A Shared Timecard Member',IsActive:true,Labor_Type:'Skilled',Crew:{ID:crews[1].ID}},unassigned={ID:'900719925474099351',EmployeeName:'No Crew',IsActive:true,Crew:{ID:null,zc_display_value:''}},inactive={ID:'900719925474099352',EmployeeName:'Inactive Employee',IsActive:false,Crew:{ID:crews[0].ID}},missingA={ID:'900719925474099353',EmployeeName:'Missing Crew A',Crew:{ID:'900719925474099398'}},missingB={ID:'900719925474099354',EmployeeName:'Missing Crew B',Crew:{ID:'900719925474099399'}};
+ const rows=[...employees,sharedMember,unassigned,inactive,missingA,missingB],before=JSON.stringify(rows),grouped=E.crewGroups([...rows,sharedMember],crews);
+ assert.equal(grouped.flatMap(g=>g.members).length,rows.length,'Each exact employee record appears once, independent of repeated timecard membership');
+ const roughCut=grouped.find(g=>g.crewId===crews[1].ID);assert.deepEqual(Array.from(roughCut.members,r=>r.ID),[employees[1].ID,sharedMember.ID],'Saved staffing governs the group and assigned foremen sort first');
+ assert.equal(grouped.find(g=>g.crewId===crews[0].ID).members.some(r=>r.ID===inactive.ID),true,'Inactive staffing is retained for the status filter');
+ assert.equal(grouped.at(-1).crewId,'');assert.equal(grouped.at(-1).members[0].ID,unassigned.ID,'Native null lookup shapes belong only to Unassigned');
+ assert.equal(grouped.filter(g=>g.name==='Unavailable Crew').length,2,'Distinct inaccessible crew IDs never merge or become Unassigned');
+ assert.equal(JSON.stringify(rows),before,'Review grouping never changes native staffing or source order');
+ assert.equal(E.crewGroups([sharedMember],[crews[0]]).flatMap(g=>g.members).length,1,'A caller-scoped missing crew never hides an authorized employee');
+}
 for(const [file,source] of [['employee','creator/functions/crewSyncEmployees.dg'],['timecard','creator/functions/crewSyncTimecardsRun.dg']]){
  const s=fs.readFileSync(source,'utf8');assert.ok(s.indexOf('normalized.add')<s.indexOf('insert into'));assert.match(s,/thisapp\.analyticsExportRows\(/);assert.match(s,/"counts":\{/);assert.match(s,/return result;\s*}\s*$/);assert.doesNotMatch(s,/containsKey|\bwhile\s*\(/);
  if(file==='employee'){assert.doesNotMatch(s,/delete from Employees|existing\.(Territory|Labor_Type|Crew)\s*=/);assert.match(s,/existing\.IsActive = employee.get\("active"\)/);}
