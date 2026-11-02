@@ -55,7 +55,7 @@ test('unsafe record IDs and missing lookup identities cannot become editable ass
 // bridge. Connection-dependent Custom API preparation deliberately fails here.
 function nativeSaveHarness(options={}){
  const calls=[],timers=new Map(),ctx={user:'cfo@example.test',environment:'PRODUCTION',appLinkName:'land-master'},nodes=new Map();let timerId=0,sequence=0;
- const employees=options.employees||[1,2,3].map(n=>({ID:'90071992547409930'+n,IsActive:n===2?'true':true,Territory:'North',Labor_Type:n===1?'Foreman':'Skilled',Crew:''}));
+ const employees=options.employees||[1,2,3].map(n=>({ID:'90071992547409930'+n,IsActive:n===2?'true':true,Territory:'North',Labor_Type:n===1?'Foreman':'Skilled',Crew:n===1?{}:n===2?{ID:null,zc_display_value:''}:[]}));
  const crews=options.crews||[{ID:'90071992547408801',Crew_Code:'U1',Crew_Name:'Utility One',Badge_Color:'#49688c',Active:'true',Source_System:'MANUAL_QA',Source_Record_ID:'original-source'}, {ID:'90071992547408802',Crew_Code:'OLD',Crew_Name:'Inactive',Badge_Color:'#8054c7',Active:false,Source_System:'MANUAL_QA',Source_Record_ID:'older-source'}];
  const records={All_Crews:crews,All_Employees:employees};
  const node=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,dataset:{},setAttribute(){},querySelectorAll:()=>[]});return nodes.get(id);};
@@ -111,6 +111,26 @@ test('crew edits and active toggles read the exact caller record and never rewri
 test('foreman batch adapter can save every captured employee through the native route with fresh capability checks',async()=>{
  const h=nativeSaveHarness();for(const row of h.employees)await h.app.management.api(h.employee(row.ID,{laborType:row.Labor_Type}));
  assert.equal(writes(h).length,3);assert.deepEqual(writes(h).map(c=>c.config.id),h.employees.map(r=>r.ID));assert.deepEqual(customActions(h),['capabilities','capabilities','capabilities']);
+});
+
+test('exposed native empty Crew lookup shapes permit first staffing assignment and read-only empty recovery',async()=>{
+ for(const lookup of [null,'',{},[],{ID:''},{ID:null},{id:''},{id:null},{ID:'',display_value:''},{ID:null,zc_display_value:null},{display_value:''}]){
+   const h=nativeSaveHarness();h.employees[0].Crew=structuredClone(lookup);
+   const result=await h.app.management.api(h.employee());assert.equal(result.state,'saved');assert.equal(writes(h).length,1);
+   h.employees[0].Crew=structuredClone(lookup);const body=h.employee(undefined,{crewId:''});
+   const status=await h.app.management.api({...body,action:'employee-status'});assert.equal(status.state,'saved');assert.equal(writes(h).length,1,'Recovery is read-only.');
+ }
+});
+
+test('native lookup identity aliases retain exact strings and malformed populated Crew values never dispatch',async()=>{
+ for(const lookup of [{id:'90071992547408802'},{ID:'90071992547408802',id:'90071992547408802'},{ID:null,id:'90071992547408802'}]){
+   const h=nativeSaveHarness();h.employees[0].Crew=lookup;await h.app.management.api(h.employee(undefined,{crewId:h.crews[1].ID}));assert.equal(writes(h).length,1,'An unchanged inactive crew remains assignable with a native identity alias.');
+ }
+ for(const lookup of [{display_value:'Hidden Crew'},{ID:'',zc_display_value:'Hidden Crew'},{ID:null,display_value:'Hidden Crew'},{ID:'invalid'},{id:'invalid'},{ID:90071992547408802},{id:12},{ID:'90071992547408801',id:'90071992547408802'},{ID:'90071992547408801',id:12},['90071992547408801'],[{}],{unexpected:''},false]){
+   const h=nativeSaveHarness();h.employees[0].Crew=lookup;await assert.rejects(h.app.management.api(h.employee()),/invalid native crew identity/);assert.equal(writes(h).length,0);assert.equal(h.app.state.managementUnknown,false);
+   await assert.rejects(h.app.management.api({...h.employee(undefined,{crewId:''}),action:'employee-status'}),/invalid native crew identity/);assert.equal(writes(h).length,0);
+ }
+ const hidden=nativeSaveHarness({missingField:'Crew'});await assert.rejects(hidden.app.management.api(hidden.employee()),/must expose native field Crew/);assert.equal(writes(hidden).length,0);
 });
 
 test('module denial, caller read denial, hidden employee and missing native fields fail before any staffing write',async()=>{

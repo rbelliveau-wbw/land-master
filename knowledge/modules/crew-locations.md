@@ -1,12 +1,15 @@
 # Crew Management
 
-## 1.8.2 — CFO Crew and Employee Saves
+## 1.8.3 — CFO Crew and Employee Saves
 
 Crew creation/editing/activation and employee staffing updates now use fresh
 caller-scoped SDK reads followed by the existing native SDK writes. The old
 connection-dependent preparation rejected real CFO sessions before a native
 write, producing the reported missing-HTTP and unavailable-employee errors.
-Foreman group updates reuse the same repaired employee save route.
+Foreman group updates reuse the same repaired employee save route. Native empty
+lookup containers normalize to Unassigned; malformed or conflicting populated
+identities still reject. Candidate 1.8.2 was held from Production after the live
+group check caught this empty-lookup mismatch.
 
 Fresh module capabilities, native report/record/field permissions, required
 source fields, exact string IDs and the native form workflows remain enforced.

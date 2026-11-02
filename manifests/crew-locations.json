@@ -1,7 +1,7 @@
 {
-  "status": "1.8.2-native-cfo-save-repair-native-9.137-live-check-pending",
+  "status": "1.8.3-native-cfo-save-repair-native-9.137-live-check-pending",
   "widget": "crew-locations",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -787,7 +787,7 @@
     "rollback": "Production crew-locations mapping to 1.8.0; retain all native data and audit history."
   },
   "cfo_native_saves_2026_11_02": {
-    "release": "1.8.2",
+    "release": "1.8.3",
     "operations": [
       "Crew create/edit/deactivate/reactivate",
       "employee staffing edit",

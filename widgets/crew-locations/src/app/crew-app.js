@@ -51,7 +51,18 @@
     if(cap.permissions?.view!==true||cap.permissions?.assignments!==true)throw new Error('Crew management permission has not been granted.');
     if(cap.management?.enabled!==true||cap.management.nativeWrites!==true||cap.management.protocol!=='native-validated-v1'||cap.sources?.crews!==true||kind==='employee'&&cap.sources?.employees!==true)throw new Error('Native crew management requires Creator promotion.');
   }
-  function nativeManagementLookup(value){if(value==null||value==='')return '';const id=typeof value==='object'&&!Array.isArray(value)?value.ID:value;if(typeof id!=='string'||!/^\d+$/.test(id))throw new Error('Creator returned an invalid native crew identity.');return id;}
+  function nativeManagementLookup(value){
+    if(value==null||value==='')return '';
+    if(Array.isArray(value)){if(!value.length)return '';}
+    else if(typeof value==='object'){
+      // Native empty single lookups include {} and empty identity/display
+      // properties. An exposed empty Crew differs from an omitted field.
+      const identities=[value.ID,value.id].filter(id=>id!=null&&id!=='');
+      if(identities.length&&identities.every(id=>typeof id==='string'&&/^\d+$/.test(id)&&id===identities[0]))return identities[0];
+      if(!identities.length&&Object.keys(value).every(key=>['ID','id','display_value','zc_display_value'].includes(key)&&(value[key]==null||value[key]==='')))return '';
+    }else if(typeof value==='string'&&/^\d+$/.test(value))return value;
+    throw new Error('Creator returned an invalid native crew identity.');
+  }
   function nativeManagementActive(value){if(value===true||value===false)return value;if(typeof value==='string'&&/^(true|false)$/i.test(value))return value.toLowerCase()==='true';throw new Error('Creator did not expose a native active status.');}
   async function nativeManagementRead(reportName,criteria,fields,scope,cancelled){
     nativeManagementCheck(scope,cancelled);
