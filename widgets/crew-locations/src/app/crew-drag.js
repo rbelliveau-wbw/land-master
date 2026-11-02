@@ -72,8 +72,8 @@
   if(event.type!=='pointerup'||!eligible(d)){cancel();return;}d.x=event.clientX;d.y=event.clientY;paint(d);release(d);
   if(!d.moved||d.value===d.r[d.field]){cancel();return;}
   if(d.error){show(d,'error',d.error);$('dragAnnounce').textContent=d.error+'. Dates unchanged.';return;}
-  show(d,'saving','Saving…');requestAnimationFrame(()=>{if(feedback===d)position(d);});
-  try{const result=await A.commit(d.p,[M.change(d.r,{[d.field]:d.value})],'drag');if(scope()!==d.scope||!allowed()){cancel();return;}if(result){d.value=A.state.model.records.get(key(d.r))?.[d.field]??d.value;show(d,'saved','Saved');$('dragAnnounce').textContent=d.r.stage+' '+d.field+' saved as '+M.us(d.value)+'.';clearTimer=setTimeout(()=>{if(feedback===d){feedback=null;panel().hidden=true;}},3500);}}
+  show(d,A.staged?'draft':'saving',A.staged?'Pending · Click Save':'Saving…');requestAnimationFrame(()=>{if(feedback===d)position(d);});
+  try{const result=await A.commit(d.p,[M.change(d.r,{[d.field]:d.value})],'drag');if(scope()!==d.scope||!allowed()){cancel();return;}if(result){d.value=A.state.model.records.get(key(d.r))?.[d.field]??d.value;const staged=result.state==='staged',reverted=result.state==='reverted';show(d,staged||reverted?'draft':'saved',reverted?'Returned to Saved Date':staged?'Pending · Click Save':'Saved');$('dragAnnounce').textContent=d.r.stage+' '+d.field+(reverted?' returned to ':staged?' pending at ':' saved as ')+M.us(d.value)+(staged?'. Click Save to apply.':'.');clearTimer=setTimeout(()=>{if(feedback===d){feedback=null;panel().hidden=true;}},3500);}}
   catch(e){if(scope()===d.scope&&allowed()){show(d,e.unknown?'unknown':'error',e.message);$('dragAnnounce').textContent=e.message;}else cancel();}
  }
  function install(adapter){

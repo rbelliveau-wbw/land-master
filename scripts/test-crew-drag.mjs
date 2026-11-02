@@ -9,7 +9,7 @@ function harness(){
  handle.dataset={record:'M:'+r.id,drag:'start'};handle.setPointerCapture=()=>handle.captured=true;handle.hasPointerCapture=()=>handle.captured;handle.releasePointerCapture=()=>handle.captured=false;
  bar.dataset={startRecord:'M:'+r.id,endRecord:'M:'+r.id,start:String(r.start),end:String(r.end)};bar.style.cssText='left:'+axis.position(r.start)+'%;width:'+(axis.position(r.end)-axis.position(r.start))+'%';bar.querySelector('.bar-label').innerHTML='26';edge.dataset={edgeRecord:'M:'+r.id,edgeField:'start'};edge.style.cssText='left:'+axis.position(r.start)+'%';lane.querySelectorAll=s=>s==='.bar'?[bar]:s==='[data-edge-record]'?[edge]:s==='.overlap'?[overlap]:[];
  const state={ready:true,model,axis,permissions:{milestones:true,tasks:true},day:M.date('2026-10-21'),filters:M.defaults(),hidden:new Set()};vm.runInContext(fs.readFileSync('widgets/crew-locations/src/app/crew-drag.js','utf8'),ctx);const app=ctx.CrewDrag;
- app.install({state,scope:()=>actor,allowed:()=>available,controls(){},async commit(phase,changes,origin){writes.push({phase:phase.id,changes,origin});if(mode==='unknown')throw Object.assign(Error('Check Save Status. No replay.'),{unknown:true});for(const [field,value] of Object.entries(changes[0].fields))r[field]=M.date(value.after);return {state:'saved'};}});
+ app.install({state,get staged(){return mode==='staged';},scope:()=>actor,allowed:()=>available,controls(){},async commit(phase,changes,origin){writes.push({phase:phase.id,changes,origin});if(mode==='unknown')throw Object.assign(Error('Check Save Status. No replay.'),{unknown:true});for(const [field,value] of Object.entries(changes[0].fields))r[field]=M.date(value.after);return {state:mode==='staged'?'staged':'saved'};}});
  const event=(x=400,type='pointermove',id=7)=>({target:handle,button:0,isPrimary:true,pointerId:id,clientX:x,clientY:240,type,preventDefault(){}});
  return {app,state,r,p,M,bar,edge,overlap,handle,get,lane,scroller,document,writes,events,winEvents,frames,event,set actor(v){actor=v;},set available(v){available=v;},set mode(v){mode=v;}};
 }
@@ -34,3 +34,5 @@ test('task, locked, pending, permission and management guards prevent starting',
 test('an uncertain native reply stays inline and is never replayed by pointer events',async()=>{
  const h=harness();h.mode='unknown';h.app.begin(h.event());h.app.move(h.event(415));await h.app.end(h.event(415,'pointerup'));assert.equal(h.get('dragPreview').dataset.state,'unknown');await h.app.end(h.event(415,'pointerup'));assert.equal(h.writes.length,1);
 });
+
+test('manual-save drops remain pending and never claim a native save',async()=>{const h=harness();h.mode='staged';h.app.begin(h.event());h.app.move(h.event(415));await h.app.end(h.event(415,'pointerup'));assert.equal(h.get('dragPreview').dataset.state,'draft');assert.equal(h.get('dragPreview').querySelector('.drag-preview-status').textContent,'Pending · Click Save');assert.match(h.get('dragAnnounce').textContent,/Click Save/);});

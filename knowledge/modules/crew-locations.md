@@ -1,5 +1,21 @@
 # Crew Management
 
+## 1.10.1 — Explicit Schedule Save and Refresh
+
+Milestones & Tasks keeps Save and Refresh at the top right of both schedule views.
+Date/Days edits, endpoint edits, valid drops, propagation and history reversals
+stay pending until Save. The count includes edited records hidden by filters.
+Refresh offers Keep Editing or Discard & Refresh. A new local draft controller
+reuses CrewModel validation and CrewApp's existing audited prepare/apply/status
+writer, including exact string IDs, per-phase plans, native permission guards,
+duration/arrow dependencies and unknown-reply review. Confirmed operations are
+removed before any later failure; they are never replayed. Pending plans and
+uncertain request identities are retained per authenticated user/environment.
+
+The Crews employee staffing pickers and existing explicit crew/assignment modal
+saves retain their current behavior. No Creator component or publication changes
+are required. See [verification and rollback](../../docs/crew-schedule-save-refresh-2026-11-02.md).
+
 ## 1.9.1 — Split Grips
 
 Editable milestone Start and End grips are permanently visible inside their

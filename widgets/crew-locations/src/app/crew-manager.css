@@ -174,6 +174,18 @@ body{padding:12px 16px 20px}
 .gantt-row.milestone .bar,.gantt-row.milestone .bar:hover{z-index:auto}.gantt-row.milestone .bar.is-resizing{z-index:10}
 
 /* Routine save/refresh announcements must never insert a row into the page. */
+#app:not([data-workspace=schedule]) #scheduleSave{display:none}
+#scheduleSave{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:110px;min-height:32px;white-space:nowrap}
+#refresh{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+#refresh>svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#refresh[aria-busy=true]>svg{animation:schedule-save-spin .8s linear infinite}
+#scheduleSaveCount{display:inline-grid;place-items:center;min-width:18px;min-height:18px;padding:0 4px;border-radius:9px;background:#ffffff28;font-size:11px;font-variant-numeric:tabular-nums}
+.schedule-save-spinner{display:none;width:13px;height:13px;border:2px solid #ffffff5e;border-top-color:currentColor;border-radius:50%;animation:schedule-save-spin .8s linear infinite}
+#scheduleSave[aria-busy=true] .schedule-save-spinner{display:block}
+.bar.schedule-pending{outline:1px dashed #b17b2c;outline-offset:2px}
+.stage-input[aria-invalid=true],.boundary-input[aria-invalid=true]{border-color:#bb3947!important;background:#fff2f3!important}
+@keyframes schedule-save-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.schedule-save-spinner,#refresh[aria-busy=true]>svg{animation:none}}
 #connection:not([data-state=error]),
 #employeeStatus:is([data-state=pending],[data-state=loading]),
 #cmStatus:is([data-state=pending],[data-state=loading]),

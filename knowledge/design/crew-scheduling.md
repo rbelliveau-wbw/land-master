@@ -80,6 +80,23 @@ remain read-only even when task-table editing is permitted. All editing uses
 authenticated server validation, durable audited operations and exact identities.
 Locks and permission errors take precedence over every presentation control.
 
+November 2 manual-save direction supersedes saving on a valid drop or field exit.
+In **Milestones & Tasks**, date/Days fields, boundary edits, drags, propagation
+and Undo/Redo become local pending drafts. Keep **Save** and **Refresh** visible
+at the top right in both Timeline and Edit Schedule. Save shows the number of
+edited records and writes only when explicitly clicked. Keep drafts through
+view/filter changes and scope recovery memory to the authenticated user and
+environment. Repeated ordinary edits to one record coalesce; reverting them
+removes that pending write. Native duration/arrow and history dependencies remain
+separate ordered operations through the existing prepare/apply path.
+
+Refresh with pending edits opens the widget's **Keep Editing / Discard & Refresh**
+choice; it never silently drops a draft. Save and Refresh expose their real busy
+states without inserting page rows. Failed saves retain unsent work and preserve
+already confirmed operations. Unknown requests cannot be replayed or discarded
+until read-only Review Save resolves them; known partial results block another
+Save and require review/Refresh. Draft recovery is not proof of a saved record.
+
 October 30 drag refinement: resize the actual mounted bar continuously, snapping
 to calendar days. Move its source boundary, duration and exact overlap shading
 with it; retain a quiet outline of the original span until release. Use compact
@@ -99,6 +116,8 @@ grips remain above overlap inspectors, and only the captured active resize raise
 its bar. Preserve exact date geometry, row height, pointer capture, keyboard
 boundary editing, cancellation, guards and native save behavior.
 
+After a valid drop show **Pending · Click Save** beside the edge; do not claim it
+was saved. Cancelled gestures restore the previous saved or pending span.
 Put stage/endpoint, before → after dates, day change, total duration and Save/Cancel
 feedback beside the edge being changed, within the timeline viewport. Do not put
 this data in a fixed bottom banner. Pending, Saved and failure/unknown feedback
