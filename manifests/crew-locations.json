@@ -1,7 +1,7 @@
 {
-  "status": "1.8.1-stable-save-layout-native-9.134",
+  "status": "1.8.2-native-cfo-save-repair-native-9.137-live-check-pending",
   "widget": "crew-locations",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
   "schema": "creator/crew-locations/schema.json",
   "existing_page_preserved": "Milestone_Gantt_View",
@@ -251,9 +251,9 @@
       ]
     },
     "read_protocol": "authenticated client LMData.readAll SDK report reads with fresh module capabilities; independent source cursors and exact counts; no seven-day limit; all sources must complete; no management-list or per-user OAuth dependency for roster loading",
-    "write_protocol": "server validates and returns native one-record descriptor; authenticated SDK v2 addRecords/updateRecordById; native On Validate workflows repeat guards; no workflow skipping",
+    "write_protocol": "Crew CRUD and employee staffing: fresh authenticated native SDK capabilities/read checks, then native SDK add/update with mandatory On Validate. Dated work assignments retain existing API preparation. No owner fallback or shared connection change.",
     "native_success": "code 3000 plus exact single destination identity; no post-success editable-value equality gate",
-    "unknown_reply": "retain draft and actor/environment request metadata in sessionStorage; block further writes; explicit read-only management-status; never replay",
+    "unknown_reply": "Retain exact actor/environment/request. Crew and employee explicit status recovery uses fresh caller SDK reads; no automatic write replay. Dated assignment status retains its existing API path.",
     "new_source_system": "MANUAL_WIDGET",
     "new_source_record_id": "UUID requestId",
     "new_assignment_source_key": "MANUAL_WIDGET:<requestId>",
@@ -785,5 +785,20 @@
     "reference": "docs/crew-stable-save-layout-2026-10-30.md",
     "scope": "Routine employee, crew, staffing and schedule save/refresh/success announcements removed from page flow. Existing busy controls, accessible announcements, errors and review/progress dialogs retained.",
     "rollback": "Production crew-locations mapping to 1.8.0; retain all native data and audit history."
+  },
+  "cfo_native_saves_2026_11_02": {
+    "release": "1.8.2",
+    "operations": [
+      "Crew create/edit/deactivate/reactivate",
+      "employee staffing edit",
+      "foreman group staffing edit"
+    ],
+    "native_workflow": "Crew_on_validate",
+    "native_guard": "Current authenticated native Crew transaction only; fresh stored identity, module flags, formats and source UUID enforced. No owner insert/update or shared read fallback.",
+    "retained_connection_paths": [
+      "dated work assignment preparation and native validation",
+      "milestone schedule writes/history"
+    ],
+    "rollback": "Restore widget 1.8.1 and scoped Crew_on_validate.cfo-20261102.dg snapshot; retain all native records and permissions."
   }
 }

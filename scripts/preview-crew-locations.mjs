@@ -22,7 +22,7 @@ function fixtureSDK(data){
  if(new URLSearchParams(location.search).has('groupPreview')){data.employees.push({ID:'90071992547408804',BU_Employee_ID:'EMPLOYEE-D',EmployeeName:'Drew Sample',Employee_Code:'1699',IsActive:true,Territory:'Waco',Labor_Type:'Laborer',Crew:'',Synced_At:'10/21/2026 08:00:00'});data.timecards[0].Multi_Line=JSON.stringify({members:['EMPLOYEE-B','EMPLOYEE-D']});}
  const tables={All_Employees:data.employees,All_Crew_Timecards:data.timecards,All_Subdivisions:data.subdivisions,All_Milestones:data.milestones,All_Crews:data.crews,Crew_Assignment_Report:data.assignments,All_Task_Schedules:data.tasks};
  if(fixture.mode==='paged')for(let i=0;i<201;i++)data.crews.push({...data.crews[0],ID:String(810000+i),Crew_Code:'PAGE-'+i});
- function nativeRows(config){const rows=tables[config.report_name];return fixture.mode!=='scope-denied'?rows:rows.filter(row=>!(config.report_name==='All_Subdivisions'&&row.ID==='90071992547409933')&&!(config.report_name==='Crew_Assignment_Report'&&row.ID==='90071992547407011'));}
+ function nativeRows(config){let rows=tables[config.report_name];if(fixture.mode==='scope-denied')rows=rows.filter(row=>!(config.report_name==='All_Subdivisions'&&row.ID==='90071992547409933')&&!(config.report_name==='Crew_Assignment_Report'&&row.ID==='90071992547407011'));const criteria=config.criteria||'',id=/^\(ID == (\d+)\)$/.exec(criteria);if(id)return rows.filter(row=>row.ID===id[1]);if(config.report_name==='All_Crews'){const code=/Crew_Code == "([^"]+)"/.exec(criteria),source=/Source_Record_ID == "([^"]+)"/.exec(criteria);if(code||source)rows=rows.filter(row=>(code&&row.Crew_Code.toLowerCase()===code[1].toLowerCase())||(source&&row.Source_System==='MANUAL_WIDGET'&&row.Source_Record_ID===source[1]));}return rows;}
  function nativeDenied(config){return fixture.mode==='report-denied'&&config.report_name==='Crew_Assignment_Report';}
  const iso=s=>!s?null:/^\d{4}-/.test(s)?s:s.slice(6)+'-'+s.slice(0,2)+'-'+s.slice(3,5),us=s=>!s?'':s.slice(5,7)+'/'+s.slice(8)+'/'+s.slice(0,4);
  const meta=body=>({ok:true,action:body.action,testingMode:false,creatorOnly:true,projectsPushEnabled:false,environment:'development'});
@@ -77,17 +77,39 @@ function fixtureSDK(data){
   fixture.managementPrepared.set(body.requestId,{body:structuredClone(body),write});expose();
   return {...meta(body),unknown:false,state:'ready',requestId:body.requestId,write};
  }
+ // Stand in for the already-installed native form guards. Crew and employee
+ // SDK writes have no Custom API preparation receipt or OAuth dependency.
+ function nativeDirectManagement(config,update){
+  const kind=update&&config.report_name==='All_Employees'?'employee':!update&&config.form_name==='Crew'||update&&config.report_name==='All_Crews'?'crew':'',patch=config.payload?.data;
+  if(!kind||!patch||Array.isArray(patch))return null;
+  const allowed=kind==='employee'?['Territory','Labor_Type','Crew']:update?['Crew_Name','Badge_Color','Active']:['Crew_Code','Crew_Name','Badge_Color','Active','Source_System','Source_Record_ID'];if(Object.keys(patch).some(field=>!allowed.includes(field)))return null;
+  const current=update?(kind==='employee'?data.employees:data.crews).find(row=>row.ID===config.id):null;
+  if(update&&!current)return null;
+  let entry,requestId;
+  if(kind==='employee'){
+   const target=data.crews.find(row=>row.ID===patch.Crew),currentCrew=typeof current.Crew==='object'?current.Crew?.ID:current.Crew;
+   if(!active(current.IsActive)||typeof patch.Territory!=='string'||!patch.Territory.trim()||!['','Superintendent','Foreman','Skilled','Unskilled','Pipe Layer','Laborer'].includes(patch.Labor_Type)||typeof patch.Crew!=='string'||patch.Crew&&(!target||patch.Crew!==currentCrew&&!active(target.Active)))return null;
+   entry={id:config.id,territory:patch.Territory,laborType:patch.Labor_Type,crewId:patch.Crew};requestId='native-employee-'+fixture.managementWrites.length;
+  }else{
+   const code=update?current.Crew_Code:patch.Crew_Code;
+   if(typeof code!=='string'||!code.trim()||code.length>64||typeof patch.Crew_Name!=='string'||patch.Crew_Name.length>255||!/^#[a-f\d]{6}$/i.test(patch.Badge_Color)||typeof patch.Active!=='boolean')return null;
+   if(!update&&(!/^[a-z\d][a-z\d _-]{0,63}$/i.test(code)||patch.Source_System!=='MANUAL_WIDGET'||!/^[-a-f\d]{36}$/i.test(patch.Source_Record_ID)||data.crews.some(row=>row.Crew_Code.toLowerCase()===code.toLowerCase())))return null;
+   entry={...(update?{id:config.id}:{}),code,name:patch.Crew_Name,color:patch.Badge_Color,active:patch.Active};requestId=update?'native-crew-'+fixture.managementWrites.length:patch.Source_Record_ID;
+  }
+  return {body:{action:'save-'+kind,requestId,[kind]:entry},write:{kind,formName:kind==='employee'?'Employees':'Crew',reportName:kind==='employee'?'All_Employees':'All_Crews',recordId:update?config.id:'',data:patch}};
+ }
  async function nativeManagementWrite(config,update){
   fixture.nativeAttempts.push({method:update?'PATCH':'POST',config:structuredClone(config)});expose();
-  const prepared=[...fixture.managementPrepared.values()].reverse().find(item=>item.write.reportName===(update?config.report_name:item.write.reportName)&&item.write.formName===(update?item.write.formName:config.form_name)&&String(item.write.recordId||'')===String(update?config.id:'')&&JSON.stringify(item.write.data)===JSON.stringify(config.payload?.data));
+  const prepared=nativeDirectManagement(config,update)||[...fixture.managementPrepared.values()].reverse().find(item=>item.write.reportName===(update?config.report_name:item.write.reportName)&&item.write.formName===(update?item.write.formName:config.form_name)&&String(item.write.recordId||'')===String(update?config.id:'')&&JSON.stringify(item.write.data)===JSON.stringify(config.payload?.data));
   if(!prepared)return {code:3001,message:'No exact prepared native request matches this write.'};
   if(fixture.mode==='reject'){fixture.mode='normal';expose();return {code:3001,message:'Fixture native validation rejected this draft.'};}
   if(fixture.mode==='native-denied'){fixture.mode='normal';expose();return {code:2897,message:'Fixture native profile denied this operation.'};}
   if(fixture.mode==='native-thrown-denied'){fixture.mode='normal';expose();throw {code:2897,message:'Fixture native SDK rejected with profile denial.'};}
-  if(fixture.mode==='create-scope-denied'||fixture.mode==='report-denied')return {code:2945,message:'Creator permission denied.'};
+  if(['create-scope-denied','report-denied','readonly','denied'].includes(fixture.mode))return {code:2945,message:'Creator permission denied.'};
   await new Promise(resolve=>setTimeout(resolve,90));
   const {body,write}=prepared,entry=body[write.kind],id=write.recordId||'900719925474'+String(81000+fixture.managementWrites.length),rows=write.kind==='employee'?data.employees:write.kind==='crew'?data.crews:data.assignments;
   let row=rows.find(item=>item.ID===id);if(!row){row={ID:id};rows.push(row);}Object.assign(row,structuredClone(write.data));
+  if(write.kind==='employee')row.Crew=entry.crewId?{ID:entry.crewId,display_value:data.crews.find(crew=>crew.ID===entry.crewId)?.Crew_Code||''}:'';
   if(write.kind==='assignment')Object.assign(row,{Crew:{ID:entry.crewId,display_value:data.crews.find(crew=>crew.ID===entry.crewId).Crew_Code},Subdivision1:{ID:entry.phaseId,display_value:data.subdivisions.find(phase=>phase.ID===entry.phaseId).Subdivision_Name}});
   fixture.managementWrites.push({requestId:body.requestId,recordId:id,kind:write.kind,payload:structuredClone(entry),method:update?'PATCH':'POST',caller:fixtureUser});expose();
   if(fixture.mode==='lost'){fixture.mode='normal';expose();throw new Error('Fixture response lost after native record save.');}
@@ -118,7 +140,7 @@ function fixtureSDK(data){
    if(config.api_name!=='Crew_Locations_Widget_DEV')throw new Error('Unexpected fixture API name');
    if(body.action==='capabilities'){if(fixture.mode==='denied')return {...base,ok:false,message:'Fixture access revoked'};return {...base,...(fixture.mode==='legacy-management'?{}:{management:{enabled:true,nativeWrites:true,protocol:'native-validated-v1'}}),permissions:{view:true,milestones:true,tasks:true,assignments:fixture.mode!=='readonly'},sources:{employees:employeePreview,foremanTimecards:employeePreview,foremanGroups:employeePreview,crews:fixture.mode!=='unconfigured',tasks:fixture.mode!=='unconfigured'&&!new URLSearchParams(location.search).has('desktop')},dependencies:['Isolated browser fixture. No live Creator or Projects records are connected.']};}
    if(body.action==='management-list'){if(fixture.mode==='invalid-connection')throw new Error('Error at line: 121, Invalid Connection');return managementRows(body);}
-   if(body.action==='save-crew'||body.action==='save-assignment'||body.action==='save-employee')return managementWrite(body);
+   if(body.action==='save-crew'||body.action==='save-assignment'||body.action==='save-employee'){if(fixture.mode==='invalid-connection'&&body.action!=='save-assignment')throw new Error('9750: The connection is not authorized.');return managementWrite(body);}
    if(body.action==='management-status')return managementStatus(body);
    if(body.action==='employee-status'){const saved=fixture.managementWrites.find(w=>w.requestId===body.requestId&&w.kind==='employee');return {...base,state:saved?'saved':'unconfirmed',kind:'employee',requestId:body.requestId,recordId:saved?.recordId||'',unknown:!saved};}
    if(body.action==='history')return {...base,operations:fixture.operations.filter(o=>o.subdivisionId===body.subdivisionId).map(o=>({...o,origin:o.origin,state:o.result.state,actor:'Fixture user',timestamp:'10/21/2026 12:00:00'}))};

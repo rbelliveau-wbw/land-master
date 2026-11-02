@@ -1,4 +1,23 @@
 {
+  "cfo_native_saves_2026_11_02": {
+    "release": "1.8.2",
+    "status": "native-guard-published-stage-production-9.137-widget-live-check-pending",
+    "existing_workflow_modified": "Crew_on_validate",
+    "new_components": false,
+    "connection_or_permission_scope_changes": false,
+    "scope": "Crew CRUD and employee/group staffing use authenticated native SDK reads/writes and native validation; shared delegated read helper unchanged",
+    "rollback": "Immutable widget 1.8.1 plus native-before/Crew_on_validate.cfo-20261102.dg; retain all business records, audit history and existing profile grants"
+  },
+  "cfo_access_2026_11_02": {
+    "status": "published-stage-and-production-9.136-cfo-preview-verified",
+    "existing_profile_modified": "CFO",
+    "existing_forms_granted": ["Employees", "Crew_Timecards"],
+    "employee_editable_fields": ["Territory", "Labor_Type", "Crew"],
+    "new_components": false,
+    "stage_api_current_scope": "All users / OAuth2; changed from Admin only by explicit user confirmation",
+    "evidence": "creator/crew-locations/native-installed/cfo-access-20261102.json",
+    "removal_rule": "Restore only the recorded grants/scopes if requested. Do not delete synced employees, timecards, staffing assignments, schedules, APIs still in use, or unrelated profile permissions."
+  },
   "employees_timecards_2026_10_29": {
     "release": "1.3.2",
     "environment": "Development, Stage and Production",

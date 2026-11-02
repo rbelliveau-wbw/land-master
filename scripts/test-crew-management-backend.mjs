@@ -167,8 +167,10 @@ test('recorded native compiler output preserves the staged management gates', ()
   assert.match(compiledAssignment, /if\(ifnull\(crew\.get\("Active"\),false\)\.toString\(\)\.toLowerCase\(\) != "true" && requiresActiveCrew\)/);
   assert.match(compiledCrew, /access\.View_Crew_Locations != true/);
   assert.match(compiledCrew, /access\.Manage_Crew_Assignments != true/);
-  assert.match(compiledCrew, /thisapp\.crewLocationsRead\("All_Crews","ID == " \+ input\.ID\.toString\(\)\)/);
-  for (const field of ['Crew_Code','Source_System','Source_Record_ID']) assert.ok(compiledCrew.includes(`current.get("${field}")`),`compiled Crew preserves immutable ${field}`);
+  assert.match(compiledCrew, /current = Crew\[ID == input\.ID\]/);
+  assert.match(compiledCrew, /if\(current\.count\(\) != 1\)/);
+  assert.doesNotMatch(compiledCrew, /crewLocationsRead|connection\s*:|invokeurl|insert into|delete from/);
+  for (const field of ['Crew_Code','Source_System','Source_Record_ID']) assert.ok(compiledCrew.includes(`current.${field}`),`compiled Crew preserves immutable ${field}`);
   assert.match(compiledCrew,/input\.Source_System != "MANUAL_WIDGET"/);
   assert.doesNotMatch(compiledCrew,/name\s*==\s*""/);
   assert.match(compiledCrew,/cancel submit/);
@@ -280,11 +282,27 @@ test('source and reopened native direct validation require the exact prepared en
 test('native crew validation protects the same actor and immutable provenance, with optional name', () => {
   assert.match(nativeCrew, /access\.View_Crew_Locations != true/);
   assert.match(nativeCrew, /access\.Manage_Crew_Assignments != true/);
-  assert.match(nativeCrew, /thisapp\.crewLocationsRead\("All_Crews","ID == "/);
-  for (const field of ['Crew_Code', 'Source_System', 'Source_Record_ID']) assert.match(nativeCrew, new RegExp(`current\\.get\\("${field}"\\)`));
+  assert.match(nativeCrew, /current = Crew\[ID == input\.ID\]/);
+  assert.match(nativeCrew, /if\(current\.count\(\) != 1\)/);
+  assert.doesNotMatch(nativeCrew, /crewLocationsRead|connection\s*:|invokeurl|insert into|delete from/);
+  for (const field of ['Crew_Code', 'Source_System', 'Source_Record_ID']) assert.match(nativeCrew, new RegExp(`current\\.${field}`));
   assert.doesNotMatch(nativeCrew + prepare, /name\s*==\s*""/);
   assert.match(nativeCrew, /input\.Source_System != "MANUAL_WIDGET"/);
   assert.match(nativeCrew, /cancel submit/);
+});
+
+test('native current-row validation still rejects code/source tampering without an OAuth connection', () => {
+  for (const source of [nativeCrew, read('creator/crew-locations/native-installed/Crew_on_validate.dg')]) {
+    const guard = source.match(/if\((ifnull\(current\.Crew_Code[^\n]+)\)\s*\{/)[1];
+    const current = {Crew_Code:'TEST-CFO', Source_System:'MANUAL_WIDGET', Source_Record_ID:'4edb5eea-b973-4c23-8529-c0dca6889c59'};
+    const input = {...current};
+    const reject = (patch = {}, code = current.Crew_Code) => Function('current','input','code','ifnull',`return (${guard});`)(current,{...input,...patch},code,(v,f)=>v==null?f:v);
+    assert.equal(reject(), false);
+    assert.equal(reject({}, 'OTHER-CODE'), true);
+    assert.equal(reject({Source_System:'IMPORTED'}), true);
+    assert.equal(reject({Source_Record_ID:'other-request'}), true);
+    assert.equal(reject({Source_Record_ID:null}), true);
+  }
 });
 
 test('native assignment validation blocks imported identity edits and inaccessible or locked phase destinations', () => {

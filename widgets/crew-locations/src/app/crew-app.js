@@ -26,19 +26,96 @@
   }
   function managementAcknowledgement(raw,expected){const item=managementMutationItem(raw),id=item?.data?.ID;if(!item||String(item.code)!=='3000'||LMData.responseFailed(raw)||LMData.responseFailed(item)||typeof id!=='string'||!/^\d+$/.test(id)||expected&&id!==expected||!managementMutationEvidence(raw,item,id)){const e=new Error(LMData.failureMessage(raw)||'Creator did not confirm the saved record identity. Check save status.');e.raw=raw;throw e;}return id;}
   function managementRejected(error){const raw=error?.response||error?.raw||error,item=managementMutationItem(raw);return !!item&&/^(1000|1030|1040|1060|1080|1100|1130|2892|2893|2894|2897|2898|2899|2902|2933|2945|2955|2965|3001|3002|3020|3050|3090|3190|3710|4000|8011|8012)$/.test(String(item.code||''))&&managementMutationEvidence(raw,item,'');}
+  // Crew CRUD and staffing use the caller's native SDK session throughout.
+  // Native form/record/field permissions and the mandatory On Validate guards
+  // still own the write; no owner read or per-user OAuth preparation is used.
+  const nativeManagementRoute=body=>['save-crew','save-employee','employee-status'].includes(body.action)||body.action==='management-status'&&body.statusFor==='crew';
+  const nativeCrewFields=['ID','Crew_Code','Crew_Name','Badge_Color','Active','Source_System','Source_Record_ID'];
+  const nativeEmployeeFields=['ID','IsActive','Territory','Labor_Type','Crew'];
+  function nativeManagementIntent(body){
+    const kind=body.action==='save-employee'||body.action==='employee-status'?'employee':'crew',value=body[kind];
+    if(typeof body.requestId!=='string'||!(/^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i.test(body.requestId))||!value||typeof value!=='object'||Array.isArray(value))throw new Error('An exact record and stable request identity are required.');
+    const id=value.id??'';if(typeof id!=='string'||id!==''&&!/^\d+$/.test(id)||kind==='employee'&&!id)throw new Error('A native record ID string is required.');
+    if(kind==='employee'){
+      if(typeof value.territory!=='string'||!value.territory.trim()||value.territory.trim().length>255||typeof value.laborType!=='string'||!['','Superintendent','Foreman','Skilled','Unskilled','Pipe Layer','Laborer'].includes(value.laborType)||typeof value.crewId!=='string'||value.crewId!==''&&!/^\d+$/.test(value.crewId))throw new Error('Choose a territory, valid labor type and native crew.');
+      return {kind,requestId:body.requestId,draft:{id,territory:value.territory.trim(),laborType:value.laborType,crewId:value.crewId}};
+    }
+    if(typeof value.code!=='string'||!value.code.trim()||value.code.trim().length>64||!id&&!/^[a-z\d][a-z\d _-]{0,63}$/i.test(value.code.trim())||typeof value.name!=='string'||value.name.trim().length>255||typeof value.color!=='string'||!/^#[a-f\d]{6}$/i.test(value.color.trim())||typeof value.active!=='boolean')throw new Error('Enter a crew code, #RRGGBB color and active status.');
+    return {kind,requestId:body.requestId,draft:{id,code:value.code.trim(),name:value.name.trim(),color:value.color.trim(),active:value.active}};
+  }
+  function nativeManagementCheck(scope,cancelled){if(cancelled?.()||scope!==managementScope())throw new Error('The Creator session changed or the queued save expired before saving.');}
+  async function nativeManagementCapabilities(scope,kind,cancelled){
+    // Recovery remains available when an unrelated schedule report could not
+    // load. Fresh module rights and caller-scoped SDK reads own this decision.
+    const cap=await api({action:'capabilities'});nativeManagementCheck(scope,cancelled);
+    if(cap.permissions?.view!==true||cap.permissions?.assignments!==true)throw new Error('Crew management permission has not been granted.');
+    if(cap.management?.enabled!==true||cap.management.nativeWrites!==true||cap.management.protocol!=='native-validated-v1'||cap.sources?.crews!==true||kind==='employee'&&cap.sources?.employees!==true)throw new Error('Native crew management requires Creator promotion.');
+  }
+  function nativeManagementLookup(value){if(value==null||value==='')return '';const id=typeof value==='object'&&!Array.isArray(value)?value.ID:value;if(typeof id!=='string'||!/^\d+$/.test(id))throw new Error('Creator returned an invalid native crew identity.');return id;}
+  function nativeManagementActive(value){if(value===true||value===false)return value;if(typeof value==='string'&&/^(true|false)$/i.test(value))return value.toLowerCase()==='true';throw new Error('Creator did not expose a native active status.');}
+  async function nativeManagementRead(reportName,criteria,fields,scope,cancelled){
+    nativeManagementCheck(scope,cancelled);
+    const rows=await LMData.readAll({reportName,criteria,fields,fresh:true,parallelExact:/^\(ID == \d+\)$/.test(criteria),isCancelled:()=>!!cancelled?.()||scope!==managementScope()});
+    nativeManagementCheck(scope,cancelled);
+    if(!Array.isArray(rows)||rows.some(row=>!row||typeof row.ID!=='string'||!/^\d+$/.test(row.ID)))throw new Error('Creator returned an invalid native record identity.');
+    for(const row of rows)for(const field of fields)if(!Object.hasOwn(row,field))throw new Error(reportName+' must expose native field '+field+'.');
+    return rows;
+  }
+  function nativeManagementResult(body,intent){return {ok:true,action:body.action,creatorOnly:true,projectsPushEnabled:false,environment:LMRuntime.current().environment.toLowerCase(),requestId:intent.requestId,kind:intent.kind};}
+  async function nativeManagementPrepare(body,scope,cancelled){
+    const intent=nativeManagementIntent(body),{kind,draft,requestId}=intent;await nativeManagementCapabilities(scope,kind,cancelled);let patch;
+    if(kind==='employee'){
+      const rows=await nativeManagementRead('All_Employees','(ID == '+draft.id+')',nativeEmployeeFields,scope,cancelled);
+      if(rows.length!==1||rows[0].ID!==draft.id)throw new Error('This employee is unavailable in your Creator report.');
+      const current=rows[0],currentCrew=nativeManagementLookup(current.Crew);
+      if(!nativeManagementActive(current.IsActive))throw new Error('Inactive employee assignments are retained for history.');
+      if(draft.crewId){const crews=await nativeManagementRead('All_Crews','(ID == '+draft.crewId+')',nativeCrewFields,scope,cancelled);if(crews.length!==1||crews[0].ID!==draft.crewId)throw new Error('This crew is unavailable in your Creator report.');if(draft.crewId!==currentCrew&&!nativeManagementActive(crews[0].Active))throw new Error('Choose an active crew.');}
+      patch={Territory:draft.territory,Labor_Type:draft.laborType,Crew:draft.crewId};
+    }else{
+      const criteria=draft.id?'(ID == '+draft.id+')':'((Source_System == "MANUAL_WIDGET" && Source_Record_ID == "'+requestId+'") || Crew_Code == "'+draft.code+'")';
+      const rows=await nativeManagementRead('All_Crews',criteria,nativeCrewFields,scope,cancelled);
+      if(draft.id){if(rows.length!==1||rows[0].ID!==draft.id)throw new Error('This crew is unavailable in your Creator report.');if(rows[0].Crew_Code!==draft.code)throw new Error('Crew code is immutable.');}
+      else if(rows.length){
+        const prior=rows.find(row=>row.Source_System==='MANUAL_WIDGET'&&row.Source_Record_ID===requestId);
+        if(prior)throw Object.assign(new Error('This create request already has a native record. Check save status; no insert was repeated.'),{unknown:true});
+        throw new Error('That crew code is already in use.');
+      }
+      patch={Crew_Name:draft.name,Badge_Color:draft.color,Active:draft.active};
+      if(!draft.id)Object.assign(patch,{Crew_Code:draft.code,Source_System:'MANUAL_WIDGET',Source_Record_ID:requestId});
+    }
+    nativeManagementCheck(scope,cancelled);
+    return {...nativeManagementResult(body,intent),state:'ready',write:{kind,formName:kind==='employee'?'Employees':'Crew',reportName:kind==='employee'?'All_Employees':'All_Crews',recordId:draft.id,data:patch}};
+  }
+  async function nativeManagementStatus(body){
+    if(S.managementBusy||S.busy||S.loading||S.operation?.unknown||S.drag)throw new Error('Finish the current save before reviewing its status.');
+    const scope=managementScope(),intent=nativeManagementIntent(body),{kind,draft,requestId}=intent;let cancelled=false,timer;S.managementBusy=true;controls();
+    const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>{cancelled=true;reject(new Error('The read-only save check timed out. No write was replayed.'));},30000);});
+    const check=(async()=>{
+      await nativeManagementCapabilities(scope,kind,()=>cancelled);
+      const criteria=draft.id?'(ID == '+draft.id+')':'(Source_System == "MANUAL_WIDGET" && Source_Record_ID == "'+requestId+'")';
+      const rows=await nativeManagementRead(kind==='employee'?'All_Employees':'All_Crews',criteria,kind==='employee'?nativeEmployeeFields:nativeCrewFields,scope,()=>cancelled);
+      const current=rows.length===1?rows[0]:null;let matches=!!current&&(!draft.id||current.ID===draft.id);
+      if(matches&&kind==='employee')matches=String(current.Territory??'')===draft.territory&&String(current.Labor_Type??'')===draft.laborType&&nativeManagementLookup(current.Crew)===draft.crewId;
+      if(matches&&kind==='crew')matches=(!!draft.id||current.Source_System==='MANUAL_WIDGET'&&current.Source_Record_ID===requestId)&&current.Crew_Code===draft.code&&String(current.Crew_Name??'')===draft.name&&current.Badge_Color===draft.color&&nativeManagementActive(current.Active)===draft.active;
+      return {...nativeManagementResult(body,intent),state:matches?'saved':'unconfirmed',unknown:!matches,...(current?{recordId:current.ID}:{}),message:matches?'':'The saved record is not confirmed. No write was replayed.'};
+    })();
+    try{return await Promise.race([check,timeout]);}finally{clearTimeout(timer);S.managementBusy=false;controls();}
+  }
   async function managementApi(body){
     // The manager releases an unknown-save lock only after matching the exact
     // request, kind and destination returned by an explicit read-only recheck.
+    if(body.action==='employee-status'||body.action==='management-status'&&body.statusFor==='crew')return nativeManagementStatus(body);
     if(!['save-crew','save-assignment','save-employee'].includes(body.action)){const data=await api(body);controls();return data;}
     if(S.managementBusy||S.managementUnknown||S.busy||S.loading||S.operation?.unknown||S.drag)throw new Error('Finish the current save or review before making another change.');
-    const scope=managementScope();let dispatched=false,cancelled=false,timer;S.managementBusy=true;controls();
+    const scope=managementScope(),nativeRoute=nativeManagementRoute(body);let dispatched=false,cancelled=false,timer;S.managementBusy=true;controls();
+    const timeout=nativeRoute?new Promise((_,reject)=>{timer=setTimeout(()=>{cancelled=true;reject(new Error(dispatched?'The save response is unknown. Check save status before continuing.':'The save timed out before it was sent.'));},90000);}):null;
     try{
-      const prepared=await api(body),kind=body.action==='save-crew'?'crew':body.action==='save-employee'?'employee':'assignment';
+      const prepared=nativeRoute?await Promise.race([nativeManagementPrepare(body,scope,()=>cancelled),timeout]):await api(body),kind=body.action==='save-crew'?'crew':body.action==='save-employee'?'employee':'assignment';
       if(prepared.requestId!==body.requestId)throw new Error('Creator prepared a different save request.');
       if(prepared.state==='saved'){if(prepared.kind!==kind||typeof prepared.recordId!=='string'||!/^\d+$/.test(prepared.recordId))throw new Error('Creator did not confirm the existing saved identity.');return prepared;}
       const w=prepared.write,expected=body[kind]?.id||'',fields=kind==='employee'?['Territory','Labor_Type','Crew']:kind==='crew'?['Crew_Code','Crew_Name','Badge_Color','Active','Source_System','Source_Record_ID']:['Crew','Subdivision1','Assignment_Date','Source_System','Source_Record_ID','Source_Key'];
       if(prepared.state!=='ready'||w?.kind!==kind||w.formName!==(kind==='employee'?'Employees':kind==='crew'?'Crew':'Crew_Assignment')||w.reportName!==(kind==='employee'?'All_Employees':kind==='crew'?'All_Crews':'Crew_Assignment_Report')||w.recordId!==expected||expected&&!/^\d+$/.test(expected)||!w.data||Array.isArray(w.data)||Object.keys(w.data).some(field=>!fields.includes(field)))throw new Error('Creator did not prepare a valid native save.');
-      const raw=await Promise.race([LMData.request('crew-management:'+kind,()=>{if(cancelled||scope!==managementScope())throw new Error('The Creator session changed or the queued save expired before saving.');dispatched=true;return expected?ZOHO.CREATOR.DATA.updateRecordById({report_name:w.reportName,id:expected,payload:{data:w.data}}):ZOHO.CREATOR.DATA.addRecords({form_name:w.formName,payload:{data:w.data}});},{readOnly:false}),new Promise((_,reject)=>{timer=setTimeout(()=>{cancelled=true;reject(new Error(dispatched?'The save response is unknown. Check save status before continuing.':'The save timed out before it was sent.'));},90000);})]);
+      const raw=await Promise.race([LMData.request('crew-management:'+kind,()=>{if(cancelled||scope!==managementScope())throw new Error('The Creator session changed or the queued save expired before saving.');dispatched=true;return expected?ZOHO.CREATOR.DATA.updateRecordById({report_name:w.reportName,id:expected,payload:{data:w.data}}):ZOHO.CREATOR.DATA.addRecords({form_name:w.formName,payload:{data:w.data}});},{readOnly:false}),timeout||new Promise((_,reject)=>{timer=setTimeout(()=>{cancelled=true;reject(new Error(dispatched?'The save response is unknown. Check save status before continuing.':'The save timed out before it was sent.'));},90000);})]);
       const recordId=managementAcknowledgement(raw,expected);if(scope!==managementScope())throw new Error('The Creator session changed while saving. Recheck from the original account.');
       LMData.invalidate();return {...prepared,kind,state:'saved',recordId,unknown:false};
     }catch(e){e.unknown=e.unknown===true||dispatched&&!managementRejected(e);if(e.unknown)S.managementUnknown=true;throw e;}

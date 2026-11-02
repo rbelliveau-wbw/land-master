@@ -1,5 +1,37 @@
 # Crew Management
 
+## 1.8.2 — CFO Crew and Employee Saves
+
+Crew creation/editing/activation and employee staffing updates now use fresh
+caller-scoped SDK reads followed by the existing native SDK writes. The old
+connection-dependent preparation rejected real CFO sessions before a native
+write, producing the reported missing-HTTP and unavailable-employee errors.
+Foreman group updates reuse the same repaired employee save route.
+
+Fresh module capabilities, native report/record/field permissions, required
+source fields, exact string IDs and the native form workflows remain enforced.
+Employee patches contain only Territory, Labor_Type and Crew. Crew edit patches
+contain only Crew_Name, Badge_Color and Active; creates retain their stable
+MANUAL_WIDGET UUID and natively unique Crew_Code. Explicit uncertain-save
+recovery reads the caller's native reports and never replays a write.
+
+Crew_on_validate now checks stored code/source immutability against only the
+current authorized native transaction's Crew record, matching the existing
+Employees_Staffing_Guard pattern. It performs no owner write and does not change
+the shared crewLocationsRead helper, native record sharing or connection scope.
+The native guard was compiled, saved and reopened before publication.
+
+Dated work assignments and milestone scheduling retain their existing delegated
+connection paths. Those operations still need the actual user's authorization
+of the existing logged-in-user Creator connection; this release does not claim
+to remove that separate requirement. The permissions-only 9.136 repair verified
+loading and controls, not CFO writes, and is superseded for write readiness by
+the verification recorded in the native installation inventory.
+
+Rollback uses immutable widget 1.8.1 and the scoped native snapshot
+creator/crew-locations/native-before/Crew_on_validate.cfo-20261102.dg. Retain
+employees, staffing, crews, timecards, profile grants and all audit history.
+
 ## 1.4.0 — HeavyJob mappings and foreman review groups
 
 Employees now offers **By foreman**, showing recorded employee membership, work

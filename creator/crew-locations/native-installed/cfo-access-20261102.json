@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-02",
+  "status": "published-stage-and-production-9.136-cfo-preview-verified",
+  "change_method": "Authenticated Creator browser UI; no direct API or connection changes",
+  "authorization": {
+    "request": "Enable CFO Crew Management permissions and remove Admin only restrictions from Custom APIs using the browser.",
+    "confirmed": "Apply These Access Changes",
+    "employee_record_scope_confirmation": "Enable Employees Modify All",
+    "employee_editable_fields": ["Territory", "Labor_Type", "Crew"]
+  },
+  "profile": {
+    "name": "CFO",
+    "id": "4410926000002229136",
+    "before": {
+      "Employees": {"add": false, "view": false, "edit": false, "delete": false, "more": false},
+      "Crew_Timecards": {"add": false, "view": false, "edit": false, "delete": false, "more": false}
+    },
+    "after": {
+      "Employees": {
+        "form_id": "4410926000005549015",
+        "report": "All_Employees",
+        "report_id": "4410926000005549052",
+        "add": false,
+        "view": true,
+        "edit": true,
+        "delete": false,
+        "view_all": true,
+        "modify_all": true,
+        "import": false,
+        "export_print": false,
+        "editable_fields": ["Territory", "Labor_Type", "Crew"],
+        "read_only_fields": ["EmployeeName", "IsActive", "Synced_At", "BU_Employee_ID", "Employee_Code"],
+        "system_fields": "Existing system-field visibility/read-only settings preserved"
+      },
+      "Crew_Timecards": {
+        "form_id": "4410926000005549102",
+        "report": "All_Crew_Timecards",
+        "report_id": "4410926000005549139",
+        "add": false,
+        "view": true,
+        "edit": false,
+        "delete": false,
+        "view_all": true,
+        "modify_all": false,
+        "import": false,
+        "export_print": false
+      }
+    },
+    "existing_grants_preserved": ["Crew_Management page", "Crew", "Crew_Assignment", "Milestones", "Add_Subdivision", "External_System_Mapping"],
+    "user_access_flags_changed": false,
+    "unrelated_profile_permissions_changed": false,
+    "api_access": "Existing enabled setting retained"
+  },
+  "custom_api_audit": {
+    "published_apis_inspected": 107,
+    "authentication": "OAuth2 on all inspected published APIs",
+    "admin_only_before": 4,
+    "admin_only_after": 0,
+    "all_users_after": 103,
+    "selective_users_unchanged": ["Forecast_Manager_Widget_DEV", "Forecast_Manager_Widget", "Post_Record_Comment_DEV", "Post_Record_Comment"],
+    "unpublished_draft": "Legacy Get User Access left unpublished",
+    "scope_changes": [
+      {"name": "Crew_Locations_Widget_STAGE", "application": "Land Master STAGE", "function": "crewLocationsWidget", "before": "Admin only", "after": "All users", "authentication": "OAuth2", "enabled": true},
+      {"name": "Manage_Purchase_Order_DEV", "application": "Land Master DEVELOPMENT", "function": "managePurchaseOrder", "before": "Admin only", "after": "All users", "authentication": "OAuth2", "enabled": true},
+      {"name": "Manage_Approval_Policies_DEV", "application": "Land Master DEVELOPMENT", "function": "manageApprovalPolicies", "before": "Admin only", "after": "All users", "authentication": "OAuth2", "enabled": true},
+      {"name": "Manage_Approval_Policies", "application": "Land Master", "function": "manageApprovalPolicies", "before": "Admin only", "after": "All users", "authentication": "OAuth2", "enabled": true}
+    ],
+    "function_bindings_and_payload_contracts_changed": false,
+    "new_apis_connections_or_credentials": false,
+    "application_checks": "Existing authenticated User_Access checks retained, including owner-only approval configuration. All users is invocation scope, not permission to bypass these checks.",
+    "stage_alias": "Retained for its existing Stage consumer; original delete-if-unused rule remains."
+  },
+  "creator_promotion": {
+    "components": ["CFO profile"],
+    "intermediate_stage_version": "9.135",
+    "final_stage_version": "9.136",
+    "stage_status": "published",
+    "production_version": "9.136",
+    "production_status": "published",
+    "production_packages": ["4410926000005660001", "4410926000005661001"],
+    "production_selection": "Selecting final 9.136 automatically included prerequisite 9.135; both packages contain only the CFO profile.",
+    "unrelated_function_left_pending": "auditProformaIRRParity20261030"
+  },
+  "verification": {
+    "environment": "Development",
+    "profile_preview": "demouser_5 / CFO",
+    "before_error": "All_Employees: Permission denied to view record(s).",
+    "after_roster_loaded": true,
+    "after_recent_timecards_loaded": true,
+    "after_milestone_timeline_loaded": true,
+    "after_inline_staffing_picker_opened": true,
+    "milestone_sample": "Cameron Ranch - Phase 01",
+    "employee_record_scope_saved_and_reopened": true,
+    "staffing_field_restrictions_saved_and_reopened": true,
+    "business_records_written": 0,
+    "actual_cfo_production_session_tested": false,
+    "limitation": "CFO preview verifies reads and available controls; no arbitrary staffing or milestone values were changed to test writes."
+  },
+  "widget_release_changed": false,
+  "rollback": "Restore only CFO Employees/Crew_Timecards grants to the before state and the four APIs to Admin only if requested. Preserve records, native guards, user flags, OAuth2 and unrelated profile permissions."
+}

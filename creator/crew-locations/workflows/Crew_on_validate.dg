@@ -14,20 +14,17 @@ try
 	}
 	if(input.ID != null)
 	{
-		// Caller-scoped report access is required in addition to native form rights.
-		read = thisapp.crewLocationsRead("All_Crews","ID == " + input.ID.toString());
-		if(read.get("ok") != true || read.get("records").size() != 1)
+		// Creator has authorized this exact native save before On Validate.
+		// Read only its current row to enforce immutable values in this transaction,
+		// matching Employees_Staffing_Guard; never expose it or write as the owner.
+		current = Crew[ID == input.ID];
+		if(current.count() != 1)
 		{
 			crewValidationError = "This crew is unavailable to the current user.";
 		}
 		else
 		{
-			current = read.get("records").get(0);
-			for each fieldName in {"ID","Crew_Code","Source_System","Source_Record_ID"}
-			{
-				if(!current.keys().contains(fieldName)) { crewValidationError = "All_Crews must expose native field " + fieldName + "."; }
-			}
-			if(ifnull(current.get("Crew_Code"),"").toString() != code || ifnull(current.get("Source_System"),"").toString() != ifnull(input.Source_System,"") || ifnull(current.get("Source_Record_ID"),"").toString() != ifnull(input.Source_Record_ID,""))
+			if(ifnull(current.Crew_Code,"").toString() != code || ifnull(current.Source_System,"").toString() != ifnull(input.Source_System,"") || ifnull(current.Source_Record_ID,"").toString() != ifnull(input.Source_Record_ID,""))
 			{
 				crewValidationError = "Crew code and source identity are immutable.";
 			}

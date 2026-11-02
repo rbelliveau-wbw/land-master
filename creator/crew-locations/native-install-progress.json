@@ -1,4 +1,27 @@
 {
+  "cfo_native_saves_2026_11_02": {
+    "release": "1.8.2",
+    "status": "native-guard-published-stage-production-9.137-widget-live-check-pending",
+    "workflow": "Crew_on_validate",
+    "workflow_id": "4410926000005314012",
+    "scope": "Native SDK Crew CRUD and employee/group staffing saves; current-row-only Crew On Validate immutability guard",
+    "connection_or_permission_scope_changes": false,
+    "source": "creator/crew-locations/workflows/Crew_on_validate.dg",
+    "native_after": "creator/crew-locations/native-installed/Crew_on_validate.dg",
+    "rollback": "creator/crew-locations/native-before/Crew_on_validate.cfo-20261102.dg",
+    "creator_versions": {"stage": "9.137", "production": "9.137"},
+    "verification": "Pending live native CFO-profile save checks; isolated client and backend checks passed"
+  },
+  "cfo_access_2026_11_02": {
+    "status": "published-stage-and-production-9.136-cfo-preview-verified",
+    "profile": "CFO",
+    "scope": "Employees View/Edit + View All/Modify All with only Territory, Labor_Type and Crew editable; Crew_Timecards read-only View All",
+    "new_components": false,
+    "existing_api_scopes_changed": ["Crew_Locations_Widget_STAGE", "Manage_Purchase_Order_DEV", "Manage_Approval_Policies_DEV", "Manage_Approval_Policies"],
+    "authentication": "OAuth2 retained; existing application permission checks unchanged",
+    "creator_versions": {"stage": "9.136", "production": "9.136"},
+    "evidence": "creator/crew-locations/native-installed/cfo-access-20261102.json"
+  },
   "employees_timecards_2026_10_29": {
     "release": "1.3.2",
     "environment": "Development, Stage and Production",

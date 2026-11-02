@@ -72,7 +72,7 @@
    assert($('#cmEditorDialog').open&&!$('#cmCheckStatus').hidden&&$('#cmSave').disabled,'Unknown reply locks committing action and exposes status');
    assert($('#cmName').value==='Recovered response draft'&&$('#cmName').disabled,'Draft retained while outcome is unknown');
    click('#cmCheckStatus');await wait(()=>!$('#cmEditorDialog').open,'status recovered');await settled();
-   assert(writes()===before+1,'Status does not replay the native write');assert(audit().requests.at(-1).action==='management-list'||audit().requests.some(request=>request.action==='management-status'),'Recovery uses read-only status');
+   assert(writes()===before+1,'Status does not replay the native write');assert(audit().nativeReads.some(request=>request.action==='sdk-records'&&request.config.report_name==='All_Crews'&&request.config.criteria==='(ID == '+window.__qaCrewId+')'),'Recovery uses caller SDK status reads');assert(!audit().requests.some(request=>request.action==='management-status'&&request.statusFor==='crew'),'Crew recovery has no delegated connection dependency');
   });
   await test('Missing native acknowledgement identity requires recovery before another edit',async()=>{
    click('#cmEditCrew');input('#cmColor','#478044');mode('ambiguous');const before=writes();await save();assert(!$('#cmCheckStatus').hidden&&$('#cmSave').disabled,'Code 3000 without destination identity remains unknown');click('#cmCheckStatus');await wait(()=>!$('#cmEditorDialog').open,'identity recovered');await settled();assert(writes()===before+1,'Ambiguous identity recovery performs no second native save');
