@@ -1,0 +1,59 @@
+{
+  "release": "1.8.3",
+  "date": "2026-11-02",
+  "creator_versions": {
+    "stage": "9.137",
+    "production": "9.137"
+  },
+  "native_workflow_id": "4410926000005314012",
+  "scope": [
+    "Crew create/edit/deactivate/reactivate",
+    "Employee staffing",
+    "Foreman group staffing"
+  ],
+  "native_verification": {
+    "environment": "DEVELOPMENT",
+    "actor": "Authorized Owner account",
+    "test_crew_id": "4410926000005685002",
+    "crew_create_edit_deactivate_reactivate": "Native acknowledgements and visible refreshed record; same ID retained",
+    "foreman_group": {
+      "employee_ids": [
+        "4410926000005549328",
+        "4410926000005549316",
+        "4410926000005549358",
+        "4410926000005549414"
+      ],
+      "assigned_count": 4,
+      "restored_count": 4,
+      "original_crew": "Unassigned",
+      "native_acknowledgements": true
+    },
+    "immutable_code_edit": "Rejected by native On Validate; stored identity unchanged",
+    "cfo_preview": {
+      "reads": true,
+      "saves": "Denied: demo identity has no User_Access row; guard preserved"
+    },
+    "real_cfo_production_session_tested": false,
+    "production_business_writes": 0
+  },
+  "checks": {
+    "full_validate": "passed",
+    "build_pages": "passed",
+    "client_groups": 21,
+    "browser_groups": 18,
+    "backend_groups": 13,
+    "foreman_groups": 9,
+    "inline_groups": 5
+  },
+  "remaining_connection_dependency": {
+    "operations": [
+      "Dated Work saves/recovery",
+      "Milestone edits/history/undo/redo/status"
+    ],
+    "connection": "zoho_creator_connection",
+    "authorization": "Existing logged-in-user connection requires the real CFO own Production authorization; Super Admin authorization does not authorize CFO",
+    "sharing_or_connection_scope_changed": false
+  },
+  "rollback": "Widget 1.8.1 and native-before/Crew_on_validate.cfo-20261102.dg; retain all native data and existing profile grants",
+  "evidence_directory": "C:/Users/R/Desktop/claude/tmp/crew-cfo-save-fix-2026-11-02/"
+}

@@ -22,7 +22,13 @@ Crew_on_validate now checks stored code/source immutability against only the
 current authorized native transaction's Crew record, matching the existing
 Employees_Staffing_Guard pattern. It performs no owner write and does not change
 the shared crewLocationsRead helper, native record sharing or connection scope.
-The native guard was compiled, saved and reopened before publication.
+The native guard was compiled, saved and reopened before publication to Stage
+and Production 9.137. Authorized Owner Development checks acknowledged Crew
+create/edit/deactivate/reactivate and all four Foreman group writes, then all
+four restorations. CFO demo reads work, but its synthetic identity has no
+User_Access row and correctly cannot save. The actual CFO Production session
+was unavailable; do not claim its writes verified. Evidence is recorded in
+creator/crew-locations/native-installed/cfo-native-saves-20261102.json.
 
 Dated work assignments and milestone scheduling retain their existing delegated
 connection paths. Those operations still need the actual user's authorization

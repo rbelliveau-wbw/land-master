@@ -1,5 +1,5 @@
 {
-  "status": "1.8.3-native-cfo-save-repair-native-9.137-live-check-pending",
+  "status": "1.8.3-native-crew-staffing-production-creator-9.137",
   "widget": "crew-locations",
   "version": "1.8.3",
   "mode": "employee-staffing-foreman-timecards-and-creator-only-scheduling",
@@ -793,6 +793,7 @@
       "employee staffing edit",
       "foreman group staffing edit"
     ],
+    "live_verification": "creator/crew-locations/native-installed/cfo-native-saves-20261102.json",
     "native_workflow": "Crew_on_validate",
     "native_guard": "Current authenticated native Crew transaction only; fresh stored identity, module flags, formats and source UUID enforced. No owner insert/update or shared read fallback.",
     "retained_connection_paths": [
